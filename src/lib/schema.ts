@@ -1222,7 +1222,19 @@ export async function initSchema(db: any) {
 async function initDynamicTriggers(db: any) {
   try {
     const tablesResult = await db.execute(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '%_fts%' AND name NOT IN ('activity_logs', 'session_context', 'sqlite_sequence', 'system_settings', 'db_indexing_status', 'faktur_sequences')"
+      `SELECT name FROM sqlite_master 
+       WHERE type='table' 
+       AND name NOT LIKE 'sqlite_%' 
+       AND name NOT LIKE '%_fts%' 
+       AND name NOT IN (
+         'activity_logs', 'session_context', 'sqlite_sequence', 'system_settings', 
+         'db_indexing_status', 'faktur_sequences',
+         'jurnal_harian_produksi', 'jurnal_umum', 'sopd', 'sopd_harga', 
+         'bahan_baku', 'barang_jadi', 'sales_reports', 'sales_orders',
+         'bill_of_materials', 'purchase_requests', 'purchase_orders', 
+         'penerimaan_pembelian', 'rekap_pembelian_barang', 'pelunasan_hutang', 
+         'pelunasan_piutang', 'pengiriman', 'spph_out', 'sph_in'
+       )`
     );
 
     const tables = tablesResult.rows.map((r: any) => r.name);

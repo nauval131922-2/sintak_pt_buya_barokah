@@ -70,7 +70,16 @@ export async function GET(request: NextRequest) {
     const data = batchResults[0].rows;
     const total = Number((batchResults[1].rows[0] as any).count);
 
-    return NextResponse.json({ success: true, data, total, page, limit });
+    // Fetch last update from activity logs
+    const metaResults = await db.execute({
+      sql: `SELECT strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) as lastUpdated 
+            FROM activity_logs 
+            WHERE table_name = 'jurnal_harian_produksi' AND action_type = 'UPLOAD'`,
+      args: []
+    });
+    const lastUpdated = (metaResults.rows[0] as any)?.lastUpdated || null;
+
+    return NextResponse.json({ success: true, data, total, page, limit, lastUpdated });
 
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

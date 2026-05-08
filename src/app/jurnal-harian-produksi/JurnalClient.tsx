@@ -548,7 +548,7 @@ export default function JurnalClient({
            {canInputTarget && (
              <button type="button" title="Duplikat Jadwal" onClick={(e) => { e.stopPropagation(); startCopy(row.original); }} className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"><Copy size={14} /></button>
            )}
-           {canInputRealisasi && (!row.original.realisasi || row.original.realisasi == 0) && (
+           {canInputRealisasi && (!row.original.no_order_2 && !row.original.jenis_pekerjaan_2) && (
              <button type="button" title="Input Realisasi" onClick={(e) => { e.stopPropagation(); startInputRealisasi(row.original); }} className="p-1.5 text-sky-600 hover:bg-sky-50 rounded transition-colors"><PlusSquare size={14} /></button>
            )}
            <button type="button" title="Edit Jurnal" onClick={(e) => { e.stopPropagation(); startEdit(row.original); }} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"><Edit2 size={14} /></button>
