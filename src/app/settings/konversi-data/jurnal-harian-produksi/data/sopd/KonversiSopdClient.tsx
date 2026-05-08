@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import ExcelUploadCard from '@/components/ExcelUploadCard';
-import { AlertTriangle, FileSpreadsheet, Info } from 'lucide-react';
+import { AlertTriangle, Info } from 'lucide-react';
 import { formatLastUpdate } from '@/lib/date-utils';
 
-export default function KonversiJHPClient() {
+export default function KonversiSopdClient() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
   const [dialog, setDialog] = useState<{isOpen: boolean, type: 'success' | 'error', title: string, message: string}>({
@@ -19,12 +18,11 @@ export default function KonversiJHPClient() {
   const [startTime, setStartTime] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [lastUpdate, setLastUpdate] = useState<string | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
     async function fetchMetadata() {
       try {
-        const res = await fetch('/api/jurnal-harian-produksi?page=1&limit=1');
+        const res = await fetch('/api/sopd?page=1&limit=1');
         const json = await res.json();
         if (json.success && json.lastUpdated) {
           setLastUpdate(json.lastUpdated);
@@ -64,7 +62,7 @@ export default function KonversiJHPClient() {
     }
 
     setStatus('loading');
-    setMessage('Membaca file Excel (proses ini mungkin memakan waktu)...');
+    setMessage('Membaca file Excel...');
     const startTimeInternal = Date.now();
     setStartTime(startTimeInternal);
     setProgress(0);
@@ -76,7 +74,7 @@ export default function KonversiJHPClient() {
 
       const arrayBuffer = await file.arrayBuffer();
       const worker = new Worker(
-        new URL('../../../jurnal-harian-produksi/excel-worker.ts', import.meta.url)
+        new URL('./sopd-excel-worker.ts', import.meta.url)
       );
 
       worker.postMessage({ arrayBuffer, filename: file.name, origin: window.location.origin }, [arrayBuffer]);
@@ -85,7 +83,7 @@ export default function KonversiJHPClient() {
         const { type, message, error, totalImported, totalRows: rowsTotal, currentRows: rowsCurrent, progress: p } = e.data;
 
         if (type === 'status') {
-          setMessage(message);
+          if (message) setMessage(message);
           if (rowsTotal) setTotalRows(rowsTotal);
           if (rowsCurrent) setCurrentRows(rowsCurrent);
           if (p !== undefined) setProgress(p);
@@ -96,14 +94,12 @@ export default function KonversiJHPClient() {
             isOpen: true,
             type: 'success',
             title: 'Berhasil',
-            message: `Berhasil mengimpor ${totalImported} data Jurnal Harian Produksi dalam waktu ${finalDuration}.`
+            message: `Berhasil mengimpor ${totalImported} data SOPd dalam waktu ${finalDuration}.`
           });
-          // Fetch new metadata
-          fetch('/api/jurnal-harian-produksi?page=1&limit=1')
+          fetch('/api/sopd?page=1&limit=1')
             .then(r => r.json())
             .then(j => { if (j.success && j.lastUpdated) setLastUpdate(j.lastUpdated); });
           worker.terminate();
-
         } else if (type === 'error') {
           setStatus('error');
           setMessage(error || 'Gagal memproses file Excel');
@@ -133,11 +129,10 @@ export default function KonversiJHPClient() {
           <AlertTriangle size={20} className="text-amber-600" />
         </div>
         <div>
-          <h4 className="text-[13px] font-bold text-amber-800 mb-1">Perhatian — Fitur Cut-off Data</h4>
+          <h4 className="text-[13px] font-bold text-amber-800 mb-1">Perhatian — Sinkronisasi Database SOPd</h4>
           <p className="text-[12px] text-amber-700 leading-relaxed">
-            Upload file Excel di sini akan <strong>menghapus seluruh data Jurnal Harian Produksi</strong> yang ada di sistem dan menggantinya dengan isi file yang diupload.
-            Gunakan fitur ini hanya saat proses cut-off data (misal: migrasi data historis sebelum Juni 2026).
-            Setelah cut-off selesai, input data jurnal harian dilakukan langsung di halaman Jurnal Harian Produksi.
+            Upload file Excel di sini akan <strong>menghapus seluruh database SOPd yang ada</strong> dan menggantinya dengan isi file yang diupload.
+            Pastikan file yang diupload adalah versi terbaru untuk menjaga konsistensi referensi nomor order di sistem.
           </p>
         </div>
       </div>
@@ -150,10 +145,11 @@ export default function KonversiJHPClient() {
         <div>
           <h4 className="text-[13px] font-bold text-blue-800 mb-2">Cara Penggunaan</h4>
           <ol className="text-[12px] text-blue-700 leading-relaxed list-decimal list-inside space-y-1">
-            <li>Pastikan file Excel memiliki sheet bernama <strong>JURNAL</strong></li>
-            <li>Sheet harus memiliki baris header yang mengandung kolom <strong>Tanggal</strong> dan <strong>Nama Karyawan</strong></li>
+            <li>Pastikan file Excel memiliki sheet bernama <strong>SOPD</strong></li>
+            <li>Sheet harus memiliki baris header pada baris ke-5 yang mengandung kolom <strong>No. Order</strong> dan <strong>Nama Order</strong></li>
+            <li>Sistem juga akan mengambil kolom <strong>Jumlah Order, Satuan, Perkiraan Harga, Keterangan, Deadline,</strong> dan <strong>Selesai</strong></li>
             <li>Upload file Excel (.xls, .xlsx, atau .xlsm)</li>
-            <li>Tunggu proses selesai — data lama akan diganti otomatis</li>
+            <li>Seluruh database SOPd akan diganti dengan isi file yang diupload</li>
           </ol>
         </div>
       </div>
@@ -161,10 +157,10 @@ export default function KonversiJHPClient() {
       {/* Upload Card */}
       <div className="h-[120px] shrink-0">
         <ExcelUploadCard
-          title="Upload Jurnal Harian Produksi"
+          title="Sinkronisasi Data SOPd"
           description={
             <div className="flex flex-col gap-0.5">
-              <span>{status === 'loading' ? `Durasi: ${formatTime(elapsedTime)}` : "Unggah file Excel (Sheet JURNAL) untuk mengganti seluruh data Jurnal Harian Produksi."}</span>
+              <span>{status === 'loading' ? `Durasi: ${formatTime(elapsedTime)}` : 'Unggah file Excel untuk memperbarui database Order Produksi sebagai referensi Jurnal Harian.'}</span>
               {lastUpdate && status !== 'loading' && (
                 <div className="flex items-center gap-2 text-[11px] font-bold text-gray-400 leading-none mt-1.5">
                   <span className="w-1 h-1 rounded-full bg-gray-300 shrink-0"></span>
@@ -173,24 +169,24 @@ export default function KonversiJHPClient() {
               )}
             </div>
           }
-
           status={status}
           errorMessage={message}
-          onFileSelect={handleFile}
           progress={progress}
           currentRows={currentRows}
           totalRows={totalRows}
+          onFileSelect={handleFile}
         />
       </div>
 
-      <ConfirmDialog
+      <ConfirmDialog 
         isOpen={dialog.isOpen}
         type={dialog.type}
         title={dialog.title}
         message={dialog.message}
         onConfirm={() => {
           setDialog(prev => ({ ...prev, isOpen: false }));
-          router.refresh();
+          window.dispatchEvent(new Event('sintak:data-updated'));
+          localStorage.setItem('sintak_data_updated', Date.now().toString());
         }}
       />
     </div>

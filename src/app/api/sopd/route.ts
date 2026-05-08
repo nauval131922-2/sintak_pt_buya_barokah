@@ -139,7 +139,46 @@ export async function GET(request: NextRequest) {
     const data = batchResults[0].rows;
     const total = Number((batchResults[1].rows[0] as any).count);
 
-    return NextResponse.json({ success: true, data, total, page, limit });
+    // Metadata for scraping status
+    const metadataResults = await db.batch([
+      { sql: `SELECT value FROM system_settings WHERE key = 'last_scrape_orders'`, args: [] },
+      { sql: `SELECT value FROM system_settings WHERE key = 'scraped_period_last_scrape_orders'`, args: [] },
+      { sql: `SELECT strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) as lastUpdated FROM activity_logs WHERE table_name = 'sopd' AND action_type = 'UPLOAD'`, args: [] },
+      { sql: `SELECT strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) as lastUpdated FROM orders`, args: [] }
+    ], "read");
+
+    const lastScrape = metadataResults[0].rows[0] as any;
+    const lastUpload = (metadataResults[2].rows[0] as any)?.lastUpdated;
+    const lastScrapeOrders = (metadataResults[3].rows[0] as any)?.lastUpdated;
+
+    // Determine which timestamp to show based on what the user is looking at
+    let lastUpdated = null;
+    if (useSopd && !useOrders) {
+      // Excel mode
+      lastUpdated = lastUpload;
+    } else if (useOrders && !useSopd) {
+      // Scraped mode
+      lastUpdated = lastScrape ? lastScrape.value : lastScrapeOrders;
+    } else {
+      // Both or default
+      lastUpdated = lastUpload || (lastScrape ? lastScrape.value : lastScrapeOrders);
+    }
+    
+    let scrapedPeriod = null;
+    try {
+      const periodVal = (metadataResults[1].rows[0] as any)?.value;
+      if (periodVal) scrapedPeriod = JSON.parse(periodVal);
+    } catch(e) {}
+
+    return NextResponse.json({ 
+      success: true, 
+      data, 
+      total, 
+      page, 
+      limit,
+      lastUpdated,
+      scrapedPeriod
+    });
 
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -148,23 +187,53 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { filename, data: rawData } = await request.json();
+    const { mode, filename, data: rawData } = await request.json();
 
-    if (!rawData || !Array.isArray(rawData) || rawData.length === 0) {
-       return NextResponse.json({ error: "Data Excel kosong atau format tidak sesuai." }, { status: 400 });
+    if (mode === 'start') {
+      await db.batch([
+        { sql: 'DELETE FROM sopd', args: [] },
+        { sql: 'DELETE FROM sopd_harga', args: [] }
+      ], "write");
+      return NextResponse.json({ success: true });
     }
 
-    const batchOps: any[] = [
-      { sql: 'DELETE FROM sopd', args: [] }
-    ];
+    if (mode === 'end') {
+      const importedCount = rawData?.importedCount || 0;
+      const session = await getSession();
+      await db.execute({
+        sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by) 
+              VALUES (?, ?, ?, ?, ?, ?)`,
+        args: [
+          'UPLOAD', 
+          'sopd', 
+          0, 
+          `Upload SOPD dari Excel (${importedCount} data)`, 
+          JSON.stringify({ fileName: filename, imported: importedCount }),
+          session?.username || 'System'
+        ]
+      });
+      return NextResponse.json({ success: true });
+    }
 
-    let importedCount = 0;
+    // Default or 'chunk' mode
+    if (!rawData || !Array.isArray(rawData) || rawData.length === 0) {
+       return NextResponse.json({ error: "Data chunk kosong." }, { status: 400 });
+    }
+
+    const processedSopd = new Set<string>();
+    const batchOps: any[] = [];
+
     for (const row of rawData) {
       const noSopd = String(row.no_sopd || '').trim();
       const tgl = String(row.tgl || '').trim();
       const namaOrder = String(row.nama_order || '').trim();
       let qtySopd = 0;
       const unit = String(row.unit || '').trim();
+      
+      const perkiraanHarga = row.perkiraan_harga;
+      const keterangan = row.keterangan;
+      const deadlineDate = row.deadline_date;
+      const finishedDate = row.finished_date;
 
       // Qty Parsing
       const rawQty = row.qty_sopd;
@@ -190,40 +259,31 @@ export async function POST(request: NextRequest) {
         sql: `INSERT INTO sopd (no_sopd, tgl, nama_order, qty_sopd, unit) VALUES (?, ?, ?, ?, ?)`,
         args: [noSopd, tgl || null, namaOrder, qtySopd, unit || null]
       });
-      importedCount++;
+
+      if (noSopd && !processedSopd.has(noSopd)) {
+        batchOps.push({
+          sql: `INSERT INTO sopd_harga (no_sopd, perkiraan_harga, keterangan, deadline_date, finished_date) VALUES (?, ?, ?, ?, ?)`,
+          args: [noSopd, perkiraanHarga || null, keterangan || null, deadlineDate || null, finishedDate || null]
+        });
+        processedSopd.add(noSopd);
+      }
     }
 
-    await db.batch(batchOps, "write");
+    if (batchOps.length > 0) {
+      await db.batch(batchOps, "write");
+    }
 
-    const session = await getSession();
-
-    await db.execute({
-      sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by) 
-            VALUES (?, ?, ?, ?, ?, ?)`,
-      args: [
-        'UPLOAD', 
-        'sopd', 
-        0, 
-        `Upload SOPD dari Excel (${importedCount} data)`, 
-        JSON.stringify({ fileName: filename, imported: importedCount }),
-        session?.username || 'System'
-      ]
-    });
-
-    return NextResponse.json({
-      success: true,
-      message: `Berhasil mengimpor ${importedCount} data SOPD.`,
-      imported: importedCount
-    });
+    return NextResponse.json({ success: true, imported: rawData.length });
 
   } catch (error: any) {
     console.error("Upload Error:", error);
     return NextResponse.json(
-      { error: "Gagal memproses file Excel", details: error.message },
+      { error: "Gagal memproses chunk data", details: error.message },
       { status: 500 }
     );
   }
 }
+
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();

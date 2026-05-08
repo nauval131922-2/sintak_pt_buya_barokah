@@ -687,7 +687,20 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                       label: 'Produksi',
                       icon: <Package size={14} />,
                       items: [
-                        { label: 'Jurnal Harian Produksi', href: '/settings/konversi-data/jurnal-harian-produksi', icon: <ClipboardList size={12} /> }
+                        { 
+                          label: 'Jurnal Harian Produksi', 
+                          icon: <ClipboardList size={12} />,
+                          items: [
+                            {
+                              label: 'Data',
+                              icon: <Database size={12} />,
+                              items: [
+                                { label: 'SOPd', href: '/settings/konversi-data/jurnal-harian-produksi/data/sopd', icon: <FileText size={12} /> }
+                              ]
+                            },
+                            { label: 'Jurnal Harian Produksi', href: '/settings/konversi-data/jurnal-harian-produksi', icon: <ClipboardList size={12} />, exact: true },
+                          ]
+                        }
                       ]
                     }
                   ]

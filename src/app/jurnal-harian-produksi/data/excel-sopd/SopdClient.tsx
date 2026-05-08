@@ -6,11 +6,22 @@ import ImportInfo from '@/components/ImportInfo';
 import { useRouter } from 'next/navigation';
 import { DataTable } from '@/components/ui/DataTable';
 import { useTableSelection } from '@/lib/hooks/useTableSelection';
-import SopdExcelUpload from './SopdExcelUpload';
 import DatePicker from '@/components/DatePicker';
 import TableTitle from '@/components/TableTitle';
 import SearchAndReload from '@/components/SearchAndReload';
 import TableFooter from '@/components/TableFooter';
+import DateRangeCard from '@/components/DateRangeCard';
+import ConfirmDialog from '@/components/ConfirmDialog';
+import ScrapingHeader from '@/components/ScrapingHeader';
+import { splitDateRangeIntoMonths, formatLastUpdate } from '@/lib/date-utils';
+import { getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod } from '@/lib/scraper-period';
+
+function formatDateToYYYYMMDD(date: Date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
 
 interface SopdRecord {
   id: number;
@@ -87,6 +98,14 @@ const EditableCell = ({
   const handleSave = async () => {
     if (isSavingGuard.current) return;
     isSavingGuard.current = true;
+
+    // Optimization: If value hasn't changed, just close without saving
+    if (String(value) === String(initialVal)) {
+      setIsEditing(false);
+      setTimeout(() => { isSavingGuard.current = false; }, 300);
+      return;
+    }
+    
     setIsSaving(true);
     setIsEditing(false);
     
@@ -113,9 +132,24 @@ const EditableCell = ({
   useEffect(() => {
     if (!isEditing) return;
     const handler = (e: MouseEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
-        handleSave();
-      }
+      const target = e.target as HTMLElement;
+      
+      // 1. If clicking inside our cell wrapper, ignore
+      if (wrapperRef.current && wrapperRef.current.contains(target)) return;
+      
+      // 2. If clicking inside a date picker popup (portaled elements), ignore
+      const isCalendarElement = 
+        target.closest('.rdp') || 
+        target.closest('[data-radix-popper-content-wrapper]') ||
+        target.closest('[role="dialog"]') || // Radix popovers often use role="dialog"
+        target.closest('.rdp-root');
+
+      if (isCalendarElement) return;
+
+      // 3. Double check: if target is part of a button that might be a trigger
+      if (target.closest('button')) return;
+
+      handleSave();
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -171,7 +205,11 @@ const EditableCell = ({
                                 tabIndex={-1}
                                 onMouseDown={(e) => {
                                   e.preventDefault(); 
+                                  e.stopPropagation(); 
                                   toggle();
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent DatePicker's wrapper div from toggling again
                                 }}
                                 className="p-1.5 hover:bg-green-100 rounded-lg text-green-600 transition-colors"
                             >
@@ -255,8 +293,15 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [startDate, setStartDate] = useState<Date>(() => getDefaultScraperDateRange().startDate);
+  const [endDate, setEndDate] = useState<Date>(() => getDefaultScraperDateRange().endDate);
+  
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [scrapedPeriod, setScrapedPeriod] = useState<{start: string, end: string} | null>(null);
+  const [isBatching, setIsBatching] = useState(false);
+  const [batchProgress, setBatchProgress] = useState(0);
+  const [batchStatus, setBatchStatus] = useState('');
+  const [dialog, setDialog] = useState({ isOpen: false, type: 'success' as any, title: '', message: '' });
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -284,29 +329,10 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
 
   useEffect(() => {
     setIsMounted(true);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const savedStart = localStorage.getItem('sopd_startDate');
-    if (savedStart) {
-      const d = new Date(savedStart);
-      if (!isNaN(d.getTime())) setStartDate(d);
-    }
-    const savedEnd = localStorage.getItem('sopd_endDate');
-    if (savedEnd) {
-      const d = new Date(savedEnd);
-      if (!isNaN(d.getTime())) {
-        d.setHours(0, 0, 0, 0);
-        if (d < today) {
-          setEndDate(today);
-          localStorage.setItem('sopd_endDate', today.toISOString());
-        } else {
-          setEndDate(d);
-        }
-      }
-    } else {
-      setEndDate(today);
-      localStorage.setItem('sopd_endDate', today.toISOString());
-    }
+    const hydrated = hydrateScraperPeriod({ stateKey: 'sopdState', periodKey: 'SopdClient_scrapedPeriod' });
+    if (hydrated.scrapedPeriod) setScrapedPeriod(hydrated.scrapedPeriod);
+    setStartDate(hydrated.startDate);
+    setEndDate(hydrated.endDate);
 
     const handleDataUpdated = () => {
       setRefreshKey(prev => prev + 1);
@@ -328,17 +354,7 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
     };
   }, [router]);
 
-  useEffect(() => {
-    if (!isMounted) return;
-    if (startDate) localStorage.setItem('sopd_startDate', startDate.toISOString());
-    else localStorage.removeItem('sopd_startDate');
-  }, [startDate, isMounted]);
-
-  useEffect(() => {
-    if (!isMounted) return;
-    if (endDate) localStorage.setItem('sopd_endDate', endDate.toISOString());
-    else localStorage.removeItem('sopd_endDate');
-  }, [endDate, isMounted]);
+  // State persistence managed by scraper-period in effects or directly in handlers
 
   useEffect(() => {
     let active = true;
@@ -365,6 +381,8 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
             setTotalCount(json.total || 0);
             setTotalPages(Math.ceil((json.total || 0) / PAGE_SIZE));
             setError('');
+            if (json.lastUpdated) setLastUpdated(formatLastUpdate(new Date(json.lastUpdated)));
+            if (json.scrapedPeriod) setScrapedPeriod(json.scrapedPeriod);
           }
         }
       } catch (err: any) {
@@ -403,15 +421,55 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
     } catch (e) { return false; }
   }, []);
 
+  const handleFetch = async () => {
+    if (!startDate || !endDate) return;
+    localStorage.setItem('sopdState', JSON.stringify({
+      startDate: startDate.toISOString(), endDate: endDate.toISOString(), sessionDate: new Date().toLocaleDateString('en-CA')
+    }));
+    setError(''); setData([]); setPage(1); setIsBatching(true); setLoading(true); setSearchQuery(''); setBatchProgress(0);
+    const startStr = formatDateToYYYYMMDD(startDate);
+    const endStr = formatDateToYYYYMMDD(endDate);
+    const chunks = splitDateRangeIntoMonths(startStr, endStr);
+    let successCount = 0; let totalScraped = 0; let completedChunks = 0;
+    const fullStart = `${String(startDate.getDate()).padStart(2, '0')}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${startDate.getFullYear()}`;
+    const fullEnd = `${String(endDate.getDate()).padStart(2, '0')}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${endDate.getFullYear()}`;
+
+    const processChunk = async (chunk: any) => {
+      try {
+        const res = await fetch(`/api/scrape-orders?start=${chunk.start}&end=${chunk.end}&metaStart=${fullStart}&metaEnd=${fullEnd}&silent=true`);
+        if (res.ok) {
+          successCount++; const json = await res.json(); totalScraped += (json.total || 0);
+        }
+      } catch (e) {} finally {
+        completedChunks++; setBatchProgress(Math.round((completedChunks / chunks.length) * 100));
+        setBatchStatus(`Memproses ${completedChunks}/${chunks.length} bulan...`);
+      }
+    };
+    try {
+      const concurrency = 15; const queue = [...chunks];
+      const workers = Array(Math.min(concurrency, queue.length)).fill(null).map(async () => {
+        while (queue.length > 0) { const chunk = queue.shift(); if (chunk) await processChunk(chunk); }
+      });
+      await Promise.all(workers);
+      if (successCount > 0) {
+        persistScraperPeriod({ stateKey: 'sopdState', periodKey: 'SopdClient_scrapedPeriod' }, startDate, endDate);
+        setRefreshKey(prev => prev + 1);
+        localStorage.setItem('sintak_data_updated', Date.now().toString());
+        setDialog({ isOpen: true, type: 'success', title: 'Berhasil', message: `Berhasil menarik ${totalScraped} Order Produksi.` });
+      }
+    } finally { setIsBatching(false); setLoading(false); }
+  };
+
   const columns = useMemo(() => [
     { 
         accessorKey: 'id', 
         header: 'No.', 
         size: 80,
+        meta: { sticky: true },
         cell: ({ row }: any) => <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-400'}`}>{(page - 1) * PAGE_SIZE + (row.index + 1)}</span>
     },
     { 
-        accessorKey: 'tgl', header: 'Tanggal', size: 130,
+        accessorKey: 'tgl', header: 'Tanggal', size: 130, meta: { sticky: true },
         cell: ({ getValue, row }: any) => {
             const val = getValue();
             if (!val) return <span className="text-gray-200">??-??-????</span>;
@@ -431,12 +489,14 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
         accessorKey: 'no_sopd', 
         header: 'No. Order', 
         size: 180, 
+        meta: { sticky: true },
         cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-600' : 'text-gray-700'}`}>{String(getValue() || '—')}</span> 
     },
     { 
         accessorKey: 'nama_order', 
         header: 'Nama Order', 
         size: 400, 
+        meta: { sticky: true },
         cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'} truncate block`} title={String(getValue())}>{String(getValue() || '—')}</span> 
     },
     { 
@@ -459,10 +519,10 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
         size: 120, 
         cell: ({ getValue }: any) => <span className="text-[11px] font-bold text-gray-400">{String(getValue() || '—')}</span> 
     },
-    { accessorKey: 'perkiraan_harga', header: 'Perkiraan Harga', size: 180, meta: { align: 'right' }, cell: (info: any) => <EditableCell row={info.row.original} isSelected={info.row.getIsSelected()} field="perkiraan_harga" onSave={handleSaveRecord} placeholder="klik 2x untuk harga" /> },
-    { accessorKey: 'keterangan', header: 'Keterangan', size: 250, meta: { align: 'right' }, cell: (info: any) => <EditableCell row={info.row.original} isSelected={info.row.getIsSelected()} field="keterangan" onSave={handleSaveRecord} placeholder="klik 2x untuk ket." /> },
-    { accessorKey: 'deadline_date', header: 'Tanggal Deadline', size: 180, meta: { align: 'right', overflowVisible: true }, cell: (info: any) => <EditableCell row={info.row.original} isSelected={info.row.getIsSelected()} field="deadline_date" onSave={handleSaveRecord} placeholder="klik 2x untuk deadline" /> },
-    { accessorKey: 'finished_date', header: 'Tanggal Selesai', size: 180, meta: { align: 'right', overflowVisible: true }, cell: (info: any) => <EditableCell row={info.row.original} isSelected={info.row.getIsSelected()} field="finished_date" onSave={handleSaveRecord} placeholder="klik 2x untuk selesai" /> }
+    { accessorKey: 'perkiraan_harga', header: 'Perkiraan Harga', size: 180, meta: { align: 'right', headerBg: '#fffbeb' }, cell: (info: any) => <EditableCell row={info.row.original} isSelected={info.row.getIsSelected()} field="perkiraan_harga" onSave={handleSaveRecord} placeholder="klik 2x untuk harga" /> },
+    { accessorKey: 'keterangan', header: 'Keterangan', size: 250, meta: { align: 'right', headerBg: '#fffbeb' }, cell: (info: any) => <EditableCell row={info.row.original} isSelected={info.row.getIsSelected()} field="keterangan" onSave={handleSaveRecord} placeholder="klik 2x untuk ket." /> },
+    { accessorKey: 'deadline_date', header: 'Tanggal Deadline', size: 180, meta: { align: 'right', overflowVisible: true, headerBg: '#f5f3ff' }, cell: (info: any) => <EditableCell row={info.row.original} isSelected={info.row.getIsSelected()} field="deadline_date" onSave={handleSaveRecord} placeholder="klik 2x untuk deadline" /> },
+    { accessorKey: 'finished_date', header: 'Tanggal Selesai', size: 180, meta: { align: 'right', overflowVisible: true, headerBg: '#f5f3ff' }, cell: (info: any) => <EditableCell row={info.row.original} isSelected={info.row.getIsSelected()} field="finished_date" onSave={handleSaveRecord} placeholder="klik 2x untuk selesai" /> }
   ], [page, handleSaveRecord]);
 
   const handleResize = useCallback((widths: any) => {
@@ -474,31 +534,23 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
 
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-6 animate-in fade-in duration-700 overflow-hidden">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 shrink-0 h-[105px]">
-         <SopdExcelUpload />
-         <div className="bg-white rounded-2xl border border-gray-100 px-6 py-4 shadow-sm shadow-green-900/5 flex flex-col justify-center relative z-50 h-full">
-            <div className="flex flex-wrap items-center gap-8">
-               <div className="flex flex-col">
-                  <span className="block text-[13px] font-semibold text-gray-500 mb-2 ml-1 tracking-tight select-none">Rentang Tanggal</span>
-                  <div className="flex items-center gap-3">
-                     <div className="w-[160px] relative group"><DatePicker name="startDate" value={startDate} onChange={(d) => { setStartDate(d); setPage(1); }} /></div>
-                     <div className="w-4 h-0.5 bg-gray-100 rounded-full mx-1"></div>
-                     <div className="w-[160px] relative group"><DatePicker name="endDate" value={endDate} onChange={(d) => { setEndDate(d); setPage(1); }} /></div>
-                  </div>
-               </div>
-            </div>
-         </div>
-      </div>
+      <DateRangeCard
+        title="Rentang Tanggal"
+        startDate={startDate}
+        endDate={endDate}
+        onStartDateChange={setStartDate}
+        onEndDateChange={setEndDate}
+        onFetch={handleFetch}
+        isFetching={loading || isBatching}
+        progress={isBatching ? batchProgress : undefined}
+        statusText={isBatching ? batchStatus : undefined}
+        fetchText="Tarik Data"
+      />
       <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden">
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
             <div className="flex items-center gap-5">
-               <h3 className="text-[14px] font-bold text-gray-800 flex items-center gap-3 leading-none tracking-tight">
-                  <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shadow-sm">
-                    <ClipboardList size={16} />
-                  </div>
-                  <span>Data Order Produksi (SOPd)</span>
-               </h3>
+               <ScrapingHeader title="Data Order Produksi (SOPd)" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
                <ImportInfo info={importInfo} />
             </div>
             {loading && (data?.length || 0) > 0 && (
@@ -517,6 +569,7 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
 
         <TableFooter totalCount={totalCount} currentCount={data?.length || 0} label="SOPd" selectedCount={selectedIds.size} onClearSelection={clearSelection} loadTime={loadTime} page={page} totalPages={totalPages} onPageChange={setPage} />
       </div>
+      <ConfirmDialog isOpen={dialog.isOpen} type={dialog.type} title={dialog.title} message={dialog.message} onConfirm={() => setDialog({ ...dialog, isOpen: false })} />
     </div>
   );
 }

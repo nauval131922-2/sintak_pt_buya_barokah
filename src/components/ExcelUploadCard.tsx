@@ -3,7 +3,7 @@ import { Upload, FileSpreadsheet, XCircle, Loader2 } from 'lucide-react';
 
 interface ExcelUploadCardProps {
   title: string;
-  description: string;
+  description: React.ReactNode;
   status: 'idle' | 'loading' | 'success' | 'error';
   errorMessage?: string;
   onFileSelect: (file: File) => void;
@@ -40,11 +40,11 @@ export default function ExcelUploadCard({
         <div className="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center shrink-0">
           <Upload size={24} />
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h3 className="text-sm font-bold text-gray-800 leading-none mb-1.5 tracking-tight">{title}</h3>
-          <p className="text-[11px] text-gray-400 font-medium leading-relaxed">
+          <div className="text-[11px] text-gray-400 font-medium leading-relaxed">
             {description}
-          </p>
+          </div>
 
           {status === 'loading' && (
             <div className="mt-3 space-y-2">
@@ -55,7 +55,7 @@ export default function ExcelUploadCard({
                 <span className="text-gray-400">{progress}% Selesai</span>
               </div>
               <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                <div 
+                <div
                   className="h-full bg-emerald-500 transition-all duration-300 ease-out shadow-[0_0_8px_rgba(16,185,129,0.4)]"
                   style={{ width: `${progress}%` }}
                 />
