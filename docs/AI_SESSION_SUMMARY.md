@@ -1,29 +1,32 @@
-# AI Session Summary - 2026-05-07 (Sesi Sore)
+# AI Session Summary - 2026-05-08 (Sesi Malam)
 
 ## 📅 Detail Sesi
-- **Tanggal**: 2026-05-07
-- **Waktu**: 15:10 - 15:30 WIB
+- **Tanggal**: 2026-05-08
+- **Waktu**: 22:15 - 22:45 WIB
 - **PC**: Lokal (Kantor)
 
 ## 🚀 Fitur & Perbaikan
-1. **Perbaikan Sistem Notifikasi (Toast)**:
-    - **Ghost Toast Fix**: Menyelesaikan bug di mana toast muncul kosong atau tidak menghilang setelah durasi selesai.
-    - **Render Stability**: Menggunakan `useCallback` pada handler `onClose` di `UsersContent.tsx` untuk mencegah reset timer toast yang tidak disengaja saat re-render parent.
-    - **Logic Robustness**: Modifikasi `Toast.tsx` agar secara otomatis menutup elemen UI jika pesan (`message`) dihapus dari state eksternal.
-2. **Resolusi Build Error TypeScript**:
-    - **Target Harian Fix**: Menangani error `possibly 'null'` pada `printRef.current` di file `TargetClient.tsx`.
-    - **Null Check Implementation**: Menambahkan validasi keberadaan elemen sebelum manipulasi DOM untuk menjamin keberhasilan proses `next build` dan `export` PDF/Gambar.
+1. **Optimasi Database & Pencegahan Bloat**:
+    - **Identifikasi Masalah**: Database `database_dev.sqlite` membengkak hingga 8.15 GB karena tabel `activity_logs` berisi 8.8 juta baris log (terutama dari churn *jurnal_harian_produksi*).
+    - **Maintenance Cleanup**: Implementasi skrip `scripts/cleanup_db.py` untuk menghapus log > 3 hari dan menjalankan `VACUUM`.
+    - **Hasil**: Ukuran database menyusut dari **8.15 GB menjadi 2.40 GB** (~5.75 GB dihemat).
+    - **Pencegahan Bloat**: Modifikasi `src/lib/schema.ts` untuk mengecualikan tabel dengan volume transaksi tinggi (high-churn) dari sistem *audit trigger* per-baris.
+2. **Peningkatan Sistem Import SOPd**:
+    - **Refactor Upload**: Pemisahan logika upload SOPd ke API route tersendiri untuk menangani data besar.
+    - **Konversi SOPd**: Implementasi modul konversi data SOPd baru dengan worker asinkron untuk stabilitas.
+    - **UI Enhancement**: Perbaikan layout pada `SopdClient.tsx` dan integrasi dengan komponen `ExcelUploadCard`.
 
 ## ⚙️ Keputusan Teknis Penting
-- **Centralized Toast Timing**: Menghapus `setTimeout` redundan di level halaman dan menyerahkan kontrol durasi sepenuhnya kepada komponen `Toast.tsx` untuk menghindari konflik timer.
-- **Strict Null Safety**: Mengimplementasikan pengecekan ref yang lebih ketat pada fungsi ekspor dokumen untuk meningkatkan stabilitas aplikasi saat proses rendering asinkron.
+- **Selective Auditing**: Membatasi penggunaan *triggers* otomatis hanya untuk tabel data master (Users, Employees, dsb.) guna menjaga efisiensi penyimpanan database SQLite dalam jangka panjang.
+- **Worker-Based Processing**: Menggunakan pola *worker* pada proses konversi data SOPd untuk mencegah UI *freezing* saat memproses ribuan baris Excel.
 
 ## 📌 Status Task & Hal yang Perlu Dilanjutkan
-- ✅ Perbaikan sistem notifikasi Toast 100% Selesai.
-- ✅ Resolusi build error Jadwal Produksi 100% Selesai.
-- 📌 Next: Melanjutkan modernisasi desain premium pada modul Penjualan & Pembelian.
+- ✅ Optimasi database bloat 100% Selesai.
+- ✅ Perbaikan & Peningkatan sistem import SOPd 100% Selesai.
+- 📌 Next: Melanjutkan modernisasi desain pada sisa modul Penjualan.
 
 ## 📂 Dokumentasi Baru/Diperbarui
-- New `docs/tutorials/15-perbaikan-toast-user-dan-build-error-target-harian.md`
+- New `docs/tutorials/16-optimasi-database-dan-pencegahan-bloat.md`
+- Update `docs/BUILD_FROM_SCRATCH.md`
 - Update `docs/task.md`
 - Update `docs/AI_SESSION_SUMMARY.md`

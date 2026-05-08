@@ -54,7 +54,8 @@
 - [x] Stabilisasi JHP (Manual Input Protection) & Modul Jadwal Harian — 2026-05-06
 - [x] Migrasi Image Export library ke modern-screenshot (Fix lab() error) — 2026-05-06
 - [x] Perbaikan sistem notifikasi Toast (Ghost Toast Fix & Stability) — 2026-05-07
-- [x] Resolusi build error "possibly null" pada Jadwal Produksi Harian — 2026-05-07
+- [x] Optimasi Database Bloat (Pencegahan log berlebih & Cleanup) — 2026-05-08
+- [x] Peningkatan Sistem Import SOPd (Refactor API & Konversi Worker) — 2026-05-08
 
 ---
 
@@ -74,8 +75,8 @@
 ## 📊 Statistik
 
 ```
-Total task    : 62
-Selesai       : 58
+Total task    : 64
+Selesai       : 60
 In progress   : 2
 Backlog       : 2
 Bug diketahui : 0

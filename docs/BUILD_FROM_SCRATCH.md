@@ -165,7 +165,8 @@ sintak_pt_buya_barokah/
 ├── tsconfig.json
 ├── vercel.json
 ├── scripts/
-│   └── init-db.ts
+│   ├── init-db.ts
+│   └── cleanup_db.py
 └── src/
     ├── app/
     │   ├── api/
@@ -611,7 +612,7 @@ doc.save('laporan.pdf');
    - **Kriteria Rekening**: Rekening dengan awalan digit **4-9** (Pendapatan & Biaya) dianggap sebagai komponen Laba Rugi.
    - **Formula Saldo**: `LabaRugi = SaldoAwal + Σ(Kredit - Debit)`. 
    - **Nota**: Pada akuntansi Digit, nilai positif di sisi Kredit untuk rekening Pendapatan/Biaya menambah Laba.
-   - **Arus Kas (Kas)**: Untuk akun bertipe 'Kas', saldo dihitung sebagai `SaldoAwal + Σ(Debit - Kredit)`.
+   - **Arus Kas (Kas)**: Untuk akun bertipe 'Kas', saldo dihitung sebagai `SaldoAwal + Σ(Debit - Kredit)`. 
 8. **Infinite Scroll & Pagination Stability**:
    - Wajib menggunakan `isLoadingMore` (useRef) untuk mengunci proses fetch saat scrolling cepat.
    - **Paging Logic**: Jangan gunakan `data.length < totalCount` karena data di layar bisa berisi baris anak (inflated). Gunakan pembanding `page < totalPages` untuk akurasi pemuatan data besar.
@@ -681,6 +682,48 @@ npm start
 3. **Label "Diperbarui" Kembali ke Tanggal 1 (Label Drift):**
    - **Penyebab**: Sifat pemisahan rentang bulan pada *Batch Scraper*.
    - **Solusi**: Pastikan parameter `metaStart` dan `metaEnd` dikirim di endpoint Cron/Sync dari Client.
+
+---
+
+## 📌 Bagian 11: Pemeliharaan Database (Bloat Prevention)
+
+Karena sistem ini menggunakan *Dynamic Audit Triggers*, tabel log dapat membengkak dengan sangat cepat jika tidak dibatasi.
+
+### 1. Pencegahan Bloat di Schema
+Pastikan fungsi `initDynamicTriggers` di `src/lib/schema.ts` mengecualikan tabel dengan *churn* (volume perubahan) tinggi:
+
+```typescript
+async function initDynamicTriggers(db: any) {
+  const tablesResult = await db.execute(
+    `SELECT name FROM sqlite_master WHERE type='table' 
+     AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '%_fts%' 
+     AND name NOT IN (
+       'activity_logs', 'session_context', 'sqlite_sequence', 'system_settings', 
+       'db_indexing_status', 'faktur_sequences',
+       'jurnal_harian_produksi', 'jurnal_umum', 'sopd', 'sopd_harga', 
+       'bahan_baku', 'barang_jadi', 'sales_reports', 'sales_orders',
+       'bill_of_materials', 'purchase_requests', 'purchase_orders', 
+       'penerimaan_pembelian', 'rekap_pembelian_barang', 'pelunasan_hutang', 
+       'pelunasan_piutang', 'pengiriman', 'spph_out', 'sph_in'
+     )`
+  );
+  // ... sisanya sama
+}
+```
+
+### 2. Skrip Pembersihan Berkala (`scripts/cleanup_db.py`)
+Gunakan skrip ini jika ukuran file `.sqlite` membengkak:
+
+```python
+import sqlite3
+import os
+
+# Hapus log > 3 hari dan jalankan VACUUM
+conn = sqlite3.connect("database_dev.sqlite")
+conn.execute("DELETE FROM activity_logs WHERE created_at < date('now', '-3 days')")
+conn.execute("VACUUM")
+conn.close()
+```
 
 ---
 > ⚠️ **PENTING**: Tutorial ini menjabarkan fondasi inti sistem. SINTAK ERP memiliki puluhan komponen (`DataTable`, `Sidebar`) dan entitas database lain. Pola pembuatannya **sama persis** dengan arsitektur pada Bagian 7. Jika Anda ingin merestore sistem sepenuhnya, *clone* sisa modul sesuai definisi tabel di `schema.ts`.
