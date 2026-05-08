@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { Search, Loader2, AlertCircle, Clock, FileSpreadsheet, Users } from 'lucide-react';
+import { Search, Loader2, AlertCircle, Clock, FileSpreadsheet, Users, Copy, Check } from 'lucide-react';
 import ImportInfo from '@/components/ImportInfo';
 import SearchAndReload from '@/components/SearchAndReload';
 import { useRouter } from 'next/navigation';
@@ -24,6 +24,34 @@ interface EmployeeTableProps {
 }
 
 const PAGE_SIZE = 50;
+
+const NameCell = ({ name }: { name: string }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(name);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="flex items-center justify-between group w-full">
+      <span className="font-bold tracking-tight truncate flex-1">{name}</span>
+      <button
+        onClick={handleCopy}
+        className={`p-1.5 rounded-md transition-all ml-2 shrink-0 ${
+          copied 
+            ? 'text-green-600 bg-green-50 opacity-100' 
+            : 'opacity-0 group-hover:opacity-100 text-gray-400 hover:text-green-600 hover:bg-gray-100'
+        }`}
+        title="Salin Nama"
+      >
+        {copied ? <Check size={14} /> : <Copy size={14} />}
+      </button>
+    </div>
+  );
+};
 
 export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
   const router = useRouter();
@@ -125,7 +153,7 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
         accessorKey: 'name', 
         header: 'Nama Karyawan',
         size: 350,
-        cell: (info: any) => <span className="font-bold tracking-tight">{info.getValue()}</span>
+        cell: (info: any) => <NameCell name={info.getValue()} />
     },
     { 
         accessorKey: 'position', 
