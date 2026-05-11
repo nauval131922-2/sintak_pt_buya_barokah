@@ -624,6 +624,9 @@ doc.save('laporan.pdf');
 10. **Data Integrity & Protection (Manual vs Sync)**: Untuk modul yang mendukung upload Excel massal (seperti Jurnal Harian Produksi), sistem wajib memiliki mekanisme perlindungan data manual menggunakan flag `is_manual_input`. Saat sinkronisasi ulang, hanya data dengan flag `0` yang boleh dihapus dan digantikan, sehingga input manual user di aplikasi tidak hilang.
 11. **Modern Screenshot (Fixing html2canvas Error)**: Untuk fitur "Simpan Gambar" pada browser modern atau Tailwind v4, gunakan library `modern-screenshot` daripada `html2canvas` untuk menghindari error parsing warna modern seperti `lab()` atau `oklch()`.
 12. **Sorting Logic Deterministic**: Untuk data jurnal/produksi, pengurutan harus dilakukan secara berlapis (Tanggal -> Bagian -> Absensi -> CreatedAt) untuk memastikan tampilan data konsisten dan mudah ditelusuri secara kronologis.
+13. **Multi-Realisasi Input Logic**: Fitur ini memungkinkan penginputan banyak baris realisasi untuk satu target. Baris pertama (index 0) melakukan UPDATE pada data target asli, sementara baris tambahan melakukan INSERT record baru dengan `is_manual_input = 1`. Form harus memfilter baris tambahan yang kosong sebelum pengiriman ke API.
+14. **Exact Category Filtering**: Untuk menghindari pencampuran kategori (seperti 'CETAK' yang ikut mengambil 'PRA CETAK'), filter API untuk `category` wajib menggunakan exact match (`=`) bukan `LIKE`.
+15. **Atomic Transaction for Bulk Copy**: Operasi massal seperti "Copy Jadwal" harus menggunakan `db.batch()` untuk memastikan integritas data dan mencegah race condition saat diakses oleh banyak user secara bersamaan.
 
 ---
 
@@ -682,6 +685,10 @@ npm start
 3. **Label "Diperbarui" Kembali ke Tanggal 1 (Label Drift):**
    - **Penyebab**: Sifat pemisahan rentang bulan pada *Batch Scraper*.
    - **Solusi**: Pastikan parameter `metaStart` dan `metaEnd` dikirim di endpoint Cron/Sync dari Client.
+
+4. **Dropdown Jenis Pekerjaan Finishing Kosong:**
+   - **Penyebab**: Kode pekerjaan Pasca Cetak (`D.*`) tersimpan di kategori `CETAK` di database.
+   - **Solusi**: Jalankan query update `UPDATE master_pekerjaan SET category = 'PASCA CETAK' WHERE code LIKE 'D.%'` dan pastikan mapping frontend `FINISHING` mengarah ke `PASCA CETAK`.
 
 ---
 

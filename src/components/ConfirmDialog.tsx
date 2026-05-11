@@ -96,7 +96,7 @@ export default function ConfirmDialog({
           </div>
 
           {/* Content */}
-          <div className="px-8 pb-8 text-[14px] font-medium text-gray-500 leading-relaxed text-center">
+          <div className="px-8 pb-8 text-[14px] font-medium text-gray-500 leading-relaxed text-center whitespace-pre-line">
             {message}
           </div>
 

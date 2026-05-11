@@ -297,6 +297,8 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
   const [endDate, setEndDate] = useState<Date>(() => getDefaultScraperDateRange().endDate);
   
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [lastExcelUpdate, setLastExcelUpdate] = useState<string | null>(null);
+  const [lastScrapedUpdate, setLastScrapedUpdate] = useState<string | null>(null);
   const [scrapedPeriod, setScrapedPeriod] = useState<{start: string, end: string} | null>(null);
   const [isBatching, setIsBatching] = useState(false);
   const [batchProgress, setBatchProgress] = useState(0);
@@ -382,6 +384,8 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
             setTotalPages(Math.ceil((json.total || 0) / PAGE_SIZE));
             setError('');
             if (json.lastUpdated) setLastUpdated(formatLastUpdate(new Date(json.lastUpdated)));
+            if (json.lastExcelUpdate) setLastExcelUpdate(formatLastUpdate(new Date(json.lastExcelUpdate)));
+            if (json.lastScrapedUpdate) setLastScrapedUpdate(formatLastUpdate(new Date(json.lastScrapedUpdate)));
             if (json.scrapedPeriod) setScrapedPeriod(json.scrapedPeriod);
           }
         }
@@ -426,7 +430,7 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
     localStorage.setItem('sopdState', JSON.stringify({
       startDate: startDate.toISOString(), endDate: endDate.toISOString(), sessionDate: new Date().toLocaleDateString('en-CA')
     }));
-    setError(''); setData([]); setPage(1); setIsBatching(true); setLoading(true); setSearchQuery(''); setBatchProgress(0);
+    setError(''); setData([]); setPage(1); setIsBatching(true); setLoading(true); setBatchProgress(0);
     const startStr = formatDateToYYYYMMDD(startDate);
     const endStr = formatDateToYYYYMMDD(endDate);
     const chunks = splitDateRangeIntoMonths(startStr, endStr);
@@ -550,7 +554,13 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
             <div className="flex items-center gap-5">
-               <ScrapingHeader title="Data Order Produksi (SOPd)" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
+               <ScrapingHeader 
+                 title="Data Order Produksi (SOPd)" 
+                 lastUpdated={lastUpdated} 
+                 lastExcelUpdate={lastExcelUpdate}
+                 lastScrapedUpdate={lastScrapedUpdate}
+                 scrapedPeriod={scrapedPeriod} 
+               />
                <ImportInfo info={importInfo} />
             </div>
             {loading && (data?.length || 0) > 0 && (

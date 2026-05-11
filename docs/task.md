@@ -56,6 +56,9 @@
 - [x] Perbaikan sistem notifikasi Toast (Ghost Toast Fix & Stability) — 2026-05-07
 - [x] Optimasi Database Bloat (Pencegahan log berlebih & Cleanup) — 2026-05-08
 - [x] Peningkatan Sistem Import SOPd (Refactor API & Konversi Worker) — 2026-05-08
+- [x] Implementasi Multi-Realisasi Input Jurnal Harian Produksi — 2026-05-11
+- [x] Perbaikan Mapping Kategori Pekerjaan & Filter API Exact Match — 2026-05-11
+- [x] Implementasi Atomic Copy Jadwal & Permission canCopyJadwal — 2026-05-11
 
 ---
 
@@ -75,8 +78,8 @@
 ## 📊 Statistik
 
 ```
-Total task    : 64
-Selesai       : 60
+Total task    : 67
+Selesai       : 63
 In progress   : 2
 Backlog       : 2
 Bug diketahui : 0

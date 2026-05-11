@@ -11,6 +11,7 @@ interface ExcelUploadCardProps {
   progress?: number;
   currentRows?: number;
   totalRows?: number;
+  extraAction?: React.ReactNode;
 }
 
 export default function ExcelUploadCard({
@@ -22,7 +23,8 @@ export default function ExcelUploadCard({
   acceptedFormats = ".xls, .xlsx, .xlsm",
   progress = 0,
   currentRows = 0,
-  totalRows = 0
+  totalRows = 0,
+  extraAction
 }: ExcelUploadCardProps) {
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -65,7 +67,12 @@ export default function ExcelUploadCard({
         </div>
       </div>
 
-      <div className="shrink-0">
+      <div className="shrink-0 flex items-center gap-3">
+        {extraAction && (
+          <div className="flex items-center">
+            {extraAction}
+          </div>
+        )}
         <input 
           type="file" 
           accept={acceptedFormats}

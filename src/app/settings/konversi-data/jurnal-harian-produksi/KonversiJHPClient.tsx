@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import ExcelUploadCard from '@/components/ExcelUploadCard';
-import { AlertTriangle, FileSpreadsheet, Info } from 'lucide-react';
+import { AlertTriangle, FileSpreadsheet, Info, Trash2 } from 'lucide-react';
 import { formatLastUpdate } from '@/lib/date-utils';
 
 export default function KonversiJHPClient() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
-  const [dialog, setDialog] = useState<{isOpen: boolean, type: 'success' | 'error', title: string, message: string}>({
+  const [dialog, setDialog] = useState<{isOpen: boolean, type: 'success' | 'error' | 'alert', title: string, message: string}>({
     isOpen: false, type: 'success', title: '', message: ''
   });
   const [progress, setProgress] = useState(0);
@@ -19,6 +19,8 @@ export default function KonversiJHPClient() {
   const [startTime, setStartTime] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [lastUpdate, setLastUpdate] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -53,6 +55,76 @@ export default function KonversiJHPClient() {
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
+  const handleClearData = async () => {
+    setIsDeleting(true);
+    try {
+      const [resJhp, resSopd] = await Promise.all([
+        fetch('/api/jurnal-harian-produksi', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ clearAll: true })
+        }),
+        fetch('/api/sopd', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ clearAll: true })
+        })
+      ]);
+
+      if (resJhp.ok && resSopd.ok) {
+        setDialog({
+          isOpen: true,
+          type: 'success',
+          title: 'Berhasil',
+          message: 'Seluruh data SOPd dan Jurnal Harian Produksi berhasil dikosongkan.'
+        });
+        setLastUpdate(null);
+      } else {
+        throw new Error('Gagal mengosongkan salah satu atau seluruh data.');
+      }
+    } catch (e: any) {
+      setDialog({
+        isOpen: true,
+        type: 'error',
+        title: 'Error',
+        message: e.message || 'Terjadi kesalahan sistem'
+      });
+    } finally {
+      setIsDeleting(false);
+      setDeleteConfirm(false);
+    }
+  };
+
+  const runWorker = (worker: Worker, file: File, arrayBuffer: ArrayBuffer, name: string): Promise<{ status: string, totalImported?: number, reason?: string }> => {
+    return new Promise((resolve, reject) => {
+      worker.postMessage({ arrayBuffer, filename: file.name, origin: window.location.origin, workerType: name }, [arrayBuffer]);
+
+      worker.onmessage = (e) => {
+        const { type, message: workerMsg, error, totalImported, reason, totalRows: rTotal, currentRows: rCurr, progress: p } = e.data;
+        if (type === 'status') {
+          setMessage(`[${name}] ${workerMsg}`);
+          if (rTotal !== undefined) setTotalRows(rTotal);
+          if (rCurr !== undefined) setCurrentRows(rCurr);
+          if (p !== undefined) setProgress(p);
+        } else if (type === 'skip') {
+          resolve({ status: 'skipped', reason });
+          worker.terminate();
+        } else if (type === 'done') {
+          resolve({ status: 'success', totalImported });
+          worker.terminate();
+        } else if (type === 'error') {
+          reject(new Error(`[${name}] ${error}`));
+          worker.terminate();
+        }
+      };
+
+      worker.onerror = (err) => {
+        reject(new Error(`[${name}] Kesalahan fatal pada worker.`));
+        worker.terminate();
+      };
+    });
+  };
+
   const handleFile = async (file: File) => {
     if (!file) return;
 
@@ -73,50 +145,41 @@ export default function KonversiJHPClient() {
 
     try {
       await new Promise(resolve => setTimeout(resolve, 50));
-
       const arrayBuffer = await file.arrayBuffer();
-      const worker = new Worker(
-        new URL('../../../jurnal-harian-produksi/excel-worker.ts', import.meta.url)
-      );
 
-      worker.postMessage({ arrayBuffer, filename: file.name, origin: window.location.origin }, [arrayBuffer]);
+      // Run SOPD Worker first
+      const sopdWorker = new Worker(new URL('../../../jurnal-harian-produksi/excel-worker.ts', import.meta.url));
+      const sopdBuffer = arrayBuffer.slice(0); // Create a copy for the first worker
+      setProgress(0); setTotalRows(0); setCurrentRows(0);
+      const sopdResult = await runWorker(sopdWorker, file, sopdBuffer, 'SOPD');
 
-      worker.onmessage = (e) => {
-        const { type, message, error, totalImported, totalRows: rowsTotal, currentRows: rowsCurrent, progress: p } = e.data;
+      // Run JHP Worker next
+      const jhpWorker = new Worker(new URL('../../../jurnal-harian-produksi/excel-worker.ts', import.meta.url));
+      const jhpBuffer = arrayBuffer.slice(0); // Create another copy
+      setProgress(0); setTotalRows(0); setCurrentRows(0);
+      const jhpResult = await runWorker(jhpWorker, file, jhpBuffer, 'JURNAL');
 
-        if (type === 'status') {
-          setMessage(message);
-          if (rowsTotal) setTotalRows(rowsTotal);
-          if (rowsCurrent) setCurrentRows(rowsCurrent);
-          if (p !== undefined) setProgress(p);
-        } else if (type === 'done') {
-          setStatus('idle');
-          const finalDuration = formatTime(Math.floor((Date.now() - startTimeInternal) / 1000));
-          setDialog({
-            isOpen: true,
-            type: 'success',
-            title: 'Berhasil',
-            message: `Berhasil mengimpor ${totalImported} data Jurnal Harian Produksi dalam waktu ${finalDuration}.`
-          });
-          // Fetch new metadata
-          fetch('/api/jurnal-harian-produksi?page=1&limit=1')
-            .then(r => r.json())
-            .then(j => { if (j.success && j.lastUpdated) setLastUpdate(j.lastUpdated); });
-          worker.terminate();
+      setStatus('idle');
+      const finalDuration = formatTime(Math.floor((Date.now() - startTimeInternal) / 1000));
+      
+      let msg = '';
+      if (sopdResult.status === 'success') msg += `✅ ${sopdResult.totalImported} data SOPd berhasil diimpor.\n`;
+      else msg += `⚠️ SOPd: ${sopdResult.reason}\n`;
 
-        } else if (type === 'error') {
-          setStatus('error');
-          setMessage(error || 'Gagal memproses file Excel');
-          worker.terminate();
-        }
-      };
+      if (jhpResult.status === 'success') msg += `✅ ${jhpResult.totalImported} data Jurnal Harian berhasil diimpor.\n`;
+      else msg += `⚠️ Jurnal: ${jhpResult.reason}\n`;
 
-      worker.onerror = (err) => {
-        console.error('Worker Error:', err);
-        setStatus('error');
-        setMessage('Terjadi kesalahan fatal pada sistem upload background.');
-        worker.terminate();
-      };
+      msg += `\nDurasi Total: ${finalDuration}`;
+
+      setDialog({
+        isOpen: true,
+        type: (sopdResult.status === 'skipped' && jhpResult.status === 'skipped') ? 'error' : 'success',
+        title: 'Hasil Impor',
+        message: msg
+      });
+
+      // Refresh metadata
+      fetch('/api/jurnal-harian-produksi?page=1&limit=1').then(r => r.json()).then(j => { if (j.success && j.lastUpdated) setLastUpdate(j.lastUpdated); });
 
     } catch (err: any) {
       console.error('Upload Error:', err);
@@ -148,12 +211,12 @@ export default function KonversiJHPClient() {
           <Info size={20} className="text-blue-600" />
         </div>
         <div>
-          <h4 className="text-[13px] font-bold text-blue-800 mb-2">Cara Penggunaan</h4>
+          <h4 className="text-[13px] font-bold text-blue-800 mb-2">Cara Penggunaan (Multi-Sheet)</h4>
           <ol className="text-[12px] text-blue-700 leading-relaxed list-decimal list-inside space-y-1">
-            <li>Pastikan file Excel memiliki sheet bernama <strong>JURNAL</strong></li>
-            <li>Sheet harus memiliki baris header yang mengandung kolom <strong>Tanggal</strong> dan <strong>Nama Karyawan</strong></li>
-            <li>Upload file Excel (.xls, .xlsx, atau .xlsm)</li>
-            <li>Tunggu proses selesai — data lama akan diganti otomatis</li>
+            <li>Anda dapat mengunggah satu file Excel yang berisi sheet <strong>SOPD</strong> dan/atau sheet <strong>JURNAL</strong></li>
+            <li>Sistem akan memproses sheet SOPD terlebih dahulu (jika ada), lalu melanjutkan ke sheet JURNAL (jika ada)</li>
+            <li>Jika salah satu sheet tidak ditemukan, sistem akan melewatinya dan melaporkannya pada hasil akhir</li>
+            <li>Upload file Excel (.xls, .xlsx, atau .xlsm) dan tunggu proses selesai</li>
           </ol>
         </div>
       </div>
@@ -161,10 +224,10 @@ export default function KonversiJHPClient() {
       {/* Upload Card */}
       <div className="h-[120px] shrink-0">
         <ExcelUploadCard
-          title="Upload Jurnal Harian Produksi"
+          title="Upload Master Data (SOPd & Jurnal)"
           description={
             <div className="flex flex-col gap-0.5">
-              <span>{status === 'loading' ? `Durasi: ${formatTime(elapsedTime)}` : "Unggah file Excel (Sheet JURNAL) untuk mengganti seluruh data Jurnal Harian Produksi."}</span>
+              <span>{status === 'loading' ? `Durasi: ${formatTime(elapsedTime)}` : "Unggah file Excel untuk mengganti data SOPD dan/atau Jurnal Harian Produksi sekaligus."}</span>
               {lastUpdate && status !== 'loading' && (
                 <div className="flex items-center gap-2 text-[11px] font-bold text-gray-400 leading-none mt-1.5">
                   <span className="w-1 h-1 rounded-full bg-gray-300 shrink-0"></span>
@@ -180,8 +243,28 @@ export default function KonversiJHPClient() {
           progress={progress}
           currentRows={currentRows}
           totalRows={totalRows}
+          extraAction={
+            <button
+              onClick={() => setDeleteConfirm(true)}
+              className="flex items-center gap-2 px-4 h-11 bg-white border border-rose-200 text-rose-600 rounded-lg hover:bg-rose-50 hover:text-rose-700 transition-colors text-[13px] font-bold shadow-sm"
+            >
+              <Trash2 size={16} />
+              Kosongkan Data
+            </button>
+          }
         />
       </div>
+
+      <ConfirmDialog
+        isOpen={deleteConfirm}
+        type="danger"
+        title="Kosongkan Data"
+        message="Apakah Anda yakin ingin mengosongkan data SOPd sekaligus Jurnal Harian Produksi? Seluruh rekaman yang ada akan terhapus permanen dan tidak dapat dibatalkan."
+        confirmLabel={isDeleting ? "Menghapus..." : "Ya, Kosongkan"}
+        cancelLabel="Batal"
+        onConfirm={handleClearData}
+        onCancel={() => !isDeleting && setDeleteConfirm(false)}
+      />
 
       <ConfirmDialog
         isOpen={dialog.isOpen}

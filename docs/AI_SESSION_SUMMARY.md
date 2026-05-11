@@ -1,32 +1,36 @@
-# AI Session Summary - 2026-05-08 (Sesi Malam)
+# AI Session Summary - 2026-05-11 (Sesi Siang)
 
 ## 📅 Detail Sesi
-- **Tanggal**: 2026-05-08
-- **Waktu**: 22:15 - 22:45 WIB
-- **PC**: Lokal (Kantor)
+- **Tanggal**: 2026-05-11
+- **Waktu**: 13:30 - 15:00 WIB
+- **PC**: Lokal (Rumah)
 
 ## 🚀 Fitur & Perbaikan
-1. **Optimasi Database & Pencegahan Bloat**:
-    - **Identifikasi Masalah**: Database `database_dev.sqlite` membengkak hingga 8.15 GB karena tabel `activity_logs` berisi 8.8 juta baris log (terutama dari churn *jurnal_harian_produksi*).
-    - **Maintenance Cleanup**: Implementasi skrip `scripts/cleanup_db.py` untuk menghapus log > 3 hari dan menjalankan `VACUUM`.
-    - **Hasil**: Ukuran database menyusut dari **8.15 GB menjadi 2.40 GB** (~5.75 GB dihemat).
-    - **Pencegahan Bloat**: Modifikasi `src/lib/schema.ts` untuk mengecualikan tabel dengan volume transaksi tinggi (high-churn) dari sistem *audit trigger* per-baris.
-2. **Peningkatan Sistem Import SOPd**:
-    - **Refactor Upload**: Pemisahan logika upload SOPd ke API route tersendiri untuk menangani data besar.
-    - **Konversi SOPd**: Implementasi modul konversi data SOPd baru dengan worker asinkron untuk stabilitas.
-    - **UI Enhancement**: Perbaikan layout pada `SopdClient.tsx` dan integrasi dengan komponen `ExcelUploadCard`.
+1. **Implementasi Multi-Realisasi Input**:
+    - Memungkinkan Admin Realisasi menginput lebih dari satu baris realisasi untuk satu target penjadwalan.
+    - Sinkronisasi field Target utama (No Order, Nama Order, Jenis Pekerjaan) mengikuti input realisasi terbaru.
+    - Proteksi data: Baris tambahan kosong otomatis difilter sebelum simpan.
+2. **Perbaikan Mapping Kategori Pekerjaan**:
+    - **Database Fix**: Update massal 532 baris kode `D.*` (Pasca Cetak) dari kategori `CETAK` ke `PASCA CETAK`.
+    - **API Fix**: Mengubah filter kategori dari `LIKE` menjadi exact match (`=`) untuk mencegah 'CETAK' mencocokkan 'PRA CETAK'.
+    - **Frontend Fix**: Mapping `FINISHING` sekarang mengarah ke kategori `PASCA CETAK`.
+3. **Optimasi Sistem Copy Jadwal Besok**:
+    - **Race Condition Prevention**: Implementasi `db.batch()` untuk operasi copy jadwal agar bersifat atomic.
+    - **Permission**: Menambahkan prop `canCopyJadwal` untuk memisahkan hak akses salin jadwal dari hak akses input target. Hanya Admin Penjadwalan yang bisa salin jadwal.
+    - **Auto-Reset**: Log `COPY_JADWAL` otomatis dihapus saat upload ulang data JHP, sehingga tombol copy muncul kembali tanpa hapus log manual.
 
 ## ⚙️ Keputusan Teknis Penting
-- **Selective Auditing**: Membatasi penggunaan *triggers* otomatis hanya untuk tabel data master (Users, Employees, dsb.) guna menjaga efisiensi penyimpanan database SQLite dalam jangka panjang.
-- **Worker-Based Processing**: Menggunakan pola *worker* pada proses konversi data SOPd untuk mencegah UI *freezing* saat memproses ribuan baris Excel.
+- **Database Multi-Env**: Penanganan manual harus dilakukan pada `database_dev.sqlite` jika bekerja di environment development untuk memastikan sinkronisasi data yang tepat.
+- **Exact Match API**: Standarisasi penggunaan exact match untuk filter kategori master data guna menghindari ambiguitas nama (seperti PRA CETAK vs CETAK).
 
 ## 📌 Status Task & Hal yang Perlu Dilanjutkan
-- ✅ Optimasi database bloat 100% Selesai.
-- ✅ Perbaikan & Peningkatan sistem import SOPd 100% Selesai.
-- 📌 Next: Melanjutkan modernisasi desain pada sisa modul Penjualan.
+- ✅ Implementasi Multi-Realisasi Input 100% Selesai.
+- ✅ Perbaikan Mapping & Dropdown Finishing 100% Selesai.
+- ✅ Optimasi Atomic Copy Jadwal 100% Selesai.
+- 📌 Next: Pengujian end-to-end fitur multi-realisasi dengan skenario data kompleks.
 
 ## 📂 Dokumentasi Baru/Diperbarui
-- New `docs/tutorials/16-optimasi-database-dan-pencegahan-bloat.md`
+- New `docs/tutorials/17-multi-realisasi-dan-mapping-pekerjaan.md`
 - Update `docs/BUILD_FROM_SCRATCH.md`
 - Update `docs/task.md`
 - Update `docs/AI_SESSION_SUMMARY.md`

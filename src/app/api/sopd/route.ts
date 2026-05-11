@@ -142,7 +142,7 @@ export async function GET(request: NextRequest) {
     // Metadata for scraping status
     const metadataResults = await db.batch([
       { sql: `SELECT value FROM system_settings WHERE key = 'last_scrape_orders'`, args: [] },
-      { sql: `SELECT value FROM system_settings WHERE key = 'scraped_period_last_scrape_orders'`, args: [] },
+      { sql: `SELECT value FROM system_settings WHERE key = 'last_scrape_orders_period'`, args: [] },
       { sql: `SELECT strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) as lastUpdated FROM activity_logs WHERE table_name = 'sopd' AND action_type = 'UPLOAD'`, args: [] },
       { sql: `SELECT strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) as lastUpdated FROM orders`, args: [] }
     ], "read");
@@ -153,14 +153,18 @@ export async function GET(request: NextRequest) {
 
     // Determine which timestamp to show based on what the user is looking at
     let lastUpdated = null;
-    if (useSopd && !useOrders) {
-      // Excel mode
+    if (!startDate && !endDate) {
+      // Jika tidak ada parameter tanggal, berarti ini dipanggil dari KonversiSopdClient (Mode Excel)
+      // JANGAN fallback ke data scraper, hanya tampilkan waktu upload Excel
+      lastUpdated = lastUpload;
+    } else if (useSopd && !useOrders) {
+      // Excel mode (Tahun < 2025)
       lastUpdated = lastUpload;
     } else if (useOrders && !useSopd) {
-      // Scraped mode
+      // Scraped mode (Tahun >= 2025)
       lastUpdated = lastScrape ? lastScrape.value : lastScrapeOrders;
     } else {
-      // Both or default
+      // Both (Rentang memotong batas tahun 2025)
       lastUpdated = lastUpload || (lastScrape ? lastScrape.value : lastScrapeOrders);
     }
     
@@ -177,6 +181,8 @@ export async function GET(request: NextRequest) {
       page, 
       limit,
       lastUpdated,
+      lastExcelUpdate: lastUpload,
+      lastScrapedUpdate: lastScrape ? lastScrape.value : lastScrapeOrders,
       scrapedPeriod
     });
 
@@ -345,6 +351,37 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ error: 'Data tidak valid' }, { status: 400 });
 
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getSession();
+    if (!session?.userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    await db.batch([
+      { sql: 'DELETE FROM sopd', args: [] },
+      { sql: 'DELETE FROM sopd_harga', args: [] }
+    ], "write");
+
+    await db.execute({
+      sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by) 
+            VALUES (?, ?, ?, ?, ?, ?)`,
+      args: [
+        'DELETE', 
+        'sopd', 
+        0, 
+        'Menghapus seluruh data SOPD', 
+        '{}',
+        session?.username || 'System'
+      ]
+    });
+
+    return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

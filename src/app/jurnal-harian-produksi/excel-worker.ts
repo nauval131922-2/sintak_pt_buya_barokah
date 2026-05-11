@@ -2,124 +2,227 @@ import * as XLSX from 'xlsx';
 
 self.addEventListener('message', async (e) => {
   try {
-    const { arrayBuffer, filename, origin } = e.data;
-    const apiUrl = `${origin}/api/jurnal-harian-produksi`;
+    const { arrayBuffer, filename, origin, workerType } = e.data;
     
-    // 1. Parsing Excel
-    self.postMessage({ type: 'status', message: 'Menganalisa struktur file Excel...' });
-    
-    const workbook = XLSX.read(arrayBuffer, {
-      type: 'array',
-      cellFormula: false,
-      cellHTML: false,
-      cellStyles: false,
-      cellText: false,
-      cellDates: false,
-      dense: true
-    });
+    // ==========================================
+    // LOGIKA PEKERJA SOPD
+    // ==========================================
+    if (workerType === 'SOPD') {
+      const apiUrl = `${origin}/api/sopd`;
+      self.postMessage({ type: 'status', message: 'Menganalisa struktur file Excel (SOPD)...' });
 
-    const sheetName = 'JURNAL';
-    let worksheet = workbook.Sheets[sheetName];
-    
-    if (!worksheet) {
-      throw new Error(`Sheet '${sheetName}' tidak ditemukan di dalam file Excel.`);
-    }
-
-    const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: null }) as any[][];
-
-    // Filter array kosong
-    const mappedData = rawData.filter((row: any) => row && Array.isArray(row) && row.length > 0);
-
-    if (mappedData.length === 0) {
-      throw new Error("Tidak dapat menemukan data transaksi pada baris yang dipindai.");
-    }
-
-    // 2. Temukan baris header agar bisa disertakan di setiap chunk (jika format dinamis)
-    let headerRow = mappedData[0];
-    for (let i = 0; i < Math.min(mappedData.length, 20); i++) {
-      if (mappedData[i] && mappedData[i].includes('Tanggal') && mappedData[i].includes('Nama Karyawan')) {
-        headerRow = mappedData[i];
-        break;
-      }
-    }
-    
-    self.postMessage({ type: 'status', message: `Berhasil membedah ${mappedData.length.toLocaleString('id-ID')} baris data. Menyiapkan pengiriman...` });
-    // 3. Konfigurasi Chunking (Disesuaikan agar tidak melebihi limit 4.5MB Vercel)
-    const CHUNK_SIZE = 8000;
-    const totalChunks = Math.ceil(mappedData.length / CHUNK_SIZE);
-    let totalImported = 0;
-
-    // 4. Fungsi pembantu untuk mengunggah satu chunk
-    const uploadChunk = async (index: number) => {
-      const chunkData = mappedData.slice(index * CHUNK_SIZE, (index + 1) * CHUNK_SIZE);
-      const dataWithHeader = index > 0 ? [headerRow, ...chunkData] : chunkData;
-
-      const res = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          filename: filename,
-          data: dataWithHeader,
-          chunkIndex: index,
-          totalChunks
-        }),
+      const workbook = XLSX.read(arrayBuffer, {
+        type: 'array', cellFormula: false, cellHTML: false, cellStyles: false, cellText: false, cellDates: false, dense: true
       });
 
-      if (!res.ok) {
-        const text = await res.text();
-        let errorMsg = `Server error (${res.status}): ${res.statusText}`;
-        try {
-          const json = JSON.parse(text);
-          errorMsg = json.error || json.details || errorMsg;
-        } catch (e) {
-          // Jika bukan JSON, tampilkan teks mentah atau status
-          if (res.status === 413) errorMsg = "File terlalu besar untuk diproses sekaligus (413 Payload Too Large).";
+      let targetSheet = 'SOPD';
+      if (!workbook.SheetNames.includes('SOPD')) {
+        const fallback = workbook.SheetNames.find((s: string) => s === '03 SOPd') ||
+                         workbook.SheetNames.find((s: string) => s.toLowerCase().includes('sopd'));
+        if (!fallback) {
+          self.postMessage({ type: 'skip', reason: `Sheet 'SOPD' tidak ditemukan di dalam file Excel.` });
+          return;
         }
-        throw new Error(errorMsg);
+        targetSheet = fallback;
       }
 
-      const data = await res.json();
-      return data.importedCount || 0;
-    };
+      const worksheet = workbook.Sheets[targetSheet];
+      const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" }) as any[][];
+      
+      let headerIndex = -1;
+      let idxNoSopd = -1;
+      
+      for (let i = 0; i < Math.min(rawRows.length, 20); i++) {
+        const row = rawRows[i];
+        const foundIdx = row.findIndex(h => {
+          const s = String(h || '').toLowerCase().trim();
+          return s === 'no. order' || s === 'no order' || s === 'no. sopd' || s === 'no_sopd' || s === 'no sopd';
+        });
+        if (foundIdx !== -1) {
+          headerIndex = i;
+          idxNoSopd = foundIdx;
+          break;
+        }
+      }
 
-    // 4. Proses Upload - Chunk pertama harus sinkron (karena ada proses DELETE di server)
-    self.postMessage({ 
-      type: 'status', 
-      message: `Memproses bagian 1 dari ${totalChunks}...`, 
-      progress: 0,
-      totalRows: mappedData.length,
-      currentRows: 0
-    });
-    totalImported += await uploadChunk(0);
+      if (headerIndex === -1) throw new Error("Gagal menemukan kolom 'No. Order'. Pastikan header berada di sekitar baris 1-20.");
 
-    // 5. Chunk sisanya dikirim secara PARALEL (Concurrency 8) untuk kecepatan maksimal
-    const remainingChunks = Array.from({ length: totalChunks - 1 }, (_, i) => i + 1);
-    const CONCURRENCY = 8;
-    let completedChunks = 1;
+      const headers = rawRows[headerIndex];
+      const findIdx = (names: string[]) => {
+        const exact = headers.findIndex(h => names.some(n => String(h || '').toLowerCase().trim() === n.toLowerCase()));
+        if (exact !== -1) return exact;
+        return headers.findIndex(h => names.some(n => String(h || '').toLowerCase().trim().includes(n.toLowerCase())));
+      };
 
-    const runWorker = async () => {
-      while (remainingChunks.length > 0) {
-        const index = remainingChunks.shift();
-        if (index === undefined) break;
+      const idxTgl = findIdx(['tanggal order', 'tanggal', 'tgl']);
+      const idxNamaOrder = findIdx(['nama order', 'nama_order', 'nama_sopd']);
+      const idxQty = findIdx(['jumlah order', 'qty sopd', 'qty', 'jumlah', 'quantity']);
+      const idxUnit = findIdx(['satuan', 'unit po', 'unit']);
+      const idxHarga = findIdx(['perkiraan harga', 'harga']);
+      const idxKet = findIdx(['keterangan', 'ket']);
+      const idxDeadline = findIdx(['tanggal deadline', 'deadline']);
+      const idxSelesai = findIdx(['tanggal selesai', 'selesai']);
 
-        const count = await uploadChunk(index);
-        totalImported += count;
-        completedChunks++;
+      const excelToDate = (val: any): string => {
+        if (!val || val === "") return "";
+        let dateObj: Date;
+        if (typeof val === 'number') dateObj = new Date(Math.round((val - 25569) * 86400 * 1000));
+        else if (val instanceof Date) dateObj = val;
+        else return String(val).trim();
+        const d = dateObj.getUTCDate().toString().padStart(2, '0');
+        const m = (dateObj.getUTCMonth() + 1).toString().padStart(2, '0');
+        const y = dateObj.getUTCFullYear();
+        return `${d}-${m}-${y}`;
+      };
 
-        self.postMessage({ 
-          type: 'status', 
-          message: `Mengunggah... (${completedChunks}/${totalChunks})`,
-          progress: Math.round((completedChunks / totalChunks) * 100),
-          totalRows: mappedData.length,
-          currentRows: Math.min(completedChunks * CHUNK_SIZE, mappedData.length)
+      const mappedData: any[] = [];
+      for (let i = headerIndex + 1; i < rawRows.length; i++) {
+        const row = rawRows[i];
+        if (!row || row.length === 0) continue;
+        const noSopd = String(row[idxNoSopd] || '').trim();
+        if (!noSopd || noSopd.toLowerCase() === 'no. order' || noSopd.toLowerCase() === 'no order') continue;
+
+        let qtySopd = 0;
+        const rawQty = row[idxQty];
+        if (typeof rawQty === 'number') qtySopd = rawQty;
+        else if (rawQty) {
+          let c = String(rawQty).trim().replace(/\s/g, '');
+          if (c.includes(',') && c.includes('.')) c = c.lastIndexOf(',') > c.lastIndexOf('.') ? c.replace(/\./g, '').replace(',', '.') : c.replace(/,/g, '');
+          else if (c.includes(',')) c = c.replace(',', '.');
+          qtySopd = parseFloat(c) || 0;
+        }
+
+        mappedData.push({
+          no_sopd: noSopd,
+          tgl: excelToDate(row[idxTgl]),
+          nama_order: String(row[idxNamaOrder] || '').trim(),
+          qty_sopd: qtySopd,
+          unit: String(row[idxUnit] || '').trim(),
+          perkiraan_harga: row[idxHarga] ?? '',
+          keterangan: row[idxKet] ?? '',
+          deadline_date: excelToDate(row[idxDeadline]),
+          finished_date: excelToDate(row[idxSelesai]),
         });
       }
-    };
 
-    // Jalankan worker paralel
-    await Promise.all(Array.from({ length: CONCURRENCY }, runWorker));
+      if (mappedData.length === 0) throw new Error("Tidak ditemukan data transaksi setelah baris header.");
 
-    self.postMessage({ type: 'done', totalImported, totalRows: mappedData.length });
+      self.postMessage({ type: 'status', message: `Berhasil membedah ${mappedData.length.toLocaleString('id-ID')} baris data. Menyiapkan pengiriman...`, totalRows: mappedData.length, currentRows: 0, progress: 0 });
+
+      const startRes = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mode: 'start', filename }) });
+      if (!startRes.ok) throw new Error('Gagal menginisialisasi upload SOPD.');
+
+      const CHUNK_SIZE = 5000;
+      const totalChunks = Math.ceil(mappedData.length / CHUNK_SIZE);
+      let totalImported = 0;
+      let completedChunks = 0;
+
+      for (let index = 0; index < totalChunks; index++) {
+        const chunk = mappedData.slice(index * CHUNK_SIZE, (index + 1) * CHUNK_SIZE);
+        const res = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mode: 'chunk', filename, data: chunk }) });
+        if (!res.ok) throw new Error(`Gagal mengupload bagian ${index + 1}`);
+        const resData = await res.json();
+        totalImported += (resData.imported || chunk.length);
+        completedChunks++;
+        self.postMessage({ type: 'status', message: `Mengunggah... (${completedChunks}/${totalChunks})`, progress: Math.round((completedChunks / totalChunks) * 100), totalRows: mappedData.length, currentRows: Math.min(completedChunks * CHUNK_SIZE, mappedData.length) });
+      }
+
+      await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mode: 'end', filename, data: { importedCount: totalImported } }) });
+      self.postMessage({ type: 'done', totalImported, totalRows: mappedData.length });
+      return;
+    }
+
+    // ==========================================
+    // LOGIKA PEKERJA JURNAL HARIAN
+    // ==========================================
+    if (workerType === 'JURNAL') {
+      const apiUrl = `${origin}/api/jurnal-harian-produksi`;
+      self.postMessage({ type: 'status', message: 'Menganalisa struktur file Excel (JURNAL)...' });
+      
+      const workbook = XLSX.read(arrayBuffer, {
+        type: 'array', cellFormula: false, cellHTML: false, cellStyles: false, cellText: false, cellDates: false, dense: true
+      });
+
+      const sheetName = 'JURNAL';
+      let worksheet = workbook.Sheets[sheetName];
+      
+      if (!worksheet) {
+        self.postMessage({ type: 'skip', reason: `Sheet '${sheetName}' tidak ditemukan di dalam file Excel.` });
+        return;
+      }
+
+      const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: null }) as any[][];
+      const mappedData = rawData.filter((row: any) => row && Array.isArray(row) && row.length > 0);
+
+      if (mappedData.length === 0) throw new Error("Tidak dapat menemukan data transaksi pada baris yang dipindai.");
+
+      let headerRow = mappedData[0];
+      for (let i = 0; i < Math.min(mappedData.length, 20); i++) {
+        if (mappedData[i] && mappedData[i].includes('Tanggal') && mappedData[i].includes('Nama Karyawan')) {
+          headerRow = mappedData[i];
+          break;
+        }
+      }
+      
+      self.postMessage({ type: 'status', message: `Berhasil membedah ${mappedData.length.toLocaleString('id-ID')} baris data. Menyiapkan pengiriman...` });
+      
+      const CHUNK_SIZE = 8000;
+      const totalChunks = Math.ceil(mappedData.length / CHUNK_SIZE);
+      let totalImported = 0;
+
+      const uploadChunk = async (index: number) => {
+        const chunkData = mappedData.slice(index * CHUNK_SIZE, (index + 1) * CHUNK_SIZE);
+        const dataWithHeader = index > 0 ? [headerRow, ...chunkData] : chunkData;
+
+        const res = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename, data: dataWithHeader, chunkIndex: index, totalChunks }),
+        });
+
+        if (!res.ok) {
+          const text = await res.text();
+          let errorMsg = `Server error (${res.status}): ${res.statusText}`;
+          try {
+            const json = JSON.parse(text);
+            errorMsg = json.error || json.details || errorMsg;
+          } catch (e) {
+            if (res.status === 413) errorMsg = "File terlalu besar untuk diproses sekaligus (413 Payload Too Large).";
+          }
+          throw new Error(errorMsg);
+        }
+
+        const data = await res.json();
+        return data.importedCount || 0;
+      };
+
+      self.postMessage({ type: 'status', message: `Memproses bagian 1 dari ${totalChunks}...`, progress: 0, totalRows: mappedData.length, currentRows: 0 });
+      totalImported += await uploadChunk(0);
+
+      const remainingChunks = Array.from({ length: totalChunks - 1 }, (_, i) => i + 1);
+      const CONCURRENCY = 8;
+      let completedChunks = 1;
+
+      const runWorker = async () => {
+        while (remainingChunks.length > 0) {
+          const index = remainingChunks.shift();
+          if (index === undefined) break;
+
+          const count = await uploadChunk(index);
+          totalImported += count;
+          completedChunks++;
+
+          self.postMessage({ type: 'status', message: `Mengunggah... (${completedChunks}/${totalChunks})`, progress: Math.round((completedChunks / totalChunks) * 100), totalRows: mappedData.length, currentRows: Math.min(completedChunks * CHUNK_SIZE, mappedData.length) });
+        }
+      };
+
+      await Promise.all(Array.from({ length: CONCURRENCY }, runWorker));
+
+      self.postMessage({ type: 'done', totalImported, totalRows: mappedData.length });
+      return;
+    }
+
+    throw new Error('Tipe worker tidak dikenali: ' + workerType);
   } catch (err: any) {
     self.postMessage({ type: 'error', error: err.message });
   }

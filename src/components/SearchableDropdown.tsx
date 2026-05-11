@@ -28,6 +28,8 @@ interface SearchableDropdownProps {
   className?: string;
   /** Unique id suffix – required when multiple dropdowns are on the same page */
   id: string;
+  /** Maximum number of items to display at once */
+  maxDisplay?: number;
 }
 
 export default function SearchableDropdown({
@@ -43,6 +45,7 @@ export default function SearchableDropdown({
   onChange,
   className = '',
   id,
+  maxDisplay = 50,
 }: SearchableDropdownProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -56,7 +59,7 @@ export default function SearchableDropdown({
   const allItems = ['', ...items];
   const filtered = allItems.filter(i =>
     (i === '' ? allLabel : i).toLowerCase().includes(query.toLowerCase())
-  );
+  ).slice(0, maxDisplay);
 
   const displayLabel = value === '' ? (placeholder ?? allLabel) : value;
 
