@@ -27,8 +27,9 @@ export async function GET(request: NextRequest) {
         where += ' AND code LIKE ?';
         args.push(`${prefix}.%`);
       } else {
-        where += ' AND category LIKE ?';
-        args.push(`%${category.trim()}%`);
+        // Exact match agar 'CETAK' tidak ikut mencocokkan 'PRA CETAK' atau 'PASCA CETAK'
+        where += ' AND category = ?';
+        args.push(category.trim());
       }
     }
     if (subCategory) {
