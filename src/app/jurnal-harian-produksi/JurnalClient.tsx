@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { Loader2, AlertCircle, ClipboardList, RotateCcw, Filter, Plus, Trash2, Edit2, Save, X, CheckCircle2, ChevronDown, Search, PlusSquare, Copy, FileText } from 'lucide-react';
+import { Loader2, AlertCircle, ClipboardList, RotateCcw, Filter, Plus, Trash2, Edit2, Save, X, CheckCircle2, ChevronDown, Search, PlusSquare, Copy, FileText, Download } from 'lucide-react';
 import SearchableDropdown from '@/components/SearchableDropdown';
 import SearchAndReload from '@/components/SearchAndReload';
 import { useRouter } from 'next/navigation';
@@ -45,9 +45,11 @@ function formatIndoDateStr(tglStr: string) {
 export default function JurnalClient({
   canInputTarget = true,
   canInputRealisasi = true,
+  canCopyJadwal = false,
 }: {
   canInputTarget?: boolean;
   canInputRealisasi?: boolean;
+  canCopyJadwal?: boolean;
 }) {
   const router = useRouter();
   
@@ -58,6 +60,9 @@ export default function JurnalClient({
   const [error, setError] = useState('');
   const [loadTime, setLoadTime] = useState<number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isExporting, setIsExporting] = useState(false);
+  const [hasCopiedToday, setHasCopiedToday] = useState(true);
+  const [isCopyingJadwal, setIsCopyingJadwal] = useState(false);
 
   // Search & Pagination
   const [searchQuery, setSearchQuery] = useState('');
@@ -84,6 +89,8 @@ export default function JurnalClient({
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<number | string | null>(null);
   const [formData, setFormData] = useState<any>({});
+  const [multiRealisasi, setMultiRealisasi] = useState<any[]>([]);
+  const [isMultiRealisasiMode, setIsMultiRealisasiMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [actionMessage, setActionMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
 
@@ -279,8 +286,8 @@ export default function JurnalClient({
       setIsLoadingForm(true);
       try {
         const [empRes, sopdRes] = await Promise.all([
-          fetch('/api/employees?limit=500'),
-          fetch('/api/sopd?all=true&limit=30')
+          fetch('/api/employees?limit=5000'),
+          fetch('/api/sopd?all=true&limit=5000')
         ]);
         if (!active) return;
         if (empRes.ok) {
@@ -304,7 +311,7 @@ export default function JurnalClient({
     if (!formData.bagian) { setJenisPekerjaanList([]); return; }
     const category = BAGIAN_CATEGORY_MAP[formData.bagian] || '';
     if (!category) { setJenisPekerjaanList([]); return; }
-    fetch(`/api/master-pekerjaan?category=${encodeURIComponent(category)}&limit=200`)
+    fetch(`/api/master-pekerjaan?category=${encodeURIComponent(category)}&limit=2000`)
       .then(r => r.json())
       .then(j => setJenisPekerjaanList((j.data || []).map((x: any) => x.name)))
       .catch(() => setJenisPekerjaanList([]));
@@ -316,7 +323,7 @@ export default function JurnalClient({
     if (!bagian) { setJenisPekerjaan2List([]); return; }
     const category = BAGIAN_CATEGORY_MAP[bagian] || '';
     if (!category) { setJenisPekerjaan2List([]); return; }
-    fetch(`/api/master-pekerjaan?category=${encodeURIComponent(category)}&limit=200`)
+    fetch(`/api/master-pekerjaan?category=${encodeURIComponent(category)}&limit=2000`)
       .then(r => r.json())
       .then(j => setJenisPekerjaan2List((j.data || []).map((x: any) => x.name)))
       .catch(() => setJenisPekerjaan2List([]));
@@ -365,6 +372,50 @@ export default function JurnalClient({
     setPage(1);
   }, []);
 
+  useEffect(() => {
+    if (!canCopyJadwal) return;
+    const todayStr = new Date().toISOString().split('T')[0];
+    fetch(`/api/jurnal-harian-produksi/copy-jadwal?today=${todayStr}`)
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) {
+          setHasCopiedToday(res.hasCopiedToday);
+        }
+      })
+      .catch(() => {});
+  }, [refreshKey, canInputTarget]);
+
+  const handleCopyJadwal = async () => {
+    if (!window.confirm('Yakin ingin menyalin seluruh jadwal HARI INI ke BESOK? Aksi ini akan menambah data jadwal baru untuk besok.')) return;
+    setIsCopyingJadwal(true);
+    try {
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      const todayStr = today.toISOString().split('T')[0];
+      const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+      const res = await fetch('/api/jurnal-harian-produksi/copy-jadwal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ today: todayStr, tomorrow: tomorrowStr })
+      });
+      const result = await res.json();
+      if (result.success) {
+        showMessage('success', `Berhasil menyalin ${result.count} jadwal ke tanggal besok.`);
+        setHasCopiedToday(true);
+        setRefreshKey(k => k + 1);
+      } else {
+        showMessage('error', result.error || 'Gagal menyalin jadwal');
+      }
+    } catch (err: any) {
+      showMessage('error', 'Terjadi kesalahan sistem');
+    } finally {
+      setIsCopyingJadwal(false);
+    }
+  };
+
   const showMessage = (type: 'success' | 'error', text: string) => {
     setActionMessage({ type, text });
     setTimeout(() => setActionMessage(null), 3000);
@@ -379,6 +430,8 @@ export default function JurnalClient({
     setSelectedTargetRow(null);
     setTargetSearchQuery('');
     setFormData({ tgl: new Date().toISOString().split('T')[0] });
+    setIsMultiRealisasiMode(false);
+    setMultiRealisasi([]);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [canInputTarget, canInputRealisasi]);
 
@@ -394,6 +447,8 @@ export default function JurnalClient({
       formattedData.tgl = formattedData.tgl.split('T')[0];
     }
     setFormData(formattedData);
+    setIsMultiRealisasiMode(false);
+    setMultiRealisasi([]);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [canInputRealisasi]);
 
@@ -404,7 +459,21 @@ export default function JurnalClient({
     setFormData({});
     setSelectedTargetRow(null);
     setTargetSearchQuery('');
+    setIsMultiRealisasiMode(false);
+    setMultiRealisasi([]);
   }, []);
+
+  const handleRealisasiChange = (index: number, field: string, value: any) => {
+    if (isMultiRealisasiMode) {
+      setMultiRealisasi(prev => {
+        const next = [...prev];
+        next[index] = { ...next[index], [field]: value };
+        return next;
+      });
+    } else {
+      setFormData((prev: any) => ({ ...prev, [field]: value }));
+    }
+  };
 
   const startInputRealisasi = useCallback((row: any) => {
     setActiveTab('form');
@@ -419,13 +488,23 @@ export default function JurnalClient({
       formattedData.tgl = formattedData.tgl.split('T')[0];
     }
 
-    setFormData({ 
-      ...formattedData,
+    setFormData({ ...formattedData });
+    setIsMultiRealisasiMode(true);
+    setMultiRealisasi([{
+      target: row.target || '',
+      realisasi: row.realisasi || '',
       no_order_2: row.no_order_2 || row.no_order || '',
       nama_order_2: row.nama_order_2 || row.nama_order || '',
       jenis_pekerjaan_2: row.jenis_pekerjaan_2 || row.jenis_pekerjaan || '',
+      bahan_kertas: row.bahan_kertas || '',
+      jml_plate: row.jml_plate || '',
+      warna: row.warna || '',
+      inscheet: row.inscheet || '',
+      rijek: row.rijek || '',
       jam: row.jam || SHIFT_JAM[String(row.shift)] || '',
-    });
+      kendala: row.kendala || ''
+    }]);
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
@@ -464,8 +543,32 @@ export default function JurnalClient({
     setIsSaving(true);
     try {
       const isEdit = editingId !== null;
+
+      if (isMultiRealisasiMode) {
+        const payload = {
+          action: 'input_multi_realisasi',
+          id: editingId,
+          baseData: formData,
+          multiRealisasi: multiRealisasi
+        };
+        const res = await fetch('/api/jurnal-harian-produksi', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        if (result.success) {
+          showMessage('success', 'Data realisasi berhasil disimpan');
+          cancelForm();
+          setRefreshKey(k => k + 1);
+          router.refresh();
+        } else {
+          showMessage('error', result.error || 'Gagal menyimpan data');
+        }
+        return;
+      }
+
       const method = isEdit ? 'PUT' : 'POST';
-      
       let payloadToSubmit: any = { ...formData };
       
       if (isEdit) {
@@ -474,7 +577,7 @@ export default function JurnalClient({
           payloadToSubmit = {};
           TARGET_FIELDS.forEach(f => { if (formData[f] !== undefined) payloadToSubmit[f] = formData[f] });
         } else if (canInputRealisasi && !canInputTarget) {
-          const REALISASI_FIELDS = ['no_order_2', 'nama_order_2', 'jenis_pekerjaan_2', 'bahan_kertas', 'jml_plate', 'warna', 'inscheet', 'rijek', 'jam', 'kendala', 'realisasi'];
+          const REALISASI_FIELDS = ['no_order_2', 'nama_order_2', 'jenis_pekerjaan_2', 'bahan_kertas', 'jml_plate', 'warna', 'inscheet', 'rijek', 'jam', 'kendala', 'realisasi', 'target'];
           payloadToSubmit = {};
           REALISASI_FIELDS.forEach(f => { if (formData[f] !== undefined) payloadToSubmit[f] = formData[f] });
         }
@@ -781,6 +884,49 @@ export default function JurnalClient({
     });
   }, [data, lastSelectedId]);
 
+  const handleExportExcel = async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+    try {
+      const fmtDate = (d: Date | null) => {
+         if (!d) return '';
+         const y = d.getFullYear();
+         const m = String(d.getMonth() + 1).padStart(2, '0');
+         const day = String(d.getDate()).padStart(2, '0');
+         return `${y}-${m}-${day}`;
+      };
+      
+      const queryParams = new URLSearchParams({
+        page: '1',
+        limit: '10000',
+        search: debouncedQuery,
+        startDate: fmtDate(startDate),
+        endDate: fmtDate(endDate),
+        ...(bagianFilter ? { bagian: bagianFilter } : {}),
+        ...(namaKaryawanFilter ? { namaKaryawan: namaKaryawanFilter } : {})
+      });
+      
+      const res = await fetch(`/api/export-jurnal?${queryParams.toString()}`);
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Jurnal_Produksi_${fmtDate(startDate) || 'All'}_to_${fmtDate(endDate) || 'All'}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        alert('Gagal mengambil data untuk diexport');
+      }
+    } catch (err) {
+      alert('Gagal export excel');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   if (!isMounted) return null;
 
   return (
@@ -849,19 +995,29 @@ export default function JurnalClient({
               }}
             />
 
-            {/* Reset Button */}
+            {/* Reset & Export Button */}
             <div className="flex flex-col">
-              <span className="block text-[13px] font-semibold text-transparent mb-2 ml-1 tracking-tight select-none">Reset</span>
-              <button
-                onClick={() => {
-                  handleResetFilter();
-                  setSearchQuery('');
-                }}
-                className="h-11 px-6 bg-white hover:bg-rose-50 text-gray-400 hover:text-rose-600 border border-gray-100 hover:border-rose-100 rounded-lg shadow-sm transition-all flex items-center gap-2.5 text-[12px] font-bold tracking-tight"
-              >
-                <RotateCcw size={16} />
-                Reset
-              </button>
+              <span className="block text-[13px] font-semibold text-transparent mb-2 ml-1 tracking-tight select-none">Aksi</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    handleResetFilter();
+                    setSearchQuery('');
+                  }}
+                  className="h-11 px-6 bg-white hover:bg-rose-50 text-gray-400 hover:text-rose-600 border border-gray-100 hover:border-rose-100 rounded-lg shadow-sm transition-all flex items-center gap-2.5 text-[12px] font-bold tracking-tight"
+                >
+                  <RotateCcw size={16} />
+                  Reset
+                </button>
+                <button
+                  onClick={handleExportExcel}
+                  disabled={isExporting}
+                  className="h-11 px-6 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-100 hover:border-emerald-200 rounded-lg shadow-sm transition-all flex items-center gap-2.5 text-[12px] font-bold tracking-tight disabled:opacity-50"
+                >
+                  {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                  {isExporting ? 'Proses...' : 'Export Excel'}
+                </button>
+              </div>
             </div>
             </div>
          </div>
@@ -875,6 +1031,19 @@ export default function JurnalClient({
                     <ClipboardList size={16} />
                   </div>
                   <span>Jurnal Harian Produksi</span>
+                  
+                  {/* Copy Jadwal Button */}
+                  {canCopyJadwal && !hasCopiedToday && (
+                    <button 
+                      onClick={handleCopyJadwal} 
+                      disabled={isCopyingJadwal}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 text-[11px] font-bold rounded-lg border border-blue-200 transition-all ml-2 disabled:opacity-50"
+                      title="Copy seluruh jadwal hari ini ke besok"
+                    >
+                      {isCopyingJadwal ? <Loader2 size={12} className="animate-spin" /> : <Copy size={12} />}
+                      Copy Jadwal Besok
+                    </button>
+                  )}
                </div>
                
 
@@ -1173,111 +1342,155 @@ export default function JurnalClient({
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {(isMultiRealisasiMode ? multiRealisasi : [formData]).map((rData, rIndex) => (
+                  <div key={rIndex} className={`mb-6 ${isMultiRealisasiMode ? 'p-5 pt-7 border-2 border-dashed border-sky-200 bg-sky-50/20 rounded-xl relative' : ''}`}>
+                    {isMultiRealisasiMode && (
+                      <div className="absolute -top-3 left-4 bg-sky-100 text-sky-800 px-3 py-0.5 rounded-full text-[11px] font-bold border border-sky-200">
+                        Realisasi #{rIndex + 1} {rIndex === 0 ? '(Utama)' : '(Baris Baru)'}
+                      </div>
+                    )}
+                    {isMultiRealisasiMode && rIndex > 0 && (
+                      <button type="button" onClick={() => setMultiRealisasi(prev => prev.filter((_, i) => i !== rIndex))} className="absolute -top-3 right-4 bg-rose-100 text-rose-600 px-2 py-0.5 rounded-full text-[11px] font-bold hover:bg-rose-200 border border-rose-200 transition-colors">
+                        Hapus
+                      </button>
+                    )}
 
-                  {/* No. Order 2 → SearchableDropdown */}
-                  <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-gray-600">No. Order</label>
-                    <SearchableDropdown
-                      id="form-no-order-2"
-                      value={formData.no_order_2 ? `${formData.no_order_2}${sopdList.find(s => s.no_sopd === formData.no_order_2)?.nama_order ? ' — ' + sopdList.find(s => s.no_sopd === formData.no_order_2)?.nama_order : ''}` : ''}
-                      items={sopdList.map(s => s.nama_order ? `${s.no_sopd} — ${s.nama_order}` : s.no_sopd)}
-                      placeholder="-- Pilih No. Order --"
-                      allLabel="-- Pilih No. Order --"
-                      triggerWidth="w-full"
-                      onChange={val => {
-                        const noSopd = val.split(' — ')[0];
-                        const sopd = sopdList.find(x => x.no_sopd === noSopd);
-                        setFormData({...formData, no_order_2: noSopd, nama_order_2: sopd?.nama_order || ''});
-                      }}
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+
+                      {/* No. Order 2 → SearchableDropdown */}
+                      <div className="space-y-1.5">
+                        <label className="text-[12px] font-bold text-gray-600">No. Order</label>
+                        <SearchableDropdown
+                          id={`form-no-order-2-${rIndex}`}
+                          value={rData.no_order_2 ? `${rData.no_order_2}${sopdList.find(s => s.no_sopd === rData.no_order_2)?.nama_order ? ' — ' + sopdList.find(s => s.no_sopd === rData.no_order_2)?.nama_order : ''}` : ''}
+                          items={sopdList.map(s => s.nama_order ? `${s.no_sopd} — ${s.nama_order}` : s.no_sopd)}
+                          placeholder="-- Pilih No. Order --"
+                          allLabel="-- Pilih No. Order --"
+                          triggerWidth="w-full"
+                          onChange={val => {
+                            const noSopd = val.split(' — ')[0];
+                            const sopd = sopdList.find(x => x.no_sopd === noSopd);
+                            handleRealisasiChange(rIndex, 'no_order_2', noSopd);
+                            handleRealisasiChange(rIndex, 'nama_order_2', sopd?.nama_order || '');
+                          }}
+                        />
+                      </div>
+
+                      {/* Jenis Pekerjaan 2 → SearchableDropdown */}
+                      <div className="space-y-1.5">
+                        <label className="text-[12px] font-bold text-gray-600">Jenis Pekerjaan</label>
+                        <SearchableDropdown
+                          id={`form-jenis-pekerjaan-2-${rIndex}`}
+                          value={rData.jenis_pekerjaan_2 || ''}
+                          items={jenisPekerjaan2List}
+                          placeholder="-- Pilih Jenis Pekerjaan --"
+                          allLabel="-- Pilih Jenis Pekerjaan --"
+                          triggerWidth="w-full"
+                          onChange={val => handleRealisasiChange(rIndex, 'jenis_pekerjaan_2', val)}
+                        />
+                      </div>
+
+                      {/* Bahan Kertas */}
+                      <div className="space-y-1.5">
+                        <label className="text-[12px] font-bold text-gray-600">Bahan Kertas</label>
+                        <input type="text" placeholder="Jenis bahan kertas..." className="w-full bg-sky-50/40 border border-sky-200 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none" value={rData.bahan_kertas || ''} onChange={e => handleRealisasiChange(rIndex, 'bahan_kertas', e.target.value)} />
+                      </div>
+
+                      {/* Jml. Plate */}
+                      <div className="space-y-1.5">
+                        <label className="text-[12px] font-bold text-gray-600">Jml. Plate</label>
+                        <input type="number" min="0" placeholder="0" className="w-full bg-sky-50/40 border border-sky-200 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none" value={rData.jml_plate || ''} onChange={e => handleRealisasiChange(rIndex, 'jml_plate', e.target.value)} />
+                      </div>
+
+                      {/* Warna */}
+                      <div className="space-y-1.5">
+                        <label className="text-[12px] font-bold text-gray-600">Warna</label>
+                        <input type="text" placeholder="Warna cetak..." className="w-full bg-sky-50/40 border border-sky-200 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none" value={rData.warna || ''} onChange={e => handleRealisasiChange(rIndex, 'warna', e.target.value)} />
+                      </div>
+
+                      {/* Inscheet */}
+                      <div className="space-y-1.5">
+                        <label className="text-[12px] font-bold text-gray-600">Inscheet</label>
+                        <input type="number" min="0" placeholder="0" className="w-full bg-sky-50/40 border border-sky-200 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none" value={rData.inscheet || ''} onChange={e => handleRealisasiChange(rIndex, 'inscheet', e.target.value)} />
+                      </div>
+
+                      {/* Rijek */}
+                      <div className="space-y-1.5">
+                        <label className="text-[12px] font-bold text-gray-600">Rijek</label>
+                        <input type="number" min="0" placeholder="0" className="w-full bg-sky-50/40 border border-sky-200 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none" value={rData.rijek || ''} onChange={e => handleRealisasiChange(rIndex, 'rijek', e.target.value)} />
+                      </div>
+
+                      {/* Jam */}
+                      <div className="space-y-1.5">
+                        <label className="text-[12px] font-bold text-gray-600">Jam Kerja</label>
+                        <input type="text" placeholder="07:00 - 15:00" className="w-full bg-sky-50/40 border border-sky-200 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none" value={rData.jam || ''} onChange={e => handleRealisasiChange(rIndex, 'jam', e.target.value)} />
+                      </div>
+
+                      {/* Kendala */}
+                      <div className="space-y-1.5 md:col-span-2">
+                        <label className="text-[12px] font-bold text-gray-600">Kendala</label>
+                        <textarea 
+                          placeholder="Kendala yang ditemukan..." 
+                          rows={3}
+                          className="w-full bg-sky-50/40 border border-sky-200 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none min-h-[80px] resize-none" 
+                          value={rData.kendala || ''} 
+                          onChange={e => handleRealisasiChange(rIndex, 'kendala', e.target.value)} 
+                        />
+                      </div>
+                      
+                      <div className="space-y-1.5 md:col-span-2 grid grid-cols-2 gap-4">
+                        {/* Target (Khusus Admin Realisasi) */}
+                        <div className="space-y-1.5">
+                          <label className="text-[12px] font-bold text-gray-600">Target</label>
+                          <input 
+                            type="text" 
+                            placeholder="0" 
+                            className="w-full bg-sky-50/40 border border-sky-200 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none" 
+                            value={rData.target || ''} 
+                            onChange={e => {
+                              let val = e.target.value;
+                              const clean = val.replace(/\./g, '');
+                              if (/^\d+$/.test(clean)) {
+                                const formatted = clean.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                                handleRealisasiChange(rIndex, 'target', formatted);
+                              } else {
+                                handleRealisasiChange(rIndex, 'target', val);
+                              }
+                            }} 
+                          />
+                        </div>
+
+                        {/* Realisasi */}
+                        <div className="space-y-1.5">
+                          <label className="text-[12px] font-bold text-gray-600">Realisasi <span className="text-rose-400">*</span></label>
+                          <input 
+                            type="text" 
+                            placeholder="0" 
+                            className="w-full bg-emerald-50/40 border border-emerald-200 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none" 
+                            value={rData.realisasi || ''} 
+                            onChange={e => {
+                              let val = e.target.value;
+                              const clean = val.replace(/\./g, '');
+                              if (/^\d+$/.test(clean)) {
+                                const formatted = clean.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                                handleRealisasiChange(rIndex, 'realisasi', formatted);
+                              } else {
+                                handleRealisasiChange(rIndex, 'realisasi', val);
+                              }
+                            }} 
+                          />
+                        </div>
+                      </div>
+
+                    </div>
                   </div>
+                ))}
 
-
-                  {/* Jenis Pekerjaan 2 → SearchableDropdown */}
-                  <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-gray-600">Jenis Pekerjaan</label>
-                    <SearchableDropdown
-                      id="form-jenis-pekerjaan-2"
-                      value={formData.jenis_pekerjaan_2 || ''}
-                      items={jenisPekerjaan2List}
-                      placeholder="-- Pilih Jenis Pekerjaan --"
-                      allLabel="-- Pilih Jenis Pekerjaan --"
-                      triggerWidth="w-full"
-                      onChange={val => setFormData({...formData, jenis_pekerjaan_2: val})}
-                    />
-                  </div>
-
-                  {/* Bahan Kertas → kolom biru */}
-                  <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-gray-600">Bahan Kertas</label>
-                    <input type="text" placeholder="Jenis bahan kertas..." className="w-full bg-sky-50/40 border border-sky-200 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none" value={formData.bahan_kertas || ''} onChange={e => setFormData({...formData, bahan_kertas: e.target.value})} />
-                  </div>
-
-                  {/* Jml. Plate */}
-                  <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-gray-600">Jml. Plate</label>
-                    <input type="number" min="0" placeholder="0" className="w-full bg-sky-50/40 border border-sky-200 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none" value={formData.jml_plate || ''} onChange={e => setFormData({...formData, jml_plate: e.target.value})} />
-                  </div>
-
-                  {/* Warna */}
-                  <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-gray-600">Warna</label>
-                    <input type="text" placeholder="Warna cetak..." className="w-full bg-sky-50/40 border border-sky-200 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none" value={formData.warna || ''} onChange={e => setFormData({...formData, warna: e.target.value})} />
-                  </div>
-
-                  {/* Inscheet */}
-                  <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-gray-600">Inscheet</label>
-                    <input type="number" min="0" placeholder="0" className="w-full bg-sky-50/40 border border-sky-200 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none" value={formData.inscheet || ''} onChange={e => setFormData({...formData, inscheet: e.target.value})} />
-                  </div>
-
-                  {/* Rijek */}
-                  <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-gray-600">Rijek</label>
-                    <input type="number" min="0" placeholder="0" className="w-full bg-sky-50/40 border border-sky-200 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none" value={formData.rijek || ''} onChange={e => setFormData({...formData, rijek: e.target.value})} />
-                  </div>
-
-                  {/* Jam → time picker, value awal dari shift */}
-                  <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-gray-600">Jam Kerja</label>
-                    <input type="text" placeholder="07:00 - 15:00" className="w-full bg-sky-50/40 border border-sky-200 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none" value={formData.jam || ''} onChange={e => setFormData({...formData, jam: e.target.value})} />
-                  </div>
-
-                  {/* Kendala */}
-                  <div className="space-y-1.5 md:col-span-2">
-                    <label className="text-[12px] font-bold text-gray-600">Kendala</label>
-                    <textarea 
-                      placeholder="Kendala yang ditemukan..." 
-                      rows={3}
-                      className="w-full bg-sky-50/40 border border-sky-200 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none min-h-[80px] resize-none" 
-                      value={formData.kendala || ''} 
-                      onChange={e => setFormData({...formData, kendala: e.target.value})} 
-                    />
-                  </div>
-
-                  {/* Realisasi */}
-                  <div className="space-y-1.5">
-                    <label className="text-[12px] font-bold text-gray-600">Realisasi <span className="text-rose-400">*</span></label>
-                    <input 
-                      type="text" 
-                      placeholder="0" 
-                      className="w-full bg-sky-50/40 border border-sky-200 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none" 
-                      value={formData.realisasi || ''} 
-                      onChange={e => {
-                        let val = e.target.value;
-                        const clean = val.replace(/\./g, '');
-                        if (/^\d+$/.test(clean)) {
-                          const formatted = clean.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-                          setFormData({...formData, realisasi: formatted});
-                        } else {
-                          setFormData({...formData, realisasi: val});
-                        }
-                      }} 
-                    />
-                  </div>
-
-                </div>
+                {isMultiRealisasiMode && (
+                  <button type="button" onClick={() => setMultiRealisasi(prev => [...prev, {}])} className="w-full py-3 border-2 border-dashed border-sky-200 text-sky-600 rounded-xl font-bold text-[13px] hover:bg-sky-50 hover:border-sky-300 transition-colors flex items-center justify-center gap-2 mb-4">
+                    <PlusSquare size={16} /> Tambah Realisasi Lainnya
+                  </button>
+                )}
               </div>
             )}
 

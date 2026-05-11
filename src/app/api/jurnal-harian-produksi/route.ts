@@ -140,6 +140,85 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
+    if (body.action === 'input_multi_realisasi') {
+      if (!session?.userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      const { id, baseData, multiRealisasi } = body;
+      
+      const cleanNumberOrText = (val: any) => {
+        if (val === undefined || val === null || val === '') return '';
+        const str = String(val).trim();
+        if (/^[0-9]+(\.[0-9]+)*$/.test(str)) return Number(str.replace(/\./g, ''));
+        return str;
+      };
+
+      if (!multiRealisasi || multiRealisasi.length === 0) {
+        return NextResponse.json({ error: 'Data realisasi kosong' }, { status: 400 });
+      }
+
+      // Filter baris tambahan yang kosong (no_order_2, jenis_pekerjaan_2, target, dan realisasi semuanya kosong)
+      const validAdditional = multiRealisasi.slice(1).filter((row: any) => {
+        const noOrder = String(row.no_order_2 || '').trim();
+        const jenisPekerjaan = String(row.jenis_pekerjaan_2 || '').trim();
+        const target = String(row.target || '').trim();
+        const realisasi = String(row.realisasi || '').trim();
+        return noOrder || jenisPekerjaan || target || realisasi;
+      });
+      const filteredMulti = [multiRealisasi[0], ...validAdditional];
+
+      // 1. Update baris pertama (yang memiliki id)
+      // Sisi Target (no_order, nama_order, jenis_pekerjaan) ikut data realisasi
+      const firstRow = filteredMulti[0];
+      await db.execute({
+        sql: `UPDATE jurnal_harian_produksi SET 
+          no_order = ?, nama_order = ?, jenis_pekerjaan = ?,
+          target = ?, realisasi = ?, no_order_2 = ?, nama_order_2 = ?, jenis_pekerjaan_2 = ?, 
+          bahan_kertas = ?, jml_plate = ?, warna = ?, inscheet = ?, rijek = ?, jam = ?, kendala = ?
+          WHERE id = ?`,
+        args: [
+          firstRow.no_order_2 || '', firstRow.nama_order_2 || '', firstRow.jenis_pekerjaan_2 || '',
+          cleanNumberOrText(firstRow.target), cleanNumberOrText(firstRow.realisasi),
+          firstRow.no_order_2 || '', firstRow.nama_order_2 || '', firstRow.jenis_pekerjaan_2 || '',
+          firstRow.bahan_kertas || '', Number(firstRow.jml_plate) || 0, firstRow.warna || '',
+          Number(firstRow.inscheet) || 0, Number(firstRow.rijek) || 0, firstRow.jam || '', firstRow.kendala || '',
+          id
+        ]
+      });
+
+      // 2. Insert baris ke-2 hingga selesai (generate new rows, skip yang kosong)
+      if (validAdditional.length > 0) {
+        try {
+          await db.execute("ALTER TABLE jurnal_harian_produksi ADD COLUMN is_manual_input INTEGER DEFAULT 0");
+        } catch (e) {} // Kolom sudah ada
+
+        let pendingRows: any[][] = [];
+        
+        for (const row of validAdditional) {
+          pendingRows.push([
+            baseData.posisi || '', Number(baseData.absensi) || 0, baseData.tgl || null, baseData.shift || '', baseData.nama_karyawan || '',
+            row.no_order_2 || '', row.nama_order_2 || '', row.jenis_pekerjaan_2 || '', baseData.keterangan || '', cleanNumberOrText(row.target), cleanNumberOrText(row.realisasi),
+            row.no_order_2 || '', row.nama_order_2 || '', row.jenis_pekerjaan_2 || '', row.bahan_kertas || '', Number(row.jml_plate) || 0,
+            row.warna || '', Number(row.inscheet) || 0, Number(row.rijek) || 0, row.jam || '', row.kendala || '', baseData.bagian || ''
+          ]);
+        }
+
+        const placeholders = pendingRows.map(() => `(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`).join(', ');
+        const args = pendingRows.flat();
+        const sql = `INSERT INTO jurnal_harian_produksi (
+                  posisi, absensi, tgl, shift, nama_karyawan, no_order, nama_order, jenis_pekerjaan, keterangan, target, realisasi,
+                  no_order_2, nama_order_2, jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, is_manual_input
+                ) VALUES ${placeholders}`;
+        await db.execute({ sql, args });
+      }
+
+      await db.execute({
+        sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
+              VALUES (?, ?, ?, ?, ?, ?)`,
+        args: ['INSERT', 'jurnal_harian_produksi', id, `Input Multi Realisasi (${filteredMulti.length} baris)`, JSON.stringify({ id, count: filteredMulti.length }), session.username || 'System']
+      });
+
+      return NextResponse.json({ success: true });
+    }
+
     // Default flow untuk bulk upload Excel
     const { filename, data: rawData, chunkIndex = 0, totalChunks = 1 } = body;
 
@@ -153,6 +232,8 @@ export async function POST(request: NextRequest) {
         await db.execute("ALTER TABLE jurnal_harian_produksi ADD COLUMN is_manual_input INTEGER DEFAULT 0");
       } catch (e) {} // Kolom sudah ada
       await db.execute("DELETE FROM jurnal_harian_produksi WHERE is_manual_input = 0 OR is_manual_input IS NULL");
+      // Hapus log COPY_JADWAL agar tombol copy jadwal besok muncul kembali setelah upload ulang
+      await db.execute("DELETE FROM activity_logs WHERE action_type = 'COPY_JADWAL'");
     }
 
     let importedCount = 0;
@@ -382,7 +463,18 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { ids } = await request.json();
+    const { ids, clearAll } = await request.json();
+    
+    if (clearAll) {
+      await db.execute('DELETE FROM jurnal_harian_produksi');
+      await db.execute({
+        sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
+              VALUES (?, ?, ?, ?, ?, ?)`,
+        args: ['DELETE', 'jurnal_harian_produksi', 0, 'Menghapus seluruh data Jurnal Harian Produksi', '{}', session.username || 'System']
+      });
+      return NextResponse.json({ success: true });
+    }
+
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
       return NextResponse.json({ error: 'IDs tidak valid' }, { status: 400 });
     }
