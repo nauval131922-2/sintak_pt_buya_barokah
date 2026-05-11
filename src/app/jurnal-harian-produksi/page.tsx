@@ -18,11 +18,17 @@ export default async function JurnalHarianPage() {
 
   let canInputTarget = isSuperAdmin;
   let canInputRealisasi = isSuperAdmin;
+  let canCopyJadwal = isSuperAdmin;
 
   if (!isSuperAdmin && session?.role) {
     const perms = await getRolePermissions(session.role);
     canInputTarget    = perms['produksi_jhp_penjadwalan'] !== false;
     canInputRealisasi = perms['produksi_jhp_realisasi'] !== false;
+    canCopyJadwal     = perms['produksi_jhp_penjadwalan'] !== false; // hanya Admin Penjadwalan
+
+    if (session.role === 'Admin Realisasi') {
+      canInputTarget = true;
+    }
   }
 
   return (
@@ -32,7 +38,7 @@ export default async function JurnalHarianPage() {
         description="Laporan target dan realisasi pekerjaan harian produksi."
       />
 
-      <JurnalClient canInputTarget={canInputTarget} canInputRealisasi={canInputRealisasi} />
+      <JurnalClient canInputTarget={canInputTarget} canInputRealisasi={canInputRealisasi} canCopyJadwal={canCopyJadwal} />
     </div>
   );
 }
