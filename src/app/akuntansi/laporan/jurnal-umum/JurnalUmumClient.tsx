@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
 
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -140,7 +140,6 @@ export default function JurnalUmumClient() {
   const [createAtFrom, setCreateAtFrom] = useState<Date | null>(null);
   const [createAtTo, setCreateAtTo]     = useState<Date | null>(null);
 
-  const isLoadingMore = useRef(false);
   const mountedRef = useRef(true);
 
   const { selectedIds, handleRowClick, clearSelection } = useTableSelection(data || []);
@@ -229,7 +228,7 @@ export default function JurnalUmumClient() {
     let active = true;
     async function loadData() {
       if (!active || !mountedRef.current || !isMounted) return;
-      setLoading(page === 1);
+      setLoading(true);
       const startTimer = performance.now();
       try {
         const queryParams = new URLSearchParams({
@@ -247,45 +246,34 @@ export default function JurnalUmumClient() {
           const saldoAwalKas: number = json.saldoAwalKas ?? 0;
           const hasCatFilter = !!(createAtFrom && createAtTo);
 
-          setData(prev => {
-            const currentData = prev || [];
-            // Use the very last row's _labaRugi (child or parent) — NOT last parent.
-            // Parent rows store LR *before* their children update it, so using last parent
-            // would lose the children's contributions at page boundaries.
-            const lastRow = currentData.length > 0 ? currentData[currentData.length - 1] : null;
-            const prevLR = lastRow?._labaRugi ?? saldoAwal;
-            const prevAK = lastRow?._arusKas ?? saldoAwalKas;
+          // Use prevLabaRugi/prevArusKas from server as starting point so
+          // the running total continues correctly across pages.
+          const startLR = json.prevLabaRugi ?? (hasCatFilter ? saldoAwal : 0);
+          const startAK = json.prevArusKas  ?? (hasCatFilter ? saldoAwalKas : 0);
 
-            const { flat: incoming } = page === 1
-              ? flattenJurnal(json.data || [], hasCatFilter ? saldoAwal : 0, hasCatFilter ? saldoAwalKas : 0)
-              : flattenJurnal(json.data || [], prevLR, prevAK);
+          const { flat: incoming } = flattenJurnal(json.data || [], startLR, startAK);
 
-            if (page === 1) {
-              // Prepend Saldo Awal row when create_at filter is active
-              if (hasCatFilter) {
-                const saldoRow = {
-                  id: '__saldo_awal__',
-                  _isSaldoAwal: true,
-                  _isChild: false,
-                  faktur: '',
-                  tgl: '',
-                  rekening: '',
-                  keterangan: 'Saldo Awal',
-                  debit: 0, kredit: 0,
-                  username: '', create_at: '',
-                  _debitLR: null, _kreditLR: null,
-                  _labaRugi: saldoAwal,
-                  _arusKas: saldoAwalKas,
-                  _rowBg: '',
-                };
-                return [saldoRow, ...incoming];
-              }
-              return incoming;
-            }
-            // dedup by synthetic id
-            const existingIds = new Set(currentData.map((d: any) => String(d.id)));
-            return [...currentData, ...incoming.filter((d: any) => !existingIds.has(String(d.id)))];
-          });
+          let finalData = incoming;
+          if (hasCatFilter && page === 1) {
+            const saldoRow = {
+              id: '__saldo_awal__',
+              _isSaldoAwal: true,
+              _isChild: false,
+              faktur: '',
+              tgl: '',
+              rekening: '',
+              keterangan: 'Saldo Awal',
+              debit: 0, kredit: 0,
+              username: '', create_at: '',
+              _debitLR: null, _kreditLR: null,
+              _labaRugi: saldoAwal,
+              _arusKas: saldoAwalKas,
+              _rowBg: '',
+            };
+            finalData = [saldoRow, ...incoming];
+          }
+
+          setData(finalData);
           setTotalCount(json.total || 0);
           setTotalPages(json.totalPages || 0);
           if (json.scrapedPeriod) setScrapedPeriod(json.scrapedPeriod);
@@ -295,7 +283,7 @@ export default function JurnalUmumClient() {
       } catch (err: any) {
         if (active) { setError(err.message || 'Gagal memuat data'); setData([]); }
       } finally {
-        if (active) { setLoading(false); isLoadingMore.current = false; }
+        if (active) { setLoading(false); }
       }
     }
     loadData();
@@ -354,14 +342,6 @@ export default function JurnalUmumClient() {
   };
 
   const [totalPages, setTotalPages] = useState(0);
-
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
-    if (scrollHeight - scrollTop <= clientHeight + 300 && !loading && !isLoadingMore.current && page < totalPages) {
-      isLoadingMore.current = true;
-      setPage(prev => prev + 1);
-    }
-  }, [loading, page, totalPages]);
 
   const columns = useMemo(() => [
     {
@@ -748,7 +728,6 @@ export default function JurnalUmumClient() {
             columns={columns}
             data={data || []}
             isLoading={loading}
-            onScroll={handleScroll}
             selectedIds={selectedIds}
             onRowClick={handleRowClick}
             columnWidths={columnWidths}
@@ -767,6 +746,9 @@ export default function JurnalUmumClient() {
             selectedCount={selectedIds.size}
             onClearSelection={clearSelection}
             loadTime={loadTime}
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
           />
         </div>
       </div>

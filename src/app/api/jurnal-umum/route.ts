@@ -169,6 +169,55 @@ export async function GET(req: NextRequest) {
       saldoAwalKas = Number((saldoRes.rows[0] as any)?.saldo_kas ?? 0) || 0;
     }
 
+    // prevLabaRugi & prevArusKas: running total from ALL child rows BEFORE this page's offset.
+    // This lets the frontend continue the cumulative calculation correctly across pages.
+    let prevLabaRugi = saldoAwal;
+    let prevArusKas  = saldoAwalKas;
+    if (offset > 0) {
+      // Build the same WHERE clause used for parents, then get children of those parents
+      let prevParentWhere = `is_child = 0`;
+      const prevParentParams: any[] = [];
+
+      if (search) {
+        const pat = `%${search}%`;
+        prevParentWhere += ` AND (faktur LIKE ? OR keterangan LIKE ? OR rekening LIKE ? OR username LIKE ?)`;
+        prevParentParams.push(pat, pat, pat, pat);
+      }
+      if (from && to) {
+        prevParentWhere += ` AND tgl BETWEEN ? AND ?`;
+        prevParentParams.push(from, to);
+      }
+      if (catFrom && catTo) {
+        prevParentWhere += ` AND substr(create_at, 1, 10) BETWEEN ? AND ?`;
+        prevParentParams.push(catFrom, catTo);
+      }
+
+      // IDs of parents before this page (same ORDER BY, LIMIT offset)
+      const prevParentsSql = `SELECT faktur FROM jurnal_umum WHERE ${prevParentWhere} ORDER BY create_at ASC, faktur ASC, id ASC LIMIT ?`;
+      const prevParentsParams = [...prevParentParams, offset];
+
+      const prevRunningSql = `
+        SELECT
+          SUM(CASE WHEN CAST(substr(rekening,1,1) AS INTEGER) BETWEEN 4 AND 9 THEN kredit ELSE 0 END) -
+          SUM(CASE WHEN CAST(substr(rekening,1,1) AS INTEGER) BETWEEN 4 AND 9 THEN debit  ELSE 0 END) as lr,
+          SUM(CASE WHEN trim(substr(rekening, 1, CASE WHEN instr(rekening, ' - ') > 0 THEN instr(rekening, ' - ') - 1 ELSE length(rekening) END)) IN (SELECT kode FROM rek_akuntansi WHERE arus_kas = 'Kas') THEN debit ELSE 0 END) -
+          SUM(CASE WHEN trim(substr(rekening, 1, CASE WHEN instr(rekening, ' - ') > 0 THEN instr(rekening, ' - ') - 1 ELSE length(rekening) END)) IN (SELECT kode FROM rek_akuntansi WHERE arus_kas = 'Kas') THEN kredit ELSE 0 END) as ak
+        FROM jurnal_umum
+        WHERE is_child = 1
+          AND parent_faktur IN (${prevParentsSql})
+      `;
+
+      try {
+        const prevRes = await db.execute({ sql: prevRunningSql, args: prevParentsParams });
+        const row = prevRes.rows[0] as any;
+        prevLabaRugi = saldoAwal + (Number(row?.lr ?? 0) || 0);
+        prevArusKas  = saldoAwalKas + (Number(row?.ak ?? 0) || 0);
+      } catch (e) {
+        // fallback: keep saldoAwal
+        console.error('Failed to compute prevLabaRugi/prevArusKas', e);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       data: parentRows,
@@ -178,6 +227,8 @@ export async function GET(req: NextRequest) {
       lastUpdated,
       saldoAwal,
       saldoAwalKas,
+      prevLabaRugi,
+      prevArusKas,
       scrapedPeriod: parseScrapedPeriod((metadataResults[1].rows[0] as any)?.value),
     });
 
