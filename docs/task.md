@@ -59,6 +59,10 @@
 - [x] Implementasi Multi-Realisasi Input Jurnal Harian Produksi — 2026-05-11
 - [x] Perbaikan Mapping Kategori Pekerjaan & Filter API Exact Match — 2026-05-11
 - [x] Implementasi Atomic Copy Jadwal & Permission canCopyJadwal — 2026-05-11
+- [x] Migrasi Pagination Jurnal Umum & Integrasi TableFooter — 2026-05-12
+- [x] Implementasi Akurasi Carry-over Running Total Jurnal Umum — 2026-05-12
+- [x] Implementasi Modul Master Barang (Scraper & UI) — 2026-05-12
+- [x] Optimasi API Barang Jadi & Stabilitas Sales Report — 2026-05-12
 
 ---
 
@@ -78,8 +82,8 @@
 ## 📊 Statistik
 
 ```
-Total task    : 67
-Selesai       : 63
+Total task    : 71
+Selesai       : 67
 In progress   : 2
 Backlog       : 2
 Bug diketahui : 0

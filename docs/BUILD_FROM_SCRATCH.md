@@ -613,10 +613,10 @@ doc.save('laporan.pdf');
    - **Formula Saldo**: `LabaRugi = SaldoAwal + Σ(Kredit - Debit)`. 
    - **Nota**: Pada akuntansi Digit, nilai positif di sisi Kredit untuk rekening Pendapatan/Biaya menambah Laba.
    - **Arus Kas (Kas)**: Untuk akun bertipe 'Kas', saldo dihitung sebagai `SaldoAwal + Σ(Debit - Kredit)`. 
-8. **Infinite Scroll & Pagination Stability**:
-   - Wajib menggunakan `isLoadingMore` (useRef) untuk mengunci proses fetch saat scrolling cepat.
-   - **Paging Logic**: Jangan gunakan `data.length < totalCount` karena data di layar bisa berisi baris anak (inflated). Gunakan pembanding `page < totalPages` untuk akurasi pemuatan data besar.
-   - Pengurutan data di API harus deterministik: `ORDER BY create_at ASC, faktur ASC, id ASC`.
+8. **Pagination & Running Total Stability**:
+   - Untuk data besar dengan akumulasi finansial (seperti Jurnal Umum), wajib menggunakan **Server-Side Pagination** (bukan infinite scroll) untuk menjaga performa memori browser.
+   - **Carry-over Logic**: API harus menghitung saldo akumulasi (Laba/Rugi, Arus Kas) dari semua transaksi *sebelum* offset halaman saat ini, agar kolom running total tetap akurat saat pengguna berpindah halaman.
+   - **Deterministic Ordering**: Pengurutan data di API harus selalu deterministik: `ORDER BY create_at ASC, faktur ASC, id ASC`.
 9. **Standardisasi Scraper Action (Premium Button)**:
    - Gunakan komponen `DateRangeCard` untuk semua modul penarikan data (Scraper).
    - Tombol aksi wajib menggunakan desain gradient premium (Emerald/Green) dengan ikon `DownloadCloud`.
