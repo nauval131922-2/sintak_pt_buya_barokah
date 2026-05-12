@@ -3,7 +3,6 @@ import db from "@/lib/db";
 import { buildFtsQuery } from "@/lib/fts";
 import { getScrapedPeriodSettingKey, parseScrapedPeriod } from "@/lib/server-scraped-period";
 
-
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
@@ -15,6 +14,9 @@ export async function GET(request: Request) {
     const offset = (page - 1) * limit;
     const fromDate = searchParams.get('from') || '';
     const toDate = searchParams.get('to') || '';
+    
+    const warningOnly = searchParams.get('warning_only') === 'true';
+    const warningFilterSQL = warningOnly ? `WHERE (harga_so_sales_order > 0 AND (harga_so_sales_order < hp OR harga_so_sales_order < hp_rata_rata)) OR (harga_so_penjualan > 0 AND (harga_so_penjualan < hp OR harga_so_penjualan < hp_rata_rata))` : '';
 
     const dateFilterSQL = (fromDate && toDate) 
       ? ` AND (substr(tgl, 7, 4) || '-' || substr(tgl, 4, 2) || '-' || substr(tgl, 1, 2) BETWEEN ? AND ?)`
@@ -29,15 +31,31 @@ export async function GET(request: Request) {
       if (ftsQuery) {
         const ftsResults = await db.batch([
           {
-            sql: `SELECT bj.* FROM barang_jadi bj JOIN barang_jadi_fts fts ON bj.id = fts.rowid
-                  WHERE barang_jadi_fts MATCH ? ${dateFilterSQL}
-                  ORDER BY substr(bj.tgl, 7, 4) DESC, substr(bj.tgl, 4, 2) DESC, substr(bj.tgl, 1, 2) DESC, bj.id DESC
+            sql: `WITH base_query AS (
+                    SELECT bj.*, 
+                      (SELECT SUM(hp_total)*1.0 / NULLIF(SUM(qty), 0) FROM barang_jadi bj_inner WHERE bj_inner.faktur_prd = bj.faktur_prd AND bj_inner.kd_barang = bj.kd_barang) AS hp_rata_rata,
+                      (SELECT harga FROM sales_orders WHERE faktur = bj.faktur_so LIMIT 1) as harga_so_sales_order,
+                      (SELECT harga FROM sales_reports WHERE faktur_so = bj.faktur_so LIMIT 1) as harga_so_penjualan
+                    FROM barang_jadi bj JOIN barang_jadi_fts fts ON bj.id = fts.rowid
+                    WHERE barang_jadi_fts MATCH ? ${dateFilterSQL}
+                  )
+                  SELECT * FROM base_query
+                  ${warningFilterSQL}
+                  ORDER BY substr(tgl, 7, 4) DESC, substr(tgl, 4, 2) DESC, substr(tgl, 1, 2) DESC, id DESC
                   LIMIT ? OFFSET ?`,
             args: [ftsQuery, ...(fromDate && toDate ? [fromDate, toDate] : []), limit, offset]
           },
           {
-            sql: `SELECT COUNT(*) as count FROM barang_jadi bj JOIN barang_jadi_fts fts ON bj.id = fts.rowid
-                  WHERE barang_jadi_fts MATCH ? ${dateFilterSQL}`,
+            sql: `WITH base_query AS (
+                    SELECT bj.*, 
+                      (SELECT SUM(hp_total)*1.0 / NULLIF(SUM(qty), 0) FROM barang_jadi bj_inner WHERE bj_inner.faktur_prd = bj.faktur_prd AND bj_inner.kd_barang = bj.kd_barang) AS hp_rata_rata,
+                      (SELECT harga FROM sales_orders WHERE faktur = bj.faktur_so LIMIT 1) as harga_so_sales_order,
+                      (SELECT harga FROM sales_reports WHERE faktur_so = bj.faktur_so LIMIT 1) as harga_so_penjualan
+                    FROM barang_jadi bj JOIN barang_jadi_fts fts ON bj.id = fts.rowid
+                    WHERE barang_jadi_fts MATCH ? ${dateFilterSQL}
+                  )
+                  SELECT COUNT(*) as count FROM base_query
+                  ${warningFilterSQL}`,
             args: [ftsQuery, ...(fromDate && toDate ? [fromDate, toDate] : [])]
           }
         ], "read");
@@ -54,15 +72,31 @@ export async function GET(request: Request) {
 
         const likeResults = await db.batch([
           {
-            sql: `SELECT * FROM barang_jadi 
-                  WHERE (CAST(id AS TEXT) LIKE ? OR nama_barang LIKE ? OR nama_prd LIKE ? OR kd_barang LIKE ? OR faktur LIKE ? OR faktur_prd LIKE ? OR satuan LIKE ?) ${dateFilterSQL}
+            sql: `WITH base_query AS (
+                    SELECT *, 
+                      (SELECT SUM(hp_total)*1.0 / NULLIF(SUM(qty), 0) FROM barang_jadi bj_inner WHERE bj_inner.faktur_prd = barang_jadi.faktur_prd AND bj_inner.kd_barang = barang_jadi.kd_barang) AS hp_rata_rata,
+                      (SELECT harga FROM sales_orders WHERE faktur = barang_jadi.faktur_so LIMIT 1) as harga_so_sales_order,
+                      (SELECT harga FROM sales_reports WHERE faktur_so = barang_jadi.faktur_so LIMIT 1) as harga_so_penjualan
+                    FROM barang_jadi 
+                    WHERE (CAST(id AS TEXT) LIKE ? OR nama_barang LIKE ? OR nama_prd LIKE ? OR kd_barang LIKE ? OR faktur LIKE ? OR faktur_prd LIKE ? OR satuan LIKE ?) ${dateFilterSQL}
+                  )
+                  SELECT * FROM base_query
+                  ${warningFilterSQL}
                   ORDER BY substr(tgl, 7, 4) DESC, substr(tgl, 4, 2) DESC, substr(tgl, 1, 2) DESC, id DESC 
                   LIMIT ? OFFSET ?`,
             args: [...likeArgs, limit, offset]
           },
           {
-            sql: `SELECT COUNT(*) as count FROM barang_jadi 
-                  WHERE (CAST(id AS TEXT) LIKE ? OR nama_barang LIKE ? OR nama_prd LIKE ? OR kd_barang LIKE ? OR faktur LIKE ? OR faktur_prd LIKE ? OR satuan LIKE ?) ${dateFilterSQL}`,
+            sql: `WITH base_query AS (
+                    SELECT *, 
+                      (SELECT SUM(hp_total)*1.0 / NULLIF(SUM(qty), 0) FROM barang_jadi bj_inner WHERE bj_inner.faktur_prd = barang_jadi.faktur_prd AND bj_inner.kd_barang = barang_jadi.kd_barang) AS hp_rata_rata,
+                      (SELECT harga FROM sales_orders WHERE faktur = barang_jadi.faktur_so LIMIT 1) as harga_so_sales_order,
+                      (SELECT harga FROM sales_reports WHERE faktur_so = barang_jadi.faktur_so LIMIT 1) as harga_so_penjualan
+                    FROM barang_jadi 
+                    WHERE (CAST(id AS TEXT) LIKE ? OR nama_barang LIKE ? OR nama_prd LIKE ? OR kd_barang LIKE ? OR faktur LIKE ? OR faktur_prd LIKE ? OR satuan LIKE ?) ${dateFilterSQL}
+                  )
+                  SELECT COUNT(*) as count FROM base_query
+                  ${warningFilterSQL}`,
             args: likeArgs
           }
         ], "read");
@@ -77,15 +111,31 @@ export async function GET(request: Request) {
 
       const standardResults = await db.batch([
         {
-          sql: `SELECT * FROM barang_jadi 
-                ${(fromDate && toDate) ? `WHERE 1=1 ${dateFilterSQL}` : ''}
+          sql: `WITH base_query AS (
+                  SELECT *, 
+                    (SELECT SUM(hp_total)*1.0 / NULLIF(SUM(qty), 0) FROM barang_jadi bj_inner WHERE bj_inner.faktur_prd = barang_jadi.faktur_prd AND bj_inner.kd_barang = barang_jadi.kd_barang) AS hp_rata_rata,
+                    (SELECT harga FROM sales_orders WHERE faktur = barang_jadi.faktur_so LIMIT 1) as harga_so_sales_order,
+                    (SELECT harga FROM sales_reports WHERE faktur_so = barang_jadi.faktur_so LIMIT 1) as harga_so_penjualan
+                  FROM barang_jadi 
+                  ${(fromDate && toDate) ? `WHERE 1=1 ${dateFilterSQL}` : ''}
+                )
+                SELECT * FROM base_query
+                ${warningFilterSQL}
                 ORDER BY substr(tgl, 7, 4) DESC, substr(tgl, 4, 2) DESC, substr(tgl, 1, 2) DESC, id DESC 
                 LIMIT ? OFFSET ?`,
           args: [...baseArgs, limit, offset]
         },
         {
-          sql: `SELECT COUNT(*) as count FROM barang_jadi
-                ${(fromDate && toDate) ? `WHERE 1=1 ${dateFilterSQL}` : ''}`,
+          sql: `WITH base_query AS (
+                  SELECT *, 
+                    (SELECT SUM(hp_total)*1.0 / NULLIF(SUM(qty), 0) FROM barang_jadi bj_inner WHERE bj_inner.faktur_prd = barang_jadi.faktur_prd AND bj_inner.kd_barang = barang_jadi.kd_barang) AS hp_rata_rata,
+                    (SELECT harga FROM sales_orders WHERE faktur = barang_jadi.faktur_so LIMIT 1) as harga_so_sales_order,
+                    (SELECT harga FROM sales_reports WHERE faktur_so = barang_jadi.faktur_so LIMIT 1) as harga_so_penjualan
+                  FROM barang_jadi
+                  ${(fromDate && toDate) ? `WHERE 1=1 ${dateFilterSQL}` : ''}
+                )
+                SELECT COUNT(*) as count FROM base_query
+                ${warningFilterSQL}`,
           args: baseArgs
         }
       ], "read");
@@ -123,3 +173,4 @@ export async function GET(request: Request) {
     );
   }
 }
+

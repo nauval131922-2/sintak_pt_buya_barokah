@@ -119,13 +119,7 @@ export default function SalesReportClient() {
         if (!res.ok) throw new Error('Gagal memuat data');
         const json = await res.json();
         if (active) {
-          setData(prev => {
-            if (page === 1) return json.data || [];
-            const currentData = prev || [];
-            const newData = json.data || [];
-            const existingIds = new Set(currentData.map((d: any) => d.id));
-            return [...currentData, ...newData.filter((d: any) => !existingIds.has(d.id))];
-          });
+          setData(json.data || []);
           setTotalCount(json.total || 0);
           if (json.scrapedPeriod) setScrapedPeriod(json.scrapedPeriod);
           if (json.lastUpdated) setLastUpdated(formatLastUpdate(new Date(json.lastUpdated)));
@@ -182,14 +176,15 @@ export default function SalesReportClient() {
     } finally { setIsBatching(false); setLoading(false); }
   };
 
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
-    if (scrollHeight - scrollTop <= clientHeight + 300 && !loading && (data?.length || 0) < totalCount) {
-      setPage(prev => prev + 1);
-    }
-  }, [loading, data, totalCount]);
+
 
   const columns = useMemo(() => [
+    {
+      id: 'no',
+      header: 'No.',
+      size: 60,
+      cell: ({ row }: any) => (page - 1) * PAGE_SIZE + row.index + 1
+    },
     {
       accessorKey: 'tgl',
       header: 'Tanggal',
@@ -285,7 +280,7 @@ export default function SalesReportClient() {
       size: 250,
       cell: ({ getValue, row }: any) => <span className={`font-medium transition-colors truncate block ${row.getIsSelected() ? 'text-green-800' : 'text-gray-700'}`}>{String(getValue() || '–')}</span>
     }
-  ], []);
+  ], [page]);
 
   if (!isMounted) return null;
 
@@ -326,8 +321,18 @@ export default function SalesReportClient() {
         </div>
 
         <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden relative">
-          <DataTable columns={columns} data={data || []} isLoading={loading || data === null} totalCount={totalCount} onScroll={handleScroll} selectedIds={selectedIds} onRowClick={handleRowClick} columnWidths={columnWidths} onColumnWidthChange={setColumnWidths} rowHeight="h-11" />
-          <TableFooter totalCount={totalCount} currentCount={data?.length || 0} label="Laporan Penjualan" selectedCount={selectedIds.size} onClearSelection={clearSelection} loadTime={loadTime} />
+          <DataTable columns={columns} data={data || []} isLoading={loading || data === null} totalCount={totalCount} selectedIds={selectedIds} onRowClick={handleRowClick} columnWidths={columnWidths} onColumnWidthChange={setColumnWidths} rowHeight="h-11" />
+          <TableFooter 
+            totalCount={totalCount} 
+            currentCount={data?.length || 0} 
+            label="Laporan Penjualan" 
+            selectedCount={selectedIds.size} 
+            onClearSelection={clearSelection} 
+            loadTime={loadTime} 
+            page={page}
+            totalPages={Math.ceil(totalCount / PAGE_SIZE)}
+            onPageChange={setPage}
+          />
         </div>
       </div>
 

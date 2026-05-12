@@ -53,6 +53,7 @@ export default function BarangJadiClient() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [warningOnly, setWarningOnly] = useState(false);
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
@@ -65,7 +66,7 @@ export default function BarangJadiClient() {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('barangJadi_columnWidths');
       return saved ? JSON.parse(saved) : {
-        id: 80, faktur: 180, tgl: 120, kd_barang: 150, qty: 100, hp_total: 130, username: 130, nama_prd: 300, recid: 80
+        no: 60, faktur: 180, tgl: 120, kd_barang: 150, qty: 100, hp_total: 130, hp_barang_jadi: 130, hp_rata_rata: 130, harga_so_sales_order: 170, harga_so_penjualan: 170, analisa_harga: 320
       };
     }
     return {};
@@ -78,6 +79,10 @@ export default function BarangJadiClient() {
     }, 500);
     return () => clearTimeout(handler);
   }, [searchQuery]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [warningOnly]);
 
   useEffect(() => {
     localStorage.setItem('barangJadi_columnWidths', JSON.stringify(columnWidths));
@@ -113,7 +118,8 @@ export default function BarangJadiClient() {
       try {
         const queryParams = new URLSearchParams({
           page: page.toString(), limit: PAGE_SIZE.toString(), search: debouncedQuery,
-          from: formatDateToYYYYMMDD(startDate), to: formatDateToYYYYMMDD(endDate), _t: Date.now().toString()
+          from: formatDateToYYYYMMDD(startDate), to: formatDateToYYYYMMDD(endDate), _t: Date.now().toString(),
+          warning_only: warningOnly.toString()
         });
         const res = await fetch(`/api/barang-jadi?${queryParams.toString()}`);
         if (res.ok && active) {
@@ -125,11 +131,7 @@ export default function BarangJadiClient() {
                 if (d.raw_data) { try { parsed = JSON.parse(d.raw_data); } catch(e){} }
                 return { ...d, ...parsed };
               });
-              if (page === 1) return processData(json.data);
-              const currentData = prev || [];
-              const newData = processData(json.data);
-              const existingIds = new Set(currentData.map((d: any) => d.id));
-              return [...currentData, ...newData.filter((d: any) => !existingIds.has(d.id))];
+              return processData(json.data);
             });
             setTotalCount(json.total || 0);
             if (json.scrapedPeriod) setScrapedPeriod(json.scrapedPeriod);
@@ -145,7 +147,7 @@ export default function BarangJadiClient() {
     }
     loadData();
     return () => { active = false; };
-  }, [page, debouncedQuery, refreshKey, startDate, endDate, isMounted]);
+  }, [page, debouncedQuery, refreshKey, startDate, endDate, isMounted, warningOnly]);
 
   const [dialog, setDialog] = useState({ isOpen: false, type: 'success' as any, title: '', message: '' });
 
@@ -188,18 +190,15 @@ export default function BarangJadiClient() {
   };
 
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
-    if (scrollHeight - scrollTop <= clientHeight + 300 && !loading && !isBatching && (data?.length || 0) < totalCount) {
-      setPage(prev => prev + 1);
-    }
-  }, [loading, isBatching, data, totalCount]);
+    // No-op for pagination
+  }, []);
 
   const columns = useMemo(() => [
     {
-      accessorKey: 'id',
-      header: 'ID',
-      size: 80,
-      cell: ({ getValue, row }: any) => <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-400'}`}>{String(getValue())}</span>
+      id: 'no',
+      header: 'No.',
+      size: 60,
+      cell: ({ row }: any) => <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-400'}`}>{(page - 1) * PAGE_SIZE + row.index + 1}</span>
     },
     {
       accessorKey: 'faktur',
@@ -229,12 +228,6 @@ export default function BarangJadiClient() {
       accessorKey: 'kd_pelanggan',
       header: 'Pelanggan',
       size: 250,
-      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'}`}>{String(getValue())}</span>
-    },
-    {
-      accessorKey: 'nama_prd',
-      header: 'Produk',
-      size: 300,
       cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'}`}>{String(getValue())}</span>
     },
     {
@@ -286,19 +279,117 @@ export default function BarangJadiClient() {
       size: 250,
       cell: ({ getValue, row }: any) => <span className={`font-medium transition-colors truncate block ${row.getIsSelected() ? 'text-green-800' : 'text-gray-700'}`}>{String(getValue() || '–')}</span>
     },
-    { 
-        accessorKey: 'username', 
-        header: 'User', 
-        size: 130, 
-        cell: ({ getValue }: any) => <span className="text-[11px] font-bold text-gray-400">@{String(getValue() || '–')}</span> 
+    {
+      id: 'hp_barang_jadi',
+      accessorKey: 'hp',
+      header: () => <span className="text-orange-600">HP Barang Jadi</span>,
+      size: 130,
+      meta: { align: 'right', headerBg: '#fff7ed' },
+      cell: ({ getValue, row }: any) => (
+        <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-green-700' : 'text-orange-700'}`}>
+          <span className="text-[10px] opacity-40 mr-1">Rp</span>
+          <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
+        </div>
+      )
     },
-    { 
-        accessorKey: 'recid', 
-        header: 'RecId', 
-        size: 80, 
-        cell: ({ getValue }: any) => <span className="text-[11px] font-semibold text-gray-700/60 tabular-nums">{String(getValue())}</span> 
+    {
+      accessorKey: 'hp_rata_rata',
+      header: () => <span className="text-purple-600">HP Rata-rata</span>,
+      size: 130,
+      meta: { align: 'right', headerBg: '#faf5ff' },
+      cell: ({ getValue, row }: any) => (
+        <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-green-700' : 'text-purple-700'}`}>
+          <span className="text-[10px] opacity-40 mr-1">Rp</span>
+          <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
+        </div>
+      )
+    },
+    {
+      accessorKey: 'harga_so_sales_order',
+      header: () => <span className="text-blue-600">Harga SO (Sales Order)</span>,
+      size: 170,
+      meta: { align: 'right', headerBg: '#eff6ff' },
+      cell: ({ getValue, row }: any) => (
+        <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-green-700' : 'text-blue-700'}`}>
+          <span className="text-[10px] opacity-40 mr-1">Rp</span>
+          <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
+        </div>
+      )
+    },
+    {
+      accessorKey: 'harga_so_penjualan',
+      header: () => <span className="text-teal-600">Harga SO (Penjualan)</span>,
+      size: 170,
+      meta: { align: 'right', headerBg: '#f0fdfa' },
+      cell: ({ getValue, row }: any) => (
+        <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-green-700' : 'text-teal-700'}`}>
+          <span className="text-[10px] opacity-40 mr-1">Rp</span>
+          <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
+        </div>
+      )
+    },
+    {
+      id: 'analisa_harga',
+      header: () => <span className="text-rose-600 font-bold">Analisa Harga</span>,
+      size: 320,
+      meta: { headerBg: '#fff1f2' },
+      cell: ({ row }: any) => {
+        const hp = Number(row.original.hp || 0);
+        const hp_avg = Number(row.original.hp_rata_rata || 0);
+        const so_ord = Number(row.original.harga_so_sales_order || 0);
+        const so_penj = Number(row.original.harga_so_penjualan || 0);
+
+        if (so_ord === 0 && so_penj === 0) {
+          return (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200/60 rounded-md text-[10px] font-bold w-fit shadow-sm">
+              <AlertCircle size={12} />
+              <span>SO Kosong</span>
+            </div>
+          );
+        }
+
+        const formatCurrency = (val: number) => {
+          const absVal = Math.abs(val);
+          return (val < 0 ? '-' : '+') + 'Rp' + absVal.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        };
+
+        const renderBadge = (label: string, diff: number, baseVal: number) => {
+          const isLoss = diff < 0;
+          let percentStr = "";
+          if (baseVal > 0) {
+            const pct = (Math.abs(diff) / baseVal) * 100;
+            percentStr = `(${pct.toFixed(1)}%)`;
+          }
+          return (
+            <div className={`px-2 py-0.5 rounded text-[10px] font-bold shadow-sm flex items-center justify-between border w-full ${isLoss ? 'bg-rose-50 text-rose-700 border-rose-200/60' : 'bg-emerald-50 text-emerald-700 border-emerald-200/60'}`}>
+              <div className="flex items-center gap-1 shrink-0">
+                <span className="text-[10px]">{isLoss ? '⚠️' : '✅'}</span>
+                <span>{label}</span>
+              </div>
+              <span className="font-mono tracking-tighter text-right">{formatCurrency(diff)} <span className="opacity-70 font-sans ml-0.5 text-[9px]">{percentStr}</span></span>
+            </div>
+          );
+        };
+
+        return (
+          <div className="flex flex-col gap-1 py-1 w-[280px]">
+            {so_ord > 0 && (
+              <>
+                {renderBadge("SO vs HP", so_ord - hp, hp)}
+                {renderBadge("SO vs HP Rata-rata", so_ord - hp_avg, hp_avg)}
+              </>
+            )}
+            {so_penj > 0 && (
+              <>
+                {renderBadge("Jual vs HP", so_penj - hp, hp)}
+                {renderBadge("Jual vs HP Rata-rata", so_penj - hp_avg, hp_avg)}
+              </>
+            )}
+          </div>
+        );
+      }
     }
-  ], []);
+  ], [page]);
 
   if (!isMounted) return null;
 
@@ -336,12 +427,52 @@ export default function BarangJadiClient() {
               </div>
             )}
           </div>
-          <SearchAndReload searchQuery={searchQuery} setSearchQuery={setSearchQuery} onReload={() => setRefreshKey(prev => prev + 1)} loading={loading} placeholder="Cari ID, faktur, barang, atau produk..." />
+          <div className="flex items-center gap-2 w-full">
+            <div className="flex-1">
+              <SearchAndReload searchQuery={searchQuery} setSearchQuery={setSearchQuery} onReload={() => setRefreshKey(prev => prev + 1)} loading={loading} placeholder="Cari ID, faktur, barang, atau produk..." />
+            </div>
+            <button
+              onClick={() => setWarningOnly(!warningOnly)}
+              className={`h-[42px] px-4 rounded-xl flex items-center gap-2 transition-all border shrink-0 shadow-sm ${warningOnly ? 'bg-red-500 text-white border-red-600 ring-2 ring-red-500/30 shadow-md font-bold' : 'bg-white text-red-500 border-red-200 hover:bg-red-50 font-medium'}`}
+              title="Filter peringatan"
+            >
+              <span>⚠️</span>
+              <span className="text-[13px] hidden sm:inline">Tampilkan Peringatan</span>
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden relative">
-          <DataTable columns={columns} data={data || []} isLoading={loading} totalCount={totalCount} onScroll={handleScroll} selectedIds={selectedIds} onRowClick={handleRowClick} columnWidths={columnWidths} onColumnWidthChange={setColumnWidths} rowHeight="h-11" />
-          <TableFooter totalCount={totalCount} currentCount={data?.length || 0} label="Penerimaan Barang Hasil Produksi" selectedCount={selectedIds.size} onClearSelection={clearSelection} loadTime={loadTime} />
+          <DataTable 
+            columns={columns} 
+            data={data || []} 
+            isLoading={loading} 
+            totalCount={totalCount} 
+            selectedIds={selectedIds} 
+            onRowClick={handleRowClick} 
+            columnWidths={columnWidths} 
+            onColumnWidthChange={setColumnWidths} 
+            rowHeight="h-auto min-h-[48px] py-2" 
+            getRowClassName={(row: any) => {
+              const hp = Number(row.hp || 0);
+              const hp_avg = Number(row.hp_rata_rata || 0);
+              const so_ord = Number(row.harga_so_sales_order || 0);
+              const so_penj = Number(row.harga_so_penjualan || 0);
+              const hasWarning = (so_ord > 0 && (so_ord < hp || so_ord < hp_avg)) || (so_penj > 0 && (so_penj < hp || so_penj < hp_avg));
+              return hasWarning ? 'bg-rose-50/60 hover:bg-rose-100/60 transition-colors' : '';
+            }}
+          />
+          <TableFooter 
+            totalCount={totalCount} 
+            currentCount={data?.length || 0} 
+            label="Penerimaan Barang Hasil Produksi" 
+            selectedCount={selectedIds.size} 
+            onClearSelection={clearSelection} 
+            loadTime={loadTime}
+            page={page}
+            totalPages={Math.ceil(totalCount / PAGE_SIZE)}
+            onPageChange={(newPage) => setPage(newPage)}
+          />
         </div>
       </div>
 
