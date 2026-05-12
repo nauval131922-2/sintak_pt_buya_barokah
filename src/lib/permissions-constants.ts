@@ -60,6 +60,9 @@ export const MODULE_REGISTRY = [
   { key: 'penjualan_laporan',      label: 'Laporan Penjualan',                group: 'Data Digit - Penjualan' },
   { key: 'penjualan_piutang',      label: 'Pelunasan Piutang',                group: 'Data Digit - Penjualan' },
   { key: 'penjualan_pengiriman',   label: 'Pengiriman (SJ)',                  group: 'Data Digit - Penjualan' },
+
+  // Stok
+  { key: 'stok_master_barang',     label: 'Master Barang',                    group: 'Data Digit - Stok' },
 ] as const;
 
 export type ModuleKey = typeof MODULE_REGISTRY[number]['key'];

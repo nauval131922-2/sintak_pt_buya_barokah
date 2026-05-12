@@ -199,6 +199,13 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
     return permissions[moduleKey] === true;
   };
 
+  const hasSistemAccess = user?.role === 'Super Admin' ||
+    canAccess('tracking_manufaktur') || canAccess('karyawan') ||
+    canAccess('catat_kesalahan') || canAccess('statistik') ||
+    canAccess('hpp_kalkulasi') ||
+    canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp') || canAccess('produksi_jhp_target') || canAccess('produksi_hasil') ||
+    canAccess('kalkulasi_rekap_so');
+
 
 
   // Recursive child check
@@ -375,6 +382,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
 
         {/* DATA DIGIT */}
         {(canAccess('sync') ||
+          canAccess('stok_master_barang') ||
           canAccess('pembelian_pr') || canAccess('pembelian_spph') || canAccess('pembelian_sph_in') ||
           canAccess('pembelian_po') || canAccess('pembelian_penerimaan') || canAccess('pembelian_rekap') || canAccess('pembelian_hutang') ||
           canAccess('produksi_bom') || canAccess('produksi_orders') || canAccess('produksi_bahan_baku') || canAccess('produksi_barang_jadi') ||
@@ -395,6 +403,25 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                 <RefreshCw size={18} />
                 {isExpanded && <span className="truncate">Sinkronisasi All Data</span>}
               </Link>
+            </div>
+          )}
+
+          {/* STOK SECTION */}
+          {canAccess('stok_master_barang') && (
+            <div data-group="Stok">
+              <FlyoutMenu
+                label="Stok"
+                icon={<Box size={18} />}
+                items={[
+                  {
+                    label: 'Data',
+                    icon: <Database size={16} />,
+                    items: [
+                      { label: 'Master Barang', href: '/data-digit/stok/master-barang', icon: <Box size={14} /> }
+                    ]
+                  }
+                ]}
+              />
             </div>
           )}
 
@@ -553,154 +580,158 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
         )}
 
         {/* LABEL MULTI-PURPOSE / MANAGEMENT */}
-        <SectionLabel label="SISTEM" />
+        {hasSistemAccess && (
+          <>
+            <SectionLabel label="SISTEM" />
 
-        {/* UMUM */}
-        {(canAccess('tracking_manufaktur') || canAccess('karyawan')) && (
-          <div className="space-y-1 mb-1" data-group="Umum">
-            <FlyoutMenu
-              label="Umum"
-              icon={<Monitor size={18} />}
-              items={[
-                ...(canAccess('karyawan') ? [{
-                  label: 'Data',
-                  icon: <Database size={16} />,
-                  items: [
-                    { label: 'Karyawan', href: '/employees', icon: <Users size={14} /> }
-                  ]
-                }] : []),
-                ...(canAccess('tracking_manufaktur') ? [{ label: 'Tracking Manufaktur', href: '/tracking-manufaktur', icon: <Search size={16} /> }] : [])
-              ]}
-            />
-          </div>
-        )}
-
-        {/* HRD */}
-        {(canAccess('catat_kesalahan') || canAccess('statistik')) && (
-          <div className="space-y-1 mb-1" data-group="HRD">
-            <FlyoutMenu
-              label="HRD"
-              icon={<Users size={18} />}
-              items={[
-                {
-                  label: 'Kesalahan Karyawan',
-                  icon: <ClipboardCheck size={16} />,
-                  items: [
-                    ...(canAccess('catat_kesalahan') ? [{ label: 'Catat Kesalahan', href: '/records', icon: <ClipboardCheck size={14} /> }] : []),
-                    ...(canAccess('statistik') ? [{ label: 'Statistik Performa', href: '/stats', icon: <BarChart2 size={14} /> }] : []),
-                  ]
-                }
-              ]}
-            />
-          </div>
-        )}
-
-        {/* KALKULASI */}
-        {canAccess('hpp_kalkulasi') && (
-          <div className="space-y-1 mb-1" data-group="Kalkulasi">
-            <FlyoutMenu
-              label="Kalkulasi"
-              icon={<Calculator size={18} />}
-              items={[
-                {
-                  label: 'Data',
-                  icon: <Database size={16} />,
-                  items: [
-                    { label: 'HPP Kalkulasi', href: '/hpp-kalkulasi', icon: <Calculator size={14} /> }
-                  ]
-                }
-              ]}
-            />
-          </div>
-        )}
-
-        {/* PRODUKSI */}
-        {(canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp') || canAccess('produksi_jhp_target') || canAccess('produksi_hasil')) && (
-          <div className="space-y-1 mb-1" data-group="Produksi">
-            <FlyoutMenu
-              id="Produksi Jurnal Harian"
-              label="Produksi"
-              icon={<Package size={18} />}
-              items={[
-                {
-                  label: 'Jurnal Harian Produksi',
-                  icon: <ClipboardList size={16} />,
-                  items: [
-                    ...(canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_stp') ? [{
+            {/* UMUM */}
+            {(canAccess('tracking_manufaktur') || canAccess('karyawan')) && (
+              <div className="space-y-1 mb-1" data-group="Umum">
+                <FlyoutMenu
+                  label="Umum"
+                  icon={<Monitor size={18} />}
+                  items={[
+                    ...(canAccess('karyawan') ? [{
                       label: 'Data',
-                      icon: <Database size={14} />,
+                      icon: <Database size={16} />,
                       items: [
-                        ...(canAccess('produksi_jhp_sopd') ? [{ label: 'SOPd', href: '/jurnal-harian-produksi/data/excel-sopd', icon: <FileText size={12} /> }] : []),
-                        ...(canAccess('produksi_jhp_master_pekerjaan') ? [{ label: 'Master Pekerjaan', href: '/jurnal-harian-produksi/data/master-pekerjaan', icon: <Database size={12} /> }] : []),
+                        { label: 'Karyawan', href: '/employees', icon: <Users size={14} /> }
                       ]
                     }] : []),
-                    ...(canAccess('produksi_jhp') ? [{ label: 'Jurnal Harian Produksi', href: '/jurnal-harian-produksi', icon: <ClipboardList size={14} />, exact: true }] : []),
-                    ...(canAccess('produksi_jhp_target') ? [{ label: 'Target Harian', href: '/jurnal-harian-produksi/target', icon: <TrendingUp size={14} /> }] : []),
-                  ]
-                },
-                ...(canAccess('produksi_hasil') ? [{ label: 'Hasil Produksi', href: '/hasil-produksi', icon: <BarChart3 size={16} /> }] : []),
-              ]}
-            />
-          </div>
-        )}
+                    ...(canAccess('tracking_manufaktur') ? [{ label: 'Tracking Manufaktur', href: '/tracking-manufaktur', icon: <Search size={16} /> }] : [])
+                  ]}
+                />
+              </div>
+            )}
 
-        {/* PENJUALAN */}
-        {canAccess('kalkulasi_rekap_so') && (
-          <div className="space-y-1 mb-1" data-group="Penjualan">
-            <FlyoutMenu
-              id="penjualan_sistem"
-              label="Penjualan"
-              icon={<TrendingUp size={18} />}
-              items={[
-                { label: 'Rekap Sales Order Barang', href: '/rekap-sales-order', icon: <FileCheck size={16} /> }
-              ]}
-            />
-          </div>
-        )}
-
-        {/* SISTEM / USER — Super Admin only */}
-        {user?.role === 'Super Admin' && (
-          <div className="space-y-1 mb-1" data-group="User">
-            <FlyoutMenu
-              label="User"
-              icon={<Settings size={18} />}
-              items={[
-                { label: 'Hak Akses', href: '/roles', icon: <ShieldCheck size={16} /> },
-                { label: 'Kelola User', href: '/users', icon: <UserCog size={16} /> }
-              ]}
-            />
-          </div>
-        )}
-
-        {/* SETTINGS — Super Admin only */}
-        {user?.role === 'Super Admin' && (
-          <div className="space-y-1 mb-1" data-group="Settings">
-            <FlyoutMenu
-              id="settings-menu"
-              label="Settings"
-              icon={<Database size={18} />}
-              items={[
-                {
-                  label: 'Konversi Data',
-                  icon: <RefreshCw size={16} />,
-                  items: [
+            {/* HRD */}
+            {(canAccess('catat_kesalahan') || canAccess('statistik')) && (
+              <div className="space-y-1 mb-1" data-group="HRD">
+                <FlyoutMenu
+                  label="HRD"
+                  icon={<Users size={18} />}
+                  items={[
                     {
-                      label: 'Produksi',
-                      icon: <Package size={14} />,
+                      label: 'Kesalahan Karyawan',
+                      icon: <ClipboardCheck size={16} />,
                       items: [
-                        { 
-                          label: 'SOPd & Jurnal Harian', 
-                          href: '/settings/konversi-data/jurnal-harian-produksi', 
-                          icon: <ClipboardList size={12} />, 
-                          exact: true 
+                        ...(canAccess('catat_kesalahan') ? [{ label: 'Catat Kesalahan', href: '/records', icon: <ClipboardCheck size={14} /> }] : []),
+                        ...(canAccess('statistik') ? [{ label: 'Statistik Performa', href: '/stats', icon: <BarChart2 size={14} /> }] : []),
+                      ]
+                    }
+                  ]}
+                />
+              </div>
+            )}
+
+            {/* KALKULASI */}
+            {canAccess('hpp_kalkulasi') && (
+              <div className="space-y-1 mb-1" data-group="Kalkulasi">
+                <FlyoutMenu
+                  label="Kalkulasi"
+                  icon={<Calculator size={18} />}
+                  items={[
+                    {
+                      label: 'Data',
+                      icon: <Database size={16} />,
+                      items: [
+                        { label: 'HPP Kalkulasi', href: '/hpp-kalkulasi', icon: <Calculator size={14} /> }
+                      ]
+                    }
+                  ]}
+                />
+              </div>
+            )}
+
+            {/* PRODUKSI */}
+            {(canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp') || canAccess('produksi_jhp_target') || canAccess('produksi_hasil')) && (
+              <div className="space-y-1 mb-1" data-group="Produksi">
+                <FlyoutMenu
+                  id="Produksi Jurnal Harian"
+                  label="Produksi"
+                  icon={<Package size={18} />}
+                  items={[
+                    {
+                      label: 'Jurnal Harian Produksi',
+                      icon: <ClipboardList size={16} />,
+                      items: [
+                        ...(canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_stp') ? [{
+                          label: 'Data',
+                          icon: <Database size={14} />,
+                          items: [
+                            ...(canAccess('produksi_jhp_sopd') ? [{ label: 'SOPd', href: '/jurnal-harian-produksi/data/excel-sopd', icon: <FileText size={12} /> }] : []),
+                            ...(canAccess('produksi_jhp_master_pekerjaan') ? [{ label: 'Master Pekerjaan', href: '/jurnal-harian-produksi/data/master-pekerjaan', icon: <Database size={12} /> }] : []),
+                          ]
+                        }] : []),
+                        ...(canAccess('produksi_jhp') ? [{ label: 'Jurnal Harian Produksi', href: '/jurnal-harian-produksi', icon: <ClipboardList size={14} />, exact: true }] : []),
+                        ...(canAccess('produksi_jhp_target') ? [{ label: 'Target Harian', href: '/jurnal-harian-produksi/target', icon: <TrendingUp size={14} /> }] : []),
+                      ]
+                    },
+                    ...(canAccess('produksi_hasil') ? [{ label: 'Hasil Produksi', href: '/hasil-produksi', icon: <BarChart3 size={16} /> }] : []),
+                  ]}
+                />
+              </div>
+            )}
+
+            {/* PENJUALAN */}
+            {canAccess('kalkulasi_rekap_so') && (
+              <div className="space-y-1 mb-1" data-group="Penjualan">
+                <FlyoutMenu
+                  id="penjualan_sistem"
+                  label="Penjualan"
+                  icon={<TrendingUp size={18} />}
+                  items={[
+                    { label: 'Rekap Sales Order Barang', href: '/rekap-sales-order', icon: <FileCheck size={16} /> }
+                  ]}
+                />
+              </div>
+            )}
+
+            {/* SISTEM / USER — Super Admin only */}
+            {user?.role === 'Super Admin' && (
+              <div className="space-y-1 mb-1" data-group="User">
+                <FlyoutMenu
+                  label="User"
+                  icon={<Settings size={18} />}
+                  items={[
+                    { label: 'Hak Akses', href: '/roles', icon: <ShieldCheck size={16} /> },
+                    { label: 'Kelola User', href: '/users', icon: <UserCog size={16} /> }
+                  ]}
+                />
+              </div>
+            )}
+
+            {/* SETTINGS — Super Admin only */}
+            {user?.role === 'Super Admin' && (
+              <div className="space-y-1 mb-1" data-group="Settings">
+                <FlyoutMenu
+                  id="settings-menu"
+                  label="Settings"
+                  icon={<Database size={18} />}
+                  items={[
+                    {
+                      label: 'Konversi Data',
+                      icon: <RefreshCw size={16} />,
+                      items: [
+                        {
+                          label: 'Produksi',
+                          icon: <Package size={14} />,
+                          items: [
+                            { 
+                              label: 'SOPd & Jurnal Harian', 
+                              href: '/settings/konversi-data/jurnal-harian-produksi', 
+                              icon: <ClipboardList size={12} />, 
+                              exact: true 
+                            }
+                          ]
                         }
                       ]
                     }
-                  ]
-                }
-              ]}
-            />
-          </div>
+                  ]}
+                />
+              </div>
+            )}
+          </>
         )}
       </nav>
 
