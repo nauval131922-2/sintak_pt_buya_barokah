@@ -609,6 +609,32 @@ export async function initSchema(db: any) {
       created_at DATETIME,
       updated_at DATETIME,
       fetched_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );`,
+    `CREATE TABLE IF NOT EXISTS stok_master_barang (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      kode TEXT UNIQUE NOT NULL,
+      barcode TEXT,
+      nama TEXT,
+      kd_satuan TEXT,
+      spesifikasi TEXT,
+      berat_kg REAL,
+      kd_golongan TEXT,
+      kd_kelompok TEXT,
+      tampil TEXT,
+      prd_std TEXT,
+      saldo REAL,
+      qty_order REAL,
+      hj_ppn TEXT,
+      ppn REAL,
+      status TEXT,
+      pj_hide TEXT,
+      royalti TEXT,
+      create_at DATETIME,
+      updated_at DATETIME,
+      username TEXT,
+      recid TEXT,
+      raw_data TEXT,
+      fetched_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`
   ], "write");
 
@@ -795,6 +821,32 @@ export async function initSchema(db: any) {
       target REAL,
       realisasi REAL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );`,
+    `CREATE TABLE IF NOT EXISTS stok_master_barang (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      kode TEXT UNIQUE NOT NULL,
+      barcode TEXT,
+      nama TEXT,
+      kd_satuan TEXT,
+      spesifikasi TEXT,
+      berat_kg REAL,
+      kd_golongan TEXT,
+      kd_kelompok TEXT,
+      tampil TEXT,
+      prd_std TEXT,
+      saldo REAL,
+      qty_order REAL,
+      hj_ppn TEXT,
+      ppn REAL,
+      status TEXT,
+      pj_hide TEXT,
+      royalti TEXT,
+      create_at DATETIME,
+      updated_at DATETIME,
+      username TEXT,
+      recid TEXT,
+      raw_data TEXT,
+      fetched_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`
   ];
 
