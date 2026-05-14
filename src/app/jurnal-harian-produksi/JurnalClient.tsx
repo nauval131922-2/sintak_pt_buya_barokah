@@ -64,6 +64,16 @@ export default function JurnalClient({
   const [hasCopiedToday, setHasCopiedToday] = useState(true);
   const [isCopyingJadwal, setIsCopyingJadwal] = useState(false);
 
+  // Copy Jadwal Modal state
+  const [showCopyModal, setShowCopyModal] = useState(false);
+  const [copyFrom, setCopyFrom] = useState<Date | null>(null);
+  const [copyTo, setCopyTo] = useState<Date | null>(null);
+  const [copyBagian, setCopyBagian] = useState('');
+  const [copyKaryawan, setCopyKaryawan] = useState('');
+  const [copyModalError, setCopyModalError] = useState('');
+  const [copyBagianSearch, setCopyBagianSearch] = useState('');
+  const [copyKaryawanSearch, setCopyKaryawanSearch] = useState('');
+
   // Search & Pagination
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
@@ -386,31 +396,40 @@ export default function JurnalClient({
   }, [refreshKey, canInputTarget]);
 
   const handleCopyJadwal = async () => {
-    if (!window.confirm('Yakin ingin menyalin seluruh jadwal HARI INI ke BESOK? Aksi ini akan menambah data jadwal baru untuk besok.')) return;
+    if (!copyFrom || !copyTo) {
+      setCopyModalError('Tanggal dari dan ke wajib diisi.');
+      return;
+    }
+    setCopyModalError('');
     setIsCopyingJadwal(true);
     try {
-      const today = new Date();
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      
-      const todayStr = today.toISOString().split('T')[0];
-      const tomorrowStr = tomorrow.toISOString().split('T')[0];
+      const fmtDate = (d: Date) => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+      };
 
       const res = await fetch('/api/jurnal-harian-produksi/copy-jadwal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ today: todayStr, tomorrow: tomorrowStr })
+        body: JSON.stringify({
+          from: fmtDate(copyFrom),
+          to: fmtDate(copyTo),
+          ...(copyBagian ? { bagian: copyBagian } : {}),
+          ...(copyKaryawan ? { namaKaryawan: copyKaryawan } : {}),
+        })
       });
       const result = await res.json();
       if (result.success) {
-        showMessage('success', `Berhasil menyalin ${result.count} jadwal ke tanggal besok.`);
-        setHasCopiedToday(true);
+        showMessage('success', `Berhasil menyalin ${result.count} jadwal ke ${fmtDate(copyTo)}.`);
+        setShowCopyModal(false);
         setRefreshKey(k => k + 1);
       } else {
-        showMessage('error', result.error || 'Gagal menyalin jadwal');
+        setCopyModalError(result.error || 'Gagal menyalin jadwal');
       }
     } catch (err: any) {
-      showMessage('error', 'Terjadi kesalahan sistem');
+      setCopyModalError('Terjadi kesalahan sistem');
     } finally {
       setIsCopyingJadwal(false);
     }
@@ -1033,15 +1052,27 @@ export default function JurnalClient({
                   <span>Jurnal Harian Produksi</span>
                   
                   {/* Copy Jadwal Button */}
-                  {canCopyJadwal && !hasCopiedToday && (
+                  {canCopyJadwal && (
                     <button 
-                      onClick={handleCopyJadwal} 
-                      disabled={isCopyingJadwal}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 text-[11px] font-bold rounded-lg border border-blue-200 transition-all ml-2 disabled:opacity-50"
-                      title="Copy seluruh jadwal hari ini ke besok"
+                      onClick={() => {
+                        // Pre-fill from = today, to = tomorrow
+                        const today = new Date();
+                        const tomorrow = new Date(today);
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+                        setCopyFrom(today);
+                        setCopyTo(tomorrow);
+                        setCopyBagian('');
+                        setCopyKaryawan('');
+                        setCopyModalError('');
+                        setCopyBagianSearch('');
+                        setCopyKaryawanSearch('');
+                        setShowCopyModal(true);
+                      }}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-green-50 hover:bg-green-100 text-green-600 text-[11px] font-bold rounded-lg border border-green-200 transition-all ml-2"
+                      title="Copy jadwal ke tanggal lain"
                     >
-                      {isCopyingJadwal ? <Loader2 size={12} className="animate-spin" /> : <Copy size={12} />}
-                      Copy Jadwal Besok
+                      <Copy size={12} />
+                      Copy Jadwal
                     </button>
                   )}
                </div>
@@ -1519,6 +1550,236 @@ export default function JurnalClient({
           </form>
         )}
       </div> {/* CLOSES activeTab === 'form' */}
+
+      {/* ===== COPY JADWAL MODAL ===== */}
+      {showCopyModal && (
+        <div
+          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setShowCopyModal(false)}
+        >
+          <div
+            className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-green-50 to-emerald-50 shrink-0 rounded-t-2xl">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-green-100 text-green-600 flex items-center justify-center">
+                  <Copy size={18} />
+                </div>
+                <div>
+                  <h3 className="text-[15px] font-bold text-gray-800 tracking-tight">Copy Jadwal</h3>
+                  <p className="text-[11px] text-gray-500 font-medium">Salin jadwal dari satu tanggal ke tanggal lain</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowCopyModal(false)}
+                className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white/80 transition-all"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Body — scrollable */}
+            <div className="px-6 py-5 flex flex-col gap-5 overflow-y-auto">
+              
+              {/* Tanggal Dari & Ke */}
+              <div className="flex items-end gap-4">
+                <div className="flex-1">
+                  <label className="block text-[12px] font-bold text-gray-600 mb-2">
+                    Copy Dari Tanggal <span className="text-rose-400">*</span>
+                  </label>
+                  <DatePicker
+                    name="copyFrom"
+                    value={copyFrom}
+                    onChange={d => setCopyFrom(d)}
+                  />
+                </div>
+                <div className="flex items-center pb-3 shrink-0">
+                  <div className="w-6 h-0.5 bg-green-200 rounded-full" />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-[12px] font-bold text-gray-600 mb-2">
+                    Ke Tanggal <span className="text-rose-400">*</span>
+                  </label>
+                  <DatePicker
+                    name="copyTo"
+                    value={copyTo}
+                    onChange={d => setCopyTo(d)}
+                  />
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-gray-100" />
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Filter Opsional</span>
+                <div className="flex-1 h-px bg-gray-100" />
+              </div>
+
+              {/* Filter Bagian — inline select with search */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[12px] font-bold text-gray-600">Filter Bagian</label>
+                  {copyBagian && (
+                    <button
+                      type="button"
+                      onClick={() => { setCopyBagian(''); setCopyKaryawan(''); setCopyBagianSearch(''); }}
+                      className="flex items-center gap-1 text-[10px] font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2 py-0.5 rounded-md transition-all"
+                    >
+                      <X size={10} /> Hapus filter
+                    </button>
+                  )}
+                </div>
+                {/* Search input */}
+                <div className="relative mb-2">
+                  <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Cari bagian..."
+                    value={copyBagianSearch}
+                    onChange={e => setCopyBagianSearch(e.target.value)}
+                    className="w-full pl-8 pr-3 py-2 text-[12px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-green-400 focus:outline-none transition-all"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-1.5 max-h-[140px] overflow-y-auto pr-1 custom-scrollbar">
+                  {bagianOptions
+                    .filter(opt => opt.toLowerCase().includes(copyBagianSearch.toLowerCase()))
+                    .map(opt => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => { setCopyBagian(copyBagian === opt ? '' : opt); setCopyKaryawan(''); }}
+                      className={`px-3 py-2 rounded-lg text-[12px] font-bold text-left transition-all border ${
+                        copyBagian === opt
+                          ? 'bg-green-600 text-white border-green-700 shadow-sm'
+                          : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-green-50 hover:text-green-700 hover:border-green-200'
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                  {bagianOptions.filter(opt => opt.toLowerCase().includes(copyBagianSearch.toLowerCase())).length === 0 && (
+                    <p className="col-span-2 text-[11px] text-gray-400 italic py-2 px-1">Tidak ditemukan</p>
+                  )}
+                </div>
+                {copyBagian && (
+                  <p className="text-[10px] text-green-600 font-semibold mt-2 ml-0.5">
+                    ✓ Hanya bagian <b>{copyBagian}</b> yang akan disalin
+                  </p>
+                )}
+              </div>
+
+              {/* Filter Karyawan — inline select with search */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[12px] font-bold text-gray-600">Filter Karyawan</label>
+                  {copyKaryawan && (
+                    <button
+                      type="button"
+                      onClick={() => setCopyKaryawan('')}
+                      className="flex items-center gap-1 text-[10px] font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2 py-0.5 rounded-md transition-all"
+                    >
+                      <X size={10} /> Hapus filter
+                    </button>
+                  )}
+                </div>
+                {(() => {
+                  const karyawanList = (copyBagian
+                    ? allNamaOptions.filter(k => k.bagian === copyBagian).map(k => k.nama)
+                    : namaOptions
+                  ).filter(nama => nama.toLowerCase().includes(copyKaryawanSearch.toLowerCase()));
+                  const allList = copyBagian
+                    ? allNamaOptions.filter(k => k.bagian === copyBagian).map(k => k.nama)
+                    : namaOptions;
+                  return allList.length === 0 ? (
+                    <p className="text-[11px] text-gray-400 font-medium italic px-1">
+                      {copyBagian ? `Tidak ada karyawan di bagian ${copyBagian}` : 'Tidak ada data karyawan'}
+                    </p>
+                  ) : (
+                    <>
+                      {/* Search input */}
+                      <div className="relative mb-2">
+                        <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                        <input
+                          type="text"
+                          placeholder="Cari karyawan..."
+                          value={copyKaryawanSearch}
+                          onChange={e => setCopyKaryawanSearch(e.target.value)}
+                          className="w-full pl-8 pr-3 py-2 text-[12px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-green-400 focus:outline-none transition-all"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1 max-h-[140px] overflow-y-auto pr-1 custom-scrollbar">
+                        {karyawanList.length === 0 ? (
+                          <p className="text-[11px] text-gray-400 italic py-1 px-1">Tidak ditemukan</p>
+                        ) : karyawanList.map(nama => (
+                          <button
+                            key={nama}
+                            type="button"
+                            onClick={() => setCopyKaryawan(copyKaryawan === nama ? '' : nama)}
+                            className={`px-3 py-2 rounded-lg text-[12px] font-semibold text-left transition-all border ${
+                              copyKaryawan === nama
+                                ? 'bg-green-600 text-white border-green-700 shadow-sm'
+                                : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-green-50 hover:text-green-700 hover:border-green-200'
+                            }`}
+                          >
+                            {nama}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  );
+                })()}
+                {copyKaryawan && (
+                  <p className="text-[10px] text-green-600 font-semibold mt-2 ml-0.5">
+                    ✓ Hanya karyawan <b>{copyKaryawan}</b> yang akan disalin
+                  </p>
+                )}
+              </div>
+
+              {/* Clear all filters */}
+              {(copyBagian || copyKaryawan) && (
+                <button
+                  type="button"
+                  onClick={() => { setCopyBagian(''); setCopyKaryawan(''); }}
+                  className="self-start flex items-center gap-1.5 text-[11px] font-bold text-gray-400 hover:text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-lg border border-transparent hover:border-rose-100 transition-all -mt-2"
+                >
+                  <X size={12} /> Hapus semua filter
+                </button>
+              )}
+
+              {/* Error Message */}
+              {copyModalError && (
+                <div className="flex items-start gap-2.5 p-3 bg-rose-50 border border-rose-200 rounded-xl animate-in fade-in duration-200">
+                  <AlertCircle size={16} className="text-rose-500 shrink-0 mt-0.5" />
+                  <p className="text-[12px] font-semibold text-rose-700">{copyModalError}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50 shrink-0 rounded-b-2xl">
+              <button
+                onClick={() => setShowCopyModal(false)}
+                className="px-5 py-2.5 text-[13px] font-bold text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 rounded-xl border border-gray-200 transition-all"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleCopyJadwal}
+                disabled={isCopyingJadwal || !copyFrom || !copyTo}
+                className="px-6 py-2.5 text-[13px] font-bold text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 rounded-xl shadow-sm transition-all flex items-center gap-2"
+              >
+                {isCopyingJadwal ? (
+                  <><Loader2 size={15} className="animate-spin" /> Menyalin...</>
+                ) : (
+                  <><Copy size={15} /> Salin Jadwal</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

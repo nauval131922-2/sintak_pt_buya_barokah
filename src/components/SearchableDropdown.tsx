@@ -177,7 +177,7 @@ export default function SearchableDropdown({
           id={`dropdown-panel-${id}`}
           role="listbox"
           aria-label={label}
-          className={`absolute top-[calc(100%+8px)] left-0 ${panelWidth ?? triggerWidth} bg-white border border-gray-100 rounded-xl shadow-md shadow-green-900/10 py-3 z-[100] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col max-h-[350px]`}
+          className={`absolute top-[calc(100%+8px)] left-0 ${panelWidth ?? triggerWidth} bg-white border border-gray-100 rounded-xl shadow-md shadow-green-900/10 py-3 z-[400] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col max-h-[350px]`}
           style={{ minWidth: '220px' }}
         >
           {/* Search */}
