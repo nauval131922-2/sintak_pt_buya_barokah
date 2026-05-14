@@ -16,7 +16,13 @@ export async function GET(request: Request) {
     const toDate = searchParams.get('to') || '';
     
     const warningOnly = searchParams.get('warning_only') === 'true';
-    const warningFilterSQL = warningOnly ? `WHERE (harga_so_sales_order > 0 AND (harga_so_sales_order < hp OR harga_so_sales_order < hp_rata_rata)) OR (harga_so_penjualan > 0 AND (harga_so_penjualan < hp OR harga_so_penjualan < hp_rata_rata))` : '';
+    const soOnly = searchParams.get('so_only') === 'true';
+
+    const warningFilterSQL = warningOnly ? `(harga_so_sales_order > 0 AND (harga_so_sales_order < hp OR harga_so_sales_order < hp_rata_rata)) OR (harga_so_penjualan > 0 AND (harga_so_penjualan < hp OR harga_so_penjualan < hp_rata_rata))` : '';
+    const soFilterSQL = soOnly ? `(faktur_so IS NOT NULL AND TRIM(faktur_so) NOT IN ('', '-', '–', '—'))` : '';
+
+    const combinedFilters = [warningFilterSQL, soFilterSQL].filter(f => f !== '');
+    const finalFilterSQL = combinedFilters.length > 0 ? `WHERE ` + combinedFilters.map(f => `(${f})`).join(' AND ') : '';
 
     const dateFilterSQL = (fromDate && toDate) 
       ? ` AND (substr(tgl, 7, 4) || '-' || substr(tgl, 4, 2) || '-' || substr(tgl, 1, 2) BETWEEN ? AND ?)`
@@ -40,7 +46,7 @@ export async function GET(request: Request) {
                     WHERE barang_jadi_fts MATCH ? ${dateFilterSQL}
                   )
                   SELECT * FROM base_query
-                  ${warningFilterSQL}
+                  ${finalFilterSQL}
                   ORDER BY substr(tgl, 7, 4) DESC, substr(tgl, 4, 2) DESC, substr(tgl, 1, 2) DESC, id DESC
                   LIMIT ? OFFSET ?`,
             args: [ftsQuery, ...(fromDate && toDate ? [fromDate, toDate] : []), limit, offset]
@@ -55,7 +61,7 @@ export async function GET(request: Request) {
                     WHERE barang_jadi_fts MATCH ? ${dateFilterSQL}
                   )
                   SELECT COUNT(*) as count FROM base_query
-                  ${warningFilterSQL}`,
+                  ${finalFilterSQL}`,
             args: [ftsQuery, ...(fromDate && toDate ? [fromDate, toDate] : [])]
           }
         ], "read");
@@ -81,7 +87,7 @@ export async function GET(request: Request) {
                     WHERE (CAST(id AS TEXT) LIKE ? OR nama_barang LIKE ? OR nama_prd LIKE ? OR kd_barang LIKE ? OR faktur LIKE ? OR faktur_prd LIKE ? OR satuan LIKE ?) ${dateFilterSQL}
                   )
                   SELECT * FROM base_query
-                  ${warningFilterSQL}
+                  ${finalFilterSQL}
                   ORDER BY substr(tgl, 7, 4) DESC, substr(tgl, 4, 2) DESC, substr(tgl, 1, 2) DESC, id DESC 
                   LIMIT ? OFFSET ?`,
             args: [...likeArgs, limit, offset]
@@ -96,7 +102,7 @@ export async function GET(request: Request) {
                     WHERE (CAST(id AS TEXT) LIKE ? OR nama_barang LIKE ? OR nama_prd LIKE ? OR kd_barang LIKE ? OR faktur LIKE ? OR faktur_prd LIKE ? OR satuan LIKE ?) ${dateFilterSQL}
                   )
                   SELECT COUNT(*) as count FROM base_query
-                  ${warningFilterSQL}`,
+                  ${finalFilterSQL}`,
             args: likeArgs
           }
         ], "read");
@@ -120,7 +126,7 @@ export async function GET(request: Request) {
                   ${(fromDate && toDate) ? `WHERE 1=1 ${dateFilterSQL}` : ''}
                 )
                 SELECT * FROM base_query
-                ${warningFilterSQL}
+                ${finalFilterSQL}
                 ORDER BY substr(tgl, 7, 4) DESC, substr(tgl, 4, 2) DESC, substr(tgl, 1, 2) DESC, id DESC 
                 LIMIT ? OFFSET ?`,
           args: [...baseArgs, limit, offset]
@@ -135,7 +141,7 @@ export async function GET(request: Request) {
                   ${(fromDate && toDate) ? `WHERE 1=1 ${dateFilterSQL}` : ''}
                 )
                 SELECT COUNT(*) as count FROM base_query
-                ${warningFilterSQL}`,
+                ${finalFilterSQL}`,
           args: baseArgs
         }
       ], "read");

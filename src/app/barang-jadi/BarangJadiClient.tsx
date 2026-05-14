@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { Loader2, Search, AlertCircle, Clock, RefreshCw } from 'lucide-react';
+import { Loader2, Search, AlertCircle, Clock, RefreshCw, Copy, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ColumnDef } from '@tanstack/react-table';
 
@@ -37,6 +37,65 @@ function formatIndoDateStr(tglStr: string) {
 
 const PAGE_SIZE = 50;
 
+const CopyableFakturCell = ({ value, isSelected }: { value: string, isSelected: boolean }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = value || '';
+    const textToCopy = (tempDiv.textContent || tempDiv.innerText || "").trim();
+    
+    if (!textToCopy || textToCopy === '–' || textToCopy === '-' || textToCopy === '---') return;
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(textToCopy);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = textToCopy;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Copy failed', err);
+    }
+  };
+
+  const textValue = (value || '').replace(/<[^>]*>/g, '').trim();
+  const hasValue = textValue && textValue !== '–' && textValue !== '-' && textValue !== '---';
+
+  return (
+    <div className="flex items-center justify-between group w-full">
+      <div 
+        className={`font-bold tracking-tight transition-colors truncate flex-1 ${isSelected ? 'text-green-600' : 'text-gray-500'}`} 
+        dangerouslySetInnerHTML={{ __html: value || '–' }} 
+      />
+      {hasValue && (
+        <button
+          onClick={handleCopy}
+          className={`p-1.5 rounded-md transition-all ml-2 shrink-0 ${
+            copied 
+              ? 'text-green-600 bg-green-50 opacity-100' 
+              : 'opacity-0 group-hover:opacity-100 text-gray-400 hover:text-green-600 hover:bg-gray-100'
+          }`}
+          title="Salin Faktur SO"
+        >
+          {copied ? <Check size={14} /> : <Copy size={14} />}
+        </button>
+      )}
+    </div>
+  );
+};
+
 export default function BarangJadiClient() {
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
@@ -54,6 +113,7 @@ export default function BarangJadiClient() {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [warningOnly, setWarningOnly] = useState(false);
+  const [soOnly, setSoOnly] = useState(false);
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
@@ -82,7 +142,7 @@ export default function BarangJadiClient() {
 
   useEffect(() => {
     setPage(1);
-  }, [warningOnly]);
+  }, [warningOnly, soOnly]);
 
   useEffect(() => {
     localStorage.setItem('barangJadi_columnWidths', JSON.stringify(columnWidths));
@@ -119,7 +179,8 @@ export default function BarangJadiClient() {
         const queryParams = new URLSearchParams({
           page: page.toString(), limit: PAGE_SIZE.toString(), search: debouncedQuery,
           from: formatDateToYYYYMMDD(startDate), to: formatDateToYYYYMMDD(endDate), _t: Date.now().toString(),
-          warning_only: warningOnly.toString()
+          warning_only: warningOnly.toString(),
+          so_only: soOnly.toString()
         });
         const res = await fetch(`/api/barang-jadi?${queryParams.toString()}`);
         if (res.ok && active) {
@@ -147,7 +208,7 @@ export default function BarangJadiClient() {
     }
     loadData();
     return () => { active = false; };
-  }, [page, debouncedQuery, refreshKey, startDate, endDate, isMounted, warningOnly]);
+  }, [page, debouncedQuery, refreshKey, startDate, endDate, isMounted, warningOnly, soOnly]);
 
   const [dialog, setDialog] = useState({ isOpen: false, type: 'success' as any, title: '', message: '' });
 
@@ -222,7 +283,7 @@ export default function BarangJadiClient() {
       accessorKey: 'faktur_so',
       header: 'Faktur SO',
       size: 200,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-green-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <CopyableFakturCell value={String(getValue() || '')} isSelected={row.getIsSelected()} />
     },
     {
       accessorKey: 'kd_pelanggan',
@@ -309,24 +370,40 @@ export default function BarangJadiClient() {
       header: () => <span className="text-blue-600">Harga SO (Sales Order)</span>,
       size: 170,
       meta: { align: 'right', headerBg: '#eff6ff' },
-      cell: ({ getValue, row }: any) => (
-        <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-green-700' : 'text-blue-700'}`}>
-          <span className="text-[10px] opacity-40 mr-1">Rp</span>
-          <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
-        </div>
-      )
+      cell: ({ getValue, row }: any) => {
+        const val = Number(getValue() || 0);
+        const fakturSo = String(row.original.faktur_so || '').trim();
+        const hasNoSo = fakturSo === '' || fakturSo === '–' || fakturSo === '-';
+
+        if (hasNoSo && val === 0) {
+           return <span className="text-[10px] font-bold text-gray-300 italic">Tidak ada SO</span>;
+        }
+
+        return (
+          <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-green-700' : 'text-blue-700'}`}>
+            <span className="text-[10px] opacity-40 mr-1">Rp</span>
+            <span>{val.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
+          </div>
+        );
+      }
     },
     {
       accessorKey: 'harga_so_penjualan',
       header: () => <span className="text-teal-600">Harga SO (Penjualan)</span>,
       size: 170,
       meta: { align: 'right', headerBg: '#f0fdfa' },
-      cell: ({ getValue, row }: any) => (
-        <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-green-700' : 'text-teal-700'}`}>
-          <span className="text-[10px] opacity-40 mr-1">Rp</span>
-          <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
-        </div>
-      )
+      cell: ({ getValue, row }: any) => {
+        const val = Number(getValue() || 0);
+        if (val === 0) {
+           return <span className="text-[10px] font-bold text-teal-400/60 italic leading-tight">Belum dilakukan transaksi Penjualan</span>;
+        }
+        return (
+          <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-green-700' : 'text-teal-700'}`}>
+            <span className="text-[10px] opacity-40 mr-1">Rp</span>
+            <span>{val.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
+          </div>
+        );
+      }
     },
     {
       id: 'analisa_harga',
@@ -375,13 +452,13 @@ export default function BarangJadiClient() {
           <div className="flex flex-col gap-1 py-1 w-[280px]">
             {so_ord > 0 && (
               <>
-                {renderBadge("SO vs HP", so_ord - hp, hp)}
+                {renderBadge("SO vs HP Barang Jadi", so_ord - hp, hp)}
                 {renderBadge("SO vs HP Rata-rata", so_ord - hp_avg, hp_avg)}
               </>
             )}
             {so_penj > 0 && (
               <>
-                {renderBadge("Jual vs HP", so_penj - hp, hp)}
+                {renderBadge("Jual vs HP Barang Jadi", so_penj - hp, hp)}
                 {renderBadge("Jual vs HP Rata-rata", so_penj - hp_avg, hp_avg)}
               </>
             )}
@@ -438,6 +515,15 @@ export default function BarangJadiClient() {
             >
               <span>⚠️</span>
               <span className="text-[13px] hidden sm:inline">Tampilkan Peringatan</span>
+            </button>
+
+            <button
+              onClick={() => setSoOnly(!soOnly)}
+              className={`h-[42px] px-4 rounded-xl flex items-center gap-2 transition-all border shrink-0 shadow-sm ${soOnly ? 'bg-blue-600 text-white border-blue-700 ring-2 ring-blue-500/30 shadow-md font-bold' : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50 font-medium'}`}
+              title="Hanya tampilkan yang ada SO"
+            >
+              <span>📋</span>
+              <span className="text-[13px] hidden sm:inline">Hanya Ada SO</span>
             </button>
           </div>
         </div>
