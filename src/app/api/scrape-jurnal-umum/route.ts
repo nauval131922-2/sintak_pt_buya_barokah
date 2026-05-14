@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { clearCachedSession, getSession as getScraperSession } from "@/lib/session-cache";
 import { encodeScrapedPeriod, getScrapedPeriodSettingKey } from "@/lib/server-scraped-period";
+import { getSession } from "@/lib/session";
 
 export const dynamic = 'force-dynamic';
 
@@ -215,6 +216,26 @@ export async function GET(req: NextRequest) {
         args: [getScrapedPeriodSettingKey("last_scrape_jurnal_umum"), encodeScrapedPeriod({ start: metaStart, end: metaEnd })]
       }
     ], "write");
+
+    // Catat aktivitas scraping ke activity_logs
+    try {
+      const session = await getSession();
+      const actor = session?.username || 'System';
+      await db.execute({
+        sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
+              VALUES (?, ?, ?, ?, ?, ?)`,
+        args: [
+          'SCRAPE',
+          'jurnal_umum',
+          0,
+          `Tarik data Jurnal Umum: ${rows.length} transaksi (${metaStart} s/d ${metaEnd})`,
+          JSON.stringify({ total: rows.length, start: metaStart, end: metaEnd }),
+          actor
+        ]
+      });
+    } catch (_) {
+      // Jangan gagalkan response jika logging error
+    }
 
     return NextResponse.json({
       success: true,

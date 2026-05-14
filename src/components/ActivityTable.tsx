@@ -59,12 +59,14 @@ export default function ActivityTable({ initialLogs }: { initialLogs: any[] }) {
       const action = String(log.action_type || '').toLowerCase();
       const table = String(log.table_name || '').toLowerCase();
       const user = String(log.recorded_by || '').toLowerCase();
+      const userName = String(log.recorded_by_name || '').toLowerCase();
       const raw = String(log.raw_data || '').toLowerCase();
       
       return msg.includes(term) || 
              action.includes(term) || 
              table.includes(term) || 
              user.includes(term) ||
+             userName.includes(term) ||
              raw.includes(term);
     });
   }, [initialLogs, search]);
@@ -118,7 +120,8 @@ export default function ActivityTable({ initialLogs }: { initialLogs: any[] }) {
       (log.action_type || '').toLowerCase().includes(term) ||
       (log.table_name || '').toLowerCase().includes(term) ||
       (log.message || '').toLowerCase().includes(term) ||
-      (log.recorded_by || '').toLowerCase().includes(term);
+      (log.recorded_by || '').toLowerCase().includes(term) ||
+      (log.recorded_by_name || '').toLowerCase().includes(term);
     if (directMatch) return [];
     try {
       const parsed = JSON.parse(log.raw_data);
@@ -213,6 +216,9 @@ export default function ActivityTable({ initialLogs }: { initialLogs: any[] }) {
                         <span className="w-1.5 h-1.5 bg-black/20 shrink-0"></span>
                          <span className="flex items-center gap-1.5 text-gray-400">
                            Oleh: <span className="font-bold text-gray-700">@{log.recorded_by || 'system'}</span>
+                           {log.recorded_by_name && (
+                             <span className="text-[10px] text-gray-400 font-medium tracking-tight">({log.recorded_by_name})</span>
+                           )}
                          </span>
                       </div>
                       {/* Snapshot match hints */}
@@ -298,7 +304,11 @@ export default function ActivityTable({ initialLogs }: { initialLogs: any[] }) {
                     <UserIcon size={14} className="text-gray-400" />
                     <span className="text-[10px] text-gray-400 font-bold tracking-wide">Pelaku</span>
                   </div>
-                  <p className="text-sm font-bold text-gray-700">{selectedLog.recorded_by || 'System'}</p>
+                  <p className="text-sm font-bold text-gray-700">
+                    {selectedLog.recorded_by_name 
+                      ? `${selectedLog.recorded_by_name} (@${selectedLog.recorded_by})` 
+                      : (selectedLog.recorded_by || 'System')}
+                  </p>
                 </div>
                 <div className="bg-gray-50 rounded-[12px] p-3 border border-gray-100">
                   <div className="flex items-center gap-2 mb-1">

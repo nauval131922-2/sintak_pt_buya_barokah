@@ -349,9 +349,10 @@ export async function getActivityLogs(limit = 1000) {
   const [recordsResult] = await db.batch([
     {
       sql: `
-        SELECT *
-        FROM activity_logs
-        ORDER BY created_at DESC
+        SELECT al.*, u.name as recorded_by_name
+        FROM activity_logs al
+        LEFT JOIN users u ON al.recorded_by = u.username
+        ORDER BY al.created_at DESC
         LIMIT ?
       `,
       args: [limit]
