@@ -63,6 +63,8 @@
 - [x] Implementasi Akurasi Carry-over Running Total Jurnal Umum — 2026-05-12
 - [x] Implementasi Modul Master Barang (Scraper & UI) — 2026-05-12
 - [x] Optimasi API Barang Jadi & Stabilitas Sales Report — 2026-05-12
+- [x] Implementasi Penyalinan Jadwal Fleksibel (Modal, Filter Search, Green Theme) — 2026-05-14
+- [x] Implementasi Audit Log Scraping Jurnal Umum & Standarisasi DEV_RULES — 2026-05-14
 
 ---
 
@@ -82,12 +84,12 @@
 ## 📊 Statistik
 
 ```
-Total task    : 71
-Selesai       : 67
+Total task    : 73
+Selesai       : 69
 In progress   : 2
 Backlog       : 2
 Bug diketahui : 0
-Progress      : 94%
+Progress      : 95%
 ```
 
 ---

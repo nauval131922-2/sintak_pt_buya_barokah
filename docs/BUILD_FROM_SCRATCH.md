@@ -43,7 +43,7 @@ SINTAK ERP kini menggunakan identitas visual **Modern Premium** (evolusi dari Ne
 1. **Geometry**: Gunakan **`rounded-xl`** (12px) atau **`rounded-2xl`** (16px) pada elemen utama seperti Button, Card, Input, dan Modal. Hindari sudut tajam.
 2. **Typography (No All-Caps Policy)**: Dilarang menggunakan `uppercase` secara paksa pada label, tombol, judul profil, maupun pesan status (loading, tidak ada data, dsb). Gunakan **Sentence Case** agar teks lebih ramah, profesional, dan mudah dibaca.
 3. **Shadow**: Gunakan shadow halus dengan intensitas rendah (contoh: `shadow-md shadow-emerald-900/5`).
-4. **Warna**: Aksen utama menggunakan **Emerald 600** (`#059669`) untuk elemen positif/tambah data dan **Rose 600** untuk elemen bahaya/hapus. Gunakan `bg-[var(--bg-deep)]` (abu-abu sangat muda) sebagai warna latar belakang halaman standar.
+4. **Warna**: Aksen utama menggunakan **Emerald 600** (`#059669`) atau **Green 600** untuk seluruh elemen positif/tambah data, tombol aksi (Add, Copy, Scrape), dan status aktif. Warna **Rose 600** digunakan untuk elemen bahaya/hapus. Hindari penggunaan warna **Blue** kecuali untuk link eksternal atau instruksi spesifik. Gunakan `bg-[var(--bg-deep)]` (abu-abu sangat muda) sebagai warna latar belakang halaman standar.
 5. **Layout**: Halaman manajemen data wajib menggunakan **Full Width** tanpa pembatas kontainer sempit (`max-w-5xl`).
 6. **Spacing**: Gunakan **gap-3** atau **gap-5** sebagai standar jarak vertikal antar elemen pencarian dan tabel.
 7. **Sticky Header Stability**: Jika menggunakan sticky header, tambahkan elemen `absolute` di dalam header yang memanjang ke atas (background extension) untuk menutupi kebocoran konten saat scroll.
@@ -569,6 +569,34 @@ await db.execute({
   args: ['UPDATE', 'sopd', id, 'Perubahan Data SOPd', JSON.stringify(changes), session?.username]
 });
 ```
+
+> ⚠️ **ATURAN WAJIB — ACTIVITY LOG UNTUK FITUR SCRAPING/IMPORT MASSAL**
+>
+> Ada **dua mekanisme** logging di sistem ini:
+> - **Otomatis (via SQLite Trigger)**: Berlaku untuk tabel yang **TIDAK** ada di exclusion list `initDynamicTriggers`. Semua INSERT/UPDATE/DELETE tercatat otomatis. Fitur CRUD biasa tidak perlu log manual.
+> - **Manual (wajib ditulis)**: Berlaku untuk tabel yang **ada di exclusion list** (lihat Bagian 11), yaitu tabel bervolume tinggi seperti `jurnal_umum`, `sales_reports`, `bahan_baku`, dst. Endpoint scraping ke tabel ini **wajib** menulis ke `activity_logs` secara eksplisit.
+>
+> **Aturan bagi AI agent**: Setiap kali membuat fitur **scraping data dari API eksternal** atau **upload/import Excel massal**, WAJIB menambahkan satu entri `activity_logs` setelah data berhasil disimpan, menggunakan pola berikut:
+> ```typescript
+> // Selalu tambahkan ini di akhir handler scraping yang berhasil
+> try {
+>   const session = await getSession();
+>   await db.execute({
+>     sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
+>           VALUES (?, ?, ?, ?, ?, ?)`,
+>     args: [
+>       'SCRAPE',            // atau 'IMPORT' untuk upload Excel
+>       'nama_tabel',
+>       0,
+>       `Tarik data NamaModul: ${total} record (${periodStart} s/d ${periodEnd})`,
+>       JSON.stringify({ total, start: periodStart, end: periodEnd }),
+>       session?.username || 'System'
+>     ]
+>   });
+> } catch (_) { /* Jangan gagalkan response jika log error */ }
+> ```
+> Ini memastikan aksi scraping selalu muncul di **Aktivitas Terkini** di dashboard tanpa perlu diingatkan oleh user.
+
 
 ### Fitur 6: Laporan PDF & Grafis (Chart)
 **Deskripsi:** Export data ke format PDF dan visualisasi statistik produksi.

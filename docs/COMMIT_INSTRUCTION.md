@@ -1,5 +1,9 @@
 # 📋 COMMIT_INSTRUCTION.md
 
+> 🤖 **Untuk AI Agent yang baru memulai sesi**:
+> Sebelum mengerjakan apapun, baca dulu file **`docs/DEV_RULES.md`**.
+> File itu berisi aturan wajib yang berlaku otomatis di setiap sesi — tidak perlu user mengingatkan satu per satu.
+
 ## 🚀 Prompt: Commit & Push Semua Perubahan
 
 Gunakan prompt ini di akhir sesi untuk menyimpan semua perubahan ke GitHub.

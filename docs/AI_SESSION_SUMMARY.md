@@ -1,39 +1,39 @@
-# AI Session Summary - 2026-05-12 (Sesi Sore)
+# AI Session Summary - 2026-05-14 (Sesi Siang)
 
 ## 📅 Detail Sesi
-- **Tanggal**: 2026-05-12
-- **Waktu**: 15:45 - 17:15 WIB
-- **PC**: Lokal (Rumah)
+- **Tanggal**: 2026-05-14
+- **Waktu**: 14:20 - 15:10 WIB
+- **PC**: Lokal (Kantor)
 
 ## 🚀 Fitur & Perbaikan
-1. **Migrasi Pagination Jurnal Umum**:
-    - Mengganti *infinite scroll* dengan *server-side pagination* menggunakan komponen `TableFooter` standar.
-    - Menghapus ketergantungan pada `handleScroll` dan `isLoadingMore` ref di frontend.
-2. **Akurasi Carry-over Running Total**:
-    - **API Fix**: Menambahkan kalkulasi `prevLabaRugi` dan `prevArusKas` di server untuk semua baris transaksi sebelum offset halaman saat ini.
-    - **Frontend Fix**: Memastikan kolom Laba/Rugi dan Arus Kas melanjutkan akumulasi dari halaman sebelumnya (tidak kembali ke 0).
-3. **Implementasi Modul Master Barang**:
-    - Pembuatan skema tabel `master_barang` baru.
-    - Implementasi *Scraper* otomatis untuk menarik data Master Barang dari sistem Digit.
-    - Pembuatan UI `MasterBarangClient` dengan fitur pencarian dan sinkronisasi berkala.
-4. **Optimasi Barang Jadi & Sales Report**:
-    - Perbaikan stabilitas API `barang-jadi` dan sinkronisasi data pada `SalesReportClient`.
-5. **Update Sidebar & Permissions**:
-    - Menambahkan menu "Master Barang" di bagian Stok.
-    - Sinkronisasi konstanta perizinan untuk modul-modul baru.
+1. **Modernisasi "Copy Jadwal" Jurnal Harian Produksi**:
+    - Mengganti sistem tombol statis menjadi **Modal interaktif**.
+    - Penambahan filter **Bagian** dan **Karyawan** dengan fitur **Live Search**.
+    - Implementasi **Tema Hijau/Emerald** pada tombol dan modal agar selaras dengan identitas SINTAK.
+2. **Pencatatan Aktivitas (Activity Log)**:
+    - Menambahkan logging otomatis pada endpoint `scrape-jurnal-umum` untuk melacak penarikan data dari Digit.
+    - Sinkronisasi data user (recorded_by) pada log aktivitas.
+3. **Standarisasi Pengembangan (AI Dev Rules)**:
+    - Pembuatan `docs/DEV_RULES.md` sebagai panduan permanen AI Agent.
+    - Pembuatan **Knowledge Item (KI)** untuk mematikan aturan tersebut ke dalam memori awal AI di setiap sesi.
+    - Integrasi instruksi baca `DEV_RULES.md` pada `RESUME_SESSION.md`.
 
 ## ⚙️ Keputusan Teknis Penting
-- **Standardisasi TableFooter**: Seluruh modul tabel besar kini diwajibkan menggunakan `TableFooter` untuk pagination demi konsistensi visual dan fungsionalitas.
-- **Server-Side Running Total**: Untuk laporan finansial yang bersifat akumulatif, kalkulasi *carry-over* dilakukan di sisi API sebelum data dikirim ke klien untuk menjamin integritas angka antar halaman.
+- **Green Theme for Actions**: Diputuskan bahwa seluruh tombol aksi utama (Add, Copy, Scrape) harus menggunakan tema **Green/Emerald** untuk memberikan kesan positif dan selaras dengan logo SINTAK.
+- **Mandatory Scraping Log**: Setiap aksi penarikan data massal (scraping) diwajibkan menulis ke `activity_logs` secara manual karena tabel target dikecualikan dari trigger otomatis database.
+- **Clarification First Policy**: AI Agent wajib bertanya klarifikasi sebelum mengeksekusi perubahan signifikan guna mengurangi kesalahan interpretasi.
 
 ## 📌 Status Task & Hal yang Perlu Dilanjutkan
-- ✅ Migrasi Pagination Jurnal Umum 100% Selesai.
-- ✅ Akurasi Carry-over Running Total 100% Selesai.
-- ✅ Implementasi Modul Master Barang 100% Selesai.
-- 📌 Next: Review performa query `prevRunning` pada database dengan jutaan baris (jika ada).
+- ✅ Fitur Copy Jadwal Fleksibel 100% Selesai.
+- ✅ Standarisasi DEV_RULES & KI 100% Selesai.
+- ✅ Activity Log Scraping Jurnal Umum 100% Selesai.
+- 📌 Next: Melanjutkan modernisasi visual pada modul Penjualan & Pembelian yang masih menggunakan tema lama.
 
 ## 📂 Dokumentasi Baru/Diperbarui
-- New `docs/tutorials/18-pagination-dan-carry-over-running-total-jurnal-umum.md`
-- Update `docs/BUILD_FROM_SCRATCH.md`
+- New `docs/DEV_RULES.md`
+- New `docs/tutorials/19-penyalinan-jadwal-fleksibel-dan-audit-log.md`
+- Update `docs/BUILD_FROM_SCRATCH.md` (Activity Log Rules)
+- Update `docs/RESUME_SESSION.md` (Read DEV_RULES instruction)
+- Update `docs/COMMIT_INSTRUCTION.md`
 - Update `docs/task.md`
 - Update `docs/AI_SESSION_SUMMARY.md`

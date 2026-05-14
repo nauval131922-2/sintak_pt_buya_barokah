@@ -1,5 +1,9 @@
 # 🔄 RESUME_SESSION.md
 
+> 🤖 **Untuk AI Agent yang baru memulai sesi**:
+> Sebelum mengerjakan apapun, baca dulu file **`docs/DEV_RULES.md`**.
+> File itu berisi aturan wajib yang berlaku otomatis — tidak perlu user mengingatkan satu per satu.
+
 ## Prompt: Melanjutkan Sesi di PC Lain (Rumah/Kantor)
 
 Gunakan prompt ini setiap kali membuka sesi baru di perangkat berbeda.
@@ -82,6 +86,7 @@ Periksa apakah file-file dokumentasi berikut ada dan tidak kosong:
   ├── COMMIT_INSTRUCTION.md      ← panduan akhir sesi
   ├── RESUME_SESSION.md          ← panduan awal sesi di PC baru (file ini)
   ├── BUILD_FROM_SCRATCH.md      ← tutorial rebuild sistem dari nol
+  ├── DEV_RULES.md               ← aturan wajib pengembangan (baca tiap sesi!)
   ├── AI_SESSION_SUMMARY.md      ← ringkasan sesi terakhir
   ├── task.md                    ← backlog & progress
   └── tutorials/                 ← tutorial per fitur/perbaikan
@@ -169,10 +174,11 @@ untuk memahami konteks sesi terakhir.
 ```
 RESUME_SESSION.md (file ini)
   │
-  ├── membaca   → docs/AI_SESSION_SUMMARY.md  (konteks sesi terakhir)
-  ├── membaca   → docs/task.md                (status task)
-  ├── memeriksa → docs/BUILD_FROM_SCRATCH.md  (jika perlu rebuild)
+  ├── membaca   → docs/DEV_RULES.md             (aturan wajib — baca pertama!)
+  ├── membaca   → docs/AI_SESSION_SUMMARY.md    (konteks sesi terakhir)
+  ├── membaca   → docs/task.md                  (status task)
+  ├── memeriksa → docs/BUILD_FROM_SCRATCH.md    (jika perlu rebuild)
   │
   └── setelah sesi selesai, jalankan:
-        → COMMIT_INSTRUCTION.md              (untuk commit & push)
+        → COMMIT_INSTRUCTION.md                 (untuk commit & push)
 ```
