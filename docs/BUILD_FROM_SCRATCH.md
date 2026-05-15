@@ -87,15 +87,16 @@ Buat file `package.json`:
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "bcryptjs": "^3.0.3",
+    "exceljs": "^4.4.0",
     "jose": "^6.2.0",
-    "jspdf": "^4.2.0",
+    "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
     "lucide-react": "^0.575.0",
-    "modern-screenshot": "^1.1.0",
+    "modern-screenshot": "^4.7.0",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "recharts": "^3.7.0",
+    "recharts": "^3.8.1",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
@@ -180,7 +181,11 @@ sintak_pt_buya_barokah/
     │   ├── SearchAndReload.tsx
     │   ├── TableFooter.tsx
     │   ├── Toast.tsx
-    │   └── Portal.tsx
+    │   ├── Portal.tsx
+    │   ├── ui/
+    │   │   ├── BaseModal.tsx
+    │   │   └── CopyButton.tsx
+    │   └── JurnalTrendChart.tsx
     └── lib/
         ├── db.ts
         ├── schema.ts
@@ -616,7 +621,21 @@ autoTable(doc, {
 doc.save('laporan.pdf');
 ```
 
-### Fitur 7: Tracking Manufaktur Dua Jalur (BOM & Rekap)
+### Fitur 7: Dashboard Analytics Premium (Recharts)
+**Deskripsi:** Visualisasi data untuk memantau tren produksi dan kesehatan operasional secara real-time.
+**Langkah Implementasi:**
+1.  **Batch Statistics Query**: API `/api/dashboard-stats` mengembalikan agregasi dari Jurnal Umum, Orders, dan Infractions dalam satu request untuk performa maksimal.
+2.  **Trend Component (`src/components/JurnalTrendChart.tsx`)**: Menggunakan `AreaChart` dengan gradien Emerald untuk menampilkan data 7 hari terakhir secara interaktif.
+3.  **Responsive Layout**: Grid dashboard menggunakan `grid-cols-1 md:grid-cols-2 lg:grid-cols-3` untuk memastikan keterbacaan di semua perangkat.
+
+### Fitur 8: Standardisasi Modal (BaseModal)
+**Deskripsi:** Mengganti semua modal kustom dengan komponen `BaseModal` untuk pengalaman pengguna yang seragam.
+**Langkah Implementasi:**
+1.  **BaseModal Architecture**: Menggunakan `framer-motion` untuk animasi `initial={{ opacity: 0, scale: 0.95 }}`.
+2.  **Z-Index Policy**: Modal menggunakan `z-[50]` sedangkan dropdown/portal di dalamnya menggunakan `z-[400+]`.
+3.  **Form Integration**: Semua form (User, Role, Manual Jurnal) dibungkus dalam `BaseModal` dengan header yang memiliki tombol Close yang konsisten.
+
+### Fitur 9: Tracking Manufaktur Dua Jalur (BOM & Rekap)
 **Deskripsi:** Sistem pelacakan canggih yang mendukung pencarian *top-down* (dari BOM) dan *bottom-up* (dari Rekap Pembelian/Barang).
 
 **Poin Kunci Implementasi:**

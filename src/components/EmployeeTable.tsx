@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { Search, Loader2, AlertCircle, Clock, FileSpreadsheet, Users, Copy, Check } from 'lucide-react';
-import ImportInfo from '@/components/ImportInfo';
-import SearchAndReload from '@/components/SearchAndReload';
-import { useRouter } from 'next/navigation';
-import { DataTable } from '@/components/ui/DataTable';
-import TableFooter from '@/components/TableFooter';
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { Search, Loader2, AlertCircle, Clock, FileSpreadsheet, Users } from "lucide-react";
+import ImportInfo from "@/components/ImportInfo";
+import SearchAndReload from "@/components/SearchAndReload";
+import { useRouter } from "next/navigation";
+import { DataTable } from "@/components/ui/DataTable";
+import TableFooter from "@/components/TableFooter";
+import CopyButton from "@/components/ui/CopyButton";
+import { ColumnDef } from "@tanstack/react-table";
 
 interface Employee {
   id: number;
@@ -25,56 +27,12 @@ interface EmployeeTableProps {
 
 const PAGE_SIZE = 50;
 
-const NameCell = ({ name }: { name: string }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(name);
-      } else {
-        // Fallback for non-secure contexts (e.g., local IP without HTTPS)
-        const textArea = document.createElement("textarea");
-        textArea.value = name;
-        textArea.style.position = "fixed";
-        textArea.style.left = "-999999px";
-        textArea.style.top = "-999999px";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        try {
-          document.execCommand('copy');
-        } catch (err) {
-          console.error('Fallback copy failed', err);
-        } finally {
-          textArea.remove();
-        }
-      }
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Copy failed', err);
-    }
-  };
-
-  return (
-    <div className="flex items-center justify-between group w-full">
-      <span className="font-bold tracking-tight truncate flex-1">{name}</span>
-      <button
-        onClick={handleCopy}
-        className={`p-1.5 rounded-md transition-all ml-2 shrink-0 ${
-          copied 
-            ? 'text-green-600 bg-green-50 opacity-100' 
-            : 'opacity-0 group-hover:opacity-100 text-gray-400 hover:text-green-600 hover:bg-gray-100'
-        }`}
-        title="Salin Nama"
-      >
-        {copied ? <Check size={14} /> : <Copy size={14} />}
-      </button>
-    </div>
-  );
-};
+const NameCell = ({ name }: { name: string }) => (
+  <div className="flex items-center justify-between group w-full pr-4">
+    <span className="font-semibold text-gray-800 truncate">{name}</span>
+    <CopyButton text={name} />
+  </div>
+);
 
 export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
   const router = useRouter();
@@ -84,28 +42,28 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
   const [isMounted, setIsMounted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<Employee[] | null>(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loadTime, setLoadTime] = useState<number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Search & Pagination
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
   // Table State
   const [selectedIds, setSelectedIds] = useState<Set<number | string>>(new Set());
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('employee_columnWidths');
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("employee_columnWidths");
       if (saved) return JSON.parse(saved);
     }
     return {
-      'no': 60,
-      'name': 350,
-      'position': 250,
-      'employee_no': 180
+      "no": 60,
+      "name": 350,
+      "position": 250,
+      "employee_no": 180
     };
   });
 
@@ -119,15 +77,15 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
   useEffect(() => {
     setIsMounted(true);
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'sintak_data_updated' || e.key === 'employee_data_updated') {
+      if (e.key === "sintak_data_updated" || e.key === "employee_data_updated") {
         setRefreshKey(prev => prev + 1);
         router.refresh();
       }
     };
-    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
     return () => { 
         mountedRef.current = false;
-        window.removeEventListener('storage', handleStorageChange); 
+        window.removeEventListener("storage", handleStorageChange); 
     };
   }, [router]);
 
@@ -144,17 +102,16 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
           const json = await res.json();
           if (json.success) {
             setLoadTime(Math.round(performance.now() - startTime));
+            setTotalCount(json.total || 0);
             if (page === 1) {
               setData(json.data || []);
             } else {
               setData(prev => [...(prev || []), ...(json.data || [])]);
             }
-            setTotalCount(json.total || 0);
-            setError('');
           }
         }
-      } catch (err: any) {
-        if (active) setError(err.message || 'Gagal memuat data');
+      } catch (e: any) {
+        if (active) setError(e.message || "Gagal memuat data");
       } finally {
         if (active) setLoading(false);
       }
@@ -163,24 +120,23 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
     return () => { active = false; };
   }, [page, debouncedQuery, refreshKey]);
 
-  // Columns definition
-  const columns = useMemo(() => [
-    { 
-        accessorKey: 'id', 
-        header: 'No.', 
-        cell: (info: any) => info.row.index + 1,
-        size: 60,
-        meta: { align: 'center' }
+  const columns = useMemo<ColumnDef<Employee>[]>(() => [
+    {
+      accessorKey: "no",
+      header: "No.",
+      cell: (info: any) => info.row.index + 1,
+      size: 60,
+      meta: { align: "center" }
     },
     { 
-        accessorKey: 'name', 
-        header: 'Nama Karyawan',
+        accessorKey: "name", 
+        header: "Nama Karyawan",
         size: 350,
         cell: (info: any) => <NameCell name={info.getValue()} />
     },
     { 
-        accessorKey: 'position', 
-        header: 'Jabatan',
+        accessorKey: "position", 
+        header: "Jabatan",
         size: 250,
         cell: (info: any) => (
             <span className="text-[11px] font-bold text-green-600 bg-green-50 px-3 py-1 rounded-lg border border-green-100 block w-fit truncate tracking-tight">
@@ -189,13 +145,13 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
         )
     },
     { 
-        accessorKey: 'employee_no', 
-        header: 'ID Karyawan',
+        accessorKey: "employee_no", 
+        header: "ID Karyawan",
         size: 180,
-        meta: { align: 'right' },
+        meta: { align: "right" },
         cell: (info: any) => (
             <span className="font-mono font-bold text-gray-400">
-                {info.getValue() || '---'}
+                {info.getValue() || "---"}
             </span>
         )
     }
@@ -204,7 +160,7 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
   // Handlers
   const handleResize = useCallback((widths: any) => {
     setColumnWidths(widths);
-    localStorage.setItem('employee_columnWidths', JSON.stringify(widths));
+    localStorage.setItem("employee_columnWidths", JSON.stringify(widths));
   }, []);
 
   const handleSelection = useCallback((id: string | number) => {
@@ -296,6 +252,3 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
     </div>
   );
 }
-
-
-

@@ -1,39 +1,43 @@
-# AI Session Summary - 2026-05-14 (Sesi Siang)
+# AI Session Summary - 2026-05-15 (Sesi Malam)
 
 ## 📅 Detail Sesi
-- **Tanggal**: 2026-05-14
-- **Waktu**: 14:20 - 15:10 WIB
+- **Tanggal**: 2026-05-15
+- **Waktu**: 19:30 - 20:10 WIB
 - **PC**: Lokal (Kantor)
 
 ## 🚀 Fitur & Perbaikan
-1. **Modernisasi "Copy Jadwal" Jurnal Harian Produksi**:
-    - Mengganti sistem tombol statis menjadi **Modal interaktif**.
-    - Penambahan filter **Bagian** dan **Karyawan** dengan fitur **Live Search**.
-    - Implementasi **Tema Hijau/Emerald** pada tombol dan modal agar selaras dengan identitas SINTAK.
-2. **Pencatatan Aktivitas (Activity Log)**:
-    - Menambahkan logging otomatis pada endpoint `scrape-jurnal-umum` untuk melacak penarikan data dari Digit.
-    - Sinkronisasi data user (recorded_by) pada log aktivitas.
-3. **Standarisasi Pengembangan (AI Dev Rules)**:
-    - Pembuatan `docs/DEV_RULES.md` sebagai panduan permanen AI Agent.
-    - Pembuatan **Knowledge Item (KI)** untuk mematikan aturan tersebut ke dalam memori awal AI di setiap sesi.
-    - Integrasi instruksi baca `DEV_RULES.md` pada `RESUME_SESSION.md`.
+1. **Optimasi Dashboard & Analytics Premium**:
+    - Integrasi library **Recharts** untuk visualisasi tren aktivitas 7 hari terakhir.
+    - Pembuatan komponen `JurnalTrendChart.tsx` dengan desain area chart gradien emerald.
+    - Konsolidasi metrik dashboard (Jurnal, Orders, Infractions) dalam satu batch query API untuk efisiensi.
+2. **Standardisasi UI & Komponen BaseModal**:
+    - Pembuatan komponen `BaseModal.tsx` menggunakan `framer-motion` sebagai standar popup sistem.
+    - Migrasi modal pada manajemen User, Role, dan Jurnal Manual ke sistem `BaseModal`.
+    - Perbaikan z-index pada portal dropdown di dalam modal agar tidak terpotong.
+3. **Modul Konversi Data HPP Kalkulasi**:
+    - Implementasi halaman Konversi HPP untuk sinkronisasi data dari Sales Orders ke HPP Kalkulasi.
+    - Penambahan filter status sinkronisasi (Sudah/Belum) untuk memudahkan audit data.
+    - Optimasi performa query pada tabel bervolume tinggi menggunakan indexing tambahan.
+4. **Pembersihan & Stabilitas Sistem**:
+    - Perbaikan bug layout pada halaman Profile (Typography & Case Policy).
+    - Optimasi `TableFooter` agar lebih responsif dan informatif.
+    - Audit `.gitignore` untuk mencegah file sampah `.vscode` dan log masuk ke repository.
 
 ## ⚙️ Keputusan Teknis Penting
-- **Green Theme for Actions**: Diputuskan bahwa seluruh tombol aksi utama (Add, Copy, Scrape) harus menggunakan tema **Green/Emerald** untuk memberikan kesan positif dan selaras dengan logo SINTAK.
-- **Mandatory Scraping Log**: Setiap aksi penarikan data massal (scraping) diwajibkan menulis ke `activity_logs` secara manual karena tabel target dikecualikan dari trigger otomatis database.
-- **Clarification First Policy**: AI Agent wajib bertanya klarifikasi sebelum mengeksekusi perubahan signifikan guna mengurangi kesalahan interpretasi.
+- **Recharts for Visuals**: Menggunakan Recharts sebagai standar visualisasi data karena kemudahan kustomisasi dan performa rendering yang baik.
+- **BaseModal Standard**: Semua popup input wajib menggunakan `BaseModal` untuk menjamin konsistensi animasi dan perilaku (outside click, close button).
+- **Index-Driven Performance**: Fokus pada penambahan index di kolom-kolom pencarian (`faktur`, `no_order`) untuk menjaga responsivitas aplikasi seiring bertambahnya data.
 
 ## 📌 Status Task & Hal yang Perlu Dilanjutkan
-- ✅ Fitur Copy Jadwal Fleksibel 100% Selesai.
-- ✅ Standarisasi DEV_RULES & KI 100% Selesai.
-- ✅ Activity Log Scraping Jurnal Umum 100% Selesai.
-- 📌 Next: Melanjutkan modernisasi visual pada modul Penjualan & Pembelian yang masih menggunakan tema lama.
+- ✅ Optimasi Dashboard & Analytics Recharts 100% Selesai.
+- ✅ Modernisasi UI & BaseModal Standard 100% Selesai.
+- ✅ Modul Konversi HPP Kalkulasi 100% Selesai.
+- 📌 Next: Melanjutkan modernisasi desain pada modul Penjualan & Pembelian yang tersisa.
+- 📌 Next: Eksplorasi fitur export laporan Excel dengan styling yang lebih kaya (exceljs).
 
 ## 📂 Dokumentasi Baru/Diperbarui
-- New `docs/DEV_RULES.md`
-- New `docs/tutorials/19-penyalinan-jadwal-fleksibel-dan-audit-log.md`
-- Update `docs/BUILD_FROM_SCRATCH.md` (Activity Log Rules)
-- Update `docs/RESUME_SESSION.md` (Read DEV_RULES instruction)
-- Update `docs/COMMIT_INSTRUCTION.md`
-- Update `docs/task.md`
+- New `docs/tutorials/20-optimasi-dashboard-dan-analytics-recharts.md`
+- New `docs/tutorials/21-modernisasi-ui-dan-standardisasi-modal.md`
+- Update `docs/BUILD_FROM_SCRATCH.md` (New components & features)
+- Update `docs/task.md` (Update statistics & completion date)
 - Update `docs/AI_SESSION_SUMMARY.md`
