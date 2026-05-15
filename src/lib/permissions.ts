@@ -21,6 +21,7 @@ const MODULE_TO_ROUTE: Array<{ key: string; route: string }> = [
   { key: 'pembelian_penerimaan',  route: '/penerimaan-pembelian' },
   { key: 'pembelian_rekap',       route: '/rekap-pembelian-barang' },
   { key: 'pembelian_hutang',      route: '/pelunasan-hutang' },
+  { key: 'produksi_dashboard',    route: '/dashboard-manufaktur' },
   { key: 'produksi_bom',          route: '/bom' },
   { key: 'produksi_orders',       route: '/orders' },
   { key: 'produksi_bahan_baku',   route: '/bahan-baku' },

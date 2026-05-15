@@ -1,4 +1,4 @@
-'use server';
+﻿'use server';
 
 import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
@@ -178,27 +178,169 @@ export const getDashboardSummary = cache(async () => {
   const startOfMonth = `${thisYear}-${thisMonth}-01 00:00:00`;
   const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const endOfMonth = `${thisYear}-${thisMonth}-${lastDay} 23:59:59`;
-  const startOfToday = `${today} 00:00:00`;
-  const endOfToday = `${today} 23:59:59`;
+
+  // 7 hari terakhir untuk chart tren jurnal
+  const last7Days: string[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    last7Days.push(new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(d));
+  }
+  const trendStart = last7Days[0];
+  const trendEnd = last7Days[last7Days.length - 1];
 
   const results = await db.batch([
+    // 0: Karyawan aktif
     'SELECT COUNT(*) as count FROM employees WHERE is_active = 1',
+    // 1: Kesalahan bulan ini
     {
-      sql: `SELECT COUNT(*) as count FROM infractions 
-            WHERE (date >= ? AND date <= ?)`,
+      sql: `SELECT COUNT(*) as count FROM infractions WHERE (date >= ? AND date <= ?)`,
       args: [startOfMonth, endOfMonth]
     },
+    // 2: Total order produksi
+    'SELECT COUNT(*) as count FROM orders',
+    // 3: Jurnal hari ini
     {
-      sql: `SELECT COUNT(*) as count FROM infractions 
-            WHERE (date >= ? AND date <= ?)`,
-      args: [startOfToday, endOfToday]
-    }
+      sql: `SELECT COUNT(*) as count FROM jurnal_harian_produksi WHERE tgl = ?`,
+      args: [today]
+    },
+    // 4: Tren 7 hari jurnal (group by tgl)
+    {
+      sql: `SELECT tgl, COUNT(*) as count FROM jurnal_harian_produksi WHERE tgl >= ? AND tgl <= ? GROUP BY tgl ORDER BY tgl ASC`,
+      args: [trendStart, trendEnd]
+    },
+    // 5: Jurnal bulan ini
+    {
+      sql: `SELECT COUNT(*) as count FROM jurnal_harian_produksi WHERE tgl >= ? AND tgl <= ?`,
+      args: [`${thisYear}-${thisMonth}-01`, `${thisYear}-${thisMonth}-${String(lastDay).padStart(2, '0')}`]
+    },
   ], "read");
+
+  const trendRaw = results[4].rows as any[];
+  const trendMap = new Map(trendRaw.map(r => [r.tgl as string, Number(r.count)]));
+  const jurnalTrend = last7Days.map(d => ({
+    date: d,
+    count: trendMap.get(d) ?? 0
+  }));
 
   return sanitizeData({
     activeEmployees: Number(results[0].rows[0]?.count || 0),
     infractionsThisMonth: Number(results[1].rows[0]?.count || 0),
-    infractionsToday: Number(results[2].rows[0]?.count || 0)
+    totalOrders: Number(results[2].rows[0]?.count || 0),
+    jurnalToday: Number(results[3].rows[0]?.count || 0),
+    jurnalTrend,
+    jurnalThisMonth: Number(results[5].rows[0]?.count || 0),
+    todayDate: today,
+  });
+});
+
+export const getProductionDashboardSummary = cache(async () => {
+  const now = new Date();
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(now);
+  const thisMonth = String(now.getMonth() + 1).padStart(2, '0');
+  const thisYear = now.getFullYear().toString();
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const startOfMonth = `${thisYear}-${thisMonth}-01`;
+  const endOfMonth = `${thisYear}-${thisMonth}-${String(lastDay).padStart(2, '0')}`;
+
+  const last14Days: string[] = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    last14Days.push(new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(d));
+  }
+  const trendStart = last14Days[0];
+  const trendEnd = last14Days[last14Days.length - 1];
+
+  const results = await db.batch([
+    {
+      sql: `SELECT COUNT(*) as count FROM jurnal_harian_produksi WHERE tgl = ?`,
+      args: [today]
+    },
+    {
+      sql: `SELECT COUNT(*) as count FROM jurnal_harian_produksi WHERE tgl >= ? AND tgl <= ?`,
+      args: [startOfMonth, endOfMonth]
+    },
+    'SELECT COUNT(*) as count FROM orders',
+    {
+      sql: `
+        SELECT COUNT(DISTINCT no_order) as count
+        FROM (
+          SELECT no_order FROM jurnal_harian_produksi
+          WHERE tgl >= ? AND tgl <= ? AND no_order IS NOT NULL AND TRIM(no_order) != ''
+          UNION ALL
+          SELECT no_order_2 as no_order FROM jurnal_harian_produksi
+          WHERE tgl >= ? AND tgl <= ? AND no_order_2 IS NOT NULL AND TRIM(no_order_2) != ''
+        ) active_orders
+      `,
+      args: [startOfMonth, endOfMonth, startOfMonth, endOfMonth]
+    },
+    {
+      sql: `SELECT COALESCE(SUM(qty), 0) as total FROM barang_jadi WHERE tgl >= ? AND tgl <= ?`,
+      args: [startOfMonth, endOfMonth]
+    },
+    {
+      sql: `SELECT COALESCE(SUM(qty), 0) as total FROM bahan_baku WHERE tgl >= ? AND tgl <= ?`,
+      args: [startOfMonth, endOfMonth]
+    },
+    {
+      sql: `
+        SELECT tgl, COUNT(*) as count
+        FROM jurnal_harian_produksi
+        WHERE tgl >= ? AND tgl <= ?
+        GROUP BY tgl
+        ORDER BY tgl ASC
+      `,
+      args: [trendStart, trendEnd]
+    },
+    {
+      sql: `
+        SELECT COALESCE(NULLIF(TRIM(bagian), ''), 'Tanpa Bagian') as label, COUNT(*) as count
+        FROM jurnal_harian_produksi
+        WHERE tgl >= ? AND tgl <= ?
+        GROUP BY label
+        ORDER BY count DESC
+        LIMIT 5
+      `,
+      args: [startOfMonth, endOfMonth]
+    },
+    {
+      sql: `
+        SELECT id, tgl, shift, nama_karyawan, no_order, nama_order, jenis_pekerjaan, bagian, target, realisasi
+        FROM jurnal_harian_produksi
+        ORDER BY COALESCE(tgl, created_at) DESC, id DESC
+        LIMIT 8
+      `
+    }
+  ], "read");
+
+  const trendRaw = results[6].rows as any[];
+  const trendMap = new Map(trendRaw.map((row) => [row.tgl as string, Number(row.count)]));
+  const jurnalTrend = last14Days.map((date) => ({
+    date,
+    count: trendMap.get(date) ?? 0
+  }));
+
+  return sanitizeData({
+    jurnalToday: Number(results[0].rows[0]?.count || 0),
+    jurnalThisMonth: Number(results[1].rows[0]?.count || 0),
+    totalOrders: Number(results[2].rows[0]?.count || 0),
+    activeOrdersThisMonth: Number(results[3].rows[0]?.count || 0),
+    finishedGoodsThisMonth: Number(results[4].rows[0]?.total || 0),
+    rawMaterialsThisMonth: Number(results[5].rows[0]?.total || 0),
+    jurnalTrend,
+    topSections: results[7].rows.map((row: any) => ({
+      label: row.label,
+      count: Number(row.count || 0)
+    })),
+    latestJournals: results[8].rows.map((row: any) => ({
+      ...row,
+      target: Number(row.target || 0),
+      realisasi: Number(row.realisasi || 0)
+    })),
+    todayDate: today,
+    monthStart: startOfMonth,
+    monthEnd: endOfMonth,
   });
 });
 

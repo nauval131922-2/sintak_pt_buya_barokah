@@ -3,49 +3,31 @@
 import { useState, useRef, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Save,
-  User,
-  Camera,
-  Lock,
-  CheckCircle2,
-  AlertCircle,
-  RefreshCw,
-  X,
-  Loader2,
+  Save, User, Camera, Lock, CheckCircle2, AlertCircle,
+  Loader2, Eye, EyeOff, ShieldCheck, RefreshCw,
 } from "lucide-react";
 import { updateProfile } from "@/lib/auth";
 import PageHeader from "@/components/PageHeader";
 
-interface UserData {
-  name: string;
-  username: string;
-  photo?: string | null;
-}
-
 export default function ProfilePage() {
   const router = useRouter();
 
-  // State for form
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
+  const [role, setRole] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
-  // State for UI feedback
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load initial data (in a real app, this might come from a context or an API fetch)
   useEffect(() => {
-    // For now we will fetch the session info from an API route we'll create or directly
-    // Because it's a client component, we'll fetch from a quick API route or pass it via layout
     const fetchUserData = async () => {
       setIsInitialLoading(true);
       try {
@@ -54,12 +36,13 @@ export default function ProfilePage() {
           const data = await res.json();
           setName(data.name || "");
           setUsername(data.username || "");
+          setRole(data.role || "");
           setPhotoUrl(data.photo || null);
         }
       } catch (error) {
         console.error("Failed to fetch user data", error);
       } finally {
-        setTimeout(() => setIsInitialLoading(false), 500); // Small delay for smooth transition
+        setTimeout(() => setIsInitialLoading(false), 300);
       }
     };
     fetchUserData();
@@ -75,31 +58,27 @@ export default function ProfilePage() {
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Optional: add validation for file type and size (e.g., < 2MB)
     if (file.size > 2 * 1024 * 1024) {
       setMessage({ type: "error", text: "Ukuran foto maksimal 2MB." });
       return;
     }
-
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setPhotoUrl(reader.result as string);
-    };
+    reader.onloadend = () => setPhotoUrl(reader.result as string);
     reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
-
     if (password && password !== confirmPassword) {
       setMessage({ type: "error", text: "Konfirmasi password tidak cocok." });
       return;
     }
-
+    if (password && password.length < 6) {
+      setMessage({ type: "error", text: "Password minimal 6 karakter." });
+      return;
+    }
     setIsLoading(true);
-
     startTransition(async () => {
       try {
         const result = await updateProfile({
@@ -108,303 +87,309 @@ export default function ProfilePage() {
           password: password || undefined,
           photo: photoUrl,
         });
-
         if (result.success) {
-          setMessage({
-            type: "success",
-            text: "Profil Anda berhasil diperbarui dan disinkronkan.",
-          });
+          setMessage({ type: "success", text: "Profil berhasil diperbarui." });
           setPassword("");
           setConfirmPassword("");
-          // Trigger cross-tab synchronization
           localStorage.setItem("sintak_profile_updated", Date.now().toString());
-          // Force a refresh to update the Layout header
           router.refresh();
         } else {
-          setMessage({
-            type: "error",
-            text: result.message || "Gagal memperbarui profil.",
-          });
+          setMessage({ type: "error", text: result.message || "Gagal memperbarui profil." });
         }
-      } catch (error) {
-        setMessage({
-          type: "error",
-          text: "Terjadi kesalahan sistem saat menyimpan.",
-        });
+      } catch {
+        setMessage({ type: "error", text: "Terjadi kesalahan sistem." });
       } finally {
         setIsLoading(false);
       }
     });
   };
 
+  const getInitials = (n: string) =>
+    (n || "U").split(" ").map(w => w[0]).join("").toUpperCase().substring(0, 2);
+
+  const passwordMatch = password && confirmPassword && password === confirmPassword;
+  const passwordMismatch = password && confirmPassword && password !== confirmPassword;
+  const isSaving = isLoading || isPending;
+
   return (
-    <div className="flex-1 min-h-0 flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-2 duration-700 overflow-hidden">
+    <div className="flex-1 min-h-0 flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-2 duration-500 overflow-hidden">
       <PageHeader
         title="Pengaturan Profil"
         description="Kelola informasi data diri dan keamanan akun Anda."
         showHelp={false}
       />
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col items-center px-4 pb-10">
-        <div className="w-full max-w-4xl bg-white border border-gray-100 rounded-2xl shadow-md shadow-emerald-900/5 overflow-hidden">
-          <form onSubmit={handleSubmit}>
-            <div className="p-8">
-              {isInitialLoading ? (
-                <div className="animate-pulse space-y-10">
-                  <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-16">
-                    <div className="flex flex-col items-center">
-                      <div className="w-40 h-40 rounded-xl bg-gray-50 border-4 border-white shadow-sm shadow-green-900/5 mb-6" />
-                      <div className="h-3 w-24 bg-gray-100 rounded-full" />
-                    </div>
-                    <div className="space-y-10">
-                      <div className="h-5 w-40 bg-gray-100 rounded-full" />
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                        <div className="space-y-3">
-                          <div className="h-3 w-24 bg-gray-100 rounded-full" />
-                          <div className="h-12 bg-gray-50 rounded-lg" />
-                        </div>
-                        <div className="space-y-3">
-                          <div className="h-3 w-24 bg-gray-100 rounded-full" />
-                          <div className="h-12 bg-gray-50 rounded-lg" />
-                        </div>
-                      </div>
-                    </div>
+      <div className="flex-1 overflow-y-auto custom-scrollbar pb-10">
+        <div className="max-w-2xl mx-auto flex flex-col gap-4">
+
+          {/* ── Feedback banner ─────────────────────────────────────────── */}
+          {message && (
+            <div className={`flex items-start gap-3 p-3.5 rounded-xl border text-[12px] font-semibold animate-in slide-in-from-top-1 duration-200 ${
+              message.type === "success"
+                ? "bg-green-50 border-green-200 text-green-700"
+                : "bg-rose-50 border-rose-200 text-rose-700"
+            }`}>
+              {message.type === "success"
+                ? <CheckCircle2 size={16} className="shrink-0 mt-0.5" />
+                : <AlertCircle size={16} className="shrink-0 mt-0.5" />}
+              <span className="flex-1">{message.text}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+
+            {/* ── Avatar card ─────────────────────────────────────────────── */}
+            <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-gray-100">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
+                    <Camera size={14} />
                   </div>
+                  <span className="text-[13px] font-bold text-gray-800">Foto Profil</span>
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-10">
-                  {/* Avatar Column */}
-                   <div className="flex flex-col items-center">
-                    <div className="relative group">
-                      <div className="w-32 h-32 rounded-xl bg-gray-50 flex items-center justify-center overflow-hidden border-4 border-white shadow-sm shadow-emerald-900/10 relative z-0 group-hover:scale-105 transition-transform duration-500">
-                        {photoUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={photoUrl}
-                            alt="Preview"
-                            className="w-full h-full object-cover animate-in fade-in duration-500"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-emerald-600 flex items-center justify-center">
-                            <User size={64} className="text-white opacity-40" />
-                          </div>
-                        )}
-                        <div
-                          className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer z-10"
-                          onClick={() => fileInputRef.current?.click()}
-                        >
-                          <Camera
-                            size={32}
-                            className="text-white transform scale-90 group-hover:scale-110 transition-transform"
-                          />
-                        </div>
-                      </div>
+                <span className="text-[10px] font-semibold text-gray-400">JPEG / PNG · Maks 2MB</span>
+              </div>
 
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="absolute -bottom-2 -right-2 w-10 h-10 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex items-center justify-center shadow-sm shadow-emerald-900/20 transition-all z-20 border-4 border-white"
-                        title="Ubah Foto"
-                      >
-                        <Camera size={16} />
-                      </button>
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handlePhotoChange}
-                        accept="image/jpeg, image/png, image/webp"
-                        className="hidden"
-                      />
-                    </div>
-                    <div className="mt-6 text-center space-y-2">
-                      <p className="text-[11px] font-bold text-gray-400 leading-loose">
-                        Foto Profil
-                      </p>
-                      <p className="text-[10px] text-gray-300 font-bold bg-gray-50 px-4 py-1.5 rounded-full border border-gray-100">
-                        JPEG/PNG, Max 2MB
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Form Column */}
-                  <div className="space-y-8">
-                    {message && (
-                      <div
-                        className={`p-5 rounded-lg flex items-center gap-4 text-sm border shadow-sm shadow-green-900/5 animate-in slide-in-from-top-2 duration-300 ${
-                          message.type === "success"
-                            ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                            : "bg-rose-50 text-rose-700 border-rose-100"
-                        }`}
-                      >
-                        {message.type === "success" ? (
-                          <CheckCircle2 size={22} className="shrink-0" />
-                        ) : (
-                          <AlertCircle size={22} className="shrink-0" />
-                        )}
-                        <span className="font-bold text-[11px] leading-tight flex-1">
-                          {message.text}
+              <div className="px-5 py-5 flex items-center gap-6">
+                {isInitialLoading ? (
+                  <div className="w-20 h-20 rounded-xl bg-gray-100 animate-pulse shrink-0" />
+                ) : (
+                  <div className="relative group shrink-0 p-2 -m-2">
+                    <div className="w-20 h-20 rounded-xl overflow-hidden border-2 border-white shadow-md shadow-green-900/10 bg-green-600 flex items-center justify-center">
+                      {photoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={photoUrl} alt="Foto profil" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-white text-[22px] font-extrabold tracking-tight select-none">
+                          {getInitials(name)}
                         </span>
-                        <button
-                          type="button"
-                          onClick={() => setMessage(null)}
-                          className="p-1 hover:bg-black/5 rounded-lg transition-colors"
-                        >
-                          <X size={18} />
-                        </button>
-                      </div>
-                    )}
-
-                    <div className="grid gap-8">
-                      {/* Basic Info */}
-                      <div className="space-y-6">
-                        <div className="flex items-center gap-4 pb-3 border-b border-gray-50">
-                          <div className="w-9 h-9 bg-emerald-600 text-white rounded-lg flex items-center justify-center shadow-sm shadow-emerald-900/10">
-                            <User size={18} />
-                          </div>
-                          <h3 className="text-[13px] font-bold text-gray-800">
-                            Informasi Dasar
-                          </h3>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                          <div className="space-y-2">
-                            <label htmlFor="name" className="text-[10px] font-bold text-gray-400 ml-1">
-                              Nama Lengkap
-                            </label>
-                            <input
-                              id="name"
-                              type="text"
-                              value={name}
-                              onChange={(e) => setName(e.target.value)}
-                              required
-                              className="w-full h-11 px-4 bg-gray-50/30 border border-gray-100 rounded-xl text-[13px] font-bold focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 focus:bg-white transition-all text-gray-800"
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <label htmlFor="username" className="text-[10px] font-bold text-gray-400 ml-1">
-                              ID Pengguna
-                            </label>
-                            <input
-                              id="username"
-                              type="text"
-                              value={username}
-                              onChange={(e) => setUsername(e.target.value)}
-                              required
-                              className="w-full h-11 px-4 bg-gray-50/30 border border-gray-100 rounded-xl text-[13px] font-bold focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 focus:bg-white transition-all text-gray-800"
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Security */}
-                      <div className="space-y-6">
-                        <div className="flex items-center gap-4 pb-3 border-b border-gray-50">
-                          <div className="w-9 h-9 bg-slate-800 text-white rounded-lg flex items-center justify-center shadow-sm shadow-slate-900/10">
-                            <Lock size={18} />
-                          </div>
-                          <h3 className="text-[13px] font-bold text-gray-800">
-                            Keamanan Akun
-                          </h3>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                          <div className="space-y-2">
-                            <label htmlFor="password" className="text-[10px] font-bold text-gray-400 ml-1">
-                              Sandi Baru (Opsional)
-                            </label>
-                            <input
-                              id="password"
-                              type="password"
-                              value={password}
-                              onChange={(e) => setPassword(e.target.value)}
-                              placeholder="••••••••"
-                              autoComplete="new-password"
-                              className="w-full h-11 px-4 bg-gray-50/30 border border-gray-100 rounded-xl text-[13px] font-bold focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 focus:bg-white transition-all text-gray-800"
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <label htmlFor="confirmPassword" className="text-[10px] font-bold text-gray-400 ml-1">
-                              Ulangi Sandi
-                            </label>
-                            <div className="relative">
-                              <input
-                                id="confirmPassword"
-                                type="password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                placeholder="••••••••"
-                                autoComplete="new-password"
-                                className={`w-full h-11 px-4 bg-gray-50/30 border rounded-xl text-[13px] font-bold focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:bg-white transition-all text-gray-800 ${
-                                  password && confirmPassword
-                                    ? password === confirmPassword
-                                      ? "border-emerald-500"
-                                      : "border-rose-500"
-                                    : "border-gray-100"
-                                }`}
-                              />
-                              {password && confirmPassword && (
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                                  {password === confirmPassword ? (
-                                    <CheckCircle2 size={18} className="text-emerald-500" />
-                                  ) : (
-                                    <AlertCircle size={18} className="text-rose-500" />
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      )}
                     </div>
+                    {/* Hover overlay */}
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute inset-0 rounded-xl bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                    >
+                      <Camera size={20} className="text-white" />
+                    </div>
+                    {/* Camera badge */}
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute -bottom-1.5 -right-1.5 w-7 h-7 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center justify-center shadow-sm border-2 border-white transition-colors"
+                    >
+                      <Camera size={12} />
+                    </button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handlePhotoChange}
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                    />
                   </div>
+                )}
+
+                <div className="flex-1 min-w-0">
+                  {isInitialLoading ? (
+                    <div className="space-y-2 animate-pulse">
+                      <div className="h-4 w-32 bg-gray-100 rounded-full" />
+                      <div className="h-3 w-20 bg-gray-100 rounded-full" />
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-[15px] font-bold text-gray-800 truncate">{name || "—"}</p>
+                      <p className="text-[12px] text-gray-400 font-medium truncate">@{username || "—"}</p>
+                      <span className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 bg-green-50 border border-green-100 rounded-lg text-[10px] font-bold text-green-700">
+                        <ShieldCheck size={10} />
+                        {role || "—"}
+                      </span>
+                    </>
+                  )}
                 </div>
-              )}
+
+                {photoUrl && !isInitialLoading && (
+                  <button
+                    type="button"
+                    onClick={() => setPhotoUrl(null)}
+                    className="shrink-0 text-[11px] font-bold text-rose-400 hover:text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-lg border border-transparent hover:border-rose-100 transition-all"
+                  >
+                    Hapus foto
+                  </button>
+                )}
+              </div>
             </div>
 
-            {/* Actions Footer */}
-            <div className="px-8 py-6 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
-              <p className="text-[10px] font-bold text-gray-400 max-w-[300px]">
-                Pastikan data Anda sudah benar sebelum menekan tombol simpan.
+            {/* ── Informasi Dasar ──────────────────────────────────────────── */}
+            <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
+              <div className="flex items-center gap-2.5 px-5 py-3.5 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-gray-100">
+                <div className="w-7 h-7 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
+                  <User size={14} />
+                </div>
+                <span className="text-[13px] font-bold text-gray-800">Informasi Dasar</span>
+              </div>
+
+              <div className="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Nama Lengkap */}
+                <div>
+                  <label className="block text-[12px] font-bold text-gray-600 mb-2">
+                    Nama Lengkap <span className="text-rose-400">*</span>
+                  </label>
+                  {isInitialLoading ? (
+                    <div className="h-10 bg-gray-100 rounded-lg animate-pulse" />
+                  ) : (
+                    <div className="relative">
+                      <User size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                        required
+                        className="w-full pl-8 pr-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-green-400 focus:outline-none transition-all placeholder:text-gray-300"
+                        placeholder="Nama lengkap Anda"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Username */}
+                <div>
+                  <label className="block text-[12px] font-bold text-gray-600 mb-2">
+                    Username <span className="text-rose-400">*</span>
+                  </label>
+                  {isInitialLoading ? (
+                    <div className="h-10 bg-gray-100 rounded-lg animate-pulse" />
+                  ) : (
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 text-[13px] font-bold select-none pointer-events-none">@</span>
+                      <input
+                        type="text"
+                        value={username}
+                        onChange={e => setUsername(e.target.value.toLowerCase().replace(/\s/g, ""))}
+                        required
+                        className="w-full pl-7 pr-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-green-400 focus:outline-none transition-all lowercase placeholder:text-gray-300 placeholder:normal-case"
+                        placeholder="username"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* ── Keamanan Akun ────────────────────────────────────────────── */}
+            <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
+              <div className="flex items-center gap-2.5 px-5 py-3.5 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-gray-100">
+                <div className="w-7 h-7 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
+                  <Lock size={14} />
+                </div>
+                <div className="flex-1">
+                  <span className="text-[13px] font-bold text-gray-800">Keamanan Akun</span>
+                </div>
+                <span className="text-[10px] font-semibold text-gray-400">Kosongkan jika tidak ingin mengubah password</span>
+              </div>
+
+              <div className="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Password baru */}
+                <div>
+                  <label className="block text-[12px] font-bold text-gray-600 mb-2">
+                    Password Baru <span className="text-gray-400 font-medium">(opsional)</span>
+                  </label>
+                  <div className="relative">
+                    <Lock size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      autoComplete="new-password"
+                      className="w-full pl-8 pr-10 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-green-400 focus:outline-none transition-all placeholder:text-gray-300"
+                      placeholder="Minimal 6 karakter"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(v => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                    </button>
+                  </div>
+                  {password.length > 0 && password.length < 6 && (
+                    <p className="mt-1.5 text-[11px] text-amber-500 font-semibold flex items-center gap-1">
+                      <AlertCircle size={10} /> Minimal 6 karakter
+                    </p>
+                  )}
+                </div>
+
+                {/* Konfirmasi password */}
+                <div>
+                  <label className="block text-[12px] font-bold text-gray-600 mb-2">
+                    Ulangi Password
+                  </label>
+                  <div className="relative">
+                    <Lock size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <input
+                      type={showConfirm ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                      autoComplete="new-password"
+                      className={`w-full pl-8 pr-10 py-2.5 text-[13px] font-medium bg-gray-50 border rounded-lg focus:bg-white focus:outline-none transition-all placeholder:text-gray-300 ${
+                        passwordMatch ? "border-green-400 focus:border-green-400" :
+                        passwordMismatch ? "border-rose-400 focus:border-rose-400" :
+                        "border-gray-200 focus:border-green-400"
+                      }`}
+                      placeholder="Ulangi password baru"
+                    />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                      {passwordMatch && <CheckCircle2 size={13} className="text-green-500" />}
+                      {passwordMismatch && <AlertCircle size={13} className="text-rose-500" />}
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirm(v => !v)}
+                        className="text-gray-400 hover:text-gray-600 transition-colors"
+                        tabIndex={-1}
+                      >
+                        {showConfirm ? <EyeOff size={14} /> : <Eye size={14} />}
+                      </button>
+                    </div>
+                  </div>
+                  {passwordMismatch && (
+                    <p className="mt-1.5 text-[11px] text-rose-500 font-semibold flex items-center gap-1">
+                      <AlertCircle size={10} /> Password tidak cocok
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* ── Footer actions ───────────────────────────────────────────── */}
+            <div className="flex items-center justify-between px-5 py-4 bg-white border border-gray-100 rounded-xl shadow-sm">
+              <p className="text-[11px] text-gray-400 font-medium">
+                Pastikan data sudah benar sebelum menyimpan.
               </p>
-              <div className="flex gap-3">
+              <div className="flex items-center gap-2.5">
                 <button
                   type="button"
                   onClick={() => router.back()}
-                  className="h-11 px-6 text-[12px] font-bold text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all"
+                  className="px-4 py-2.5 text-[12px] font-bold text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 rounded-xl border border-gray-200 transition-all"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  disabled={
-                    isLoading ||
-                    isPending ||
-                    (password !== "" && password !== confirmPassword)
-                  }
-                  className="h-11 px-8 text-[13px] bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-all shadow-md shadow-emerald-900/10 flex items-center gap-3 disabled:opacity-50 ring-4 ring-emerald-500/0 hover:ring-emerald-500/5 active:scale-95"
+                  disabled={isSaving || !!passwordMismatch || isInitialLoading}
+                  className="flex items-center gap-2 px-5 py-2.5 text-[13px] font-bold text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 rounded-xl shadow-sm transition-all"
                 >
-                  {isLoading || isPending ? (
-                    <Loader2 size={18} className="animate-spin" />
-                  ) : (
-                    <Save size={18} />
-                  )}
-                  <span>
-                    {isLoading || isPending ? "Menyimpan..." : "Simpan Profil"}
-                  </span>
+                  {isSaving
+                    ? <><RefreshCw size={14} className="animate-spin" /> Menyimpan...</>
+                    : <><Save size={14} /> Simpan Profil</>
+                  }
                 </button>
               </div>
             </div>
+
           </form>
         </div>
       </div>
     </div>
   );
 }
-
-
-
-
-
-

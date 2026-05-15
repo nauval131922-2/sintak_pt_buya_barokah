@@ -44,7 +44,12 @@ export async function GET(request: NextRequest) {
 
     const whereClause = whereParts.length > 0 ? `WHERE ${whereParts.join(' AND ')}` : '';
 
-    const sqlData = `SELECT * FROM jurnal_harian_produksi ${whereClause} 
+    // Kolom yang dipilih eksplisit untuk menghindari transfer data berlebih
+    const SELECT_COLS = `id, posisi, absensi, tgl, shift, nama_karyawan, no_order, nama_order,
+      jenis_pekerjaan, keterangan, target, realisasi, no_order_2, nama_order_2,
+      jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, is_manual_input`;
+
+    const sqlData = `SELECT ${SELECT_COLS} FROM jurnal_harian_produksi ${whereClause} 
       ORDER BY 
         tgl ASC, 
         CASE UPPER(bagian)
@@ -61,25 +66,22 @@ export async function GET(request: NextRequest) {
         id ASC 
       LIMIT ? OFFSET ?`;
     const sqlTotal = `SELECT COUNT(*) as count FROM jurnal_harian_produksi ${whereClause}`;
+    const sqlLastUpdated = `SELECT strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) as lastUpdated 
+          FROM activity_logs 
+          WHERE table_name = 'jurnal_harian_produksi' AND action_type = 'UPLOAD'`;
 
     const batchResults = await db.batch([
       { sql: sqlData, args: [...args, limit, offset] },
-      { sql: sqlTotal, args }
+      { sql: sqlTotal, args },
+      { sql: sqlLastUpdated, args: [] }
     ], "read");
 
     const data = batchResults[0].rows;
     const total = Number((batchResults[1].rows[0] as any).count);
-
-    // Fetch last update from activity logs
-    const metaResults = await db.execute({
-      sql: `SELECT strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) as lastUpdated 
-            FROM activity_logs 
-            WHERE table_name = 'jurnal_harian_produksi' AND action_type = 'UPLOAD'`,
-      args: []
-    });
-    const lastUpdated = (metaResults.rows[0] as any)?.lastUpdated || null;
+    const lastUpdated = (batchResults[2].rows[0] as any)?.lastUpdated || null;
 
     return NextResponse.json({ success: true, data, total, page, limit, lastUpdated });
+
 
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

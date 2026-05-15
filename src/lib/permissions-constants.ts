@@ -29,6 +29,7 @@ export const MODULE_REGISTRY = [
   { key: 'pembelian_hutang',       label: 'Pelunasan Hutang',                 group: 'Data Digit - Pembelian' },
 
   // Produksi (Data Digit)
+  { key: 'produksi_dashboard',     label: 'Dashboard Produksi',             group: 'Data Digit - Produksi' },
   { key: 'produksi_bom',           label: 'BOM Produksi',                     group: 'Data Digit - Produksi' },
   { key: 'produksi_orders',        label: 'Order Produksi',                   group: 'Data Digit - Produksi' },
   { key: 'produksi_bahan_baku',    label: 'BBB Produksi',                     group: 'Data Digit - Produksi' },
@@ -48,7 +49,8 @@ export const MODULE_REGISTRY = [
   { key: 'kelola_user',            label: 'Kelola User',                      group: 'Sistem - User' },
 
   // Sistem - Settings
-  { key: 'settings_konversi_data', label: 'Konversi Data - Jurnal Harian Produksi', group: 'Sistem - Settings' },
+  { key: 'settings_konversi_data_hpp', label: 'Konversi Data - HPP Kalkulasi',          group: 'Sistem - Settings' },
+  { key: 'settings_konversi_data',     label: 'Konversi Data - Jurnal Harian Produksi', group: 'Sistem - Settings' },
 
   // Akuntansi & Keuangan (Data Digit)
   { key: 'akt_mrek',               label: 'Rek Akuntansi',                    group: 'Data Digit - Akuntansi & Keuangan' },

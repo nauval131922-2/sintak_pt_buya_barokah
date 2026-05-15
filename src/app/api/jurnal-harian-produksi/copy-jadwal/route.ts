@@ -14,9 +14,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Cek apakah hari ini sudah pernah di-copy
+    // Gunakan raw_data JSON prefix match (bisa pakai index) daripada LIKE '%...%' pada message
     const checkLog = await db.execute({
-      sql: `SELECT id FROM activity_logs WHERE action_type = 'COPY_JADWAL' AND message LIKE ?`,
-      args: [`%dari ${today} ke%`]
+      sql: `SELECT id FROM activity_logs 
+            WHERE action_type = 'COPY_JADWAL' 
+              AND table_name = 'jurnal_harian_produksi'
+              AND raw_data LIKE ?
+            LIMIT 1`,
+      args: [`{"from":"${today}"%`]
     });
 
     return NextResponse.json({ 

@@ -881,6 +881,7 @@ export async function initSchema(db: any) {
           "INSERT OR IGNORE INTO role_permissions (role, module_key, can_access) VALUES ('Admin', 'pembelian_penerimaan', 1);",
           "INSERT OR IGNORE INTO role_permissions (role, module_key, can_access) VALUES ('Admin', 'pembelian_rekap', 1);",
           "INSERT OR IGNORE INTO role_permissions (role, module_key, can_access) VALUES ('Admin', 'pembelian_hutang', 1);",
+          "INSERT OR IGNORE INTO role_permissions (role, module_key, can_access) VALUES ('Admin', 'produksi_dashboard', 1);",
           "INSERT OR IGNORE INTO role_permissions (role, module_key, can_access) VALUES ('Admin', 'produksi_bom', 1);",
           "INSERT OR IGNORE INTO role_permissions (role, module_key, can_access) VALUES ('Admin', 'produksi_orders', 1);",
           "INSERT OR IGNORE INTO role_permissions (role, module_key, can_access) VALUES ('Admin', 'produksi_bahan_baku', 1);",

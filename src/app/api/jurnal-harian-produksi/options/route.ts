@@ -1,13 +1,30 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@libsql/client';
+import { NextResponse } from 'next/server';
+import db from '@/lib/db';
 
-const db = createClient({ url: `file:${process.env.DB_PATH || 'database_dev.sqlite'}` });
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    // Gunakan shared db — hindari buka koneksi baru setiap request
+    // Query DISTINCT pada kolom yang sudah terindex (bagian, nama_karyawan)
     const [bagianResult, karyawanResult] = await db.batch([
-      { sql: `SELECT DISTINCT bagian FROM jurnal_harian_produksi WHERE bagian IS NOT NULL AND bagian != '' ORDER BY bagian ASC`, args: [] },
-      { sql: `SELECT DISTINCT nama_karyawan, bagian FROM jurnal_harian_produksi WHERE nama_karyawan IS NOT NULL AND nama_karyawan != '' ORDER BY nama_karyawan ASC`, args: [] }
+      {
+        sql: `SELECT DISTINCT bagian 
+              FROM jurnal_harian_produksi 
+              WHERE bagian IS NOT NULL AND bagian != '' 
+              ORDER BY bagian ASC 
+              LIMIT 50`,
+        args: []
+      },
+      {
+        sql: `SELECT DISTINCT nama_karyawan, bagian 
+              FROM jurnal_harian_produksi 
+              WHERE nama_karyawan IS NOT NULL AND nama_karyawan != ''
+                AND (nama_karyawan NOT LIKE '-%' AND bagian NOT LIKE '-%')
+              ORDER BY nama_karyawan ASC 
+              LIMIT 500`,
+        args: []
+      }
     ], 'read');
 
     const bagian = bagianResult.rows.map((r: any) => r.bagian as string);
