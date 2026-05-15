@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
-import { HelpCircle, X, Home, Users, Package, Box, Star, BarChart3, Calculator, AlertCircle, Info, Search, Filter, Database, FileText, FileCheck, CheckCircle2, TrendingDown, Monitor, ShieldCheck, ShoppingCart, ClipboardList, Truck, CreditCard, TrendingUp } from 'lucide-react';
+import { Database, Info, TrendingDown, Monitor, Search, ShieldCheck, Users, FileText, FileCheck, ClipboardList, Calculator, ShoppingCart, Truck, Box, Star, BarChart3, AlertCircle, TrendingUp, CreditCard } from 'lucide-react';
+import BaseModal from '@/components/ui/BaseModal';
 
 export default function ManualModal() {
   const [isOpen, setIsOpen] = useState(false);
@@ -34,7 +35,7 @@ export default function ManualModal() {
       ]
     },
     '/dashboard-manufaktur': {
-      title: 'Dashboard Manufaktur',
+      title: 'Dashboard Produksi',
       icon: Monitor,
       description: 'Ringkasan operasional dan progres produksi harian yang terintegrasi dengan Digit.',
       steps: [
@@ -390,141 +391,91 @@ export default function ManualModal() {
   const currentGuide = allGuides[pathname as keyof typeof allGuides] || allGuides['/dashboard'];
 
   return (
-    <>
-      {/* Modal Overlay */}
-      {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div 
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300"
-            onClick={() => setIsOpen(false)}
-          />
-          
-          <div 
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="modal-title"
-            className="relative w-full max-w-2xl bg-white rounded-2xl shadow-md overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-300 border border-gray-100"
-          >
-            {/* Header */}
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center">
-                  <currentGuide.icon size={24} />
+    <BaseModal
+      isOpen={isOpen}
+      onClose={() => setIsOpen(false)}
+      title={currentGuide.title}
+      subtitle="Panduan Sistem SINTAK"
+      icon={currentGuide.icon}
+      maxWidth="max-w-2xl"
+      footer={<p className="text-[12px] font-bold text-gray-400 w-full text-center">SINTAK &copy; PT. Buya Barokah</p>}
+    >
+      {(() => {
+        // Helper to parse **bold** text into strong tags
+        const renderText = (text: string) => {
+          if (!text) return '';
+          const parts = text.split(/(\*\*.*?\*\*)/g);
+          return parts.map((part, i) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+              return <strong key={i} className="font-bold text-gray-900">{part.slice(2, -2)}</strong>;
+            }
+            return part;
+          });
+        };
+
+        return (
+          <div className="space-y-8">
+            {/* Description / Kegunaan */}
+            {currentGuide.description && (
+              <div className="p-5 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="flex items-center gap-2 text-[11px] text-gray-400 font-bold uppercase tracking-widest mb-2">
+                  <Database size={14} />
+                  <span>Kegunaan Menu</span>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Panduan Sistem</span>
-                  <h2 id="modal-title" className="text-xl font-bold text-gray-800 tracking-tight">
-                    {currentGuide.title}
-                  </h2>
-                </div>
+                <p className="text-[14px] text-gray-600 font-medium leading-relaxed">
+                  {renderText(currentGuide.description)}
+                </p>
               </div>
-              <button 
-                onClick={() => setIsOpen(false)}
-                className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all"
-                aria-label="Tutup Panduan"
-              >
-                <X size={20} />
-              </button>
-            </div>
+            )}
 
-            {/* Content Area */}
-            <div className="p-8 space-y-8 overflow-y-auto custom-scrollbar">
+            {/* Steps / Cara Penggunaan */}
+            <div className="space-y-4">
               {(() => {
-                // Helper to parse **bold** text into strong tags
-                const renderText = (text: string) => {
-                  if (!text) return '';
-                  const parts = text.split(/(\*\*.*?\*\*)/g);
-                  return parts.map((part, i) => {
-                    if (part.startsWith('**') && part.endsWith('**')) {
-                      return <strong key={i} className="font-bold text-gray-900">{part.slice(2, -2)}</strong>;
-                    }
-                    return part;
-                  });
-                };
-
-                return (
-                  <>
-                    {/* Description / Kegunaan */}
-                    {currentGuide.description && (
-                      <div className="p-5 bg-gray-50 rounded-xl border border-gray-100">
-                        <div className="flex items-center gap-2 text-[11px] text-gray-400 font-bold uppercase tracking-widest mb-2">
-                          <Database size={14} />
-                          <span>Kegunaan Menu</span>
+                let stepCounter = 0;
+                return currentGuide.steps.map((step, index) => {
+                  const isHeader = step.endsWith(':') && (step.startsWith('Tab ') || step.startsWith('A. ') || step.startsWith('B. ') || step.startsWith('C. '));
+                  const isSubStep = step.trimStart().startsWith('•') || step.startsWith('  ');
+                  const cleanText = isSubStep ? step.trimStart().replace(/^[•\s]+/, '') : step;
+                  
+                  if (!isHeader && !isSubStep) {
+                    stepCounter++;
+                  }
+                  
+                  return (
+                    <div key={index} className={`flex ${isHeader ? 'mt-8 first:mt-0 mb-4' : 'gap-4'} ${isSubStep ? 'pl-10' : 'pl-2'} group items-start`}>
+                      {isHeader ? null : isSubStep ? (
+                        <div className="flex-shrink-0 w-1.5 h-1.5 mt-2 rounded-full bg-gray-300" />
+                      ) : (
+                        <div className="flex-shrink-0 w-6 h-6 rounded-lg bg-green-100 text-green-600 flex items-center justify-center text-[11px] font-bold shadow-sm">
+                          {stepCounter}
                         </div>
-                        <p className="text-[14px] text-gray-600 font-medium leading-relaxed">
-                          {renderText(currentGuide.description)}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Steps / Cara Penggunaan */}
-                    <div className="space-y-4">
-                      {(() => {
-                        let stepCounter = 0;
-                        return currentGuide.steps.map((step, index) => {
-                          const isHeader = step.endsWith(':') && (step.startsWith('Tab ') || step.startsWith('A. ') || step.startsWith('B. ') || step.startsWith('C. '));
-                          const isSubStep = step.trimStart().startsWith('•') || step.startsWith('  ');
-                          const cleanText = isSubStep ? step.trimStart().replace(/^[•\s]+/, '') : step;
-                          
-                          if (!isHeader && !isSubStep) {
-                            stepCounter++;
-                          }
-                          
-                          return (
-                            <div key={index} className={`flex ${isHeader ? 'mt-8 first:mt-0 mb-4' : 'gap-4'} ${isSubStep ? 'pl-10' : 'pl-2'} group items-start`}>
-                              {isHeader ? null : isSubStep ? (
-                                <div className="flex-shrink-0 w-1.5 h-1.5 mt-2 rounded-full bg-gray-300" />
-                              ) : (
-                                <div className="flex-shrink-0 w-6 h-6 rounded-lg bg-green-100 text-green-600 flex items-center justify-center text-[11px] font-bold shadow-sm">
-                                  {stepCounter}
-                                </div>
-                              )}
-                              <p className={`text-[14px] leading-relaxed ${
-                                isHeader ? 'font-bold text-gray-800 text-sm border-b-2 border-green-100 pb-1' : 
-                                isSubStep ? 'text-gray-500 font-medium' : 'text-gray-700 font-medium'
-                              }`}>
-                                {renderText(cleanText)}
-                              </p>
-                            </div>
-                          );
-                        });
-                      })()}
+                      )}
+                      <p className={`text-[14px] leading-relaxed ${
+                        isHeader ? 'font-bold text-gray-800 text-sm border-b-2 border-green-100 pb-1' : 
+                        isSubStep ? 'text-gray-500 font-medium' : 'text-gray-700 font-medium'
+                      }`}>
+                        {renderText(cleanText)}
+                      </p>
                     </div>
-
-                    {(currentGuide as any).tips && (
-                      <div className="p-5 bg-green-600 rounded-xl flex gap-4 shadow-sm shadow-green-200">
-                        <Info size={24} className="text-white shrink-0" />
-                        <div>
-                          <p className="text-[11px] font-bold text-green-100 uppercase tracking-widest mb-1">Tips Berguna</p>
-                          <p className="text-[14px] font-bold text-white leading-relaxed">
-                            {renderText((currentGuide as any).tips)}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                );
+                  );
+                });
               })()}
             </div>
 
-            {/* Footer */}
-            <div className="p-6 bg-gray-50 border-t border-gray-100 flex items-center justify-center">
-              <p className="text-[12px] font-bold text-gray-400">SINTAK &copy; PT. Buya Barokah</p>
-            </div>
+            {(currentGuide as any).tips && (
+              <div className="p-5 bg-green-600 rounded-xl flex gap-4 shadow-sm shadow-green-200">
+                <Info size={24} className="text-white shrink-0" />
+                <div>
+                  <p className="text-[11px] font-bold text-green-100 uppercase tracking-widest mb-1">Tips Berguna</p>
+                  <p className="text-[14px] font-bold text-white leading-relaxed">
+                    {renderText((currentGuide as any).tips)}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      )}
-    </>
+        );
+      })()}
+    </BaseModal>
   );
 }
-
-
-
-
-
-
-
-
-
-
-

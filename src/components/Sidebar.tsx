@@ -385,7 +385,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
           canAccess('stok_master_barang') ||
           canAccess('pembelian_pr') || canAccess('pembelian_spph') || canAccess('pembelian_sph_in') ||
           canAccess('pembelian_po') || canAccess('pembelian_penerimaan') || canAccess('pembelian_rekap') || canAccess('pembelian_hutang') ||
-          canAccess('produksi_bom') || canAccess('produksi_orders') || canAccess('produksi_bahan_baku') || canAccess('produksi_barang_jadi') ||
+          canAccess('produksi_dashboard') || canAccess('produksi_bom') || canAccess('produksi_orders') || canAccess('produksi_bahan_baku') || canAccess('produksi_barang_jadi') ||
           canAccess('penjualan_sph_out') || canAccess('penjualan_so') || canAccess('penjualan_laporan') ||
           canAccess('penjualan_piutang') || canAccess('penjualan_pengiriman') ||
           canAccess('akt_jurnal_umum') || canAccess('akt_mrek')) && (
@@ -471,12 +471,13 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
           )}
 
           {/* PRODUKSI SECTION */}
-          {(canAccess('produksi_bom') || canAccess('produksi_orders') || canAccess('produksi_bahan_baku') || canAccess('produksi_barang_jadi')) && (
+          {(canAccess('produksi_dashboard') || canAccess('produksi_bom') || canAccess('produksi_orders') || canAccess('produksi_bahan_baku') || canAccess('produksi_barang_jadi')) && (
             <div data-group="Produksi">
               <FlyoutMenu
                 label="Produksi"
                 icon={<Package size={18} />}
                 items={[
+                  ...(canAccess('produksi_dashboard') ? [{ label: 'Dashboard Produksi', href: '/dashboard-manufaktur', icon: <LayoutDashboard size={16} /> }] : []),
                   ...(canAccess('produksi_bom') ? [{ label: 'Bill of Material Produksi', href: '/bom', icon: <Calculator size={16} /> }] : []),
                   ...(canAccess('produksi_orders') ? [{ label: 'Order Produksi', href: '/orders', icon: <ClipboardList size={16} /> }] : []),
                   ...(canAccess('produksi_bahan_baku') || canAccess('produksi_barang_jadi') ? [{
@@ -713,6 +714,24 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                       label: 'Konversi Data',
                       icon: <RefreshCw size={16} />,
                       items: [
+                        {
+                          label: 'Kalkulasi',
+                          icon: <Calculator size={14} />,
+                          items: [
+                            {
+                              label: 'Data',
+                              icon: <Database size={12} />,
+                              items: [
+                                {
+                                  label: 'HPP Kalkulasi',
+                                  href: '/settings/konversi-data/kalkulasi/hpp-kalkulasi',
+                                  icon: <Calculator size={12} />,
+                                  exact: true,
+                                }
+                              ]
+                            }
+                          ]
+                        },
                         {
                           label: 'Produksi',
                           icon: <Package size={14} />,

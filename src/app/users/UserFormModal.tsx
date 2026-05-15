@@ -1,7 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { X, Save, RefreshCw, AlertCircle, Search, ChevronDown, User, ShieldCheck, UserCog, Lock } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import {
+  X, Save, RefreshCw, AlertCircle, Search, ChevronDown,
+  User, ShieldCheck, UserCog, Lock, Eye, EyeOff, CheckCircle2
+} from 'lucide-react';
 import { createUser, updateUser } from '@/lib/users';
 
 interface UserData {
@@ -24,26 +27,71 @@ export default function UserFormModal({ user, customRoles = [], onClose }: UserF
   const [username, setUsername] = useState(user?.username || '');
   const [role, setRole] = useState(user?.role || (customRoles.length > 0 ? customRoles[0] : ''));
   const [password, setPassword] = useState('');
-  
+  const [showPassword, setShowPassword] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Custom Dropdown State
+  // Role Dropdown State
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [roleSearchQuery, setRoleSearchQuery] = useState('');
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  // Posisi fixed untuk dropdown agar tidak terpotong overflow modal
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number; width: number } | null>(null);
+
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dropdownPanelRef = useRef<HTMLDivElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const handleGlobalClick = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsRoleDropdownOpen(false);
+    setTimeout(() => nameInputRef.current?.focus(), 100);
+  }, []);
+
+  // Hitung posisi dropdown berdasarkan posisi tombol trigger
+  const openDropdown = useCallback(() => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setDropdownPos({
+        top: rect.bottom + 6,
+        left: rect.left,
+        width: rect.width,
+      });
+    }
+    setIsRoleDropdownOpen(true);
+  }, []);
+
+  const closeDropdown = useCallback(() => {
+    setIsRoleDropdownOpen(false);
+    setRoleSearchQuery('');
+  }, []);
+
+  // Tutup dropdown kalau klik di luar panel
+  useEffect(() => {
+    if (!isRoleDropdownOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (
+        triggerRef.current?.contains(target) ||
+        dropdownPanelRef.current?.contains(target)
+      ) return;
+      closeDropdown();
+    };
+    window.addEventListener('mousedown', handleClick);
+    return () => window.removeEventListener('mousedown', handleClick);
+  }, [isRoleDropdownOpen, closeDropdown]);
+
+  // Escape hanya tutup dropdown kalau terbuka, baru tutup modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (isRoleDropdownOpen) {
+          closeDropdown();
+        }
+        // tidak tutup modal saat tekan Escape
       }
     };
-    if (isRoleDropdownOpen) {
-      window.addEventListener('mousedown', handleGlobalClick);
-    }
-    return () => window.removeEventListener('mousedown', handleGlobalClick);
-  }, [isRoleDropdownOpen]);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isRoleDropdownOpen, closeDropdown]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,175 +124,225 @@ export default function UserFormModal({ user, customRoles = [], onClose }: UserF
     }
   };
 
+  const filteredRoles = customRoles.filter(r =>
+    r.toLowerCase().includes(roleSearchQuery.toLowerCase())
+  );
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md animate-in zoom-in-95 duration-300 relative border border-gray-100">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-50 flex justify-between items-center bg-gray-50/30 rounded-t-2xl">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 border border-emerald-100 shadow-sm">
-               <UserCog size={24} />
+    <>
+      {/* Backdrop — klik tidak menutup modal */}
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+
+          {/* Modal Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-green-50 to-emerald-50 shrink-0 rounded-t-2xl">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-green-100 text-green-600 flex items-center justify-center">
+                <UserCog size={18} />
+              </div>
+              <div>
+                <h3 className="text-[15px] font-bold text-gray-800 tracking-tight">
+                  {isEditing ? 'Edit Profil User' : 'Tambah Akun Baru'}
+                </h3>
+                <p className="text-[11px] text-gray-500 font-medium">
+                  {isEditing ? `Memperbarui data untuk @${user?.username}` : 'Isi detail akun pengguna baru'}
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-[18px] font-bold text-gray-800 tracking-tight leading-none mb-1.5">
-                {isEditing ? 'Edit Profil User' : 'Buat Akun Baru'}
-              </h2>
-              <p className="text-[11px] text-gray-400 font-bold leading-none">Manajemen Akses & Otoritas</p>
-            </div>
+            <button
+              onClick={() => onClose(false)}
+              className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white/80 transition-all"
+            >
+              <X size={18} />
+            </button>
           </div>
-          <button
-            onClick={() => onClose(false)}
-            className="p-2 text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
-          >
-            <X size={20} />
-          </button>
-        </div>
 
-        <form onSubmit={handleSubmit} className="p-6">
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 text-red-600 border border-red-100 rounded-xl flex items-start gap-3 text-[12px] font-bold shadow-sm shadow-red-900/5">
-              <AlertCircle size={18} className="shrink-0 mt-0.5" />
-              <span>{error}</span>
-            </div>
-          )}
+          {/* Modal Body */}
+          <div className="px-6 py-5 flex flex-col gap-5 overflow-y-auto">
 
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-[11px] font-bold text-gray-400 ml-1 flex items-center gap-2">
-                <User size={14} className="text-gray-300" /> Nama Lengkap
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-50/30 border border-gray-100 rounded-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 focus:bg-white transition-all font-bold text-[13px] tracking-tight placeholder:text-gray-300 shadow-sm"
-                placeholder="Contoh: Budi Santoso"
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-[11px] font-bold text-gray-400 ml-1 flex items-center gap-2">
-                <ShieldCheck size={14} className="text-gray-300" /> Username
-              </label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ''))}
-                className="w-full px-4 py-2.5 bg-gray-50/30 border border-gray-100 rounded-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 focus:bg-white transition-all font-bold text-[13px] lowercase tracking-tight placeholder:text-gray-300 shadow-sm"
-                placeholder="Contoh: budis"
-                required
-              />
-            </div>
+            {/* Error Message */}
+            {error && (
+              <div className="flex items-start gap-2.5 p-3 bg-rose-50 border border-rose-200 rounded-xl animate-in fade-in duration-200">
+                <AlertCircle size={16} className="text-rose-500 shrink-0 mt-0.5" />
+                <p className="text-[12px] font-semibold text-rose-700">{error}</p>
+              </div>
+            )}
 
-            <div className="space-y-2">
-              <label className="text-[11px] font-bold text-gray-400 ml-1 flex items-center gap-2">
-                <UserCog size={14} className="text-gray-300" /> Peran Akses (Role)
+            {/* Nama Lengkap */}
+            <div>
+              <label className="block text-[12px] font-bold text-gray-600 mb-2">
+                Nama Lengkap <span className="text-rose-400">*</span>
               </label>
-              <div className="relative" ref={dropdownRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsRoleDropdownOpen(prev => !prev)}
-                  className="w-full px-4 py-2.5 text-left bg-gray-50/30 border border-gray-100 rounded-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 focus:bg-white transition-all font-bold text-[13px] text-gray-700 flex items-center justify-between tracking-tight shadow-sm hover:border-emerald-200 group"
-                >
-                  <span className="truncate">{role}</span>
-                  <ChevronDown size={18} className={`text-gray-400 shrink-0 transition-transform duration-300 ${isRoleDropdownOpen ? 'rotate-180 text-emerald-500' : 'group-hover:text-emerald-500'}`} />
-                </button>
-                {isRoleDropdownOpen && (
-                  <div className="absolute top-[calc(100%+10px)] left-0 w-full bg-white border border-gray-100 rounded-xl shadow-md py-3 z-50 animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col max-h-[250px]">
-                    <div className="px-4 pb-3 shrink-0 border-b border-gray-50 mb-2">
-                      <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-300 group-focus-within:text-green-500">
-                          <Search size={14} />
-                        </div>
-                        <input
-                          type="text"
-                          autoFocus
-                          placeholder="Cari role..."
-                          value={roleSearchQuery}
-                          onChange={(e) => setRoleSearchQuery(e.target.value)}
-                          className="w-full pl-10 pr-3 py-2 text-[12px] bg-gray-50 border-none focus:outline-none rounded-lg placeholder:text-gray-300 font-bold transition-colors"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex-1 overflow-y-auto px-2 custom-scrollbar">
-                      {customRoles
-                        .filter(r => r.toLowerCase().includes(roleSearchQuery.toLowerCase()))
-                        .map(cr => (
-                          <button
-                            type="button"
-                            key={cr}
-                            onClick={() => {
-                              setRole(cr);
-                              setIsRoleDropdownOpen(false);
-                              setRoleSearchQuery('');
-                            }}
-                            className={`w-full text-left px-4 py-2 text-[12px] font-bold rounded-lg transition-all mb-1 ${
-                              role === cr 
-                                ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-100' 
-                                : 'text-gray-600 hover:bg-emerald-50 hover:text-emerald-600'
-                            }`}
-                          >
-                            {cr}
-                          </button>
-                        ))}
-                    </div>
-                  </div>
-                )}
+              <div className="relative">
+                <User size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <input
+                  ref={nameInputRef}
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full pl-8 pr-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-green-400 focus:outline-none transition-all placeholder:text-gray-300"
+                  placeholder="Contoh: Budi Santoso"
+                  required
+                />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-[11px] font-bold text-gray-400 ml-1 flex items-center gap-2">
-                <Lock size={14} className="text-gray-300" /> {isEditing ? 'Password Baru (Opsional)' : 'Password'}
+            {/* Username */}
+            <div>
+              <label className="block text-[12px] font-bold text-gray-600 mb-2">
+                Username <span className="text-rose-400">*</span>
               </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="new-password"
-                className="w-full px-4 py-2.5 bg-gray-50/30 border border-gray-100 rounded-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 focus:bg-white transition-all font-bold text-[13px] tracking-tight placeholder:text-gray-300 shadow-sm"
-                placeholder={isEditing ? 'Kosongkan jika tidak diubah' : 'Minimal 6 karakter'}
-                required={!isEditing}
-              />
+              <div className="relative">
+                <ShieldCheck size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ''))}
+                  className="w-full pl-8 pr-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-green-400 focus:outline-none transition-all lowercase placeholder:text-gray-300 placeholder:normal-case"
+                  placeholder="Contoh: budis"
+                  required
+                />
+              </div>
             </div>
+
+            {/* Peran Akses */}
+            <div>
+              <label className="block text-[12px] font-bold text-gray-600 mb-2">
+                Peran Akses (Role) <span className="text-rose-400">*</span>
+              </label>
+              <button
+                ref={triggerRef}
+                type="button"
+                onClick={() => isRoleDropdownOpen ? closeDropdown() : openDropdown()}
+                className={`w-full px-3.5 py-2.5 text-left bg-gray-50 border rounded-lg focus:outline-none transition-all text-[13px] font-medium flex items-center justify-between gap-2 ${
+                  isRoleDropdownOpen
+                    ? 'border-green-400 bg-white'
+                    : 'border-gray-200 hover:border-green-300'
+                }`}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <UserCog size={13} className="text-gray-400 shrink-0" />
+                  <span className="truncate text-gray-700">{role || 'Pilih role...'}</span>
+                </div>
+                <ChevronDown
+                  size={15}
+                  className={`text-gray-400 shrink-0 transition-transform duration-200 ${isRoleDropdownOpen ? 'rotate-180 text-green-500' : ''}`}
+                />
+              </button>
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-[12px] font-bold text-gray-600 mb-2">
+                {isEditing ? (
+                  <>Password Baru <span className="text-gray-400 font-medium">(opsional)</span></>
+                ) : (
+                  <>Password <span className="text-rose-400">*</span></>
+                )}
+              </label>
+              <div className="relative">
+                <Lock size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="new-password"
+                  className="w-full pl-8 pr-10 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-green-400 focus:outline-none transition-all placeholder:text-gray-300"
+                  placeholder={isEditing ? 'Kosongkan jika tidak diubah' : 'Minimal 6 karakter'}
+                  required={!isEditing}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(prev => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-gray-400 hover:text-gray-600 transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                </button>
+              </div>
+              {!isEditing && password.length > 0 && password.length < 6 && (
+                <p className="text-[11px] text-amber-500 font-semibold flex items-center gap-1.5 mt-1.5 ml-0.5">
+                  <AlertCircle size={11} />
+                  Password minimal 6 karakter
+                </p>
+              )}
+            </div>
+
           </div>
 
-          <div className="mt-8 flex items-center justify-end gap-3">
+          {/* Modal Footer */}
+          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50 shrink-0 rounded-b-2xl">
             <button
               type="button"
               onClick={() => onClose(false)}
-              className="px-6 py-3 text-[13px] font-bold text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-all"
+              className="px-5 py-2.5 text-[13px] font-bold text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 rounded-xl border border-gray-200 transition-all"
             >
               Batal
             </button>
             <button
-              type="submit"
+              type="button"
+              onClick={handleSubmit}
               disabled={loading}
-              className="flex-1 max-w-[200px] px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold rounded-xl shadow-md shadow-emerald-900/10 transition-all disabled:opacity-50 flex items-center justify-center gap-3 active:scale-95"
+              className="px-6 py-2.5 text-[13px] font-bold text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 rounded-xl shadow-sm transition-all flex items-center gap-2"
             >
               {loading ? (
-                <RefreshCw size={18} className="animate-spin" />
+                <><RefreshCw size={15} className="animate-spin" /> Menyimpan...</>
               ) : (
-                <Save size={18} />
+                <><Save size={15} /> {isEditing ? 'Simpan Perubahan' : 'Buat Akun'}</>
               )}
-              <span>{isEditing ? 'Update User' : 'Buat User'}</span>
             </button>
           </div>
-        </form>
+        </div>
       </div>
-    </div>
 
+      {/* Dropdown Role — dirender di luar modal (fixed) agar tidak terpotong overflow */}
+      {isRoleDropdownOpen && dropdownPos && (
+        <div
+          ref={dropdownPanelRef}
+          className="fixed z-[200] bg-white border border-gray-100 rounded-xl shadow-lg animate-in fade-in slide-in-from-top-1 duration-150 overflow-hidden"
+          style={{ top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width }}
+        >
+          {/* Search */}
+          <div className="p-2 border-b border-gray-50">
+            <div className="relative">
+              <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <input
+                type="text"
+                autoFocus
+                placeholder="Cari role..."
+                value={roleSearchQuery}
+                onChange={(e) => setRoleSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-3 py-2 text-[12px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-green-400 focus:outline-none transition-all"
+              />
+            </div>
+          </div>
+          {/* Options */}
+          <div className="max-h-[180px] overflow-y-auto p-1.5 custom-scrollbar">
+            {filteredRoles.length === 0 ? (
+              <p className="text-center text-[11px] text-gray-400 italic py-4">Tidak ada role ditemukan</p>
+            ) : (
+              filteredRoles.map(cr => (
+                <button
+                  type="button"
+                  key={cr}
+                  onClick={() => {
+                    setRole(cr);
+                    closeDropdown();
+                  }}
+                  className={`w-full text-left px-3.5 py-2.5 text-[12px] font-semibold rounded-lg transition-all flex items-center justify-between gap-2 border ${
+                    role === cr
+                      ? 'bg-green-600 text-white border-green-700 shadow-sm'
+                      : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-green-50 hover:text-green-700 hover:border-green-200'
+                  }`}
+                >
+                  <span>{cr}</span>
+                  {role === cr && <CheckCircle2 size={13} className="shrink-0" />}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
