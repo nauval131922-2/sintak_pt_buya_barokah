@@ -15,6 +15,7 @@ import TableFooter from '@/components/TableFooter';
 import DateRangeCard from '@/components/DateRangeCard';
 import { useTableSelection } from '@/lib/hooks/useTableSelection';
 import ScrapingHeader from '@/components/ScrapingHeader';
+import CopyButton from '@/components/ui/CopyButton';
 
 function formatDateToYYYYMMDD(date: Date) {
   const y = date.getFullYear();
@@ -37,64 +38,7 @@ function formatIndoDateStr(tglStr: string) {
 
 const PAGE_SIZE = 50;
 
-const CopyableFakturCell = ({ value, isSelected }: { value: string, isSelected: boolean }) => {
-  const [copied, setCopied] = useState(false);
 
-  const handleCopy = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = value || '';
-    const textToCopy = (tempDiv.textContent || tempDiv.innerText || "").trim();
-    
-    if (!textToCopy || textToCopy === '–' || textToCopy === '-' || textToCopy === '---') return;
-
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(textToCopy);
-      } else {
-        const textArea = document.createElement("textarea");
-        textArea.value = textToCopy;
-        textArea.style.position = "fixed";
-        textArea.style.left = "-999999px";
-        textArea.style.top = "-999999px";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        document.execCommand('copy');
-        textArea.remove();
-      }
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Copy failed', err);
-    }
-  };
-
-  const textValue = (value || '').replace(/<[^>]*>/g, '').trim();
-  const hasValue = textValue && textValue !== '–' && textValue !== '-' && textValue !== '---';
-
-  return (
-    <div className="flex items-center justify-between group w-full">
-      <div 
-        className={`font-bold tracking-tight transition-colors truncate flex-1 ${isSelected ? 'text-green-600' : 'text-gray-500'}`} 
-        dangerouslySetInnerHTML={{ __html: value || '–' }} 
-      />
-      {hasValue && (
-        <button
-          onClick={handleCopy}
-          className={`p-1.5 rounded-md transition-all ml-2 shrink-0 ${
-            copied 
-              ? 'text-green-600 bg-green-50 opacity-100' 
-              : 'opacity-0 group-hover:opacity-100 text-gray-400 hover:text-green-600 hover:bg-gray-100'
-          }`}
-          title="Salin Faktur SO"
-        >
-          {copied ? <Check size={14} /> : <Copy size={14} />}
-        </button>
-      )}
-    </div>
-  );
-};
 
 export default function BarangJadiClient() {
   const router = useRouter();
@@ -154,6 +98,10 @@ export default function BarangJadiClient() {
     setScrapedPeriod(hydratedPeriod.scrapedPeriod);
     setStartDate(hydratedPeriod.startDate);
     setEndDate(hydratedPeriod.endDate);
+
+    const savedLastUpdate = localStorage.getItem('BarangJadiClient_lastUpdated');
+    if (savedLastUpdate) setLastUpdated(formatLastUpdate(new Date(savedLastUpdate)));
+
     mountedRef.current = true;
     return () => { mountedRef.current = false; };
   }, []);
@@ -196,7 +144,11 @@ export default function BarangJadiClient() {
             });
             setTotalCount(json.total || 0);
             if (json.scrapedPeriod) setScrapedPeriod(json.scrapedPeriod);
-            setLastUpdated(json.lastUpdated ? formatLastUpdate(new Date(json.lastUpdated)) : null);
+            if (json.lastUpdated) {
+              const date = new Date(json.lastUpdated);
+              setLastUpdated(formatLastUpdate(date));
+              localStorage.setItem('BarangJadiClient_lastUpdated', date.toISOString());
+            }
             setLoadTime(Math.round(performance.now() - startTimer));
           }
         }
@@ -283,7 +235,23 @@ export default function BarangJadiClient() {
       accessorKey: 'faktur_so',
       header: 'Faktur SO',
       size: 200,
-      cell: ({ getValue, row }: any) => <CopyableFakturCell value={String(getValue() || '')} isSelected={row.getIsSelected()} />
+      cell: ({ getValue, row }: any) => {
+        const val = String(getValue() || '').replace(/<[^>]*>/g, '').trim();
+        const hasValue = val && val !== '–' && val !== '-' && val !== '---';
+        return (
+          <div className="flex items-center justify-between group w-full pr-2">
+             <div 
+              className={`font-bold tracking-tight transition-colors truncate flex-1 ${row.getIsSelected() ? 'text-green-600' : 'text-gray-500'}`} 
+              dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} 
+            />
+            {hasValue && (
+              <div className="shrink-0 ml-2">
+                <CopyButton text={val} />
+              </div>
+            )}
+          </div>
+        );
+      }
     },
     {
       accessorKey: 'kd_pelanggan',
@@ -493,7 +461,7 @@ export default function BarangJadiClient() {
       )}
 
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
-        <div className="flex flex-col gap-4 shrink-0 px-1">
+        <div className="flex flex-col gap-3 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
             <ScrapingHeader title="Hasil Scrapping Penerimaan Barang Hasil Produksi" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
 
@@ -510,7 +478,7 @@ export default function BarangJadiClient() {
             </div>
             <button
               onClick={() => setWarningOnly(!warningOnly)}
-              className={`h-[42px] px-4 rounded-xl flex items-center gap-2 transition-all border shrink-0 shadow-sm ${warningOnly ? 'bg-red-500 text-white border-red-600 ring-2 ring-red-500/30 shadow-md font-bold' : 'bg-white text-red-500 border-red-200 hover:bg-red-50 font-medium'}`}
+              className={`h-10 px-4 rounded-xl flex items-center gap-2 transition-all border shrink-0 shadow-sm ${warningOnly ? 'bg-red-500 text-white border-red-600 ring-2 ring-red-500/30 shadow-md font-bold' : 'bg-white text-red-500 border-red-200 hover:bg-red-50 font-medium'}`}
               title="Filter peringatan"
             >
               <span>⚠️</span>
@@ -519,7 +487,7 @@ export default function BarangJadiClient() {
 
             <button
               onClick={() => setSoOnly(!soOnly)}
-              className={`h-[42px] px-4 rounded-xl flex items-center gap-2 transition-all border shrink-0 shadow-sm ${soOnly ? 'bg-blue-600 text-white border-blue-700 ring-2 ring-blue-500/30 shadow-md font-bold' : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50 font-medium'}`}
+              className={`h-10 px-4 rounded-xl flex items-center gap-2 transition-all border shrink-0 shadow-sm ${soOnly ? 'bg-blue-600 text-white border-blue-700 ring-2 ring-blue-500/30 shadow-md font-bold' : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50 font-medium'}`}
               title="Hanya tampilkan yang ada SO"
             >
               <span>📋</span>
@@ -528,7 +496,7 @@ export default function BarangJadiClient() {
           </div>
         </div>
 
-        <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden relative">
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative">
           <DataTable 
             columns={columns} 
             data={data || []} 
@@ -548,18 +516,19 @@ export default function BarangJadiClient() {
               return hasWarning ? 'bg-rose-50/60 hover:bg-rose-100/60 transition-colors' : '';
             }}
           />
-          <TableFooter 
-            totalCount={totalCount} 
-            currentCount={data?.length || 0} 
-            label="Penerimaan Barang Hasil Produksi" 
-            selectedCount={selectedIds.size} 
-            onClearSelection={clearSelection} 
-            loadTime={loadTime}
-            page={page}
-            totalPages={Math.ceil(totalCount / PAGE_SIZE)}
-            onPageChange={(newPage) => setPage(newPage)}
-          />
         </div>
+
+        <TableFooter 
+          totalCount={totalCount} 
+          currentCount={data?.length || 0} 
+          label="Penerimaan Barang Hasil Produksi" 
+          selectedCount={selectedIds.size} 
+          onClearSelection={clearSelection} 
+          loadTime={loadTime}
+          page={page}
+          totalPages={Math.ceil(totalCount / PAGE_SIZE)}
+          onPageChange={(newPage) => setPage(newPage)}
+        />
       </div>
 
       <ConfirmDialog isOpen={dialog.isOpen} type={dialog.type as any} title={dialog.title} message={dialog.message} onConfirm={() => setDialog(prev => ({ ...prev, isOpen: false }))} />

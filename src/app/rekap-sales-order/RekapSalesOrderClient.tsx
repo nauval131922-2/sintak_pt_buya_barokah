@@ -353,7 +353,7 @@ export default function RekapSalesOrderClient() {
       )}
 
       <div className="flex-1 flex flex-col gap-3 overflow-hidden relative min-h-0">
-        <div className="flex flex-col gap-4 shrink-0 px-1">
+        <div className="flex flex-col gap-3 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
             <ScrapingHeader title="Hasil Scrapping Rekap Sales Order" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
 
@@ -367,7 +367,7 @@ export default function RekapSalesOrderClient() {
           <SearchAndReload searchQuery={searchQuery} setSearchQuery={setSearchQuery} onReload={() => setRefreshKey(v => v + 1)} loading={loading} placeholder="Cari faktur atau pelanggan..." />
         </div>
 
-        <div className="flex-1 min-h-0 flex flex-col gap-5 overflow-hidden relative">
+        <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden relative">
           <DataTable columns={columns} data={data || []} isLoading={loading} totalCount={totalCount} selectedIds={selectedIds} onRowClick={handleRowClick} columnWidths={columnWidths} onColumnWidthChange={setColumnWidths} rowHeight="h-11" />
         </div>
 

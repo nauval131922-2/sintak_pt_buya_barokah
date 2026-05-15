@@ -30,7 +30,9 @@ export default async function BarangJadiPage() {
         }
       />
 
-      <BarangJadiClient />
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+        <BarangJadiClient />
+      </div>
     </div>
   );
 }
