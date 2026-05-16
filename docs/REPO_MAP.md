@@ -1,4 +1,4 @@
-﻿# Repo Map
+# Repo Map
 
 Dokumen ini adalah peta cepat struktur repository untuk membantu AI agent atau developer baru memahami arah kerja tanpa perlu scan ulang dari nol. Detail aturan kerja tetap mengikuti `AGENTS.md`, `AI_RULES.md`, dan dokumen di `docs/`.
 
@@ -71,6 +71,7 @@ Project ini adalah aplikasi Next.js App Router berbasis TypeScript untuk operasi
 - Components: `src/components/ExcelUpload.tsx`, `src/components/ExcelUploadCard.tsx`, `src/components/ImportInfo.tsx`, `src/components/ScrapingHeader.tsx`.
 - Scripts: `scripts/init-db.ts`, `scripts/migrate-sales-2025.mjs`, `scripts/import-master-pekerjaan.ts`, `scripts/import-master-target.ts`, serta script `check-*` dan `debug-*`.
 - Fokus: scraping data eksternal, import Excel/master data, cron sync, maintenance, dan debugging.
+- Docs: docs/SCRAPING_FLOW.md adalah playbook scraping/import, pola activity log, checklist aman, dan validasi cepat.
 
 ## Common Entry Points
 

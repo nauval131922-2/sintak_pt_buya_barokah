@@ -23,6 +23,8 @@ Sebelum menjalankan prompt resume atau melakukan analisis apa pun, AI wajib memb
 2. `docs/REPO_MAP.md` - peta struktur repo agar cepat paham arah kerja.
 3. `docs/DEV_RULES.md` - aturan teknis pengembangan proyek.
 
+Jika task berkaitan dengan scraping, import, atau sinkronisasi data, baca juga `docs/SCRAPING_FLOW.md` sebelum mengubah kode.
+
 Jika salah satu file tidak ditemukan, laporkan ke user terlebih dahulu sebelum lanjut.
 
 ## Prompt: Melanjutkan Sesi di PC Lain (Rumah/Kantor)

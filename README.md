@@ -19,6 +19,8 @@ Sebelum mengerjakan fitur atau debugging, baca file berikut dalam urutan ini:
 2. `docs/DEV_RULES.md` - standar workflow development, guardrail UI/UX, dan aturan data.
 3. `docs/REPO_MAP.md` - peta struktur repository dan area kode penting.
 
+Jika task berkaitan dengan scraping, import, atau sinkronisasi data, baca juga `docs/SCRAPING_FLOW.md` sebelum mengubah kode.
+
 Setelah itu, gunakan `docs/RESUME_SESSION.md` sebagai konteks lanjutan saat melanjutkan sesi sebelumnya.
 
 ## Quick Start

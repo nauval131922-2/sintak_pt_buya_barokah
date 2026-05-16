@@ -6,6 +6,7 @@
 - Sesi AI berikutnya wajib mulai dari `AGENTS.md`, lalu `docs/REPO_MAP.md`, lalu `docs/DEV_RULES.md`.
 - `docs/RESUME_SESSION.md` sudah dirapikan agar urutan bacaan awal konsisten dengan alur tersebut.
 - `README.md` sudah diperbarui dengan Quick Start ringkas untuk onboarding manusia dan AI.
+- `docs/SCRAPING_FLOW.md` menjadi playbook awal untuk task scraping, import, sinkronisasi data, activity log, dan validasi cepat.
 
 ### Default Workflow Sesi Berikutnya
 - Baca `AGENTS.md` -> `docs/REPO_MAP.md` -> `docs/DEV_RULES.md` sebelum mengubah file.
