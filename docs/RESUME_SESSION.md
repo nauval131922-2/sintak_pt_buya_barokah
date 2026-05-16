@@ -1,9 +1,15 @@
 # 🔄 RESUME_SESSION.md
 
 > 🤖 **Untuk AI Agent yang baru memulai sesi**:
-> Sebelum mengerjakan apapun, baca dulu file **`docs/DEV_RULES.md`**.
+> Sebelum mengerjakan apapun, baca dulu file **`AGENTS.md`**, **`docs/DEV_RULES.md`**, dan **`docs/REPO_MAP.md`**.
 > File itu berisi aturan wajib yang berlaku otomatis — tidak perlu user mengingatkan satu per satu.
 
+## 📚 Bacaan Wajib Sebelum Mulai
+Sebelum menjalankan prompt resume di bawah, AI **wajib** membaca dokumen berikut secara berurutan:
+
+1. `AGENTS.md`
+2. `docs/DEV_RULES.md`
+3. `docs/REPO_MAP.md`
 ## Prompt: Melanjutkan Sesi di PC Lain (Rumah/Kantor)
 
 Gunakan prompt ini setiap kali membuka sesi baru di perangkat berbeda.
@@ -17,6 +23,15 @@ berikut secara berurutan sebelum kita mulai bekerja:
 
 ---
 
+### 🔰 LANGKAH 0 — Bacaan Wajib (Jangan Dilewati)
+Sebelum melakukan tindakan apa pun, baca dan patuhi dokumen berikut:
+1. `AGENTS.md`
+2. `docs/DEV_RULES.md`
+3. `docs/REPO_MAP.md`
+
+Gunakan ketiganya sebagai konteks utama sebelum analisis atau eksekusi.
+
+---
 ### 🔄 LANGKAH 1 — Sinkronisasi Repository
 Jalankan perintah berikut dan tampilkan hasilnya:
   git pull
