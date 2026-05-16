@@ -1,7 +1,8 @@
 # RESUME_SESSION.md
 
 > Untuk AI Agent yang baru memulai sesi:
-> sebelum mengerjakan apa pun, baca dulu `AGENTS.md`, `docs/DEV_RULES.md`, dan `docs/REPO_MAP.md`.
+> sebelum mengerjakan apa pun, baca dulu `AGENTS.md` dan `docs/REPO_MAP.md`.
+> Setelah paham arah repo, lanjutkan baca `docs/DEV_RULES.md`.
 > Tiga file ini adalah konteks awal wajib. Jangan menunggu user mengingatkan ulang.
 
 ## Bacaan Wajib Sebelum Mulai
@@ -9,8 +10,8 @@
 Sebelum menjalankan prompt resume atau melakukan analisis apa pun, AI wajib membaca dokumen berikut secara berurutan:
 
 1. `AGENTS.md` - aturan utama repo dan gaya kerja AI.
-2. `docs/DEV_RULES.md` - aturan teknis pengembangan proyek.
-3. `docs/REPO_MAP.md` - peta struktur repo agar cepat paham arah kerja.
+2. `docs/REPO_MAP.md` - peta struktur repo agar cepat paham arah kerja.
+3. `docs/DEV_RULES.md` - aturan teknis pengembangan proyek.
 
 Jika salah satu file tidak ditemukan, laporkan ke user terlebih dahulu sebelum lanjut.
 
@@ -30,8 +31,8 @@ berikut secara berurutan sebelum kita mulai bekerja:
 ### LANGKAH 0 - Bacaan Wajib (Jangan Dilewati)
 Sebelum melakukan tindakan apa pun, baca dan patuhi dokumen berikut secara berurutan:
 1. `AGENTS.md`
-2. `docs/DEV_RULES.md`
-3. `docs/REPO_MAP.md`
+2. `docs/REPO_MAP.md`
+3. `docs/DEV_RULES.md`
 
 Gunakan ketiganya sebagai konteks utama sebelum analisis atau eksekusi.
 Jangan mulai mengubah file sebelum aturan dan peta repo dipahami.
@@ -189,8 +190,8 @@ untuk memahami konteks sesi terakhir.
 RESUME_SESSION.md (file ini)
   |
   |-- wajib membaca -> AGENTS.md                   (aturan utama repo)
-  |-- wajib membaca -> docs/DEV_RULES.md           (aturan teknis pengembangan)
   |-- wajib membaca -> docs/REPO_MAP.md            (peta struktur repository)
+  |-- wajib membaca -> docs/DEV_RULES.md           (aturan teknis pengembangan)
   |-- membaca       -> docs/AI_SESSION_SUMMARY.md  (konteks sesi terakhir)
   |-- membaca       -> docs/task.md                (status task)
   |-- memeriksa     -> docs/BUILD_FROM_SCRATCH.md  (jika perlu rebuild)
