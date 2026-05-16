@@ -91,8 +91,8 @@
 ## 📊 Statistik
 
 ```
-Total task    : 79
-Selesai       : 74
+Total task    : 80
+Selesai       : 75
 In progress   : 1
 Backlog       : 4
 Bug diketahui : 0

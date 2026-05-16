@@ -168,12 +168,18 @@ Jika sesi menyentuh scraping, import, sync, marketplace, atau activity log:
 ## Ringkasan Urutan Cepat
 
 ```text
-1. Baca AGENTS.md, REPO_MAP.md, DEV_RULES.md, RESUME_SESSION.md.
-2. Baca SCRAPING_FLOW.md jika task terkait scraping/import/sync.
-3. Review git status, git diff --check, dan git diff.
-4. Update dokumen relevan.
-5. Audit .gitignore dan file staged.
-6. Commit per kategori perubahan.
-7. Push jika aman atau sudah diizinkan.
-8. Laporkan hasil dan next step.
+Mulai sesi:
+1. Baca AGENTS.md, docs/REPO_MAP.md, dan docs/DEV_RULES.md.
+2. Baca docs/RESUME_SESSION.md dan docs/AI_SESSION_SUMMARY.md.
+3. Baca docs/SCRAPING_FLOW.md jika task terkait scraping/import/sync.
+
+Eksekusi:
+4. Kerjakan task sesuai scope dan dokumen teknis terkait.
+5. Update dokumen relevan jika ada perubahan alur, struktur, atau keputusan.
+
+Tutup sesi:
+6. Review git status, git diff --check, dan git diff.
+7. Audit .gitignore, staged files, lalu commit per kategori perubahan.
+8. Push jika aman atau sudah diizinkan.
+9. Laporkan hasil, commit hash, validasi, dan next step.
 ```
