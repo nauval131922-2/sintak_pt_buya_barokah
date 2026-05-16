@@ -25,7 +25,7 @@ Setelah itu, gunakan `docs/RESUME_SESSION.md` sebagai konteks lanjutan saat mela
 
 - Node.js versi modern yang kompatibel dengan Next.js 16.
 - npm.
-- File environment lokal (`.env` atau `.env.development`) jika menjalankan fitur database remote, scraping, cron, atau session production.
+- File environment lokal sesuai mode: `.env.development` untuk `npm run dev`, dan `.env` atau environment production setara untuk `npm run build` / `npm run start` bila memakai secret, database remote, scraping, cron, atau session production.
 
 ## Setup Pertama Kali
 
@@ -55,6 +55,8 @@ Jalankan development server:
 npm run dev
 ```
 
+Mode development membaca konfigurasi dari `.env.development` bila file tersebut tersedia. Tanpa override `DB_PATH`, database lokal development memakai `database_dev.sqlite`.
+
 Buka aplikasi di browser:
 
 ```text
@@ -69,7 +71,7 @@ Build production:
 npm run build
 ```
 
-Catatan: `npm run build` otomatis menjalankan `prebuild`, yaitu `npm run init-db`, sebelum proses build.
+Catatan: `npm run build` otomatis menjalankan `prebuild`, yaitu `npm run init-db`, sebelum proses build. Untuk build/start production lokal, siapkan `.env` atau environment production setara bila membutuhkan `SESSION_SECRET`, database remote, scraping, atau cron.
 
 Jalankan hasil build:
 
@@ -91,7 +93,7 @@ npm run start
 
 ## Environment Variable
 
-Project dapat berjalan dengan database lokal tanpa konfigurasi remote tambahan. Beberapa environment variable yang dikenali kode:
+Project dapat berjalan dengan database lokal tanpa konfigurasi remote tambahan. Gunakan `.env.development` untuk development (`npm run dev`) dan `.env` atau environment production setara untuk `npm run build` / `npm run start`. Beberapa environment variable yang dikenali kode:
 
 | Variable | Kegunaan |
 | --- | --- |
