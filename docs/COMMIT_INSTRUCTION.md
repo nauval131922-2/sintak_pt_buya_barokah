@@ -1,160 +1,179 @@
-# 📋 COMMIT_INSTRUCTION.md
+# Instruksi Commit dan Akhir Sesi AI
 
-> 🤖 **Untuk AI Agent yang baru memulai sesi**:
-> Sebelum mengerjakan apa pun, baca urutan berikut (wajib):
-> 1) `AGENTS.md`
-> 2) `docs/REPO_MAP.md`
-> 3) `docs/DEV_RULES.md`
->
-> Catatan: untuk konteks lintas sesi, baca juga `docs/RESUME_SESSION.md`.
+Dokumen ini adalah checklist penutup sesi kerja. Tujuannya agar setiap perubahan selesai dengan rapi, terdokumentasi, mudah dilanjutkan, dan aman untuk di-commit/push.
 
-## 🚀 Prompt: Commit & Push Perubahan
+## Prinsip Utama
 
-Gunakan prompt ini di akhir sesi untuk menyimpan semua perubahan ke Git.
-Cukup copy-paste prompt di bawah ini ke AI agent.
+- Baca konteks repo sebelum mengubah atau menutup sesi.
+- Dokumentasikan perubahan penting, bukan semua detail kecil.
+- Commit dipisah berdasarkan jenis perubahan yang masuk akal.
+- Jangan ikutkan file lokal besar, cache, database, log, atau secret.
+- Jika user sudah memberi izin eksplisit untuk lanjut tanpa persetujuan ulang, eksekusi aman boleh dilakukan langsung.
 
----
+## Bacaan Wajib Awal Sesi
+
+Sebelum bekerja atau menutup sesi, baca minimal:
+
+1. `AGENTS.md`
+2. `docs/REPO_MAP.md`
+3. `docs/DEV_RULES.md`
+4. `docs/RESUME_SESSION.md`
+5. `docs/AI_SESSION_SUMMARY.md`
+
+Jika task menyentuh scraping, import, sync, marketplace, atau activity log, baca juga:
+
+- `docs/SCRAPING_FLOW.md`
+
+Jika ada konflik instruksi, prioritaskan urutan berikut:
+
+1. Instruksi langsung user/developer/system.
+2. `AGENTS.md` yang scope-nya berlaku.
+3. `docs/DEV_RULES.md`.
+4. Dokumen pendukung lain di `docs/`.
+
+## Struktur Dokumen yang Perlu Dijaga
 
 ```text
-Tolong lakukan commit dan push semua perubahan terbaru. Ikuti langkah-langkah berikut secara berurutan:
-
----
-
-### 🗂️ LANGKAH 1 — Pastikan Struktur Dokumentasi
-Pastikan struktur folder dokumentasi berikut sudah ada (buat jika belum):
-
 docs/
-├── COMMIT_INSTRUCTION.md      ← panduan akhir sesi
-├── RESUME_SESSION.md          ← panduan awal sesi/lanjutan konteks
-├── REPO_MAP.md                ← peta struktur repo & entry points
-├── DEV_RULES.md               ← aturan development wajib
-├── BUILD_FROM_SCRATCH.md      ← tutorial rebuild sistem dari nol
-├── AI_SESSION_SUMMARY.md      ← ringkasan sesi terakhir
-├── task.md                    ← backlog & progress
-└── tutorials/
-    ├── 01-setup.md
-    ├── 02-fitur-[nama].md
-    └── ...                    ← satu file per fitur/perbaikan
-
----
-
-### 🧭 LANGKAH 2 — Verifikasi Bacaan Wajib (AI)
-Sebelum lanjut, pastikan kamu sudah membaca dan mengikuti:
-- `AGENTS.md`
-- `docs/REPO_MAP.md`
-- `docs/DEV_RULES.md`
-
-Jika ada konflik instruksi, prioritaskan `AGENTS.md` dan aturan di `docs/DEV_RULES.md`.
-
----
-
-### 📝 LANGKAH 3 — Buat/Perbarui Dokumentasi Tutorial Mandiri
-Berdasarkan semua perubahan di sesi ini (lihat Changes di Source Control), buat/perbarui file tutorial step-by-step di dalam `docs/tutorials/`.
-
-Aturan:
-- Satu file per fitur atau perbaikan.
-- Penamaan: `01-nama-fitur.md`, `02-nama-fitur.md`, dst.
-
----
-
-### 🔄 LANGKAH 4 — Perbarui BUILD_FROM_SCRATCH.md
-Tinjau seluruh perubahan di sesi ini, lalu perbarui `docs/BUILD_FROM_SCRATCH.md` agar selalu mencerminkan kondisi sistem terkini secara lengkap.
-
-Yang harus diperbarui bila relevan:
-- Fitur baru        → tambahkan langkah pembuatannya secara kronologis
-- Bug fix           → perbarui langkah yang berubah cara kerjanya
-- Perubahan folder  → perbarui bagian struktur proyek
-- Dependency baru   → perbarui bagian instalasi & konfigurasi
-- Perubahan skema   → perbarui bagian setup database
-- Env var baru      → perbarui bagian konfigurasi `.env`
-
-Prinsip utama:
-- `BUILD_FROM_SCRATCH.md` harus bisa dipakai siapa pun untuk membangun ulang sistem dari nol dan menghasilkan sistem yang identik dengan kondisi saat ini.
-
----
-
-### 🔍 LANGKAH 5 — Audit `.gitignore`
-Periksa file `.gitignore`:
-- Pastikan tidak ada file sampah (cache/log/database lokal) yang ikut ter-push.
-- Pastikan tidak ada rule terlalu luas yang mengabaikan file penting.
-- Jika ada masalah, perbaiki dan jelaskan perubahannya.
-
----
-
-### 👥 LANGKAH 6 — Tanya Dulu Sebelum Push
-Jika user belum memberi izin eksplisit untuk langsung commit/push, tanyakan dulu:
-"Apakah kamu sedang bekerja sendiri atau dalam tim?"
-- Jika sendiri → push ke branch aktif (mis. `master`).
-- Jika tim     → push ke branch fitur/dev, jangan langsung ke `master`.
-
-Tunggu jawaban saya sebelum lanjut. Jika user sudah memberi izin eksplisit untuk lanjut tanpa persetujuan ulang, gunakan konteks itu dan lanjutkan dengan aman.
-
----
-
-### ✅ LANGKAH 7 — Review Sebelum Commit
-Jalankan perintah berikut dan tampilkan hasilnya ke saya:
-- `git status`
-- `git diff`
-
-Pastikan:
-- Tidak ada file yang tidak sengaja ikut.
-- Tidak ada perubahan penting yang terlewat.
-
----
-
-### 📦 LANGKAH 8 — Kelompokkan & Commit
-Kelompokkan perubahan berdasarkan fitur/perbaikan (jangan digabung jadi satu).
-Gunakan Conventional Commits:
-
-Tipe yang tersedia:
-- feat     → fitur baru
-- fix      → perbaikan bug
-- docs     → perubahan dokumentasi
-- refactor → refaktor tanpa ubah fungsi
-- chore    → maintenance (dependency/konfigurasi)
-- test     → menambah/memperbaiki test
-- style    → formatting/style (tanpa ubah logika)
-
-Format: `<tipe>: <deskripsi singkat dalam bahasa Indonesia>`
-
-Contoh:
-- `feat: tambah fitur login dengan Google OAuth`
-- `fix: perbaiki bug validasi form registrasi`
-- `docs: perbarui README dan tutorial onboarding`
-
----
-
-### 🧾 LANGKAH 9 — Perbarui Ringkasan Sesi AI
-Buat/perbarui:
-- `docs/AI_SESSION_SUMMARY.md` (tanggal/waktu, PC, pekerjaan, keputusan, sisa pekerjaan)
-- `docs/task.md` (status ✅/🔄/📌 dan statistik jika ada)
-
----
-
-### 🚀 LANGKAH 10 — Commit Dokumentasi & Push
-Commit dokumentasi (jika ada perubahan) dalam satu commit:
-- `docs/AI_SESSION_SUMMARY.md`
-- `docs/task.md`
-- `docs/BUILD_FROM_SCRATCH.md`
-- seluruh file baru/diperbarui di `docs/tutorials/`
-
-Pesan commit:
-- `docs: perbarui ringkasan sesi, tutorial, dan BUILD_FROM_SCRATCH`
-
-Lalu push sesuai keputusan di Langkah 6.
-Tampilkan konfirmasi hasil push ke saya.
+├── REPO_MAP.md              # peta repo dan entry point utama
+├── RESUME_SESSION.md        # panduan lanjut sesi berikutnya
+├── AI_SESSION_SUMMARY.md    # ringkasan sesi terakhir
+├── DEV_RULES.md             # aturan teknis pengembangan
+├── COMMIT_INSTRUCTION.md    # checklist akhir sesi ini
+├── BUILD_FROM_SCRATCH.md    # cara membangun ulang sistem dari nol
+├── SCRAPING_FLOW.md         # playbook scraping/import/sync/activity log
+├── task.md                  # backlog, status, dan statistik progress
+└── tutorials/               # tutorial per fitur/perbaikan bila relevan
 ```
 
----
+## Checklist Akhir Sesi
 
-## 💡 Referensi Cepat Format Commit
+### 1. Review Perubahan
 
-| Tipe | Kapan Digunakan | Contoh |
-|------|------------------|--------|
-| `feat:` | Fitur baru | `feat: tambah halaman profil pengguna` |
-| `fix:` | Perbaikan bug | `fix: perbaiki crash saat upload foto` |
-| `docs:` | Dokumentasi | `docs: perbarui README instalasi` |
-| `refactor:` | Refaktor kode | `refactor: pisahkan logika auth ke service` |
-| `chore:` | Maintenance | `chore: update dependency ke versi terbaru` |
-| `test:` | Penambahan test | `test: tambah unit test untuk user model` |
-| `style:` | Formatting/style | `style: rapikan indentasi file controller` |
+Jalankan dan cek:
+
+```bash
+git status
+git diff --check
+git diff
+```
+
+Pastikan:
+
+- Tidak ada file yang tidak sengaja ikut.
+- Tidak ada whitespace error dari `git diff --check`.
+- Tidak ada perubahan unrelated yang ikut dalam commit.
+- Tidak ada file lokal besar seperti database SQLite, cache, log, atau file secret.
+
+### 2. Update Dokumentasi Relevan
+
+Update dokumen sesuai jenis perubahan:
+
+- `README.md` jika cara menjalankan, onboarding, atau alur utama berubah.
+- `docs/REPO_MAP.md` jika struktur folder, entry point, atau modul penting berubah.
+- `docs/RESUME_SESSION.md` jika ada arahan awal sesi yang perlu diingat AI berikutnya.
+- `docs/AI_SESSION_SUMMARY.md` untuk ringkasan pekerjaan, keputusan, dan sisa pekerjaan.
+- `docs/task.md` untuk status task dan statistik progress.
+- `docs/BUILD_FROM_SCRATCH.md` jika perubahan memengaruhi cara membangun sistem dari nol.
+- `docs/SCRAPING_FLOW.md` jika perubahan menyentuh scraping, import, sync, marketplace, atau activity log.
+- `docs/tutorials/` jika perubahan butuh tutorial step-by-step mandiri.
+
+### 3. Audit `.gitignore`
+
+Cek `.gitignore` bila ada file baru atau generated file baru.
+
+Pastikan:
+
+- Database lokal tidak ter-commit.
+- Cache/build output tidak ter-commit.
+- File `.env` atau secret tidak ter-commit.
+- Rule tidak terlalu luas sampai mengabaikan source penting.
+
+### 4. Kelompokkan Commit
+
+Pisahkan commit berdasarkan kategori yang jelas.
+
+Gunakan Conventional Commits:
+
+- `feat:` fitur baru.
+- `fix:` perbaikan bug.
+- `docs:` dokumentasi.
+- `refactor:` refaktor tanpa perubahan perilaku.
+- `chore:` maintenance dependency/konfigurasi.
+- `test:` penambahan/perbaikan test.
+- `style:` formatting tanpa perubahan logika.
+
+Contoh:
+
+```text
+docs: rapikan panduan onboarding AI
+fix: perbaiki validasi import marketplace
+feat: tambah filter activity log scraping
+```
+
+### 5. Stage dengan Aman
+
+Stage hanya file yang relevan:
+
+```bash
+git add <file-1> <file-2>
+```
+
+Hindari `git add .` jika working tree berisi file lokal/generated yang belum diaudit.
+
+### 6. Commit
+
+Commit dengan pesan singkat dan jelas:
+
+```bash
+git commit -m "docs: rapikan instruksi commit akhir sesi"
+```
+
+Jika ada beberapa kategori perubahan, buat beberapa commit terpisah.
+
+### 7. Push
+
+Jika user sudah memberi izin eksplisit untuk langsung lanjut tanpa persetujuan ulang, push ke branch aktif dengan aman:
+
+```bash
+git push
+```
+
+Jika belum ada izin eksplisit:
+
+- Tanyakan apakah user bekerja sendiri atau dalam tim.
+- Jika sendiri, boleh push ke branch aktif.
+- Jika tim, gunakan branch fitur/dev dan jangan langsung push ke `master` tanpa konfirmasi.
+
+### 8. Laporkan Hasil
+
+Ringkas hasil akhir ke user:
+
+- File yang diubah.
+- Commit hash/pesan commit.
+- Status push.
+- Validasi yang sudah dijalankan.
+- Sisa risiko atau langkah berikutnya bila ada.
+
+## Checklist Khusus Scraping/Import/Sync
+
+Jika sesi menyentuh scraping, import, sync, marketplace, atau activity log:
+
+- Baca `docs/SCRAPING_FLOW.md` sebelum edit dan sebelum commit.
+- Pastikan setiap operasi penting tercatat di activity log bila pola kode mengharuskannya.
+- Pastikan validasi cepat sesuai playbook sudah dijalankan atau dicatat alasannya jika belum.
+- Update `docs/SCRAPING_FLOW.md` bila ada pola baru yang perlu jadi standar.
+- Sebutkan dampaknya di `docs/AI_SESSION_SUMMARY.md` dan `docs/task.md` bila relevan.
+
+## Ringkasan Urutan Cepat
+
+```text
+1. Baca AGENTS.md, REPO_MAP.md, DEV_RULES.md, RESUME_SESSION.md.
+2. Baca SCRAPING_FLOW.md jika task terkait scraping/import/sync.
+3. Review git status, git diff --check, dan git diff.
+4. Update dokumen relevan.
+5. Audit .gitignore dan file staged.
+6. Commit per kategori perubahan.
+7. Push jika aman atau sudah diizinkan.
+8. Laporkan hasil dan next step.
+```
