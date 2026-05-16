@@ -1,6 +1,6 @@
 # Repo Map
 
-Dokumen ini adalah peta cepat struktur repository untuk membantu AI agent atau developer baru memahami arah kerja tanpa perlu scan ulang dari nol. Detail aturan kerja tetap mengikuti `AGENTS.md`, `AI_RULES.md`, dan dokumen di `docs/`.
+Dokumen ini adalah peta cepat struktur repository untuk membantu AI agent atau developer baru memahami arah kerja tanpa perlu scan ulang dari nol. Detail aturan kerja tetap mengikuti `AGENTS.md`, lalu `docs/DEV_RULES.md`, `AI_RULES.md`, dan dokumen relevan lain di `docs/`.
 
 ## Purpose
 

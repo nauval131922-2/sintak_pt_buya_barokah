@@ -1,6 +1,6 @@
 # Scraping & Import Flow
 
-Dokumen ini adalah playbook cepat untuk perubahan fitur scraping/import data. Baca setelah `AGENTS.md` dan `docs/REPO_MAP.md` saat task menyentuh endpoint scraping, import, sync, atau pencatatan aktivitas.
+Dokumen ini adalah playbook cepat untuk perubahan fitur scraping/import data. Baca setelah `AGENTS.md` dan `docs/REPO_MAP.md`, lalu pastikan aturan teknis di `docs/DEV_RULES.md` juga diikuti saat task menyentuh endpoint scraping, import, sync, atau pencatatan aktivitas.
 
 ## Tujuan
 
