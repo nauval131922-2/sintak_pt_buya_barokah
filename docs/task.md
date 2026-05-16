@@ -8,6 +8,8 @@
 
 ## 📌 Akan Dikerjakan (Backlog)
 
+- [ ] Validasi ulang quick start README setelah setup di mesin baru
+- [ ] Dokumentasikan command operasional harian yang paling sering dipakai
 - [ ] Integrasi Audit Log yang lebih detail untuk setiap aksi User
 - [ ] Setup sistem backup database otomatis ke Cloud Storage
 
@@ -15,6 +17,7 @@
 
 ## ✅ Selesai (Done)
 
+- [x] Standarisasi dokumentasi onboarding AI (`AGENTS.md`, `REPO_MAP.md`, `RESUME_SESSION.md`, `README.md`, `AI_SESSION_SUMMARY.md`) — 2026-05-16
 - [x] Optimasi Dashboard & Analytics dengan visualisasi Recharts terbaru — 2026-05-15
 - [x] Implementasi Standardisasi UI & BaseModal Integration — 2026-05-15
 - [x] Implementasi Modul Konversi Data HPP Kalkulasi & Sinkronisasi — 2026-05-15
@@ -86,12 +89,12 @@
 ## 📊 Statistik
 
 ```
-Total task    : 74
-Selesai       : 71
+Total task    : 77
+Selesai       : 72
 In progress   : 1
-Backlog       : 2
+Backlog       : 4
 Bug diketahui : 0
-Progress      : 96%
+Progress      : 94%
 ```
 
 ---
