@@ -13,12 +13,13 @@ Aplikasi ERP/internal web berbasis Next.js App Router untuk PT Buya Barokah/SINT
 
 ## Bacaan Awal untuk Developer/AI
 
-Sebelum mengerjakan fitur atau debugging, baca file berikut terlebih dahulu:
+Sebelum mengerjakan fitur atau debugging, baca file berikut dalam urutan ini:
 
 1. `AGENTS.md` - aturan kerja agent, command utama, dan batasan penting.
-2. `docs/REPO_MAP.md` - peta struktur repository dan area kode penting.
-3. `docs/RESUME_SESSION.md` - panduan melanjutkan sesi kerja sebelumnya.
-4. `AI_RULES.md` dan `docs/DEV_RULES.md` - aturan workflow, UI/UX, data, dan development.
+2. `docs/DEV_RULES.md` - standar workflow development, guardrail UI/UX, dan aturan data.
+3. `docs/REPO_MAP.md` - peta struktur repository dan area kode penting.
+
+Setelah itu, gunakan `docs/RESUME_SESSION.md` sebagai konteks lanjutan saat melanjutkan sesi sebelumnya.
 
 ## Prasyarat
 
