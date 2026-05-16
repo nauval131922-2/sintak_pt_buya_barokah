@@ -1,5 +1,16 @@
 # AI Session Summary - 2026-05-15 (Sesi Malam)
 
+## Update Sesi - 2026-05-16
+
+### Konteks Onboarding AI
+- Sesi AI berikutnya wajib mulai dari `AGENTS.md`, lalu `docs/REPO_MAP.md`, lalu `docs/DEV_RULES.md`.
+- `docs/RESUME_SESSION.md` sudah dirapikan agar urutan bacaan awal konsisten dengan alur tersebut.
+- `README.md` sudah diperbarui dengan Quick Start ringkas untuk onboarding manusia dan AI.
+
+### Catatan Lanjutan
+- Gunakan `docs/REPO_MAP.md` sebagai peta awal sebelum masuk ke aturan teknis detail.
+- Untuk melanjutkan sesi, baca `docs/RESUME_SESSION.md`, `docs/AI_SESSION_SUMMARY.md`, dan `docs/task.md`.
+
 ## 📅 Detail Sesi
 - **Tanggal**: 2026-05-15
 - **Waktu**: 19:30 - 20:10 WIB
