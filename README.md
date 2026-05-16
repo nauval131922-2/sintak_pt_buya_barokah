@@ -1,36 +1,143 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SINTAK ERP - PT Buya Barokah
 
-## Getting Started
+Aplikasi ERP/internal web berbasis Next.js App Router untuk PT Buya Barokah/SINTAK. Project ini mencakup dashboard, manufaktur, akuntansi, sales order, purchase order, stok, scraping/import data, jurnal harian produksi, dan manajemen user/role.
 
-First, run the development server:
+## Stack Utama
+
+- Next.js 16 App Router
+- React 19
+- TypeScript
+- Tailwind CSS
+- SQLite/libSQL (`@libsql/client`)
+- Node.js + npm
+
+## Bacaan Awal untuk Developer/AI
+
+Sebelum mengerjakan fitur atau debugging, baca file berikut terlebih dahulu:
+
+1. `AGENTS.md` - aturan kerja agent, command utama, dan batasan penting.
+2. `docs/REPO_MAP.md` - peta struktur repository dan area kode penting.
+3. `docs/RESUME_SESSION.md` - panduan melanjutkan sesi kerja sebelumnya.
+4. `AI_RULES.md` dan `docs/DEV_RULES.md` - aturan workflow, UI/UX, data, dan development.
+
+## Prasyarat
+
+- Node.js versi modern yang kompatibel dengan Next.js 16.
+- npm.
+- File environment lokal (`.env` atau `.env.development`) jika menjalankan fitur database remote, scraping, cron, atau session production.
+
+## Setup Pertama Kali
+
+Install dependency:
+
+```bash
+npm install
+```
+
+Inisialisasi database default:
+
+```bash
+npm run init-db
+```
+
+Untuk database development lokal (`database_dev.sqlite`):
+
+```bash
+npm run init-db:dev
+```
+
+## Menjalankan Project Lokal
+
+Jalankan development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka aplikasi di browser:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```text
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Build dan Production Start
 
-## Learn More
+Build production:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Catatan: `npm run build` otomatis menjalankan `prebuild`, yaitu `npm run init-db`, sebelum proses build.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Jalankan hasil build:
 
-## Deploy on Vercel
+```bash
+npm run start
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Command Penting
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Command | Fungsi |
+| --- | --- |
+| `npm run dev` | Menjalankan development server Next.js dengan Turbo. |
+| `npm run build` | Build production. Otomatis menjalankan `npm run init-db` lewat `prebuild`. |
+| `npm run start` | Menjalankan server production setelah build. |
+| `npm run lint` | Menjalankan ESLint. |
+| `npm run init-db` | Inisialisasi/melengkapi schema database default. |
+| `npm run init-db:dev` | Inisialisasi database development dengan `DB_PATH=database_dev.sqlite`. |
+| `npm run migrate:sales2025` | Menjalankan migrasi sales 2025. Pakai hanya saat memang diperlukan. |
+
+## Environment Variable
+
+Project dapat berjalan dengan database lokal tanpa konfigurasi remote tambahan. Beberapa environment variable yang dikenali kode:
+
+| Variable | Kegunaan |
+| --- | --- |
+| `DB_PATH` | Override path database lokal. Default production lokal: `database.sqlite`; development: `database_dev.sqlite`. |
+| `USE_REMOTE_DB` | Jika `true`, memakai remote database saat `TURSO_DATABASE_URL` tersedia. |
+| `TURSO_DATABASE_URL` | URL database Turso/libSQL remote. |
+| `TURSO_AUTH_TOKEN` | Token auth untuk database Turso/libSQL remote. |
+| `SESSION_SECRET` | Secret untuk signing session/JWT. Wajib diganti untuk production. |
+| `SCRAPER_EMAIL` | Username/email untuk fitur scraping. |
+| `SCRAPER_PASSWORD` | Password untuk fitur scraping. |
+| `CRON_SECRET` | Secret untuk endpoint cron/maintenance. |
+
+Jangan commit file `.env`, database lokal, atau secret asli ke repository.
+
+## Database
+
+- Database lokal utama biasanya memakai `database.sqlite`.
+- Database development dapat memakai `database_dev.sqlite` lewat `npm run init-db:dev`.
+- Kode koneksi database ada di `src/lib/db.ts`.
+- Definisi schema dan helper terkait ada di `src/lib/schema.ts` dan `scripts/init-db.ts`.
+- Perlakukan file `*.sqlite` dan `*.db` sebagai data kerja penting; jangan hapus tanpa instruksi eksplisit.
+
+## Struktur Singkat
+
+| Path | Isi |
+| --- | --- |
+| `src/app/` | Halaman, layout, dan route handler Next.js App Router. |
+| `src/app/api/` | Endpoint backend internal, scraping, import/export, sync, dan CRUD. |
+| `src/components/` | Komponen UI reusable dan komponen domain. |
+| `src/lib/` | Utilitas database, auth/session, permissions, logger, schema, dan helper. |
+| `scripts/` | Script database, migrasi, audit, import, dan debugging operasional. |
+| `docs/` | Dokumentasi kerja, aturan development, resume sesi, tutorial, dan backlog. |
+| `public/` | Aset statis. |
+| `test/` | Test/script validasi behavior tertentu. |
+
+## Validasi Sebelum Commit
+
+Minimal jalankan command yang relevan dengan perubahan:
+
+```bash
+npm run lint
+```
+
+Untuk perubahan besar pada database/API/UI, pertimbangkan juga:
+
+```bash
+npm run build
+```
+
+Jika build dijalankan, ingat bahwa `prebuild` akan menjalankan `npm run init-db` terlebih dahulu.
