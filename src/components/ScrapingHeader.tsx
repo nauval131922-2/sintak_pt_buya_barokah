@@ -41,8 +41,8 @@ export default function ScrapingHeader({
           {lastExcelUpdate && lastScrapedUpdate && <span className="text-gray-300">|</span>}
           {lastScrapedUpdate && (
             <>
-              <span className="w-1 h-1 rounded-full bg-blue-200 shrink-0"></span>
-              <span className="text-blue-500">
+              <span className="w-1 h-1 rounded-full bg-emerald-200 shrink-0"></span>
+              <span className="text-emerald-600">
                 Tarik Data: {lastScrapedUpdate}
                 {scrapedPeriod ? ` (${formatScrapedPeriodDate(scrapedPeriod.start)} - ${formatScrapedPeriodDate(scrapedPeriod.end)})` : ''}
               </span>

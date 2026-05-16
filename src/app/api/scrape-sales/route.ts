@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 export const dynamic = 'force-dynamic';
 import db from "@/lib/db";
-import { getCachedSession, setCachedSession, clearCachedSession, getSession as getScraperSession } from "@/lib/session-cache";
-import { getSession } from "@/lib/session";
+import { clearCachedSession, getSession as getScraperSession } from "@/lib/session-cache";
 import { encodeScrapedPeriod, getScrapedPeriodSettingKey } from "@/lib/server-scraped-period";
+import { logActivity } from "@/lib/activity";
 
 const API_EMAIL = process.env.SCRAPER_EMAIL || "nauval"; 
 const API_PASSWORD = process.env.SCRAPER_PASSWORD || "312admin2";
@@ -35,11 +35,8 @@ export async function GET(request: NextRequest) {
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
       return NextResponse.json({ error: "Invalid date format. Use YYYY-MM-DD" }, { status: 400 });
     }
-
-    const startTime = Date.now();
-    const currentUserSession = await getSession();
     
-    let cookies = await getScraperSession(async () => {
+    const cookies = await getScraperSession(async () => {
       const loginReqUrl = BASE_URL + "v1/auth/login";
       const loginBody = JSON.stringify({
         username: API_EMAIL,
@@ -100,12 +97,12 @@ export async function GET(request: NextRequest) {
     const jsonData = await res.json();
     const rawRecords = jsonData.records || jsonData.data || jsonData.rows || jsonData.result || [];
     
-    const allRecords = rawRecords.filter((r: any) => 
+    const allRecords = rawRecords.filter((r: ScrapedRecord) => 
         String(r.kd_barang || "").toLowerCase().trim() !== "total"
     );
 
     // 1. Prepare batch inserts
-    const batchOps: any[] = [];
+    const batchOps: BatchOperation[] = [];
     for (const record of allRecords) {
       batchOps.push({
         sql: `
@@ -164,7 +161,6 @@ export async function GET(request: NextRequest) {
     }
 
     const lastUpdated = new Date().toISOString();
-    const silent = searchParams.get('silent') === 'true';
     const finalOps = [
       {
         sql: `
@@ -186,6 +182,13 @@ export async function GET(request: NextRequest) {
 
     await db.batch(finalOps, "write");
 
+    await logActivity(
+      "SCRAPE",
+      "sales_reports",
+      `Scrape laporan penjualan berhasil: ${allRecords.length} baris (${metaStart} - ${metaEnd}).`,
+      { total: allRecords.length, start: metaStart, end: metaEnd, scrapedPeriod: { start: metaStart, end: metaEnd } }
+    );
+
     return NextResponse.json({
       success: true,
       total: allRecords.length,
@@ -194,7 +197,7 @@ export async function GET(request: NextRequest) {
       scrapedPeriod: { start: metaStart, end: metaEnd }
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

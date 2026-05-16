@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
-import { getCachedSession, clearCachedSession, getSession as getScraperSession } from "@/lib/session-cache";
-import { getSession } from "@/lib/session";
+import { clearCachedSession, getSession as getScraperSession } from "@/lib/session-cache";
 import { encodeScrapedPeriod, getScrapedPeriodSettingKey } from "@/lib/server-scraped-period";
+import { logActivity } from "@/lib/activity";
 
 export const dynamic = 'force-dynamic';
 
@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
     }
 
     // 1. Handle Auth & Session
-    let cookies = await getScraperSession(async () => {
+    const cookies = await getScraperSession(async () => {
       const loginRes = await fetch(BASE_URL + "v1/auth/login", {
         method: "POST",
         headers: {
@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
 
     // 3. Save to Database (UPSERT)
     // Map with defensive parsing
-    const finalRecords = rows.map((r: any) => ({
+    const finalRecords = rows.map((r: ScrapedRecord) => ({
       faktur: r.faktur,
       kd_pelanggan: r.kd_pelanggan || '',
       tgl: r.tgl || '',
@@ -145,7 +145,7 @@ export async function GET(req: NextRequest) {
         raw_data=excluded.raw_data
     `;
 
-    const queries = finalRecords.map((r: any) => ({
+    const queries = finalRecords.map((r: ScrapedRecord) => ({
       sql: insertSql,
       args: [
         r.faktur, r.kd_pelanggan, r.tgl, r.kd_barang, r.faktur_sph, r.top_hari, 
@@ -180,6 +180,13 @@ export async function GET(req: NextRequest) {
       }
     ], "write");
 
+    await logActivity(
+      "SCRAPE",
+      "sales_orders",
+      `Scrape sales order berhasil: ${finalRecords.length} baris (${metaStart} - ${metaEnd}).`,
+      { total: finalRecords.length, start: metaStart, end: metaEnd, scrapedPeriod: { start: metaStart, end: metaEnd } }
+    );
+
     return NextResponse.json({ 
       success: true, 
       total: finalRecords.length,
@@ -187,8 +194,8 @@ export async function GET(req: NextRequest) {
       scrapedPeriod: { start: metaStart, end: metaEnd }
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Scrape API Error (sales-orders):', error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: getErrorMessage(error) }, { status: 500 });
   }
 }

@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import db from '@/lib/db';
 import { getSession as getScraperSession, clearCachedSession } from '@/lib/session-cache';
 import { encodeScrapedPeriod, getScrapedPeriodSettingKey } from '@/lib/server-scraped-period';
+import { logActivity } from '@/lib/activity';
 
 const API_EMAIL = process.env.SCRAPER_EMAIL || "nauval"; 
 const API_PASSWORD = process.env.SCRAPER_PASSWORD || "312admin2";
@@ -36,7 +37,7 @@ export async function GET(req: NextRequest) {
     const metaStart = searchParams.get("metaStart") || startIndo;
     const metaEnd = searchParams.get("metaEnd") || endIndo;
 
-    let cookies = await getScraperSession(async () => {
+    const cookies = await getScraperSession(async () => {
       const loginRes = await fetch(BASE_URL + "v1/auth/login", {
         method: "POST",
         headers: {
@@ -86,11 +87,11 @@ export async function GET(req: NextRequest) {
     const rows = json.data || json.records || json.rows || [];
     
     // Filter out total rows or invalid data
-    const filteredRows = rows.filter((r: any) => 
+    const filteredRows = rows.filter((r: ScrapedRecord) => 
       r.faktur && String(r.faktur).toLowerCase() !== 'total'
     );
 
-    const batchOps: any[] = [];
+    const batchOps: BatchOperation[] = [];
     for (const item of filteredRows) {
       batchOps.push({
         sql: `INSERT INTO purchase_orders (
@@ -160,14 +161,21 @@ export async function GET(req: NextRequest) {
       }
     ], "write");
 
+    await logActivity(
+      'SCRAPE',
+      'purchase_orders',
+      `Scrape purchase order berhasil: ${filteredRows.length} baris (${metaStart} - ${metaEnd}).`,
+      { total: filteredRows.length, start: metaStart, end: metaEnd, scrapedPeriod: { start: metaStart, end: metaEnd } }
+    );
+
     return NextResponse.json({
       success: true,
       total: filteredRows.length,
       lastUpdated,
       scrapedPeriod: { start: metaStart, end: metaEnd }
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Scrape PO Error:", err);
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: getErrorMessage(err) }, { status: 500 });
   }
 }
