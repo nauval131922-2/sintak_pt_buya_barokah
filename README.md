@@ -21,6 +21,13 @@ Sebelum mengerjakan fitur atau debugging, baca file berikut dalam urutan ini:
 
 Setelah itu, gunakan `docs/RESUME_SESSION.md` sebagai konteks lanjutan saat melanjutkan sesi sebelumnya.
 
+## Quick Start
+
+Untuk onboarding cepat tim baru:
+
+1. Install dependency: `npm install`
+2. Siapkan database development: `npm run init-db:dev`
+3. Jalankan aplikasi: `npm run dev`, lalu buka `http://localhost:3000`
 ## Prasyarat
 
 - Node.js versi modern yang kompatibel dengan Next.js 16.
