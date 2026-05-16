@@ -33,6 +33,7 @@ Catatan: `npm run build` menjalankan `prebuild`, yaitu `npm run init-db`, sebelu
 ## File Konteks yang Wajib Diperhatikan
 - `AI_RULES.md` — aturan UI/UX, workflow, integritas data, dan aturan kerja AI.
 - `docs/DEV_RULES.md` — aturan pengembangan wajib, terutama activity log untuk scraping/import.
+- `docs/REPO_MAP.md` — peta struktur repo (entry point penting, modul, dan lokasi file kunci).
 - `docs/RESUME_SESSION.md` — cara memahami konteks lanjutan antar sesi.
 - `docs/AI_SESSION_SUMMARY.md` — ringkasan sesi terakhir.
 - `docs/task.md` — backlog/progress yang sedang berjalan.
