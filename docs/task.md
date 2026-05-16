@@ -17,6 +17,7 @@
 
 ## ✅ Selesai (Done)
 
+- [x] Penguatan alur lanjut kerja tanpa briefing ulang panjang — 2026-05-16
 - [x] Standarisasi dokumentasi onboarding AI (`AGENTS.md`, `REPO_MAP.md`, `RESUME_SESSION.md`, `README.md`, `AI_SESSION_SUMMARY.md`) — 2026-05-16
 - [x] Optimasi Dashboard & Analytics dengan visualisasi Recharts terbaru — 2026-05-15
 - [x] Implementasi Standardisasi UI & BaseModal Integration — 2026-05-15
@@ -89,8 +90,8 @@
 ## 📊 Statistik
 
 ```
-Total task    : 77
-Selesai       : 72
+Total task    : 78
+Selesai       : 73
 In progress   : 1
 Backlog       : 4
 Bug diketahui : 0

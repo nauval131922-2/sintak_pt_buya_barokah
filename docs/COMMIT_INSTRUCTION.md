@@ -3,8 +3,8 @@
 > 🤖 **Untuk AI Agent yang baru memulai sesi**:
 > Sebelum mengerjakan apa pun, baca urutan berikut (wajib):
 > 1) `AGENTS.md`
-> 2) `docs/DEV_RULES.md`
-> 3) `docs/REPO_MAP.md`
+> 2) `docs/REPO_MAP.md`
+> 3) `docs/DEV_RULES.md`
 >
 > Catatan: untuk konteks lintas sesi, baca juga `docs/RESUME_SESSION.md`.
 
@@ -41,8 +41,8 @@ docs/
 ### 🧭 LANGKAH 2 — Verifikasi Bacaan Wajib (AI)
 Sebelum lanjut, pastikan kamu sudah membaca dan mengikuti:
 - `AGENTS.md`
-- `docs/DEV_RULES.md`
 - `docs/REPO_MAP.md`
+- `docs/DEV_RULES.md`
 
 Jika ada konflik instruksi, prioritaskan `AGENTS.md` dan aturan di `docs/DEV_RULES.md`.
 
@@ -82,12 +82,12 @@ Periksa file `.gitignore`:
 ---
 
 ### 👥 LANGKAH 6 — Tanya Dulu Sebelum Push
-Sebelum melanjutkan, tanyakan ke saya:
+Jika user belum memberi izin eksplisit untuk langsung commit/push, tanyakan dulu:
 "Apakah kamu sedang bekerja sendiri atau dalam tim?"
 - Jika sendiri → push ke branch aktif (mis. `master`).
 - Jika tim     → push ke branch fitur/dev, jangan langsung ke `master`.
 
-Tunggu jawaban saya sebelum lanjut.
+Tunggu jawaban saya sebelum lanjut. Jika user sudah memberi izin eksplisit untuk lanjut tanpa persetujuan ulang, gunakan konteks itu dan lanjutkan dengan aman.
 
 ---
 

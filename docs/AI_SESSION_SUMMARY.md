@@ -7,6 +7,13 @@
 - `docs/RESUME_SESSION.md` sudah dirapikan agar urutan bacaan awal konsisten dengan alur tersebut.
 - `README.md` sudah diperbarui dengan Quick Start ringkas untuk onboarding manusia dan AI.
 
+### Default Workflow Sesi Berikutnya
+- Baca `AGENTS.md` -> `docs/REPO_MAP.md` -> `docs/DEV_RULES.md` sebelum mengubah file.
+- Sinkronkan repo dengan `git pull`, lalu cek `git status`.
+- Baca `docs/AI_SESSION_SUMMARY.md` dan `docs/task.md` untuk menentukan prioritas kerja.
+- Jika user sudah memberi izin eksplisit untuk lanjut langsung, eksekusi langkah aman tanpa meminta persetujuan berulang.
+- Akhiri sesi dengan update dokumentasi relevan, commit, dan push sesuai `docs/COMMIT_INSTRUCTION.md`.
+
 ### Catatan Lanjutan
 - Gunakan `docs/REPO_MAP.md` sebagai peta awal sebelum masuk ke aturan teknis detail.
 - Untuk melanjutkan sesi, baca `docs/RESUME_SESSION.md`, `docs/AI_SESSION_SUMMARY.md`, dan `docs/task.md`.

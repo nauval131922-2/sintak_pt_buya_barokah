@@ -5,6 +5,16 @@
 > Setelah paham arah repo, lanjutkan baca `docs/DEV_RULES.md`.
 > Tiga file ini adalah konteks awal wajib. Jangan menunggu user mengingatkan ulang.
 
+## Start Cepat 1 Menit
+
+Untuk sesi AI berikutnya, gunakan urutan singkat ini agar bisa langsung lanjut kerja tanpa briefing ulang panjang:
+
+1. Baca `AGENTS.md`, `docs/REPO_MAP.md`, lalu `docs/DEV_RULES.md`.
+2. Jalankan `git pull` untuk sinkronisasi repo.
+3. Baca `docs/AI_SESSION_SUMMARY.md` dan `docs/task.md` untuk konteks terakhir.
+4. Jalankan `git status` untuk memastikan kondisi branch dan working tree.
+5. Lanjutkan task prioritas atau backlog tanpa meminta briefing ulang kecuali ada risiko besar.
+
 ## Bacaan Wajib Sebelum Mulai
 
 Sebelum menjalankan prompt resume atau melakukan analisis apa pun, AI wajib membaca dokumen berikut secara berurutan:
