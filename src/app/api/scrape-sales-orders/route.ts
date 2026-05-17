@@ -3,6 +3,8 @@ import db from "@/lib/db";
 import { clearCachedSession, getSession as getScraperSession } from "@/lib/session-cache";
 import { encodeScrapedPeriod, getScrapedPeriodSettingKey } from "@/lib/server-scraped-period";
 import { logActivity } from "@/lib/activity";
+import { getErrorMessage } from "@/lib/api-utils";
+import { ScrapedRecord } from "@/lib/scraper-utils";
 
 export const dynamic = 'force-dynamic';
 

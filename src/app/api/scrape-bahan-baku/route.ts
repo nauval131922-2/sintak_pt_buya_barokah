@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 export const dynamic = 'force-dynamic';
 import db from "@/lib/db";
+import { getErrorMessage } from "@/lib/api-utils";
+import { ScrapedRecord, BatchOperation } from "@/lib/scraper-utils";
 import { getCachedSession, setCachedSession, clearCachedSession, getSession as getScraperSession } from "@/lib/session-cache";
 import { getSession } from "@/lib/session";
 import { encodeScrapedPeriod, getScrapedPeriodSettingKey } from "@/lib/server-scraped-period";
@@ -229,8 +231,9 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error("Scraping error:", error);
     return NextResponse.json(
-      { error: "Failed to scrape data", details: error.message },
+      { error: "Failed to scrape data", details: getErrorMessage(error) },
       { status: 500 }
     );
   }
 }
+

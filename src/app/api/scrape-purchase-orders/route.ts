@@ -4,6 +4,8 @@ import db from '@/lib/db';
 import { getSession as getScraperSession, clearCachedSession } from '@/lib/session-cache';
 import { encodeScrapedPeriod, getScrapedPeriodSettingKey } from '@/lib/server-scraped-period';
 import { logActivity } from '@/lib/activity';
+import { getErrorMessage } from '@/lib/api-utils';
+import { ScrapedRecord, BatchOperation } from '@/lib/scraper-utils';
 
 const API_EMAIL = process.env.SCRAPER_EMAIL || "nauval"; 
 const API_PASSWORD = process.env.SCRAPER_PASSWORD || "312admin2";

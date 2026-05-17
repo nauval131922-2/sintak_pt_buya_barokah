@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import db from '@/lib/db';
+import { getErrorMessage } from '@/lib/api-utils';
+import { ScrapedRecord, BatchOperation } from '@/lib/scraper-utils';
 import { getSession as getScraperSession, clearCachedSession } from '@/lib/session-cache';
 import { encodeScrapedPeriod, getScrapedPeriodSettingKey } from '@/lib/server-scraped-period';
 
@@ -147,3 +149,5 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
+
+

@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
+import { getErrorMessage } from "@/lib/api-utils";
+import { ScrapedRecord, BatchOperation } from "@/lib/scraper-utils";
 import { clearCachedSession, getSession as getScraperSession } from "@/lib/session-cache";
 import { encodeScrapedPeriod, getScrapedPeriodSettingKey } from "@/lib/server-scraped-period";
 import { getSession } from "@/lib/session";
@@ -249,3 +251,4 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
+

@@ -4,6 +4,8 @@ import db from "@/lib/db";
 import { clearCachedSession, getSession as getScraperSession } from "@/lib/session-cache";
 import { encodeScrapedPeriod, getScrapedPeriodSettingKey } from "@/lib/server-scraped-period";
 import { logActivity } from "@/lib/activity";
+import { getErrorMessage } from "@/lib/api-utils";
+import { ScrapedRecord, BatchOperation } from "@/lib/scraper-utils";
 
 const API_EMAIL = process.env.SCRAPER_EMAIL || "nauval"; 
 const API_PASSWORD = process.env.SCRAPER_PASSWORD || "312admin2";
@@ -198,6 +200,6 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error: unknown) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }
