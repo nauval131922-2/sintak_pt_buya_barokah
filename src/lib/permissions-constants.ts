@@ -4,7 +4,8 @@
 
 export const MODULE_REGISTRY = [
   // Utilitas / Dashboard
-  { key: 'dashboard',              label: 'Dashboard',                        group: 'Dashboard' },
+  { key: 'dashboard',              label: 'Dashboard Umum',                   group: 'Dashboard' },
+  { key: 'hrd_dashboard',          label: 'Dashboard HRD',                    group: 'Dashboard' },
   { key: 'sync',                   label: 'Sinkronisasi All Data',            group: 'Data Digit' },
 
   // Umum
@@ -29,7 +30,7 @@ export const MODULE_REGISTRY = [
   { key: 'pembelian_hutang',       label: 'Pelunasan Hutang',                 group: 'Data Digit - Pembelian' },
 
   // Produksi (Data Digit)
-  { key: 'produksi_dashboard',     label: 'Dashboard Produksi',             group: 'Data Digit - Produksi' },
+  { key: 'produksi_dashboard',     label: 'Dashboard Produksi',               group: 'Dashboard' },
   { key: 'produksi_bom',           label: 'BOM Produksi',                     group: 'Data Digit - Produksi' },
   { key: 'produksi_orders',        label: 'Order Produksi',                   group: 'Data Digit - Produksi' },
   { key: 'produksi_bahan_baku',    label: 'BBB Produksi',                     group: 'Data Digit - Produksi' },

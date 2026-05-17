@@ -77,3 +77,12 @@ export function validateRequest(data: any, requiredFields: string[]): { valid: b
 
   return { valid: true };
 }
+
+/**
+ * Extract error message from unknown error object
+ */
+export function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === 'object' && 'message' in error) return String(error.message);
+  return String(error);
+}

@@ -16,6 +16,8 @@ export async function initIndexing(database: any) {
     // 3. Activity Logs Optimization (Dashboard)
     "CREATE INDEX IF NOT EXISTS idx_activity_logs_created_at_desc ON activity_logs(created_at DESC);",
     "CREATE INDEX IF NOT EXISTS idx_activity_logs_table_action ON activity_logs(table_name, action_type);",
+    // Index untuk correlated subquery / GROUP BY record_id per table+action
+    "CREATE INDEX IF NOT EXISTS idx_activity_logs_table_action_record ON activity_logs(table_name, action_type, record_id, id);",
     // Index untuk copy-jadwal check: WHERE action_type = 'COPY_JADWAL' AND raw_data LIKE 'prefix%'
     "CREATE INDEX IF NOT EXISTS idx_activity_logs_action_rawdata ON activity_logs(action_type, raw_data);",
     
@@ -37,6 +39,9 @@ export async function initIndexing(database: any) {
     "CREATE INDEX IF NOT EXISTS idx_jurnal_bagian_pekerjaan_2 ON jurnal_harian_produksi(bagian, jenis_pekerjaan_2);",
     // Full-text search support columns
     "CREATE INDEX IF NOT EXISTS idx_jurnal_nama_karyawan ON jurnal_harian_produksi(nama_karyawan);",
+    // Index untuk dashboard sorting: COALESCE(updated_at, deleted_at, created_at) DESC
+    "CREATE INDEX IF NOT EXISTS idx_jurnal_updated_at ON jurnal_harian_produksi(updated_at DESC);",
+    "CREATE INDEX IF NOT EXISTS idx_jurnal_deleted_at ON jurnal_harian_produksi(deleted_at DESC);",
 
     // 5. Rekap Pembelian Barang Optimization
     "CREATE INDEX IF NOT EXISTS idx_rekap_pembelian_barang_tgl ON rekap_pembelian_barang(tgl DESC);",

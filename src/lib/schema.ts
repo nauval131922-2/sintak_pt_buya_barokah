@@ -593,7 +593,11 @@ export async function initSchema(db: any) {
       kendala TEXT,
       bagian TEXT,
       is_manual_input INTEGER DEFAULT 0,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT NULL,
+      deleted_at DATETIME DEFAULT NULL,
+      created_by TEXT DEFAULT NULL,
+      updated_by TEXT DEFAULT NULL
     );`,
     `CREATE TABLE IF NOT EXISTS rek_akuntansi (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -663,6 +667,10 @@ export async function initSchema(db: any) {
     "ALTER TABLE jurnal_harian_produksi ADD COLUMN kendala TEXT;",
     "ALTER TABLE jurnal_harian_produksi ADD COLUMN bagian TEXT;",
     "ALTER TABLE jurnal_harian_produksi ADD COLUMN is_manual_input INTEGER DEFAULT 0;",
+    "ALTER TABLE jurnal_harian_produksi ADD COLUMN updated_at DATETIME DEFAULT NULL;",
+    "ALTER TABLE jurnal_harian_produksi ADD COLUMN deleted_at DATETIME DEFAULT NULL;",
+    "ALTER TABLE jurnal_harian_produksi ADD COLUMN created_by TEXT DEFAULT NULL;",
+    "ALTER TABLE jurnal_harian_produksi ADD COLUMN updated_by TEXT DEFAULT NULL;",
     "ALTER TABLE infractions ADD COLUMN jumlah REAL;",
     "ALTER TABLE infractions ADD COLUMN harga REAL;",
     "ALTER TABLE infractions ADD COLUMN total REAL;",

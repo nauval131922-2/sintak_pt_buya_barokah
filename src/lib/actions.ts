@@ -1,4 +1,4 @@
-﻿'use server';
+'use server';
 
 import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
@@ -32,6 +32,18 @@ export const getEmployees = cache(
       return sanitizeData(result.rows.map((row: any) => ({ ...row })));
     },
     ['master-employees-active'],
+    { revalidate: 3600, tags: ['karyawan'] }
+  )
+);
+
+// Caching Total Karyawan — Di-cache 1 jam (3600 detik)
+export const getEmployeeCount = cache(
+  unstable_cache(
+    async () => {
+      const result = await db.execute('SELECT COUNT(*) as count FROM employees');
+      return Number(result.rows[0]?.count || 0);
+    },
+    ['total-employees-count'],
     { revalidate: 3600, tags: ['karyawan'] }
   )
 );
@@ -214,6 +226,8 @@ export const getDashboardSummary = cache(async () => {
       sql: `SELECT COUNT(*) as count FROM jurnal_harian_produksi WHERE tgl >= ? AND tgl <= ?`,
       args: [`${thisYear}-${thisMonth}-01`, `${thisYear}-${thisMonth}-${String(lastDay).padStart(2, '0')}`]
     },
+    // 6: Total semua karyawan
+    'SELECT COUNT(*) as count FROM employees',
   ], "read");
 
   const trendRaw = results[4].rows as any[];
@@ -225,6 +239,7 @@ export const getDashboardSummary = cache(async () => {
 
   return sanitizeData({
     activeEmployees: Number(results[0].rows[0]?.count || 0),
+    totalEmployees: Number(results[6].rows[0]?.count || 0),
     infractionsThisMonth: Number(results[1].rows[0]?.count || 0),
     totalOrders: Number(results[2].rows[0]?.count || 0),
     jurnalToday: Number(results[3].rows[0]?.count || 0),
@@ -306,12 +321,22 @@ export const getProductionDashboardSummary = cache(async () => {
     },
     {
       sql: `
-        SELECT id, tgl, shift, nama_karyawan, no_order, nama_order, jenis_pekerjaan, bagian, target, realisasi
+        SELECT
+          id, tgl, shift, nama_karyawan, no_order, nama_order,
+          jenis_pekerjaan, jenis_pekerjaan_2, bagian, target, realisasi,
+          no_order_2, nama_order_2, created_at,
+          COALESCE(updated_by, created_by) AS recorded_by,
+          CASE
+            WHEN deleted_at IS NOT NULL THEN 'DELETE'
+            WHEN updated_at IS NOT NULL THEN 'UPDATE'
+            ELSE 'INSERT'
+          END AS action_type,
+          COALESCE(updated_at, deleted_at, created_at) AS input_at
         FROM jurnal_harian_produksi
-        ORDER BY COALESCE(tgl, created_at) DESC, id DESC
+        ORDER BY COALESCE(updated_at, deleted_at, created_at) DESC, id DESC
         LIMIT 8
       `
-    }
+    },
   ], "read");
 
   const trendRaw = results[6].rows as any[];
