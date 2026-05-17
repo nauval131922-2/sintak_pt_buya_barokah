@@ -12,12 +12,21 @@
 - [ ] Dokumentasikan command operasional harian yang paling sering dipakai
 - [ ] Integrasi Audit Log yang lebih detail untuk setiap aksi User
 - [ ] Setup sistem backup database otomatis ke Cloud Storage
+- [ ] Fitur export laporan ke Excel dengan format lebih rapi (exceljs)
 
 ---
 
 ## ✅ Selesai (Done)
 
+- [x] Perbaikan Infractions: ConfirmDialog redirect + validasi API description opsional — 2026-05-17
+- [x] Implementasi Dashboard HRD (RecordsTabs, tab List ↔ Form, export infractions) — 2026-05-17
+- [x] JHP Soft Delete System + Audit Columns (created_by, updated_by) — 2026-05-17
+- [x] Optimasi Dashboard Manufaktur (query single-table, JurnalTerbaruCard, ProduksiTrendChart) — 2026-05-17
+- [x] Standarisasi Scraping Utils terpusat ke `src/lib/scraper-utils.ts` — 2026-05-17
+- [x] Komponen baru dashboard: JurnalStatCard, OrdersStatCard, UsersStatCard, StatCardDropdown — 2026-05-17
+- [x] Audit `.gitignore`: tambah `scratch/` agar file debug tidak ter-commit — 2026-05-17
 - [x] Dokumentasi playbook scraping/import dan activity log — 2026-05-16
+- [x] Pembuatan `docs/AI_WORKFLOW.md` sebagai playbook utama sesi AI — 2026-05-16
 - [x] Penguatan alur lanjut kerja tanpa briefing ulang panjang — 2026-05-16
 - [x] Standarisasi dokumentasi onboarding AI (`AGENTS.md`, `REPO_MAP.md`, `RESUME_SESSION.md`, `README.md`, `AI_SESSION_SUMMARY.md`) — 2026-05-16
 - [x] Optimasi Dashboard & Analytics dengan visualisasi Recharts terbaru — 2026-05-15
@@ -91,12 +100,12 @@
 ## 📊 Statistik
 
 ```
-Total task    : 80
-Selesai       : 75
+Total task    : 91
+Selesai       : 85
 In progress   : 1
-Backlog       : 4
+Backlog       : 5
 Bug diketahui : 0
-Progress      : 94%
+Progress      : 93%
 ```
 
 ---

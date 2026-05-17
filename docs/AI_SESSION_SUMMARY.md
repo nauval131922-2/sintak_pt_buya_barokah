@@ -1,62 +1,108 @@
-# AI Session Summary - 2026-05-15 (Sesi Malam)
+# AI Session Summary
 
-## Update Sesi - 2026-05-16
+## Update Sesi — 2026-05-17 (Sore)
 
 ### Konteks Onboarding AI
-- Sesi AI berikutnya wajib mulai dari `AGENTS.md`, lalu `docs/REPO_MAP.md`, lalu `docs/DEV_RULES.md`.
-- `docs/RESUME_SESSION.md` sudah dirapikan agar urutan bacaan awal konsisten dengan alur tersebut.
-- `README.md` sudah diperbarui dengan Quick Start ringkas untuk onboarding manusia dan AI.
+- Sesi AI berikutnya wajib mengikuti `docs/AI_WORKFLOW.md` sebagai playbook utama.
+- `docs/RESUME_SESSION.md` dan `docs/COMMIT_INSTRUCTION.md` sudah diarahkan agar konsisten dengan playbook tersebut.
 - `docs/SCRAPING_FLOW.md` menjadi playbook awal untuk task scraping, import, sinkronisasi data, activity log, dan validasi cepat.
+- Scraper utils dipusatkan ke `src/lib/scraper-utils.ts` agar tidak duplikasi di setiap route.
 
 ### Default Workflow Sesi Berikutnya
-- Baca `AGENTS.md` -> `docs/REPO_MAP.md` -> `docs/DEV_RULES.md` sebelum mengubah file.
+- Baca urutan wajib di `docs/AI_WORKFLOW.md` sebelum mengubah file.
 - Sinkronkan repo dengan `git pull`, lalu cek `git status`.
-- Baca `docs/AI_SESSION_SUMMARY.md` dan `docs/task.md` untuk menentukan prioritas kerja.
+- Gunakan `docs/task.md` untuk menentukan prioritas kerja setelah bacaan wajib selesai.
 - Jika user sudah memberi izin eksplisit untuk lanjut langsung, eksekusi langkah aman tanpa meminta persetujuan berulang.
-- Akhiri sesi dengan update dokumentasi relevan, commit, dan push sesuai `docs/COMMIT_INSTRUCTION.md`.
+- Akhiri sesi dengan update dokumentasi relevan, lalu commit/push.
 
 ### Catatan Lanjutan
 - Gunakan `docs/REPO_MAP.md` sebagai peta awal sebelum masuk ke aturan teknis detail.
-- Untuk melanjutkan sesi, baca `docs/RESUME_SESSION.md`, `docs/AI_SESSION_SUMMARY.md`, dan `docs/task.md`.
+- `scratch/` sudah masuk `.gitignore` — file debug tidak akan ikut commit.
+- `src/lib/scraper-utils.ts` baru: helper untuk response scraping standar, gunakan di semua route scrape.
+- `src/lib/api-utils.ts` baru: helper response API umum (sukses/error/not found).
 
-## 📅 Detail Sesi
-- **Tanggal**: 2026-05-15
-- **Waktu**: 19:30 - 20:10 WIB
+---
+
+## 📅 Detail Sesi Terbaru
+
+### Sesi 2026-05-17 (Pagi — Fixing Redirect After Save)
+- **Fokus**: Modul Pencatatan Kesalahan (Infractions) & Dashboard HRD
 - **PC**: Lokal (Kantor)
 
-## 🚀 Fitur & Perbaikan
-1. **Optimasi Dashboard & Analytics Premium**:
-    - Integrasi library **Recharts** untuk visualisasi tren aktivitas 7 hari terakhir.
-    - Pembuatan komponen `JurnalTrendChart.tsx` dengan desain area chart gradien emerald.
-    - Konsolidasi metrik dashboard (Jurnal, Orders, Infractions) dalam satu batch query API untuk efisiensi.
-2. **Standardisasi UI & Komponen BaseModal**:
-    - Pembuatan komponen `BaseModal.tsx` menggunakan `framer-motion` sebagai standar popup sistem.
-    - Migrasi modal pada manajemen User, Role, dan Jurnal Manual ke sistem `BaseModal`.
-    - Perbaikan z-index pada portal dropdown di dalam modal agar tidak terpotong.
-3. **Modul Konversi Data HPP Kalkulasi**:
-    - Implementasi halaman Konversi HPP untuk sinkronisasi data dari Sales Orders ke HPP Kalkulasi.
-    - Penambahan filter status sinkronisasi (Sudah/Belum) untuk memudahkan audit data.
-    - Optimasi performa query pada tabel bervolume tinggi menggunakan indexing tambahan.
-4. **Pembersihan & Stabilitas Sistem**:
-    - Perbaikan bug layout pada halaman Profile (Typography & Case Policy).
-    - Optimasi `TableFooter` agar lebih responsif dan informatif.
-    - Audit `.gitignore` untuk mencegah file sampah `.vscode` dan log masuk ke repository.
+### Sesi 2026-05-17 (Dini Hari — Cleaning Dashboard and Inventory)
+- **Fokus**: Optimasi Jurnal Harian Produksi (JHP) + Dashboard Manufaktur
+- **PC**: Lokal (Kantor)
+
+---
+
+## 🚀 Fitur & Perbaikan (Sesi 2026-05-16 s.d. 2026-05-17)
+
+1. **Modul Infractions (Pencatatan Kesalahan) — HRD**:
+   - Implementasi `dashboard-hrd/` dengan tab List & Form terintegrasi.
+   - Komponen `RecordsTabs.tsx` untuk navigasi tab List ↔ Form.
+   - Perbaikan `ConfirmDialog.tsx`: tombol "Tutup" kini trigger action callback + close secara konsisten.
+   - Perbaikan validasi API `infractions/route.ts`: field `description` tidak lagi wajib diisi.
+   - Penambahan API `export-infractions/` untuk export PDF/data pelanggaran.
+   - Hook `useInfractionsData.ts` dan komponen `InfractionsTable.tsx` diperbarui.
+   - Setelah simpan sukses, user otomatis diredirect ke tab List.
+
+2. **Jurnal Harian Produksi (JHP) — Soft Delete & Optimasi**:
+   - Implementasi sistem soft delete JHP dengan endpoint `jurnal-harian-produksi/trash/`.
+   - Penambahan kolom audit `created_by`, `updated_by` langsung di tabel JHP (hapus dependency JOIN activity_logs).
+   - Optimasi query dashboard: ganti JOIN dengan single-table scan berbasis timestamp.
+   - Timestamp sekarang menampilkan detik; kolom activity diubah namanya untuk kejelasan.
+   - Perbaikan React reconciliation error di `JurnalTerbaruCard.tsx`.
+
+3. **Dashboard & Analytics**:
+   - Komponen baru: `JurnalStatCard.tsx`, `OrdersStatCard.tsx`, `UsersStatCard.tsx` untuk dashboard utama.
+   - Komponen baru: `JurnalTerbaruCard.tsx`, `ProduksiTrendChart.tsx` untuk dashboard manufaktur.
+   - Komponen `StatCardDropdown.tsx` dan hook `useAutoRefresh.ts`.
+   - API `dashboard/` baru dengan endpoint batch query untuk performa.
+   - Komponen `LastUpdatedBadge.tsx` untuk badge status refresh.
+
+4. **Standarisasi Scraping & API Utils**:
+   - `src/lib/scraper-utils.ts`: helper response standar scraping (sukses, error, partial, dll).
+   - `src/lib/api-utils.ts`: helper response API umum.
+   - Seluruh route `scrape-*` diperbarui menggunakan helper dari `scraper-utils.ts`.
+   - Schema `src/lib/schema.ts` diperbarui untuk kolom baru JHP.
+   - Indexing DB `src/lib/db-indexing.ts` ditambah untuk performa query JHP.
+
+5. **Komponen UI**:
+   - `ScrapingHeader.tsx`: komponen header standar untuk halaman scraping.
+   - `ActivityTable.tsx`, `DataTable.tsx`, `Sidebar.tsx`: penyesuaian minor.
+   - `RecordsTabs.tsx`: tab baru untuk modul HRD.
+
+6. **Permissions**:
+   - `permissions-constants.ts` diperbarui dengan permission baru untuk modul infractions/HRD.
+   - `src/lib/actions.ts` ditambah action untuk soft delete JHP.
+
+---
 
 ## ⚙️ Keputusan Teknis Penting
-- **Recharts for Visuals**: Menggunakan Recharts sebagai standar visualisasi data karena kemudahan kustomisasi dan performa rendering yang baik.
-- **BaseModal Standard**: Semua popup input wajib menggunakan `BaseModal` untuk menjamin konsistensi animasi dan perilaku (outside click, close button).
-- **Index-Driven Performance**: Fokus pada penambahan index di kolom-kolom pencarian (`faktur`, `no_order`) untuk menjaga responsivitas aplikasi seiring bertambahnya data.
+
+- **Scraper-Utils Terpusat**: Semua route scraping wajib pakai helper dari `src/lib/scraper-utils.ts` agar response format konsisten.
+- **Audit Column di Tabel JHP**: `created_by` dan `updated_by` kini ada langsung di tabel, bukan di-join dari `activity_logs`. Ini menghilangkan bottleneck query JOIN volume tinggi.
+- **Soft Delete JHP**: Data jurnal yang dihapus masuk ke trash (soft delete), tidak langsung hilang. Endpoint `/trash` tersedia untuk recovery.
+- **scratch/ di-ignore**: Semua file eksperimen/debug di `scratch/` tidak akan masuk repo.
+
+---
 
 ## 📌 Status Task & Hal yang Perlu Dilanjutkan
-- ✅ Optimasi Dashboard & Analytics Recharts 100% Selesai.
-- ✅ Modernisasi UI & BaseModal Standard 100% Selesai.
-- ✅ Modul Konversi HPP Kalkulasi 100% Selesai.
-- 📌 Next: Melanjutkan modernisasi desain pada modul Penjualan & Pembelian yang tersisa.
-- 📌 Next: Eksplorasi fitur export laporan Excel dengan styling yang lebih kaya (exceljs).
+
+- ✅ Modul Infractions (HRD) — Form, List, Redirect, Export PDF selesai.
+- ✅ JHP Soft Delete + Audit Columns selesai.
+- ✅ Dashboard Manufaktur & Utama diperbarui dengan komponen baru.
+- ✅ Standarisasi scraping utils selesai.
+- 📌 **Next**: Melanjutkan modernisasi desain premium pada modul Penjualan & Pembelian.
+- 📌 **Next**: Eksplorasi fitur export laporan Excel dengan styling lebih kaya (exceljs).
+
+---
 
 ## 📂 Dokumentasi Baru/Diperbarui
-- New `docs/tutorials/20-optimasi-dashboard-dan-analytics-recharts.md`
-- New `docs/tutorials/21-modernisasi-ui-dan-standardisasi-modal.md`
-- Update `docs/BUILD_FROM_SCRATCH.md` (New components & features)
-- Update `docs/task.md` (Update statistics & completion date)
-- Update `docs/AI_SESSION_SUMMARY.md`
+
+- New `docs/AI_WORKFLOW.md` — playbook utama sesi AI
+- New `src/lib/scraper-utils.ts` — helper scraping terpusat
+- New `src/lib/api-utils.ts` — helper response API
+- Update `docs/AI_SESSION_SUMMARY.md` (file ini)
+- Update `docs/task.md` (statistik & task baru)
+- Update `.gitignore` (tambah `scratch/`)

@@ -17,8 +17,9 @@ Sebelum bekerja atau menutup sesi, baca minimal:
 1. `AGENTS.md`
 2. `docs/REPO_MAP.md`
 3. `docs/DEV_RULES.md`
-4. `docs/RESUME_SESSION.md`
-5. `docs/AI_SESSION_SUMMARY.md`
+4. `docs/AI_WORKFLOW.md`
+5. `docs/RESUME_SESSION.md`
+6. `docs/AI_SESSION_SUMMARY.md`
 
 Jika task menyentuh scraping, import, sync, marketplace, atau activity log, baca juga:
 
@@ -35,6 +36,7 @@ Jika ada konflik instruksi, prioritaskan urutan berikut:
 
 ```text
 docs/
+├── AI_WORKFLOW.md          # playbook utama mulai sesi, eksekusi, dan tutup sesi
 ├── REPO_MAP.md              # peta repo dan entry point utama
 ├── RESUME_SESSION.md        # panduan lanjut sesi berikutnya
 ├── AI_SESSION_SUMMARY.md    # ringkasan sesi terakhir
@@ -170,16 +172,17 @@ Jika sesi menyentuh scraping, import, sync, marketplace, atau activity log:
 ```text
 Mulai sesi:
 1. Baca AGENTS.md, docs/REPO_MAP.md, dan docs/DEV_RULES.md.
-2. Baca docs/RESUME_SESSION.md dan docs/AI_SESSION_SUMMARY.md.
-3. Baca docs/SCRAPING_FLOW.md jika task terkait scraping/import/sync.
+2. Baca docs/AI_WORKFLOW.md sebagai playbook utama sesi.
+3. Baca docs/RESUME_SESSION.md dan docs/AI_SESSION_SUMMARY.md.
+4. Baca docs/SCRAPING_FLOW.md jika task terkait scraping/import/sync.
 
 Eksekusi:
-4. Kerjakan task sesuai scope dan dokumen teknis terkait.
-5. Update dokumen relevan jika ada perubahan alur, struktur, atau keputusan.
+5. Kerjakan task sesuai scope dan dokumen teknis terkait.
+6. Update dokumen relevan jika ada perubahan alur, struktur, atau keputusan.
 
 Tutup sesi:
-6. Review git status, git diff --check, dan git diff.
-7. Audit .gitignore, staged files, lalu commit per kategori perubahan.
-8. Push jika aman atau sudah diizinkan.
-9. Laporkan hasil, commit hash, validasi, dan next step.
+7. Review git status, git diff --check, dan git diff.
+8. Audit .gitignore, staged files, lalu commit per kategori perubahan.
+9. Push jika aman atau sudah diizinkan.
+10. Laporkan hasil, commit hash, validasi, dan next step.
 ```

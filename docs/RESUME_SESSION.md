@@ -4,6 +4,11 @@
 > sebelum mengerjakan apa pun, baca dulu `AGENTS.md` dan `docs/REPO_MAP.md`.
 > Setelah paham arah repo, lanjutkan baca `docs/DEV_RULES.md`.
 > Tiga file ini adalah konteks awal wajib. Jangan menunggu user mengingatkan ulang.
+> Untuk alur kerja penuh start-to-finish, gunakan juga `docs/AI_WORKFLOW.md` sebagai playbook utama sesi.
+
+## Playbook Utama
+
+Gunakan `docs/AI_WORKFLOW.md` sebagai ringkasan utama alur **mulai sesi -> eksekusi -> tutup sesi**.
 
 ## Start Cepat 1 Menit
 
