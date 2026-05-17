@@ -55,6 +55,8 @@ export async function GET(request: NextRequest) {
       args.push(namaKaryawan);
     }
 
+    // Selalu filter soft-deleted
+    whereParts.push('deleted_at IS NULL');
     const whereClause = whereParts.length > 0 ? `WHERE ${whereParts.join(' AND ')}` : '';
 
     const sqlData = `SELECT * FROM jurnal_harian_produksi ${whereClause} 

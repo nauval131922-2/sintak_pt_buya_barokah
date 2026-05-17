@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { Loader2, AlertCircle, ClipboardList, RotateCcw, Filter, Plus, Trash2, Edit2, Save, X, CheckCircle2, ChevronDown, Search, PlusSquare, Copy, FileText, Download } from 'lucide-react';
+import { Loader2, AlertCircle, ClipboardList, RotateCcw, Filter, Plus, Trash2, Edit2, Save, X, CheckCircle2, ChevronDown, Search, PlusSquare, Copy, FileText, Download, BookOpen } from 'lucide-react';
 import SearchableDropdown from '@/components/SearchableDropdown';
 import SearchAndReload from '@/components/SearchAndReload';
 import { useRouter } from 'next/navigation';
@@ -47,10 +47,12 @@ export default function JurnalClient({
   canInputTarget = true,
   canInputRealisasi = true,
   canCopyJadwal = false,
+  isSuperAdmin = false,
 }: {
   canInputTarget?: boolean;
   canInputRealisasi?: boolean;
   canCopyJadwal?: boolean;
+  isSuperAdmin?: boolean;
 }) {
   const router = useRouter();
   
@@ -104,6 +106,15 @@ export default function JurnalClient({
   const [isMultiRealisasiMode, setIsMultiRealisasiMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [actionMessage, setActionMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+
+  // Trash / Restore state (Super Admin only)
+  const [showTrashModal, setShowTrashModal] = useState(false);
+  const [trashData, setTrashData] = useState<any[]>([]);
+  const [trashLoading, setTrashLoading] = useState(false);
+  const [trashTotal, setTrashTotal] = useState(0);
+  const [trashPage, setTrashPage] = useState(1);
+  const [selectedTrashIds, setSelectedTrashIds] = useState<Set<number | string>>(new Set());
+  const [isRestoring, setIsRestoring] = useState(false);
 
   // Dropdown data for form
   const [employees, setEmployees] = useState<any[]>([]);
@@ -660,6 +671,44 @@ export default function JurnalClient({
     } catch (err) {}
   };
 
+  const fetchTrash = async (pg = 1) => {
+    setTrashLoading(true);
+    try {
+      const res = await fetch(`/api/jurnal-harian-produksi/trash?page=${pg}&limit=50`);
+      const json = await res.json();
+      if (json.success) {
+        setTrashData(json.data || []);
+        setTrashTotal(json.total || 0);
+        setTrashPage(pg);
+        setSelectedTrashIds(new Set());
+      }
+    } catch {} finally { setTrashLoading(false); }
+  };
+
+  const handleOpenTrash = () => { setShowTrashModal(true); fetchTrash(1); };
+
+  const handleRestore = async () => {
+    if (selectedTrashIds.size === 0) return;
+    if (!window.confirm(`Restore ${selectedTrashIds.size} data yang terhapus?`)) return;
+    setIsRestoring(true);
+    try {
+      const res = await fetch('/api/jurnal-harian-produksi/trash', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: Array.from(selectedTrashIds) })
+      });
+      const json = await res.json();
+      if (json.success) {
+        showMessage('success', `${json.restoredCount} data berhasil direstore`);
+        fetchTrash(trashPage);
+        setRefreshKey(k => k + 1);
+      } else {
+        showMessage('error', json.error || 'Gagal restore data');
+      }
+    } catch { showMessage('error', 'Terjadi kesalahan'); }
+    finally { setIsRestoring(false); }
+  };
+
   const columns = useMemo(() => [
     {
       id: 'actions',
@@ -955,14 +1004,16 @@ export default function JurnalClient({
       <div className="flex gap-6 border-b border-gray-100 shrink-0 px-2 mt-1">
         <button 
           onClick={() => { setActiveTab('list'); cancelForm(); }} 
-          className={`pb-3 px-2 text-[13px] font-bold border-b-2 transition-all ${activeTab === 'list' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          className={`flex items-center gap-1.5 pb-3 px-2 text-[13px] font-bold border-b-2 transition-all ${activeTab === 'list' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
         >
+          <ClipboardList size={14} />
           Daftar Jurnal
         </button>
         <button 
           onClick={() => { if(activeTab !== 'form') startAdd(); }} 
-          className={`pb-3 px-2 text-[13px] font-bold border-b-2 transition-all ${activeTab === 'form' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          className={`flex items-center gap-1.5 pb-3 px-2 text-[13px] font-bold border-b-2 transition-all ${activeTab === 'form' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
         >
+          {editingId ? <Edit2 size={14} /> : <PlusSquare size={14} />}
           {editingId ? 'Edit Jurnal' : 'Tambah Jurnal'}
         </button>
       </div>
@@ -1074,6 +1125,18 @@ export default function JurnalClient({
                     >
                       <Copy size={12} />
                       Copy Jadwal
+                    </button>
+                  )}
+
+                  {/* Trash Button — Super Admin only */}
+                  {isSuperAdmin && (
+                    <button
+                      onClick={handleOpenTrash}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-bold rounded-lg border border-rose-200 transition-all ml-2"
+                      title="Lihat data terhapus"
+                    >
+                      <Trash2 size={12} />
+                      Trash
                     </button>
                   )}
                </div>
@@ -1755,6 +1818,120 @@ export default function JurnalClient({
         )}
       </BaseModal>
 
+      {/* Trash Modal — Super Admin only */}
+      {isSuperAdmin && showTrashModal && (
+        <BaseModal
+          isOpen={showTrashModal}
+          onClose={() => setShowTrashModal(false)}
+          title="Data Terhapus (Trash)"
+          icon={Trash2}
+          maxWidth="max-w-5xl"
+        >
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <p className="text-[12px] text-gray-500">
+                Total <span className="font-bold text-gray-700">{trashTotal}</span> data terhapus
+              </p>
+              {selectedTrashIds.size > 0 && (
+                <button
+                  onClick={handleRestore}
+                  disabled={isRestoring}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-bold rounded-lg transition-all disabled:opacity-50"
+                >
+                  {isRestoring ? <Loader2 size={13} className="animate-spin" /> : <RotateCcw size={13} />}
+                  Restore {selectedTrashIds.size} data
+                </button>
+              )}
+            </div>
+
+            {trashLoading ? (
+              <div className="h-40 flex items-center justify-center">
+                <Loader2 size={24} className="animate-spin text-gray-400" />
+              </div>
+            ) : trashData.length === 0 ? (
+              <div className="h-40 flex items-center justify-center">
+                <p className="text-[13px] text-gray-400 font-semibold">Tidak ada data yang terhapus.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto rounded-xl border border-gray-100">
+                <table className="min-w-full text-left text-[11px]">
+                  <thead className="bg-gray-50 border-b border-gray-100">
+                    <tr>
+                      <th className="px-3 py-2 w-8">
+                        <input type="checkbox"
+                          checked={selectedTrashIds.size === trashData.length && trashData.length > 0}
+                          onChange={(e) => {
+                            if (e.target.checked) setSelectedTrashIds(new Set(trashData.map((r: any) => r.id)));
+                            else setSelectedTrashIds(new Set());
+                          }}
+                          className="rounded"
+                        />
+                      </th>
+                      <th className="px-3 py-2 font-bold text-gray-400">Tgl. Jurnal</th>
+                      <th className="px-3 py-2 font-bold text-gray-400">Shift</th>
+                      <th className="px-3 py-2 font-bold text-gray-400">Karyawan</th>
+                      <th className="px-3 py-2 font-bold text-gray-400">Bagian</th>
+                      <th className="px-3 py-2 font-bold text-gray-400">Pekerjaan</th>
+                      <th className="px-3 py-2 font-bold text-gray-400">Order Realisasi</th>
+                      <th className="px-3 py-2 font-bold text-gray-400 text-right">Target / Real</th>
+                      <th className="px-3 py-2 font-bold text-gray-400">Dihapus</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {trashData.map((row: any) => (
+                      <tr key={row.id}
+                        className={`transition-colors cursor-pointer ${
+                          selectedTrashIds.has(row.id) ? 'bg-rose-50' : 'hover:bg-gray-50'
+                        }`}
+                        onClick={() => setSelectedTrashIds(prev => {
+                          const next = new Set(prev);
+                          if (next.has(row.id)) next.delete(row.id); else next.add(row.id);
+                          return next;
+                        })}
+                      >
+                        <td className="px-3 py-2">
+                          <input type="checkbox" readOnly checked={selectedTrashIds.has(row.id)} className="rounded pointer-events-none" />
+                        </td>
+                        <td className="px-3 py-2 font-semibold text-gray-700 whitespace-nowrap">{formatIndoDateStr(row.tgl) || '-'}</td>
+                        <td className="px-3 py-2 text-gray-600">{row.shift || '-'}</td>
+                        <td className="px-3 py-2 font-semibold text-gray-700">{row.nama_karyawan || '-'}</td>
+                        <td className="px-3 py-2 text-gray-600">{row.bagian || '-'}</td>
+                        <td className="px-3 py-2 text-gray-600 max-w-[140px] truncate">{row.jenis_pekerjaan_2 || row.jenis_pekerjaan || '-'}</td>
+                        <td className="px-3 py-2 text-gray-600 max-w-[140px] truncate">{row.nama_order_2 || row.no_order_2 || '-'}</td>
+                        <td className="px-3 py-2 text-right font-bold tabular-nums">
+                          <span className="text-gray-800">{Number(row.realisasi || 0).toLocaleString('id-ID')}</span>
+                          <span className="text-gray-400 font-normal ml-1">/ {Number(row.target || 0).toLocaleString('id-ID')}</span>
+                        </td>
+                        <td className="px-3 py-2 text-rose-500 whitespace-nowrap">
+                          {row.deleted_at ? new Intl.DateTimeFormat('id-ID', {
+                            day: '2-digit', month: 'short', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta'
+                          }).format(new Date(row.deleted_at.includes('T') ? row.deleted_at : row.deleted_at.replace(' ', 'T') + 'Z')) : '-'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Pagination trash */}
+            {trashTotal > 50 && (
+              <div className="flex items-center justify-center gap-2">
+                <button disabled={trashPage <= 1} onClick={() => fetchTrash(trashPage - 1)}
+                  className="px-3 py-1 text-[11px] font-bold border rounded-lg disabled:opacity-40 hover:bg-gray-50">
+                  ← Prev
+                </button>
+                <span className="text-[11px] text-gray-500">Hal. {trashPage}</span>
+                <button disabled={trashPage * 50 >= trashTotal} onClick={() => fetchTrash(trashPage + 1)}
+                  className="px-3 py-1 text-[11px] font-bold border rounded-lg disabled:opacity-40 hover:bg-gray-50">
+                  Next →
+                </button>
+              </div>
+            )}
+          </div>
+        </BaseModal>
+      )}
 
     </div>
   );

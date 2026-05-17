@@ -58,13 +58,13 @@ export async function GET(req: NextRequest) {
 
     // ─── Harga Filter ─────────────────────────────────────────────────────
     if (minHarga !== null && minHarga !== '') {
-      const clause = ` AND jumlah >= ?`;
+      const clause = ` AND harga >= ?`;
       query      += clause;
       countQuery += clause;
       params.push(parseFloat(minHarga));
     }
     if (maxHarga !== null && maxHarga !== '') {
-      const clause = ` AND jumlah <= ?`;
+      const clause = ` AND harga <= ?`;
       query      += clause;
       countQuery += clause;
       params.push(parseFloat(maxHarga));

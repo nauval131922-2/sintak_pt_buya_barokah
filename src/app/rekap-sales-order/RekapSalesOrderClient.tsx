@@ -307,7 +307,7 @@ export default function RekapSalesOrderClient() {
               <div className="absolute top-full mt-3 right-0 w-72 bg-white rounded-xl border border-gray-100 shadow-md shadow-green-900/10 p-6 z-[100] animate-in fade-in slide-in-from-top-2">
                 <div className="flex flex-col gap-5">
                   <div className="flex flex-col gap-2">
-                    <label className="text-[13px] font-semibold text-gray-500 mb-0.5 pl-1">Min. Total (Rp)</label>
+                    <label className="text-[13px] font-semibold text-gray-500 mb-0.5 pl-1">Min. Harga Satuan (Rp)</label>
                     <input 
                       type="text" 
                       value={minHarga} 
@@ -320,7 +320,7 @@ export default function RekapSalesOrderClient() {
                     />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-[13px] font-semibold text-gray-500 mb-0.5 pl-1">Max. Total (Rp)</label>
+                    <label className="text-[13px] font-semibold text-gray-500 mb-0.5 pl-1">Max. Harga Satuan (Rp)</label>
                     <input 
                       type="text" 
                       value={maxHarga} 

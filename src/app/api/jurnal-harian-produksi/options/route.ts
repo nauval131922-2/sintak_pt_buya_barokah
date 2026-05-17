@@ -11,7 +11,8 @@ export async function GET() {
       {
         sql: `SELECT DISTINCT bagian 
               FROM jurnal_harian_produksi 
-              WHERE bagian IS NOT NULL AND bagian != '' 
+              WHERE bagian IS NOT NULL AND bagian != ''
+                AND deleted_at IS NULL
               ORDER BY bagian ASC 
               LIMIT 50`,
         args: []
@@ -21,6 +22,7 @@ export async function GET() {
               FROM jurnal_harian_produksi 
               WHERE nama_karyawan IS NOT NULL AND nama_karyawan != ''
                 AND (nama_karyawan NOT LIKE '-%' AND bagian NOT LIKE '-%')
+                AND deleted_at IS NULL
               ORDER BY nama_karyawan ASC 
               LIMIT 500`,
         args: []

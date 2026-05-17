@@ -42,6 +42,8 @@ export async function GET(request: NextRequest) {
       args.push(namaKaryawan);
     }
 
+    // Selalu filter soft-deleted
+    whereParts.push('deleted_at IS NULL');
     const whereClause = whereParts.length > 0 ? `WHERE ${whereParts.join(' AND ')}` : '';
 
     // Kolom yang dipilih eksplisit untuk menghindari transfer data berlebih
@@ -49,7 +51,10 @@ export async function GET(request: NextRequest) {
       jenis_pekerjaan, keterangan, target, realisasi, no_order_2, nama_order_2,
       jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, is_manual_input`;
 
-    const sqlData = `SELECT ${SELECT_COLS} FROM jurnal_harian_produksi ${whereClause} 
+    const sortLatest = searchParams.get('sort') === 'latest';
+    const sqlData = sortLatest
+      ? `SELECT ${SELECT_COLS} FROM jurnal_harian_produksi ${whereClause} ORDER BY id DESC LIMIT ? OFFSET ?`
+      : `SELECT ${SELECT_COLS} FROM jurnal_harian_produksi ${whereClause} 
       ORDER BY 
         tgl ASC, 
         CASE UPPER(bagian)
@@ -65,7 +70,7 @@ export async function GET(request: NextRequest) {
         absensi ASC, 
         id ASC 
       LIMIT ? OFFSET ?`;
-    const sqlTotal = `SELECT COUNT(*) as count FROM jurnal_harian_produksi ${whereClause}`;
+    const sqlTotal = `SELECT COUNT(*) as count FROM jurnal_harian_produksi WHERE deleted_at IS NULL ${whereParts.length > 1 ? 'AND ' + whereParts.filter(p => p !== 'deleted_at IS NULL').join(' AND ') : ''}`;
     const sqlLastUpdated = `SELECT strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) as lastUpdated 
           FROM activity_logs 
           WHERE table_name = 'jurnal_harian_produksi' AND action_type = 'UPLOAD'`;
@@ -123,20 +128,25 @@ export async function POST(request: NextRequest) {
       await db.execute({
         sql: `INSERT INTO jurnal_harian_produksi (
           posisi, absensi, tgl, shift, nama_karyawan, no_order, nama_order, jenis_pekerjaan, keterangan, target, realisasi,
-          no_order_2, nama_order_2, jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, is_manual_input
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
+          no_order_2, nama_order_2, jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, is_manual_input, created_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
         args: [
           posisi || '', Number(absensi) || 0, tgl || null, shift || '', nama_karyawan || '',
           no_order || '', nama_order || '', jenis_pekerjaan || '', keterangan || '', cleanTarget, cleanRealisasi,
           no_order_2 || '', nama_order_2 || '', jenis_pekerjaan_2 || '', bahan_kertas || '', Number(jml_plate) || 0,
-          warna || '', Number(inscheet) || 0, Number(rijek) || 0, jam || '', kendala || '', bagian || ''
+          warna || '', Number(inscheet) || 0, Number(rijek) || 0, jam || '', kendala || '', bagian || '',
+          session.username || null
         ]
       });
+
+      // Ambil ID row yang baru diinsert untuk disimpan di activity_log
+      const lastIdResult = await db.execute({ sql: `SELECT last_insert_rowid() as id`, args: [] });
+      const newId = Number((lastIdResult.rows[0] as any)?.id || 0);
 
       await db.execute({
         sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
               VALUES (?, ?, ?, ?, ?, ?)`,
-        args: ['INSERT', 'jurnal_harian_produksi', 0, `Tambah Jurnal Harian Produksi Baru`, JSON.stringify(body.data), session.username || 'System']
+        args: ['INSERT', 'jurnal_harian_produksi', newId, `Tambah Jurnal Harian Produksi Baru`, JSON.stringify(body.data), session.username || 'System']
       });
 
       return NextResponse.json({ success: true });
@@ -439,9 +449,13 @@ export async function PUT(request: NextRequest) {
     }
 
     if (updateParts.length > 0) {
+      // Selalu set updated_at dan updated_by saat ada perubahan
+      updateParts.push('updated_at = CURRENT_TIMESTAMP');
+      updateParts.push('updated_by = ?');
+      updateArgs.push(session.username || null);
       updateArgs.push(id);
       await db.execute({
-        sql: `UPDATE jurnal_harian_produksi SET ${updateParts.join(', ')} WHERE id = ?`,
+        sql: `UPDATE jurnal_harian_produksi SET ${updateParts.join(', ')} WHERE id = ? AND deleted_at IS NULL`,
         args: updateArgs
       });
     }
@@ -468,11 +482,12 @@ export async function DELETE(request: NextRequest) {
     const { ids, clearAll } = await request.json();
     
     if (clearAll) {
-      await db.execute('DELETE FROM jurnal_harian_produksi');
+      // Soft delete semua
+      await db.execute(`UPDATE jurnal_harian_produksi SET deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE deleted_at IS NULL`);
       await db.execute({
         sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
               VALUES (?, ?, ?, ?, ?, ?)`,
-        args: ['DELETE', 'jurnal_harian_produksi', 0, 'Menghapus seluruh data Jurnal Harian Produksi', '{}', session.username || 'System']
+        args: ['DELETE', 'jurnal_harian_produksi', 0, 'Soft delete seluruh data Jurnal Harian Produksi', '{}', session.username || 'System']
       });
       return NextResponse.json({ success: true });
     }
@@ -481,17 +496,20 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'IDs tidak valid' }, { status: 400 });
     }
 
+    // Soft delete per id — tulis log per id agar bisa ter-track di dashboard
     const placeholders = ids.map(() => '?').join(', ');
     await db.execute({
-      sql: `DELETE FROM jurnal_harian_produksi WHERE id IN (${placeholders})`,
-      args: ids
+      sql: `UPDATE jurnal_harian_produksi SET deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id IN (${placeholders}) AND deleted_at IS NULL`,
+      args: [session.username || null, ...ids]
     });
 
-    await db.execute({
-      sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
-            VALUES (?, ?, ?, ?, ?, ?)`,
-      args: ['DELETE', 'jurnal_harian_produksi', 0, `Hapus ${ids.length} baris Jurnal Harian Produksi`, JSON.stringify({ ids }), session.username || 'System']
-    });
+    for (const id of ids) {
+      await db.execute({
+        sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
+              VALUES (?, ?, ?, ?, ?, ?)`,
+        args: ['DELETE', 'jurnal_harian_produksi', id, `Soft delete Jurnal Harian Produksi ID #${id}`, JSON.stringify({ id }), session.username || 'System']
+      });
+    }
 
     return NextResponse.json({ success: true, deletedCount: ids.length });
   } catch (error: any) {

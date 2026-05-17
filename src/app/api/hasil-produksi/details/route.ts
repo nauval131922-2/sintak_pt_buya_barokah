@@ -21,12 +21,12 @@ export async function GET(request: NextRequest) {
 
     // Query 1: Available sections
     queries.push({
-      sql: `SELECT DISTINCT bagian FROM jurnal_harian_produksi WHERE (no_order = ? OR no_order_2 = ?) AND bagian != ''`,
+      sql: `SELECT DISTINCT bagian FROM jurnal_harian_produksi WHERE (no_order = ? OR no_order_2 = ?) AND bagian != '' AND deleted_at IS NULL`,
       args: [noSopd, noSopd]
     });
 
     // Query 2: Available jobs (using jenis_pekerjaan_2 to match frontend)
-    let jobSql = `SELECT DISTINCT jenis_pekerjaan_2 as jenis_pekerjaan FROM jurnal_harian_produksi WHERE (no_order = ? OR no_order_2 = ?) AND jenis_pekerjaan_2 != ''`;
+    let jobSql = `SELECT DISTINCT jenis_pekerjaan_2 as jenis_pekerjaan FROM jurnal_harian_produksi WHERE (no_order = ? OR no_order_2 = ?) AND jenis_pekerjaan_2 != '' AND deleted_at IS NULL`;
     const jobArgs: any[] = [noSopd, noSopd];
     if (bagian) {
       jobSql += ` AND bagian = ?`;
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     let jSql = `SELECT tgl, nama_karyawan, realisasi, target, keterangan, jam, kendala, bagian,
                        no_order_2, nama_order_2, jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek
                 FROM jurnal_harian_produksi
-                WHERE (no_order = ? OR no_order_2 = ?)`;
+                WHERE (no_order = ? OR no_order_2 = ?) AND deleted_at IS NULL`;
     const jArgs: any[] = [noSopd, noSopd];
 
     if (startDate) {

@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
       filterArgs.push(namaKaryawanFilter);
     }
 
+    filterClauses.push('deleted_at IS NULL');
     const whereSQL = filterClauses.join(' AND ');
 
     // Pastikan ada data di tanggal asal dengan filter yang diberikan
@@ -108,7 +109,7 @@ export async function POST(request: NextRequest) {
 
     // Ambil jumlah data yang dicopy untuk response
     const copied = await db.execute({
-      sql: `SELECT count(*) as count FROM jurnal_harian_produksi WHERE tgl = ?`,
+      sql: `SELECT count(*) as count FROM jurnal_harian_produksi WHERE tgl = ? AND deleted_at IS NULL`,
       args: [toDate]
     });
 
