@@ -366,23 +366,21 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
 
       <nav ref={navRef} className="flex-1 overflow-y-auto overflow-x-hidden px-3 pt-4 pb-2 custom-scrollbar">
         {/* DASHBOARD SECTION */}
-        {canAccess('dashboard') && (
-          <div className="space-y-1">
-            <Link 
-              href="/dashboard" 
-              className={navItemClasses('/dashboard')} 
-              title={!isExpanded ? "Dashboard" : ""}
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              <LayoutDashboard size={18} />
-              {isExpanded && <span className="truncate">Dashboard</span>}
-            </Link>
-          </div>
-        )}
+          {(canAccess('dashboard') || canAccess('produksi_dashboard') || canAccess('hrd_dashboard')) && (
+            <FlyoutMenu
+              id="dashboard"
+              label="Dashboard"
+              icon={<LayoutDashboard size={18} />}
+              items={[
+                ...(canAccess('dashboard') ? [{ label: 'Dashboard Umum', href: '/dashboard', icon: <LayoutDashboard size={16} /> }] : []),
+                ...(canAccess('hrd_dashboard') ? [{ label: 'Dashboard HRD', href: '/dashboard-hrd', icon: <Users size={16} /> }] : []),
+                ...(canAccess('produksi_dashboard') ? [{ label: 'Dashboard Produksi', href: '/dashboard-manufaktur', icon: <Monitor size={16} /> }] : []),
+              ]}
+            />
+          )}
 
         {/* DATA DIGIT */}
         {(canAccess('sync') ||
-          canAccess('stok_master_barang') ||
           canAccess('pembelian_pr') || canAccess('pembelian_spph') || canAccess('pembelian_sph_in') ||
           canAccess('pembelian_po') || canAccess('pembelian_penerimaan') || canAccess('pembelian_rekap') || canAccess('pembelian_hutang') ||
           canAccess('produksi_dashboard') || canAccess('produksi_bom') || canAccess('produksi_orders') || canAccess('produksi_bahan_baku') || canAccess('produksi_barang_jadi') ||
@@ -403,25 +401,6 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                 <RefreshCw size={18} />
                 {isExpanded && <span className="truncate">Sinkronisasi All Data</span>}
               </Link>
-            </div>
-          )}
-
-          {/* STOK SECTION */}
-          {canAccess('stok_master_barang') && (
-            <div data-group="Stok">
-              <FlyoutMenu
-                label="Stok"
-                icon={<Box size={18} />}
-                items={[
-                  {
-                    label: 'Data',
-                    icon: <Database size={16} />,
-                    items: [
-                      { label: 'Master Barang', href: '/data-digit/stok/master-barang', icon: <Box size={14} /> }
-                    ]
-                  }
-                ]}
-              />
             </div>
           )}
 
@@ -471,14 +450,12 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
           )}
 
           {/* PRODUKSI SECTION */}
-          {(canAccess('produksi_dashboard') || canAccess('produksi_bom') || canAccess('produksi_orders') || canAccess('produksi_bahan_baku') || canAccess('produksi_barang_jadi')) && (
+          {(canAccess('produksi_bom') || canAccess('produksi_orders') || canAccess('produksi_bahan_baku') || canAccess('produksi_barang_jadi')) && (
             <div data-group="Produksi">
               <FlyoutMenu
                 label="Produksi"
                 icon={<Package size={18} />}
-                items={[
-                  ...(canAccess('produksi_dashboard') ? [{ label: 'Dashboard Produksi', href: '/dashboard-manufaktur', icon: <LayoutDashboard size={16} /> }] : []),
-                  ...(canAccess('produksi_bom') ? [{ label: 'Bill of Material Produksi', href: '/bom', icon: <Calculator size={16} /> }] : []),
+                items={[...(canAccess('produksi_bom') ? [{ label: 'Bill of Material Produksi', href: '/bom', icon: <Calculator size={16} /> }] : []),
                   ...(canAccess('produksi_orders') ? [{ label: 'Order Produksi', href: '/orders', icon: <ClipboardList size={16} /> }] : []),
                   ...(canAccess('produksi_bahan_baku') || canAccess('produksi_barang_jadi') ? [{
                     label: 'Laporan',
@@ -586,11 +563,24 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
             <SectionLabel label="SISTEM" />
 
             {/* UMUM */}
-            {(canAccess('tracking_manufaktur') || canAccess('karyawan')) && (
+            {canAccess('tracking_manufaktur') && (
               <div className="space-y-1 mb-1" data-group="Umum">
                 <FlyoutMenu
                   label="Umum"
                   icon={<Monitor size={18} />}
+                  items={[
+                    { label: 'Tracking Manufaktur', href: '/tracking-manufaktur', icon: <Search size={16} /> }
+                  ]}
+                />
+              </div>
+            )}
+
+            {/* HRD */}
+            {(canAccess('karyawan') || canAccess('catat_kesalahan') || canAccess('statistik')) && (
+              <div className="space-y-1 mb-1" data-group="HRD">
+                <FlyoutMenu
+                  label="HRD"
+                  icon={<Users size={18} />}
                   items={[
                     ...(canAccess('karyawan') ? [{
                       label: 'Data',
@@ -599,27 +589,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                         { label: 'Karyawan', href: '/employees', icon: <Users size={14} /> }
                       ]
                     }] : []),
-                    ...(canAccess('tracking_manufaktur') ? [{ label: 'Tracking Manufaktur', href: '/tracking-manufaktur', icon: <Search size={16} /> }] : [])
-                  ]}
-                />
-              </div>
-            )}
-
-            {/* HRD */}
-            {(canAccess('catat_kesalahan') || canAccess('statistik')) && (
-              <div className="space-y-1 mb-1" data-group="HRD">
-                <FlyoutMenu
-                  label="HRD"
-                  icon={<Users size={18} />}
-                  items={[
-                    {
-                      label: 'Kesalahan Karyawan',
-                      icon: <ClipboardCheck size={16} />,
-                      items: [
-                        ...(canAccess('catat_kesalahan') ? [{ label: 'Catat Kesalahan', href: '/records', icon: <ClipboardCheck size={14} /> }] : []),
-                        ...(canAccess('statistik') ? [{ label: 'Statistik Performa', href: '/stats', icon: <BarChart2 size={14} /> }] : []),
-                      ]
-                    }
+                    ...(canAccess('catat_kesalahan') ? [{ label: 'Catat Kesalahan Karyawan', href: '/records', icon: <ClipboardCheck size={16} /> }] : []),
                   ]}
                 />
               </div>
@@ -688,7 +658,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
               </div>
             )}
 
-            {/* SISTEM / USER — Super Admin only */}
+            {/* SISTEM / USER â€” Super Admin only */}
             {user?.role === 'Super Admin' && (
               <div className="space-y-1 mb-1" data-group="User">
                 <FlyoutMenu
@@ -702,7 +672,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
               </div>
             )}
 
-            {/* SETTINGS — Super Admin only */}
+            {/* SETTINGS â€” Super Admin only */}
             {user?.role === 'Super Admin' && (
               <div className="space-y-1 mb-1" data-group="Settings">
                 <FlyoutMenu
@@ -805,7 +775,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
 }
 
 // =============================================================================
-// Module-level components — defined OUTSIDE Sidebar so their reference is stable
+// Module-level components â€” defined OUTSIDE Sidebar so their reference is stable
 // across re-renders. Using SidebarContext to access shared state.
 // =============================================================================
 
@@ -915,6 +885,8 @@ function FlyoutMenu({ id, label, icon, items }: { id?: string; label: string; ic
     </div>
   );
 }
+
+
 
 
 

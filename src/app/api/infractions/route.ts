@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Validate required fields
-    const requiredFields = ['employee_id', 'date', 'order_faktur', 'description'];
+    const requiredFields = ['employee_id', 'date', 'order_faktur'];
     const validation = validateRequest(data, requiredFields);
     if (!validation.valid) {
       return apiError(validation.error!, 400);

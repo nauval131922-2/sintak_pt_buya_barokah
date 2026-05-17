@@ -3,6 +3,9 @@ import { useRouter } from 'next/navigation';
 import type { Infraction } from '../types';
 
 const PAGE_SIZE = 50;
+const LS_START  = 'infraction_startDate';
+const LS_END    = 'infraction_endDate';
+const LS_LAST   = 'infraction_lastVisitDate';
 
 interface UseInfractionsDataProps {
   initial: Infraction[];
@@ -23,23 +26,67 @@ export function useInfractionsData({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [loadTime, setLoadTime] = useState<number | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
-
-  const [startDate, setStartDate] = useState<Date>(() => {
-
-    if (initialStartDate) return initialStartDate;
-    // Default to today in local time
+  const today = (() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  })();
+
+  const [startDate, setStartDate] = useState<Date>(() => {
+    if (initialStartDate) return initialStartDate;
+    return today;
   });
 
   const [endDate, setEndDate] = useState<Date>(() => {
     if (initialEndDate) return initialEndDate;
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return today;
   });
 
   const initialMount = useRef(true);
+
+  // Mount: baca localStorage, reset ke hari ini kalau hari sudah berganti
+  useEffect(() => {
+    setIsMounted(true);
+    const todayStr = today.toDateString();
+    const lastVisit = localStorage.getItem(LS_LAST);
+    const isNewDay = lastVisit !== todayStr;
+
+    // Update tanggal kunjungan terakhir
+    localStorage.setItem(LS_LAST, todayStr);
+
+    if (isNewDay) {
+      // Hari baru → reset ke hari ini
+      setStartDate(today);
+      setEndDate(today);
+      localStorage.setItem(LS_START, today.toISOString());
+      localStorage.setItem(LS_END, today.toISOString());
+    } else {
+      // Hari sama → restore nilai yang tersimpan
+      const savedStart = localStorage.getItem(LS_START);
+      const savedEnd   = localStorage.getItem(LS_END);
+      if (savedStart) {
+        const d = new Date(savedStart);
+        if (!isNaN(d.getTime())) setStartDate(d);
+      }
+      if (savedEnd) {
+        const d = new Date(savedEnd);
+        if (!isNaN(d.getTime())) setEndDate(d);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Simpan ke localStorage setiap kali user mengubah tanggal
+  useEffect(() => {
+    if (!isMounted) return;
+    localStorage.setItem(LS_START, startDate.toISOString());
+  }, [startDate, isMounted]);
+
+  useEffect(() => {
+    if (!isMounted) return;
+    localStorage.setItem(LS_END, endDate.toISOString());
+  }, [endDate, isMounted]);
 
   // Sync state when initial data changes (from parent refresh)
   useEffect(() => {

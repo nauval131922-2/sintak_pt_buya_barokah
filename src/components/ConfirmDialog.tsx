@@ -81,7 +81,7 @@ export default function ConfirmDialog({
         {/* Backdrop */}
         <div 
           className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-          onClick={isConfirmType ? onCancel : onConfirm}
+          onClick={isConfirmType ? onCancel : () => { onConfirm(); onCancel?.(); }}
         />
         
         {/* Modal Box */}
@@ -112,7 +112,7 @@ export default function ConfirmDialog({
               </button>
             )}
             <button
-              onClick={onConfirm}
+              onClick={!isConfirmType ? () => { onConfirm(); onCancel?.(); } : onConfirm}
               disabled={isLoading}
               className={`flex-1 px-4 py-3 font-bold rounded-lg transition-all text-sm flex items-center justify-center min-w-[100px] shadow-sm shadow-green-900/5 ${btnConfirmStyles[type]} disabled:opacity-70`}
             >

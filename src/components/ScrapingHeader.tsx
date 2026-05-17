@@ -22,9 +22,9 @@ export default function ScrapingHeader({
   return (
     <div className="flex items-center gap-5">
       <h3 className="text-[14px] font-bold text-gray-800 flex items-center gap-3 leading-none">
-        <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shadow-sm shrink-0">
+        <span className="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shadow-sm shrink-0">
           {icon}
-        </div>
+        </span>
         <span>{title}</span>
       </h3>
       {/* Dual Update Mode (khusus halaman Data SOPD) */}

@@ -7,6 +7,8 @@ import { formatLastUpdate } from '@/lib/date-utils';
 import { getLiveRecord } from '@/lib/actions';
 import TableFooter from '@/components/TableFooter';
 import SearchAndReload from '@/components/SearchAndReload';
+import { useAutoRefresh } from '@/lib/hooks/useAutoRefresh';
+import LastUpdatedBadge from '@/components/LastUpdatedBadge';
 export default function ActivityTable({ initialLogs }: { initialLogs: any[] }) {
   const [search, setSearch] = useState('');
   const [visibleCount, setVisibleCount] = useState(50);
@@ -23,9 +25,7 @@ export default function ActivityTable({ initialLogs }: { initialLogs: any[] }) {
   useEffect(() => {
     const handleRefresh = () => {
       if (document.visibilityState === 'visible') {
-        startTransition(() => {
-          router.refresh();
-        });
+        startTransition(() => { router.refresh(); });
       }
     };
 
@@ -36,6 +36,8 @@ export default function ActivityTable({ initialLogs }: { initialLogs: any[] }) {
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [router]);
+
+  const lastUpdated = useAutoRefresh(() => startTransition(() => router.refresh()));
 
   useEffect(() => {
     if (selectedLog && selectedLog.table_name && selectedLog.record_id) {
@@ -149,7 +151,7 @@ export default function ActivityTable({ initialLogs }: { initialLogs: any[] }) {
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-3 w-full animate-in fade-in duration-500">
       <div className="flex flex-col gap-4 shrink-0">
-        <div className="flex items-center px-1">
+        <div className="flex flex-col items-start px-1">
           <div className="flex items-center gap-3">
             <h3 className="text-[15px] font-extrabold text-gray-800 flex items-center gap-2">
               <History size={18} className="text-green-600" />
@@ -165,6 +167,7 @@ export default function ActivityTable({ initialLogs }: { initialLogs: any[] }) {
             )}
             {isPending && <Loader2 size={14} className="animate-spin text-gray-400" />}
           </div>
+          <LastUpdatedBadge lastUpdated={lastUpdated} />
         </div>
         <SearchAndReload
           searchQuery={search}

@@ -3,7 +3,6 @@
 import { useState, useTransition, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Pencil, Trash2, Calendar, FileText, Printer, RefreshCw, FileSpreadsheet, Clock, ClipboardList, Loader2 } from 'lucide-react';
-import { utils, writeFile } from 'xlsx';
 import SearchAndReload from '@/components/SearchAndReload';
 import TableFooter from '@/components/TableFooter';
 
@@ -74,6 +73,17 @@ export default function InfractionsTable({
     clearSelection,
   } = useTableSelection(filtered);
 
+  // Pagination
+  const [page, setPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginatedData = useMemo(
+    () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filtered, page]
+  );
+
+  // Reset ke halaman 1 saat filter/query/data berubah
+  useEffect(() => { setPage(1); }, [query, data]);
+
   // Column Widths for DataTable
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
     if (typeof window !== 'undefined') {
@@ -136,6 +146,7 @@ export default function InfractionsTable({
   }, [fetchFilteredData, router]);
 
   // Delete handlers
+  const [isExporting, setIsExporting] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [isDeletingConfirm, setIsDeletingConfirm] = useState(false);
   const [dialogConfig, setDialogConfig] = useState<{
@@ -202,15 +213,344 @@ export default function InfractionsTable({
   };
 
   const generatePDF = () => {
-     // ... logic unchanged
+    const doc = new jsPDF({ orientation: 'l', unit: 'mm', format: 'a4' });
+    const now = new Date();
+    const printedOnStr = formatIndoDateStr(formatDateToYYYYMMDD(now));
+    const printedTimeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    const periodStr = `${formatIndoDateStr(formatDateToYYYYMMDD(startDate))} s/d ${formatIndoDateStr(formatDateToYYYYMMDD(endDate))}`;
+
+    // Header
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text('PT. Buya Barokah', 15, 18);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Div. Percetakan', 15, 24);
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.line(15, 28, 282, 28);
+
+    // Title
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('REKAP PENCATATAN KESALAHAN KARYAWAN', 148.5, 37, { align: 'center' });
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Periode: ${periodStr}`, 148.5, 43, { align: 'center' });
+
+    // Table
+    const tableData = filtered.map((inf, idx) => [
+      idx + 1,
+      inf.faktur || '-',
+      formatIndoDateStr(inf.date),
+      inf.employee_name || '-',
+      inf.employee_position || '-',
+      inf.description || '-',
+      inf.nama_barang_display || inf.nama_barang || '-',
+      inf.jenis_barang || '-',
+      inf.order_name_display || inf.order_name || '-',
+      inf.jumlah ?? 0,
+      inf.harga ? `Rp ${inf.harga.toLocaleString('id-ID')}` : '-',
+      inf.total ? `Rp ${inf.total.toLocaleString('id-ID')}` : '-',
+    ]);
+
+    autoTable(doc, {
+      startY: 48,
+      head: [['#', 'Faktur', 'Tanggal', 'Karyawan', 'Posisi', 'Deskripsi', 'Nama Barang', 'Kategori', 'No. Order', 'Qty', 'Harga', 'Total Beban']],
+      body: tableData,
+      theme: 'striped',
+      headStyles: { fillColor: [30, 80, 50], textColor: 255, fontStyle: 'bold', fontSize: 7.5 },
+      bodyStyles: { fontSize: 7, textColor: [30, 30, 30] },
+      columnStyles: {
+        0: { cellWidth: 7, halign: 'center' },
+        1: { cellWidth: 18 },
+        2: { cellWidth: 20 },
+        3: { cellWidth: 26 },
+        4: { cellWidth: 20 },
+        5: { cellWidth: 40, overflow: 'linebreak' },
+        6: { cellWidth: 30, overflow: 'linebreak' },
+        7: { cellWidth: 20 },
+        8: { cellWidth: 30, overflow: 'linebreak' },
+        9: { cellWidth: 10, halign: 'right' },
+        10: { cellWidth: 23, halign: 'right' },
+        11: { cellWidth: 23, halign: 'right' },
+      },
+      margin: { left: 15, right: 15 },
+    });
+
+    // Row total beban
+    const grandTotal = filtered.reduce((sum, inf) => sum + (inf.total || 0), 0);
+    const afterTableY = (doc as any).lastAutoTable.finalY;
+    autoTable(doc, {
+      startY: afterTableY,
+      head: [],
+      body: [['', '', '', '', '', '', '', '', 'TOTAL BEBAN', '', '', `Rp ${grandTotal.toLocaleString('id-ID')}`]],
+      theme: 'plain',
+      bodyStyles: { fontSize: 7.5, fontStyle: 'bold', textColor: [30, 80, 50] },
+      columnStyles: {
+        0: { cellWidth: 7 },
+        1: { cellWidth: 18 },
+        2: { cellWidth: 20 },
+        3: { cellWidth: 26 },
+        4: { cellWidth: 20 },
+        5: { cellWidth: 40 },
+        6: { cellWidth: 30 },
+        7: { cellWidth: 20 },
+        8: { cellWidth: 30, halign: 'right', fontStyle: 'bold' },
+        9: { cellWidth: 10 },
+        10: { cellWidth: 23 },
+        11: { cellWidth: 23, halign: 'right', fontStyle: 'bold' },
+      },
+      margin: { left: 15, right: 15 },
+    });
+
+    // Footer
+    const pageCount = (doc as any).internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(100);
+      doc.text(`Dicetak: ${printedOnStr}, ${printedTimeStr}  |  Hal ${i} dari ${pageCount}`, 15, doc.internal.pageSize.height - 8);
+    }
+
+    const pdfOutput = doc.output('bloburl');
+    window.open(pdfOutput, '_blank');
   };
 
-  const generateExcel = () => {
-    // ... logic unchanged
+  const generateExcel = async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+    try {
+      const startStr = formatDateToYYYYMMDD(startDate);
+      const endStr   = formatDateToYYYYMMDD(endDate);
+      const params = new URLSearchParams({
+        startDate: startStr,
+        endDate:   endStr,
+      });
+      const res = await fetch(`/api/export-infractions?${params.toString()}`);
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `rekap-kesalahan_${startStr}_sd_${endStr}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert('Gagal export Excel: ' + (err.error || res.statusText));
+      }
+    } catch (e) {
+      alert('Terjadi kesalahan saat export Excel.');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const generateSinglePDF = useCallback((inf: Infraction) => {
-    // ... logic unchanged
+    const doc = new jsPDF({
+      orientation: 'p',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    const docDate = formatIndoDateStr(inf.date);
+    const now = new Date();
+    const printedOnStr = formatIndoDateStr(formatDateToYYYYMMDD(now));
+    const printedTimeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+
+    // --- HEADER ---
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0); // black
+    doc.setFont('helvetica', 'bold');
+    doc.text('PT. Buya Barokah', 15, 18);
+    
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0); // black
+    doc.setFont('helvetica', 'normal');
+    doc.text('Div. Percetakan', 15, 24);
+    
+    doc.setDrawColor(0, 0, 0); // black
+    doc.setLineWidth(0.5);
+    doc.line(15, 28, 195, 28);
+
+    // --- TITLE ---
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0); // black
+    doc.setFont('helvetica', 'bold');
+    doc.text('FORMULIR DETAIL KESALAHAN KARYAWAN', 105, 38, { align: 'center' });
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(0, 0, 0); // black
+    doc.text(`No. Referensi: ${inf.faktur || '-'}`, 105, 44, { align: 'center' });
+
+    // --- DATA KARYAWAN & WAKTU ---
+    const startY = 55;
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+
+    // Tabel untuk data karyawan
+    const employeeTableData = [
+      ['Nama Karyawan', ':', inf.employee_name || '-'],
+      ['Tanggal Kejadian', ':', docDate],
+      ['Posisi / Bagian', ':', inf.employee_position || '-']
+    ];
+
+    autoTable(doc, {
+      startY: startY,
+      head: [],
+      body: employeeTableData,
+      theme: 'plain',
+      columnStyles: {
+        0: { cellWidth: 35, fontStyle: 'bold', halign: 'left', textColor: [0, 0, 0], cellPadding: { left: 0, right: 2, top: 2, bottom: 2 } },
+        1: { cellWidth: 5, halign: 'center', textColor: [0, 0, 0] },
+        2: { cellWidth: 140, halign: 'left', textColor: [0, 0, 0] }
+      },
+      styles: {
+        fontSize: 10,
+        cellPadding: 2,
+        valign: 'top',
+        lineColor: [255, 255, 255],
+        lineWidth: 0
+      },
+      margin: { left: 15, right: 15 }
+    });
+
+    // --- RINCIAN PRODUKSI ---
+    const detailY = (doc as any).lastAutoTable.finalY + 8;
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0); // black
+    doc.text('A. RINCIAN PRODUKSI & BARANG', 15, detailY);
+    doc.setDrawColor(0, 0, 0); // black
+    doc.setLineWidth(0.2);
+    doc.line(15, detailY + 2, 195, detailY + 2);
+
+    // Tabel untuk rincian produksi
+    const detailTableData = [
+      ['No. Order / SPK', ':', inf.order_name_display || inf.order_name || '-'],
+      ['Nama Barang', ':', inf.nama_barang_display || inf.nama_barang || '-'],
+      ['Kategori', ':', inf.jenis_barang || '-']
+    ];
+
+    autoTable(doc, {
+      startY: detailY + 4,
+      head: [],
+      body: detailTableData,
+      theme: 'plain',
+      columnStyles: {
+        0: { cellWidth: 35, fontStyle: 'bold', halign: 'left', textColor: [0, 0, 0] },
+        1: { cellWidth: 5, halign: 'center', textColor: [0, 0, 0] },
+        2: { cellWidth: 140, halign: 'left', textColor: [0, 0, 0], overflow: 'linebreak' }
+      },
+      styles: {
+        fontSize: 10,
+        cellPadding: 2,
+        overflow: 'linebreak',
+        valign: 'top',
+        lineColor: [255, 255, 255],
+        lineWidth: 0
+      },
+      margin: { left: 15, right: 15 }
+    });
+
+    const orderExtraHeight = (doc as any).lastAutoTable.finalY - (detailY + 8);
+
+    // --- DESKRIPSI KEJADIAN ---
+    const descY = (doc as any).lastAutoTable.finalY + 8;
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0); // black
+    doc.text('B. DESKRIPSI KESALAHAN', 15, descY);
+    doc.line(15, descY + 2, 195, descY + 2);
+
+    // Tabel untuk deskripsi (1 kolom saja)
+    const descTableData = [
+      [inf.description || 'Tidak ada deskripsi rinci.']
+    ];
+
+    autoTable(doc, {
+      startY: descY + 4,
+      head: [],
+      body: descTableData,
+      theme: 'plain',
+      columnStyles: {
+        0: { cellWidth: 180, halign: 'left', textColor: [0, 0, 0], overflow: 'linebreak' }
+      },
+      styles: {
+        fontSize: 10,
+        cellPadding: 2,
+        overflow: 'linebreak',
+        valign: 'top',
+        lineColor: [255, 255, 255],
+        lineWidth: 0
+      },
+      margin: { left: 15, right: 15 }
+    });
+
+    const descHeight = 0; // Not needed anymore since we use autoTable
+
+    // --- DAMPAK FINANCIAL ---
+    const finY = (doc as any).lastAutoTable.finalY + 8;
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0); // black
+    doc.text('C. DAMPAK BIAYA (BEBAN)', 15, finY);
+    doc.line(15, finY + 2, 195, finY + 2);
+
+    const totalStr = inf.total ? `Rp ${inf.total.toLocaleString('id-ID')}` : '-';
+    const qtyStr = inf.jumlah ? `${inf.jumlah}` : '-';
+    const hargaStr = inf.harga ? `Rp ${inf.harga.toLocaleString('id-ID')}` : '-';
+
+    // Tabel untuk dampak biaya
+    const financeTableData = [
+      ['Kuantitas (Qty)', ':', qtyStr],
+      ['Harga Satuan', ':', hargaStr],
+      ['Total Beban', ':', totalStr]
+    ];
+
+    autoTable(doc, {
+      startY: finY + 4,
+      head: [],
+      body: financeTableData,
+      theme: 'plain',
+      columnStyles: {
+        0: { cellWidth: 35, fontStyle: 'bold', halign: 'left', textColor: [0, 0, 0] },
+        1: { cellWidth: 5, halign: 'center', textColor: [0, 0, 0] },
+        2: { cellWidth: 140, halign: 'left', textColor: [0, 0, 0] }
+      },
+      styles: {
+        fontSize: 10,
+        cellPadding: 2,
+        valign: 'top',
+        lineColor: [255, 255, 255],
+        lineWidth: 0
+      },
+      margin: { left: 15, right: 15 }
+    });
+
+    // --- SIGNATURES ---
+    const sigY = (doc as any).lastAutoTable.finalY + 18;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0); // black
+    
+    // Kiri: center di antara 15 dan 105 (60mm), Kanan: center di antara 105 dan 195 (150mm)
+    doc.text('Mengetahui / Pencatat,', 60, sigY, { align: 'center' });
+    doc.text('( _________________________ )', 60, sigY + 20, { align: 'center' });
+    doc.text(inf.recorded_by_name || inf.recorded_by || 'Admin', 60, sigY + 25, { align: 'center' });
+
+    doc.text('Karyawan Ybs,', 150, sigY, { align: 'center' });
+    doc.text('( _________________________ )', 150, sigY + 20, { align: 'center' });
+    doc.text(inf.employee_name || '-', 150, sigY + 25, { align: 'center' });
+
+    // --- FOOTER ---
+    doc.setFontSize(8);
+    doc.setTextColor(0, 0, 0); // black
+    doc.text(`Dicetak: ${printedOnStr}, ${printedTimeStr}`, 15, doc.internal.pageSize.height - 10);
+
+    const pdfOutput = doc.output('bloburl');
+    window.open(pdfOutput, '_blank');
   }, []);
 
   // DataTable Column Definitions
@@ -219,10 +559,11 @@ export default function InfractionsTable({
         id: 'action',
         header: 'Action',
         size: 140,
+        meta: { sticky: true, headerBg: '#f8fafc' },
         cell: (info: any) => {
             const inf = info.row.original as Infraction;
             return (
-                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 group-[.is-selected]:opacity-100 transition-opacity">
+                <div className="flex items-center gap-2 opacity-100 transition-opacity">
                     <button
                         onClick={(e) => { e.stopPropagation(); generateSinglePDF(inf); }}
                         className="flex items-center gap-1.5 text-[10px] font-bold text-green-600 bg-green-50 hover:bg-green-600 hover:text-white border border-green-100 px-3 py-1.5 rounded-lg transition-all leading-none uppercase tracking-wider"
@@ -380,63 +721,73 @@ export default function InfractionsTable({
 
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-6 animate-in fade-in duration-500 overflow-hidden">
-      {/* Top Filter Bar - Premium Light */}
-      <div className="bg-white rounded-2xl border border-gray-100 py-3.5 px-6 shadow-sm shadow-green-900/5 flex flex-col gap-4 shrink-0 relative z-50">
-        <div className="flex flex-wrap items-center justify-between gap-6 relative z-10">
-          <div className="flex flex-col gap-2">
-            <span className="text-[13px] font-semibold text-gray-500 pl-1">Rentang Periode Kesalahan</span>
-            <div className="flex items-center gap-3">
-              <div className="w-[180px] relative group">
-                <DatePicker name="startDate" value={startDate} onChange={setStartDate} />
-              </div>
-              <div className="w-4 h-0.5 bg-gray-200 rounded-full"></div>
-              <div className="w-[180px] relative group">
-                <DatePicker name="endDate" value={endDate} onChange={setEndDate} />
-              </div>
-              {isRefreshing && (
-                <div className="ml-2 flex items-center justify-center w-10 h-10 rounded-lg bg-green-50 text-green-600">
-                  <RefreshCw size={18} className="animate-spin" />
+      {/* Top Filter Bar */}
+      <div className="flex gap-6 shrink-0 min-h-[105px]">
+        <div className="flex-1 bg-white rounded-2xl border border-gray-100 px-6 py-4 shadow-sm shadow-green-900/5 flex flex-col justify-center relative z-50 overflow-visible h-full">
+          <div className="flex items-center justify-between gap-6">
+            <div className="flex items-center gap-6">
+              {/* Rentang Tanggal */}
+              <div className="flex flex-col">
+                <span className="block text-[13px] font-semibold text-gray-500 mb-2 ml-1 tracking-tight select-none">Rentang Tanggal</span>
+                <div className="flex items-center gap-3">
+                  <div className="w-[150px] relative group">
+                    <DatePicker name="startDate" value={startDate} onChange={setStartDate} />
+                  </div>
+                  <div className="w-4 h-0.5 bg-gray-100 rounded-full"></div>
+                  <div className="w-[150px] relative group">
+                    <DatePicker name="endDate" value={endDate} onChange={setEndDate} popupAlign="right" />
+                  </div>
+                  {isRefreshing && (
+                    <div className="ml-2 flex items-center justify-center w-10 h-10 rounded-lg bg-green-50 text-green-600">
+                      <RefreshCw size={18} className="animate-spin" />
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
-          </div>
-          <div className="shrink-0 flex items-center gap-4">
-            <button 
-              onClick={generateExcel}
-              className="px-5 h-10 bg-white text-gray-600 border border-gray-100 font-semibold rounded-lg hover:bg-green-50 hover:text-green-600 hover:border-green-100 transition-all flex items-center gap-2 shadow-sm text-[12px]"
-            >
-              <FileSpreadsheet size={18} />
-              <span>Ekspor Excel</span>
-            </button>
-            <button 
-              onClick={generatePDF}
-              className="px-5 h-10 bg-white text-gray-600 border border-gray-100 font-semibold rounded-lg hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all flex items-center gap-2 shadow-sm text-[12px]"
-            >
-              <Printer size={18} />
-              <span>Cetak Rekap PDF</span>
-            </button>
+            {/* Tombol Ekspor */}
+            <div className="flex flex-col">
+              <span className="block text-[13px] font-semibold text-transparent mb-2 ml-1 tracking-tight select-none">Aksi</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={generateExcel}
+                  disabled={isExporting}
+                  className="h-11 px-5 bg-green-50 text-green-600 border border-green-100 font-semibold rounded-lg hover:bg-green-600 hover:text-white hover:border-green-600 transition-all flex items-center gap-2 shadow-sm text-[12px] disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isExporting ? <Loader2 size={16} className="animate-spin" /> : <FileSpreadsheet size={16} />}
+                  <span>{isExporting ? 'Mengekspor...' : 'Ekspor Excel'}</span>
+                </button>
+                <button
+                  onClick={generatePDF}
+                  className="h-11 px-5 bg-red-50 text-red-600 border border-red-100 font-semibold rounded-lg hover:bg-red-600 hover:text-white hover:border-red-600 transition-all flex items-center gap-2 shadow-sm text-[12px]"
+                >
+                  <Printer size={16} />
+                  <span>Cetak Rekap PDF</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Results View */}
-      <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
+      <div className="flex-1 flex flex-col gap-3 overflow-hidden relative min-h-0">
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
-            <div className="flex items-center gap-4">
-              <h3 className="text-[14px] font-bold text-gray-800 flex items-center gap-3 leading-none">
-                <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shadow-sm shrink-0">
+            <div className="flex items-center gap-5">
+              <div className="text-[14px] font-bold text-gray-800 flex items-center gap-3 leading-none tracking-tight">
+                <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shadow-sm">
                   <ClipboardList size={16} />
                 </div>
                 <span>Riwayat Kesalahan Karyawan</span>
-              </h3>
-              {isRefreshing && data.length > 0 && (
-                <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 animate-pulse leading-none shadow-sm">
-                  <RefreshCw size={12} className="animate-spin" />
-                  <span>Sinkronisasi Data...</span>
-                </div>
-              )}
+              </div>
             </div>
+            {isRefreshing && data.length > 0 && (
+              <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse tracking-tight leading-none">
+                <Loader2 size={12} className="animate-spin" />
+                <span>Memproses Data...</span>
+              </div>
+            )}
           </div>
 
           <SearchAndReload
@@ -448,9 +799,9 @@ export default function InfractionsTable({
           />
         </div>
 
-        <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden">
+        <div className="flex-1 min-h-0 flex flex-col gap-5 overflow-hidden relative">
           <DataTable
-              data={filtered}
+              data={paginatedData}
               columns={columns}
               columnWidths={columnWidths}
               onColumnWidthChange={handleResize}
@@ -458,21 +809,23 @@ export default function InfractionsTable({
               selectedIds={selectedIds}
               onRowClick={handleRowClick}
               onRowDoubleClick={(id) => {
-                  const inf = filtered.find(d => d.id === id);
+                  const inf = paginatedData.find(d => d.id === id);
                   if (inf && onEdit) onEdit(inf);
               }}
               rowHeight="h-14"
           />
-          <TableFooter
-            totalCount={filtered.length}
-            currentCount={filtered.length}
-            label="Rekaman Kesalahan"
-            selectedCount={selectedIds.size}
-            onClearSelection={clearSelection}
-            loadTime={loadTime}
-          />
         </div>
-
+        <TableFooter
+          totalCount={filtered.length}
+          currentCount={paginatedData.length}
+          label="Rekaman Kesalahan"
+          selectedCount={selectedIds.size}
+          onClearSelection={clearSelection}
+          loadTime={loadTime}
+          page={page}
+          totalPages={totalPages}
+          onPageChange={(p) => { setPage(p); clearSelection(); }}
+        />
       </div>
 
       <ConfirmDialog

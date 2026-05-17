@@ -238,48 +238,49 @@ function DataTableInner<TData extends { id: number | string }>({
               })}
             </thead>
             <tbody>
-              {rows.length === 0 && !isLoading ? (
-                <tr key="empty-row">
-                  <td key="empty-cell" colSpan={headers.length + 1} className="p-0 border-none">
-                      <div className="flex flex-col items-center justify-center py-24 text-center">
-                         <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                            <AlertCircle className="text-gray-300" size={32} />
-                         </div>
-                         <h3 className="text-[14px] font-bold text-gray-800 mb-1">Data Tidak Ditemukan</h3>
-                         <p className="text-[12px] text-gray-400 font-medium max-w-[240px] leading-relaxed">
-                            Tidak ada rekaman untuk ditampilkan pada periode ini atau kriteria pencarian Anda.
-                         </p>
+              {rows.length === 0 && !isLoading && (
+                <tr>
+                  <td colSpan={headers.length + 1} className="p-0 border-none">
+                    <div className="flex flex-col items-center justify-center py-24 text-center">
+                      <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                        <AlertCircle className="text-gray-300" size={32} />
                       </div>
+                      <h3 className="text-[14px] font-bold text-gray-800 mb-1">Data Tidak Ditemukan</h3>
+                      <p className="text-[12px] text-gray-400 font-medium max-w-[240px] leading-relaxed">
+                        Tidak ada rekaman untuk ditampilkan pada periode ini atau kriteria pencarian Anda.
+                      </p>
+                    </div>
                   </td>
                 </tr>
-              ) : (
-                <>
-                  <tr key="top-spacer" style={{ height: `${virtualizer.getVirtualItems()[0]?.start ?? 0}px` }} className="border-none">
-                    <td key="top-td" colSpan={headers.length + 1} className="p-0 border-none"></td>
-                  </tr>
-                  {virtualizer.getVirtualItems().map((virtualRow) => {
-                    const row = rows[virtualRow.index];
-                    const isSelected = selectedIds.has(row.original.id);
-                    const isOdd = virtualRow.index % 2 === 1;
-                    return (
-                      <TableRow
-                        key={`row-${row.original.id}`}
-                        row={row}
-                        isSelected={isSelected}
-                        isOdd={isOdd}
-                        onRowClick={onRowClick}
-                        onRowDoubleClick={onRowDoubleClick}
-                        rowHeight={rowHeight}
-                        disableHover={disableHover}
-                        rowCursor={rowCursor}
-                        extraClassName={getRowClassName ? getRowClassName(row.original) : ''}
-                      />
-                    );
-                  })}
-                  <tr key="bottom-spacer" style={{ height: `${Math.max(0, virtualizer.getTotalSize() - (virtualizer.getVirtualItems().at(-1)?.end ?? 0))}px` }} className="border-none">
-                    <td key="bottom-td" colSpan={headers.length + 1} className="p-0 border-none"></td>
-                  </tr>
-                </>
+              )}
+              {rows.length > 0 && (
+                <tr style={{ height: `${virtualizer.getVirtualItems()[0]?.start ?? 0}px` }} className="border-none">
+                  <td colSpan={headers.length + 1} className="p-0 border-none" />
+                </tr>
+              )}
+              {rows.length > 0 && virtualizer.getVirtualItems().map((virtualRow) => {
+                const row = rows[virtualRow.index];
+                const isSelected = selectedIds.has(row.original.id);
+                const isOdd = virtualRow.index % 2 === 1;
+                return (
+                  <TableRow
+                    key={`row-${row.original.id}`}
+                    row={row}
+                    isSelected={isSelected}
+                    isOdd={isOdd}
+                    onRowClick={onRowClick}
+                    onRowDoubleClick={onRowDoubleClick}
+                    rowHeight={rowHeight}
+                    disableHover={disableHover}
+                    rowCursor={rowCursor}
+                    extraClassName={getRowClassName ? getRowClassName(row.original) : ''}
+                  />
+                );
+              })}
+              {rows.length > 0 && (
+                <tr style={{ height: `${Math.max(0, virtualizer.getTotalSize() - (virtualizer.getVirtualItems().at(-1)?.end ?? 0))}px` }} className="border-none">
+                  <td colSpan={headers.length + 1} className="p-0 border-none" />
+                </tr>
               )}
             </tbody>
           </table>
