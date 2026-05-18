@@ -31,6 +31,7 @@ export const MODULE_REGISTRY = [
 
   // Produksi (Data Digit)
   { key: 'produksi_dashboard',     label: 'Dashboard Produksi',               group: 'Dashboard' },
+  { key: 'akt_dashboard',          label: 'Dashboard Akuntansi',              group: 'Dashboard' },
   { key: 'produksi_bom',           label: 'BOM Produksi',                     group: 'Data Digit - Produksi' },
   { key: 'produksi_orders',        label: 'Order Produksi',                   group: 'Data Digit - Produksi' },
   { key: 'produksi_bahan_baku',    label: 'BBB Produksi',                     group: 'Data Digit - Produksi' },

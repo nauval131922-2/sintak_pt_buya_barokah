@@ -366,7 +366,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
 
       <nav ref={navRef} className="flex-1 overflow-y-auto overflow-x-hidden px-3 pt-4 pb-2 custom-scrollbar">
         {/* DASHBOARD SECTION */}
-          {(canAccess('dashboard') || canAccess('produksi_dashboard') || canAccess('hrd_dashboard')) && (
+          {(canAccess('dashboard') || canAccess('produksi_dashboard') || canAccess('hrd_dashboard') || canAccess('akt_dashboard')) && (
             <FlyoutMenu
               id="dashboard"
               label="Dashboard"
@@ -375,6 +375,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                 ...(canAccess('dashboard') ? [{ label: 'Dashboard Umum', href: '/dashboard', icon: <LayoutDashboard size={16} /> }] : []),
                 ...(canAccess('hrd_dashboard') ? [{ label: 'Dashboard HRD', href: '/dashboard-hrd', icon: <Users size={16} /> }] : []),
                 ...(canAccess('produksi_dashboard') ? [{ label: 'Dashboard Produksi', href: '/dashboard-manufaktur', icon: <Monitor size={16} /> }] : []),
+                ...(canAccess('akt_dashboard') ? [{ label: 'Dashboard Akuntansi', href: '/dashboard-akunting', icon: <BarChart2 size={16} /> }] : []),
               ]}
             />
           )}
