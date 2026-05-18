@@ -56,3 +56,6 @@ local.db-wal
 .vscode/
 /scratch/
 
+# PM2 logs
+/logs/
+
