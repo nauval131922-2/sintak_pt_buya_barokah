@@ -1428,7 +1428,27 @@ export default function JurnalClient({
                       ) : null)}
                     </div>
                   </div>
+                ) : isAdding ? (
+                  /* Mode tambah baru: tampilkan ringkasan data Target yang sudah diisi */
+                  <div className="mb-6 p-4 bg-emerald-50/50 border border-emerald-200 rounded-xl">
+                    <p className="text-[12px] font-bold text-emerald-800 mb-3">Data Target dari form yang sedang diisi:</p>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      {[
+                        { label: 'Tanggal', val: formData.tgl ? formatIndoDateStr(formData.tgl) : '' },
+                        { label: 'Shift', val: formData.shift ? String(formData.shift) : '' },
+                        { label: 'Karyawan', val: formData.nama_karyawan || '' },
+                        { label: 'Order', val: formData.no_order ? `${formData.no_order}${formData.nama_order ? ' — ' + formData.nama_order : ''}` : '' },
+                        { label: 'Bagian', val: formData.bagian || '' },
+                      ].map(item => item.val ? (
+                        <span key={item.label} className="text-[11px] font-bold bg-white text-emerald-700 px-2.5 py-1 rounded-md border border-emerald-100 shadow-sm">{item.label}: {item.val}</span>
+                      ) : null)}
+                    </div>
+                    {![formData.tgl, formData.shift, formData.nama_karyawan].some(Boolean) && (
+                      <p className="text-[11px] text-emerald-600 mt-2">Kembali ke tab Target untuk melengkapi data penjadwalan.</p>
+                    )}
+                  </div>
                 ) : (
+                  /* Mode edit jurnal lama tanpa memilih target dari tabel */
                   <div className="mb-6 p-4 bg-sky-50 border border-sky-100 rounded-xl flex items-start gap-3">
                     <AlertCircle size={16} className="text-sky-600 shrink-0 mt-0.5" />
                     <p className="text-[12px] font-medium text-sky-800 leading-relaxed">

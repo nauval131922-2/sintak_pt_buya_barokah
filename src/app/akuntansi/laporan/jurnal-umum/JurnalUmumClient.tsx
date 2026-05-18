@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
+import CopyButton from '@/components/ui/CopyButton';
 
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { formatLastUpdate, splitDateRangeIntoMonths } from '@/lib/date-utils';
@@ -492,8 +493,12 @@ export default function JurnalUmumClient() {
         const isChild = row.original._isChild;
         const val = String(getValue() || '');
         if (!val) return <span className="text-gray-200">—</span>;
-        if (isChild) return <span className="text-gray-400 tabular-nums">{val}</span>;
-        return <span className="text-gray-500 tabular-nums">{val}</span>;
+        return (
+          <span className="group flex items-center gap-1.5">
+            <span className={`tabular-nums ${isChild ? 'text-gray-400' : 'text-gray-500'}`}>{val}</span>
+            <CopyButton text={val} size={11} />
+          </span>
+        );
       }
     },
     {
