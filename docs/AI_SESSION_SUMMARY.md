@@ -1,5 +1,54 @@
 # AI Session Summary
 
+## Update Sesi — 2026-05-18 (Siang)
+
+### Konteks Sesi
+- Sesi AI berlanjut dari sesi 2026-05-17 (kantor).
+- Fokus utama: Dashboard Akuntansi baru, perbaikan chart legend & label, RBAC fail-close, JHP warning fix.
+
+### Pekerjaan Sesi Ini
+
+1. **Dashboard Akuntansi (`dashboard-akunting/`)**:
+   - Halaman baru `dashboard-akunting/page.tsx` dengan filter bulan, trend chart, warning card, dan jurnal terbaru.
+   - `AkuntingTrendChart.tsx`: chart Laba/Rugi & Arus Kas kumulatif dengan Recharts.
+   - `WarningBarangJadiCard.tsx`: warning harga mismatch penerimaan barang jadi (kumulatif s.d. tanggal).
+   - `JurnalAkuntansiTerbaru.tsx`: log transaksi terbaru akuntansi dengan copy-to-clipboard.
+   - API baru: `akunting-trend/route.ts`, `akunting-jurnal-terbaru/route.ts`, `barang-jadi-warning/route.ts`.
+   - Sidebar & permission `akt_dashboard` ditambahkan.
+
+2. **Perbaikan Chart Dashboard**:
+   - Urutan legend trend chart Production & HRD disesuaikan dengan custom payload Recharts.
+   - Label X-axis otomatis: tampilkan hari (format DD) untuk single-month, bulan (Mon YYYY) untuk multi-month.
+   - Chart Laba/Rugi & Arus Kas diubah ke running cumulative total.
+
+3. **Perbaikan Permission (fail-close)**:
+   - `permissions.ts`: logika dari fail-open ke fail-close — akses hanya diberikan jika baris ada DAN `can_access = 1`.
+   - Tambah routing `hrd_dashboard`, `produksi_dashboard`, `akt_dashboard` ke `MODULE_TO_ROUTE` agar redirect login benar.
+
+4. **Perbaikan JHP Warning**:
+   - `JurnalClient.tsx`: perbaiki kondisi warning "mengisi realisasi tanpa target" agar tidak muncul saat realisasi mengacu target valid.
+
+5. **Copy-to-Clipboard Jurnal Umum**:
+   - `JurnalUmumClient.tsx`: tombol salin username pada log transaksi jurnal umum.
+
+6. **PM2 Deployment**:
+   - `docs/PM2_DEPLOYMENT.md`: panduan lengkap deploy production dengan PM2 (port 3000 prod, 3001 dev).
+   - `ecosystem.config.js`: konfigurasi PM2 untuk SINTAK production.
+
+### Commit Sesi Ini
+- `71ffcf3` feat: tambah modul Dashboard Akuntansi
+- `b63fa41` fix: permission fail-close + routing dashboard
+- `8e02358` feat: perbaikan trend chart dashboard
+- `0c1638a` fix: warning JHP + copy-to-clipboard jurnal umum
+- `3960ed1` docs: panduan PM2 deployment
+
+### Keputusan Teknis
+- **Permission fail-close**: role yang belum dikonfigurasi di DB → akses DITOLAK (tidak lagi fail-open).
+- **Warning card kumulatif**: hitung mismatch dari awal historis s.d. tanggal terpilih (bukan interval relatif).
+- **PM2 sebagai production server**: port 3000 untuk prod, port 3001 untuk dev — bisa berjalan bersamaan.
+
+---
+
 ## Update Sesi — 2026-05-17 (Sore)
 
 ### Konteks Onboarding AI

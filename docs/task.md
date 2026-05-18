@@ -2,7 +2,7 @@
 
 ## 🔄 Sedang Dikerjakan (In Progress)
 
-- [ ] Melanjutkan Modernisasi Desain Premium pada modul Penjualan & Pembelian
+_Tidak ada task yang sedang berjalan saat ini._
 
 ---
 
@@ -18,6 +18,13 @@
 
 ## ✅ Selesai (Done)
 
+- [x] Dashboard Akuntansi: halaman, trend chart, warning card, jurnal terbaru, API batch — 2026-05-18
+- [x] Perbaikan RBAC fail-close (permission.ts) + routing dashboard — 2026-05-18
+- [x] Perbaikan trend chart legend & label X-axis (Production, HRD) — 2026-05-18
+- [x] Perbaikan warning JHP tanpa target — 2026-05-18
+- [x] Copy-to-clipboard log jurnal umum — 2026-05-18
+- [x] Panduan PM2 deployment + ecosystem.config.js — 2026-05-18
+- [x] Modernisasi Desain Premium modul Penjualan & Pembelian (sebagian) — 2026-05-18
 - [x] Perbaikan Infractions: ConfirmDialog redirect + validasi API description opsional — 2026-05-17
 - [x] Implementasi Dashboard HRD (RecordsTabs, tab List ↔ Form, export infractions) — 2026-05-17
 - [x] JHP Soft Delete System + Audit Columns (created_by, updated_by) — 2026-05-17
@@ -100,10 +107,10 @@
 ## 📊 Statistik
 
 ```
-Total task    : 91
-Selesai       : 85
-In progress   : 1
-Backlog       : 5
+Total task    : 100
+Selesai       : 93
+In progress   : 0
+Backlog       : 5 (+ 2 ide)
 Bug diketahui : 0
 Progress      : 93%
 ```
