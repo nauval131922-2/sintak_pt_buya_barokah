@@ -65,13 +65,24 @@ function formatFull(val: number): string {
 }
 
 function buildXTickMap(data: TrendPoint[]): Record<string, string> {
-  if (data.length <= 14) {
+  if (data.length === 0) return {};
+
+  // Cek apakah semua data dalam bulan & tahun yang sama
+  const firstDt = strToDate(data[0].date);
+  const isSingleMonth = data.every(d => {
+    const dt = strToDate(d.date);
+    return dt.getMonth() === firstDt.getMonth() && dt.getFullYear() === firstDt.getFullYear();
+  });
+
+  if (isSingleMonth) {
+    // Tampilkan nomor hari tiap titik agar label tersebar merata
     return Object.fromEntries(data.map(d => {
       const dt = strToDate(d.date);
       return [d.date, String(dt.getDate()).padStart(2, '0')];
     }));
   }
-  // monthly grouping
+
+  // Multi-bulan: tampilkan nama bulan di titik pertama tiap bulan
   const map: Record<string, string> = {};
   let lastMonth = '';
   data.forEach(d => {
@@ -270,7 +281,31 @@ export default function ProduksiTrendChart() {
                 label={{ value: 'Qty', angle: 0, position: 'insideBottomRight', offset: 0, dy: 28, style: { fontSize: 9, fill: '#c7d2fe', fontWeight: 600 } }}
               />
               <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#d1fae5', strokeWidth: 1 }} />
-              {/* Area: Nilai BBB */}
+              <Legend
+                verticalAlign="bottom"
+                height={24}
+                content={() => (
+                  <div style={{ display: 'flex', gap: 16, justifyContent: 'center', fontSize: 10, fontWeight: 600, color: '#6b7280', paddingTop: 4 }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <svg width="16" height="8"><line x1="0" y1="4" x2="16" y2="4" stroke="#10b981" strokeWidth="2" /><circle cx="8" cy="4" r="3" fill="#10b981" stroke="white" strokeWidth="1.5" /></svg>
+                      Nilai BBB
+                    </span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <svg width="16" height="8"><line x1="0" y1="4" x2="16" y2="4" stroke="#6366f1" strokeWidth="2" /><circle cx="8" cy="4" r="3" fill="#6366f1" stroke="white" strokeWidth="1.5" /></svg>
+                      HPP Hasil Produksi
+                    </span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <svg width="8" height="8"><rect width="8" height="8" rx="1" fill="#6ee7b7" /></svg>
+                      Qty BBB
+                    </span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <svg width="8" height="8"><rect width="8" height="8" rx="1" fill="#a5b4fc" /></svg>
+                      Qty Hasil
+                    </span>
+                  </div>
+                )}
+              />
+              {/* nilai_bbb dulu (di bawah layer), hpp_total di atas */}
               <Area
                 yAxisId="left"
                 type="monotone"
@@ -286,7 +321,6 @@ export default function ProduksiTrendChart() {
                 }}
                 activeDot={{ r: 5, fill: '#10b981', stroke: 'white', strokeWidth: 2 }}
               />
-              {/* Area: HPP Hasil Produksi */}
               <Area
                 yAxisId="left"
                 type="monotone"
@@ -306,10 +340,6 @@ export default function ProduksiTrendChart() {
               <Bar yAxisId="right" dataKey="qty_bbb" name="Qty BBB" fill="#6ee7b7" fillOpacity={0.6} radius={[3,3,0,0]} maxBarSize={10} />
               {/* Bar: Qty Hasil Produksi */}
               <Bar yAxisId="right" dataKey="qty_hasil" name="Qty Hasil" fill="#a5b4fc" fillOpacity={0.6} radius={[3,3,0,0]} maxBarSize={10} />
-              <Legend verticalAlign="bottom" height={24} iconSize={8}
-                wrapperStyle={{ fontSize: '10px', fontWeight: 600, paddingTop: 4 }}
-                formatter={(val) => <span style={{ color: '#6b7280' }}>{val}</span>}
-              />
             </ComposedChart>
           </ResponsiveContainer>
         )}

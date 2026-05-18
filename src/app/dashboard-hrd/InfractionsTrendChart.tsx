@@ -81,6 +81,22 @@ function CustomTooltip({ active, payload }: any) {
 
 
 function buildXTicks(data: TrendPoint[]): Record<string, string> {
+  if (data.length === 0) return {};
+
+  // Cek apakah semua data dalam bulan & tahun yang sama
+  const firstM = data[0].date.slice(0, 7); // "YYYY-MM"
+  const isSingleMonth = data.every(d => d.date.slice(0, 7) === firstM);
+
+  if (isSingleMonth) {
+    // Tampilkan nomor hari tiap titik agar label tersebar merata
+    const ticks: Record<string, string> = {};
+    for (const d of data) {
+      ticks[d.date] = d.date.slice(8, 10); // "dd"
+    }
+    return ticks;
+  }
+
+  // Multi-bulan: tampilkan nama bulan di titik pertama tiap bulan
   const ticks: Record<string, string> = {};
   let lastMonth = '';
   for (const d of data) {

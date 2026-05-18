@@ -21,9 +21,7 @@ async function DashboardContent() {
   return (
     <div className="flex flex-col gap-5 shrink-0">
       {/* Stat Card */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <KaryawanStatCard />
-      </div>
+      <KaryawanStatCard />
 
       {/* Quick Links */}
       <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm flex flex-col gap-3">
@@ -63,9 +61,7 @@ async function DashboardContent() {
 function DashboardSkeleton() {
   return (
     <div className="flex flex-col gap-5 shrink-0">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="bg-white border border-gray-100 rounded-2xl p-5 h-[110px] animate-pulse shadow-sm" />
-      </div>
+      <div className="bg-white border border-gray-100 rounded-2xl p-5 h-[110px] animate-pulse shadow-sm" />
       <div className="bg-white border border-gray-100 rounded-2xl h-[300px] animate-pulse shadow-sm" />
       <div className="bg-white border border-gray-100 rounded-2xl h-[120px] animate-pulse shadow-sm" />
     </div>
