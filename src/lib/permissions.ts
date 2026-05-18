@@ -13,6 +13,9 @@ export type { ModuleKey, PermissionMap } from './permissions-constants';
 // Ordered by sidebar priority — first accessible route wins.
 const MODULE_TO_ROUTE: Array<{ key: string; route: string }> = [
   { key: 'dashboard',             route: '/dashboard' },
+  { key: 'hrd_dashboard',         route: '/dashboard-hrd' },
+  { key: 'produksi_dashboard',    route: '/dashboard-manufaktur' },
+  { key: 'akt_dashboard',         route: '/dashboard-akunting' },
   { key: 'sync',                  route: '/sync' },
   { key: 'pembelian_pr',          route: '/pr' },
   { key: 'pembelian_spph',        route: '/spph-out' },
@@ -21,7 +24,6 @@ const MODULE_TO_ROUTE: Array<{ key: string; route: string }> = [
   { key: 'pembelian_penerimaan',  route: '/penerimaan-pembelian' },
   { key: 'pembelian_rekap',       route: '/rekap-pembelian-barang' },
   { key: 'pembelian_hutang',      route: '/pelunasan-hutang' },
-  { key: 'produksi_dashboard',    route: '/dashboard-manufaktur' },
   { key: 'produksi_bom',          route: '/bom' },
   { key: 'produksi_orders',       route: '/orders' },
   { key: 'produksi_bahan_baku',   route: '/bahan-baku' },
@@ -134,12 +136,13 @@ export async function requirePermission(moduleKey: ModuleKey): Promise<void> {
 
     const canAccess = result.rows[0];
 
-    // If a row exists and can_access is explicitly 0, mark as denied
-    if (canAccess && Number(canAccess.can_access) === 0) {
+    // Akses hanya diberikan jika baris ada DAN can_access = 1
+    // Jika baris tidak ditemukan (role belum dikonfigurasi), akses DITOLAK (fail-close)
+    if (!canAccess || Number(canAccess.can_access) !== 1) {
       isDenied = true;
     }
   } catch (error) {
-    // Log the error but fail open (allow access) to prevent locking everyone out if DB is down
+    // Log error, tapi jangan blokir semua user jika DB down — tetap fail-open saat DB error
     console.error(`[PERMISSIONS] Error checking access for ${moduleKey}:`, error);
   }
 
