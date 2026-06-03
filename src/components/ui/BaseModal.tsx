@@ -12,6 +12,7 @@ interface BaseModalProps {
   children: React.ReactNode;
   footer?: React.ReactNode;
   maxWidth?: string; // e.g., 'max-w-lg', 'max-w-2xl'
+  bodyClassName?: string;
 }
 
 export default function BaseModal({
@@ -22,7 +23,8 @@ export default function BaseModal({
   icon: Icon,
   children,
   footer,
-  maxWidth = 'max-w-lg'
+  maxWidth = 'max-w-lg',
+  bodyClassName
 }: BaseModalProps) {
   
   // Close on ESC
@@ -65,7 +67,7 @@ export default function BaseModal({
         </div>
 
         {/* Modal Body — scrollable */}
-        <div className="px-6 py-5 flex flex-col gap-5 overflow-y-auto custom-scrollbar">
+        <div className={`px-6 py-5 flex flex-col gap-5 custom-scrollbar ${bodyClassName || 'overflow-y-auto'}`}>
           {children}
         </div>
 
