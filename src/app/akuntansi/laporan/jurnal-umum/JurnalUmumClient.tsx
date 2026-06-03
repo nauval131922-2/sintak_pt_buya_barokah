@@ -309,7 +309,7 @@ export default function JurnalUmumClient() {
 
     const processChunk = async (chunk: any) => {
       try {
-        const res = await fetch(`/api/scrape-jurnal-umum?start=${chunk.start}&end=${chunk.end}&metaStart=${startStr}&metaEnd=${endStr}`);
+        const res = await fetch(`/api/scrape-jurnal-umum?start=${chunk.start}&end=${chunk.end}&metaStart=${startStr}&metaEnd=${endStr}&silent=true`);
         if (res.ok) {
           successCount++;
           const json = await res.json();
@@ -337,6 +337,11 @@ export default function JurnalUmumClient() {
       if (successCount > 0) {
         persistScraperPeriod({ stateKey: 'jurnalUmumState', periodKey: 'JurnalUmumClient_scrapedPeriod' }, startDate, endDate);
         setRefreshKey(prev => prev + 1);
+        fetch('/api/activity-log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action_type: 'SCRAPE', table_name: 'jurnal_umum', message: `Scrape jurnal umum berhasil: ${totalScraped} baris (${startStr} - ${endStr}).`, raw_data: JSON.stringify({ total: totalScraped, start: startStr, end: endStr }) }),
+        }).catch(() => {});
         setDialog({ isOpen: true, type: 'success', title: 'Berhasil', message: `Berhasil menarik ${totalScraped} transaksi Jurnal Umum.` });
       }
     } finally { setIsBatching(false); setLoading(false); }
@@ -711,7 +716,7 @@ export default function JurnalUmumClient() {
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
-            <ScrapingHeader title="Hasil Scrapping Jurnal Umum" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
+            <ScrapingHeader title="Hasil Scrapping Jurnal Umum" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} activityLogTable="jurnal_umum" />
             {loading && data && data.length > 0 && (
               <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
                 <Loader2 size={12} className="animate-spin" />

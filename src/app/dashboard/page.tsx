@@ -1,15 +1,17 @@
-import { getDashboardSummary, getActivityLogs } from "@/lib/actions";
+import { getDashboardSummary } from "@/lib/actions";
 import {
   ShieldCheck, Users, ClipboardList,
   RefreshCw, Calculator,
 } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import ActivityTable from "@/components/ActivityTable";
+import AktivitasTerbaruCard, { type ActivityRow } from "./AktivitasTerbaruCard";
 import PageHeader from "@/components/PageHeader";
 import UsersStatCard from "./UsersStatCard";
 import { Suspense } from "react";
-import { requirePermission } from "@/lib/permissions";
+import { requirePermission, getRolePermissions } from "@/lib/permissions";
+import { getSession } from "@/lib/session";
+import db from "@/lib/db";
 
 export const metadata: Metadata = {
   title: "SINTAK | Dashboard Umum",
@@ -17,10 +19,37 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
+function toPlainActivityRows(rows: Record<string, unknown>[]): ActivityRow[] {
+  return rows.map((row) => {
+    const plain: ActivityRow = { id: 0 };
+    for (const key of Object.keys(row)) {
+      const val = row[key];
+      (plain as unknown as Record<string, unknown>)[key] = typeof val === 'bigint' ? Number(val) : val;
+    }
+    return plain;
+  });
+}
+
+async function getAktivitasTerbaru() {
+  try {
+    const result = await db.execute({
+      sql: `
+        SELECT al.*, u.name AS recorded_by_name
+        FROM activity_logs al
+        LEFT JOIN users u ON al.recorded_by = u.username
+        ORDER BY al.created_at DESC
+        LIMIT 8
+      `,
+      args: [],
+    });
+    return toPlainActivityRows(result.rows as Record<string, unknown>[]);
+  } catch {
+    return [];
+  }
+}
+
 // ─── Stat + Quick Links ───────────────────────────────────────────────────────
 async function DashboardStats() {
-  // getDashboardSummary masih dipakai meski hanya untuk infractionsThisMonth (tidak ditampilkan di card)
-  // tetap call agar tidak breaking jika nanti dipakai lagi
   await getDashboardSummary();
 
   const quickLinks = [
@@ -63,10 +92,8 @@ async function DashboardStats() {
 
   return (
     <div className="flex flex-col gap-5 shrink-0">
-      {/* Stat Card */}
       <UsersStatCard />
 
-      {/* Quick Links */}
       <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm flex flex-col gap-3">
         <div>
           <p className="text-[13px] font-extrabold text-gray-700 tracking-tight">Akses Cepat</p>
@@ -94,13 +121,17 @@ async function DashboardStats() {
   );
 }
 
-// ─── Activity Log ─────────────────────────────────────────────────────────────
-async function DashboardLogs() {
-  const logs = await getActivityLogs(500);
-  return <ActivityTable initialLogs={logs} />;
+async function DashboardAktivitasPreview() {
+  const session = await getSession();
+  const initialData = await getAktivitasTerbaru();
+  let showFullLink = session?.role === 'Super Admin';
+  if (!showFullLink && session?.role) {
+    const perms = await getRolePermissions(session.role);
+    showFullLink = perms.activity_log_view === true || perms.activity_log === true;
+  }
+  return <AktivitasTerbaruCard initialData={initialData} showFullLink={showFullLink} />;
 }
 
-// ─── Skeletons ────────────────────────────────────────────────────────────────
 function StatSkeleton() {
   return (
     <div className="flex flex-col gap-5 shrink-0">
@@ -110,7 +141,12 @@ function StatSkeleton() {
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+function AktivitasSkeleton() {
+  return (
+    <div className="bg-white border border-gray-100 rounded-2xl h-[280px] animate-pulse shadow-sm" />
+  );
+}
+
 export default async function Home() {
   await requirePermission("dashboard");
   return (
@@ -124,15 +160,9 @@ export default async function Home() {
         <DashboardStats />
       </Suspense>
 
-      <div className="h-[600px] flex flex-col">
-        <Suspense
-          fallback={
-            <div className="h-full bg-white border border-gray-100 rounded-2xl animate-pulse shadow-sm" />
-          }
-        >
-          <DashboardLogs />
-        </Suspense>
-      </div>
+      <Suspense fallback={<AktivitasSkeleton />}>
+        <DashboardAktivitasPreview />
+      </Suspense>
     </div>
   );
 }

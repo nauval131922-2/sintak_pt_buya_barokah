@@ -165,7 +165,7 @@ export default function OrderProduksiClient() {
 
     const processChunk = async (chunk: any) => {
       try {
-        const res = await fetch(`/api/scrape-orders?start=${chunk.start}&end=${chunk.end}&metaStart=${fullStart}&metaEnd=${fullEnd}&silent=true`);
+        const res = await fetch(`/api/scrape-orders?start=${chunk.start}&end=${chunk.end}&metaStart=${chunk.start}&metaEnd=${chunk.end}&silent=true`);
         if (res.ok) {
           successCount++; const json = await res.json(); totalScraped += (json.total || 0);
         }
@@ -184,6 +184,16 @@ export default function OrderProduksiClient() {
         persistScraperPeriod({ stateKey: 'orderProduksiState', periodKey: 'OrderProduksiClient_scrapedPeriod' }, startDate, endDate);
         setRefreshKey(prev => prev + 1);
         localStorage.setItem('sintak_data_updated', Date.now().toString());
+        // Log satu entry untuk seluruh range
+        fetch('/api/activity-log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action_type: 'SCRAPE', table_name: 'orders',
+            message: `Scrape orders berhasil: ${totalScraped} baris (${fullStart} - ${fullEnd}).`,
+            raw_data: JSON.stringify({ total: totalScraped, start: fullStart, end: fullEnd })
+          })
+        });
         setDialog({ isOpen: true, type: 'success', title: 'Berhasil', message: `Berhasil menarik ${totalScraped} Order Produksi.` });
       }
     } finally { setIsBatching(false); setLoading(false); }
@@ -298,7 +308,7 @@ export default function OrderProduksiClient() {
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
-            <ScrapingHeader title="Hasil Scrapping Order Produksi" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
+            <ScrapingHeader title="Hasil Scrapping Order Produksi" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} activityLogTable="orders" />
 
             {loading && (data?.length || 0) > 0 && (
               <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse leading-none">

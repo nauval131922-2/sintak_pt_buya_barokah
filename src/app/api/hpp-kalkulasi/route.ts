@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { getSession } from "@/lib/session";
+import { logActivity } from "@/lib/activity";
 import { buildFtsQuery } from "@/lib/fts";
 
 export const dynamic = 'force-dynamic';
@@ -201,6 +202,7 @@ export async function PATCH(request: NextRequest) {
         args: [val, whereArg],
       });
       const row = await db.execute({ sql: "SELECT id FROM hpp_kalkulasi " + whereClause, args: [whereArg] });
+      await logActivity('UPDATE', 'hpp_kalkulasi', `Update HPP kalkulasi: ${nama_order || id}`, { id: row.rows[0]?.id ?? id, nama_order, hpp_kalkulasi: val });
       return NextResponse.json({ success: true, id: row.rows[0]?.id ?? id, hpp_kalkulasi: val });
     }
 
@@ -210,6 +212,7 @@ export async function PATCH(request: NextRequest) {
         args: [keterangan || null, whereArg],
       });
       const row = await db.execute({ sql: "SELECT id FROM hpp_kalkulasi " + whereClause, args: [whereArg] });
+      await logActivity('UPDATE', 'hpp_kalkulasi', `Update keterangan HPP kalkulasi: ${nama_order || id}`, { id: row.rows[0]?.id ?? id, nama_order, keterangan });
       return NextResponse.json({ success: true, id: row.rows[0]?.id ?? id, keterangan });
     }
 

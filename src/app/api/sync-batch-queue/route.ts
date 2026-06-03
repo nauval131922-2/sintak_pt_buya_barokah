@@ -23,7 +23,12 @@ const MODULE_ENDPOINTS: Record<string, string> = {
   'sales': '/api/scrape-sales',
   'pengiriman': '/api/scrape-pengiriman',
   'pelunasan-piutang': '/api/scrape-pelunasan-piutang',
+  'jurnal-umum': '/api/scrape-jurnal-umum',
+  'rek-akuntansi': '/api/scrape-rek-akuntansi',
 };
+
+// Modul yang tidak memerlukan parameter tanggal
+const NO_DATE_RANGE_MODULES = new Set(['rek-akuntansi']);
 
 const SYNC_TO_PERM_MAP: Record<string, string> = {
   'pr': 'pembelian_pr',
@@ -42,6 +47,8 @@ const SYNC_TO_PERM_MAP: Record<string, string> = {
   'sales': 'penjualan_laporan',
   'pengiriman': 'penjualan_pengiriman',
   'pelunasan-piutang': 'penjualan_piutang',
+  'jurnal-umum': 'akt_jurnal_umum',
+  'rek-akuntansi': 'akt_mrek',
 };
 
 /**
@@ -84,7 +91,9 @@ async function processModule(
     });
   } catch {}
 
-  const url = `${origin}${endpoint}?start=${start}&end=${end}`;
+  const url = NO_DATE_RANGE_MODULES.has(modId)
+    ? `${origin}${endpoint}`
+    : `${origin}${endpoint}?start=${start}&end=${end}`;
   const { ok, data, error } = await safeFetchJson(url);
 
   if (ok && data && (data.success || !data.error)) {

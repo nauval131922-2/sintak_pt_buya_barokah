@@ -16,6 +16,7 @@ interface Employee {
   position: string;
   department: string;
   employee_no: string | null;
+  is_active: number;
 }
 
 interface EmployeeTableProps {
@@ -96,18 +97,14 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
       setLoading(true);
       const startTime = performance.now();
       try {
-        const res = await fetch(`/api/employees?page=${page}&limit=${PAGE_SIZE}&search=${encodeURIComponent(debouncedQuery)}&_t=${Date.now()}`);
+        const res = await fetch(`/api/employees?all=true&page=${page}&limit=${PAGE_SIZE}&search=${encodeURIComponent(debouncedQuery)}&_t=${Date.now()}`);
         if (!active) return;
         if (res.ok) {
           const json = await res.json();
           if (json.success) {
             setLoadTime(Math.round(performance.now() - startTime));
             setTotalCount(json.total || 0);
-            if (page === 1) {
-              setData(json.data || []);
-            } else {
-              setData(prev => [...(prev || []), ...(json.data || [])]);
-            }
+            setData(json.data || []);
           }
         }
       } catch (e: any) {
@@ -120,6 +117,36 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
     return () => { active = false; };
   }, [page, debouncedQuery, refreshKey]);
 
+  const [toggleLoading, setToggleLoading] = useState<Set<number>>(new Set());
+
+  const notifyDataUpdated = useCallback(() => {
+    localStorage.setItem('sintak_data_updated', Date.now().toString());
+    window.dispatchEvent(new CustomEvent('sintak:data-updated'));
+  }, []);
+
+  const handleToggleActive = useCallback(async (employee: Employee) => {
+    setToggleLoading(prev => new Set(prev).add(employee.id));
+    try {
+      const res = await fetch(`/api/employees/${employee.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_active: !employee.is_active })
+      });
+      if (res.ok) {
+        setData(prev => prev?.map(e =>
+          e.id === employee.id ? { ...e, is_active: employee.is_active ? 0 : 1 } : e
+        ) || null);
+        notifyDataUpdated();
+      }
+    } catch {} finally {
+      setToggleLoading(prev => {
+        const next = new Set(prev);
+        next.delete(employee.id);
+        return next;
+      });
+    }
+  }, [notifyDataUpdated]);
+
   const columns = useMemo<ColumnDef<Employee>[]>(() => [
     {
       accessorKey: "no",
@@ -131,13 +158,13 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
     { 
         accessorKey: "name", 
         header: "Nama Karyawan",
-        size: 350,
+        size: 320,
         cell: (info: any) => <NameCell name={info.getValue()} />
     },
     { 
         accessorKey: "position", 
         header: "Jabatan",
-        size: 250,
+        size: 220,
         cell: (info: any) => (
             <span className="text-[11px] font-bold text-green-600 bg-green-50 px-3 py-1 rounded-lg border border-green-100 block w-fit truncate tracking-tight">
               {info.getValue()}
@@ -147,15 +174,45 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
     { 
         accessorKey: "employee_no", 
         header: "ID Karyawan",
-        size: 180,
+        size: 150,
         meta: { align: "right" },
         cell: (info: any) => (
             <span className="font-mono font-bold text-gray-400">
                 {info.getValue() || "---"}
             </span>
         )
+    },
+    {
+        accessorKey: "is_active",
+        header: "Status",
+        size: 100,
+        meta: { align: "center" },
+        cell: (info: any) => {
+            const employee = info.row.original as Employee;
+            const loading = toggleLoading.has(employee.id);
+            const isActive = employee.is_active === 1;
+            return (
+                <div className="flex items-center justify-center">
+                    <button
+                        type="button"
+                        disabled={loading}
+                        onClick={(e) => { e.stopPropagation(); handleToggleActive(employee); }}
+                        className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                            loading ? 'opacity-50 cursor-wait' :
+                            isActive ? 'bg-green-500' : 'bg-gray-300'
+                        }`}
+                        role="switch"
+                        aria-checked={isActive}
+                    >
+                        <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                            isActive ? 'translate-x-4' : 'translate-x-0'
+                        }`} />
+                    </button>
+                </div>
+            );
+        }
     }
-  ], []);
+  ], [handleToggleActive, toggleLoading]);
 
   // Handlers
   const handleResize = useCallback((widths: any) => {
@@ -172,12 +229,11 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
     });
   }, []);
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
-    if (scrollHeight - scrollTop <= clientHeight + 300 && !loading && (data?.length || 0) < totalCount) {
-       setPage(prev => prev + 1);
-    }
-  };
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+
+  const handlePageChange = useCallback((newPage: number) => {
+    setPage(newPage);
+  }, []);
 
   if (!isMounted) return null;
 
@@ -234,20 +290,22 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
              onColumnWidthChange={handleResize}
              isLoading={loading || data === null}
              selectedIds={selectedIds}
-             onRowClick={handleSelection} 
-             onScroll={handleScroll}
-             rowHeight="h-11"
+              onRowClick={handleSelection}
+              rowHeight="h-11"
            />
          )}
       </div>
 
-      <TableFooter 
+      <TableFooter
         totalCount={totalCount}
         currentCount={data?.length || 0}
         label="karyawan"
         selectedCount={selectedIds.size}
         onClearSelection={() => setSelectedIds(new Set())}
         loadTime={loadTime}
+        page={page}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
       />
     </div>
   );

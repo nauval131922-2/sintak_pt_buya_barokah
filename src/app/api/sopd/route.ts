@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { getSession } from "@/lib/session";
+import { logActivity } from "@/lib/activity";
 
 export const dynamic = 'force-dynamic';
 
@@ -316,6 +317,7 @@ export async function PATCH(request: NextRequest) {
                 ON CONFLICT(no_sopd) DO UPDATE SET perkiraan_harga = excluded.perkiraan_harga, updated_at = CURRENT_TIMESTAMP`,
           args: [no_sopd, harga]
         });
+        await logActivity('UPDATE', 'sopd_harga', `Update perkiraan harga SOPD: ${no_sopd}`, { no_sopd, perkiraan_harga: harga });
         return NextResponse.json({ success: true, no_sopd, perkiraan_harga: harga });
     }
 
@@ -326,6 +328,7 @@ export async function PATCH(request: NextRequest) {
                 ON CONFLICT(no_sopd) DO UPDATE SET keterangan = excluded.keterangan, updated_at = CURRENT_TIMESTAMP`,
           args: [no_sopd, keterangan]
         });
+        await logActivity('UPDATE', 'sopd_harga', `Update keterangan SOPD: ${no_sopd}`, { no_sopd, keterangan });
         return NextResponse.json({ success: true, no_sopd, keterangan });
     }
 
@@ -336,6 +339,7 @@ export async function PATCH(request: NextRequest) {
                 ON CONFLICT(no_sopd) DO UPDATE SET deadline_date = excluded.deadline_date, updated_at = CURRENT_TIMESTAMP`,
           args: [no_sopd, deadline_date]
         });
+        await logActivity('UPDATE', 'sopd_harga', `Update deadline SOPD: ${no_sopd}`, { no_sopd, deadline_date });
         return NextResponse.json({ success: true, no_sopd, deadline_date });
     }
 
@@ -346,6 +350,7 @@ export async function PATCH(request: NextRequest) {
                 ON CONFLICT(no_sopd) DO UPDATE SET finished_date = excluded.finished_date, updated_at = CURRENT_TIMESTAMP`,
           args: [no_sopd, finished_date]
         });
+        await logActivity('UPDATE', 'sopd_harga', `Update tanggal selesai SOPD: ${no_sopd}`, { no_sopd, finished_date });
         return NextResponse.json({ success: true, no_sopd, finished_date });
     }
 

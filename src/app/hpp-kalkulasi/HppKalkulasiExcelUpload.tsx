@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Upload, FileSpreadsheet, XCircle, Loader2 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import ViewActivityLogLink from '@/components/ViewActivityLogLink';
 
 export default function HppKalkulasiExcelUpload() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -107,7 +108,8 @@ export default function HppKalkulasiExcelUpload() {
           </div>
         </div>
 
-        <div className="shrink-0">
+        <div className="shrink-0 flex items-center gap-2">
+          <ViewActivityLogLink tableName="hpp_kalkulasi" />
           <input 
             type="file" 
             accept=".xls, .xlsx, .xlsm"

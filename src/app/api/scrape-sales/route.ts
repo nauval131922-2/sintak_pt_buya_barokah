@@ -184,12 +184,15 @@ export async function GET(request: NextRequest) {
 
     await db.batch(finalOps, "write");
 
-    await logActivity(
-      "SCRAPE",
-      "sales_reports",
-      `Scrape laporan penjualan berhasil: ${allRecords.length} baris (${metaStart} - ${metaEnd}).`,
-      { total: allRecords.length, start: metaStart, end: metaEnd, scrapedPeriod: { start: metaStart, end: metaEnd } }
-    );
+    const isSilent = searchParams.get('silent') === 'true';
+    if (!isSilent) {
+      await logActivity(
+        "SCRAPE",
+        "sales_reports",
+        `Scrape laporan penjualan berhasil: ${allRecords.length} baris (${metaStart} - ${metaEnd}).`,
+        { total: allRecords.length, start: metaStart, end: metaEnd, scrapedPeriod: { start: metaStart, end: metaEnd } }
+      );
+    }
 
     return NextResponse.json({
       success: true,

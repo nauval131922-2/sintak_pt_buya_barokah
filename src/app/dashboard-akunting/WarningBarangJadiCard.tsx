@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { useAutoRefresh } from '@/lib/hooks/useAutoRefresh';
 import LastUpdatedBadge from '@/components/LastUpdatedBadge';
@@ -36,6 +36,9 @@ export default function WarningBarangJadiCard() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  // Fetch awal saat mount
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   // Auto-refresh setiap 2 menit, hanya saat tab aktif
   const lastUpdated = useAutoRefresh(fetchData);

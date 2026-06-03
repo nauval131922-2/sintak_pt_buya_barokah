@@ -12,18 +12,25 @@ _Tidak ada task yang sedang berjalan saat ini._
 - [ ] Dokumentasikan command operasional harian yang paling sering dipakai
 - [ ] Integrasi Audit Log yang lebih detail untuk setiap aksi User
 - [ ] Setup sistem backup database otomatis ke Cloud Storage
-- [ ] Fitur export laporan ke Excel dengan format lebih rapi (exceljs)
 
 ---
 
 ## ✅ Selesai (Done)
 
+- [x] Implementasi Progress Bar Hapus Log Aktivitas (Dedicated Progress Screen, Live Percentage, Dynamic Status, & Timer) di Dashboard Umum — 2026-05-20
+- [x] Penghapusan Menyeluruh Fitur Statistik Performa (`statistik`) dari Navigasi, Halaman Stats, RBAC, dan Database — 2026-05-20
+- [x] Implementasi modul Master Pekerjaan Jurnal Produksi (Skema DB, API, Hak Akses, Sidebar, dan UI Upload/List) — 2026-05-20
+- [x] Optimasi Ekspor Excel Jurnal Harian Produksi Seluruh Data dengan ExcelJS Streaming — 2026-05-20
+- [x] Dukungan Teks & Paragraf Kolom JHP (Jml. Plate, Inscheet, Rijek) + Textarea Form — 2026-05-19
+- [x] Fitur "Pilih Semua Data" pada Trash JHP & Optimasi API Hard Delete/Restore Bulk — 2026-05-19
+- [x] Pembuatan Script `cleanup-db.ts` & Dokumen Panduan Ukuran Database (`docs/DATABASE_CLEANUP.md`) — 2026-05-19
 - [x] Dashboard Akuntansi: halaman, trend chart, warning card, jurnal terbaru, API batch — 2026-05-18
 - [x] Perbaikan RBAC fail-close (permission.ts) + routing dashboard — 2026-05-18
 - [x] Perbaikan trend chart legend & label X-axis (Production, HRD) — 2026-05-18
 - [x] Perbaikan warning JHP tanpa target — 2026-05-18
 - [x] Copy-to-clipboard log jurnal umum — 2026-05-18
 - [x] Panduan PM2 deployment + ecosystem.config.js — 2026-05-18
+- [x] Catatan auto-start Windows (`docs/STARTUP_WINDOWS_NOTE.md`) + skrip `scripts/startup/*` — 2026-05-21
 - [x] Modernisasi Desain Premium modul Penjualan & Pembelian (sebagian) — 2026-05-18
 - [x] Perbaikan Infractions: ConfirmDialog redirect + validasi API description opsional — 2026-05-17
 - [x] Implementasi Dashboard HRD (RecordsTabs, tab List ↔ Form, export infractions) — 2026-05-17
@@ -107,12 +114,12 @@ _Tidak ada task yang sedang berjalan saat ini._
 ## 📊 Statistik
 
 ```
-Total task    : 100
-Selesai       : 93
+Total task    : 106
+Selesai       : 100
 In progress   : 0
-Backlog       : 5 (+ 2 ide)
+Backlog       : 4 (+ 2 ide)
 Bug diketahui : 0
-Progress      : 93%
+Progress      : 94.3%
 ```
 
 ---

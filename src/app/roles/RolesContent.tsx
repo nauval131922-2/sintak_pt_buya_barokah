@@ -223,7 +223,6 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
       { type: 'leaf', key: 'pembelian_hutang', label: 'Pelunasan Hutang' },
     ]},
     { type: 'node', label: 'Produksi', colorKey: 'Data Digit - Produksi', children: [
-      { type: 'leaf', key: 'produksi_dashboard', label: 'Dashboard Produksi' },
       { type: 'leaf', key: 'produksi_bom', label: 'BOM Produksi' },
       { type: 'leaf', key: 'produksi_orders', label: 'Order Produksi' },
       { type: 'leaf', key: 'produksi_bahan_baku', label: 'BBB Produksi' },
@@ -252,7 +251,6 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
     ]},
     { type: 'node', label: 'HRD', colorKey: 'Sistem - HRD', children: [
       { type: 'leaf', key: 'catat_kesalahan', label: 'Catat Kesalahan' },
-      { type: 'leaf', key: 'statistik', label: 'Statistik Performa' },
     ]},
     { type: 'node', label: 'Kalkulasi', colorKey: 'Sistem - Kalkulasi', children: [
       { type: 'leaf', key: 'hpp_kalkulasi', label: 'HPP Kalkulasi' },
@@ -266,6 +264,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
         { type: 'leaf', key: 'produksi_jhp_target', label: 'Target Harian' },
         { type: 'leaf', key: 'produksi_jhp_sopd', label: 'SOPd' },
         { type: 'leaf', key: 'produksi_jhp_master_pekerjaan', label: 'Master Pekerjaan' },
+        { type: 'leaf', key: 'produksi_jhp_master_pekerjaan_jurnal_produksi', label: 'Master Pekerjaan Jurnal Produksi' },
       ]},
     ]},
     { type: 'node', label: 'Penjualan', colorKey: 'Sistem - Penjualan', children: [

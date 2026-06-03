@@ -28,7 +28,15 @@ async function main() {
 
   const db = createClient({ url: dbUrl, authToken: process.env.TURSO_AUTH_TOKEN });
 
-  const filePath = path.join(process.cwd(), 'Referensi', '060105 MASTER PEKERJAAN.xlsm');
+  const filePath = path.join(
+    process.cwd(), 
+    'Referensi', 
+    'Produksi', 
+    'Jurnal Harian Produksi', 
+    'Data', 
+    'Master Pekerjaan', 
+    '060105 MASTER PEKERJAAN.xlsm'
+  );
   if (!fs.existsSync(filePath)) {
     console.error(`File not found: ${filePath}`);
     return;

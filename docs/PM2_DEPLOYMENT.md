@@ -2,6 +2,8 @@
 
 Panduan menjalankan dan men-deploy SINTAK ERP menggunakan PM2 agar server production tetap berjalan saat pengembangan berlangsung.
 
+> **Catatan ringkas auto-start Windows (PM2 + terminal login):** lihat [`docs/STARTUP_WINDOWS_NOTE.md`](./STARTUP_WINDOWS_NOTE.md)
+
 ---
 
 ## Arsitektur
@@ -108,21 +110,25 @@ pm2 start ecosystem.config.js
 
 ---
 
-## Jika PC Reboot
+## Auto-start saat laptop/PC nyala (Windows)
 
-Secara default, PM2 tidak otomatis jalan setelah PC restart. Untuk mengaktifkan auto-start:
+Detail lengkap (PM2, terminal login, troubleshooting, kesalahan umum): **[`docs/STARTUP_WINDOWS_NOTE.md`](./STARTUP_WINDOWS_NOTE.md)**.
+
+Ringkas:
 
 ```powershell
-# Jalankan sekali sebagai Administrator
+cd "D:\repo github\sintak_pt_buya_barokah"
+npm run build
+pm2 start ecosystem.config.js
 pm2 save
-pm2 startup
+npm install -g pm2-windows-startup
+pm2-startup install
 ```
 
-Setelah itu, setiap PC restart server akan otomatis berjalan kembali.
+Terminal PowerShell Admin + Git Bash dev saat login:
 
-Jika tidak menggunakan auto-start, cukup jalankan manual setelah PC reboot:
 ```powershell
-pm2 start ecosystem.config.js
+.\scripts\startup\install-logon-tasks.ps1
 ```
 
 ---

@@ -18,15 +18,21 @@ interface JurnalRow {
   jenis_pekerjaan_2?: string | null;
   jenis_pekerjaan?: string | null;
   bagian?: string | null;
-  target: number;
-  realisasi: number;
+  target: number | string;
+  realisasi: number | string;
   created_at?: string | null;
   recorded_by?: string | null;
+  recorded_by_name?: string | null;
   input_at?: string | null;
   action_type?: string | null;
 }
 
 const numberFormatter = new Intl.NumberFormat('id-ID');
+
+function formatNilai(val: any) {
+  if (val === null || val === undefined || val === '') return '0';
+  return !isNaN(Number(val)) ? numberFormatter.format(Number(val)) : String(val);
+}
 
 function getActionBadge(action?: string | null) {
   // Fallback ke INSERT untuk data lama yang tidak punya activity_log
@@ -66,6 +72,7 @@ function formatDateTime(value?: string | null) {
 
 export default function JurnalTerbaruCard({ initialData }: { initialData: JurnalRow[] }) {
   const [data, setData] = useState<JurnalRow[]>(initialData);
+  const hasInitialData = initialData.length > 0;
 
   const fetchData = useCallback(() => {
     fetch('/api/dashboard/jurnal-terbaru')
@@ -77,6 +84,9 @@ export default function JurnalTerbaruCard({ initialData }: { initialData: Jurnal
   }, []);
 
   useEffect(() => {
+    // Skip initial fetch jika data sudah dikirim dari server
+    if (hasInitialData) return;
+
     const handler = () => fetchData();
     const storageHandler = (e: StorageEvent) => { if (e.key === 'sintak_data_updated') fetchData(); };
     window.addEventListener('sintak:data-updated', handler);
@@ -85,7 +95,7 @@ export default function JurnalTerbaruCard({ initialData }: { initialData: Jurnal
       window.removeEventListener('sintak:data-updated', handler);
       window.removeEventListener('storage', storageHandler);
     };
-  }, [fetchData]);
+  }, [fetchData, hasInitialData]);
 
   const lastUpdated = useAutoRefresh(fetchData);
 
@@ -136,7 +146,10 @@ export default function JurnalTerbaruCard({ initialData }: { initialData: Jurnal
                     {/* Waktu input + user */}
                     <td className="px-5 py-3 min-w-[160px]">
                       <p className="text-[11px] font-bold text-gray-600">{inputAt ?? '—'}</p>
-                      <p className="text-[10px] font-semibold text-gray-400">{journal.recorded_by || ''}</p>
+                      <p className="text-[10px] font-semibold text-gray-400">
+                        {journal.recorded_by || ''}
+                        {journal.recorded_by_name ? ` (${journal.recorded_by_name})` : ''}
+                      </p>
                     </td>
                     {/* Tanggal jurnal + shift */}
                     <td className="px-5 py-3 whitespace-nowrap">
@@ -169,8 +182,8 @@ export default function JurnalTerbaruCard({ initialData }: { initialData: Jurnal
                     </td>
                     {/* Target / Realisasi */}
                     <td className="px-5 py-3 text-right whitespace-nowrap">
-                      <p className="text-[12px] font-extrabold text-gray-800">{numberFormatter.format(journal.realisasi)}</p>
-                      <p className="text-[10px] font-semibold text-gray-400">target {numberFormatter.format(journal.target)}</p>
+                      <p className="text-[12px] font-extrabold text-gray-800">{formatNilai(journal.realisasi)}</p>
+                      <p className="text-[10px] font-semibold text-gray-400">target {formatNilai(journal.target)}</p>
                     </td>
                   </tr>
                 );

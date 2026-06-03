@@ -166,12 +166,15 @@ export async function GET(req: NextRequest) {
       }
     ], "write");
 
-    await logActivity(
-      'SCRAPE',
-      'rekap_pembelian_barang',
-      `Scrape rekap pembelian barang berhasil: ${filteredRows.length} baris (${metaStart} - ${metaEnd}).`,
-      { total: filteredRows.length, start: metaStart, end: metaEnd, scrapedPeriod: { start: metaStart, end: metaEnd } }
-    );
+    const silent = searchParams.get('silent') === 'true';
+    if (!silent) {
+      await logActivity(
+        'SCRAPE',
+        'rekap_pembelian_barang',
+        `Scrape rekap pembelian barang berhasil: ${filteredRows.length} baris (${metaStart} - ${metaEnd}).`,
+        { total: filteredRows.length, start: metaStart, end: metaEnd, scrapedPeriod: { start: metaStart, end: metaEnd } }
+      );
+    }
 
     return NextResponse.json({
       success: true,

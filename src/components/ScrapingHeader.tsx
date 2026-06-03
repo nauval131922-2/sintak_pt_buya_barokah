@@ -1,6 +1,9 @@
+'use client';
+
 import { ReactNode } from 'react';
 import { Clock } from 'lucide-react';
 import { formatScrapedPeriodDate } from '@/lib/scraper-period';
+import ViewActivityLogLink from '@/components/ViewActivityLogLink';
 
 interface ScrapingHeaderProps {
   title: string;
@@ -9,6 +12,8 @@ interface ScrapingHeaderProps {
   scrapedPeriod?: { start: string; end: string } | null;
   lastExcelUpdate?: string | null;
   lastScrapedUpdate?: string | null;
+  /** Nama tabel activity_logs — tampilkan link ke halaman log */
+  activityLogTable?: string;
 }
 
 export default function ScrapingHeader({
@@ -17,10 +22,11 @@ export default function ScrapingHeader({
   lastUpdated,
   scrapedPeriod,
   lastExcelUpdate,
-  lastScrapedUpdate
+  lastScrapedUpdate,
+  activityLogTable,
 }: ScrapingHeaderProps) {
   return (
-    <div className="flex items-center gap-5">
+    <div className="flex items-center gap-5 flex-wrap">
       <h3 className="text-[14px] font-bold text-gray-800 flex items-center gap-3 leading-none">
         <span className="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shadow-sm shrink-0">
           {icon}
@@ -61,6 +67,7 @@ export default function ScrapingHeader({
           </div>
         )
       )}
+      {activityLogTable && <ViewActivityLogLink tableName={activityLogTable} />}
     </div>
   );
 }

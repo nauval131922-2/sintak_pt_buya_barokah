@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { getSession } from "@/lib/session";
 import ExcelJS from "exceljs";
+import { logActivity } from '@/lib/activity';
 
 export const dynamic = 'force-dynamic';
 
@@ -172,6 +173,8 @@ export async function GET(request: NextRequest) {
 
     const dateName = startDate ? `${startDate}_sd_${endDate}` : 'all';
     const filename = `rekap-kesalahan_${dateName}.xlsx`;
+
+    logActivity('EXPORT', 'infractions', `Export ${data.length} baris infractions ke Excel (${filename})`).catch(() => {});
 
     return new NextResponse(buffer as ArrayBuffer, {
       status: 200,

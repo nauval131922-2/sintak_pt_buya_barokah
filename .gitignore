@@ -59,3 +59,9 @@ local.db-wal
 # PM2 logs
 /logs/
 
+# Temporary debug files
+_sync_*
+_temp_*
+_tmp_*
+tmp_*
+

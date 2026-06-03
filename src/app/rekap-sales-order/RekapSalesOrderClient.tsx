@@ -154,7 +154,7 @@ export default function RekapSalesOrderClient() {
     let successCount = 0; let totalScraped = 0; let completedChunks = 0;
     const processChunk = async (chunk: any) => {
       try {
-        const res = await fetch(`/api/scrape-sales-orders?start=${chunk.start}&end=${chunk.end}&metaStart=${startStr}&metaEnd=${endStr}`);
+        const res = await fetch(`/api/scrape-sales-orders?start=${chunk.start}&end=${chunk.end}&metaStart=${startStr}&metaEnd=${endStr}&silent=true`);
         if (res.ok) {
           successCount++; const json = await res.json(); totalScraped += (json.total || 0);
         } else {
@@ -177,6 +177,16 @@ export default function RekapSalesOrderClient() {
       if (successCount > 0) {
         persistScraperPeriod({ stateKey: 'rekapSalesOrderState', periodKey: 'RekapSalesOrderClient_scrapedPeriod' }, startDate, endDate);
         setRefreshKey(v => v + 1);
+        fetch('/api/activity-log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action_type: 'SCRAPE',
+            table_name: 'sales_orders',
+            message: `Scrape sales order berhasil: ${totalScraped} baris (${startStr} - ${endStr}).`,
+            raw_data: JSON.stringify({ total: totalScraped, start: startStr, end: endStr }),
+          }),
+        }).catch(() => {});
         setDialog({ isOpen: true, type: 'success', title: 'Selesai', message: `Berhasil menarik ${totalScraped} Rekap Sales Order.` });
       }
     } finally { setIsBatching(false); }
@@ -353,7 +363,7 @@ export default function RekapSalesOrderClient() {
       )}
 
       <div className="flex-1 flex flex-col gap-3 overflow-hidden relative min-h-0">
-        <div className="flex flex-col gap-3 shrink-0 px-1">
+        <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
             <ScrapingHeader title="Hasil Scrapping Rekap Sales Order" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
 

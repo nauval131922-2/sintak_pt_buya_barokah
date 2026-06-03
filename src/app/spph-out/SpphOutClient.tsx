@@ -162,7 +162,7 @@ export default function SpphOutClient() {
     let successCount = 0; let totalScraped = 0; let completedChunks = 0;
     const processChunk = async (chunk: any) => {
       try {
-        const res = await fetch(`/api/scrape-spph-out?start=${chunk.start}&end=${chunk.end}&metaStart=${startStr}&metaEnd=${endStr}`);
+        const res = await fetch(`/api/scrape-spph-out?start=${chunk.start}&end=${chunk.end}&metaStart=${startStr}&metaEnd=${endStr}&silent=true`);
         if (res.ok) {
           successCount++; const json = await res.json(); totalScraped += (json.total || 0);
         }
@@ -181,6 +181,11 @@ export default function SpphOutClient() {
         persistScraperPeriod({ stateKey: 'spphOutState', periodKey: 'SpphOutClient_scrapedPeriod' }, startDate, endDate);
         setRefreshKey(prev => prev + 1);
         localStorage.setItem('sintak_data_updated', Date.now().toString());
+        fetch('/api/activity-log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action_type: 'SCRAPE', table_name: 'spph_out', message: `Scrape SPPH Out berhasil: ${totalScraped} baris (${startStr} - ${endStr}).`, raw_data: JSON.stringify({ total: totalScraped, start: startStr, end: endStr }) }),
+        }).catch(() => {});
         setDialog({ isOpen: true, type: 'success', title: 'Berhasil', message: `Berhasil menarik ${totalScraped} SPPH Keluar.` });
       }
     } finally { setIsBatching(false); setLoading(false); }
@@ -295,7 +300,7 @@ export default function SpphOutClient() {
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
-            <ScrapingHeader title="Hasil Scrapping SPPH Keluar" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
+            <ScrapingHeader title="Hasil Scrapping SPPH Keluar" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} activityLogTable="spph_out" />
 
             {loading && (data?.length || 0) > 0 && (
               <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse leading-none">

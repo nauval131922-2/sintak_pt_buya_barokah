@@ -305,7 +305,7 @@ function DataTableInner<TData extends { id: number | string }>({
   );
 }
 
-const TableRow = React.memo(({ row, isSelected, isOdd, onRowClick, onRowDoubleClick, rowHeight, disableHover, rowCursor, extraClassName }: any) => {
+const TableRow = ({ row, isSelected, isOdd, onRowClick, onRowDoubleClick, rowHeight, disableHover, rowCursor, extraClassName }: any) => {
   // Compute sticky left offsets once per row render
   let stickyLeft = 6;
   const stickyOffsets: Record<string, number> = {};
@@ -376,7 +376,7 @@ const TableRow = React.memo(({ row, isSelected, isOdd, onRowClick, onRowDoubleCl
         );
       })}</tr>
   );
-});
+};
 
 TableRow.displayName = 'TableRow';
 

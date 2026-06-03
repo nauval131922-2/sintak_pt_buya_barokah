@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import Portal from '@/components/Portal';
-import { BarChart3, Construction, Search, ChevronDown, Filter, RotateCcw, ClipboardList, TrendingUp, CheckCircle, X, Target, Box, AlertCircle, Package, ChevronLeft, ChevronRight } from 'lucide-react';
+import { BarChart3, Search, ChevronDown, Filter, RotateCcw, ClipboardList, TrendingUp, X, Target, AlertCircle, Package } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   BarChart, Bar, Cell 
 } from 'recharts';
 import DatePicker from '@/components/DatePicker';
+import SearchableDropdown from '@/components/SearchableDropdown';
+import TableFooter from '@/components/TableFooter';
 
 interface SopdOption {
   no_sopd: string;
@@ -36,6 +37,19 @@ const formatToDayMonthYear = (dateStr: string) => {
   } catch (e) {
     return dateStr;
   }
+};
+
+const formatCellVal = (val: any) => {
+  if (val === null || val === undefined || val === '') {
+    return <div className="text-right tabular-nums">0</div>;
+  }
+  const isNum = !isNaN(Number(val));
+  const display = isNum ? Number(val).toLocaleString('id-ID') : String(val);
+  return (
+    <div className={`whitespace-pre-wrap ${isNum ? 'text-right tabular-nums' : 'text-left'}`}>
+      {display}
+    </div>
+  );
 };
 
 export default function HasilProduksiClient() {
@@ -112,6 +126,7 @@ export default function HasilProduksiClient() {
   const [grandTotal, setGrandTotal] = useState(0);
   const [grandTotalJurnal, setGrandTotalJurnal] = useState(0);
   const [grandTotalRijek, setGrandTotalRijek] = useState(0);
+  const [grandTotalTarget, setGrandTotalTarget] = useState(0);
   const [unit, setUnit] = useState('');
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [loadTime, setLoadTime] = useState<number | null>(null);
@@ -128,28 +143,13 @@ export default function HasilProduksiClient() {
   const [jurnalPage, setJurnalPage] = useState(1);
   const [barangJadiPage, setBarangJadiPage] = useState(1);
   
-  // Custom dropdown states
-  const [isBagianDropdownOpen, setIsBagianDropdownOpen] = useState(false);
-  const [bagianSearchQuery, setBagianSearchQuery] = useState('');
-  const [focusedBagianIndex, setFocusedBagianIndex] = useState(-1);
-  const [bagianCoords, setBagianCoords] = useState({ top: 0, left: 0, width: 0 });
-  const bagianTriggerRef = useRef<HTMLButtonElement>(null);
-
-  const [isPekerjaanDropdownOpen, setIsPekerjaanDropdownOpen] = useState(false);
-  const [pekerjaanSearchQuery, setPekerjaanSearchQuery] = useState('');
-  const [focusedPekerjaanIndex, setFocusedPekerjaanIndex] = useState(-1);
-  const [pekerjaanCoords, setPekerjaanCoords] = useState({ top: 0, left: 0, width: 0 });
-  const pekerjaanTriggerRef = useRef<HTMLButtonElement>(null);
-  
   // Keyboard navigation states
   const [focusedSopdIndex, setFocusedSopdIndex] = useState(-1);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
   // Table scroll sync refs
-  const jurnalHeaderRef = useRef<HTMLDivElement>(null);
-  const jurnalBodyRef = useRef<HTMLDivElement>(null);
-  const barangJadiHeaderRef = useRef<HTMLDivElement>(null);
   const barangJadiBodyRef = useRef<HTMLDivElement>(null);
+  const jurnalBodyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -189,20 +189,8 @@ export default function HasilProduksiClient() {
     ).slice(0, 50);
   }, [sopdOptions, searchQuery]);
 
-  const filteredPekerjaan = useMemo(() => {
-    const all = ['', ...availablePekerjaan].filter(c => (c?.toLowerCase() || '').includes(pekerjaanSearchQuery.toLowerCase()));
-    return { items: all.slice(0, 30), total: all.length };
-  }, [availablePekerjaan, pekerjaanSearchQuery]);
-
-  const filteredBagian = useMemo(() => {
-    const all = ['', ...availableBagian].filter(c => (c?.toLowerCase() || '').includes(bagianSearchQuery.toLowerCase()));
-    return { items: all.slice(0, 30), total: all.length };
-  }, [availableBagian, bagianSearchQuery]);
-
   // Reset indices when search or open state changes
   useEffect(() => { setFocusedSopdIndex(-1); }, [searchQuery, isDropdownOpen]);
-  useEffect(() => { setFocusedBagianIndex(-1); }, [bagianSearchQuery, isBagianDropdownOpen]);
-  useEffect(() => { setFocusedPekerjaanIndex(-1); }, [pekerjaanSearchQuery, isPekerjaanDropdownOpen]);
 
   const fetchDetails = async () => {
     if (!selectedSopd) {
@@ -236,6 +224,7 @@ export default function HasilProduksiClient() {
         setGrandTotal(json.grandTotal || 0);
         setGrandTotalJurnal(json.grandTotalRealisasi || 0);
         setGrandTotalRijek(json.grandTotalRijek || 0);
+        setGrandTotalTarget(json.grandTotalTarget || 0);
         setUnit(json.unit || selectedSopd.unit || '');
         setAvailableBagian(json.availableBagian || []);
         setAvailablePekerjaan(json.availablePekerjaan || []);
@@ -328,6 +317,7 @@ export default function HasilProduksiClient() {
             <td className="px-4 py-5"><div className="h-3 w-12 bg-gray-50 rounded-full"></div></td>
             <td className="px-4 py-5"><div className="h-3 w-20 bg-gray-100 rounded-full"></div></td>
             <td className="px-4 py-5"><div className="h-3 w-20 bg-gray-50 rounded-full"></div></td>
+            <td className="px-4 py-5"><div className="h-4 w-16 bg-gray-100 rounded-full"></div></td>
             <td className="px-4 py-5 text-right"><div className="h-5 w-16 bg-emerald-100/50 rounded-lg ml-auto"></div></td>
           </tr>
         ))
@@ -337,7 +327,7 @@ export default function HasilProduksiClient() {
     if (!jurnalResults || jurnalResults.length === 0) {
       return (
         <tr>
-          <td colSpan={14} className="px-6 py-20 text-center">
+          <td colSpan={15} className="px-6 py-20 text-center">
             <div className="flex flex-col items-center gap-3 opacity-30">
               <ClipboardList size={40} />
               <span className="text-sm font-semibold tracking-wide">Belum ada laporan operator</span>
@@ -371,31 +361,31 @@ export default function HasilProduksiClient() {
     let lastDate = '';
 
     const pushSubtotalRow = (streak: any[], jobDisplayName: string, date: string, gIdx: number) => {
-      if (streak.length > 1) {
-        const totalR = streak.reduce((sum, s) => sum + Number(s.realisai || s.realisasi || 0), 0);
-        const totalRijek = streak.reduce((sum, s) => sum + Number(s.rijek || 0), 0);
-        
-        // Calculate date range within this streak
-        const dates = streak.map(s => s.tgl).filter(Boolean).sort();
-        const minDate = dates[0];
-        const maxDate = dates[dates.length - 1];
-        
-        let dateLabel = formatToDayMonthYear(minDate);
-        if (minDate && maxDate && minDate !== maxDate) {
-          dateLabel = `${formatToDayMonthYear(minDate)} s.d. ${formatToDayMonthYear(maxDate)}`;
-        }
-
-        renderedGroups.push(
-          <tr key={`subtotal-${gIdx}-${jobDisplayName}-${minDate}-${maxDate}`} className="bg-emerald-50/50 border-t border-emerald-100">
-            <td colSpan={8} className="px-4 py-3 text-right text-[11px] font-bold tracking-tight text-emerald-800 border-r border-emerald-100">
-              Total {jobDisplayName || 'Pekerjaan'} — {dateLabel}
-            </td>
-            <td className="px-4 py-3 text-right text-[12px] font-bold tabular-nums text-rose-600 bg-rose-50/30 border-r border-emerald-100">{totalRijek.toLocaleString('id-ID')}</td>
-            <td colSpan={3} className="px-4 py-3 border-r border-emerald-100"></td>
-            <td className="px-4 py-3 text-right text-[13px] font-bold tabular-nums text-emerald-900 bg-emerald-100/50">{totalR.toLocaleString('id-ID')}</td>
-          </tr>
-        );
+      const totalR = streak.reduce((sum, s) => sum + Number(s.realisai || s.realisasi || 0), 0);
+      const totalRijek = streak.reduce((sum, s) => sum + Number(s.rijek || 0), 0);
+      const totalTarget = streak.reduce((sum, s) => sum + Number(s.target || 0), 0);
+      
+      // Calculate date range within this streak
+      const dates = streak.map(s => s.tgl).filter(Boolean).sort();
+      const minDate = dates[0];
+      const maxDate = dates[dates.length - 1];
+      
+      let dateLabel = formatToDayMonthYear(minDate);
+      if (minDate && maxDate && minDate !== maxDate) {
+        dateLabel = `${formatToDayMonthYear(minDate)} s.d. ${formatToDayMonthYear(maxDate)}`;
       }
+
+      renderedGroups.push(
+        <tr key={`subtotal-${gIdx}-${jobDisplayName}-${minDate}-${maxDate}`} className="bg-emerald-100 border-t-2 border-emerald-200">
+          <td colSpan={8} className="px-4 py-3.5 text-right text-[15px] font-extrabold tracking-tight text-emerald-900 border-r border-emerald-200">
+            Total {jobDisplayName || 'Pekerjaan'} — {dateLabel}
+          </td>
+          <td className="px-4 py-3.5 text-right text-[16px] font-extrabold tabular-nums text-rose-700 bg-rose-100/60 border-r border-emerald-200">{totalRijek.toLocaleString('id-ID')}</td>
+          <td colSpan={3} className="px-4 py-3.5 border-r border-emerald-200 bg-emerald-100"></td>
+          <td className="px-4 py-3.5 text-right text-[16px] font-extrabold tabular-nums text-gray-800 bg-gray-100/60 border-r border-emerald-200">{totalTarget.toLocaleString('id-ID')}</td>
+          <td className="px-4 py-3.5 text-right text-[17px] font-extrabold tabular-nums text-emerald-900 bg-emerald-200/60">{totalR.toLocaleString('id-ID')}</td>
+        </tr>
+      );
     };
 
     pageItems.forEach(({ item, group, iIdx, gIdx, isLastInGroup }, pIdx) => {
@@ -429,19 +419,20 @@ export default function HasilProduksiClient() {
               <span className="text-[11px] xl:text-[12px] font-bold text-gray-700 leading-tight truncate" title={item.nama_order_2 || ''}>{item.nama_order_2 || '-'}</span>
             </div>
           </td>
-          <td className="px-4 py-3 xl:py-4 text-[11px] xl:text-[12px] border-r border-gray-100">
+          <td className="lg:sticky lg:left-[500px] lg:z-10 px-4 py-3 xl:py-4 text-[11px] xl:text-[12px] border-r border-gray-100 bg-white group-even:bg-[#f9fafb] group-hover:bg-[#f0fdf4] lg:shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]">
             <div className="font-bold bg-white px-2 py-1 rounded-lg border border-gray-100 shadow-sm text-gray-700 capitalize inline-block whitespace-nowrap align-middle" title={item.jenis_pekerjaan_2 || ''}>
               {(item.jenis_pekerjaan_2 || '-').toLowerCase()}
             </div>
           </td>
           <td className="px-4 py-3 xl:py-4 text-[10px] xl:text-[11px] font-bold border-r border-gray-100 truncate max-w-[120px] text-gray-600" title={item.bahan_kertas || ''}>{item.bahan_kertas || '-'}</td>
-          <td className="px-4 py-3 xl:py-4 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-right tabular-nums text-gray-700">{Number(item.jml_plate || 0).toLocaleString('id-ID')}</td>
+          <td className="px-4 py-3 xl:py-4 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-gray-700">{formatCellVal(item.jml_plate)}</td>
           <td className="px-4 py-3 xl:py-4 text-[10px] xl:text-[11px] font-bold border-r border-gray-100 truncate max-w-[100px] text-gray-600" title={item.warna || ''}>{item.warna || '-'}</td>
-          <td className="px-4 py-3 xl:py-4 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-right tabular-nums text-gray-700">{Number(item.inscheet || 0).toLocaleString('id-ID')}</td>
-          <td className="px-4 py-3 xl:py-4 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-right tabular-nums text-rose-600">{Number(item.rijek || 0).toLocaleString('id-ID')}</td>
+          <td className="px-4 py-3 xl:py-4 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-gray-700">{formatCellVal(item.inscheet)}</td>
+          <td className="px-4 py-3 xl:py-4 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-rose-600">{formatCellVal(item.rijek)}</td>
           <td className="px-4 py-3 xl:py-4 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-gray-700 truncate max-w-[80px]" title={item.jam || ''}>{item.jam || '-'}</td>
           <td className="px-4 py-3 xl:py-4 text-[10px] xl:text-[11px] font-bold border-r border-gray-100 truncate max-w-[120px] text-rose-600" title={item.kendala || ''}>{item.kendala || '-'}</td>
           <td className="px-4 py-3 xl:py-4 text-[10px] xl:text-[11px] font-bold border-r border-gray-100 text-gray-500 max-w-[120px] truncate" title={item.keterangan || ''}>{item.keterangan || '-'}</td>
+          <td className="px-4 py-3 xl:py-4 text-[12px] xl:text-[13px] font-bold text-right tabular-nums border-r border-gray-100 text-gray-700">{Number(item.target).toLocaleString('id-ID')}</td>
           <td className="px-4 py-3 xl:py-4 text-[13px] xl:text-[15px] font-semibold text-right tabular-nums bg-emerald-50 text-emerald-900">{Number(item.realisasi).toLocaleString('id-ID')}</td>
         </tr>
       );
@@ -454,7 +445,7 @@ export default function HasilProduksiClient() {
 
     if (pageItems.length === 0 && !loadingDetails) {
       renderedGroups.push(
-        <tr key="empty"><td colSpan={14} className="px-6 py-24 text-center">
+        <tr key="empty"><td colSpan={15} className="px-6 py-24 text-center">
           <div className="flex flex-col items-center gap-4 opacity-30">
             <AlertCircle size={28} />
             <span className="text-[11px] font-bold tracking-wide">Tidak ada data</span>
@@ -509,9 +500,9 @@ export default function HasilProduksiClient() {
 
       if (isLastInGroup && group.items.length > 1) {
         renderedGroups.push(
-          <tr key={`${gIdx}-subtotal`} className="bg-emerald-50/50 border-t border-emerald-100">
-            <td colSpan={3} className="px-5 py-3 text-right text-[12px] font-bold tracking-wide text-emerald-800 border-r border-emerald-100">Total Harian {formatToDayMonthYear(group.date)}</td>
-            <td className="px-5 py-3 text-right text-[14px] font-bold tabular-nums text-emerald-900 bg-emerald-100/50">
+          <tr key={`${gIdx}-subtotal`} className="bg-emerald-100 border-t-2 border-emerald-200">
+            <td colSpan={3} className="px-5 py-3.5 text-right text-[15px] font-extrabold tracking-tight text-emerald-900 border-r border-emerald-200">Total Harian {formatToDayMonthYear(group.date)}</td>
+            <td className="px-5 py-3.5 text-right text-[17px] font-extrabold tabular-nums text-emerald-900 bg-emerald-200/60">
                {group.total.toLocaleString('id-ID')} <span className="text-[10px] opacity-40 ml-1 uppercase">{group.items[0].satuan || unit}</span>
             </td>
           </tr>
@@ -544,8 +535,6 @@ export default function HasilProduksiClient() {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
-      if (!target.closest('.bagian-dropdown-container') && !target.closest('.bagian-portal-content')) setIsBagianDropdownOpen(false);
-      if (!target.closest('.pekerjaan-dropdown-container') && !target.closest('.pekerjaan-portal-content')) setIsPekerjaanDropdownOpen(false);
     }
     document.addEventListener('mousedown', handleClickOutside);
 
@@ -602,11 +591,11 @@ export default function HasilProduksiClient() {
   const totalBarangJadiPages = Math.max(1, Math.ceil(totalBarangJadiItems / PAGE_SIZE));
 
   return (
-    <div className="flex flex-col gap-4 animate-in fade-in duration-500">
+    <div className="flex flex-col h-full gap-3 animate-in fade-in duration-500">
       {/* 1. Header Section - Fixed */}
-      <div id="filter-control-container" className="flex flex-col gap-4 shrink-0 relative">
+      <div id="filter-control-container" className="flex flex-col gap-3 shrink-0 relative bg-[var(--bg-deep)] pt-0 pb-1 -mx-4 px-4 lg:-mx-8 lg:px-8">
         {/* 1. Filter Control Center */}
-        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 flex flex-col 2xl:flex-row items-stretch 2xl:items-end gap-6 lg:gap-8 relative">
+        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 flex flex-col 2xl:flex-row items-stretch 2xl:items-end gap-4 lg:gap-6 relative">
           {/* SOPd Selection Group */}
           <div className="flex-1 min-w-[300px]">
             <label className="block text-[13px] font-semibold text-gray-500 mb-2 ml-1 tracking-tight select-none">
@@ -722,175 +711,47 @@ export default function HasilProduksiClient() {
           </div>
 
           {/* Combined Row for Date, Bagian, Pekerjaan & Refresh on LG */}
-          <div className="flex flex-col lg:flex-row lg:items-end gap-6 lg:gap-8 flex-[2]">
+          <div className="flex flex-col lg:flex-row lg:items-end gap-4 lg:gap-6">
             {/* Rentang Tanggal */}
             <div className="flex flex-col lg:w-[320px] shrink-0">
               <label className="block text-[13px] font-semibold text-gray-500 mb-2 ml-1 tracking-tight select-none">Rentang Tanggal</label>
-              <div className="flex items-center gap-2 sm:gap-4">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <div className="flex-1"><DatePicker name="startDate" value={startDate} onChange={(d) => setStartDate(d)} /></div>
-                <div className="w-3 sm:w-6 h-px bg-gray-200 shrink-0"></div>
+                <div className="w-2 h-px bg-gray-200 shrink-0"></div>
                 <div className="flex-1"><DatePicker name="endDate" value={endDate} onChange={(d) => setEndDate(d)} popupAlign="right" /></div>
               </div>
             </div>
 
             {/* Bagian, Pekerjaan & Refresh */}
-            <div className="flex-1 flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2 sm:gap-3 w-fit">
               {activeTab === 'jurnal' && (
-                <div className="flex flex-1 items-center gap-4">
-                  <div className="flex flex-col flex-1 min-w-0">
-                    <label className="block text-[13px] font-semibold text-gray-500 mb-2 ml-1 tracking-tight select-none">Bagian</label>
-                    <div className="relative bagian-dropdown-container">
-                        <button 
-                          ref={bagianTriggerRef}
-                          onClick={() => {
-                            if (!isBagianDropdownOpen && bagianTriggerRef.current) {
-                              const rect = bagianTriggerRef.current.getBoundingClientRect();
-                              setBagianCoords({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX, width: rect.width });
-                            }
-                            setIsBagianDropdownOpen(!isBagianDropdownOpen);
-                          }}
-                          className="w-full h-11 px-4 bg-gray-50/50 border border-gray-100 rounded-xl text-[12px] font-semibold text-gray-700 flex items-center justify-between hover:border-emerald-500 transition-all">
-                          <span className="truncate" title={selectedBagian || 'Semua Bagian'}>{selectedBagian || 'Semua Bagian'}</span>
-                          <ChevronDown size={14} className={`text-gray-300 transition-transform ${isBagianDropdownOpen ? 'rotate-180' : ''}`} />
-                        </button>
-                        {isBagianDropdownOpen && (
-                          <Portal>
-                            <div 
-                              style={{ 
-                                position: 'absolute', 
-                                top: `${bagianCoords.top + 8}px`, 
-                                left: `${Math.max(8, Math.min(window.innerWidth - 258, bagianCoords.left))}px`, 
-                                width: '250px', 
-                                zIndex: 9999 
-                              }}
-                              className="bg-white border border-gray-100 rounded-2xl shadow-2xl py-3 animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[350px] bagian-portal-content">
-                              <div className="px-3 pb-2 my-2 border-b border-gray-50">
-                                <input type="text" autoFocus placeholder="Cari bagian..." className="w-full px-3 py-2 bg-gray-50 rounded-lg text-xs font-bold outline-none border border-transparent focus:border-emerald-200 transition-all" 
-                                  value={bagianSearchQuery} 
-                                  onChange={(e) => setBagianSearchQuery(e.target.value)} 
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'ArrowDown') {
-                                      e.preventDefault();
-                                      setFocusedBagianIndex(prev => (prev < filteredBagian.items.length - 1 ? prev + 1 : prev));
-                                    } else if (e.key === 'ArrowUp') {
-                                      e.preventDefault();
-                                      setFocusedBagianIndex(prev => (prev > 0 ? prev - 1 : prev));
-                                    } else if (e.key === 'Enter' && focusedBagianIndex >= 0) {
-                                      e.preventDefault();
-                                      setSelectedBagian(filteredBagian.items[focusedBagianIndex]);
-                                      setIsBagianDropdownOpen(false);
-                                    } else if (e.key === 'Escape') {
-                                      setIsBagianDropdownOpen(false);
-                                    }
-                                  }}
-                                />
-                              </div>
-                              <div className="overflow-y-auto px-2 custom-scrollbar">
-                                {filteredBagian.items.length > 0 ? (
-                                  <>
-                                    {filteredBagian.items.map((cat, idx) => (
-                                      <button key={cat} 
-                                        ref={focusedBagianIndex === idx ? (el) => { if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } : null}
-                                        onClick={() => { setSelectedBagian(cat); setIsBagianDropdownOpen(false); }}
-                                        className={`w-full text-left px-4 py-2 text-xs font-bold rounded-lg mb-1 tracking-tight ${selectedBagian === cat ? 'bg-emerald-600 text-white shadow-md' : focusedBagianIndex === idx ? 'bg-emerald-50 ring-1 ring-emerald-100' : 'text-gray-600 hover:bg-emerald-50'}`}>
-                                        {cat || 'Semua Bagian'}
-                                      </button>
-                                    ))}
-                                    {filteredBagian.total > 30 && (
-                                      <div className="px-4 py-2 text-[10px] text-gray-400 font-semibold text-center border-t border-gray-50 mt-1">
-                                        +{filteredBagian.total - 30} lainnya — ketik untuk mempersempit
-                                      </div>
-                                    )}
-                                  </>
-                                ) : (
-                                  <div className="py-8 text-center opacity-30">
-                                    <AlertCircle size={24} className="mx-auto mb-2" />
-                                    <span className="text-[10px] font-semibold tracking-wide">Tidak ada hasil</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </Portal>
-                        )}
-                      </div>
-                    </div>
-                  <div className="flex flex-col flex-1 min-w-0">
-                    <label className="block text-[13px] font-semibold text-gray-500 mb-2 ml-1 tracking-tight select-none">Pekerjaan</label>
-                    <div className="relative pekerjaan-dropdown-container">
-                        <button 
-                          ref={pekerjaanTriggerRef}
-                          onClick={() => {
-                            if (!isPekerjaanDropdownOpen && pekerjaanTriggerRef.current) {
-                              const rect = pekerjaanTriggerRef.current.getBoundingClientRect();
-                              setPekerjaanCoords({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX, width: rect.width });
-                            }
-                            setIsPekerjaanDropdownOpen(!isPekerjaanDropdownOpen);
-                          }}
-                          className="w-full h-11 px-4 bg-gray-50/50 border border-gray-100 rounded-xl text-[12px] font-semibold text-gray-700 flex items-center justify-between hover:border-emerald-500 transition-all">
-                          <span className="truncate" title={selectedPekerjaan || 'Semua Pekerjaan'}>{selectedPekerjaan || 'Semua Pekerjaan'}</span>
-                          <ChevronDown size={14} className={`text-gray-300 transition-transform ${isPekerjaanDropdownOpen ? 'rotate-180' : ''}`} />
-                        </button>
-                        {isPekerjaanDropdownOpen && (
-                          <Portal>
-                            <div 
-                              style={{ 
-                                position: 'absolute', 
-                                top: `${pekerjaanCoords.top + 8}px`, 
-                                left: `${Math.max(8, Math.min(window.innerWidth - 288, pekerjaanCoords.left + pekerjaanCoords.width - 280))}px`, 
-                                width: '280px', 
-                                zIndex: 9999 
-                              }}
-                              className="bg-white border border-gray-100 rounded-2xl shadow-2xl py-3 animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[350px] pekerjaan-portal-content">
-                              <div className="px-3 pb-2 my-2 border-b border-gray-50">
-                                <input type="text" autoFocus placeholder="Cari pekerjaan..." className="w-full px-3 py-2 bg-gray-50 rounded-lg text-xs font-bold outline-none border border-transparent focus:border-emerald-200 transition-all" 
-                                  value={pekerjaanSearchQuery} 
-                                  onChange={(e) => setPekerjaanSearchQuery(e.target.value)} 
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'ArrowDown') {
-                                      e.preventDefault();
-                                      setFocusedPekerjaanIndex(prev => (prev < filteredPekerjaan.items.length - 1 ? prev + 1 : prev));
-                                    } else if (e.key === 'ArrowUp') {
-                                      e.preventDefault();
-                                      setFocusedPekerjaanIndex(prev => (prev > 0 ? prev - 1 : prev));
-                                    } else if (e.key === 'Enter' && focusedPekerjaanIndex >= 0) {
-                                      e.preventDefault();
-                                      setSelectedPekerjaan(filteredPekerjaan.items[focusedPekerjaanIndex]);
-                                      setIsPekerjaanDropdownOpen(false);
-                                    } else if (e.key === 'Escape') {
-                                      setIsPekerjaanDropdownOpen(false);
-                                    }
-                                  }}
-                                />
-                              </div>
-                              <div className="overflow-y-auto px-2 custom-scrollbar">
-                                {filteredPekerjaan.items.length > 0 ? (
-                                  <>
-                                    {filteredPekerjaan.items.map((cat, idx) => (
-                                      <button key={cat} 
-                                        ref={focusedPekerjaanIndex === idx ? (el) => { if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } : null}
-                                        onClick={() => { setSelectedPekerjaan(cat); setIsPekerjaanDropdownOpen(false); }}
-                                        className={`w-full text-left px-4 py-2 text-xs font-bold rounded-lg mb-1 tracking-tight ${selectedPekerjaan === cat ? 'bg-emerald-600 text-white shadow-md' : focusedPekerjaanIndex === idx ? 'bg-emerald-50 ring-1 ring-emerald-100' : 'text-gray-600 hover:bg-emerald-50'}`}>
-                                        {cat || 'Semua Pekerjaan'}
-                                      </button>
-                                    ))}
-                                    {filteredPekerjaan.total > 30 && (
-                                      <div className="px-4 py-2 text-[10px] text-gray-400 font-semibold text-center border-t border-gray-50 mt-1">
-                                        +{filteredPekerjaan.total - 30} lainnya — ketik untuk mempersempit
-                                      </div>
-                                    )}
-                                  </>
-                                ) : (
-                                  <div className="py-8 text-center opacity-30">
-                                    <AlertCircle size={24} className="mx-auto mb-2" />
-                                    <span className="text-[10px] font-semibold uppercase tracking-wide">Tidak ada hasil</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </Portal>
-                        )}
-                      </div>
-                    </div>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="flex flex-col min-w-0">
+                    <SearchableDropdown
+                      id="hasil-bagian"
+                      label="Bagian"
+                      value={selectedBagian}
+                      items={availableBagian}
+                      allLabel="Semua Bagian"
+                      searchPlaceholder="Cari bagian..."
+                      panelWidth="w-[250px]"
+                      icon={<Filter size={16} className={selectedBagian ? 'text-emerald-600' : 'text-gray-400'} />}
+                      onChange={(val) => setSelectedBagian(val)}
+                    />
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <SearchableDropdown
+                      id="hasil-pekerjaan"
+                      label="Pekerjaan"
+                      value={selectedPekerjaan}
+                      items={availablePekerjaan}
+                      allLabel="Semua Pekerjaan"
+                      searchPlaceholder="Cari pekerjaan..."
+                      panelWidth="w-[280px]"
+                      icon={<Filter size={16} className={selectedPekerjaan ? 'text-emerald-600' : 'text-gray-400'} />}
+                      onChange={(val) => setSelectedPekerjaan(val)}
+                    />
+                  </div>
                 </div>
               )}
 
@@ -911,7 +772,7 @@ export default function HasilProduksiClient() {
 
         {/* Unified Dashboard Control Bar - Split into 3 Cards, Combined on LG */}
         {selectedSopd && (
-          <div id="desktop-sticky-control-bar" className="lg:sticky lg:top-[calc(var(--sticky-header-h,72px)-1px)] lg:z-[70] lg:bg-[var(--bg-deep)] lg:pb-1.5 lg:-mx-4 lg:px-4 xl:lg:-mx-8 xl:lg:px-8">
+          <div id="desktop-sticky-control-bar" className="shrink-0 z-[70] bg-[var(--bg-deep)] pb-1.5 -mx-4 px-4 xl:-mx-8 xl:px-8">
             <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 sm:gap-4">
               {/* Card 1 & 2 Container */}
               <div className="flex flex-col md:flex-row flex-wrap lg:flex-nowrap items-stretch lg:items-center gap-3 sm:gap-4 flex-1">
@@ -991,9 +852,9 @@ export default function HasilProduksiClient() {
           </div>
         )}
 
-        {/* Tab Navigation — Mobile/MD sticky (shown below cards, separate sticky layer) */}
+        {/* Tab Navigation — Mobile/MD (shown below cards, separate layer) */}
         {selectedSopd && (
-          <div id="sticky-tabs-container" className="sticky top-[calc(var(--sticky-header-h,72px)-1px)] z-[70] bg-[var(--bg-deep)] pb-1.5 -mx-4 px-4 lg:hidden">
+          <div id="sticky-tabs-container" className="shrink-0 z-[70] bg-[var(--bg-deep)] pb-1.5 -mx-4 px-4 lg:hidden">
             <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-1.5 flex items-center gap-1 w-full">
               <button 
                 onClick={() => setActiveTab('jurnal')}
@@ -1152,16 +1013,14 @@ export default function HasilProduksiClient() {
             )}
         
         {selectedSopd ? (
-          <div className="bg-white border border-gray-100 rounded-xl shadow-sm shadow-green-900/5 flex flex-col -mt-2">
+          <>
+          <div className="bg-white border border-gray-100 rounded-xl shadow-sm shadow-green-900/5 flex flex-col flex-1 min-h-0 -mt-2">
             {activeTab === 'barang_jadi' ? (
-            <div className="flex flex-col">
-              {/* Gap Filler to prevent scrolling text from showing between tabs and table header */}
-              <div className="sticky z-20 bg-white" style={{ height: '40px', top: 'calc(var(--sticky-header-h, 72px) + var(--sticky-tabs-h, 60px) - 41px)', marginBottom: '-40px' }} />
-              {/* Sticky Header - outside overflow-x-auto */}
+            <div className="flex flex-col flex-1 min-h-0">
+              {/* Scrollable container - header + body in same scroll area */}
               <div
-                ref={barangJadiHeaderRef}
-                className="overflow-x-hidden sticky z-20 bg-white"
-                style={{ top: 'calc(var(--sticky-header-h, 72px) + var(--sticky-tabs-h, 60px) - 1px)' }}
+                ref={barangJadiBodyRef}
+                className="flex-1 min-h-0 overflow-auto custom-scrollbar bg-gray-50/20"
               >
                 <table className="w-full text-left border-separate border-spacing-0" style={{ tableLayout: 'fixed', minWidth: '700px' }}>
                   <colgroup>
@@ -1170,7 +1029,7 @@ export default function HasilProduksiClient() {
                     <col style={{ width: '150px' }} />
                     <col style={{ width: '120px' }} />
                   </colgroup>
-                  <thead>
+                  <thead className="sticky top-0 z-20">
                     <tr className="bg-white">
                       <th className="sticky left-0 z-30 px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]">Tanggal</th>
                       <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-gray-100 bg-white whitespace-nowrap">Nama Produksi</th>
@@ -1178,31 +1037,14 @@ export default function HasilProduksiClient() {
                       <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-gray-100 bg-emerald-50 text-right whitespace-nowrap">Quantity</th>
                     </tr>
                   </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {memoizedBarangJadiRows}
+                  </tbody>
                 </table>
-              </div>
-              {/* Scrollable Body */}
-              <div
-                ref={barangJadiBodyRef}
-                className="overflow-x-auto custom-scrollbar bg-gray-50/20"
-                onScroll={(e) => {
-                  if (barangJadiHeaderRef.current) barangJadiHeaderRef.current.scrollLeft = e.currentTarget.scrollLeft;
-                }}
-              >
-                <table className="w-full text-left border-separate border-spacing-0" style={{ tableLayout: 'fixed', minWidth: '700px' }}>
-                  <colgroup>
-                    <col style={{ width: '130px' }} />
-                    <col />
-                    <col style={{ width: '150px' }} />
-                    <col style={{ width: '120px' }} />
-                  </colgroup>
-                <tbody className="divide-y divide-gray-50">
-                  {memoizedBarangJadiRows}
-                 </tbody>
-               </table>
               </div>
             </div>
            ) : (
-            <div className="flex flex-col">
+            <div className="flex flex-col flex-1 min-h-0">
               {/* Operator Efficiency Summary - Horizontal scrollable row */}
               {jurnalResults.length > 0 && !loadingDetails && selectedPekerjaan && (
                 <div className="bg-white border-b border-gray-100 px-6 py-2.5 flex items-center gap-4 shrink-0 overflow-hidden">
@@ -1228,20 +1070,12 @@ export default function HasilProduksiClient() {
                 </div>
               )}
 
-              {/* Gap Filler to prevent scrolling text from showing between tabs and table header */}
-              <div className="sticky z-20 bg-white" style={{ height: '40px', top: 'calc(var(--sticky-header-h, 72px) + var(--sticky-tabs-h, 60px) - 41px)', marginBottom: '-40px' }} />
-              {/* Sticky Table Header - sticky to viewport, scroll synced with body */}
+              {/* Scrollable container - header + body in same scroll area */}
               <div
-                ref={jurnalHeaderRef}
-                className="sticky z-20 bg-white"
-                style={{
-                  top: 'calc(var(--sticky-header-h, 72px) + var(--sticky-tabs-h, 60px) - 1px)',
-                  overflowX: 'auto',
-                  scrollbarWidth: 'none',
-                  msOverflowStyle: 'none',
-                }}
+                ref={jurnalBodyRef}
+                className="flex-1 min-h-0 overflow-auto custom-scrollbar"
               >
-                <table className="w-full text-left border-separate border-spacing-0" style={{ tableLayout: 'fixed', minWidth: '1850px' }}>
+                <table className="w-full text-left border-separate border-spacing-0" style={{ tableLayout: 'fixed', minWidth: '1950px' }}>
                   <colgroup>
                     <col style={{ width: '100px' }} />
                     <col style={{ width: '160px' }} />
@@ -1255,14 +1089,15 @@ export default function HasilProduksiClient() {
                     <col style={{ width: '80px' }} />
                     <col style={{ width: '200px' }} />
                     <col style={{ width: '200px' }} />
+                    <col style={{ width: '100px' }} />
                     <col style={{ width: '120px' }} />
                   </colgroup>
-                  <thead>
+                  <thead className="sticky top-0 z-20">
                     <tr className="bg-white">
                       <th className="sticky left-0 z-30 px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap md:shadow-none shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]">Tanggal</th>
                       <th className="md:sticky md:left-[100px] md:z-30 px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap md:shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)] lg:shadow-none">Bagian / Karyawan</th>
                       <th className="lg:sticky lg:left-[260px] lg:z-30 px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap lg:shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]">No. & Nama Order</th>
-                      <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap">Jenis Pekerjaan</th>
+                      <th className="lg:sticky lg:left-[500px] lg:z-30 px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap lg:shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]">Jenis Pekerjaan</th>
                       <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap">Bahan Kertas</th>
                       <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap text-right">Jml. Plate</th>
                       <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap">Warna</th>
@@ -1271,35 +1106,10 @@ export default function HasilProduksiClient() {
                       <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap">Jam</th>
                       <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap">Kendala</th>
                       <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap">Keterangan</th>
+                      <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-gray-100 bg-white whitespace-nowrap text-right">Target</th>
                       <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-gray-100 bg-emerald-50 whitespace-nowrap text-right">Realisasi</th>
                     </tr>
                   </thead>
-                </table>
-              </div>
-              {/* Scrollable Body */}
-              <div
-                ref={jurnalBodyRef}
-                className="overflow-x-auto custom-scrollbar"
-                onScroll={(e) => {
-                  if (jurnalHeaderRef.current) jurnalHeaderRef.current.scrollLeft = e.currentTarget.scrollLeft;
-                }}
-              >
-                <table className="w-full text-left border-separate border-spacing-0" style={{ tableLayout: 'fixed', minWidth: '1850px' }}>
-                  <colgroup>
-                    <col style={{ width: '100px' }} />
-                    <col style={{ width: '160px' }} />
-                    <col style={{ width: '240px' }} />
-                    <col style={{ width: '280px' }} />
-                    <col style={{ width: '150px' }} />
-                    <col style={{ width: '100px' }} />
-                    <col style={{ width: '100px' }} />
-                    <col style={{ width: '100px' }} />
-                    <col style={{ width: '100px' }} />
-                    <col style={{ width: '80px' }} />
-                    <col style={{ width: '200px' }} />
-                    <col style={{ width: '200px' }} />
-                    <col style={{ width: '120px' }} />
-                  </colgroup>
                   <tbody className="divide-y divide-gray-50">
                     {memoizedJurnalRows}
                   </tbody>
@@ -1307,105 +1117,57 @@ export default function HasilProduksiClient() {
               </div>
             </div>
           )}
-
-
-
+          </div>
 
           {/* Fixed Footer for Totals & Pagination */}
           {((activeTab === 'barang_jadi' && results.length > 0) || (activeTab === 'jurnal' && jurnalResults.length > 0)) && !loadingDetails && (
-            <div className="bg-white text-gray-800 border-t border-gray-100 px-6 xl:px-8 py-3 sm:py-2.5 flex flex-col sm:flex-row justify-between items-center sm:items-center shrink-0 relative z-20 shadow-[0_-10px_30px_-15px_rgba(0,0,0,0.05)] gap-3 sm:gap-4">
-              {/* Left Side: Text Info & Load Speed */}
-              <div className="flex items-center gap-3">
-                <span className="hidden md:block text-[11px] font-bold text-gray-400 tracking-wide">
-                  {activeTab === 'jurnal' 
-                    ? (totalJurnalItems === 0 ? 'Tidak ada data' : `Menampilkan ${Math.min(jurnalPage * PAGE_SIZE, totalJurnalItems)} dari ${totalJurnalItems} baris`)
-                    : (totalBarangJadiItems === 0 ? 'Tidak ada data' : `Menampilkan ${Math.min(barangJadiPage * PAGE_SIZE, totalBarangJadiItems)} dari ${totalBarangJadiItems} baris`)
-                  }
-                </span>
-
-                {/* Load Speed Badge - moved next to Text Info */}
-                {loadTime !== null && loadTime !== undefined && (
-                  <div className={`hidden md:flex text-[9px] px-2 py-1 rounded-full font-bold items-center gap-1.5 border tracking-wide shadow-sm ${
-                    loadTime < 300  ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                    loadTime < 1000 ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                                      'bg-rose-50 text-rose-600 border-rose-100'
-                  }`}>
-                    <span className="animate-pulse">⚡</span>
-                    <span className="leading-none">{(loadTime / 1000).toFixed(2)}s</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Center: Pagination Controls */}
-              <div className="flex-1 flex justify-center">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1">
-                    <button
-                      disabled={activeTab === 'jurnal' ? jurnalPage <= 1 : barangJadiPage <= 1}
-                      onClick={() => activeTab === 'jurnal' ? setJurnalPage(1) : setBarangJadiPage(1)}
-                      className="w-8 h-8 flex items-center justify-center text-[12px] font-bold border border-gray-100 bg-white hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-100 rounded-lg disabled:opacity-30 transition-all shadow-sm"
-                      title="Halaman Pertama"
-                    >«</button>
-                    <button
-                      disabled={activeTab === 'jurnal' ? jurnalPage <= 1 : barangJadiPage <= 1}
-                      onClick={() => activeTab === 'jurnal' ? setJurnalPage(p => Math.max(1, p - 1)) : setBarangJadiPage(p => Math.max(1, p - 1))}
-                      className="w-8 h-8 flex items-center justify-center border border-gray-100 bg-white hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-100 rounded-lg disabled:opacity-30 transition-all shadow-sm"
-                      title="Halaman Sebelumnya"
-                    ><ChevronLeft size={14} /></button>
-                  </div>
-                  <div className="flex items-center px-4 py-1.5 bg-gray-50/50 border border-gray-100 rounded-full shadow-inner">
-                    <span className="text-[11px] font-bold tracking-wide text-gray-400">
-                      Hal. <span className="text-gray-800">{activeTab === 'jurnal' ? jurnalPage : barangJadiPage}</span> <span className="mx-1.5 opacity-30">/</span> {activeTab === 'jurnal' ? totalJurnalPages : totalBarangJadiPages}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      disabled={activeTab === 'jurnal' ? jurnalPage >= totalJurnalPages : barangJadiPage >= totalBarangJadiPages}
-                      onClick={() => activeTab === 'jurnal' ? setJurnalPage(p => Math.min(totalJurnalPages, p + 1)) : setBarangJadiPage(p => Math.min(totalBarangJadiPages, p + 1))}
-                      className="w-8 h-8 flex items-center justify-center border border-gray-100 bg-white hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-100 rounded-lg disabled:opacity-30 transition-all shadow-sm"
-                      title="Halaman Berikutnya"
-                    ><ChevronRight size={14} /></button>
-                    <button
-                      disabled={activeTab === 'jurnal' ? jurnalPage >= totalJurnalPages : barangJadiPage >= totalBarangJadiPages}
-                      onClick={() => activeTab === 'jurnal' ? setJurnalPage(totalJurnalPages) : setBarangJadiPage(totalBarangJadiPages)}
-                      className="w-8 h-8 flex items-center justify-center text-[12px] font-bold border border-gray-100 bg-white hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-100 rounded-lg disabled:opacity-30 transition-all shadow-sm"
-                      title="Halaman Terakhir"
-                    >»</button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Side: Load Speed & Totals */}
-              <div className="flex items-center gap-6">
-                {/* Totals Section */}
-                {(activeTab === 'barang_jadi' || (activeTab === 'jurnal' && selectedPekerjaan)) && (
-                  <div className="flex flex-wrap items-center gap-4 border-l border-gray-100 pl-4">
-                    {activeTab === 'jurnal' && grandTotalRijek > 0 && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold tracking-wide text-rose-400">Total rijek</span>
-                        <div className="text-[14px] font-bold tabular-nums tracking-tight text-rose-600">
-                          {grandTotalRijek.toLocaleString('id-ID')}
-                        </div>
-                      </div>
-                    )}
+            <>
+              {/* Totals Row */}
+              {(activeTab === 'barang_jadi' || (activeTab === 'jurnal' && selectedPekerjaan)) && (
+                <div className="shrink-0 flex flex-wrap items-center justify-end gap-4 px-4 py-2 border-t border-gray-100 bg-gray-50/30">
+                  {activeTab === 'jurnal' && grandTotalRijek > 0 && (
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold tracking-wide text-gray-500">
-                        {activeTab === 'barang_jadi' ? 'Total Masuk' : `Realisasi`}
-                      </span>
-                      <div className="text-[14px] font-bold tabular-nums tracking-tight text-emerald-600">
-                        {activeTab === 'barang_jadi' 
-                          ? `${grandTotal.toLocaleString('id-ID')} ${results[0]?.items[0]?.satuan || results[0]?.items[0]?.unit || unit}`
-                          : `${grandTotalJurnal.toLocaleString('id-ID')}`
-                        }
+                      <span className="text-[12px] font-bold tracking-wide text-rose-400">Total rijek</span>
+                      <div className="text-[14px] font-bold tabular-nums tracking-tight text-rose-600">
+                        {grandTotalRijek.toLocaleString('id-ID')}
                       </div>
                     </div>
+                  )}
+                  {activeTab === 'jurnal' && grandTotalTarget > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[12px] font-bold tracking-wide text-gray-500">Total target</span>
+                      <div className="text-[14px] font-bold tabular-nums tracking-tight text-gray-700">
+                        {grandTotalTarget.toLocaleString('id-ID')}
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[12px] font-bold tracking-wide text-gray-500">
+                      {activeTab === 'barang_jadi' ? 'Total Masuk' : 'Realisasi'}
+                    </span>
+                    <div className="text-[14px] font-bold tabular-nums tracking-tight text-emerald-600">
+                      {activeTab === 'barang_jadi' 
+                        ? `${grandTotal.toLocaleString('id-ID')} ${results[0]?.items[0]?.satuan || results[0]?.items[0]?.unit || unit}`
+                        : `${grandTotalJurnal.toLocaleString('id-ID')}`
+                      }
+                    </div>
                   </div>
-                )}
-              </div>
-            </div>
+                </div>
+              )}
+              {/* TableFooter with Pagination */}
+              <TableFooter
+                totalCount={activeTab === 'jurnal' ? totalJurnalItems : totalBarangJadiItems}
+                currentCount={activeTab === 'jurnal' ? Math.min(jurnalPage * PAGE_SIZE, totalJurnalItems) : Math.min(barangJadiPage * PAGE_SIZE, totalBarangJadiItems)}
+                label="baris data"
+                loadTime={loadTime}
+                page={activeTab === 'jurnal' ? jurnalPage : barangJadiPage}
+                totalPages={activeTab === 'jurnal' ? totalJurnalPages : totalBarangJadiPages}
+                onPageChange={activeTab === 'jurnal' ? setJurnalPage : setBarangJadiPage}
+              />
+            </>
           )}
-        </div>
-      ) : (
+          </>
+        ) : (
         <div className="flex-1 min-h-0 flex flex-col items-center justify-center border-2 border-dashed border-emerald-100 bg-emerald-50/10 rounded-2xl animate-in fade-in duration-700 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-200/20 blur-[100px] -mr-32 -mt-32 rounded-full"></div>
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-100/20 blur-[100px] -ml-32 -mb-32 rounded-full"></div>

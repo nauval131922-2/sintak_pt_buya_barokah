@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { Search, Loader2, AlertCircle, ChevronLeft, ChevronRight, RefreshCw, ClipboardList, Pencil, Check, X, Calendar } from 'lucide-react';
+import { Search, Loader2, AlertCircle, ChevronLeft, ChevronRight, RefreshCw, ClipboardList, Pencil, Check, X, Calendar, Copy } from 'lucide-react';
 import ImportInfo from '@/components/ImportInfo';
 import { useRouter } from 'next/navigation';
 import { DataTable } from '@/components/ui/DataTable';
@@ -73,14 +73,22 @@ const EditableCell = ({
     onSave, 
     placeholder = 'klik 2x untuk isi',
     isNumericOnly = false,
-    isSelected = false 
+    isSelected = false,
+    pasteActive = false,
+    onCopyValue,
+    copiedValue,
+    onPasteDone,
 }: { 
     row: SopdRecord, 
     field: keyof SopdRecord,
     onSave: (no_sopd: string, value: string, field: string) => Promise<boolean>,
     placeholder?: string,
     isNumericOnly?: boolean,
-    isSelected?: boolean
+    isSelected?: boolean,
+    pasteActive?: boolean,
+    onCopyValue?: (value: string) => void,
+    copiedValue?: string | null,
+    onPasteDone?: () => void,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState('');
@@ -94,6 +102,10 @@ const EditableCell = ({
   useEffect(() => {
     setLocalVal(row[field]);
   }, [row[field], field]);
+
+  useEffect(() => {
+    if (pasteActive) setIsEditing(false);
+  }, [pasteActive]);
 
   const handleSave = async () => {
     if (isSavingGuard.current) return;
@@ -155,6 +167,48 @@ const EditableCell = ({
     return () => document.removeEventListener('mousedown', handler);
   }, [isEditing, value]);
 
+  const val = localVal;
+  const parseClean = (v: any) => {
+      if (v === null || v === undefined || v === '') return NaN;
+      if (typeof v === 'number') return v;
+      let s = String(v);
+      if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+      return Number(s);
+  };
+
+  const numericVal = parseClean(val);
+  const isActuallyNumeric = !isNaN(numericVal) && (isNumericOnly || !/[a-zA-Z]/.test(String(val)));
+  
+  const formatted = isActuallyNumeric
+      ? numericVal.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+      : val;
+
+  if (pasteActive) {
+    return (
+      <div className="flex items-center justify-end w-[calc(100%+2rem)] h-11 pr-2 -mr-4 gap-1 select-none overflow-hidden">
+        {formatted ? (
+          <span className={`font-bold transition-colors ${isSelected ? 'text-green-800' : 'text-green-700'} truncate ${!isActuallyNumeric ? 'text-[12px]' : 'tabular-nums'}`}>
+            {formatted}
+          </span>
+        ) : (
+          <span className="text-gray-300 italic text-[11px] font-bold">{placeholder}</span>
+        )}
+        <button
+          onClick={async (e) => {
+            e.stopPropagation();
+            if (copiedValue) {
+              await onSave(row.no_sopd, copiedValue, field as string);
+            }
+          }}
+          className="p-1 hover:bg-emerald-100 rounded-md text-emerald-400 hover:text-emerald-600 transition-all shrink-0"
+          title="Tempel value yang di-copy"
+        >
+          <ClipboardList size={12} />
+        </button>
+      </div>
+    );
+  }
+
   const smartFormatInput = (val: string) => {
     if (isNumericOnly) return formatIDR(val);
     if (/[a-zA-Z]/.test(val)) return val;
@@ -209,7 +263,7 @@ const EditableCell = ({
                                   toggle();
                                 }}
                                 onClick={(e) => {
-                                  e.stopPropagation(); // Prevent DatePicker's wrapper div from toggling again
+                                  e.stopPropagation();
                                 }}
                                 className="p-1.5 hover:bg-green-100 rounded-lg text-green-600 transition-colors"
                             >
@@ -232,25 +286,9 @@ const EditableCell = ({
       );
   }
 
-  const val = localVal;
-  const parseClean = (v: any) => {
-      if (v === null || v === undefined || v === '') return NaN;
-      if (typeof v === 'number') return v;
-      let s = String(v);
-      if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
-      return Number(s);
-  };
-
-  const numericVal = parseClean(val);
-  const isActuallyNumeric = !isNaN(numericVal) && (isNumericOnly || !/[a-zA-Z]/.test(String(val)));
-  
-  const formatted = isActuallyNumeric
-      ? numericVal.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
-      : val;
-
   return (
       <div
-          className="flex items-center justify-end w-[calc(100%+2rem)] h-11 pr-8 -mr-4 cursor-pointer group select-none overflow-hidden transition-colors hover:bg-green-50/30"
+          className="flex items-center justify-end w-[calc(100%+2rem)] h-11 pr-2 -mr-4 cursor-pointer group/cell select-none overflow-hidden transition-colors hover:bg-green-50/30 gap-1"
           onDoubleClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -275,6 +313,17 @@ const EditableCell = ({
           ) : (
               <span className="text-gray-300 italic text-[11px] font-bold group-hover:text-green-400 transition-colors">{placeholder}</span>
           )}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const cellValue = val !== null && val !== undefined ? String(val) : '';
+              onCopyValue?.(cellValue);
+            }}
+            className="p-1 hover:bg-green-100 rounded-md text-green-400 hover:text-green-600 transition-all shrink-0"
+            title="Copy value cell ini"
+          >
+            <Copy size={12} />
+          </button>
       </div>
   );
 };
@@ -308,6 +357,27 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [pasteActive, setPasteActive] = useState(false);
+  const [copiedValue, setCopiedValue] = useState<string | null>(null);
+  const handleCopyValue = useCallback((value: string) => {
+    setCopiedValue(value);
+    setPasteActive(true);
+  }, []);
+  const handlePasteDone = useCallback(() => {
+    setPasteActive(false);
+    setCopiedValue(null);
+  }, []);
+
+  useEffect(() => {
+    if (!pasteActive) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handlePasteDone();
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [pasteActive, handlePasteDone]);
 
   const { selectedIds, setSelectedIds, handleRowClick, clearSelection } = useTableSelection(data || []);
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
@@ -440,7 +510,7 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
 
     const processChunk = async (chunk: any) => {
       try {
-        const res = await fetch(`/api/scrape-orders?start=${chunk.start}&end=${chunk.end}&metaStart=${fullStart}&metaEnd=${fullEnd}&silent=true`);
+        const res = await fetch(`/api/scrape-orders?start=${chunk.start}&end=${chunk.end}&metaStart=${chunk.start}&metaEnd=${chunk.end}&silent=true`);
         if (res.ok) {
           successCount++; const json = await res.json(); totalScraped += (json.total || 0);
         }
@@ -459,6 +529,15 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
         persistScraperPeriod({ stateKey: 'sopdState', periodKey: 'SopdClient_scrapedPeriod' }, startDate, endDate);
         setRefreshKey(prev => prev + 1);
         localStorage.setItem('sintak_data_updated', Date.now().toString());
+        fetch('/api/activity-log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action_type: 'SCRAPE', table_name: 'orders',
+            message: `Scrape orders berhasil: ${totalScraped} baris (${fullStart} - ${fullEnd}).`,
+            raw_data: JSON.stringify({ total: totalScraped, start: fullStart, end: fullEnd })
+          })
+        });
         setDialog({ isOpen: true, type: 'success', title: 'Berhasil', message: `Berhasil menarik ${totalScraped} Order Produksi.` });
       }
     } finally { setIsBatching(false); setLoading(false); }
@@ -523,11 +602,11 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
         size: 120, 
         cell: ({ getValue }: any) => <span className="text-[11px] font-bold text-gray-400">{String(getValue() || '—')}</span> 
     },
-    { accessorKey: 'perkiraan_harga', header: 'Perkiraan Harga', size: 180, meta: { align: 'right', headerBg: '#fffbeb' }, cell: (info: any) => <EditableCell row={info.row.original} isSelected={info.row.getIsSelected()} field="perkiraan_harga" onSave={handleSaveRecord} placeholder="klik 2x untuk harga" /> },
-    { accessorKey: 'keterangan', header: 'Keterangan', size: 250, meta: { align: 'right', headerBg: '#fffbeb' }, cell: (info: any) => <EditableCell row={info.row.original} isSelected={info.row.getIsSelected()} field="keterangan" onSave={handleSaveRecord} placeholder="klik 2x untuk ket." /> },
-    { accessorKey: 'deadline_date', header: 'Tanggal Deadline', size: 180, meta: { align: 'right', overflowVisible: true, headerBg: '#f5f3ff' }, cell: (info: any) => <EditableCell row={info.row.original} isSelected={info.row.getIsSelected()} field="deadline_date" onSave={handleSaveRecord} placeholder="klik 2x untuk deadline" /> },
-    { accessorKey: 'finished_date', header: 'Tanggal Selesai', size: 180, meta: { align: 'right', overflowVisible: true, headerBg: '#f5f3ff' }, cell: (info: any) => <EditableCell row={info.row.original} isSelected={info.row.getIsSelected()} field="finished_date" onSave={handleSaveRecord} placeholder="klik 2x untuk selesai" /> }
-  ], [page, handleSaveRecord]);
+    { accessorKey: 'perkiraan_harga', header: 'Perkiraan Harga', size: 180, meta: { align: 'right', headerBg: '#fffbeb' }, cell: (info: any) => <EditableCell row={info.row.original} isSelected={info.row.getIsSelected()} field="perkiraan_harga" onSave={handleSaveRecord} placeholder="klik 2x untuk harga" pasteActive={pasteActive} onCopyValue={handleCopyValue} copiedValue={copiedValue} onPasteDone={handlePasteDone} /> },
+    { accessorKey: 'keterangan', header: 'Keterangan', size: 250, meta: { align: 'right', headerBg: '#fffbeb' }, cell: (info: any) => <EditableCell row={info.row.original} isSelected={info.row.getIsSelected()} field="keterangan" onSave={handleSaveRecord} placeholder="klik 2x untuk ket." pasteActive={pasteActive} onCopyValue={handleCopyValue} copiedValue={copiedValue} onPasteDone={handlePasteDone} /> },
+    { accessorKey: 'deadline_date', header: 'Tanggal Deadline', size: 180, meta: { align: 'right', overflowVisible: true, headerBg: '#f5f3ff' }, cell: (info: any) => <EditableCell row={info.row.original} isSelected={info.row.getIsSelected()} field="deadline_date" onSave={handleSaveRecord} placeholder="klik 2x untuk deadline" pasteActive={pasteActive} onCopyValue={handleCopyValue} copiedValue={copiedValue} onPasteDone={handlePasteDone} /> },
+    { accessorKey: 'finished_date', header: 'Tanggal Selesai', size: 180, meta: { align: 'right', overflowVisible: true, headerBg: '#f5f3ff' }, cell: (info: any) => <EditableCell row={info.row.original} isSelected={info.row.getIsSelected()} field="finished_date" onSave={handleSaveRecord} placeholder="klik 2x untuk selesai" pasteActive={pasteActive} onCopyValue={handleCopyValue} copiedValue={copiedValue} onPasteDone={handlePasteDone} /> }
+  ], [page, handleSaveRecord, pasteActive, handleCopyValue, copiedValue, handlePasteDone]);
 
   const handleResize = useCallback((widths: any) => {
     setColumnWidths(widths);
@@ -559,16 +638,30 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
                  lastUpdated={lastUpdated} 
                  lastExcelUpdate={lastExcelUpdate}
                  lastScrapedUpdate={lastScrapedUpdate}
-                 scrapedPeriod={scrapedPeriod} 
+                 scrapedPeriod={scrapedPeriod}
+                 activityLogTable="sopd"
                />
                <ImportInfo info={importInfo} />
             </div>
-            {loading && (data?.length || 0) > 0 && (
-                <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
-                  <Loader2 size={12} className="animate-spin" />
-                  <span>Memproses Data...</span>
-                </div>
-            )}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => { setPasteActive(false); setCopiedValue(null); }}
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] leading-none font-bold transition-all ${
+                  pasteActive
+                    ? 'opacity-100 visible bg-red-50 text-red-600 border border-red-200 hover:bg-red-100'
+                    : 'opacity-0 invisible pointer-events-none'
+                }`}
+              >
+                <X size={12} />
+                Stop Copy (Esc)
+              </button>
+              {loading && (data?.length || 0) > 0 && (
+                  <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
+                    <Loader2 size={12} className="animate-spin" />
+                    <span>Memproses Data...</span>
+                  </div>
+              )}
+            </div>
           </div>
           <SearchAndReload searchQuery={searchQuery} setSearchQuery={setSearchQuery} onReload={() => setRefreshKey(k => k + 1)} loading={loading} placeholder="Cari berdasarkan nama order..." />
         </div>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getSession } from '@/lib/session';
+import { logActivity } from '@/lib/activity';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,6 +40,8 @@ export async function POST(request: NextRequest) {
             ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
       args: [new Date().toISOString()]
     });
+
+    logActivity('CREATE', 'hpp_kalkulasi', `Sync ${rows.length} nama_order baru dari orders ke hpp_kalkulasi`).catch(() => {});
 
     return NextResponse.json({ success: true, synced: rows.length });
   } catch (error: any) {

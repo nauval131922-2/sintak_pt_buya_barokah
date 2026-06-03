@@ -3,6 +3,7 @@ import db from "@/lib/db";
 import { getErrorMessage } from "@/lib/api-utils";
 import { ScrapedRecord, BatchOperation } from "@/lib/scraper-utils";
 import { clearCachedSession, getSession as getScraperSession } from "@/lib/session-cache";
+import { logActivity } from "@/lib/activity";
 
 export const dynamic = 'force-dynamic';
 
@@ -128,6 +129,13 @@ export async function GET(req: NextRequest) {
         args: ["last_scrape_rek_akuntansi", lastUpdated]
       }
     ], "write");
+
+    await logActivity(
+      'SCRAPE',
+      'rek_akuntansi',
+      `Scrape rekening akuntansi berhasil: ${totalScraped} data.`,
+      { total: totalScraped }
+    );
 
     return NextResponse.json({
       success: true,

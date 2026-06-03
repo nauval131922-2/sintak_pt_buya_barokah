@@ -6,6 +6,7 @@ import { ScrapedRecord, BatchOperation } from "@/lib/scraper-utils";
 import { getCachedSession, setCachedSession, clearCachedSession, getSession as getScraperSession } from "@/lib/session-cache";
 import { getSession } from "@/lib/session";
 import { encodeScrapedPeriod, getScrapedPeriodSettingKey } from "@/lib/server-scraped-period";
+import { logActivity } from "@/lib/activity";
 
 const API_EMAIL = process.env.SCRAPER_EMAIL || "nauval"; 
 const API_PASSWORD = process.env.SCRAPER_PASSWORD || "312admin2";
@@ -182,6 +183,16 @@ export async function GET(request: NextRequest) {
         args: [getScrapedPeriodSettingKey('last_scrape_bom'), encodeScrapedPeriod({ start: metaStart, end: metaEnd })]
       }
     ], "write");
+
+    const silent = searchParams.get('silent') === 'true';
+    if (!silent) {
+      await logActivity(
+        'SCRAPE',
+        'bill_of_materials',
+        `Scrape bill of materials berhasil: ${allRecords.length} baris (${metaStart} - ${metaEnd}).`,
+        { total: allRecords.length, start: metaStart, end: metaEnd, scrapedPeriod: { start: metaStart, end: metaEnd } }
+      );
+    }
 
     return NextResponse.json({
       success: true,

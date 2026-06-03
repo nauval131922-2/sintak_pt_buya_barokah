@@ -30,6 +30,10 @@ type LatestJournal = {
   target: number;
   realisasi: number;
   created_at?: string | null;
+  recorded_by?: string | null;
+  recorded_by_name?: string | null;
+  input_at?: string | null;
+  action_type?: string | null;
 };
 
 type ProductionDashboardSummary = {

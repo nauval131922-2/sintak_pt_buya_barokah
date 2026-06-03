@@ -14,20 +14,11 @@ import {
 import DatePicker from '@/components/DatePicker';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import DateRangeCard from '@/components/DateRangeCard';
+import ViewActivityLogLink from '@/components/ViewActivityLogLink';
 import { formatLastUpdate } from '@/lib/date-utils';
 import { formatScrapedPeriodDate, getDefaultScraperDateRange, persistScraperPeriod, hydrateScraperPeriod } from '@/lib/scraper-period';
 
 const MODULE_GROUPS = [
-  {
-    group: 'Produksi',
-    color: 'green',
-    modules: [
-      { id: 'bom', name: 'Bill of Material Produksi', endpoint: '/api/scrape-bom', description: 'Data formula produksi' },
-      { id: 'orders', name: 'Order Produksi', endpoint: '/api/scrape-orders', description: 'Surat Perintah Kerja' },
-      { id: 'bahan-baku', name: 'BBB Produksi', endpoint: '/api/scrape-bahan-baku', description: 'Pengeluaran bahan produksi' },
-      { id: 'barang-jadi', name: 'Penerimaan Barang Hasil Produksi', endpoint: '/api/scrape-barang-jadi', description: 'Stok produk siap kirim' },
-    ]
-  },
   {
     group: 'Pembelian',
     color: 'blue',
@@ -42,6 +33,16 @@ const MODULE_GROUPS = [
     ]
   },
   {
+    group: 'Produksi',
+    color: 'green',
+    modules: [
+      { id: 'bom', name: 'Bill of Material Produksi', endpoint: '/api/scrape-bom', description: 'Data formula produksi' },
+      { id: 'orders', name: 'Order Produksi', endpoint: '/api/scrape-orders', description: 'Surat Perintah Kerja' },
+      { id: 'bahan-baku', name: 'BBB Produksi', endpoint: '/api/scrape-bahan-baku', description: 'Pengeluaran bahan produksi' },
+      { id: 'barang-jadi', name: 'Penerimaan Barang Hasil Produksi', endpoint: '/api/scrape-barang-jadi', description: 'Stok produk siap kirim' },
+    ]
+  },
+  {
     group: 'Penjualan',
     color: 'purple',
     modules: [
@@ -50,6 +51,14 @@ const MODULE_GROUPS = [
       { id: 'sales', name: 'Laporan Penjualan', endpoint: '/api/scrape-sales', description: 'Faktur penjualan barang' },
       { id: 'pengiriman', name: 'Pengiriman', endpoint: '/api/scrape-pengiriman', description: 'Logistik barang keluar' },
       { id: 'pelunasan-piutang', name: 'Pelunasan Piutang Penjualan', endpoint: '/api/scrape-pelunasan-piutang', description: 'Penerimaan dari pelanggan' },
+    ]
+  },
+  {
+    group: 'Akuntansi & Keuangan',
+    color: 'amber',
+    modules: [
+      { id: 'rek-akuntansi', name: 'Rekening Akuntansi', endpoint: '/api/scrape-rek-akuntansi', description: 'Master rekening akuntansi', noDateRange: true },
+      { id: 'jurnal-umum', name: 'Jurnal Umum', endpoint: '/api/scrape-jurnal-umum', description: 'Transaksi jurnal akuntansi' },
     ]
   },
 ];
@@ -74,6 +83,7 @@ const PERSISTENCE_KEYS: Record<string, { stateKey: string; periodKey: string }> 
   'sales': { stateKey: 'salesReportState', periodKey: 'SalesReportClient_scrapedPeriod' },
   'pengiriman': { stateKey: 'pengirimanState', periodKey: 'PengirimanClient_scrapedPeriod' },
   'pelunasan-piutang': { stateKey: 'pelunasanPiutangState', periodKey: 'PelunasanPiutangClient_scrapedPeriod' },
+  'jurnal-umum': { stateKey: 'jurnalUmumState', periodKey: 'JurnalUmumClient_scrapedPeriod' },
 };
 
 type SyncStatus = 'idle' | 'loading' | 'success' | 'error';
@@ -102,6 +112,8 @@ const SYNC_TO_PERM_MAP: Record<string, string> = {
   'sales': 'penjualan_laporan',
   'pengiriman': 'penjualan_pengiriman',
   'pelunasan-piutang': 'penjualan_piutang',
+  'jurnal-umum': 'akt_jurnal_umum',
+  'rek-akuntansi': 'akt_mrek',
 };
 
 export default function SyncClient({ userPermissions = {} }: { userPermissions?: Record<string, boolean> }) {
@@ -206,7 +218,9 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
 
       const startStr = formatDate(startDate);
       const endStr = formatDate(endDate);
-      const url = `${mod.endpoint}?start=${startStr}&end=${endStr}&metaStart=${startStr}&metaEnd=${endStr}`;
+      const url = (mod as any).noDateRange
+        ? `${mod.endpoint}`
+        : `${mod.endpoint}?start=${startStr}&end=${endStr}&metaStart=${startStr}&metaEnd=${endStr}`;
 
       const response = await fetch(url, { method: 'GET', cache: 'no-store' });
       const data = await response.json();
@@ -216,7 +230,7 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
         const formattedNow = formatLastUpdate(now);
 
         const keys = PERSISTENCE_KEYS[modId];
-        if (keys) {
+        if (keys && !(mod as any).noDateRange) {
           persistScraperPeriod(keys, startDate, endDate);
         }
 
@@ -230,7 +244,7 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
           [modId]: { 
             status: 'success', 
             lastUpdate: formattedNow, 
-            period: { 
+            period: (mod as any).noDateRange ? null : { 
               start: startDate.toLocaleDateString('en-GB').replace(/\//g, '-'), 
               end: endDate.toLocaleDateString('en-GB').replace(/\//g, '-') 
             },
@@ -310,16 +324,25 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
   return (
     <div className="w-full flex-1 min-h-0 overflow-hidden flex flex-col gap-6 animate-in fade-in duration-500">
       {/* Header Section */}
-      <DateRangeCard
-        title="Rentang Tanggal"
-        startDate={startDate}
-        endDate={endDate}
-        onStartDateChange={setStartDate}
-        onEndDateChange={setEndDate}
-        onFetch={runBatchSync}
-        isFetching={isBatchProcessing}
-        fetchText="Mulai Scrape Seluruh Modul"
-      />
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="flex-1 min-w-[280px]">
+          <DateRangeCard
+            title="Rentang Tanggal"
+            startDate={startDate}
+            endDate={endDate}
+            onStartDateChange={setStartDate}
+            onEndDateChange={setEndDate}
+            onFetch={runBatchSync}
+            isFetching={isBatchProcessing}
+            fetchText="Mulai Scrape Seluruh Modul"
+          />
+        </div>
+      </div>
+
+      {/* Log Aktivitas Button */}
+      <div className="flex items-center gap-2 shrink-0 px-1">
+        <ViewActivityLogLink className="mb-1" />
+      </div>
 
       {/* Grouped Modules */}
       <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar min-h-0 pb-10 flex flex-col gap-10">

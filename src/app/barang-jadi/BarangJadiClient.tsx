@@ -195,6 +195,11 @@ export default function BarangJadiClient() {
         persistScraperPeriod({ stateKey: 'barangJadiState', periodKey: 'BarangJadiClient_scrapedPeriod' }, startDate, endDate);
         setRefreshKey(prev => prev + 1);
         localStorage.setItem('sintak_data_updated', Date.now().toString());
+        fetch('/api/activity-log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action_type: 'SCRAPE', table_name: 'barang_jadi', message: `Scrape barang jadi berhasil: ${totalScraped} baris (${startStr} - ${endStr}).`, raw_data: JSON.stringify({ total: totalScraped, start: startStr, end: endStr }) }),
+        }).catch(() => {});
         setDialog({ isOpen: true, type: 'success', title: 'Berhasil', message: `Berhasil menarik ${totalScraped} data Penerimaan Barang Hasil Produksi.` });
       }
     } finally {
@@ -463,7 +468,7 @@ export default function BarangJadiClient() {
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
         <div className="flex flex-col gap-3 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
-            <ScrapingHeader title="Hasil Scrapping Penerimaan Barang Hasil Produksi" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
+            <ScrapingHeader title="Hasil Scrapping Penerimaan Barang Hasil Produksi" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} activityLogTable="barang_jadi" />
 
             {loading && data && data.length > 0 && (
               <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">

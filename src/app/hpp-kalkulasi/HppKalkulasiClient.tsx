@@ -293,7 +293,7 @@ export default function HppKalkulasiClient() {
 
     const processChunk = async (chunk: any) => {
       try {
-        const res = await fetch(`/api/scrape-orders?start=${chunk.start}&end=${chunk.end}&metaStart=${fullStart}&metaEnd=${fullEnd}&silent=true`);
+        const res = await fetch(`/api/scrape-orders?start=${chunk.start}&end=${chunk.end}&metaStart=${chunk.start}&metaEnd=${chunk.end}&silent=true`);
         if (res.ok) { successCount++; const json = await res.json(); totalScraped += (json.total || 0); }
       } catch {}
       finally {
@@ -320,6 +320,15 @@ export default function HppKalkulasiClient() {
         localStorage.setItem('HppKalkulasi_lastUpdated', now.toISOString());
         setRefreshKey(k => k + 1);
         localStorage.setItem('sintak_data_updated', Date.now().toString());
+        fetch('/api/activity-log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action_type: 'SCRAPE', table_name: 'orders',
+            message: `Scrape orders berhasil: ${totalScraped} baris (${fullStart} - ${fullEnd}).`,
+            raw_data: JSON.stringify({ total: totalScraped, start: fullStart, end: fullEnd })
+          })
+        });
         setDialog({
           isOpen: true, type: 'success', title: 'Berhasil',
           message: `Berhasil menarik ${totalScraped} Order Produksi.\nNama order baru telah ditambahkan ke tabel HPP Kalkulasi.`,

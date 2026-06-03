@@ -9,6 +9,9 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "50");
     const offset = (page - 1) * limit;
+    const all = searchParams.get("all") === "true";
+
+    const activeFilter = all ? "" : "AND is_active = 1";
 
     let sqlData = "";
     let sqlTotal = "";
@@ -26,8 +29,8 @@ export async function GET(request: NextRequest) {
 
             if (ftsMatch.rows.length > 0) {
                 const ids = ftsMatch.rows.map(r => r.id).join(',');
-                sqlData = `SELECT * FROM employees WHERE id IN (${ids}) AND is_active = 1 ORDER BY id ASC LIMIT ? OFFSET ?`;
-                sqlTotal = `SELECT COUNT(*) as count FROM employees WHERE id IN (${ids}) AND is_active = 1`;
+                sqlData = `SELECT * FROM employees WHERE id IN (${ids}) ${activeFilter} ORDER BY id ASC LIMIT ? OFFSET ?`;
+                sqlTotal = `SELECT COUNT(*) as count FROM employees WHERE id IN (${ids}) ${activeFilter}`;
                 argsData = [limit, offset];
                 argsTotal = [];
             }
@@ -35,22 +38,22 @@ export async function GET(request: NextRequest) {
 
           if (!sqlData) {
             const qPattern = `%${search}%`;
-            sqlData = `SELECT * FROM employees WHERE is_active = 1 AND (name LIKE ? OR position LIKE ? OR employee_no LIKE ? OR department LIKE ?) ORDER BY id ASC LIMIT ? OFFSET ?`;
-            sqlTotal = `SELECT COUNT(*) as count FROM employees WHERE is_active = 1 AND (name LIKE ? OR position LIKE ? OR employee_no LIKE ? OR department LIKE ?)`;
+            sqlData = `SELECT * FROM employees WHERE 1=1 ${activeFilter} AND (name LIKE ? OR position LIKE ? OR employee_no LIKE ? OR department LIKE ?) ORDER BY id ASC LIMIT ? OFFSET ?`;
+            sqlTotal = `SELECT COUNT(*) as count FROM employees WHERE 1=1 ${activeFilter} AND (name LIKE ? OR position LIKE ? OR employee_no LIKE ? OR department LIKE ?)`;
             argsData = [qPattern, qPattern, qPattern, qPattern, limit, offset];
             argsTotal = [qPattern, qPattern, qPattern, qPattern];
           }
       } catch {
           // Fallback if FTS table not ready
           const qPattern = `%${search}%`;
-          sqlData = `SELECT * FROM employees WHERE is_active = 1 AND (name LIKE ? OR position LIKE ? OR employee_no LIKE ? OR department LIKE ?) ORDER BY id ASC LIMIT ? OFFSET ?`;
-          sqlTotal = `SELECT COUNT(*) as count FROM employees WHERE is_active = 1 AND (name LIKE ? OR position LIKE ? OR employee_no LIKE ? OR department LIKE ?)`;
+          sqlData = `SELECT * FROM employees WHERE 1=1 ${activeFilter} AND (name LIKE ? OR position LIKE ? OR employee_no LIKE ? OR department LIKE ?) ORDER BY id ASC LIMIT ? OFFSET ?`;
+          sqlTotal = `SELECT COUNT(*) as count FROM employees WHERE 1=1 ${activeFilter} AND (name LIKE ? OR position LIKE ? OR employee_no LIKE ? OR department LIKE ?)`;
           argsData = [qPattern, qPattern, qPattern, qPattern, limit, offset];
           argsTotal = [qPattern, qPattern, qPattern, qPattern];
       }
     } else {
-      sqlData = "SELECT * FROM employees WHERE is_active = 1 ORDER BY id ASC LIMIT ? OFFSET ?";
-      sqlTotal = "SELECT COUNT(*) as count FROM employees WHERE is_active = 1";
+      sqlData = `SELECT * FROM employees WHERE 1=1 ${activeFilter} ORDER BY id ASC LIMIT ? OFFSET ?`;
+      sqlTotal = `SELECT COUNT(*) as count FROM employees WHERE 1=1 ${activeFilter}`;
       argsData = [limit, offset];
       argsTotal = [];
     }

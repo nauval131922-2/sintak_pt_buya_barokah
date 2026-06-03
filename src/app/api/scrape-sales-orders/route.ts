@@ -182,12 +182,15 @@ export async function GET(req: NextRequest) {
       }
     ], "write");
 
-    await logActivity(
-      "SCRAPE",
-      "sales_orders",
-      `Scrape sales order berhasil: ${finalRecords.length} baris (${metaStart} - ${metaEnd}).`,
-      { total: finalRecords.length, start: metaStart, end: metaEnd, scrapedPeriod: { start: metaStart, end: metaEnd } }
-    );
+    const isSilent = searchParams.get('silent') === 'true';
+    if (!isSilent) {
+      await logActivity(
+        "SCRAPE",
+        "sales_orders",
+        `Scrape sales order berhasil: ${finalRecords.length} baris (${metaStart} - ${metaEnd}).`,
+        { total: finalRecords.length, start: metaStart, end: metaEnd, scrapedPeriod: { start: metaStart, end: metaEnd } }
+      );
+    }
 
     return NextResponse.json({ 
       success: true, 

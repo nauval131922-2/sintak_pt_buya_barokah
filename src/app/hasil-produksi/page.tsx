@@ -8,8 +8,8 @@ export const metadata = {
 
 export default function HasilProduksiPage() {
   return (
-    <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-2 duration-700">
-      <div id="sticky-page-header" className="sticky -top-6 z-[80] bg-[var(--bg-deep)] py-6 -mt-6 -mx-4 px-4 xl:-mx-8 xl:px-8 relative">
+    <div className="flex flex-col h-full animate-in fade-in slide-in-from-bottom-2 duration-700">
+      <div id="sticky-page-header" className="sticky -top-6 z-[80] bg-[var(--bg-deep)] py-6 -mt-6 -mx-4 px-4 xl:-mx-8 xl:px-8 relative shrink-0">
         {/* Extend background upward to prevent content leaking above sticky header */}
         <div className="absolute inset-x-0 -top-16 h-16 bg-[var(--bg-deep)]" />
         <PageHeader 
@@ -18,7 +18,9 @@ export default function HasilProduksiPage() {
         />
       </div>
       
-      <HasilProduksiClient />
+      <div className="flex-1 min-h-0">
+        <HasilProduksiClient />
+      </div>
     </div>
   );
 }

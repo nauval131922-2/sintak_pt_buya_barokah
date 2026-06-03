@@ -30,6 +30,10 @@ interface SearchableDropdownProps {
   id: string;
   /** Maximum number of items to display at once */
   maxDisplay?: number;
+  /** Optional display label per value (e.g. username → full name) */
+  itemLabels?: Record<string, string>;
+  /** Compact trigger height for dense toolbars */
+  compact?: boolean;
 }
 
 export default function SearchableDropdown({
@@ -46,6 +50,8 @@ export default function SearchableDropdown({
   className = '',
   id,
   maxDisplay = 50,
+  itemLabels,
+  compact = false,
 }: SearchableDropdownProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -55,13 +61,18 @@ export default function SearchableDropdown({
   const searchRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // All items including the "all" entry
-  const allItems = ['', ...items];
-  const filtered = allItems.filter(i =>
-    (i === '' ? allLabel : i).toLowerCase().includes(query.toLowerCase())
-  ).slice(0, maxDisplay);
+  const labelFor = (item: string) => {
+    if (item === '') return allLabel;
+    return itemLabels?.[item] ?? String(item);
+  };
 
-  const displayLabel = value === '' ? (placeholder ?? allLabel) : value;
+  // All items including the "all" entry
+  const allItems = ['', ...items.map(i => String(i))];
+  const filtered = allItems
+    .filter((i) => labelFor(i).toLowerCase().includes(query.toLowerCase()))
+    .slice(0, maxDisplay);
+
+  const displayLabel = value === '' ? (placeholder ?? allLabel) : labelFor(value);
 
   // Close on outside click
   useEffect(() => {
@@ -151,7 +162,7 @@ export default function SearchableDropdown({
         aria-expanded={open}
         aria-controls={`dropdown-panel-${id}`}
         className={`
-          relative w-full h-11 pl-10 pr-10 rounded-lg border transition-all text-[13px] font-bold flex items-center justify-between shadow-sm
+          relative w-full ${compact ? 'h-9 pl-9 pr-9 text-[11px]' : 'h-11 pl-10 pr-10 text-[13px]'} rounded-lg border transition-all font-bold flex items-center justify-between shadow-sm
           ${open
             ? 'bg-white border-green-500 ring-4 ring-green-500/5'
             : 'bg-gray-50 border-gray-100 hover:bg-white hover:border-gray-200'}
@@ -219,9 +230,9 @@ export default function SearchableDropdown({
                       ? 'bg-gray-100 text-gray-900'
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
                   `}
-                  title={item === '' ? allLabel : item}
+                  title={labelFor(item)}
                 >
-                  {item === '' ? allLabel : item}
+                  {labelFor(item)}
                 </button>
               ))
             )}

@@ -46,7 +46,7 @@ export default async function RootLayout({
     photo: userPhoto || session.photo, // Prioritize fresh photo from DB
   } : null;
 
-  // Fetch permissions for the current user's role
+  // Fetch permissions for the current user's role (di-cache oleh React cache, jadi hanya 1x query per request)
   const permissions = session?.role ? await getRolePermissions(session.role) : {};
 
   return (

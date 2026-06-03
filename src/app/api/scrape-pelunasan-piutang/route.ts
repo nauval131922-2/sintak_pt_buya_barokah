@@ -5,6 +5,7 @@ import { getErrorMessage } from '@/lib/api-utils';
 import { ScrapedRecord, BatchOperation } from '@/lib/scraper-utils';
 import { getSession as getScraperSession, clearCachedSession } from '@/lib/session-cache';
 import { encodeScrapedPeriod, getScrapedPeriodSettingKey } from '@/lib/server-scraped-period';
+import { logActivity } from '@/lib/activity';
 
 const API_EMAIL = process.env.SCRAPER_EMAIL || "nauval"; 
 const API_PASSWORD = process.env.SCRAPER_PASSWORD || "312admin2";
@@ -137,6 +138,16 @@ export async function GET(req: NextRequest) {
         args: [getScrapedPeriodSettingKey('last_scrape_pelunasan_piutang'), encodeScrapedPeriod({ start: metaStart, end: metaEnd })]
       }
     ], "write");
+
+    const silent = searchParams.get('silent') === 'true';
+    if (!silent) {
+      await logActivity(
+        'SCRAPE',
+        'pelunasan_piutang',
+        `Scrape pelunasan piutang berhasil: ${filteredRows.length} baris (${metaStart} - ${metaEnd}).`,
+        { total: filteredRows.length, start: metaStart, end: metaEnd, scrapedPeriod: { start: metaStart, end: metaEnd } }
+      );
+    }
 
     return NextResponse.json({
       success: true,

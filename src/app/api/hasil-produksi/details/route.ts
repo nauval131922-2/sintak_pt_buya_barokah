@@ -126,10 +126,11 @@ export async function GET(request: NextRequest) {
     });
 
     // 3. Group jurnal by Job (since they are now sorted by job)
-    const groupedJurnal: Array<{ date: string, items: any[], totalRealisasi: number, totalRijek: number }> = [];
+    const groupedJurnal: Array<{ date: string, items: any[], totalRealisasi: number, totalRijek: number, totalTarget: number }> = [];
     let currentGroup: any = null;
     let grandTotalRealisasi = 0;
     let grandTotalRijek = 0;
+    let grandTotalTarget = 0;
 
     jurnalRows.forEach(row => {
       const job = row.jenis_pekerjaan_2 || '';
@@ -139,15 +140,18 @@ export async function GET(request: NextRequest) {
           date: jobFirstDate[job], // Use first date as the group date
           items: [], 
           totalRealisasi: 0, 
-          totalRijek: 0 
+          totalRijek: 0,
+          totalTarget: 0
         };
         groupedJurnal.push(currentGroup);
       }
       currentGroup.items.push(row);
-      currentGroup.totalRealisasi += Number(row.realisasi || 0);
-      currentGroup.totalRijek += Number(row.rijek || 0);
-      grandTotalRealisasi += Number(row.realisasi || 0);
-      grandTotalRijek += Number(row.rijek || 0);
+      currentGroup.totalRealisasi += Number(row.realisasi) || 0;
+      currentGroup.totalRijek += Number(row.rijek) || 0;
+      currentGroup.totalTarget += Number(row.target) || 0;
+      grandTotalRealisasi += Number(row.realisasi) || 0;
+      grandTotalRijek += Number(row.rijek) || 0;
+      grandTotalTarget += Number(row.target) || 0;
     });
 
     return NextResponse.json({ 
@@ -157,6 +161,7 @@ export async function GET(request: NextRequest) {
       grandTotal,
       grandTotalRealisasi,
       grandTotalRijek,
+      grandTotalTarget,
       unit: bjRows[0]?.satuan || '',
       availableBagian,
       availablePekerjaan

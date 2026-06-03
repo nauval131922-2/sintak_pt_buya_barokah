@@ -162,7 +162,7 @@ export default function SphInClient() {
     let successCount = 0; let totalScraped = 0; let completedChunks = 0;
     const processChunk = async (chunk: any) => {
       try {
-        const res = await fetch(`/api/scrape-sph-in?start=${chunk.start}&end=${chunk.end}&metaStart=${startStr}&metaEnd=${endStr}`);
+        const res = await fetch(`/api/scrape-sph-in?start=${chunk.start}&end=${chunk.end}&metaStart=${startStr}&metaEnd=${endStr}&silent=true`);
         if (res.ok) {
           successCount++; const json = await res.json(); totalScraped += (json.total || 0);
         }
@@ -181,6 +181,11 @@ export default function SphInClient() {
         persistScraperPeriod({ stateKey: 'sphInState', periodKey: 'SphInClient_scrapedPeriod' }, startDate, endDate);
         setRefreshKey(prev => prev + 1);
         localStorage.setItem('sintak_data_updated', Date.now().toString());
+        fetch('/api/activity-log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action_type: 'SCRAPE', table_name: 'sph_in', message: `Scrape SPH In berhasil: ${totalScraped} baris (${startStr} - ${endStr}).`, raw_data: JSON.stringify({ total: totalScraped, start: startStr, end: endStr }) }),
+        }).catch(() => {});
         setDialog({ isOpen: true, type: 'success', title: 'Berhasil', message: `Berhasil menarik ${totalScraped} data SPH Masuk.` });
       }
     } finally { setIsBatching(false); setLoading(false); }
@@ -295,7 +300,7 @@ export default function SphInClient() {
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
-            <ScrapingHeader title="Hasil Scrapping SPH Masuk" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
+            <ScrapingHeader title="Hasil Scrapping SPH Masuk" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} activityLogTable="sph_in" />
 
             {loading && data && data.length > 0 && (
               <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse leading-none">
