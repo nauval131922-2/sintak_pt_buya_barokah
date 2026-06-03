@@ -48,7 +48,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { ids } = await request.json();
+    const { ids, all } = await request.json();
+    if (all) {
+      const countResult = await db.execute(`SELECT COUNT(*) as count FROM jurnal_harian_produksi WHERE deleted_at IS NOT NULL`);
+      const totalCount = Number((countResult.rows[0] as any)?.count ?? 0);
+
+      await db.execute(`UPDATE jurnal_harian_produksi SET deleted_at = NULL, updated_at = CURRENT_TIMESTAMP WHERE deleted_at IS NOT NULL`);
+
+      await db.execute({
+        sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
+              VALUES (?, ?, ?, ?, ?, ?)`,
+        args: ['RESTORE', 'jurnal_harian_produksi', 0, `Restore semua ${totalCount} baris Jurnal Harian Produksi dari Trash`, JSON.stringify({ all: true }), session.username || 'System'],
+      });
+
+      return NextResponse.json({ success: true, restoredCount: totalCount });
+    }
+
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
       return NextResponse.json({ error: 'IDs tidak valid' }, { status: 400 });
     }
@@ -66,6 +81,52 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ success: true, restoredCount: ids.length });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+// DELETE: hapus permanen data yang sudah di-soft delete
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getSession();
+    if (!session?.userId || session.role !== 'Super Admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const { ids, all } = await request.json();
+    if (all) {
+      const countResult = await db.execute(`SELECT COUNT(*) as count FROM jurnal_harian_produksi WHERE deleted_at IS NOT NULL`);
+      const totalCount = Number((countResult.rows[0] as any)?.count ?? 0);
+
+      await db.execute(`DELETE FROM jurnal_harian_produksi WHERE deleted_at IS NOT NULL`);
+
+      await db.execute({
+        sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
+              VALUES (?, ?, ?, ?, ?, ?)`,
+        args: ['HARD_DELETE', 'jurnal_harian_produksi', 0, `Hapus permanen semua ${totalCount} baris Jurnal Harian Produksi dari Trash`, JSON.stringify({ all: true }), session.username || 'System'],
+      });
+
+      return NextResponse.json({ success: true, deletedCount: totalCount });
+    }
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json({ error: 'IDs tidak valid' }, { status: 400 });
+    }
+
+    const placeholders = ids.map(() => '?').join(', ');
+    await db.execute({
+      sql: `DELETE FROM jurnal_harian_produksi WHERE id IN (${placeholders}) AND deleted_at IS NOT NULL`,
+      args: ids,
+    });
+
+    await db.execute({
+      sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
+            VALUES (?, ?, ?, ?, ?, ?)`,
+      args: ['HARD_DELETE', 'jurnal_harian_produksi', 0, `Hapus permanen ${ids.length} baris Jurnal Harian Produksi dari Trash`, JSON.stringify({ ids }), session.username || 'System'],
+    });
+
+    return NextResponse.json({ success: true, deletedCount: ids.length });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

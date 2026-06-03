@@ -322,18 +322,20 @@ export const getProductionDashboardSummary = cache(async () => {
     {
       sql: `
         SELECT
-          id, tgl, shift, nama_karyawan, no_order, nama_order,
-          jenis_pekerjaan, jenis_pekerjaan_2, bagian, target, realisasi,
-          no_order_2, nama_order_2, created_at,
-          COALESCE(updated_by, created_by) AS recorded_by,
+          j.id, j.tgl, j.shift, j.nama_karyawan, j.no_order, j.nama_order,
+          j.jenis_pekerjaan, j.jenis_pekerjaan_2, j.bagian, j.target, j.realisasi,
+          j.no_order_2, j.nama_order_2, j.created_at,
+          COALESCE(j.updated_by, j.created_by) AS recorded_by,
+          u.name AS recorded_by_name,
           CASE
-            WHEN deleted_at IS NOT NULL THEN 'DELETE'
-            WHEN updated_at IS NOT NULL THEN 'UPDATE'
+            WHEN j.deleted_at IS NOT NULL THEN 'DELETE'
+            WHEN j.updated_at IS NOT NULL THEN 'UPDATE'
             ELSE 'INSERT'
           END AS action_type,
-          COALESCE(updated_at, deleted_at, created_at) AS input_at
-        FROM jurnal_harian_produksi
-        ORDER BY COALESCE(updated_at, deleted_at, created_at) DESC, id DESC
+          COALESCE(j.updated_at, j.deleted_at, j.created_at) AS input_at
+        FROM jurnal_harian_produksi j
+        LEFT JOIN users u ON u.username = COALESCE(j.updated_by, j.created_by)
+        ORDER BY COALESCE(j.updated_at, j.deleted_at, j.created_at) DESC, j.id DESC
         LIMIT 8
       `
     },
@@ -359,9 +361,7 @@ export const getProductionDashboardSummary = cache(async () => {
       count: Number(row.count || 0)
     })),
     latestJournals: results[8].rows.map((row: any) => ({
-      ...row,
-      target: Number(row.target || 0),
-      realisasi: Number(row.realisasi || 0)
+      ...row
     })),
     todayDate: today,
     monthStart: startOfMonth,
@@ -501,6 +501,16 @@ export async function getLastMasterPekerjaanImport() {
   }
 }
 
+export async function getLastMasterPekerjaanJurnalProduksiImport() {
+  try {
+    const result = await db.execute(`SELECT * FROM activity_logs WHERE table_name = 'master_pekerjaan_jurnal_produksi' AND action_type = 'UPLOAD' ORDER BY id DESC LIMIT 1`);
+    return result.rows.length > 0 ? sanitizeData({ ...result.rows[0] }) : null;
+  } catch (err) {
+    console.error('Failed to get last master pekerjaan jurnal produksi import log', err);
+    return null;
+  }
+}
+
 export async function getLastJurnalHarianImport() {
   try {
     const result = await db.execute(`SELECT * FROM activity_logs WHERE table_name = 'jurnal_harian_produksi' AND action_type = 'UPLOAD' ORDER BY id DESC LIMIT 1`);
@@ -545,5 +555,98 @@ export async function getLiveRecord(tableName: string, recordId: number | string
   } catch (err) {
     console.error('Failed to get live record', err);
     return null;
+  }
+}
+
+export async function cleanupActivityLogs(daysToKeep: number) {
+  const session = await getSession();
+  const { canAdminActivityLog } = await import('@/lib/activity-log-permissions');
+  if (!session || !(await canAdminActivityLog(session.role))) {
+    throw new Error('Unauthorized: Hanya role dengan hak Log Aktivitas (Kelola) yang diizinkan menghapus log.');
+  }
+
+  const { revalidatePath } = await import('next/cache');
+  const fs = await import('fs');
+  const path = await import('path');
+
+  const isDev = process.env.NODE_ENV === 'development';
+  const isVercel = !!process.env.VERCEL;
+  const useRemote = (isVercel || process.env.USE_REMOTE_DB === 'true') && !!process.env.TURSO_DATABASE_URL;
+
+  let dbPath = '';
+  let initialSize = 0;
+
+  if (!useRemote) {
+    const defaultDbName = isDev ? 'database_dev.sqlite' : 'database.sqlite';
+    dbPath = path.join(process.cwd(), process.env.DB_PATH || defaultDbName);
+    if (fs.existsSync(dbPath)) {
+      initialSize = fs.statSync(dbPath).size / (1024 * 1024); // in MB
+    }
+  }
+
+  try {
+    // 1. Get count before
+    const countBeforeRes = await db.execute(`SELECT COUNT(*) as count FROM activity_logs`);
+    const countBefore = Number((countBeforeRes.rows[0] as any).count ?? 0);
+
+    // 2. Delete logs older than daysToKeep
+    await db.execute({
+      sql: `DELETE FROM activity_logs WHERE created_at < date('now', ?)`,
+      args: [`-${daysToKeep} days`]
+    });
+
+    // 3. Get count after
+    const countAfterRes = await db.execute(`SELECT COUNT(*) as count FROM activity_logs`);
+    const countAfter = Number((countAfterRes.rows[0] as any).count ?? 0);
+    const deletedCount = countBefore - countAfter;
+
+    // 4. Run VACUUM
+    const startVacuum = Date.now();
+    await db.execute(`VACUUM`);
+    const vacuumDurationSec = Number(((Date.now() - startVacuum) / 1000).toFixed(1));
+
+    // 5. Get size after
+    let finalSize = 0;
+    let savedSize = 0;
+    if (!useRemote && dbPath && fs.existsSync(dbPath)) {
+      finalSize = fs.statSync(dbPath).size / (1024 * 1024);
+      savedSize = initialSize - finalSize;
+    }
+
+    // 6. Record activity log for maintenance
+    await db.execute({
+      sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by) 
+            VALUES (?, ?, ?, ?, ?, ?)`,
+      args: [
+        'MAINTENANCE', 
+        'activity_logs', 
+        0, 
+        `Pembersihan log aktivitas berhasil dilakukan (retensi ${daysToKeep} hari terakhir). Terhapus: ${deletedCount.toLocaleString('id-ID')} baris.`, 
+        JSON.stringify({ 
+          daysToKeep, 
+          deletedCount, 
+          spaceSavedMb: savedSize.toFixed(2), 
+          vacuumDurationSec 
+        }), 
+        session.username || 'System'
+      ]
+    });
+
+    revalidatePath('/dashboard');
+    revalidatePath('/log-aktivitas');
+
+    return {
+      success: true,
+      deletedCount,
+      countBefore,
+      countAfter,
+      initialSizeMb: initialSize,
+      finalSizeMb: finalSize,
+      savedSizeMb: savedSize,
+      vacuumDurationSec,
+    };
+  } catch (error: any) {
+    console.error('[CLEANUP ACTION] Error:', error);
+    throw new Error(`Gagal melakukan pembersihan: ${error.message}`);
   }
 }

@@ -60,19 +60,19 @@ export async function initSchema(db: any) {
 
     for (const col of columns) {
       try {
-        await db.execute(`ALTER TABLE ${col.table} ADD COLUMN ${col.column} ${col.type}`);
+        await executor.execute(`ALTER TABLE ${col.table} ADD COLUMN ${col.column} ${col.type}`);
         console.log(`[DB] Migration: Added column ${col.column} to ${col.table}`);
-      } catch (e) {}
+      } catch {}
     }
 
     for (let i = 1; i <= 7; i++) {
       try {
-        await db.execute(`ALTER TABLE master_pekerjaan ADD COLUMN ket_${i} TEXT`);
-      } catch (e) {}
+        await executor.execute(`ALTER TABLE master_pekerjaan ADD COLUMN ket_${i} TEXT`);
+      } catch {}
     }
     // ----------------------------
 
-  } catch (e) {
+  } catch {
     // Ignore pragma errors
   }
 
@@ -294,7 +294,7 @@ export async function initSchema(db: any) {
     );`,
     `CREATE TABLE IF NOT EXISTS sales_orders (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      faktur TEXT UNIQUE NOT NULL,
+      faktur TEXT NOT NULL,
       kd_pelanggan TEXT,
       tgl TEXT,
       kd_barang TEXT,
@@ -568,6 +568,13 @@ export async function initSchema(db: any) {
       keterangan TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`,
+    `CREATE TABLE IF NOT EXISTS master_pekerjaan_jurnal_produksi (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      category TEXT NOT NULL,
+      name TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(category, name)
+    );`,
     `CREATE TABLE IF NOT EXISTS jurnal_harian_produksi (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       posisi TEXT,
@@ -593,6 +600,8 @@ export async function initSchema(db: any) {
       kendala TEXT,
       bagian TEXT,
       is_manual_input INTEGER DEFAULT 0,
+      nama_order_manual TEXT,
+      nama_order_manual_2 TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT NULL,
       deleted_at DATETIME DEFAULT NULL,
@@ -855,7 +864,9 @@ export async function initSchema(db: any) {
       recid TEXT,
       raw_data TEXT,
       fetched_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );`
+    );`,
+    "ALTER TABLE jurnal_harian_produksi ADD COLUMN nama_order_manual TEXT;",
+    "ALTER TABLE jurnal_harian_produksi ADD COLUMN nama_order_manual_2 TEXT;"
   ];
 
   const executor = db.client || db;
@@ -901,7 +912,6 @@ export async function initSchema(db: any) {
           "INSERT OR IGNORE INTO role_permissions (role, module_key, can_access) VALUES ('Admin', 'penjualan_pengiriman', 1);",
           "INSERT OR IGNORE INTO role_permissions (role, module_key, can_access) VALUES ('Admin', 'karyawan', 1);",
           "INSERT OR IGNORE INTO role_permissions (role, module_key, can_access) VALUES ('Admin', 'hpp_kalkulasi', 1);",
-          "INSERT OR IGNORE INTO role_permissions (role, module_key, can_access) VALUES ('Admin', 'statistik', 1);",
           "INSERT OR IGNORE INTO role_permissions (role, module_key, can_access) VALUES ('Admin', 'catat_kesalahan', 1);",
           "INSERT OR IGNORE INTO role_permissions (role, module_key, can_access) VALUES ('Admin', 'tracking_manufaktur', 1);"
         ], "write");
@@ -913,8 +923,73 @@ export async function initSchema(db: any) {
     }
   }
 
+  // 2.7 Fix: Hapus UNIQUE constraint pada kolom faktur di sales_orders
+  // Constraint ini mencegah satu faktur punya banyak baris (beda kd_barang).
+  // Unique key yang benar adalah composite (faktur, kd_barang, tgl) via idx_sales_orders_unique.
+  try {
+    if (executor.execute) {
+      // Cek apakah tabel sales_orders_new sudah ada (artinya migration ini sudah pernah jalan sebagian)
+      const tableCheck = await executor.execute(
+        `SELECT name FROM sqlite_master WHERE type='table' AND name='sales_orders'`
+      );
+      if (tableCheck.rows.length > 0) {
+        // Cek apakah kolom faktur masih punya UNIQUE constraint dengan melihat index
+        const indexCheck = await executor.execute(
+          `SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='sales_orders' AND name='sqlite_autoindex_sales_orders_1'`
+        );
+        if (indexCheck.rows.length > 0) {
+          // Masih ada auto-index UNIQUE pada faktur, perlu recreate
+          await executor.execute(`
+            CREATE TABLE IF NOT EXISTS sales_orders_new (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              faktur TEXT NOT NULL,
+              kd_pelanggan TEXT,
+              tgl TEXT,
+              kd_barang TEXT,
+              faktur_sph TEXT,
+              top_hari TEXT,
+              harga REAL,
+              qty REAL,
+              satuan TEXT,
+              jumlah REAL,
+              ppn REAL,
+              faktur_prd TEXT,
+              nama_prd TEXT,
+              nama_pelanggan TEXT,
+              dati_2 TEXT,
+              gol_barang TEXT,
+              spesifikasi TEXT,
+              keterangan TEXT,
+              raw_data TEXT,
+              created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+          `);
+          await executor.execute(`INSERT OR IGNORE INTO sales_orders_new SELECT * FROM sales_orders`);
+          await executor.execute(`DROP TABLE sales_orders`);
+          await executor.execute(`ALTER TABLE sales_orders_new RENAME TO sales_orders`);
+          // Recreate composite unique index
+          await executor.execute(
+            `CREATE UNIQUE INDEX IF NOT EXISTS idx_sales_orders_unique ON sales_orders(faktur, kd_barang, tgl)`
+          );
+          console.log('[DB] Migration 2.7: sales_orders UNIQUE(faktur) constraint removed, composite index restored.');
+        }
+      }
+    }
+  } catch (e: any) {
+    console.warn('[DB] Migration 2.7 (sales_orders recreate) failed:', e.message);
+  }
+
   // 3. Performance Optimization
   await db.batch([
+    "DROP TRIGGER IF EXISTS trg_jurnal_harian_produksi_insert;",
+    "DROP TRIGGER IF EXISTS trg_jurnal_harian_produksi_update;",
+    "DROP TRIGGER IF EXISTS trg_jurnal_harian_produksi_delete;",
+    "DROP TRIGGER IF EXISTS trg_rek_akuntansi_insert;",
+    "DROP TRIGGER IF EXISTS trg_rek_akuntansi_update;",
+    "DROP TRIGGER IF EXISTS trg_rek_akuntansi_delete;",
+    "DROP TRIGGER IF EXISTS trg_hpp_kalkulasi_insert;",
+    "DROP TRIGGER IF EXISTS trg_hpp_kalkulasi_update;",
+    "DROP TRIGGER IF EXISTS trg_hpp_kalkulasi_delete;",
     "CREATE INDEX IF NOT EXISTS idx_infractions_date ON infractions(date);",
     "CREATE INDEX IF NOT EXISTS idx_infractions_faktur ON infractions(faktur);",
     "CREATE INDEX IF NOT EXISTS idx_infractions_emp_id ON infractions(employee_id);",
@@ -1078,7 +1153,7 @@ export async function initSchema(db: any) {
            await db.batch([
               "DELETE FROM employees_fts",
               `INSERT INTO employees_fts(id, rowid, name, position, department, employee_no)
-               SELECT id, id, name, position, department, employee_no FROM employees WHERE is_active = 1`
+                SELECT id, id, name, position, department, employee_no FROM employees`
            ], "write");
         }
 
@@ -1173,8 +1248,7 @@ export async function initSchema(db: any) {
 
           // Employees
           `DROP TRIGGER IF EXISTS trg_employees_fts_insert;`,
-          `CREATE TRIGGER trg_employees_fts_insert AFTER INSERT ON employees
-            WHEN NEW.is_active = 1 BEGIN
+          `CREATE TRIGGER trg_employees_fts_insert AFTER INSERT ON employees BEGIN
             INSERT INTO employees_fts(id, rowid, name, position, department, employee_no)
             VALUES (NEW.id, NEW.id, NEW.name, NEW.position, NEW.department, NEW.employee_no);
           END;`,
@@ -1182,8 +1256,7 @@ export async function initSchema(db: any) {
           `CREATE TRIGGER trg_employees_fts_update AFTER UPDATE ON employees BEGIN
             DELETE FROM employees_fts WHERE rowid = OLD.id;
             INSERT INTO employees_fts(id, rowid, name, position, department, employee_no)
-            SELECT NEW.id, NEW.id, NEW.name, NEW.position, NEW.department, NEW.employee_no
-            WHERE NEW.is_active = 1;
+            VALUES (NEW.id, NEW.id, NEW.name, NEW.position, NEW.department, NEW.employee_no);
           END;`,
           `DROP TRIGGER IF EXISTS trg_employees_fts_delete;`,
           `CREATE TRIGGER trg_employees_fts_delete AFTER DELETE ON employees BEGIN
@@ -1282,20 +1355,36 @@ export async function initSchema(db: any) {
  */
 async function initDynamicTriggers(db: any) {
   try {
+    const EXCLUDED_TABLES = [
+      'activity_logs', 'session_context', 'sqlite_sequence', 'system_settings',
+      'db_indexing_status', 'faktur_sequences', 'employees',
+      'jurnal_harian_produksi', 'jurnal_umum', 'orders', 'sopd', 'sopd_harga',
+      'bahan_baku', 'barang_jadi', 'sales_reports', 'sales_orders',
+      'bill_of_materials', 'purchase_requests', 'purchase_orders',
+      'penerimaan_pembelian', 'rekap_pembelian_barang', 'pelunasan_hutang',
+      'pelunasan_piutang', 'pengiriman', 'spph_out', 'sph_in', 'rek_akuntansi',
+      'hpp_kalkulasi'
+    ];
+
+    // Drop triggers for all excluded tables (cleanup from previous runs)
+    for (const tbl of EXCLUDED_TABLES) {
+      try {
+        await db.batch([
+          `DROP TRIGGER IF EXISTS trg_${tbl}_insert`,
+          `DROP TRIGGER IF EXISTS trg_${tbl}_update`,
+          `DROP TRIGGER IF EXISTS trg_${tbl}_delete`,
+        ], "write");
+      } catch (_) {}
+    }
+
+    const placeholders = EXCLUDED_TABLES.map(() => '?').join(', ');
     const tablesResult = await db.execute(
       `SELECT name FROM sqlite_master 
        WHERE type='table' 
        AND name NOT LIKE 'sqlite_%' 
        AND name NOT LIKE '%_fts%' 
-       AND name NOT IN (
-         'activity_logs', 'session_context', 'sqlite_sequence', 'system_settings', 
-         'db_indexing_status', 'faktur_sequences',
-         'jurnal_harian_produksi', 'jurnal_umum', 'sopd', 'sopd_harga', 
-         'bahan_baku', 'barang_jadi', 'sales_reports', 'sales_orders',
-         'bill_of_materials', 'purchase_requests', 'purchase_orders', 
-         'penerimaan_pembelian', 'rekap_pembelian_barang', 'pelunasan_hutang', 
-         'pelunasan_piutang', 'pengiriman', 'spph_out', 'sph_in'
-       )`
+       AND name NOT IN (${placeholders})`,
+      EXCLUDED_TABLES
     );
 
     const tables = tablesResult.rows.map((r: any) => r.name);
@@ -1348,7 +1437,7 @@ async function initDynamicTriggers(db: any) {
               WHEN '${table}' = 'users' AND (SELECT last_menu FROM session_context WHERE id = 1) = 'Pengaturan Profil' THEN 'Profil diperbarui'
               ELSE 'Update ' || '${table}' || ': ' || ${label}
             END, 
-            json_object(${dataCols}), 
+            json_object('before', json_object(${oldDataCols}), 'after', json_object(${dataCols})), 
             COALESCE((SELECT username FROM session_context WHERE id = 1), 'System')
           );
         END;`,

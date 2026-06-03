@@ -1,6 +1,7 @@
 // permissions.ts — No top-level 'use server' because this file also exports non-function constants.
 // Functions that mutate data use 'use server' inline (in their own invocation scope).
 
+import { cache } from 'react';
 import db from '@/lib/db';
 import { getSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
@@ -37,8 +38,9 @@ const MODULE_TO_ROUTE: Array<{ key: string; route: string }> = [
   { key: 'karyawan',              route: '/employees' },
   { key: 'hpp_kalkulasi',         route: '/hpp-kalkulasi' },
   { key: 'catat_kesalahan',       route: '/records' },
-  { key: 'statistik',             route: '/stats' },
   { key: 'tracking_manufaktur',   route: '/tracking-manufaktur' },
+  { key: 'activity_log_view',     route: '/log-aktivitas' },
+  { key: 'activity_log',          route: '/log-aktivitas' },
   { key: 'produksi_jhp',          route: '/jurnal-harian-produksi' },
 ];
 
@@ -59,7 +61,7 @@ export async function getFirstAccessibleRoute(role: string): Promise<string> {
 }
 
 // ─── Fetch all permissions for a given role ────────────────────────────────
-export async function getRolePermissions(role: string): Promise<PermissionMap> {
+export const getRolePermissions = cache(async (role: string): Promise<PermissionMap> => {
   // Super Admin always has full access — no DB lookup needed
   if (role === 'Super Admin') {
     return Object.fromEntries(MODULE_REGISTRY.map(m => [m.key, true]));
@@ -83,13 +85,18 @@ export async function getRolePermissions(role: string): Promise<PermissionMap> {
       map[m.key] = dbMap[m.key] !== undefined ? dbMap[m.key] : false;
     }
 
+    // Legacy activity_log → izin lihat (tanpa otomatis kelola)
+    if (dbMap.activity_log) {
+      map.activity_log_view = true;
+    }
+
     return map;
   } catch (error) {
     console.error('[PERMISSIONS] Failed to fetch role permissions:', error);
     // On error, return false access so users are not silently empowered on DB fail
     return Object.fromEntries(MODULE_REGISTRY.map(m => [m.key, false]));
   }
-}
+});
 
 // ─── Fetch permissions for all roles (for the matrix UI) ─────────────────────
 export async function getAllPermissions(): Promise<Record<string, PermissionMap>> {
@@ -129,16 +136,9 @@ export async function requirePermission(moduleKey: ModuleKey): Promise<void> {
   let isDenied = false;
 
   try {
-    const result = await db.execute({
-      sql: 'SELECT can_access FROM role_permissions WHERE role = ? AND module_key = ?',
-      args: [session.role, moduleKey],
-    });
-
-    const canAccess = result.rows[0];
-
-    // Akses hanya diberikan jika baris ada DAN can_access = 1
-    // Jika baris tidak ditemukan (role belum dikonfigurasi), akses DITOLAK (fail-close)
-    if (!canAccess || Number(canAccess.can_access) !== 1) {
+    // Pakai getRolePermissions yang sudah di-cache — hindari query DB terpisah
+    const permissions = await getRolePermissions(session.role);
+    if (!permissions[moduleKey]) {
       isDenied = true;
     }
   } catch (error) {

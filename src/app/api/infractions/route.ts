@@ -121,10 +121,10 @@ export async function POST(req: NextRequest) {
     // Parse Indonesian number format
     const jumlah = parseIndoNum(data.jumlah);
     const harga = parseIndoNum(data.harga);
-    const total = parseIndoNum(data.total);
+    const total = jumlah * harga;
 
-    if (isNaN(jumlah) || isNaN(harga) || isNaN(total)) {
-      return apiError('Format angka (jumlah/harga/total) tidak valid.', 400);
+    if (isNaN(jumlah) || isNaN(harga)) {
+      return apiError('Format angka (jumlah/harga) tidak valid.', 400);
     }
 
     const severity = (data.severity as string) || 'Low';

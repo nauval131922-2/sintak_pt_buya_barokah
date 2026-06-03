@@ -4,6 +4,7 @@ import db from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { createSession, destroySession, getSession } from '@/lib/session';
 import { getFirstAccessibleRoute } from '@/lib/permissions';
+import { logActivity } from '@/lib/activity';
 
 export async function login(username: string, password: string): Promise<{ success: boolean; message?: string; firstRoute?: string }> {
   console.log(`[AUTH] Login attempt for user: ${username}`);
@@ -53,6 +54,7 @@ export async function login(username: string, password: string): Promise<{ succe
     const firstRoute = await getFirstAccessibleRoute(user.role as string);
 
     console.log(`[AUTH] Login success for user: ${username}, redirecting to: ${firstRoute}`);
+    logActivity('LOGIN', 'users', `User ${username} berhasil login`, {}, username).catch(() => {});
     return { success: true, firstRoute };
   } catch (error) {
     console.error('[AUTH] Login error:', error);
@@ -61,6 +63,10 @@ export async function login(username: string, password: string): Promise<{ succe
 }
 
 export async function logout() {
+  const session = await getSession();
+  if (session?.username) {
+    logActivity('LOGOUT', 'users', `User ${session.username} logout`, {}, session.username).catch(() => {});
+  }
   await destroySession();
 }
 

@@ -96,14 +96,14 @@ export async function POST(request: NextRequest) {
       {
         sql: `INSERT INTO jurnal_harian_produksi (
                 posisi, absensi, tgl, shift, nama_karyawan, no_order, nama_order, jenis_pekerjaan, keterangan, target, 
-                realisasi, no_order_2, nama_order_2, jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, is_manual_input
+                realisasi, no_order_2, nama_order_2, jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, is_manual_input, created_by
               )
               SELECT 
                 posisi, absensi, ?, shift, nama_karyawan, no_order, nama_order, jenis_pekerjaan, keterangan, target,
-                0, '', '', '', '', 0, '', 0, 0, '', '', bagian, is_manual_input
+                0, '', '', '', '', 0, '', 0, 0, '', '', bagian, is_manual_input, ?
               FROM jurnal_harian_produksi
               WHERE ${whereSQL}`,
-        args: [toDate, ...filterArgs]
+        args: [toDate, session.username || 'System', ...filterArgs]
       }
     ], 'write');
 

@@ -48,9 +48,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const employeeId = parseInt(String(employee_id));
     const cleanJumlah = parseIndoNum(jumlah);
     const cleanHarga = parseIndoNum(harga);
-    const cleanTotal = parseIndoNum(total);
+    const cleanTotal = cleanJumlah * cleanHarga;
 
-    if (isNaN(cleanJumlah) || isNaN(cleanHarga) || isNaN(cleanTotal)) {
+    if (isNaN(cleanJumlah) || isNaN(cleanHarga)) {
       return NextResponse.json({ error: 'Format angka tidak valid.' }, { status: 400 });
     }
 

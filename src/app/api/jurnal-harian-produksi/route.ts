@@ -4,6 +4,16 @@ import { getSession } from "@/lib/session";
 
 export const dynamic = 'force-dynamic';
 
+const cleanNumberOrText = (val: any) => {
+  if (val === undefined || val === null || val === '') return '';
+  const str = String(val).trim();
+  // Cek jika murni angka dengan titik sebagai pemisah ribuan
+  if (/^[0-9]+(\.[0-9]+)*$/.test(str)) {
+    return Number(str.replace(/\./g, ''));
+  }
+  return str;
+};
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -17,9 +27,17 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get("endDate");
     const bagian = searchParams.get("bagian");
     const namaKaryawan = searchParams.get("namaKaryawan");
+    const noOrder = searchParams.get("noOrder");
+    const belumRealisasi = searchParams.get("belumRealisasi");
+    const needTotals = searchParams.get("needTotals") === 'true';
 
     let whereParts: string[] = [];
     let args: any[] = [];
+
+    if (belumRealisasi === 'true') {
+      // Sama dengan logika tombol "+" di tabel: belum realisasi jika semua field realisasi kosong
+      whereParts.push('((realisasi IS NULL OR realisasi = 0 OR realisasi = \'\') AND (no_order_2 IS NULL OR no_order_2 = \'\') AND (jenis_pekerjaan_2 IS NULL OR jenis_pekerjaan_2 = \'\'))');
+    }
 
     if (search) {
       whereParts.push(`(nama_karyawan LIKE ? OR nama_order LIKE ? OR no_order LIKE ? OR jenis_pekerjaan LIKE ? OR nama_order_2 LIKE ? OR no_order_2 LIKE ?)`);
@@ -42,6 +60,11 @@ export async function GET(request: NextRequest) {
       args.push(namaKaryawan);
     }
 
+    if (noOrder) {
+      whereParts.push(`(no_order = ? OR no_order_2 = ? OR nama_order = ? OR nama_order_2 = ?)`);
+      args.push(noOrder, noOrder, noOrder, noOrder);
+    }
+
     // Selalu filter soft-deleted
     whereParts.push('deleted_at IS NULL');
     const whereClause = whereParts.length > 0 ? `WHERE ${whereParts.join(' AND ')}` : '';
@@ -49,12 +72,14 @@ export async function GET(request: NextRequest) {
     // Kolom yang dipilih eksplisit untuk menghindari transfer data berlebih
     const SELECT_COLS = `id, posisi, absensi, tgl, shift, nama_karyawan, no_order, nama_order,
       jenis_pekerjaan, keterangan, target, realisasi, no_order_2, nama_order_2,
-      jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, is_manual_input`;
+      jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, is_manual_input, nama_order_manual, nama_order_manual_2`;
 
     const sortLatest = searchParams.get('sort') === 'latest';
+    const useMainIndex = !search && !sortLatest;
+    const tableRef = useMainIndex ? 'jurnal_harian_produksi INDEXED BY idx_jurnal_main' : 'jurnal_harian_produksi';
     const sqlData = sortLatest
-      ? `SELECT ${SELECT_COLS} FROM jurnal_harian_produksi ${whereClause} ORDER BY id DESC LIMIT ? OFFSET ?`
-      : `SELECT ${SELECT_COLS} FROM jurnal_harian_produksi ${whereClause} 
+      ? `SELECT ${SELECT_COLS} FROM ${tableRef} ${whereClause} ORDER BY id DESC LIMIT ? OFFSET ?`
+      : `SELECT ${SELECT_COLS} FROM ${tableRef} ${whereClause} 
       ORDER BY 
         tgl ASC, 
         CASE UPPER(bagian)
@@ -64,28 +89,51 @@ export async function GET(request: NextRequest) {
           WHEN 'FINISHING' THEN 4
           WHEN 'GUDANG' THEN 5
           WHEN 'TEKNISI' THEN 6
-          ELSE 7
+          WHEN 'MESIN' THEN 7
+          ELSE 8
         END ASC,
         CASE WHEN jenis_pekerjaan LIKE '%Koordinasi%' THEN 0 ELSE 1 END ASC,
         absensi ASC, 
         id ASC 
       LIMIT ? OFFSET ?`;
-    const sqlTotal = `SELECT COUNT(*) as count FROM jurnal_harian_produksi WHERE deleted_at IS NULL ${whereParts.length > 1 ? 'AND ' + whereParts.filter(p => p !== 'deleted_at IS NULL').join(' AND ') : ''}`;
+    // Count query — pakai INDEXED BY idx_jurnal_tgl_deleted jika ada filter tgl
+    const countTableRef = (startDate && endDate) ? 'jurnal_harian_produksi INDEXED BY idx_jurnal_tgl_deleted' : 'jurnal_harian_produksi';
+    const additionalWhere = whereParts.length > 1 ? 'AND ' + whereParts.filter(p => p !== 'deleted_at IS NULL').join(' AND ') : '';
+    const sqlTotal = `SELECT COUNT(*) as count FROM ${countTableRef} WHERE deleted_at IS NULL ${additionalWhere}`;
+
+    // Totals query — hanya jalan jika needTotals=true (filter aktif di client)
+    let sqlTotals = '';
+    if (needTotals && (search || startDate || endDate || bagian || namaKaryawan || noOrder || belumRealisasi)) {
+      sqlTotals = `SELECT COALESCE(SUM(COALESCE(realisasi, 0)), 0) as totalRealisasi, COALESCE(SUM(COALESCE(rijek, 0)), 0) as totalRijek FROM ${countTableRef} WHERE deleted_at IS NULL ${additionalWhere}`;
+    }
+
     const sqlLastUpdated = `SELECT strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) as lastUpdated 
           FROM activity_logs 
           WHERE table_name = 'jurnal_harian_produksi' AND action_type = 'UPLOAD'`;
 
-    const batchResults = await db.batch([
+    const batchStmts: any[] = [
       { sql: sqlData, args: [...args, limit, offset] },
       { sql: sqlTotal, args },
-      { sql: sqlLastUpdated, args: [] }
-    ], "read");
+    ];
+    if (sqlTotals) {
+      batchStmts.push({ sql: sqlTotals, args });
+    }
+    batchStmts.push({ sql: sqlLastUpdated, args: [] });
+
+    const batchResults = await db.batch(batchStmts, "read");
 
     const data = batchResults[0].rows;
     const total = Number((batchResults[1].rows[0] as any).count);
-    const lastUpdated = (batchResults[2].rows[0] as any)?.lastUpdated || null;
+    let totalRealisasi = 0, totalRijek = 0;
+    if (sqlTotals) {
+      const totals = batchResults[2].rows[0] as any;
+      totalRealisasi = Number(totals?.totalRealisasi || 0);
+      totalRijek = Number(totals?.totalRijek || 0);
+    }
+    const lastUpdated = batchResults[batchResults.length - 1].rows[0] as any;
+    const lastUpdatedVal = lastUpdated?.lastUpdated || null;
 
-    return NextResponse.json({ success: true, data, total, page, limit, lastUpdated });
+    return NextResponse.json({ success: true, data, total, page, limit, lastUpdated: lastUpdatedVal, totalRealisasi, totalRijek });
 
 
   } catch (error: any) {
@@ -105,21 +153,22 @@ export async function POST(request: NextRequest) {
         posisi, absensi, tgl, shift, nama_karyawan, no_order, nama_order,
         jenis_pekerjaan, keterangan, target, realisasi,
         no_order_2, nama_order_2, jenis_pekerjaan_2,
-        bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian
+        bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian,
+        nama_order_manual, nama_order_manual_2
       } = body.data;
-
-      const cleanNumberOrText = (val: any) => {
-        if (val === undefined || val === null || val === '') return '';
-        const str = String(val).trim();
-        // Cek jika murni angka dengan titik sebagai pemisah ribuan
-        if (/^[0-9]+(\.[0-9]+)*$/.test(str)) {
-          return Number(str.replace(/\./g, ''));
-        }
-        return str;
-      };
 
       const cleanTarget = cleanNumberOrText(target);
       const cleanRealisasi = cleanNumberOrText(realisasi);
+
+      // Jika no_order kosong, gunakan nama_order_manual sebagai nama_order (target)
+      const finalNamaOrder = (nama_order && String(nama_order).trim())
+        ? String(nama_order).trim()
+        : ((!no_order && nama_order_manual && String(nama_order_manual).trim()) ? String(nama_order_manual).trim() : '');
+      // Jika no_order_2 kosong DAN ada data realisasi yang diisi, gunakan nama_order_manual_2 sebagai nama_order_2
+      const hasRealisasiData = realisasi || no_order_2 || jenis_pekerjaan_2 || bahan_kertas || jml_plate || warna || inscheet || rijek;
+      const finalNamaOrder2 = (nama_order_2 && String(nama_order_2).trim())
+        ? String(nama_order_2).trim()
+        : ((!no_order_2 && nama_order_manual_2 && String(nama_order_manual_2).trim() && hasRealisasiData) ? String(nama_order_manual_2).trim() : '');
 
       try {
         await db.execute("ALTER TABLE jurnal_harian_produksi ADD COLUMN is_manual_input INTEGER DEFAULT 0");
@@ -128,14 +177,14 @@ export async function POST(request: NextRequest) {
       await db.execute({
         sql: `INSERT INTO jurnal_harian_produksi (
           posisi, absensi, tgl, shift, nama_karyawan, no_order, nama_order, jenis_pekerjaan, keterangan, target, realisasi,
-          no_order_2, nama_order_2, jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, is_manual_input, created_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+          no_order_2, nama_order_2, jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, is_manual_input, created_by, nama_order_manual, nama_order_manual_2
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)`,
         args: [
           posisi || '', Number(absensi) || 0, tgl || null, shift || '', nama_karyawan || '',
-          no_order || '', nama_order || '', jenis_pekerjaan || '', keterangan || '', cleanTarget, cleanRealisasi,
-          no_order_2 || '', nama_order_2 || '', jenis_pekerjaan_2 || '', bahan_kertas || '', Number(jml_plate) || 0,
-          warna || '', Number(inscheet) || 0, Number(rijek) || 0, jam || '', kendala || '', bagian || '',
-          session.username || null
+          no_order || '', finalNamaOrder, jenis_pekerjaan || '', keterangan || '', cleanTarget, cleanRealisasi,
+          no_order_2 || '', finalNamaOrder2, jenis_pekerjaan_2 || '', bahan_kertas || '', cleanNumberOrText(jml_plate),
+          warna || '', cleanNumberOrText(inscheet), cleanNumberOrText(rijek), jam || '', kendala || '', bagian || '',
+          session.username || null, nama_order_manual || null, nama_order_manual_2 || null
         ]
       });
 
@@ -154,15 +203,8 @@ export async function POST(request: NextRequest) {
 
     if (body.action === 'input_multi_realisasi') {
       if (!session?.userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      const { id, baseData, multiRealisasi } = body;
+      const { id, updated_at, baseData, multiRealisasi } = body;
       
-      const cleanNumberOrText = (val: any) => {
-        if (val === undefined || val === null || val === '') return '';
-        const str = String(val).trim();
-        if (/^[0-9]+(\.[0-9]+)*$/.test(str)) return Number(str.replace(/\./g, ''));
-        return str;
-      };
-
       if (!multiRealisasi || multiRealisasi.length === 0) {
         return NextResponse.json({ error: 'Data realisasi kosong' }, { status: 400 });
       }
@@ -180,21 +222,44 @@ export async function POST(request: NextRequest) {
       // 1. Update baris pertama (yang memiliki id)
       // Sisi Target (no_order, nama_order, jenis_pekerjaan) ikut data realisasi
       const firstRow = filteredMulti[0];
-      await db.execute({
+      // Prioritas nama_order_2:
+      // 1. Jika nama_order_manual_2 diisi di baris ini → pakai itu
+      // 2. Jika no_order_2 dipilih dari dropdown → pakai nama_order_2 dari firstRow
+      const firstNamaOrder2 = (firstRow.nama_order_manual_2 && String(firstRow.nama_order_manual_2).trim())
+        ? String(firstRow.nama_order_manual_2).trim()
+        : (firstRow.nama_order_2 || '');
+      const updateWhere = updated_at ? 'id = ? AND deleted_at IS NULL AND updated_at = ?' : 'id = ? AND deleted_at IS NULL';
+      const updateFields = [
+          firstRow.no_order_2 || '', firstNamaOrder2, firstRow.jenis_pekerjaan_2 || '',
+          cleanNumberOrText(firstRow.target), cleanNumberOrText(firstRow.realisasi),
+          firstRow.no_order_2 || '', firstNamaOrder2, firstRow.jenis_pekerjaan_2 || '',
+          firstRow.bahan_kertas || '', cleanNumberOrText(firstRow.jml_plate), firstRow.warna || '',
+          cleanNumberOrText(firstRow.inscheet), cleanNumberOrText(firstRow.rijek), firstRow.jam || '', firstRow.kendala || '',
+          baseData.nama_order_manual || null, firstRow.nama_order_manual_2 || null,
+          session.username || null
+        ];
+      const updateWhereArgs = updated_at ? [id, updated_at] : [id];
+      const result = await db.execute({
         sql: `UPDATE jurnal_harian_produksi SET 
           no_order = ?, nama_order = ?, jenis_pekerjaan = ?,
           target = ?, realisasi = ?, no_order_2 = ?, nama_order_2 = ?, jenis_pekerjaan_2 = ?, 
-          bahan_kertas = ?, jml_plate = ?, warna = ?, inscheet = ?, rijek = ?, jam = ?, kendala = ?
-          WHERE id = ?`,
-        args: [
-          firstRow.no_order_2 || '', firstRow.nama_order_2 || '', firstRow.jenis_pekerjaan_2 || '',
-          cleanNumberOrText(firstRow.target), cleanNumberOrText(firstRow.realisasi),
-          firstRow.no_order_2 || '', firstRow.nama_order_2 || '', firstRow.jenis_pekerjaan_2 || '',
-          firstRow.bahan_kertas || '', Number(firstRow.jml_plate) || 0, firstRow.warna || '',
-          Number(firstRow.inscheet) || 0, Number(firstRow.rijek) || 0, firstRow.jam || '', firstRow.kendala || '',
-          id
-        ]
+          bahan_kertas = ?, jml_plate = ?, warna = ?, inscheet = ?, rijek = ?, jam = ?, kendala = ?,
+          nama_order_manual = ?, nama_order_manual_2 = ?,
+          updated_at = CURRENT_TIMESTAMP, updated_by = ?
+          WHERE ${updateWhere}`,
+        args: [...updateFields, ...updateWhereArgs]
       });
+
+      if (result.rowsAffected === 0) {
+        const existing = await db.execute({
+          sql: `SELECT id, deleted_at, updated_at FROM jurnal_harian_produksi WHERE id = ?`,
+          args: [id]
+        });
+        if (existing.rows.length === 0 || (existing.rows[0] as any)?.deleted_at) {
+          return NextResponse.json({ error: 'Data telah dihapus oleh pengguna lain.', code: 'DELETED' }, { status: 409 });
+        }
+        return NextResponse.json({ error: 'Data telah diubah oleh pengguna lain. Silakan reload halaman.', code: 'CONFLICT' }, { status: 409 });
+      }
 
       // 2. Insert baris ke-2 hingga selesai (generate new rows, skip yang kosong)
       if (validAdditional.length > 0) {
@@ -205,19 +270,24 @@ export async function POST(request: NextRequest) {
         let pendingRows: any[][] = [];
         
         for (const row of validAdditional) {
+          // Prioritas nama_order_2: nama_order_manual_2 per baris jika diisi, lalu dari row
+          const rowNamaOrder2 = (row.nama_order_manual_2 && String(row.nama_order_manual_2).trim())
+            ? String(row.nama_order_manual_2).trim()
+            : (row.nama_order_2 || '');
           pendingRows.push([
             baseData.posisi || '', Number(baseData.absensi) || 0, baseData.tgl || null, baseData.shift || '', baseData.nama_karyawan || '',
-            row.no_order_2 || '', row.nama_order_2 || '', row.jenis_pekerjaan_2 || '', baseData.keterangan || '', cleanNumberOrText(row.target), cleanNumberOrText(row.realisasi),
-            row.no_order_2 || '', row.nama_order_2 || '', row.jenis_pekerjaan_2 || '', row.bahan_kertas || '', Number(row.jml_plate) || 0,
-            row.warna || '', Number(row.inscheet) || 0, Number(row.rijek) || 0, row.jam || '', row.kendala || '', baseData.bagian || ''
+            row.no_order_2 || '', rowNamaOrder2, row.jenis_pekerjaan_2 || '', baseData.keterangan || '', cleanNumberOrText(row.target), cleanNumberOrText(row.realisasi),
+            row.no_order_2 || '', rowNamaOrder2, row.jenis_pekerjaan_2 || '', row.bahan_kertas || '', cleanNumberOrText(row.jml_plate),
+            row.warna || '', cleanNumberOrText(row.inscheet), cleanNumberOrText(row.rijek), row.jam || '', row.kendala || '', baseData.bagian || '',
+            session.username || null, baseData.nama_order_manual || null, row.nama_order_manual_2 || null
           ]);
         }
 
-        const placeholders = pendingRows.map(() => `(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`).join(', ');
+        const placeholders = pendingRows.map(() => `(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)`).join(', ');
         const args = pendingRows.flat();
         const sql = `INSERT INTO jurnal_harian_produksi (
                   posisi, absensi, tgl, shift, nama_karyawan, no_order, nama_order, jenis_pekerjaan, keterangan, target, realisasi,
-                  no_order_2, nama_order_2, jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, is_manual_input
+                  no_order_2, nama_order_2, jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, is_manual_input, created_by, nama_order_manual, nama_order_manual_2
                 ) VALUES ${placeholders}`;
         await db.execute({ sql, args });
       }
@@ -225,10 +295,53 @@ export async function POST(request: NextRequest) {
       await db.execute({
         sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
               VALUES (?, ?, ?, ?, ?, ?)`,
-        args: ['INSERT', 'jurnal_harian_produksi', id, `Input Multi Realisasi (${filteredMulti.length} baris)`, JSON.stringify({ id, count: filteredMulti.length }), session.username || 'System']
+        args: [
+          'INSERT',
+          'jurnal_harian_produksi',
+          id,
+          `Input Multi Realisasi (${filteredMulti.length} baris)`,
+          JSON.stringify({
+            id,
+            count: filteredMulti.length,
+            realisasi: filteredMulti.map((r: any, i: number) => ({
+              baris: i + 1,
+              nama_order: r.nama_order_2 || r.nama_order_manual_2 || '-',
+              jenis_pekerjaan: r.jenis_pekerjaan_2 || '-',
+              target: r.target || 0,
+              realisasi: r.realisasi || 0,
+              jam: r.jam || '-',
+            }))
+          }),
+          session.username || 'System'
+        ]
       });
 
       return NextResponse.json({ success: true });
+    }
+
+    if (body.action === 'bulk_update_shift') {
+      if (!session?.userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      const { ids, shift } = body;
+      if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return NextResponse.json({ error: 'IDs tidak valid' }, { status: 400 });
+      }
+      if (!shift || !['1', '2', '3'].includes(String(shift))) {
+        return NextResponse.json({ error: 'Shift tidak valid' }, { status: 400 });
+      }
+
+      const placeholders = ids.map(() => '?').join(', ');
+      await db.execute({
+        sql: `UPDATE jurnal_harian_produksi SET shift = ?, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id IN (${placeholders}) AND deleted_at IS NULL`,
+        args: [String(shift), session.username || null, ...ids]
+      });
+
+      await db.execute({
+        sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
+              VALUES (?, ?, ?, ?, ?, ?)`,
+        args: ['UPDATE', 'jurnal_harian_produksi', 0, `Bulk update shift ${ids.length} data`, JSON.stringify({ ids, shift }), session.username || 'System']
+      });
+
+      return NextResponse.json({ success: true, updatedCount: ids.length });
     }
 
     // Default flow untuk bulk upload Excel
@@ -293,14 +406,15 @@ export async function POST(request: NextRequest) {
     // Fungsi untuk eksekusi bulk insert guna performa maksimal
     const BATCH_SIZE = 1000;
     let pendingRows: any[][] = [];
+    const username = session?.username || 'System';
     
     const flushRows = async (rows: any[][]) => {
       if (rows.length === 0) return;
-      const placeholders = rows.map(() => `(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).join(', ');
+      const placeholders = rows.map(() => `(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).join(', ');
       const args = rows.flat();
       const sql = `INSERT INTO jurnal_harian_produksi (
                 posisi, absensi, tgl, shift, nama_karyawan, no_order, nama_order, jenis_pekerjaan, keterangan, target, realisasi,
-                no_order_2, nama_order_2, jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian
+                no_order_2, nama_order_2, jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, created_by
               ) VALUES ${placeholders}`;
       await db.execute({ sql, args });
     };
@@ -312,7 +426,7 @@ export async function POST(request: NextRequest) {
       if (String(row[idxNama] || '').toLowerCase() === 'nama karyawan') continue;
 
       const posisi = String(row[idxPosisi] || '').trim();
-      const absensi = parseFloat(row[idxAbsensi]) || 0;
+      const absensi = Number(String(row[idxAbsensi] ?? '').replace(/[^0-9.-]+/g, '')) || 0;
       
       let tgl = null;
       if (row[idxTgl]) {
@@ -349,17 +463,18 @@ export async function POST(request: NextRequest) {
       const namaOrder2 = String(row[idxNamaOrder2] || '').trim();
       const jenisPekerjaan2 = String(row[idxJenisPekerjaan2] || '').trim();
       const bahanKertas = String(row[idxBahanKertas] || '').trim();
-      const jmlPlate = parseFloat(row[idxJmlPlate]) || 0;
+      const jmlPlate = cleanNumberOrText(row[idxJmlPlate]);
       const warna = String(row[idxWarna] || '').trim();
-      const inscheet = parseFloat(row[idxInscheet]) || 0;
-      const rijek = parseFloat(row[idxRijek]) || 0;
+      const inscheet = cleanNumberOrText(row[idxInscheet]);
+      const rijek = cleanNumberOrText(row[idxRijek]);
       const jam = String(row[idxJam] || '').trim();
       const kendala = String(row[idxKendala] || '').trim();
       const bagian = String(row[idxBagian] || '').trim();
 
       pendingRows.push([
         posisi, absensi, tgl, shift, namaKaryawan, noOrder, namaOrder, jenisPekerjaan, keterangan, target, realisasi,
-        noOrder2, namaOrder2, jenisPekerjaan2, bahanKertas, jmlPlate, warna, inscheet, rijek, jam, kendala, bagian
+        noOrder2, namaOrder2, jenisPekerjaan2, bahanKertas, jmlPlate, warna, inscheet, rijek, jam, kendala, bagian,
+        username
       ]);
 
       importedCount++;
@@ -413,17 +528,8 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id, ...fields } = await request.json();
+    const { id, updated_at, ...fields } = await request.json();
     if (!id) return NextResponse.json({ error: 'ID tidak ditemukan' }, { status: 400 });
-
-    const cleanNumberOrText = (val: any) => {
-      if (val === undefined || val === null || val === '') return '';
-      const str = String(val).trim();
-      if (/^[0-9]+(\.[0-9]+)*$/.test(str)) {
-        return Number(str.replace(/\./g, ''));
-      }
-      return str;
-    };
 
     const updateParts: string[] = [];
     const updateArgs: any[] = [];
@@ -432,15 +538,16 @@ export async function PUT(request: NextRequest) {
       'posisi', 'absensi', 'tgl', 'shift', 'nama_karyawan', 'no_order', 'nama_order',
       'jenis_pekerjaan', 'keterangan', 'target', 'realisasi',
       'no_order_2', 'nama_order_2', 'jenis_pekerjaan_2',
-      'bahan_kertas', 'jml_plate', 'warna', 'inscheet', 'rijek', 'jam', 'kendala', 'bagian'
+      'bahan_kertas', 'jml_plate', 'warna', 'inscheet', 'rijek', 'jam', 'kendala', 'bagian',
+      'nama_order_manual', 'nama_order_manual_2'
     ];
 
     for (const [key, value] of Object.entries(fields)) {
       if (allowedFields.includes(key)) {
         updateParts.push(`${key} = ?`);
-        if (key === 'target' || key === 'realisasi') {
+        if (['target', 'realisasi', 'jml_plate', 'inscheet', 'rijek'].includes(key)) {
           updateArgs.push(cleanNumberOrText(value));
-        } else if (['absensi', 'jml_plate', 'inscheet', 'rijek'].includes(key)) {
+        } else if (['absensi'].includes(key)) {
           updateArgs.push(Number(value) || 0);
         } else {
           updateArgs.push(value || (key === 'tgl' ? null : ''));
@@ -448,22 +555,70 @@ export async function PUT(request: NextRequest) {
       }
     }
 
+    // Jika nama_order_manual diisi dan no_order kosong → override nama_order dengan nilai manual
+    if (fields.nama_order_manual && String(fields.nama_order_manual).trim()) {
+      const manualVal = String(fields.nama_order_manual).trim();
+      const noOrderVal = String(fields.no_order || '').trim();
+      if (!noOrderVal) {
+        const idx = updateParts.findIndex(p => p === 'nama_order = ?');
+        if (idx !== -1) {
+          updateArgs[idx] = manualVal;
+        } else {
+          updateParts.push('nama_order = ?');
+          updateArgs.push(manualVal);
+        }
+      }
+    }
+
+    // Jika nama_order_manual_2 diisi dan no_order_2 kosong → override nama_order_2 dengan nilai manual
+    if (fields.nama_order_manual_2 && String(fields.nama_order_manual_2).trim()) {
+      const manualVal2 = String(fields.nama_order_manual_2).trim();
+      const noOrder2Val = String(fields.no_order_2 || '').trim();
+      if (!noOrder2Val) {
+        const idx2 = updateParts.findIndex(p => p === 'nama_order_2 = ?');
+        if (idx2 !== -1) {
+          updateArgs[idx2] = manualVal2;
+        } else {
+          updateParts.push('nama_order_2 = ?');
+          updateArgs.push(manualVal2);
+        }
+      }
+    }
+
+    const rowBefore = await db.execute({
+      sql: `SELECT * FROM jurnal_harian_produksi WHERE id = ?`,
+      args: [id]
+    });
+    const snapshotData = rowBefore.rows[0] ? Object.fromEntries(Object.entries(rowBefore.rows[0] as Record<string, unknown>)) : { id };
+
     if (updateParts.length > 0) {
-      // Selalu set updated_at dan updated_by saat ada perubahan
       updateParts.push('updated_at = CURRENT_TIMESTAMP');
       updateParts.push('updated_by = ?');
       updateArgs.push(session.username || null);
-      updateArgs.push(id);
-      await db.execute({
-        sql: `UPDATE jurnal_harian_produksi SET ${updateParts.join(', ')} WHERE id = ? AND deleted_at IS NULL`,
-        args: updateArgs
+
+      const whereClause = updated_at ? 'id = ? AND deleted_at IS NULL AND updated_at = ?' : 'id = ? AND deleted_at IS NULL';
+      const whereArgs = updated_at ? [id, updated_at] : [id];
+      const result = await db.execute({
+        sql: `UPDATE jurnal_harian_produksi SET ${updateParts.join(', ')} WHERE ${whereClause}`,
+        args: [...updateArgs, ...whereArgs]
       });
+
+      if (result.rowsAffected === 0) {
+        const existing = await db.execute({
+          sql: `SELECT id, deleted_at, updated_at FROM jurnal_harian_produksi WHERE id = ?`,
+          args: [id]
+        });
+        if (existing.rows.length === 0 || (existing.rows[0] as any)?.deleted_at) {
+          return NextResponse.json({ error: 'Data telah dihapus oleh pengguna lain.', code: 'DELETED' }, { status: 409 });
+        }
+        return NextResponse.json({ error: 'Data telah diubah oleh pengguna lain. Silakan reload halaman.', code: 'CONFLICT' }, { status: 409 });
+      }
     }
 
     await db.execute({
       sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
             VALUES (?, ?, ?, ?, ?, ?)`,
-      args: ['UPDATE', 'jurnal_harian_produksi', id, `Update Jurnal Harian Produksi ID #${id}`, JSON.stringify({ id }), session.username || 'System']
+      args: ['UPDATE', 'jurnal_harian_produksi', id, `Update Jurnal Harian Produksi ID #${id}`, JSON.stringify(snapshotData), session.username || 'System']
     });
 
     return NextResponse.json({ success: true });
@@ -498,16 +653,29 @@ export async function DELETE(request: NextRequest) {
 
     // Soft delete per id — tulis log per id agar bisa ter-track di dashboard
     const placeholders = ids.map(() => '?').join(', ');
+
+    // Ambil snapshot data sebelum soft-delete
+    const rowsBefore = await db.execute({
+      sql: `SELECT * FROM jurnal_harian_produksi WHERE id IN (${placeholders}) AND deleted_at IS NULL`,
+      args: [...ids]
+    });
+    const snapshotMap = new Map<number, Record<string, unknown>>();
+    for (const row of rowsBefore.rows) {
+      const r = row as Record<string, unknown>;
+      snapshotMap.set(Number(r.id), Object.fromEntries(Object.entries(r)));
+    }
+
     await db.execute({
       sql: `UPDATE jurnal_harian_produksi SET deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id IN (${placeholders}) AND deleted_at IS NULL`,
       args: [session.username || null, ...ids]
     });
 
     for (const id of ids) {
+      const snapshot = snapshotMap.get(Number(id)) || { id };
       await db.execute({
         sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
               VALUES (?, ?, ?, ?, ?, ?)`,
-        args: ['DELETE', 'jurnal_harian_produksi', id, `Soft delete Jurnal Harian Produksi ID #${id}`, JSON.stringify({ id }), session.username || 'System']
+        args: ['DELETE', 'jurnal_harian_produksi', id, `Soft delete Jurnal Harian Produksi ID #${id}`, JSON.stringify(snapshot), session.username || 'System']
       });
     }
 
