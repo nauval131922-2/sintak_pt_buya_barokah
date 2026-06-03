@@ -4,6 +4,7 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Upload, FileSpreadsheet, XCircle, Loader2 } from 'lucide-react';
+import ViewActivityLogLink from '@/components/ViewActivityLogLink';
 import ConfirmDialog from '@/components/ConfirmDialog';
 
 export default function MasterPekerjaanUpload() {
@@ -76,7 +77,7 @@ export default function MasterPekerjaanUpload() {
       // === Auto-detect category rows ===
       // Scan early rows to find which rows contain the known category names.
       // This is robust and does NOT rely on hardcoded row indices.
-      const KNOWN_CATEGORIES = ['PRA CETAK', 'QUALITY CONTROL', 'CETAK', 'PASCA CETAK', 'GUDANG', 'TEHNISI'];
+      const KNOWN_CATEGORIES = ['PRA CETAK', 'PASCA CETAK', 'QUALITY CONTROL', 'CETAK', 'GUDANG', 'TEHNISI'];
 
        let categoryRowData: any[]     = [];
        let subCategoryRowData: any[]  = [];
@@ -417,7 +418,8 @@ export default function MasterPekerjaanUpload() {
           </div>
         </div>
 
-        <div className="shrink-0">
+        <div className="shrink-0 flex items-center gap-2">
+          <ViewActivityLogLink tableName="master_pekerjaan" />
           <input
             type="file"
             accept=".xls, .xlsx, .xlsm"

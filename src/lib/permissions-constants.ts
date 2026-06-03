@@ -10,11 +10,12 @@ export const MODULE_REGISTRY = [
 
   // Umum
   { key: 'tracking_manufaktur',    label: 'Tracking Manufaktur',              group: 'Sistem - Umum' },
+  { key: 'activity_log_view',      label: 'Log Aktivitas (Lihat)',            group: 'Sistem - Umum' },
+  { key: 'activity_log_admin',     label: 'Log Aktivitas (Kelola)',           group: 'Sistem - Umum' },
   { key: 'karyawan',               label: 'Karyawan',                         group: 'Sistem - Umum' },
 
   // HRD
   { key: 'catat_kesalahan',        label: 'Catat Kesalahan',                  group: 'Sistem - HRD' },
-  { key: 'statistik',              label: 'Statistik Performa',               group: 'Sistem - HRD' },
 
   // Kalkulasi
   { key: 'kalkulasi_rekap_so',     label: 'Rekap Sales Order Barang',         group: 'Sistem - Penjualan' },
@@ -40,6 +41,7 @@ export const MODULE_REGISTRY = [
   // Sistem - Produksi
   { key: 'produksi_jhp_sopd',      label: 'SOPd',                             group: 'Sistem - Produksi' },
   { key: 'produksi_jhp_master_pekerjaan', label: 'Master Pekerjaan',          group: 'Sistem - Produksi' },
+  { key: 'produksi_jhp_master_pekerjaan_jurnal_produksi', label: 'Master Pekerjaan Jurnal Produksi', group: 'Sistem - Produksi' },
   { key: 'produksi_jhp_target',    label: 'Target Harian',                    group: 'Sistem - Produksi' },
   { key: 'produksi_jhp',           label: 'Jurnal Harian Produksi',           group: 'Sistem - Produksi' },
   { key: 'produksi_jhp_penjadwalan', label: 'JHP - Input Target (Penjadwalan)', group: 'Sistem - Produksi' },
