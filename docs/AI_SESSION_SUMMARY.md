@@ -1,5 +1,28 @@
 # AI Session Summary
 
+## Update Sesi — 2026-06-05
+
+### Konteks Sesi
+- Sesi pembersihan file tidak terpakai, file debug temporer di root, file database kosong/dummy, script pengecekan sekali pakai di folder `scripts/`, folder `tmp/`, dan folder kosong.
+
+### Pekerjaan Sesi Ini
+1. **Pembersihan File Root**:
+   - Menghapus 15 file teks/json debug dan temporer di folder root (seperti `count_so.txt`, `debug_bom.json`, `temp.txt`, dll.).
+2. **Pembersihan Database Dummy**:
+   - Menghapus database kosong/tidak digunakan: `sikka.db` (tracked), `sintak.db` (ignored), dan `local.db` (ignored).
+3. **Pembersihan Script & Folder scripts/**:
+   - Menghapus 36 script check/debug eksperimental sekali pakai di folder `scripts/` (seperti `check_bom*.ts`, `debug_*.ts`, dll.). Script operasional utama tetap dipertahankan.
+4. **Pembersihan Folder `tmp/` & Folder Kosong**:
+   - Menghapus folder `tmp/` beserta seluruh script debug di dalamnya.
+   - Menghapus folder kosong `src/app/tracking-designs`.
+5. **Verifikasi Build**:
+   - Melakukan verifikasi build sistem dengan `npm run build` dan dipastikan sukses 100%.
+
+### Keputusan Teknis
+- Modul **Master Barang** (`src/app/data-digit/stok/master-barang`) dipertahankan sepenuhnya karena merupakan modul fitur selesai resmi yang diimplementasikan pada sesi sebelumnya.
+
+---
+
 ## Update Sesi — 2026-06-03
 
 ### Konteks Sesi

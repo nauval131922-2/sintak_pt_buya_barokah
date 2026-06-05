@@ -17,6 +17,7 @@ _Tidak ada task yang sedang berjalan saat ini._
 
 ## ✅ Selesai (Done)
 
+- [x] Pembersihan file tidak terpakai (file debug root, database kosong, script eksperimental, folder kosong, dan folder tmp) — 2026-06-05
 - [x] Implementasi Progress Bar Hapus Log Aktivitas (Dedicated Progress Screen, Live Percentage, Dynamic Status, & Timer) di Dashboard Umum — 2026-05-20
 - [x] Penghapusan Menyeluruh Fitur Statistik Performa (`statistik`) dari Navigasi, Halaman Stats, RBAC, dan Database — 2026-05-20
 - [x] Implementasi modul Master Pekerjaan Jurnal Produksi (Skema DB, API, Hak Akses, Sidebar, dan UI Upload/List) — 2026-05-20
@@ -114,12 +115,12 @@ _Tidak ada task yang sedang berjalan saat ini._
 ## 📊 Statistik
 
 ```
-Total task    : 106
-Selesai       : 100
+Total task    : 107
+Selesai       : 101
 In progress   : 0
 Backlog       : 4 (+ 2 ide)
 Bug diketahui : 0
-Progress      : 94.3%
+Progress      : 94.4%
 ```
 
 ---

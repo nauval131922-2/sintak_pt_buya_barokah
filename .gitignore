@@ -56,6 +56,9 @@ local.db-wal
 .vscode/
 /scratch/
 
+# opencode config (contains API keys)
+opencode.json
+
 # PM2 logs
 /logs/
 
@@ -65,3 +68,5 @@ _temp_*
 _tmp_*
 tmp_*
 
+
+testsprite_tests\tmp\config.json
