@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import TargetClient from './TargetClient';
 import { requirePermission } from '@/lib/permissions';
 import PageHeader from "@/components/PageHeader";
@@ -18,7 +19,9 @@ export default async function TargetHarianPage() {
         title="Jadwal Produksi Harian"
         description="Laporan jadwal harian produksi untuk operasional lapangan."
       />
-      <TargetClient />
+      <Suspense fallback={null}>
+        <TargetClient />
+      </Suspense>
     </div>
   );
 }

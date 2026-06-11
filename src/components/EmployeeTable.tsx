@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import { Search, Loader2, AlertCircle, Clock, FileSpreadsheet, Users } from "lucide-react";
+import { Loader2, AlertCircle, Users } from "lucide-react";
 import ImportInfo from "@/components/ImportInfo";
 import SearchAndReload from "@/components/SearchAndReload";
 import { useRouter } from "next/navigation";
 import { DataTable } from "@/components/ui/DataTable";
 import TableFooter from "@/components/TableFooter";
 import CopyButton from "@/components/ui/CopyButton";
-import { ColumnDef } from "@tanstack/react-table";
+import { CellContext, ColumnDef, SortingState, Updater } from "@tanstack/react-table";
 
 interface Employee {
   id: number;
@@ -52,6 +52,9 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+
+  // Sorting State
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   // Table State
   const [selectedIds, setSelectedIds] = useState<Set<number | string>>(new Set());
@@ -97,7 +100,14 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
       setLoading(true);
       const startTime = performance.now();
       try {
-        const res = await fetch(`/api/employees?all=true&page=${page}&limit=${PAGE_SIZE}&search=${encodeURIComponent(debouncedQuery)}&_t=${Date.now()}`);
+        let sortBy = "";
+        let sortDir = "";
+        if (sorting.length > 0) {
+          sortBy = sorting[0].id;
+          sortDir = sorting[0].desc ? "desc" : "asc";
+        }
+        const sortParams = sortBy ? `&sortBy=${sortBy}&sortDir=${sortDir}` : "";
+        const res = await fetch(`/api/employees?all=true&page=${page}&limit=${PAGE_SIZE}&search=${encodeURIComponent(debouncedQuery)}${sortParams}&_t=${Date.now()}`);
         if (!active) return;
         if (res.ok) {
           const json = await res.json();
@@ -107,15 +117,15 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
             setData(json.data || []);
           }
         }
-      } catch (e: any) {
-        if (active) setError(e.message || "Gagal memuat data");
+      } catch (e: unknown) {
+        if (active) setError(e instanceof Error ? e.message : "Gagal memuat data");
       } finally {
         if (active) setLoading(false);
       }
     }
     loadData();
     return () => { active = false; };
-  }, [page, debouncedQuery, refreshKey]);
+  }, [page, debouncedQuery, refreshKey, sorting]);
 
   const [toggleLoading, setToggleLoading] = useState<Set<number>>(new Set());
 
@@ -151,21 +161,22 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
     {
       accessorKey: "no",
       header: "No.",
-      cell: (info: any) => info.row.index + 1,
+      cell: (info: CellContext<Employee, unknown>) => info.row.index + 1,
       size: 60,
-      meta: { align: "center" }
+      meta: { align: "center" },
+      enableSorting: false
     },
     { 
         accessorKey: "name", 
         header: "Nama Karyawan",
         size: 320,
-        cell: (info: any) => <NameCell name={info.getValue()} />
+        cell: (info: CellContext<Employee, string>) => <NameCell name={info.getValue()} />
     },
     { 
         accessorKey: "position", 
         header: "Jabatan",
         size: 220,
-        cell: (info: any) => (
+        cell: (info: CellContext<Employee, string>) => (
             <span className="text-[11px] font-bold text-green-600 bg-green-50 px-3 py-1 rounded-lg border border-green-100 block w-fit truncate tracking-tight">
               {info.getValue()}
             </span>
@@ -176,7 +187,7 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
         header: "ID Karyawan",
         size: 150,
         meta: { align: "right" },
-        cell: (info: any) => (
+        cell: (info: CellContext<Employee, string | null>) => (
             <span className="font-mono font-bold text-gray-400">
                 {info.getValue() || "---"}
             </span>
@@ -187,8 +198,8 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
         header: "Status",
         size: 100,
         meta: { align: "center" },
-        cell: (info: any) => {
-            const employee = info.row.original as Employee;
+        cell: (info: CellContext<Employee, number>) => {
+            const employee = info.row.original;
             const loading = toggleLoading.has(employee.id);
             const isActive = employee.is_active === 1;
             return (
@@ -215,7 +226,7 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
   ], [handleToggleActive, toggleLoading]);
 
   // Handlers
-  const handleResize = useCallback((widths: any) => {
+  const handleResize = useCallback((widths: Record<string, number>) => {
     setColumnWidths(widths);
     localStorage.setItem("employee_columnWidths", JSON.stringify(widths));
   }, []);
@@ -233,6 +244,14 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
 
   const handlePageChange = useCallback((newPage: number) => {
     setPage(newPage);
+  }, []);
+
+  const handleSortingChange = useCallback((updaterOrValue: Updater<SortingState>) => {
+    setSorting(prev => {
+      const next = typeof updaterOrValue === 'function' ? updaterOrValue(prev) : updaterOrValue;
+      return next;
+    });
+    setPage(1);
   }, []);
 
   if (!isMounted) return null;
@@ -290,8 +309,10 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
              onColumnWidthChange={handleResize}
              isLoading={loading || data === null}
              selectedIds={selectedIds}
-              onRowClick={handleSelection}
-              rowHeight="h-11"
+             onRowClick={handleSelection}
+             rowHeight="h-11"
+             sorting={sorting}
+             onSortingChange={handleSortingChange}
            />
          )}
       </div>

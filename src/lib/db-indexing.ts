@@ -79,8 +79,11 @@ export async function initIndexing(database: { execute: (sql: string) => Promise
     // Index untuk dashboard sorting: COALESCE(updated_at, deleted_at, created_at) DESC
     "CREATE INDEX IF NOT EXISTS idx_jurnal_updated_at ON jurnal_harian_produksi(updated_at DESC);",
     "CREATE INDEX IF NOT EXISTS idx_jurnal_deleted_at ON jurnal_harian_produksi(deleted_at DESC);",
-    // Expression index untuk ORDER BY utama — hindari temp B-tree sort
-    "CREATE INDEX IF NOT EXISTS idx_jurnal_main ON jurnal_harian_produksi(tgl ASC, (CASE UPPER(bagian) WHEN 'SETTING' THEN 1 WHEN 'QUALITY CONTROL' THEN 2 WHEN 'CETAK' THEN 3 WHEN 'FINISHING' THEN 4 WHEN 'GUDANG' THEN 5 WHEN 'TEKNISI' THEN 6 WHEN 'MESIN' THEN 7 ELSE 8 END) ASC, (CASE WHEN jenis_pekerjaan LIKE '%Koordinasi%' THEN 0 ELSE 1 END) ASC, absensi ASC, id ASC);",
+    // Expression index untuk ORDER BY utama (tanpa window function — diurus via query sort)
+    "DROP INDEX IF EXISTS idx_jurnal_main;",
+    "CREATE INDEX IF NOT EXISTS idx_jurnal_main ON jurnal_harian_produksi(tgl ASC, (CASE UPPER(bagian) WHEN 'SETTING' THEN 1 WHEN 'QUALITY CONTROL' THEN 2 WHEN 'CETAK' THEN 3 WHEN 'FINISHING' THEN 4 WHEN 'GUDANG' THEN 5 WHEN 'TEKNISI' THEN 6 WHEN 'MESIN' THEN 7 ELSE 8 END) ASC, absensi ASC, id ASC);",
+    // Index untuk PARTITION BY window function: MIN(CASE ...) OVER (PARTITION BY tgl, nama_karyawan)
+    "CREATE INDEX IF NOT EXISTS idx_jurnal_tgl_karyawan_pekerjaan ON jurnal_harian_produksi(tgl, nama_karyawan, jenis_pekerjaan);",
 
     // Composite index untuk filter bagian + deleted_at + tgl — hindari full scan saat filter bagian tanpa tgl
     "CREATE INDEX IF NOT EXISTS idx_jurnal_bagian_deleted_tgl ON jurnal_harian_produksi(bagian, deleted_at, tgl);",

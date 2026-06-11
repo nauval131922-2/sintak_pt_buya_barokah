@@ -12,6 +12,7 @@ import TableFooter from '@/components/TableFooter';
 import DatePicker from '@/components/DatePicker';
 import BaseModal from '@/components/ui/BaseModal';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { persistDateStore, hydrateDateStore } from '@/lib/scraper-period';
 
 // Mapping Bagian -> Category master_pekerjaan_jurnal_produksi
 const BAGIAN_CATEGORY_MAP: Record<string, string> = {
@@ -160,8 +161,8 @@ export default function JurnalClient({
   const [showCopyModal, setShowCopyModal] = useState(false);
   const [copyFrom, setCopyFrom] = useState<Date | null>(null);
   const [copyTo, setCopyTo] = useState<Date | null>(null);
-  const [copyBagian, setCopyBagian] = useState('');
-  const [copyKaryawan, setCopyKaryawan] = useState('');
+  const [copyBagian, setCopyBagian] = useState<string[]>([]);
+  const [copyKaryawan, setCopyKaryawan] = useState<string[]>([]);
   const [copyModalError, setCopyModalError] = useState('');
   const [copyBagianSearch, setCopyBagianSearch] = useState('');
   const [copyKaryawanSearch, setCopyKaryawanSearch] = useState('');
@@ -181,8 +182,9 @@ export default function JurnalClient({
   const [totalRealisasi, setTotalRealisasi] = useState(0);
   const [totalRijek, setTotalRijek] = useState(0);
   const [bagianOptions, setBagianOptions] = useState<string[]>([]);
+  const [karyawanByBagian, setKaryawanByBagian] = useState<Record<string, string[]>>({});
+  const [allEmployeeNames, setAllEmployeeNames] = useState<string[]>([]);
   const [namaOptions, setNamaOptions] = useState<string[]>([]);
-  const [allNamaOptions, setAllNamaOptions] = useState<{ nama: string; bagian: string }[]>([]);
   const [noOrderFilter, setNoOrderFilter] = useState('');
   const [isBagianDropdownOpen, setIsBagianDropdownOpen] = useState(false);
   const [isNamaDropdownOpen, setIsNamaDropdownOpen] = useState(false);
@@ -283,29 +285,16 @@ export default function JurnalClient({
     setIsMounted(true);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const savedStart = localStorage.getItem('jurnal_startDate');
-    if (savedStart) {
-      const d = new Date(savedStart);
-      if (!isNaN(d.getTime())) setStartDate(d);
-    }
-    const savedEnd = localStorage.getItem('jurnal_endDate');
-    const lastVisit = localStorage.getItem('jurnal_lastVisitDate');
-    const todayStr = today.toDateString();
 
-    // Update hari kunjungan terakhir
-    localStorage.setItem('jurnal_lastVisitDate', todayStr);
-
-    const isNewDay = lastVisit !== todayStr;
-
-    if (savedEnd && !isNewDay) {
-      // Hari yang sama Ã¢â‚¬â€ pakai nilai yang sudah disimpan user apa adanya
-      const d = new Date(savedEnd);
-      if (!isNaN(d.getTime())) setEndDate(d);
-      else { setEndDate(today); localStorage.setItem('jurnal_endDate', today.toISOString()); }
+    const hydrated = hydrateDateStore('jurnal_dates');
+    if (hydrated.startDate && hydrated.endDate) {
+      setStartDate(hydrated.startDate);
+      setEndDate(hydrated.endDate);
+      persistDateStore('jurnal_dates', hydrated.startDate, hydrated.endDate);
     } else {
-      // Hari baru atau belum ada data Ã¢â‚¬â€ reset ke hari ini
+      setStartDate(today);
       setEndDate(today);
-      localStorage.setItem('jurnal_endDate', today.toISOString());
+      persistDateStore('jurnal_dates', today, today);
     }
 
     const handleDataUpdated = () => {
@@ -329,19 +318,13 @@ export default function JurnalClient({
 
   useEffect(() => {
     if (!isMounted) return;
-    if (startDate) localStorage.setItem('jurnal_startDate', startDate.toISOString());
-    else localStorage.removeItem('jurnal_startDate');
-  }, [startDate, isMounted]);
-
-  useEffect(() => {
-    if (!isMounted) return;
-    if (endDate) localStorage.setItem('jurnal_endDate', endDate.toISOString());
-    else localStorage.removeItem('jurnal_endDate');
-  }, [endDate, isMounted]);
+    persistDateStore('jurnal_dates', startDate, endDate);
+  }, [startDate, endDate, isMounted]);
 
   useEffect(() => {
     let active = true;
     async function loadData() {
+      if (!isMounted) return;
       setLoading(true);
       const startTime = performance.now();
       try {
@@ -386,7 +369,7 @@ export default function JurnalClient({
     }
     loadData();
     return () => { active = false; };
-  }, [page, debouncedQuery, refreshKey, startDate, endDate, bagianFilter, namaKaryawanFilter, noOrderFilter, belumRealisasiFilter]);
+  }, [page, debouncedQuery, refreshKey, startDate, endDate, bagianFilter, namaKaryawanFilter, noOrderFilter, belumRealisasiFilter, isMounted]);
 
   // Fetch distinct bagian & nama karyawan for dropdowns
   useEffect(() => {
@@ -395,14 +378,15 @@ export default function JurnalClient({
         const res = await fetch('/api/jurnal-harian-produksi/options');
         if (res.ok) {
           const json = await res.json();
-          // Filter out options starting with '-'
-          const filteredBagian = (json.bagian || []).filter((b: string) => b && !b.trim().startsWith('-'));
-          const filteredKaryawan = (json.karyawan || []).filter((k: any) => k.nama && !k.nama.trim().startsWith('-') && k.bagian && !k.bagian.trim().startsWith('-'));
+          const filteredBagian: string[] = (json.bagian || []).filter((b: string) => b && !b.trim().startsWith('-'));
+          const filteredKaryawan: string[] = (json.karyawan || []).filter((k: string) => k && !k.trim().startsWith('-'));
 
           setBagianOptions(filteredBagian);
-          setAllNamaOptions(filteredKaryawan);
-          setNamaOptions(Array.from(new Set(filteredKaryawan.map((k: any) => k.nama))));
+          const employeeNames: string[] = Array.from(new Set(filteredKaryawan));
+          setAllEmployeeNames(employeeNames);
+          setNamaOptions(employeeNames);
           setAvailableYears(json.years || []);
+          setKaryawanByBagian(json.karyawanByBagian || {});
         }
       } catch {}
     }
@@ -494,18 +478,16 @@ export default function JurnalClient({
     return () => document.removeEventListener('mousedown', handle);
   }, []);
 
-  // When bagian changes, update nama options
+  // When bagian changes, filter nama options by bagian mapping
   useEffect(() => {
     if (!bagianFilter) {
-      setNamaOptions(Array.from(new Set(allNamaOptions.map(k => k.nama))));
+      setNamaOptions(allEmployeeNames);
     } else {
-      const filtered = allNamaOptions.filter(k => k.bagian === bagianFilter).map(k => k.nama);
-      setNamaOptions(Array.from(new Set(filtered)));
-      setNamaKaryawanFilter(prev => {
-        return filtered.includes(prev) ? prev : '';
-      });
+      const names = karyawanByBagian[bagianFilter] || [];
+      setNamaOptions(names);
+      setNamaKaryawanFilter(prev => names.includes(prev) ? prev : '');
     }
-  }, [bagianFilter, allNamaOptions]);
+  }, [bagianFilter, allEmployeeNames, karyawanByBagian]);
 
   const handleResetFilter = useCallback(() => {
     setBagianFilter('');
@@ -549,14 +531,19 @@ export default function JurnalClient({
         body: JSON.stringify({
           from: fmtDate(copyFrom),
           to: fmtDate(copyTo),
-          ...(copyBagian ? { bagian: copyBagian } : {}),
-          ...(copyKaryawan ? { namaKaryawan: copyKaryawan } : {}),
+          ...(copyBagian.length > 0 ? { bagian: copyBagian } : {}),
+          ...(copyKaryawan.length > 0 ? { namaKaryawan: copyKaryawan } : {}),
         })
       });
       const result = await res.json();
       if (result.success) {
         showMessage('success', `Berhasil menyalin ${result.count} jadwal ke ${fmtDate(copyTo)}.`);
         setShowCopyModal(false);
+        setCopyKaryawan([]);
+        setCopyBagian([]);
+        setCopyKaryawanSearch('');
+        setCopyBagianSearch('');
+        setCopyModalError('');
         setRefreshKey(k => k + 1);
       } else {
         setCopyModalError(result.error || 'Gagal menyalin jadwal');
@@ -1474,8 +1461,8 @@ export default function JurnalClient({
                         tomorrow.setDate(tomorrow.getDate() + 1);
                         setCopyFrom(today);
                         setCopyTo(tomorrow);
-                        setCopyBagian('');
-                        setCopyKaryawan('');
+                        setCopyBagian([]);
+                        setCopyKaryawan([]);
                         setCopyModalError('');
                         setCopyBagianSearch('');
                         setCopyKaryawanSearch('');
@@ -2136,14 +2123,28 @@ export default function JurnalClient({
       {/* ===== COPY JADWAL MODAL ===== */}
       <BaseModal
         isOpen={showCopyModal}
-        onClose={() => setShowCopyModal(false)}
+        onClose={() => {
+          setShowCopyModal(false);
+          setCopyKaryawan([]);
+          setCopyBagian([]);
+          setCopyKaryawanSearch('');
+          setCopyBagianSearch('');
+          setCopyModalError('');
+        }}
         title="Copy Jadwal"
         subtitle="Salin jadwal dari satu tanggal ke tanggal lain"
         icon={Copy}
         footer={
           <>
             <button
-              onClick={() => setShowCopyModal(false)}
+              onClick={() => {
+                setShowCopyModal(false);
+                setCopyKaryawan([]);
+                setCopyBagian([]);
+                setCopyKaryawanSearch('');
+                setCopyBagianSearch('');
+                setCopyModalError('');
+              }}
               className="px-5 py-2.5 text-[13px] font-bold text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 rounded-xl border border-gray-200 transition-all"
             >
               Batal
@@ -2199,11 +2200,18 @@ export default function JurnalClient({
         {/* Filter Bagian — inline select with search */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="text-[12px] font-bold text-gray-600">Filter Bagian</label>
-            {copyBagian && (
+            <label className="text-[12px] font-bold text-gray-600">
+              Filter Bagian
+              {copyBagian.length > 0 && (
+                <span className="ml-1.5 text-[10px] font-bold text-green-600 bg-green-100 px-1.5 py-0.5 rounded-full">
+                  {copyBagian.length}
+                </span>
+              )}
+            </label>
+            {copyBagian.length > 0 && (
               <button
                 type="button"
-                onClick={() => { setCopyBagian(''); setCopyKaryawan(''); setCopyBagianSearch(''); }}
+                onClick={() => { setCopyBagian([]); setCopyKaryawan([]); setCopyBagianSearch(''); }}
                 className="flex items-center gap-1 text-[10px] font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2 py-0.5 rounded-md transition-all"
               >
                 <X size={10} /> Hapus filter
@@ -2224,27 +2232,33 @@ export default function JurnalClient({
           <div className="grid grid-cols-2 gap-1.5 max-h-[140px] overflow-y-auto pr-1 custom-scrollbar">
             {bagianOptions
               .filter(opt => opt.toLowerCase().includes(copyBagianSearch.toLowerCase()))
-              .map(opt => (
-              <button
-                key={opt}
-                type="button"
-                onClick={() => { setCopyBagian(copyBagian === opt ? '' : opt); setCopyKaryawan(''); }}
-                className={`px-3 py-2 rounded-lg text-[12px] font-bold text-left transition-all border ${
-                  copyBagian === opt
-                    ? 'bg-green-600 text-white border-green-700 shadow-sm'
-                    : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-green-50 hover:text-green-700 hover:border-green-200'
-                }`}
-              >
-                {opt}
-              </button>
-            ))}
+              .map(opt => {
+                const isBagianSelected = copyBagian.includes(opt);
+                return (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => {
+                    setCopyBagian(prev => prev.includes(opt) ? prev.filter(b => b !== opt) : [...prev, opt]);
+                    setCopyKaryawan([]);
+                  }}
+                  className={`px-3 py-2 rounded-lg text-[12px] font-bold text-left transition-all border ${
+                    isBagianSelected
+                      ? 'bg-green-600 text-white border-green-700 shadow-sm'
+                      : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-green-50 hover:text-green-700 hover:border-green-200'
+                  }`}
+                >
+                  {isBagianSelected ? '✓ ' : ''}{opt}
+                </button>
+                );
+              })}
             {bagianOptions.filter(opt => opt.toLowerCase().includes(copyBagianSearch.toLowerCase())).length === 0 && (
               <p className="col-span-2 text-[11px] text-gray-400 italic py-2 px-1">Tidak ditemukan</p>
             )}
           </div>
-          {copyBagian && (
+          {copyBagian.length > 0 && (
             <p className="text-[10px] text-green-600 font-semibold mt-2 ml-0.5">
-              ✓ Hanya bagian <b>{copyBagian}</b> yang akan disalin
+              ✓ Hanya bagian <b>{copyBagian.join(', ')}</b> yang akan disalin
             </p>
           )}
         </div>
@@ -2252,11 +2266,18 @@ export default function JurnalClient({
         {/* Filter Karyawan — inline select with search */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="text-[12px] font-bold text-gray-600">Filter Karyawan</label>
-            {copyKaryawan && (
+            <label className="text-[12px] font-bold text-gray-600">
+              Filter Karyawan
+              {copyKaryawan.length > 0 && (
+                <span className="ml-1.5 text-[10px] font-bold text-green-600 bg-green-100 px-1.5 py-0.5 rounded-full">
+                  {copyKaryawan.length}
+                </span>
+              )}
+            </label>
+            {copyKaryawan.length > 0 && (
               <button
                 type="button"
-                onClick={() => setCopyKaryawan('')}
+                onClick={() => setCopyKaryawan([])}
                 className="flex items-center gap-1 text-[10px] font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2 py-0.5 rounded-md transition-all"
               >
                 <X size={10} /> Hapus filter
@@ -2264,16 +2285,15 @@ export default function JurnalClient({
             )}
           </div>
           {(() => {
-            const karyawanList = (copyBagian
-              ? allNamaOptions.filter(k => k.bagian === copyBagian).map(k => k.nama)
-              : namaOptions
-            ).filter(nama => nama.toLowerCase().includes(copyKaryawanSearch.toLowerCase()));
-            const allList = copyBagian
-              ? allNamaOptions.filter(k => k.bagian === copyBagian).map(k => k.nama)
-              : namaOptions;
+            const karyawanForBagian = copyBagian.length > 0
+              ? [...new Set(copyBagian.flatMap(b => karyawanByBagian[b] || []))]
+              : [];
+            const karyawanList = (copyBagian.length > 0 ? karyawanForBagian : namaOptions)
+              .filter(nama => nama.toLowerCase().includes(copyKaryawanSearch.toLowerCase()));
+            const allList = copyBagian.length > 0 ? karyawanForBagian : namaOptions;
             return allList.length === 0 ? (
               <p className="text-[11px] text-gray-400 font-medium italic px-1">
-                {copyBagian ? `Tidak ada karyawan di bagian ${copyBagian}` : 'Tidak ada data karyawan'}
+                Tidak ada data karyawan
               </p>
             ) : (
               <>
@@ -2291,36 +2311,39 @@ export default function JurnalClient({
                 <div className="flex flex-col gap-1 max-h-[140px] overflow-y-auto pr-1 custom-scrollbar">
                   {karyawanList.length === 0 ? (
                     <p className="text-[11px] text-gray-400 italic py-1 px-1">Tidak ditemukan</p>
-                  ) : karyawanList.map(nama => (
-                    <button
-                      key={nama}
-                      type="button"
-                      onClick={() => setCopyKaryawan(copyKaryawan === nama ? '' : nama)}
-                      className={`px-3 py-2 rounded-lg text-[12px] font-semibold text-left transition-all border ${
-                        copyKaryawan === nama
-                          ? 'bg-green-600 text-white border-green-700 shadow-sm'
-                          : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-green-50 hover:text-green-700 hover:border-green-200'
-                      }`}
-                    >
-                      {nama}
-                    </button>
-                  ))}
+                  ) : karyawanList.map(nama => {
+                    const isSelected = copyKaryawan.includes(nama);
+                    return (
+                      <button
+                        key={nama}
+                        type="button"
+                        onClick={() => setCopyKaryawan(prev => prev.includes(nama) ? prev.filter(n => n !== nama) : [...prev, nama])}
+                        className={`px-3 py-2 rounded-lg text-[12px] font-semibold text-left transition-all border ${
+                          isSelected
+                            ? 'bg-green-600 text-white border-green-700 shadow-sm'
+                            : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-green-50 hover:text-green-700 hover:border-green-200'
+                        }`}
+                      >
+                        {isSelected ? '✓ ' : ''}{nama}
+                      </button>
+                    );
+                  })}
                 </div>
               </>
             );
           })()}
-          {copyKaryawan && (
+          {copyKaryawan.length > 0 && (
             <p className="text-[10px] text-green-600 font-semibold mt-2 ml-0.5">
-              ✓ Hanya karyawan <b>{copyKaryawan}</b> yang akan disalin
+              ✓ Hanya karyawan <b>{copyKaryawan.join(', ')}</b> yang akan disalin
             </p>
           )}
         </div>
 
         {/* Clear all filters */}
-        {(copyBagian || copyKaryawan) && (
+        {(copyBagian.length > 0 || copyKaryawan.length > 0) && (
           <button
             type="button"
-            onClick={() => { setCopyBagian(''); setCopyKaryawan(''); }}
+            onClick={() => { setCopyBagian([]); setCopyKaryawan([]); }}
             className="self-start flex items-center gap-1.5 text-[11px] font-bold text-gray-400 hover:text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-lg border border-transparent hover:border-rose-100 transition-all -mt-2"
           >
             <X size={12} /> Hapus semua filter

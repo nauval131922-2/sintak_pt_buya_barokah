@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Printer, Loader2, ArrowLeft, Image as ImageIcon, RefreshCw, AlertCircle, Copy, Check, RotateCcw } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import DatePicker from '@/components/DatePicker';
 import SearchableDropdown from '@/components/SearchableDropdown';
 import { domToBlob, domToPng } from 'modern-screenshot';
@@ -23,19 +24,88 @@ function getTodayStr() {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
 
-function getJam(shift: string) {
-  const s = String(shift || '').trim();
-  if (s === '1') return '07.00 – 15.00';
-  if (s === '2') return '15.00 – 23.00';
-  if (s === '3') return '23.00 – 07.00';
-  return '–';
+function getJam(shift: string): string {
+  const map: Record<string, string> = {
+    '1': '07:00 - 15:00',
+    '2': '15:00 - 23:00',
+    '3': '23:00 - 07:00',
+  };
+  return map[shift] || shift || '–';
 }
 
+// Module-level cache (survives component re-mount dalam session yang sama)
+let _cachedDate = '';
+
+//// URL + localStorage + module cache
 export default function TargetClient() {
-  const [dateStr, setDateStr] = useState<string>(getTodayStr);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // useState initializer: module cache dulu biar gak flash pas navigasi balik
+  const [dateStr, setDateStr] = useState<string>(() => _cachedDate || getTodayStr());
+  const [hydrated, setHydrated] = useState(false);
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Hydrate: URL > localStorage > today (module cache udah di useState initializer)
+  useEffect(() => {
+    const fromURL = searchParams.get('date');
+    if (fromURL && /^\d{4}-\d{2}-\d{2}$/.test(fromURL)) {
+      _cachedDate = fromURL;
+      setDateStr(fromURL);
+      setHydrated(true);
+      return;
+    }
+
+    // URL kosong, tapi module cache mungkin udah kepake di useState initializer
+    // Cek localStorage sebagai backup
+
+    try {
+      const raw = localStorage.getItem('jhp_target_date');
+      if (raw) {
+        const store = JSON.parse(raw);
+        if (store?.v === 1) {
+          const d = new Date(store.startDate);
+          if (!isNaN(d.getTime())) {
+            _cachedDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            setDateStr(_cachedDate);
+            setHydrated(true);
+            return;
+          }
+        }
+      }
+    } catch {}
+
+    setHydrated(true);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Sync ke URL (tanpa dependency searchParams untuk hindari loop)
+  useEffect(() => {
+    if (!hydrated) return;
+    const params = new URLSearchParams(searchParams.toString());
+    if (params.get('date') !== dateStr) {
+      params.set('date', dateStr);
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    }
+  }, [dateStr, hydrated]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Sync ke localStorage + module cache
+  useEffect(() => {
+    if (!hydrated) return;
+    _cachedDate = dateStr;
+    try {
+      const parts = dateStr.split('-');
+      const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      localStorage.setItem('jhp_target_date', JSON.stringify({
+        v: 1,
+        startDate: d.toISOString(),
+        endDate: d.toISOString(),
+        dateTag: new Date().toDateString(),
+      }));
+    } catch {}
+  }, [dateStr, hydrated]);
   const [savingImage, setSavingImage] = useState(false);
   const [copied, setCopied] = useState(false);
   const [ks1, setKs1] = useState('');
@@ -70,7 +140,15 @@ export default function TargetClient() {
       const res = await fetch(`/api/jurnal-harian-produksi?startDate=${selectedDate}&endDate=${selectedDate}&limit=500`);
       const result = await res.json();
       if (result.success) {
-        const sorted = [...result.data].sort((a, b) => {
+          // Pre-compute employees yg punya Koordinasi (untuk grup sort)
+          const koordinasiSet = new Set<string>();
+          for (const row of result.data) {
+            if ((row.jenis_pekerjaan || '').toLowerCase().includes('koordinasi')) {
+              koordinasiSet.add(row.nama_karyawan + '|' + row.tgl);
+            }
+          }
+
+          const sorted = [...result.data].sort((a, b) => {
           // 1. Group by Bagian (Section) using the official 'bagian' column
           const sections = ['SETTING', 'QUALITY CONTROL', 'CETAK', 'FINISHING', 'GUDANG', 'TEKNISI'];
           const getBagianInfo = (row: any) => {
@@ -80,6 +158,7 @@ export default function TargetClient() {
             return {
               index: index === -1 ? 99 : index,
               isKoordinasi: jp.includes('koordinasi'),
+              hasKoordinasi: koordinasiSet.has(row.nama_karyawan + '|' + row.tgl),
               absensi: Number(row.absensi || 0),
               id: Number(row.id || 0)
             };
@@ -91,17 +170,21 @@ export default function TargetClient() {
           // 2. Sort by Section Priority
           if (infoA.index !== infoB.index) return infoA.index - infoB.index;
 
-          // 3. Within same Section, Koordinasi goes first
+          // 3. Same section: semua entry karyawan yg punya Koordinasi dikumpulkan
+          if (infoA.hasKoordinasi && !infoB.hasKoordinasi) return -1;
+          if (!infoA.hasKoordinasi && infoB.hasKoordinasi) return 1;
+
+          // 4. Within that group, Koordinasi row first
           if (infoA.isKoordinasi && !infoB.isKoordinasi) return -1;
           if (!infoA.isKoordinasi && infoB.isKoordinasi) return 1;
 
-          // 4. Then sort by Absensi
+          // 5. Then sort by Absensi
           if (infoA.absensi !== infoB.absensi) return infoA.absensi - infoB.absensi;
 
-          // 5. Final tie-breaker: ID (Order of insertion/Excel)
+          // 6. Final tie-breaker: ID (Order of insertion/Excel)
           return infoA.id - infoB.id;
-        });
-        setData(sorted);
+          });
+          setData(sorted);
       } else {
         setError(result.error || 'Gagal memuat data');
       }
@@ -479,9 +562,9 @@ export default function TargetClient() {
           >
             {/* Header Branding & Title */}
             <div id="report-header" className="text-center mb-5 border-b-2 border-slate-800 pb-3">
-              <p className="text-[9px] font-black text-slate-400 tracking-[0.3em] mb-1">PT. BUYA BAROKAH DIV. PERCETAKAN</p>
-              <h1 className="text-[22px] font-black text-slate-800 leading-none tracking-tight mb-2">JADWAL PRODUKSI HARIAN</h1>
-              <p className="text-[11px] font-bold text-slate-500">{formatIndoDate(dateStr)}</p>
+              <p className="text-[13px] font-black text-slate-400 tracking-[0.3em] mb-1">PT. BUYA BAROKAH DIV. PERCETAKAN</p>
+              <h1 className="text-[28px] font-black text-slate-800 leading-none tracking-tight mb-2">JADWAL PRODUKSI HARIAN</h1>
+              <p className="text-[22px] font-bold text-slate-500">{formatIndoDate(dateStr)}</p>
             </div>
 
             {/* Coordinator Info - Vertical */}

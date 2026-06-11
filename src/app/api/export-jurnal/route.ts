@@ -49,11 +49,10 @@ export async function GET(request: NextRequest) {
     whereParts.push('deleted_at IS NULL');
     const whereClause = whereParts.length > 0 ? `WHERE ${whereParts.join(' AND ')}` : '';
 
-    // Single SELECT with INDEXED BY to force expression index usage
     const result = await db.execute({
-      sql: `SELECT * FROM jurnal_harian_produksi INDEXED BY idx_jurnal_main ${whereClause} 
-        ORDER BY 
-           tgl ASC, 
+      sql: `SELECT * FROM jurnal_harian_produksi ${whereClause}
+        ORDER BY
+           tgl ASC,
            CASE UPPER(bagian)
              WHEN 'SETTING' THEN 1
              WHEN 'QUALITY CONTROL' THEN 2
@@ -64,8 +63,9 @@ export async function GET(request: NextRequest) {
              WHEN 'MESIN' THEN 7
              ELSE 8
            END ASC,
+           MIN(CASE WHEN jenis_pekerjaan LIKE '%Koordinasi%' THEN 0 ELSE 1 END) OVER (PARTITION BY tgl, nama_karyawan) ASC,
            CASE WHEN jenis_pekerjaan LIKE '%Koordinasi%' THEN 0 ELSE 1 END ASC,
-           absensi ASC, 
+           absensi ASC,
            id ASC`,
       args,
     });

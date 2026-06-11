@@ -44,8 +44,8 @@ export async function POST(request: NextRequest) {
     // Also support old params (today, tomorrow) for backward compat
     const fromDate: string = body.from || body.today;
     const toDate: string = body.to || body.tomorrow;
-    const bagianFilter: string = body.bagian || '';
-    const namaKaryawanFilter: string = body.namaKaryawan || '';
+    const bagianFilter: string[] = Array.isArray(body.bagian) ? body.bagian : (body.bagian ? [body.bagian] : []);
+    const namaKaryawanFilter: string[] = Array.isArray(body.namaKaryawan) ? body.namaKaryawan : (body.namaKaryawan ? [body.namaKaryawan] : []);
 
     if (!fromDate || !toDate) {
       return NextResponse.json({ error: 'Missing date parameters' }, { status: 400 });
@@ -55,13 +55,15 @@ export async function POST(request: NextRequest) {
     const filterClauses: string[] = [`tgl = ?`];
     const filterArgs: any[] = [fromDate];
 
-    if (bagianFilter) {
-      filterClauses.push(`bagian = ?`);
-      filterArgs.push(bagianFilter);
+    if (bagianFilter.length > 0) {
+      const placeholders = bagianFilter.map(() => '?').join(',');
+      filterClauses.push(`bagian IN (${placeholders})`);
+      filterArgs.push(...bagianFilter);
     }
-    if (namaKaryawanFilter) {
-      filterClauses.push(`nama_karyawan = ?`);
-      filterArgs.push(namaKaryawanFilter);
+    if (namaKaryawanFilter.length > 0) {
+      const placeholders = namaKaryawanFilter.map(() => '?').join(',');
+      filterClauses.push(`nama_karyawan IN (${placeholders})`);
+      filterArgs.push(...namaKaryawanFilter);
     }
 
     filterClauses.push('deleted_at IS NULL');

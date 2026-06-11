@@ -13,10 +13,17 @@ export async function GET(request: NextRequest) {
 
     const activeFilter = all ? "" : "AND is_active = 1";
 
+    const sortByParam = searchParams.get("sortBy") || "id";
+    const sortDirParam = searchParams.get("sortDir") || "asc";
+
+    const allowedSortColumns = ["id", "name", "position", "department", "employee_no", "is_active"];
+    const sortBy = allowedSortColumns.includes(sortByParam) ? sortByParam : "id";
+    const sortDir = sortDirParam.toLowerCase() === "desc" ? "DESC" : "ASC";
+
     let sqlData = "";
     let sqlTotal = "";
-    let argsData: any[] = [];
-    let argsTotal: any[] = [];
+    let argsData: unknown[] = [];
+    let argsTotal: unknown[] = [];
 
     if (search) {
       const queryValue = buildFtsQuery(search);
@@ -29,7 +36,7 @@ export async function GET(request: NextRequest) {
 
             if (ftsMatch.rows.length > 0) {
                 const ids = ftsMatch.rows.map(r => r.id).join(',');
-                sqlData = `SELECT * FROM employees WHERE id IN (${ids}) ${activeFilter} ORDER BY id ASC LIMIT ? OFFSET ?`;
+                sqlData = `SELECT * FROM employees WHERE id IN (${ids}) ${activeFilter} ORDER BY ${sortBy} ${sortDir} LIMIT ? OFFSET ?`;
                 sqlTotal = `SELECT COUNT(*) as count FROM employees WHERE id IN (${ids}) ${activeFilter}`;
                 argsData = [limit, offset];
                 argsTotal = [];
@@ -38,7 +45,7 @@ export async function GET(request: NextRequest) {
 
           if (!sqlData) {
             const qPattern = `%${search}%`;
-            sqlData = `SELECT * FROM employees WHERE 1=1 ${activeFilter} AND (name LIKE ? OR position LIKE ? OR employee_no LIKE ? OR department LIKE ?) ORDER BY id ASC LIMIT ? OFFSET ?`;
+            sqlData = `SELECT * FROM employees WHERE 1=1 ${activeFilter} AND (name LIKE ? OR position LIKE ? OR employee_no LIKE ? OR department LIKE ?) ORDER BY ${sortBy} ${sortDir} LIMIT ? OFFSET ?`;
             sqlTotal = `SELECT COUNT(*) as count FROM employees WHERE 1=1 ${activeFilter} AND (name LIKE ? OR position LIKE ? OR employee_no LIKE ? OR department LIKE ?)`;
             argsData = [qPattern, qPattern, qPattern, qPattern, limit, offset];
             argsTotal = [qPattern, qPattern, qPattern, qPattern];
@@ -46,13 +53,13 @@ export async function GET(request: NextRequest) {
       } catch {
           // Fallback if FTS table not ready
           const qPattern = `%${search}%`;
-          sqlData = `SELECT * FROM employees WHERE 1=1 ${activeFilter} AND (name LIKE ? OR position LIKE ? OR employee_no LIKE ? OR department LIKE ?) ORDER BY id ASC LIMIT ? OFFSET ?`;
+          sqlData = `SELECT * FROM employees WHERE 1=1 ${activeFilter} AND (name LIKE ? OR position LIKE ? OR employee_no LIKE ? OR department LIKE ?) ORDER BY ${sortBy} ${sortDir} LIMIT ? OFFSET ?`;
           sqlTotal = `SELECT COUNT(*) as count FROM employees WHERE 1=1 ${activeFilter} AND (name LIKE ? OR position LIKE ? OR employee_no LIKE ? OR department LIKE ?)`;
           argsData = [qPattern, qPattern, qPattern, qPattern, limit, offset];
           argsTotal = [qPattern, qPattern, qPattern, qPattern];
       }
     } else {
-      sqlData = `SELECT * FROM employees WHERE 1=1 ${activeFilter} ORDER BY id ASC LIMIT ? OFFSET ?`;
+      sqlData = `SELECT * FROM employees WHERE 1=1 ${activeFilter} ORDER BY ${sortBy} ${sortDir} LIMIT ? OFFSET ?`;
       sqlTotal = `SELECT COUNT(*) as count FROM employees WHERE 1=1 ${activeFilter}`;
       argsData = [limit, offset];
       argsTotal = [];
@@ -65,12 +72,12 @@ export async function GET(request: NextRequest) {
     ], "read");
 
     const data = batchResults[0].rows;
-    const total = Number((batchResults[1].rows[0] as any).count);
-    const lastUpdated = (batchResults[2].rows[0] as any).lastUpdated;
+    const total = Number((batchResults[1].rows[0] as Record<string, unknown> | undefined)?.count ?? 0);
+    const lastUpdated = (batchResults[2].rows[0] as Record<string, unknown> | undefined)?.lastUpdated ?? null;
 
     return NextResponse.json({ success: true, data, total, lastUpdated, page, limit });
 
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

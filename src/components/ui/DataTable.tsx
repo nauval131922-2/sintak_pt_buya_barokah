@@ -5,13 +5,14 @@ import {
   ColumnDef,
   ColumnSizingState,
   SortingState,
+  OnChangeFn,
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { ArrowUp, ArrowDown, ArrowUpDown, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowUp, ArrowDown, ArrowUpDown, AlertCircle } from 'lucide-react';
 
 export const ScrollContext = React.createContext<React.RefObject<HTMLDivElement | null> | null>(null);
 
@@ -33,6 +34,8 @@ interface DataTableProps<TData> {
   disableHover?: boolean;
   rowCursor?: string;
   getRowClassName?: (row: TData) => string;
+  sorting?: SortingState;
+  onSortingChange?: OnChangeFn<SortingState>;
 }
 
 function DataTableInner<TData extends { id: number | string }>({
@@ -53,8 +56,12 @@ function DataTableInner<TData extends { id: number | string }>({
   disableHover = false,
   rowCursor = 'cursor-pointer',
   getRowClassName,
+  sorting,
+  onSortingChange,
 }: DataTableProps<TData>) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [localSorting, setLocalSorting] = React.useState<SortingState>([]);
+  const activeSorting = sorting !== undefined ? sorting : localSorting;
+  const activeOnSortingChange = onSortingChange !== undefined ? onSortingChange : setLocalSorting;
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>(
     initialColumnWidths 
       ? Object.entries(initialColumnWidths).reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
@@ -125,12 +132,12 @@ function DataTableInner<TData extends { id: number | string }>({
     data,
     columns,
     state: {
-      sorting,
+      sorting: activeSorting,
       columnSizing,
     },
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
-    onSortingChange: setSorting,
+    onSortingChange: activeOnSortingChange,
     onColumnSizingChange: setColumnSizing,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -190,7 +197,7 @@ function DataTableInner<TData extends { id: number | string }>({
                     style={{ backgroundColor: (headerGroup.headers[0]?.column.columnDef.meta as any)?.headerBg || '#f8fafc' }}
                   />
                   {headerGroup.headers.map((header) => {
-                    const sortingState = sorting.find((s) => s.id === header.id);
+                    const sortingState = activeSorting.find((s) => s.id === header.id);
                     const meta = header.column.columnDef.meta as any;
                     const colWidth = columnSizing[header.id] || (header.column.columnDef as any).size || 150;
                     const isSticky = meta?.sticky;

@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "50");
     const offset = (page - 1) * limit;
-    
+
     // Optional date filters
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
@@ -75,13 +75,11 @@ export async function GET(request: NextRequest) {
       jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, is_manual_input, nama_order_manual, nama_order_manual_2`;
 
     const sortLatest = searchParams.get('sort') === 'latest';
-    const useMainIndex = !search && !sortLatest;
-    const tableRef = useMainIndex ? 'jurnal_harian_produksi INDEXED BY idx_jurnal_main' : 'jurnal_harian_produksi';
     const sqlData = sortLatest
-      ? `SELECT ${SELECT_COLS} FROM ${tableRef} ${whereClause} ORDER BY id DESC LIMIT ? OFFSET ?`
-      : `SELECT ${SELECT_COLS} FROM ${tableRef} ${whereClause} 
-      ORDER BY 
-        tgl ASC, 
+      ? `SELECT ${SELECT_COLS} FROM jurnal_harian_produksi ${whereClause} ORDER BY id DESC LIMIT ? OFFSET ?`
+      : `SELECT ${SELECT_COLS} FROM jurnal_harian_produksi ${whereClause}
+      ORDER BY
+        tgl ASC,
         CASE UPPER(bagian)
           WHEN 'SETTING' THEN 1
           WHEN 'QUALITY CONTROL' THEN 2
@@ -92,9 +90,10 @@ export async function GET(request: NextRequest) {
           WHEN 'MESIN' THEN 7
           ELSE 8
         END ASC,
+        MIN(CASE WHEN jenis_pekerjaan LIKE '%Koordinasi%' THEN 0 ELSE 1 END) OVER (PARTITION BY tgl, nama_karyawan) ASC,
         CASE WHEN jenis_pekerjaan LIKE '%Koordinasi%' THEN 0 ELSE 1 END ASC,
-        absensi ASC, 
-        id ASC 
+        absensi ASC,
+        id ASC
       LIMIT ? OFFSET ?`;
     // Count query — pakai INDEXED BY idx_jurnal_tgl_deleted jika ada filter tgl
     const countTableRef = (startDate && endDate) ? 'jurnal_harian_produksi INDEXED BY idx_jurnal_tgl_deleted' : 'jurnal_harian_produksi';
@@ -107,8 +106,8 @@ export async function GET(request: NextRequest) {
       sqlTotals = `SELECT COALESCE(SUM(COALESCE(realisasi, 0)), 0) as totalRealisasi, COALESCE(SUM(COALESCE(rijek, 0)), 0) as totalRijek FROM ${countTableRef} WHERE deleted_at IS NULL ${additionalWhere}`;
     }
 
-    const sqlLastUpdated = `SELECT strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) as lastUpdated 
-          FROM activity_logs 
+    const sqlLastUpdated = `SELECT strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) as lastUpdated
+          FROM activity_logs
           WHERE table_name = 'jurnal_harian_produksi' AND action_type = 'UPLOAD'`;
 
     const batchStmts: any[] = [
@@ -173,7 +172,7 @@ export async function POST(request: NextRequest) {
       try {
         await db.execute("ALTER TABLE jurnal_harian_produksi ADD COLUMN is_manual_input INTEGER DEFAULT 0");
       } catch (e) {} // Kolom sudah ada
-      
+
       await db.execute({
         sql: `INSERT INTO jurnal_harian_produksi (
           posisi, absensi, tgl, shift, nama_karyawan, no_order, nama_order, jenis_pekerjaan, keterangan, target, realisasi,
@@ -204,7 +203,7 @@ export async function POST(request: NextRequest) {
     if (body.action === 'input_multi_realisasi') {
       if (!session?.userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       const { id, updated_at, baseData, multiRealisasi } = body;
-      
+
       if (!multiRealisasi || multiRealisasi.length === 0) {
         return NextResponse.json({ error: 'Data realisasi kosong' }, { status: 400 });
       }
@@ -240,9 +239,9 @@ export async function POST(request: NextRequest) {
         ];
       const updateWhereArgs = updated_at ? [id, updated_at] : [id];
       const result = await db.execute({
-        sql: `UPDATE jurnal_harian_produksi SET 
+        sql: `UPDATE jurnal_harian_produksi SET
           no_order = ?, nama_order = ?, jenis_pekerjaan = ?,
-          target = ?, realisasi = ?, no_order_2 = ?, nama_order_2 = ?, jenis_pekerjaan_2 = ?, 
+          target = ?, realisasi = ?, no_order_2 = ?, nama_order_2 = ?, jenis_pekerjaan_2 = ?,
           bahan_kertas = ?, jml_plate = ?, warna = ?, inscheet = ?, rijek = ?, jam = ?, kendala = ?,
           nama_order_manual = ?, nama_order_manual_2 = ?,
           updated_at = CURRENT_TIMESTAMP, updated_by = ?
@@ -268,7 +267,7 @@ export async function POST(request: NextRequest) {
         } catch (e) {} // Kolom sudah ada
 
         let pendingRows: any[][] = [];
-        
+
         for (const row of validAdditional) {
           // Prioritas nama_order_2: nama_order_manual_2 per baris jika diisi, lalu dari row
           const rowNamaOrder2 = (row.nama_order_manual_2 && String(row.nama_order_manual_2).trim())
@@ -363,7 +362,7 @@ export async function POST(request: NextRequest) {
 
     let importedCount = 0;
     let debugInfo: any = null;
-    
+
     // Cari baris header untuk deteksi index kolom secara dinamis
     let headerRowIndex = -1;
     for (let i = 0; i < Math.min(rawData.length, 20); i++) {
@@ -402,12 +401,12 @@ export async function POST(request: NextRequest) {
     const idxJam = getIdx('Jam', 20);
     const idxKendala = getIdx('Kendala', 21);
     const idxBagian = getIdx('Bagian', 23);
-    
+
     // Fungsi untuk eksekusi bulk insert guna performa maksimal
     const BATCH_SIZE = 1000;
     let pendingRows: any[][] = [];
     const username = session?.username || 'System';
-    
+
     const flushRows = async (rows: any[][]) => {
       if (rows.length === 0) return;
       const placeholders = rows.map(() => `(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).join(', ');
@@ -427,7 +426,7 @@ export async function POST(request: NextRequest) {
 
       const posisi = String(row[idxPosisi] || '').trim();
       const absensi = Number(String(row[idxAbsensi] ?? '').replace(/[^0-9.-]+/g, '')) || 0;
-      
+
       let tgl = null;
       if (row[idxTgl]) {
         if (typeof row[idxTgl] === 'number') {
@@ -444,8 +443,8 @@ export async function POST(request: NextRequest) {
 
       const shift = String(row[idxShift] || '').trim();
       const namaKaryawan = String(row[idxNama] || '').trim();
-      
-      // Validasi ketat: 
+
+      // Validasi ketat:
       // 1. Nama karyawan tidak boleh kosong, 'null', atau diawali tanda '-' (baris kategori)
       // 2. Tanggal harus valid (mengandung '-' untuk format YYYY-MM-DD atau merupakan angka Excel)
       const isValidDate = tgl && (tgl.includes('-') || typeof row[idxTgl] === 'number');
@@ -493,23 +492,23 @@ export async function POST(request: NextRequest) {
     if (chunkIndex === totalChunks - 1) {
       const session = await getSession();
       await db.execute({
-        sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by) 
+        sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
               VALUES (?, ?, ?, ?, ?, ?)`,
         args: [
-          'UPLOAD', 
-          'jurnal_harian_produksi', 
-          0, 
-          `Upload Jurnal Harian Produksi dari Excel (${filename})`, 
+          'UPLOAD',
+          'jurnal_harian_produksi',
+          0,
+          `Upload Jurnal Harian Produksi dari Excel (${filename})`,
           JSON.stringify({ fileName: filename, chunks: totalChunks }),
           session?.username || 'System'
         ]
       });
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      importedCount, 
-      debug: debugInfo 
+    return NextResponse.json({
+      success: true,
+      importedCount,
+      debug: debugInfo
     });
 
   } catch (error: any) {
@@ -635,7 +634,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const { ids, clearAll } = await request.json();
-    
+
     if (clearAll) {
       // Soft delete semua
       await db.execute(`UPDATE jurnal_harian_produksi SET deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE deleted_at IS NULL`);
