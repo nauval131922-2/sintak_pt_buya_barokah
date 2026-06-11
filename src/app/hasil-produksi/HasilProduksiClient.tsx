@@ -9,6 +9,7 @@ import {
 import DatePicker from '@/components/DatePicker';
 import SearchableDropdown from '@/components/SearchableDropdown';
 import TableFooter from '@/components/TableFooter';
+import { persistDateStore, hydrateDateStore } from '@/lib/scraper-period';
 
 interface SopdOption {
   no_sopd: string;
@@ -67,28 +68,16 @@ export default function HasilProduksiClient() {
     setIsMounted(true);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
-    // Load persisted dates
-    const savedStart = localStorage.getItem('hasil_startDate');
-    if (savedStart) {
-      const d = new Date(savedStart);
-      if (!isNaN(d.getTime())) setStartDate(d);
-    }
-    
-    const savedEnd = localStorage.getItem('hasil_endDate');
-    const lastVisit = localStorage.getItem('hasil_lastVisitDate');
-    const todayStr = today.toDateString();
 
-    localStorage.setItem('hasil_lastVisitDate', todayStr);
-    const isNewDay = lastVisit !== todayStr;
-
-    if (savedEnd && !isNewDay) {
-      const d = new Date(savedEnd);
-      if (!isNaN(d.getTime())) setEndDate(d);
-      else { setEndDate(today); localStorage.setItem('hasil_endDate', today.toISOString()); }
+    const hydrated = hydrateDateStore('hasil_dates');
+    if (hydrated.startDate && hydrated.endDate) {
+      setStartDate(hydrated.startDate);
+      setEndDate(hydrated.endDate);
+      persistDateStore('hasil_dates', hydrated.startDate, hydrated.endDate);
     } else {
+      setStartDate(today);
       setEndDate(today);
-      localStorage.setItem('hasil_endDate', today.toISOString());
+      persistDateStore('hasil_dates', today, today);
     }
 
     // Load persisted SOPd
@@ -105,15 +94,8 @@ export default function HasilProduksiClient() {
 
   useEffect(() => {
     if (!isMounted) return;
-    if (startDate) localStorage.setItem('hasil_startDate', startDate.toISOString());
-    else localStorage.removeItem('hasil_startDate');
-  }, [startDate, isMounted]);
-
-  useEffect(() => {
-    if (!isMounted) return;
-    if (endDate) localStorage.setItem('hasil_endDate', endDate.toISOString());
-    else localStorage.removeItem('hasil_endDate');
-  }, [endDate, isMounted]);
+    persistDateStore('hasil_dates', startDate, endDate);
+  }, [startDate, endDate, isMounted]);
 
   useEffect(() => {
     if (!isMounted) return;

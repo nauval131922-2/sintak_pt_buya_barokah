@@ -6,7 +6,7 @@ import CopyButton from '@/components/ui/CopyButton';
 
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { formatLastUpdate, splitDateRangeIntoMonths } from '@/lib/date-utils';
-import { getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod } from '@/lib/scraper-period';
+import { getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod, hydrateDateStore, persistDateStore } from '@/lib/scraper-period';
 import { DataTable } from '@/components/ui/DataTable';
 import SearchAndReload from '@/components/SearchAndReload';
 import TableFooter from '@/components/TableFooter';
@@ -179,33 +179,16 @@ export default function JurnalUmumClient() {
     // Sync Filter Tanggal Dibuat logic with JHP "Rentang Tanggal"
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const todayStr = today.toDateString();
-    
-    // 1. Hydrate From Date
-    const savedFrom = localStorage.getItem('jurnalUmum_createAtFrom');
-    if (savedFrom) {
-      const d = new Date(savedFrom);
-      if (!isNaN(d.getTime())) setCreateAtFrom(d);
-    }
 
-    // 2. Hydrate To Date with New Day Detection
-    const savedTo = localStorage.getItem('jurnalUmum_createAtTo');
-    const lastVisit = localStorage.getItem('jurnalUmum_lastVisitDate');
-    localStorage.setItem('jurnalUmum_lastVisitDate', todayStr);
-
-    const isNewDay = lastVisit !== todayStr;
-    if (savedTo && !isNewDay) {
-      const d = new Date(savedTo);
-      if (!isNaN(d.getTime())) setCreateAtTo(d);
-      else setCreateAtTo(today);
+    const hydratedDates = hydrateDateStore('jurnalUmum_createAt_dates');
+    if (hydratedDates.startDate && hydratedDates.endDate) {
+      setCreateAtFrom(hydratedDates.startDate);
+      setCreateAtTo(hydratedDates.endDate);
+      persistDateStore('jurnalUmum_createAt_dates', hydratedDates.startDate, hydratedDates.endDate);
     } else {
-      // If it's a new day, we might want to keep it null OR set to today.
-      // JHP sets to today if there was a value or if new day.
-      // But for "Filter Dibuat", keeping it flexible is better.
-      // Let's follow JHP: if it was set, update it to today. 
-      // If it's a new day, we reset to today for convenience.
+      setCreateAtFrom(today);
       setCreateAtTo(today);
-      localStorage.setItem('jurnalUmum_createAtTo', today.toISOString());
+      persistDateStore('jurnalUmum_createAt_dates', today, today);
     }
 
     mountedRef.current = true;
@@ -215,15 +198,8 @@ export default function JurnalUmumClient() {
   // Persist Filter Tanggal Dibuat changes
   useEffect(() => {
     if (!isMounted) return;
-    if (createAtFrom) localStorage.setItem('jurnalUmum_createAtFrom', createAtFrom.toISOString());
-    else localStorage.removeItem('jurnalUmum_createAtFrom');
-  }, [createAtFrom, isMounted]);
-
-  useEffect(() => {
-    if (!isMounted) return;
-    if (createAtTo) localStorage.setItem('jurnalUmum_createAtTo', createAtTo.toISOString());
-    else localStorage.removeItem('jurnalUmum_createAtTo');
-  }, [createAtTo, isMounted]);
+    persistDateStore('jurnalUmum_createAt_dates', createAtFrom, createAtTo);
+  }, [createAtFrom, createAtTo, isMounted]);
 
   useEffect(() => {
     let active = true;

@@ -59,7 +59,6 @@ export function getDefaultScraperDateRange() {
   endDate.setHours(23, 59, 59, 999);
 
   const startDate = new Date(endDate);
-  startDate.setMonth(startDate.getMonth() - 1);
   startDate.setHours(0, 0, 0, 0);
 
   return { startDate, endDate };
@@ -125,4 +124,53 @@ export function persistScraperPeriod(
   }
 
   return period;
+}
+
+// ---- Generic composite-date-store for non-scraper pages (Jurnal, Hasil, Tracking) ----
+
+const DATE_STORE_VERSION = 1;
+
+interface DateStore {
+  v: number;
+  startDate: string;
+  endDate: string;
+  dateTag: string;
+}
+
+export function persistDateStore(key: string, startDate: Date | null, endDate: Date | null) {
+  if (!startDate || !endDate) return;
+  const store: DateStore = {
+    v: DATE_STORE_VERSION,
+    startDate: startDate.toISOString(),
+    endDate: endDate.toISOString(),
+    dateTag: new Date().toDateString(),
+  };
+  localStorage.setItem(key, JSON.stringify(store));
+}
+
+export function hydrateDateStore(key: string): { startDate: Date | null; endDate: Date | null } {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return { startDate: null, endDate: null };
+    const store: DateStore = JSON.parse(raw);
+    if (!store || store.v !== DATE_STORE_VERSION) return { startDate: null, endDate: null };
+
+    const isNewDay = store.dateTag !== new Date().toDateString();
+    if (isNewDay) {
+      localStorage.removeItem(key);
+      return { startDate: null, endDate: null };
+    }
+
+    const dStart = new Date(store.startDate);
+    const dEnd = new Date(store.endDate);
+    if (isNaN(dStart.getTime()) || isNaN(dEnd.getTime())) {
+      localStorage.removeItem(key);
+      return { startDate: null, endDate: null };
+    }
+
+    return { startDate: dStart, endDate: dEnd };
+  } catch {
+    localStorage.removeItem(key);
+    return { startDate: null, endDate: null };
+  }
 }

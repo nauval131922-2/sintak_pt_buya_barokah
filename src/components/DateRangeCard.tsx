@@ -1,6 +1,34 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { DownloadCloud, Loader2 } from 'lucide-react';
 import DatePicker from '@/components/DatePicker';
+import { persistScraperPeriod } from '@/lib/scraper-period';
+
+const PATH_MAP: Record<string, { stateKey: string; periodKey?: string }> = {
+  '/pr': { stateKey: 'prReportState', periodKey: 'PRClient_scrapedPeriod' },
+  '/spph-out': { stateKey: 'spphOutState', periodKey: 'SpphOutClient_scrapedPeriod' },
+  '/sph-in': { stateKey: 'sphInState', periodKey: 'SphInClient_scrapedPeriod' },
+  '/purchase-orders': { stateKey: 'poState', periodKey: 'PurchaseOrderClient_scrapedPeriod' },
+  '/penerimaan-pembelian': { stateKey: 'pbState', periodKey: 'PenerimaanPembelianClient_scrapedPeriod' },
+  '/rekap-pembelian-barang': { stateKey: 'rbpState', periodKey: 'RekapPembelianBarangClient_scrapedPeriod' },
+  '/pelunasan-hutang': { stateKey: 'phState', periodKey: 'PelunasanHutangClient_scrapedPeriod' },
+  '/bom': { stateKey: 'bomReportState', periodKey: 'BOMClient_scrapedPeriod' },
+  '/orders': { stateKey: 'orderProduksiState', periodKey: 'OrderProduksiClient_scrapedPeriod' },
+  '/bahan-baku': { stateKey: 'bahanBakuState', periodKey: 'BahanBakuClient_scrapedPeriod' },
+  '/barang-jadi': { stateKey: 'barangJadiState', periodKey: 'BarangJadiClient_scrapedPeriod' },
+  '/hpp-kalkulasi': { stateKey: 'hppKalkulasiState', periodKey: 'HppKalkulasi_scrapedPeriod' },
+  '/sph-out': { stateKey: 'sphOutState', periodKey: 'SphOutClient_scrapedPeriod' },
+  '/sales-orders': { stateKey: 'salesOrderState', periodKey: 'SalesOrderClient_scrapedPeriod' },
+  '/sales': { stateKey: 'salesReportState', periodKey: 'SalesReportClient_scrapedPeriod' },
+  '/pengiriman': { stateKey: 'shState', periodKey: 'PengirimanClient_scrapedPeriod' },
+  '/pelunasan-piutang': { stateKey: 'ppState', periodKey: 'PelunasanPiutangClient_scrapedPeriod' },
+  '/rekap-sales-order': { stateKey: 'rekapSalesOrderState', periodKey: 'RekapSalesOrderClient_scrapedPeriod' },
+  '/akuntansi/laporan/jurnal-umum': { stateKey: 'jurnalUmumState', periodKey: 'JurnalUmumClient_scrapedPeriod' },
+  '/jurnal-harian-produksi/data/excel-sopd': { stateKey: 'sopdState', periodKey: 'SopdClient_scrapedPeriod' },
+  '/sync': { stateKey: 'bomReportState', periodKey: 'BOMClient_scrapedPeriod' }
+};
 
 interface DateRangeCardProps {
   startDate?: Date | null;
@@ -31,7 +59,17 @@ export default function DateRangeCard({
   children,
   fetchDisabled = false
 }: DateRangeCardProps) {
+  const pathname = usePathname();
   const hasDates = onStartDateChange && onEndDateChange;
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && startDate && endDate && pathname) {
+      const keys = PATH_MAP[pathname];
+      if (keys) {
+        persistScraperPeriod(keys, startDate, endDate);
+      }
+    }
+  }, [startDate, endDate, pathname]);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 py-3.5 px-6 shadow-sm shadow-green-900/5 flex flex-col gap-4 shrink-0 relative z-50 min-w-0">

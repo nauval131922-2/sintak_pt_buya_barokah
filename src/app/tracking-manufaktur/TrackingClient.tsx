@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import DatePicker from "@/components/DatePicker";
 import SearchAndReload from "@/components/SearchAndReload";
+import { persistDateStore, hydrateDateStore } from '@/lib/scraper-period';
 
 // Unified date formatter for MDT Host source data (YYYY-MM-DD -> DD-MM-YYYY)
 const formatMdtDate = (str: string) => {
@@ -931,24 +932,15 @@ export default function TrackingClient() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const savedStart = localStorage.getItem("tracking_startDate");
-    if (savedStart) {
-      const d = new Date(savedStart);
-      if (!isNaN(d.getTime())) setStartDate(d);
-    }
-
-    const savedEnd = localStorage.getItem("tracking_endDate");
-    const lastVisit = localStorage.getItem("tracking_lastVisitDate");
-    const todayStr = today.toDateString();
-    localStorage.setItem("tracking_lastVisitDate", todayStr);
-
-    const isNewDay = lastVisit !== todayStr;
-    if (savedEnd && !isNewDay) {
-      const d = new Date(savedEnd);
-      if (!isNaN(d.getTime())) setEndDate(d);
+    const hydrated = hydrateDateStore('tracking_dates');
+    if (hydrated.startDate && hydrated.endDate) {
+      setStartDate(hydrated.startDate);
+      setEndDate(hydrated.endDate);
+      persistDateStore('tracking_dates', hydrated.startDate, hydrated.endDate);
     } else {
+      setStartDate(today);
       setEndDate(today);
-      localStorage.setItem("tracking_endDate", today.toISOString());
+      persistDateStore('tracking_dates', today, today);
     }
 
     const savedSupplier = localStorage.getItem("tracking_selectedSupplier");
@@ -959,16 +951,8 @@ export default function TrackingClient() {
 
   // Persist dates on change
   useEffect(() => {
-    if (startDate)
-      localStorage.setItem("tracking_startDate", startDate.toISOString());
-    else localStorage.removeItem("tracking_startDate");
-  }, [startDate]);
-
-  useEffect(() => {
-    if (endDate)
-      localStorage.setItem("tracking_endDate", endDate.toISOString());
-    else localStorage.removeItem("tracking_endDate");
-  }, [endDate]);
+    persistDateStore('tracking_dates', startDate, endDate);
+  }, [startDate, endDate]);
 
   useEffect(() => {
     if (selectedSupplier)
