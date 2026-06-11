@@ -123,6 +123,10 @@ Bug diketahui : 0
 Progress      : 94.4%
 ```
 
+### Catatan Sesi 2026-06-11
+- Commit massal perubahan dari 17 file: unified date store, copy multi-select, koordinasi group sort, URL sync target, employee sorting, DateRangeCard persist, refactor options API.
+- Update `.gitignore` untuk `testsprite_tests/` dan `_copy_*`.
+
 ---
 
 <!--

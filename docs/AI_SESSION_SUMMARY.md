@@ -1,5 +1,54 @@
 # AI Session Summary
 
+## Update Sesi — 2026-06-11
+
+### Konteks Sesi
+- Sesi finalisasi dan commit perubahan dari 17 file source code yang mencakup berbagai fitur dan refaktor.
+
+### Pekerjaan Sesi Ini
+1. **Refactor Unified Date Store**:
+   - Migrasi `JurnalUmumClient`, `HasilProduksiClient`, `JurnalClient`, `TrackingClient` dari raw `localStorage` ke `persistDateStore`/`hydrateDateStore` di `scraper-period.ts`.
+   - Menambahkan `getDefaultScraperDateRange` fix: hapus `setMonth -1` agar default range hanya hari ini, bukan 1 bulan.
+
+2. **Feat: Copy Jadwal Multi-Select**:
+   - Copy modal sekarang support pilih banyak bagian & karyawan sekaligus (array-based).
+   - API `copy-jadwal/route.ts` menerima array `bagian` & `namaKaryawan` dengan `IN(...)` clause.
+
+3. **Feat: Koordinasi Group Sort**:
+   - Sorting JHP menggunakan `MIN(CASE ...) OVER (PARTITION BY tgl, nama_karyawan)` agar semua entry karyawan yg punya Koordinasi dikelompokkan duluan.
+   - Diterapkan di API JHP, export-jurnal, dan sort client-side TargetClient.
+   - Drop & recreate `idx_jurnal_main` tanpa expression index window function; tambah `idx_jurnal_tgl_karyawan_pekerjaan`.
+
+4. **Feat: URL Sync Target Page**:
+   - `TargetClient` menggunakan `useSearchParams` untuk persist date di URL (bukan cuma localStorage).
+   - Module-level cache (`_cachedDate`) menghindari flash saat navigasi balik.
+   - `target/page.tsx` dibungkus `Suspense` untuk kompatibilitas `useSearchParams`.
+
+5. **Feat: Employee Table Sorting**:
+   - `DataTable.tsx` menerima controlled `sorting` + `onSortingChange` props.
+   - `EmployeeTable.tsx` mengirim state sorting ke API.
+   - `employees/route.ts` menerima `sortBy`/`sortDir` params (whitelist kolom yang aman).
+
+6. **Feat: DateRangeCard Scraper Persist**:
+   - `DateRangeCard.tsx` jadi `'use client'` dan auto-persist scraper period via `PATH_MAP` ke localStorage.
+
+7. **Feat: JHP Options API Refactor**:
+   - Bagian dropdown kini dari `master_pekerjaan_jurnal_produksi`, karyawan dari `employees` table.
+   - Tambah `yearsCount`, `karyawanByBagian`, dan in-memory cache (TTL 10 detik).
+
+8. **Chore & Cleanup**:
+   - Hapus `.agents/workflows/dev-with-timestamp.md`.
+   - Hapus `_copy_dev_temp.js` (temp debug file).
+   - Update `.gitignore`: tambah `testsprite_tests/`, `_copy_*`, `_copy_*/`.
+   - Fix trailing whitespace di 3 file.
+
+### Keputusan Teknis
+- `getDefaultScraperDateRange` default range diubah dari 1 bulan ke 1 hari saja (hari ini).
+- URL-based date persistence untuk Target Page agar link bisa di-share/bookmark.
+- Controlled sorting di DataTable memungkinkan server-side sort tanpa kehilangan state.
+
+---
+
 ## Update Sesi — 2026-06-05
 
 ### Konteks Sesi
