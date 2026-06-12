@@ -8,6 +8,7 @@ _Tidak ada task yang sedang berjalan saat ini._
 
 ## 📌 Akan Dikerjakan (Backlog)
 
+- [ ] **Auto-Generate Jadwal Produksi Harian** — fitur generate draft jadwal besok berdasarkan histori JHP (lihat `docs/AUTO_GENERATE_JADWAL.md`)
 - [ ] Validasi ulang quick start README setelah setup di mesin baru
 - [ ] Dokumentasikan command operasional harian yang paling sering dipakai
 - [ ] Integrasi Audit Log yang lebih detail untuk setiap aksi User
@@ -119,12 +120,12 @@ _Tidak ada task yang sedang berjalan saat ini._
 ## 📊 Statistik
 
 ```
-Total task    : 111
+Total task    : 112
 Selesai       : 105
 In progress   : 0
-Backlog       : 4 (+ 2 ide)
+Backlog       : 5 (+ 2 ide)
 Bug diketahui : 0
-Progress      : 94.6%
+Progress      : 93.8%
 ```
 
 ### Catatan Sesi 2026-06-12

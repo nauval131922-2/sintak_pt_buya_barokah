@@ -39,6 +39,12 @@
 - Empty state tidak lagi menggunakan `uppercase` sesuai aturan `AGENTS.md`.
 - DatePicker difasilitasi dengan data attribute untuk akses dari luar komponen (tanpa ref forwarding).
 
+### Dokumentasi Baru
+- `docs/AUTO_GENERATE_JADWAL.md` — dokumen perencanaan fitur auto-generate jadwal produksi harian, berisi 12 pertanyaan untuk menentukan kebutuhan fitur.
+
+### Sisa Pekerjaan / Backlog
+- Fitur Auto-Generate Jadwal Produksi Harian menunggu jawaban dari 12 pertanyaan di `docs/AUTO_GENERATE_JADWAL.md`.
+
 ---
 
 ## Update Sesi — 2026-06-11
