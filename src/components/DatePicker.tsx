@@ -301,7 +301,7 @@ export default function DatePicker({ name, required, label, onChange, value, cus
       <input type="hidden" name={name} value={valueStr} required={required} />
 
       {/* TRIGGER: bagian yang diklik untuk buka popup */}
-      <div ref={triggerRef} onClick={toggleOpen}>
+      <div ref={triggerRef} data-date-picker-trigger={name} onClick={toggleOpen}>
         {customTrigger ? customTrigger(toggleOpen) : (
           <div className="w-full h-11 bg-white border border-gray-100 rounded-lg px-2.5 sm:px-4 text-xs sm:text-sm cursor-pointer flex items-center justify-between shadow-sm transition-all hover:border-green-500 group">
             <span className={`font-bold sm:font-semibold whitespace-nowrap ${formatted ? 'text-gray-800' : 'text-gray-300'}`}>

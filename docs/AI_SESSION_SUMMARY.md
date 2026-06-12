@@ -1,5 +1,46 @@
 # AI Session Summary
 
+## Update Sesi — 2026-06-12
+
+### Konteks Sesi
+- Sesi perbaikan bug dan optimasi pada halaman Jadwal Produksi Harian (target) dan Export JHP Excel.
+
+### Pekerjaan Sesi Ini
+1. **Fix: Race Condition Fetch Data Target Page**:
+   - `TargetClient.tsx`: ubah initial `loading=false` → `true` agar tidak flash "Tidak Ada Data".
+   - Tambah `fetchIdRef` + stale response guard di `fetchData`. Dua fetch concurrent (hari ini vs tanggal URL) tidak lagi saling overwrite.
+   - Hasil: navigasi ke `?date=YYYY-MM-DD` langsung tampil data tanpa refresh.
+
+2. **Fix: Auto-reset Tanggal Saat Hari Berganti**:
+   - `TargetClient.tsx`: di hydration effect, cek `store.dateTag !== new Date().toDateString()`.
+   - Jika hari berbeda → reset ke `getTodayStr()`. Jika hari sama → pertahankan pilihan user.
+   - Hasil: logout/login di hari yang sama tidak reset tanggal, tapi besok buka halaman otomatis kembali ke hari ini.
+
+3. **Feat: UI Empty State Baru + Tombol Aksi**:
+   - `TargetClient.tsx`: hapus `opacity-30` dan `uppercase`, ganti dengan card putih `rounded-2xl` `shadow-sm`, icon emerald, tampilkan `formatIndoDate(dateStr)`.
+   - Tambah tombol "Pilih Tanggal Lain" (buka DatePicker) dan "Muat Ulang" (refresh data).
+
+4. **Fix: Tombol Pilih Tanggal Lain**:
+   - `DatePicker.tsx`: tambah atribut `data-date-picker-trigger={name}` di trigger div.
+   - `TargetClient.tsx`: query `[data-date-picker-trigger="filter_date"]` untuk klik trigger DatePicker.
+
+5. **Perf: Dual Database Connection untuk Export**:
+   - File baru `src/lib/db-export.ts`: koneksi SQLite kedua via `createClient()` terpisah.
+   - `export-jurnal/route.ts`: ganti `import db from '@/lib/db'` → `import db from '@/lib/db-export'`.
+   - Hasil: export Excel gak ngeblock halaman lain (WAL mode, concurrent readers).
+
+6. **Fix: Pesan Export Dinamis**:
+   - `JurnalClient.tsx`: tambah state `yearsCount`, simpan dari `/api/jurnal-harian-produksi/options`.
+   - Teks overlay `"Sedang memproses seluruh database jurnal (~168k baris)"` diganti dengan estimasi real sesuai tahun terpilih.
+   - Pesan progress bar dan modal deskripsi export juga dinamis.
+
+### Keputusan Teknis
+- `db-export.ts` adalah koneksi read-only terpisah, tanpa wrapper session logging — karena export cuma query SELECT.
+- Empty state tidak lagi menggunakan `uppercase` sesuai aturan `AGENTS.md`.
+- DatePicker difasilitasi dengan data attribute untuk akses dari luar komponen (tanpa ref forwarding).
+
+---
+
 ## Update Sesi — 2026-06-11
 
 ### Konteks Sesi

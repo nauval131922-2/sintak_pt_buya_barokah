@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/lib/db";
+import db from "@/lib/db-export";
 import { getSession } from "@/lib/session";
 import ExcelJS from "exceljs";
 import { logActivity } from '@/lib/activity';

@@ -17,6 +17,10 @@ _Tidak ada task yang sedang berjalan saat ini._
 
 ## ✅ Selesai (Done)
 
+- [x] Perbaikan race condition fetch data halaman Target + auto-reset tanggal saat hari berganti — 2026-06-12
+- [x] UI empty state baru halaman Target (emerald theme, sentence case, tombol aksi) — 2026-06-12
+- [x] Dual database connection untuk export Excel agar tidak blokir user lain — 2026-06-12
+- [x] Pesan export dinamis sesuai tahun terpilih (hilangkan hardcoded "168k" dan "seluruh database") — 2026-06-12
 - [x] Pembersihan file tidak terpakai (file debug root, database kosong, script eksperimental, folder kosong, dan folder tmp) — 2026-06-05
 - [x] Implementasi Progress Bar Hapus Log Aktivitas (Dedicated Progress Screen, Live Percentage, Dynamic Status, & Timer) di Dashboard Umum — 2026-05-20
 - [x] Penghapusan Menyeluruh Fitur Statistik Performa (`statistik`) dari Navigasi, Halaman Stats, RBAC, dan Database — 2026-05-20
@@ -115,17 +119,18 @@ _Tidak ada task yang sedang berjalan saat ini._
 ## 📊 Statistik
 
 ```
-Total task    : 107
-Selesai       : 101
+Total task    : 111
+Selesai       : 105
 In progress   : 0
 Backlog       : 4 (+ 2 ide)
 Bug diketahui : 0
-Progress      : 94.4%
+Progress      : 94.6%
 ```
 
-### Catatan Sesi 2026-06-11
-- Commit massal perubahan dari 17 file: unified date store, copy multi-select, koordinasi group sort, URL sync target, employee sorting, DateRangeCard persist, refactor options API.
-- Update `.gitignore` untuk `testsprite_tests/` dan `_copy_*`.
+### Catatan Sesi 2026-06-12
+- Perbaikan race condition, auto-reset tanggal, dan UI empty state halaman Target.
+- Dual database connection untuk export (db-export.ts).
+- Pesan dan estimasi export dinamis sesuai tahun.
 
 ---
 

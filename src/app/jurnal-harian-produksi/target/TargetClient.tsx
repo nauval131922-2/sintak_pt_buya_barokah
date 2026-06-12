@@ -46,7 +46,7 @@ export default function TargetClient() {
   const [dateStr, setDateStr] = useState<string>(() => _cachedDate || getTodayStr());
   const [hydrated, setHydrated] = useState(false);
   const [data, setData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   // Hydrate: URL > localStorage > today (module cache udah di useState initializer)
@@ -67,6 +67,12 @@ export default function TargetClient() {
       if (raw) {
         const store = JSON.parse(raw);
         if (store?.v === 1) {
+          if (store.dateTag !== new Date().toDateString()) {
+            _cachedDate = getTodayStr();
+            setDateStr(_cachedDate);
+            setHydrated(true);
+            return;
+          }
           const d = new Date(store.startDate);
           if (!isNaN(d.getTime())) {
             _cachedDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -132,14 +138,17 @@ export default function TargetClient() {
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const [employees, setEmployees] = useState<any[]>([]);
   const printRef = useRef<HTMLDivElement>(null);
+  const fetchIdRef = useRef(0);
 
   const fetchData = useCallback(async (selectedDate: string) => {
+    const fetchId = ++fetchIdRef.current;
     setLoading(true);
     setError('');
     try {
       const res = await fetch(`/api/jurnal-harian-produksi?startDate=${selectedDate}&endDate=${selectedDate}&limit=500`);
       const result = await res.json();
       if (result.success) {
+          if (fetchId !== fetchIdRef.current) return;
           // Pre-compute employees yg punya Koordinasi (untuk grup sort)
           const koordinasiSet = new Set<string>();
           for (const row of result.data) {
@@ -189,9 +198,9 @@ export default function TargetClient() {
         setError(result.error || 'Gagal memuat data');
       }
     } catch (err: any) {
-      setError(err.message);
+      if (fetchId === fetchIdRef.current) setError(err.message);
     } finally {
-      setLoading(false);
+      if (fetchId === fetchIdRef.current) setLoading(false);
     }
   }, []);
 
@@ -546,12 +555,33 @@ export default function TargetClient() {
             <button onClick={() => fetchData(dateStr)} className="text-sm font-bold text-green-600 underline underline-offset-2">Coba lagi</button>
           </div>
         ) : data.length === 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-[400px] gap-3 opacity-30 w-full">
-             <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-2">
-                <ImageIcon size={40} className="text-gray-300" />
-             </div>
-            <p className="text-lg font-black text-gray-400 uppercase tracking-tighter">Tidak Ada Data</p>
-            <p className="text-xs font-semibold text-gray-400">Tidak ada jadwal untuk tanggal yang dipilih</p>
+          <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 w-full bg-white rounded-2xl shadow-sm border border-gray-100 animate-in fade-in duration-300">
+            <div className="w-24 h-24 bg-emerald-50 rounded-2xl flex items-center justify-center mb-1">
+              <ImageIcon size={44} className="text-emerald-400" />
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <p className="text-xl font-black text-gray-700 tracking-tight">Tidak ada data</p>
+              <p className="text-sm font-semibold text-gray-400">
+                Belum ada jadwal untuk {formatIndoDate(dateStr)}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 mt-1">
+              <button
+                onClick={() => {
+                  const el = document.querySelector('[data-date-picker-trigger="filter_date"]');
+                  (el as HTMLElement)?.click();
+                }}
+                className="px-5 h-10 text-[13px] font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition-all active:scale-95"
+              >
+                Pilih Tanggal Lain
+              </button>
+              <button
+                onClick={() => fetchData(dateStr)}
+                className="px-5 h-10 text-[13px] font-bold text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl transition-all active:scale-95"
+              >
+                Muat Ulang
+              </button>
+            </div>
           </div>
         ) : (
           /* ── PRINTABLE CARD ── */

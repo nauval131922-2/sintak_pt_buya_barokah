@@ -156,6 +156,7 @@ export default function JurnalClient({
   const [showYearModal, setShowYearModal] = useState(false);
   const [selectedExportYear, setSelectedExportYear] = useState('all');
   const [availableYears, setAvailableYears] = useState<string[]>([]);
+  const [yearsCount, setYearsCount] = useState<Record<string, number>>({});
 
   // Copy Jadwal Modal state
   const [showCopyModal, setShowCopyModal] = useState(false);
@@ -386,6 +387,7 @@ export default function JurnalClient({
           setAllEmployeeNames(employeeNames);
           setNamaOptions(employeeNames);
           setAvailableYears(json.years || []);
+          setYearsCount(json.yearsCount || {});
           setKaryawanByBagian(json.karyawanByBagian || {});
         }
       } catch {}
@@ -1266,8 +1268,8 @@ export default function JurnalClient({
         } else if (progress < 55) {
           setExportStatusText(
             year === 'all'
-              ? 'Membaca 168.000+ data jurnal...'
-              : `Membaca data jurnal tahun ${year}...`
+              ? `Membaca ${(yearsCount['all'] || 0).toLocaleString('id-ID')} data jurnal...`
+              : `Membaca ${(yearsCount[year] || 0).toLocaleString('id-ID')} data jurnal tahun ${year}...`
           );
         } else if (progress < 80) {
           setExportStatusText('Menyusun Workbook & Tanggal (ExcelJS)...');
@@ -2543,7 +2545,9 @@ export default function JurnalClient({
             <p className="text-[12px] text-gray-500 font-medium mb-5 max-w-[280px]">
               {exportProgress === 100 
                 ? 'File Excel sedang diunduh ke perangkat Anda...'
-                : 'Sedang memproses seluruh database jurnal (~168k baris) ke file Excel.'
+                : selectedExportYear === 'all'
+                ? `Sedang memproses ${(yearsCount['all'] || 0).toLocaleString('id-ID')} baris jurnal ke file Excel.`
+                : `Sedang memproses ${(yearsCount[selectedExportYear] || 0).toLocaleString('id-ID')} baris jurnal tahun ${selectedExportYear} ke file Excel.`
               }
             </p>
 
@@ -2610,7 +2614,10 @@ export default function JurnalClient({
               onChange={(val) => setSelectedExportYear(val === '' ? 'all' : val)}
             />
             <p className="mt-2.5 text-[11px] text-gray-400 font-medium ml-1">
-              Data yang diekspor adalah seluruh baris pada tahun yang dipilih.
+              {selectedExportYear === 'all'
+                ? `Data yang diekspor adalah ${(yearsCount['all'] || 0).toLocaleString('id-ID')} baris jurnal dari seluruh tahun.`
+                : `Data yang diekspor adalah ${(yearsCount[selectedExportYear] || 0).toLocaleString('id-ID')} baris jurnal tahun ${selectedExportYear}.`
+              }
             </p>
           </div>
         </BaseModal>
