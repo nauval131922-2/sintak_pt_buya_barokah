@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Printer, Loader2, ArrowLeft, Image as ImageIcon, RefreshCw, AlertCircle, Copy, Check, RotateCcw } from 'lucide-react';
+import { Printer, Loader2, ArrowLeft, Image as ImageIcon, RefreshCw, AlertCircle, Copy, Check, RotateCcw, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import DatePicker from '@/components/DatePicker';
 import SearchableDropdown from '@/components/SearchableDropdown';
+import AutoGenerateModal from '@/components/AutoGenerateModal';
 import { domToBlob, domToPng } from 'modern-screenshot';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -22,6 +23,12 @@ function formatIndoDate(dateStr: string) {
 function getTodayStr() {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+}
+
+function getTomorrowStr() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function getJam(shift: string): string {
@@ -136,6 +143,7 @@ export default function TargetClient() {
     }
   }, [ks1, ks2, ks3]);
   const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [employees, setEmployees] = useState<any[]>([]);
   const printRef = useRef<HTMLDivElement>(null);
   const fetchIdRef = useRef(0);
@@ -529,6 +537,14 @@ export default function TargetClient() {
             )}
             <span>{generatingPdf ? 'Memproses...' : 'Cetak'}</span>
           </button>
+
+          <button
+            onClick={() => setShowGenerateModal(true)}
+            className="flex items-center gap-2 px-4 h-10 bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl text-[12px] font-bold shadow-md shadow-emerald-100 transition-all active:scale-95"
+          >
+            <Sparkles size={14} />
+            <span>Generate Jadwal</span>
+          </button>
         </div>
       </div>
 
@@ -574,6 +590,13 @@ export default function TargetClient() {
                 className="px-5 h-10 text-[13px] font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition-all active:scale-95"
               >
                 Pilih Tanggal Lain
+              </button>
+              <button
+                onClick={() => setShowGenerateModal(true)}
+                className="px-5 h-10 text-[13px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 border border-emerald-600 rounded-xl shadow-md shadow-emerald-100 transition-all active:scale-95 flex items-center gap-2"
+              >
+                <Sparkles size={14} />
+                Generate Jadwal
               </button>
               <button
                 onClick={() => fetchData(dateStr)}
@@ -649,6 +672,14 @@ export default function TargetClient() {
       </div>
 
       {/* ── Print CSS ── */}
+      <AutoGenerateModal
+        isOpen={showGenerateModal}
+        onClose={() => setShowGenerateModal(false)}
+        targetDate={getTomorrowStr()}
+        employees={employees}
+        onSaved={() => { fetchData(dateStr); }}
+      />
+
       <style jsx global>{`
         @media print {
           @page { size: A4 portrait; margin: 0.2cm; }
