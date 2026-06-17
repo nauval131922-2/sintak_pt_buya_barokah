@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { History } from 'lucide-react';
 import { buildActivityLogHref } from '@/lib/activity-log-url';
@@ -17,6 +18,25 @@ export default function ViewActivityLogLink({
   actionType?: string;
   className?: string;
 }) {
+  const [allowed, setAllowed] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    fetch('/api/permissions/check-activity-log')
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) {
+          setAllowed(res.allowed);
+        } else {
+          setAllowed(false);
+        }
+      })
+      .catch(() => setAllowed(false));
+  }, []);
+
+  if (allowed === null || !allowed) {
+    return null;
+  }
+
   const href = buildActivityLogHref({ tableName, from, to, actionType });
 
   return (

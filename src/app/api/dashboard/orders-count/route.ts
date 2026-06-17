@@ -17,7 +17,7 @@ export async function GET(request: Request) {
       year: 'numeric',
     })
       .format(d)
-      .replace(/\//g, '/'); // tetap DD/MM/YYYY
+      .replace(/\//g, '-'); // DD-MM-YYYY sesuai format database
 
   const todayStr = fmt(now); // e.g. "17/05/2025"
 

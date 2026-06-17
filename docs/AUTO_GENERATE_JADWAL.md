@@ -14,18 +14,18 @@ Koordinator shift bisa membuat draft jadwal produksi untuk **hari berikutnya** d
 
 | # | Kategori | Pertanyaan | Jawaban | Status |
 |---|----------|-----------|---------|--------|
-| 1 | Shift | Apakah shift karyawan **tetap** (si A selalu shift 1) atau **rotasi**? | | ⬜ |
-| 2 | Shift | Kalau rotasi, apa polanya? (mingguan, bulanan, atau manual tiap hari?) | | ⬜ |
-| 3 | Bagian | Apakah 1 karyawan bisa kerja di **lebih dari 1 bagian**? (misal hari ini Setting, besok Finishing) | | ⬜ |
-| 4 | Order | Apakah order (`no_order`) bisa **berlanjut** keesokan harinya? Atau tiap hari order baru? | | ⬜ |
-| 5 | Order | Apakah ada kolom/flag yang menandakan **"order ini sudah selesai"** atau masih berjalan? | | ⬜ |
-| 6 | Pekerjaan | `jenis_pekerjaan` per karyawan itu **sama setiap hari** atau **berubah-ubah**? | | ⬜ |
-| 7 | Jadwal | **Hari apa saja** produksi jalan? (Senin-Sabtu? Senin-Jumat? Termasuk Minggu/libur?) | | ⬜ |
-| 8 | Jadwal | Apakah jadwal hari Senin mirip dengan **hari Sabtu sebelumnya**, atau dengan **Senin minggu lalu**? | | ⬜ |
-| 9 | Koordinator | Apakah data koordinator (`ks1/ks2/ks3`) ikut digenerate atau tetap diisi manual? | | ⬜ |
-| 10 | Review | Setelah jadwal digenerate, apakah koordinator **wajib review** dulu sebelum jadi resmi? | | ⬜ |
-| 11 | Eksternal | Apakah ada **file Excel / data terpisah** berisi roster shift atau jadwal karyawan? | | ⬜ |
-| 12 | Histori | Apakah histori JHP minimal **3 bulan terakhir** cukup lengkap untuk referensi? | | ⬜ |
+| 1 | Shift | Apakah shift karyawan **tetap** (si A selalu shift 1) atau **rotasi**? | seringnya rotasi, tapi memungkinkan juga untuk semua karyawan dalam 1 shift| ⬜ |
+| 2 | Shift | Kalau rotasi, apa polanya? (mingguan, bulanan, atau manual tiap hari?) | seringnya mingguan, tapi memungkinkan juga untuk diubah manual tiap hari| ⬜ |
+| 3 | Bagian | Apakah 1 karyawan bisa kerja di **lebih dari 1 bagian**? (misal hari ini Setting, besok Finishing) | seharusnya tidak, tapi bisa jadi iya| ⬜ |
+| 4 | Order | Apakah order (`no_order`) bisa **berlanjut** keesokan harinya? Atau tiap hari order baru? | bisa berlanjut, tergantung pekerjaan order itu sudah sampai tahap apa, besok bisa dilanjut tahap selanjutnya sesuai urutan pekerjaan pada ordernya| ⬜ |
+| 5 | Order | Apakah ada kolom/flag yang menandakan **"order ini sudah selesai"** atau masih berjalan? | untuk sekarang belum ada| ⬜ |
+| 6 | Pekerjaan | `jenis_pekerjaan` per karyawan itu **sama setiap hari** atau **berubah-ubah**? | bisa jadi berubah-ubah, tergantung dia sudah mencapai target dan pekerjaan selanjutnya apa untuk ordernya| ⬜ |
+| 7 | Jadwal | **Hari apa saja** produksi jalan? (Senin-Sabtu? Senin-Jumat? Termasuk Minggu/libur?) | normalnya sabtu sampai kamis, tapi memungkinkan juga hari jumat ada lembur| ⬜ |
+| 8 | Jadwal | Apakah jadwal hari Senin mirip dengan **hari Sabtu sebelumnya**, atau dengan **Senin minggu lalu**? | bisa jadi mirip bisa jadi ngga, dan ini konteks dari pertanyaan kamu jika liburnya minggu kan ya?, tapi kita liburnya jumat| ⬜ |
+| 9 | Koordinator | Apakah data koordinator (`ks1/ks2/ks3`) ikut digenerate atau tetap diisi manual? | sementara diisi manual gapapa, atau bisa kamu jadikan seperti hari sebelumnya aja, tapi user tetap bisa ngubah| ⬜ |
+| 10 | Review | Setelah jadwal digenerate, apakah koordinator **wajib review** dulu sebelum jadi resmi? | tentu saja wajib review, dan hasil reviewnya nanti user bisa mengetik kenapa kok itu salah, dan seharusnya seperti apa, dan jadikan itu sebagai baham belajar kamu (sebagai sistem), agar tetap berkembang menjadi lebih baik untuk kedepannya, apakah bisa?, dan apakah kita membutuhkan AI untuk SINTAK ini?| ⬜ |
+| 11 | Eksternal | Apakah ada **file Excel / data terpisah** berisi roster shift atau jadwal karyawan? |untuk sekarang belum ada | ⬜ |
+| 12 | Histori | Apakah histori JHP minimal **3 bulan terakhir** cukup lengkap untuk referensi? |bisa jadi tidak, soalnya ada order yang bahkan 1 tahun lebih itu bisa jadi belum selesai (masih dalam tahap proses produksi) | ⬜ |
 
 ---
 

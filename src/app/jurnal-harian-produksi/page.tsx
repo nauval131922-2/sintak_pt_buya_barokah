@@ -38,7 +38,13 @@ export default async function JurnalHarianPage() {
         description="Laporan target dan realisasi pekerjaan harian produksi."
       />
 
-      <JurnalClient canInputTarget={canInputTarget} canInputRealisasi={canInputRealisasi} canCopyJadwal={canCopyJadwal} isSuperAdmin={isSuperAdmin} />
+      <JurnalClient
+        canInputTarget={canInputTarget}
+        canInputRealisasi={canInputRealisasi}
+        canCopyJadwal={canCopyJadwal}
+        isSuperAdmin={isSuperAdmin}
+        userRole={session?.role || ""}
+      />
     </div>
   );
 }
