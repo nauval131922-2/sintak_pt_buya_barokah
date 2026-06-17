@@ -257,7 +257,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
     canAccess('tracking_manufaktur') || canAccess('activity_log_view') || canAccess('activity_log') || canAccess('karyawan') ||
     canAccess('catat_kesalahan') ||
     canAccess('hpp_kalkulasi') ||
-    canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp_master_pekerjaan_jurnal_produksi') || canAccess('produksi_jhp') || canAccess('produksi_jhp_target') || canAccess('produksi_hasil') ||
+    canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp_master_pekerjaan_jurnal_produksi') || canAccess('produksi_jhp') || canAccess('produksi_jhp_target') || canAccess('produksi_hasil') || canAccess('produksi_jhp_analisa') ||
     canAccess('kalkulasi_rekap_so');
 
   const isAnyChildActive = (item: MenuItem): boolean => {
@@ -580,7 +580,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
               />
             )}
 
-            {(canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp_master_pekerjaan_jurnal_produksi') || canAccess('produksi_jhp') || canAccess('produksi_jhp_target') || canAccess('produksi_hasil')) && (
+            {(canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp_master_pekerjaan_jurnal_produksi') || canAccess('produksi_jhp') || canAccess('produksi_jhp_target') || canAccess('produksi_hasil') || canAccess('produksi_jhp_analisa')) && (
               <AccordionMenu
                 id="produksi-sistem"
                 label="Produksi"
@@ -600,6 +600,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                     }] : []),
                     ...(canAccess('produksi_jhp') ? [{ label: 'Jurnal Harian Produksi', href: '/jurnal-harian-produksi', icon: <ClipboardList size={14} />, exact: true }] : []),
                     ...(canAccess('produksi_jhp_target') ? [{ label: 'Target Harian', href: '/jurnal-harian-produksi/target', icon: <TrendingUp size={14} /> }] : []),
+                    ...(canAccess('produksi_jhp_analisa') ? [{ label: 'Analisa Produksi', href: '/jurnal-harian-produksi/analisa', icon: <BarChart2 size={14} /> }] : []),
                   ]
                 },
                 ...(canAccess('produksi_hasil') ? [{ label: 'Hasil Produksi', href: '/hasil-produksi', icon: <BarChart3 size={16} /> }] : []),
