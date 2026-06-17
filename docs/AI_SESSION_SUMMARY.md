@@ -1,5 +1,60 @@
 # AI Session Summary
 
+## Update Sesi — 2026-06-17
+
+### Konteks Sesi
+- Sesi implementasi 3 fitur baru pada modul Jurnal Harian Produksi (JHP): Auto-Generate Jadwal, Analisa Produksi, dan Revert Copy Jadwal. Ditambah beberapa perbaikan kecil.
+
+### Pekerjaan Sesi Ini
+
+1. **Feat: Auto-Generate Jadwal Produksi dari Pola Historis**:
+   - API `/api/jurnal-harian-produksi/auto-generate/draft`: analisis pola 7 hari terakhir, deteksi tanggal kosong terdekat, kembalikan draft baris jadwal dengan metadata (`sourceDate`, `resolvedDate`, `mode`, `meta`).
+   - API `/api/jurnal-harian-produksi/auto-generate/save`: simpan draft ke tabel JHP, dukung flag `append` saat tanggal sudah ada data.
+   - API `/api/jurnal-harian-produksi/auto-generate/scrape`: trigger scrape orders + barang jadi bulan berjalan sebelum generate.
+   - Komponen `AutoGenerateModal`: modal 2 fase — fase 1 progress bar scraping (orders + barang jadi + analisis), fase 2 tabel draft editable dengan rekap order & pekerjaan. Support Jumat/lembur, append confirm, feedback per baris.
+   - Komponen `DraftRowItem`: baris tabel draft dengan `InlineDropdown` untuk bagian/shift/karyawan/order/pekerjaan, tombol sisipkan/hapus/feedback, sub-row feedback.
+   - Komponen `InlineDropdown`: dropdown ringan searchable + freeInput via `createPortal`, kalkulasi posisi fixed agar tidak terpotong overflow, keyboard navigation.
+   - `TargetClient.tsx`: tombol "Generate Jadwal" di header dan di empty state, `targetDate` = hari berikutnya.
+
+2. **Feat: Modul Analisa Produksi JHP**:
+   - API `/api/jurnal-harian-produksi/analisa`: agregasi data produksi per karyawan, bagian, order dalam rentang tanggal.
+   - Halaman `/jurnal-harian-produksi/analisa` + `AnalisaClient.tsx` dengan filter tanggal dan tabel rekap.
+   - Permission baru `produksi_jhp_analisa` di `MODULE_REGISTRY`.
+   - Menu "Analisa Produksi" di Sidebar grup Produksi, guard `canAccess('produksi_jhp_analisa')`.
+
+3. **Feat: Revert Copy Jadwal**:
+   - API POST `/api/jurnal-harian-produksi/copy-jadwal/revert`: soft delete semua data JHP yang dicopy berdasarkan `COPY_JADWAL` activity log terbaru.
+   - GET `/api/jurnal-harian-produksi/copy-jadwal`: tambah field `canRevert` — true jika `COPY_JADWAL` terbaru belum di-revert (bandingkan `id DESC` antara `COPY_JADWAL` dan `REVERT_COPY_JADWAL`).
+   - `JurnalClient.tsx`: tambah handler `handleRevertCopyJadwal`, tombol revert dengan `ConfirmDialog`, prop `userRole` dari `page.tsx`.
+
+4. **Fix & Misc**:
+   - API `/api/permissions/check-activity-log`: endpoint baru, cek permission `activity_log_view` dari sesi server-side.
+   - `ViewActivityLogLink.tsx`: fetch check-activity-log saat mount, sembunyikan link jika tidak punya akses (fail-close).
+   - `orders-count/route.ts`: fix format tanggal `DD/MM/YYYY` → `DD-MM-YYYY` agar cocok dengan format kolom database.
+   - `schema.ts`: tambah tabel `generate_feedback` untuk menyimpan koreksi user saat review draft (bahan belajar sistem ke depan).
+   - `docs/AUTO_GENERATE_JADWAL.md`: update jawaban 12 pertanyaan perencanaan dari masukan user.
+
+### Keputusan Teknis
+- Draft auto-generate tidak langsung disimpan — wajib review di modal sebelum klik simpan.
+- `resolvedDate` dari API draft: jika tanggal target sudah ada data, sistem otomatis geser ke hari kosong terdekat.
+- `generate_feedback` disimpan sebagai bahan iterasi algoritma, belum digunakan untuk training otomatis.
+- `InlineDropdown` pakai `createPortal` ke `document.body` (bukan Portal.tsx) agar bisa digunakan di dalam tabel tanpa overhead komponen terpisah.
+- Revert copy jadwal bersifat soft delete (set `deleted_at`) — data masih bisa dipulihkan dari trash.
+- `canRevert` di GET copy-jadwal tidak membatasi per tanggal — berlaku untuk copy jadwal terakhir kapan pun.
+
+### Commit Sesi Ini
+- `890bb6a` feat: auto-generate jadwal produksi dari pola historis
+- `562dc43` feat: modul Analisa Produksi JHP
+- `a795972` feat: revert copy jadwal dan deteksi status canRevert
+- `9138ad6` fix: permission check activity log, format tanggal orders-count, schema feedback, pass userRole ke JurnalClient
+
+### Sisa Pekerjaan / Backlog
+- Evaluasi akurasi hasil generate dan iterasi algoritma pola historis.
+- Finalisasi visualisasi chart di halaman Analisa Produksi.
+- Tabel `generate_feedback` sudah ada di schema — belum ada alur simpan otomatis dari modal saat koreksi.
+
+---
+
 ## Update Sesi — 2026-06-12
 
 ### Konteks Sesi

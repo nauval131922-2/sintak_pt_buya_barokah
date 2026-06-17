@@ -8,7 +8,8 @@ _Tidak ada task yang sedang berjalan saat ini._
 
 ## 📌 Akan Dikerjakan (Backlog)
 
-- [ ] **Auto-Generate Jadwal Produksi Harian** — fitur generate draft jadwal besok berdasarkan histori JHP (lihat `docs/AUTO_GENERATE_JADWAL.md`)
+- [ ] **Auto-Generate Jadwal Produksi Harian (tahap 2)** — evaluasi akurasi hasil generate, iterasi algoritma pola historis, dan simpan feedback koreksi ke tabel `generate_feedback` (lihat `docs/AUTO_GENERATE_JADWAL.md`)
+- [ ] **Analisa Produksi** — finalisasi chart/visualisasi di halaman `/jurnal-harian-produksi/analisa`
 - [ ] Validasi ulang quick start README setelah setup di mesin baru
 - [ ] Dokumentasikan command operasional harian yang paling sering dipakai
 - [ ] Integrasi Audit Log yang lebih detail untuk setiap aksi User
@@ -18,6 +19,12 @@ _Tidak ada task yang sedang berjalan saat ini._
 
 ## ✅ Selesai (Done)
 
+- [x] Auto-Generate Jadwal Produksi dari pola historis (modal 2-fase, draft editable, simpan, revert) — 2026-06-17
+- [x] Modul Analisa Produksi JHP (halaman, API agregasi, permission, sidebar) — 2026-06-17
+- [x] Revert Copy Jadwal + deteksi canRevert via activity log — 2026-06-17
+- [x] ViewActivityLogLink fail-close (cek permission via API sebelum render) — 2026-06-17
+- [x] Fix format tanggal orders-count dashboard (DD/MM/YYYY → DD-MM-YYYY) — 2026-06-17
+- [x] Skema tabel generate_feedback untuk menyimpan koreksi draft auto-generate — 2026-06-17
 - [x] Perbaikan race condition fetch data halaman Target + auto-reset tanggal saat hari berganti — 2026-06-12
 - [x] UI empty state baru halaman Target (emerald theme, sentence case, tombol aksi) — 2026-06-12
 - [x] Dual database connection untuk export Excel agar tidak blokir user lain — 2026-06-12
@@ -120,18 +127,20 @@ _Tidak ada task yang sedang berjalan saat ini._
 ## 📊 Statistik
 
 ```
-Total task    : 112
-Selesai       : 105
+Total task    : 119
+Selesai       : 112
 In progress   : 0
-Backlog       : 5 (+ 2 ide)
+Backlog       : 6 (+ 2 ide)
 Bug diketahui : 0
-Progress      : 93.8%
+Progress      : 94.1%
 ```
 
-### Catatan Sesi 2026-06-12
-- Perbaikan race condition, auto-reset tanggal, dan UI empty state halaman Target.
-- Dual database connection untuk export (db-export.ts).
-- Pesan dan estimasi export dinamis sesuai tahun.
+### Catatan Sesi 2026-06-17
+- Auto-generate jadwal produksi dari pola historis (modal 2-fase: scraping progress + tabel draft editable).
+- Modul Analisa Produksi JHP baru dengan permission tersendiri.
+- Revert copy jadwal + deteksi canRevert otomatis via activity log.
+- ViewActivityLogLink sekarang fail-close: cek permission server-side sebelum render.
+- Fix format tanggal dashboard orders-count dan tambah skema generate_feedback.
 
 ---
 
