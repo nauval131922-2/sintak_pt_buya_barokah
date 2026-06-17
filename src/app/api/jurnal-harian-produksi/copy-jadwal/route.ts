@@ -14,7 +14,6 @@ export async function GET(request: NextRequest) {
     }
 
     // Cek apakah hari ini sudah pernah di-copy
-    // Gunakan raw_data JSON prefix match (bisa pakai index) daripada LIKE '%...%' pada message
     const checkLog = await db.execute({
       sql: `SELECT id FROM activity_logs 
             WHERE action_type = 'COPY_JADWAL' 
@@ -24,9 +23,44 @@ export async function GET(request: NextRequest) {
       args: [`{"from":"${today}"%`]
     });
 
+    // Dapatkan log COPY_JADWAL atau COPY_JADWAL_REVERTED terbaru
+    const lastCopyQuery = await db.execute({
+      sql: `SELECT id, action_type FROM activity_logs
+            WHERE action_type IN ('COPY_JADWAL', 'COPY_JADWAL_REVERTED')
+              AND table_name = 'jurnal_harian_produksi'
+            ORDER BY id DESC LIMIT 1`,
+      args: []
+    });
+
+    // Dapatkan log REVERT_COPY_JADWAL terbaru
+    const lastRevertQuery = await db.execute({
+      sql: `SELECT id FROM activity_logs
+            WHERE action_type = 'REVERT_COPY_JADWAL'
+              AND table_name = 'jurnal_harian_produksi'
+            ORDER BY id DESC LIMIT 1`,
+      args: []
+    });
+
+    let canRevert = false;
+    if (lastCopyQuery.rows.length > 0) {
+      const lastCopy = lastCopyQuery.rows[0] as any;
+      const lastCopyId = Number(lastCopy.id);
+      const isAlreadyReverted = lastCopy.action_type === 'COPY_JADWAL_REVERTED';
+
+      if (!isAlreadyReverted) {
+        if (lastRevertQuery.rows.length === 0) {
+          canRevert = true;
+        } else {
+          const lastRevertId = Number((lastRevertQuery.rows[0] as any).id);
+          canRevert = lastCopyId > lastRevertId;
+        }
+      }
+    }
+
     return NextResponse.json({ 
       success: true, 
-      hasCopiedToday: checkLog.rows.length > 0 
+      hasCopiedToday: checkLog.rows.length > 0,
+      canRevert
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

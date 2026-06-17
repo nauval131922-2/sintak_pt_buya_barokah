@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { Loader2, AlertCircle, ClipboardList, RotateCcw, Filter, Plus, Trash2, Edit2, Save, X, CheckCircle2, ChevronDown, Search, PlusSquare, Copy, FileText, Download, BookOpen, FileSpreadsheet } from 'lucide-react';
+import { Loader2, AlertCircle, AlertTriangle, ClipboardList, RotateCcw, Filter, Plus, Trash2, Edit2, Save, X, CheckCircle2, ChevronDown, Search, PlusSquare, Copy, FileText, Download, BookOpen, FileSpreadsheet } from 'lucide-react';
 import SearchableDropdown from '@/components/SearchableDropdown';
 import SearchAndReload from '@/components/SearchAndReload';
 import { useRouter } from 'next/navigation';
@@ -133,11 +133,13 @@ export default function JurnalClient({
   canInputRealisasi = true,
   canCopyJadwal = false,
   isSuperAdmin = false,
+  userRole = '',
 }: {
   canInputTarget?: boolean;
   canInputRealisasi?: boolean;
   canCopyJadwal?: boolean;
   isSuperAdmin?: boolean;
+  userRole?: string;
 }) {
   const router = useRouter();
   
@@ -153,6 +155,8 @@ export default function JurnalClient({
   const [exportStatusText, setExportStatusText] = useState('');
   const [hasCopiedToday, setHasCopiedToday] = useState(true);
   const [isCopyingJadwal, setIsCopyingJadwal] = useState(false);
+  const [isReverting, setIsReverting] = useState(false);
+  const [canRevert, setCanRevert] = useState(false);
   const [showYearModal, setShowYearModal] = useState(false);
   const [selectedExportYear, setSelectedExportYear] = useState('all');
   const [availableYears, setAvailableYears] = useState<string[]>([]);
@@ -499,18 +503,22 @@ export default function JurnalClient({
     setPage(1);
   }, []);
 
-  useEffect(() => {
+  const checkCopyStatus = useCallback(async () => {
     if (!canCopyJadwal) return;
-    const todayStr = new Date().toISOString().split('T')[0];
-    fetch(`/api/jurnal-harian-produksi/copy-jadwal?today=${todayStr}`)
-      .then(r => r.json())
-      .then(res => {
-        if (res.success) {
-          setHasCopiedToday(res.hasCopiedToday);
-        }
-      })
-      .catch(() => {});
+    try {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/jurnal-harian-produksi/copy-jadwal?today=${todayStr}`);
+      const json = await res.json();
+      if (json.success) {
+        setHasCopiedToday(json.hasCopiedToday);
+        setCanRevert(json.canRevert);
+      }
+    } catch {}
   }, [canCopyJadwal]);
+
+  useEffect(() => {
+    checkCopyStatus();
+  }, [checkCopyStatus]);
 
   const handleCopyJadwal = async () => {
     if (!copyFrom || !copyTo) {
@@ -547,6 +555,8 @@ export default function JurnalClient({
         setCopyBagianSearch('');
         setCopyModalError('');
         setRefreshKey(k => k + 1);
+
+        checkCopyStatus();
       } else {
         setCopyModalError(result.error || 'Gagal menyalin jadwal');
       }
@@ -555,6 +565,43 @@ export default function JurnalClient({
     } finally {
       setIsCopyingJadwal(false);
     }
+  };
+
+  const handleRevertCopyJadwal = async () => {
+    setIsReverting(true);
+    try {
+      const res = await fetch('/api/jurnal-harian-produksi/copy-jadwal/revert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const result = await res.json();
+      if (result.success) {
+        showMessage('success', `Berhasil membatalkan penyalinan. ${result.count} data jadwal telah dihapus.`);
+        setRefreshKey(k => k + 1);
+        checkCopyStatus();
+        router.refresh();
+      } else {
+        showMessage('error', result.error || 'Gagal membatalkan penyalinan');
+      }
+    } catch (err: any) {
+      showMessage('error', 'Terjadi kesalahan sistem');
+    } finally {
+      setIsReverting(false);
+    }
+  };
+
+  const triggerRevertConfirm = () => {
+    setDialogConfig({
+      isOpen: true,
+      type: 'confirm',
+      title: 'Konfirmasi Revert Copy Jadwal',
+      message: 'Apakah Anda yakin ingin membatalkan penyalinan jadwal terakhir? Tindakan ini akan menghapus semua data jadwal hasil copy terakhir.',
+      confirmLabel: 'Ya, Batalkan Copy',
+      onConfirm: () => {
+        closeDialog();
+        handleRevertCopyJadwal();
+      }
+    });
   };
 
   const showMessage = (type: 'success' | 'error', text: string) => {
@@ -577,21 +624,47 @@ export default function JurnalClient({
   }, [canInputTarget, canInputRealisasi]);
 
   const startEdit = useCallback((row: any) => {
-    setActiveTab('form');
-    // Admin Realisasi: langsung ke tab Realisasi. Admin Penjadwalan: ke tab Target.
-    setFormSubTab(canInputRealisasi ? 'realisasi' : 'target');
-    setIsAdding(false);
-    setEditingId(row.id);
-    setSelectedTargetRow(null);
-    const formattedData = { ...row };
-    if (formattedData.tgl && formattedData.tgl.includes('T')) {
-      formattedData.tgl = formattedData.tgl.split('T')[0];
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+    const isBeforeTomorrow = row.tgl && row.tgl < tomorrowStr;
+    const isPenjadwalan = userRole?.toLowerCase() === 'admin penjadwalan';
+
+    const proceedEdit = () => {
+      setActiveTab('form');
+      // Admin Realisasi: langsung ke tab Realisasi. Admin Penjadwalan: ke tab Target.
+      setFormSubTab(canInputRealisasi ? 'realisasi' : 'target');
+      setIsAdding(false);
+      setEditingId(row.id);
+      setSelectedTargetRow(null);
+      const formattedData = { ...row };
+      if (formattedData.tgl && formattedData.tgl.includes('T')) {
+        formattedData.tgl = formattedData.tgl.split('T')[0];
+      }
+      setFormData(formattedData);
+      setIsMultiRealisasiMode(false);
+      setMultiRealisasi([]);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    if (isPenjadwalan && isBeforeTomorrow) {
+      setDialogConfig({
+        isOpen: true,
+        type: 'confirm',
+        title: 'Peringatan Edit Jadwal',
+        message: `Anda sedang mencoba mengedit jadwal untuk tanggal ${formatIndoDateStr(row.tgl)} (sebelum besok). Perubahan pada data hari ini atau masa lalu dapat memengaruhi laporan realisasi. Apakah Anda yakin ingin melanjutkan?`,
+        confirmLabel: 'Ya, Lanjutkan',
+        onConfirm: () => {
+          closeDialog();
+          proceedEdit();
+        }
+      });
+    } else {
+      proceedEdit();
     }
-    setFormData(formattedData);
-    setIsMultiRealisasiMode(false);
-    setMultiRealisasi([]);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [canInputRealisasi]);
+  }, [canInputRealisasi, userRole]);
 
   const cancelForm = useCallback(() => {
     setActiveTab('list');
@@ -734,9 +807,19 @@ export default function JurnalClient({
           payloadToSubmit = {};
           TARGET_FIELDS.forEach(f => { if (formData[f] !== undefined) payloadToSubmit[f] = formData[f] });
         } else if (canInputRealisasi && !canInputTarget) {
-          const REALISASI_FIELDS = ['no_order_2', 'nama_order_2', 'jenis_pekerjaan_2', 'bahan_kertas', 'jml_plate', 'warna', 'inscheet', 'rijek', 'jam', 'kendala', 'realisasi', 'target', 'nama_order_manual_2'];
+          const REALISASI_FIELDS = [
+            'no_order_2', 'nama_order_2', 'jenis_pekerjaan_2', 'bahan_kertas', 'jml_plate',
+            'warna', 'inscheet', 'rijek', 'jam', 'kendala', 'realisasi', 'nama_order_manual_2',
+            'no_order', 'nama_order', 'jenis_pekerjaan', 'target', 'nama_order_manual',
+          ];
           payloadToSubmit = {};
           REALISASI_FIELDS.forEach(f => { if (formData[f] !== undefined) payloadToSubmit[f] = formData[f] });
+        }
+        // Sync kolom target dari nilai realisasi — berlaku untuk semua role saat edit di tab realisasi
+        if (formSubTab === 'realisasi') {
+          payloadToSubmit.no_order = formData.no_order_2 || formData.no_order || '';
+          payloadToSubmit.nama_order = formData.nama_order_manual_2 || formData.nama_order_2 || formData.nama_order_manual || formData.nama_order || '';
+          payloadToSubmit.jenis_pekerjaan = formData.jenis_pekerjaan_2 || formData.jenis_pekerjaan || '';
         }
       }
       
@@ -1453,29 +1536,54 @@ export default function JurnalClient({
                   <span>Jurnal Harian Produksi</span>
                   <ViewActivityLogLink tableName="jurnal_harian_produksi" />
                   
-                  {/* Copy Jadwal Button */}
+                  {/* Copy Jadwal Button / Status & Revert */}
                   {canCopyJadwal && (
-                    <button 
-                      onClick={() => {
-                        // Pre-fill from = today, to = tomorrow
-                        const today = new Date();
-                        const tomorrow = new Date(today);
-                        tomorrow.setDate(tomorrow.getDate() + 1);
-                        setCopyFrom(today);
-                        setCopyTo(tomorrow);
-                        setCopyBagian([]);
-                        setCopyKaryawan([]);
-                        setCopyModalError('');
-                        setCopyBagianSearch('');
-                        setCopyKaryawanSearch('');
-                        setShowCopyModal(true);
-                      }}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-green-50 hover:bg-green-100 text-green-600 text-[11px] font-bold rounded-lg border border-green-200 transition-all ml-2"
-                      title="Copy jadwal ke tanggal lain"
-                    >
-                      <Copy size={12} />
-                      Copy Jadwal
-                    </button>
+                    <div className="flex items-center gap-2 ml-2">
+                      {hasCopiedToday ? (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-[11px] font-bold shadow-sm" title="Penyalinan jadwal untuk hari ini sudah pernah dilakukan">
+                          <CheckCircle2 size={12} className="text-emerald-600" />
+                          <span>Jadwal hari ini sudah disalin</span>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            // Pre-fill from = today, to = tomorrow
+                            const today = new Date();
+                            const tomorrow = new Date(today);
+                            tomorrow.setDate(tomorrow.getDate() + 1);
+                            setCopyFrom(today);
+                            setCopyTo(tomorrow);
+                            setCopyBagian([]);
+                            setCopyKaryawan([]);
+                            setCopyModalError('');
+                            setCopyBagianSearch('');
+                            setCopyKaryawanSearch('');
+                            setShowCopyModal(true);
+                          }}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg border border-emerald-700 hover:border-emerald-800 transition-all shadow-sm shadow-emerald-100 animate-pulse"
+                          title="Copy jadwal ke tanggal lain"
+                        >
+                          <Copy size={12} />
+                          Copy Jadwal
+                        </button>
+                      )}
+
+                      {canRevert && (
+                        <button
+                          onClick={triggerRevertConfirm}
+                          disabled={isReverting}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 text-[11px] font-bold rounded-lg border border-amber-200 hover:border-amber-300 transition-all disabled:opacity-50"
+                          title="Batalkan penyalinan jadwal terakhir yang telah dilakukan"
+                        >
+                          {isReverting ? (
+                            <Loader2 size={12} className="animate-spin" />
+                          ) : (
+                            <RotateCcw size={12} />
+                          )}
+                          Revert Copy Terakhir
+                        </button>
+                      )}
+                    </div>
                   )}
 
                   {/* Trash Button — Super Admin only */}
@@ -1594,8 +1702,28 @@ export default function JurnalClient({
 
       {/* TAB CONTENT: FORM */}
       <div className={`flex-1 flex flex-col gap-4 overflow-y-auto pr-2 pb-10 ${activeTab === 'form' ? 'flex' : 'hidden'}`}>
-        {(isAdding || editingId !== null) && (
+          {(isAdding || editingId !== null) && (
           <form onSubmit={(e) => { e.preventDefault(); saveForm(); }} className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm animate-in slide-in-from-top-4 fade-in duration-300">
+
+            {userRole?.toLowerCase() === 'admin penjadwalan' && editingId !== null && formData.tgl && (() => {
+              const tomorrow = new Date();
+              tomorrow.setDate(tomorrow.getDate() + 1);
+              const tomorrowStr = tomorrow.toISOString().split('T')[0];
+              if (formData.tgl < tomorrowStr) {
+                return (
+                  <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 text-amber-800 animate-in fade-in duration-300">
+                    <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-[12px] font-bold">Peringatan: Mengedit Data Masa Lalu / Hari Ini</p>
+                      <p className="text-[11px] mt-0.5 leading-relaxed font-medium">
+                        Jadwal ini untuk tanggal <b>{formatIndoDateStr(formData.tgl)}</b> (sebelum besok). Mengubah data jadwal yang sudah berjalan dapat memengaruhi laporan hasil produksi dan realisasi harian.
+                      </p>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            })()}
 
             {/* Sub-tab: Target / Realisasi - hanya tampil jika punya akses keduanya */}
             {canInputTarget && canInputRealisasi && (
