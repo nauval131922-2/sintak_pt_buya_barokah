@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { Loader2, AlertCircle, AlertTriangle, ClipboardList, RotateCcw, Filter, Plus, Trash2, Edit2, Save, X, CheckCircle2, ChevronDown, Search, PlusSquare, Copy, FileText, Download, BookOpen, FileSpreadsheet } from 'lucide-react';
+import { Loader2, AlertCircle, AlertTriangle, ClipboardList, RotateCcw, Filter, Plus, Trash2, Edit2, Save, X, CheckCircle2, ChevronDown, Search, PlusSquare, Copy, FileText, Download, BookOpen, FileSpreadsheet, Pencil } from 'lucide-react';
 import SearchableDropdown from '@/components/SearchableDropdown';
 import SearchAndReload from '@/components/SearchAndReload';
 import { useRouter } from 'next/navigation';
@@ -127,6 +127,188 @@ function formatFormulaNumbers(val: string): string {
     }
   });
 }
+
+// ─── Editable Cell untuk kolom Keterangan ───────────────────────────────────
+function KeteranganEditableCell({
+  row,
+  onSave,
+  canEdit,
+  pasteActive = false,
+  copiedValue,
+  onCopyValue,
+  onPasteDone,
+}: {
+  row: any;
+  onSave: (id: number | string, value: string) => Promise<boolean>;
+  canEdit: boolean;
+  pasteActive?: boolean;
+  copiedValue?: string | null;
+  onCopyValue?: (value: string) => void;
+  onPasteDone?: () => void;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [value, setValue] = useState('');
+  const [localVal, setLocalVal] = useState<string>(row.keterangan || '');
+  const [isSaving, setIsSaving] = useState(false);
+  const isSavingGuard = useRef(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  // Sync localVal jika data dari luar berubah (misal setelah refresh)
+  useEffect(() => {
+    setLocalVal(row.keterangan || '');
+  }, [row.keterangan]);
+
+  // Tutup editing saat mode paste aktif
+  useEffect(() => {
+    if (pasteActive) setIsEditing(false);
+  }, [pasteActive]);
+
+  const handleSave = useCallback(async () => {
+    if (isSavingGuard.current) return;
+    isSavingGuard.current = true;
+    setIsEditing(false);
+
+    // Tidak ada perubahan — tutup saja
+    if (value === (row.keterangan || '')) {
+      setTimeout(() => { isSavingGuard.current = false; }, 300);
+      return;
+    }
+
+    setIsSaving(true);
+    setLocalVal(value); // optimistic update
+
+    const success = await onSave(row.id, value);
+    if (!success) {
+      setLocalVal(row.keterangan || ''); // rollback
+    }
+
+    setIsSaving(false);
+    setTimeout(() => { isSavingGuard.current = false; }, 300);
+  }, [value, row.id, row.keterangan, onSave]);
+
+  // Tutup saat klik di luar
+  useEffect(() => {
+    if (!isEditing) return;
+    const handler = (e: MouseEvent) => {
+      if (wrapperRef.current && wrapperRef.current.contains(e.target as HTMLElement)) return;
+      handleSave();
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [isEditing, handleSave]);
+
+  // Single return — semua kondisi di dalam satu wrapper agar React tidak
+  // mount/unmount node yang berbeda (mencegah insertBefore NotFoundError)
+  return (
+    <div className="relative w-full min-h-[24px]">
+      {/* Read-only */}
+      {!canEdit && (
+        <span className="font-medium text-gray-500 truncate block">
+          {localVal || '-'}
+        </span>
+      )}
+
+      {/* Saving indicator */}
+      {canEdit && isSaving && (
+        <div className="flex items-center gap-1.5 text-emerald-600 animate-pulse">
+          <Loader2 size={12} className="animate-spin shrink-0" />
+          <span className="text-[11px] font-bold">Menyimpan...</span>
+        </div>
+      )}
+
+      {/* Editing input */}
+      {canEdit && !isSaving && isEditing && (
+        <div ref={wrapperRef} className="relative w-full z-[999]">
+          <input
+            ref={inputRef}
+            type="text"
+            autoFocus
+            value={value}
+            onChange={e => setValue(e.target.value)}
+            onClick={e => e.stopPropagation()}
+            onKeyDown={e => {
+              if (e.key === 'Enter') { e.preventDefault(); handleSave(); }
+              if (e.key === 'Escape') {
+                isSavingGuard.current = true;
+                setIsEditing(false);
+                setTimeout(() => { isSavingGuard.current = false; }, 300);
+              }
+            }}
+            className="w-full px-2 py-1 text-[12px] font-medium text-gray-800 bg-yellow-50 border border-yellow-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400/40 transition-all"
+            placeholder="Ketik keterangan..."
+          />
+        </div>
+      )}
+
+      {/* Paste mode */}
+      {canEdit && !isSaving && !isEditing && pasteActive && (
+        <div className="flex items-center gap-1 select-none">
+          <span className={`font-medium truncate flex-1 text-[12px] ${localVal ? 'text-gray-600' : 'text-gray-300 italic'}`}>
+            {localVal || '—'}
+          </span>
+          <button
+            onClick={async e => {
+              e.stopPropagation();
+              if (copiedValue !== undefined && copiedValue !== null) {
+                setIsSaving(true);
+                setLocalVal(copiedValue);
+                const success = await onSave(row.id, copiedValue);
+                if (!success) setLocalVal(row.keterangan || '');
+                setIsSaving(false);
+              }
+            }}
+            className="p-1 rounded-md text-emerald-400 hover:text-emerald-600 hover:bg-emerald-100 transition-all shrink-0"
+            title="Tempel keterangan yang di-copy"
+            tabIndex={-1}
+          >
+            <ClipboardList size={11} />
+          </button>
+        </div>
+      )}
+
+      {/* Normal display */}
+      {canEdit && !isSaving && !isEditing && !pasteActive && (
+        <div
+          className="group flex items-center gap-1 cursor-pointer rounded-md px-1 -mx-1 hover:bg-yellow-50 transition-colors"
+          onDoubleClick={e => {
+            e.stopPropagation();
+            isSavingGuard.current = false;
+            setValue(localVal);
+            setIsEditing(true);
+          }}
+          title="Klik 2x untuk edit keterangan"
+        >
+          <span className={`font-medium truncate flex-1 text-[12px] ${localVal ? 'text-gray-600' : 'text-gray-300 italic'}`}>
+            {localVal || 'klik 2x untuk isi'}
+          </span>
+          <button
+            onClick={e => { e.stopPropagation(); onCopyValue?.(localVal); }}
+            className="p-1 rounded-md text-gray-300 hover:text-yellow-500 hover:bg-yellow-100 transition-all shrink-0"
+            title="Copy keterangan"
+            tabIndex={-1}
+          >
+            <Copy size={10} />
+          </button>
+          <button
+            onClick={e => {
+              e.stopPropagation();
+              isSavingGuard.current = false;
+              setValue(localVal);
+              setIsEditing(true);
+            }}
+            className="p-1 rounded-md text-gray-300 hover:text-yellow-500 hover:bg-yellow-100 transition-all shrink-0"
+            title="Edit keterangan"
+            tabIndex={-1}
+          >
+            <Pencil size={10} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function JurnalClient({
   canInputTarget = true,
@@ -506,8 +688,7 @@ export default function JurnalClient({
   const checkCopyStatus = useCallback(async () => {
     if (!canCopyJadwal) return;
     try {
-      const todayStr = new Date().toISOString().split('T')[0];
-      const res = await fetch(`/api/jurnal-harian-produksi/copy-jadwal?today=${todayStr}`);
+      const res = await fetch(`/api/jurnal-harian-produksi/copy-jadwal`);
       const json = await res.json();
       if (json.success) {
         setHasCopiedToday(json.hasCopiedToday);
@@ -608,6 +789,54 @@ export default function JurnalClient({
     setActionMessage({ type, text });
     setTimeout(() => setActionMessage(null), 3000);
   };
+
+  const handleSaveKeterangan = useCallback(async (id: number | string, value: string): Promise<boolean> => {
+    try {
+      // Ambil updated_at dari data lokal untuk optimistic concurrency check
+      const currentRow = data?.find((r: any) => r.id === id);
+      const updated_at = currentRow?.updated_at ?? null;
+
+      const res = await fetch('/api/jurnal-harian-produksi', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, updated_at, keterangan: value }),
+      });
+      if (!res.ok) return false;
+      const result = await res.json();
+      if (result.success) {
+        // Update data lokal tanpa full refresh
+        setData(prev => prev ? prev.map(r => r.id === id ? { ...r, keterangan: value } : r) : prev);
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  }, [data]);
+
+  // State paste mode untuk kolom keterangan
+  const [keteranganPasteActive, setKeteranganPasteActive] = useState(false);
+  const [keteranganCopiedValue, setKeteranganCopiedValue] = useState<string | null>(null);
+
+  const handleKeteranganCopy = useCallback((value: string) => {
+    setKeteranganCopiedValue(value);
+    setKeteranganPasteActive(true);
+  }, []);
+
+  const handleKeteranganPasteDone = useCallback(() => {
+    setKeteranganPasteActive(false);
+    setKeteranganCopiedValue(null);
+  }, []);
+
+  // Tekan Escape untuk keluar dari mode paste keterangan
+  useEffect(() => {
+    if (!keteranganPasteActive) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleKeteranganPasteDone();
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [keteranganPasteActive, handleKeteranganPasteDone]);
 
   const startAdd = useCallback(() => {
     setActiveTab('form');
@@ -810,7 +1039,7 @@ export default function JurnalClient({
           const REALISASI_FIELDS = [
             'no_order_2', 'nama_order_2', 'jenis_pekerjaan_2', 'bahan_kertas', 'jml_plate',
             'warna', 'inscheet', 'rijek', 'jam', 'kendala', 'realisasi', 'nama_order_manual_2',
-            'no_order', 'nama_order', 'jenis_pekerjaan', 'target', 'nama_order_manual',
+            'no_order', 'nama_order', 'jenis_pekerjaan', 'target', 'nama_order_manual', 'keterangan',
           ];
           payloadToSubmit = {};
           REALISASI_FIELDS.forEach(f => { if (formData[f] !== undefined) payloadToSubmit[f] = formData[f] });
@@ -1115,7 +1344,17 @@ export default function JurnalClient({
       header: 'Keterangan',
       size: columnWidths.keterangan,
       meta: { headerBg: '#fef9c3' },
-      cell: ({ getValue, row }: any) => <span className={`font-medium transition-colors truncate block ${row.getIsSelected() ? 'text-green-800' : 'text-gray-500'}`}>{String(getValue() || '-')}</span>
+      cell: ({ row }: any) => (
+        <KeteranganEditableCell
+          row={row.original}
+          onSave={handleSaveKeterangan}
+          canEdit={canInputTarget || canInputRealisasi}
+          pasteActive={keteranganPasteActive}
+          copiedValue={keteranganCopiedValue}
+          onCopyValue={handleKeteranganCopy}
+          onPasteDone={handleKeteranganPasteDone}
+        />
+      )
     },
     { 
       accessorKey: 'target', 
@@ -1272,7 +1511,7 @@ export default function JurnalClient({
       meta: { headerBg: '#79f2c0' },
       cell: ({ getValue, row }: any) => <span className={`font-medium truncate block tracking-tight ${row.getIsSelected() ? 'text-green-800' : 'text-gray-600'}`}>{String(getValue() || '-')}</span>
     }
-  ], [columnWidths, page]);
+  ], [columnWidths, page, handleSaveKeterangan, canInputTarget, canInputRealisasi, keteranganPasteActive, keteranganCopiedValue, handleKeteranganCopy, handleKeteranganPasteDone, data]);
 
   const handleResize = useCallback((widths: any) => {
     setColumnWidths(widths);
@@ -1624,6 +1863,17 @@ export default function JurnalClient({
                   <span>Memproses Data...</span>
                 </div>
             )}
+            <button
+              onClick={handleKeteranganPasteDone}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] leading-none font-bold transition-all ${
+                keteranganPasteActive
+                  ? 'opacity-100 visible bg-red-50 text-red-600 border border-red-200 hover:bg-red-100'
+                  : 'opacity-0 invisible pointer-events-none'
+              }`}
+            >
+              <X size={12} />
+              Stop Copy (Esc)
+            </button>
           </div>
 
           <SearchAndReload

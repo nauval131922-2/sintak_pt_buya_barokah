@@ -4,26 +4,21 @@ import { getSession } from "@/lib/session";
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const today = searchParams.get("today");
+    const todayStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD UTC
 
-    if (!today) {
-      return NextResponse.json({ error: 'Missing today parameter' }, { status: 400 });
-    }
-
-    // Cek apakah hari ini sudah pernah di-copy
-    const checkLog = await db.execute({
-      sql: `SELECT id FROM activity_logs 
-            WHERE action_type = 'COPY_JADWAL' 
+    // Cek apakah hari ini (berdasarkan created_at) sudah ada COPY_JADWAL yang belum di-revert
+    const todayCopyQuery = await db.execute({
+      sql: `SELECT id, action_type FROM activity_logs
+            WHERE action_type IN ('COPY_JADWAL', 'COPY_JADWAL_REVERTED')
               AND table_name = 'jurnal_harian_produksi'
-              AND raw_data LIKE ?
-            LIMIT 1`,
-      args: [`{"from":"${today}"%`]
+              AND DATE(created_at) = ?
+            ORDER BY id DESC LIMIT 1`,
+      args: [todayStr]
     });
 
-    // Dapatkan log COPY_JADWAL atau COPY_JADWAL_REVERTED terbaru
+    // Dapatkan log COPY_JADWAL atau COPY_JADWAL_REVERTED terbaru (global, untuk canRevert)
     const lastCopyQuery = await db.execute({
       sql: `SELECT id, action_type FROM activity_logs
             WHERE action_type IN ('COPY_JADWAL', 'COPY_JADWAL_REVERTED')
@@ -41,6 +36,14 @@ export async function GET(request: NextRequest) {
       args: []
     });
 
+    // hasCopiedToday: ada COPY_JADWAL hari ini yang belum di-revert
+    let hasCopiedToday = false;
+    if (todayCopyQuery.rows.length > 0) {
+      const todayCopy = todayCopyQuery.rows[0] as any;
+      hasCopiedToday = todayCopy.action_type === 'COPY_JADWAL'; // bukan COPY_JADWAL_REVERTED
+    }
+
+    // canRevert: copy terakhir (kapanpun) masih aktif belum di-revert
     let canRevert = false;
     if (lastCopyQuery.rows.length > 0) {
       const lastCopy = lastCopyQuery.rows[0] as any;
@@ -59,7 +62,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
-      hasCopiedToday: checkLog.rows.length > 0,
+      hasCopiedToday,
       canRevert
     });
   } catch (error: any) {

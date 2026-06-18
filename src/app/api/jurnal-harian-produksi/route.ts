@@ -234,6 +234,7 @@ export async function POST(request: NextRequest) {
           firstRow.no_order_2 || '', firstNamaOrder2, firstRow.jenis_pekerjaan_2 || '',
           firstRow.bahan_kertas || '', cleanNumberOrText(firstRow.jml_plate), firstRow.warna || '',
           cleanNumberOrText(firstRow.inscheet), cleanNumberOrText(firstRow.rijek), firstRow.jam || '', firstRow.kendala || '',
+          baseData.keterangan || '',
           baseData.nama_order_manual || null, firstRow.nama_order_manual_2 || null,
           session.username || null
         ];
@@ -243,6 +244,7 @@ export async function POST(request: NextRequest) {
           no_order = ?, nama_order = ?, jenis_pekerjaan = ?,
           target = ?, realisasi = ?, no_order_2 = ?, nama_order_2 = ?, jenis_pekerjaan_2 = ?,
           bahan_kertas = ?, jml_plate = ?, warna = ?, inscheet = ?, rijek = ?, jam = ?, kendala = ?,
+          keterangan = ?,
           nama_order_manual = ?, nama_order_manual_2 = ?,
           updated_at = CURRENT_TIMESTAMP, updated_by = ?
           WHERE ${updateWhere}`,
@@ -588,7 +590,7 @@ export async function PUT(request: NextRequest) {
       sql: `SELECT * FROM jurnal_harian_produksi WHERE id = ?`,
       args: [id]
     });
-    const snapshotData = rowBefore.rows[0] ? Object.fromEntries(Object.entries(rowBefore.rows[0] as Record<string, unknown>)) : { id };
+    const snapshotBefore = rowBefore.rows[0] ? Object.fromEntries(Object.entries(rowBefore.rows[0] as Record<string, unknown>)) : { id };
 
     if (updateParts.length > 0) {
       updateParts.push('updated_at = CURRENT_TIMESTAMP');
@@ -612,13 +614,20 @@ export async function PUT(request: NextRequest) {
         }
         return NextResponse.json({ error: 'Data telah diubah oleh pengguna lain. Silakan reload halaman.', code: 'CONFLICT' }, { status: 409 });
       }
-    }
 
-    await db.execute({
-      sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
-            VALUES (?, ?, ?, ?, ?, ?)`,
-      args: ['UPDATE', 'jurnal_harian_produksi', id, `Update Jurnal Harian Produksi ID #${id}`, JSON.stringify(snapshotData), session.username || 'System']
-    });
+      // Ambil data setelah update untuk raw_data { before, after }
+      const rowAfter = await db.execute({
+        sql: `SELECT * FROM jurnal_harian_produksi WHERE id = ?`,
+        args: [id]
+      });
+      const snapshotAfter = rowAfter.rows[0] ? Object.fromEntries(Object.entries(rowAfter.rows[0] as Record<string, unknown>)) : { id };
+
+      await db.execute({
+        sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
+              VALUES (?, ?, ?, ?, ?, ?)`,
+        args: ['UPDATE', 'jurnal_harian_produksi', id, `Update Jurnal Harian Produksi ID #${id}`, JSON.stringify({ before: snapshotBefore, after: snapshotAfter }), session.username || 'System']
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
