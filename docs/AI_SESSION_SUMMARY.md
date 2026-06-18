@@ -1,6 +1,52 @@
 # AI Session Summary
 
-## Update Sesi — 2026-06-17
+## Update Sesi — 2026-06-18
+
+### Konteks Sesi
+- Sesi perbaikan bug, peningkatan UX, dan fitur baru pada modul Jurnal Harian Produksi (JHP).
+
+### Pekerjaan Sesi Ini
+
+1. **Fix: Tombol Copy Jadwal tidak berubah status setelah copy**
+   - Logika `hasCopiedToday` di GET `/api/jurnal-harian-produksi/copy-jadwal` diubah dari cek `raw_data LIKE '{"from":"today"...'` (yang tidak pernah match karena modal sudah fleksibel) menjadi cek `DATE(created_at) = hari_ini`.
+   - Sekarang: kalau hari ini sudah ada `COPY_JADWAL` (apapun from/to-nya dan belum di-revert), tombol copy berubah jadi info "Jadwal hari ini sudah disalin".
+   - `canRevert` tetap global (tidak terbatas hari ini) — tombol revert muncul selama ada copy aktif belum di-revert.
+   - Parameter `today` di URL dihapus dari requirement (tidak lagi dipakai di server).
+
+2. **Fix: Field `keterangan` tidak tersimpan saat input realisasi**
+   - `keterangan` ditambahkan ke `REALISASI_FIELDS` di `performSave` (`JurnalClient.tsx`).
+
+3. **Fix: Field `keterangan` tidak tersimpan di baris pertama multi-realisasi**
+   - Query `UPDATE` baris pertama di handler `input_multi_realisasi` (`route.ts`) ditambahkan `keterangan = ?` dengan nilai dari `baseData.keterangan`.
+
+4. **Feat: Editable cell untuk kolom Keterangan di tabel daftar JHP**
+   - Komponen baru `KeteranganEditableCell` di `JurnalClient.tsx`: double-click untuk edit, Enter/Escape untuk konfirmasi/batal, klik luar otomatis save, single-wrapper return (mencegah React `insertBefore` error).
+   - Handler `handleSaveKeterangan`: memanggil `PUT /api/jurnal-harian-produksi` dengan `{ id, updated_at, keterangan }` — `updated_at` diambil dari state lokal untuk optimistic concurrency check.
+   - Mode paste: klik ikon Copy → semua cell lain berubah ke mode paste dengan ikon clipboard hijau. Paste berkali-kali, keluar via tombol "Stop Copy (Esc)" atau tekan Escape. State: `keteranganPasteActive`, `keteranganCopiedValue`.
+
+5. **Fix: Activity log PUT format before/after**
+   - `raw_data` di activity log UPDATE sekarang menyimpan `{ before: {...}, after: {...} }` — dikenali oleh `computeExplicitDiff` di halaman log aktivitas untuk menampilkan diff yang jelas.
+   - Query `rowAfter` dan insert log dipindahkan ke dalam blok `if (updateParts.length > 0)` — log hanya ditulis kalau benar-benar ada field yang diupdate (tidak ada lagi log noise).
+
+### Keputusan Teknis
+- `hasCopiedToday` berbasis `DATE(created_at)` (hari ini, lokal DB) bukan per tanggal jadwal — sesuai kebutuhan operasional: satu kali copy per hari sudah cukup.
+- Editable cell keterangan pakai single-return pattern (semua kondisi dalam satu `<div>` wrapper) untuk menghindari React DOM reconciliation error di dalam tabel.
+- `handleSaveKeterangan` meneruskan `updated_at` dari state lokal ke payload PUT — concurrency guard aktif sama seperti save via form utama.
+- Activity log format `{ before, after }` dipilih karena langsung dikenali `computeExplicitDiff` di `activity-log-utils.ts` tanpa perlu perubahan di halaman log.
+
+### File yang Diubah
+- `src/app/jurnal-harian-produksi/JurnalClient.tsx`
+- `src/app/api/jurnal-harian-produksi/route.ts`
+- `src/app/api/jurnal-harian-produksi/copy-jadwal/route.ts`
+
+### Sisa Pekerjaan / Backlog
+- Error `insertBefore` di console masih perlu diverifikasi apakah dari browser extension atau dari kode lain (bukan dari `KeteranganEditableCell` yang sudah difix).
+- Evaluasi akurasi hasil auto-generate jadwal dan iterasi algoritma pola historis.
+- Finalisasi visualisasi chart di halaman Analisa Produksi.
+
+---
+
+
 
 ### Konteks Sesi
 - Sesi implementasi 3 fitur baru pada modul Jurnal Harian Produksi (JHP): Auto-Generate Jadwal, Analisa Produksi, dan Revert Copy Jadwal. Ditambah beberapa perbaikan kecil.

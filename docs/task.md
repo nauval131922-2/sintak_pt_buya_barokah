@@ -19,6 +19,11 @@ _Tidak ada task yang sedang berjalan saat ini._
 
 ## ✅ Selesai (Done)
 
+- [x] Fix tombol copy jadwal tidak berubah status (logika hasCopiedToday berbasis DATE(created_at)) — 2026-06-18
+- [x] Fix field keterangan tidak tersimpan saat input realisasi & multi-realisasi baris pertama — 2026-06-18
+- [x] Feat: editable cell keterangan di tabel daftar JHP (double-click, paste mode, copy button) — 2026-06-18
+- [x] Fix: activity log PUT format { before, after } + log hanya ditulis jika ada field yang berubah — 2026-06-18
+
 - [x] Auto-Generate Jadwal Produksi dari pola historis (modal 2-fase, draft editable, simpan, revert) — 2026-06-17
 - [x] Modul Analisa Produksi JHP (halaman, API agregasi, permission, sidebar) — 2026-06-17
 - [x] Revert Copy Jadwal + deteksi canRevert via activity log — 2026-06-17
@@ -127,20 +132,20 @@ _Tidak ada task yang sedang berjalan saat ini._
 ## 📊 Statistik
 
 ```
-Total task    : 119
-Selesai       : 112
+Total task    : 123
+Selesai       : 116
 In progress   : 0
 Backlog       : 6 (+ 2 ide)
 Bug diketahui : 0
-Progress      : 94.1%
+Progress      : 94.3%
 ```
 
-### Catatan Sesi 2026-06-17
-- Auto-generate jadwal produksi dari pola historis (modal 2-fase: scraping progress + tabel draft editable).
-- Modul Analisa Produksi JHP baru dengan permission tersendiri.
-- Revert copy jadwal + deteksi canRevert otomatis via activity log.
-- ViewActivityLogLink sekarang fail-close: cek permission server-side sebelum render.
-- Fix format tanggal dashboard orders-count dan tambah skema generate_feedback.
+### Catatan Sesi 2026-06-18
+- Fix tombol copy jadwal: `hasCopiedToday` kini berbasis `DATE(created_at)` bukan per tanggal jadwal.
+- Fix field keterangan tidak tersimpan saat input realisasi dan multi-realisasi.
+- Editable cell keterangan di tabel daftar JHP: double-click edit, mode paste berkali-kali, stop via Esc.
+- Activity log PUT kini format `{ before, after }` untuk diff yang jelas di halaman log aktivitas.
+- Log hanya ditulis kalau ada field yang benar-benar berubah (tidak ada log noise).
 
 ---
 
