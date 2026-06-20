@@ -6,11 +6,15 @@ export async function initSchema(db: any) {
   try {
     const executor = db.client || db;
     if (executor.execute) {
-      await executor.execute("PRAGMA busy_timeout = 5000;");
-      await executor.execute("PRAGMA journal_mode = WAL;");
+      try { await executor.execute("PRAGMA busy_timeout = 5000;"); } catch {}
+      try { await executor.execute("PRAGMA journal_mode = WAL;"); } catch {}
     }
+  } catch {}
 
-    // --- AUTO MIGRATION BLOCK (FIX SPACES & ADD MISSING) ---
+  // 2. Auto-migration block: always runs independently of PRAGMA errors
+  try {
+    const executor = db.client || db;
+    if (executor.execute) {
     const fixColumns = [
       { table: 'master_pekerjaan', old: 'target value', new: 'target_value' },
       { table: 'master_pekerjaan', old: 'standart target', new: 'standart_target' },
@@ -55,7 +59,9 @@ export async function initSchema(db: any) {
       { table: 'master_pekerjaan', column: 'target_per_hari', type: 'REAL' },
       { table: 'master_pekerjaan', column: 'target_per_jam', type: 'REAL' },
       { table: 'master_pekerjaan', column: 'efektif_jam_kerja', type: 'REAL' },
-      { table: 'master_pekerjaan', column: 'keterangan', type: 'TEXT' }
+      { table: 'master_pekerjaan', column: 'keterangan', type: 'TEXT' },
+      { table: 'sopd_harga', column: 'pending_produksi', type: 'INTEGER DEFAULT 0' },
+      { table: 'sopd_harga', column: 'alasan_pending', type: 'TEXT' },
     ];
 
     for (const col of columns) {
@@ -71,9 +77,9 @@ export async function initSchema(db: any) {
       } catch {}
     }
     // ----------------------------
-
+    }
   } catch {
-    // Ignore pragma errors
+    // Ignore migration errors
   }
 
   // 2. Initialize core schema using batch for efficiency
@@ -166,6 +172,14 @@ export async function initSchema(db: any) {
       can_access INTEGER DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(role, module_key)
+    );`,
+    `CREATE TABLE IF NOT EXISTS user_roles (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      role_name TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(user_id, role_name),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );`,
     `CREATE TABLE IF NOT EXISTS orders (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -671,6 +685,40 @@ export async function initSchema(db: any) {
       recid TEXT,
       raw_data TEXT,
       fetched_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );`,
+    `CREATE TABLE IF NOT EXISTS produksi_selesai (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      faktur TEXT UNIQUE NOT NULL,
+      faktur_bom TEXT,
+      faktur_so TEXT,
+      faktur_pb TEXT,
+      kd_cabang TEXT,
+      kd_gudang TEXT,
+      tgl TEXT,
+      kd_mtd TEXT,
+      kd_pelanggan TEXT,
+      nama_prd TEXT,
+      status TEXT,
+      perbaikan TEXT,
+      regu TEXT,
+      bbb REAL,
+      pers_btkl REAL,
+      btkl REAL,
+      pers_bop REAL,
+      bop REAL,
+      hp REAL,
+      datetime_mulai TEXT,
+      datetime_selesai TEXT,
+      fkt_selesai TEXT,
+      tglclose TEXT,
+      wip REAL,
+      kd_regu TEXT,
+      created_at TEXT,
+      username TEXT,
+      edited_at TEXT,
+      username_edited TEXT,
+      recid TEXT,
+      fetched_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`
   ], "write");
 
@@ -944,6 +992,31 @@ export async function initSchema(db: any) {
     if (!e.message?.includes('no such table')) {
       console.warn("[DB] Failed seeding permissions:", e.message);
     }
+  }
+
+  // 2.6 Backfill user_roles dari kolom users.role (migrasi ke multiple role)
+  // Hanya jalankan jika user_roles masih kosong tapi users sudah ada data.
+  try {
+    if (executor.execute) {
+      const urCount = await executor.execute("SELECT COUNT(*) as c FROM user_roles");
+      const usrCount = await executor.execute("SELECT COUNT(*) as c FROM users");
+      const urTotal = Number(urCount.rows[0].c);
+      const usrTotal = Number(usrCount.rows[0].c);
+      if (urTotal === 0 && usrTotal > 0) {
+        const usersResult = await executor.execute("SELECT id, role FROM users WHERE role IS NOT NULL AND role != ''");
+        for (const row of usersResult.rows as any[]) {
+          try {
+            await executor.execute({
+              sql: "INSERT OR IGNORE INTO user_roles (user_id, role_name) VALUES (?, ?)",
+              args: [row.id, row.role]
+            });
+          } catch (_) {}
+        }
+        console.log(`[DB] Backfill user_roles: ${usersResult.rows.length} user(s) migrated.`);
+      }
+    }
+  } catch (e: any) {
+    console.warn("[DB] Failed backfill user_roles:", e.message);
   }
 
   // 2.7 Fix: Hapus UNIQUE constraint pada kolom faktur di sales_orders
@@ -1386,7 +1459,7 @@ async function initDynamicTriggers(db: any) {
       'bill_of_materials', 'purchase_requests', 'purchase_orders',
       'penerimaan_pembelian', 'rekap_pembelian_barang', 'pelunasan_hutang',
       'pelunasan_piutang', 'pengiriman', 'spph_out', 'sph_in', 'rek_akuntansi',
-      'hpp_kalkulasi'
+      'hpp_kalkulasi', 'stok_master_barang', 'produksi_selesai', 'user_roles'
     ];
 
     // Drop triggers for all excluded tables (cleanup from previous runs)

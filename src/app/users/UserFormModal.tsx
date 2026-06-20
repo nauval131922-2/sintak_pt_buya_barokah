@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
-  X, Save, RefreshCw, AlertCircle, Search, ChevronDown,
-  User, ShieldCheck, UserCog, Lock, Eye, EyeOff, CheckCircle2
+  X, Save, RefreshCw, AlertCircle, Search,
+  User, ShieldCheck, UserCog, Lock, Eye, EyeOff, Check, ChevronDown,
 } from 'lucide-react';
 import { createUser, updateUser } from '@/lib/users';
 
@@ -11,6 +11,7 @@ interface UserData {
   id: number;
   username: string;
   name: string;
+  roles: string[];
   role: string;
 }
 
@@ -25,17 +26,21 @@ export default function UserFormModal({ user, customRoles = [], onClose }: UserF
 
   const [name, setName] = useState(user?.name || '');
   const [username, setUsername] = useState(user?.username || '');
-  const [role, setRole] = useState(user?.role || (customRoles.length > 0 ? customRoles[0] : ''));
+  // selectedRoles: array role yang dipilih
+  const [selectedRoles, setSelectedRoles] = useState<string[]>(() => {
+    if (user?.roles && user.roles.length > 0) return user.roles;
+    if (user?.role) return [user.role];
+    return [];
+  });
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Role Dropdown State
+  // Role dropdown state
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [roleSearchQuery, setRoleSearchQuery] = useState('');
-  // Posisi fixed untuk dropdown agar tidak terpotong overflow modal
   const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number; width: number } | null>(null);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -46,7 +51,6 @@ export default function UserFormModal({ user, customRoles = [], onClose }: UserF
     setTimeout(() => nameInputRef.current?.focus(), 100);
   }, []);
 
-  // Hitung posisi dropdown berdasarkan posisi tombol trigger
   const openDropdown = useCallback(() => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
@@ -64,7 +68,7 @@ export default function UserFormModal({ user, customRoles = [], onClose }: UserF
     setRoleSearchQuery('');
   }, []);
 
-  // Tutup dropdown kalau klik di luar panel
+  // Tutup dropdown saat klik di luar
   useEffect(() => {
     if (!isRoleDropdownOpen) return;
     const handleClick = (e: MouseEvent) => {
@@ -79,24 +83,48 @@ export default function UserFormModal({ user, customRoles = [], onClose }: UserF
     return () => window.removeEventListener('mousedown', handleClick);
   }, [isRoleDropdownOpen, closeDropdown]);
 
-  // Escape hanya tutup dropdown kalau terbuka, baru tutup modal
+  // Escape tutup dropdown
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (isRoleDropdownOpen) {
-          closeDropdown();
-        }
-        // tidak tutup modal saat tekan Escape
+      if (e.key === 'Escape' && isRoleDropdownOpen) {
+        closeDropdown();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isRoleDropdownOpen, closeDropdown]);
 
+  const toggleRole = useCallback((roleName: string) => {
+    setSelectedRoles(prev => {
+      if (prev.includes(roleName)) {
+        // Jangan hapus jika ini satu-satunya role
+        if (prev.length === 1) return prev;
+        return prev.filter(r => r !== roleName);
+      }
+      return [...prev, roleName];
+    });
+  }, []);
+
+  const filteredRoles = useMemo(
+    () => customRoles.filter(r => r.toLowerCase().includes(roleSearchQuery.toLowerCase())),
+    [customRoles, roleSearchQuery]
+  );
+
+  // Label tombol trigger
+  const triggerLabel = useMemo(() => {
+    if (selectedRoles.length === 0) return 'Pilih role...';
+    if (selectedRoles.length === 1) return selectedRoles[0];
+    return `${selectedRoles.length} role dipilih`;
+  }, [selectedRoles]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !username || (!isEditing && !password)) {
       setError('Harap lengkapi semua field wajib.');
+      return;
+    }
+    if (selectedRoles.length === 0) {
+      setError('Pilih minimal satu role.');
       return;
     }
 
@@ -106,9 +134,14 @@ export default function UserFormModal({ user, customRoles = [], onClose }: UserF
     try {
       let res;
       if (isEditing) {
-        res = await updateUser(user!.id, { name, username, role, password: password || undefined });
+        res = await updateUser(user!.id, {
+          name,
+          username,
+          roles: selectedRoles,
+          password: password || undefined,
+        });
       } else {
-        res = await createUser({ name, username, role, password });
+        res = await createUser({ name, username, roles: selectedRoles, password });
       }
 
       if (res.success) {
@@ -117,24 +150,20 @@ export default function UserFormModal({ user, customRoles = [], onClose }: UserF
       } else {
         setError(res.message || 'Gagal menyimpan user.');
       }
-    } catch (err) {
+    } catch {
       setError('Terjadi kesalahan jaringan.');
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredRoles = customRoles.filter(r =>
-    r.toLowerCase().includes(roleSearchQuery.toLowerCase())
-  );
-
   return (
     <>
-      {/* Backdrop — klik tidak menutup modal */}
+      {/* Backdrop */}
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
 
-          {/* Modal Header */}
+          {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-green-50 to-emerald-50 shrink-0 rounded-t-2xl">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-green-100 text-green-600 flex items-center justify-center">
@@ -157,10 +186,10 @@ export default function UserFormModal({ user, customRoles = [], onClose }: UserF
             </button>
           </div>
 
-          {/* Modal Body */}
+          {/* Body */}
           <div className="px-6 py-5 flex flex-col gap-5 overflow-y-auto">
 
-            {/* Error Message */}
+            {/* Error */}
             {error && (
               <div className="flex items-start gap-2.5 p-3 bg-rose-50 border border-rose-200 rounded-xl animate-in fade-in duration-200">
                 <AlertCircle size={16} className="text-rose-500 shrink-0 mt-0.5" />
@@ -179,7 +208,7 @@ export default function UserFormModal({ user, customRoles = [], onClose }: UserF
                   ref={nameInputRef}
                   type="text"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={e => setName(e.target.value)}
                   className="w-full pl-8 pr-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-green-400 focus:outline-none transition-all placeholder:text-gray-300"
                   placeholder="Contoh: Budi Santoso"
                   required
@@ -197,7 +226,7 @@ export default function UserFormModal({ user, customRoles = [], onClose }: UserF
                 <input
                   type="text"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ''))}
+                  onChange={e => setUsername(e.target.value.toLowerCase().replace(/\s/g, ''))}
                   className="w-full pl-8 pr-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-green-400 focus:outline-none transition-all lowercase placeholder:text-gray-300 placeholder:normal-case"
                   placeholder="Contoh: budis"
                   required
@@ -205,30 +234,56 @@ export default function UserFormModal({ user, customRoles = [], onClose }: UserF
               </div>
             </div>
 
-            {/* Peran Akses */}
+            {/* Peran Akses — Multi-select */}
             <div>
               <label className="block text-[12px] font-bold text-gray-600 mb-2">
                 Peran Akses (Role) <span className="text-rose-400">*</span>
+                <span className="ml-1.5 font-normal text-gray-400">— bisa lebih dari satu</span>
               </label>
+
+              {/* Trigger button */}
               <button
                 ref={triggerRef}
                 type="button"
                 onClick={() => isRoleDropdownOpen ? closeDropdown() : openDropdown()}
                 className={`w-full px-3.5 py-2.5 text-left bg-gray-50 border rounded-lg focus:outline-none transition-all text-[13px] font-medium flex items-center justify-between gap-2 ${
-                  isRoleDropdownOpen
-                    ? 'border-green-400 bg-white'
-                    : 'border-gray-200 hover:border-green-300'
+                  isRoleDropdownOpen ? 'border-green-400 bg-white' : 'border-gray-200 hover:border-green-300'
                 }`}
               >
-                <div className="flex items-center gap-2 min-w-0">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
                   <UserCog size={13} className="text-gray-400 shrink-0" />
-                  <span className="truncate text-gray-700">{role || 'Pilih role...'}</span>
+                  <span className="truncate text-gray-700">{triggerLabel}</span>
                 </div>
                 <ChevronDown
                   size={15}
                   className={`text-gray-400 shrink-0 transition-transform duration-200 ${isRoleDropdownOpen ? 'rotate-180 text-green-500' : ''}`}
                 />
               </button>
+
+              {/* Badge role yang sudah dipilih */}
+              {selectedRoles.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {selectedRoles.map(r => (
+                    <span
+                      key={r}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-50 border border-green-200 text-green-700 text-[11px] font-bold rounded-lg"
+                    >
+                      {r === 'Super Admin' && <ShieldCheck size={10} />}
+                      {r}
+                      {selectedRoles.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => toggleRole(r)}
+                          className="ml-0.5 text-green-500 hover:text-rose-500 transition-colors"
+                          aria-label={`Hapus role ${r}`}
+                        >
+                          <X size={10} />
+                        </button>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Password */}
@@ -245,7 +300,7 @@ export default function UserFormModal({ user, customRoles = [], onClose }: UserF
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   autoComplete="new-password"
                   className="w-full pl-8 pr-10 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-green-400 focus:outline-none transition-all placeholder:text-gray-300"
                   placeholder={isEditing ? 'Kosongkan jika tidak diubah' : 'Minimal 6 karakter'}
@@ -270,7 +325,7 @@ export default function UserFormModal({ user, customRoles = [], onClose }: UserF
 
           </div>
 
-          {/* Modal Footer */}
+          {/* Footer */}
           <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50 shrink-0 rounded-b-2xl">
             <button
               type="button"
@@ -295,7 +350,7 @@ export default function UserFormModal({ user, customRoles = [], onClose }: UserF
         </div>
       </div>
 
-      {/* Dropdown Role — dirender di luar modal (fixed) agar tidak terpotong overflow */}
+      {/* Dropdown Role — fixed portal agar tidak terpotong overflow */}
       {isRoleDropdownOpen && dropdownPos && (
         <div
           ref={dropdownPanelRef}
@@ -311,35 +366,62 @@ export default function UserFormModal({ user, customRoles = [], onClose }: UserF
                 autoFocus
                 placeholder="Cari role..."
                 value={roleSearchQuery}
-                onChange={(e) => setRoleSearchQuery(e.target.value)}
+                onChange={e => setRoleSearchQuery(e.target.value)}
                 className="w-full pl-8 pr-3 py-2 text-[12px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-green-400 focus:outline-none transition-all"
               />
             </div>
           </div>
+          {/* Hint */}
+          <div className="px-3 py-1.5 bg-green-50 border-b border-green-100">
+            <p className="text-[10px] text-green-600 font-semibold">Klik untuk centang / hapus centang role</p>
+          </div>
           {/* Options */}
-          <div className="max-h-[180px] overflow-y-auto p-1.5 custom-scrollbar">
+          <div className="max-h-[200px] overflow-y-auto p-1.5 custom-scrollbar">
             {filteredRoles.length === 0 ? (
               <p className="text-center text-[11px] text-gray-400 italic py-4">Tidak ada role ditemukan</p>
             ) : (
-              filteredRoles.map(cr => (
-                <button
-                  type="button"
-                  key={cr}
-                  onClick={() => {
-                    setRole(cr);
-                    closeDropdown();
-                  }}
-                  className={`w-full text-left px-3.5 py-2.5 text-[12px] font-semibold rounded-lg transition-all flex items-center justify-between gap-2 border ${
-                    role === cr
-                      ? 'bg-green-600 text-white border-green-700 shadow-sm'
-                      : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-green-50 hover:text-green-700 hover:border-green-200'
-                  }`}
-                >
-                  <span>{cr}</span>
-                  {role === cr && <CheckCircle2 size={13} className="shrink-0" />}
-                </button>
-              ))
+              filteredRoles.map(cr => {
+                const isChecked = selectedRoles.includes(cr);
+                return (
+                  <button
+                    type="button"
+                    key={cr}
+                    onClick={() => toggleRole(cr)}
+                    className={`w-full text-left px-3 py-2.5 text-[12px] font-semibold rounded-lg transition-all flex items-center gap-2.5 border ${
+                      isChecked
+                        ? 'bg-green-600 text-white border-green-700 shadow-sm'
+                        : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-green-50 hover:text-green-700 hover:border-green-200'
+                    }`}
+                  >
+                    {/* Checkbox visual */}
+                    <span className={`w-4 h-4 rounded flex items-center justify-center shrink-0 border ${
+                      isChecked ? 'bg-white/20 border-white/40' : 'border-gray-300 bg-white'
+                    }`}>
+                      {isChecked && <Check size={10} className="text-white" strokeWidth={3} />}
+                    </span>
+                    <span className="flex-1 truncate">{cr}</span>
+                    {cr === 'Super Admin' && (
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${isChecked ? 'bg-white/20 text-white' : 'bg-amber-50 text-amber-600'}`}>
+                        SA
+                      </span>
+                    )}
+                  </button>
+                );
+              })
             )}
+          </div>
+          {/* Footer info jumlah terpilih */}
+          <div className="px-3 py-2 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
+            <span className="text-[11px] text-gray-400">
+              {selectedRoles.length} role dipilih
+            </span>
+            <button
+              type="button"
+              onClick={closeDropdown}
+              className="text-[11px] font-bold text-green-600 hover:text-green-700 transition-colors"
+            >
+              Selesai
+            </button>
           </div>
         </div>
       )}

@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect, useMemo, useTransition, useCallback } from 'react';
-import { 
-  Users, ShieldCheck, UserCog, Plus, Search, 
-  Edit2, Trash2, X,
-  AlertCircle, BadgeCheck, Loader2, ShieldAlert,
+import {
+  Users, ShieldCheck, UserCog, Plus, Search,
+  Edit2, Trash2,
+  AlertCircle, Loader2,
   RefreshCw
 } from 'lucide-react';
 import SearchableDropdown from '@/components/SearchableDropdown';
@@ -20,12 +20,21 @@ interface User {
   id: number;
   username: string;
   name: string;
+  roles: string[];
   role: string;
   photo?: string | null;
   created_at?: string | null;
 }
 
-export default function UsersContent({ currentUser, currentUserId, customRoles = [] }: { currentUser: string, currentUserId: number, customRoles?: string[] }) {
+export default function UsersContent({
+  currentUser,
+  currentUserId,
+  customRoles = [],
+}: {
+  currentUser: string;
+  currentUserId: number;
+  customRoles?: string[];
+}) {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchImmediate, setSearchImmediate] = useState('');
@@ -35,18 +44,17 @@ export default function UsersContent({ currentUser, currentUserId, customRoles =
   const [roleFilter, setRoleFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<number | string>>(new Set());
   const [lastSelectedId, setLastSelectedId] = useState<number | null>(null);
   const [loadTime, setLoadTime] = useState<number | null>(null);
 
-
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
     if (typeof window !== 'undefined') {
-        const saved = localStorage.getItem('user_columnWidths');
-        if (saved) return JSON.parse(saved);
+      const saved = localStorage.getItem('user_columnWidths');
+      if (saved) return JSON.parse(saved);
     }
-    return { profile: 400, role: 250, action: 150 };
+    return { profile: 380, roles: 300, action: 150 };
   });
 
   const handleResize = useCallback((widths: any) => {
@@ -55,11 +63,11 @@ export default function UsersContent({ currentUser, currentUserId, customRoles =
   }, []);
 
   const [dialog, setDialog] = useState<{
-    isOpen: boolean, 
-    type: 'success' | 'error' | 'danger' | 'confirm' | 'alert', 
-    title: string, 
-    message: string,
-    onConfirm?: () => void
+    isOpen: boolean;
+    type: 'success' | 'error' | 'danger' | 'confirm' | 'alert';
+    title: string;
+    message: string;
+    onConfirm?: () => void;
   }>({ isOpen: false, type: 'confirm', title: '', message: '' });
 
   const loadUsers = useCallback(async () => {
@@ -73,16 +81,14 @@ export default function UsersContent({ currentUser, currentUserId, customRoles =
       } else {
         setMessage({ type: 'error', text: res.message || 'Gagal memuat data user.' });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Gagal memuat data user.' });
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    loadUsers();
-  }, [loadUsers]);
+  useEffect(() => { loadUsers(); }, [loadUsers]);
 
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
@@ -91,8 +97,6 @@ export default function UsersContent({ currentUser, currentUserId, customRoles =
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [loadUsers]);
-
-  // Outside click handling is managed within SearchableDropdown
 
   useEffect(() => {
     setIsSearching(true);
@@ -105,19 +109,22 @@ export default function UsersContent({ currentUser, currentUserId, customRoles =
     return () => clearTimeout(timer);
   }, [searchImmediate]);
 
-  // Toast duration is handled by the Toast component itself via its duration prop and onClose callback
-
-
   const filteredUsers = useMemo(() => {
     const query = searchDebounced.toLowerCase().trim();
     return users.filter(user => {
-      const matchesSearch = !query || user.name.toLowerCase().includes(query) || user.username.toLowerCase().includes(query);
-      const matchesRole = !roleFilter || user.role === roleFilter;
+      const matchesSearch =
+        !query ||
+        user.name.toLowerCase().includes(query) ||
+        user.username.toLowerCase().includes(query) ||
+        user.roles.some(r => r.toLowerCase().includes(query));
+      // Filter role: cocok jika salah satu role user sama dengan filter
+      const matchesRole = !roleFilter || user.roles.includes(roleFilter);
       return matchesSearch && matchesRole;
     });
   }, [users, searchDebounced, roleFilter]);
 
-  const getInitials = (name: string) => (name || 'U').split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+  const getInitials = (name: string) =>
+    (name || 'U').split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
 
   const columns = useMemo(() => [
     {
@@ -140,23 +147,34 @@ export default function UsersContent({ currentUser, currentUserId, customRoles =
             </div>
           </div>
         );
-      }
+      },
     },
     {
-      accessorKey: 'role',
+      accessorKey: 'roles',
+      id: 'roles',
       header: 'Jabatan / Peran',
-      size: columnWidths.role,
+      size: columnWidths.roles,
       cell: (info: any) => {
-        const role = info.getValue() as string;
+        const user = info.row.original as User;
+        const roles: string[] = user.roles?.length ? user.roles : (user.role ? [user.role] : []);
         return (
-          <span className={`px-3 py-1.5 rounded-lg text-[10px] font-bold inline-flex items-center gap-2 leading-none border ${
-            role === 'Super Admin' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 shadow-sm' : 'bg-green-50 text-green-600 border-green-100'
-          }`}>
-            {role === 'Super Admin' ? <ShieldCheck size={12} /> : <UserCog size={12} />}
-            {role}
-          </span>
+          <div className="flex flex-wrap gap-1.5">
+            {roles.map(r => (
+              <span
+                key={r}
+                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold inline-flex items-center gap-1.5 leading-none border ${
+                  r === 'Super Admin'
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-100 shadow-sm'
+                    : 'bg-green-50 text-green-600 border-green-100'
+                }`}
+              >
+                {r === 'Super Admin' ? <ShieldCheck size={10} /> : <UserCog size={10} />}
+                {r}
+              </span>
+            ))}
+          </div>
         );
-      }
+      },
     },
     {
       id: 'action',
@@ -167,18 +185,26 @@ export default function UsersContent({ currentUser, currentUserId, customRoles =
         const user = info.row.original as User;
         return (
           <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 group-[.is-selected]:opacity-100 transition-opacity">
-            <button onClick={(e) => { e.stopPropagation(); handleEdit(user); }} className="p-2.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all" title="Edit User">
+            <button
+              onClick={e => { e.stopPropagation(); handleEdit(user); }}
+              className="p-2.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
+              title="Edit User"
+            >
               <Edit2 size={16} />
             </button>
             {user.id !== currentUserId && (
-              <button onClick={(e) => { e.stopPropagation(); handleDelete(user.id, user.username); }} className="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Hapus User">
+              <button
+                onClick={e => { e.stopPropagation(); handleDelete(user.id, user.username); }}
+                className="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                title="Hapus User"
+              >
                 <Trash2 size={16} />
               </button>
             )}
           </div>
         );
-      }
-    }
+      },
+    },
   ], [columnWidths, currentUserId]);
 
   const handleDelete = (id: number, username: string) => {
@@ -187,7 +213,10 @@ export default function UsersContent({ currentUser, currentUserId, customRoles =
       return;
     }
     setDialog({
-      isOpen: true, type: 'confirm', title: 'Hapus User', message: `Apakah Anda yakin ingin menghapus user "${username}"? Tindakan ini tidak dapat dibatalkan.`,
+      isOpen: true,
+      type: 'confirm',
+      title: 'Hapus User',
+      message: `Apakah Anda yakin ingin menghapus user "${username}"? Tindakan ini tidak dapat dibatalkan.`,
       onConfirm: async () => {
         setDialog(prev => ({ ...prev, isOpen: false }));
         try {
@@ -196,15 +225,18 @@ export default function UsersContent({ currentUser, currentUserId, customRoles =
             localStorage.setItem('sintak_data_updated', Date.now().toString());
             setMessage({ type: 'success', text: 'User berhasil dihapus.' });
             loadUsers();
-          } else setMessage({ type: 'error', text: result.message || 'Gagal menghapus user.' });
-        } catch (error) { setMessage({ type: 'error', text: 'Terjadi kesalahan sistem.' }); }
-      }
+          } else {
+            setMessage({ type: 'error', text: result.message || 'Gagal menghapus user.' });
+          }
+        } catch {
+          setMessage({ type: 'error', text: 'Terjadi kesalahan sistem.' });
+        }
+      },
     });
   };
 
   const handleEdit = (user: User) => { setEditingUser(user); setShowModal(true); };
   const handleCreate = () => { setEditingUser(null); setShowModal(true); };
-
   const handleCloseToast = useCallback(() => setMessage(null), []);
 
   return (
@@ -220,10 +252,10 @@ export default function UsersContent({ currentUser, currentUserId, customRoles =
           triggerWidth="w-[300px]"
           panelWidth="w-[300px]"
           icon={<Users size={16} className={roleFilter ? 'text-green-600' : 'text-gray-400'} />}
-          onChange={(val) => startTransition(() => setRoleFilter(val))}
+          onChange={val => startTransition(() => setRoleFilter(val))}
         />
-        <button 
-          onClick={handleCreate} 
+        <button
+          onClick={handleCreate}
           className="flex items-center justify-center gap-3 px-6 h-12 bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold rounded-xl transition-all shadow-md shadow-emerald-900/10 active:scale-95"
         >
           <Plus size={20} />
@@ -233,44 +265,98 @@ export default function UsersContent({ currentUser, currentUserId, customRoles =
       </div>
 
       <div className="shrink-0">
-        <SearchAndReload 
-          searchQuery={searchImmediate} 
-          setSearchQuery={setSearchImmediate} 
-          onReload={loadUsers} 
-          loading={loading} 
-          placeholder="Cari user berdasarkan nama atau username..." 
+        <SearchAndReload
+          searchQuery={searchImmediate}
+          setSearchQuery={setSearchImmediate}
+          onReload={loadUsers}
+          loading={loading}
+          placeholder="Cari user berdasarkan nama, username, atau role..."
         />
       </div>
 
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-        <DataTable columns={columns} data={filteredUsers} isLoading={loading} selectedIds={selectedIds} onRowClick={(id: any, e: any) => { setSelectedIds((prev) => { const next = new Set(prev); if (e.shiftKey && lastSelectedId !== null) { const currentIndex = filteredUsers.findIndex((u) => u.id === id); const lastIndex = filteredUsers.findIndex((u) => u.id === lastSelectedId); if (currentIndex !== -1 && lastIndex !== -1) { const start = Math.min(currentIndex, lastIndex); const end = Math.max(currentIndex, lastIndex); for (let i = start; i <= end; i++) next.add(filteredUsers[i].id); } } else if (e.ctrlKey || e.metaKey) { if (next.has(id)) next.delete(id); else next.add(id); } else { if (next.has(id) && next.size === 1) { if (e.detail === 1) next.clear(); } else { next.clear(); next.add(id); } } setLastSelectedId(id); return next; }); }} onRowDoubleClick={(id) => { const user = users.find(u => u.id === id); if (user) handleEdit(user); }} columnWidths={columnWidths} onColumnWidthChange={handleResize} rowHeight="h-16" />
+        <DataTable
+          columns={columns}
+          data={filteredUsers}
+          isLoading={loading}
+          selectedIds={selectedIds}
+          onRowClick={(id: any, e: any) => {
+            setSelectedIds(prev => {
+              const next = new Set(prev);
+              if (e.shiftKey && lastSelectedId !== null) {
+                const currentIndex = filteredUsers.findIndex(u => u.id === id);
+                const lastIndex = filteredUsers.findIndex(u => u.id === lastSelectedId);
+                if (currentIndex !== -1 && lastIndex !== -1) {
+                  const start = Math.min(currentIndex, lastIndex);
+                  const end = Math.max(currentIndex, lastIndex);
+                  for (let i = start; i <= end; i++) next.add(filteredUsers[i].id);
+                }
+              } else if (e.ctrlKey || e.metaKey) {
+                if (next.has(id)) next.delete(id);
+                else next.add(id);
+              } else {
+                if (next.has(id) && next.size === 1) {
+                  if (e.detail === 1) next.clear();
+                } else {
+                  next.clear();
+                  next.add(id);
+                }
+              }
+              setLastSelectedId(id);
+              return next;
+            });
+          }}
+          onRowDoubleClick={id => {
+            const user = users.find(u => u.id === id);
+            if (user) handleEdit(user);
+          }}
+          columnWidths={columnWidths}
+          onColumnWidthChange={handleResize}
+          rowHeight="h-16"
+        />
       </div>
-      <TableFooter totalCount={users.length} currentCount={filteredUsers.length} label="pengguna" selectedCount={selectedIds.size} onClearSelection={() => setSelectedIds(new Set())} loadTime={loadTime} />
+
+      <TableFooter
+        totalCount={users.length}
+        currentCount={filteredUsers.length}
+        label="pengguna"
+        selectedCount={selectedIds.size}
+        onClearSelection={() => setSelectedIds(new Set())}
+        loadTime={loadTime}
+      />
 
       {showModal && (
-        <UserFormModal 
-          user={editingUser} 
-          customRoles={customRoles} 
-          onClose={(refresh) => { 
-            setShowModal(false); 
+        <UserFormModal
+          user={editingUser}
+          customRoles={customRoles}
+          onClose={refresh => {
+            setShowModal(false);
             if (refresh) {
               loadUsers();
-              setMessage({ type: 'success', text: `Data user berhasil ${editingUser ? 'diperbarui' : 'ditambahkan'}.` });
+              setMessage({
+                type: 'success',
+                text: `Data user berhasil ${editingUser ? 'diperbarui' : 'ditambahkan'}.`,
+              });
             }
-          }} 
+          }}
         />
       )}
-      <ConfirmDialog isOpen={dialog.isOpen} type={dialog.type} title={dialog.title} message={dialog.message} onConfirm={dialog.onConfirm || (() => setDialog(prev => ({ ...prev, isOpen: false })))} onCancel={() => setDialog(prev => ({ ...prev, isOpen: false }))} />
-      
-      <Toast 
-        message={message?.text || null} 
-        type={message?.type} 
+
+      <ConfirmDialog
+        isOpen={dialog.isOpen}
+        type={dialog.type}
+        title={dialog.title}
+        message={dialog.message}
+        onConfirm={dialog.onConfirm || (() => setDialog(prev => ({ ...prev, isOpen: false })))}
+        onCancel={() => setDialog(prev => ({ ...prev, isOpen: false }))}
+      />
+
+      <Toast
+        message={message?.text || null}
+        type={message?.type}
         duration={5000}
-        onClose={handleCloseToast} 
+        onClose={handleCloseToast}
       />
     </div>
   );
 }
-
-
-

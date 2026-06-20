@@ -12,6 +12,7 @@ interface MainContentWrapperProps {
     name: string;
     username: string;
     role?: string;
+    roles?: string[];
     photo?: string | null;
   } | null;
   permissions?: PermissionMap;

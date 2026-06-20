@@ -27,6 +27,7 @@ const MODULE_TO_ROUTE: Array<{ key: string; route: string }> = [
   { key: 'pembelian_hutang',      route: '/pelunasan-hutang' },
   { key: 'produksi_bom',          route: '/bom' },
   { key: 'produksi_orders',       route: '/orders' },
+  { key: 'produksi_selesai',      route: '/data-digit/produksi/produksi-selesai' },
   { key: 'produksi_bahan_baku',   route: '/bahan-baku' },
   { key: 'produksi_barang_jadi',  route: '/barang-jadi' },
   { key: 'penjualan_sph_out',     route: '/sph-out' },
@@ -42,27 +43,25 @@ const MODULE_TO_ROUTE: Array<{ key: string; route: string }> = [
   { key: 'activity_log_view',     route: '/log-aktivitas' },
   { key: 'activity_log',          route: '/log-aktivitas' },
   { key: 'produksi_jhp',          route: '/jurnal-harian-produksi' },
+  { key: 'stok_master_barang',    route: '/data-digit/stok/master-barang' },
 ];
 
-// ─── Get the first route accessible for a given role ──────────────────────────
-// Used after login and on root redirect so users are never sent to a forbidden page.
-export async function getFirstAccessibleRoute(role: string): Promise<string> {
-  // Super Admin always lands on dashboard
-  if (role === 'Super Admin') return '/dashboard';
+// ─── Get first accessible route berdasarkan array roles ───────────────────────
+// Dipakai setelah login — user diarahkan ke halaman pertama yang boleh diakses.
+export async function getFirstAccessibleRoute(roles: string[]): Promise<string> {
+  if (roles.includes('Super Admin')) return '/dashboard';
 
-  const permissions = await getRolePermissions(role);
+  const permissions = await getMergedPermissions(roles);
 
   for (const { key, route } of MODULE_TO_ROUTE) {
     if (permissions[key] === true) return route;
   }
 
-  // Fallback: no module is accessible — send to profile page
   return '/profile';
 }
 
-// ─── Fetch all permissions for a given role ────────────────────────────────
+// ─── Fetch permissions untuk satu role (di-cache per role) ────────────────────
 export const getRolePermissions = cache(async (role: string): Promise<PermissionMap> => {
-  // Super Admin always has full access — no DB lookup needed
   if (role === 'Super Admin') {
     return Object.fromEntries(MODULE_REGISTRY.map(m => [m.key, true]));
   }
@@ -73,19 +72,17 @@ export const getRolePermissions = cache(async (role: string): Promise<Permission
       args: [role],
     });
 
-    // Build map from DB rows
     const dbMap: PermissionMap = {};
     for (const row of result.rows) {
       dbMap[row.module_key as string] = Number(row.can_access) === 1;
     }
 
-    // Fill in any missing module keys with default false (graceful fallback)
     const map: PermissionMap = {};
     for (const m of MODULE_REGISTRY) {
       map[m.key] = dbMap[m.key] !== undefined ? dbMap[m.key] : false;
     }
 
-    // Legacy activity_log → izin lihat (tanpa otomatis kelola)
+    // Legacy: activity_log → otomatis izin lihat
     if (dbMap.activity_log) {
       map.activity_log_view = true;
     }
@@ -93,25 +90,44 @@ export const getRolePermissions = cache(async (role: string): Promise<Permission
     return map;
   } catch (error) {
     console.error('[PERMISSIONS] Failed to fetch role permissions:', error);
-    // On error, return false access so users are not silently empowered on DB fail
     return Object.fromEntries(MODULE_REGISTRY.map(m => [m.key, false]));
   }
 });
 
-// ─── Fetch permissions for all roles (for the matrix UI) ─────────────────────
+// ─── Merge permissions dari array roles (union: true jika salah satu role mengizinkan) ──
+export async function getMergedPermissions(roles: string[]): Promise<PermissionMap> {
+  if (!roles || roles.length === 0) {
+    return Object.fromEntries(MODULE_REGISTRY.map(m => [m.key, false]));
+  }
+
+  // Super Admin selalu full access
+  if (roles.includes('Super Admin')) {
+    return Object.fromEntries(MODULE_REGISTRY.map(m => [m.key, true]));
+  }
+
+  // Ambil permissions masing-masing role lalu union (OR)
+  const allMaps = await Promise.all(roles.map(r => getRolePermissions(r)));
+
+  const merged: PermissionMap = {};
+  for (const m of MODULE_REGISTRY) {
+    merged[m.key] = allMaps.some(map => map[m.key] === true);
+  }
+  return merged;
+}
+
+// ─── Fetch permissions untuk semua role (untuk matrix UI) ─────────────────────
 export async function getAllPermissions(): Promise<Record<string, PermissionMap>> {
   const result: Record<string, PermissionMap> = {};
-  
+
   try {
     const { rows } = await db.execute('SELECT role_name FROM app_roles');
-    const roles = ['Super Admin', ...rows.map(r => r.role_name as string)]; // Super Admin is implicit
-    
+    const roles = ['Super Admin', ...rows.map(r => r.role_name as string)];
+
     for (const role of roles) {
       result[role] = await getRolePermissions(role);
     }
   } catch (err) {
     console.error('[PERMISSIONS] Failed to fetch all roles:', err);
-    // fallback
     result['Super Admin'] = await getRolePermissions('Super Admin');
     result['Admin'] = await getRolePermissions('Admin');
   }
@@ -119,35 +135,31 @@ export async function getAllPermissions(): Promise<Record<string, PermissionMap>
   return result;
 }
 
-// ─── Server-side enforcement: redirect if no access ──────────────────────────
-// Call this at the top of any protected page.tsx
+// ─── Server-side enforcement: redirect jika tidak punya akses ─────────────────
 export async function requirePermission(moduleKey: ModuleKey): Promise<void> {
   const session = await getSession();
 
-  // Not logged in → redirect to login
   if (!session || !session.userId) {
     redirect('/login');
   }
 
-  // Super Admin always has access
-  if (session.role === 'Super Admin') return;
+  // Super Admin selalu punya akses
+  if (session.roles?.includes('Super Admin') || session.role === 'Super Admin') return;
 
-  // Define a variable outside to track if access is denied
   let isDenied = false;
 
   try {
-    // Pakai getRolePermissions yang sudah di-cache — hindari query DB terpisah
-    const permissions = await getRolePermissions(session.role);
+    const roles = Array.isArray(session.roles) && session.roles.length > 0
+      ? session.roles
+      : [session.role];
+    const permissions = await getMergedPermissions(roles);
     if (!permissions[moduleKey]) {
       isDenied = true;
     }
   } catch (error) {
-    // Log error, tapi jangan blokir semua user jika DB down — tetap fail-open saat DB error
     console.error(`[PERMISSIONS] Error checking access for ${moduleKey}:`, error);
   }
 
-  // Next.js redirect() throws an error, so it MUST be OUTSIDE the try-catch block
-  // Otherwise, the catch block swallows the redirect error, bypassing the security guard!
   if (isDenied) {
     redirect('/unauthorized');
   }

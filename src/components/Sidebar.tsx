@@ -33,6 +33,7 @@ import {
   Database,
   BookOpen,
   History,
+  CheckCircle,
 } from 'lucide-react';
 import type { PermissionMap } from '@/lib/permissions-constants';
 
@@ -68,6 +69,7 @@ interface SidebarProps {
     name: string;
     username: string;
     role?: string;
+    roles?: string[];
     photo?: string | null;
   } | null;
   permissions?: PermissionMap;
@@ -381,7 +383,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
         {(canAccess('sync') ||
           canAccess('pembelian_pr') || canAccess('pembelian_spph') || canAccess('pembelian_sph_in') ||
           canAccess('pembelian_po') || canAccess('pembelian_penerimaan') || canAccess('pembelian_rekap') || canAccess('pembelian_hutang') ||
-          canAccess('produksi_bom') || canAccess('produksi_orders') || canAccess('produksi_bahan_baku') || canAccess('produksi_barang_jadi') ||
+          canAccess('produksi_bom') || canAccess('produksi_orders') || canAccess('produksi_selesai') || canAccess('produksi_bahan_baku') || canAccess('produksi_barang_jadi') || canAccess('stok_master_barang') ||
           canAccess('penjualan_sph_out') || canAccess('penjualan_so') || canAccess('penjualan_laporan') ||
           canAccess('penjualan_piutang') || canAccess('penjualan_pengiriman') ||
           canAccess('akt_jurnal_umum') || canAccess('akt_mrek')) && (
@@ -393,6 +395,24 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                   <RefreshCw size={18} />
                   {isExpanded && <span className="truncate">Sinkronisasi All Data</span>}
                 </Link>
+              )}
+
+              {/* STOK */}
+              {canAccess('stok_master_barang') && (
+                <AccordionMenu
+                  id="stok-digit"
+                  label="Stok"
+                  icon={<Box size={18} />}
+                  items={[
+                    {
+                      label: 'Data',
+                      icon: <Database size={16} />,
+                      items: [
+                        { label: 'Master Barang', href: '/data-digit/stok/master-barang', icon: <Box size={14} /> },
+                      ]
+                    },
+                  ]}
+                />
               )}
 
               {/* PEMBELIAN */}
@@ -439,7 +459,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
               )}
 
               {/* PRODUKSI */}
-              {(canAccess('produksi_bom') || canAccess('produksi_orders') || canAccess('produksi_bahan_baku') || canAccess('produksi_barang_jadi')) && (
+              {(canAccess('produksi_bom') || canAccess('produksi_orders') || canAccess('produksi_selesai') || canAccess('produksi_bahan_baku') || canAccess('produksi_barang_jadi')) && (
                 <AccordionMenu
                   id="produksi-digit"
                   label="Produksi"
@@ -447,6 +467,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                   items={[
                     ...(canAccess('produksi_bom') ? [{ label: 'Bill of Material Produksi', href: '/bom', icon: <Calculator size={16} /> }] : []),
                     ...(canAccess('produksi_orders') ? [{ label: 'Order Produksi', href: '/orders', icon: <ClipboardList size={16} /> }] : []),
+                    ...(canAccess('produksi_selesai') ? [{ label: 'Produksi Selesai', href: '/data-digit/produksi/produksi-selesai', icon: <CheckCircle size={16} /> }] : []),
                     ...(canAccess('produksi_bahan_baku') || canAccess('produksi_barang_jadi') ? [{
                       label: 'Laporan',
                       icon: <BarChart3 size={16} />,
@@ -679,7 +700,11 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
               {isExpanded && (
                 <div className="flex flex-col min-w-0 text-left">
                   <p className="text-[12px] font-bold text-gray-700 truncate leading-none">{user.name}</p>
-                  <p className="text-[10px] text-gray-400 font-bold mt-1 truncate">{user.role}</p>
+                  <p className="text-[10px] text-gray-400 font-bold mt-1 truncate">
+                    {user.roles && user.roles.length > 0
+                      ? user.roles.join(', ')
+                      : (user.role || '')}
+                  </p>
                 </div>
               )}
             </button>

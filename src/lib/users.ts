@@ -6,53 +6,108 @@ import { getSession } from '@/lib/session';
 import { logActivity } from '@/lib/activity';
 
 
-// Helper to check Super Admin authorization
+// Helper: pastikan hanya Super Admin yang bisa akses
 async function requireSuperAdmin() {
   const session = await getSession();
   if (!session || !session.userId) {
     throw new Error('Unauthorized');
   }
-  if (session.role !== 'Super Admin') {
+  const isSuperAdmin =
+    session.role === 'Super Admin' ||
+    (Array.isArray(session.roles) && session.roles.includes('Super Admin'));
+  if (!isSuperAdmin) {
     throw new Error('Forbidden: Membutuhkan akses Super Admin');
   }
   return session;
 }
 
+// Helper: ambil roles dari junction table untuk satu user
+async function getUserRoles(userId: number): Promise<string[]> {
+  const res = await db.execute({
+    sql: 'SELECT role_name FROM user_roles WHERE user_id = ? ORDER BY role_name ASC',
+    args: [userId],
+  });
+  return res.rows.map(r => r.role_name as string);
+}
+
+// Helper: set roles di junction table (replace semua)
+async function setUserRoles(userId: number, roles: string[]): Promise<void> {
+  const uniqueRoles = [...new Set(roles.filter(Boolean))];
+
+  // Hapus semua role lama
+  await db.execute({
+    sql: 'DELETE FROM user_roles WHERE user_id = ?',
+    args: [userId],
+  });
+
+  // Insert role baru
+  for (const roleName of uniqueRoles) {
+    await db.execute({
+      sql: 'INSERT OR IGNORE INTO user_roles (user_id, role_name) VALUES (?, ?)',
+      args: [userId, roleName],
+    });
+  }
+
+  // Sync kolom users.role = role utama (Super Admin prioritas, lalu pertama)
+  const primaryRole = uniqueRoles.includes('Super Admin')
+    ? 'Super Admin'
+    : (uniqueRoles[0] || '');
+  await db.execute({
+    sql: 'UPDATE users SET role = ? WHERE id = ?',
+    args: [primaryRole, userId],
+  });
+}
+
 export async function getUsers() {
   try {
     await requireSuperAdmin();
-    
-    const result = await db.execute('SELECT id, username, name, role, photo, created_at FROM users ORDER BY name ASC');
-    
-    // Libsql rows have a null prototype or other properties that Next.js serialization dislikes.
-    // Converting to plain objects via mapping or JSON parse/stringify fixes this.
-    const users = result.rows.map(row => ({
-      id: Number(row.id),
-      username: String(row.username),
-      name: String(row.name),
-      role: String(row.role),
-      photo: row.photo ? String(row.photo) : null,
-      created_at: row.created_at ? String(row.created_at) : null
-    }));
-    
+
+    const result = await db.execute(
+      'SELECT id, username, name, role, photo, created_at FROM users ORDER BY name ASC'
+    );
+
+    // Ambil roles dari junction table untuk setiap user
+    const users = await Promise.all(
+      result.rows.map(async (row) => {
+        const userId = Number(row.id);
+        const roles = await getUserRoles(userId);
+        return {
+          id: userId,
+          username: String(row.username),
+          name: String(row.name),
+          // roles[] dari junction table; fallback ke kolom role jika belum ada data
+          roles: roles.length > 0 ? roles : (row.role ? [String(row.role)] : []),
+          role: String(row.role),
+          photo: row.photo ? String(row.photo) : null,
+          created_at: row.created_at ? String(row.created_at) : null,
+        };
+      })
+    );
+
     return { success: true, users };
-
-
   } catch (error: any) {
     return { success: false, message: error.message || 'Terjadi kesalahan sistem' };
   }
 }
 
-export async function createUser(data: { name: string, username: string, role: string, password?: string }) {
+export async function createUser(data: {
+  name: string;
+  username: string;
+  roles: string[];
+  password?: string;
+}) {
   try {
     const session = await requireSuperAdmin();
 
-    if (!data.name || !data.username || !data.password || !data.role) {
+    if (!data.name || !data.username || !data.password || !data.roles?.length) {
       return { success: false, message: 'Data tidak lengkap.' };
     }
 
-    // Check duplicate username
-    const checkUsr = await db.execute({ sql: 'SELECT id FROM users WHERE LOWER(username) = LOWER(?)', args: [data.username] });
+    // Cek username duplikat
+    const checkUsr = await db.execute({
+      sql: 'SELECT id FROM users WHERE LOWER(username) = LOWER(?)',
+      args: [data.username],
+    });
     if (checkUsr.rows.length > 0) {
       return { success: false, message: 'Username sudah terdaftar.' };
     }
@@ -60,10 +115,28 @@ export async function createUser(data: { name: string, username: string, role: s
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(data.password, salt);
 
+    const uniqueRoles = [...new Set(data.roles.filter(Boolean))];
+    const primaryRole = uniqueRoles.includes('Super Admin')
+      ? 'Super Admin'
+      : (uniqueRoles[0] || 'Admin');
+
     const result = await db.execute({
       sql: 'INSERT INTO users (name, username, password, role) VALUES (?, ?, ?, ?)',
-      args: [data.name, data.username, hash, data.role]
+      args: [data.name, data.username, hash, primaryRole],
     });
+
+    const newUserId = Number(result.lastInsertRowid);
+
+    // Insert ke junction table
+    await setUserRoles(newUserId, uniqueRoles);
+
+    logActivity(
+      'CREATE',
+      'users',
+      `User ${data.username} dibuat dengan role: ${uniqueRoles.join(', ')}`,
+      {},
+      session.username
+    ).catch(() => {});
 
     return { success: true };
   } catch (error: any) {
@@ -71,44 +144,73 @@ export async function createUser(data: { name: string, username: string, role: s
   }
 }
 
-export async function updateUser(id: number, data: { name: string, username: string, role: string, password?: string }) {
+export async function updateUser(
+  id: number,
+  data: { name: string; username: string; roles: string[]; password?: string }
+) {
   try {
     const session = await requireSuperAdmin();
 
-    if (!data.name || !data.username || !data.role) {
+    if (!data.name || !data.username || !data.roles?.length) {
       return { success: false, message: 'Data tidak lengkap.' };
     }
 
-    // Check duplicate username for other users
-    const checkUsr = await db.execute({ sql: 'SELECT id FROM users WHERE LOWER(username) = LOWER(?) AND id != ?', args: [data.username, id] });
+    // Cek username duplikat
+    const checkUsr = await db.execute({
+      sql: 'SELECT id FROM users WHERE LOWER(username) = LOWER(?) AND id != ?',
+      args: [data.username, id],
+    });
     if (checkUsr.rows.length > 0) {
       return { success: false, message: 'Username sudah dipakai oleh user lain.' };
     }
 
+    const uniqueRoles = [...new Set(data.roles.filter(Boolean))];
+    const primaryRole = uniqueRoles.includes('Super Admin')
+      ? 'Super Admin'
+      : (uniqueRoles[0] || 'Admin');
+
     if (data.password) {
       const salt = await bcrypt.genSalt(10);
       const hash = await bcrypt.hash(data.password, salt);
-      await db.execute({
-        sql: 'UPDATE users SET name = ?, username = ?, role = ?, password = ? WHERE id = ?',
-        args: [data.name, data.username, data.role, hash, id]
-      }, 'Kelola User');
+      await db.execute(
+        {
+          sql: 'UPDATE users SET name = ?, username = ?, role = ?, password = ? WHERE id = ?',
+          args: [data.name, data.username, primaryRole, hash, id],
+        },
+        'Kelola User'
+      );
     } else {
-      await db.execute({
-        sql: 'UPDATE users SET name = ?, username = ?, role = ? WHERE id = ?',
-        args: [data.name, data.username, data.role, id]
-      }, 'Kelola User');
+      await db.execute(
+        {
+          sql: 'UPDATE users SET name = ?, username = ?, role = ? WHERE id = ?',
+          args: [data.name, data.username, primaryRole, id],
+        },
+        'Kelola User'
+      );
     }
 
-    // If changing own data, update the session so the UI/header updates immediately
+    // Update junction table
+    await setUserRoles(id, uniqueRoles);
+
+    // Jika mengedit diri sendiri, refresh session
     if (session.userId === id) {
       const { createSession } = await import('@/lib/session');
       await createSession({
         userId: session.userId,
         username: data.username,
         name: data.name,
-        role: data.role, // role might have changed too
+        roles: uniqueRoles,
+        role: primaryRole,
       });
     }
+
+    logActivity(
+      'UPDATE',
+      'users',
+      `User ${data.username} diperbarui dengan role: ${uniqueRoles.join(', ')}`,
+      {},
+      session.username
+    ).catch(() => {});
 
     return { success: true };
   } catch (error: any) {
@@ -120,14 +222,14 @@ export async function deleteUser(id: number) {
   try {
     const session = await requireSuperAdmin();
 
-    // Prevent deleting oneself
     if (session.userId === id) {
       return { success: false, message: 'Anda tidak dapat menghapus akun Anda sendiri.' };
     }
 
+    // user_roles akan otomatis terhapus karena FK ON DELETE CASCADE
     await db.execute({
       sql: 'DELETE FROM users WHERE id = ?',
-      args: [id]
+      args: [id],
     });
 
     return { success: true };

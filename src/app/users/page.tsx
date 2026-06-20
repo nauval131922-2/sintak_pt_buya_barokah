@@ -11,7 +11,10 @@ export const metadata: Metadata = {
 export default async function UsersPage() {
   const session = await getSession();
 
-  if (!session || session.role !== "Super Admin") {
+  const isSuperAdmin =
+    session?.roles?.includes("Super Admin") || session?.role === "Super Admin";
+
+  if (!session || !isSuperAdmin) {
     redirect("/");
   }
 

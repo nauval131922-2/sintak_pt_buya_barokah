@@ -1,6 +1,125 @@
 # AI Session Summary
 
-## Update Sesi — 2026-06-18
+## Update Sesi — 2026-06-20
+
+### Konteks Sesi
+- Implementasi fitur **multiple role per user** pada halaman Kelola User.
+- Lanjutan: Modul **Produksi Selesai**, **Pending Produksi SOPD**, **UI JHP Compact**, **Activity Log diff**, **Scraper Master Barang**.
+
+### Pekerjaan Sesi Ini
+
+#### Multiple Role per User (Commit Terpisah)
+
+1. **Database: Tabel junction `user_roles`** (`src/lib/schema.ts`)
+   - Tambah `CREATE TABLE IF NOT EXISTS user_roles` dengan FK cascade.
+   - Migrasi otomatis backfill dari `users.role` ke `user_roles`.
+   - Tambah `user_roles` ke `EXCLUDED_TABLES`.
+
+2. **Session & Auth** (`src/lib/session.ts`, `src/lib/auth.ts`)
+   - `SessionPayload` punya `roles: string[]` + `role` (backward-compat).
+   - Login baca semua role dari `user_roles`, validasi ke `app_roles`.
+
+3. **Permissions** (`src/lib/permissions.ts`, `src/lib/permissions-actions.ts`, `src/lib/activity-log-permissions.ts`)
+   - `getMergedPermissions(roles[])`: union/OR semua permissions.
+   - `updateRole`/`deleteRole` adjust `user_roles` + `users.role`.
+   - Activity log permissions support `string | string[]`.
+
+4. **UI Users** (`UserFormModal.tsx`, `UsersContent.tsx`)
+   - Multi-select checkbox dropdown dengan badge removable.
+   - Kolom "Jabatan / Peran" menampilkan multiple badge.
+   - Filter & search mencakup semua role.
+
+5. **Layout & Sidebar** (`layout.tsx`, `Sidebar.tsx`, `MainContentWrapper.tsx`)
+   - Sidebar pakai `getMergedPermissions(roles[])`.
+   - Sidebar profil tampilkan semua role.
+
+6. **Bugfix ProduksiSelesaiClient.tsx** — Union type dialog fix.
+
+#### Modul Produksi Selesai
+
+7. **Modul Baru: Produksi Selesai**
+   - Halaman `src/app/data-digit/produksi/produksi-selesai/page.tsx`
+   - Komponen `ProduksiSelesaiClient.tsx`
+   - API `src/app/api/produksi-selesai/route.ts`
+   - Scraper `src/app/api/scrape-produksi-selesai/route.ts`
+   - Permission `produksi_selesai` di MODULE_REGISTRY
+
+#### SOPD — Pending Produksi & Sorting
+
+8. **Kolom Pending Produksi SOPD** (`sopd/route.ts`, `SopdClient.tsx`)
+   - Field baru `pending_produksi` (checkbox) + `alasan_pending` (editable text).
+   - PATCH endpoint untuk update individual field.
+   - Auto-generate draft JHP filter: skip order dengan `pending_produksi = 1`.
+
+9. **Unified SOPD + Orders Query** (`sopd/route.ts`)
+   - UNION ALL query untuk data SOPD (≤2024) + Orders (semua tahun).
+   - Simplified lastUpdated display (timestamp terbaru dari kedua sumber).
+
+10. **Sorting SOPD** (`SopdClient.tsx`, `DataTable.tsx`, `sopd/route.ts`)
+    - `SortingState` + sort params di API SOPD.
+    - DataTable: prop `manualSorting` untuk server-side sort.
+
+#### UI JHP — Compact Filter Bar
+
+11. **Redesain Filter Bar JHP** (`JurnalClient.tsx`)
+    - Layout lebih ringkas: custom DatePicker triggers, divider, inline status.
+    - SearchAndReload compact di kanan, action buttons streamlined.
+    - Subtotal bar & contextual bulk actions tetap responsif.
+
+#### Komponen & Perbaikan
+
+12. **SearchAndReload compact mode** (`SearchAndReload.tsx`)
+    - Prop `compact` untuk tinggi 32px, teks lebih kecil.
+
+13. **Activity Log Diff** (`ActivityLogClient.tsx`)
+    - Tabel `table-fixed` dengan kolom proporsional (30/35/35).
+    - Warna before=rose, after=emerald untuk diff readability.
+
+14. **Scraper Master Barang** (`scrape-master-barang/route.ts`)
+    - Multi-row VALUES chunk 200 records + Promise.all paralel.
+    - Hapus `raw_data` dari storage untuk hemat ruang.
+    - Tambah activity log otomatis setelah scrape.
+
+### Keputusan Teknis
+- Kolom `users.role` tetap ada dan disinkronkan ke role "utama" — backward-compat.
+- Permissions menggunakan union (OR) — akses jika salah satu role punya akses.
+- Scraper master barang pakai multi-row VALUES + paralel untuk throughput tinggi.
+- `pending_produksi` filter di auto-generate draft cegah order pending masuk jadwal.
+
+### File yang Diubah (Sesi Ini — Multiple Role)
+- `src/lib/schema.ts`, `src/lib/session.ts`, `src/lib/permissions.ts`
+- `src/lib/permissions-actions.ts`, `src/lib/activity-log-permissions.ts`
+- `src/lib/users.ts`, `src/lib/auth.ts`, `src/lib/actions.ts`
+- `src/app/page.tsx`, `src/app/layout.tsx`
+- `src/app/users/page.tsx`, `src/app/users/UsersContent.tsx`, `src/app/users/UserFormModal.tsx`
+- `src/components/Sidebar.tsx`, `src/components/MainContentWrapper.tsx`
+
+### File Baru (Sesi Ini — Produksi Selesai)
+- `src/app/data-digit/produksi/produksi-selesai/page.tsx`
+- `src/app/data-digit/produksi/produksi-selesai/ProduksiSelesaiClient.tsx`
+- `src/app/api/produksi-selesai/route.ts`
+- `src/app/api/scrape-produksi-selesai/route.ts`
+
+### File Diubah (Sesi Ini — Fitur Lain)
+- `src/app/api/sopd/route.ts`
+- `src/app/api/scrape-master-barang/route.ts`
+- `src/app/api/jurnal-harian-produksi/auto-generate/draft/route.ts`
+- `src/app/jurnal-harian-produksi/JurnalClient.tsx`
+- `src/app/jurnal-harian-produksi/data/excel-sopd/SopdClient.tsx`
+- `src/app/log-aktivitas/ActivityLogClient.tsx`
+- `src/components/SearchAndReload.tsx`
+- `src/components/ui/DataTable.tsx`
+- `src/lib/permissions-constants.ts`
+- `.gitignore`
+
+### Sisa Pekerjaan / Backlog
+- Evaluasi akurasi auto-generate jadwal dan iterasi algoritma pola historis.
+- Finalisasi chart visualisasi Analisa Produksi.
+- Setup backup database otomatis ke cloud storage.
+
+---
+
+
 
 ### Konteks Sesi
 - Sesi perbaikan bug, peningkatan UX, dan fitur baru pada modul Jurnal Harian Produksi (JHP).

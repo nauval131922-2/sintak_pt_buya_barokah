@@ -561,7 +561,9 @@ export async function getLiveRecord(tableName: string, recordId: number | string
 export async function cleanupActivityLogs(daysToKeep: number) {
   const session = await getSession();
   const { canAdminActivityLog } = await import('@/lib/activity-log-permissions');
-  if (!session || !(await canAdminActivityLog(session.role))) {
+  if (!session || !(await canAdminActivityLog(
+    Array.isArray(session.roles) && session.roles.length > 0 ? session.roles : session.role
+  ))) {
     throw new Error('Unauthorized: Hanya role dengan hak Log Aktivitas (Kelola) yang diizinkan menghapus log.');
   }
 
