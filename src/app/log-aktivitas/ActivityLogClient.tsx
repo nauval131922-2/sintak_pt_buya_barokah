@@ -1010,7 +1010,12 @@ export default function ActivityLogClient({
                                       }
                                       return diffs.length > 0 ? (
                                         <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
-                                          <table className="w-full text-[10px]">
+                                          <table className="w-full table-fixed text-[10px]">
+                                            <colgroup>
+                                              <col style={{ width: '30%' }} />
+                                              <col style={{ width: '35%' }} />
+                                              <col style={{ width: '35%' }} />
+                                            </colgroup>
                                             <thead>
                                               <tr className="text-left text-gray-400 font-bold border-b border-gray-50">
                                                 <th className="pb-1 pr-2">Kolom</th>
@@ -1021,9 +1026,9 @@ export default function ActivityLogClient({
                                             <tbody>
                                               {diffs.map((d) => (
                                                 <tr key={d.key} className="border-b border-gray-50/50">
-                                                  <td className="py-1 pr-2 font-semibold text-gray-700 whitespace-nowrap">{d.key}</td>
-                                                  <td className="py-1 pr-2 text-gray-400 line-clamp-2 max-w-[140px]">{d.before || <span className="italic text-gray-300">—</span>}</td>
-                                                  <td className="py-1 text-gray-700 line-clamp-2 max-w-[140px]">{d.after || <span className="italic text-gray-300">—</span>}</td>
+                                                  <td className="py-1 pr-2 font-semibold text-gray-700 break-words">{d.key}</td>
+                                                  <td className="py-1 pr-2 text-rose-500 break-words">{d.before || <span className="italic text-gray-300">—</span>}</td>
+                                                  <td className="py-1 text-emerald-700 break-words">{d.after || <span className="italic text-gray-300">—</span>}</td>
                                                 </tr>
                                               ))}
                                             </tbody>
