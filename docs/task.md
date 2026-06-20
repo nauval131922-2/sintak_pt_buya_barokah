@@ -19,6 +19,15 @@ _Tidak ada task yang sedang berjalan saat ini._
 
 ## ✅ Selesai (Done)
 
+- [x] **Multiple Role per User** — implementasi penuh (DB junction, session, permissions merge, UI multi-select, login auth, sidebar) — 2026-06-20
+- [x] **Modul Produksi Selesai** — halaman, API, scraper, permission — 2026-06-20
+- [x] **Pending Produksi SOPD** — kolom checkbox pending + alasan editable di sopd_harga, PATCH endpoint, filter auto-generate draft — 2026-06-20
+- [x] **Unified SOPD + Orders Query** — UNION ALL, cutoff 2024 untuk SOPD, simplified lastUpdated — 2026-06-20
+- [x] **Sorting SOPD** — server-side sort via DataTable manualSorting — 2026-06-20
+- [x] **UI Compact Filter Bar JHP** — redesain layout lebih ringkas, custom DatePicker triggers — 2026-06-20
+- [x] **SearchAndReload compact mode** — prop compact untuk toolbar padat — 2026-06-20
+- [x] **Activity Log diff improved** — table-fixed, warna before/after (rose/emerald) — 2026-06-20
+- [x] **Scraper Master Barang optimized** — multi-row VALUES, paralel eksekusi, activity log — 2026-06-20
 - [x] Fix tombol copy jadwal tidak berubah status (logika hasCopiedToday berbasis DATE(created_at)) — 2026-06-18
 - [x] Fix field keterangan tidak tersimpan saat input realisasi & multi-realisasi baris pertama — 2026-06-18
 - [x] Feat: editable cell keterangan di tabel daftar JHP (double-click, paste mode, copy button) — 2026-06-18
@@ -132,13 +141,22 @@ _Tidak ada task yang sedang berjalan saat ini._
 ## 📊 Statistik
 
 ```
-Total task    : 123
-Selesai       : 116
+Total task    : 133
+Selesai       : 126
 In progress   : 0
 Backlog       : 6 (+ 2 ide)
 Bug diketahui : 0
-Progress      : 94.3%
+Progress      : 94.7%
 ```
+
+### Catatan Sesi 2026-06-20
+- **Multiple Role per User**: implementasi penuh — junction table, session roles[], permissions merge (OR), UI multi-select, auth login, sidebar.
+- **Modul Produksi Selesai**: halaman baru, API, scraper, permission.
+- **Pending Produksi SOPD**: checkbox toggle + alasan editable, PATCH endpoint, filter di auto-generate draft.
+- **Unified SOPD + Orders Query**: UNION ALL, cutoff 2024 untuk data SOPD.
+- **UI Compact Filter Bar JHP**: filter bar redesain jadi lebih ringkas, custom DatePicker triggers.
+- **Scraper Master Barang**: multi-row VALUES chunk 200, Promise.all paralel, hapus raw_data.
+- **Activity Log diff**: table-fixed, warna before/after untuk readability.
 
 ### Catatan Sesi 2026-06-18
 - Fix tombol copy jadwal: `hasCopiedToday` kini berbasis `DATE(created_at)` bukan per tanggal jadwal.
