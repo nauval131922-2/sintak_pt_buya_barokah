@@ -5,6 +5,7 @@ import { getErrorMessage } from "@/lib/api-utils";
 import { ScrapedRecord, BatchOperation } from "@/lib/scraper-utils";
 import { getCachedSession, setCachedSession, clearCachedSession, getSession as getScraperSession } from "@/lib/session-cache";
 import { getSession } from "@/lib/session";
+import { logActivity } from "@/lib/activity";
 
 const API_EMAIL = process.env.SCRAPER_EMAIL || "nauval";
 const API_PASSWORD = process.env.SCRAPER_PASSWORD || "312admin2";
@@ -88,75 +89,62 @@ export async function GET(request: NextRequest) {
       };
     });
     
-    // Prepare batch inserts
-    const batchOps: any[] = [];
-    for (const record of finalRecords) {
-      if (!record.kode) continue;
-      
-      batchOps.push({
-        sql: `
-          INSERT INTO stok_master_barang (
-            kode, barcode, nama, kd_satuan, spesifikasi, berat_kg, 
-            kd_golongan, kd_kelompok, tampil, prd_std, saldo, 
-            qty_order, hj_ppn, ppn, status, pj_hide, royalti, 
-            create_at, updated_at, username, recid, raw_data
-          )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          ON CONFLICT(kode) DO UPDATE SET
-            barcode = excluded.barcode,
-            nama = excluded.nama,
-            kd_satuan = excluded.kd_satuan,
-            spesifikasi = excluded.spesifikasi,
-            berat_kg = excluded.berat_kg,
-            kd_golongan = excluded.kd_golongan,
-            kd_kelompok = excluded.kd_kelompok,
-            tampil = excluded.tampil,
-            prd_std = excluded.prd_std,
-            saldo = excluded.saldo,
-            qty_order = excluded.qty_order,
-            hj_ppn = excluded.hj_ppn,
-            ppn = excluded.ppn,
-            status = excluded.status,
-            pj_hide = excluded.pj_hide,
-            royalti = excluded.royalti,
-            create_at = excluded.create_at,
-            updated_at = excluded.updated_at,
-            username = excluded.username,
-            recid = excluded.recid,
-            raw_data = excluded.raw_data,
-            fetched_at = CURRENT_TIMESTAMP
-        `,
-        args: [
-          record.kode || '',
-          record.barcode || '',
-          record.nama || '',
-          record.kd_satuan || '',
-          record.spesifikasi || '',
-          record.berat_kg || 0,
-          record.kd_golongan || '',
-          record.kd_kelompok || '',
-          record.tampil || '',
-          record.prd_std || '',
-          record.saldo || 0,
-          record.qty_order || 0,
-          record.hj_ppn || '',
-          record.ppn || 0,
-          record.status || '',
-          record.pj_hide || '',
-          record.royalti || '',
-          record.create_at || null,
-          record.updated_at || null,
-          record.username || '',
-          record.recid || '',
-          JSON.stringify(record)
-        ]
+    // Prepare batch inserts — gunakan multi-row VALUES untuk minimasi round-trip
+    const COLS = [
+      'kode', 'barcode', 'nama', 'kd_satuan', 'spesifikasi', 'berat_kg',
+      'kd_golongan', 'kd_kelompok', 'tampil', 'prd_std', 'saldo',
+      'qty_order', 'hj_ppn', 'ppn', 'status', 'pj_hide', 'royalti',
+      'create_at', 'updated_at', 'username', 'recid', 'raw_data'
+    ];
+    const MARKER = `(${COLS.map(() => '?').join(', ')})`;
+    const UPDATE_SET = COLS.filter(c => c !== 'kode').map(c =>
+      `${c} = excluded.${c}`
+    ).join(', ') + ', fetched_at = CURRENT_TIMESTAMP';
+
+    const validRecords = finalRecords.filter((r: any) => r.kode);
+
+    // Bangun args per record
+    const recordArgs = (r: any) => [
+      r.kode || '',
+      r.barcode || '',
+      r.nama || '',
+      r.kd_satuan || '',
+      r.spesifikasi || '',
+      r.berat_kg || 0,
+      r.kd_golongan || '',
+      r.kd_kelompok || '',
+      r.tampil || '',
+      r.prd_std || '',
+      r.saldo || 0,
+      r.qty_order || 0,
+      r.hj_ppn || '',
+      r.ppn || 0,
+      r.status || '',
+      r.pj_hide || '',
+      r.royalti || '',
+      r.create_at || null,
+      r.updated_at || null,
+      r.username || '',
+      r.recid || '',
+      null, // raw_data tidak disimpan untuk hemat storage
+    ];
+
+    // Kelompokkan per 200 record per statement, lalu jalankan semua PARALEL
+    const CHUNK = 200;
+    const batchStmts: { sql: string; args: any[] }[] = [];
+    for (let i = 0; i < validRecords.length; i += CHUNK) {
+      const chunk = validRecords.slice(i, i + CHUNK);
+      const allMarkers = chunk.map(() => MARKER).join(', ');
+      const allArgs = chunk.flatMap(recordArgs);
+      batchStmts.push({
+        sql: `INSERT INTO stok_master_barang (${COLS.join(', ')}) VALUES ${allMarkers}
+              ON CONFLICT(kode) DO UPDATE SET ${UPDATE_SET}`,
+        args: allArgs,
       });
     }
 
-    const chunkSize = 100;
-    for (let i = 0; i < batchOps.length; i += chunkSize) {
-      await db.batch(batchOps.slice(i, i + chunkSize), "write");
-    }
+    // Jalankan semua chunk paralel (libSQL batch per statement)
+    await Promise.all(batchStmts.map(stmt => db.execute(stmt)));
 
     const lastUpdated = new Date().toISOString();
     const finalOps = [
@@ -171,6 +159,13 @@ export async function GET(request: NextRequest) {
     ];
 
     await db.batch(finalOps, "write");
+
+    await logActivity(
+      'SCRAPE',
+      'stok_master_barang',
+      `Scrape master barang berhasil: ${validRecords.length} item.`,
+      { total: validRecords.length }
+    );
 
     return NextResponse.json({
       success: true,
