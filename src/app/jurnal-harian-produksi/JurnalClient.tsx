@@ -1662,245 +1662,260 @@ export default function JurnalClient({
       </div>
 
       {/* TAB CONTENT: LIST */}
-      <div className={`flex-1 flex flex-col gap-6 overflow-hidden ${activeTab === 'list' ? 'flex' : 'hidden'}`}>
+      <div className={`flex-1 flex flex-col gap-4 overflow-hidden ${activeTab === 'list' ? 'flex' : 'hidden'}`}>
         {/* Top Filter Bar */}
-        <div className="flex gap-6 shrink-0 min-h-[105px]">
-         <div className="flex-1 bg-white rounded-2xl border border-gray-100 px-6 py-4 shadow-sm shadow-green-900/5 flex flex-col justify-center relative z-50 overflow-visible h-full">
-            <div className="flex items-center gap-6">
+        <div className="shrink-0 bg-white rounded-2xl border border-gray-100 px-4 py-3 shadow-sm shadow-green-900/5 relative z-50 overflow-visible">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Rentang Tanggal */}
-            <div className="flex flex-col">
-               <span className="block text-[13px] font-semibold text-gray-500 mb-2 ml-1 tracking-tight select-none">Rentang Tanggal</span>
-               <div className="flex items-center gap-3">
-                  <div className="w-[150px] relative group"><DatePicker name="startDate" value={startDate} onChange={(d) => { setStartDate(d); setPage(1); }} /></div>
-                  <div className="w-4 h-0.5 bg-gray-100 rounded-full"></div>
-                  <div className="w-[150px] relative group"><DatePicker name="endDate" value={endDate} onChange={(d) => { setEndDate(d); setPage(1); }} popupAlign="right" /></div>
-               </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <DatePicker
+                name="startDate"
+                value={startDate}
+                onChange={(d) => { setStartDate(d); setPage(1); }}
+                customTrigger={(toggle) => (
+                  <button type="button" onClick={toggle}
+                    className="h-9 px-3 bg-gray-50 border border-gray-100 rounded-lg text-[11px] font-semibold text-gray-700 flex items-center gap-2 hover:border-green-300 hover:bg-white transition-all whitespace-nowrap min-w-[120px]">
+                    <Filter size={12} className="text-gray-400 shrink-0" />
+                    {startDate ? startDate.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : <span className="text-gray-300">Dari</span>}
+                  </button>
+                )}
+              />
+              <span className="text-gray-300 text-[11px] font-bold">—</span>
+              <DatePicker
+                name="endDate"
+                value={endDate}
+                onChange={(d) => { setEndDate(d); setPage(1); }}
+                popupAlign="right"
+                customTrigger={(toggle) => (
+                  <button type="button" onClick={toggle}
+                    className="h-9 px-3 bg-gray-50 border border-gray-100 rounded-lg text-[11px] font-semibold text-gray-700 flex items-center gap-2 hover:border-green-300 hover:bg-white transition-all whitespace-nowrap min-w-[120px]">
+                    <Filter size={12} className="text-gray-400 shrink-0" />
+                    {endDate ? endDate.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : <span className="text-gray-300">Sampai</span>}
+                  </button>
+                )}
+              />
             </div>
+
+            {/* divider */}
+            <div className="w-px h-5 bg-gray-200 shrink-0" />
 
             {/* Bagian Filter */}
             <SearchableDropdown
               id="jurnal-bagian"
-              label="Filter Bagian"
               value={bagianFilter}
               items={bagianOptions}
               allLabel="Semua Bagian"
               searchPlaceholder="Cari bagian..."
+              triggerWidth="w-[160px]"
               panelWidth="w-[260px]"
-              icon={<Filter size={16} className={bagianFilter ? 'text-green-600' : 'text-gray-400'} />}
-              onChange={(val) => {
-                setBagianFilter(val);
-                setPage(1);
-              }}
+              compact
+              icon={<Filter size={13} className={bagianFilter ? 'text-green-600' : 'text-gray-400'} />}
+              onChange={(val) => { setBagianFilter(val); setPage(1); }}
             />
 
             {/* Nama Karyawan Filter */}
             <SearchableDropdown
               id="jurnal-karyawan"
-              label="Filter Karyawan"
               value={namaKaryawanFilter}
               items={namaOptions}
               allLabel="Semua Karyawan"
               searchPlaceholder="Cari karyawan..."
+              triggerWidth="w-[170px]"
               panelWidth="w-[260px]"
-              icon={<Filter size={16} className={namaKaryawanFilter ? 'text-green-600' : 'text-gray-400'} />}
-              onChange={(val) => {
-                setNamaKaryawanFilter(val);
-                setPage(1);
-              }}
+              compact
+              icon={<Filter size={13} className={namaKaryawanFilter ? 'text-green-600' : 'text-gray-400'} />}
+              onChange={(val) => { setNamaKaryawanFilter(val); setPage(1); }}
             />
 
             {/* Nama Order Filter */}
             <SearchableDropdown
               id="jurnal-no-order"
-              label="Filter Nama Order"
               value={noOrderFilter}
               items={sopdList.map(s => s.nama_order ? `${s.no_sopd} — ${s.nama_order}` : s.no_sopd)}
               allLabel="Semua Order"
               searchPlaceholder="Cari no. order..."
+              triggerWidth="w-[190px]"
               panelWidth="w-[320px]"
-              icon={<Filter size={16} className={noOrderFilter ? 'text-green-600' : 'text-gray-400'} />}
-              onChange={(val) => {
-                setNoOrderFilter(val.split(' — ')[0]);
-                setPage(1);
-              }}
+              compact
+              icon={<Filter size={13} className={noOrderFilter ? 'text-green-600' : 'text-gray-400'} />}
+              onChange={(val) => { setNoOrderFilter(val.split(' — ')[0]); setPage(1); }}
             />
 
             {/* Belum Realisasi Toggle */}
-            <div className="flex flex-col">
-              <span className="block text-[13px] font-semibold text-gray-500 mb-2 ml-1 tracking-tight select-none">Status Realisasi</span>
-              <button
-                onClick={() => { setBelumRealisasiFilter(prev => !prev); setPage(1); }}
-                className={`h-11 px-4 rounded-lg border shadow-sm transition-all flex items-center gap-2.5 text-[12px] font-bold tracking-tight ${belumRealisasiFilter ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-white text-gray-400 border-gray-100 hover:border-amber-100 hover:text-amber-500'}`}
-              >
-                <Filter size={16} />
-                {belumRealisasiFilter ? 'Belum Realisasi' : 'Semua'}
-              </button>
-            </div>
-
-            {/* Reset & Export Button */}
-            <div className="flex flex-col">
-              <span className="block text-[13px] font-semibold text-transparent mb-2 ml-1 tracking-tight select-none">Aksi</span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    handleResetFilter();
-                    setSearchQuery('');
-                  }}
-                  className="h-11 px-6 bg-white hover:bg-rose-50 text-gray-400 hover:text-rose-600 border border-gray-100 hover:border-rose-100 rounded-lg shadow-sm transition-all flex items-center gap-2.5 text-[12px] font-bold tracking-tight"
-                >
-                  <RotateCcw size={16} />
-                  Reset
-                </button>
-                <button
-                  onClick={handleExportExcel}
-                  disabled={isExporting}
-                  className="h-11 px-6 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-100 hover:border-emerald-200 rounded-lg shadow-sm transition-all flex items-center gap-2.5 text-[12px] font-bold tracking-tight disabled:opacity-50"
-                >
-                  {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-                  {isExporting ? 'Proses...' : 'Export Excel'}
-                </button>
-              </div>
-            </div>
-            </div>
-         </div>
-        </div>
-      <div className="flex-1 flex flex-col gap-3 overflow-hidden relative min-h-0">
-        <div className="flex flex-col gap-4 shrink-0 px-1">
-          <div className="flex items-center justify-between gap-4 min-h-[32px]">
-            <div className="flex items-center gap-5">
-               <div className="text-[14px] font-bold text-gray-800 flex items-center gap-3 leading-none tracking-tight">
-                  <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shadow-sm">
-                    <ClipboardList size={16} />
-                  </div>
-                  <span>Jurnal Harian Produksi</span>
-                  <ViewActivityLogLink tableName="jurnal_harian_produksi" />
-                  
-                  {/* Copy Jadwal Button / Status & Revert */}
-                  {canCopyJadwal && (
-                    <div className="flex items-center gap-2 ml-2">
-                      {hasCopiedToday ? (
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-[11px] font-bold shadow-sm" title="Penyalinan jadwal untuk hari ini sudah pernah dilakukan">
-                          <CheckCircle2 size={12} className="text-emerald-600" />
-                          <span>Jadwal hari ini sudah disalin</span>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => {
-                            // Pre-fill from = today, to = tomorrow
-                            const today = new Date();
-                            const tomorrow = new Date(today);
-                            tomorrow.setDate(tomorrow.getDate() + 1);
-                            setCopyFrom(today);
-                            setCopyTo(tomorrow);
-                            setCopyBagian([]);
-                            setCopyKaryawan([]);
-                            setCopyModalError('');
-                            setCopyBagianSearch('');
-                            setCopyKaryawanSearch('');
-                            setShowCopyModal(true);
-                          }}
-                          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg border border-emerald-700 hover:border-emerald-800 transition-all shadow-sm shadow-emerald-100 animate-pulse"
-                          title="Copy jadwal ke tanggal lain"
-                        >
-                          <Copy size={12} />
-                          Copy Jadwal
-                        </button>
-                      )}
-
-                      {canRevert && (
-                        <button
-                          onClick={triggerRevertConfirm}
-                          disabled={isReverting}
-                          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 text-[11px] font-bold rounded-lg border border-amber-200 hover:border-amber-300 transition-all disabled:opacity-50"
-                          title="Batalkan penyalinan jadwal terakhir yang telah dilakukan"
-                        >
-                          {isReverting ? (
-                            <Loader2 size={12} className="animate-spin" />
-                          ) : (
-                            <RotateCcw size={12} />
-                          )}
-                          Revert Copy Terakhir
-                        </button>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Trash Button — Super Admin only */}
-                  {isSuperAdmin && (
-                    <button
-                      onClick={handleOpenTrash}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-bold rounded-lg border border-rose-200 transition-all ml-2"
-                      title="Lihat data terhapus"
-                    >
-                      <Trash2 size={12} />
-                      Trash
-                    </button>
-                  )}
-               </div>
-               
-
-               {/* Contextual Actions */}
-               {selectedIds.size > 0 && (
-                 <>
-                  <button onClick={() => setShowShiftModal(true)} className="flex items-center gap-1.5 px-2 py-1 bg-sky-50 hover:bg-sky-100 text-sky-600 text-[11px] font-bold rounded-lg border border-sky-200 transition-all ml-2 animate-in fade-in zoom-in duration-200">
-                     <RotateCcw size={12} /> Ganti Shift
-                 </button>
-                  <button onClick={handleBulkDelete} className="flex items-center gap-1.5 px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-bold rounded-lg border border-rose-200 transition-all ml-2 animate-in fade-in zoom-in duration-200">
-                     <Trash2 size={12} /> Hapus {selectedIds.size} Terpilih
-                 </button>
-                 </>
-               )}
-               {actionMessage && (
-                 <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[12px] font-bold animate-in fade-in slide-in-from-left-2 duration-300 ${actionMessage.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
-                   {actionMessage.type === 'success' ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}
-                   {actionMessage.text}
-                 </div>
-               )}
-            </div>
-            {loading && (data?.length || 0) > 0 && (
-                <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse tracking-tight leading-none">
-                  <Loader2 size={12} className="animate-spin" />
-                  <span>Memproses Data...</span>
-                </div>
-            )}
             <button
-              onClick={handleKeteranganPasteDone}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] leading-none font-bold transition-all ${
-                keteranganPasteActive
-                  ? 'opacity-100 visible bg-red-50 text-red-600 border border-red-200 hover:bg-red-100'
-                  : 'opacity-0 invisible pointer-events-none'
-              }`}
+              onClick={() => { setBelumRealisasiFilter(prev => !prev); setPage(1); }}
+              className={`h-9 px-3 rounded-lg border transition-all flex items-center gap-2 text-[11px] font-bold shrink-0 ${belumRealisasiFilter ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-gray-50 text-gray-400 border-gray-100 hover:border-amber-100 hover:text-amber-500'}`}
             >
-              <X size={12} />
-              Stop Copy (Esc)
+              <Filter size={13} />
+              {belumRealisasiFilter ? 'Belum Realisasi' : 'Semua Status'}
+            </button>
+
+            {/* Reset — ikut filter */}
+            <button
+              onClick={() => { handleResetFilter(); setSearchQuery(''); }}
+              className="h-9 px-3 bg-white hover:bg-rose-50 text-gray-400 hover:text-rose-600 border border-gray-100 hover:border-rose-100 rounded-lg transition-all flex items-center gap-1.5 text-[11px] font-bold shrink-0"
+            >
+              <RotateCcw size={13} />
+              Reset
+            </button>
+
+            {/* divider + Export sendiri di kanan */}
+            <div className="w-px h-5 bg-gray-200 shrink-0 ml-auto" />
+            <button
+              onClick={handleExportExcel}
+              disabled={isExporting}
+              className="h-9 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-100 hover:border-emerald-200 rounded-lg transition-all flex items-center gap-1.5 text-[11px] font-bold disabled:opacity-50 shrink-0"
+            >
+              {isExporting ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
+              {isExporting ? 'Proses...' : 'Export'}
             </button>
           </div>
+        </div>
+      <div className="flex-1 flex flex-col gap-3 overflow-hidden relative min-h-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0 px-1">
+          {/* Judul + icon */}
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="w-7 h-7 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shadow-sm">
+              <ClipboardList size={14} />
+            </div>
+            <span className="text-[13px] font-bold text-gray-800 leading-none tracking-tight whitespace-nowrap">Jurnal Harian Produksi</span>
+            <ViewActivityLogLink tableName="jurnal_harian_produksi" />
+          </div>
 
-          <SearchAndReload
-            searchQuery={searchQuery}
-            setSearchQuery={(v) => { setSearchQuery(v); setPage(1); }}
-            onReload={() => setRefreshKey(k => k + 1)}
-            loading={loading}
-            placeholder="Cari karyawan, nomor order, atau nama pekerjaan..."
-          />
+          {/* Copy Jadwal / Status / Revert */}
+          {canCopyJadwal && (
+            <>
+              <div className="w-px h-5 bg-gray-200 shrink-0" />
+              <div className="flex items-center gap-1.5">
+                {hasCopiedToday ? (
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-[10px] font-bold" title="Penyalinan jadwal untuk hari ini sudah pernah dilakukan">
+                    <CheckCircle2 size={11} className="text-emerald-600" />
+                    <span>Jadwal disalin</span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      const today = new Date();
+                      const tomorrow = new Date(today);
+                      tomorrow.setDate(tomorrow.getDate() + 1);
+                      setCopyFrom(today);
+                      setCopyTo(tomorrow);
+                      setCopyBagian([]);
+                      setCopyKaryawan([]);
+                      setCopyModalError('');
+                      setCopyBagianSearch('');
+                      setCopyKaryawanSearch('');
+                      setShowCopyModal(true);
+                    }}
+                    className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-lg border border-emerald-700 transition-all shadow-sm shadow-emerald-100 animate-pulse"
+                    title="Copy jadwal ke tanggal lain"
+                  >
+                    <Copy size={11} />
+                    Copy Jadwal
+                  </button>
+                )}
+                {canRevert && (
+                  <button
+                    onClick={triggerRevertConfirm}
+                    disabled={isReverting}
+                    className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 text-[10px] font-bold rounded-lg border border-amber-200 transition-all disabled:opacity-50"
+                    title="Batalkan penyalinan jadwal terakhir"
+                  >
+                    {isReverting ? <Loader2 size={11} className="animate-spin" /> : <RotateCcw size={11} />}
+                    Revert
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* Trash — Super Admin only */}
+          {isSuperAdmin && (
+            <>
+              <div className="w-px h-5 bg-gray-200 shrink-0" />
+              <button
+                onClick={handleOpenTrash}
+                className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[10px] font-bold rounded-lg border border-rose-200 transition-all"
+                title="Lihat data terhapus"
+              >
+                <Trash2 size={11} />
+                Trash
+              </button>
+            </>
+          )}
+
+          {/* Contextual — bulk actions */}
+          {selectedIds.size > 0 && (
+            <>
+              <div className="w-px h-5 bg-gray-200 shrink-0" />
+              <button onClick={() => setShowShiftModal(true)} className="flex items-center gap-1.5 px-2.5 py-1 bg-sky-50 hover:bg-sky-100 text-sky-600 text-[10px] font-bold rounded-lg border border-sky-200 transition-all animate-in fade-in zoom-in duration-200">
+                <RotateCcw size={11} /> Ganti Shift
+              </button>
+              <div className="w-px h-5 bg-gray-200 shrink-0" />
+              <button onClick={handleBulkDelete} className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[10px] font-bold rounded-lg border border-rose-200 transition-all animate-in fade-in zoom-in duration-200">
+                <Trash2 size={11} /> Hapus {selectedIds.size}
+              </button>
+            </>
+          )}
+
+          {/* Action message */}
+          {actionMessage && (
+            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold animate-in fade-in slide-in-from-left-2 duration-300 ${actionMessage.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
+              {actionMessage.type === 'success' ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}
+              {actionMessage.text}
+            </div>
+          )}
+
+          {/* Loading badge */}
+          {loading && (data?.length || 0) > 0 && (
+            <div className="text-[10px] font-bold text-green-600 flex items-center gap-1.5 bg-green-50 px-3 py-1 rounded-full border border-green-100 animate-pulse leading-none">
+              <Loader2 size={11} className="animate-spin" />
+              <span>Memuat...</span>
+            </div>
+          )}
+
+          {/* Stop Copy */}
+          <button
+            onClick={handleKeteranganPasteDone}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] leading-none font-bold transition-all ${
+              keteranganPasteActive
+                ? 'opacity-100 visible bg-red-50 text-red-600 border border-red-200 hover:bg-red-100'
+                : 'opacity-0 invisible pointer-events-none'
+            }`}
+          >
+            <X size={11} />
+            Stop Copy (Esc)
+          </button>
+
+          {/* Search — dorong ke kanan */}
+          <div className="ml-auto shrink-0 w-full sm:w-auto">
+            <SearchAndReload
+              searchQuery={searchQuery}
+              setSearchQuery={(v) => { setSearchQuery(v); setPage(1); }}
+              onReload={() => setRefreshKey(k => k + 1)}
+              loading={loading}
+              compact
+              placeholder="Cari karyawan, nomor order, atau nama pekerjaan..."
+            />
+          </div>
         </div>
 
         {/* Subtotal bar — tampil saat filter aktif */}
         {(bagianFilter || namaKaryawanFilter || noOrderFilter || belumRealisasiFilter || debouncedQuery) && (
-          <div className="shrink-0 bg-gradient-to-r from-emerald-50 to-sky-50 border border-emerald-100 rounded-xl px-5 py-3 flex items-center gap-8 shadow-sm">
-            <div className="flex items-center gap-2 text-[13px] font-bold text-gray-500">
-              <Filter size={14} />
+          <div className="shrink-0 bg-gradient-to-r from-emerald-50 to-sky-50 border border-emerald-100 rounded-xl px-4 py-2 flex items-center gap-6">
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-500">
+              <Filter size={12} />
               <span>Subtotal</span>
             </div>
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <span className="text-[12px] font-semibold text-gray-400">Realisasi:</span>
-                <span className="text-[14px] font-bold text-sky-700 tabular-nums">{totalRealisasi.toLocaleString('id-ID')}</span>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-semibold text-gray-400">Realisasi:</span>
+                <span className="text-[12px] font-bold text-sky-700 tabular-nums">{totalRealisasi.toLocaleString('id-ID')}</span>
               </div>
-              <div className="w-px h-6 bg-emerald-200"></div>
-              <div className="flex items-center gap-2">
-                <span className="text-[12px] font-semibold text-gray-400">Rijek:</span>
-                <span className="text-[14px] font-bold text-amber-700 tabular-nums">{totalRijek.toLocaleString('id-ID')}</span>
+              <div className="w-px h-4 bg-emerald-200"></div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-semibold text-gray-400">Rijek:</span>
+                <span className="text-[12px] font-bold text-amber-700 tabular-nums">{totalRijek.toLocaleString('id-ID')}</span>
               </div>
             </div>
           </div>
