@@ -36,6 +36,7 @@ interface DataTableProps<TData> {
   getRowClassName?: (row: TData) => string;
   sorting?: SortingState;
   onSortingChange?: OnChangeFn<SortingState>;
+  manualSorting?: boolean;
 }
 
 function DataTableInner<TData extends { id: number | string }>({
@@ -58,6 +59,7 @@ function DataTableInner<TData extends { id: number | string }>({
   getRowClassName,
   sorting,
   onSortingChange,
+  manualSorting = false,
 }: DataTableProps<TData>) {
   const [localSorting, setLocalSorting] = React.useState<SortingState>([]);
   const activeSorting = sorting !== undefined ? sorting : localSorting;
@@ -140,7 +142,8 @@ function DataTableInner<TData extends { id: number | string }>({
     onSortingChange: activeOnSortingChange,
     onColumnSizingChange: setColumnSizing,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
+    getSortedRowModel: manualSorting ? undefined : getSortedRowModel(),
+    manualSorting,
   });
 
   const isResizingColumn = table.getState().columnSizingInfo.isResizingColumn;

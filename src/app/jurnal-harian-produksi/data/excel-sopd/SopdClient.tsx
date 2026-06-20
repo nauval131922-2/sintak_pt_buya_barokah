@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { SortingState } from '@tanstack/react-table';
 import { Search, Loader2, AlertCircle, ChevronLeft, ChevronRight, RefreshCw, ClipboardList, Pencil, Check, X, Calendar, Copy } from 'lucide-react';
 import ImportInfo from '@/components/ImportInfo';
 import { useRouter } from 'next/navigation';
@@ -34,6 +35,8 @@ interface SopdRecord {
   keterangan: string | null;
   deadline_date: string | null;
   finished_date: string | null;
+  pending_produksi: number | null;
+  alasan_pending: string | null;
 }
 
 interface SopdClientProps {
@@ -224,6 +227,7 @@ const EditableCell = ({
                 value={value}
                 onChange={e => setValue(smartFormatInput(e.target.value))}
                 onClick={e => e.stopPropagation()}
+                onMouseDown={e => e.stopPropagation()}
                 onKeyDown={e => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
@@ -328,6 +332,46 @@ const EditableCell = ({
   );
 };
 
+const CheckboxCell = ({
+  row,
+  onSave,
+}: {
+  row: SopdRecord;
+  onSave: (no_sopd: string, value: string, field: string) => Promise<boolean>;
+}) => {
+  const [localVal, setLocalVal] = useState<number>(row.pending_produksi ? 1 : 0);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    setLocalVal(row.pending_produksi ? 1 : 0);
+  }, [row.pending_produksi]);
+
+  const handleToggle = async () => {
+    const next = localVal === 1 ? 0 : 1;
+    setLocalVal(next);
+    setIsSaving(true);
+    await onSave(row.no_sopd, String(next), 'pending_produksi');
+    setIsSaving(false);
+  };
+
+  return (
+    <div className="flex items-center justify-center w-full h-11">
+      <button
+        onClick={(e) => { e.stopPropagation(); handleToggle(); }}
+        disabled={isSaving}
+        title={localVal ? 'Pending (klik untuk hapus)' : 'Klik untuk tandai pending'}
+        className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-all shrink-0 ${
+          localVal
+            ? 'bg-orange-500 border-orange-500 text-white hover:bg-orange-600 hover:border-orange-600'
+            : 'border-gray-300 bg-white hover:border-orange-400'
+        } ${isSaving ? 'opacity-50 cursor-wait' : 'cursor-pointer'}`}
+      >
+        {localVal ? <Check size={12} strokeWidth={3} /> : null}
+      </button>
+    </div>
+  );
+};
+
 
 export default function SopdClient({ importInfo }: SopdClientProps) {
   const router = useRouter();
@@ -339,6 +383,15 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
   const [error, setError] = useState('');
   const [loadTime, setLoadTime] = useState<number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [sorting, setSorting] = useState<SortingState>([]);
+
+  const handleSortingChange = useCallback((updaterOrValue: SortingState | ((old: SortingState) => SortingState)) => {
+    setSorting(prev => {
+      const next = typeof updaterOrValue === 'function' ? updaterOrValue(prev) : updaterOrValue;
+      setPage(1);
+      return next;
+    });
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
@@ -387,7 +440,8 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
     }
     return {
       'id': 60, 'no_sopd': 180, 'nama_order': 400, 'qty_sopd': 150, 'unit': 120,
-      'perkiraan_harga': 180, 'keterangan': 250, 'deadline_date': 180, 'finished_date': 180
+      'perkiraan_harga': 180, 'keterangan': 250, 'deadline_date': 180, 'finished_date': 180,
+      'pending_produksi': 130, 'alasan_pending': 220
     };
   });
 
@@ -443,7 +497,10 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
         };
         const startParam = fmtDate(startDate);
         const endParam = fmtDate(endDate);
-        const res = await fetch(`/api/sopd?page=${page}&limit=${PAGE_SIZE}&search=${encodeURIComponent(debouncedQuery)}&startDate=${startParam}&endDate=${endParam}&_t=${Date.now()}`);
+        const sortParam = sorting.length > 0
+          ? `&sortBy=${sorting[0].id}&sortDir=${sorting[0].desc ? 'desc' : 'asc'}`
+          : '';
+        const res = await fetch(`/api/sopd?page=${page}&limit=${PAGE_SIZE}&search=${encodeURIComponent(debouncedQuery)}&startDate=${startParam}&endDate=${endParam}${sortParam}&_t=${Date.now()}`);
         if (!active) return;
         if (res.ok) {
           const json = await res.json();
@@ -467,7 +524,7 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
     }
     loadData();
     return () => { active = false; };
-  }, [page, debouncedQuery, refreshKey, startDate, endDate]);
+  }, [page, debouncedQuery, refreshKey, startDate, endDate, sorting]);
 
   const handleSaveRecord = useCallback(async (no_sopd: string, value: string, field: string): Promise<boolean> => {
     try {
@@ -485,6 +542,9 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
           if (field === 'perkiraan_harga' && value !== '' && !/[a-zA-Z]/.test(value)) {
             const num = Number(value.replace(/\./g, "").replace(',', '.'));
             if (!isNaN(num)) parsedVal = num;
+          }
+          if (field === 'pending_produksi') {
+            parsedVal = value === '1' ? 1 : 0;
           }
           return { ...row, [field]: parsedVal };
         }) : prev);
@@ -605,7 +665,38 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
     { accessorKey: 'perkiraan_harga', header: 'Perkiraan Harga', size: 180, meta: { align: 'right', headerBg: '#fffbeb' }, cell: (info: any) => <EditableCell row={info.row.original} isSelected={info.row.getIsSelected()} field="perkiraan_harga" onSave={handleSaveRecord} placeholder="klik 2x untuk harga" pasteActive={pasteActive} onCopyValue={handleCopyValue} copiedValue={copiedValue} onPasteDone={handlePasteDone} /> },
     { accessorKey: 'keterangan', header: 'Keterangan', size: 250, meta: { align: 'right', headerBg: '#fffbeb' }, cell: (info: any) => <EditableCell row={info.row.original} isSelected={info.row.getIsSelected()} field="keterangan" onSave={handleSaveRecord} placeholder="klik 2x untuk ket." pasteActive={pasteActive} onCopyValue={handleCopyValue} copiedValue={copiedValue} onPasteDone={handlePasteDone} /> },
     { accessorKey: 'deadline_date', header: 'Tanggal Deadline', size: 180, meta: { align: 'right', overflowVisible: true, headerBg: '#f5f3ff' }, cell: (info: any) => <EditableCell row={info.row.original} isSelected={info.row.getIsSelected()} field="deadline_date" onSave={handleSaveRecord} placeholder="klik 2x untuk deadline" pasteActive={pasteActive} onCopyValue={handleCopyValue} copiedValue={copiedValue} onPasteDone={handlePasteDone} /> },
-    { accessorKey: 'finished_date', header: 'Tanggal Selesai', size: 180, meta: { align: 'right', overflowVisible: true, headerBg: '#f5f3ff' }, cell: (info: any) => <EditableCell row={info.row.original} isSelected={info.row.getIsSelected()} field="finished_date" onSave={handleSaveRecord} placeholder="klik 2x untuk selesai" pasteActive={pasteActive} onCopyValue={handleCopyValue} copiedValue={copiedValue} onPasteDone={handlePasteDone} /> }
+    { accessorKey: 'finished_date', header: 'Tanggal Selesai', size: 180, meta: { align: 'right', overflowVisible: true, headerBg: '#f5f3ff' }, cell: (info: any) => <EditableCell row={info.row.original} isSelected={info.row.getIsSelected()} field="finished_date" onSave={handleSaveRecord} placeholder="klik 2x untuk selesai" pasteActive={pasteActive} onCopyValue={handleCopyValue} copiedValue={copiedValue} onPasteDone={handlePasteDone} /> },
+    {
+      accessorKey: 'pending_produksi',
+      header: 'Pending Produksi',
+      size: 130,
+      meta: { align: 'center', headerBg: '#fef2f2' },
+      cell: (info: any) => (
+        <CheckboxCell
+          row={info.row.original}
+          onSave={handleSaveRecord}
+        />
+      )
+    },
+    {
+      accessorKey: 'alasan_pending',
+      header: 'Alasan Pending Produksi',
+      size: 220,
+      meta: { align: 'right', headerBg: '#fef2f2' },
+      cell: (info: any) => (
+        <EditableCell
+          row={info.row.original}
+          isSelected={info.row.getIsSelected()}
+          field="alasan_pending"
+          onSave={handleSaveRecord}
+          placeholder="klik 2x untuk alasan"
+          pasteActive={pasteActive}
+          onCopyValue={handleCopyValue}
+          copiedValue={copiedValue}
+          onPasteDone={handlePasteDone}
+        />
+      )
+    },
   ], [page, handleSaveRecord, pasteActive, handleCopyValue, copiedValue, handlePasteDone]);
 
   const handleResize = useCallback((widths: any) => {
@@ -667,7 +758,7 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
         </div>
 
         <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative">
-          <DataTable data={data || []} columns={columns} columnWidths={columnWidths} onColumnWidthChange={handleResize} isLoading={loading || data === null} selectedIds={selectedIds} onRowClick={handleRowClick} rowHeight="h-11" />
+          <DataTable data={data || []} columns={columns} columnWidths={columnWidths} onColumnWidthChange={handleResize} isLoading={loading || data === null} selectedIds={selectedIds} onRowClick={handleRowClick} rowHeight="h-11" sorting={sorting} onSortingChange={handleSortingChange} manualSorting />
         </div>
 
         <TableFooter totalCount={totalCount} currentCount={data?.length || 0} label="SOPd" selectedCount={selectedIds.size} onClearSelection={clearSelection} loadTime={loadTime} page={page} totalPages={totalPages} onPageChange={setPage} />

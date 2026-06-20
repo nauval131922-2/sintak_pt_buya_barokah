@@ -375,7 +375,9 @@ export async function GET(request: NextRequest) {
           COALESCE(SUM(bj.qty), 0) AS qty_terima
         FROM orders o
         LEFT JOIN barang_jadi bj ON bj.faktur_prd = o.faktur
+        LEFT JOIN sopd_harga sh ON sh.no_sopd = o.faktur
         WHERE o.tgl >= ?
+          AND (sh.pending_produksi IS NULL OR sh.pending_produksi != 1)
         GROUP BY o.faktur, o.nama_prd, o.qty
         HAVING qty_order > qty_terima
         ORDER BY o.tgl DESC
