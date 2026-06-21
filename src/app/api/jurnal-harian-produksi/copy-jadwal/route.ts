@@ -18,15 +18,6 @@ export async function GET(_request: NextRequest) {
       args: [todayStr]
     });
 
-    // Dapatkan log COPY_JADWAL atau COPY_JADWAL_REVERTED terbaru (global, untuk canRevert)
-    const lastCopyQuery = await db.execute({
-      sql: `SELECT id, action_type FROM activity_logs
-            WHERE action_type IN ('COPY_JADWAL', 'COPY_JADWAL_REVERTED')
-              AND table_name = 'jurnal_harian_produksi'
-            ORDER BY id DESC LIMIT 1`,
-      args: []
-    });
-
     // Dapatkan log REVERT_COPY_JADWAL terbaru
     const lastRevertQuery = await db.execute({
       sql: `SELECT id FROM activity_logs
@@ -43,20 +34,17 @@ export async function GET(_request: NextRequest) {
       hasCopiedToday = todayCopy.action_type === 'COPY_JADWAL'; // bukan COPY_JADWAL_REVERTED
     }
 
-    // canRevert: copy terakhir (kapanpun) masih aktif belum di-revert
+    // canRevert: copy terakhir dilakukan hari ini dan belum di-revert
     let canRevert = false;
-    if (lastCopyQuery.rows.length > 0) {
-      const lastCopy = lastCopyQuery.rows[0] as any;
-      const lastCopyId = Number(lastCopy.id);
-      const isAlreadyReverted = lastCopy.action_type === 'COPY_JADWAL_REVERTED';
-
-      if (!isAlreadyReverted) {
-        if (lastRevertQuery.rows.length === 0) {
-          canRevert = true;
-        } else {
-          const lastRevertId = Number((lastRevertQuery.rows[0] as any).id);
-          canRevert = lastCopyId > lastRevertId;
-        }
+    if (hasCopiedToday) {
+      // hasCopiedToday sudah memastikan ada COPY_JADWAL hari ini yang aktif
+      // Cukup cek apakah log copy terbaru (hari ini) ID-nya > log revert terbaru
+      const todayCopyId = Number((todayCopyQuery.rows[0] as any).id);
+      if (lastRevertQuery.rows.length === 0) {
+        canRevert = true;
+      } else {
+        const lastRevertId = Number((lastRevertQuery.rows[0] as any).id);
+        canRevert = todayCopyId > lastRevertId;
       }
     }
 

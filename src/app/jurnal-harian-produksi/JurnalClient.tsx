@@ -1887,17 +1887,18 @@ export default function JurnalClient({
             Stop Copy (Esc)
           </button>
 
-          {/* Search — dorong ke kanan */}
-          <div className="ml-auto shrink-0 w-full sm:w-auto">
-            <SearchAndReload
-              searchQuery={searchQuery}
-              setSearchQuery={(v) => { setSearchQuery(v); setPage(1); }}
-              onReload={() => setRefreshKey(k => k + 1)}
-              loading={loading}
-              compact
-              placeholder="Cari karyawan, nomor order, atau nama pekerjaan..."
-            />
-          </div>
+        </div>
+
+        {/* Search bar — 1 baris penuh di antara toolbar dan tabel */}
+        <div className="shrink-0">
+          <SearchAndReload
+            searchQuery={searchQuery}
+            setSearchQuery={(v) => { setSearchQuery(v); setPage(1); }}
+            onReload={() => setRefreshKey(k => k + 1)}
+            loading={loading}
+            compact
+            placeholder="Cari karyawan, nomor order, atau nama pekerjaan..."
+          />
         </div>
 
         {/* Subtotal bar — tampil saat filter aktif */}
@@ -2282,7 +2283,8 @@ export default function JurnalClient({
                         <span className="text-[13px] font-bold text-gray-700">Order &amp; Pekerjaan</span>
                         <div className="flex-1 h-px bg-gray-100"></div>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="space-y-4">
+                        {/* Baris 1: No. Order — full width */}
                         <div className="space-y-1.5">
                           <label className="text-[12px] font-bold text-gray-600">No. Order</label>
                           <SearchableDropdown
@@ -2301,21 +2303,24 @@ export default function JurnalClient({
                             }}
                           />
                         </div>
-                        <div className="space-y-1.5">
-                          <label className="text-[12px] font-bold text-gray-600">Nama Order <span className="text-[11px] font-normal text-gray-400">(manual)</span></label>
-                          <input type="text" placeholder="Nama Order jika tidak ada di daftar No. Order" className="w-full bg-sky-50/40 border border-sky-200 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none h-11" value={rData.nama_order_manual_2 || ''} onChange={e => { handleRealisasiChange(rIndex, 'no_order_2', ''); handleRealisasiChange(rIndex, 'nama_order_2', ''); handleRealisasiChange(rIndex, 'nama_order_manual_2', e.target.value); }} />
-                        </div>
-                        <div className="space-y-1.5">
-                          <label className="text-[12px] font-bold text-gray-600">Jenis Pekerjaan</label>
-                          <SearchableDropdown
-                            id={`form-jenis-pekerjaan-2-${rIndex}`}
-                            value={rData.jenis_pekerjaan_2 || ''}
-                            items={jenisPekerjaan2List}
-                            placeholder="-- Pilih Jenis Pekerjaan --"
-                            allLabel="-- Pilih Jenis Pekerjaan --"
-                            triggerWidth="w-full"
-                            onChange={val => handleRealisasiChange(rIndex, 'jenis_pekerjaan_2', val)}
-                          />
+                        {/* Baris 2: Nama Order Manual + Jenis Pekerjaan */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[12px] font-bold text-gray-600">Nama Order <span className="text-[11px] font-normal text-gray-400">(manual)</span></label>
+                            <input type="text" placeholder="Nama Order jika tidak ada di daftar No. Order" className="w-full bg-sky-50/40 border border-sky-200 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none h-11" value={rData.nama_order_manual_2 || ''} onChange={e => { handleRealisasiChange(rIndex, 'no_order_2', ''); handleRealisasiChange(rIndex, 'nama_order_2', ''); handleRealisasiChange(rIndex, 'nama_order_manual_2', e.target.value); }} />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[12px] font-bold text-gray-600">Jenis Pekerjaan</label>
+                            <SearchableDropdown
+                              id={`form-jenis-pekerjaan-2-${rIndex}`}
+                              value={rData.jenis_pekerjaan_2 || ''}
+                              items={jenisPekerjaan2List}
+                              placeholder="-- Pilih Jenis Pekerjaan --"
+                              allLabel="-- Pilih Jenis Pekerjaan --"
+                              triggerWidth="w-full"
+                              onChange={val => handleRealisasiChange(rIndex, 'jenis_pekerjaan_2', val)}
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
