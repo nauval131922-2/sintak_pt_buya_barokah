@@ -86,11 +86,10 @@ function DataTableInner<TData extends { id: number | string }>({
 
   const onMouseDown = (e: React.MouseEvent) => {
     if (!parentRef.current) return;
-    // Only drag if it's the left mouse button
     if (e.button !== 0) return;
-
-    // IMPORTANT: We allow dragging even on text to make navigation easier in large tables
-    // Users can still select text by moving slowly or double-clicking
+    // Jangan aktifkan drag-scroll kalau klik dimulai dari dalam sel (td/th) —
+    // biarkan browser handle text selection secara normal
+    if ((e.target as HTMLElement).closest('td, th')) return;
 
     setIsPointerDown(true);
     startX.current = e.pageX - parentRef.current.offsetLeft;
@@ -144,6 +143,8 @@ function DataTableInner<TData extends { id: number | string }>({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: manualSorting ? undefined : getSortedRowModel(),
     manualSorting,
+    enableMultiSort: true,
+    isMultiSortEvent: () => true,
   });
 
   const isResizingColumn = table.getState().columnSizingInfo.isResizingColumn;
@@ -201,6 +202,7 @@ function DataTableInner<TData extends { id: number | string }>({
                   />
                   {headerGroup.headers.map((header) => {
                     const sortingState = activeSorting.find((s) => s.id === header.id);
+                    const sortIndex = activeSorting.findIndex((s) => s.id === header.id);
                     const meta = header.column.columnDef.meta as any;
                     const colWidth = columnSizing[header.id] || (header.column.columnDef as any).size || 150;
                     const isSticky = meta?.sticky;
@@ -218,15 +220,35 @@ function DataTableInner<TData extends { id: number | string }>({
                     >
                         <div 
                           className={`px-4 py-3 flex items-center gap-2 transition-colors select-none ${!hideSorting ? 'cursor-pointer hover:bg-black/5' : ''} ${meta?.align === 'right' ? 'justify-end flex-row-reverse' : meta?.align === 'center' ? 'justify-center' : 'justify-start'}`}
-                          onClick={!hideSorting ? header.column.getToggleSortingHandler() : undefined}
+                          onClick={!hideSorting ? () => {
+                            const colId = header.id;
+                            const existing = activeSorting.find(s => s.id === colId);
+                            let next: SortingState;
+                            if (!existing) {
+                              // Kolom belum di-sort: tambahkan asc
+                              next = [...activeSorting, { id: colId, desc: false }];
+                            } else if (!existing.desc) {
+                              // Sudah asc: ubah ke desc
+                              next = activeSorting.map(s => s.id === colId ? { ...s, desc: true } : s);
+                            } else {
+                              // Sudah desc: hapus dari sort list
+                              next = activeSorting.filter(s => s.id !== colId);
+                            }
+                            activeOnSortingChange(next);
+                          } : undefined}
                         >
                             <span className="text-[12px] font-bold text-gray-700 whitespace-nowrap overflow-hidden truncate">
                                 {flexRender(header.column.columnDef.header, header.getContext())}
                             </span>
                             {!hideSorting && (
-                                <div className="flex-shrink-0">
+                                <div className="flex-shrink-0 flex items-center gap-0.5">
                                 {sortingState ? (
-                                    sortingState.desc ? <ArrowDown size={14} className="text-blue-500" /> : <ArrowUp size={14} className="text-blue-500" />
+                                    <>
+                                      {sortingState.desc ? <ArrowDown size={14} className="text-blue-500" /> : <ArrowUp size={14} className="text-blue-500" />}
+                                      {activeSorting.length > 1 && (
+                                        <span className="text-[10px] font-bold text-blue-400 leading-none">{sortIndex + 1}</span>
+                                      )}
+                                    </>
                                 ) : (
                                     <ArrowUpDown size={14} className="text-gray-300 group-hover:text-gray-400 transition-colors" />
                                 )}

@@ -40,9 +40,16 @@ export async function GET(request: NextRequest) {
     }
 
     if (search) {
-      whereParts.push(`(nama_karyawan LIKE ? OR nama_order LIKE ? OR no_order LIKE ? OR jenis_pekerjaan LIKE ? OR nama_order_2 LIKE ? OR no_order_2 LIKE ?)`);
-      const searchStr = `%${search}%`;
-      args.push(searchStr, searchStr, searchStr, searchStr, searchStr, searchStr);
+      // ponytail: token-based AND search — tiap token harus cocok di salah satu kolom
+      // ceiling: O(tokens × cols) LIKE scans; upgrade path: FTS5 virtual table jika data > 1M baris
+      const cols = ['nama_karyawan', 'nama_order', 'no_order', 'jenis_pekerjaan', 'nama_order_2', 'no_order_2', 'jenis_pekerjaan_2', 'nama_order_manual', 'nama_order_manual_2'];
+      const colClause = cols.map(c => `${c} LIKE ?`).join(' OR ');
+      const tokens = search.trim().split(/\s+/).filter(Boolean).slice(0, 10); // max 10 token
+      for (const token of tokens) {
+        whereParts.push(`(${colClause})`);
+        const likeStr = `%${token}%`;
+        for (let i = 0; i < cols.length; i++) args.push(likeStr);
+      }
     }
 
     if (startDate && endDate) {

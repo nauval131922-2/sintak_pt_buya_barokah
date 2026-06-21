@@ -35,9 +35,6 @@ export async function GET(request: NextRequest) {
     const qPattern = search ? `%${search}%` : null;
 
     // Sorting server-side
-    const sortByRaw = searchParams.get("sortBy") || '';
-    const sortDir   = searchParams.get("sortDir") === 'asc' ? 'ASC' : 'DESC';
-
     // Whitelist kolom yang boleh disort beserta ekspresi SQL-nya
     // Kolom tanggal disimpan DD-MM-YYYY sehingga perlu konversi ke YYYY-MM-DD untuk sort yang benar
     const SORT_COLUMNS: Record<string, string> = {
@@ -52,12 +49,32 @@ export async function GET(request: NextRequest) {
       finished_date:    `h.finished_date`,
       pending_produksi: `h.pending_produksi`,
       alasan_pending:   `h.alasan_pending`,
+      kd_kelompok:          `mb.kd_kelompok`,
+      is_produksi_selesai:  `CASE WHEN ps.nama_prd IS NOT NULL THEN 1 ELSE 0 END`,
     };
 
-    const sortExpr = SORT_COLUMNS[sortByRaw];
-    const ORDER_BY = sortExpr
-      ? `ORDER BY ${sortExpr} ${sortDir}, no_sopd ${sortDir}`
-      : `ORDER BY substr(tgl,7,4) DESC, substr(tgl,4,2) DESC, substr(tgl,1,2) DESC, no_sopd DESC`;
+    // Support multi-sort: ?sort=col1:asc,col2:desc — fallback ke legacy sortBy/sortDir
+    const sortRaw = searchParams.get("sort") || '';
+    const sortByRaw = searchParams.get("sortBy") || '';
+    const sortDir   = searchParams.get("sortDir") === 'asc' ? 'ASC' : 'DESC';
+
+    let ORDER_BY: string;
+    if (sortRaw) {
+      const clauses = sortRaw.split(',').flatMap(part => {
+        const [col, dir] = part.split(':');
+        const expr = SORT_COLUMNS[col];
+        if (!expr) return [];
+        return [`${expr} ${dir === 'asc' ? 'ASC' : 'DESC'}`];
+      });
+      ORDER_BY = clauses.length
+        ? `ORDER BY ${clauses.join(', ')}`
+        : `ORDER BY substr(tgl,7,4) DESC, substr(tgl,4,2) DESC, substr(tgl,1,2) DESC, no_sopd DESC`;
+    } else {
+      const sortExpr = SORT_COLUMNS[sortByRaw];
+      ORDER_BY = sortExpr
+        ? `ORDER BY ${sortExpr} ${sortDir}, no_sopd ${sortDir}`
+        : `ORDER BY substr(tgl,7,4) DESC, substr(tgl,4,2) DESC, substr(tgl,1,2) DESC, no_sopd DESC`;
+    }
 
     // Mode khusus untuk dropdown (tanpa filter tanggal, ambil semua)
     const allMode = searchParams.get('all') === 'true';
@@ -91,11 +108,17 @@ export async function GET(request: NextRequest) {
     const ordersArgs = [...dateArgs, ...(search ? [qPattern!, qPattern!] : [])];
 
     const sqlData = `
-      SELECT u.*, h.perkiraan_harga, h.keterangan, h.deadline_date, h.finished_date, h.pending_produksi, h.alasan_pending FROM (
+      SELECT u.*, h.perkiraan_harga, h.keterangan, h.deadline_date, h.finished_date, h.pending_produksi, h.alasan_pending,
+        mb.kd_kelompok,
+        CASE WHEN ps.nama_prd IS NOT NULL THEN 1 ELSE 0 END as is_produksi_selesai
+      FROM (
         SELECT s.id, s.no_sopd, s.tgl, s.nama_order, s.qty_sopd, s.unit, 'sopd' as src FROM sopd s ${sopdWhere}
         UNION ALL
         SELECT o.id, o.faktur as no_sopd, o.tgl, o.nama_prd as nama_order, o.qty as qty_sopd, o.satuan as unit, 'orders' as src FROM orders o ${ordersWhere}
-      ) u LEFT JOIN sopd_harga h ON h.no_sopd = u.no_sopd
+      ) u
+      LEFT JOIN sopd_harga h ON h.no_sopd = u.no_sopd
+      LEFT JOIN stok_master_barang mb ON TRIM(mb.nama) = TRIM(u.nama_order)
+      LEFT JOIN (SELECT DISTINCT nama_prd FROM produksi_selesai) ps ON ps.nama_prd = u.nama_order
       ${ORDER_BY} LIMIT ? OFFSET ?`;
 
     const sqlTotal = `

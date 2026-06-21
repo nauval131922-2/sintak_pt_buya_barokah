@@ -37,6 +37,8 @@ interface SopdRecord {
   finished_date: string | null;
   pending_produksi: number | null;
   alasan_pending: string | null;
+  kd_kelompok: string | null;
+  is_produksi_selesai: number | null;
 }
 
 interface SopdClientProps {
@@ -441,7 +443,7 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
     return {
       'id': 60, 'no_sopd': 180, 'nama_order': 400, 'qty_sopd': 150, 'unit': 120,
       'perkiraan_harga': 180, 'keterangan': 250, 'deadline_date': 180, 'finished_date': 180,
-      'pending_produksi': 130, 'alasan_pending': 220
+      'pending_produksi': 130, 'alasan_pending': 220, 'kd_kelompok': 160
     };
   });
 
@@ -498,7 +500,7 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
         const startParam = fmtDate(startDate);
         const endParam = fmtDate(endDate);
         const sortParam = sorting.length > 0
-          ? `&sortBy=${sorting[0].id}&sortDir=${sorting[0].desc ? 'desc' : 'asc'}`
+          ? `&sort=${sorting.map(s => `${s.id}:${s.desc ? 'desc' : 'asc'}`).join(',')}`
           : '';
         const res = await fetch(`/api/sopd?page=${page}&limit=${PAGE_SIZE}&search=${encodeURIComponent(debouncedQuery)}&startDate=${startParam}&endDate=${endParam}${sortParam}&_t=${Date.now()}`);
         if (!active) return;
@@ -642,6 +644,29 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
         meta: { sticky: true },
         cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'} truncate block`} title={String(getValue())}>{String(getValue() || '—')}</span> 
     },
+    {
+        accessorKey: 'kd_kelompok',
+        header: 'Kelompok Barang',
+        size: 160,
+        cell: ({ getValue }: any) => {
+            const val = getValue();
+            return val
+                ? <span className="text-[12px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg">{String(val)}</span>
+                : <span className="text-gray-200 italic text-[11px]">—</span>;
+        }
+    },
+    {
+        accessorKey: 'is_produksi_selesai',
+        header: 'Produksi Selesai',
+        size: 140,
+        meta: { align: 'center' },
+        cell: ({ getValue }: any) => {
+            const done = Boolean(getValue());
+            return done
+                ? <span className="flex items-center justify-center w-full"><Check size={16} strokeWidth={3} className="text-emerald-600" /></span>
+                : <span className="text-gray-200 text-[11px]">—</span>;
+        }
+    },
     { 
         accessorKey: 'qty_sopd', header: 'Jumlah Order', size: 150, meta: { align: 'right' },
         cell: ({ getValue, row }: any) => {
@@ -738,7 +763,7 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
               <button
                 onClick={() => { setPasteActive(false); setCopiedValue(null); }}
                 className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] leading-none font-bold transition-all ${
-                  pasteActive
+                  pasteActive && !loading
                     ? 'opacity-100 visible bg-red-50 text-red-600 border border-red-200 hover:bg-red-100'
                     : 'opacity-0 invisible pointer-events-none'
                 }`}
@@ -746,10 +771,21 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
                 <X size={12} />
                 Stop Copy (Esc)
               </button>
+              <button
+                onClick={() => setSorting([])}
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] leading-none font-bold transition-all ${
+                  sorting.length > 0 && !loading
+                    ? 'opacity-100 visible bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100'
+                    : 'opacity-0 invisible pointer-events-none'
+                }`}
+              >
+                <X size={12} />
+                Reset Sort
+              </button>
               {loading && (data?.length || 0) > 0 && (
-                  <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
+                  <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse leading-none">
                     <Loader2 size={12} className="animate-spin" />
-                    <span>Memproses Data...</span>
+                    <span>Memproses data...</span>
                   </div>
               )}
             </div>
