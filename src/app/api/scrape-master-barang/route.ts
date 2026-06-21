@@ -41,33 +41,43 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Failed to login. No cookies returned." }, { status: 401 });
     }
 
-    const reqData = {
-      limit: 5000,
-      offset: 0,
-      bsearch: {
-        sroyalti: ""
-      },
-    };
+    // Pagination loop — ambil semua data sampai habis
+    const PAGE_LIMIT = 2000;
+    const rawRecords: any[] = [];
+    let offset = 0;
 
-    const reqJson = encodeURIComponent(JSON.stringify(reqData));
-    const dataUrl = BASE_URL + "v1/stk/mbrg/gr1?request=" + reqJson;
+    while (true) {
+      const reqData = {
+        limit: PAGE_LIMIT,
+        offset,
+        bsearch: { sroyalti: "" },
+      };
 
-    const res = await fetch(dataUrl, {
-      method: "GET",
-      headers: {
-        Accept: "application/json; charset=utf-8",
-        "X-Bismillah-Api-Key": API_KEY,
-        Cookie: cookies,
-      },
-    });
+      const reqJson = encodeURIComponent(JSON.stringify(reqData));
+      const dataUrl = BASE_URL + "v1/stk/mbrg/gr1?request=" + reqJson;
 
-    if (res.status === 401) {
-      clearCachedSession();
-      return NextResponse.json({ error: "Unauthorized. Session may have expired." }, { status: 401 });
+      const res = await fetch(dataUrl, {
+        method: "GET",
+        headers: {
+          Accept: "application/json; charset=utf-8",
+          "X-Bismillah-Api-Key": API_KEY,
+          Cookie: cookies,
+        },
+      });
+
+      if (res.status === 401) {
+        clearCachedSession();
+        return NextResponse.json({ error: "Unauthorized. Session may have expired." }, { status: 401 });
+      }
+
+      const jsonData = await res.json();
+      const page = jsonData.records || jsonData.data || jsonData.rows || jsonData.result || [];
+      rawRecords.push(...page);
+
+      // Berhenti kalau sudah halaman terakhir
+      if (page.length < PAGE_LIMIT) break;
+      offset += PAGE_LIMIT;
     }
-
-    const jsonData = await res.json();
-    const rawRecords = jsonData.records || jsonData.data || jsonData.rows || jsonData.result || [];
 
     const parseNumber = (val: any) => {
       if (!val) return 0;
