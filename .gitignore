@@ -76,3 +76,4 @@ _explore_*
 tsc_out.txt
 
 testsprite_tests/
+.kiro/
