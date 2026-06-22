@@ -11,18 +11,6 @@ Aplikasi ERP/internal web berbasis Next.js App Router untuk PT Buya Barokah/SINT
 - SQLite/libSQL (`@libsql/client`)
 - Node.js + npm
 
-## Bacaan Awal untuk Developer/AI
-
-Sebelum mengerjakan fitur atau debugging, baca file berikut dalam urutan ini:
-
-1. `AGENTS.md` - aturan kerja agent, command utama, dan batasan penting.
-2. `docs/REPO_MAP.md` - peta struktur repository dan area kode penting.
-3. `docs/DEV_RULES.md` - standar workflow development, guardrail UI/UX, dan aturan data.
-
-Jika task berkaitan dengan scraping, import, atau sinkronisasi data, baca juga `docs/SCRAPING_FLOW.md` sebelum mengubah kode.
-
-Setelah itu, gunakan `docs/RESUME_SESSION.md` sebagai konteks lanjutan saat melanjutkan sesi sebelumnya.
-
 ## Quick Start
 
 Untuk onboarding cepat tim baru:
