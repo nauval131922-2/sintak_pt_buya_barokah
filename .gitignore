@@ -77,9 +77,3 @@ tsc_out.txt
 
 testsprite_tests/
 .kiro/
-
-# AI documentation (not for production deployment)
-/docs
-/AGENTS.md
-/AI_RULES.md
-/PANDUAN_OPERASIONAL.md
