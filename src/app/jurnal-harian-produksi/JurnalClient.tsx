@@ -851,7 +851,6 @@ export default function JurnalClient({
   }, [cekKaryawanData, cekSearchDebounced]);
 
   const cekSudahFiltered = useMemo(() => {
-    setCekSudahPage(1); // reset ke halaman 1 saat filter berubah
     if (!cekKaryawanData) return [];
     const q = cekSearchDebounced.toLowerCase();
     if (!q) return cekKaryawanData.sudah;
@@ -864,6 +863,47 @@ export default function JurnalClient({
       (r.jenis_pekerjaan || '').toLowerCase().includes(q)
     );
   }, [cekKaryawanData, cekSearchDebounced]);
+
+  // Reset cekSudahPage ketika search query, tab aktif, atau data cekKaryawan berubah
+  useEffect(() => {
+    setCekSudahPage(1);
+  }, [cekSearchDebounced, cekActiveTab, cekKaryawanData]);
+
+  // Memoize baris tabel Belum Dapat Pekerjaan agar tidak di-re-render saat mengetik search
+  const belumRows = useMemo(() => {
+    if (!cekBelumFiltered) return [];
+    return cekBelumFiltered.map((row, idx) => (
+      <tr key={row.id} className="border-b border-gray-50 hover:bg-rose-50/40 transition-colors">
+        <td className="px-3 py-2 text-gray-300 font-semibold">{idx + 1}</td>
+        <td className="px-3 py-2 font-semibold text-gray-800">{row.name}</td>
+        <td className="px-3 py-2 text-gray-400">{row.position || '-'}</td>
+      </tr>
+    ));
+  }, [cekBelumFiltered]);
+
+  // Memoize baris tabel Sudah Dapat Pekerjaan agar tidak di-re-render saat mengetik search
+  const sudahRows = useMemo(() => {
+    if (!cekSudahFiltered) return [];
+    return cekSudahFiltered.slice(0, cekSudahPage * CEK_PAGE_SIZE).map((row, idx) => (
+      <tr key={row.jurnal_id} className="border-b border-gray-50 hover:bg-emerald-50/40 transition-colors">
+        <td className="px-3 py-2 text-gray-300 font-semibold">{idx + 1}</td>
+        <td className="px-3 py-2 font-semibold text-gray-800">{row.name}</td>
+        <td className="px-3 py-2 text-gray-400">{row.position || '-'}</td>
+        <td className="px-3 py-2 text-gray-500">{row.tgl ? formatIndoDateStr(row.tgl) : '-'}</td>
+        <td className="px-3 py-2 text-gray-600 font-medium">{row.no_order || '-'}</td>
+        <td className="px-3 py-2 text-gray-700 font-medium truncate" title={row.nama_order}>{row.nama_order || '-'}</td>
+        <td className="px-3 py-2 text-gray-600 truncate" title={row.jenis_pekerjaan}>{row.jenis_pekerjaan || '-'}</td>
+        <td className="px-3 py-2 text-right tabular-nums text-gray-700 font-semibold">
+          {row.target != null ? Number(row.target).toLocaleString('id-ID') : '-'}
+        </td>
+        <td className="px-3 py-2 text-right tabular-nums font-bold">
+          <span className={row.realisasi ? 'text-emerald-700' : 'text-gray-300'}>
+            {row.realisasi != null ? Number(row.realisasi).toLocaleString('id-ID') : '-'}
+          </span>
+        </td>
+      </tr>
+    ));
+  }, [cekSudahFiltered, cekSudahPage]);
 
   const showMessage = (type: 'success' | 'error', text: string) => {
     setActionMessage({ type, text });
@@ -3280,10 +3320,9 @@ export default function JurnalClient({
 
                 {/* Tabel hasil */}
                 <div className="flex-1 overflow-y-auto rounded-xl border border-gray-100">
-                  {cekActiveTab === 'belum' ? (
-                    /* ── TAB BELUM ── */
-                    /* ── TAB BELUM ── */
-                    cekBelumFiltered.length === 0 ? (
+                  {/* ── TAB BELUM ── */}
+                  <div className={cekActiveTab === 'belum' ? '' : 'hidden'}>
+                    {cekBelumFiltered.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-14 text-gray-400 gap-2">
                         {cekSearchDebounced ? <Search size={24} className="text-gray-300" /> : <CheckCircle2 size={28} className="text-emerald-300" />}
                         <p className="text-[13px] font-semibold">
@@ -3300,19 +3339,15 @@ export default function JurnalClient({
                           </tr>
                         </thead>
                         <tbody>
-                          {cekBelumFiltered.map((row, idx) => (
-                            <tr key={row.id} className="border-b border-gray-50 hover:bg-rose-50/40 transition-colors">
-                              <td className="px-3 py-2 text-gray-300 font-semibold">{idx + 1}</td>
-                              <td className="px-3 py-2 font-semibold text-gray-800">{row.name}</td>
-                              <td className="px-3 py-2 text-gray-400">{row.position || '-'}</td>
-                            </tr>
-                          ))}
+                          {belumRows}
                         </tbody>
                       </table>
-                    )
-                  ) : (
-                    /* ── TAB SUDAH ── */
-                    cekSudahFiltered.length === 0 ? (
+                    )}
+                  </div>
+
+                  {/* ── TAB SUDAH ── */}
+                  <div className={cekActiveTab === 'sudah' ? '' : 'hidden'}>
+                    {cekSudahFiltered.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-14 text-gray-400 gap-2">
                         <Search size={24} className="text-gray-300" />
                         <p className="text-[13px] font-semibold">Tidak ada hasil untuk &ldquo;{cekSearch}&rdquo;</p>
@@ -3333,29 +3368,12 @@ export default function JurnalClient({
                           </tr>
                         </thead>
                         <tbody>
-                          {cekSudahFiltered.slice(0, cekSudahPage * CEK_PAGE_SIZE).map((row, idx) => (
-                              <tr key={row.jurnal_id} className="border-b border-gray-50 hover:bg-emerald-50/40 transition-colors">
-                                <td className="px-3 py-2 text-gray-300 font-semibold">{idx + 1}</td>
-                                <td className="px-3 py-2 font-semibold text-gray-800">{row.name}</td>
-                                <td className="px-3 py-2 text-gray-400">{row.position || '-'}</td>
-                                <td className="px-3 py-2 text-gray-500">{row.tgl ? formatIndoDateStr(row.tgl) : '-'}</td>
-                                <td className="px-3 py-2 text-gray-600 font-medium">{row.no_order || '-'}</td>
-                                <td className="px-3 py-2 text-gray-700 font-medium truncate" title={row.nama_order}>{row.nama_order || '-'}</td>
-                                <td className="px-3 py-2 text-gray-600 truncate" title={row.jenis_pekerjaan}>{row.jenis_pekerjaan || '-'}</td>
-                                <td className="px-3 py-2 text-right tabular-nums text-gray-700 font-semibold">
-                                  {row.target != null ? Number(row.target).toLocaleString('id-ID') : '-'}
-                                </td>
-                                <td className="px-3 py-2 text-right tabular-nums font-bold">
-                                  <span className={row.realisasi ? 'text-emerald-700' : 'text-gray-300'}>
-                                    {row.realisasi != null ? Number(row.realisasi).toLocaleString('id-ID') : '-'}
-                                  </span>
-                                </td>
-                              </tr>
-                            ))}
+                          {sudahRows}
                           {cekSudahFiltered.length > cekSudahPage * CEK_PAGE_SIZE && (
                             <tr>
                               <td colSpan={9} className="px-3 py-3 text-center">
                                 <button
+                                  type="button"
                                   onClick={() => setCekSudahPage(p => p + 1)}
                                   className="text-[11px] font-bold text-violet-600 hover:text-violet-800 bg-violet-50 hover:bg-violet-100 px-4 py-1.5 rounded-lg border border-violet-200 transition-all"
                                 >
@@ -3364,10 +3382,10 @@ export default function JurnalClient({
                               </td>
                             </tr>
                           )}
-                          </tbody>
-                        </table>
-                      )
-                  )}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
                 </div>
               </>
             )}
