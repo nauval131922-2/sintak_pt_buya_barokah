@@ -81,27 +81,55 @@ export async function GET(request: NextRequest) {
       jenis_pekerjaan, keterangan, target, realisasi, no_order_2, nama_order_2,
       jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, is_manual_input, nama_order_manual, nama_order_manual_2`;
 
-    const sortLatest = searchParams.get('sort') === 'latest';
-    const sqlData = sortLatest
-      ? `SELECT ${SELECT_COLS} FROM jurnal_harian_produksi ${whereClause} ORDER BY id DESC LIMIT ? OFFSET ?`
-      : `SELECT ${SELECT_COLS} FROM jurnal_harian_produksi ${whereClause}
-      ORDER BY
+    // Whitelist kolom sortable — ekspresi SQL langsung, bukan nama kolom user
+    const SORT_COLUMNS: Record<string, string> = {
+      tgl:              'tgl',
+      shift:            'shift',
+      absensi:          'absensi',
+      nama_karyawan:    'nama_karyawan',
+      no_order:         'no_order',
+      nama_order:       'nama_order',
+      jenis_pekerjaan:  'jenis_pekerjaan',
+      keterangan:       'keterangan',
+      target:           'target',
+      realisasi:        'realisasi',
+      no_order_2:       'no_order_2',
+      nama_order_2:     'nama_order_2',
+      jenis_pekerjaan_2:'jenis_pekerjaan_2',
+      bagian:           `CASE UPPER(bagian) WHEN 'SETTING' THEN 1 WHEN 'QUALITY CONTROL' THEN 2 WHEN 'CETAK' THEN 3 WHEN 'FINISHING' THEN 4 WHEN 'GUDANG' THEN 5 WHEN 'TEKNISI' THEN 6 WHEN 'MESIN' THEN 7 ELSE 8 END`,
+      rijek:            'rijek',
+      jam:              'jam',
+      id:               'id',
+    };
+
+    const DEFAULT_ORDER = `ORDER BY
         tgl ASC,
         CASE UPPER(bagian)
-          WHEN 'SETTING' THEN 1
-          WHEN 'QUALITY CONTROL' THEN 2
-          WHEN 'CETAK' THEN 3
-          WHEN 'FINISHING' THEN 4
-          WHEN 'GUDANG' THEN 5
-          WHEN 'TEKNISI' THEN 6
-          WHEN 'MESIN' THEN 7
-          ELSE 8
+          WHEN 'SETTING' THEN 1 WHEN 'QUALITY CONTROL' THEN 2 WHEN 'CETAK' THEN 3
+          WHEN 'FINISHING' THEN 4 WHEN 'GUDANG' THEN 5 WHEN 'TEKNISI' THEN 6 WHEN 'MESIN' THEN 7 ELSE 8
         END ASC,
         MIN(CASE WHEN jenis_pekerjaan LIKE '%Koordinasi%' THEN 0 ELSE 1 END) OVER (PARTITION BY tgl, nama_karyawan) ASC,
         CASE WHEN jenis_pekerjaan LIKE '%Koordinasi%' THEN 0 ELSE 1 END ASC,
-        absensi ASC,
-        id ASC
-      LIMIT ? OFFSET ?`;
+        absensi ASC, id ASC`;
+
+    const sortRaw = searchParams.get('sort') || '';
+    let ORDER_BY: string;
+    if (sortRaw === 'latest') {
+      ORDER_BY = 'ORDER BY id DESC';
+    } else if (sortRaw) {
+      const clauses = sortRaw.split(',').flatMap(part => {
+        const [col, dir] = part.split(':');
+        const expr = SORT_COLUMNS[col];
+        if (!expr) return [];
+        return [`${expr} ${dir === 'asc' ? 'ASC' : 'DESC'}`];
+      });
+      // ponytail: fallback ke id ASC sebagai tie-breaker stabil
+      ORDER_BY = clauses.length ? `ORDER BY ${clauses.join(', ')}, id ASC` : DEFAULT_ORDER;
+    } else {
+      ORDER_BY = DEFAULT_ORDER;
+    }
+
+    const sqlData = `SELECT ${SELECT_COLS} FROM jurnal_harian_produksi ${whereClause} ${ORDER_BY} LIMIT ? OFFSET ?`;
     // Count query — pakai INDEXED BY idx_jurnal_tgl_deleted jika ada filter tgl
     const countTableRef = (startDate && endDate) ? 'jurnal_harian_produksi INDEXED BY idx_jurnal_tgl_deleted' : 'jurnal_harian_produksi';
     const additionalWhere = whereParts.length > 1 ? 'AND ' + whereParts.filter(p => p !== 'deleted_at IS NULL').join(' AND ') : '';

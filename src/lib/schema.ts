@@ -937,7 +937,8 @@ export async function initSchema(db: any) {
       fetched_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`,
     "ALTER TABLE jurnal_harian_produksi ADD COLUMN nama_order_manual TEXT;",
-    "ALTER TABLE jurnal_harian_produksi ADD COLUMN nama_order_manual_2 TEXT;"
+    "ALTER TABLE jurnal_harian_produksi ADD COLUMN nama_order_manual_2 TEXT;",
+    "UPDATE produksi_selesai SET nama_prd = TRIM(nama_prd);"
   ];
 
   const executor = db.client || db;
