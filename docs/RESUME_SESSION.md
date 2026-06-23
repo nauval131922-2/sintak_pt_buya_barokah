@@ -1,0 +1,218 @@
+# RESUME_SESSION.md
+
+> Untuk AI Agent yang baru memulai sesi:
+> sebelum mengerjakan apa pun, baca dulu `AGENTS.md` dan `docs/REPO_MAP.md`.
+> Setelah paham arah repo, lanjutkan baca `docs/DEV_RULES.md`.
+> Tiga file ini adalah konteks awal wajib. Jangan menunggu user mengingatkan ulang.
+> Untuk alur kerja penuh start-to-finish, gunakan juga `docs/AI_WORKFLOW.md` sebagai playbook utama sesi.
+
+## Playbook Utama
+
+Gunakan `docs/AI_WORKFLOW.md` sebagai ringkasan utama alur **mulai sesi -> eksekusi -> tutup sesi**.
+
+## Start Cepat 1 Menit
+
+Untuk sesi AI berikutnya, gunakan urutan singkat ini agar bisa langsung lanjut kerja tanpa briefing ulang panjang:
+
+1. Baca `AGENTS.md`, `docs/REPO_MAP.md`, lalu `docs/DEV_RULES.md`.
+2. Jalankan `git pull` untuk sinkronisasi repo.
+3. Baca `docs/AI_SESSION_SUMMARY.md` dan `docs/task.md` untuk konteks terakhir.
+4. Jalankan `git status` untuk memastikan kondisi branch dan working tree.
+5. Lanjutkan task prioritas atau backlog tanpa meminta briefing ulang kecuali ada risiko besar.
+
+## Bacaan Wajib Sebelum Mulai
+
+Sebelum menjalankan prompt resume atau melakukan analisis apa pun, AI wajib membaca dokumen berikut secara berurutan:
+
+1. `AGENTS.md` - aturan utama repo dan gaya kerja AI.
+2. `docs/REPO_MAP.md` - peta struktur repo agar cepat paham arah kerja.
+3. `docs/DEV_RULES.md` - aturan teknis pengembangan proyek.
+
+Jika task berkaitan dengan scraping, import, atau sinkronisasi data, baca juga `docs/SCRAPING_FLOW.md` sebelum mengubah kode.
+
+Jika salah satu file tidak ditemukan, laporkan ke user terlebih dahulu sebelum lanjut.
+
+## Prompt: Melanjutkan Sesi di PC Lain (Rumah/Kantor)
+
+Gunakan prompt ini setiap kali membuka sesi baru di perangkat berbeda.
+Cukup copy-paste prompt di bawah ini ke AI agent.
+
+---
+
+```text
+Saya baru membuka sesi baru / pindah PC. Tolong lakukan langkah-langkah
+berikut secara berurutan sebelum kita mulai bekerja:
+
+---
+
+### LANGKAH 0 - Bacaan Wajib (Jangan Dilewati)
+Sebelum melakukan tindakan apa pun, baca dan patuhi dokumen berikut secara berurutan:
+1. `AGENTS.md`
+2. `docs/REPO_MAP.md`
+3. `docs/DEV_RULES.md`
+
+Gunakan ketiganya sebagai konteks utama sebelum analisis atau eksekusi.
+Jangan mulai mengubah file sebelum aturan dan peta repo dipahami.
+
+---
+
+### LANGKAH 1 - Sinkronisasi Repository
+Jalankan perintah berikut dan tampilkan hasilnya:
+  git pull
+
+Jika ada konflik:
+  - Tampilkan file mana saja yang konflik
+  - Bantu saya menyelesaikan konflik tersebut satu per satu
+  - Jangan lanjut ke langkah berikutnya sebelum konflik selesai
+
+Jika tidak ada konflik, tampilkan ringkasan perubahan yang baru di-pull
+(file apa saja yang berubah).
+
+---
+
+### LANGKAH 2 - Baca Ringkasan Sesi Terakhir
+Baca file `docs/AI_SESSION_SUMMARY.md` dan tampilkan:
+  - Tanggal & waktu sesi terakhir
+  - PC yang digunakan di sesi terakhir (Rumah / Kantor)
+  - Fitur/perbaikan apa yang dikerjakan di sesi terakhir
+  - Keputusan teknis penting yang diambil
+  - Hal yang belum selesai / perlu dilanjutkan
+
+Jika file tidak ditemukan, informasikan ke saya dan lewati langkah ini.
+
+---
+
+### LANGKAH 3 - Baca Status Task
+Baca file `docs/task.md` dan tampilkan dalam format berikut:
+
+  SELESAI
+  -> [daftar task yang sudah selesai]
+
+  SEDANG BERJALAN
+  -> [daftar task yang masih in-progress]
+
+  SELANJUTNYA / BACKLOG
+  -> [daftar task yang belum dikerjakan]
+
+  BUG DIKETAHUI
+  -> [daftar bug yang belum diselesaikan]
+
+Jika file tidak ditemukan, informasikan ke saya dan lewati langkah ini.
+
+---
+
+### LANGKAH 4 - Periksa Kondisi Repository
+Jalankan perintah berikut dan tampilkan hasilnya:
+  git status
+
+Laporkan ke saya:
+  - Apakah ada file yang belum ter-commit dari sesi sebelumnya?
+  - Apakah working directory bersih?
+  - Branch apa yang sedang aktif sekarang?
+
+Jika ada file yang belum ter-commit:
+  - Tampilkan daftar filenya
+  - Tanyakan ke saya: "Ada file yang belum ter-commit dari sesi sebelumnya. Apakah ingin di-commit sekarang atau diabaikan dulu?"
+  - Tunggu jawaban saya sebelum lanjut.
+
+---
+
+### LANGKAH 5 - Periksa Kelengkapan Dokumentasi
+Periksa apakah file-file dokumentasi berikut ada dan tidak kosong:
+
+  docs/
+  - COMMIT_INSTRUCTION.md      -> panduan akhir sesi
+  - RESUME_SESSION.md          -> panduan awal sesi di PC baru (file ini)
+  - BUILD_FROM_SCRATCH.md      -> tutorial rebuild sistem dari nol
+  - DEV_RULES.md               -> aturan wajib pengembangan
+  - REPO_MAP.md                -> peta struktur repository
+  - AI_SESSION_SUMMARY.md      -> ringkasan sesi terakhir
+  - task.md                    -> backlog & progress
+  - tutorials/                 -> tutorial per fitur/perbaikan
+
+Laporkan status setiap file:
+  - Ada & lengkap
+  - Ada tapi kosong / perlu diperbarui
+  - Tidak ditemukan
+
+Jika ada file yang tidak ditemukan atau perlu diperbarui:
+  - Tanyakan ke saya: "Apakah ingin saya buatkan/perbarui sekarang?"
+  - Tunggu jawaban saya.
+
+---
+
+### LANGKAH 6 - Tampilkan Ringkasan & Rekomendasi
+Setelah semua langkah di atas selesai, tampilkan ringkasan dalam format:
+
+  SESI TERAKHIR
+  Tanggal       : [tanggal sesi terakhir]
+  PC            : [Rumah / Kantor]
+  Dikerjakan    : [ringkasan singkat]
+  Belum selesai : [jika ada]
+
+  REKOMENDASI MULAI DARI MANA
+  [Berikan 1-3 rekomendasi task yang paling logis untuk dikerjakan
+   selanjutnya berdasarkan konteks sesi terakhir dan task.md]
+
+  STATUS REPOSITORY
+  Branch aktif : [nama branch]
+  Working dir  : [bersih / ada perubahan]
+  Dokumentasi  : [lengkap / ada yang kurang]
+
+Setelah ringkasan ditampilkan, tanyakan ke saya:
+  "Dari rekomendasi di atas, mana yang ingin kamu kerjakan duluan?
+   Atau ada task lain yang ingin kamu prioritaskan?"
+
+Tunggu instruksi saya. Jangan mulai mengerjakan apa pun sebelum saya
+memberikan konfirmasi.
+```
+
+---
+
+## Kapan File Ini Digunakan?
+
+| Situasi | Lakukan |
+| --- | --- |
+| Pindah dari PC kantor ke PC rumah | Jalankan prompt ini |
+| Pindah dari PC rumah ke PC kantor | Jalankan prompt ini |
+| Membuka sesi baru setelah lama tidak coding | Jalankan prompt ini |
+| Melanjutkan pekerjaan di hari berikutnya | Jalankan prompt ini |
+| Setelah install ulang / PC baru | Jalankan prompt ini + `git clone` dulu |
+
+---
+
+## Jika PC Baru / Belum Ada Repository
+
+Jika kamu membuka sesi di PC yang belum pernah ada repository-nya,
+jalankan prompt ini terlebih dahulu sebelum prompt di atas:
+
+```text
+Saya di PC baru dan belum ada repository-nya. Tolong bantu saya:
+  1. Clone repository dari [URL_REPOSITORY_KAMU]
+  2. Masuk ke folder proyek
+  3. Install semua dependency
+  4. Setup file .env berdasarkan .env.example
+  5. Jalankan migration database jika ada
+  6. Verifikasi sistem bisa dijalankan
+
+Setelah selesai, lanjutkan dengan membaca docs/RESUME_SESSION.md
+untuk memahami konteks sesi terakhir.
+```
+
+---
+
+## Hubungan dengan File Lain
+
+```text
+RESUME_SESSION.md (file ini)
+  |
+  |-- wajib membaca -> AGENTS.md                   (aturan utama repo)
+  |-- wajib membaca -> docs/REPO_MAP.md            (peta struktur repository)
+  |-- wajib membaca -> docs/DEV_RULES.md           (aturan teknis pengembangan)
+  |-- membaca       -> docs/AI_SESSION_SUMMARY.md  (konteks sesi terakhir)
+  |-- membaca       -> docs/task.md                (status task)
+  |-- memeriksa     -> docs/BUILD_FROM_SCRATCH.md  (jika perlu rebuild)
+  |
+  `-- setelah sesi selesai, jalankan:
+      -> docs/COMMIT_INSTRUCTION.md                (untuk commit & push)
+```
