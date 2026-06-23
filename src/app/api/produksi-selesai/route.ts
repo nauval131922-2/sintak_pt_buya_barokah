@@ -84,9 +84,8 @@ export async function GET(request: NextRequest) {
     const lastUpdated = metaMap['last_scrape_produksi_selesai'] || null;
     let scrapedPeriod = null;
     try {
-      if (metaMap['last_scrape_produksi_selesai_period']) {
-        scrapedPeriod = JSON.parse(metaMap['last_scrape_produksi_selesai_period']);
-      }
+      const raw = metaMap['last_scrape_produksi_selesai_period'];
+      if (raw) scrapedPeriod = JSON.parse(raw);
     } catch {}
 
     return NextResponse.json({

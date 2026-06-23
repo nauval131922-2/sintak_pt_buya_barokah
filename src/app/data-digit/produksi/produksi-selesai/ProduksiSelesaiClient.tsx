@@ -14,7 +14,6 @@ import { useTableSelection } from '@/lib/hooks/useTableSelection';
 import { formatLastUpdate } from '@/lib/date-utils';
 import { getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod } from '@/lib/scraper-period';
 import { splitDateRangeIntoMonths } from '@/lib/date-utils';
-import type { ScrapedPeriod } from '@/lib/scraper-period';
 
 const STATE_KEY  = 'produksiSelesaiState';
 const PERIOD_KEY = 'ProduksiSelesaiClient_scrapedPeriod';
@@ -60,7 +59,7 @@ export default function ProduksiSelesaiClient() {
   const [data, setData] = useState<ProduksiSelesaiRecord[] | null>(null);
   const [error, setError] = useState('');
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-  const [scrapedPeriod, setScrapedPeriod] = useState<ScrapedPeriod | null>(null);
+  const [scrapedPeriod, setScrapedPeriod] = useState<{start: string, end: string} | null>(null);
   const [loadTime, setLoadTime] = useState<number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -97,7 +96,6 @@ export default function ProduksiSelesaiClient() {
   useEffect(() => {
     setIsMounted(true);
     const hydrated = hydrateScraperPeriod({ stateKey: STATE_KEY, periodKey: PERIOD_KEY });
-    if (hydrated.scrapedPeriod) setScrapedPeriod(hydrated.scrapedPeriod);
     setStartDate(hydrated.startDate);
     setEndDate(hydrated.endDate);
   }, []);
@@ -213,16 +211,20 @@ export default function ProduksiSelesaiClient() {
     await Promise.all(Array(Math.min(concurrency, chunks.length)).fill(null).map(worker));
 
     // Simpan period ke localStorage — sama seperti pola OrderProduksiClient
-    const period = persistScraperPeriod(
+    persistScraperPeriod(
       { stateKey: STATE_KEY, periodKey: PERIOD_KEY },
       startDate,
       endDate,
     );
-    setScrapedPeriod(period);
 
-    // 1 log aktivitas untuk seluruh range — bukan per chunk
+    // Update period total ke DB — timpa key period utama setelah semua chunk selesai
     const fullStart = fmtDDMMYYYY(startDate);
     const fullEnd   = fmtDDMMYYYY(endDate);
+    fetch('/api/system-settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: 'last_scrape_produksi_selesai_period', value: JSON.stringify({ start: fullStart, end: fullEnd }) }),
+    });
     fetch('/api/activity-log', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

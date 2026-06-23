@@ -8,7 +8,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import DatePicker from '@/components/DatePicker';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { formatLastUpdate } from '@/lib/date-utils';
-import { formatScrapedPeriodDate, getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod } from '@/lib/scraper-period';
+import { formatScrapedPeriodDate, getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod, persistScraperPeriodFull } from '@/lib/scraper-period';
 import { DataTable } from '@/components/ui/DataTable';
 import SearchAndReload from '@/components/SearchAndReload';
 import TableFooter from '@/components/TableFooter';
@@ -247,6 +247,7 @@ export default function BOMClient() {
 
       if (successCount > 0) {
         const periodStr = persistScraperPeriod({ stateKey: 'bomReportState', periodKey: 'BOMClient_scrapedPeriod' }, startDate, endDate);
+        persistScraperPeriodFull('last_scrape_bom_period', startDate, endDate);
         setScrapedPeriod(periodStr);
         if (lastUpdatedFromScrape) {
           setLastUpdated(formatLastUpdate(new Date(lastUpdatedFromScrape)));

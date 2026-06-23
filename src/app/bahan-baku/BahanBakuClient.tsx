@@ -8,7 +8,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import DatePicker from '@/components/DatePicker';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { splitDateRangeIntoMonths, formatLastUpdate } from '@/lib/date-utils';
-import { formatScrapedPeriodDate, getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod } from '@/lib/scraper-period';
+import { formatScrapedPeriodDate, getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod, persistScraperPeriodFull } from '@/lib/scraper-period';
 import { DataTable } from '@/components/ui/DataTable';
 import SearchAndReload from '@/components/SearchAndReload';
 import TableFooter from '@/components/TableFooter';
@@ -178,6 +178,7 @@ export default function BahanBakuClient() {
       await Promise.all(workers);
       if (successCount > 0) {
         persistScraperPeriod({ stateKey: 'bahanBakuState', periodKey: 'BahanBakuClient_scrapedPeriod' }, startDate, endDate);
+        persistScraperPeriodFull('last_scrape_bahan_baku_period', startDate, endDate);
         setRefreshKey(prev => prev + 1);
         localStorage.setItem('sintak_data_updated', Date.now().toString());
         fetch('/api/activity-log', {

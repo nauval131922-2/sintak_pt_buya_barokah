@@ -126,6 +126,20 @@ export function persistScraperPeriod(
   return period;
 }
 
+/**
+ * Simpan period total ke DB via /api/system-settings agar tidak ditimpa scraper per-chunk.
+ * Dipanggil setelah semua chunk selesai (post await Promise.all) — timpa key period utama.
+ * ponytail: fire-and-forget — gagal tidak fatal, period localStorage tetap tersimpan
+ */
+export function persistScraperPeriodFull(dbKey: string, startDate: Date, endDate: Date) {
+  const fmt = (d: Date) => `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
+  fetch('/api/system-settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key: dbKey, value: JSON.stringify({ start: fmt(startDate), end: fmt(endDate) }) }),
+  }).catch(() => {}); // ponytail: silent fail — UI tetap jalan tanpa period DB
+}
+
 // ---- Generic composite-date-store for non-scraper pages (Jurnal, Hasil, Tracking) ----
 
 const DATE_STORE_VERSION = 1;

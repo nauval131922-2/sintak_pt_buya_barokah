@@ -144,7 +144,7 @@ export async function GET(request: NextRequest) {
       r.tgl || "",
       r.kd_mtd || "",
       r.kd_pelanggan || "",
-      r.nama_prd || "",
+      (r.nama_prd || "").trim(),
       r.status || "",
       r.perbaikan || "",
       r.regu || null,

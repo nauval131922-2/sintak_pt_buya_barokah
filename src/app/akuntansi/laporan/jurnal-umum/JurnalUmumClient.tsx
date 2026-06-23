@@ -6,7 +6,7 @@ import CopyButton from '@/components/ui/CopyButton';
 
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { formatLastUpdate, splitDateRangeIntoMonths } from '@/lib/date-utils';
-import { getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod, hydrateDateStore, persistDateStore } from '@/lib/scraper-period';
+import { getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod, hydrateDateStore, persistDateStore, persistScraperPeriodFull } from '@/lib/scraper-period';
 import { DataTable } from '@/components/ui/DataTable';
 import SearchAndReload from '@/components/SearchAndReload';
 import TableFooter from '@/components/TableFooter';
@@ -312,6 +312,7 @@ export default function JurnalUmumClient() {
       await Promise.all(workers);
       if (successCount > 0) {
         persistScraperPeriod({ stateKey: 'jurnalUmumState', periodKey: 'JurnalUmumClient_scrapedPeriod' }, startDate, endDate);
+        persistScraperPeriodFull('last_scrape_jurnal_umum_period', startDate, endDate);
         setRefreshKey(prev => prev + 1);
         fetch('/api/activity-log', {
           method: 'POST',

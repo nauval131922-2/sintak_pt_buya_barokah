@@ -14,7 +14,7 @@ import TableFooter from '@/components/TableFooter';
 import DateRangeCard from '@/components/DateRangeCard';
 import { useTableSelection } from '@/lib/hooks/useTableSelection';
 import { formatLastUpdate } from '@/lib/date-utils';
-import { formatScrapedPeriodDate, getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod } from '@/lib/scraper-period';
+import { formatScrapedPeriodDate, getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod, persistScraperPeriodFull } from '@/lib/scraper-period';
 import ScrapingHeader from '@/components/ScrapingHeader';
 
 function formatDateToYYYYMMDD(date: Date) {
@@ -182,6 +182,7 @@ export default function OrderProduksiClient() {
       await Promise.all(workers);
       if (successCount > 0) {
         persistScraperPeriod({ stateKey: 'orderProduksiState', periodKey: 'OrderProduksiClient_scrapedPeriod' }, startDate, endDate);
+        persistScraperPeriodFull('last_scrape_orders_period', startDate, endDate);
         setRefreshKey(prev => prev + 1);
         localStorage.setItem('sintak_data_updated', Date.now().toString());
         // Log satu entry untuk seluruh range
