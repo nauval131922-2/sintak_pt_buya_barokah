@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
             AND j.tgl BETWEEN ? AND ?
             AND j.deleted_at IS NULL
         )
-      ORDER BY e.id ASC
+      ORDER BY e.position ASC, e.id ASC
     `;
     const belumArgs: string[] = bagian
       ? [bagian, startDate, endDate]
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
         AND j.deleted_at IS NULL
       WHERE e.is_active = 1
         ${bagianClause}
-      ORDER BY j.tgl ASC, e.id ASC, j.id ASC
+      ORDER BY j.tgl ASC, e.position ASC, e.id ASC, j.id ASC
     `;
     const sudahArgs: string[] = bagian
       ? [startDate, endDate, bagian]

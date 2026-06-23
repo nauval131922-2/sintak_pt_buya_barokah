@@ -857,6 +857,7 @@ export default function JurnalClient({
     if (!q) return cekKaryawanData.sudah;
     return cekKaryawanData.sudah.filter(r =>
       r.name.toLowerCase().includes(q) ||
+      (r.position || '').toLowerCase().includes(q) ||
       (r.tgl || '').includes(q) ||
       (r.no_order || '').toLowerCase().includes(q) ||
       (r.nama_order || '').toLowerCase().includes(q) ||
@@ -3322,6 +3323,7 @@ export default function JurnalClient({
                           <tr className="bg-gray-50 border-b border-gray-100">
                             <th className="text-left px-3 py-2.5 font-bold text-gray-500 w-8">#</th>
                             <th className="text-left px-3 py-2.5 font-bold text-gray-500">Nama Karyawan</th>
+                            <th className="text-left px-3 py-2.5 font-bold text-gray-500">Jabatan</th>
                             <th className="text-left px-3 py-2.5 font-bold text-gray-500">Tanggal</th>
                             <th className="text-left px-3 py-2.5 font-bold text-gray-500">No. Order</th>
                             <th className="text-left px-3 py-2.5 font-bold text-gray-500">Nama Order</th>
@@ -3335,6 +3337,7 @@ export default function JurnalClient({
                               <tr key={row.jurnal_id} className="border-b border-gray-50 hover:bg-emerald-50/40 transition-colors">
                                 <td className="px-3 py-2 text-gray-300 font-semibold">{idx + 1}</td>
                                 <td className="px-3 py-2 font-semibold text-gray-800">{row.name}</td>
+                                <td className="px-3 py-2 text-gray-400">{row.position || '-'}</td>
                                 <td className="px-3 py-2 text-gray-500">{row.tgl ? formatIndoDateStr(row.tgl) : '-'}</td>
                                 <td className="px-3 py-2 text-gray-600 font-medium">{row.no_order || '-'}</td>
                                 <td className="px-3 py-2 text-gray-700 font-medium truncate" title={row.nama_order}>{row.nama_order || '-'}</td>
@@ -3351,7 +3354,7 @@ export default function JurnalClient({
                             ))}
                           {cekSudahFiltered.length > cekSudahPage * CEK_PAGE_SIZE && (
                             <tr>
-                              <td colSpan={8} className="px-3 py-3 text-center">
+                              <td colSpan={9} className="px-3 py-3 text-center">
                                 <button
                                   onClick={() => setCekSudahPage(p => p + 1)}
                                   className="text-[11px] font-bold text-violet-600 hover:text-violet-800 bg-violet-50 hover:bg-violet-100 px-4 py-1.5 rounded-lg border border-violet-200 transition-all"
