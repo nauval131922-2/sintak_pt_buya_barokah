@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { Loader2, AlertCircle, AlertTriangle, ClipboardList, RotateCcw, Filter, Plus, Trash2, Edit2, Save, X, CheckCircle2, ChevronDown, Search, PlusSquare, Copy, FileText, Download, BookOpen, FileSpreadsheet, Pencil } from 'lucide-react';
+import { SortingState } from '@tanstack/react-table';
+import { Loader2, AlertCircle, AlertTriangle, ClipboardList, RotateCcw, Filter, Plus, Trash2, Edit2, Save, X, CheckCircle2, ChevronDown, Search, PlusSquare, Copy, FileText, Download, BookOpen, FileSpreadsheet, Pencil, Users } from 'lucide-react';
 import SearchableDropdown from '@/components/SearchableDropdown';
 import SearchAndReload from '@/components/SearchAndReload';
 import { useRouter } from 'next/navigation';
@@ -361,6 +362,15 @@ export default function JurnalClient({
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [sorting, setSorting] = useState<SortingState>([]);
+
+  const handleSortingChange = useCallback((updaterOrValue: SortingState | ((old: SortingState) => SortingState)) => {
+    setSorting(prev => {
+      const next = typeof updaterOrValue === 'function' ? updaterOrValue(prev) : updaterOrValue;
+      setPage(1); // reset ke halaman 1 saat sort berubah
+      return next;
+    });
+  }, []);
 
   // Dropdown filters
   const [bagianFilter, setBagianFilter] = useState('');
@@ -399,6 +409,25 @@ export default function JurnalClient({
 
   // Trash / Restore state (Super Admin only)
   const [showTrashModal, setShowTrashModal] = useState(false);
+
+  // Cek Karyawan state
+  const [showCekKaryawan, setShowCekKaryawan] = useState(false);
+  const [cekKaryawanLoading, setCekKaryawanLoading] = useState(false);
+  type CekKaryawanRow = { id: number; name: string; position: string };
+  type CekSudahRow = {
+    employee_id: number; name: string; position: string;
+    jurnal_id: number; tgl: string; no_order: string; nama_order: string;
+    jenis_pekerjaan: string; target: number | null; realisasi: number | null;
+  };
+  const [cekKaryawanData, setCekKaryawanData] = useState<{
+    sudah: CekSudahRow[]; belum: CekKaryawanRow[];
+    startDate: string; endDate: string; totalKaryawan: number;
+  } | null>(null);
+  const [cekKaryawanError, setCekKaryawanError] = useState('');
+  const [cekActiveTab, setCekActiveTab] = useState<'belum' | 'sudah'>('belum');
+  const [cekSearch, setCekSearch] = useState('');
+  const CEK_PAGE_SIZE = 50; // ponytail: render 50 baris — cukup untuk 1 layar, upgrade ke virtual scroll jika data > 10k baris
+  const [cekSudahPage, setCekSudahPage] = useState(1);
   const [trashData, setTrashData] = useState<any[]>([]);
   const [trashLoading, setTrashLoading] = useState(false);
   const [trashTotal, setTrashTotal] = useState(0);
@@ -533,6 +562,7 @@ export default function JurnalClient({
           ...(noOrderFilter ? { noOrder: noOrderFilter } : {}),
           ...(belumRealisasiFilter ? { belumRealisasi: 'true' } : {}),
           ...((bagianFilter || namaKaryawanFilter || noOrderFilter || belumRealisasiFilter || debouncedQuery) ? { needTotals: 'true' } : {}),
+          ...(sorting.length > 0 ? { sort: sorting.map(s => `${s.id}:${s.desc ? 'desc' : 'asc'}`).join(',') } : {}),
           _r: refreshKey.toString() // hanya berubah saat data dimutasi, bukan setiap render
         });
         const res = await fetch(`/api/jurnal-harian-produksi?${queryParams.toString()}`);
@@ -556,7 +586,7 @@ export default function JurnalClient({
     }
     loadData();
     return () => { active = false; };
-  }, [page, debouncedQuery, refreshKey, startDate, endDate, bagianFilter, namaKaryawanFilter, noOrderFilter, belumRealisasiFilter, isMounted]);
+  }, [page, debouncedQuery, refreshKey, startDate, endDate, bagianFilter, namaKaryawanFilter, noOrderFilter, belumRealisasiFilter, sorting, isMounted]);
 
   // Fetch distinct bagian & nama karyawan for dropdowns
   useEffect(() => {
@@ -784,6 +814,55 @@ export default function JurnalClient({
       }
     });
   };
+
+  const fetchCekKaryawan = useCallback(() => {
+    const fmtDate = (d: Date | null) => {
+      if (!d) return '';
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    };
+    const sd = fmtDate(startDate);
+    const ed = fmtDate(endDate);
+    if (!sd || !ed) { setCekKaryawanError('Set rentang tanggal terlebih dahulu.'); return; }
+    setCekKaryawanLoading(true);
+    setCekKaryawanError('');
+    fetch(`/api/jurnal-harian-produksi/cek-karyawan?startDate=${sd}&endDate=${ed}${bagianFilter ? `&bagian=${encodeURIComponent(bagianFilter)}` : ''}`)
+      .then(r => r.json())
+      .then(j => { if (j.success) setCekKaryawanData(j); else setCekKaryawanError(j.error || 'Gagal memuat data'); })
+      .catch(() => setCekKaryawanError('Terjadi kesalahan jaringan'))
+      .finally(() => setCekKaryawanLoading(false));
+  }, [startDate, endDate, bagianFilter]);
+
+  // Debounce search cek karyawan — 200ms cukup untuk input field biasa
+  const [cekSearchDebounced, setCekSearchDebounced] = useState('');
+  useEffect(() => {
+    const t = setTimeout(() => setCekSearchDebounced(cekSearch), 200);
+    return () => clearTimeout(t);
+  }, [cekSearch]);
+
+  // ponytail: useMemo agar filter tidak jalan ulang setiap render parent
+  const cekBelumFiltered = useMemo(() => {
+    if (!cekKaryawanData) return [];
+    const q = cekSearchDebounced.toLowerCase();
+    if (!q) return cekKaryawanData.belum;
+    return cekKaryawanData.belum.filter(r =>
+      r.name.toLowerCase().includes(q) ||
+      (r.position || '').toLowerCase().includes(q)
+    );
+  }, [cekKaryawanData, cekSearchDebounced]);
+
+  const cekSudahFiltered = useMemo(() => {
+    setCekSudahPage(1); // reset ke halaman 1 saat filter berubah
+    if (!cekKaryawanData) return [];
+    const q = cekSearchDebounced.toLowerCase();
+    if (!q) return cekKaryawanData.sudah;
+    return cekKaryawanData.sudah.filter(r =>
+      r.name.toLowerCase().includes(q) ||
+      (r.tgl || '').includes(q) ||
+      (r.no_order || '').toLowerCase().includes(q) ||
+      (r.nama_order || '').toLowerCase().includes(q) ||
+      (r.jenis_pekerjaan || '').toLowerCase().includes(q)
+    );
+  }, [cekKaryawanData, cekSearchDebounced]);
 
   const showMessage = (type: 'success' | 'error', text: string) => {
     setActionMessage({ type, text });
@@ -1844,6 +1923,24 @@ export default function JurnalClient({
             </>
           )}
 
+          {/* Cek Karyawan — siapa belum/sudah dapat pekerjaan */}
+          <div className="w-px h-5 bg-gray-200 shrink-0" />
+          <button
+            onClick={() => {
+              setCekKaryawanError('');
+              setCekKaryawanData(null);
+              setCekActiveTab('belum');
+              setCekSearch('');
+              setShowCekKaryawan(true);
+              fetchCekKaryawan();
+            }}
+            className="flex items-center gap-1.5 px-2.5 py-1 bg-violet-50 hover:bg-violet-100 text-violet-700 text-[10px] font-bold rounded-lg border border-violet-200 transition-all"
+            title="Cek karyawan yang sudah/belum dapat pekerjaan di rentang tanggal aktif"
+          >
+            <Users size={11} />
+            Cek Karyawan
+          </button>
+
           {/* Contextual — bulk actions */}
           {selectedIds.size > 0 && (
             <>
@@ -1885,6 +1982,19 @@ export default function JurnalClient({
           >
             <X size={11} />
             Stop Copy (Esc)
+          </button>
+
+          {/* Reset Sort */}
+          <button
+            onClick={() => setSorting([])}
+            className={`ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
+              sorting.length > 0 && !loading
+                ? 'opacity-100 visible bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100'
+                : 'opacity-0 invisible pointer-events-none'
+            }`}
+          >
+            <X size={11} />
+            Reset Sort
           </button>
 
         </div>
@@ -1948,6 +2058,9 @@ export default function JurnalClient({
                  selectedIds={selectedIds}
                  onRowClick={handleSelection}
                  rowHeight="h-11"
+                 sorting={sorting}
+                 onSortingChange={handleSortingChange}
+                 manualSorting={true}
                />
              </>
            )}
@@ -3072,6 +3185,189 @@ export default function JurnalClient({
                 ))}
               </div>
             </div>
+          </div>
+        </BaseModal>
+      )}
+
+      {/* Modal Cek Karyawan */}
+      {showCekKaryawan && (
+        <BaseModal
+          isOpen={showCekKaryawan}
+          onClose={() => setShowCekKaryawan(false)}
+          title="Cek Karyawan"
+          subtitle={
+            cekKaryawanData
+              ? `Rentang: ${cekKaryawanData.startDate} s/d ${cekKaryawanData.endDate} • ${cekKaryawanData.totalKaryawan} karyawan aktif`
+              : 'Memeriksa pekerjaan karyawan pada rentang tanggal aktif...'
+          }
+          icon={Users}
+          maxWidth="max-w-[95vw]"
+        >
+          <div className="flex flex-col gap-3 h-[70vh]">
+            {/* Toolbar: Refresh */}
+            <div className="flex items-center justify-between shrink-0">
+              <span className="text-[11px] text-gray-400 font-medium">
+                {cekKaryawanData ? `${cekKaryawanData.totalKaryawan} karyawan aktif ditemukan` : ''}
+              </span>
+              <button
+                onClick={() => { setCekSearch(''); fetchCekKaryawan(); }}
+                disabled={cekKaryawanLoading}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-violet-50 hover:bg-violet-100 text-violet-700 text-[11px] font-bold rounded-lg border border-violet-200 transition-all disabled:opacity-50"
+                title="Refresh data"
+              >
+                {cekKaryawanLoading ? <Loader2 size={12} className="animate-spin" /> : <RotateCcw size={12} />}
+                Refresh
+              </button>
+            </div>
+            {cekKaryawanLoading && !cekKaryawanData && (
+              <div className="flex-1 flex items-center justify-center py-16 text-gray-400 gap-2 text-[13px]">
+                <Loader2 size={18} className="animate-spin" />
+                Memuat data...
+              </div>
+            )}
+
+            {cekKaryawanError && !cekKaryawanLoading && (
+              <div className="flex items-center gap-2 px-4 py-3 bg-rose-50 text-rose-700 rounded-xl border border-rose-200 text-[12px] font-semibold">
+                <AlertCircle size={14} />
+                {cekKaryawanError}
+              </div>
+            )}
+
+            {cekKaryawanData && (
+              <>
+                {/* Tab switcher */}
+                <div className="flex gap-1 bg-gray-100 rounded-xl p-1 shrink-0">
+                  <button
+                    onClick={() => { setCekActiveTab('belum'); setCekSearch(''); }}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] font-bold transition-all ${cekActiveTab === 'belum' ? 'bg-white shadow-sm text-rose-600' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    <AlertTriangle size={13} />
+                    Belum dapat pekerjaan
+                    <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${cekActiveTab === 'belum' ? 'bg-rose-100 text-rose-700' : 'bg-gray-200 text-gray-500'}`}>
+                      {cekKaryawanData.belum.length}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => { setCekActiveTab('sudah'); setCekSearch(''); }}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] font-bold transition-all ${cekActiveTab === 'sudah' ? 'bg-white shadow-sm text-emerald-600' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    <CheckCircle2 size={13} />
+                    Sudah dapat pekerjaan
+                    <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${cekActiveTab === 'sudah' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-500'}`}>
+                      {/* hitung karyawan unik, bukan jumlah baris */}
+                      {new Set(cekKaryawanData.sudah.map(r => r.employee_id)).size}
+                    </span>
+                  </button>
+                </div>
+
+                {/* Search */}
+                <div className="relative shrink-0">
+                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={cekSearch}
+                    onChange={e => setCekSearch(e.target.value)}
+                    placeholder={cekActiveTab === 'sudah' ? 'Cari nama, tanggal, no. order, jenis pekerjaan...' : 'Cari nama atau jabatan...'}
+                    className="w-full h-9 pl-8 pr-3 bg-gray-50 border border-gray-200 rounded-xl text-[12px] text-gray-700 placeholder:text-gray-400 focus:outline-none focus:border-violet-300 focus:bg-white transition-all"
+                  />
+                  {cekSearch && (
+                    <button onClick={() => setCekSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                      <X size={13} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Tabel hasil */}
+                <div className="flex-1 overflow-y-auto rounded-xl border border-gray-100">
+                  {cekActiveTab === 'belum' ? (
+                    /* ── TAB BELUM ── */
+                    /* ── TAB BELUM ── */
+                    cekBelumFiltered.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-14 text-gray-400 gap-2">
+                        {cekSearchDebounced ? <Search size={24} className="text-gray-300" /> : <CheckCircle2 size={28} className="text-emerald-300" />}
+                        <p className="text-[13px] font-semibold">
+                          {cekSearchDebounced ? `Tidak ada hasil untuk "${cekSearch}"` : 'Semua karyawan sudah mendapat pekerjaan.'}
+                        </p>
+                      </div>
+                    ) : (
+                      <table className="w-full text-[12px]">
+                        <thead className="sticky top-0 z-10">
+                          <tr className="bg-gray-50 border-b border-gray-100">
+                            <th className="text-left px-3 py-2.5 font-bold text-gray-500 w-8">#</th>
+                            <th className="text-left px-3 py-2.5 font-bold text-gray-500">Nama Karyawan</th>
+                            <th className="text-left px-3 py-2.5 font-bold text-gray-500">Jabatan</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {cekBelumFiltered.map((row, idx) => (
+                            <tr key={row.id} className="border-b border-gray-50 hover:bg-rose-50/40 transition-colors">
+                              <td className="px-3 py-2 text-gray-300 font-semibold">{idx + 1}</td>
+                              <td className="px-3 py-2 font-semibold text-gray-800">{row.name}</td>
+                              <td className="px-3 py-2 text-gray-400">{row.position || '-'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )
+                  ) : (
+                    /* ── TAB SUDAH ── */
+                    cekSudahFiltered.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-14 text-gray-400 gap-2">
+                        <Search size={24} className="text-gray-300" />
+                        <p className="text-[13px] font-semibold">Tidak ada hasil untuk &ldquo;{cekSearch}&rdquo;</p>
+                      </div>
+                    ) : (
+                      <table className="w-full text-[12px]">
+                        <thead className="sticky top-0 z-10">
+                          <tr className="bg-gray-50 border-b border-gray-100">
+                            <th className="text-left px-3 py-2.5 font-bold text-gray-500 w-8">#</th>
+                            <th className="text-left px-3 py-2.5 font-bold text-gray-500">Nama Karyawan</th>
+                            <th className="text-left px-3 py-2.5 font-bold text-gray-500">Tanggal</th>
+                            <th className="text-left px-3 py-2.5 font-bold text-gray-500">No. Order</th>
+                            <th className="text-left px-3 py-2.5 font-bold text-gray-500">Nama Order</th>
+                            <th className="text-left px-3 py-2.5 font-bold text-gray-500">Jenis Pekerjaan</th>
+                            <th className="text-right px-3 py-2.5 font-bold text-gray-500 w-20">Target</th>
+                            <th className="text-right px-3 py-2.5 font-bold text-gray-500 w-20">Realisasi</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {cekSudahFiltered.slice(0, cekSudahPage * CEK_PAGE_SIZE).map((row, idx) => (
+                              <tr key={row.jurnal_id} className="border-b border-gray-50 hover:bg-emerald-50/40 transition-colors">
+                                <td className="px-3 py-2 text-gray-300 font-semibold">{idx + 1}</td>
+                                <td className="px-3 py-2 font-semibold text-gray-800">{row.name}</td>
+                                <td className="px-3 py-2 text-gray-500">{row.tgl ? formatIndoDateStr(row.tgl) : '-'}</td>
+                                <td className="px-3 py-2 text-gray-600 font-medium">{row.no_order || '-'}</td>
+                                <td className="px-3 py-2 text-gray-700 font-medium truncate" title={row.nama_order}>{row.nama_order || '-'}</td>
+                                <td className="px-3 py-2 text-gray-600 truncate" title={row.jenis_pekerjaan}>{row.jenis_pekerjaan || '-'}</td>
+                                <td className="px-3 py-2 text-right tabular-nums text-gray-700 font-semibold">
+                                  {row.target != null ? Number(row.target).toLocaleString('id-ID') : '-'}
+                                </td>
+                                <td className="px-3 py-2 text-right tabular-nums font-bold">
+                                  <span className={row.realisasi ? 'text-emerald-700' : 'text-gray-300'}>
+                                    {row.realisasi != null ? Number(row.realisasi).toLocaleString('id-ID') : '-'}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          {cekSudahFiltered.length > cekSudahPage * CEK_PAGE_SIZE && (
+                            <tr>
+                              <td colSpan={8} className="px-3 py-3 text-center">
+                                <button
+                                  onClick={() => setCekSudahPage(p => p + 1)}
+                                  className="text-[11px] font-bold text-violet-600 hover:text-violet-800 bg-violet-50 hover:bg-violet-100 px-4 py-1.5 rounded-lg border border-violet-200 transition-all"
+                                >
+                                  Tampilkan lebih banyak ({cekSudahFiltered.length - cekSudahPage * CEK_PAGE_SIZE} tersisa)
+                                </button>
+                              </td>
+                            </tr>
+                          )}
+                          </tbody>
+                        </table>
+                      )
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </BaseModal>
       )}
