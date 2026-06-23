@@ -42,6 +42,9 @@ function getJam(shift: string): string {
 
 // Module-level cache (survives component re-mount dalam session yang sama)
 let _cachedDate = '';
+// ponytail: cache tgl-map di module level — fetch sekali per session, bukan per tanggal
+// ceiling: stale jika ada upload SOPD baru; upgrade path: invalidate via event/SWR
+let _tglOrderMap: Map<string, string> | null = null;
 
 //// URL + localStorage + module cache
 export default function TargetClient() {
@@ -53,6 +56,7 @@ export default function TargetClient() {
   const [dateStr, setDateStr] = useState<string>(() => _cachedDate || getTodayStr());
   const [hydrated, setHydrated] = useState(false);
   const [data, setData] = useState<any[]>([]);
+  const [rawData, setRawData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -145,6 +149,8 @@ export default function TargetClient() {
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [employees, setEmployees] = useState<any[]>([]);
+  const [sortByTglOrder, setSortByTglOrder] = useState(false);
+  const [tglOrderMap, setTglOrderMap] = useState<Map<string, string>>(() => _tglOrderMap ?? new Map());
   const printRef = useRef<HTMLDivElement>(null);
   const fetchIdRef = useRef(0);
 
@@ -157,51 +163,7 @@ export default function TargetClient() {
       const result = await res.json();
       if (result.success) {
           if (fetchId !== fetchIdRef.current) return;
-          // Pre-compute employees yg punya Koordinasi (untuk grup sort)
-          const koordinasiSet = new Set<string>();
-          for (const row of result.data) {
-            if ((row.jenis_pekerjaan || '').toLowerCase().includes('koordinasi')) {
-              koordinasiSet.add(row.nama_karyawan + '|' + row.tgl);
-            }
-          }
-
-          const sorted = [...result.data].sort((a, b) => {
-          // 1. Group by Bagian (Section) using the official 'bagian' column
-          const sections = ['SETTING', 'QUALITY CONTROL', 'CETAK', 'FINISHING', 'GUDANG', 'TEKNISI'];
-          const getBagianInfo = (row: any) => {
-            const b = String(row.bagian || '').toUpperCase();
-            const jp = (row.jenis_pekerjaan || '').toLowerCase();
-            const index = sections.indexOf(b);
-            return {
-              index: index === -1 ? 99 : index,
-              isKoordinasi: jp.includes('koordinasi'),
-              hasKoordinasi: koordinasiSet.has(row.nama_karyawan + '|' + row.tgl),
-              absensi: Number(row.absensi || 0),
-              id: Number(row.id || 0)
-            };
-          };
-
-          const infoA = getBagianInfo(a);
-          const infoB = getBagianInfo(b);
-
-          // 2. Sort by Section Priority
-          if (infoA.index !== infoB.index) return infoA.index - infoB.index;
-
-          // 3. Same section: semua entry karyawan yg punya Koordinasi dikumpulkan
-          if (infoA.hasKoordinasi && !infoB.hasKoordinasi) return -1;
-          if (!infoA.hasKoordinasi && infoB.hasKoordinasi) return 1;
-
-          // 4. Within that group, Koordinasi row first
-          if (infoA.isKoordinasi && !infoB.isKoordinasi) return -1;
-          if (!infoA.isKoordinasi && infoB.isKoordinasi) return 1;
-
-          // 5. Then sort by Absensi
-          if (infoA.absensi !== infoB.absensi) return infoA.absensi - infoB.absensi;
-
-          // 6. Final tie-breaker: ID (Order of insertion/Excel)
-          return infoA.id - infoB.id;
-          });
-          setData(sorted);
+          setRawData(result.data);
       } else {
         setError(result.error || 'Gagal memuat data');
       }
@@ -212,6 +174,78 @@ export default function TargetClient() {
     }
   }, []);
 
+  // Derived: sort rawData setiap kali rawData, sortByTglOrder, atau tglOrderMap berubah
+  // ponytail: konversi tgl DD-MM-YYYY ke YYYY-MM-DD inline untuk string compare — O(n log n), cukup untuk ≤500 baris
+  useEffect(() => {
+    if (rawData.length === 0) { setData([]); return; }
+
+    const koordinasiSet = new Set<string>();
+    for (const row of rawData) {
+      if ((row.jenis_pekerjaan || '').toLowerCase().includes('koordinasi')) {
+        koordinasiSet.add(row.nama_karyawan + '|' + row.tgl);
+      }
+    }
+
+    const sections = ['SETTING', 'QUALITY CONTROL', 'CETAK', 'FINISHING', 'GUDANG', 'TEKNISI'];
+    const getBagianInfo = (row: any) => {
+      const b = String(row.bagian || '').toUpperCase();
+      const jp = (row.jenis_pekerjaan || '').toLowerCase();
+      const index = sections.indexOf(b);
+      return {
+        index: index === -1 ? 99 : index,
+        isKoordinasi: jp.includes('koordinasi'),
+        hasKoordinasi: koordinasiSet.has(row.nama_karyawan + '|' + row.tgl),
+        absensi: Number(row.absensi || 0),
+        id: Number(row.id || 0)
+      };
+    };
+
+    // Konversi DD-MM-YYYY → YYYY-MM-DD untuk string compare
+    const toISO = (ddmmyyyy: string) => {
+      if (!ddmmyyyy) return '';
+      const p = ddmmyyyy.split('-');
+      return p.length === 3 ? `${p[2]}-${p[1]}-${p[0]}` : ddmmyyyy;
+    };
+
+    const sorted = [...rawData].sort((a, b) => {
+      const infoA = getBagianInfo(a);
+      const infoB = getBagianInfo(b);
+
+      // Sort default (bagian → koordinasi → absensi → id)
+      if (infoA.index !== infoB.index) return infoA.index - infoB.index;
+      if (infoA.hasKoordinasi && !infoB.hasKoordinasi) return -1;
+      if (!infoA.hasKoordinasi && infoB.hasKoordinasi) return 1;
+      if (infoA.isKoordinasi && !infoB.isKoordinasi) return -1;
+      if (!infoA.isKoordinasi && infoB.isKoordinasi) return 1;
+      if (infoA.absensi !== infoB.absensi) return infoA.absensi - infoB.absensi;
+      return infoA.id - infoB.id;
+    });
+
+    // Jika sort by tanggal order aktif: partisi → [tanpa no_order (urutan default)] + [ada no_order (sort tgl)]
+    // ponytail: stable partition dengan filter — urutan grup "tanpa no_order" sudah benar dari sort default di atas
+    if (sortByTglOrder) {
+      const toISO = (ddmmyyyy: string) => {
+        if (!ddmmyyyy) return '';
+        const p = ddmmyyyy.split('-');
+        return p.length === 3 ? `${p[2]}-${p[1]}-${p[0]}` : ddmmyyyy;
+      };
+      const noOrder = sorted.filter(r => !String(r.no_order || '').trim() || String(r.no_order).trim() === '-');
+      const hasOrder = sorted
+        .filter(r => { const n = String(r.no_order || '').trim(); return n && n !== '-'; })
+        .sort((a, b) => {
+          const noA = String(a.no_order).trim();
+          const noB = String(b.no_order).trim();
+          const tglA = toISO(tglOrderMap.get(noA) || '');
+          const tglB = toISO(tglOrderMap.get(noB) || '');
+          if (tglA !== tglB) return tglA < tglB ? -1 : 1;
+          return noA < noB ? -1 : noA > noB ? 1 : 0;
+        });
+      setData([...noOrder, ...hasOrder]);
+      return;
+    }
+    setData(sorted);
+  }, [rawData, sortByTglOrder, tglOrderMap]);
+
   useEffect(() => { fetchData(dateStr); }, [dateStr, fetchData]);
 
   useEffect(() => {
@@ -221,6 +255,23 @@ export default function TargetClient() {
         if (json.success) setEmployees(json.data || []);
       })
       .catch(err => console.error('Failed to fetch employees', err));
+
+    // Fetch tgl-map sekali per session (cached di module level)
+    if (!_tglOrderMap) {
+      fetch('/api/sopd?tglOnly=true')
+        .then(res => res.json())
+        .then(json => {
+          if (json.success) {
+            const map = new Map<string, string>();
+            for (const row of json.data) {
+              if (row.no_sopd && row.tgl) map.set(String(row.no_sopd), String(row.tgl));
+            }
+            _tglOrderMap = map;
+            setTglOrderMap(map);
+          }
+        })
+        .catch(err => console.error('Failed to fetch tgl order map', err));
+    }
   }, []);
 
   const handlePrint = async () => {
@@ -464,6 +515,21 @@ export default function TargetClient() {
                }}
              />
           </div>
+
+          <button
+            onClick={() => setSortByTglOrder(v => !v)}
+            title={sortByTglOrder ? 'Urutan: berdasarkan tanggal order (aktif) — klik untuk reset ke urutan bagian' : 'Urutkan berdasarkan tanggal order'}
+            className={`flex items-center gap-1.5 px-3 h-10 rounded-xl border text-[11px] font-bold transition-all active:scale-95 ${
+              sortByTglOrder
+                ? 'bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-100'
+                : 'bg-white text-gray-500 border-gray-200 hover:border-emerald-300 hover:text-emerald-600 hover:bg-emerald-50'
+            }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 6h18M7 12h10M11 18h2"/>
+            </svg>
+            Tgl Order
+          </button>
         </div>
 
         <div className="hidden lg:block w-px h-6 bg-gray-100" />

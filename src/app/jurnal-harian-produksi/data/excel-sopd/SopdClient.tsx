@@ -39,6 +39,7 @@ interface SopdRecord {
   alasan_pending: string | null;
   kd_kelompok: string | null;
   is_produksi_selesai: number | null;
+  produk?: string | null;
 }
 
 interface SopdClientProps {
@@ -399,6 +400,7 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [startDate, setStartDate] = useState<Date>(() => getDefaultScraperDateRange().startDate);
   const [endDate, setEndDate] = useState<Date>(() => getDefaultScraperDateRange().endDate);
+  const [produksiFilter, setProduksiFilter] = useState<'all' | 'yes' | 'no'>('all');
   
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [lastExcelUpdate, setLastExcelUpdate] = useState<string | null>(null);
@@ -441,7 +443,7 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
       if (saved) return JSON.parse(saved);
     }
     return {
-      'id': 60, 'no_sopd': 180, 'nama_order': 400, 'qty_sopd': 150, 'unit': 120,
+      'id': 60, 'no_sopd': 180, 'nama_order': 400, 'produk': 350, 'qty_sopd': 150, 'unit': 120,
       'perkiraan_harga': 180, 'keterangan': 250, 'deadline_date': 180, 'finished_date': 180,
       'pending_produksi': 130, 'alasan_pending': 220, 'kd_kelompok': 160
     };
@@ -458,7 +460,6 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
   useEffect(() => {
     setIsMounted(true);
     const hydrated = hydrateScraperPeriod({ stateKey: 'sopdState', periodKey: 'SopdClient_scrapedPeriod' });
-    if (hydrated.scrapedPeriod) setScrapedPeriod(hydrated.scrapedPeriod);
     setStartDate(hydrated.startDate);
     setEndDate(hydrated.endDate);
 
@@ -482,7 +483,9 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
     };
   }, [router]);
 
-  // State persistence managed by scraper-period in effects or directly in handlers
+  // Reset ke halaman 1 setiap kali filter tanggal berubah
+  useEffect(() => { setPage(1); }, [startDate, endDate]);
+  useEffect(() => { setPage(1); }, [produksiFilter]);
 
   useEffect(() => {
     let active = true;
@@ -502,7 +505,8 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
         const sortParam = sorting.length > 0
           ? `&sort=${sorting.map(s => `${s.id}:${s.desc ? 'desc' : 'asc'}`).join(',')}`
           : '';
-        const res = await fetch(`/api/sopd?page=${page}&limit=${PAGE_SIZE}&search=${encodeURIComponent(debouncedQuery)}&startDate=${startParam}&endDate=${endParam}${sortParam}&_t=${Date.now()}`);
+        const pf = produksiFilter !== 'all' ? `&produksiSelesai=${produksiFilter}` : '';
+        const res = await fetch(`/api/sopd?page=${page}&limit=${PAGE_SIZE}&search=${encodeURIComponent(debouncedQuery)}&startDate=${startParam}&endDate=${endParam}${sortParam}${pf}&_t=${Date.now()}`);
         if (!active) return;
         if (res.ok) {
           const json = await res.json();
@@ -526,7 +530,7 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
     }
     loadData();
     return () => { active = false; };
-  }, [page, debouncedQuery, refreshKey, startDate, endDate, sorting]);
+  }, [page, debouncedQuery, refreshKey, startDate, endDate, sorting, produksiFilter]);
 
   const handleSaveRecord = useCallback(async (no_sopd: string, value: string, field: string): Promise<boolean> => {
     try {
@@ -589,6 +593,12 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
       await Promise.all(workers);
       if (successCount > 0) {
         persistScraperPeriod({ stateKey: 'sopdState', periodKey: 'SopdClient_scrapedPeriod' }, startDate, endDate);
+        // Update period total ke DB — timpa key period utama setelah semua chunk selesai
+        fetch('/api/system-settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: 'last_scrape_orders_period', value: JSON.stringify({ start: fullStart, end: fullEnd }) })
+        });
         setRefreshKey(prev => prev + 1);
         localStorage.setItem('sintak_data_updated', Date.now().toString());
         fetch('/api/activity-log', {
@@ -643,6 +653,17 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
         size: 400, 
         meta: { sticky: true },
         cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'} truncate block`} title={String(getValue())}>{String(getValue() || '—')}</span> 
+    },
+    {
+        accessorKey: 'produk',
+        header: 'Produk',
+        size: 350,
+        cell: ({ getValue, row }: any) => {
+            const val = getValue();
+            return val
+                ? <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'} truncate block`} title={String(val)}>{String(val)}</span>
+                : <span className="text-gray-200 italic text-[11px]">—</span>;
+        }
     },
     {
         accessorKey: 'kd_kelompok',
@@ -744,19 +765,20 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
         progress={isBatching ? batchProgress : undefined}
         statusText={isBatching ? batchStatus : undefined}
         fetchText="Tarik Data"
+        compact
       />
       <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden">
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
             <div className="flex items-center gap-5">
-               <ScrapingHeader 
-                 title="Data Order Produksi (SOPd)" 
-                 lastUpdated={lastUpdated} 
-                 lastExcelUpdate={lastExcelUpdate}
-                 lastScrapedUpdate={lastScrapedUpdate}
-                 scrapedPeriod={scrapedPeriod}
-                 activityLogTable="sopd"
-               />
+                <ScrapingHeader
+                  title="Data Order Produksi (SOPd)"
+                  lastUpdated={lastUpdated}
+                  lastExcelUpdate={lastExcelUpdate}
+                  lastScrapedUpdate={lastScrapedUpdate}
+                  scrapedPeriod={scrapedPeriod}
+                  activityLogTable="sopd"
+                />
                <ImportInfo info={importInfo} />
             </div>
             <div className="flex items-center gap-3">
@@ -791,6 +813,23 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
             </div>
           </div>
           <SearchAndReload searchQuery={searchQuery} setSearchQuery={setSearchQuery} onReload={() => setRefreshKey(k => k + 1)} loading={loading} placeholder="Cari berdasarkan nama order..." />
+          <div className="flex items-center gap-1.5">
+            {(['all', 'yes', 'no'] as const).map(val => {
+              const label = val === 'all' ? 'Semua' : val === 'yes' ? 'Selesai' : 'Belum Selesai';
+              return (
+                <button key={val}
+                  onClick={() => setProduksiFilter(val)}
+                  className={`px-3 py-1.5 rounded-lg text-[11px] leading-none font-bold transition-all border ${
+                    produksiFilter === val
+                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                      : 'bg-white text-gray-500 border-gray-100 hover:bg-gray-50 hover:text-gray-700'
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative">

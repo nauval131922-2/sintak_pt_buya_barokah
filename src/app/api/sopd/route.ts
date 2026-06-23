@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("search");
     const startDate = searchParams.get("startDate"); // DD-MM-YYYY
     const endDate = searchParams.get("endDate");     // DD-MM-YYYY
+    const produksiSelesai = searchParams.get("produksiSelesai"); // 'yes' | 'no' | null
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "50");
     const offset = (page - 1) * limit;
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
     // Whitelist kolom yang boleh disort beserta ekspresi SQL-nya
     // Kolom tanggal disimpan DD-MM-YYYY sehingga perlu konversi ke YYYY-MM-DD untuk sort yang benar
     const SORT_COLUMNS: Record<string, string> = {
-      tgl:              `substr(tgl,7,4)||'-'||substr(tgl,4,2)||'-'||substr(tgl,1,2)`,
+      tgl:              `substr(u.tgl,7,4)||'-'||substr(u.tgl,4,2)||'-'||substr(u.tgl,1,2)`,
       no_sopd:          `no_sopd`,
       nama_order:       `nama_order`,
       qty_sopd:         `qty_sopd`,
@@ -49,7 +50,7 @@ export async function GET(request: NextRequest) {
       finished_date:    `h.finished_date`,
       pending_produksi: `h.pending_produksi`,
       alasan_pending:   `h.alasan_pending`,
-      kd_kelompok:          `mb.kd_kelompok`,
+      kd_kelompok:          `COALESCE(mb_prefix.kd_kelompok, mb_strip.kd_kelompok, mb_exact.kd_kelompok)`,
       is_produksi_selesai:  `CASE WHEN ps.nama_prd IS NOT NULL THEN 1 ELSE 0 END`,
     };
 
@@ -68,12 +69,23 @@ export async function GET(request: NextRequest) {
       });
       ORDER_BY = clauses.length
         ? `ORDER BY ${clauses.join(', ')}`
-        : `ORDER BY substr(tgl,7,4) DESC, substr(tgl,4,2) DESC, substr(tgl,1,2) DESC, no_sopd DESC`;
+        : `ORDER BY substr(u.tgl,7,4) DESC, substr(u.tgl,4,2) DESC, substr(u.tgl,1,2) DESC, no_sopd DESC`;
     } else {
       const sortExpr = SORT_COLUMNS[sortByRaw];
       ORDER_BY = sortExpr
         ? `ORDER BY ${sortExpr} ${sortDir}, no_sopd ${sortDir}`
-        : `ORDER BY substr(tgl,7,4) DESC, substr(tgl,4,2) DESC, substr(tgl,1,2) DESC, no_sopd DESC`;
+        : `ORDER BY substr(u.tgl,7,4) DESC, substr(u.tgl,4,2) DESC, substr(u.tgl,1,2) DESC, no_sopd DESC`;
+    }
+
+    // Mode lookup tgl: return semua {no_sopd, tgl} dari sopd+orders untuk sort by tanggal order
+    // ponytail: no pagination, no join — hanya 2 kolom; dipakai TargetClient untuk build tglMap
+    if (searchParams.get('tglOnly') === 'true') {
+      const sql = `
+        SELECT no_sopd, tgl FROM sopd
+        UNION ALL
+        SELECT faktur as no_sopd, tgl FROM orders WHERE tgl IS NOT NULL AND tgl != ''`;
+      const result = await db.execute({ sql, args: [] });
+      return NextResponse.json({ success: true, data: result.rows });
     }
 
     // Mode khusus untuk dropdown (tanpa filter tanggal, ambil semua)
@@ -95,13 +107,32 @@ export async function GET(request: NextRequest) {
     const sopdWhereParts: string[] = [`${dateExpr} <= '${SOPD_CUTOFF}'`];
     if (startDate && endDate) sopdWhereParts.push(`${dateExpr} BETWEEN ? AND ?`);
     if (search) sopdWhereParts.push(`(s.no_sopd LIKE ? OR s.nama_order LIKE ?)`);
+    if (produksiSelesai === 'yes') sopdWhereParts.push(`EXISTS (SELECT 1 FROM produksi_selesai WHERE nama_prd = s.nama_order)`);
+    if (produksiSelesai === 'no') sopdWhereParts.push(`NOT EXISTS (SELECT 1 FROM produksi_selesai WHERE nama_prd = s.nama_order)`);
     const sopdWhere = `WHERE ${sopdWhereParts.join(' AND ')}`;
 
     // orders: tidak dibatasi tahun, semua rentang
     const ordersWhereParts: string[] = [];
     if (startDate && endDate) ordersWhereParts.push(`${dateExpr} BETWEEN ? AND ?`);
     if (search) ordersWhereParts.push(`(o.faktur LIKE ? OR o.nama_prd LIKE ?)`);
+    if (produksiSelesai === 'yes') ordersWhereParts.push(`EXISTS (SELECT 1 FROM produksi_selesai WHERE nama_prd = o.nama_prd)`);
+    if (produksiSelesai === 'no') ordersWhereParts.push(`NOT EXISTS (SELECT 1 FROM produksi_selesai WHERE nama_prd = o.nama_prd)`);
     const ordersWhere = ordersWhereParts.length ? `WHERE ${ordersWhereParts.join(' AND ')}` : '';
+
+    // WHERE untuk COUNT — tanpa alias tabel (s./o.) agar bisa dipakai langsung di sqlTotal
+    const sopdWhereTotalParts: string[] = [`${dateExpr} <= '${SOPD_CUTOFF}'`];
+    if (startDate && endDate) sopdWhereTotalParts.push(`${dateExpr} BETWEEN ? AND ?`);
+    if (search) sopdWhereTotalParts.push(`(no_sopd LIKE ? OR nama_order LIKE ?)`);
+    if (produksiSelesai === 'yes') sopdWhereTotalParts.push(`EXISTS (SELECT 1 FROM produksi_selesai WHERE nama_prd = sopd.nama_order)`);
+    if (produksiSelesai === 'no') sopdWhereTotalParts.push(`NOT EXISTS (SELECT 1 FROM produksi_selesai WHERE nama_prd = sopd.nama_order)`);
+    const sopdWhereTotal = `WHERE ${sopdWhereTotalParts.join(' AND ')}`;
+
+    const ordersWhereTotalParts: string[] = [];
+    if (startDate && endDate) ordersWhereTotalParts.push(`${dateExpr} BETWEEN ? AND ?`);
+    if (search) ordersWhereTotalParts.push(`(faktur LIKE ? OR nama_prd LIKE ?)`);
+    if (produksiSelesai === 'yes') ordersWhereTotalParts.push(`EXISTS (SELECT 1 FROM produksi_selesai WHERE nama_prd = orders.nama_prd)`);
+    if (produksiSelesai === 'no') ordersWhereTotalParts.push(`NOT EXISTS (SELECT 1 FROM produksi_selesai WHERE nama_prd = orders.nama_prd)`);
+    const ordersWhereTotal = ordersWhereTotalParts.length ? `WHERE ${ordersWhereTotalParts.join(' AND ')}` : '';
 
     const dateArgs = (startDate && endDate) ? [startISO!, endISO!] : [];
     const sopdArgs   = [...dateArgs, ...(search ? [qPattern!, qPattern!] : [])];
@@ -109,53 +140,67 @@ export async function GET(request: NextRequest) {
 
     const sqlData = `
       SELECT u.*, h.perkiraan_harga, h.keterangan, h.deadline_date, h.finished_date, h.pending_produksi, h.alasan_pending,
-        mb.kd_kelompok,
+        COALESCE(mb_prefix.kd_kelompok, mb_strip.kd_kelompok, mb_exact.kd_kelompok, mb_produk.kd_kelompok) as kd_kelompok,
         CASE WHEN ps.nama_prd IS NOT NULL THEN 1 ELSE 0 END as is_produksi_selesai
       FROM (
-        SELECT s.id, s.no_sopd, s.tgl, s.nama_order, s.qty_sopd, s.unit, 'sopd' as src FROM sopd s ${sopdWhere}
+        SELECT s.id, s.no_sopd, s.tgl, s.nama_order, s.qty_sopd, s.unit, 'sopd' as src, NULL as produk FROM sopd s ${sopdWhere}
         UNION ALL
-        SELECT o.id, o.faktur as no_sopd, o.tgl, o.nama_prd as nama_order, o.qty as qty_sopd, o.satuan as unit, 'orders' as src FROM orders o ${ordersWhere}
+        SELECT o.id, o.faktur as no_sopd, o.tgl, o.nama_prd as nama_order, o.qty as qty_sopd, o.satuan as unit, 'orders' as src, json_extract(o.raw_data, '$.produk') as produk FROM orders o ${ordersWhere}
       ) u
       LEFT JOIN sopd_harga h ON h.no_sopd = u.no_sopd
-      LEFT JOIN stok_master_barang mb ON TRIM(mb.nama) = TRIM(u.nama_order)
+      LEFT JOIN (SELECT TRIM(nama) as nama, kd_kelompok FROM stok_master_barang GROUP BY TRIM(nama)) mb_exact
+        ON mb_exact.nama = TRIM(u.nama_order)
+      -- mb_strip: strip prefix OP/OS dari nama_order SOPD, cocokkan ke nama bersih di master barang
+      LEFT JOIN (SELECT TRIM(nama) as nama, kd_kelompok FROM stok_master_barang GROUP BY TRIM(nama)) mb_strip
+        ON INSTR(u.nama_order, '-') > 0 AND mb_strip.nama = TRIM(SUBSTR(u.nama_order, INSTR(u.nama_order, '-') + 1))
+      -- mb_prefix: ekstrak prefix OP/OS dari nama master barang → equality join ke nama_order SOPD
+      LEFT JOIN (
+        SELECT TRIM(SUBSTR(nama, 1, INSTR(nama, '-') - 1)) as prefix, MIN(kd_kelompok) as kd_kelompok
+        FROM stok_master_barang
+        WHERE (nama LIKE 'OP.%.SOPD.%-%' OR nama LIKE 'OS.%.SOPD.%-%') AND INSTR(nama, '-') > 0
+        GROUP BY TRIM(SUBSTR(nama, 1, INSTR(nama, '-') - 1))
+      ) mb_prefix ON mb_prefix.prefix = TRIM(SUBSTR(u.nama_order, 1, INSTR(u.nama_order, '-') - 1))
+        AND (u.nama_order LIKE 'OP.%.SOPD.%-%' OR u.nama_order LIKE 'OS.%.SOPD.%-%')
+      LEFT JOIN (SELECT TRIM(nama) as nama, kd_kelompok FROM stok_master_barang GROUP BY TRIM(nama)) mb_produk
+        ON u.produk IS NOT NULL AND mb_produk.nama = TRIM(u.produk)
       LEFT JOIN (SELECT DISTINCT nama_prd FROM produksi_selesai) ps ON ps.nama_prd = u.nama_order
       ${ORDER_BY} LIMIT ? OFFSET ?`;
 
     const sqlTotal = `
       SELECT (
-        (SELECT COUNT(*) FROM sopd s ${sopdWhere.replace(/s\./g, '')}) +
-        (SELECT COUNT(*) FROM orders o ${ordersWhere.replace(/o\./g, '')})
+        (SELECT COUNT(*) FROM sopd ${sopdWhereTotal}) +
+        (SELECT COUNT(*) FROM orders ${ordersWhereTotal})
       ) as count`;
 
     const argsData  = [...sopdArgs, ...ordersArgs, limit, offset];
     const argsTotal = [...sopdArgs, ...ordersArgs];
 
+    // ponytail: semua query digabung satu batch — 2 round-trips → 1
     const batchResults = await db.batch([
       { sql: sqlData, args: argsData },
-      { sql: sqlTotal, args: argsTotal }
+      { sql: sqlTotal, args: argsTotal },
+      { sql: `SELECT value FROM system_settings WHERE key = 'last_scrape_orders'`, args: [] },
+      { sql: `SELECT value FROM system_settings WHERE key = 'last_scrape_orders_period'`, args: [] },
+      { sql: `SELECT strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) as lastUpdated FROM activity_logs WHERE table_name = 'sopd' AND action_type = 'UPLOAD'`, args: [] },
+      { sql: `SELECT strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) as lastUpdated FROM orders`, args: [] },
+      { sql: `SELECT value FROM system_settings WHERE key = 'last_scrape_orders_period_full'`, args: [] },
     ], "read");
 
     const data = batchResults[0].rows;
     const total = Number((batchResults[1].rows[0] as any).count);
 
-    // Metadata for scraping status
-    const metadataResults = await db.batch([
-      { sql: `SELECT value FROM system_settings WHERE key = 'last_scrape_orders'`, args: [] },
-      { sql: `SELECT value FROM system_settings WHERE key = 'last_scrape_orders_period'`, args: [] },
-      { sql: `SELECT strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) as lastUpdated FROM activity_logs WHERE table_name = 'sopd' AND action_type = 'UPLOAD'`, args: [] },
-      { sql: `SELECT strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) as lastUpdated FROM orders`, args: [] }
-    ], "read");
-
-    const lastScrape = metadataResults[0].rows[0] as any;
-    const lastUpload = (metadataResults[2].rows[0] as any)?.lastUpdated;
-    const lastScrapeOrders = (metadataResults[3].rows[0] as any)?.lastUpdated;
+    const lastScrape = batchResults[2].rows[0] as any;
+    const lastUpload = (batchResults[4].rows[0] as any)?.lastUpdated;
+    const lastScrapeOrders = (batchResults[5].rows[0] as any)?.lastUpdated;
 
     // Selalu tampilkan timestamp terbaru dari kedua sumber
     const lastUpdated = lastUpload || (lastScrape ? lastScrape.value : lastScrapeOrders);
     
     let scrapedPeriod = null;
     try {
-      const periodVal = (metadataResults[1].rows[0] as any)?.value;
+      // Prioritas: period_full (range total dari SopdClient) > period (chunk terakhir dari scraper)
+      const periodFull = (batchResults[6].rows[0] as any)?.value;
+      const periodVal = periodFull || (batchResults[3].rows[0] as any)?.value;
       if (periodVal) scrapedPeriod = JSON.parse(periodVal);
     } catch(e) {}
 
@@ -168,7 +213,7 @@ export async function GET(request: NextRequest) {
       lastUpdated,
       lastExcelUpdate: lastUpload,
       lastScrapedUpdate: lastScrape ? lastScrape.value : lastScrapeOrders,
-      scrapedPeriod
+      scrapedPeriod,
     });
 
   } catch (error: any) {
