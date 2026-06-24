@@ -45,3 +45,18 @@ jobs:
             mv .next-tmp/.next .next
             rmdir .next-tmp
             pm2 restart sintak-prod
+
+            for i in $(seq 1 30); do
+              sleep 1
+              code=$(curl -s -o /dev/null -w "%{http_code}" -m 2 http://localhost:3000/login 2>/dev/null || true)
+              if [ "$code" = "200" ]; then
+                echo "Health OK"
+                exit 0
+              fi
+            done
+
+            echo "Health FAILED - rolling back"
+            mv .next .next-failed
+            mv .next.bak .next
+            pm2 restart sintak-prod
+            exit 1
