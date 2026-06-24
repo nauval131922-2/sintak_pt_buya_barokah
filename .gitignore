@@ -77,3 +77,9 @@ tsc_out.txt
 
 testsprite_tests/
 .kiro/
+
+# AI/IDE tool configs (machine-specific)
+.clinerules/
+.cursor/
+.windsurf/
+.agents/
