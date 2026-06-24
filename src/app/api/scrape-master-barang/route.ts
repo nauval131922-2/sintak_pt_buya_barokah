@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Failed to login. No cookies returned." }, { status: 401 });
     }
 
-    // Pagination loop — ambil semua data sampai habis
+    // Pagination loop â€“ ambil semua data sampai habis
     const PAGE_LIMIT = 2000;
     const rawRecords: any[] = [];
     let offset = 0;
@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
       };
     });
     
-    // Prepare batch inserts — gunakan multi-row VALUES untuk minimasi round-trip
+    // Prepare batch inserts â€“ gunakan multi-row VALUES untuk minimasi round-trip
     const COLS = [
       'kode', 'barcode', 'nama', 'kd_satuan', 'spesifikasi', 'berat_kg',
       'kd_golongan', 'kd_kelompok', 'tampil', 'prd_std', 'saldo',
