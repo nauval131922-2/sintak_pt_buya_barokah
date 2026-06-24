@@ -2,7 +2,8 @@ import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import db from '@/lib/db';
 
-const secretKey = process.env.SESSION_SECRET || 'sintaksecretkey_change_in_production';
+if (!process.env.SESSION_SECRET) throw new Error('SESSION_SECRET env tidak diset');
+const secretKey = process.env.SESSION_SECRET;
 const key = new TextEncoder().encode(secretKey);
 
 interface SessionPayload {
@@ -44,7 +45,7 @@ export async function createSession(payload: SessionPayload) {
   cookieStore.set('sintak_session', session, {
     expires,
     httpOnly: true,
-    secure: false,
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
   });

@@ -1,4 +1,4 @@
-ï»¿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 export const dynamic = 'force-dynamic';
 import db from "@/lib/db";
 import { getErrorMessage } from "@/lib/api-utils";
@@ -8,9 +8,11 @@ import { getSession } from "@/lib/session";
 import { logActivity } from "@/lib/activity";
 
 const API_EMAIL = process.env.SCRAPER_EMAIL || "nauval";
-const API_PASSWORD = process.env.SCRAPER_PASSWORD || "312admin2";
+if (!process.env.SCRAPER_PASSWORD) throw new Error("SCRAPER_PASSWORD env tidak diset");
+const API_PASSWORD = process.env.SCRAPER_PASSWORD;
 const BASE_URL = "https://buyapercetakan.mdthoster.com/il/";
-const API_KEY = "bismillah-m377-4j76-bb34-c450-7a62-ad3f";
+if (!process.env.SCRAPER_API_KEY) throw new Error("SCRAPER_API_KEY env tidak diset");
+const API_KEY = process.env.SCRAPER_API_KEY;
 
 export async function GET(request: NextRequest) {
   try {
@@ -41,7 +43,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Failed to login. No cookies returned." }, { status: 401 });
     }
 
-    // Pagination loop â€” ambil semua data sampai habis
+    // Pagination loop — ambil semua data sampai habis
     const PAGE_LIMIT = 2000;
     const rawRecords: any[] = [];
     let offset = 0;
@@ -99,7 +101,7 @@ export async function GET(request: NextRequest) {
       };
     });
     
-    // Prepare batch inserts â€” gunakan multi-row VALUES untuk minimasi round-trip
+    // Prepare batch inserts — gunakan multi-row VALUES untuk minimasi round-trip
     const COLS = [
       'kode', 'barcode', 'nama', 'kd_satuan', 'spesifikasi', 'berat_kg',
       'kd_golongan', 'kd_kelompok', 'tampil', 'prd_std', 'saldo',

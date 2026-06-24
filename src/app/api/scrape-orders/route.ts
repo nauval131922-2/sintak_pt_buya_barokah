@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 export const dynamic = 'force-dynamic';
 import db from "@/lib/db";
 import { getErrorMessage } from "@/lib/api-utils";
@@ -9,9 +9,11 @@ import { encodeScrapedPeriod, getScrapedPeriodSettingKey } from "@/lib/server-sc
 import { logActivity } from "@/lib/activity";
 
 const API_EMAIL = process.env.SCRAPER_EMAIL || "nauval";
-const API_PASSWORD = process.env.SCRAPER_PASSWORD || "312admin2";
+if (!process.env.SCRAPER_PASSWORD) throw new Error("SCRAPER_PASSWORD env tidak diset");
+const API_PASSWORD = process.env.SCRAPER_PASSWORD;
 const BASE_URL = "https://buyapercetakan.mdthoster.com/il/";
-const API_KEY = "bismillah-m377-4j76-bb34-c450-7a62-ad3f";
+if (!process.env.SCRAPER_API_KEY) throw new Error("SCRAPER_API_KEY env tidak diset");
+const API_KEY = process.env.SCRAPER_API_KEY;
 
 // Helper to format date object to DD-MM-YYYY
 function formatDate(date: Date): string {
