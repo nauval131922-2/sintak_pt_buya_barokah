@@ -28,13 +28,13 @@ jobs:
           SCRAPER_PASSWORD: build_placeholder
           SCRAPER_API_KEY: build_placeholder
 
-      - name: Install sshpass
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq sshpass
-
-      - name: Copy build to VPS
+      - name: Deploy to VPS
         run: |
-          sshpass -p "${{ secrets.VPS_PASSWORD }}" scp -o StrictHostKeyChecking=no -r .next/ "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_PATH }}/.next-tmp/"
-
-      - name: Deploy and restart
-        run: |
-          sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "cd ${{ secrets.VPS_PATH }} && rm -rf .next.bak && mv .next .next.bak && mv .next-tmp .next && pm2 restart sintak-prod"
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key -r .next/ \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/sintak/.next-tmp/"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "cd /var/www/sintak && rm -rf .next.bak && mv .next .next.bak && mv .next-tmp .next && pm2 restart sintak-prod"
