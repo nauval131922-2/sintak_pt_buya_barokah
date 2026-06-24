@@ -88,6 +88,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [openMenuIds, setOpenMenuIds] = useState<Set<string>>(new Set());
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   const toggleMenuId = (id: string) => {
     setOpenMenuIds(prev => {
@@ -109,6 +110,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
 
   useEffect(() => {
     setIsMounted(true);
+    setIsTouchDevice(window.matchMedia('(pointer: coarse)').matches);
     const savedCollapsed = localStorage.getItem('sidebar_collapsed');
     const savedWidth = localStorage.getItem('sidebar_expanded_width');
     if (savedCollapsed !== null) setIsCollapsed(savedCollapsed === 'true');
@@ -307,8 +309,8 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
 
     <aside
       ref={sidebarRef}
-      onMouseEnter={() => isCollapsed && !isResizing && setIsHovered(true)}
-      onMouseLeave={() => { if (!isResizing) setIsHovered(false); }}
+      onMouseEnter={() => !isTouchDevice && isCollapsed && !isResizing && setIsHovered(true)}
+      onMouseLeave={() => { if (!isTouchDevice && !isResizing) setIsHovered(false); }}
       style={{ width: currentWidth }}
       className={`
         fixed xl:relative h-screen bg-white border-r border-gray-100 shrink-0 flex flex-col z-[100]
@@ -357,7 +359,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
       <button
         onClick={() => { setIsCollapsed(!isCollapsed); setIsHovered(false); }}
         className={`absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white border border-gray-100 rounded-full flex items-center justify-center text-gray-400 shadow-sm hover:text-green-600 z-50 transition-all xl:flex hidden ${
-          !isExpanded && isCollapsed ? 'opacity-0' : 'opacity-100'
+          (!isExpanded && isCollapsed && !isTouchDevice) ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
       >
         {isCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
