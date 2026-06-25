@@ -47,6 +47,43 @@
 
 ---
 
+## Update Sesi — 2026-06-25
+
+### Konteks Sesi
+- Implementasi fitur **status aktif/nonaktif user** (is_active).
+
+### Pekerjaan Sesi Ini
+
+1. **Feat: Status aktif/nonaktif user**:
+   - **Schema**: Kolom `is_active INTEGER DEFAULT 1` di tabel `users`, ditambahkan via migration otomatis.
+   - **Login block**: Auth (`auth.ts`) cek `is_active` — user nonaktif ditolak login dengan pesan "Akun Anda dinonaktifkan. Hubungi Super Admin."
+   - **Session guard**: `getSession()` (`session.ts`) validasi `is_active` — user nonaktif dianggap tidak login (session null).
+   - **UI UserFormModal**: Toggle switch aktif/nonaktif saat edit user, dinonaktifkan untuk akun sendiri.
+   - **UI UsersContent**: Kolom Status dengan toggle switch langsung di tabel, filter dropdown (Aktif/Nonaktif/Semua).
+   - **Backend**: `updateUser()` validasi prevent self-deactivation, update kolom `is_active`.
+   - **Chore**: Tambah `*.zip` ke `.gitignore`.
+
+### Keputusan Teknis
+- User nonaktif langsung ditolak login dan session di-invalidate — tidak perlu logout manual dari sisi admin.
+- Toggle di tabel untuk operasi cepat; toggle di modal untuk konteks edit penuh.
+- `is_active` default 1 (aktif) — migration aman untuk user eksisting.
+
+### File yang Diubah
+- `src/lib/schema.ts`
+- `src/lib/auth.ts`
+- `src/lib/session.ts`
+- `src/lib/users.ts`
+- `src/app/users/UserFormModal.tsx`
+- `src/app/users/UsersContent.tsx`
+- `.gitignore`
+
+### Sisa Pekerjaan / Backlog
+- Evaluasi akurasi auto-generate jadwal dan iterasi algoritma pola historis.
+- Finalisasi chart visualisasi Analisa Produksi.
+- Setup backup database otomatis ke cloud storage.
+
+---
+
 ## Update Sesi — 2026-06-23
 
 ### Konteks Sesi

@@ -24,6 +24,12 @@ export async function login(
       return { success: false, message: 'Username tidak ditemukan.' };
     }
 
+    if (user.hasOwnProperty('is_active') && Number(user.is_active) === 0) {
+      console.log(`[AUTH] User is inactive: ${username}`);
+      return { success: false, message: 'Akun Anda dinonaktifkan. Hubungi Super Admin.' };
+    }
+
+
     const isMatch = await bcrypt.compare(password, user.password as string);
     if (!isMatch) {
       console.log(`[AUTH] Password mismatch for user: ${username}`);

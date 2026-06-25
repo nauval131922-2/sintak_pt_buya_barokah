@@ -13,15 +13,17 @@ interface UserData {
   name: string;
   roles: string[];
   role: string;
+  is_active?: number;
 }
 
 interface UserFormModalProps {
   user: UserData | null;
   customRoles?: string[];
+  currentUserId?: number;
   onClose: (refresh: boolean) => void;
 }
 
-export default function UserFormModal({ user, customRoles = [], onClose }: UserFormModalProps) {
+export default function UserFormModal({ user, customRoles = [], currentUserId, onClose }: UserFormModalProps) {
   const isEditing = !!user;
 
   const [name, setName] = useState(user?.name || '');
@@ -34,6 +36,7 @@ export default function UserFormModal({ user, customRoles = [], onClose }: UserF
   });
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isActive, setIsActive] = useState(user?.is_active ?? 1);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -139,6 +142,7 @@ export default function UserFormModal({ user, customRoles = [], onClose }: UserF
           username,
           roles: selectedRoles,
           password: password || undefined,
+          is_active: isActive,
         });
       } else {
         res = await createUser({ name, username, roles: selectedRoles, password });
@@ -322,6 +326,33 @@ export default function UserFormModal({ user, customRoles = [], onClose }: UserF
                 </p>
               )}
             </div>
+
+            {/* Status Aktif/Nonaktif */}
+            {isEditing && (
+              <div className="flex items-center justify-between p-3.5 bg-gray-50 border border-gray-200 rounded-xl">
+                <div className="flex flex-col gap-0.5 leading-tight">
+                  <span className="text-[12px] font-bold text-gray-700">Status Akun</span>
+                  <span className="text-[10px] text-gray-400 font-semibold">
+                    Nonaktifkan user yang resign atau tidak aktif
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsActive(prev => (prev === 1 ? 0 : 1))}
+                  disabled={user.id === currentUserId}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 ${
+                    isActive === 1 ? 'bg-green-600' : 'bg-gray-200'
+                  }`}
+                  title={user.id === currentUserId ? 'Anda tidak dapat menonaktifkan akun sendiri' : ''}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      isActive === 1 ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+            )}
 
           </div>
 

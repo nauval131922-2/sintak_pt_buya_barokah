@@ -59,8 +59,17 @@ export async function getSession(): Promise<SessionPayload | null> {
   const payload = await decrypt(session);
   if (!payload) return null;
 
-  // Refresh roles dari DB setiap request agar perubahan role langsung berlaku
+  // Refresh roles dari DB setiap request agar perubahan role langsung berlaku, serta validasi status aktif
   try {
+    const userRow = await db.execute({
+      sql: 'SELECT role, is_active FROM users WHERE id = ?',
+      args: [payload.userId],
+    });
+
+    if (userRow.rows.length === 0 || (userRow.rows[0].hasOwnProperty('is_active') && Number(userRow.rows[0].is_active) === 0)) {
+      return null;
+    }
+
     const { rows } = await db.execute({
       sql: `SELECT ur.role_name
             FROM user_roles ur
@@ -78,15 +87,9 @@ export async function getSession(): Promise<SessionPayload | null> {
         : freshRoles[0];
     } else {
       // Fallback: baca dari kolom users.role (pre-migration atau user tanpa user_roles)
-      const userRow = await db.execute({
-        sql: 'SELECT role FROM users WHERE id = ?',
-        args: [payload.userId],
-      });
-      if (userRow.rows.length > 0) {
-        const r = userRow.rows[0].role as string;
-        payload.roles = r ? [r] : [];
-        payload.role = r || '';
-      }
+      const r = userRow.rows[0].role as string;
+      payload.roles = r ? [r] : [];
+      payload.role = r || '';
     }
   } catch (_) {}
 

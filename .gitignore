@@ -83,3 +83,6 @@ testsprite_tests/
 .cursor/
 .windsurf/
 .agents/
+
+# Zip/archive files
+*.zip

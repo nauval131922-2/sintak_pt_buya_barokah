@@ -8,7 +8,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import SearchableDropdown from '@/components/SearchableDropdown';
-import { getUsers, deleteUser } from '@/lib/users';
+import { getUsers, deleteUser, updateUser } from '@/lib/users';
 import UserFormModal from './UserFormModal';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { DataTable } from '@/components/ui/DataTable';
@@ -23,6 +23,7 @@ interface User {
   roles: string[];
   role: string;
   photo?: string | null;
+  is_active: number;
   created_at?: string | null;
 }
 
@@ -42,6 +43,7 @@ export default function UsersContent({
   const [isSearching, setIsSearching] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [roleFilter, setRoleFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -54,7 +56,7 @@ export default function UsersContent({
       const saved = localStorage.getItem('user_columnWidths');
       if (saved) return JSON.parse(saved);
     }
-    return { profile: 380, roles: 300, action: 150 };
+    return { profile: 380, roles: 250, status: 120, action: 150 };
   });
 
   const handleResize = useCallback((widths: any) => {
@@ -119,14 +121,75 @@ export default function UsersContent({
         user.roles.some(r => r.toLowerCase().includes(query));
       // Filter role: cocok jika salah satu role user sama dengan filter
       const matchesRole = !roleFilter || user.roles.includes(roleFilter);
-      return matchesSearch && matchesRole;
+      // Filter status: cocok dengan status aktif/nonaktif
+      const matchesStatus =
+        !statusFilter ||
+        (statusFilter === 'Aktif' && user.is_active !== 0) ||
+        (statusFilter === 'Nonaktif' && user.is_active === 0);
+      return matchesSearch && matchesRole && matchesStatus;
     });
-  }, [users, searchDebounced, roleFilter]);
+  }, [users, searchDebounced, roleFilter, statusFilter]);
+
+  const handleToggleStatus = useCallback(async (user: User) => {
+    if (user.id === currentUserId) {
+      setMessage({ type: 'error', text: 'Anda tidak dapat menonaktifkan akun Anda sendiri.' });
+      return;
+    }
+    const newStatus = user.is_active === 1 ? 0 : 1;
+    try {
+      const res = await updateUser(user.id, {
+        name: user.name,
+        username: user.username,
+        roles: user.roles,
+        is_active: newStatus,
+      });
+      if (res.success) {
+        localStorage.setItem('sintak_data_updated', Date.now().toString());
+        setMessage({
+          type: 'success',
+          text: `Status user "${user.username}" berhasil diubah menjadi ${newStatus === 1 ? 'Aktif' : 'Nonaktif'}.`,
+        });
+        loadUsers();
+      } else {
+        setMessage({ type: 'error', text: res.message || 'Gagal memperbarui status user.' });
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'Terjadi kesalahan sistem.' });
+    }
+  }, [currentUserId, loadUsers]);
 
   const getInitials = (name: string) =>
     (name || 'U').split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
 
   const columns = useMemo(() => [
+    {
+      id: 'action',
+      header: 'Manajemen',
+      size: columnWidths.action,
+      cell: (info: any) => {
+        const user = info.row.original as User;
+        return (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={e => { e.stopPropagation(); handleEdit(user); }}
+              className="p-2.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
+              title="Edit User"
+            >
+              <Edit2 size={16} />
+            </button>
+            {user.id !== currentUserId && (
+              <button
+                onClick={e => { e.stopPropagation(); handleDelete(user.id, user.username); }}
+                className="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                title="Hapus User"
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
+          </div>
+        );
+      },
+    },
     {
       accessorKey: 'name',
       id: 'profile',
@@ -177,35 +240,39 @@ export default function UsersContent({
       },
     },
     {
-      id: 'action',
-      header: 'Manajemen',
-      size: columnWidths.action,
-      meta: { align: 'right' },
+      accessorKey: 'is_active',
+      id: 'status',
+      header: 'Status',
+      size: columnWidths.status || 120,
       cell: (info: any) => {
         const user = info.row.original as User;
+        const isActive = user.is_active !== 0;
+        const isSelf = user.id === currentUserId;
         return (
-          <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 group-[.is-selected]:opacity-100 transition-opacity">
+          <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
             <button
-              onClick={e => { e.stopPropagation(); handleEdit(user); }}
-              className="p-2.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
-              title="Edit User"
+              type="button"
+              onClick={() => handleToggleStatus(user)}
+              disabled={isSelf}
+              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-50 ${
+                isActive ? 'bg-green-600' : 'bg-gray-200'
+              }`}
+              title={isSelf ? 'Anda tidak dapat menonaktifkan akun sendiri' : `Klik untuk ${isActive ? 'nonaktifkan' : 'aktifkan'}`}
             >
-              <Edit2 size={16} />
+              <span
+                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                  isActive ? 'translate-x-4' : 'translate-x-0'
+                }`}
+              />
             </button>
-            {user.id !== currentUserId && (
-              <button
-                onClick={e => { e.stopPropagation(); handleDelete(user.id, user.username); }}
-                className="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                title="Hapus User"
-              >
-                <Trash2 size={16} />
-              </button>
-            )}
+            <span className={`text-[11px] font-bold ${isActive ? 'text-green-600' : 'text-gray-400'}`}>
+              {isActive ? 'Aktif' : 'Nonaktif'}
+            </span>
           </div>
         );
       },
     },
-  ], [columnWidths, currentUserId]);
+  ], [columnWidths, currentUserId, handleToggleStatus]);
 
   const handleDelete = (id: number, username: string) => {
     if (id === currentUserId || username === currentUser) {
@@ -242,18 +309,32 @@ export default function UsersContent({
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-3 animate-in fade-in duration-500 overflow-hidden">
       <div className="shrink-0 flex items-center justify-between gap-3 z-50">
-        <SearchableDropdown
-          id="users-role"
-          value={roleFilter}
-          items={customRoles}
-          allLabel="Semua Jabatan"
-          placeholder="Filter Jabatan"
-          searchPlaceholder="Cari role..."
-          triggerWidth="w-[300px]"
-          panelWidth="w-[300px]"
-          icon={<Users size={16} className={roleFilter ? 'text-green-600' : 'text-gray-400'} />}
-          onChange={val => startTransition(() => setRoleFilter(val))}
-        />
+        <div className="flex items-center gap-3">
+          <SearchableDropdown
+            id="users-role"
+            value={roleFilter}
+            items={customRoles}
+            allLabel="Semua Jabatan"
+            placeholder="Filter Jabatan"
+            searchPlaceholder="Cari role..."
+            triggerWidth="w-[200px]"
+            panelWidth="w-[200px]"
+            icon={<Users size={16} className={roleFilter ? 'text-green-600' : 'text-gray-400'} />}
+            onChange={val => startTransition(() => setRoleFilter(val))}
+          />
+          <SearchableDropdown
+            id="users-status"
+            value={statusFilter}
+            items={['Aktif', 'Nonaktif']}
+            allLabel="Semua Status"
+            placeholder="Filter Status"
+            searchPlaceholder="Cari status..."
+            triggerWidth="w-[180px]"
+            panelWidth="w-[180px]"
+            icon={<UserCog size={16} className={statusFilter ? 'text-green-600' : 'text-gray-400'} />}
+            onChange={val => startTransition(() => setStatusFilter(val))}
+          />
+        </div>
         <button
           onClick={handleCreate}
           className="flex items-center justify-center gap-3 px-6 h-12 bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold rounded-xl transition-all shadow-md shadow-emerald-900/10 active:scale-95"
@@ -329,6 +410,7 @@ export default function UsersContent({
         <UserFormModal
           user={editingUser}
           customRoles={customRoles}
+          currentUserId={currentUserId}
           onClose={refresh => {
             setShowModal(false);
             if (refresh) {

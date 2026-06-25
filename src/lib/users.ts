@@ -63,7 +63,7 @@ export async function getUsers() {
     await requireSuperAdmin();
 
     const result = await db.execute(
-      'SELECT id, username, name, role, photo, created_at FROM users ORDER BY name ASC'
+      'SELECT id, username, name, role, photo, is_active, created_at FROM users ORDER BY name ASC'
     );
 
     // Ambil roles dari junction table untuk setiap user
@@ -79,6 +79,7 @@ export async function getUsers() {
           roles: roles.length > 0 ? roles : (row.role ? [String(row.role)] : []),
           role: String(row.role),
           photo: row.photo ? String(row.photo) : null,
+          is_active: row.hasOwnProperty('is_active') && row.is_active !== null ? Number(row.is_active) : 1,
           created_at: row.created_at ? String(row.created_at) : null,
         };
       })
@@ -146,13 +147,18 @@ export async function createUser(data: {
 
 export async function updateUser(
   id: number,
-  data: { name: string; username: string; roles: string[]; password?: string }
+  data: { name: string; username: string; roles: string[]; password?: string; is_active?: number }
 ) {
   try {
     const session = await requireSuperAdmin();
 
     if (!data.name || !data.username || !data.roles?.length) {
       return { success: false, message: 'Data tidak lengkap.' };
+    }
+
+    // Mencegah Super Admin menonaktifkan dirinya sendiri
+    if (session.userId === id && data.is_active === 0) {
+      return { success: false, message: 'Anda tidak dapat menonaktifkan akun Anda sendiri.' };
     }
 
     // Cek username duplikat
@@ -174,16 +180,16 @@ export async function updateUser(
       const hash = await bcrypt.hash(data.password, salt);
       await db.execute(
         {
-          sql: 'UPDATE users SET name = ?, username = ?, role = ?, password = ? WHERE id = ?',
-          args: [data.name, data.username, primaryRole, hash, id],
+          sql: 'UPDATE users SET name = ?, username = ?, role = ?, password = ?, is_active = ? WHERE id = ?',
+          args: [data.name, data.username, primaryRole, hash, data.is_active ?? 1, id],
         },
         'Kelola User'
       );
     } else {
       await db.execute(
         {
-          sql: 'UPDATE users SET name = ?, username = ?, role = ? WHERE id = ?',
-          args: [data.name, data.username, primaryRole, id],
+          sql: 'UPDATE users SET name = ?, username = ?, role = ?, is_active = ? WHERE id = ?',
+          args: [data.name, data.username, primaryRole, data.is_active ?? 1, id],
         },
         'Kelola User'
       );
