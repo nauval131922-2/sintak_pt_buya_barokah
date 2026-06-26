@@ -47,7 +47,7 @@ jobs:
             mv .next .next.bak
             mv .next-tmp/.next .next
             rmdir .next-tmp
-            pm2 restart sintak-prod
+            pm2 reload ecosystem.config.js --only sintak-prod
 
             for i in $(seq 1 30); do
               sleep 1
@@ -61,5 +61,5 @@ jobs:
             echo "Health FAILED - rolling back"
             mv .next .next-failed
             mv .next.bak .next
-            pm2 restart sintak-prod
+            pm2 reload ecosystem.config.js --only sintak-prod
             exit 1
