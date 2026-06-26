@@ -4,11 +4,17 @@ import db from '@/lib/db';
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
+  console.log('[TELEGRAM API] check-status called!', req.nextUrl.toString());
+  console.log('[TELEGRAM API] All headers:', Object.fromEntries(req.headers.entries()));
   try {
     // Auth check
-    const apiKey = req.headers.get('X-API-Key');
+    const apiKey = req.headers.get('X-API-Key') || req.headers.get('x-api-key');
+    console.log('[TELEGRAM API] API Key received:', apiKey);
+    console.log('[TELEGRAM API] Expected API Key:', process.env.SCRAPER_API_KEY);
+    console.log('[TELEGRAM API] Match:', apiKey === process.env.SCRAPER_API_KEY);
+    
     if (apiKey !== process.env.SCRAPER_API_KEY) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', debug: { received: apiKey, expected: process.env.SCRAPER_API_KEY?.substring(0, 10) + '...' } }, { status: 401 });
     }
 
     const telegram_id = req.nextUrl.searchParams.get('telegram_id');

@@ -1,0 +1,30 @@
+{
+  "name": "sintak-telegram-bot",
+  "version": "1.0.0",
+  "description": "Telegram Bot untuk input realisasi produksi SINTAK",
+  "main": "dist/bot.js",
+  "scripts": {
+    "dev": "tsx src/bot.ts",
+    "build": "tsc",
+    "start": "node dist/bot.js",
+    "approve": "tsx src/approve-user.ts"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "sintak"
+  ],
+  "author": "SINTAK",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@libsql/client": "^0.17.4",
+    "dotenv": "^17.4.2",
+    "grammy": "^1.44.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.1",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3"
+  }
+}
