@@ -21,6 +21,9 @@ jobs:
           SCRAPER_EMAIL: build_placeholder
           SCRAPER_PASSWORD: build_placeholder
           SCRAPER_API_KEY: build_placeholder
+      
+      - name: Remove build cache before deploy
+        run: rm -rf .next/cache
 
       - name: Copy build to VPS
         uses: appleboy/scp-action@v0.1.7
