@@ -108,6 +108,20 @@ export async function initSchema(db: any) {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`,
 
+    `CREATE TABLE IF NOT EXISTS telegram_users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      telegram_id TEXT UNIQUE NOT NULL,
+      telegram_username TEXT,
+      nama_karyawan TEXT NOT NULL,
+      posisi TEXT,
+      absensi TEXT,
+      bagian TEXT NOT NULL,
+      is_active INTEGER DEFAULT 0,
+      registered_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      approved_at DATETIME,
+      approved_by TEXT
+    );`,
+
     `CREATE TABLE IF NOT EXISTS infractions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       employee_id INTEGER NOT NULL,
@@ -1094,6 +1108,9 @@ export async function initSchema(db: any) {
     "CREATE INDEX IF NOT EXISTS idx_infractions_emp_id ON infractions(employee_id);",
     "CREATE INDEX IF NOT EXISTS idx_infractions_rec_id ON infractions(recorded_by_id);",
     "CREATE INDEX IF NOT EXISTS idx_infractions_emp_no ON infractions(employee_no);",
+    "CREATE INDEX IF NOT EXISTS idx_telegram_users_telegram_id ON telegram_users(telegram_id);",
+    "CREATE INDEX IF NOT EXISTS idx_telegram_users_nama ON telegram_users(nama_karyawan);",
+    "CREATE INDEX IF NOT EXISTS idx_telegram_users_active ON telegram_users(is_active);",
     "DROP INDEX IF EXISTS idx_barang_jadi_tgl_id;",
     "CREATE INDEX IF NOT EXISTS idx_barang_jadi_expr_tgl ON barang_jadi(substr(tgl, 7, 4) DESC, substr(tgl, 4, 2) DESC, substr(tgl, 1, 2) DESC, id DESC);",
     "CREATE INDEX IF NOT EXISTS idx_barang_jadi_created_at ON barang_jadi(created_at);",
