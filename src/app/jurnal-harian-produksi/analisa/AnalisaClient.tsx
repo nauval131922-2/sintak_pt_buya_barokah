@@ -58,6 +58,12 @@ export default function AnalisaClient() {
 
   const displayOrders = query.length >= 2 ? results : recentOrders;
 
+  // Load saved order on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('analisa_selected_order');
+    if (saved) selectOrder(saved);
+  }, []);
+
   const search = useCallback(async (q: string) => {
     if (q.length < 2) { setResults([]); return; }
     setLoading(true);
@@ -100,6 +106,7 @@ export default function AnalisaClient() {
 
   const selectOrder = async (noOrder: string) => {
     setSelectedOrder(noOrder);
+    localStorage.setItem('analisa_selected_order', noOrder);
     setIsDropdownOpen(false);
     setQuery('');
     setResults([]);
@@ -130,6 +137,13 @@ export default function AnalisaClient() {
     }
     finally { setDetailLoading(false); }
   }, [selectedOrder]);
+
+  const clearSelection = () => {
+    setSelectedOrder(null);
+    setEntries([]);
+    setOrderInfo(null);
+    localStorage.removeItem('analisa_selected_order');
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     const items = displayOrders;
@@ -267,6 +281,13 @@ export default function AnalisaClient() {
                 >
                   <RefreshCw size={16} className={detailLoading ? 'animate-spin' : ''} />
                 </button>
+                <button
+                  onClick={clearSelection}
+                  className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Hapus Pilihan"
+                >
+                  <X size={16} />
+                </button>
               </div>
             )}
 
@@ -278,15 +299,14 @@ export default function AnalisaClient() {
 
             {!detailLoading && entries.length > 0 && (
               <div className="flex-1 min-h-0 flex flex-col xl:flex-row gap-4">
-                <div className="flex-1 min-h-0 overflow-auto">
-                  <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-                    <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
-                      <h3 className="text-sm font-semibold text-gray-700">Riwayat Produksi</h3>
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-gray-100 bg-gray-50/30">
+                <div className="flex-1 min-h-0 flex flex-col bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50 shrink-0">
+                    <h3 className="text-sm font-semibold text-gray-700">Riwayat Produksi</h3>
+                  </div>
+                  <div className="flex-1 min-h-0 overflow-auto">
+                    <table className="w-full text-sm">
+                      <thead className="sticky top-0 z-10 bg-white shadow-sm">
+                        <tr className="border-b border-gray-100 bg-gray-50/30">
                             <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">Tgl</th>
                             <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">Shift</th>
                             <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">Bagian</th>
@@ -320,7 +340,6 @@ export default function AnalisaClient() {
                       </table>
                     </div>
                   </div>
-                </div>
 
                 <div className="xl:w-80 shrink-0">
                   <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
