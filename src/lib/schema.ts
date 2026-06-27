@@ -8,6 +8,8 @@ export async function initSchema(db: any) {
     if (executor.execute) {
       try { await executor.execute("PRAGMA busy_timeout = 5000;"); } catch {}
       try { await executor.execute("PRAGMA journal_mode = WAL;"); } catch {}
+      try { await executor.execute("PRAGMA cache_size = -64000;"); } catch {}    // 64MB cache
+      try { await executor.execute("PRAGMA mmap_size = 268435456;"); } catch {}  // 256MB mmap I/O
     }
   } catch {}
 

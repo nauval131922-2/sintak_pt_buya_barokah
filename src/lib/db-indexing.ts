@@ -125,7 +125,8 @@ export async function initIndexing(database: { execute: (sql: string) => Promise
     "CREATE INDEX IF NOT EXISTS idx_pelunasan_piutang_fkt ON pelunasan_piutang(fkt);",
 
     // 10. System Optimization
-    "ANALYZE;" // Update SQLite statistics for query planner
+    "ANALYZE;", // Update SQLite statistics for query planner
+    "PRAGMA optimize;", // Auto-tune after bulk data changes
   ];
 
   for (const sql of indexes) {
