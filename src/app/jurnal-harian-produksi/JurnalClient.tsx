@@ -565,7 +565,7 @@ export default function JurnalClient({
           ...(sorting.length > 0 ? { sort: sorting.map(s => `${s.id}:${s.desc ? 'desc' : 'asc'}`).join(',') } : {}),
           _r: refreshKey.toString() // hanya berubah saat data dimutasi, bukan setiap render
         });
-        const res = await fetch(`/api/jurnal-harian-produksi?${queryParams.toString()}`);
+        const res = await fetch(`/api/jurnal-harian-produksi?${queryParams.toString()}`, { priority: 'high' });
         if (!active) return;
         if (res.ok) {
           const json = await res.json();
