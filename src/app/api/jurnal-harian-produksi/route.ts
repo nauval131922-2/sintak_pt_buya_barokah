@@ -15,7 +15,6 @@ const cleanNumberOrText = (val: any) => {
 };
 
 export async function GET(request: NextRequest) {
-  const requestStart = Date.now();
   try {
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get("search");
@@ -154,9 +153,7 @@ export async function GET(request: NextRequest) {
     }
     batchStmts.push({ sql: sqlLastUpdated, args: [] });
 
-    const t0 = Date.now();
     const batchResults = await db.batch(batchStmts, "read");
-    const queryTime = Date.now() - t0;
 
     const data = batchResults[0].rows;
     const total = Number((batchResults[1].rows[0] as any).count);
@@ -169,9 +166,7 @@ export async function GET(request: NextRequest) {
     const lastUpdated = batchResults[batchResults.length - 1].rows[0] as any;
     const lastUpdatedVal = lastUpdated?.lastUpdated || null;
 
-    const totalTime = Date.now() - requestStart;
-    console.log(`[JHP] total=${totalTime}ms query=${queryTime}ms page=${page} from=${startDate||'-'} to=${endDate||'-'}`);
-    return NextResponse.json({ success: true, data, total, page, limit, lastUpdated: lastUpdatedVal, totalRealisasi, totalRijek, queryTime, totalTime });
+    return NextResponse.json({ success: true, data, total, page, limit, lastUpdated: lastUpdatedVal, totalRealisasi, totalRijek });
 
 
   } catch (error: any) {

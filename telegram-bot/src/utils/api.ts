@@ -1,83 +1,196 @@
-// Lazy evaluation - read from env at runtime, not at module load time
-function getApiUrl() {
-  return process.env.SINTAK_API_URL || 'http://localhost:3000';
-}
+import db from '../db';
 
-function getApiKey() {
-  return process.env.SINTAK_API_KEY || '';
-}
-
-interface ApiResponse {
-  success?: boolean;
-  error?: string;
-  [key: string]: any;
-}
-
-export async function apiCall(endpoint: string, options: RequestInit = {}): Promise<ApiResponse> {
-  const url = `${getApiUrl()}${endpoint}`;
-  
-  const headers: Record<string, string> = {
-    'X-API-Key': getApiKey(),
-    'Content-Type': 'application/json',
-    ...options.headers as Record<string, string>
-  };
-
-  console.log('[API DEBUG] URL:', url);
-  console.log('[API DEBUG] Headers:', JSON.stringify(headers, null, 2));
-
-  try {
-    const response = await fetch(url, {
-      ...options,
-      headers
-    });
-
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.error || `HTTP ${response.status}`);
-    }
-
-    return data;
-  } catch (error: any) {
-    console.error(`[API] Error calling ${endpoint}:`, error.message);
-    throw error;
+const cleanNumberOrText = (val: any) => {
+  if (val === undefined || val === null || val === '') return '';
+  const str = String(val).trim();
+  if (/^[0-9]+(\.[0-9]+)*$/.test(str)) {
+    return Number(str.replace(/\./g, ''));
   }
-}
+  return str;
+};
 
-// API Methods
+const SHIFT_JAM: Record<string, string> = {
+  '1': '07:00-15:00',
+  '2': '15:00-23:00',
+  '3': '23:00-07:00'
+};
+
 export const api = {
   async validateKaryawan(nama: string) {
-    return apiCall(`/api/telegram/validate-karyawan?nama=${encodeURIComponent(nama)}`);
+    const result = await db.execute({
+      sql: `SELECT name, position, employee_no, department 
+            FROM employees WHERE name = ? AND is_active = 1 LIMIT 1`,
+      args: [nama]
+    });
+    if (result.rows.length === 0) return { valid: false, message: 'Nama karyawan tidak ditemukan atau tidak aktif' };
+    const e = result.rows[0] as any;
+    return { valid: true, nama_karyawan: e.name, posisi: e.position, absensi: e.employee_no, department: e.department };
   },
 
-  async registerRequest(data: {
-    telegram_id: string;
-    telegram_username?: string;
-    nama_karyawan: string;
-    bagian: string;
-  }) {
-    return apiCall('/api/telegram/register-request', {
-      method: 'POST',
-      body: JSON.stringify(data)
+  async registerRequest(data: { telegram_id: string; telegram_username?: string; nama_karyawan: string; bagian: string }) {
+    const { telegram_id, telegram_username, nama_karyawan, bagian } = data;
+    if (!telegram_id || !nama_karyawan || !bagian) {
+      return { error: 'Field wajib: telegram_id, nama_karyawan, bagian' };
+    }
+    const emp = await db.execute({
+      sql: `SELECT name, position, employee_no FROM employees WHERE name = ? AND is_active = 1 LIMIT 1`,
+      args: [nama_karyawan]
     });
+    if (emp.rows.length === 0) return { error: 'Nama karyawan tidak ditemukan di database' };
+    const employee = emp.rows[0] as any;
+
+    const existing = await db.execute({
+      sql: `SELECT id, is_active FROM telegram_users WHERE telegram_id = ? LIMIT 1`,
+      args: [telegram_id]
+    });
+    if (existing.rows.length > 0) {
+      const row = existing.rows[0] as any;
+      if (row.is_active === 1) return { error: 'Telegram ID Anda sudah terdaftar dan aktif.' };
+      return { error: 'Permintaan registrasi Anda sedang menunggu persetujuan admin.' };
+    }
+
+    await db.execute({
+      sql: `INSERT INTO telegram_users (telegram_id, telegram_username, nama_karyawan, posisi, absensi, bagian, is_active)
+            VALUES (?, ?, ?, ?, ?, ?, 0)`,
+      args: [telegram_id, telegram_username || null, employee.name, employee.position, employee.employee_no, bagian]
+    });
+
+    await db.execute({
+      sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
+            VALUES ('INSERT', 'telegram_users', 0, ?, ?, 'telegram-bot')`,
+      args: [
+        `Request registrasi Telegram Bot dari ${employee.name} (@${telegram_username || telegram_id})`,
+        JSON.stringify(data)
+      ]
+    });
+
+    return { success: true, status: 'pending', message: 'Permintaan registrasi telah dikirim ke admin. Tunggu persetujuan.' };
   },
 
   async checkStatus(telegram_id: string) {
-    return apiCall(`/api/telegram/check-status?telegram_id=${telegram_id}`);
+    const result = await db.execute({
+      sql: `SELECT telegram_id, telegram_username, nama_karyawan, posisi, absensi, bagian, is_active
+            FROM telegram_users WHERE telegram_id = ? LIMIT 1`,
+      args: [telegram_id]
+    });
+    if (result.rows.length === 0) return { registered: false, is_active: 0, message: 'User belum terdaftar' };
+    const u = result.rows[0] as any;
+    return { registered: true, is_active: u.is_active, nama_karyawan: u.nama_karyawan, posisi: u.posisi, absensi: u.absensi, bagian: u.bagian, telegram_username: u.telegram_username };
   },
 
   async validateOrder(no_order: string) {
-    return apiCall(`/api/telegram/validate-order?no_order=${encodeURIComponent(no_order)}`);
+    const result = await db.execute({
+      sql: `SELECT no_sopd, nama_order FROM sopd WHERE no_sopd = ? LIMIT 1`,
+      args: [no_order]
+    });
+    if (result.rows.length === 0) return { valid: false, message: 'Order tidak ditemukan di database' };
+    const o = result.rows[0] as any;
+    return { valid: true, no_order: o.no_sopd, nama_order: o.nama_order };
   },
 
   async submitRealisasi(data: any) {
-    return apiCall('/api/telegram/realisasi', {
-      method: 'POST',
-      body: JSON.stringify(data)
+    const { telegram_id, tgl, shift, no_order_2, jenis_pekerjaan_2, realisasi } = data;
+    if (!telegram_id || !tgl || !shift || !realisasi) return { error: 'Field wajib: telegram_id, tgl, shift, realisasi' };
+
+    const userCheck = await db.execute({
+      sql: `SELECT id, nama_karyawan, posisi, absensi, bagian, is_active FROM telegram_users WHERE telegram_id = ? LIMIT 1`,
+      args: [telegram_id]
     });
+    if (userCheck.rows.length === 0) return { error: 'User tidak terdaftar. Silakan registrasi terlebih dahulu.' };
+    const user = userCheck.rows[0] as any;
+    if (user.is_active !== 1) return { error: 'Akun Anda belum disetujui admin. Tunggu persetujuan terlebih dahulu.' };
+
+    const inputDate = new Date(tgl + 'T12:00:00');
+    const today = new Date();
+    const diffDays = Math.floor((today.getTime() - inputDate.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffDays > 7) return { error: 'Tanggal terlalu jauh di masa lalu. Maksimal 7 hari ke belakang.' };
+    if (diffDays < 0) return { error: 'Tanggal tidak boleh di masa depan.' };
+
+    const defaultJam = SHIFT_JAM[String(shift)] || '';
+    const cleanTarget = cleanNumberOrText(data.target);
+    const cleanRealisasi = cleanNumberOrText(realisasi);
+    const cleanInscheet = cleanNumberOrText(data.inscheet);
+    const cleanRijek = cleanNumberOrText(data.rijek);
+    const cleanJmlPlate = cleanNumberOrText(data.jml_plate);
+
+    let namaOrder2 = data.nama_order_manual_2 || data.nama_order_2 || '';
+    if (no_order_2 && !namaOrder2) {
+      const orderCheck = await db.execute({
+        sql: `SELECT nama_order FROM sopd WHERE no_sopd = ? LIMIT 1`,
+        args: [no_order_2]
+      });
+      if (orderCheck.rows.length > 0) namaOrder2 = (orderCheck.rows[0] as any).nama_order || '';
+    }
+
+    await db.execute({
+      sql: `INSERT INTO jurnal_harian_produksi (
+        posisi, absensi, tgl, shift, nama_karyawan, bagian,
+        no_order, nama_order, jenis_pekerjaan, target,
+        no_order_2, nama_order_2, jenis_pekerjaan_2, realisasi,
+        bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala,
+        keterangan, nama_order_manual_2, is_manual_input, created_by
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+      args: [
+        user.posisi || '', user.absensi || '', tgl, String(shift), user.nama_karyawan, user.bagian,
+        no_order_2 || '', namaOrder2, jenis_pekerjaan_2 || '', cleanTarget || cleanRealisasi,
+        no_order_2 || '', namaOrder2, jenis_pekerjaan_2 || '', cleanRealisasi,
+        data.bahan_kertas || '', cleanJmlPlate, data.warna || '', cleanInscheet, cleanRijek,
+        data.jam || defaultJam, data.kendala || '', data.keterangan || '', data.nama_order_manual_2 || null,
+        'telegram-bot'
+      ]
+    });
+
+    const lastId = await db.execute({ sql: `SELECT last_insert_rowid() as id`, args: [] });
+    const newId = Number((lastId.rows[0] as any)?.id || 0);
+
+    await db.execute({
+      sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
+            VALUES ('INSERT', 'jurnal_harian_produksi', ?, ?, ?, ?)`,
+      args: [
+        newId,
+        `Input realisasi via Telegram Bot oleh ${user.nama_karyawan}`,
+        JSON.stringify({ telegram_id, tgl, shift, bagian: user.bagian, no_order: no_order_2, nama_order: namaOrder2, pekerjaan: jenis_pekerjaan_2, realisasi: cleanRealisasi }),
+        `telegram-bot-${user.bagian.toLowerCase()}`
+      ]
+    });
+
+    return {
+      success: true, id: newId,
+      data: {
+        nama_karyawan: user.nama_karyawan, tgl, shift, bagian: user.bagian,
+        no_order: no_order_2, nama_order: namaOrder2, pekerjaan: jenis_pekerjaan_2,
+        target: cleanTarget || cleanRealisasi, realisasi: cleanRealisasi
+      }
+    };
   },
 
   async getHistory(telegram_id: string, limit: number = 10) {
-    return apiCall(`/api/telegram/history?telegram_id=${telegram_id}&limit=${limit}`);
+    const userCheck = await db.execute({
+      sql: `SELECT nama_karyawan FROM telegram_users WHERE telegram_id = ? AND is_active = 1 LIMIT 1`,
+      args: [telegram_id]
+    });
+    if (userCheck.rows.length === 0) return { error: 'User tidak ditemukan atau belum disetujui' };
+    const user = userCheck.rows[0] as any;
+
+    const result = await db.execute({
+      sql: `SELECT id, tgl, shift, bagian, no_order_2, nama_order_2, jenis_pekerjaan_2,
+                   target, realisasi, bahan_kertas, warna, inscheet, rijek, jam, kendala, created_at
+            FROM jurnal_harian_produksi
+            WHERE nama_karyawan = ? AND deleted_at IS NULL
+              AND created_by LIKE 'telegram-bot%'
+              AND tgl >= date('now', '-7 days')
+            ORDER BY tgl DESC, id DESC
+            LIMIT ?`,
+      args: [user.nama_karyawan, limit]
+    });
+
+    const data = result.rows.map((row: any) => ({
+      id: row.id, tgl: row.tgl, shift: row.shift, bagian: row.bagian,
+      no_order: row.no_order_2, nama_order: row.nama_order_2, pekerjaan: row.jenis_pekerjaan_2,
+      target: row.target, realisasi: row.realisasi, bahan_kertas: row.bahan_kertas,
+      warna: row.warna, inscheet: row.inscheet, rijek: row.rijek, jam: row.jam, kendala: row.kendala, created_at: row.created_at
+    }));
+
+    return { success: true, nama_karyawan: user.nama_karyawan, data };
   }
 };

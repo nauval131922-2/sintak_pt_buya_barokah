@@ -312,12 +312,14 @@ function KeteranganEditableCell({
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function JurnalClient({
+  initData,
   canInputTarget = true,
   canInputRealisasi = true,
   canCopyJadwal = false,
   isSuperAdmin = false,
   userRole = '',
 }: {
+  initData?: { data: any[]; total: number; totalRealisasi: number; totalRijek: number };
   canInputTarget?: boolean;
   canInputRealisasi?: boolean;
   canCopyJadwal?: boolean;
@@ -325,6 +327,7 @@ export default function JurnalClient({
   userRole?: string;
 }) {
   const router = useRouter();
+  const initDone = useRef(false);
   
   // State
   const [isMounted, setIsMounted] = useState(false);
@@ -538,6 +541,14 @@ export default function JurnalClient({
   }, [startDate, endDate, isMounted]);
 
   useEffect(() => {
+    if (initData && !initDone.current) {
+      initDone.current = true;
+      setData(initData.data || []);
+      setTotalCount(initData.total || 0);
+      setTotalRealisasi(Number(initData.totalRealisasi || 0));
+      setTotalRijek(Number(initData.totalRijek || 0));
+      return;
+    }
     let active = true;
     async function loadData() {
       if (!isMounted) return;
@@ -586,7 +597,7 @@ export default function JurnalClient({
     }
     loadData();
     return () => { active = false; };
-  }, [page, debouncedQuery, refreshKey, startDate, endDate, bagianFilter, namaKaryawanFilter, noOrderFilter, belumRealisasiFilter, sorting, isMounted]);
+  }, [page, debouncedQuery, refreshKey, startDate, endDate, bagianFilter, namaKaryawanFilter, noOrderFilter, belumRealisasiFilter, sorting, isMounted, initData]);
 
   // Fetch distinct bagian & nama karyawan for dropdowns
   useEffect(() => {
