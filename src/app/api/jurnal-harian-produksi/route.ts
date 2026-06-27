@@ -153,7 +153,9 @@ export async function GET(request: NextRequest) {
     }
     batchStmts.push({ sql: sqlLastUpdated, args: [] });
 
+    const t0 = Date.now();
     const batchResults = await db.batch(batchStmts, "read");
+    console.log(`[TIMING] JHP GET batch: ${Date.now() - t0}ms | page=${page} startDate=${startDate} endDate=${endDate} bagian=${bagian || '-'} karyawan=${namaKaryawan || '-'}`);
 
     const data = batchResults[0].rows;
     const total = Number((batchResults[1].rows[0] as any).count);
