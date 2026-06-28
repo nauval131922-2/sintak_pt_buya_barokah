@@ -316,7 +316,7 @@ export default function TargetClient() {
       theme: 'grid',
       styles: { fontSize: 5, cellPadding: 0.8, lineColor: [200, 200, 200], lineWidth: 0.1, font: 'helvetica', textColor: [40, 40, 40], minCellHeight: 0 },
       headStyles: { fillColor: [245, 245, 245], textColor: [40, 40, 40], fontSize: 5, fontStyle: 'bold', halign: 'center', lineWidth: 0.2 },
-      columnStyles: { 0: { halign: 'center', cellWidth: 6 }, 1: { halign: 'center', cellWidth: 6 }, 2: { halign: 'center', cellWidth: 15 }, 3: { fontStyle: 'bold', cellWidth: 25 }, 4: { cellWidth: 22 }, 5: { cellWidth: 'auto' }, 8: { halign: 'right', fontStyle: 'bold', cellWidth: 10 } },
+      columnStyles: { 0: { halign: 'center', cellWidth: 6 }, 1: { halign: 'center', cellWidth: 6 }, 2: { halign: 'center', cellWidth: 15 }, 3: { fontStyle: 'bold', cellWidth: 25 }, 4: { cellWidth: 22 }, 5: { cellWidth: 'auto' }, 6: { fontStyle: 'bold' }, 8: { halign: 'right', fontStyle: 'bold', cellWidth: 10 } },
       alternateRowStyles: { fillColor: [252, 252, 252] },
       margin: { top: 5, left: 5, right: 5, bottom: 5 }
     });
