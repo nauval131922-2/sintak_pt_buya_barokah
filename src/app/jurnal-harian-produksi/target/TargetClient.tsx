@@ -346,7 +346,7 @@ export default function TargetClient() {
     try {
       const { blob } = await buildPdfBlob();
       const pdfjs = await import('pdfjs-dist');
-      pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+      pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 
       const pdf = await pdfjs.getDocument({ data: await blob.arrayBuffer() }).promise;
       const totalPages = pdf.numPages;
