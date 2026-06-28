@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
-import { canAccess } from '@/lib/permissions';
+import { getMergedPermissions } from '@/lib/permissions';
 import PageHeader from '@/components/PageHeader';
 import TelegramUsersClient from './TelegramUsersClient';
 
@@ -15,8 +15,9 @@ export default async function TelegramUsersPage() {
   const session = await getSession();
   if (!session?.userId) redirect('/login');
 
-  const hasAccess = session.role === 'Super Admin' || await canAccess('telegram_users');
-  if (!hasAccess) redirect('/unauthorized');
+  const roles = session.roles?.length ? session.roles : [session.role];
+  const perms = await getMergedPermissions(roles);
+  if (!perms.telegram_users) redirect('/unauthorized');
 
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-6 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-700">
