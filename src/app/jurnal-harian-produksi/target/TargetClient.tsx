@@ -611,7 +611,7 @@ export default function TargetClient() {
                       <td className="border border-gray-300 py-1 px-2 font-bold text-gray-900">{row.nama_karyawan || '–'}</td>
                       <td className="border border-gray-300 py-1 px-2 font-bold text-gray-500 whitespace-nowrap tabular-nums">{row.no_order || '–'}</td>
                       <td className="border border-gray-300 py-1 px-2 font-medium text-gray-700">{row.nama_order || '–'}</td>
-                      <td className="border border-gray-300 py-1 px-2 font-bold text-gray-700">{row.jenis_pekerjaan || '–'}</td>
+                      <td className="border border-gray-300 py-1 px-2 font-bold text-gray-900">{row.jenis_pekerjaan || '–'}</td>
                       <td className="border border-gray-300 py-1 px-2 text-gray-500">{row.keterangan || '–'}</td>
                       <td className="border border-gray-300 py-1 px-2 text-right font-black tabular-nums text-gray-900 whitespace-nowrap">
                         {row.target !== null && row.target !== '' && row.target !== undefined
