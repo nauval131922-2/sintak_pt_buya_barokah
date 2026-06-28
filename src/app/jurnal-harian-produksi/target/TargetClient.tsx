@@ -274,116 +274,64 @@ export default function TargetClient() {
     }
   }, []);
 
+  // ponytail: satu sumber kebenaran — PDF blob dipakai tombol PDF dan tombol Gambar
+  const buildPdfBlob = async (): Promise<{ blob: Blob; headerDataUrl: string }> => {
+    const headerArea = printRef.current!.querySelector('#report-header');
+    const coordArea = printRef.current!.querySelector('#report-coordinators');
+    if (!headerArea || !coordArea) throw new Error('Header or Coordinator area not found');
+
+    const headerContainer = document.createElement('div');
+    headerContainer.style.width = '1400px';
+    headerContainer.style.background = 'white';
+    headerContainer.style.padding = '0';
+    headerContainer.appendChild(headerArea.cloneNode(true));
+    headerContainer.appendChild(coordArea.cloneNode(true));
+    document.body.appendChild(headerContainer);
+    const headerDataUrl = await domToPng(headerContainer, { scale: 3, backgroundColor: '#ffffff' });
+    const headerImg = new Image();
+    headerImg.src = headerDataUrl;
+    await new Promise(r => headerImg.onload = r);
+    document.body.removeChild(headerContainer);
+
+    const headerWidthMm = 200;
+    const headerHeightMm = (headerImg.height / headerImg.width) * headerWidthMm;
+
+    const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+    doc.setProperties({ title: `Jadwal_Produksi_${dateStr}` });
+    doc.addImage(headerDataUrl, 'PNG', 5, 5, headerWidthMm, headerHeightMm, undefined, 'FAST');
+
+    const tableRows = data.map((row, i) => [
+      i + 1, row.shift || '–', getJam(row.shift), row.nama_karyawan || '–',
+      row.no_order || '–', row.nama_order || '–', row.jenis_pekerjaan || '–',
+      row.keterangan || '–',
+      row.target !== null && row.target !== '' && row.target !== undefined
+        ? !isNaN(Number(row.target)) && row.target !== '-'
+          ? Number(row.target).toLocaleString('id-ID') : row.target : '–'
+    ]);
+
+    autoTable(doc, {
+      startY: 5 + headerHeightMm + 2,
+      head: [['No.', 'Sft', 'Jam Kerja', 'Nama Karyawan', 'No. Order', 'Nama Order', 'Pekerjaan', 'Keterangan', 'Target']],
+      body: tableRows,
+      theme: 'grid',
+      styles: { fontSize: 5, cellPadding: 0.8, lineColor: [200, 200, 200], lineWidth: 0.1, font: 'helvetica', textColor: [40, 40, 40], minCellHeight: 0 },
+      headStyles: { fillColor: [245, 245, 245], textColor: [40, 40, 40], fontSize: 5, fontStyle: 'bold', halign: 'center', lineWidth: 0.2 },
+      columnStyles: { 0: { halign: 'center', cellWidth: 6 }, 1: { halign: 'center', cellWidth: 6 }, 2: { halign: 'center', cellWidth: 15 }, 3: { fontStyle: 'bold', cellWidth: 25 }, 4: { cellWidth: 22 }, 5: { cellWidth: 'auto' }, 8: { halign: 'right', fontStyle: 'bold', cellWidth: 10 } },
+      alternateRowStyles: { fillColor: [252, 252, 252] },
+      margin: { top: 5, left: 5, right: 5, bottom: 5 }
+    });
+
+    return { blob: doc.output('blob'), headerDataUrl };
+  };
+
   const handlePrint = async () => {
     if (generatingPdf || !printRef.current) return;
     setGeneratingPdf(true);
     try {
-      const doc = new jsPDF({
-        orientation: 'p',
-        unit: 'mm',
-        format: 'a4'
-      });
-
-      // Set Metadata
-      doc.setProperties({
-        title: `Jadwal_Produksi_${dateStr}`
-      });
-
-      // Capture ONLY the header section (branding + coordinators) as a high-res image
-      const headerArea = printRef.current.querySelector('#report-header');
-      const coordArea = printRef.current.querySelector('#report-coordinators');
-      
-      if (!headerArea || !coordArea) {
-        throw new Error('Header or Coordinator area not found');
-      }
-      
-      // We'll capture everything above the table
-      const headerContainer = document.createElement('div');
-      headerContainer.style.width = `1400px`;
-      headerContainer.style.background = 'white';
-      headerContainer.style.padding = '0'; // Remove padding to align with table margins
-      
-      // Clone the header and coordinator elements
-      const brandingClone = headerArea.cloneNode(true);
-      const coordClone = coordArea.cloneNode(true);
-      headerContainer.appendChild(brandingClone);
-      headerContainer.appendChild(coordClone);
-      
-      document.body.appendChild(headerContainer);
-      const headerDataUrl = await domToPng(headerContainer, { scale: 3, backgroundColor: '#ffffff' });
-      const headerImg = new Image();
-      headerImg.src = headerDataUrl;
-      await new Promise(r => headerImg.onload = r);
-      document.body.removeChild(headerContainer);
-
-      const headerWidthMm = 200; // Fixed A4 width (210) minus 5mm margins on each side
-      const headerHeightMm = (headerImg.height / headerImg.width) * headerWidthMm;
-
-      // Add the pixel-perfect header image to PDF starting at the exact same margin (5mm)
-      doc.addImage(headerDataUrl, 'PNG', 5, 5, headerWidthMm, headerHeightMm, undefined, 'FAST');
-
-      // 4. Map Data for Table
-      const tableRows = data.map((row, i) => [
-        i + 1,
-        row.shift || '–',
-        getJam(row.shift),
-        row.nama_karyawan || '–',
-        row.no_order || '–',
-        row.nama_order || '–',
-        row.jenis_pekerjaan || '–',
-        row.keterangan || '–',
-        row.target !== null && row.target !== '' && row.target !== undefined
-          ? !isNaN(Number(row.target)) && row.target !== '-'
-            ? Number(row.target).toLocaleString('id-ID')
-            : row.target
-          : '–'
-      ]);
-
-      // 5. Generate Table with autoTable
-      autoTable(doc, {
-        startY: 5 + headerHeightMm + 2, // Start below the image header
-        head: [['No.', 'Sft', 'Jam Kerja', 'Nama Karyawan', 'No. Order', 'Nama Order', 'Pekerjaan', 'Keterangan', 'Target']],
-        body: tableRows,
-        theme: 'grid',
-        styles: {
-          fontSize: 5,
-          cellPadding: 0.8,
-          lineColor: [200, 200, 200],
-          lineWidth: 0.1,
-          font: 'helvetica',
-          textColor: [40, 40, 40],
-          minCellHeight: 0
-        },
-        headStyles: {
-          fillColor: [245, 245, 245],
-          textColor: [40, 40, 40],
-          fontSize: 5,
-          fontStyle: 'bold',
-          halign: 'center',
-          lineWidth: 0.2
-        },
-        columnStyles: {
-          0: { halign: 'center', cellWidth: 6 },
-          1: { halign: 'center', cellWidth: 6 },
-          2: { halign: 'center', cellWidth: 15 },
-          3: { fontStyle: 'bold', cellWidth: 25 },
-          4: { cellWidth: 22 },
-          5: { cellWidth: 'auto' }, // Let Nama Order take remaining space
-          8: { halign: 'right', fontStyle: 'bold', cellWidth: 10 }
-        },
-        alternateRowStyles: {
-          fillColor: [252, 252, 252]
-        },
-        margin: { top: 5, left: 5, right: 5, bottom: 5 }
-      });
-
-      // 6. Output to New Tab
-      const pdfBlob = doc.output('blob');
+      const { blob } = await buildPdfBlob();
       const filename = `Jadwal_Produksi_${dateStr}.pdf`;
-      const file = new File([pdfBlob], filename, { type: 'application/pdf' });
-      const blobUrl = URL.createObjectURL(file);
-      window.open(blobUrl, '_blank');
-
+      const file = new File([blob], filename, { type: 'application/pdf' });
+      window.open(URL.createObjectURL(file), '_blank');
     } catch (err) {
       console.error('Failed to generate PDF', err);
       alert('Gagal membuat PDF.');
@@ -391,94 +339,35 @@ export default function TargetClient() {
       setGeneratingPdf(false);
     }
   };
+
   const handleDownloadImage = async () => {
     if (!printRef.current || savingImage) return;
     setSavingImage(true);
     try {
-      // Temporarily fix width at 1400px for consistent capture across screens
-      const scale = 2;
-      const origWidth = printRef.current.style.width;
-      printRef.current.style.width = '1400px';
-      const dataUrl = await domToPng(printRef.current, {
-        scale,
-        backgroundColor: '#ffffff',
-      });
-      printRef.current.style.width = origWidth;
+      const { blob } = await buildPdfBlob();
+      const pdfjs = await import('pdfjs-dist');
+      pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
-      const img = new Image();
-      img.src = dataUrl;
-      await new Promise((resolve) => (img.onload = resolve));
+      const pdf = await pdfjs.getDocument({ data: await blob.arrayBuffer() }).promise;
+      const totalPages = pdf.numPages;
 
-      // Get precise header position from DOM
-      const headerEl = printRef.current.querySelector('thead');
-      const containerRect = printRef.current.getBoundingClientRect();
-      const headerRect = headerEl?.getBoundingClientRect();
-      
-      const headerTopPx = headerRect ? (headerRect.top - containerRect.top) * scale : 0;
-      const headerHeightPx = headerRect ? headerRect.height * scale : 40;
-
-      // Calculate A4 dimensions in pixels
-      const a4PageHeightPx = (img.width / 210) * 297;
-      let totalPages = Math.ceil(img.height / a4PageHeightPx);
-
-      for (let i = 0; i < totalPages; i++) {
-        let startY = i * a4PageHeightPx;
-        let currentChunkHeight = a4PageHeightPx;
-        let drawOffset = 0;
-
-        // If not the first page, we repeat header and adjust start
-        if (i > 0) {
-          drawOffset = headerHeightPx;
-          // Shift start slightly back to avoid gaps caused by repeating headers
-          startY = (i * a4PageHeightPx) - (i * headerHeightPx);
-        }
-        
-        // Merge tiny last pages
-        if (i === totalPages - 2) {
-          const lastPageHeight = img.height - (startY + currentChunkHeight);
-          if (lastPageHeight < a4PageHeightPx * 0.2) {
-            currentChunkHeight = img.height - startY;
-            totalPages = i + 1; 
-          }
-        } else if (i === totalPages - 1) {
-          currentChunkHeight = img.height - startY;
-        }
-
+      for (let p = 1; p <= totalPages; p++) {
+        const page = await pdf.getPage(p);
+        const viewport = page.getViewport({ scale: 4 });
         const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = currentChunkHeight + (i > 0 ? headerHeightPx : 0);
-        
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d')!;
+        await page.render({ canvasContext: ctx, viewport }).promise;
 
-          if (i > 0 && headerRect) {
-            ctx.drawImage(
-              img, 
-              0, headerTopPx, img.width, headerHeightPx, 
-              0, 0, img.width, headerHeightPx
-            );
-          }
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL('image/png');
+        link.download = `Jadwal_Produksi_${dateStr}_Hal_${p}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
 
-          ctx.drawImage(
-            img, 
-            0, startY, img.width, currentChunkHeight, 
-            0, drawOffset, img.width, currentChunkHeight
-          );
-          
-          const pageDataUrl = canvas.toDataURL('image/png');
-          const link = document.createElement('a');
-          link.href = pageDataUrl;
-          link.download = `Jadwal_Produksi_${dateStr}_Hal_${i + 1}.png`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        }
-
-        if (totalPages > 1) {
-          await new Promise(r => setTimeout(r, 600));
-        }
+        if (totalPages > 1 && p < totalPages) await new Promise(r => setTimeout(r, 600));
       }
     } catch (err) {
       console.error('Failed to download images', err);
