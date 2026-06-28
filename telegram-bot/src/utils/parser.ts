@@ -1,4 +1,6 @@
 export interface RealisasiData {
+  nama_karyawan?: string;
+  absensi?: string;
   tgl: string;
   shift: string;
   order?: string;
@@ -32,7 +34,11 @@ export function parseRealisasiTemplate(text: string): RealisasiData | null {
     if (!value) continue;
 
     // Map keys to data fields
-    if (key === 'tgl' || key === 'tanggal') {
+    if (key === 'nama' || key === 'nama karyawan' || key === 'karyawan' || key === 'operator') {
+      data.nama_karyawan = value;
+    } else if (key === 'absensi' || key === 'id karyawan' || key === 'employee no') {
+      data.absensi = value.replace(/[^0-9]/g, '');
+    } else if (key === 'tgl' || key === 'tanggal') {
       data.tgl = value;
     } else if (key === 'shift') {
       data.shift = value.replace(/[^0-9]/g, ''); // Extract number only

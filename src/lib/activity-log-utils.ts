@@ -1,3 +1,5 @@
+import { formatLastUpdate } from './date-utils';
+
 export type ActivityLogSource = 'active' | 'archive';
 
 export type DatePreset = 'today' | '7d' | 'month' | 'last_month';
@@ -145,6 +147,37 @@ export interface FieldDiff {
   after: string;
 }
 
+function formatAuditFieldValue(key: string, value: unknown): string {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string' && /(?:^|_)at$/.test(key)) {
+    const formatted = formatLastUpdate(value);
+    return formatted || value;
+  }
+  if (typeof value === 'object') {
+    return JSON.stringify(value);
+  }
+  return String(value);
+}
+
+function formatAuditValueDeep(key: string, value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map((item) => formatAuditValueDeep(key, item));
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([childKey, childValue]) => [
+        childKey,
+        formatAuditValueDeep(childKey, childValue),
+      ])
+    );
+  }
+  return /(?:^|_)at$/.test(key) ? formatAuditFieldValue(key, value) : value;
+}
+
+export function stringifyAuditData(data: unknown): string {
+  return JSON.stringify(formatAuditValueDeep('', data), null, 2);
+}
+
 /** Bandingkan snapshot log dengan data live (untuk UPDATE) */
 export function computeSnapshotLiveDiff(
   snapshot: Record<string, unknown> | null,
@@ -162,8 +195,14 @@ export function computeSnapshotLiveDiff(
     if (sa !== sb) {
       diffs.push({
         key,
-        before: sa.length > 120 ? sa.slice(0, 120) + '…' : sa,
-        after: sb.length > 120 ? sb.slice(0, 120) + '…' : sb,
+        before: (() => {
+          const formatted = formatAuditFieldValue(key, a);
+          return formatted.length > 120 ? formatted.slice(0, 120) + '...' : formatted;
+        })(),
+        after: (() => {
+          const formatted = formatAuditFieldValue(key, b);
+          return formatted.length > 120 ? formatted.slice(0, 120) + '...' : formatted;
+        })(),
       });
     }
   }
@@ -197,8 +236,8 @@ export function computeExplicitDiff(raw: Record<string, unknown> | null): FieldD
     .filter(([, a, b]) => JSON.stringify(a) !== JSON.stringify(b))
     .map(([key, before, after]) => ({
       key,
-      before: String(before ?? ''),
-      after: String(after ?? ''),
+      before: formatAuditFieldValue(key, before),
+      after: formatAuditFieldValue(key, after),
     }))
     .slice(0, 40);
 }

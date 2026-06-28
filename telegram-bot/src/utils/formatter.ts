@@ -17,6 +17,9 @@ export function formatRealisasiSummary(data: any): string {
   const percentage = data.target && data.realisasi 
     ? Math.round((parseInt(data.realisasi) / parseInt(data.target)) * 100)
     : null;
+  const inputByLine = data.input_by && data.input_by !== data.nama_karyawan
+    ? `📝 Diinput oleh: ${data.input_by}`
+    : '';
 
   return `
 ✅ Data realisasi berhasil disimpan!
@@ -24,6 +27,7 @@ export function formatRealisasiSummary(data: any): string {
 📊 Ringkasan:
 ━━━━━━━━━━━━━━━━━━
 👤 Nama      : ${data.nama_karyawan}
+${inputByLine}
 📅 Tanggal   : ${formatDate(data.tgl)}
 ⏰ Shift     : ${data.shift}
 🏭 Bagian    : ${data.bagian}
@@ -46,6 +50,7 @@ export function formatHistoryItem(item: any, index: number): string {
 
   return `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+👤 ${item.nama_karyawan || '-'}
 📅 ${formatDate(item.tgl)} | Shift ${item.shift}
 🏭 ${item.bagian}
 📦 ${item.no_order || '-'} - ${item.pekerjaan || '-'}
@@ -53,12 +58,12 @@ export function formatHistoryItem(item: any, index: number): string {
   `.trim();
 }
 
-export function formatHistoryList(data: any[]): string {
+export function formatHistoryList(data: any[], title = 'Riwayat Realisasi'): string {
   if (data.length === 0) {
-    return '📊 Belum ada riwayat realisasi dalam 7 hari terakhir.';
+    return `📊 Belum ada riwayat realisasi dalam 7 hari terakhir.`;
   }
 
-  const header = `📊 Riwayat Realisasi Anda (7 hari terakhir):\n`;
+  const header = `📊 ${title} (7 hari terakhir):\n`;
   const items = data.map((item, i) => formatHistoryItem(item, i)).join('\n');
   
   return header + items + '\n━━━━━━━━━━━━━━━━━━━━━━━━━━━';
@@ -73,6 +78,8 @@ export function getHelpText(bagian: string): string {
 Ketik /input lalu kirim template berikut:
 
 \`\`\`
+Nama: Nauval Gunawan
+Absensi: 190
 Tgl: 2026-06-26
 Shift: 1
 Order: SO-12345
@@ -88,6 +95,8 @@ Kendala: -
 • Realisasi (angka)
 
 📋 Field Optional:
+• Nama
+• Absensi (opsional, kalau Nama tidak diketahui)
 • Order, Pekerjaan, Target
 • Bahan, Warna, Inscheet, Rijek, Plate
 • Jam, Kendala, Keterangan
@@ -95,10 +104,13 @@ Kendala: -
 ⚡ Tips:
 • Tanggal bisa hingga 7 hari ke belakang
 • Order akan divalidasi otomatis
-• Posisi & Absensi terisi otomatis
+• Pakai \`/cari <nama>\` jika tidak ingat nama lengkap
+• Cukup isi \`Nama:\` saja, absensi akan otomatis terisi dari database
 
 📌 Perintah Lain:
-/start - Registrasi
+/start - Menu utama
+/register - Daftar ke bot
+/cari - Cari karyawan
 /history - Lihat riwayat
 /help - Bantuan ini
 

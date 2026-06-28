@@ -100,7 +100,7 @@ export default function MasterPekerjaanUpload() {
 
          // Cari baris Sub-Kategori (Level 2)
          // Biasanya baris yang punya pola prefix 2 tingkat (misal A.a atau 1.1)
-         const hasSubPattern = rowStrings.some(v => /^[A-Z0-9]\.[a-z0-9]\.?$/i.test(v));
+          const hasSubPattern = rowStrings.some(v => /^[A-Z0-9]+\.[A-Za-z0-9]+\.[A-Za-z0-9]+\.?$/.test(v));
          if (hasSubPattern && subCategoryRowData.length === 0 && row !== categoryRowData) {
            subCategoryRowData = row;
            continue;
@@ -108,7 +108,7 @@ export default function MasterPekerjaanUpload() {
 
          // Cari baris Grup (Level 3)
          // Biasanya baris yang punya pola prefix 3 tingkat (misal A.a.a atau 1.1.1)
-         const hasGroupPattern = rowStrings.some(v => /^[A-Z0-9]\.[a-z0-9]\.[a-z0-9]\.?$/i.test(v));
+          const hasGroupPattern = rowStrings.some(v => /^[A-Z0-9]+\.[A-Za-z0-9]+\.[A-Za-z0-9]+\.[A-Za-z0-9]+\.?$/.test(v));
          if (hasGroupPattern && groupRowData.length === 0 && row !== categoryRowData && row !== subCategoryRowData) {
            groupRowData = row;
            continue;
@@ -208,19 +208,20 @@ export default function MasterPekerjaanUpload() {
       // 3. Scan Data Rows (Row 9 onwards)
       const items: any[] = [];
       // Pattern matches any depth like A.a.a.01 or A.a.c.11.01.a
-      const codeRegex = /^[A-Z](?:\.[a-z0-9]+)+$/i;
+      const codeRegex = /^[A-Z0-9]+(?:\.[A-Za-z0-9]+)+$/;
       // Track dynamic offsets for all specialized columns per column block
       const columnOffsetsAtCol: Record<number, Record<string, number | null>> = {};
       
       // Pre-scan all header rows to find column offsets robustly
-      for (let c = 0; c < maxCols; c++) {
-        const val = (groupRowData[c] || '').toString().trim();
-        if (val && /^[A-Z]\.[a-z0-9]\.[a-z0-9]\.?$/i.test(val)) {
-           const offsets: Record<string, number | null> = {};
-           for (let i = 1; i <= 50; i++) {
-             // Stop scanning if we hit the territory of the next group column
-             const nextGroupVal = String(groupRowData[c + i] || '').trim();
-             if (/^[A-Z]\.[a-z0-9]\.[a-z0-9]\.?$/i.test(nextGroupVal)) break;
+       const groupCodeRegex = /^[A-Z0-9]+\.[A-Za-z0-9]+\.[A-Za-z0-9]+\.[A-Za-z0-9]+\.?$/;
+       for (let c = 0; c < maxCols; c++) {
+         const val = (groupRowData[c] || '').toString().trim();
+         if (val && groupCodeRegex.test(val)) {
+            const offsets: Record<string, number | null> = {};
+            for (let i = 1; i <= 50; i++) {
+              // Stop scanning if we hit the territory of the next group column
+              const nextGroupVal = String(groupRowData[c + i] || '').trim();
+              if (groupCodeRegex.test(nextGroupVal)) break;
 
              // Scan ALL header rows (0–7) for this column offset
              const headerVals: string[] = [];
@@ -265,12 +266,12 @@ export default function MasterPekerjaanUpload() {
         for (let c = 0; c < row.length; c++) {
           const val = (row[c] || '').toString().trim();
           
-          // DETECT INLINE GROUP HEADERS (e.g., A.a.c or A.a.c.)
-          if (val && /^[A-Z]\.[a-z0-9]\.[a-z0-9]\.?$/i.test(val)) {
+          // DETECT INLINE GROUP HEADERS (e.g., A.a.c or 01.A.a.a.)
+          if (val && /^[A-Z0-9]+\.[A-Za-z0-9]+\.[A-Za-z0-9]+\.[A-Za-z0-9]+\.?$/.test(val)) {
              let finalGroup = val;
              const nextGv = (row[c+1] || '').toString().trim();
              // Ensure the next cell isn't a column header or another code
-             if (nextGv && !/^[A-Z](?:\.[a-z0-9]+)+$/i.test(nextGv) && !['TARGET', 'KTT', 'STANDART'].includes(nextGv.toUpperCase())) {
+             if (nextGv && !/^[A-Z0-9]+(?:\.[A-Za-z0-9]+)+$/.test(nextGv) && !['TARGET', 'KTT', 'STANDART'].includes(nextGv.toUpperCase())) {
                finalGroup = val + " " + nextGv;
              }
              groupAtCol[c] = finalGroup;
@@ -279,7 +280,7 @@ export default function MasterPekerjaanUpload() {
              continue; // Skip processing this as a data row
           }
 
-          if (val && codeRegex.test(val)) {
+          if (val && typeof row[c] === 'string' && codeRegex.test(val)) {
             // Found a code! The name is in the next column
             const code = val;
             const name = (row[c + 1] || '').toString().trim();

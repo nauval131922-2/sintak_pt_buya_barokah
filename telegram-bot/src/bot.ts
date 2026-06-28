@@ -1,12 +1,13 @@
-import { Bot } from 'grammy';
+import { Bot, Context } from 'grammy';
 import * as dotenv from 'dotenv';
-import { handleStart, handleRegistrationInput, userStates } from './handlers/start';
+import { handleStart } from './handlers/start';
+import { handleRegister, handleRegistrationInput, userStates } from './handlers/register';
 import { handleInputCommand, handleInputTemplate, inputStates } from './handlers/input';
 import { handleHistory } from './handlers/history';
 import { handleHelp } from './handlers/help';
+import { handleSearch } from './handlers/search';
 
-// Load environment variables
-dotenv.config();
+dotenv.config({ path: `${process.cwd()}/.env` });
 
 // Set timezone
 process.env.TZ = 'Asia/Jakarta';
@@ -25,47 +26,43 @@ const bot = new Bot(BOT_TOKEN);
 
 // Command handlers
 bot.command('start', handleStart);
+bot.command('register', handleRegister);
 bot.command('input', handleInputCommand);
+bot.command('cari', handleSearch);
 bot.command('history', handleHistory);
 bot.command('help', handleHelp);
 
-// Text message handler (for registration and input template)
+// Text message handler
 bot.on('message:text', async (ctx) => {
   const telegramId = ctx.from?.id;
   const text = ctx.message.text;
 
-  console.log('[BOT] Text message received:', { telegramId, text: text.substring(0, 50) });
-
   if (!telegramId || !text) return;
 
-  // Skip if text is a command
-  if (text.startsWith('/')) {
-    console.log('[BOT] Skipping command');
-    return;
-  }
+  // Skip commands
+  if (text.startsWith('/')) return;
 
-  // Check if user is in registration flow
+  // Registration flow
   const userState = userStates.get(telegramId);
-  console.log('[BOT] User state:', userState);
-  
   if (userState && userState.state === 'waiting_nama') {
-    console.log('[BOT] Routing to handleRegistrationInput');
     return handleRegistrationInput(ctx);
   }
 
-  // Check if user is in input flow or text contains template
+  // Input flow
   const inputState = inputStates.get(telegramId);
   const isTemplate = text.includes('Tgl:') && text.includes('Shift:');
-  
+
   if (inputState || isTemplate) {
     return handleInputTemplate(ctx);
   }
 
-  // Default response for unrecognized text
+  // Default
   await ctx.reply(
     `ℹ️ Perintah tidak dikenali.\n\n` +
     `Gunakan:\n` +
-    `/start - Registrasi\n` +
+    `/start - Menu utama\n` +
+    `/register - Daftar ke bot\n` +
+    `/cari - Cari karyawan\n` +
     `/input - Input realisasi\n` +
     `/history - Lihat riwayat\n` +
     `/help - Bantuan`
@@ -84,7 +81,6 @@ bot.start({
   onStart: (botInfo) => {
     console.log(`✅ Bot started: @${botInfo.username}`);
     console.log(`📍 Bagian: ${BAGIAN}`);
-    console.log(`🔗 SINTAK API: ${process.env.SINTAK_API_URL}`);
   }
 });
 
@@ -97,3 +93,5 @@ process.once('SIGTERM', () => {
   console.log('\n🛑 Stopping bot...');
   bot.stop();
 });
+
+export { userStates, inputStates };

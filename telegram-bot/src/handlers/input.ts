@@ -6,7 +6,14 @@ import { formatRealisasiSummary } from '../utils/formatter';
 const BAGIAN = process.env.BAGIAN || 'SETTING';
 
 // Store user state (waiting for template)
-const inputStates = new Map<number, { state: string }>();
+type ParsedRealisasiData = ReturnType<typeof parseRealisasiTemplate>;
+
+type InputState = {
+  state: 'waiting_template' | 'confirm_manual_order';
+  pendingData?: ParsedRealisasiData;
+};
+
+const inputStates = new Map<number, InputState>();
 
 export async function handleInputCommand(ctx: Context) {
   const telegramId = ctx.from?.id;
@@ -38,6 +45,7 @@ export async function handleInputCommand(ctx: Context) {
       `📝 Kirim template realisasi Anda:\n\n` +
       `Contoh:\n` +
       `\`\`\`\n` +
+      `Nama: Nauval Gunawan\n` +
       `Tgl: 2026-06-26\n` +
       `Shift: 1\n` +
       `Order: SO-12345\n` +
@@ -47,6 +55,7 @@ export async function handleInputCommand(ctx: Context) {
       `Kendala: -\n` +
       `\`\`\`\n\n` +
       `Field wajib: Tgl, Shift, Realisasi\n\n` +
+      `Field Nama opsional untuk input atas nama karyawan lain. Cukup isi Nama saja, absensi otomatis terisi dari database.\n\n` +
       `Ketik /help untuk panduan lengkap.`,
       { parse_mode: 'Markdown' }
     );
@@ -64,11 +73,48 @@ export async function handleInputTemplate(ctx: Context) {
   if (!telegramId || !text) return;
 
   const userState = inputStates.get(telegramId);
+  const normalizedText = text.trim().toLowerCase();
   
   // Cek apakah text mengandung template (ada "Tgl:" dan "Shift:")
   const isTemplate = text.includes('Tgl:') && text.includes('Shift:');
   
   if (!userState && !isTemplate) return;
+
+  if (userState?.state === 'confirm_manual_order') {
+    try {
+      const status = await api.checkStatus(String(telegramId));
+
+      if (!status.registered || status.is_active !== 1) {
+        inputStates.delete(telegramId);
+        return ctx.reply(`❌ Anda belum terdaftar atau belum disetujui. Gunakan /start`);
+      }
+
+      if (normalizedText === 'lanjut') {
+        if (!userState.pendingData) {
+          inputStates.delete(telegramId);
+          return ctx.reply(`❌ Data template sebelumnya tidak ditemukan. Kirim ulang template dengan /input.`);
+        }
+
+        await submitRealisasi(ctx, userState.pendingData, status);
+        inputStates.delete(telegramId);
+        return;
+      }
+
+      if (isTemplate) {
+        inputStates.set(telegramId, { state: 'waiting_template' });
+      } else {
+        return ctx.reply(
+          `⚠️ Balas dengan "lanjut" untuk tetap simpan order manual, atau kirim template baru untuk koreksi.`
+        );
+      }
+    } catch (error: any) {
+      console.error('[INPUT_CONFIRM] Error:', error);
+      inputStates.delete(telegramId);
+      return ctx.reply(`❌ Gagal memproses konfirmasi: ${error.message}`);
+    }
+  }
+
+  let shouldClearState = true;
 
   try {
     // Cek user aktif
@@ -116,7 +162,8 @@ export async function handleInputTemplate(ctx: Context) {
             `Ketik "lanjut" untuk tetap simpan, atau kirim template baru untuk koreksi.`
           );
           // Store data for confirmation
-          inputStates.set(telegramId, { state: 'confirm_manual_order' });
+          inputStates.set(telegramId, { state: 'confirm_manual_order', pendingData: data });
+          shouldClearState = false;
           return;
         }
       } catch (err) {
@@ -131,7 +178,9 @@ export async function handleInputTemplate(ctx: Context) {
     console.error('[INPUT_TEMPLATE] Error:', error);
     await ctx.reply(`❌ Gagal memproses template: ${error.message}`);
   } finally {
-    inputStates.delete(telegramId);
+    if (shouldClearState) {
+      inputStates.delete(telegramId);
+    }
   }
 }
 
@@ -141,6 +190,8 @@ async function submitRealisasi(ctx: Context, data: any, userStatus: any) {
 
     const payload = {
       telegram_id: String(ctx.from?.id),
+      nama_karyawan: data.nama_karyawan || '',
+      absensi: data.absensi || '',
       tgl: data.tgl,
       shift: data.shift,
       no_order_2: data.order || '',

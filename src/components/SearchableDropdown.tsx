@@ -148,7 +148,7 @@ export default function SearchableDropdown({
       data-dropdown-id={id}
     >
       {label && (
-        <span className="block text-[13px] font-semibold text-gray-500 mb-2 ml-1 tracking-tight select-none">
+        <span className={`block font-semibold text-gray-500 ml-1 tracking-tight select-none ${compact ? 'text-[11px] mb-1' : 'text-[13px] mb-2'}`}>
           {label}
         </span>
       )}

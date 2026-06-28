@@ -8,13 +8,12 @@ export async function handleHistory(ctx: Context) {
   if (!telegramId) return;
 
   try {
-    // Cek user aktif
     const status = await api.checkStatus(String(telegramId));
 
     if (!status.registered) {
       return ctx.reply(
         `❌ Anda belum terdaftar.\n\n` +
-        `Gunakan /start untuk registrasi terlebih dahulu.`
+        `Gunakan /register untuk daftar.`
       );
     }
 
@@ -27,13 +26,9 @@ export async function handleHistory(ctx: Context) {
 
     await ctx.reply('🔍 Mengambil riwayat realisasi...');
 
-    const result = await api.getHistory(String(telegramId), 10);
+    const result = await api.getAllHistory(10);
 
-    if (!result.success) {
-      throw new Error(result.error || 'Gagal mengambil riwayat');
-    }
-
-    const historyText = formatHistoryList(result.data);
+    const historyText = formatHistoryList(result.data, 'Riwayat Semua Realisasi Bot');
     await ctx.reply(historyText);
 
   } catch (error: any) {

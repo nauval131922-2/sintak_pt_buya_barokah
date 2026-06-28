@@ -28,6 +28,7 @@ import {
   formatDateStrId,
   type ActivityLogSource,
   computeExplicitDiff,
+  stringifyAuditData,
 } from '@/lib/activity-log-utils';
 import type { ActivityLogSortField } from '@/lib/activity-log-query';
 import {
@@ -918,18 +919,18 @@ export default function ActivityLogClient({
                       let afterJson: string | null = null;
                       if (rawParsed) {
                         if (log.action_type === 'INSERT') {
-                          afterJson = JSON.stringify(rawParsed, null, 2);
+                          afterJson = stringifyAuditData(rawParsed);
                         } else if (log.action_type === 'DELETE') {
-                          beforeJson = JSON.stringify(rawParsed, null, 2);
+                          beforeJson = stringifyAuditData(rawParsed);
                         } else if (log.action_type === 'UPDATE') {
                           if (rawParsed.before && rawParsed.after) {
-                            beforeJson = JSON.stringify(rawParsed.before, null, 2);
-                            afterJson = JSON.stringify(rawParsed.after, null, 2);
+                            beforeJson = stringifyAuditData(rawParsed.before);
+                            afterJson = stringifyAuditData(rawParsed.after);
                           } else {
-                            afterJson = JSON.stringify(rawParsed, null, 2);
+                            afterJson = stringifyAuditData(rawParsed);
                           }
                         } else {
-                          afterJson = JSON.stringify(rawParsed, null, 2);
+                          afterJson = stringifyAuditData(rawParsed);
                         }
                       }
                       return (

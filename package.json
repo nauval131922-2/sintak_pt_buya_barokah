@@ -15,7 +15,7 @@
   "dependencies": {
     "@libsql/client": "^0.17.3",
     "@tanstack/react-table": "^8.21.3",
-    "@tanstack/react-virtual": "^3.13.22",
+    "@tanstack/react-virtual": "^3.14.4",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "bcryptjs": "^3.0.3",

@@ -43,6 +43,7 @@ const MODULE_TO_ROUTE: Array<{ key: string; route: string }> = [
   { key: 'activity_log_view',     route: '/log-aktivitas' },
   { key: 'activity_log',          route: '/log-aktivitas' },
   { key: 'produksi_jhp',          route: '/jurnal-harian-produksi' },
+  { key: 'telegram_users',        route: '/settings/telegram-users' },
   { key: 'stok_master_barang',    route: '/data-digit/stok/master-barang' },
 ];
 

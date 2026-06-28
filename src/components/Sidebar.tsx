@@ -34,6 +34,7 @@ import {
   BookOpen,
   History,
   CheckCircle,
+  MessageSquare,
 } from 'lucide-react';
 import type { PermissionMap } from '@/lib/permissions-constants';
 
@@ -637,6 +638,16 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                 label="Penjualan"
                 icon={<TrendingUp size={18} />}
                 items={[{ label: 'Rekap Sales Order Barang', href: '/rekap-sales-order', icon: <FileCheck size={16} /> }]}
+              />
+            )}
+
+            {(user?.role === 'Super Admin' || canAccess('telegram_users')) && (
+              <AccordionMenu
+                label="Telegram"
+                icon={<MessageSquare size={18} />}
+                items={[
+                  { label: 'Telegram Users', href: '/settings/telegram-users', icon: <MessageSquare size={14} /> },
+                ]}
               />
             )}
 

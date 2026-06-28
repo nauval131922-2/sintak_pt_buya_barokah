@@ -27,6 +27,38 @@ export const api = {
     return { valid: true, nama_karyawan: e.name, posisi: e.position, absensi: e.employee_no, department: e.department };
   },
 
+  async findKaryawan(query: string, bagian?: string, limit: number = 10) {
+    const trimmed = String(query || '').trim();
+    if (!trimmed) return { success: true, data: [] };
+
+    const whereParts = ['is_active = 1', '(name LIKE ? OR employee_no LIKE ?)'];
+    const args: any[] = [`%${trimmed}%`, `%${trimmed}%`];
+
+    if (bagian) {
+      whereParts.push('UPPER(department) = ?');
+      args.push(String(bagian).trim().toUpperCase());
+    }
+
+    const result = await db.execute({
+      sql: `SELECT name, position, employee_no, department
+            FROM employees
+            WHERE ${whereParts.join(' AND ')}
+            ORDER BY CASE WHEN employee_no = ? THEN 0 WHEN name = ? THEN 1 ELSE 2 END, name ASC
+            LIMIT ?`,
+      args: [...args, trimmed, trimmed, limit]
+    });
+
+    return {
+      success: true,
+      data: result.rows.map((row: any) => ({
+        nama_karyawan: row.name,
+        posisi: row.position,
+        absensi: row.employee_no,
+        department: row.department,
+      }))
+    };
+  },
+
   async registerRequest(data: { telegram_id: string; telegram_username?: string; nama_karyawan: string; bagian: string }) {
     const { telegram_id, telegram_username, nama_karyawan, bagian } = data;
     if (!telegram_id || !nama_karyawan || !bagian) {
@@ -89,7 +121,7 @@ export const api = {
   },
 
   async submitRealisasi(data: any) {
-    const { telegram_id, tgl, shift, no_order_2, jenis_pekerjaan_2, realisasi } = data;
+    const { telegram_id, tgl, shift, no_order_2, jenis_pekerjaan_2, realisasi, nama_karyawan, absensi } = data;
     if (!telegram_id || !tgl || !shift || !realisasi) return { error: 'Field wajib: telegram_id, tgl, shift, realisasi' };
 
     const userCheck = await db.execute({
@@ -99,6 +131,46 @@ export const api = {
     if (userCheck.rows.length === 0) return { error: 'User tidak terdaftar. Silakan registrasi terlebih dahulu.' };
     const user = userCheck.rows[0] as any;
     if (user.is_active !== 1) return { error: 'Akun Anda belum disetujui admin. Tunggu persetujuan terlebih dahulu.' };
+
+    let targetEmployee = user;
+    const requestedAbsensi = String(absensi || '').trim();
+    const requestedNama = String(nama_karyawan || '').trim();
+    if (requestedNama || (requestedAbsensi && requestedNama !== user.nama_karyawan)) {
+      let employee: any = null;
+
+      if (requestedNama) {
+        const byName = await db.execute({
+          sql: `SELECT name, position, employee_no, department FROM employees WHERE name = ? AND is_active = 1 LIMIT 1`,
+          args: [requestedNama]
+        });
+        if (byName.rows.length === 0) {
+          return { error: `Nama karyawan "${requestedNama}" tidak ditemukan atau tidak aktif.` };
+        }
+        employee = byName.rows[0] as any;
+      }
+
+      if (!employee && requestedAbsensi) {
+        const byAbsensi = await db.execute({
+          sql: `SELECT name, position, employee_no, department FROM employees WHERE employee_no = ? AND is_active = 1 LIMIT 1`,
+          args: [requestedAbsensi]
+        });
+        if (byAbsensi.rows.length === 0) {
+          return { error: `Absensi "${requestedAbsensi}" tidak ditemukan atau tidak aktif.` };
+        }
+        employee = byAbsensi.rows[0] as any;
+      }
+
+      if (!employee) {
+        return { error: 'Karyawan target tidak ditemukan.' };
+      }
+
+      targetEmployee = {
+        ...user,
+        nama_karyawan: employee.name,
+        posisi: employee.position,
+        absensi: employee.employee_no,
+      };
+    }
 
     const inputDate = new Date(tgl + 'T12:00:00');
     const today = new Date();
@@ -131,7 +203,7 @@ export const api = {
         keterangan, nama_order_manual_2, is_manual_input, created_by
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
       args: [
-        user.posisi || '', user.absensi || '', tgl, String(shift), user.nama_karyawan, user.bagian,
+        targetEmployee.posisi || '', targetEmployee.absensi || '', tgl, String(shift), targetEmployee.nama_karyawan, user.bagian,
         no_order_2 || '', namaOrder2, jenis_pekerjaan_2 || '', cleanTarget || cleanRealisasi,
         no_order_2 || '', namaOrder2, jenis_pekerjaan_2 || '', cleanRealisasi,
         data.bahan_kertas || '', cleanJmlPlate, data.warna || '', cleanInscheet, cleanRijek,
@@ -148,8 +220,8 @@ export const api = {
             VALUES ('INSERT', 'jurnal_harian_produksi', ?, ?, ?, ?)`,
       args: [
         newId,
-        `Input realisasi via Telegram Bot oleh ${user.nama_karyawan}`,
-        JSON.stringify({ telegram_id, tgl, shift, bagian: user.bagian, no_order: no_order_2, nama_order: namaOrder2, pekerjaan: jenis_pekerjaan_2, realisasi: cleanRealisasi }),
+        `Input realisasi via Telegram Bot oleh ${user.nama_karyawan}${targetEmployee.nama_karyawan !== user.nama_karyawan ? ` untuk ${targetEmployee.nama_karyawan}` : ''}`,
+        JSON.stringify({ telegram_id, input_by: user.nama_karyawan, nama_karyawan: targetEmployee.nama_karyawan, tgl, shift, bagian: user.bagian, no_order: no_order_2, nama_order: namaOrder2, pekerjaan: jenis_pekerjaan_2, realisasi: cleanRealisasi }),
         `telegram-bot-${user.bagian.toLowerCase()}`
       ]
     });
@@ -157,9 +229,10 @@ export const api = {
     return {
       success: true, id: newId,
       data: {
-        nama_karyawan: user.nama_karyawan, tgl, shift, bagian: user.bagian,
+        nama_karyawan: targetEmployee.nama_karyawan, tgl, shift, bagian: user.bagian,
         no_order: no_order_2, nama_order: namaOrder2, pekerjaan: jenis_pekerjaan_2,
-        target: cleanTarget || cleanRealisasi, realisasi: cleanRealisasi
+        target: cleanTarget || cleanRealisasi, realisasi: cleanRealisasi,
+        input_by: user.nama_karyawan
       }
     };
   },
@@ -173,7 +246,7 @@ export const api = {
     const user = userCheck.rows[0] as any;
 
     const result = await db.execute({
-      sql: `SELECT id, tgl, shift, bagian, no_order_2, nama_order_2, jenis_pekerjaan_2,
+      sql: `SELECT id, tgl, shift, bagian, nama_karyawan, no_order_2, nama_order_2, jenis_pekerjaan_2,
                    target, realisasi, bahan_kertas, warna, inscheet, rijek, jam, kendala, created_at
             FROM jurnal_harian_produksi
             WHERE nama_karyawan = ? AND deleted_at IS NULL
@@ -185,12 +258,35 @@ export const api = {
     });
 
     const data = result.rows.map((row: any) => ({
-      id: row.id, tgl: row.tgl, shift: row.shift, bagian: row.bagian,
+      id: row.id, tgl: row.tgl, shift: row.shift, bagian: row.bagian, nama_karyawan: row.nama_karyawan,
       no_order: row.no_order_2, nama_order: row.nama_order_2, pekerjaan: row.jenis_pekerjaan_2,
       target: row.target, realisasi: row.realisasi, bahan_kertas: row.bahan_kertas,
       warna: row.warna, inscheet: row.inscheet, rijek: row.rijek, jam: row.jam, kendala: row.kendala, created_at: row.created_at
     }));
 
     return { success: true, nama_karyawan: user.nama_karyawan, data };
+  },
+
+  async getAllHistory(limit: number = 20) {
+    const result = await db.execute({
+      sql: `SELECT id, tgl, shift, bagian, nama_karyawan, no_order_2, nama_order_2, jenis_pekerjaan_2,
+                   target, realisasi, bahan_kertas, warna, inscheet, rijek, jam, kendala, created_at
+            FROM jurnal_harian_produksi
+            WHERE deleted_at IS NULL
+              AND created_by LIKE 'telegram-bot%'
+              AND tgl >= date('now', '-7 days')
+            ORDER BY tgl DESC, id DESC
+            LIMIT ?`,
+      args: [limit]
+    });
+
+    const data = result.rows.map((row: any) => ({
+      id: row.id, tgl: row.tgl, shift: row.shift, bagian: row.bagian, nama_karyawan: row.nama_karyawan,
+      no_order: row.no_order_2, nama_order: row.nama_order_2, pekerjaan: row.jenis_pekerjaan_2,
+      target: row.target, realisasi: row.realisasi, bahan_kertas: row.bahan_kertas,
+      warna: row.warna, inscheet: row.inscheet, rijek: row.rijek, jam: row.jam, kendala: row.kendala, created_at: row.created_at
+    }));
+
+    return { success: true, data };
   }
 };

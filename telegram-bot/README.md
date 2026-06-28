@@ -71,6 +71,8 @@ npm run dev
    ```
    Lalu kirim template:
    ```
+   Nama: Nauval Gunawan
+   Absensi: 190
    Tgl: 2026-06-26
    Shift: 1
    Order: SO-12345
@@ -81,14 +83,19 @@ npm run dev
    ```
 
 5. **Lihat History:**
+    ```
+    /history
+    ```
+
+6. **Cari Karyawan jika lupa nama/absensi:**
    ```
-   /history
+   /cari nauval
    ```
 
-6. **Help:**
-   ```
-   /help
-   ```
+7. **Help:**
+    ```
+    /help
+    ```
 
 ## 🧪 Testing User
 
@@ -131,6 +138,8 @@ telegram-bot/
 ### Input realisasi gagal
 - Pastikan user sudah diapprove (is_active = 1)
 - Cek format template (wajib: Tgl, Shift, Realisasi)
+- Jika pakai field `Absensi`, pastikan nomor ada di tabel `employees` dan masih aktif
+- Jika pakai field `Nama`, pastikan nama ada di tabel `employees`, aktif, dan masih 1 bagian dengan akun Telegram penginput
 - Cek console log bot untuk detail error
 
 ## 📊 API Endpoints Used
@@ -153,6 +162,9 @@ telegram-bot/
 - Bot ini untuk **bagian SETTING** saja
 - Nanti bisa deploy 6 bot terpisah (1 per bagian)
 - Approval sementara manual via database, nanti ada web interface
+- Field `Nama` pada template bersifat opsional untuk input atas nama karyawan lain yang aktif di database. Activity log tetap menyimpan siapa akun Telegram penginputnya
+- Field `Absensi` direkomendasikan jika user tidak ingat nama lengkap karyawan
+- Command `/cari <kata kunci>` dipakai untuk mencari semua karyawan aktif
 
 ---
 

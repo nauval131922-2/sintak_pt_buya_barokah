@@ -55,6 +55,7 @@ export const MODULE_REGISTRY = [
   { key: 'kelola_user',            label: 'Kelola User',                      group: 'Sistem - User' },
 
   // Sistem - Settings
+  { key: 'telegram_users',       label: 'Telegram Users',                   group: 'Sistem - Settings' },
   { key: 'settings_konversi_data_hpp', label: 'Konversi Data - HPP Kalkulasi',          group: 'Sistem - Settings' },
   { key: 'settings_konversi_data',     label: 'Konversi Data - Jurnal Harian Produksi', group: 'Sistem - Settings' },
 
