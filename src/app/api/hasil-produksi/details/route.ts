@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate');     // YYYY-MM-DD
     const bagian = searchParams.get('bagian');
     const pekerjaan = searchParams.get('pekerjaan');
+    const sortBy = searchParams.get('sort') || 'default';
 
     if (!noSopd) {
       return NextResponse.json({ error: 'no_sopd is required' }, { status: 400 });
@@ -77,6 +78,9 @@ export async function GET(request: NextRequest) {
     jSql += ` ORDER BY tgl ASC`;
     queries.push({ sql: jSql, args: jArgs });
 
+    // Query 5: Master pekerjaan for code mapping
+    queries.push({ sql: 'SELECT code, name FROM master_pekerjaan', args: [] });
+
     // Execute all in one go
     const batchResults = await db.batch(queries);
     
@@ -84,6 +88,19 @@ export async function GET(request: NextRequest) {
     const availablePekerjaan = (batchResults[1].rows as any[]).map(r => r.jenis_pekerjaan);
     const bjRows = batchResults[2].rows as any[];
     let jurnalRows = batchResults[3].rows as any[];
+
+    // Build name-to-code map from master_pekerjaan
+    const nameToCode = new Map<string, string>();
+    const masterPekerjaanRows = (batchResults[4]?.rows as any[]) || [];
+    masterPekerjaanRows.forEach((r: any) => {
+      if (r.name && r.code) {
+        nameToCode.set(String(r.name).trim().toLowerCase(), String(r.code));
+      }
+    });
+    const getCode = (jobName: string) => {
+      if (!jobName) return '';
+      return nameToCode.get(jobName.trim().toLowerCase()) || '';
+    };
 
     // 1. Calculate first occurrence for each job to enable grouping by job starting date
     const jobFirstDate: Record<string, string> = {};
@@ -94,17 +111,31 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // 2. Sort rows: by Job's first appearance (ASC), then by Job name, then by actual row date (ASC)
-    jurnalRows.sort((a, b) => {
-      const jobA = a.jenis_pekerjaan_2 || '';
-      const jobB = b.jenis_pekerjaan_2 || '';
-      const firstA = jobFirstDate[jobA] || '9999-12-31';
-      const firstB = jobFirstDate[jobB] || '9999-12-31';
-      
-      if (firstA !== firstB) return firstA.localeCompare(firstB);
-      if (jobA !== jobB) return jobA.localeCompare(jobB);
-      return a.tgl.localeCompare(b.tgl);
-    });
+    // 2. Sort rows
+    if (sortBy === 'code') {
+      // Sort by code from master_pekerjaan (natural), then by date
+      jurnalRows.sort((a, b) => {
+        const jobA = a.jenis_pekerjaan_2 || '';
+        const jobB = b.jenis_pekerjaan_2 || '';
+        const codeA = getCode(jobA) || jobA;
+        const codeB = getCode(jobB) || jobB;
+        const cmp = codeA.localeCompare(codeB, undefined, { numeric: true, sensitivity: 'base' });
+        if (cmp !== 0) return cmp;
+        return a.tgl.localeCompare(b.tgl);
+      });
+    } else {
+      // Default: by Job's first appearance (ASC), then by Job name, then by date (ASC)
+      jurnalRows.sort((a, b) => {
+        const jobA = a.jenis_pekerjaan_2 || '';
+        const jobB = b.jenis_pekerjaan_2 || '';
+        const firstA = jobFirstDate[jobA] || '9999-12-31';
+        const firstB = jobFirstDate[jobB] || '9999-12-31';
+        
+        if (firstA !== firstB) return firstA.localeCompare(firstB);
+        if (jobA !== jobB) return jobA.localeCompare(jobB);
+        return a.tgl.localeCompare(b.tgl);
+      });
+    }
 
     // Group barang_jadi by date (keep original logic)
     const groupedByDate: Record<string, { date: string, items: any[], total: number }> = {};
@@ -137,6 +168,7 @@ export async function GET(request: NextRequest) {
       if (!currentGroup || currentGroup.job !== job) {
         currentGroup = { 
           job, 
+          code: getCode(job),
           date: jobFirstDate[job], // Use first date as the group date
           items: [], 
           totalRealisasi: 0, 

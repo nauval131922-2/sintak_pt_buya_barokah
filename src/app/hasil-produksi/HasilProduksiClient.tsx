@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { BarChart3, Search, ChevronDown, Filter, RotateCcw, ClipboardList, TrendingUp, X, Target, AlertCircle, Package } from 'lucide-react';
+import { BarChart3, Search, ChevronDown, Filter, RotateCcw, ClipboardList, TrendingUp, X, Target, AlertCircle, Package, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   BarChart, Bar, Cell 
@@ -10,6 +10,7 @@ import DatePicker from '@/components/DatePicker';
 import SearchableDropdown from '@/components/SearchableDropdown';
 import TableFooter from '@/components/TableFooter';
 import { persistDateStore, hydrateDateStore } from '@/lib/scraper-period';
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 interface SopdOption {
   no_sopd: string;
@@ -120,10 +121,100 @@ export default function HasilProduksiClient() {
   const [showChart, setShowChart] = useState(false);
   const [hideGudang, setHideGudang] = useState(false);
   const [hideJurnal, setHideJurnal] = useState(false);
-  const [jurnalDisplayLimit, setJurnalDisplayLimit] = useState(20);
   const PAGE_SIZE = 20;
-  const [jurnalPage, setJurnalPage] = useState(1);
   const [barangJadiPage, setBarangJadiPage] = useState(1);
+  // ponytail: multi-column sort + column resize
+  const COL_DEFAULTS = [100, 160, 240, 280, 130, 150, 100, 100, 100, 100, 80, 200, 200, 100, 120];
+  const COL_MIN = [80, 100, 120, 150, 80, 100, 60, 60, 60, 60, 60, 100, 100, 80, 80];
+  const COL_PROPS: (string | null)[] = ['tgl','bagian','no_order_2','jenis_pekerjaan_2',null,'bahan_kertas','jml_plate','warna','inscheet','rijek','jam','kendala','keterangan','target','realisasi'];
+  const [colWidths, setColWidths] = useState<number[]>(() => { try { const s = localStorage.getItem('hp-col-w'); return s ? JSON.parse(s) : COL_DEFAULTS; } catch { return COL_DEFAULTS; } });
+  useEffect(() => { try { localStorage.setItem('hp-col-w', JSON.stringify(colWidths)); } catch {} }, [colWidths]);
+  const [sorting, setSorting] = useState<{ i: number; desc: boolean }[]>(() => { try { const s = localStorage.getItem('hp-sort'); return s ? JSON.parse(s) : []; } catch { return []; } });
+  useEffect(() => { try { localStorage.setItem('hp-sort', JSON.stringify(sorting)); } catch {} }, [sorting]);
+  const resizingRef = useRef(false);
+  const toggleSort = (i: number) => {
+    if (resizingRef.current) return;
+    setSorting(prev => {
+      const existing = prev.find(x => x.i === i);
+      if (!existing) return [...prev, { i, desc: false }];
+      if (!existing.desc) return prev.map(x => x.i === i ? { ...x, desc: true } : x);
+      return prev.filter(x => x.i !== i);
+    });
+  };
+  const colResizeStart = (i: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    resizingRef.current = true;
+    const startX = e.clientX, startW = colWidths[i];
+    const move = (e: MouseEvent) => { const w = Math.max(COL_MIN[i], startW + e.clientX - startX); setColWidths(p => { const n = [...p]; n[i] = w; return n; }); };
+    const up = () => { document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); setTimeout(() => { resizingRef.current = false; }); };
+    document.addEventListener('mousemove', move); document.addEventListener('mouseup', up);
+  };
+  const colAutoFit = (i: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const th = (e.target as HTMLElement).closest('th');
+    if (!th) return;
+    const tbody = th.closest('table')?.querySelector('tbody');
+    let maxW = 0;
+    const measure = (el: HTMLElement) => {
+      const c = el.cloneNode(true) as HTMLElement;
+      c.style.cssText = 'position:absolute;visibility:hidden;width:auto;min-width:auto;height:auto;left:-9999px;top:0';
+      document.body.appendChild(c);
+      const w = c.scrollWidth;
+      document.body.removeChild(c);
+      return w;
+    };
+    maxW = Math.max(maxW, measure(th));
+    if (tbody) {
+      tbody.querySelectorAll(`tr[data-index]:not(.bg-emerald-100) td:nth-child(${i+1})`).forEach(td => { maxW = Math.max(maxW, measure(td as HTMLElement)); });
+    }
+    setColWidths(p => { const n = [...p]; n[i] = Math.max(COL_MIN[i], maxW + 8); return n; });
+  };
+  const [ctxCol, setCtxCol] = useState<{ i: number; x: number; y: number; val: string } | null>(null);
+  useEffect(() => { if (!ctxCol) return; const f = () => setCtxCol(null); document.addEventListener('mousedown', f); return () => document.removeEventListener('mousedown', f); }, [ctxCol]);
+  const colCtx = (i: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    setCtxCol({ i, x: e.clientX, y: e.clientY, val: String(colWidths[i]) });
+  };
+  const SortIcon = ({ i }: { i: number }) => {
+    const s = sorting.find(x => x.i === i);
+    return s ? (s.desc ? <ArrowDown size={12} className="text-blue-500 shrink-0" /> : <ArrowUp size={12} className="text-blue-500 shrink-0" />) : <ArrowUpDown size={12} className="text-gray-300 shrink-0" />;
+  };
+  const sortedJurnalResults = useMemo(() => {
+    const nd = (d: string) => {
+      if (!d) return 0;
+      const p = d.split('-');
+      if (p.length === 3 && p[2].length === 4) return +(p[2] + p[1] + p[0]);
+      if (p.length === 3 && p[0].length === 4) return +(p[0] + p[1] + p[2]);
+      const dt = new Date(d);
+      if (!isNaN(dt.getTime())) return +dt.toISOString().slice(0, 10).replace(/-/g, '');
+      return 0;
+    };
+    if (sorting.length === 0) return jurnalResults;
+    let res = jurnalResults;
+    for (const s of sorting) {
+      const dir = s.desc ? -1 : 1;
+      if (s.i !== 4) {
+        const key = COL_PROPS[s.i];
+        if (!key) continue;
+        const allItems = [...res.flatMap(g => g.items)].sort((a, b) => {
+          if (s.i === 0) return dir * (nd(a[key]) - nd(b[key]));
+          if (s.i === 1) { const va = (a.bagian||'')+'|'+(a.nama_karyawan||''), vb = (b.bagian||'')+'|'+(b.nama_karyawan||''); return dir * va.localeCompare(vb, 'id'); }
+          const va = a[key], vb = b[key];
+          if (va == null) return 1; if (vb == null) return -1;
+          const na = Number(va), nb = Number(vb);
+          if (!isNaN(na) && !isNaN(nb)) return dir * (na - nb);
+          return dir * String(va).localeCompare(String(vb), 'id');
+        });
+        if (allItems.length === 0) { res = []; continue; }
+        res = [{ job: '', code: '', date: allItems[0].tgl, items: allItems, totalRealisasi: 0, totalRijek: 0, totalTarget: 0 }];
+        continue;
+      }
+      if (s.i === 4) { res = [...res].sort((a, b) => dir * ((a.code || '').localeCompare(b.code || '', 'id'))); continue; }
+    }
+    return res;
+  }, [jurnalResults, sorting]);
   
   // Keyboard navigation states
   const [focusedSopdIndex, setFocusedSopdIndex] = useState(-1);
@@ -195,13 +286,12 @@ export default function HasilProduksiClient() {
          return `${y}-${m}-${day}`;
       };
 
-      const url = `/api/hasil-produksi/details?no_sopd=${encodeURIComponent(selectedSopd.no_sopd)}&startDate=${fmtDate(startDate)}&endDate=${fmtDate(endDate)}&bagian=${encodeURIComponent(selectedBagian)}&pekerjaan=${encodeURIComponent(selectedPekerjaan)}`;
+      const url = `/api/hasil-produksi/details?no_sopd=${encodeURIComponent(selectedSopd.no_sopd)}&startDate=${fmtDate(startDate)}&endDate=${fmtDate(endDate)}&bagian=${encodeURIComponent(selectedBagian)}&pekerjaan=${encodeURIComponent(selectedPekerjaan)}&sort=default`;
       const res = await fetch(url);
       if (res.ok) {
         const json = await res.json();
         setResults(json.barang_jadi || []);
         setJurnalResults(json.jurnal || []);
-        setJurnalPage(1);
         setBarangJadiPage(1);
         setGrandTotal(json.grandTotal || 0);
         setGrandTotalJurnal(json.grandTotalRealisasi || 0);
@@ -227,6 +317,19 @@ export default function HasilProduksiClient() {
   useEffect(() => {
     fetchDetails();
   }, [selectedSopd, startDate, endDate, selectedBagian, selectedPekerjaan]);
+
+  const resetFilters = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    setSelectedSopd(null);
+    setStartDate(today);
+    setEndDate(today);
+    setSelectedBagian('');
+    setSelectedPekerjaan('');
+    setSorting([]);
+    persistDateStore('hasil_dates', today, today);
+    localStorage.removeItem('hasil_selectedSopd');
+  };
 
   // Prepare chart data
   const chartData = React.useMemo(() => {
@@ -281,8 +384,94 @@ export default function HasilProduksiClient() {
     return Object.entries(stats).sort((a, b) => b[1] - a[1]);
   }, [jurnalResults]);
 
-  // Memoize the Jurnal Table Rows to prevent heavy re-renders
-  const memoizedJurnalRows = React.useMemo(() => {
+  // Pre-compute flat rows (data + subtotals) for virtual scrolling
+  const flatRows = React.useMemo(() => {
+    const src = sortedJurnalResults;
+    if (!src || src.length === 0) return [];
+
+    // Pure sort: flatten all items, subtotals per pekerjaan
+    if (sorting.some(s => s.i !== 4)) {
+      const allItems = src.flatMap(g => (g.items || []).map(item => ({ item, g })));
+      const rows: any[] = [];
+      let _sk = 0, streak: any[] = [], lastJobKey = '', lastTgl = '';
+      const flushStreak = () => {
+        if (streak.length === 0) return;
+        const totalR = streak.reduce((s, x) => s + Number(x.realisasi || 0), 0);
+        const totalRijek = streak.reduce((s, x) => s + Number(x.rijek || 0), 0);
+        const totalTarget = streak.reduce((s, x) => s + Number(x.target || 0), 0);
+        if (streak.length > 1) {
+          const dates = streak.map(x => x.tgl).filter(Boolean).sort();
+          let dateLabel = formatToDayMonthYear(dates[0]);
+          if (dates[0] && dates[dates.length-1] && dates[0] !== dates[dates.length-1]) dateLabel = `${formatToDayMonthYear(dates[0])} s.d. ${formatToDayMonthYear(dates[dates.length-1])}`;
+          rows.push({ type: 'subtotal', jobDisplayName: streak[0]?.jenis_pekerjaan_2 || 'Pekerjaan', dateLabel, totalR, totalRijek, totalTarget, gIdx: 0, _sk: _sk++ });
+        }
+        streak = [];
+      };
+      allItems.forEach(({ item, g }, i) => {
+        const jobKey = (item.jenis_pekerjaan_2 || '').toLowerCase();
+        if (streak.length > 0 && jobKey !== lastJobKey) flushStreak();
+        lastJobKey = jobKey;
+        const showDate = item.tgl !== lastTgl;
+        lastTgl = item.tgl;
+        rows.push({ type: 'data', item, group: g, iIdx: i, gIdx: 0, showDate });
+        streak.push(item);
+      });
+      flushStreak();
+      return rows;
+    }
+
+    const rows: any[] = [];
+    let _sk = 0;
+
+    src.forEach((group: any, gIdx: number) => {
+      const items = group.items || [];
+      let streak: any[] = [];
+      let lastJobKey = '';
+
+      const flushStreak = () => {
+        if (streak.length === 0) return;
+        const totalR = streak.reduce((s, x) => s + Number(x.realisasi || 0), 0);
+        const totalRijek = streak.reduce((s, x) => s + Number(x.rijek || 0), 0);
+        const totalTarget = streak.reduce((s, x) => s + Number(x.target || 0), 0);
+        const dates = streak.map(x => x.tgl).filter(Boolean).sort();
+        const minDate = dates[0];
+        const maxDate = dates[dates.length - 1];
+        let dateLabel = formatToDayMonthYear(minDate);
+        if (minDate && maxDate && minDate !== maxDate) {
+          dateLabel = `${formatToDayMonthYear(minDate)} s.d. ${formatToDayMonthYear(maxDate)}`;
+        }
+        const jobDisplayName = streak[0]?.jenis_pekerjaan_2 || 'Pekerjaan';
+        rows.push({ type: 'subtotal', jobDisplayName, dateLabel, totalR, totalRijek, totalTarget, gIdx, _sk: _sk++ });
+        streak = [];
+      };
+
+      items.forEach((item: any, iIdx: number) => {
+        const jobKey = (item.jenis_pekerjaan_2 || '').toLowerCase();
+        if (streak.length > 0 && (jobKey !== lastJobKey || group.date !== streak[0].tgl)) {
+          flushStreak();
+        }
+        lastJobKey = jobKey;
+
+        const showDate = rows.length === 0 || item.tgl !== streak[streak.length - 1]?.tgl;
+        rows.push({ type: 'data', item, group, iIdx, gIdx, showDate });
+        streak.push(item);
+      });
+
+      flushStreak();
+    });
+
+    return rows;
+  }, [sortedJurnalResults, sorting]);
+
+  const rowVirtualizer = useVirtualizer({
+    count: flatRows.length,
+    getScrollElement: () => jurnalBodyRef.current,
+    estimateSize: (i) => (flatRows[i]?.type === 'subtotal' ? 56 : 58),
+    overscan: 15,
+    measureElement: (el) => el.getBoundingClientRect().height,
+  });
+
+  const jurnalRowsContent = (() => {
     if (loadingDetails) {
       return (
         [...Array(8)].map((_, i) => (
@@ -291,6 +480,7 @@ export default function HasilProduksiClient() {
             <td className="px-4 py-5"><div className="h-4 w-32 bg-gray-50 rounded-full"></div></td>
             <td className="px-4 py-5"><div className="h-3 w-24 bg-gray-100 rounded-full"></div></td>
             <td className="px-4 py-5"><div className="h-4 w-16 bg-gray-50 rounded-full"></div></td>
+            <td className="px-4 py-5"><div className="h-3 w-16 bg-gray-100 rounded-full"></div></td>
             <td className="px-4 py-5"><div className="h-3 w-20 bg-gray-100 rounded-full"></div></td>
             <td className="px-4 py-5"><div className="h-3 w-12 bg-gray-50 rounded-full"></div></td>
             <td className="px-4 py-5"><div className="h-3 w-12 bg-gray-100 rounded-full"></div></td>
@@ -307,10 +497,11 @@ export default function HasilProduksiClient() {
     }
 
     if (!jurnalResults || jurnalResults.length === 0) {
+      const minW = '2160px';
       return (
-        <tr>
-          <td colSpan={15} className="px-6 py-20 text-center">
-            <div className="flex flex-col items-center gap-3 opacity-30">
+        <tr style={{ display: 'block', width: '100%', minWidth: minW }}>
+          <td style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px', width: '100%' }}>
+            <div className="flex flex-col items-center gap-3 opacity-30 py-20">
               <ClipboardList size={40} />
               <span className="text-sm font-semibold tracking-wide">Belum ada laporan operator</span>
             </div>
@@ -319,125 +510,99 @@ export default function HasilProduksiClient() {
       );
     }
 
-    // Flatten all items with group info, then paginate
-    const allItems: Array<{ item: any; group: any; iIdx: number; gIdx: number; isFirstInGroup: boolean; isLastInGroup: boolean }> = [];
-    jurnalResults.forEach((group: any, gIdx: number) => {
-      group.items.forEach((item: any, iIdx: number) => {
-        allItems.push({ item, group, iIdx, gIdx, isFirstInGroup: iIdx === 0, isLastInGroup: iIdx === group.items.length - 1 });
-      });
-    });
-
-    const totalItems = allItems.length;
-    const startIdx = (jurnalPage - 1) * PAGE_SIZE;
-    const pageItems = allItems.slice(startIdx, startIdx + PAGE_SIZE);
-      
-
-    const allJobsSame = (group: any) => group.items.length > 0 && group.items.every((it: any) => it.jenis_pekerjaan_2 === group.items[0].jenis_pekerjaan_2);
-
-    // ---- Rebuild rendered rows from paged items ----
-    const renderedGroups: React.ReactNode[] = [];
-    
-    // Grouping by Job streak within the paged items
-    let currentJobStreak: any[] = [];
-    let currentJobName = '';
-    let lastDate = '';
-
-    const pushSubtotalRow = (streak: any[], jobDisplayName: string, date: string, gIdx: number) => {
-      const totalR = streak.reduce((sum, s) => sum + Number(s.realisai || s.realisasi || 0), 0);
-      const totalRijek = streak.reduce((sum, s) => sum + Number(s.rijek || 0), 0);
-      const totalTarget = streak.reduce((sum, s) => sum + Number(s.target || 0), 0);
-      
-      // Calculate date range within this streak
-      const dates = streak.map(s => s.tgl).filter(Boolean).sort();
-      const minDate = dates[0];
-      const maxDate = dates[dates.length - 1];
-      
-      let dateLabel = formatToDayMonthYear(minDate);
-      if (minDate && maxDate && minDate !== maxDate) {
-        dateLabel = `${formatToDayMonthYear(minDate)} s.d. ${formatToDayMonthYear(maxDate)}`;
-      }
-
-      renderedGroups.push(
-        <tr key={`subtotal-${gIdx}-${jobDisplayName}-${minDate}-${maxDate}`} className="bg-emerald-100 border-t-2 border-emerald-200">
-          <td colSpan={8} className="px-4 py-3.5 text-right text-[15px] font-extrabold tracking-tight text-emerald-900 border-r border-emerald-200">
-            Total {jobDisplayName || 'Pekerjaan'} — {dateLabel}
+    if (flatRows.length === 0) {
+      const minW = '2160px';
+      return (
+        <tr style={{ display: 'block', width: '100%', minWidth: minW }}>
+          <td style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px', width: '100%' }}>
+            <div className="flex flex-col items-center gap-4 opacity-30 py-24">
+              <AlertCircle size={28} />
+              <span className="text-[11px] font-bold tracking-wide">Tidak ada data</span>
+            </div>
           </td>
-          <td className="px-4 py-3.5 text-right text-[16px] font-extrabold tabular-nums text-rose-700 bg-rose-100/60 border-r border-emerald-200">{totalRijek.toLocaleString('id-ID')}</td>
-          <td colSpan={3} className="px-4 py-3.5 border-r border-emerald-200 bg-emerald-100"></td>
-          <td className="px-4 py-3.5 text-right text-[16px] font-extrabold tabular-nums text-gray-800 bg-gray-100/60 border-r border-emerald-200">{totalTarget.toLocaleString('id-ID')}</td>
-          <td className="px-4 py-3.5 text-right text-[17px] font-extrabold tabular-nums text-emerald-900 bg-emerald-200/60">{totalR.toLocaleString('id-ID')}</td>
         </tr>
       );
-    };
+    }
 
-    pageItems.forEach(({ item, group, iIdx, gIdx, isLastInGroup }, pIdx) => {
-      const jobKey = (item.jenis_pekerjaan_2 || '').toLowerCase();
-      const jobDisplayName = item.jenis_pekerjaan_2 || 'Pekerjaan';
-      
-      // If job changes or day changes, finish previous streak
-      if (pIdx > 0 && (jobKey !== currentJobName || group.date !== lastDate)) {
-        pushSubtotalRow(currentJobStreak, currentJobStreak[0]?.jenis_pekerjaan_2 || 'Pekerjaan', lastDate, gIdx - 1);
-        currentJobStreak = [];
+    const virtualRows = rowVirtualizer.getVirtualItems();
+
+    if (virtualRows.length === 0) return null;
+
+    return virtualRows.map((virtualRow) => {
+      const row = flatRows[virtualRow.index];
+
+      if (row.type === 'subtotal') {
+        const totalLabel = `Total ${row.jobDisplayName || 'Pekerjaan'} — ${row.dateLabel}`;
+        const cols: [string, string, string?][] = [
+          [`${colWidths.slice(0, 9).reduce((a, b) => a + b, 0)}px`, 'border-r border-emerald-200 bg-emerald-100 text-right', totalLabel],
+          [`${colWidths[9]}px`, 'border-r border-emerald-200 bg-rose-100/60 text-right', row.totalRijek.toLocaleString('id-ID')],
+          [`${colWidths.slice(10, 13).reduce((a, b) => a + b, 0)}px`, 'border-r border-emerald-200 bg-emerald-100', undefined],
+          [`${colWidths[13]}px`, 'border-r border-emerald-200 bg-gray-100/60 text-right', row.totalTarget.toLocaleString('id-ID')],
+          [`${colWidths[14]}px`, 'bg-emerald-200/60 text-right', row.totalR.toLocaleString('id-ID')],
+        ];
+        return (
+          <tr key={`s-${row._sk}`}
+            data-index={virtualRow.index}
+            ref={rowVirtualizer.measureElement}
+            className="bg-emerald-100"
+            style={{ display: 'flex', flexDirection: 'row', alignItems: 'stretch', position: 'absolute', top: 0, left: 0, transform: `translateY(${virtualRow.start}px)`, width: '100%' }}>
+            {cols.map(([w, cls, content], i) => (
+              <td key={i} className={`px-4 py-3.5 ${cls}`} style={{ flex: `0 0 ${w}`, width: w, display: 'flex', alignItems: 'center', justifyContent: content ? 'flex-end' : 'flex-start' }}>
+                {content ? <span className="text-[15px] font-extrabold tracking-tight tabular-nums">{content}</span> : null}
+              </td>
+            ))}
+          </tr>
+        );
       }
 
-      currentJobName = jobKey;
-      lastDate = group.date;
-      currentJobStreak.push(item);
-
-      renderedGroups.push(
-        <tr key={`${gIdx}-${iIdx}`} className="bg-white hover:bg-emerald-50/30 even:bg-gray-50/50 transition-colors group cursor-default">
-          <td className="sticky left-0 z-10 px-4 py-3 xl:py-4 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 tabular-nums text-gray-800 bg-white group-even:bg-[#f9fafb] group-hover:bg-[#f0fdf4] min-w-[100px] max-w-[100px] md:shadow-none shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]">
-            {pIdx === 0 || item.tgl !== pageItems[pIdx-1].item.tgl ? formatToDayMonthYear(item.tgl) : ''}
+      const { item, group, iIdx, gIdx, showDate } = row;
+      const isEven = virtualRow.index % 2 === 0;
+      const rowBg = isEven ? 'bg-white' : 'bg-[#f9fafb]';
+      const cw = (i: number) => `${colWidths[i]}px`;
+      const sl = (i: number) => ({ left: `${colWidths.slice(0, i).reduce((a, b) => a + b, 0)}px` });
+      return (
+        <tr key={`${gIdx}-${iIdx}`}
+          data-index={virtualRow.index}
+          ref={rowVirtualizer.measureElement}
+          className={`${rowBg} hover:bg-[#f0fdf4] transition-colors cursor-default`}
+          style={{ display: 'table', width: '100%', tableLayout: 'fixed', borderSpacing: 0, position: 'absolute', top: 0, left: 0, transform: `translateY(${virtualRow.start}px)` }}>
+          <td className="sticky left-0 z-10 px-4 py-3.5 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 tabular-nums text-gray-800" style={{ width: cw(0), minWidth: cw(0), backgroundColor: isEven ? '#fff' : '#f9fafb' }}>
+            {showDate ? formatToDayMonthYear(item.tgl) : ''}
           </td>
-          <td className="md:sticky md:left-[100px] md:z-10 px-4 py-3 xl:py-4 border-r border-gray-100 bg-white group-even:bg-[#f9fafb] group-hover:bg-[#f0fdf4] min-w-[160px] max-w-[160px] md:shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)] lg:shadow-none">
+          <td className="md:sticky md:z-10 px-4 py-3.5 border-r border-gray-100" style={{ width: cw(1), minWidth: cw(1), backgroundColor: isEven ? '#fff' : '#f9fafb', ...sl(1) }}>
             <div className="flex flex-col min-w-0">
               <span className="text-[9px] xl:text-[10px] font-bold text-gray-400 uppercase leading-none mb-1 truncate" title={item.bagian}>{item.bagian}</span>
               <span className="text-[11px] xl:text-[12px] font-bold text-gray-800 leading-tight whitespace-nowrap truncate" title={item.nama_karyawan}>{item.nama_karyawan}</span>
             </div>
           </td>
-          <td className="lg:sticky lg:left-[260px] z-10 px-4 py-3 xl:py-4 border-r border-gray-100 bg-white group-even:bg-[#f9fafb] group-hover:bg-[#f0fdf4] min-w-[240px] max-w-[240px] lg:shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]">
+          <td className="lg:sticky lg:z-10 px-4 py-3.5 border-r border-gray-100" style={{ width: cw(2), minWidth: cw(2), backgroundColor: isEven ? '#fff' : '#f9fafb', ...sl(2) }}>
             <div className="flex flex-col min-w-0">
               <span className="text-[9px] xl:text-[10px] font-bold text-gray-400 leading-none mb-1 truncate" title={item.no_order_2 || ''}>{item.no_order_2 || '-'}</span>
               <span className="text-[11px] xl:text-[12px] font-bold text-gray-700 leading-tight truncate" title={item.nama_order_2 || ''}>{item.nama_order_2 || '-'}</span>
             </div>
           </td>
-          <td className="lg:sticky lg:left-[500px] lg:z-10 px-4 py-3 xl:py-4 text-[11px] xl:text-[12px] border-r border-gray-100 bg-white group-even:bg-[#f9fafb] group-hover:bg-[#f0fdf4] lg:shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]">
+          <td className="lg:sticky lg:z-10 px-4 py-3.5 text-[11px] xl:text-[12px] border-r border-gray-100" style={{ width: cw(3), minWidth: cw(3), backgroundColor: isEven ? '#fff' : '#f9fafb', ...sl(3) }}>
             <div className="font-bold bg-white px-2 py-1 rounded-lg border border-gray-100 shadow-sm text-gray-700 capitalize inline-block whitespace-nowrap align-middle" title={item.jenis_pekerjaan_2 || ''}>
               {(item.jenis_pekerjaan_2 || '-').toLowerCase()}
             </div>
           </td>
-          <td className="px-4 py-3 xl:py-4 text-[10px] xl:text-[11px] font-bold border-r border-gray-100 truncate max-w-[120px] text-gray-600" title={item.bahan_kertas || ''}>{item.bahan_kertas || '-'}</td>
-          <td className="px-4 py-3 xl:py-4 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-gray-700">{formatCellVal(item.jml_plate)}</td>
-          <td className="px-4 py-3 xl:py-4 text-[10px] xl:text-[11px] font-bold border-r border-gray-100 truncate max-w-[100px] text-gray-600" title={item.warna || ''}>{item.warna || '-'}</td>
-          <td className="px-4 py-3 xl:py-4 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-gray-700">{formatCellVal(item.inscheet)}</td>
-          <td className="px-4 py-3 xl:py-4 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-rose-600">{formatCellVal(item.rijek)}</td>
-          <td className="px-4 py-3 xl:py-4 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-gray-700 truncate max-w-[80px]" title={item.jam || ''}>{item.jam || '-'}</td>
-          <td className="px-4 py-3 xl:py-4 text-[10px] xl:text-[11px] font-bold border-r border-gray-100 truncate max-w-[120px] text-rose-600" title={item.kendala || ''}>{item.kendala || '-'}</td>
-          <td className="px-4 py-3 xl:py-4 text-[10px] xl:text-[11px] font-bold border-r border-gray-100 text-gray-500 max-w-[120px] truncate" title={item.keterangan || ''}>{item.keterangan || '-'}</td>
-          <td className="px-4 py-3 xl:py-4 text-[12px] xl:text-[13px] font-bold text-right tabular-nums border-r border-gray-100 text-gray-700">{Number(item.target).toLocaleString('id-ID')}</td>
-          <td className="px-4 py-3 xl:py-4 text-[13px] xl:text-[15px] font-semibold text-right tabular-nums bg-emerald-50 text-emerald-900">{Number(item.realisasi).toLocaleString('id-ID')}</td>
+          <td className="lg:sticky lg:z-10 px-4 py-3.5 text-[10px] xl:text-[11px] font-mono font-bold border-r border-gray-100 text-emerald-700 truncate" style={{ width: cw(4), minWidth: cw(4), maxWidth: cw(4), backgroundColor: isEven ? '#fff' : '#f9fafb', ...sl(4) }} title={group.code || ''}>
+              {group.code || '-'}
+            </td>
+          <td className="px-4 py-3.5 text-[10px] xl:text-[11px] font-bold border-r border-gray-100 truncate text-gray-600" style={{ width: cw(5), minWidth: cw(5), maxWidth: cw(5) }} title={item.bahan_kertas || ''}>{item.bahan_kertas || '-'}</td>
+          <td className="px-4 py-3.5 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-gray-700" style={{ width: cw(6), minWidth: cw(6) }}>{formatCellVal(item.jml_plate)}</td>
+          <td className="px-4 py-3.5 text-[10px] xl:text-[11px] font-bold border-r border-gray-100 truncate text-gray-600" style={{ width: cw(7), minWidth: cw(7), maxWidth: cw(7) }} title={item.warna || ''}>{item.warna || '-'}</td>
+          <td className="px-4 py-3.5 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-gray-700" style={{ width: cw(8), minWidth: cw(8) }}>{formatCellVal(item.inscheet)}</td>
+          <td className="px-4 py-3.5 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-rose-600" style={{ width: cw(9), minWidth: cw(9) }}>{formatCellVal(item.rijek)}</td>
+          <td className="px-4 py-3.5 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-gray-700 truncate" style={{ width: cw(10), minWidth: cw(10) }} title={item.jam || ''}>{item.jam || '-'}</td>
+          <td className="px-4 py-3.5 text-[10px] xl:text-[11px] font-bold border-r border-gray-100 truncate text-rose-600" style={{ width: cw(11), minWidth: cw(11) }} title={item.kendala || ''}>{item.kendala || '-'}</td>
+          <td className="px-4 py-3.5 text-[10px] xl:text-[11px] font-bold border-r border-gray-100 text-gray-500 truncate" style={{ width: cw(12), minWidth: cw(12) }} title={item.keterangan || ''}>{item.keterangan || '-'}</td>
+          <td className="px-4 py-3.5 text-[12px] xl:text-[13px] font-bold text-right tabular-nums border-r border-gray-100 text-gray-700" style={{ width: cw(13), minWidth: cw(13) }}>{Number(item.target).toLocaleString('id-ID')}</td>
+          <td className="px-4 py-3.5 text-[13px] xl:text-[15px] font-semibold text-right tabular-nums bg-emerald-50 text-emerald-900" style={{ width: cw(14), minWidth: cw(14) }}>{Number(item.realisasi).toLocaleString('id-ID')}</td>
         </tr>
       );
-
-      // Final streak push for the very last item in paged results
-      if (pIdx === pageItems.length - 1) {
-        pushSubtotalRow(currentJobStreak, currentJobStreak[0]?.jenis_pekerjaan_2 || 'Pekerjaan', lastDate, gIdx);
-      }
     });
-
-    if (pageItems.length === 0 && !loadingDetails) {
-      renderedGroups.push(
-        <tr key="empty"><td colSpan={15} className="px-6 py-24 text-center">
-          <div className="flex flex-col items-center gap-4 opacity-30">
-            <AlertCircle size={28} />
-            <span className="text-[11px] font-bold tracking-wide">Tidak ada data</span>
-          </div>
-        </td></tr>
-      );
-    }
-
-    return renderedGroups;
-  }, [jurnalResults, loadingDetails, jurnalPage]);
+  })();
 
   const memoizedBarangJadiRows = useMemo(() => {
     if (loadingDetails) {
@@ -566,8 +731,7 @@ export default function HasilProduksiClient() {
 
   if (!isMounted) return null;
 
-  const totalJurnalItems = jurnalResults.reduce((acc, group) => acc + group.items.length, 0);
-  const totalJurnalPages = Math.max(1, Math.ceil(totalJurnalItems / PAGE_SIZE));
+  const totalJurnalItems = flatRows.length;
   
   const totalBarangJadiItems = results.reduce((acc, group) => acc + group.items.length, 0);
   const totalBarangJadiPages = Math.max(1, Math.ceil(totalBarangJadiItems / PAGE_SIZE));
@@ -577,37 +741,37 @@ export default function HasilProduksiClient() {
       {/* 1. Header Section - Fixed */}
       <div id="filter-control-container" className="flex flex-col gap-3 shrink-0 relative bg-[var(--bg-deep)] pt-0 pb-1 -mx-4 px-4 lg:-mx-8 lg:px-8">
         {/* 1. Filter Control Center */}
-        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 flex flex-col 2xl:flex-row items-stretch 2xl:items-end gap-4 lg:gap-6 relative">
+        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-3 flex flex-col 2xl:flex-row items-stretch 2xl:items-end gap-2 lg:gap-3 relative">
           {/* SOPd Selection Group */}
           <div className="flex-1 min-w-[300px]">
-            <label className="block text-[13px] font-semibold text-gray-500 mb-2 ml-1 tracking-tight select-none">
+            <label className="block text-[11px] font-semibold text-gray-500 mb-1 ml-1 tracking-tight select-none">
               Pilih Order Produksi (SOPd)
             </label>
             <div className="relative sopd-dropdown-container" ref={dropdownRef}>
               <button
                 onClick={() => setIsDropdownOpen(prev => !prev)}
-                className={`w-full h-12 px-5 bg-gray-50/50 border rounded-xl transition-all flex items-center justify-between group ${
+                className={`w-full h-9 px-3 bg-gray-50/50 border rounded-xl transition-all flex items-center justify-between group ${
                   selectedSopd 
                   ? 'border-emerald-100 bg-emerald-50/20' 
                   : 'border-gray-100 hover:border-emerald-500'
                 }`}
               >
                 {selectedSopd ? (
-                  <div className="flex flex-1 items-center gap-3 sm:gap-4 min-w-0 mr-4">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shadow-sm shrink-0">
-                      <ClipboardList size={16} />
+                  <div className="flex flex-1 items-center gap-2 min-w-0 mr-2">
+                    <div className="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center shadow-sm shrink-0">
+                      <ClipboardList size={12} />
                     </div>
                     <div className="flex flex-col items-start flex-1 min-w-0 overflow-hidden">
-                      <span className="text-[11px] font-semibold text-emerald-700 leading-none mb-1">{selectedSopd.no_sopd}</span>
-                      <span className="text-[13px] font-semibold text-gray-800 truncate tracking-tight w-full text-left" title={`${selectedSopd.pelanggan} — ${selectedSopd.nama_order}`}>
+                      <span className="text-[10px] font-semibold text-emerald-700 leading-none">{selectedSopd.no_sopd}</span>
+                      <span className="text-[12px] font-semibold text-gray-800 truncate tracking-tight w-full text-left" title={`${selectedSopd.pelanggan} — ${selectedSopd.nama_order}`}>
                         {selectedSopd.pelanggan} — {selectedSopd.nama_order}
                       </span>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-3 text-gray-400">
-                    <Search size={18} className="group-hover:text-emerald-500 transition-colors" />
-                    <span className="text-[13px] font-bold">Cari nomor SOPd atau pelanggan...</span>
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Search size={15} className="group-hover:text-emerald-500 transition-colors" />
+                    <span className="text-[12px] font-bold">Cari nomor SOPd atau pelanggan...</span>
                   </div>
                 )}
                 <ChevronDown size={18} className={`text-gray-300 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
@@ -693,11 +857,11 @@ export default function HasilProduksiClient() {
           </div>
 
           {/* Combined Row for Date, Bagian, Pekerjaan & Refresh on LG */}
-          <div className="flex flex-col lg:flex-row lg:items-end gap-4 lg:gap-6">
+          <div className="flex flex-col lg:flex-row lg:items-end gap-2 lg:gap-3">
             {/* Rentang Tanggal */}
-            <div className="flex flex-col lg:w-[320px] shrink-0">
-              <label className="block text-[13px] font-semibold text-gray-500 mb-2 ml-1 tracking-tight select-none">Rentang Tanggal</label>
-              <div className="flex items-center gap-1 sm:gap-2">
+            <div className="flex flex-col lg:w-[290px] shrink-0">
+              <label className="block text-[11px] font-semibold text-gray-500 mb-1 ml-1 tracking-tight select-none">Rentang Tanggal</label>
+              <div className="flex items-center gap-1">
                 <div className="flex-1"><DatePicker name="startDate" value={startDate} onChange={(d) => setStartDate(d)} /></div>
                 <div className="w-2 h-px bg-gray-200 shrink-0"></div>
                 <div className="flex-1"><DatePicker name="endDate" value={endDate} onChange={(d) => setEndDate(d)} popupAlign="right" /></div>
@@ -705,9 +869,9 @@ export default function HasilProduksiClient() {
             </div>
 
             {/* Bagian, Pekerjaan & Refresh */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2 sm:gap-3 w-fit">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2 w-fit">
               {activeTab === 'jurnal' && (
-                <div className="flex items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-2">
                   <div className="flex flex-col min-w-0">
                     <SearchableDropdown
                       id="hasil-bagian"
@@ -717,8 +881,9 @@ export default function HasilProduksiClient() {
                       allLabel="Semua Bagian"
                       searchPlaceholder="Cari bagian..."
                       panelWidth="w-[250px]"
-                      icon={<Filter size={16} className={selectedBagian ? 'text-emerald-600' : 'text-gray-400'} />}
+                      icon={<Filter size={14} className={selectedBagian ? 'text-emerald-600' : 'text-gray-400'} />}
                       onChange={(val) => setSelectedBagian(val)}
+                      compact
                     />
                   </div>
                   <div className="flex flex-col min-w-0">
@@ -730,21 +895,32 @@ export default function HasilProduksiClient() {
                       allLabel="Semua Pekerjaan"
                       searchPlaceholder="Cari pekerjaan..."
                       panelWidth="w-[280px]"
-                      icon={<Filter size={16} className={selectedPekerjaan ? 'text-emerald-600' : 'text-gray-400'} />}
+                      icon={<Filter size={14} className={selectedPekerjaan ? 'text-emerald-600' : 'text-gray-400'} />}
                       onChange={(val) => setSelectedPekerjaan(val)}
+                      compact
                     />
                   </div>
                 </div>
               )}
 
+              {/* Reset Button */}
+              <button
+                onClick={resetFilters}
+                className="h-9 px-4 sm:w-auto flex items-center justify-center gap-2 shrink-0 bg-rose-50 text-rose-600 font-bold text-[12px] border border-rose-200 rounded-xl hover:bg-rose-100 transition-all group shadow-sm"
+                title="Reset semua filter"
+              >
+                <X size={14} />
+                <span className="sm:hidden md:inline">Reset</span>
+              </button>
+
               {/* Refresh Button */}
               <button
                 onClick={() => fetchDetails()}
-                className="h-11 px-5 sm:w-auto flex items-center justify-center gap-2 shrink-0 bg-gray-50 text-gray-600 font-bold text-[12px] border border-gray-200 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all group shadow-sm"
+                className="h-9 px-4 sm:w-auto flex items-center justify-center gap-2 shrink-0 bg-emerald-50 text-emerald-600 font-bold text-[12px] border border-emerald-200 rounded-xl hover:bg-emerald-100 transition-all group shadow-sm"
                 title="Refresh Data"
               >
-                <RotateCcw size={16} className={`group-hover:rotate-[-180deg] transition-transform duration-500 ${loadingDetails ? 'animate-spin' : ''}`} />
-                <span className="sm:hidden md:inline">Refresh Data</span>
+                <RotateCcw size={14} className={`group-hover:rotate-[-180deg] transition-transform duration-500 ${loadingDetails ? 'animate-spin' : ''}`} />
+                <span className="sm:hidden md:inline">Refresh</span>
               </button>
             </div>
           </div>
@@ -752,85 +928,159 @@ export default function HasilProduksiClient() {
         </div>
 
 
-        {/* Unified Dashboard Control Bar - Split into 3 Cards, Combined on LG */}
+        {/* Unified Dashboard Control Bar */}
         {selectedSopd && (
           <div id="desktop-sticky-control-bar" className="shrink-0 z-[70] bg-[var(--bg-deep)] pb-1.5 -mx-4 px-4 xl:-mx-8 xl:px-8">
-            <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 sm:gap-4">
-              {/* Card 1 & 2 Container */}
-              <div className="flex flex-col md:flex-row flex-wrap lg:flex-nowrap items-stretch lg:items-center gap-3 sm:gap-4 flex-1">
-                {/* Card 1: Target & Sisa */}
-                <div className="bg-white border border-gray-100 rounded-xl shadow-sm px-3 sm:px-5 py-2.5 sm:py-3.5 flex items-center justify-between shrink-0 min-w-0">
+
+            {selectedPekerjaan ? (
+              /* === MODE PEKERJAAN DIPILIH: 1 baris, Card Tren menempel di ujung === */
+              <div className="flex flex-col lg:flex-row items-stretch gap-3 sm:gap-4">
+                {/* Card 1: Order Produksi | WIP | Hasil Produksi */}
+                <div className="bg-white border border-gray-100 rounded-xl shadow-sm px-3 sm:px-5 py-2.5 sm:py-3.5 flex items-center shrink-0 min-w-0">
                   <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Target</span>
+                    <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Order Produksi</span>
                     <div className="flex items-baseline gap-1 min-w-0">
                       <span className="text-lg sm:text-xl font-semibold text-gray-800 tabular-nums truncate" title={selectedSopd.qty.toLocaleString('id-ID')}>{selectedSopd.qty.toLocaleString('id-ID')}</span>
                       <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-tighter shrink-0">{selectedSopd.unit}</span>
                     </div>
                   </div>
-
-                  <div className="w-px h-6 bg-gray-100 shrink-0 mx-2"></div>
-
+                  <div className="w-px h-6 bg-gray-100 shrink-0 mx-2 sm:mx-3"></div>
                   <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Sisa</span>
+                    <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight shrink-0">WIP</span>
                     <div className="flex items-baseline gap-1 min-w-0">
                       <span className="text-lg sm:text-xl font-semibold text-rose-600 tabular-nums truncate" title={(selectedSopd.qty - grandTotal).toLocaleString('id-ID')}>{(selectedSopd.qty - grandTotal).toLocaleString('id-ID')}</span>
                       <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-tighter shrink-0">{selectedSopd.unit}</span>
                     </div>
                   </div>
+                  <div className="w-px h-6 bg-gray-100 shrink-0 mx-2 sm:mx-3"></div>
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Hasil Produksi</span>
+                    <div className="flex items-baseline gap-1 min-w-0">
+                      <span className="text-lg sm:text-xl font-semibold text-emerald-600 tabular-nums truncate" title={grandTotal.toLocaleString('id-ID')}>{grandTotal.toLocaleString('id-ID')}</span>
+                      <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-tighter shrink-0">{selectedSopd.unit}</span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Card 2: Tren & Progress Bar */}
-                <div className="flex-1 min-w-0 bg-white border border-gray-100 rounded-xl shadow-sm px-3 sm:px-5 py-2.5 sm:py-3.5 flex items-center gap-2 sm:gap-6">
-                  <button 
-                    onClick={() => setShowChart(!showChart)} 
-                    className={`px-4 py-1.5 rounded-lg border text-[10px] font-semibold uppercase tracking-wide transition-all shadow-sm shrink-0 ${
-                      showChart 
-                      ? 'bg-emerald-600 text-white border-emerald-600' 
-                      : 'border-emerald-100 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white'
-                    }`}
+                {/* Card 2: Pekerjaan | Realisasi | WIP */}
+                <div className="bg-white border border-gray-100 rounded-xl shadow-sm px-3 sm:px-5 py-2.5 sm:py-3.5 flex items-center shrink-0 min-w-0">
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Pekerjaan</span>
+                    <span className="text-[13px] sm:text-[14px] font-semibold text-gray-800 capitalize truncate max-w-[180px]" title={selectedPekerjaan}>{selectedPekerjaan}</span>
+                  </div>
+                  <div className="w-px h-6 bg-gray-100 shrink-0 mx-2 sm:mx-3"></div>
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Realisasi</span>
+                    <div className="flex items-baseline gap-1 min-w-0">
+                      <span className="text-lg sm:text-xl font-semibold text-emerald-600 tabular-nums truncate" title={grandTotalJurnal.toLocaleString('id-ID')}>{grandTotalJurnal.toLocaleString('id-ID')}</span>
+                      <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-tighter shrink-0">{selectedSopd.unit}</span>
+                    </div>
+                  </div>
+                  <div className="w-px h-6 bg-gray-100 shrink-0 mx-2 sm:mx-3"></div>
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight shrink-0">WIP</span>
+                    <div className="flex items-baseline gap-1 min-w-0">
+                      <span className="text-lg sm:text-xl font-semibold text-rose-600 tabular-nums truncate" title={(selectedSopd.qty - grandTotalJurnal).toLocaleString('id-ID')}>{(selectedSopd.qty - grandTotalJurnal).toLocaleString('id-ID')}</span>
+                      <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-tighter shrink-0">{selectedSopd.unit}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card Tren — hanya tombol Tren, sebelum Tab */}
+                <div className="bg-white border border-gray-100 rounded-xl shadow-sm px-3 sm:px-5 py-2.5 sm:py-3.5 flex items-center shrink-0">
+                  <button
+                    onClick={() => setShowChart(!showChart)}
+                    className={`px-4 py-1.5 rounded-lg border text-[10px] font-semibold uppercase tracking-wide transition-all shadow-sm shrink-0 ${showChart ? 'bg-emerald-600 text-white border-emerald-600' : 'border-emerald-100 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white'}`}
                   >
                     Tren
                   </button>
-                  <div className="flex-1 flex items-center gap-4 min-w-0">
+                </div>
+
+                {/* Tab — flex-1 agar mengisi sisa ruang */}
+                <div className="hidden lg:flex items-stretch flex-1 shrink-0 bg-white border border-gray-100 rounded-xl shadow-sm px-1.5 gap-1">
+                  <button
+                    onClick={() => setActiveTab('jurnal')}
+                    className={`flex-1 my-2 rounded-lg text-[12px] font-bold capitalize tracking-tight whitespace-nowrap transition-all duration-300 ${activeTab === 'jurnal' ? 'bg-gray-100 text-emerald-600 border border-gray-200/50 shadow-inner' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
+                  >
+                    Jurnal Produksi
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('barang_jadi')}
+                    className={`flex-1 my-2 rounded-lg text-[12px] font-bold capitalize tracking-tight whitespace-nowrap transition-all duration-300 ${activeTab === 'barang_jadi' ? 'bg-gray-100 text-emerald-600 border border-gray-200/50 shadow-inner' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
+                  >
+                    Barang Jadi
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* === MODE TANPA PEKERJAAN: 1 baris, card stats & tren terpisah === */
+              <div className="flex flex-col lg:flex-row items-stretch gap-3 sm:gap-4">
+                {/* Card 1: Order Produksi | WIP | Hasil Produksi */}
+                <div className="bg-white border border-gray-100 rounded-xl shadow-sm px-3 sm:px-5 py-2.5 sm:py-3.5 flex items-center shrink-0 min-w-0">
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                    <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight">Order Produksi</span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-lg sm:text-xl font-semibold text-gray-800 tabular-nums">{selectedSopd.qty.toLocaleString('id-ID')}</span>
+                      <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-tighter">{selectedSopd.unit}</span>
+                    </div>
+                  </div>
+
+                  <div className="w-px h-6 bg-gray-100 shrink-0 mx-2 sm:mx-3"></div>
+
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                    <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight">WIP</span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-lg sm:text-xl font-semibold text-rose-600 tabular-nums">{(selectedSopd.qty - grandTotal).toLocaleString('id-ID')}</span>
+                      <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-tighter">{selectedSopd.unit}</span>
+                    </div>
+                  </div>
+
+                  <div className="w-px h-6 bg-gray-100 shrink-0 mx-2 sm:mx-3"></div>
+
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                    <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight">Hasil Produksi</span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-lg sm:text-xl font-semibold text-emerald-600 tabular-nums">{grandTotal.toLocaleString('id-ID')}</span>
+                      <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-tighter">{selectedSopd.unit}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card Tren — flex-1 agar mengisi sisa ruang, sebelum Tab */}
+                <div className="flex-1 bg-white border border-gray-100 rounded-xl shadow-sm px-3 sm:px-5 py-2.5 sm:py-3.5 flex items-center gap-2 sm:gap-6 min-w-0">
+                  <button
+                    onClick={() => setShowChart(!showChart)}
+                    className={`px-4 py-1.5 rounded-lg border text-[10px] font-semibold uppercase tracking-wide transition-all shadow-sm shrink-0 ${showChart ? 'bg-emerald-600 text-white border-emerald-600' : 'border-emerald-100 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white'}`}
+                  >
+                    Tren
+                  </button>
+                  <div className="flex-1 flex items-center gap-3 min-w-0">
                     <div className="flex-1 h-2.5 bg-gray-200/50 rounded-full relative overflow-hidden">
-                      <div 
-                        className={`h-full transition-all duration-1000 ease-out rounded-full ${grandTotal >= selectedSopd.qty ? 'bg-emerald-500 shadow-sm' : 'bg-emerald-400'}`} 
-                        style={{ width: `${Math.min(100, (grandTotal / selectedSopd.qty) * 100)}%` }} 
-                      />
+                      <div className={`h-full transition-all duration-1000 ease-out rounded-full ${grandTotal >= selectedSopd.qty ? 'bg-emerald-500 shadow-sm' : 'bg-emerald-400'}`} style={{ width: `${Math.min(100, (grandTotal / selectedSopd.qty) * 100)}%` }} />
                     </div>
                     <span className="text-[14px] font-semibold tabular-nums text-gray-800 w-14 text-right shrink-0">
                       {((grandTotal / selectedSopd.qty) * 100).toFixed(1)}%
                     </span>
                   </div>
                 </div>
-              </div>
 
-              {/* Tab Navigation (Card 3) — only visible at LG+, mobile tabs rendered separately below */}
-              <div className="hidden lg:flex lg:items-stretch shrink-0">
-                <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-1.5 flex items-center gap-1 w-fit shrink-0">
-                  <button 
+                {/* Tab */}
+                <div className="hidden lg:flex items-stretch shrink-0 bg-white border border-gray-100 rounded-xl shadow-sm px-1.5 gap-1">
+                  <button
                     onClick={() => setActiveTab('jurnal')}
-                    className={`lg:px-10 py-2.5 rounded-lg text-[12px] font-bold capitalize tracking-tight whitespace-nowrap transition-all duration-300 ${
-                      activeTab === 'jurnal' 
-                      ? 'bg-gray-100 text-emerald-600 border border-gray-200/50 shadow-inner' 
-                      : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-                    }`}
+                    className={`lg:px-10 my-2 rounded-lg text-[12px] font-bold capitalize tracking-tight whitespace-nowrap transition-all duration-300 ${activeTab === 'jurnal' ? 'bg-gray-100 text-emerald-600 border border-gray-200/50 shadow-inner' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
                   >
                     Jurnal Produksi
                   </button>
-                  <button 
+                  <button
                     onClick={() => setActiveTab('barang_jadi')}
-                    className={`lg:px-10 py-2.5 rounded-lg text-[12px] font-bold capitalize tracking-tight whitespace-nowrap transition-all duration-300 ${
-                      activeTab === 'barang_jadi' 
-                      ? 'bg-gray-100 text-emerald-600 border border-gray-200/50 shadow-inner' 
-                      : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-                    }`}
+                    className={`lg:px-10 my-2 rounded-lg text-[12px] font-bold capitalize tracking-tight whitespace-nowrap transition-all duration-300 ${activeTab === 'barang_jadi' ? 'bg-gray-100 text-emerald-600 border border-gray-200/50 shadow-inner' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
                   >
                     Barang Jadi
                   </button>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -1057,43 +1307,27 @@ export default function HasilProduksiClient() {
                 ref={jurnalBodyRef}
                 className="flex-1 min-h-0 overflow-auto custom-scrollbar"
               >
-                <table className="w-full text-left border-separate border-spacing-0" style={{ tableLayout: 'fixed', minWidth: '1950px' }}>
+                <table className="text-left border-separate border-spacing-0" style={{ tableLayout: 'fixed', width: `${colWidths.reduce((a, b) => a + b, 0)}px` }}>
                   <colgroup>
-                    <col style={{ width: '100px' }} />
-                    <col style={{ width: '160px' }} />
-                    <col style={{ width: '240px' }} />
-                    <col style={{ width: '280px' }} />
-                    <col style={{ width: '150px' }} />
-                    <col style={{ width: '100px' }} />
-                    <col style={{ width: '100px' }} />
-                    <col style={{ width: '100px' }} />
-                    <col style={{ width: '100px' }} />
-                    <col style={{ width: '80px' }} />
-                    <col style={{ width: '200px' }} />
-                    <col style={{ width: '200px' }} />
-                    <col style={{ width: '100px' }} />
-                    <col style={{ width: '120px' }} />
+                    {colWidths.map((w, i) => <col key={i} style={{ width: `${w}px` }} />)}
                   </colgroup>
                   <thead className="sticky top-0 z-20">
                     <tr className="bg-white">
-                      <th className="sticky left-0 z-30 px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap md:shadow-none shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]">Tanggal</th>
-                      <th className="md:sticky md:left-[100px] md:z-30 px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap md:shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)] lg:shadow-none">Bagian / Karyawan</th>
-                      <th className="lg:sticky lg:left-[260px] lg:z-30 px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap lg:shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]">No. & Nama Order</th>
-                      <th className="lg:sticky lg:left-[500px] lg:z-30 px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap lg:shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]">Jenis Pekerjaan</th>
-                      <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap">Bahan Kertas</th>
-                      <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap text-right">Jml. Plate</th>
-                      <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap">Warna</th>
-                      <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap text-right">Inscheet</th>
-                      <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap text-right">Rijek</th>
-                      <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap">Jam</th>
-                      <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap">Kendala</th>
-                      <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap">Keterangan</th>
-                      <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-gray-100 bg-white whitespace-nowrap text-right">Target</th>
-                      <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-gray-100 bg-emerald-50 whitespace-nowrap text-right">Realisasi</th>
+                      {colWidths.map((w, i) => (
+                        <th key={i} onClick={() => toggleSort(i)} onContextMenu={(e) => colCtx(i, e)}
+                          className={`px-2 py-3 xl:py-4 text-[10px] xl:text-xs font-bold tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap ${i === 0 ? 'sticky left-0 z-30 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]' : ''} ${i === 1 ? 'md:sticky md:z-30 md:shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]' : ''} ${i === 2 || i === 3 || i === 4 ? 'lg:sticky lg:z-30 lg:shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]' : ''} ${sorting.some(x => x.i === i) ? 'text-emerald-600' : 'text-gray-400'} ${i >= 6 && i <= 9 ? 'text-right' : ''} ${i === 14 ? 'bg-emerald-50' : ''} cursor-pointer hover:bg-gray-50 select-none`}
+                          style={{ width: `${w}px`, minWidth: `${w}px`, ...(i > 4 ? { position: 'relative' } : {}), ...(i > 0 && i <= 4 ? { left: `${colWidths.slice(0, i).reduce((a, b) => a + b, 0)}px` } : {}) }}>
+                          <div className="flex items-center gap-1">
+                            <SortIcon i={i} />
+                            <span className="truncate">{['Tanggal','Bagian / Karyawan','No. & Nama Order','Jenis Pekerjaan','Kode','Bahan Kertas','Jml. Plate','Warna','Inscheet','Rijek','Jam','Kendala','Keterangan','Target','Realisasi'][i]}</span>
+                          </div>
+                          <div onMouseDown={(e) => colResizeStart(i, e)} onDoubleClick={(e) => colAutoFit(i, e)} className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-blue-300/50 z-10" />
+                        </th>
+                      ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {memoizedJurnalRows}
+                  <tbody style={{ display: 'block', height: `${rowVirtualizer.getTotalSize()}px`, position: 'relative' }}>
+                    {jurnalRowsContent}
                   </tbody>
                 </table>
               </div>
@@ -1136,21 +1370,44 @@ export default function HasilProduksiClient() {
                   </div>
                 </div>
               )}
-              {/* TableFooter with Pagination */}
+              {activeTab === 'jurnal' ? (
+                <div className="flex items-center justify-between shrink-0 px-2 min-h-[30px]">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[11px] font-bold text-gray-400 tracking-wide">Menampilkan {totalJurnalItems} dari {totalJurnalItems} baris data</span>
+                    {loadTime !== null && loadTime !== undefined && (
+                      <div className={`text-[9px] px-2 py-1 rounded-full font-bold flex items-center gap-1.5 border tracking-wide shadow-sm ${
+                        loadTime < 300  ? 'bg-green-50 text-green-600 border-green-100' :
+                        loadTime < 1000 ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                          'bg-red-50 text-red-600 border-red-100'
+                      }`}>
+                        <span className="animate-pulse">⚡</span>
+                        <span className="leading-none">{(loadTime / 1000).toFixed(2)}s</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
               <TableFooter
-                totalCount={activeTab === 'jurnal' ? totalJurnalItems : totalBarangJadiItems}
-                currentCount={activeTab === 'jurnal' ? Math.min(jurnalPage * PAGE_SIZE, totalJurnalItems) : Math.min(barangJadiPage * PAGE_SIZE, totalBarangJadiItems)}
+                totalCount={totalBarangJadiItems}
+                currentCount={Math.min(barangJadiPage * PAGE_SIZE, totalBarangJadiItems)}
                 label="baris data"
                 loadTime={loadTime}
-                page={activeTab === 'jurnal' ? jurnalPage : barangJadiPage}
-                totalPages={activeTab === 'jurnal' ? totalJurnalPages : totalBarangJadiPages}
-                onPageChange={activeTab === 'jurnal' ? setJurnalPage : setBarangJadiPage}
-              />
+                page={barangJadiPage}
+                totalPages={totalBarangJadiPages}
+                onPageChange={setBarangJadiPage}
+               />
+              )}
             </>
           )}
+          {ctxCol && (() => {
+            return <div className="fixed bg-white border border-gray-200 shadow-2xl rounded-xl p-3 flex items-center gap-2 z-50" style={{ left: ctxCol.x, top: ctxCol.y }}>
+                <input autoFocus className="w-20 px-2 py-1.5 text-xs font-bold border border-gray-200 rounded-lg outline-none focus:border-emerald-400" type="number" value={ctxCol.val} onChange={e => setCtxCol({ ...ctxCol, val: e.target.value })} onKeyDown={e => { if (e.key === 'Enter') { const v = parseInt(ctxCol.val); if (v >= COL_MIN[ctxCol.i]) setColWidths(p => { const n = [...p]; n[ctxCol.i] = v; return n; }); setCtxCol(null); } }} />
+                <button onClick={() => { const v = parseInt(ctxCol.val); if (v >= COL_MIN[ctxCol.i]) setColWidths(p => { const n = [...p]; n[ctxCol.i] = v; return n; }); setCtxCol(null); }} className="text-[11px] font-bold text-white bg-emerald-600 px-3 py-1.5 rounded-lg hover:bg-emerald-700">Atur</button>
+              </div>;
+          })()}
           </>
         ) : (
-        <div className="flex-1 min-h-0 flex flex-col items-center justify-center border-2 border-dashed border-emerald-100 bg-emerald-50/10 rounded-2xl animate-in fade-in duration-700 relative overflow-hidden">
+          <div className="flex-1 min-h-0 flex flex-col items-center justify-center border-2 border-dashed border-emerald-100 bg-emerald-50/10 rounded-2xl animate-in fade-in duration-700 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-200/20 blur-[100px] -mr-32 -mt-32 rounded-full"></div>
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-100/20 blur-[100px] -ml-32 -mb-32 rounded-full"></div>
           
