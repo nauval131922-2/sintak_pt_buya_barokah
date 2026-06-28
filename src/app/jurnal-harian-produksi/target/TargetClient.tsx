@@ -299,7 +299,7 @@ export default function TargetClient() {
       
       // We'll capture everything above the table
       const headerContainer = document.createElement('div');
-      headerContainer.style.width = `${printRef.current.offsetWidth}px`;
+      headerContainer.style.width = `1400px`;
       headerContainer.style.background = 'white';
       headerContainer.style.padding = '0'; // Remove padding to align with table margins
       
@@ -395,13 +395,16 @@ export default function TargetClient() {
     if (!printRef.current || savingImage) return;
     setSavingImage(true);
     try {
-      // Capture the full content as a single data URL
+      // Temporarily fix width at 1400px for consistent capture across screens
       const scale = 2;
+      const origWidth = printRef.current.style.width;
+      printRef.current.style.width = '1400px';
       const dataUrl = await domToPng(printRef.current, {
         scale,
         backgroundColor: '#ffffff',
       });
-      
+      printRef.current.style.width = origWidth;
+
       const img = new Image();
       img.src = dataUrl;
       await new Promise((resolve) => (img.onload = resolve));
