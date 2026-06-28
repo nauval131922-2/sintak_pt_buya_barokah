@@ -391,7 +391,7 @@ export default function HasilProduksiClient() {
 
     // Pure sort: flatten all items, subtotals per pekerjaan
     if (sorting.some(s => s.i !== 4)) {
-      const allItems = src.flatMap(g => (g.items || []).map(item => ({ item, g })));
+      const allItems = src.flatMap(g => (g.items || []).map((item: any) => ({ item, g })));
       const rows: any[] = [];
       let _sk = 0, streak: any[] = [], lastJobKey = '', lastTgl = '';
       const flushStreak = () => {
@@ -938,7 +938,7 @@ export default function HasilProduksiClient() {
                 {/* Card 1: Order Produksi | WIP | Hasil Produksi */}
                 <div className="bg-white border border-gray-100 rounded-xl shadow-sm px-3 sm:px-5 py-2.5 sm:py-3.5 flex items-center shrink-0 min-w-0">
                   <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Order Produksi</span>
+                    <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Jumlah Order</span>
                     <div className="flex items-baseline gap-1 min-w-0">
                       <span className="text-lg sm:text-xl font-semibold text-gray-800 tabular-nums truncate" title={selectedSopd.qty.toLocaleString('id-ID')}>{selectedSopd.qty.toLocaleString('id-ID')}</span>
                       <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-tighter shrink-0">{selectedSopd.unit}</span>
@@ -1018,7 +1018,7 @@ export default function HasilProduksiClient() {
                 {/* Card 1: Order Produksi | WIP | Hasil Produksi */}
                 <div className="bg-white border border-gray-100 rounded-xl shadow-sm px-3 sm:px-5 py-2.5 sm:py-3.5 flex items-center shrink-0 min-w-0">
                   <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                    <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight">Order Produksi</span>
+                    <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight">Jumlah Order</span>
                     <div className="flex items-baseline gap-1">
                       <span className="text-lg sm:text-xl font-semibold text-gray-800 tabular-nums">{selectedSopd.qty.toLocaleString('id-ID')}</span>
                       <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-tighter">{selectedSopd.unit}</span>
