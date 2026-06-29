@@ -32,7 +32,8 @@ export async function handleRegister(ctx: Context) {
     // Belum terdaftar
     await ctx.reply(
       `📝 Pendaftaran SINTAK Bot - Bagian ${BAGIAN}\n\n` +
-      `Ketik nama lengkap Anda sesuai database SINTAK:`
+      `Ketik nama lengkap Anda sesuai database SINTAK.\n\n` +
+      `Tip: Cari nama Anda dulu dengan /cari budi`
     );
 
     userStates.set(telegramId, { state: 'waiting_nama' });

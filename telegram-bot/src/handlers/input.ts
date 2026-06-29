@@ -27,7 +27,7 @@ export async function handleInputCommand(ctx: Context) {
     if (!status.registered) {
       return ctx.reply(
         `❌ Anda belum terdaftar.\n\n` +
-        `Gunakan /start untuk registrasi terlebih dahulu.`
+        `Gunakan /register untuk registrasi terlebih dahulu.`
       );
     }
 
@@ -41,14 +41,16 @@ export async function handleInputCommand(ctx: Context) {
     // Set state waiting for template
     inputStates.set(telegramId, { state: 'waiting_template' });
 
+    const today = new Date().toISOString().slice(0, 10);
+    const year = new Date().getFullYear();
     await ctx.reply(
       `📝 Kirim template realisasi Anda:\n\n` +
       `Contoh:\n` +
       `\`\`\`\n` +
-      `Nama: Nauval Gunawan\n` +
-      `Tgl: 2026-06-26\n` +
+      `Nama: Budi\n` +
+      `Tgl: ${today}\n` +
       `Shift: 1\n` +
-      `Order: SO-12345\n` +
+      `Order: OP.001.SOPd.${year}\n` +
       `Pekerjaan: Setting Mesin\n` +
       `Target: 100\n` +
       `Realisasi: 95\n` +
@@ -56,6 +58,7 @@ export async function handleInputCommand(ctx: Context) {
       `\`\`\`\n\n` +
       `Field wajib: Tgl, Shift, Realisasi\n\n` +
       `Field Nama opsional untuk input atas nama karyawan lain. Cukup isi Nama saja, absensi otomatis terisi dari database.\n\n` +
+      `Cari nama karyawan dengan /cari budi\n\n` +
       `Ketik /help untuk panduan lengkap.`,
       { parse_mode: 'Markdown' }
     );
@@ -84,10 +87,10 @@ export async function handleInputTemplate(ctx: Context) {
     try {
       const status = await api.checkStatus(String(telegramId));
 
-      if (!status.registered || status.is_active !== 1) {
-        inputStates.delete(telegramId);
-        return ctx.reply(`❌ Anda belum terdaftar atau belum disetujui. Gunakan /start`);
-      }
+    if (!status.registered || status.is_active !== 1) {
+      inputStates.delete(telegramId);
+      return ctx.reply(`❌ Anda belum terdaftar atau belum disetujui. Gunakan /register`);
+    }
 
       if (normalizedText === 'lanjut') {
         if (!userState.pendingData) {
@@ -121,7 +124,7 @@ export async function handleInputTemplate(ctx: Context) {
     const status = await api.checkStatus(String(telegramId));
 
     if (!status.registered || status.is_active !== 1) {
-      return ctx.reply(`❌ Anda belum terdaftar atau belum disetujui. Gunakan /start`);
+      return ctx.reply(`❌ Anda belum terdaftar atau belum disetujui. Gunakan /register`);
     }
 
     // Parse template

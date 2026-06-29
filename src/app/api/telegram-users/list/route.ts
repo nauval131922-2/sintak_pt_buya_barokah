@@ -11,9 +11,9 @@ export async function GET(request: NextRequest) {
 
     const result = await db.execute({
       sql: `SELECT id, telegram_id, telegram_username, nama_karyawan, posisi, absensi, bagian, is_active,
-                   requested_at, approved_at, approved_by
-            FROM telegram_users
-            ORDER BY is_active ASC, registered_at DESC`,
+                   registered_at, approved_at, approved_by
+             FROM telegram_users
+             ORDER BY is_active ASC, registered_at DESC`,
       args: []
     });
 

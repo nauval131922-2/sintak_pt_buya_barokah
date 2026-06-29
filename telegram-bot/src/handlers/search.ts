@@ -11,7 +11,7 @@ export async function handleSearch(ctx: Context) {
   if (!query) {
       return ctx.reply(
         `🔎 Gunakan format:\n\n` +
-        `/cari nauval\n\n` +
+        `/cari budi\n\n` +
         `Bot akan mencari semua karyawan aktif.`
       );
     }
@@ -19,7 +19,7 @@ export async function handleSearch(ctx: Context) {
   try {
     const status = await api.checkStatus(String(telegramId));
     if (!status.registered || status.is_active !== 1) {
-      return ctx.reply(`❌ Anda belum terdaftar atau belum disetujui. Gunakan /start`);
+      return ctx.reply(`❌ Anda belum terdaftar atau belum disetujui. Gunakan /register`);
     }
 
     const result = await api.findKaryawan(query, undefined, 10);

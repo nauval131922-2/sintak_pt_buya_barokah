@@ -20,15 +20,20 @@ interface TelegramUser {
 
 function formatDateTime(dateStr: string) {
   if (!dateStr) return '-';
-  const d = new Date(dateStr + 'T00:00:00');
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '-';
   return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
 }
+
+const REFRESH_INTERVAL = 2 * 60; // seconds
 
 export default function TelegramUsersClient() {
   const [users, setUsers] = useState<TelegramUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [toast, setToast] = useState<{ type: 'success' | 'error' | 'warning'; message: string } | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [countdown, setCountdown] = useState(REFRESH_INTERVAL);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -37,6 +42,8 @@ export default function TelegramUsersClient() {
       const json = await res.json();
       if (json.success) {
         setUsers(json.data);
+        setLastUpdated(new Date());
+        setCountdown(REFRESH_INTERVAL);
       } else {
         setToast({ type: 'error', message: json.error || 'Gagal memuat data' });
       }
@@ -47,7 +54,17 @@ export default function TelegramUsersClient() {
     }
   }, []);
 
-  useEffect(() => { fetchUsers(); }, [fetchUsers]);
+  useEffect(() => {
+    fetchUsers();
+    const interval = setInterval(fetchUsers, REFRESH_INTERVAL * 1000);
+    return () => clearInterval(interval);
+  }, [fetchUsers]);
+
+  // ponytail: countdown tick, separate from fetch interval
+  useEffect(() => {
+    const tick = setInterval(() => setCountdown(c => Math.max(0, c - 1)), 1000);
+    return () => clearInterval(tick);
+  }, []);
 
   const handleApprove = async (telegramId: string, nama: string) => {
     setActionLoading(telegramId);
@@ -71,8 +88,11 @@ export default function TelegramUsersClient() {
     }
   };
 
-  const handleReject = async (telegramId: string, nama: string) => {
-    if (!window.confirm(`Tolak permintaan akses dari ${nama}? Data akan dihapus.`)) return;
+  const handleDelete = async (telegramId: string, nama: string, isPending: boolean) => {
+    const msg = isPending
+      ? `Tolak permintaan akses dari ${nama}? Data akan dihapus.`
+      : `Hapus user ${nama}? Data akan dihapus permanen.`;
+    if (!window.confirm(msg)) return;
     setActionLoading(telegramId);
     try {
       const res = await fetch('/api/telegram-users/reject', {
@@ -82,10 +102,10 @@ export default function TelegramUsersClient() {
       });
       const json = await res.json();
       if (json.success) {
-        setToast({ type: 'success', message: `Permintaan dari ${nama} ditolak.` });
+        setToast({ type: 'success', message: isPending ? `Permintaan dari ${nama} ditolak.` : `${nama} berhasil dihapus.` });
         fetchUsers();
       } else {
-        setToast({ type: 'error', message: json.error || 'Gagal reject' });
+        setToast({ type: 'error', message: json.error || 'Gagal memproses' });
       }
     } catch {
       setToast({ type: 'error', message: 'Terjadi kesalahan sistem' });
@@ -98,7 +118,7 @@ export default function TelegramUsersClient() {
   const activeUsers = users.filter(u => u.is_active === 1);
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto px-6 pb-6 space-y-6">
+    <div className="flex flex-col gap-6">
       {toast && <Toast {...toast} onClose={() => setToast(null)} />}
 
       {/* Stats */}
@@ -129,15 +149,27 @@ export default function TelegramUsersClient() {
 
       {/* Pending Requests */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-3">
           <h2 className="text-[14px] font-bold text-gray-800">Permintaan Pending</h2>
-          <button
-            onClick={fetchUsers}
-            disabled={loading}
-            className="p-2 rounded-lg text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
-          >
-            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-          </button>
+          <div className="flex items-center gap-2 ml-auto">
+            <div className="text-right">
+              {lastUpdated && (
+                <p className="text-[10px] text-gray-400">
+                   Update: {lastUpdated.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })} {lastUpdated.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                </p>
+              )}
+              <p className="text-[10px] text-gray-400">
+                Refresh dalam: <span className={countdown <= 10 ? 'text-amber-500 font-bold' : ''}>{Math.floor(countdown / 60)}:{String(countdown % 60).padStart(2, '0')}</span>
+              </p>
+            </div>
+            <button
+              onClick={fetchUsers}
+              disabled={loading}
+              className="p-2 rounded-lg text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors shrink-0"
+            >
+              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+            </button>
+          </div>
         </div>
 
         {loading ? (
@@ -172,7 +204,7 @@ export default function TelegramUsersClient() {
                     Approve
                   </button>
                   <button
-                    onClick={() => handleReject(user.telegram_id, user.nama_karyawan)}
+                    onClick={() => handleDelete(user.telegram_id, user.nama_karyawan, true)}
                     disabled={actionLoading === user.telegram_id}
                     className="px-3 py-1.5 text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition-colors disabled:opacity-50 flex items-center gap-1"
                   >
@@ -197,7 +229,7 @@ export default function TelegramUsersClient() {
         ) : (
           <div className="divide-y divide-gray-50">
             {activeUsers.map(user => (
-              <div key={user.id} className="px-5 py-3 flex items-center gap-4">
+              <div key={user.id} className="px-5 py-3 flex items-center gap-4 hover:bg-gray-50/50 transition-colors">
                 <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
                   <span className="text-xs font-bold text-emerald-700">{user.nama_karyawan.charAt(0)}</span>
                 </div>
@@ -213,6 +245,14 @@ export default function TelegramUsersClient() {
                     by {user.approved_by}
                   </p>
                 )}
+                <button
+                  onClick={() => handleDelete(user.telegram_id, user.nama_karyawan, false)}
+                  disabled={actionLoading === user.telegram_id}
+                  className="px-3 py-1.5 text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition-colors disabled:opacity-50 flex items-center gap-1 shrink-0"
+                >
+                  {actionLoading === user.telegram_id ? <Loader2 size={12} className="animate-spin" /> : <XCircle size={12} />}
+                  Hapus
+                </button>
               </div>
             ))}
           </div>
