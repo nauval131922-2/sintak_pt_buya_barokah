@@ -121,6 +121,7 @@ export default function HasilProduksiClient() {
   const [showChart, setShowChart] = useState(false);
   const [hideGudang, setHideGudang] = useState(false);
   const [hideJurnal, setHideJurnal] = useState(false);
+  const [detailLevel, setDetailLevel] = useState(2);
   const PAGE_SIZE = 20;
   const [barangJadiPage, setBarangJadiPage] = useState(1);
   // ponytail: multi-column sort + column resize
@@ -172,7 +173,12 @@ export default function HasilProduksiClient() {
     setColWidths(p => { const n = [...p]; n[i] = Math.max(COL_MIN[i], maxW + 8); return n; });
   };
   const [ctxCol, setCtxCol] = useState<{ i: number; x: number; y: number; val: string } | null>(null);
-  useEffect(() => { if (!ctxCol) return; const f = () => setCtxCol(null); document.addEventListener('mousedown', f); return () => document.removeEventListener('mousedown', f); }, [ctxCol]);
+  useEffect(() => {
+    if (!ctxCol) return;
+    const g = (e: KeyboardEvent) => { if (e.key === 'Escape') setCtxCol(null); };
+    document.addEventListener('keydown', g);
+    return () => { document.removeEventListener('keydown', g); };
+  }, [ctxCol]);
   const colCtx = (i: number, e: React.MouseEvent) => {
     e.preventDefault();
     setCtxCol({ i, x: e.clientX, y: e.clientY, val: String(colWidths[i]) });
@@ -327,6 +333,7 @@ export default function HasilProduksiClient() {
     setSelectedBagian('');
     setSelectedPekerjaan('');
     setSorting([]);
+    setDetailLevel(2);
     persistDateStore('hasil_dates', today, today);
     localStorage.removeItem('hasil_selectedSopd');
   };
@@ -393,7 +400,7 @@ export default function HasilProduksiClient() {
     if (sorting.some(s => s.i !== 4)) {
       const allItems = src.flatMap(g => (g.items || []).map((item: any) => ({ item, g })));
       const rows: any[] = [];
-      let _sk = 0, streak: any[] = [], lastJobKey = '', lastTgl = '';
+      let _sk = 0, streak: any[] = [], lastJobKey = '', lastTgl = '', streakCode = '';
       const flushStreak = () => {
         if (streak.length === 0) return;
         const totalR = streak.reduce((s, x) => s + Number(x.realisasi || 0), 0);
@@ -403,13 +410,14 @@ export default function HasilProduksiClient() {
           const dates = streak.map(x => x.tgl).filter(Boolean).sort();
           let dateLabel = formatToDayMonthYear(dates[0]);
           if (dates[0] && dates[dates.length-1] && dates[0] !== dates[dates.length-1]) dateLabel = `${formatToDayMonthYear(dates[0])} s.d. ${formatToDayMonthYear(dates[dates.length-1])}`;
-          rows.push({ type: 'subtotal', jobDisplayName: streak[0]?.jenis_pekerjaan_2 || 'Pekerjaan', dateLabel, totalR, totalRijek, totalTarget, gIdx: 0, _sk: _sk++ });
+          rows.push({ type: 'subtotal', jobDisplayName: streak[0]?.jenis_pekerjaan_2 || 'Pekerjaan', dateLabel, totalR, totalRijek, totalTarget, gIdx: 0, _sk: _sk++, code: streakCode });
         }
-        streak = [];
+        streak = []; streakCode = '';
       };
       allItems.forEach(({ item, g }, i) => {
         const jobKey = (item.jenis_pekerjaan_2 || '').toLowerCase();
         if (streak.length > 0 && jobKey !== lastJobKey) flushStreak();
+        if (!streakCode) streakCode = g?.code || '';
         lastJobKey = jobKey;
         const showDate = item.tgl !== lastTgl;
         lastTgl = item.tgl;
@@ -441,7 +449,7 @@ export default function HasilProduksiClient() {
           dateLabel = `${formatToDayMonthYear(minDate)} s.d. ${formatToDayMonthYear(maxDate)}`;
         }
         const jobDisplayName = streak[0]?.jenis_pekerjaan_2 || 'Pekerjaan';
-        rows.push({ type: 'subtotal', jobDisplayName, dateLabel, totalR, totalRijek, totalTarget, gIdx, _sk: _sk++ });
+        rows.push({ type: 'subtotal', jobDisplayName, dateLabel, totalR, totalRijek, totalTarget, gIdx, _sk: _sk++, code: group?.code || '' });
         streak = [];
       };
 
@@ -463,10 +471,15 @@ export default function HasilProduksiClient() {
     return rows;
   }, [sortedJurnalResults, sorting]);
 
+  const displayRows = React.useMemo(() => {
+    if (detailLevel === 1) return flatRows.filter(r => r.type === 'subtotal');
+    return flatRows;
+  }, [flatRows, detailLevel]);
+
   const rowVirtualizer = useVirtualizer({
-    count: flatRows.length,
+    count: displayRows.length,
     getScrollElement: () => jurnalBodyRef.current,
-    estimateSize: (i) => (flatRows[i]?.type === 'subtotal' ? 56 : 58),
+    estimateSize: (i) => (displayRows[i]?.type === 'subtotal' ? 56 : 58),
     overscan: 15,
     measureElement: (el) => el.getBoundingClientRect().height,
   });
@@ -529,12 +542,13 @@ export default function HasilProduksiClient() {
     if (virtualRows.length === 0) return null;
 
     return virtualRows.map((virtualRow) => {
-      const row = flatRows[virtualRow.index];
+      const row = displayRows[virtualRow.index];
 
       if (row.type === 'subtotal') {
-        const totalLabel = `Total ${row.jobDisplayName || 'Pekerjaan'} — ${row.dateLabel}`;
-        const cols: [string, string, string?][] = [
-          [`${colWidths.slice(0, 9).reduce((a, b) => a + b, 0)}px`, 'border-r border-emerald-200 bg-emerald-100 text-right', totalLabel],
+        const cols: [string, string, React.ReactNode?][] = [
+          [`${colWidths.slice(0, 9).reduce((a, b) => a + b, 0)}px`, 'border-r border-emerald-200 bg-emerald-100 text-right',
+            <span className="inline-flex items-baseline gap-1.5"><span className="text-[13px] font-semibold text-emerald-700">Total</span>{row.code ? <span className="text-[13px] font-bold text-gray-500 font-mono">{row.code}</span> : null}<span className="text-[15px] font-extrabold text-gray-900 tracking-tight">{row.jobDisplayName || 'Pekerjaan'}</span><span className="text-[11px] font-semibold text-gray-400">—</span><span className="text-[12px] font-semibold text-gray-500">{row.dateLabel}</span></span>
+          ],
           [`${colWidths[9]}px`, 'border-r border-emerald-200 bg-rose-100/60 text-right', row.totalRijek.toLocaleString('id-ID')],
           [`${colWidths.slice(10, 13).reduce((a, b) => a + b, 0)}px`, 'border-r border-emerald-200 bg-emerald-100', undefined],
           [`${colWidths[13]}px`, 'border-r border-emerald-200 bg-gray-100/60 text-right', row.totalTarget.toLocaleString('id-ID')],
@@ -548,7 +562,7 @@ export default function HasilProduksiClient() {
             style={{ display: 'flex', flexDirection: 'row', alignItems: 'stretch', position: 'absolute', top: 0, left: 0, transform: `translateY(${virtualRow.start}px)`, width: '100%' }}>
             {cols.map(([w, cls, content], i) => (
               <td key={i} className={`px-4 py-3.5 ${cls}`} style={{ flex: `0 0 ${w}`, width: w, display: 'flex', alignItems: 'center', justifyContent: content ? 'flex-end' : 'flex-start' }}>
-                {content ? <span className="text-[15px] font-extrabold tracking-tight tabular-nums">{content}</span> : null}
+                {typeof content === 'string' ? <span className="text-[15px] font-extrabold tracking-tight tabular-nums">{content}</span> : content}
               </td>
             ))}
           </tr>
@@ -902,6 +916,15 @@ export default function HasilProduksiClient() {
                   </div>
                 </div>
               )}
+
+              {/* Level */}
+              <div className="flex flex-col gap-0.5 shrink-0">
+                <span className="block font-semibold text-gray-500 ml-1 tracking-tight select-none text-[11px] mb-1">Level</span>
+                <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-xl p-0.5 shadow-sm">
+                  <button onClick={() => setDetailLevel(1)} className={`px-3 h-7 text-[11px] font-bold rounded-lg transition-all ${detailLevel === 1 ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>1</button>
+                  <button onClick={() => setDetailLevel(2)} className={`px-3 h-7 text-[11px] font-bold rounded-lg transition-all ${detailLevel === 2 ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>2</button>
+                </div>
+              </div>
 
               {/* Reset Button */}
               <button
@@ -1400,10 +1423,12 @@ export default function HasilProduksiClient() {
             </>
           )}
           {ctxCol && (() => {
-            return <div className="fixed bg-white border border-gray-200 shadow-2xl rounded-xl p-3 flex items-center gap-2 z-50" style={{ left: ctxCol.x, top: ctxCol.y }}>
-                <input autoFocus className="w-20 px-2 py-1.5 text-xs font-bold border border-gray-200 rounded-lg outline-none focus:border-emerald-400" type="number" value={ctxCol.val} onChange={e => setCtxCol({ ...ctxCol, val: e.target.value })} onKeyDown={e => { if (e.key === 'Enter') { const v = parseInt(ctxCol.val); if (v >= COL_MIN[ctxCol.i]) setColWidths(p => { const n = [...p]; n[ctxCol.i] = v; return n; }); setCtxCol(null); } }} />
-                <button onClick={() => { const v = parseInt(ctxCol.val); if (v >= COL_MIN[ctxCol.i]) setColWidths(p => { const n = [...p]; n[ctxCol.i] = v; return n; }); setCtxCol(null); }} className="text-[11px] font-bold text-white bg-emerald-600 px-3 py-1.5 rounded-lg hover:bg-emerald-700">Atur</button>
-              </div>;
+            return <div onMouseDown={() => setCtxCol(null)} className="fixed inset-0 z-50">
+                <div onMouseDown={e => e.stopPropagation()} className="fixed bg-white border border-gray-200 shadow-2xl rounded-xl p-3 flex items-center gap-2 z-50" style={{ left: ctxCol.x, top: ctxCol.y }}>
+                <input autoFocus className="w-20 px-2 py-1.5 text-xs font-bold border border-gray-200 rounded-lg outline-none focus:border-emerald-400" type="number" value={ctxCol.val} onChange={e => setCtxCol({ ...ctxCol, val: e.target.value })} onKeyDown={e => { if (e.key === 'Enter') { setColWidths(p => { const n = [...p]; n[ctxCol.i] = Math.max(COL_MIN[ctxCol.i], parseInt(ctxCol.val) || COL_MIN[ctxCol.i]); return n; }); setCtxCol(null); } }} />
+                <button onClick={() => { setColWidths(p => { const n = [...p]; n[ctxCol.i] = Math.max(COL_MIN[ctxCol.i], parseInt(ctxCol.val) || COL_MIN[ctxCol.i]); return n; }); setCtxCol(null); }} className="text-[11px] font-bold text-white bg-emerald-600 px-3 py-1.5 rounded-lg hover:bg-emerald-700">Atur</button>
+              </div>
+            </div>;
           })()}
           </>
         ) : (
