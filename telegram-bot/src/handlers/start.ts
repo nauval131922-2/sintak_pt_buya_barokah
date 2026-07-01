@@ -7,12 +7,13 @@ export async function handleStart(ctx: Context) {
   if (!telegramId) return;
 
   return ctx.reply(
-    `👋 Selamat datang di SINTAK Bot - Bagian ${BAGIAN}!\n\n` +
+    `👋 *Selamat datang di SINTAK Bot - Bagian ${BAGIAN}!*\n\n` +
     `Perintah yang tersedia:\n\n` +
-    `/register - Daftar ke bot\n` +
-    `/cari - Cari karyawan\n` +
-    `/input - Input realisasi\n` +
-    `/history - Lihat riwayat\n` +
-    `/help - Bantuan`
+    `*/register* - Daftar ke bot\n` +
+    `*/input* - Input realisasi\n` +
+    `*/input_realisasi_by_target* - Input realisasi ke target existing\n` +
+    `*/history* - Lihat riwayat\n` +
+    `*/help* - Bantuan`,
+    { parse_mode: 'Markdown' }
   );
 }

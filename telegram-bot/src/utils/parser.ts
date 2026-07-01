@@ -54,11 +54,11 @@ export function parseRealisasiTemplate(text: string): RealisasiData | null {
       data.bahan = value;
     } else if (key === 'warna') {
       data.warna = value;
-    } else if (key === 'inscheet') {
+    } else if (key === 'inscheet' || key === 'insheet') {
       data.inscheet = value.replace(/\./g, '');
     } else if (key === 'rijek') {
       data.rijek = value.replace(/\./g, '');
-    } else if (key === 'plate' || key === 'jml plate') {
+    } else if (key === 'plate' || key === 'jml plate' || key === 'jml. plate') {
       data.plate = value.replace(/\./g, '');
     } else if (key === 'jam' || key === 'jam kerja') {
       data.jam = value;
@@ -70,7 +70,12 @@ export function parseRealisasiTemplate(text: string): RealisasiData | null {
   }
 
   // Validasi field wajib
-  if (!data.tgl || !data.shift || !data.realisasi) {
+  if (!data.tgl || !data.shift || !data.realisasi || !data.order || !data.pekerjaan || !data.target) {
+    return null;
+  }
+
+  // Nama atau Absensi wajib (salah satu)
+  if (!data.nama_karyawan && !data.absensi) {
     return null;
   }
 
@@ -91,13 +96,19 @@ export function validateRealisasiData(data: RealisasiData): { valid: boolean; er
   }
 
   // Validasi realisasi (harus angka)
-  if (!/^\d+$/.test(data.realisasi)) {
+  if (!data.realisasi || !/^\d+$/.test(data.realisasi)) {
     errors.push('Realisasi harus berupa angka');
   }
 
+  // Validasi target (harus angka)
+  if (!data.target || !/^\d+$/.test(data.target)) {
+    errors.push('Target harus berupa angka');
+  }
+
   // Validasi tanggal tidak di masa depan
-  const inputDate = new Date(data.tgl + 'T12:00:00');
   const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const inputDate = new Date(data.tgl + 'T00:00:00+07:00');
   const diffDays = Math.floor((today.getTime() - inputDate.getTime()) / (1000 * 60 * 60 * 24));
 
   if (diffDays < 0) {

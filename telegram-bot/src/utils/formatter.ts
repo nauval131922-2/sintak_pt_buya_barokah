@@ -22,21 +22,21 @@ export function formatRealisasiSummary(data: any): string {
     : '';
 
   return `
-✅ Data realisasi berhasil disimpan!
+✅ *Data realisasi berhasil disimpan!*
 
-📊 Ringkasan:
+*📊 Ringkasan:*
 ━━━━━━━━━━━━━━━━━━
-👤 Nama      : ${data.nama_karyawan}
+👤 *Nama*      : ${data.nama_karyawan}
 ${inputByLine}
-📅 Tanggal   : ${formatDate(data.tgl)}
-⏰ Shift     : ${data.shift}
-🏭 Bagian    : ${data.bagian}
-📦 Order     : ${data.no_order || '-'}
-⚙️ Pekerjaan : ${data.pekerjaan || '-'}
-${data.target ? `🎯 Target    : ${formatNumber(data.target)}` : ''}
-✔️ Realisasi : ${formatNumber(data.realisasi)}${percentage ? ` (${percentage}%)` : ''}
-${data.inscheet ? `📄 Inscheet  : ${formatNumber(data.inscheet)}` : ''}
-${data.rijek ? `❌ Rijek     : ${formatNumber(data.rijek)}` : ''}
+📅 *Tanggal*   : ${formatDate(data.tgl)}
+⏰ *Shift*     : ${data.shift}
+🏭 *Bagian*    : ${data.bagian}
+📦 *Order*     : ${data.no_order || '-'}
+⚙️ *Pekerjaan* : ${data.pekerjaan || '-'}
+${data.target ? `🎯 *Target*    : ${formatNumber(data.target)}` : ''}
+✔️ *Realisasi* : ${formatNumber(data.realisasi)}${percentage ? ` (${percentage}%)` : ''}
+${data.inscheet ? `📄 *Inscheet*  : ${formatNumber(data.inscheet)}` : ''}
+${data.rijek ? `❌ *Rijek*     : ${formatNumber(data.rijek)}` : ''}
 ━━━━━━━━━━━━━━━━━━
 
 Gunakan /history untuk melihat riwayat.
@@ -48,9 +48,15 @@ export function formatHistoryItem(item: any, index: number): string {
     ? Math.round((item.realisasi / item.target) * 100)
     : null;
 
+  const statusBadge = item.deleted_at
+    ? `🗑️ *DIHAPUS* ${item.deleted_by ? `oleh ${item.deleted_by}` : ''}`
+    : item.updated_by && item.updated_by !== 'telegram-bot'
+      ? `✏️ *Diedit* ${item.updated_by}`
+      : '';
+
   return `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-👤 ${item.nama_karyawan || '-'}
+${statusBadge ? statusBadge + '\n' : ''}👤 ${item.nama_karyawan || '-'}
 📅 ${formatDate(item.tgl)} | Shift ${item.shift}
 🏭 ${item.bagian}
 📦 ${item.no_order || '-'} - ${item.pekerjaan || '-'}
@@ -71,49 +77,43 @@ export function formatHistoryList(data: any[], title = 'Riwayat Realisasi'): str
 
 export function getHelpText(bagian: string): string {
   return `
-🤖 SINTAK Bot - Bagian ${bagian}
+🤖 *SINTAK Bot - Bagian ${bagian}*
 
-📝 Cara Input Realisasi:
+*📝 Cara Input Realisasi:*
 
 Ketik /input lalu kirim template berikut:
 
 \`\`\`
-Nama: Nauval Gunawan
-Absensi: 190
-Tgl: 2026-06-26
+Nama: Budi
+Tgl: 2026-06-29
 Shift: 1
-Order: SO-12345
+Order: OP.001.SOPd.I.2026
 Pekerjaan: Setting Mesin
+Bahan Kertas:
+Jml. Plate:
+Warna:
+Insheet:
+Rijek:
+Jam Kerja:
+Kendala:
+Keterangan:
 Target: 100
 Realisasi: 95
-Kendala: -
 \`\`\`
 
-📋 Field Wajib:
-• Tgl (format YYYY-MM-DD)
-• Shift (1/2/3)
-• Realisasi (angka)
+⚡ *Field Wajib:* Nama, Tgl, Shift, Order, Pekerjaan, Target, Realisasi
 
-📋 Field Optional:
-• Nama
-• Absensi (opsional, kalau Nama tidak diketahui)
-• Order, Pekerjaan, Target
-• Bahan, Warna, Inscheet, Rijek, Plate
-• Jam, Kendala, Keterangan
+*⚡ Tips:*
+• Order & Pekerjaan akan divalidasi otomatis dengan suggestions
+• Nama tidak ditemukan? Bot kasih pilihan nama yang cocok
+• Jam Kerja kosong? Otomatis terisi sesuai Shift (1=07:00-15:00, 2=15:00-23:00, 3=23:00-07:00)
 
-⚡ Tips:
-• Tanggal bisa hingga 7 hari ke belakang
-• Order akan divalidasi otomatis
-• Pakai \`/cari <nama>\` jika tidak ingat nama lengkap
-• Cukup isi \`Nama:\` saja, absensi akan otomatis terisi dari database
-
-📌 Perintah Lain:
-/start - Menu utama
-/register - Daftar ke bot
-/cari - Cari karyawan
-/history - Lihat riwayat
-/help - Bantuan ini
-
-Butuh bantuan? Hubungi admin SINTAK.
+*📌 Perintah Lain:*
+*/start* - Menu utama
+*/register* - Daftar ke bot
+*/input_realisasi_by_target* - Input realisasi ke target existing
+*/history* - Lihat riwayat
+*/batal* - Batalkan proses yang sedang berjalan
+*/help* - Bantuan ini
   `.trim();
 }

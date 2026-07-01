@@ -124,6 +124,14 @@ export async function initSchema(db: any) {
       approved_by TEXT
     );`,
 
+    `CREATE TABLE IF NOT EXISTS push_subscriptions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      subscription TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(user_id)
+    );`,
+
     `CREATE TABLE IF NOT EXISTS infractions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       employee_id INTEGER NOT NULL,
@@ -637,6 +645,7 @@ export async function initSchema(db: any) {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT NULL,
       deleted_at DATETIME DEFAULT NULL,
+      deleted_by TEXT DEFAULT NULL,
       created_by TEXT DEFAULT NULL,
       updated_by TEXT DEFAULT NULL
     );`,
@@ -956,6 +965,7 @@ export async function initSchema(db: any) {
     );`,
     "ALTER TABLE jurnal_harian_produksi ADD COLUMN nama_order_manual TEXT;",
     "ALTER TABLE jurnal_harian_produksi ADD COLUMN nama_order_manual_2 TEXT;",
+    "ALTER TABLE jurnal_harian_produksi ADD COLUMN deleted_by TEXT DEFAULT NULL;",
     "UPDATE produksi_selesai SET nama_prd = TRIM(nama_prd);"
   ];
 
@@ -1482,7 +1492,7 @@ async function initDynamicTriggers(db: any) {
       'penerimaan_pembelian', 'rekap_pembelian_barang', 'pelunasan_hutang',
       'pelunasan_piutang', 'pengiriman', 'spph_out', 'sph_in', 'sph_out', 'rek_akuntansi',
       'hpp_kalkulasi', 'stok_master_barang', 'produksi_selesai', 'user_roles',
-      'master_pekerjaan'
+      'master_pekerjaan', 'push_subscriptions', 'telegram_users'
     ];
 
     // Drop triggers for all excluded tables (cleanup from previous runs)

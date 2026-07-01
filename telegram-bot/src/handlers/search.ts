@@ -36,7 +36,7 @@ export async function handleSearch(ctx: Context) {
     await ctx.reply(
       `🔎 Hasil pencarian untuk "${query}":\n\n` +
       `${lines.join('\n')}\n\n` +
-      `Untuk input realisasi, pakai field \`Absensi:\` atau \`Nama:\` di template /input.`,
+      `Untuk input realisasi, pakai field \`Nama:\` di template /input.`,
       { parse_mode: 'Markdown' }
     );
   } catch (error: any) {

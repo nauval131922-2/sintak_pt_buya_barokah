@@ -5,7 +5,7 @@ import { getSession } from './lib/session';
 // Tentukan rute yang tidak memerlukan autentikasi
 const publicRoutes = ['/login'];
 // Tentukan pola rute yang selalu bisa diakses (aset statis, api tertentu opsional)
-const publicPathPrefixes = ['/_next', '/favicon.ico', '/api/auth'];
+const publicPathPrefixes = ['/_next', '/favicon.ico', '/api/auth', '/api/push', '/api/telegram/register-webhook', '/api/telegram/register-request'];
 
 export default async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;

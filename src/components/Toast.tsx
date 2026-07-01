@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { X, CheckCircle, AlertCircle, Info, Loader2 } from 'lucide-react';
-import Portal from './Portal';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
@@ -15,74 +14,95 @@ interface ToastProps {
 
 export default function Toast({ message, type = 'success', duration = 3000, onClose }: ToastProps) {
   const [isShowing, setIsShowing] = useState(false);
+  const [progress, setProgress] = useState(100);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     let exitTimer: NodeJS.Timeout;
     if (message) {
       setIsShowing(true);
+      setProgress(100);
+      const startTime = Date.now();
+      const progressInterval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, 100 - (elapsed / duration) * 100);
+        setProgress(remaining);
+      }, 16);
       const timer = setTimeout(() => {
-        setIsShowing(true); // Ensure it's true before setting to false (react batching)
+        setIsShowing(true);
         setIsShowing(false);
-        exitTimer = setTimeout(onClose, 300);
+        clearInterval(progressInterval);
+        exitTimer = setTimeout(() => onCloseRef.current(), 300);
       }, duration);
       return () => {
         clearTimeout(timer);
+        clearInterval(progressInterval);
         if (exitTimer) clearTimeout(exitTimer);
       };
     } else {
       setIsShowing(false);
     }
-  }, [message, duration, onClose]);
+  // ponytail: onClose via ref to avoid restarting timers on every parent render
+  }, [message, duration]);
 
   if (!message && !isShowing) return null;
 
-  const bgStyles: Record<ToastType, string> = {
-    success: 'bg-white border-green-100 text-green-600 shadow-green-900/5',
-    error: 'bg-white border-red-100 text-red-600 shadow-red-900/5',
-    info: 'bg-white border-blue-100 text-blue-600 shadow-blue-900/5',
-    warning: 'bg-white border-amber-100 text-amber-600 shadow-amber-900/5',
+  const styles: Record<ToastType, { border: string; icon: string; strip: string; iconBg: string }> = {
+    success: { border: 'border-green-100',  icon: 'text-green-500',  strip: 'bg-green-500',  iconBg: 'bg-green-50' },
+    error:   { border: 'border-red-100',    icon: 'text-red-500',    strip: 'bg-red-500',    iconBg: 'bg-red-50' },
+    info:    { border: 'border-blue-100',   icon: 'text-blue-500',   strip: 'bg-blue-500',   iconBg: 'bg-blue-50' },
+    warning: { border: 'border-amber-100',  icon: 'text-amber-500',  strip: 'bg-amber-500',  iconBg: 'bg-amber-50' },
   };
 
-  const IconComponent = () => {
-    switch (type) {
-      case 'success': return <CheckCircle size={18} className="text-green-500" />;
-      case 'error': return <AlertCircle size={18} className="text-red-500" />;
-      case 'info': return <Info size={18} className="text-blue-500" />;
-      case 'warning': return <AlertCircle size={18} className="text-amber-500" />;
-      default: return <Info size={18} />;
-    }
+  const icons: Record<ToastType, React.ReactNode> = {
+    success: <CheckCircle size={16} />,
+    error:   <AlertCircle size={16} />,
+    info:    <Info size={16} />,
+    warning: <AlertCircle size={16} />,
   };
+
+  const s = styles[type];
 
   return (
-    <Portal>
-      <div className="fixed top-6 right-6 z-[9999999] pointer-events-none">
-        <div 
+        <div
           className={`
-            pointer-events-auto
-            flex items-center gap-3 px-4 py-3.5 rounded-xl border bg-white shadow-xl
+            pointer-events-auto overflow-hidden
+            flex items-center gap-3 pr-3 pl-0 py-0 rounded-xl border bg-white
+            shadow-lg shadow-black/8
             transition-all duration-300 ease-out
-            ${isShowing ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'}
-            ${bgStyles[type]}
+            ${isShowing ? 'translate-x-0 opacity-100 scale-100' : 'translate-x-6 opacity-0 scale-95'}
+            ${s.border}
           `}
-          style={{ minWidth: '300px' }}
+          style={{ minWidth: '300px', maxWidth: '380px' }}
         >
-          <div className="shrink-0">
-            <IconComponent />
-          </div>
-          <div className="flex-1 text-[13px] font-bold tracking-tight pr-4">
-            {message}
-          </div>
-          <button 
-            onClick={() => {
-              setIsShowing(false);
-              setTimeout(onClose, 300);
-            }}
-            className="shrink-0 p-1 hover:bg-gray-50 rounded-lg transition-colors text-gray-300 hover:text-gray-500"
-          >
-            <X size={16} />
-          </button>
+          {/* accent strip */}
+          <div className={`self-stretch w-1 shrink-0 rounded-l-xl ${s.strip}`} />
+
+          <div className="flex-1 min-w-0 py-3">
+            {/* icon + message row */}
+            <div className="flex items-start gap-3">
+              <div className={`shrink-0 p-1.5 rounded-lg ${s.iconBg} ${s.icon} -mt-1`}>
+                {icons[type]}
+              </div>
+              <div className="flex-1 text-[13px] font-medium text-gray-700 tracking-tight">
+                {message}
+              </div>
+              <button
+                onClick={() => { setIsShowing(false); setTimeout(onClose, 300); }}
+                className="shrink-0 p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-300 hover:text-gray-500 -mt-1 -mr-1"
+              >
+                <X size={14} />
+              </button>
+            </div>
+            {/* timer bar */}
+            <div className="mt-2 h-0.5 rounded-full bg-gray-100 overflow-hidden">
+              <div
+                className={`h-full rounded-full ${s.strip}`}
+                style={{ width: `${progress}%` }}
+              />
+            </div>
         </div>
       </div>
-    </Portal>
-  );
-}
+    );
+  }

@@ -5,7 +5,7 @@ import path from 'path';
 dotenv.config({ path: path.join(process.cwd(), '.env') });
 
 function getDbUrl() {
-  const isDev = process.env.NODE_ENV === 'development';
+  const isDev = __filename.includes(path.sep + 'src' + path.sep) || process.env.NODE_ENV === 'development';
   const defaultDb = isDev ? 'database_dev.sqlite' : 'database.sqlite';
   const dbPath = path.join(process.cwd(), '..', process.env.DB_PATH || defaultDb);
   return `file:${dbPath}`;

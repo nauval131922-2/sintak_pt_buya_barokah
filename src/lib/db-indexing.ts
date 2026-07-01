@@ -1,6 +1,11 @@
+const IDX_KEY = '__SINTAK_INDEXED_V2';
+const g = globalThis as Record<string, unknown>;
+if (!g[IDX_KEY]) g[IDX_KEY] = false;
+
 export async function initIndexing(database: { execute: (sql: string) => Promise<unknown> }) {
-  console.log('[INDEXING] Initializing Performance Indexes...');
-  
+  if (g[IDX_KEY]) return;
+  g[IDX_KEY] = true;
+
   const indexes = [
     // 1. Employees Optimization
     "CREATE INDEX IF NOT EXISTS idx_employees_active_id ON employees(is_active, id);",
@@ -132,7 +137,6 @@ export async function initIndexing(database: { execute: (sql: string) => Promise
   for (const sql of indexes) {
     try {
       await database.execute(sql);
-      console.log(`[INDEXING] SUCCESS: ${sql.substring(0, 40)}...`);
     } catch (e) {
       console.error(`[INDEXING] FAILED: ${sql.substring(0, 40)}...`, e);
     }

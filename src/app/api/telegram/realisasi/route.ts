@@ -116,10 +116,10 @@ export async function POST(req: NextRequest) {
         String(shift),
         user.nama_karyawan,
         user.bagian,
-        no_order_2 || '',  // Kolom target sama dengan realisasi
+        no_order_2 || '',  
         namaOrder2,
         jenis_pekerjaan_2 || '',
-        cleanTarget || cleanRealisasi,  // Target = realisasi jika tidak diisi
+        cleanTarget,  
         no_order_2 || '',
         namaOrder2,
         jenis_pekerjaan_2 || '',
@@ -178,7 +178,7 @@ export async function POST(req: NextRequest) {
         no_order: no_order_2,
         nama_order: namaOrder2,
         pekerjaan: jenis_pekerjaan_2,
-        target: cleanTarget || cleanRealisasi,
+        target: cleanTarget,
         realisasi: cleanRealisasi
       }
     });

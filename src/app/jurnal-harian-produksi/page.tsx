@@ -59,8 +59,9 @@ export default async function JurnalHarianPage() {
     { sql: 'SELECT COALESCE(SUM(COALESCE(CAST(realisasi AS REAL), 0)), 0) as v FROM jurnal_harian_produksi WHERE tgl = ? AND deleted_at IS NULL', args: [today] },
     { sql: 'SELECT COALESCE(SUM(COALESCE(CAST(rijek AS REAL), 0)), 0) as v FROM jurnal_harian_produksi WHERE tgl = ? AND deleted_at IS NULL', args: [today] },
   ], "read");
+  // ponytail: JSON parse/stringify flattens BigInt → Number for client component
   const initialData = {
-    data: batch[1].rows,
+    data: JSON.parse(JSON.stringify(batch[1].rows)),
     total: Number((batch[0].rows[0] as any).total),
     totalRealisasi: Number((batch[2].rows[0] as any).v || 0),
     totalRijek: Number((batch[3].rows[0] as any).v || 0),

@@ -708,8 +708,8 @@ export async function DELETE(request: NextRequest) {
     }
 
     await db.execute({
-      sql: `UPDATE jurnal_harian_produksi SET deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id IN (${placeholders}) AND deleted_at IS NULL`,
-      args: [session.username || null, ...ids]
+      sql: `UPDATE jurnal_harian_produksi SET deleted_at = CURRENT_TIMESTAMP, deleted_by = ?, updated_at = CURRENT_TIMESTAMP, updated_by = ? WHERE id IN (${placeholders}) AND deleted_at IS NULL`,
+      args: [session.username || null, session.username || null, ...ids]
     });
 
     for (const id of ids) {

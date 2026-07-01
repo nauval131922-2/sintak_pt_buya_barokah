@@ -1,11 +1,14 @@
 import { Bot, Context } from 'grammy';
 import * as dotenv from 'dotenv';
 import { handleStart } from './handlers/start';
-import { handleRegister, handleRegistrationInput, userStates } from './handlers/register';
-import { handleInputCommand, handleInputTemplate, inputStates } from './handlers/input';
-import { handleHistory } from './handlers/history';
+import { handleRegister, handleRegistrationInput, handleRegisterCallback, userStates } from './handlers/register';
+import { handleInputCommand, handleInputTemplate, handleInputCorrectionCallback, inputStates } from './handlers/input';
+import { handleInputTargetCommand, handleInputTargetCallback, handleInputTargetText, targetStates } from './handlers/input-target';
+import { handleHistory, handleHistoryCallback, handleHistoryText, historyStates } from './handlers/history';
 import { handleHelp } from './handlers/help';
-import { handleSearch } from './handlers/search';
+import { handleBatal } from './handlers/batal';
+import { handleVoiceMessage } from './handlers/voice';
+import { checkSessionTimeout, updateActivity, startSessionCleanup } from './utils/session-timeout';
 
 dotenv.config({ path: `${process.cwd()}/.env` });
 
@@ -24,13 +27,95 @@ console.log(`🤖 Starting SINTAK Bot - Bagian ${BAGIAN}...`);
 
 const bot = new Bot(BOT_TOKEN);
 
-// Command handlers
-bot.command('start', handleStart);
-bot.command('register', handleRegister);
-bot.command('input', handleInputCommand);
-bot.command('cari', handleSearch);
-bot.command('history', handleHistory);
-bot.command('help', handleHelp);
+// Register command suggestions for Telegram auto-complete
+bot.api.setMyCommands([
+  { command: 'start', description: 'Menu utama' },
+  { command: 'register', description: 'Daftar ke bot' },
+  { command: 'input', description: 'Input realisasi (standalone)' },
+  { command: 'input_realisasi_by_target', description: 'Input realisasi ke target existing' },
+  { command: 'history', description: 'Lihat riwayat' },
+  { command: 'batal', description: 'Batalkan proses yang sedang berjalan' },
+  { command: 'help', description: 'Bantuan' },
+]).catch(() => {}); // non-blocking
+
+function clearConflicting(telegramId: number | undefined) {
+  if (!telegramId) return;
+  userStates.delete(telegramId);
+  inputStates.delete(telegramId);
+  targetStates.delete(telegramId);
+  historyStates.delete(telegramId);
+}
+
+// Command handlers — clear conflicting states sebelum masuk flow baru
+bot.command('start', async (ctx) => { 
+  const telegramId = ctx.from?.id;
+  if (telegramId) updateActivity(telegramId);
+  clearConflicting(telegramId); 
+  return handleStart(ctx); 
+});
+bot.command('register', async (ctx) => { 
+  const telegramId = ctx.from?.id;
+  if (telegramId) updateActivity(telegramId);
+  clearConflicting(telegramId); 
+  return handleRegister(ctx); 
+});
+bot.command('input', async (ctx) => { 
+  const telegramId = ctx.from?.id;
+  if (telegramId) updateActivity(telegramId);
+  clearConflicting(telegramId); 
+  return handleInputCommand(ctx); 
+});
+bot.command('input_realisasi_by_target', async (ctx) => { 
+  const telegramId = ctx.from?.id;
+  if (telegramId) updateActivity(telegramId);
+  clearConflicting(telegramId); 
+  return handleInputTargetCommand(ctx); 
+});
+bot.command('history', async (ctx) => { 
+  const telegramId = ctx.from?.id;
+  if (telegramId) updateActivity(telegramId);
+  clearConflicting(telegramId); 
+  return handleHistory(ctx); 
+});
+bot.command('batal', async (ctx) => {
+  const telegramId = ctx.from?.id;
+  if (telegramId) updateActivity(telegramId);
+  return handleBatal(ctx);
+});
+bot.command('help', async (ctx) => { 
+  const telegramId = ctx.from?.id;
+  if (telegramId) updateActivity(telegramId);
+  clearConflicting(telegramId); 
+  return handleHelp(ctx); 
+});
+
+// Callback queries
+bot.on('callback_query:data', async (ctx) => {
+  const telegramId = ctx.from?.id;
+  if (telegramId) {
+    const expired = await checkSessionTimeout(bot, telegramId, () => clearConflicting(telegramId));
+    if (expired) return; // Stop if session expired
+    updateActivity(telegramId);
+  }
+  
+  const data = ctx.callbackQuery?.data || '';
+  if (data.startsWith('register_select:')) return handleRegisterCallback(ctx);
+  if (data.startsWith('input_')) return handleInputCorrectionCallback(ctx);
+  if (data.startsWith('it_')) return handleInputTargetCallback(ctx);
+  if (data.startsWith('hist_')) return handleHistoryCallback(ctx);
+});
+
+// Voice message handler
+bot.on('message:voice', async (ctx) => {
+  const telegramId = ctx.from?.id;
+  if (!telegramId) return;
+
+  const expired = await checkSessionTimeout(bot, telegramId, () => clearConflicting(telegramId));
+  if (expired) return;
+  updateActivity(telegramId);
+
+  return handleVoiceMessage(ctx);
+});
 
 // Text message handler
 bot.on('message:text', async (ctx) => {
@@ -41,6 +126,11 @@ bot.on('message:text', async (ctx) => {
 
   // Skip commands
   if (text.startsWith('/')) return;
+  
+  // Check session timeout
+  const expired = await checkSessionTimeout(bot, telegramId, () => clearConflicting(telegramId));
+  if (expired) return;
+  updateActivity(telegramId);
 
   // Registration flow
   const userState = userStates.get(telegramId);
@@ -48,24 +138,39 @@ bot.on('message:text', async (ctx) => {
     return handleRegistrationInput(ctx);
   }
 
+  // History edit flow
+  if (historyStates.has(telegramId) && historyStates.get(telegramId)?.editing) {
+    return handleHistoryText(ctx);
+  }
+
+  // Input-target flow (check BEFORE template detection — target updates existing row)
+  if (targetStates.has(telegramId)) {
+    return handleInputTargetText(ctx);
+  }
+
+  // Template detection — standalone input (INSERT baru)
+  if (text.includes('Tgl:') && text.includes('Shift:')) {
+    userStates.delete(telegramId);
+    return handleInputTemplate(ctx);
+  }
+
   // Input flow
   const inputState = inputStates.get(telegramId);
-  const isTemplate = text.includes('Tgl:') && text.includes('Shift:');
-
-  if (inputState || isTemplate) {
+  if (inputState) {
     return handleInputTemplate(ctx);
   }
 
   // Default
   await ctx.reply(
-    `ℹ️ Perintah tidak dikenali.\n\n` +
+    `ℹ️ *Perintah tidak dikenali.*\n\n` +
     `Gunakan:\n` +
-    `/start - Menu utama\n` +
-    `/register - Daftar ke bot\n` +
-    `/cari - Cari karyawan\n` +
-    `/input - Input realisasi\n` +
-    `/history - Lihat riwayat\n` +
-    `/help - Bantuan`
+    `*/start* - Menu utama\n` +
+    `*/register* - Daftar ke bot\n` +
+    `*/input* - Input realisasi\n` +
+    `*/input_realisasi_by_target* - Input realisasi ke target existing\n` +
+    `*/history* - Lihat riwayat\n` +
+    `*/help* - Bantuan`,
+    { parse_mode: 'Markdown' }
   );
 });
 

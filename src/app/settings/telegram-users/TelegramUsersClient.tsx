@@ -1,8 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Loader2, CheckCircle, XCircle, RefreshCw, MessageSquare } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Loader2, CheckCircle, XCircle, RefreshCw, MessageSquare, Bell, BellOff } from 'lucide-react';
 import Toast from '@/components/Toast';
+import Portal from '@/components/Portal';
+
+type ToastData = { id: number; type: 'success' | 'error' | 'warning'; message: string };
 
 interface TelegramUser {
   id: number;
@@ -20,9 +23,12 @@ interface TelegramUser {
 
 function formatDateTime(dateStr: string) {
   if (!dateStr) return '-';
-  const d = new Date(dateStr);
+  const normalized = dateStr.includes('T') ? dateStr : dateStr.replace(' ', 'T');
+  // DB stores UTC (CURRENT_TIMESTAMP) → parse as UTC → display WIB
+  const d = new Date(normalized.endsWith('Z') || normalized.includes('+') ? normalized : normalized + 'Z');
   if (isNaN(d.getTime())) return '-';
-  return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+  return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Jakarta' }) +
+    ' ' + d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
 }
 
 const REFRESH_INTERVAL = 2 * 60; // seconds
@@ -31,9 +37,103 @@ export default function TelegramUsersClient() {
   const [users, setUsers] = useState<TelegramUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ type: 'success' | 'error' | 'warning'; message: string } | null>(null);
+  const [toasts, setToasts] = useState<ToastData[]>([]);
+  const toastIdRef = useRef(0);
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
+  const lastPendingCountRef = useRef<number>(0);
+  const [pushSubscribed, setPushSubscribed] = useState(false);
+
+  const showToast = useCallback((type: ToastData['type'], message: string) => {
+    const id = ++toastIdRef.current;
+    setToasts(prev => [...prev, { id, type, message }]);
+  }, []);
+
+  const removeToast = useCallback((id: number) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
+
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [countdown, setCountdown] = useState(REFRESH_INTERVAL);
+
+  const subscribePush = async () => {
+    try {
+      const permission = await Notification.requestPermission();
+      setNotificationPermission(permission);
+
+      if (permission !== 'granted') {
+        showToast('error', 'Izin notifikasi ditolak');
+        return;
+      }
+
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        showToast('error', 'Service Worker atau Push tidak didukung browser');
+        return;
+      }
+
+      await navigator.serviceWorker.register('/sw.js');
+      const registration = await navigator.serviceWorker.ready;
+
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: 'BGR9pZCmLIDbpXJG7Epd53mpac_BMToDQkhutZEvs4vR6VQpLDABLWRxhvcfbp0ZK-UC5T-luVxbqmfbVQSn2Ss'
+      });
+
+      // Send subscription to server
+      const res = await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscription })
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        setPushSubscribed(true);
+        showToast('success', 'Notifikasi push aktif (bahkan saat tab ditutup)');
+      } else {
+        showToast('error', 'Gagal subscribe: ' + json.error);
+      }
+    } catch (err: any) {
+      console.error('[PUSH] Subscribe failed:', err);
+      showToast('error', 'Gagal subscribe notifikasi: ' + err.message);
+    }
+  };
+
+  const unsubscribePush = async () => {
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.getSubscription();
+      if (subscription) {
+        await subscription.unsubscribe();
+      }
+      await fetch('/api/push/subscribe', { method: 'DELETE' });
+      setPushSubscribed(false);
+      showToast('success', 'Notifikasi push dinonaktifkan');
+    } catch (err: any) {
+      console.error('[PUSH] Unsubscribe failed:', err);
+      showToast('error', 'Gagal nonaktifkan: ' + err.message);
+    }
+  };
+
+  const requestNotificationPermission = subscribePush;
+
+  useEffect(() => {
+    if ('Notification' in window) {
+      setNotificationPermission(Notification.permission);
+    }
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+      navigator.serviceWorker.ready.then(async (registration) => {
+        const sub = await registration.pushManager.getSubscription();
+        if (!sub) return;
+        const res = await fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subscription: sub })
+        });
+        const json = await res.json();
+        if (json.success) setPushSubscribed(true);
+      }).catch(() => {});
+    }
+  }, []);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -45,14 +145,14 @@ export default function TelegramUsersClient() {
         setLastUpdated(new Date());
         setCountdown(REFRESH_INTERVAL);
       } else {
-        setToast({ type: 'error', message: json.error || 'Gagal memuat data' });
+        showToast('error', json.error || 'Gagal memuat data');
       }
     } catch {
-      setToast({ type: 'error', message: 'Terjadi kesalahan sistem' });
+      showToast('error', 'Terjadi kesalahan sistem');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
     fetchUsers();
@@ -76,13 +176,13 @@ export default function TelegramUsersClient() {
       });
       const json = await res.json();
       if (json.success) {
-        setToast({ type: 'success', message: `${nama} berhasil di-approve. Notifikasi dikirim.` });
+        showToast('success', `${nama} berhasil di-approve. Notifikasi dikirim.`);
         fetchUsers();
       } else {
-        setToast({ type: 'error', message: json.error || 'Gagal approve' });
+        showToast('error', json.error || 'Gagal approve');
       }
     } catch {
-      setToast({ type: 'error', message: 'Terjadi kesalahan sistem' });
+      showToast('error', 'Terjadi kesalahan sistem');
     } finally {
       setActionLoading(null);
     }
@@ -102,13 +202,13 @@ export default function TelegramUsersClient() {
       });
       const json = await res.json();
       if (json.success) {
-        setToast({ type: 'success', message: isPending ? `Permintaan dari ${nama} ditolak.` : `${nama} berhasil dihapus.` });
+        showToast('success', isPending ? `Permintaan dari ${nama} ditolak.` : `${nama} berhasil dihapus.`);
         fetchUsers();
       } else {
-        setToast({ type: 'error', message: json.error || 'Gagal memproses' });
+        showToast('error', json.error || 'Gagal memproses');
       }
     } catch {
-      setToast({ type: 'error', message: 'Terjadi kesalahan sistem' });
+      showToast('error', 'Terjadi kesalahan sistem');
     } finally {
       setActionLoading(null);
     }
@@ -119,7 +219,13 @@ export default function TelegramUsersClient() {
 
   return (
     <div className="flex flex-col gap-6">
-      {toast && <Toast {...toast} onClose={() => setToast(null)} />}
+      <Portal>
+        <div className="fixed top-6 right-6 z-[9999999] pointer-events-none flex flex-col gap-2">
+          {toasts.map(t => (
+            <Toast key={t.id} type={t.type} message={t.message} onClose={() => removeToast(t.id)} />
+          ))}
+        </div>
+      </Portal>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -146,6 +252,35 @@ export default function TelegramUsersClient() {
           </div>
         </div>
       </div>
+
+      {/* Notification Permission */}
+      {!pushSubscribed && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center gap-3">
+          <Bell size={20} className="text-blue-600 shrink-0" />
+          <div className="flex-1">
+            <p className="text-[13px] font-bold text-blue-800">Aktifkan Notifikasi Push</p>
+            <p className="text-[11px] text-blue-600">Terima notifikasi otomatis bahkan saat tab ditutup</p>
+          </div>
+          <button
+            onClick={requestNotificationPermission}
+            className="px-3 py-1.5 text-[11px] font-bold text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors shrink-0"
+          >
+            Aktifkan
+          </button>
+        </div>
+      )}
+      {pushSubscribed && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
+          <Bell size={20} className="text-emerald-600 shrink-0" />
+          <p className="text-[11px] text-emerald-700 flex-1">✅ Notifikasi push aktif · Anda akan menerima notif bahkan saat tab ditutup</p>
+          <button
+            onClick={unsubscribePush}
+            className="px-3 py-1.5 text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition-colors shrink-0"
+          >
+            Nonaktifkan
+          </button>
+        </div>
+      )}
 
       {/* Pending Requests */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
@@ -179,9 +314,9 @@ export default function TelegramUsersClient() {
         ) : pendingUsers.length === 0 ? (
           <div className="text-center py-10 text-gray-400 text-[13px]">Tidak ada permintaan pending.</div>
         ) : (
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-gray-50" key={'pending-' + pendingUsers.length + '-' + (pendingUsers[0]?.id || 'none')}>
             {pendingUsers.map(user => (
-              <div key={user.id} className="px-5 py-4 flex items-center gap-4 hover:bg-gray-50/50 transition-colors">
+              <div key={user.telegram_id} className="px-5 py-4 flex items-center gap-4 hover:bg-gray-50/50 transition-colors">
                 <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
                   <span className="text-sm font-bold text-amber-700">{user.nama_karyawan.charAt(0)}</span>
                 </div>
@@ -227,9 +362,9 @@ export default function TelegramUsersClient() {
         {activeUsers.length === 0 ? (
           <div className="text-center py-10 text-gray-400 text-[13px]">Belum ada user aktif.</div>
         ) : (
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-gray-50" key={'active-' + activeUsers.length + '-' + (activeUsers[0]?.id || 'none')}>
             {activeUsers.map(user => (
-              <div key={user.id} className="px-5 py-3 flex items-center gap-4 hover:bg-gray-50/50 transition-colors">
+              <div key={user.telegram_id} className="px-5 py-3 flex items-center gap-4 hover:bg-gray-50/50 transition-colors">
                 <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
                   <span className="text-xs font-bold text-emerald-700">{user.nama_karyawan.charAt(0)}</span>
                 </div>
