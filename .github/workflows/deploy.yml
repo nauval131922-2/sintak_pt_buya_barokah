@@ -44,6 +44,7 @@ jobs:
           script: |
             cd /var/www/sintak
             rm -rf .next.bak
+            touch .maintenance
             mv .next .next.bak
             mv .next-tmp/.next .next
             rmdir .next-tmp
@@ -53,6 +54,7 @@ jobs:
               sleep 1
               code=$(curl -s -o /dev/null -w "%{http_code}" -m 2 http://localhost:3000/login 2>/dev/null || true)
               if [ "$code" = "200" ]; then
+                rm -f .maintenance
                 echo "Health OK"
                 exit 0
               fi
@@ -61,5 +63,6 @@ jobs:
             echo "Health FAILED - rolling back"
             mv .next .next-failed
             mv .next.bak .next
+            rm -f .maintenance
             pm2 reload ecosystem.config.js --only sintak-prod
             exit 1
