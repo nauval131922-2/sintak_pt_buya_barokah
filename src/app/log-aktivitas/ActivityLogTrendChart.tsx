@@ -61,7 +61,20 @@ function ActivityLogTrendChart({
   const [hourlyZoomStart, setHourlyZoomStart] = useState(0);
   const [hourlyZoomEnd, setHourlyZoomEnd] = useState(100);
   
+  // ponytail: flag untuk skip onClick kalau user baru interaksi dengan Brush slider
+  // Brush Recharts trigger onClick parent chart, bedakan dengan flag ini
+  const brushInteractionRef = useRef(false);
+  const markBrushInteraction = () => {
+    brushInteractionRef.current = true;
+    // reset setelah 500ms — cukup lama untuk click sequence, cukup pendek untuk tidak block klik berikutnya
+    setTimeout(() => { brushInteractionRef.current = false; }, 500);
+  };
+  
   const handleHourClick = (label: string) => {
+    if (brushInteractionRef.current) {
+      console.log('[Chart] onClick ignored: brush interaction');
+      return;
+    }
     if (onHourClick) onHourClick(label.replace(':00', ''));
   };
 
@@ -227,12 +240,12 @@ function ActivityLogTrendChart({
               data={dailyChartData}
               margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
               onClick={(state: any) => {
-                console.log('BarChart clicked:', state);
+                // ponytail: Brush slider trigger onClick parent chart — skip kalau baru Brush
+                if (brushInteractionRef.current) return;
                 // ponytail: Recharts tidak kasih activePayload di stacked bar, pakai activeIndex instead
                 if (state?.activeIndex !== undefined && dailyChartData[state.activeIndex]) {
                   const clickedData = dailyChartData[state.activeIndex];
                   const clickedDate = clickedData.date;
-                  console.log('Clicked date:', clickedDate);
                   if (clickedDate) onSelectDay(clickedDate);
                 }
               }}
@@ -302,6 +315,7 @@ function ActivityLogTrendChart({
                 startIndex={Math.floor((dailyZoomStart / 100) * (dailyChartData.length - 1))}
                 endIndex={Math.floor((dailyZoomEnd / 100) * (dailyChartData.length - 1))}
                 onChange={(e) => {
+                  markBrushInteraction();
                   if (e.startIndex !== undefined && e.endIndex !== undefined) {
                     setDailyZoomStart((e.startIndex / (dailyChartData.length - 1)) * 100);
                     setDailyZoomEnd((e.endIndex / (dailyChartData.length - 1)) * 100);
@@ -345,15 +359,9 @@ function ActivityLogTrendChart({
               data={detailHour ? minuteChartData : hourlyChartData}
               margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
               onClick={(state: any) => {
-                // ponytail: Brush slider trigger onClick parent chart dengan activeLabel
-                // tapiii tidak punya isTooltipActive karena tidak hover data point
-                console.log('[Chart] AreaChart onClick state:', { 
-                  activeLabel: state?.activeLabel, 
-                  isTooltipActive: state?.isTooltipActive, 
-                  activePayload: state?.activePayload?.length,
-                  activeTooltipIndex: state?.activeTooltipIndex 
-                });
-                if (!detailHour && state?.activeLabel && state?.isTooltipActive) {
+                // ponytail: Brush slider trigger onClick parent chart — skip kalau baru Brush
+                if (brushInteractionRef.current) return;
+                if (!detailHour && state?.activeLabel) {
                   handleHourClick(state.activeLabel);
                 }
               }}
@@ -416,6 +424,7 @@ function ActivityLogTrendChart({
                   startIndex={Math.floor((hourlyZoomStart / 100) * (hourlyChartData.length - 1))}
                   endIndex={Math.floor((hourlyZoomEnd / 100) * (hourlyChartData.length - 1))}
                   onChange={(e) => {
+                    markBrushInteraction();
                     if (e.startIndex !== undefined && e.endIndex !== undefined) {
                       setHourlyZoomStart((e.startIndex / (hourlyChartData.length - 1)) * 100);
                       setHourlyZoomEnd((e.endIndex / (hourlyChartData.length - 1)) * 100);
