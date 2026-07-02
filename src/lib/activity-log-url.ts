@@ -142,7 +142,7 @@ export function mergeActivityLogState(
     search: parsed.search ?? '',
     sortBy: parsed.sortBy ?? base.sortBy,
     sortDir: parsed.sortDir ?? base.sortDir,
-    datePreset: parsed.datePreset ?? base.datePreset,
+    datePreset: 'datePreset' in parsed ? parsed.datePreset : base.datePreset,
     page: parsed.page,
   };
 }
