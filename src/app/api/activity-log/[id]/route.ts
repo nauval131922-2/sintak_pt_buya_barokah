@@ -6,7 +6,7 @@ import { canViewActivityLog } from '@/lib/activity-log-permissions';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getSession();
@@ -20,7 +20,7 @@ export async function GET(
     const { searchParams } = new URL(req.url);
     const source = searchParams.get('source') === 'archive' ? 'archive' : 'active';
     const table = getActivityLogTable(source);
-    const id = params.id;
+    const { id } = await params;
 
     const result = await db.execute({
       sql: `SELECT raw_data FROM ${table} WHERE id = ? LIMIT 1`,
