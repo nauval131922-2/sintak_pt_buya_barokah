@@ -341,7 +341,8 @@ function ActivityLogTrendChart({
               data={detailHour ? minuteChartData : hourlyChartData}
               margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
               onClick={(state: any) => {
-                if (!detailHour && state?.activeLabel && onHourClick) {
+                // ponytail: activePayload = real data point click, activeLabel tanpa payload = Brush/axis noise
+                if (!detailHour && state?.activePayload?.length > 0 && state?.activeLabel && onHourClick) {
                   onHourClick(state.activeLabel.replace(':00', ''));
                 }
               }}

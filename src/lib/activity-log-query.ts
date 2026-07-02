@@ -54,10 +54,10 @@ export function buildActivityLogWhere(params: ActivityLogQueryParams) {
     conditions.push('al.created_at >= ? AND al.created_at <= ?');
     const fromDate = new Date(`${params.from}T00:00:00+07:00`);
     const toDate = new Date(`${params.to}T23:59:59.999+07:00`);
-    args.push(
-      fromDate.toISOString(),
-      toDate.toISOString()
-    );
+    const fromISO = fromDate.toISOString();
+    const toISO = toDate.toISOString();
+    console.log('[buildActivityLogWhere] Date range:', { from: params.from, to: params.to, fromISO, toISO });
+    args.push(fromISO, toISO);
   }
 
   if (params.tableName) {

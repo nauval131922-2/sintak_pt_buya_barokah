@@ -8,6 +8,7 @@ import {
   getActivityLogTable,
   type ActivityLogQueryParams,
   type ActivityLogSortField,
+  type ActivityLogSortDir,
 } from '@/lib/activity-log-query';
 import type { ActivityLogSource } from '@/lib/activity-log-utils';
 
@@ -27,16 +28,19 @@ function todayStr(): string {
 
 function parseQuery(searchParams: URLSearchParams): ActivityLogQueryParams {
   const source = searchParams.get('source');
-  const from = searchParams.get('from') || undefined;
-  const to = searchParams.get('to') || undefined;
-  return {
+  const fromRaw = searchParams.get('from');
+  const toRaw = searchParams.get('to');
+  // ponytail: empty string = undefined, jangan pakai || karena "" adalah falsy tapi .get() bisa return ""
+  const from = fromRaw?.trim() || undefined;
+  const to = toRaw?.trim() || undefined;
+  const params: ActivityLogQueryParams = {
     from: from ?? todayStr(),
     to: to ?? todayStr(),
     search: (searchParams.get('search') || '').trim() || undefined,
     tableName: searchParams.get('tableName') || undefined,
     actionType: searchParams.get('actionType') || undefined,
     recordedBy: searchParams.get('recordedBy') || undefined,
-    source: source === 'archive' ? 'archive' : 'active',
+    source: (source === 'archive' ? 'archive' : 'active') as ActivityLogSource,
     page: Math.max(1, parseInt(searchParams.get('page') || '1', 10)),
     pageSize: Math.min(100000, Math.max(10, parseInt(searchParams.get('pageSize') || '50', 10))),
     sortBy: (() => {
@@ -44,9 +48,11 @@ function parseQuery(searchParams: URLSearchParams): ActivityLogQueryParams {
       const allowed: ActivityLogSortField[] = ['created_at', 'action_type', 'table_name', 'recorded_by'];
       return s && allowed.includes(s as ActivityLogSortField) ? (s as ActivityLogSortField) : 'created_at';
     })(),
-    sortDir: searchParams.get('sortDir') === 'asc' ? 'asc' : 'desc',
+    sortDir: (searchParams.get('sortDir') === 'asc' ? 'asc' : 'desc') as ActivityLogSortDir,
     opts: { skipRawDataSearch: true }, // ponytail: raw_data LIKE adalah yang termahal
   };
+  console.log('[API activity-log] parseQuery result:', { from: params.from, to: params.to, page: params.page });
+  return params;
 }
 
 async function queryLogs(params: ActivityLogQueryParams, withStats = false) {

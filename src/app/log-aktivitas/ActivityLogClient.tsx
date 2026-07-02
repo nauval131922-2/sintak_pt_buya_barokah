@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useTransition, useRef, useMemo, Fragment } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-  Database, Loader2, Calendar, X, Table2, Zap, User, ChevronUp, ChevronDown, Trash2, BarChart3
+  Database, Loader2, Calendar, X, Table2, Zap, User, ChevronUp, ChevronDown, Trash2, BarChart3, Copy
 } from 'lucide-react';
 import ActivityLogExportMenu from './ActivityLogExportMenu';
 import SearchableDropdown from '@/components/SearchableDropdown';
@@ -69,6 +69,25 @@ function getMatchedFields(log: ActivityLogRow, q: string): MatchInfo[] {
     } catch {}
   }
   return fromFields.slice(0, 2);
+}
+
+// ponytail: highlight helper — wrap matches dengan <mark>
+function highlightText(text: string, search: string): React.ReactNode {
+  if (!search.trim()) return text;
+  const parts = text.split(new RegExp(`(${search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'));
+  return parts.map((part, i) => 
+    part.toLowerCase() === search.toLowerCase() 
+      ? <mark key={i} className="bg-yellow-200 text-gray-900 px-0.5 rounded">{part}</mark>
+      : part
+  );
+}
+
+// ponytail: copy to clipboard helper
+function copyToClipboard(text: string, label: string) {
+  navigator.clipboard.writeText(text).then(
+    () => toast.success(`${label} berhasil disalin`),
+    () => toast.error('Gagal menyalin')
+  );
 }
 
 function strToDate(s: string): Date { return new Date(`${s}T12:00:00+07:00`); }
@@ -283,12 +302,16 @@ export default function ActivityLogClient({
         source,
         ...extra,
       });
-      if (debouncedSearch) p.set('search', debouncedSearch);
+      if (debouncedSearch) {
+        console.log('[ActivityLog] buildParams adding search:', debouncedSearch);
+        p.set('search', debouncedSearch);
+      }
       if (tableName) p.set('tableName', tableName);
       if (actionType) p.set('actionType', actionType);
       if (recordedBy) p.set('recordedBy', recordedBy);
       p.set('sortBy', sortBy);
       p.set('sortDir', sortDir);
+      console.log('[ActivityLog] Final params:', p.toString());
       return p;
     },
     [from, to, debouncedSearch, tableName, actionType, recordedBy, source, sortBy, sortDir, page]
@@ -407,7 +430,10 @@ export default function ActivityLogClient({
   }, []);
 
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(search), 350);
+    const t = setTimeout(() => {
+      console.log('[ActivityLog] Debounced search:', search);
+      setDebouncedSearch(search);
+    }, 350);
     return () => clearTimeout(t);
   }, [search]);
 
@@ -1051,7 +1077,9 @@ export default function ActivityLogClient({
                               {log.record_id ? ` #${log.record_id}` : ''}
                             </td>
                             <td className="px-4 py-2.5 relative">
-                              <p className="text-[12px] font-bold text-gray-700 line-clamp-2">{log.message}</p>
+                              <p className="text-[12px] font-bold text-gray-700 line-clamp-2">
+                                {debouncedSearch ? highlightText(log.message || '', debouncedSearch) : log.message}
+                              </p>
                               {debouncedSearch && getMatchedFields(log, debouncedSearch).length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-1">
                                   {getMatchedFields(log, debouncedSearch).map((m) => (
@@ -1072,7 +1100,19 @@ export default function ActivityLogClient({
                               <td colSpan={5} className="px-4 py-3">
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                   <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
-                                    <div className="text-[10px] font-bold text-gray-400 mb-2">Before</div>
+                                    <div className="flex items-center justify-between mb-2">
+                                      <div className="text-[10px] font-bold text-gray-400">Before</div>
+                                      {beforeJson && (
+                                        <button
+                                          type="button"
+                                          onClick={() => copyToClipboard(beforeJson, 'Before')}
+                                          className="text-gray-400 hover:text-green-600 transition-colors"
+                                          title="Copy Before"
+                                        >
+                                          <Copy size={12} />
+                                        </button>
+                                      )}
+                                    </div>
                                     {beforeJson ? (
                                       <pre className="text-[10px] leading-relaxed text-gray-700 max-h-[200px] overflow-y-auto custom-scrollbar whitespace-pre-wrap">{beforeJson}</pre>
                                     ) : (
@@ -1080,7 +1120,19 @@ export default function ActivityLogClient({
                                     )}
                                   </div>
                                   <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
-                                    <div className="text-[10px] font-bold text-gray-400 mb-2">After</div>
+                                    <div className="flex items-center justify-between mb-2">
+                                      <div className="text-[10px] font-bold text-gray-400">After</div>
+                                      {afterJson && (
+                                        <button
+                                          type="button"
+                                          onClick={() => copyToClipboard(afterJson, 'After')}
+                                          className="text-gray-400 hover:text-green-600 transition-colors"
+                                          title="Copy After"
+                                        >
+                                          <Copy size={12} />
+                                        </button>
+                                      )}
+                                    </div>
                                     {afterJson ? (
                                       <pre className="text-[10px] leading-relaxed text-gray-700 max-h-[200px] overflow-y-auto custom-scrollbar whitespace-pre-wrap">{afterJson}</pre>
                                     ) : (
@@ -1088,7 +1140,30 @@ export default function ActivityLogClient({
                                     )}
                                   </div>
                                   <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
-                                    <div className="text-[10px] font-bold text-gray-400 mb-2">Diff</div>
+                                    <div className="flex items-center justify-between mb-2">
+                                      <div className="text-[10px] font-bold text-gray-400">Diff</div>
+                                      {(() => {
+                                        let diffs = computeExplicitDiff(rawParsed);
+                                        if (diffs.length === 0 && rawParsed && !rawParsed.before && !rawParsed.after) {
+                                          if (log.action_type === 'INSERT') {
+                                            diffs = Object.entries(rawParsed).map(([key, value]) => ({ key, before: '', after: String(value ?? '') }));
+                                          } else if (log.action_type === 'DELETE') {
+                                            diffs = Object.entries(rawParsed).map(([key, value]) => ({ key, before: String(value ?? ''), after: '' }));
+                                          }
+                                        }
+                                        const diffText = diffs.map(d => `${d.key}: "${d.before}" → "${d.after}"`).join('\n');
+                                        return diffs.length > 0 && (
+                                          <button
+                                            type="button"
+                                            onClick={() => copyToClipboard(diffText, 'Diff')}
+                                            className="text-gray-400 hover:text-green-600 transition-colors"
+                                            title="Copy Diff"
+                                          >
+                                            <Copy size={12} />
+                                          </button>
+                                        );
+                                      })()}
+                                    </div>
                                     {(() => {
                                       let diffs = computeExplicitDiff(rawParsed);
                                       if (diffs.length === 0 && rawParsed && !rawParsed.before && !rawParsed.after) {
