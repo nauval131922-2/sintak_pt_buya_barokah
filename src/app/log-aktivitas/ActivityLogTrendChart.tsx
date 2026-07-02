@@ -196,8 +196,10 @@ export default function ActivityLogTrendChart({
               data={dailyChartData}
               margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
               onClick={(state: any) => {
+                console.log('BarChart clicked:', state);
                 if (state?.activePayload?.[0]) {
                   const clickedDate = state.activePayload[0].payload.date;
+                  console.log('Clicked date:', clickedDate);
                   if (clickedDate) onSelectDay(clickedDate);
                 }
               }}

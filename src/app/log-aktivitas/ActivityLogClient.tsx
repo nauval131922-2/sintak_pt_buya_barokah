@@ -540,9 +540,40 @@ export default function ActivityLogClient({
   }, [refreshCallback]);
 
   const handleTrendDay = (date: string) => {
-    setFrom(date);
-    setTo(date);
-    setDatePreset(null);
+    // ponytail: smart date range based on grouping
+    if (date.includes('-W')) {
+      // Weekly format: YYYY-Www → set range to that week
+      const [year, week] = date.split('-W');
+      const yearNum = parseInt(year);
+      const weekNum = parseInt(week);
+      
+      // Calculate first day of week (ISO week starts Monday)
+      const jan4 = new Date(yearNum, 0, 4);
+      const daysToMonday = (jan4.getDay() + 6) % 7;
+      const firstMonday = new Date(yearNum, 0, 4 - daysToMonday);
+      const targetMonday = new Date(firstMonday);
+      targetMonday.setDate(firstMonday.getDate() + (weekNum - 1) * 7);
+      
+      const sunday = new Date(targetMonday);
+      sunday.setDate(targetMonday.getDate() + 6);
+      
+      setFrom(dateToStr(targetMonday));
+      setTo(dateToStr(sunday));
+      setDatePreset(null);
+    } else if (date.match(/^\d{4}-\d{2}$/)) {
+      // Monthly format: YYYY-MM → set range to that month
+      const [year, month] = date.split('-');
+      const firstDay = `${year}-${month}-01`;
+      const lastDay = new Date(parseInt(year), parseInt(month), 0);
+      setFrom(firstDay);
+      setTo(dateToStr(lastDay));
+      setDatePreset(null);
+    } else {
+      // Daily format: YYYY-MM-DD → set exact date
+      setFrom(date);
+      setTo(date);
+      setDatePreset(null);
+    }
   };
 
   const urlFilterState = useCallback(
