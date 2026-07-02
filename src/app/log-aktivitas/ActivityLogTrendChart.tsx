@@ -61,11 +61,15 @@ function ActivityLogTrendChart({
   const [hourlyZoomStart, setHourlyZoomStart] = useState(0);
   const [hourlyZoomEnd, setHourlyZoomEnd] = useState(100);
   
-  // ponytail: skip onClick pada first render untuk avoid false trigger dari Recharts mount
-  const isFirstRenderRef = useRef(true);
-  useEffect(() => {
-    isFirstRenderRef.current = false;
-  }, []);
+  // ponytail: track real mouse click untuk avoid false trigger dari Recharts internal events
+  const lastClickTimeRef = useRef(0);
+  const handleHourClick = (label: string) => {
+    const now = Date.now();
+    // ponytail: debounce 100ms — Recharts kadang fire onClick 2x dalam <50ms
+    if (now - lastClickTimeRef.current < 100) return;
+    lastClickTimeRef.current = now;
+    if (onHourClick) onHourClick(label.replace(':00', ''));
+  };
 
   // ponytail: dynamic maxBarSize based on data length
   const maxBarSize = useMemo(() => {
@@ -347,10 +351,8 @@ function ActivityLogTrendChart({
               data={detailHour ? minuteChartData : hourlyChartData}
               margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
               onClick={(state: any) => {
-                // ponytail: skip first render false trigger, then check activeLabel exists
-                if (isFirstRenderRef.current) return;
-                if (!detailHour && state?.activeLabel && onHourClick) {
-                  onHourClick(state.activeLabel.replace(':00', ''));
+                if (!detailHour && state?.activeLabel) {
+                  handleHourClick(state.activeLabel);
                 }
               }}
             >
