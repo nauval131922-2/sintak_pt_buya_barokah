@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useMemo, useState } from 'react';
+import { memo, useMemo, useState, useRef, useEffect } from 'react';
 import { BarChart3, Clock } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -60,6 +60,12 @@ function ActivityLogTrendChart({
   const [dailyZoomEnd, setDailyZoomEnd] = useState(100);
   const [hourlyZoomStart, setHourlyZoomStart] = useState(0);
   const [hourlyZoomEnd, setHourlyZoomEnd] = useState(100);
+  
+  // ponytail: skip onClick pada first render untuk avoid false trigger dari Recharts mount
+  const isFirstRenderRef = useRef(true);
+  useEffect(() => {
+    isFirstRenderRef.current = false;
+  }, []);
 
   // ponytail: dynamic maxBarSize based on data length
   const maxBarSize = useMemo(() => {
@@ -341,8 +347,9 @@ function ActivityLogTrendChart({
               data={detailHour ? minuteChartData : hourlyChartData}
               margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
               onClick={(state: any) => {
-                // ponytail: activePayload = real data point click, activeLabel tanpa payload = Brush/axis noise
-                if (!detailHour && state?.activePayload?.length > 0 && state?.activeLabel && onHourClick) {
+                // ponytail: skip first render false trigger, then check activeLabel exists
+                if (isFirstRenderRef.current) return;
+                if (!detailHour && state?.activeLabel && onHourClick) {
                   onHourClick(state.activeLabel.replace(':00', ''));
                 }
               }}
