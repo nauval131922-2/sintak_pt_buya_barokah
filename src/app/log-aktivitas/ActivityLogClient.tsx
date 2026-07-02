@@ -496,7 +496,7 @@ export default function ActivityLogClient({
         to: to || undefined,
         tableName: tableName || undefined,
         actionType: actionType || undefined,
-      });
+      } as { from?: string; to?: string; tableName?: string; actionType?: string });
       if (res.success) {
         toast.success(`Berhasil menghapus ${res.deletedCount.toLocaleString('id-ID')} log.`);
         // Clear filters after successful cleanup
