@@ -558,7 +558,12 @@ export async function getLiveRecord(tableName: string, recordId: number | string
   }
 }
 
-export async function cleanupActivityLogs(daysToKeep: number) {
+// ponytail: function overload untuk fix TypeScript union type inference di CI
+export async function cleanupActivityLogs(options: number): Promise<{ success: boolean; deletedCount: number; fileSizeReduction?: number; countBefore?: number; countAfter?: number; initialSizeMb?: number; finalSizeMb?: number; savedSizeMb?: number; vacuumDurationSec?: number }>;
+export async function cleanupActivityLogs(options: { from?: string; to?: string; tableName?: string; actionType?: string }): Promise<{ success: boolean; deletedCount: number; fileSizeReduction?: number; countBefore?: number; countAfter?: number; initialSizeMb?: number; finalSizeMb?: number; savedSizeMb?: number; vacuumDurationSec?: number }>;
+export async function cleanupActivityLogs(
+  options: number | { from?: string; to?: string; tableName?: string; actionType?: string }
+): Promise<{ success: boolean; deletedCount: number; fileSizeReduction?: number; countBefore?: number; countAfter?: number; initialSizeMb?: number; finalSizeMb?: number; savedSizeMb?: number; vacuumDurationSec?: number }> {
   const session = await getSession();
   const { canAdminActivityLog } = await import('@/lib/activity-log-permissions');
   if (!session || !(await canAdminActivityLog(
@@ -591,11 +596,44 @@ export async function cleanupActivityLogs(daysToKeep: number) {
     const countBeforeRes = await db.execute(`SELECT COUNT(*) as count FROM activity_logs`);
     const countBefore = Number((countBeforeRes.rows[0] as any).count ?? 0);
 
-    // 2. Delete logs older than daysToKeep
-    await db.execute({
-      sql: `DELETE FROM activity_logs WHERE created_at < date('now', ?)`,
-      args: [`-${daysToKeep} days`]
-    });
+    // 2. Delete logs older than daysToKeep or matching custom conditions
+    if (typeof options === 'number') {
+      await db.execute({
+        sql: `DELETE FROM activity_logs WHERE created_at < date('now', ?)`,
+        args: [`-${options} days`]
+      });
+    } else {
+      const conditions: string[] = [];
+      const args: any[] = [];
+
+      if (options.from && options.to) {
+        conditions.push('created_at >= ? AND created_at < ?');
+        const fromDate = new Date(`${options.from}T00:00:00+07:00`);
+        const toDate = new Date(`${options.to}T00:00:00+07:00`);
+        toDate.setDate(toDate.getDate() + 1);
+        args.push(
+          fromDate.toISOString().replace('T', ' ').slice(0, 19),
+          toDate.toISOString().replace('T', ' ').slice(0, 19)
+        );
+      }
+      if (options.tableName) {
+        conditions.push('table_name = ?');
+        args.push(options.tableName);
+      }
+      if (options.actionType) {
+        conditions.push('action_type = ?');
+        args.push(options.actionType);
+      }
+
+      if (conditions.length === 0) {
+        throw new Error('Minimal harus memilih salah satu kriteria penghapusan log kustom.');
+      }
+
+      await db.execute({
+        sql: `DELETE FROM activity_logs WHERE ${conditions.join(' AND ')}`,
+        args
+      });
+    }
 
     // 3. Get count after
     const countAfterRes = await db.execute(`SELECT COUNT(*) as count FROM activity_logs`);
@@ -616,6 +654,10 @@ export async function cleanupActivityLogs(daysToKeep: number) {
     }
 
     // 6. Record activity log for maintenance
+    const optionStr = typeof options === 'number' 
+      ? `retensi ${options} hari terakhir`
+      : `filter kustom (dari: ${options.from || '-'}, sampai: ${options.to || '-'}, tabel: ${options.tableName || '-'}, action: ${options.actionType || '-'})`;
+
     await db.execute({
       sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by) 
             VALUES (?, ?, ?, ?, ?, ?)`,
@@ -623,9 +665,9 @@ export async function cleanupActivityLogs(daysToKeep: number) {
         'MAINTENANCE', 
         'activity_logs', 
         0, 
-        `Pembersihan log aktivitas berhasil dilakukan (retensi ${daysToKeep} hari terakhir). Terhapus: ${deletedCount.toLocaleString('id-ID')} baris.`, 
+        `Pembersihan log aktivitas berhasil dilakukan (${optionStr}). Terhapus: ${deletedCount.toLocaleString('id-ID')} baris.`, 
         JSON.stringify({ 
-          daysToKeep, 
+          options, 
           deletedCount, 
           spaceSavedMb: savedSize.toFixed(2), 
           vacuumDurationSec 
