@@ -49,15 +49,16 @@ export function buildActivityLogWhere(params: ActivityLogQueryParams) {
   const opts = params.opts ?? {};
 
   if (params.from && params.to) {
-    // ponytail: data stored as ISO 8601 (YYYY-MM-DDTHH:MM:SS.mmmZ), filter in same format
-    // agar lexicographic string comparison works dan index created_at bisa dipake (range seek).
+    // ponytail: SQLite CURRENT_TIMESTAMP returns 'YYYY-MM-DD HH:MM:SS' (UTC, no Z suffix)
+    // Filter harus pakai format sama biar string comparison works
     conditions.push('al.created_at >= ? AND al.created_at <= ?');
     const fromDate = new Date(`${params.from}T00:00:00+07:00`);
     const toDate = new Date(`${params.to}T23:59:59.999+07:00`);
-    const fromISO = fromDate.toISOString();
-    const toISO = toDate.toISOString();
-    console.log('[buildActivityLogWhere] Date range:', { from: params.from, to: params.to, fromISO, toISO });
-    args.push(fromISO, toISO);
+    // Convert to SQLite format: 'YYYY-MM-DD HH:MM:SS' (UTC)
+    const fromSQL = fromDate.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '');
+    const toSQL = toDate.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '');
+    console.log('[buildActivityLogWhere] Date range:', { from: params.from, to: params.to, fromSQL, toSQL });
+    args.push(fromSQL, toSQL);
   }
 
   if (params.tableName) {
