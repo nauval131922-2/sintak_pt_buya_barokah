@@ -71,9 +71,8 @@ export function formatDateStrId(dateStr: string): string {
 }
 
 export function getDefaultActivityLogFilters() {
-  // ponytail: default 30 hari untuk performa lebih baik vs 1 tahun
   const today = getTodayStr();
-  const from = addDaysStr(today, -29); // 30 hari (hari ini + 29 hari sebelumnya)
+  const from = today; // 1 hari
   return {
     source: 'active' as ActivityLogSource,
     from,
@@ -82,7 +81,7 @@ export function getDefaultActivityLogFilters() {
     actionType: '',
     recordedBy: '',
     search: '',
-    datePreset: null, // Bukan preset standar
+    datePreset: 'today' as DatePreset, // default = hari ini
   };
 }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { BarChart3, Clock } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -33,20 +33,28 @@ export interface ActivityLogHourlyStat {
   count: number;
 }
 
-export default function ActivityLogTrendChart({
+function ActivityLogTrendChart({
   days,
   hourly = [],
+  minutes = [],
+  detailHour = null,
   loading,
   activeAction,
   onSelectDay,
   onSelectAction,
+  onHourClick,
+  onHourBack,
 }: {
   days: ActivityLogTrendDay[];
   hourly?: ActivityLogHourlyStat[];
+  minutes?: { minute: string; count: number }[];
+  detailHour?: string | null;
   loading?: boolean;
   activeAction?: string;
   onSelectDay: (date: string) => void;
   onSelectAction: (action: string) => void;
+  onHourClick?: (hour: string) => void;
+  onHourBack?: () => void;
 }) {
   const [dailyZoomStart, setDailyZoomStart] = useState(0);
   const [dailyZoomEnd, setDailyZoomEnd] = useState(100);
@@ -145,6 +153,25 @@ export default function ActivityLogTrendChart({
     return result;
   }, [hourly]);
 
+  const minuteChartData: typeof hourlyChartData = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const m of minutes) {
+      map.set(m.minute, m.count);
+    }
+    const result: { hour: string; count: number; name: string }[] = [];
+    if (!detailHour) return result;
+    const hh = detailHour.padStart(2, '0');
+    for (let i = 0; i < 60; i++) {
+      const mStr = `${hh}:${String(i).padStart(2, '0')}`;
+      result.push({
+        hour: mStr,
+        name: mStr,
+        count: map.get(mStr) ?? 0,
+      });
+    }
+    return result;
+  }, [minutes, detailHour]);
+
   if (loading) {
     return (
       <div className="h-56 bg-gray-50 border border-gray-100 rounded-xl animate-pulse" />
@@ -197,8 +224,10 @@ export default function ActivityLogTrendChart({
               margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
               onClick={(state: any) => {
                 console.log('BarChart clicked:', state);
-                if (state?.activePayload?.[0]) {
-                  const clickedDate = state.activePayload[0].payload.date;
+                // ponytail: Recharts tidak kasih activePayload di stacked bar, pakai activeIndex instead
+                if (state?.activeIndex !== undefined && dailyChartData[state.activeIndex]) {
+                  const clickedData = dailyChartData[state.activeIndex];
+                  const clickedDate = clickedData.date;
                   console.log('Clicked date:', clickedDate);
                   if (clickedDate) onSelectDay(clickedDate);
                 }
@@ -221,25 +250,26 @@ export default function ActivityLogTrendChart({
                 fontWeight="bold"
               />
               <Tooltip
-                labelFormatter={(label, payload) => {
-                  if (payload && payload[0]) {
-                    return payload[0].payload.fullDate || label;
-                  }
-                  return label;
-                }}
-                contentStyle={{
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '12px',
-                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06)',
-                  fontSize: '11px',
-                  fontWeight: '500',
-                  padding: '8px 12px',
-                }}
-                labelStyle={{
-                  color: '#374151',
-                  fontWeight: '600',
-                  marginBottom: '4px',
+                content={({ active, payload, label }) => {
+                  if (!active || !payload?.length) return null;
+                  const data = payload[0]?.payload;
+                  const total = data?.total ?? 0;
+                  // ponytail: compact custom tooltip, total sekali di atas
+                  return (
+                    <div className="bg-white border border-gray-200 rounded-xl shadow-sm px-3 py-2 text-[11px]">
+                      <div className="font-semibold text-gray-700 mb-1.5">{data?.fullDate || label}</div>
+                      <div className="font-bold text-gray-900 mb-1.5">Total: {total.toLocaleString('id-ID')}</div>
+                      <div className="space-y-0.5">
+                        {payload.toReversed().map((entry: any) => (
+                          <div key={entry.dataKey} className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-sm shrink-0" style={{ backgroundColor: entry.color }} />
+                            <span className="text-gray-600">{entry.name}</span>
+                            <span className="ml-auto font-medium text-gray-800">{entry.value?.toLocaleString('id-ID')}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
                 }}
               />
               {topActions.map((action) => (
@@ -251,6 +281,13 @@ export default function ActivityLogTrendChart({
                   radius={[2, 2, 0, 0]}
                   maxBarSize={maxBarSize}
                   cursor="pointer"
+                  onClick={(data: any) => {
+                    if (data?.date) {
+                      onSelectDay(data.date);
+                      // filter action cuma kalau cuma 1 bar (1 hari)
+                      if (days.length === 1) onSelectAction(action);
+                    }
+                  }}
                 />
               ))}
               <Brush
@@ -272,23 +309,42 @@ export default function ActivityLogTrendChart({
         </div>
       </div>
 
-      {/* Hourly Traffic Chart */}
+      {/* Hourly / Minute Traffic Chart */}
       <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm flex flex-col justify-between">
         <div className="flex items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-2 text-[12px] font-medium text-gray-700">
             <Clock size={14} className="text-blue-600" />
-            Traffic per jam
+            {detailHour ? `Per-menit jam ${detailHour.padStart(2, '0')}:00` : 'Traffic per jam'}
           </div>
-          <div className="text-[9px] font-semibold text-gray-500 bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100">
-            Total: {hourly.reduce((acc, curr) => acc + curr.count, 0).toLocaleString('id-ID')} log
+          <div className="flex items-center gap-2">
+            {detailHour && (
+              <button
+                type="button"
+                onClick={onHourBack}
+                className="text-[9px] font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200"
+              >
+                ← Kembali
+              </button>
+            )}
+            <div className="text-[9px] font-semibold text-gray-500 bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100">
+              Total: {detailHour
+                ? minutes.reduce((acc, curr) => acc + curr.count, 0).toLocaleString('id-ID')
+                : hourly.reduce((acc, curr) => acc + curr.count, 0).toLocaleString('id-ID')
+              } log
+            </div>
           </div>
         </div>
 
         <div className="h-64 w-full text-[10px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
-              data={hourlyChartData}
+              data={detailHour ? minuteChartData : hourlyChartData}
               margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
+              onClick={(state: any) => {
+                if (!detailHour && state?.activeLabel && onHourClick) {
+                  onHourClick(state.activeLabel.replace(':00', ''));
+                }
+              }}
             >
               <defs>
                 <linearGradient id="hourlyGrad" x1="0" y1="0" x2="0" y2="1">
@@ -304,6 +360,7 @@ export default function ActivityLogTrendChart({
                 stroke="#94a3b8"
                 fontSize={8}
                 fontWeight="bold"
+                interval={detailHour ? 4 : 0}
               />
               <YAxis
                 axisLine={false}
@@ -331,26 +388,29 @@ export default function ActivityLogTrendChart({
               <Area
                 type="monotone"
                 dataKey="count"
-                name="Jumlah Log"
+                name={detailHour ? 'Jumlah per menit' : 'Jumlah Log'}
                 stroke="#2563eb"
                 strokeWidth={1.8}
                 fillOpacity={1}
                 fill="url(#hourlyGrad)"
+                cursor={detailHour ? 'default' : 'pointer'}
               />
-              <Brush
-                dataKey="name"
-                height={20}
-                stroke="#3b82f6"
-                fill="#eff6ff"
-                startIndex={Math.floor((hourlyZoomStart / 100) * (hourlyChartData.length - 1))}
-                endIndex={Math.floor((hourlyZoomEnd / 100) * (hourlyChartData.length - 1))}
-                onChange={(e) => {
-                  if (e.startIndex !== undefined && e.endIndex !== undefined) {
-                    setHourlyZoomStart((e.startIndex / (hourlyChartData.length - 1)) * 100);
-                    setHourlyZoomEnd((e.endIndex / (hourlyChartData.length - 1)) * 100);
-                  }
-                }}
-              />
+              {!detailHour && (
+                <Brush
+                  dataKey="name"
+                  height={20}
+                  stroke="#3b82f6"
+                  fill="#eff6ff"
+                  startIndex={Math.floor((hourlyZoomStart / 100) * (hourlyChartData.length - 1))}
+                  endIndex={Math.floor((hourlyZoomEnd / 100) * (hourlyChartData.length - 1))}
+                  onChange={(e) => {
+                    if (e.startIndex !== undefined && e.endIndex !== undefined) {
+                      setHourlyZoomStart((e.startIndex / (hourlyChartData.length - 1)) * 100);
+                      setHourlyZoomEnd((e.endIndex / (hourlyChartData.length - 1)) * 100);
+                    }
+                  }}
+                />
+              )}
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -358,3 +418,5 @@ export default function ActivityLogTrendChart({
     </div>
   );
 }
+
+export default memo(ActivityLogTrendChart);

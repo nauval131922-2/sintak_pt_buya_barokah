@@ -45,6 +45,7 @@ function parseQuery(searchParams: URLSearchParams): ActivityLogQueryParams {
       return s && allowed.includes(s as ActivityLogSortField) ? (s as ActivityLogSortField) : 'created_at';
     })(),
     sortDir: searchParams.get('sortDir') === 'asc' ? 'asc' : 'desc',
+    opts: { skipRawDataSearch: true }, // ponytail: raw_data LIKE adalah yang termahal
   };
 }
 
@@ -56,7 +57,7 @@ async function queryLogs(params: ActivityLogQueryParams, withStats = false) {
   // Build two WHERE variants:
   // - fullWhere: for data query (needs user JOIN for u.name + raw_data search)
   // - countWhere: for COUNT/STATS — skip expensive user name JOIN only
-  const countParams = { ...params, opts: { skipUserNameSearch: true } };
+  const countParams = { ...params, opts: { ...params.opts, skipUserNameSearch: true } };
   const { whereClause: fullWhere, args: fullArgs } = buildActivityLogWhere(params);
   const { whereClause: countWhere, args: countArgs } = buildActivityLogWhere(countParams);
 
@@ -89,7 +90,7 @@ async function queryLogs(params: ActivityLogQueryParams, withStats = false) {
   const dataResult = await db.execute({
     sql: `
       SELECT al.id, al.created_at, al.action_type, al.table_name, al.record_id,
-             al.message, al.recorded_by${archiveCol},
+             al.message, al.recorded_by, al.raw_data${archiveCol},
              u.name AS recorded_by_name
       FROM ${table} al${indexHint}
       LEFT JOIN users u ON al.recorded_by = u.username

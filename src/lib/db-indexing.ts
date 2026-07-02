@@ -17,20 +17,11 @@ export async function initIndexing(database: { execute: (sql: string) => Promise
     "CREATE INDEX IF NOT EXISTS idx_infractions_faktur_composite ON infractions(faktur, date DESC);",
     
     // 3. Activity Logs Optimization (Dashboard)
-    "CREATE INDEX IF NOT EXISTS idx_activity_logs_created_at_desc ON activity_logs(created_at DESC);",
     // Index covering untuk ORDER BY created_at DESC, id DESC — hindari TEMP B-TREE RIGHT PART
     "CREATE INDEX IF NOT EXISTS idx_activity_logs_created_at_id_desc ON activity_logs(created_at DESC, id DESC);",
     "CREATE INDEX IF NOT EXISTS idx_activity_logs_table_action ON activity_logs(table_name, action_type);",
     // Index untuk correlated subquery / GROUP BY record_id per table+action
     "CREATE INDEX IF NOT EXISTS idx_activity_logs_table_action_record ON activity_logs(table_name, action_type, record_id, id);",
-    // Index untuk copy-jadwal check: WHERE action_type = 'COPY_JADWAL' AND raw_data LIKE 'prefix%'
-    "CREATE INDEX IF NOT EXISTS idx_activity_logs_action_rawdata ON activity_logs(action_type, raw_data);",
-    // Index covering untuk filter DISTINCT (table_name, action_type, recorded_by)
-    "CREATE INDEX IF NOT EXISTS idx_activity_logs_table_name ON activity_logs(table_name);",
-    "CREATE INDEX IF NOT EXISTS idx_activity_logs_action_type ON activity_logs(action_type);",
-    "CREATE INDEX IF NOT EXISTS idx_activity_logs_recorded_by ON activity_logs(recorded_by);",
-    // Index composite untuk trend query: GROUP BY date(created_at), action_type
-    "CREATE INDEX IF NOT EXISTS idx_activity_logs_trend ON activity_logs(created_at, action_type);",
     // Index untuk STATS GROUP BY action_type + WHERE date range — hindari temp B-tree
     "CREATE INDEX IF NOT EXISTS idx_activity_logs_action_created ON activity_logs(action_type, created_at);",
     // Index untuk STATS GROUP BY table_name + WHERE date range
@@ -38,14 +29,8 @@ export async function initIndexing(database: { execute: (sql: string) => Promise
     // Index untuk STATS GROUP BY recorded_by + WHERE date range
     "CREATE INDEX IF NOT EXISTS idx_activity_logs_recorded_by_created ON activity_logs(recorded_by, created_at DESC);",
     // Index untuk activity_logs_archive (sama seperti activity_logs)
-    "CREATE INDEX IF NOT EXISTS idx_actlogs_arch_created_at ON activity_logs_archive(created_at DESC);",
     "CREATE INDEX IF NOT EXISTS idx_actlogs_arch_table_action ON activity_logs_archive(table_name, action_type);",
     "CREATE INDEX IF NOT EXISTS idx_actlogs_arch_table_action_record ON activity_logs_archive(table_name, action_type, record_id, id);",
-    "CREATE INDEX IF NOT EXISTS idx_actlogs_arch_action_rawdata ON activity_logs_archive(action_type, raw_data);",
-    "CREATE INDEX IF NOT EXISTS idx_actlogs_arch_table_name ON activity_logs_archive(table_name);",
-    "CREATE INDEX IF NOT EXISTS idx_actlogs_arch_action_type ON activity_logs_archive(action_type);",
-    "CREATE INDEX IF NOT EXISTS idx_actlogs_arch_recorded_by ON activity_logs_archive(recorded_by);",
-    "CREATE INDEX IF NOT EXISTS idx_actlogs_arch_trend ON activity_logs_archive(created_at, action_type);",
     "CREATE INDEX IF NOT EXISTS idx_actlogs_arch_action_created ON activity_logs_archive(action_type, created_at);",
     "CREATE INDEX IF NOT EXISTS idx_actlogs_arch_table_created ON activity_logs_archive(table_name, created_at DESC);",
     "CREATE INDEX IF NOT EXISTS idx_actlogs_arch_recorded_by_created ON activity_logs_archive(recorded_by, created_at DESC);",

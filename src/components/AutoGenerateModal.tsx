@@ -6,7 +6,7 @@ import {
   Save, Info, Plus, SkipForward, CheckCircle2, RefreshCw
 } from 'lucide-react';
 import Portal from './Portal';
-import Toast from './Toast';
+import { toast } from '@/lib/toast';
 import DraftRowItem from './DraftRowItem';
 
 interface DraftRow {
@@ -120,7 +120,6 @@ export default function AutoGenerateModal({
   const [generateMode, setGenerateMode] = useState<'historis' | 'fallback' | null>(null);
   const [generateMeta, setGenerateMeta] = useState<{ karyawanAktif: number; orderAktif: number; windowHari: number } | null>(null);
   const [error, setError] = useState('');
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
   const [fridayChoice, setFridayChoice] = useState<'friday' | 'saturday'>('friday');
   const [append, setAppend] = useState(false);
   const [appendConfirm, setAppendConfirm] = useState(false);
@@ -425,7 +424,7 @@ export default function AutoGenerateModal({
       });
       const result = await res.json();
       if (result.success) {
-        setToast({ message: `Berhasil menyimpan ${result.count} baris jadwal.`, type: 'success' });
+        toast.success(`Berhasil menyimpan ${result.count} baris jadwal.`);
         onSaved();
         onClose();
       } else if (result.code === 'EXISTS') {
@@ -445,8 +444,6 @@ export default function AutoGenerateModal({
 
   return (
     <Portal>
-      <Toast message={toast?.message ?? null} type={toast?.type} onClose={() => setToast(null)} />
-
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[1400px] max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
           {/* Header */}

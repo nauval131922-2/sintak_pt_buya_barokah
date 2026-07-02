@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useTransition, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useTransition, useRef, useMemo, Fragment } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Database, Loader2, Calendar, X, Table2, Zap, User, ChevronUp, ChevronDown, Trash2, BarChart3
@@ -9,7 +9,6 @@ import ActivityLogExportMenu from './ActivityLogExportMenu';
 import SearchableDropdown from '@/components/SearchableDropdown';
 import { formatLastUpdate } from '@/lib/date-utils';
 import SearchAndReload from '@/components/SearchAndReload';
-import { useVirtualizer } from '@tanstack/react-virtual';
 import DatePicker from '@/components/DatePicker';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import TableFooter from '@/components/TableFooter';
@@ -143,6 +142,8 @@ export default function ActivityLogClient({
   const [debouncedSearch, setDebouncedSearch] = useState(initialState.search);
   const [total, setTotal] = useState(0);
   const [loadTime, setLoadTime] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [from, setFrom] = useState(initialState.from);
   const [to, setTo] = useState(initialState.to);
   const [datePreset, setDatePreset] = useState<DatePreset | null>(initialState.datePreset);
@@ -165,8 +166,6 @@ export default function ActivityLogClient({
   }>({ tables: [], actions: [], users: [] });
 
   const [expandedId, setExpandedId] = useState<number | string | null>(null);
-  const [expandedRawData, setExpandedRawData] = useState<Record<string | number, string | null>>({});
-  const [fetchingRawData, setFetchingRawData] = useState<Set<string | number>>(new Set());
   const [isPending] = useTransition();
   const [dialog, setDialog] = useState<{
     isOpen: boolean;
@@ -186,14 +185,18 @@ export default function ActivityLogClient({
   const [trendDays, setTrendDays] = useState<ActivityLogTrendDay[]>([]);
   const [trendHourly, setTrendHourly] = useState<{ hour: string; count: number }[]>([]);
   const [trendGroupBy, setTrendGroupBy] = useState<string>('day'); // 'day' | 'week' | 'month'
+  const [detailHour, setDetailHour] = useState<string | null>(null);
+  const [minuteData, setMinuteData] = useState<{ minute: string; count: number }[]>([]);
   const [isFetchingTrend, setIsFetchingTrend] = useState(false);
   const statsFetchId = useRef(0);
   const logsFetchId = useRef(0);
   const trendFetchId = useRef(0);
   const fetchAcRef = useRef<AbortController | null>(null);
   const pageRef = useRef<HTMLDivElement>(null);
-  const bodyRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  // ponytail: scroll table ke atas tiap ganti page
+  useEffect(() => { scrollContainerRef.current?.scrollTo(0, 0); }, [page]);
   // ponytail: column resize like hasil produksi
   const COL_DEFAULTS = [110, 150, 180, 140, 600];
   const COL_MIN = [80, 100, 120, 100, 300];
@@ -233,67 +236,29 @@ export default function ActivityLogClient({
     resizingRef.current = true;
     const startX = e.clientX;
     const startW = colWidths[i];
+    const tableEl = (e.currentTarget as HTMLElement).closest('table');
+    const colEls = tableEl?.querySelectorAll('colgroup > col');
     
     const move = (e: MouseEvent) => {
       const w = Math.max(COL_MIN[i], startW + e.clientX - startX);
-      setColWidths(p => {
-        const n = [...p];
-        n[i] = w;
-        return n;
-      });
+      // ponytail: update DOM langsung biar ga trigger React re-render + table layout recalc
+      if (colEls?.[i]) (colEls[i] as HTMLElement).style.width = `${w}px`;
     };
     
     const up = () => {
       document.removeEventListener('mousemove', move);
       document.removeEventListener('mouseup', up);
-      setTimeout(() => {
-        resizingRef.current = false;
-      }, 10);
+      // commit final widths ke React state
+      if (colEls) {
+        const finalWidths = Array.from(colEls).map((el) => parseInt((el as HTMLElement).style.width) || COL_DEFAULTS[Array.from(colEls).indexOf(el)]);
+        setColWidths(finalWidths);
+      }
+      setTimeout(() => { resizingRef.current = false; }, 10);
     };
     
     document.addEventListener('mousemove', move);
     document.addEventListener('mouseup', up);
   };
-
-  // Build grid template from colWidths
-  const gridCols = `${colWidths[0]}px ${colWidths[1]}px ${colWidths[2]}px ${colWidths[3]}px ${colWidths[4]}px`;
-
-  // Flatten logs into virtual rows (each log = 1 or 2 rows depending on expanded state)
-  const virtualRows = useMemo(() => {
-    const rows: { type: 'main' | 'expanded'; log: ActivityLogRow; logIndex: number }[] = [];
-    logs.forEach((log, i) => {
-      rows.push({ type: 'main', log, logIndex: i });
-      if (expandedId === log.id) {
-        rows.push({ type: 'expanded', log, logIndex: i });
-      }
-    });
-    return rows;
-  }, [logs, expandedId]);
-
-  const rowVirtualizer = useVirtualizer({
-    count: virtualRows.length,
-    getScrollElement: () => bodyRef.current,
-    estimateSize: (i) => {
-      const row = virtualRows[i];
-      if (!row) return 45;
-      // Expanded rows are much taller due to the 3-column grid with before/after/diff
-      return row.type === 'expanded' ? 280 : 45;
-    },
-    overscan: 10,
-    measureElement: (el) => el.getBoundingClientRect().height,
-  });
-
-  // Re-measure all rows when expandedId changes (for accurate heights after expand/collapse)
-  useEffect(() => {
-    // Double-measure: immediate + delayed to ensure DOM is fully updated
-    requestAnimationFrame(() => {
-      rowVirtualizer.measure();
-      // Second measure after a delay for more reliability
-      setTimeout(() => {
-        rowVirtualizer.measure();
-      }, 50);
-    });
-  }, [expandedId, rowVirtualizer]);
 
   // Save showChart state to localStorage (only after mount to avoid hydration issues)
   useEffect(() => {
@@ -313,8 +278,8 @@ export default function ActivityLogClient({
       const p = new URLSearchParams({
         from,
         to,
-        page: '1',
-        pageSize: '5000', // ponytail: limit 5000 untuk performa
+        page: String(page),
+        pageSize: '50',
         source,
         ...extra,
       });
@@ -326,7 +291,7 @@ export default function ActivityLogClient({
       p.set('sortDir', sortDir);
       return p;
     },
-    [from, to, debouncedSearch, tableName, actionType, recordedBy, source, sortBy, sortDir]
+    [from, to, debouncedSearch, tableName, actionType, recordedBy, source, sortBy, sortDir, page]
   );
 
   const fetchLogs = useCallback(
@@ -346,11 +311,8 @@ export default function ActivityLogClient({
           setTotal(data.total ?? 0);
           setLastUpdated(new Date());
           setCountdown(120);
-          
-          // ponytail: warning jika hasil terpotong limit 5000
-          if (rows.length >= 5000 && (data.total ?? 0) > 5000) {
-            toast.warning('Menampilkan 5.000 log terbaru. Persempit filter untuk hasil lebih spesifik.');
-          }
+          setPage(data.page ?? 1);
+          setTotalPages(data.totalPages ?? 1);
         }
       } catch { /* ignore */ } finally {
         if (logsFetchId.current !== fid) return;
@@ -370,7 +332,7 @@ export default function ActivityLogClient({
 
   const fetchTrend = useCallback(async () => {
     const signal = fetchAcRef.current?.signal;
-    if (signal?.aborted) return;
+      if (signal?.aborted) return;
     const fid = ++trendFetchId.current;
     setIsFetchingTrend(true);
     try {
@@ -378,6 +340,7 @@ export default function ActivityLogClient({
       p.delete('page');
       p.delete('pageSize');
       p.delete('stats');
+      if (detailHour) p.set('detailHour', detailHour);
       const res = await fetch(`/api/activity-log/trend?${p.toString()}`, { signal });
       const data = await res.json();
       if (trendFetchId.current !== fid) return;
@@ -385,12 +348,13 @@ export default function ActivityLogClient({
         setTrendDays(data.days || []);
         setTrendHourly(data.hourly || []);
         setTrendGroupBy(data.groupBy || 'day');
+        if (data.minutes) setMinuteData(data.minutes);
       }
     } catch { /* ignore */ } finally {
       if (trendFetchId.current !== fid) return;
       setIsFetchingTrend(false);
     }
-  }, [buildParams]);
+  }, [buildParams, detailHour]);
 
   const fetchStats = useCallback(async () => {
     const signal = fetchAcRef.current?.signal;
@@ -447,6 +411,9 @@ export default function ActivityLogClient({
     return () => clearTimeout(t);
   }, [search]);
 
+  // ponytail: reset page ke 1 kalau filter berubah
+  useEffect(() => { setPage(1); }, [from, to, debouncedSearch, tableName, actionType, recordedBy, source, sortBy, sortDir]);
+
   useEffect(() => {
     const ac = new AbortController();
     fetchAcRef.current = ac;
@@ -462,7 +429,7 @@ export default function ActivityLogClient({
       {
         source, from, to, tableName, actionType, recordedBy, search, sortBy, sortDir, datePreset,
       },
-      expandedId ? String(expandedId) : undefined
+      undefined // ponytail: jangan sync expandedId ke URL — nulis id ke URL trigger Suspense reload → collapse
     );
     const targetQs = target.includes('?') ? target.split('?')[1]! : '';
     if (targetQs !== urlSearchParams.toString()) {
@@ -470,7 +437,7 @@ export default function ActivityLogClient({
     }
   }, [
     source, from, to, tableName, actionType, recordedBy, search, sortBy, sortDir, datePreset,
-    expandedId, router, urlSearchParams,
+    router, urlSearchParams,
   ]);
 
   useEffect(() => {
@@ -538,6 +505,17 @@ export default function ActivityLogClient({
     const interval = setInterval(refreshCallback, 120 * 1000);
     return () => clearInterval(interval);
   }, [refreshCallback]);
+
+  // ponytail: pause auto-refresh kalau tab inactive
+  const refreshCallbackRef = useRef(refreshCallback);
+  refreshCallbackRef.current = refreshCallback;
+  useEffect(() => {
+    const onVisible = () => {
+      if (!document.hidden) refreshCallbackRef.current();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, []);
 
   const handleTrendDay = (date: string) => {
     // ponytail: smart date range based on grouping
@@ -657,29 +635,8 @@ export default function ActivityLogClient({
     window.open(`/api/activity-log/export?${p.toString()}`, '_blank');
   };
 
-  const toggleExpand = async (log: ActivityLogRow) => {
-    const next: number | string | null = expandedId === log.id ? null : log.id;
-    setExpandedId(next);
-    
-    // ponytail: lazy-load raw_data on expand (Priority 2)
-    if (next && !expandedRawData[log.id] && !fetchingRawData.has(log.id)) {
-      setFetchingRawData(prev => new Set(prev).add(log.id));
-      try {
-        const res = await fetch(`/api/activity-log/${log.id}?source=${source}`);
-        const data = await res.json();
-        if (data.success) {
-          setExpandedRawData(prev => ({ ...prev, [log.id]: data.raw_data }));
-        }
-      } catch (err) {
-        console.error('Failed to fetch raw_data:', err);
-      } finally {
-        setFetchingRawData(prev => {
-          const next = new Set(prev);
-          next.delete(log.id);
-          return next;
-        });
-      }
-    }
+  const toggleExpand = (log: ActivityLogRow) => {
+    setExpandedId(prev => prev === log.id ? null : log.id);
   };
 
   return (
@@ -896,10 +853,14 @@ export default function ActivityLogClient({
               <ActivityLogTrendChart
                 days={trendDays}
                 hourly={trendHourly}
+                minutes={minuteData}
+                detailHour={detailHour}
                 loading={isFetchingTrend}
                 activeAction={actionType}
                 onSelectDay={handleTrendDay}
                 onSelectAction={setActionType}
+                onHourClick={setDetailHour}
+                onHourBack={() => { setDetailHour(null); setMinuteData([]); }}
               />
             </div>
           )}
@@ -945,152 +906,151 @@ export default function ActivityLogClient({
                 Tidak ada log yang sesuai filter.
               </div>
             ) : (
-              <>
-                <div
-                  ref={bodyRef}
-                  className="overflow-y-auto overflow-x-auto max-h-[min(52vh,560px)] min-h-[240px] custom-scrollbar"
-                >
-                  <div className="w-full">
-                  {/* Header - CSS Grid */}
-                  <div 
-                    className="bg-gray-50 border-b border-gray-100 sticky top-0 z-10"
-                    style={{ 
-                      display: 'grid',
-                      gridTemplateColumns: gridCols,
-                      alignItems: 'center',
-                      minWidth: '100%'
-                    }}
-                  >
-                    <div className="px-4 py-3 relative border-r border-gray-200" onContextMenu={(e) => colCtx(0, e)}>
-                      <button
-                        type="button"
-                        onClick={() => toggleSort('action_type')}
-                        className={`inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-green-700 transition-colors ${sortBy === 'action_type' ? 'text-green-700' : ''}`}
-                      >
-                        Action
-                        {sortBy === 'action_type' ? (
-                          sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
-                        ) : (
-                          <ChevronDown size={12} className="opacity-30" />
-                        )}
-                      </button>
-                      <div
-                        className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
-                        onMouseDown={(e) => colResizeStart(0, e)}
-                        title="Drag untuk resize kolom"
-                      />
-                    </div>
-                    <div className="px-4 py-3 relative border-r border-gray-200" onContextMenu={(e) => colCtx(1, e)}>
-                      <button
-                        type="button"
-                        onClick={() => toggleSort('created_at')}
-                        className={`inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-green-700 transition-colors ${sortBy === 'created_at' ? 'text-green-700' : ''}`}
-                      >
-                        Waktu
-                        {sortBy === 'created_at' ? (
-                          sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
-                        ) : (
-                          <ChevronDown size={12} className="opacity-30" />
-                        )}
-                      </button>
-                      <div
-                        className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
-                        onMouseDown={(e) => colResizeStart(1, e)}
-                        title="Drag untuk resize kolom"
-                      />
-                    </div>
-                    <div className="px-4 py-3 relative border-r border-gray-200" onContextMenu={(e) => colCtx(2, e)}>
-                      <button
-                        type="button"
-                        onClick={() => toggleSort('recorded_by')}
-                        className={`inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-green-700 transition-colors ${sortBy === 'recorded_by' ? 'text-green-700' : ''}`}
-                      >
-                        User
-                        {sortBy === 'recorded_by' ? (
-                          sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
-                        ) : (
-                          <ChevronDown size={12} className="opacity-30" />
-                        )}
-                      </button>
-                      <div
-                        className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
-                        onMouseDown={(e) => colResizeStart(2, e)}
-                        title="Drag untuk resize kolom"
-                      />
-                    </div>
-                    <div className="px-4 py-3 relative border-r border-gray-200" onContextMenu={(e) => colCtx(3, e)}>
-                      <button
-                        type="button"
-                        onClick={() => toggleSort('table_name')}
-                        className={`inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-green-700 transition-colors ${sortBy === 'table_name' ? 'text-green-700' : ''}`}
-                      >
-                        Tabel
-                        {sortBy === 'table_name' ? (
-                          sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
-                        ) : (
-                          <ChevronDown size={12} className="opacity-30" />
-                        )}
-                      </button>
-                      <div
-                        className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
-                        onMouseDown={(e) => colResizeStart(3, e)}
-                        title="Drag untuk resize kolom"
-                      />
-                    </div>
-                    <div className="px-4 py-3 relative" onContextMenu={(e) => colCtx(4, e)}>
-                      <span className="text-[10px] font-bold text-gray-400">Keterangan</span>
-                      <div
-                        className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
-                        onMouseDown={(e) => colResizeStart(4, e)}
-                        title="Drag untuk resize kolom"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Body - Virtual Scrolling with CSS Grid */}
-                  <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: 'relative' }}>
-                    {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                      const virtualItem = virtualRows[virtualRow.index];
-                      const log = virtualItem.log;
-                      
-                      if (virtualItem.type === 'main') {
-                        const isExpanded = expandedId === log.id;
-                        return (
-                          <div
-                            key={`main-${log.id}`}
-                            data-index={virtualRow.index}
-                            ref={rowVirtualizer.measureElement}
+              <div ref={scrollContainerRef} className="overflow-y-auto overflow-x-auto max-h-[min(52vh,560px)] min-h-[240px] custom-scrollbar">
+                <table className="text-left table-fixed">
+                  <colgroup>
+                    <col style={{ width: colWidths[0] }} />
+                    <col style={{ width: colWidths[1] }} />
+                    <col style={{ width: colWidths[2] }} />
+                    <col style={{ width: colWidths[3] }} />
+                    <col style={{ width: colWidths[4] }} />
+                  </colgroup>
+                  <thead className="bg-gray-50 border-b border-gray-100 sticky top-0 z-10">
+                    <tr>
+                      <th className="px-4 py-3 relative border-r border-gray-200" onContextMenu={(e) => colCtx(0, e)}>
+                        <button
+                          type="button"
+                          onClick={() => toggleSort('action_type')}
+                          className={`inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-green-700 transition-colors ${sortBy === 'action_type' ? 'text-green-700' : ''}`}
+                        >
+                          Action
+                          {sortBy === 'action_type' ? (
+                            sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
+                          ) : (
+                            <ChevronDown size={12} className="opacity-30" />
+                          )}
+                        </button>
+                        <div
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
+                          onMouseDown={(e) => colResizeStart(0, e)}
+                          title="Drag untuk resize kolom"
+                        />
+                      </th>
+                      <th className="px-4 py-3 relative border-r border-gray-200" onContextMenu={(e) => colCtx(1, e)}>
+                        <button
+                          type="button"
+                          onClick={() => toggleSort('created_at')}
+                          className={`inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-green-700 transition-colors ${sortBy === 'created_at' ? 'text-green-700' : ''}`}
+                        >
+                          Waktu
+                          {sortBy === 'created_at' ? (
+                            sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
+                          ) : (
+                            <ChevronDown size={12} className="opacity-30" />
+                          )}
+                        </button>
+                        <div
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
+                          onMouseDown={(e) => colResizeStart(1, e)}
+                          title="Drag untuk resize kolom"
+                        />
+                      </th>
+                      <th className="px-4 py-3 relative border-r border-gray-200" onContextMenu={(e) => colCtx(2, e)}>
+                        <button
+                          type="button"
+                          onClick={() => toggleSort('recorded_by')}
+                          className={`inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-green-700 transition-colors ${sortBy === 'recorded_by' ? 'text-green-700' : ''}`}
+                        >
+                          User
+                          {sortBy === 'recorded_by' ? (
+                            sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
+                          ) : (
+                            <ChevronDown size={12} className="opacity-30" />
+                          )}
+                        </button>
+                        <div
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
+                          onMouseDown={(e) => colResizeStart(2, e)}
+                          title="Drag untuk resize kolom"
+                        />
+                      </th>
+                      <th className="px-4 py-3 relative border-r border-gray-200" onContextMenu={(e) => colCtx(3, e)}>
+                        <button
+                          type="button"
+                          onClick={() => toggleSort('table_name')}
+                          className={`inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-green-700 transition-colors ${sortBy === 'table_name' ? 'text-green-700' : ''}`}
+                        >
+                          Tabel
+                          {sortBy === 'table_name' ? (
+                            sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
+                          ) : (
+                            <ChevronDown size={12} className="opacity-30" />
+                          )}
+                        </button>
+                        <div
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
+                          onMouseDown={(e) => colResizeStart(3, e)}
+                          title="Drag untuk resize kolom"
+                        />
+                      </th>
+                      <th className="px-4 py-3 relative" onContextMenu={(e) => colCtx(4, e)}>
+                        <span className="text-[10px] font-bold text-gray-400">Keterangan</span>
+                        <div
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
+                          onMouseDown={(e) => colResizeStart(4, e)}
+                          title="Drag untuk resize kolom"
+                        />
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {logs.map((log) => {
+                      const isExpanded = expandedId === log.id;
+                      const rawParsed = log.raw_data
+                        ? (() => { try { return JSON.parse(log.raw_data as string); } catch { return null; } })()
+                        : null;
+                      let beforeJson: string | null = null;
+                      let afterJson: string | null = null;
+                      if (rawParsed) {
+                        if (log.action_type === 'INSERT') {
+                          afterJson = stringifyAuditData(rawParsed);
+                        } else if (log.action_type === 'DELETE') {
+                          beforeJson = stringifyAuditData(rawParsed);
+                        } else if (log.action_type === 'UPDATE') {
+                          if (rawParsed.before && rawParsed.after) {
+                            beforeJson = stringifyAuditData(rawParsed.before);
+                            afterJson = stringifyAuditData(rawParsed.after);
+                          } else {
+                            afterJson = stringifyAuditData(rawParsed);
+                          }
+                        } else {
+                          afterJson = stringifyAuditData(rawParsed);
+                        }
+                      }
+                      return (
+                        <Fragment key={log.id}>
+                          <tr
                             onClick={() => toggleExpand(log)}
-                            className={`border-b border-gray-50 hover:bg-green-50/40 cursor-pointer transition-colors ${isExpanded ? 'bg-green-50/60' : ''}`}
-                            style={{ 
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              width: '100%',
-                              transform: `translateY(${virtualRow.start}px)`,
-                              display: 'grid',
-                              gridTemplateColumns: gridCols,
-                              alignItems: 'center',
-                            }}
+                            className={`hover:bg-green-50/40 cursor-pointer transition-colors ${isExpanded ? 'bg-green-50/60' : ''}`}
                           >
-                            <div className="px-4 py-2.5 overflow-hidden border-r border-gray-100">
+                            <td className="px-4 py-2.5 whitespace-nowrap overflow-hidden text-ellipsis max-w-[110px]">
                               <span className={`inline-flex px-2 py-0.5 rounded-md text-[9px] font-bold border ${getActionColor(log.action_type || '')}`}>
                                 {log.action_type}
                               </span>
-                            </div>
-                            <div className="px-4 py-2.5 text-[11px] font-bold text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis border-r border-gray-100">
+                            </td>
+                            <td className="px-4 py-2.5 text-[11px] font-bold text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px]">
                               {formatLastUpdate(log.created_at)}
-                            </div>
-                            <div className="px-4 py-2.5 text-[10px] font-semibold text-gray-500 overflow-hidden border-r border-gray-100">
+                            </td>
+                            <td className="px-4 py-2.5 text-[10px] font-semibold text-gray-500 overflow-hidden text-ellipsis max-w-[180px]">
                               {log.recorded_by_name
                                 ? <>{log.recorded_by_name}<br /><span className="text-[9px] text-gray-400">@{log.recorded_by}</span></>
                                 : (log.recorded_by || '—')}
-                            </div>
-                            <div className="px-4 py-2.5 text-[11px] font-bold text-gray-700 uppercase whitespace-nowrap overflow-hidden text-ellipsis border-r border-gray-100">
+                            </td>
+                            <td className="px-4 py-2.5 text-[11px] font-bold text-gray-700 uppercase whitespace-nowrap overflow-hidden text-ellipsis max-w-[140px]">
                               {log.table_name}
                               {log.record_id ? ` #${log.record_id}` : ''}
-                            </div>
-                            <div className="px-4 py-2.5 relative min-w-0 overflow-hidden">
+                            </td>
+                            <td className="px-4 py-2.5 relative">
                               <p className="text-[12px] font-bold text-gray-700 line-clamp-2">{log.message}</p>
                               {debouncedSearch && getMatchedFields(log, debouncedSearch).length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-1">
@@ -1105,117 +1065,80 @@ export default function ActivityLogClient({
                               <span className="absolute right-2 top-2 text-gray-300">
                                 {isExpanded ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
                               </span>
-                            </div>
-                          </div>
-                        );
-                      } else {
-                        // Expanded row - lazy-load raw_data
-                        const rawDataStr = expandedRawData[log.id];
-                        const isLoading = fetchingRawData.has(log.id);
-                        const rawParsed = rawDataStr ? (() => { try { return JSON.parse(rawDataStr); } catch { return null; } })() : null;
-                        let beforeJson: string | null = null;
-                        let afterJson: string | null = null;
-                        if (rawParsed) {
-                          if (log.action_type === 'INSERT') {
-                            afterJson = stringifyAuditData(rawParsed);
-                          } else if (log.action_type === 'DELETE') {
-                            beforeJson = stringifyAuditData(rawParsed);
-                          } else if (log.action_type === 'UPDATE') {
-                            if (rawParsed.before && rawParsed.after) {
-                              beforeJson = stringifyAuditData(rawParsed.before);
-                              afterJson = stringifyAuditData(rawParsed.after);
-                            } else {
-                              afterJson = stringifyAuditData(rawParsed);
-                            }
-                          } else {
-                            afterJson = stringifyAuditData(rawParsed);
-                          }
-                        }
-                        return (
-                          <div
-                            key={`expanded-${log.id}`}
-                            data-index={virtualRow.index}
-                            ref={rowVirtualizer.measureElement}
-                            className="bg-gray-50/80 border-b border-gray-100"
-                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${virtualRow.start}px)` }}
-                          >
-                            <div className="px-4 py-3">
-                              {isLoading ? (
-                                <div className="flex items-center justify-center py-8">
-                                  <Loader2 size={20} className="animate-spin text-green-600" />
-                                  <span className="ml-2 text-[11px] text-gray-500">Loading detail...</span>
-                                </div>
-                              ) : (
+                            </td>
+                          </tr>
+                          {isExpanded && (
+                            <tr className="bg-gray-50/80">
+                              <td colSpan={5} className="px-4 py-3">
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
-                                  <div className="text-[10px] font-bold text-gray-400 mb-2">Before</div>
-                                  {beforeJson ? (
-                                    <pre className="text-[10px] leading-relaxed text-gray-700 max-h-[200px] overflow-y-auto custom-scrollbar whitespace-pre-wrap">{beforeJson}</pre>
-                                  ) : (
-                                    <p className="text-[11px] text-gray-400 italic">—</p>
-                                  )}
-                                </div>
-                                <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
-                                  <div className="text-[10px] font-bold text-gray-400 mb-2">After</div>
-                                  {afterJson ? (
-                                    <pre className="text-[10px] leading-relaxed text-gray-700 max-h-[200px] overflow-y-auto custom-scrollbar whitespace-pre-wrap">{afterJson}</pre>
-                                  ) : (
-                                    <p className="text-[11px] text-gray-400 italic">—</p>
-                                  )}
-                                </div>
-                                <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
-                                  <div className="text-[10px] font-bold text-gray-400 mb-2">Diff</div>
-                                  {(() => {
-                                    let diffs = computeExplicitDiff(rawParsed);
-                                    if (diffs.length === 0 && rawParsed && !rawParsed.before && !rawParsed.after) {
-                                      if (log.action_type === 'INSERT') {
-                                        diffs = Object.entries(rawParsed).map(([key, value]) => ({ key, before: '', after: String(value ?? '') }));
-                                      } else if (log.action_type === 'DELETE') {
-                                        diffs = Object.entries(rawParsed).map(([key, value]) => ({ key, before: String(value ?? ''), after: '' }));
-                                      }
-                                    }
-                                    return diffs.length > 0 ? (
-                                      <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
-                                        <table className="w-full table-fixed text-[10px]">
-                                          <colgroup>
-                                            <col style={{ width: '30%' }} />
-                                            <col style={{ width: '35%' }} />
-                                            <col style={{ width: '35%' }} />
-                                          </colgroup>
-                                          <thead>
-                                            <tr className="text-left text-gray-400 font-bold border-b border-gray-50">
-                                              <th className="pb-1 pr-2">Kolom</th>
-                                              <th className="pb-1 pr-2">Sebelum</th>
-                                              <th className="pb-1">Sesudah</th>
-                                            </tr>
-                                          </thead>
-                                          <tbody>
-                                            {diffs.map((d) => (
-                                              <tr key={d.key} className="border-b border-gray-50/50">
-                                                <td className="py-1 pr-2 font-semibold text-gray-700 break-words">{d.key}</td>
-                                                <td className="py-1 pr-2 text-rose-500 break-words">{d.before || <span className="italic text-gray-300">—</span>}</td>
-                                                <td className="py-1 text-emerald-700 break-words">{d.after || <span className="italic text-gray-300">—</span>}</td>
-                                              </tr>
-                                            ))}
-                                          </tbody>
-                                        </table>
-                                      </div>
+                                  <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
+                                    <div className="text-[10px] font-bold text-gray-400 mb-2">Before</div>
+                                    {beforeJson ? (
+                                      <pre className="text-[10px] leading-relaxed text-gray-700 max-h-[200px] overflow-y-auto custom-scrollbar whitespace-pre-wrap">{beforeJson}</pre>
                                     ) : (
                                       <p className="text-[11px] text-gray-400 italic">—</p>
-                                    );
-                                   })()}
+                                    )}
+                                  </div>
+                                  <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
+                                    <div className="text-[10px] font-bold text-gray-400 mb-2">After</div>
+                                    {afterJson ? (
+                                      <pre className="text-[10px] leading-relaxed text-gray-700 max-h-[200px] overflow-y-auto custom-scrollbar whitespace-pre-wrap">{afterJson}</pre>
+                                    ) : (
+                                      <p className="text-[11px] text-gray-400 italic">—</p>
+                                    )}
+                                  </div>
+                                  <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
+                                    <div className="text-[10px] font-bold text-gray-400 mb-2">Diff</div>
+                                    {(() => {
+                                      let diffs = computeExplicitDiff(rawParsed);
+                                      if (diffs.length === 0 && rawParsed && !rawParsed.before && !rawParsed.after) {
+                                        if (log.action_type === 'INSERT') {
+                                          diffs = Object.entries(rawParsed).map(([key, value]) => ({ key, before: '', after: String(value ?? '') }));
+                                        } else if (log.action_type === 'DELETE') {
+                                          diffs = Object.entries(rawParsed).map(([key, value]) => ({ key, before: String(value ?? ''), after: '' }));
+                                        }
+                                      }
+                                      return diffs.length > 0 ? (
+                                        <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                                          <table className="w-full table-fixed text-[10px]">
+                                            <colgroup>
+                                              <col style={{ width: '30%' }} />
+                                              <col style={{ width: '35%' }} />
+                                              <col style={{ width: '35%' }} />
+                                            </colgroup>
+                                            <thead>
+                                              <tr className="text-left text-gray-400 font-bold border-b border-gray-50">
+                                                <th className="pb-1 pr-2">Kolom</th>
+                                                <th className="pb-1 pr-2">Sebelum</th>
+                                                <th className="pb-1">Sesudah</th>
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              {diffs.map((d) => (
+                                                <tr key={d.key} className="border-b border-gray-50/50">
+                                                  <td className="py-1 pr-2 font-semibold text-gray-700 break-words">{d.key}</td>
+                                                  <td className="py-1 pr-2 text-rose-500 break-words">{d.before || <span className="italic text-gray-300">—</span>}</td>
+                                                  <td className="py-1 text-emerald-700 break-words">{d.after || <span className="italic text-gray-300">—</span>}</td>
+                                                </tr>
+                                              ))}
+                                            </tbody>
+                                          </table>
+                                        </div>
+                                      ) : (
+                                        <p className="text-[11px] text-gray-400 italic">—</p>
+                                      );
+                                    })()}
+                                  </div>
                                 </div>
-                              </div>
-                            )}
-                            </div>
-                          </div>
-                        );
-                      }
+                              </td>
+                            </tr>
+                          )}
+                        </Fragment>
+                      );
                     })}
-                  </div>
-                  </div>
-                </div>
-              </>
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
 
@@ -1226,6 +1149,9 @@ export default function ActivityLogClient({
               currentCount={logs.length}
               label="log aktivitas"
               loadTime={loadTime}
+              page={page}
+              totalPages={totalPages}
+              onPageChange={(p) => { fetchAcRef.current?.abort(); setPage(p); }}
             />
           )}
         </div>

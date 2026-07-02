@@ -85,10 +85,15 @@ export default function DatePicker({ name, required, label, onChange, value, cus
   }, [open]); // jalan ulang setiap `open` berubah
 
   // ---- EFFECT 2: kalau value dari parent berubah, ikutin ----
+  const prevTimeRef = useRef<number | null>(null);
   useEffect(() => {
-    if (value) {
-      setViewYear(value.getFullYear());
-      setViewMonth(value.getMonth());
+    const timeVal = value ? value.getTime() : null;
+    if (timeVal !== prevTimeRef.current) {
+      prevTimeRef.current = timeVal;
+      if (value) {
+        setViewYear(value.getFullYear());
+        setViewMonth(value.getMonth());
+      }
     }
   }, [value]);
 

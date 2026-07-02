@@ -3,6 +3,7 @@ import { Outfit } from "next/font/google";
 import "./globals.css";
 import MainContentWrapper from "@/components/MainContentWrapper";
 import ManualModal from "@/components/ManualModal";
+import { ToastContainer } from "@/components/Toast";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
 
@@ -62,6 +63,7 @@ export default async function RootLayout({
           {children}
         </MainContentWrapper>
         <ManualModal />
+        <ToastContainer />
         <SpeedInsights />
         <Analytics />
       </body>

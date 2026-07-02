@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
     const table = getActivityLogTable(source);
     const from = searchParams.get('from') || undefined;
     const to = searchParams.get('to') || undefined;
+    const detailHour = searchParams.get('detailHour');
 
     // Safety guard: trend tanpa date range bakal scan semua baris — tolak
     if (!from || !to) {
@@ -82,6 +83,26 @@ export async function GET(req: NextRequest) {
       args,
     });
 
+    let minutes: { minute: string; count: number }[] = [];
+    if (detailHour) {
+      const hourPadded = detailHour.padStart(2, '0');
+      const minuteResult = await db.execute({
+        sql: `
+          SELECT strftime('%H:%M', datetime(al.created_at, '+7 hours')) AS minute, COUNT(*) AS cnt
+          FROM ${table} al
+          ${whereClause}
+            AND strftime('%H', datetime(al.created_at, '+7 hours')) = ?
+          GROUP BY minute
+          ORDER BY minute ASC
+        `,
+        args: [...args, hourPadded],
+      });
+      minutes = minuteResult.rows.map((r) => ({
+        minute: String(r.minute ?? ''),
+        count: Number(r.cnt ?? 0),
+      }));
+    }
+
     const dayMap = new Map<string, ActivityLogTrendDay>();
     for (const row of result.rows) {
       const period = String(row.period ?? '');
@@ -103,7 +124,7 @@ export async function GET(req: NextRequest) {
       count: Number(r.cnt ?? 0),
     }));
 
-    return NextResponse.json({ success: true, days, hourly, source, groupBy, rangeDays });
+    return NextResponse.json({ success: true, days, hourly, minutes, source, groupBy, rangeDays });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     return NextResponse.json({ error: message }, { status: 500 });

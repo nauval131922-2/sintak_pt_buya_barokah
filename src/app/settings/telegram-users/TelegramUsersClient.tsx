@@ -2,10 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Loader2, CheckCircle, XCircle, RefreshCw, MessageSquare, Bell, BellOff } from 'lucide-react';
-import Toast from '@/components/Toast';
-import Portal from '@/components/Portal';
-
-type ToastData = { id: number; type: 'success' | 'error' | 'warning'; message: string };
+import { toast } from '@/lib/toast';
 
 interface TelegramUser {
   id: number;
@@ -37,19 +34,12 @@ export default function TelegramUsersClient() {
   const [users, setUsers] = useState<TelegramUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [toasts, setToasts] = useState<ToastData[]>([]);
-  const toastIdRef = useRef(0);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
   const lastPendingCountRef = useRef<number>(0);
   const [pushSubscribed, setPushSubscribed] = useState(false);
 
-  const showToast = useCallback((type: ToastData['type'], message: string) => {
-    const id = ++toastIdRef.current;
-    setToasts(prev => [...prev, { id, type, message }]);
-  }, []);
-
-  const removeToast = useCallback((id: number) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
+  const showToast = useCallback((type: 'success' | 'error' | 'warning', message: string) => {
+    toast.show(type, message);
   }, []);
 
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -219,14 +209,6 @@ export default function TelegramUsersClient() {
 
   return (
     <div className="flex flex-col gap-6">
-      <Portal>
-        <div className="fixed top-6 right-6 z-[9999999] pointer-events-none flex flex-col gap-2">
-          {toasts.map(t => (
-            <Toast key={t.id} type={t.type} message={t.message} onClose={() => removeToast(t.id)} />
-          ))}
-        </div>
-      </Portal>
-
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="bg-white rounded-xl border border-amber-200 p-5 shadow-sm">

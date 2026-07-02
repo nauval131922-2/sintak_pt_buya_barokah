@@ -14,7 +14,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import { DataTable } from '@/components/ui/DataTable';
 import TableFooter from '@/components/TableFooter';
 import SearchAndReload from '@/components/SearchAndReload';
-import Toast from '@/components/Toast';
+import { toast } from '@/lib/toast';
 
 interface User {
   id: number;
@@ -46,7 +46,6 @@ export default function UsersContent({
   const [statusFilter, setStatusFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<number | string>>(new Set());
   const [lastSelectedId, setLastSelectedId] = useState<number | null>(null);
   const [loadTime, setLoadTime] = useState<number | null>(null);
@@ -81,10 +80,10 @@ export default function UsersContent({
       if (res.success && res.users) {
         setUsers(res.users as User[]);
       } else {
-        setMessage({ type: 'error', text: res.message || 'Gagal memuat data user.' });
+        toast.error(res.message || 'Gagal memuat data user.');
       }
     } catch {
-      setMessage({ type: 'error', text: 'Gagal memuat data user.' });
+      toast.error('Gagal memuat data user.');
     } finally {
       setLoading(false);
     }
@@ -132,7 +131,7 @@ export default function UsersContent({
 
   const handleToggleStatus = useCallback(async (user: User) => {
     if (user.id === currentUserId) {
-      setMessage({ type: 'error', text: 'Anda tidak dapat menonaktifkan akun Anda sendiri.' });
+      toast.error('Anda tidak dapat menonaktifkan akun Anda sendiri.');
       return;
     }
     const newStatus = user.is_active === 1 ? 0 : 1;
@@ -145,16 +144,13 @@ export default function UsersContent({
       });
       if (res.success) {
         localStorage.setItem('sintak_data_updated', Date.now().toString());
-        setMessage({
-          type: 'success',
-          text: `Status user "${user.username}" berhasil diubah menjadi ${newStatus === 1 ? 'Aktif' : 'Nonaktif'}.`,
-        });
+        toast.success(`Status user "${user.username}" berhasil diubah menjadi ${newStatus === 1 ? 'Aktif' : 'Nonaktif'}.`);
         loadUsers();
       } else {
-        setMessage({ type: 'error', text: res.message || 'Gagal memperbarui status user.' });
+        toast.error(res.message || 'Gagal memperbarui status user.');
       }
     } catch {
-      setMessage({ type: 'error', text: 'Terjadi kesalahan sistem.' });
+      toast.error('Terjadi kesalahan sistem.');
     }
   }, [currentUserId, loadUsers]);
 
@@ -290,13 +286,13 @@ export default function UsersContent({
           const result = await deleteUser(id);
           if (result.success) {
             localStorage.setItem('sintak_data_updated', Date.now().toString());
-            setMessage({ type: 'success', text: 'User berhasil dihapus.' });
+            toast.success('User berhasil dihapus.');
             loadUsers();
           } else {
-            setMessage({ type: 'error', text: result.message || 'Gagal menghapus user.' });
+            toast.error(result.message || 'Gagal menghapus user.');
           }
         } catch {
-          setMessage({ type: 'error', text: 'Terjadi kesalahan sistem.' });
+          toast.error('Terjadi kesalahan sistem.');
         }
       },
     });
@@ -304,7 +300,6 @@ export default function UsersContent({
 
   const handleEdit = (user: User) => { setEditingUser(user); setShowModal(true); };
   const handleCreate = () => { setEditingUser(null); setShowModal(true); };
-  const handleCloseToast = useCallback(() => setMessage(null), []);
 
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-3 animate-in fade-in duration-500 overflow-hidden">
@@ -415,10 +410,7 @@ export default function UsersContent({
             setShowModal(false);
             if (refresh) {
               loadUsers();
-              setMessage({
-                type: 'success',
-                text: `Data user berhasil ${editingUser ? 'diperbarui' : 'ditambahkan'}.`,
-              });
+              toast.success(`Data user berhasil ${editingUser ? 'diperbarui' : 'ditambahkan'}.`);
             }
           }}
         />
@@ -431,13 +423,6 @@ export default function UsersContent({
         message={dialog.message}
         onConfirm={dialog.onConfirm || (() => setDialog(prev => ({ ...prev, isOpen: false })))}
         onCancel={() => setDialog(prev => ({ ...prev, isOpen: false }))}
-      />
-
-      <Toast
-        message={message?.text || null}
-        type={message?.type}
-        duration={5000}
-        onClose={handleCloseToast}
       />
     </div>
   );

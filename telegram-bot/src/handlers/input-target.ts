@@ -598,13 +598,13 @@ function parseTargetTemplate(text: string) {
   const fields: Record<string, string> = {};
   const patterns: [RegExp, string][] = [
     [/^realisasi:[ \t]*(.+)$/im, 'realisasi'],
-    [/^jam:[ \t]*(.+)$/im, 'jam'],
+    [/^jam(?:[ \t]+kerja)?:[ \t]*(.+)$/im, 'jam'],
     [/^kendala:[ \t]*(.+)$/im, 'kendala'],
     [/^bahan(?:[ \t]+kertas)?:[ \t]*(.+)$/im, 'bahan_kertas'],
     [/^warna:[ \t]*(.+)$/im, 'warna'],
-    [/^inscheet:[ \t]*(.+)$/im, 'inscheet'],
+    [/^ins(?:che|h)eet:[ \t]*(.+)$/im, 'inscheet'],
     [/^rijek:[ \t]*(.+)$/im, 'rijek'],
-    [/^plate:[ \t]*(.+)$/im, 'jml_plate'],
+    [/^(?:jml[.\s]+)?plate:[ \t]*(.+)$/im, 'jml_plate'],
     [/^keterangan:[ \t]*(.+)$/im, 'keterangan'],
     [/^pekerjaan:[ \t]*(.+)$/im, 'jenis_pekerjaan_2'],
     [/^order:[ \t]*(.+)$/im, 'no_order_2'],

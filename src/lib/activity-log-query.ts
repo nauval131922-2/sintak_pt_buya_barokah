@@ -49,16 +49,14 @@ export function buildActivityLogWhere(params: ActivityLogQueryParams) {
   const opts = params.opts ?? {};
 
   if (params.from && params.to) {
-    conditions.push('al.created_at >= ? AND al.created_at < ?');
-    // params.from / params.to adalah string tanggal WIB (Asia/Jakarta, UTC+7)
-    // Tapi created_at di DB tersimpan dalam UTC (format YYYY-MM-DD HH:MM:SS)
-    // Konversi: 00:00 WIB = 17:00 UTC hari sebelumnya
+    // ponytail: data stored as ISO 8601 (YYYY-MM-DDTHH:MM:SS.mmmZ), filter in same format
+    // agar lexicographic string comparison works dan index created_at bisa dipake (range seek).
+    conditions.push('al.created_at >= ? AND al.created_at <= ?');
     const fromDate = new Date(`${params.from}T00:00:00+07:00`);
-    const toDate = new Date(`${params.to}T00:00:00+07:00`);
-    toDate.setDate(toDate.getDate() + 1);
+    const toDate = new Date(`${params.to}T23:59:59.999+07:00`);
     args.push(
-      fromDate.toISOString().replace('T', ' ').slice(0, 19),
-      toDate.toISOString().replace('T', ' ').slice(0, 19)
+      fromDate.toISOString(),
+      toDate.toISOString()
     );
   }
 
