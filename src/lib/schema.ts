@@ -1123,6 +1123,19 @@ export async function initSchema(db: any) {
     "CREATE INDEX IF NOT EXISTS idx_telegram_users_telegram_id ON telegram_users(telegram_id);",
     "CREATE INDEX IF NOT EXISTS idx_telegram_users_nama ON telegram_users(nama_karyawan);",
     "CREATE INDEX IF NOT EXISTS idx_telegram_users_active ON telegram_users(is_active);",
+    
+    // ponytail: composite indexes untuk activity_logs stats queries (Priority 1)
+    "CREATE INDEX IF NOT EXISTS idx_activity_logs_created_at_action ON activity_logs(created_at, action_type);",
+    "CREATE INDEX IF NOT EXISTS idx_activity_logs_created_at_table ON activity_logs(created_at, table_name);",
+    "CREATE INDEX IF NOT EXISTS idx_activity_logs_created_at_user ON activity_logs(created_at, recorded_by);",
+    "CREATE INDEX IF NOT EXISTS idx_activity_logs_created_at_id_desc ON activity_logs(created_at DESC, id DESC);",
+    
+    // Same for archive table
+    "CREATE INDEX IF NOT EXISTS idx_activity_logs_archive_created_at_action ON activity_logs_archive(created_at, action_type);",
+    "CREATE INDEX IF NOT EXISTS idx_activity_logs_archive_created_at_table ON activity_logs_archive(created_at, table_name);",
+    "CREATE INDEX IF NOT EXISTS idx_activity_logs_archive_created_at_user ON activity_logs_archive(created_at, recorded_by);",
+    "CREATE INDEX IF NOT EXISTS idx_activity_logs_archive_created_at_id_desc ON activity_logs_archive(created_at DESC, id DESC);",
+    
     "DROP INDEX IF EXISTS idx_barang_jadi_tgl_id;",
     "CREATE INDEX IF NOT EXISTS idx_barang_jadi_expr_tgl ON barang_jadi(substr(tgl, 7, 4) DESC, substr(tgl, 4, 2) DESC, substr(tgl, 1, 2) DESC, id DESC);",
     "CREATE INDEX IF NOT EXISTS idx_barang_jadi_created_at ON barang_jadi(created_at);",

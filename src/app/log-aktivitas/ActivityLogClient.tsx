@@ -165,6 +165,8 @@ export default function ActivityLogClient({
   }>({ tables: [], actions: [], users: [] });
 
   const [expandedId, setExpandedId] = useState<number | string | null>(null);
+  const [expandedRawData, setExpandedRawData] = useState<Record<string | number, string | null>>({});
+  const [fetchingRawData, setFetchingRawData] = useState<Set<string | number>>(new Set());
   const [isPending] = useTransition();
   const [dialog, setDialog] = useState<{
     isOpen: boolean;
@@ -312,7 +314,7 @@ export default function ActivityLogClient({
         from,
         to,
         page: '1',
-        pageSize: '100000',
+        pageSize: '5000', // ponytail: limit 5000 untuk performa
         source,
         ...extra,
       });
@@ -339,10 +341,16 @@ export default function ActivityLogClient({
         const data = await res.json();
         if (logsFetchId.current !== fid) return;
         if (data.success) {
-          setLogs(toPlainActivityRows(data.data || []));
+          const rows = toPlainActivityRows(data.data || []);
+          setLogs(rows);
           setTotal(data.total ?? 0);
           setLastUpdated(new Date());
           setCountdown(120);
+          
+          // ponytail: warning jika hasil terpotong limit 5000
+          if (rows.length >= 5000 && (data.total ?? 0) > 5000) {
+            toast.warning('Menampilkan 5.000 log terbaru. Persempit filter untuk hasil lebih spesifik.');
+          }
         }
       } catch { /* ignore */ } finally {
         if (logsFetchId.current !== fid) return;
@@ -618,9 +626,29 @@ export default function ActivityLogClient({
     window.open(`/api/activity-log/export?${p.toString()}`, '_blank');
   };
 
-  const toggleExpand = (log: ActivityLogRow) => {
+  const toggleExpand = async (log: ActivityLogRow) => {
     const next: number | string | null = expandedId === log.id ? null : log.id;
     setExpandedId(next);
+    
+    // ponytail: lazy-load raw_data on expand (Priority 2)
+    if (next && !expandedRawData[log.id] && !fetchingRawData.has(log.id)) {
+      setFetchingRawData(prev => new Set(prev).add(log.id));
+      try {
+        const res = await fetch(`/api/activity-log/${log.id}?source=${source}`);
+        const data = await res.json();
+        if (data.success) {
+          setExpandedRawData(prev => ({ ...prev, [log.id]: data.raw_data }));
+        }
+      } catch (err) {
+        console.error('Failed to fetch raw_data:', err);
+      } finally {
+        setFetchingRawData(prev => {
+          const next = new Set(prev);
+          next.delete(log.id);
+          return next;
+        });
+      }
+    }
   };
 
   return (
@@ -1050,8 +1078,10 @@ export default function ActivityLogClient({
                           </div>
                         );
                       } else {
-                        // Expanded row
-                        const rawParsed = log.raw_data ? (() => { try { return JSON.parse(log.raw_data as string); } catch { return null; } })() : null;
+                        // Expanded row - lazy-load raw_data
+                        const rawDataStr = expandedRawData[log.id];
+                        const isLoading = fetchingRawData.has(log.id);
+                        const rawParsed = rawDataStr ? (() => { try { return JSON.parse(rawDataStr); } catch { return null; } })() : null;
                         let beforeJson: string | null = null;
                         let afterJson: string | null = null;
                         if (rawParsed) {
@@ -1079,7 +1109,13 @@ export default function ActivityLogClient({
                             style={{ position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${virtualRow.start}px)` }}
                           >
                             <div className="px-4 py-3">
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                              {isLoading ? (
+                                <div className="flex items-center justify-center py-8">
+                                  <Loader2 size={20} className="animate-spin text-green-600" />
+                                  <span className="ml-2 text-[11px] text-gray-500">Loading detail...</span>
+                                </div>
+                              ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                 <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
                                   <div className="text-[10px] font-bold text-gray-400 mb-2">Before</div>
                                   {beforeJson ? (
@@ -1136,9 +1172,10 @@ export default function ActivityLogClient({
                                     ) : (
                                       <p className="text-[11px] text-gray-400 italic">—</p>
                                     );
-                                  })()}
+                                   })()}
                                 </div>
                               </div>
+                            )}
                             </div>
                           </div>
                         );
