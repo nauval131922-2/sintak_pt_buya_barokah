@@ -61,13 +61,19 @@ function ActivityLogTrendChart({
   const [hourlyZoomStart, setHourlyZoomStart] = useState(0);
   const [hourlyZoomEnd, setHourlyZoomEnd] = useState(100);
   
-  // ponytail: track real mouse click untuk avoid false trigger dari Recharts internal events
-  const lastClickTimeRef = useRef(0);
+  // ponytail: track user interaction — Recharts onClick bisa trigger tanpa mouse event (mount/resize)
+  // Hanya proses onClick kalau ada user mousedown dalam 500ms terakhir
+  const userInteractedRef = useRef(false);
+  const handleUserInteraction = () => {
+    userInteractedRef.current = true;
+    setTimeout(() => { userInteractedRef.current = false; }, 500);
+  };
+  
   const handleHourClick = (label: string) => {
-    const now = Date.now();
-    // ponytail: debounce 100ms — Recharts kadang fire onClick 2x dalam <50ms
-    if (now - lastClickTimeRef.current < 100) return;
-    lastClickTimeRef.current = now;
+    if (!userInteractedRef.current) {
+      console.log('[Chart] onClick ignored: no user interaction detected');
+      return;
+    }
     if (onHourClick) onHourClick(label.replace(':00', ''));
   };
 
@@ -345,7 +351,7 @@ function ActivityLogTrendChart({
           </div>
         </div>
 
-        <div className="h-64 w-full text-[10px]">
+        <div className="h-64 w-full text-[10px]" onMouseDown={handleUserInteraction}>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={detailHour ? minuteChartData : hourlyChartData}
