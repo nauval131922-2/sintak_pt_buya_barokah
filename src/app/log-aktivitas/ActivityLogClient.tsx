@@ -1,20 +1,20 @@
 'use client';
 
-import { useState, useEffect, useCallback, useTransition, useRef, useMemo, Fragment } from 'react';
+import { useState, useEffect, useCallback, useTransition, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-  Clock, Database, Loader2, Calendar, LayoutList, LayoutGrid, Archive, FileText,
-  X, Table2, Zap, User, ChevronUp, ChevronDown, Bookmark, Trash2, Info, ListTree,
+  Database, Loader2, Calendar, X, Table2, Zap, User, ChevronUp, ChevronDown, Trash2, BarChart3
 } from 'lucide-react';
 import ActivityLogExportMenu from './ActivityLogExportMenu';
 import SearchableDropdown from '@/components/SearchableDropdown';
 import { formatLastUpdate } from '@/lib/date-utils';
-import TableFooter from '@/components/TableFooter';
 import SearchAndReload from '@/components/SearchAndReload';
-import { useAutoRefresh } from '@/lib/hooks/useAutoRefresh';
-import LastUpdatedBadge from '@/components/LastUpdatedBadge';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import DatePicker from '@/components/DatePicker';
-import ActivityLogCleanupModal from './ActivityLogCleanupModal';
+import ConfirmDialog from '@/components/ConfirmDialog';
+import TableFooter from '@/components/TableFooter';
+import { toast } from '@/lib/toast';
+import { cleanupActivityLogs } from '@/lib/actions';
 import {
   type ActivityLogRow,
   type DatePreset,
@@ -24,9 +24,7 @@ import {
   detectActiveDatePreset,
   getActionColor,
   toPlainActivityRows,
-  groupActivityLogsByDate,
   formatDateStrId,
-  type ActivityLogSource,
   computeExplicitDiff,
   stringifyAuditData,
 } from '@/lib/activity-log-utils';
@@ -37,22 +35,11 @@ import {
   mergeActivityLogState,
   parseActivityLogUrl,
 } from '@/lib/activity-log-url';
-import {
-  deleteActivityLogPreset,
-  loadActivityLogPresets,
-  saveActivityLogPreset,
-  type SavedActivityLogPreset,
-} from '@/lib/activity-log-presets';
 import ActivityLogTrendChart from './ActivityLogTrendChart';
 import type { ActivityLogTrendDay } from '@/app/api/activity-log/trend/route';
 import {
-  loadActivityLogRefreshMs,
-  saveActivityLogRefreshMs,
-  REFRESH_INTERVAL_OPTIONS,
   QUICK_ACTION_CHIPS,
 } from '@/lib/activity-log-refresh';
-
-const PAGE_SIZE = 50;
 
 interface MatchInfo { field: string; label: string; value: string; }
 const MATCH_FIELDS: { key: keyof ActivityLogRow; label: string; extract: (l: ActivityLogRow) => string }[] = [
@@ -141,7 +128,6 @@ export default function ActivityLogClient({
   const urlSearchParams = useSearchParams();
   const deepLinkHandled = useRef(false);
   const skipUrlSync = useRef(true);
-  const skipPageReset = useRef(true);
 
   const baseState = useMemo(() => buildBaseState(serverDateDefaults), [serverDateDefaults]);
 
@@ -152,12 +138,10 @@ export default function ActivityLogClient({
     )
   ).current;
 
-  const [source, setSource] = useState<ActivityLogSource>(initialState.source);
+  const source = 'active';
   const [search, setSearch] = useState(initialState.search);
   const [debouncedSearch, setDebouncedSearch] = useState(initialState.search);
-  const [page, setPage] = useState(initialState.page ?? 1);
   const [total, setTotal] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
   const [loadTime, setLoadTime] = useState<number | null>(null);
   const [from, setFrom] = useState(initialState.from);
   const [to, setTo] = useState(initialState.to);
@@ -167,9 +151,8 @@ export default function ActivityLogClient({
   const [recordedBy, setRecordedBy] = useState(initialState.recordedBy);
   const [sortBy, setSortBy] = useState<ActivityLogSortField>(initialState.sortBy);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>(initialState.sortDir);
-  const [savedPresets, setSavedPresets] = useState<SavedActivityLogPreset[]>([]);
-  const [viewMode, setViewMode] = useState<'table' | 'cards' | 'timeline'>('table');
-  const [collapsedDays, setCollapsedDays] = useState<Record<string, boolean>>({});
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [countdown, setCountdown] = useState(120);
   const [logs, setLogs] = useState<ActivityLogRow[]>([]);
   const [actionStats, setActionStats] = useState<{ value: string; count: number }[]>([]);
   const [tableStats, setTableStats] = useState<{ value: string; count: number }[]>([]);
@@ -183,23 +166,153 @@ export default function ActivityLogClient({
 
   const [expandedId, setExpandedId] = useState<number | string | null>(null);
   const [isPending] = useTransition();
-  const [cleanupOpen, setCleanupOpen] = useState(false);
+  const [dialog, setDialog] = useState<{
+    isOpen: boolean;
+    type: 'confirm' | 'danger' | 'success' | 'error';
+    title: string;
+    message: string;
+    onConfirm?: () => void;
+    isLoading?: boolean;
+  }>({
+    isOpen: false,
+    type: 'confirm',
+    title: '',
+    message: '',
+  });
+  const [showChart, setShowChart] = useState(false);
+  const [isChartMounted, setIsChartMounted] = useState(false);
   const [trendDays, setTrendDays] = useState<ActivityLogTrendDay[]>([]);
+  const [trendHourly, setTrendHourly] = useState<{ hour: string; count: number }[]>([]);
+  const [trendGroupBy, setTrendGroupBy] = useState<string>('day'); // 'day' | 'week' | 'month'
   const [isFetchingTrend, setIsFetchingTrend] = useState(false);
-  const [refreshMs, setRefreshMs] = useState(120_000);
   const statsFetchId = useRef(0);
   const logsFetchId = useRef(0);
   const trendFetchId = useRef(0);
   const fetchAcRef = useRef<AbortController | null>(null);
   const pageRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
+
+  // ponytail: column resize like hasil produksi
+  const COL_DEFAULTS = [110, 150, 180, 140, 600];
+  const COL_MIN = [80, 100, 120, 100, 300];
+  const [colWidths, setColWidths] = useState<number[]>(() => {
+    try {
+      const saved = localStorage.getItem('activityLog_colWidths');
+      return saved ? JSON.parse(saved) : COL_DEFAULTS;
+    } catch {
+      return COL_DEFAULTS;
+    }
+  });
+  
+  useEffect(() => {
+    try {
+      localStorage.setItem('activityLog_colWidths', JSON.stringify(colWidths));
+    } catch {}
+  }, [colWidths]);
+
+  const resizingRef = useRef(false);
+  const [ctxCol, setCtxCol] = useState<{ i: number; x: number; y: number; val: string } | null>(null);
+
+  useEffect(() => {
+    if (!ctxCol) return;
+    const g = (e: KeyboardEvent) => { if (e.key === 'Escape') setCtxCol(null); };
+    document.addEventListener('keydown', g);
+    return () => { document.removeEventListener('keydown', g); };
+  }, [ctxCol]);
+
+  const colCtx = (i: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    setCtxCol({ i, x: e.clientX, y: e.clientY, val: String(colWidths[i]) });
+  };
+
+  const colResizeStart = (i: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    resizingRef.current = true;
+    const startX = e.clientX;
+    const startW = colWidths[i];
+    
+    const move = (e: MouseEvent) => {
+      const w = Math.max(COL_MIN[i], startW + e.clientX - startX);
+      setColWidths(p => {
+        const n = [...p];
+        n[i] = w;
+        return n;
+      });
+    };
+    
+    const up = () => {
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+      setTimeout(() => {
+        resizingRef.current = false;
+      }, 10);
+    };
+    
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+  };
+
+  // Build grid template from colWidths
+  const gridCols = `${colWidths[0]}px ${colWidths[1]}px ${colWidths[2]}px ${colWidths[3]}px ${colWidths[4]}px`;
+
+  // Flatten logs into virtual rows (each log = 1 or 2 rows depending on expanded state)
+  const virtualRows = useMemo(() => {
+    const rows: { type: 'main' | 'expanded'; log: ActivityLogRow; logIndex: number }[] = [];
+    logs.forEach((log, i) => {
+      rows.push({ type: 'main', log, logIndex: i });
+      if (expandedId === log.id) {
+        rows.push({ type: 'expanded', log, logIndex: i });
+      }
+    });
+    return rows;
+  }, [logs, expandedId]);
+
+  const rowVirtualizer = useVirtualizer({
+    count: virtualRows.length,
+    getScrollElement: () => bodyRef.current,
+    estimateSize: (i) => {
+      const row = virtualRows[i];
+      if (!row) return 45;
+      // Expanded rows are much taller due to the 3-column grid with before/after/diff
+      return row.type === 'expanded' ? 280 : 45;
+    },
+    overscan: 10,
+    measureElement: (el) => el.getBoundingClientRect().height,
+  });
+
+  // Re-measure all rows when expandedId changes (for accurate heights after expand/collapse)
+  useEffect(() => {
+    // Double-measure: immediate + delayed to ensure DOM is fully updated
+    requestAnimationFrame(() => {
+      rowVirtualizer.measure();
+      // Second measure after a delay for more reliability
+      setTimeout(() => {
+        rowVirtualizer.measure();
+      }, 50);
+    });
+  }, [expandedId, rowVirtualizer]);
+
+  // Save showChart state to localStorage (only after mount to avoid hydration issues)
+  useEffect(() => {
+    if (!isChartMounted) return;
+    localStorage.setItem('activityLog_showChart', String(showChart));
+  }, [showChart, isChartMounted]);
+
+  // Restore showChart from localStorage after mount (avoid hydration mismatch)
+  useEffect(() => {
+    const saved = localStorage.getItem('activityLog_showChart');
+    if (saved) setShowChart(saved === 'true');
+    setIsChartMounted(true);
+  }, []);
 
   const buildParams = useCallback(
-    (pageNum: number, extra?: Record<string, string>) => {
+    (extra?: Record<string, string>) => {
       const p = new URLSearchParams({
         from,
         to,
-        page: String(pageNum),
-        pageSize: String(PAGE_SIZE),
+        page: '1',
+        pageSize: '100000',
         source,
         ...extra,
       });
@@ -215,21 +328,21 @@ export default function ActivityLogClient({
   );
 
   const fetchLogs = useCallback(
-    async (pageNum: number) => {
+    async () => {
       const signal = fetchAcRef.current?.signal;
       if (signal?.aborted) return;
       const fid = ++logsFetchId.current;
       setIsFetchingLogs(true);
       const start = performance.now();
       try {
-        const res = await fetch(`/api/activity-log?${buildParams(pageNum).toString()}`, { signal });
+        const res = await fetch(`/api/activity-log?${buildParams().toString()}`, { signal });
         const data = await res.json();
         if (logsFetchId.current !== fid) return;
         if (data.success) {
           setLogs(toPlainActivityRows(data.data || []));
           setTotal(data.total ?? 0);
-          setTotalPages(data.totalPages ?? 1);
-          if (data.page && data.page !== pageNum) setPage(data.page);
+          setLastUpdated(new Date());
+          setCountdown(120);
         }
       } catch { /* ignore */ } finally {
         if (logsFetchId.current !== fid) return;
@@ -243,8 +356,6 @@ export default function ActivityLogClient({
   );
 
   useEffect(() => {
-    setSavedPresets(loadActivityLogPresets());
-    setRefreshMs(loadActivityLogRefreshMs());
     const t = setTimeout(() => { skipUrlSync.current = false; }, 0);
     return () => clearTimeout(t);
   }, []);
@@ -255,14 +366,18 @@ export default function ActivityLogClient({
     const fid = ++trendFetchId.current;
     setIsFetchingTrend(true);
     try {
-      const p = buildParams(1);
+      const p = buildParams();
       p.delete('page');
       p.delete('pageSize');
       p.delete('stats');
       const res = await fetch(`/api/activity-log/trend?${p.toString()}`, { signal });
       const data = await res.json();
       if (trendFetchId.current !== fid) return;
-      if (data.success) setTrendDays(data.days || []);
+      if (data.success) {
+        setTrendDays(data.days || []);
+        setTrendHourly(data.hourly || []);
+        setTrendGroupBy(data.groupBy || 'day');
+      }
     } catch { /* ignore */ } finally {
       if (trendFetchId.current !== fid) return;
       setIsFetchingTrend(false);
@@ -274,7 +389,7 @@ export default function ActivityLogClient({
     if (signal?.aborted) return;
     const fid = ++statsFetchId.current;
     try {
-      const p = buildParams(1, { stats: '1' });
+      const p = buildParams({ stats: '1' });
       const res = await fetch(`/api/activity-log?${p.toString()}`, { signal });
       const data = await res.json();
       if (statsFetchId.current !== fid) return;
@@ -325,28 +440,19 @@ export default function ActivityLogClient({
   }, [search]);
 
   useEffect(() => {
-    if (skipPageReset.current) {
-      skipPageReset.current = false;
-      return;
-    }
-    setPage(1);
-  }, [from, to, debouncedSearch, tableName, actionType, recordedBy, source, sortBy, sortDir]);
-
-  useEffect(() => {
     const ac = new AbortController();
     fetchAcRef.current = ac;
-    fetchLogs(page);
+    fetchLogs();
     fetchTrend();
     fetchStats();
     return () => { if (fetchAcRef.current === ac) fetchAcRef.current = null; ac.abort(); };
-  }, [page, fetchLogs, fetchTrend, fetchStats]);
+  }, [fetchLogs, fetchTrend, fetchStats]);
 
   useEffect(() => {
     if (skipUrlSync.current) return;
     const target = buildActivityLogUrl(
       {
         source, from, to, tableName, actionType, recordedBy, search, sortBy, sortDir, datePreset,
-        page: page > 1 ? page : undefined,
       },
       expandedId ? String(expandedId) : undefined
     );
@@ -355,7 +461,7 @@ export default function ActivityLogClient({
       router.replace(target, { scroll: false });
     }
   }, [
-    source, from, to, tableName, actionType, recordedBy, search, sortBy, sortDir, datePreset, page,
+    source, from, to, tableName, actionType, recordedBy, search, sortBy, sortDir, datePreset,
     expandedId, router, urlSearchParams,
   ]);
 
@@ -369,25 +475,67 @@ export default function ActivityLogClient({
 
 
   const refreshCallback = useCallback(() => {
-    fetchLogs(page);
+    fetchLogs();
     fetchTrend();
     fetchStats();
-  }, [fetchLogs, fetchTrend, fetchStats, page]);
+  }, [fetchLogs, fetchTrend, fetchStats]);
 
-  const lastUpdated = useAutoRefresh(
-    refreshCallback,
-    refreshMs,
-    refreshMs > 0
-  );
+  const handleCleanup = async () => {
+    setDialog((prev) => ({ ...prev, isLoading: true }));
+    try {
+      const res = await cleanupActivityLogs({
+        from: from || undefined,
+        to: to || undefined,
+        tableName: tableName || undefined,
+        actionType: actionType || undefined,
+      });
+      if (res.success) {
+        toast.success(`Berhasil menghapus ${res.deletedCount.toLocaleString('id-ID')} log.`);
+        // Clear filters after successful cleanup
+        setTableName('');
+        setActionType('');
+        setRecordedBy('');
+        setSearch('');
+        refreshCallback();
+      } else {
+        toast.error('Gagal membersihkan log.');
+      }
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Gagal membersihkan log.');
+    } finally {
+      setDialog({ isOpen: false, type: 'confirm', title: '', message: '' });
+    }
+  };
+
+  const triggerCleanupConfirm = () => {
+    setDialog({
+      isOpen: true,
+      type: 'danger',
+      title: 'Hapus Log Sesuai Filter',
+      message: `Apakah Anda yakin ingin menghapus log dengan filter saat ini?\n\n` +
+        `• Rentang: ${from ? formatDateStrId(from) : '—'} s/d ${to ? formatDateStrId(to) : '—'}\n` +
+        `• Tabel: ${tableName || 'Semua tabel'}\n` +
+        `• Action: ${actionType || 'Semua action'}\n\n` +
+        `Tindakan ini akan menghapus data secara permanen dari database log aktif dan tidak dapat dibatalkan.`,
+      onConfirm: handleCleanup,
+    });
+  };
+
+  useEffect(() => {
+    const tick = setInterval(() => setCountdown((c) => Math.max(0, c - 1)), 1000);
+    return () => clearInterval(tick);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(refreshCallback, 120 * 1000);
+    return () => clearInterval(interval);
+  }, [refreshCallback]);
 
   const handleTrendDay = (date: string) => {
     setFrom(date);
     setTo(date);
     setDatePreset(null);
-    setPage(1);
   };
-
-  const timelineGroups = useMemo(() => groupActivityLogsByDate(logs), [logs]);
 
   const urlFilterState = useCallback(
     () => ({
@@ -401,9 +549,8 @@ export default function ActivityLogClient({
       sortBy,
       sortDir,
       datePreset,
-      page: page > 1 ? page : undefined,
     }),
-    [source, from, to, tableName, actionType, recordedBy, search, sortBy, sortDir, datePreset, page]
+    [source, from, to, tableName, actionType, recordedBy, search, sortBy, sortDir, datePreset]
   );
 
   const userItemLabels = useMemo(() => {
@@ -446,12 +593,10 @@ export default function ActivityLogClient({
       setSortBy(field);
       setSortDir('desc');
     }
-    setPage(1);
   };
 
   const clearFilters = () => {
     const fresh = getDefaultActivityLogFilters();
-    setSource(fresh.source);
     setFrom(fresh.from);
     setTo(fresh.to);
     setDatePreset(fresh.datePreset);
@@ -463,36 +608,8 @@ export default function ActivityLogClient({
     setSortDir('desc');
   };
 
-  const applySavedPreset = (preset: SavedActivityLogPreset) => {
-    setSource(preset.filters.source);
-    setFrom(preset.filters.from);
-    setTo(preset.filters.to);
-    setTableName(preset.filters.tableName);
-    setActionType(preset.filters.actionType);
-    setRecordedBy(preset.filters.recordedBy);
-    setSearch(preset.filters.search);
-    setDatePreset(detectActiveDatePreset(preset.filters.from, preset.filters.to));
-    setPage(1);
-  };
-
-  const handleSavePreset = () => {
-    const name = window.prompt('Nama preset filter:', 'Scraping hari ini');
-    if (!name) return;
-    setSavedPresets(
-      saveActivityLogPreset(name, {
-        source,
-        from,
-        to,
-        tableName,
-        actionType,
-        recordedBy,
-        search,
-      })
-    );
-  };
-
   const handleExport = (includeRawData: boolean) => {
-    const p = buildParams(1);
+    const p = buildParams();
     p.delete('page');
     p.delete('pageSize');
     p.delete('stats');
@@ -510,27 +627,6 @@ export default function ActivityLogClient({
     <div ref={pageRef} className="flex flex-col gap-3 w-full animate-in fade-in duration-500">
       <div className="flex flex-col gap-3 shrink-0 px-1">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex rounded-xl border border-gray-100 overflow-hidden shrink-0">
-            <button
-              type="button"
-              onClick={() => setSource('active')}
-              className={`px-3 py-1.5 text-[11px] font-bold flex items-center gap-1.5 ${
-                source === 'active' ? 'bg-green-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              <FileText size={12} /> Aktif
-            </button>
-            <button
-              type="button"
-              onClick={() => setSource('archive')}
-              className={`px-3 py-1.5 text-[11px] font-bold flex items-center gap-1.5 border-l border-gray-100 ${
-                source === 'archive' ? 'bg-green-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              <Archive size={12} /> Arsip (&gt;90 hari)
-            </button>
-          </div>
-
           <div className="flex flex-wrap gap-1.5">
             {DATE_PRESETS.map((p) => (
               <button
@@ -628,183 +724,138 @@ export default function ActivityLogClient({
             icon={<User size={14} className={recordedBy ? 'text-green-600' : 'text-gray-400'} />}
           />
 
-          <div className="flex rounded-lg border border-gray-100 overflow-hidden ml-auto">
-            <button
-              type="button"
-              title="Tabel"
-              onClick={() => setViewMode('table')}
-              className={`p-2 ${viewMode === 'table' ? 'bg-green-50 text-green-700' : 'bg-white text-gray-400'}`}
-            >
-              <LayoutList size={14} />
-            </button>
-            <button
-              type="button"
-              title="Kartu"
-              onClick={() => setViewMode('cards')}
-              className={`p-2 border-l border-gray-100 ${viewMode === 'cards' ? 'bg-green-50 text-green-700' : 'bg-white text-gray-400'}`}
-            >
-              <LayoutGrid size={14} />
-            </button>
-            <button
-              type="button"
-              title="Timeline per hari"
-              onClick={() => setViewMode('timeline')}
-              className={`p-2 border-l border-gray-100 ${viewMode === 'timeline' ? 'bg-green-50 text-green-700' : 'bg-white text-gray-400'}`}
-            >
-              <ListTree size={14} />
-            </button>
-          </div>
+          <div className="flex items-center gap-2 ml-auto">
+            <ActivityLogExportMenu onExport={handleExport} />
 
-          <ActivityLogExportMenu onExport={handleExport} />
+            {canAdminLogs && (
+              <button
+                type="button"
+                onClick={triggerCleanupConfirm}
+                title="Hapus Log Sesuai Filter"
+                className="h-8 px-3 rounded-lg border border-rose-100 bg-rose-50 text-[10px] font-bold text-rose-600 hover:bg-rose-100 transition-all flex items-center gap-1.5 shrink-0 shadow-sm"
+              >
+                <Trash2 size={12} /> Hapus Log
+              </button>
+            )}
+          </div>
         </div>
 
-        {source === 'archive' && (
-          <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl border border-amber-100 bg-amber-50/80 text-[11px] text-amber-900 font-medium leading-relaxed">
-            <Info size={14} className="shrink-0 mt-0.5 text-amber-600" />
-            <span>
-              Data arsip: log lebih dari <strong>90 hari</strong> (kecuali <strong>DELETE</strong>) dipindahkan otomatis dari log aktif.
-              Kolom <strong>Diarsipkan</strong> menunjukkan waktu pemindahan.
-            </span>
-          </div>
-        )}
-
         {(actionStats.length > 0 || tableStats.length > 0 || userStats.length > 0) && (
-          <div className="flex flex-wrap gap-x-4 gap-y-2 items-center">
+          <div className="grid grid-cols-1 gap-2">
             {actionStats.length > 0 && (
-              <div className="flex flex-wrap gap-1 items-center">
-                <span className="text-[10px] font-bold text-gray-400 mr-0.5">Action:</span>
-                {actionStats.map((s) => (
-                  <button
-                    key={s.value}
-                    type="button"
-                    onClick={() => setActionType(actionType === s.value ? '' : s.value)}
-                    className={`inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-bold border transition-all hover:ring-2 hover:ring-green-200 ${
-                      actionType === s.value
-                        ? 'ring-2 ring-green-400 ' + getActionColor(s.value)
-                        : getActionColor(s.value)
-                    }`}
-                  >
-                    {s.value}: {s.count.toLocaleString('id-ID')}
-                  </button>
-                ))}
+              <div className="flex items-start gap-2">
+                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide shrink-0 pt-1">Action</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {actionStats.map((s) => (
+                    <button
+                      key={s.value}
+                      type="button"
+                      onClick={() => setActionType(actionType === s.value ? '' : s.value)}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all hover:shadow-md ${
+                        actionType === s.value
+                          ? 'ring-2 ring-green-400 shadow-sm ' + getActionColor(s.value)
+                          : getActionColor(s.value)
+                      }`}
+                    >
+                      <span className="font-semibold">{s.value}</span>
+                      <span className="text-[9px] opacity-75">{s.count.toLocaleString('id-ID')}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
             {tableStats.length > 0 && (
-              <div className="flex flex-wrap gap-1 items-center">
-                <span className="text-[10px] font-bold text-gray-400 mr-0.5">Tabel:</span>
-                {tableStats.map((s) => (
-                  <button
-                    key={s.value}
-                    type="button"
-                    onClick={() => setTableName(tableName === s.value ? '' : s.value)}
-                    className={`inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-bold border transition-all hover:ring-2 hover:ring-green-200 ${
-                      tableName === s.value
-                        ? 'ring-2 ring-green-400 border-green-300 bg-green-50 text-green-700'
-                        : 'bg-gray-50 text-gray-600 border-gray-200'
-                    }`}
-                  >
-                    {s.value}: {s.count.toLocaleString('id-ID')}
-                  </button>
-                ))}
+              <div className="flex items-start gap-2">
+                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide shrink-0 pt-1">Tabel</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {tableStats.map((s) => (
+                    <button
+                      key={s.value}
+                      type="button"
+                      onClick={() => setTableName(tableName === s.value ? '' : s.value)}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all hover:shadow-md ${
+                        tableName === s.value
+                          ? 'ring-2 ring-green-400 border-green-300 bg-green-50 text-green-700 shadow-sm'
+                          : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <span className="font-mono text-[9px]">{s.value}</span>
+                      <span className="text-[9px] opacity-75">{s.count.toLocaleString('id-ID')}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
             {userStats.length > 0 && (
-              <div className="flex flex-wrap gap-1 items-center">
-                <span className="text-[10px] font-bold text-gray-400 mr-0.5">User:</span>
-                {userStats.map((s) => (
-                  <button
-                    key={s.value}
-                    type="button"
-                    onClick={() => setRecordedBy(recordedBy === s.value ? '' : s.value)}
-                    className={`inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-bold border transition-all hover:ring-2 hover:ring-green-200 ${
-                      recordedBy === s.value
-                        ? 'ring-2 ring-green-400 border-green-300 bg-green-50 text-green-700'
-                        : 'bg-gray-50 text-gray-600 border-gray-200'
-                    }`}
-                  >
-                    {s.label ? `${s.label} (@${s.value})` : s.value}: {s.count.toLocaleString('id-ID')}
-                  </button>
-                ))}
+              <div className="flex items-start gap-2">
+                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide shrink-0 pt-1">User</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {userStats.map((s) => (
+                    <button
+                      key={s.value}
+                      type="button"
+                      onClick={() => setRecordedBy(recordedBy === s.value ? '' : s.value)}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-all hover:shadow-md ${
+                        recordedBy === s.value
+                          ? 'ring-2 ring-green-400 border-green-300 bg-green-50 text-green-700 shadow-sm'
+                          : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <span className="truncate max-w-[200px]">{s.label || s.value}</span>
+                      <span className="text-[9px] opacity-75">{s.count.toLocaleString('id-ID')}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
         )}
 
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Collapsible Graph Trend Chart */}
+        <div className="border border-gray-100 rounded-2xl overflow-hidden bg-white shadow-sm">
           <button
             type="button"
-            onClick={handleSavePreset}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-gray-100 bg-white text-[10px] font-bold text-gray-600 hover:border-green-200 hover:text-green-700"
+            onClick={() => setShowChart(!showChart)}
+            className="w-full px-4 py-2.5 flex items-center justify-between text-[11px] font-semibold text-gray-700 bg-gradient-to-r from-gray-50 to-white hover:from-gray-100 hover:to-gray-50 transition-all border-b border-gray-100"
           >
-            <Bookmark size={12} /> Simpan preset
+            <span className="flex items-center gap-2">
+              <BarChart3 size={13} className="text-green-600" />
+              <span>Grafik tren & traffic aktivitas</span>
+              <span className="text-[9px] font-bold text-gray-400 bg-white px-2 py-0.5 rounded-full border border-gray-100">
+                {trendGroupBy === 'month' 
+                  ? `${trendDays.length} bulan`
+                  : trendGroupBy === 'week'
+                  ? `${trendDays.length} minggu`
+                  : `${trendDays.length} hari`
+                }
+              </span>
+            </span>
+            <span className="text-[10px] text-gray-500 font-medium">{showChart ? '↑ Sembunyikan' : '↓ Tampilkan'}</span>
           </button>
-          {savedPresets.map((preset) => (
-            <div key={preset.id} className="flex items-center rounded-lg border border-gray-100 overflow-hidden">
-              <button
-                type="button"
-                onClick={() => applySavedPreset(preset)}
-                className="px-2.5 py-1 text-[10px] font-bold text-gray-600 bg-white hover:bg-green-50 hover:text-green-700"
-                title={`${preset.filters.from} — ${preset.filters.to}`}
-              >
-                {preset.name}
-              </button>
-              <button
-                type="button"
-                onClick={() => setSavedPresets(deleteActivityLogPreset(preset.id))}
-                className="px-1.5 py-1 bg-white text-gray-300 hover:text-rose-600 border-l border-gray-100"
-                title="Hapus preset"
-              >
-                <Trash2 size={11} />
-              </button>
+          {showChart && (
+            <div className="p-4 animate-in fade-in duration-300">
+              <ActivityLogTrendChart
+                days={trendDays}
+                hourly={trendHourly}
+                loading={isFetchingTrend}
+                activeAction={actionType}
+                onSelectDay={handleTrendDay}
+                onSelectAction={setActionType}
+              />
             </div>
-          ))}
-        </div>
-
-        <ActivityLogTrendChart
-          days={trendDays}
-          loading={isFetchingTrend}
-          activeAction={actionType}
-          onSelectDay={handleTrendDay}
-          onSelectAction={setActionType}
-        />
-
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[10px] font-bold text-gray-400 mr-0.5">Aksi cepat:</span>
-          {QUICK_ACTION_CHIPS.map((chip) => (
-            <button
-              key={chip}
-              type="button"
-              onClick={() => setActionType(actionType === chip ? '' : chip)}
-              className={`px-2 py-0.5 rounded-md text-[9px] font-bold border transition-all ${
-                actionType === chip
-                  ? 'ring-1 ring-green-400 ' + getActionColor(chip)
-                  : getActionColor(chip) + ' opacity-80 hover:opacity-100'
-              }`}
-            >
-              {chip}
-            </button>
-          ))}
+          )}
         </div>
 
         <div className="flex items-center justify-between gap-2 min-h-[28px] flex-wrap">
-          <div className="flex items-center gap-2 flex-wrap">
-            <LastUpdatedBadge lastUpdated={lastUpdated} />
-            <select
-              value={refreshMs}
-              onChange={(e) => {
-                const ms = parseInt(e.target.value, 10);
-                setRefreshMs(ms);
-                saveActivityLogRefreshMs(ms);
-              }}
-              className="h-7 px-2 rounded-lg border border-gray-100 text-[10px] font-bold text-gray-600 bg-white"
-              title="Interval auto-refresh"
-            >
-              {REFRESH_INTERVAL_OPTIONS.map((o) => (
-                <option key={o.ms} value={o.ms}>
-                  Refresh: {o.label}
-                </option>
-              ))}
-            </select>
+          <div className="flex items-center gap-3 flex-wrap">
+            {lastUpdated && (
+              <span className="text-[10px] text-gray-400 font-semibold">
+                Update: {lastUpdated.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })} {lastUpdated.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              </span>
+            )}
+            <span className="text-[10px] text-gray-400 font-semibold">
+              Refresh dalam: <span className={countdown <= 10 ? 'text-amber-500 font-bold' : ''}>{Math.floor(countdown / 60)}:{String(countdown % 60).padStart(2, '0')}</span>
+            </span>
           </div>
           {debouncedSearch && (
             <span className="text-[10px] bg-green-50 text-green-700 px-2.5 py-1 rounded-full font-bold border border-green-100">
@@ -824,151 +875,170 @@ export default function ActivityLogClient({
               placeholder="Cari menu, user, atau keterangan..."
             />
           </div>
-          {canAdminLogs && source === 'active' && (
-            <button
-              onClick={() => setCleanupOpen(true)}
-              title="Bersihkan Log"
-              className="h-10 w-10 bg-white border border-gray-100 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center shadow-sm shrink-0"
-            >
-              <Database size={16} />
-            </button>
-          )}
         </div>
       </div>
 
       <div className="flex flex-col gap-3">
-        <div className="relative">
+        <div className="relative flex flex-col gap-2">
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
-            <div className="overflow-y-auto overflow-x-auto max-h-[min(52vh,560px)] min-h-[240px] pb-3 custom-scrollbar">
-              {logs.length === 0 ? (
-                <div className="p-8 text-center text-gray-400 text-[13px] font-bold">
-                  Tidak ada log yang sesuai filter.
-                </div>
-              ) : viewMode === 'timeline' ? (
-                <div className="p-3 space-y-2">
-                  {timelineGroups.map((group) => {
-                    const collapsed = collapsedDays[group.dateKey];
-                    return (
-                      <div key={group.dateKey}>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setCollapsedDays((prev) => ({ ...prev, [group.dateKey]: !prev[group.dateKey] }))
-                          }
-                          className="sticky top-0 z-[5] w-full flex items-center justify-between gap-2 px-3 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-left hover:bg-green-50/50 transition-colors"
-                        >
-                          <span className="text-[11px] font-bold text-gray-800">{group.label}</span>
-                          <span className="text-[10px] font-bold text-gray-400 shrink-0">
-                            {group.items.length.toLocaleString('id-ID')} log {collapsed ? '▸' : '▾'}
-                          </span>
-                        </button>
-                        {!collapsed && (
-                          <div className="ml-4 mt-1 pl-3 border-l-2 border-green-100 space-y-0 divide-y divide-gray-50">
-                            {group.items.map((log) => (
-                              <div
-                                key={log.id}
-                                onClick={() => toggleExpand(log)}
-                                className="flex items-start gap-3 py-2.5 cursor-pointer hover:bg-green-50/40 px-2 rounded-lg transition-colors"
-                              >
-                                <span className={`inline-flex px-2 py-0.5 rounded-md text-[9px] font-bold border shrink-0 mt-0.5 ${getActionColor(log.action_type || '')}`}>
-                                  {log.action_type}
-                                </span>
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-[12px] font-bold text-gray-800 line-clamp-2">{log.message}</p>
-                                  {debouncedSearch && getMatchedFields(log, debouncedSearch).length > 0 && (
-                                    <div className="flex flex-wrap gap-1 mt-1">
-                                      {getMatchedFields(log, debouncedSearch).map((m) => (
-                                        <span key={m.field} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold bg-green-50 text-green-700 border border-green-100">
-                                          {m.field}
-                                          <span className="text-green-400 font-normal truncate max-w-[120px]">“{m.value.slice(0, 40)}”</span>
-                                        </span>
-                                      ))}
-                                    </div>
-                                  )}
-                                  <p className="text-[10px] text-gray-400 mt-0.5">
-                                    {formatLastUpdate(log.created_at)} · {log.table_name} · {log.recorded_by_name ? `${log.recorded_by_name} (@${log.recorded_by})` : log.recorded_by}
-                                  </p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
+            {logs.length === 0 ? (
+              <div className="p-8 text-center text-gray-400 text-[13px] font-bold">
+                Tidak ada log yang sesuai filter.
+              </div>
+            ) : (
+              <>
+                <div
+                  ref={bodyRef}
+                  className="overflow-y-auto overflow-x-auto max-h-[min(52vh,560px)] min-h-[240px] custom-scrollbar"
+                >
+                  <div className="w-full">
+                  {/* Header - CSS Grid */}
+                  <div 
+                    className="bg-gray-50 border-b border-gray-100 sticky top-0 z-10"
+                    style={{ 
+                      display: 'grid',
+                      gridTemplateColumns: gridCols,
+                      alignItems: 'center',
+                      minWidth: '100%'
+                    }}
+                  >
+                    <div className="px-4 py-3 relative border-r border-gray-200" onContextMenu={(e) => colCtx(0, e)}>
+                      <button
+                        type="button"
+                        onClick={() => toggleSort('action_type')}
+                        className={`inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-green-700 transition-colors ${sortBy === 'action_type' ? 'text-green-700' : ''}`}
+                      >
+                        Action
+                        {sortBy === 'action_type' ? (
+                          sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
+                        ) : (
+                          <ChevronDown size={12} className="opacity-30" />
                         )}
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : viewMode === 'table' ? (
-                <table className="min-w-full text-left">
-                  <thead className="bg-gray-50 border-b border-gray-100 sticky top-0 z-10">
-                    <tr>
-                      <SortHeader label="Action" field="action_type" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                      <SortHeader label="Waktu" field="created_at" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                      {source === 'archive' && (
-                        <th className="px-4 py-3 text-[10px] font-bold text-gray-400 whitespace-nowrap">Diarsipkan</th>
-                      )}
-                      <SortHeader label="User" field="recorded_by" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                      <SortHeader label="Tabel" field="table_name" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-                      <th className="px-4 py-3 text-[10px] font-bold text-gray-400 min-w-[280px]">Keterangan</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {logs.map((log) => {
-                      const isExpanded = expandedId === log.id;
-                      const rawParsed = isExpanded && log.raw_data ? (() => { try { return JSON.parse(log.raw_data as string); } catch { return null; } })() : null;
-                      let beforeJson: string | null = null;
-                      let afterJson: string | null = null;
-                      if (rawParsed) {
-                        if (log.action_type === 'INSERT') {
-                          afterJson = stringifyAuditData(rawParsed);
-                        } else if (log.action_type === 'DELETE') {
-                          beforeJson = stringifyAuditData(rawParsed);
-                        } else if (log.action_type === 'UPDATE') {
-                          if (rawParsed.before && rawParsed.after) {
-                            beforeJson = stringifyAuditData(rawParsed.before);
-                            afterJson = stringifyAuditData(rawParsed.after);
-                          } else {
-                            afterJson = stringifyAuditData(rawParsed);
-                          }
-                        } else {
-                          afterJson = stringifyAuditData(rawParsed);
-                        }
-                      }
-                      return (
-                        <Fragment key={log.id}>
-                          <tr
+                      </button>
+                      <div
+                        className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
+                        onMouseDown={(e) => colResizeStart(0, e)}
+                        title="Drag untuk resize kolom"
+                      />
+                    </div>
+                    <div className="px-4 py-3 relative border-r border-gray-200" onContextMenu={(e) => colCtx(1, e)}>
+                      <button
+                        type="button"
+                        onClick={() => toggleSort('created_at')}
+                        className={`inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-green-700 transition-colors ${sortBy === 'created_at' ? 'text-green-700' : ''}`}
+                      >
+                        Waktu
+                        {sortBy === 'created_at' ? (
+                          sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
+                        ) : (
+                          <ChevronDown size={12} className="opacity-30" />
+                        )}
+                      </button>
+                      <div
+                        className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
+                        onMouseDown={(e) => colResizeStart(1, e)}
+                        title="Drag untuk resize kolom"
+                      />
+                    </div>
+                    <div className="px-4 py-3 relative border-r border-gray-200" onContextMenu={(e) => colCtx(2, e)}>
+                      <button
+                        type="button"
+                        onClick={() => toggleSort('recorded_by')}
+                        className={`inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-green-700 transition-colors ${sortBy === 'recorded_by' ? 'text-green-700' : ''}`}
+                      >
+                        User
+                        {sortBy === 'recorded_by' ? (
+                          sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
+                        ) : (
+                          <ChevronDown size={12} className="opacity-30" />
+                        )}
+                      </button>
+                      <div
+                        className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
+                        onMouseDown={(e) => colResizeStart(2, e)}
+                        title="Drag untuk resize kolom"
+                      />
+                    </div>
+                    <div className="px-4 py-3 relative border-r border-gray-200" onContextMenu={(e) => colCtx(3, e)}>
+                      <button
+                        type="button"
+                        onClick={() => toggleSort('table_name')}
+                        className={`inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-green-700 transition-colors ${sortBy === 'table_name' ? 'text-green-700' : ''}`}
+                      >
+                        Tabel
+                        {sortBy === 'table_name' ? (
+                          sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
+                        ) : (
+                          <ChevronDown size={12} className="opacity-30" />
+                        )}
+                      </button>
+                      <div
+                        className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
+                        onMouseDown={(e) => colResizeStart(3, e)}
+                        title="Drag untuk resize kolom"
+                      />
+                    </div>
+                    <div className="px-4 py-3 relative" onContextMenu={(e) => colCtx(4, e)}>
+                      <span className="text-[10px] font-bold text-gray-400">Keterangan</span>
+                      <div
+                        className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
+                        onMouseDown={(e) => colResizeStart(4, e)}
+                        title="Drag untuk resize kolom"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Body - Virtual Scrolling with CSS Grid */}
+                  <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: 'relative' }}>
+                    {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                      const virtualItem = virtualRows[virtualRow.index];
+                      const log = virtualItem.log;
+                      
+                      if (virtualItem.type === 'main') {
+                        const isExpanded = expandedId === log.id;
+                        return (
+                          <div
+                            key={`main-${log.id}`}
+                            data-index={virtualRow.index}
+                            ref={rowVirtualizer.measureElement}
                             onClick={() => toggleExpand(log)}
-                            className={`hover:bg-green-50/40 cursor-pointer transition-colors ${isExpanded ? 'bg-green-50/60' : ''}`}
+                            className={`border-b border-gray-50 hover:bg-green-50/40 cursor-pointer transition-colors ${isExpanded ? 'bg-green-50/60' : ''}`}
+                            style={{ 
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              width: '100%',
+                              transform: `translateY(${virtualRow.start}px)`,
+                              display: 'grid',
+                              gridTemplateColumns: gridCols,
+                              alignItems: 'center',
+                            }}
                           >
-                            <td className="px-4 py-2.5">
+                            <div className="px-4 py-2.5 overflow-hidden border-r border-gray-100">
                               <span className={`inline-flex px-2 py-0.5 rounded-md text-[9px] font-bold border ${getActionColor(log.action_type || '')}`}>
                                 {log.action_type}
                               </span>
-                            </td>
-                            <td className="px-4 py-2.5 text-[11px] font-bold text-gray-600 whitespace-nowrap">
+                            </div>
+                            <div className="px-4 py-2.5 text-[11px] font-bold text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis border-r border-gray-100">
                               {formatLastUpdate(log.created_at)}
-                            </td>
-                            {source === 'archive' && (
-                              <td className="px-4 py-2.5 text-[10px] font-semibold text-amber-700 whitespace-nowrap">
-                                {log.archived_at ? formatLastUpdate(log.archived_at) : '—'}
-                              </td>
-                            )}
-                            <td className="px-4 py-2.5 text-[10px] font-semibold text-gray-500 whitespace-nowrap">
+                            </div>
+                            <div className="px-4 py-2.5 text-[10px] font-semibold text-gray-500 overflow-hidden border-r border-gray-100">
                               {log.recorded_by_name
                                 ? <>{log.recorded_by_name}<br /><span className="text-[9px] text-gray-400">@{log.recorded_by}</span></>
                                 : (log.recorded_by || '—')}
-                            </td>
-                            <td className="px-4 py-2.5 text-[11px] font-bold text-gray-700 uppercase whitespace-nowrap">
+                            </div>
+                            <div className="px-4 py-2.5 text-[11px] font-bold text-gray-700 uppercase whitespace-nowrap overflow-hidden text-ellipsis border-r border-gray-100">
                               {log.table_name}
                               {log.record_id ? ` #${log.record_id}` : ''}
-                            </td>
-                            <td className="px-4 py-2.5 relative">
+                            </div>
+                            <div className="px-4 py-2.5 relative min-w-0 overflow-hidden">
                               <p className="text-[12px] font-bold text-gray-700 line-clamp-2">{log.message}</p>
                               {debouncedSearch && getMatchedFields(log, debouncedSearch).length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-1">
                                   {getMatchedFields(log, debouncedSearch).map((m) => (
                                     <span key={m.field} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold bg-green-50 text-green-700 border border-green-100">
                                       {m.field}
-                                      <span className="text-green-400 font-normal truncate max-w-[120px]">“{m.value.slice(0, 40)}”</span>
+                                      <span className="text-green-400 font-normal truncate max-w-[120px]">"{m.value.slice(0, 40)}"</span>
                                     </span>
                                   ))}
                                 </div>
@@ -976,136 +1046,173 @@ export default function ActivityLogClient({
                               <span className="absolute right-2 top-2 text-gray-300">
                                 {isExpanded ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
                               </span>
-                            </td>
-                          </tr>
-                          {isExpanded && (
-                            <tr className="bg-gray-50/80">
-                              <td colSpan={source === 'archive' ? 6 : 5} className="px-4 py-3">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                  <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
-                                    <div className="text-[10px] font-bold text-gray-400 mb-2">Before</div>
-                                    {beforeJson ? (
-                                      <pre className="text-[10px] leading-relaxed text-gray-700 max-h-[200px] overflow-y-auto custom-scrollbar whitespace-pre-wrap">{beforeJson}</pre>
-                                    ) : (
-                                      <p className="text-[11px] text-gray-400 italic">—</p>
-                                    )}
-                                  </div>
-                                  <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
-                                    <div className="text-[10px] font-bold text-gray-400 mb-2">After</div>
-                                    {afterJson ? (
-                                      <pre className="text-[10px] leading-relaxed text-gray-700 max-h-[200px] overflow-y-auto custom-scrollbar whitespace-pre-wrap">{afterJson}</pre>
-                                    ) : (
-                                      <p className="text-[11px] text-gray-400 italic">—</p>
-                                    )}
-                                  </div>
-                                  <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
-                                    <div className="text-[10px] font-bold text-gray-400 mb-2">Diff</div>
-                                    {(() => {
-                                      let diffs = computeExplicitDiff(rawParsed);
-                                      if (diffs.length === 0 && rawParsed && !rawParsed.before && !rawParsed.after) {
-                                        if (log.action_type === 'INSERT') {
-                                          diffs = Object.entries(rawParsed).map(([key, value]) => ({ key, before: '', after: String(value ?? '') }));
-                                        } else if (log.action_type === 'DELETE') {
-                                          diffs = Object.entries(rawParsed).map(([key, value]) => ({ key, before: String(value ?? ''), after: '' }));
-                                        }
+                            </div>
+                          </div>
+                        );
+                      } else {
+                        // Expanded row
+                        const rawParsed = log.raw_data ? (() => { try { return JSON.parse(log.raw_data as string); } catch { return null; } })() : null;
+                        let beforeJson: string | null = null;
+                        let afterJson: string | null = null;
+                        if (rawParsed) {
+                          if (log.action_type === 'INSERT') {
+                            afterJson = stringifyAuditData(rawParsed);
+                          } else if (log.action_type === 'DELETE') {
+                            beforeJson = stringifyAuditData(rawParsed);
+                          } else if (log.action_type === 'UPDATE') {
+                            if (rawParsed.before && rawParsed.after) {
+                              beforeJson = stringifyAuditData(rawParsed.before);
+                              afterJson = stringifyAuditData(rawParsed.after);
+                            } else {
+                              afterJson = stringifyAuditData(rawParsed);
+                            }
+                          } else {
+                            afterJson = stringifyAuditData(rawParsed);
+                          }
+                        }
+                        return (
+                          <div
+                            key={`expanded-${log.id}`}
+                            data-index={virtualRow.index}
+                            ref={rowVirtualizer.measureElement}
+                            className="bg-gray-50/80 border-b border-gray-100"
+                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${virtualRow.start}px)` }}
+                          >
+                            <div className="px-4 py-3">
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
+                                  <div className="text-[10px] font-bold text-gray-400 mb-2">Before</div>
+                                  {beforeJson ? (
+                                    <pre className="text-[10px] leading-relaxed text-gray-700 max-h-[200px] overflow-y-auto custom-scrollbar whitespace-pre-wrap">{beforeJson}</pre>
+                                  ) : (
+                                    <p className="text-[11px] text-gray-400 italic">—</p>
+                                  )}
+                                </div>
+                                <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
+                                  <div className="text-[10px] font-bold text-gray-400 mb-2">After</div>
+                                  {afterJson ? (
+                                    <pre className="text-[10px] leading-relaxed text-gray-700 max-h-[200px] overflow-y-auto custom-scrollbar whitespace-pre-wrap">{afterJson}</pre>
+                                  ) : (
+                                    <p className="text-[11px] text-gray-400 italic">—</p>
+                                  )}
+                                </div>
+                                <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
+                                  <div className="text-[10px] font-bold text-gray-400 mb-2">Diff</div>
+                                  {(() => {
+                                    let diffs = computeExplicitDiff(rawParsed);
+                                    if (diffs.length === 0 && rawParsed && !rawParsed.before && !rawParsed.after) {
+                                      if (log.action_type === 'INSERT') {
+                                        diffs = Object.entries(rawParsed).map(([key, value]) => ({ key, before: '', after: String(value ?? '') }));
+                                      } else if (log.action_type === 'DELETE') {
+                                        diffs = Object.entries(rawParsed).map(([key, value]) => ({ key, before: String(value ?? ''), after: '' }));
                                       }
-                                      return diffs.length > 0 ? (
-                                        <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
-                                          <table className="w-full table-fixed text-[10px]">
-                                            <colgroup>
-                                              <col style={{ width: '30%' }} />
-                                              <col style={{ width: '35%' }} />
-                                              <col style={{ width: '35%' }} />
-                                            </colgroup>
-                                            <thead>
-                                              <tr className="text-left text-gray-400 font-bold border-b border-gray-50">
-                                                <th className="pb-1 pr-2">Kolom</th>
-                                                <th className="pb-1 pr-2">Sebelum</th>
-                                                <th className="pb-1">Sesudah</th>
+                                    }
+                                    return diffs.length > 0 ? (
+                                      <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                                        <table className="w-full table-fixed text-[10px]">
+                                          <colgroup>
+                                            <col style={{ width: '30%' }} />
+                                            <col style={{ width: '35%' }} />
+                                            <col style={{ width: '35%' }} />
+                                          </colgroup>
+                                          <thead>
+                                            <tr className="text-left text-gray-400 font-bold border-b border-gray-50">
+                                              <th className="pb-1 pr-2">Kolom</th>
+                                              <th className="pb-1 pr-2">Sebelum</th>
+                                              <th className="pb-1">Sesudah</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            {diffs.map((d) => (
+                                              <tr key={d.key} className="border-b border-gray-50/50">
+                                                <td className="py-1 pr-2 font-semibold text-gray-700 break-words">{d.key}</td>
+                                                <td className="py-1 pr-2 text-rose-500 break-words">{d.before || <span className="italic text-gray-300">—</span>}</td>
+                                                <td className="py-1 text-emerald-700 break-words">{d.after || <span className="italic text-gray-300">—</span>}</td>
                                               </tr>
-                                            </thead>
-                                            <tbody>
-                                              {diffs.map((d) => (
-                                                <tr key={d.key} className="border-b border-gray-50/50">
-                                                  <td className="py-1 pr-2 font-semibold text-gray-700 break-words">{d.key}</td>
-                                                  <td className="py-1 pr-2 text-rose-500 break-words">{d.before || <span className="italic text-gray-300">—</span>}</td>
-                                                  <td className="py-1 text-emerald-700 break-words">{d.after || <span className="italic text-gray-300">—</span>}</td>
-                                                </tr>
-                                              ))}
-                                            </tbody>
-                                          </table>
-                                        </div>
-                                      ) : (
-                                        <p className="text-[11px] text-gray-400 italic">—</p>
-                                      );
-                                    })()}
+                                            ))}
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    ) : (
+                                      <p className="text-[11px] text-gray-400 italic">—</p>
+                                    );
+                                  })()}
                                 </div>
                               </div>
-                            </td>
-                          </tr>
-                          )}
-                        </Fragment>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              ) : (
-                <div className="p-2 space-y-3">
-                  {logs.map((log) => (
-                    <div
-                      key={log.id}
-                      onClick={() => toggleExpand(log)}
-                      className="group flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl border border-gray-50 hover:border-green-100 hover:bg-green-50/10 cursor-pointer"
-                    >
-                      <div className="flex gap-3 items-start min-w-0">
-                        <span className={`inline-flex px-2 py-0.5 rounded-md text-[9px] font-bold border shrink-0 ${getActionColor(log.action_type || '')}`}>
-                          {log.action_type}
-                        </span>
-                        <div className="min-w-0">
-                          <p className="text-[13px] font-bold text-gray-800 line-clamp-2">{log.message}</p>
-                          {debouncedSearch && getMatchedFields(log, debouncedSearch).length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {getMatchedFields(log, debouncedSearch).map((m) => (
-                                <span key={m.field} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold bg-green-50 text-green-700 border border-green-100">
-                                  {m.field}
-                                  <span className="text-green-400 font-normal truncate max-w-[120px]">“{m.value.slice(0, 40)}”</span>
-                                </span>
-                              ))}
                             </div>
-                          )}
-                          <p className="text-[10px] text-gray-400 mt-1">
-                            {log.table_name} · {log.recorded_by_name ? `${log.recorded_by_name} (@${log.recorded_by})` : log.recorded_by}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 text-[11px] font-bold text-gray-400 shrink-0">
-                        <Clock size={12} />
-                        {formatLastUpdate(log.created_at)}
-                      </div>
-                    </div>
-                  ))}
+                          </div>
+                        );
+                      }
+                    })}
+                  </div>
+                  </div>
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </div>
-        </div>
 
-        <TableFooter
-          totalCount={total}
-          currentCount={logs.length}
-          label="log aktivitas"
-          loadTime={loadTime}
-          page={page}
-          totalPages={totalPages}
-          onPageChange={setPage}
-        />
+          {/* Footer - Outside table */}
+          {logs.length > 0 && (
+            <TableFooter
+              totalCount={total}
+              currentCount={logs.length}
+              label="log aktivitas"
+              loadTime={loadTime}
+            />
+          )}
+        </div>
       </div>
 
-      <ActivityLogCleanupModal
-        isOpen={cleanupOpen}
-        onClose={() => setCleanupOpen(false)}
-        onDone={() => fetchLogs(1)}
+      <ConfirmDialog
+        isOpen={dialog.isOpen}
+        type={dialog.type}
+        title={dialog.title}
+        message={dialog.message}
+        isLoading={dialog.isLoading}
+        onConfirm={dialog.onConfirm || (() => setDialog((prev) => ({ ...prev, isOpen: false })))}
+        onCancel={() => setDialog((prev) => ({ ...prev, isOpen: false }))}
       />
+
+      {ctxCol && (
+        <div onMouseDown={() => setCtxCol(null)} className="fixed inset-0 z-50">
+          <div 
+            onMouseDown={e => e.stopPropagation()} 
+            className="fixed bg-white border border-gray-200 shadow-2xl rounded-xl p-3 flex items-center gap-2 z-50" 
+            style={{ left: ctxCol.x, top: ctxCol.y }}
+          >
+            <input 
+              autoFocus 
+              className="w-20 px-2 py-1.5 text-xs font-bold border border-gray-200 rounded-lg outline-none focus:border-green-400" 
+              type="number" 
+              value={ctxCol.val} 
+              onChange={e => setCtxCol({ ...ctxCol, val: e.target.value })} 
+              onKeyDown={e => { 
+                if (e.key === 'Enter') { 
+                  setColWidths(p => { 
+                    const n = [...p]; 
+                    n[ctxCol.i] = Math.max(COL_MIN[ctxCol.i], parseInt(ctxCol.val) || COL_MIN[ctxCol.i]); 
+                    return n; 
+                  }); 
+                  setCtxCol(null); 
+                } 
+              }} 
+            />
+            <button 
+              onClick={() => { 
+                setColWidths(p => { 
+                  const n = [...p]; 
+                  n[ctxCol.i] = Math.max(COL_MIN[ctxCol.i], parseInt(ctxCol.val) || COL_MIN[ctxCol.i]); 
+                  return n; 
+                }); 
+                setCtxCol(null); 
+              }} 
+              className="text-[11px] font-bold text-white bg-green-600 px-3 py-1.5 rounded-lg hover:bg-green-700"
+            >
+              Atur
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

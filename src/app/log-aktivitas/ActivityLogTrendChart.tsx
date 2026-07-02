@@ -1,41 +1,66 @@
 'use client';
 
-import { useMemo } from 'react';
-import { BarChart3 } from 'lucide-react';
-import { getActionColor } from '@/lib/activity-log-utils';
+import { useMemo, useState } from 'react';
+import { BarChart3, Clock } from 'lucide-react';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  BarChart,
+  Bar,
+  Brush,
+} from 'recharts';
 import type { ActivityLogTrendDay } from '@/app/api/activity-log/trend/route';
 
 const ACTION_COLORS: Record<string, string> = {
-  SCRAPE: 'bg-violet-500',
-  IMPORT: 'bg-teal-500',
-  UPLOAD: 'bg-cyan-500',
-  UPDATE: 'bg-blue-500',
-  DELETE: 'bg-rose-500',
-  INSERT: 'bg-emerald-500',
-  CREATE: 'bg-emerald-500',
+  INSERT: '#10b981', // emerald-500
+  UPDATE: '#3b82f6', // blue-500
+  DELETE: '#ef4444', // rose-500
+  LOGIN: '#6366f1',  // indigo-500
+  MAINTENANCE: '#f59e0b', // amber-500
+  CRON_SYNC: '#a855f7', // purple-500
+  SCRAPE: '#06b6d4', // cyan-500
+  IMPORT: '#14b8a6', // teal-500
+  UPLOAD: '#14b8a6',
 };
 
-function barColor(action: string): string {
-  return ACTION_COLORS[action] ?? 'bg-gray-400';
+export interface ActivityLogHourlyStat {
+  hour: string;
+  count: number;
 }
 
 export default function ActivityLogTrendChart({
   days,
+  hourly = [],
   loading,
   activeAction,
   onSelectDay,
   onSelectAction,
 }: {
   days: ActivityLogTrendDay[];
+  hourly?: ActivityLogHourlyStat[];
   loading?: boolean;
   activeAction?: string;
   onSelectDay: (date: string) => void;
   onSelectAction: (action: string) => void;
 }) {
-  const maxTotal = useMemo(
-    () => Math.max(1, ...days.map((d) => d.total)),
-    [days]
-  );
+  const [dailyZoomStart, setDailyZoomStart] = useState(0);
+  const [dailyZoomEnd, setDailyZoomEnd] = useState(100);
+  const [hourlyZoomStart, setHourlyZoomStart] = useState(0);
+  const [hourlyZoomEnd, setHourlyZoomEnd] = useState(100);
+
+  // ponytail: dynamic maxBarSize based on data length
+  const maxBarSize = useMemo(() => {
+    const len = days.length;
+    if (len <= 7) return 40;
+    if (len <= 30) return 20;
+    if (len <= 90) return 12;
+    return 8; // 365 days → thin bars
+  }, [days.length]);
 
   const topActions = useMemo(() => {
     const counts = new Map<string, number>();
@@ -46,13 +71,83 @@ export default function ActivityLogTrendChart({
     }
     return Array.from(counts.entries())
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 8)
+      .slice(0, 5)
       .map(([a]) => a);
   }, [days]);
 
+  const dailyChartData = useMemo(() => {
+    return days.map((d) => {
+      // ponytail: support week/month format from API (YYYY-WWw or YYYY-MM)
+      let dateLabel = d.date;
+      let fullDateLabel = d.date;
+      
+      if (d.date.includes('-W')) {
+        // Week format: YYYY-Www
+        const [year, week] = d.date.split('-W');
+        dateLabel = `W${week}`;
+        fullDateLabel = `Minggu ${week}, ${year}`;
+      } else if (d.date.match(/^\d{4}-\d{2}$/)) {
+        // Month format: YYYY-MM
+        const [year, month] = d.date.split('-');
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        dateLabel = monthNames[parseInt(month) - 1];
+        fullDateLabel = `${monthNames[parseInt(month) - 1]} ${year}`;
+      } else {
+        // Daily format: YYYY-MM-DD
+        try {
+          const date = new Date(d.date + 'T12:00:00+07:00');
+          dateLabel = new Intl.DateTimeFormat('id-ID', {
+            day: '2-digit',
+            month: 'short',
+            timeZone: 'Asia/Jakarta',
+          }).format(date);
+          
+          fullDateLabel = new Intl.DateTimeFormat('id-ID', {
+            weekday: 'long',
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+            timeZone: 'Asia/Jakarta',
+          }).format(date);
+        } catch {
+          dateLabel = d.date;
+          fullDateLabel = d.date;
+        }
+      }
+
+      const item: Record<string, any> = {
+        date: d.date,
+        name: dateLabel,
+        fullDate: fullDateLabel,
+        total: d.total,
+      };
+      for (const action of topActions) {
+        item[action] = d.byAction[action] ?? 0;
+      }
+      return item;
+    });
+  }, [days, topActions]);
+
+  const hourlyChartData = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const h of hourly) {
+      map.set(h.hour, h.count);
+    }
+    const result: { hour: string; count: number; name: string }[] = [];
+    for (let i = 0; i < 24; i++) {
+      const hStr = String(i).padStart(2, '0');
+      result.push({
+        hour: hStr,
+        name: `${hStr}:00`,
+        count: map.get(hStr) ?? 0,
+      });
+    }
+    return result;
+  }, [hourly]);
+
   if (loading) {
     return (
-      <div className="h-52 bg-gray-50 border border-gray-100 rounded-xl animate-pulse" />
+      <div className="h-56 bg-gray-50 border border-gray-100 rounded-xl animate-pulse" />
     );
   }
 
@@ -65,73 +160,198 @@ export default function ActivityLogTrendChart({
   }
 
   return (
-    <div className="rounded-xl border border-gray-100 bg-white p-3 shadow-sm">
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-500">
-          <BarChart3 size={12} className="text-green-600" />
-          Trend harian (klik batang = filter tanggal / aksi)
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Daily Trend Chart */}
+      <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm flex flex-col justify-between">
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <div className="flex items-center gap-2 text-[12px] font-medium text-gray-700">
+            <BarChart3 size={14} className="text-emerald-600" />
+            Tren harian
+          </div>
+          <div className="flex flex-wrap gap-1 justify-end">
+            {topActions.map((action) => (
+              <button
+                key={action}
+                type="button"
+                onClick={() => onSelectAction(activeAction === action ? '' : action)}
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[8px] font-bold border transition-all ${
+                  activeAction === action
+                    ? 'ring-1 ring-emerald-400 bg-emerald-50 text-emerald-700 border-emerald-300'
+                    : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
+                }`}
+              >
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ backgroundColor: ACTION_COLORS[action] ?? '#94a3b8' }}
+                />
+                {action}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="flex flex-wrap gap-1 justify-end">
-          {topActions.map((action) => (
-            <button
-              key={action}
-              type="button"
-              title={`Filter: ${action}`}
-              onClick={() => onSelectAction(activeAction === action ? '' : action)}
-              className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold border transition-all ${
-                activeAction === action
-                  ? 'ring-1 ring-green-400 ' + getActionColor(action)
-                  : getActionColor(action)
-              }`}
+
+        <div className="h-64 w-full text-[10px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={dailyChartData}
+              margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
+              onClick={(state: any) => {
+                if (state?.activePayload?.[0]) {
+                  const clickedDate = state.activePayload[0].payload.date;
+                  if (clickedDate) onSelectDay(clickedDate);
+                }
+              }}
             >
-              <span className={`w-1.5 h-1.5 rounded-full ${barColor(action)}`} />
-              {action}
-            </button>
-          ))}
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                stroke="#94a3b8"
+                fontSize={8}
+                fontWeight="bold"
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                stroke="#94a3b8"
+                fontSize={8}
+                fontWeight="bold"
+              />
+              <Tooltip
+                labelFormatter={(label, payload) => {
+                  if (payload && payload[0]) {
+                    return payload[0].payload.fullDate || label;
+                  }
+                  return label;
+                }}
+                contentStyle={{
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06)',
+                  fontSize: '11px',
+                  fontWeight: '500',
+                  padding: '8px 12px',
+                }}
+                labelStyle={{
+                  color: '#374151',
+                  fontWeight: '600',
+                  marginBottom: '4px',
+                }}
+              />
+              {topActions.map((action) => (
+                <Bar
+                  key={action}
+                  dataKey={action}
+                  stackId="a"
+                  fill={ACTION_COLORS[action] ?? '#94a3b8'}
+                  radius={[2, 2, 0, 0]}
+                  maxBarSize={maxBarSize}
+                  cursor="pointer"
+                />
+              ))}
+              <Brush
+                dataKey="name"
+                height={20}
+                stroke="#10b981"
+                fill="#f0fdf4"
+                startIndex={Math.floor((dailyZoomStart / 100) * (dailyChartData.length - 1))}
+                endIndex={Math.floor((dailyZoomEnd / 100) * (dailyChartData.length - 1))}
+                onChange={(e) => {
+                  if (e.startIndex !== undefined && e.endIndex !== undefined) {
+                    setDailyZoomStart((e.startIndex / (dailyChartData.length - 1)) * 100);
+                    setDailyZoomEnd((e.endIndex / (dailyChartData.length - 1)) * 100);
+                  }
+                }}
+              />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
-      <div className="flex items-end gap-1.5 h-44 overflow-x-auto pb-1.5 custom-scrollbar">
-        {days.map((day) => {
-          const hPct = Math.max(8, Math.round((day.total / maxTotal) * 100));
-          const segments = Object.entries(day.byAction).sort((a, b) => b[1] - a[1]);
-          const dateLabel = new Intl.DateTimeFormat('id-ID', {
-            day: '2-digit', month: 'short', timeZone: 'Asia/Jakarta',
-          }).format(new Date(day.date + 'T12:00:00+07:00'));
-          return (
-            <div
-              key={day.date}
-              className="flex flex-col items-center gap-1 shrink-0 min-w-[40px]"
-              title={`${day.date}: ${day.total} log`}
+
+      {/* Hourly Traffic Chart */}
+      <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm flex flex-col justify-between">
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <div className="flex items-center gap-2 text-[12px] font-medium text-gray-700">
+            <Clock size={14} className="text-blue-600" />
+            Traffic per jam
+          </div>
+          <div className="text-[9px] font-semibold text-gray-500 bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100">
+            Total: {hourly.reduce((acc, curr) => acc + curr.count, 0).toLocaleString('id-ID')} log
+          </div>
+        </div>
+
+        <div className="h-64 w-full text-[10px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart
+              data={hourlyChartData}
+              margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
             >
-              <button
-                type="button"
-                onClick={() => onSelectDay(day.date)}
-                className="w-9 flex flex-col justify-end rounded-t-md overflow-hidden border border-gray-100 hover:ring-2 hover:ring-green-300 transition-all bg-gray-50"
-                style={{ height: `${Math.max(24, Math.round((hPct / 100) * 156))}px` }}
-              >
-                {segments.map(([action, cnt]) => {
-                  const segH = day.total > 0 ? (cnt / day.total) * 100 : 0;
-                  return (
-                    <span
-                      key={action}
-                      className={`w-full ${barColor(action)} opacity-90`}
-                      style={{ height: `${segH}%`, minHeight: segH > 0 ? '2px' : 0 }}
-                      title={`${action}: ${cnt}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSelectAction(activeAction === action ? '' : action);
-                        onSelectDay(day.date);
-                      }}
-                    />
-                  );
-                })}
-              </button>
-              <span className="text-[9px] font-bold text-gray-400 whitespace-nowrap">
-                {dateLabel}
-              </span>
-            </div>
-          );
-        })}
+              <defs>
+                <linearGradient id="hourlyGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                stroke="#94a3b8"
+                fontSize={8}
+                fontWeight="bold"
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                stroke="#94a3b8"
+                fontSize={8}
+                fontWeight="bold"
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06)',
+                  fontSize: '11px',
+                  fontWeight: '500',
+                  padding: '8px 12px',
+                }}
+                labelStyle={{
+                  color: '#374151',
+                  fontWeight: '600',
+                  marginBottom: '4px',
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="count"
+                name="Jumlah Log"
+                stroke="#2563eb"
+                strokeWidth={1.8}
+                fillOpacity={1}
+                fill="url(#hourlyGrad)"
+              />
+              <Brush
+                dataKey="name"
+                height={20}
+                stroke="#3b82f6"
+                fill="#eff6ff"
+                startIndex={Math.floor((hourlyZoomStart / 100) * (hourlyChartData.length - 1))}
+                endIndex={Math.floor((hourlyZoomEnd / 100) * (hourlyChartData.length - 1))}
+                onChange={(e) => {
+                  if (e.startIndex !== undefined && e.endIndex !== undefined) {
+                    setHourlyZoomStart((e.startIndex / (hourlyChartData.length - 1)) * 100);
+                    setHourlyZoomEnd((e.endIndex / (hourlyChartData.length - 1)) * 100);
+                  }
+                }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );

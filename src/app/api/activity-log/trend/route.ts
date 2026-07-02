@@ -31,11 +31,20 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: true, days: [], source, note: 'date range required' });
     }
 
-    // Guard: range > 31 hari terlalu berat untuk GROUP BY date(created_at)
+    // ponytail: adaptive grouping based on range size
     const fromMs = new Date(from).getTime();
     const toMs = new Date(to).getTime();
-    if (!isNaN(fromMs) && !isNaN(toMs) && (toMs - fromMs) > 31 * 86400_000) {
-      return NextResponse.json({ success: true, days: [], source, note: 'range too wide, max 31 days' });
+    const rangeDays = Math.round((toMs - fromMs) / 86400_000);
+    
+    let groupBy = 'day';
+    let dateFormat = '%Y-%m-%d'; // daily
+    
+    if (rangeDays > 90) {
+      groupBy = 'month';
+      dateFormat = '%Y-%m'; // monthly
+    } else if (rangeDays > 31) {
+      groupBy = 'week';
+      dateFormat = '%Y-W%W'; // weekly (year-week)
     }
 
     const params = {
@@ -53,31 +62,48 @@ export async function GET(req: NextRequest) {
 
     const result = await db.execute({
       sql: `
-        SELECT date(datetime(al.created_at, '+7 hours')) AS day, al.action_type, COUNT(*) AS cnt
+        SELECT strftime('${dateFormat}', datetime(al.created_at, '+7 hours')) AS period, al.action_type, COUNT(*) AS cnt
         FROM ${table} al
         ${whereClause}
-        GROUP BY day, al.action_type
-        ORDER BY day ASC
+        GROUP BY period, al.action_type
+        ORDER BY period ASC
+      `,
+      args,
+    });
+
+    const hourlyResult = await db.execute({
+      sql: `
+        SELECT strftime('%H', datetime(al.created_at, '+7 hours')) AS hour, COUNT(*) AS cnt
+        FROM ${table} al
+        ${whereClause}
+        GROUP BY hour
+        ORDER BY hour ASC
       `,
       args,
     });
 
     const dayMap = new Map<string, ActivityLogTrendDay>();
     for (const row of result.rows) {
-      const date = String(row.day ?? '');
-      if (!date) continue;
+      const period = String(row.period ?? '');
+      if (!period) continue;
       const action = String(row.action_type ?? 'OTHER');
       const cnt = Number(row.cnt ?? 0);
-      if (!dayMap.has(date)) {
-        dayMap.set(date, { date, total: 0, byAction: {} });
+      
+      if (!dayMap.has(period)) {
+        dayMap.set(period, { date: period, total: 0, byAction: {} });
       }
-      const entry = dayMap.get(date)!;
+      const entry = dayMap.get(period)!;
       entry.byAction[action] = cnt;
       entry.total += cnt;
     }
 
     const days = Array.from(dayMap.values());
-    return NextResponse.json({ success: true, days, source });
+    const hourly = hourlyResult.rows.map((r) => ({
+      hour: String(r.hour ?? '').padStart(2, '0'),
+      count: Number(r.cnt ?? 0),
+    }));
+
+    return NextResponse.json({ success: true, days, hourly, source, groupBy, rangeDays });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     return NextResponse.json({ error: message }, { status: 500 });
