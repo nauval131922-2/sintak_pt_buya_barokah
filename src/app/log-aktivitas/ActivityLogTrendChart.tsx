@@ -61,18 +61,7 @@ function ActivityLogTrendChart({
   const [hourlyZoomStart, setHourlyZoomStart] = useState(0);
   const [hourlyZoomEnd, setHourlyZoomEnd] = useState(100);
   
-  // ponytail: cooldown setelah mount untuk prevent Recharts false onClick saat initial render
-  const [clickEnabled, setClickEnabled] = useState(false);
-  useEffect(() => {
-    const timer = setTimeout(() => setClickEnabled(true), 1000);
-    return () => clearTimeout(timer);
-  }, []);
-  
   const handleHourClick = (label: string) => {
-    if (!clickEnabled) {
-      console.log('[Chart] onClick ignored: cooldown period');
-      return;
-    }
     if (onHourClick) onHourClick(label.replace(':00', ''));
   };
 
@@ -356,7 +345,15 @@ function ActivityLogTrendChart({
               data={detailHour ? minuteChartData : hourlyChartData}
               margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
               onClick={(state: any) => {
-                if (!detailHour && state?.activeLabel) {
+                // ponytail: Brush slider trigger onClick parent chart dengan activeLabel
+                // tapiii tidak punya isTooltipActive karena tidak hover data point
+                console.log('[Chart] AreaChart onClick state:', { 
+                  activeLabel: state?.activeLabel, 
+                  isTooltipActive: state?.isTooltipActive, 
+                  activePayload: state?.activePayload?.length,
+                  activeTooltipIndex: state?.activeTooltipIndex 
+                });
+                if (!detailHour && state?.activeLabel && state?.isTooltipActive) {
                   handleHourClick(state.activeLabel);
                 }
               }}
