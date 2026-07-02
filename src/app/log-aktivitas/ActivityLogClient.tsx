@@ -547,36 +547,51 @@ export default function ActivityLogClient({
     // ponytail: smart date range based on grouping
     if (date.includes('-W')) {
       // Weekly format: YYYY-Www → set range to that week
+      // Gunakan SQLite %W logic (bukan ISO) — konsisten dengan trend API
       const [year, week] = date.split('-W');
       const yearNum = parseInt(year);
       const weekNum = parseInt(week);
       
-      // Calculate first day of week (ISO week starts Monday)
-      const jan4 = new Date(yearNum, 0, 4);
-      const daysToMonday = (jan4.getDay() + 6) % 7;
-      const firstMonday = new Date(yearNum, 0, 4 - daysToMonday);
-      const targetMonday = new Date(firstMonday);
-      targetMonday.setDate(firstMonday.getDate() + (weekNum - 1) * 7);
+      // Cari first Monday di tahun ini (SQLite %W week 1 starts from first Monday)
+      const firstMonday = new Date(yearNum, 0, 1);
+      while (firstMonday.getDay() !== 1) {
+        firstMonday.setDate(firstMonday.getDate() + 1);
+      }
       
-      const sunday = new Date(targetMonday);
-      sunday.setDate(targetMonday.getDate() + 6);
+      let wFrom: string, wTo: string;
+      if (weekNum <= 0) {
+        // %W 00 = partial week sebelum first Monday
+        wFrom = dateToStr(new Date(yearNum, 0, 1));
+        wTo = dateToStr(new Date(firstMonday.getTime() - 86400000));
+      } else {
+        const targetMonday = new Date(firstMonday);
+        targetMonday.setDate(firstMonday.getDate() + (weekNum - 1) * 7);
+        const sunday = new Date(targetMonday);
+        sunday.setDate(targetMonday.getDate() + 6);
+        wFrom = dateToStr(targetMonday);
+        wTo = dateToStr(sunday);
+      }
       
-      setFrom(dateToStr(targetMonday));
-      setTo(dateToStr(sunday));
-      setDatePreset(null);
+      setFrom(wFrom);
+      setTo(wTo);
+      setDatePreset(detectActiveDatePreset(wFrom, wTo));
     } else if (date.match(/^\d{4}-\d{2}$/)) {
       // Monthly format: YYYY-MM → set range to that month
       const [year, month] = date.split('-');
       const firstDay = `${year}-${month}-01`;
       const lastDay = new Date(parseInt(year), parseInt(month), 0);
-      setFrom(firstDay);
-      setTo(dateToStr(lastDay));
-      setDatePreset(null);
+      const newFrom = firstDay;
+      const newTo = dateToStr(lastDay);
+      setFrom(newFrom);
+      setTo(newTo);
+      setDatePreset(detectActiveDatePreset(newFrom, newTo));
     } else {
       // Daily format: YYYY-MM-DD → set exact date
-      setFrom(date);
-      setTo(date);
-      setDatePreset(null);
+      const newFrom = date;
+      const newTo = date;
+      setFrom(newFrom);
+      setTo(newTo);
+      setDatePreset(detectActiveDatePreset(newFrom, newTo));
     }
   };
 
