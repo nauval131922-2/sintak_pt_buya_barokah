@@ -159,6 +159,7 @@ export default function ActivityLogClient({
   const source = 'active';
   const [search, setSearch] = useState(initialState.search);
   const [debouncedSearch, setDebouncedSearch] = useState(initialState.search);
+  const [deepSearch, setDeepSearch] = useState(false); // ponytail: toggle untuk cari di raw_data JSON
   const [total, setTotal] = useState(0);
   const [loadTime, setLoadTime] = useState<number | null>(null);
   const [page, setPage] = useState(1);
@@ -305,6 +306,7 @@ export default function ActivityLogClient({
       if (debouncedSearch) {
         console.log('[ActivityLog] buildParams adding search:', debouncedSearch);
         p.set('search', debouncedSearch);
+        if (deepSearch) p.set('deepSearch', '1'); // ponytail: enable raw_data search
       }
       if (tableName) p.set('tableName', tableName);
       if (actionType) p.set('actionType', actionType);
@@ -314,7 +316,7 @@ export default function ActivityLogClient({
       console.log('[ActivityLog] Final params:', p.toString());
       return p;
     },
-    [from, to, debouncedSearch, tableName, actionType, recordedBy, source, sortBy, sortDir, page]
+    [from, to, debouncedSearch, deepSearch, tableName, actionType, recordedBy, source, sortBy, sortDir, page]
   );
 
   const fetchLogs = useCallback(
@@ -926,16 +928,29 @@ export default function ActivityLogClient({
           {(isPending || isFetchingLogs) && <Loader2 size={14} className="animate-spin text-gray-400" />}
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="flex-1">
-            <SearchAndReload
-              searchQuery={search}
-              setSearchQuery={setSearch}
-              onReload={refreshCallback}
-              loading={isPending || isFetchingLogs}
-              placeholder="Cari menu, user, atau keterangan..."
-            />
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <SearchAndReload
+                searchQuery={search}
+                setSearchQuery={setSearch}
+                onReload={refreshCallback}
+                loading={isPending || isFetchingLogs}
+                placeholder="Cari menu, user, atau keterangan..."
+              />
+            </div>
           </div>
+          {debouncedSearch && (
+            <label className="flex items-center gap-2 text-[11px] text-gray-600 font-medium cursor-pointer hover:text-green-700 transition-colors">
+              <input
+                type="checkbox"
+                checked={deepSearch}
+                onChange={(e) => setDeepSearch(e.target.checked)}
+                className="w-3.5 h-3.5 rounded border-gray-300 text-green-600 focus:ring-green-500 focus:ring-offset-0 focus:ring-2 cursor-pointer"
+              />
+              <span>Cari di detail data JSON (lebih lambat, lebih lengkap)</span>
+            </label>
+          )}
         </div>
       </div>
 

@@ -33,6 +33,7 @@ function parseQuery(searchParams: URLSearchParams): ActivityLogQueryParams {
   // ponytail: empty string = undefined, jangan pakai || karena "" adalah falsy tapi .get() bisa return ""
   const from = fromRaw?.trim() || undefined;
   const to = toRaw?.trim() || undefined;
+  const deepSearch = searchParams.get('deepSearch') === '1';
   const params: ActivityLogQueryParams = {
     from: from ?? todayStr(),
     to: to ?? todayStr(),
@@ -49,9 +50,9 @@ function parseQuery(searchParams: URLSearchParams): ActivityLogQueryParams {
       return s && allowed.includes(s as ActivityLogSortField) ? (s as ActivityLogSortField) : 'created_at';
     })(),
     sortDir: (searchParams.get('sortDir') === 'asc' ? 'asc' : 'desc') as ActivityLogSortDir,
-    opts: { skipRawDataSearch: true }, // ponytail: raw_data LIKE adalah yang termahal
+    opts: { skipRawDataSearch: !deepSearch }, // ponytail: raw_data LIKE lambat, skip kecuali user aktifkan deepSearch
   };
-  console.log('[API activity-log] parseQuery result:', { from: params.from, to: params.to, page: params.page });
+  console.log('[API activity-log] parseQuery result:', { from: params.from, to: params.to, page: params.page, deepSearch });
   return params;
 }
 
