@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useTransition, useRef, useMemo, Fragment } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-  Database, Loader2, Calendar, X, Table2, Zap, User, ChevronUp, ChevronDown, Trash2, BarChart3, Copy
+  Database, Loader2, Calendar, X, Table2, Zap, User, ChevronUp, ChevronDown, Trash2, BarChart3, Copy, Gauge
 } from 'lucide-react';
 import ActivityLogExportMenu from './ActivityLogExportMenu';
 import SearchableDropdown from '@/components/SearchableDropdown';
@@ -41,6 +41,19 @@ import {
 } from '@/lib/activity-log-refresh';
 
 interface MatchInfo { field: string; label: string; value: string; }
+interface PerformanceLogRow {
+  id: number;
+  created_at: string;
+  username?: string | null;
+  action: string;
+  endpoint?: string | null;
+  method?: string | null;
+  duration_ms: number;
+  status_code?: number | null;
+  success: number;
+  message?: string | null;
+}
+interface PerformanceSummary { total: number; avg_ms: number; max_ms: number; errors: number; }
 const MATCH_FIELDS: { key: keyof ActivityLogRow; label: string; extract: (l: ActivityLogRow) => string }[] = [
   { key: 'action_type', label: 'Aksi', extract: (l) => l.action_type || '' },
   { key: 'table_name', label: 'Tabel', extract: (l) => l.table_name || '' },
@@ -179,6 +192,8 @@ export default function ActivityLogClient({
   const [tableStats, setTableStats] = useState<{ value: string; count: number }[]>([]);
   const [userStats, setUserStats] = useState<{ value: string; label: string; count: number }[]>([]);
   const [isFetchingLogs, setIsFetchingLogs] = useState(false);
+  const [perfSummary, setPerfSummary] = useState<PerformanceSummary | null>(null);
+  const [perfRows, setPerfRows] = useState<PerformanceLogRow[]>([]);
   const [filterOptions, setFilterOptions] = useState<{
     tables: string[];
     actions: string[];
@@ -398,6 +413,25 @@ export default function ActivityLogClient({
     } catch { /* ignore */ }
   }, [buildParams]);
 
+  const fetchPerformance = useCallback(async () => {
+    const signal = fetchAcRef.current?.signal;
+    if (signal?.aborted) return;
+    try {
+      const p = new URLSearchParams({ from, to });
+      const res = await fetch(`/api/performance-log?${p.toString()}`, { signal });
+      const data = await res.json();
+      if (data.success) {
+        setPerfSummary({
+          total: Number(data.summary?.total ?? 0),
+          avg_ms: Number(data.summary?.avg_ms ?? 0),
+          max_ms: Number(data.summary?.max_ms ?? 0),
+          errors: Number(data.summary?.errors ?? 0),
+        });
+        setPerfRows(data.data || []);
+      }
+    } catch { /* ignore */ }
+  }, [from, to]);
+
   // Cancel pending fetches immediately when user clicks a navigation link —
   // prevents stale responses from triggering state updates after navigation starts.
   useEffect(() => {
@@ -448,8 +482,9 @@ export default function ActivityLogClient({
     fetchLogs();
     fetchTrend();
     fetchStats();
+    fetchPerformance();
     return () => { if (fetchAcRef.current === ac) fetchAcRef.current = null; ac.abort(); };
-  }, [fetchLogs, fetchTrend, fetchStats]);
+  }, [fetchLogs, fetchTrend, fetchStats, fetchPerformance]);
 
   useEffect(() => {
     if (skipUrlSync.current) return;
@@ -481,7 +516,8 @@ export default function ActivityLogClient({
     fetchLogs();
     fetchTrend();
     fetchStats();
-  }, [fetchLogs, fetchTrend, fetchStats]);
+    fetchPerformance();
+  }, [fetchLogs, fetchTrend, fetchStats, fetchPerformance]);
 
   const handleCleanup = async () => {
     setDialog((prev) => ({ ...prev, isLoading: true }));
@@ -908,6 +944,43 @@ export default function ActivityLogClient({
             </div>
           )}
         </div>
+
+        {perfSummary && perfSummary.total > 0 && (
+          <div className="rounded-2xl border border-amber-100 bg-gradient-to-r from-amber-50 to-white p-3 shadow-sm">
+            <div className="flex flex-wrap items-center gap-3 justify-between">
+              <div className="flex items-center gap-2 text-[12px] font-bold text-amber-800">
+                <Gauge size={14} className="text-amber-600" />
+                Performa lambat/error
+                <span className="text-[10px] font-semibold text-amber-600 bg-white/70 border border-amber-100 px-2 py-0.5 rounded-full">
+                  {perfSummary.total.toLocaleString('id-ID')} event
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold text-amber-700">
+                <span>Avg: {perfSummary.avg_ms.toLocaleString('id-ID')} ms</span>
+                <span>Max: {perfSummary.max_ms.toLocaleString('id-ID')} ms</span>
+                {perfSummary.errors > 0 && <span className="text-rose-600">Error: {perfSummary.errors.toLocaleString('id-ID')}</span>}
+              </div>
+            </div>
+            {perfRows.length > 0 && (
+              <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2">
+                {perfRows.slice(0, 4).map((row) => (
+                  <div key={row.id} className="rounded-xl border border-amber-100 bg-white/80 px-3 py-2 text-[11px] text-gray-600">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-bold text-gray-800 truncate">{row.action}</span>
+                      <span className={`font-bold ${row.success ? 'text-amber-700' : 'text-rose-600'}`}>
+                        {Number(row.duration_ms).toLocaleString('id-ID')} ms
+                      </span>
+                    </div>
+                    <div className="mt-0.5 flex items-center gap-2 text-[10px] text-gray-400 truncate">
+                      <span>{row.method || '—'} {row.endpoint || '—'}</span>
+                      <span>{row.username || 'System'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="flex items-center justify-between gap-2 min-h-[28px] flex-wrap">
           <div className="flex items-center gap-3 flex-wrap">

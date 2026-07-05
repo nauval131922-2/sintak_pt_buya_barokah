@@ -11,6 +11,7 @@ import {
   type ActivityLogSortDir,
 } from '@/lib/activity-log-query';
 import type { ActivityLogSource } from '@/lib/activity-log-utils';
+import { recordPerformanceLog } from '@/lib/performance-log';
 
 import { canViewActivityLog } from '@/lib/activity-log-permissions';
 
@@ -180,13 +181,16 @@ async function queryLogs(params: ActivityLogQueryParams, withStats = false) {
 }
 
 export async function GET(req: NextRequest) {
+  const start = performance.now();
+  let username: string | null = null;
+  const { pathname, searchParams } = new URL(req.url);
   try {
     const session = await getSession();
+    username = session?.username || null;
     if (!session?.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { searchParams } = new URL(req.url);
     const preview = searchParams.get('preview') === '1';
 
     if (!preview) {
@@ -231,10 +235,44 @@ export async function GET(req: NextRequest) {
     const params = parseQuery(searchParams);
     const withStats = searchParams.get('stats') === '1';
     const result = await queryLogs(params, withStats);
+    recordPerformanceLog({
+      username,
+      type: 'api',
+      source: 'backend',
+      module: 'log-aktivitas',
+      action: withStats ? 'fetch_activity_log_stats' : 'fetch_activity_logs',
+      endpoint: pathname,
+      method: req.method,
+      durationMs: performance.now() - start,
+      statusCode: 200,
+      success: true,
+      metadata: {
+        page: params.page,
+        pageSize: params.pageSize,
+        from: params.from,
+        to: params.to,
+        hasSearch: !!params.search,
+        deepSearch: !params.opts?.skipRawDataSearch,
+        total: result.total,
+      },
+    }).catch(() => {});
 
     return NextResponse.json({ success: true, ...result });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
+    recordPerformanceLog({
+      username,
+      type: 'api',
+      source: 'backend',
+      module: 'log-aktivitas',
+      action: 'fetch_activity_logs',
+      endpoint: pathname,
+      method: req.method,
+      durationMs: performance.now() - start,
+      statusCode: 500,
+      success: false,
+      message,
+    }).catch(() => {});
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

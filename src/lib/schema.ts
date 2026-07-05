@@ -182,6 +182,22 @@ export async function initSchema(db: any) {
       created_at DATETIME NOT NULL,
       archived_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`,
+    `CREATE TABLE IF NOT EXISTS performance_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      username TEXT,
+      type TEXT NOT NULL,
+      source TEXT NOT NULL,
+      module TEXT,
+      action TEXT NOT NULL,
+      endpoint TEXT,
+      method TEXT,
+      duration_ms INTEGER NOT NULL,
+      status_code INTEGER,
+      success INTEGER NOT NULL DEFAULT 1,
+      message TEXT,
+      metadata_json TEXT
+    );`,
     `CREATE TABLE IF NOT EXISTS app_roles (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       role_name TEXT UNIQUE NOT NULL,
@@ -1135,6 +1151,10 @@ export async function initSchema(db: any) {
     "CREATE INDEX IF NOT EXISTS idx_activity_logs_archive_created_at_table ON activity_logs_archive(created_at, table_name);",
     "CREATE INDEX IF NOT EXISTS idx_activity_logs_archive_created_at_user ON activity_logs_archive(created_at, recorded_by);",
     "CREATE INDEX IF NOT EXISTS idx_activity_logs_archive_created_at_id_desc ON activity_logs_archive(created_at DESC, id DESC);",
+    "CREATE INDEX IF NOT EXISTS idx_performance_logs_created_at ON performance_logs(created_at DESC);",
+    "CREATE INDEX IF NOT EXISTS idx_performance_logs_duration ON performance_logs(duration_ms DESC);",
+    "CREATE INDEX IF NOT EXISTS idx_performance_logs_endpoint ON performance_logs(endpoint, created_at DESC);",
+    "CREATE INDEX IF NOT EXISTS idx_performance_logs_user ON performance_logs(username, created_at DESC);",
     
     "DROP INDEX IF EXISTS idx_barang_jadi_tgl_id;",
     "CREATE INDEX IF NOT EXISTS idx_barang_jadi_expr_tgl ON barang_jadi(substr(tgl, 7, 4) DESC, substr(tgl, 4, 2) DESC, substr(tgl, 1, 2) DESC, id DESC);",
