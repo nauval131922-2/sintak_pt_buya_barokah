@@ -19,7 +19,8 @@ const CACHE_TTL = 30_000; // 30 seconds for stats/count cache
 
 function cacheKey(params: ActivityLogQueryParams): string {
   const p = params;
-  return `activity-log:${p.source ?? 'active'}|${p.from ?? ''}|${p.to ?? ''}|${p.tableName ?? ''}|${p.actionType ?? ''}|${p.recordedBy ?? ''}|${p.search ?? ''}`;
+  const deep = p.opts?.skipRawDataSearch === false ? 'deep' : 'normal';
+  return `activity-log:${p.source ?? 'active'}|${p.from ?? ''}|${p.to ?? ''}|${p.tableName ?? ''}|${p.actionType ?? ''}|${p.recordedBy ?? ''}|${p.search ?? ''}|${deep}`;
 }
 
 function todayStr(): string {

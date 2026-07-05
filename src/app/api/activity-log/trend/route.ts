@@ -26,6 +26,7 @@ export async function GET(req: NextRequest) {
     const from = searchParams.get('from') || undefined;
     const to = searchParams.get('to') || undefined;
     const detailHour = searchParams.get('detailHour');
+    const deepSearch = searchParams.get('deepSearch') === '1';
 
     // Safety guard: trend tanpa date range bakal scan semua baris — tolak
     if (!from || !to) {
@@ -56,8 +57,8 @@ export async function GET(req: NextRequest) {
       actionType: searchParams.get('actionType') || searchParams.get('action') || undefined,
       recordedBy: searchParams.get('recordedBy') || searchParams.get('user') || undefined,
       source: source as 'active' | 'archive',
-      // Trend doesn't need user name search or raw_data search — skip expensive scans
-      opts: { skipUserNameSearch: true, skipRawDataSearch: true },
+      // ponytail: raw_data search hanya aktif kalau user centang deepSearch.
+      opts: { skipUserNameSearch: true, skipRawDataSearch: !deepSearch },
     };
     const { whereClause, args } = buildActivityLogWhere(params);
 
