@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
     const bagian = searchParams.get("bagian");
     const namaKaryawan = searchParams.get("namaKaryawan");
     const noOrder = searchParams.get("noOrder");
+    const jenisPekerjaan = searchParams.get("jenisPekerjaan");
     const belumRealisasi = searchParams.get("belumRealisasi");
     const needTotals = searchParams.get("needTotals") === 'true';
 
@@ -70,6 +71,11 @@ export async function GET(request: NextRequest) {
     if (noOrder) {
       whereParts.push(`(no_order = ? OR no_order_2 = ? OR nama_order = ? OR nama_order_2 = ?)`);
       args.push(noOrder, noOrder, noOrder, noOrder);
+    }
+
+    if (jenisPekerjaan) {
+      whereParts.push(`(jenis_pekerjaan = ? OR jenis_pekerjaan_2 = ?)`);
+      args.push(jenisPekerjaan, jenisPekerjaan);
     }
 
     // Selalu filter soft-deleted

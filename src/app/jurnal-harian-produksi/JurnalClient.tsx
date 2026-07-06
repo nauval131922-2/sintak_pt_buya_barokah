@@ -386,6 +386,8 @@ export default function JurnalClient({
   const [allEmployeeNames, setAllEmployeeNames] = useState<string[]>([]);
   const [namaOptions, setNamaOptions] = useState<string[]>([]);
   const [noOrderFilter, setNoOrderFilter] = useState('');
+  const [jenisPekerjaanFilter, setJenisPekerjaanFilter] = useState('');
+  const [masterPekerjaanOptions, setMasterPekerjaanOptions] = useState<string[]>([]);
   const [isBagianDropdownOpen, setIsBagianDropdownOpen] = useState(false);
   const [isNamaDropdownOpen, setIsNamaDropdownOpen] = useState(false);
   const [bagianSearchQuery, setBagianSearchQuery] = useState('');
@@ -571,8 +573,9 @@ export default function JurnalClient({
           ...(bagianFilter ? { bagian: bagianFilter } : {}),
           ...(namaKaryawanFilter ? { namaKaryawan: namaKaryawanFilter } : {}),
           ...(noOrderFilter ? { noOrder: noOrderFilter } : {}),
+          ...(jenisPekerjaanFilter ? { jenisPekerjaan: jenisPekerjaanFilter } : {}),
           ...(belumRealisasiFilter ? { belumRealisasi: 'true' } : {}),
-          ...((bagianFilter || namaKaryawanFilter || noOrderFilter || belumRealisasiFilter || debouncedQuery) ? { needTotals: 'true' } : {}),
+          ...((bagianFilter || namaKaryawanFilter || noOrderFilter || jenisPekerjaanFilter || belumRealisasiFilter || debouncedQuery) ? { needTotals: 'true' } : {}),
           ...(sorting.length > 0 ? { sort: sorting.map(s => `${s.id}:${s.desc ? 'desc' : 'asc'}`).join(',') } : {}),
           _r: refreshKey.toString() // hanya berubah saat data dimutasi, bukan setiap render
         });
@@ -597,7 +600,7 @@ export default function JurnalClient({
     }
     loadData();
     return () => { active = false; };
-  }, [page, debouncedQuery, refreshKey, startDate, endDate, bagianFilter, namaKaryawanFilter, noOrderFilter, belumRealisasiFilter, sorting, isMounted, initData]);
+  }, [page, debouncedQuery, refreshKey, startDate, endDate, bagianFilter, namaKaryawanFilter, noOrderFilter, jenisPekerjaanFilter, belumRealisasiFilter, sorting, isMounted, initData]);
 
   // Fetch distinct bagian & nama karyawan for dropdowns
   useEffect(() => {
@@ -621,6 +624,26 @@ export default function JurnalClient({
     }
     fetchOptions();
   }, [refreshKey]);
+
+  // Fetch master pekerjaan for jenis pekerjaan filter
+  useEffect(() => {
+    let active = true;
+    async function fetchMaster() {
+      try {
+        const res = await fetch('/api/master-pekerjaan-jurnal-produksi?limit=9999');
+        if (!active) return;
+        if (res.ok) {
+          const json: any = await res.json();
+          if (json.success) {
+            const names = [...new Set(((json.data || []) as any[]).map((r: any) => r.name).filter(Boolean))].sort() as string[];
+            setMasterPekerjaanOptions(names);
+          }
+        }
+      } catch {}
+    }
+    fetchMaster();
+    return () => { active = false; };
+  }, []);
 
   // Fetch SOPD list for filter dropdown & form
   useEffect(() => {
@@ -673,7 +696,7 @@ export default function JurnalClient({
 
   // Fetch jenis pekerjaan untuk section Realisasi (ikut bagian dari target)
   useEffect(() => {
-    const bagian = selectedTargetRow?.bagian || formData.bagian;
+    const bagian = formData.bagian || selectedTargetRow?.bagian;
     if (!bagian) { setJenisPekerjaan2List([]); return; }
     const category = BAGIAN_CATEGORY_MAP[bagian] || '';
     if (!category) { setJenisPekerjaan2List([]); return; }
@@ -718,10 +741,13 @@ export default function JurnalClient({
     }
   }, [bagianFilter, allEmployeeNames, karyawanByBagian]);
 
+  const jenisPekerjaanFilterOptions = useMemo(() => masterPekerjaanOptions, [masterPekerjaanOptions]);
+
   const handleResetFilter = useCallback(() => {
     setBagianFilter('');
     setNamaKaryawanFilter('');
     setNoOrderFilter('');
+    setJenisPekerjaanFilter('');
     setBelumRealisasiFilter(false);
     setPage(1);
   }, []);
@@ -1002,6 +1028,10 @@ export default function JurnalClient({
       const formattedData = { ...row };
       if (formattedData.tgl && formattedData.tgl.includes('T')) {
         formattedData.tgl = formattedData.tgl.split('T')[0];
+      }
+      if (!formattedData.nama_order_manual && (!formattedData.no_order || formattedData.no_order === '-') && formattedData.nama_order) {
+        formattedData.nama_order_manual = formattedData.nama_order;
+        formattedData.no_order = '';
       }
       setFormData(formattedData);
       setIsMultiRealisasiMode(false);
@@ -1872,6 +1902,21 @@ export default function JurnalClient({
               onChange={(val) => { setNoOrderFilter(val.split(' — ')[0]); setPage(1); }}
             />
 
+            {/* Jenis Pekerjaan Filter */}
+            <SearchableDropdown
+              id="jurnal-jenis-pekerjaan"
+              value={jenisPekerjaanFilter}
+              items={jenisPekerjaanFilterOptions}
+              allLabel="Semua Pekerjaan"
+              searchPlaceholder="Cari pekerjaan..."
+              triggerWidth="w-[170px]"
+              panelWidth="w-[280px]"
+              compact
+              maxDisplay={300}
+              icon={<Filter size={13} className={jenisPekerjaanFilter ? 'text-green-600' : 'text-gray-400'} />}
+              onChange={(val) => { setJenisPekerjaanFilter(val); setPage(1); }}
+            />
+
             {/* Belum Realisasi Toggle */}
             <button
               onClick={() => { setBelumRealisasiFilter(prev => !prev); setPage(1); }}
@@ -2064,7 +2109,7 @@ export default function JurnalClient({
         </div>
 
         {/* Subtotal bar — tampil saat filter aktif */}
-        {(bagianFilter || namaKaryawanFilter || noOrderFilter || belumRealisasiFilter || debouncedQuery) && (
+        {(bagianFilter || namaKaryawanFilter || noOrderFilter || jenisPekerjaanFilter || belumRealisasiFilter || debouncedQuery) && (
           <div className="shrink-0 bg-gradient-to-r from-emerald-50 to-sky-50 border border-emerald-100 rounded-xl px-4 py-2 flex items-center gap-6">
             <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-500">
               <Filter size={12} />

@@ -69,7 +69,7 @@ export default function GlobalSearch() {
   // Trigger search on "/" key press
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === '/' && document.activeElement !== inputRef.current) {
+      if (e.key === '/' && document.activeElement !== inputRef.current && !/^(INPUT|TEXTAREA)$/i.test(document.activeElement?.tagName || '') && !(document.activeElement as HTMLElement)?.isContentEditable) {
         e.preventDefault();
         inputRef.current?.focus();
       }

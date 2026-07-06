@@ -104,6 +104,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Tidak ada jadwal yang cocok dengan filter untuk di-copy.' }, { status: 400 });
     }
 
+    const manualSource = await db.execute({
+      sql: `SELECT count(*) as count FROM jurnal_harian_produksi WHERE ${whereSQL} AND COALESCE(NULLIF(TRIM(nama_order_manual), ''), '') != ''`,
+      args: filterArgs
+    });
+
     // Buat log message yang deskriptif
     const filterDesc = [
       bagianFilter ? `bagian: ${bagianFilter}` : '',
@@ -117,17 +122,24 @@ export async function POST(request: NextRequest) {
       {
         sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
               VALUES (?, ?, ?, ?, ?, ?)`,
-        args: ['COPY_JADWAL', 'jurnal_harian_produksi', 0, logMessage, JSON.stringify(body), session.username || 'System']
+        args: ['COPY_JADWAL', 'jurnal_harian_produksi', 0, logMessage, JSON.stringify({
+          ...body,
+          sourceCount: Number((countSource.rows[0] as any).count),
+          manualOrderCount: Number((manualSource.rows[0] as any).count),
+          copiedManualFields: ['nama_order_manual']
+        }), session.username || 'System']
       },
       // 2. Copy data jadwal dengan filter
       {
         sql: `INSERT INTO jurnal_harian_produksi (
                 posisi, absensi, tgl, shift, nama_karyawan, no_order, nama_order, jenis_pekerjaan, keterangan, target, 
-                realisasi, no_order_2, nama_order_2, jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, is_manual_input, created_by
+                realisasi, no_order_2, nama_order_2, jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, is_manual_input, created_by,
+                nama_order_manual, nama_order_manual_2
               )
               SELECT 
                 posisi, absensi, ?, shift, nama_karyawan, no_order, nama_order, jenis_pekerjaan, keterangan, target,
-                0, '', '', '', '', 0, '', 0, 0, '', '', bagian, is_manual_input, ?
+                0, '', '', '', '', 0, '', 0, 0, '', '', bagian, is_manual_input, ?,
+                nama_order_manual, NULL
               FROM jurnal_harian_produksi
               WHERE ${whereSQL}`,
         args: [toDate, session.username || 'System', ...filterArgs]
