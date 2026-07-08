@@ -43,11 +43,33 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/sintak
-            rm -rf .next.bak
+
+            # Cek apakah build baru valid
+            if [ ! -d ".next-tmp/.next" ] || [ ! -f ".next-tmp/.next/BUILD_ID" ]; then
+              echo "No valid build in .next-tmp/.next"
+              rm -rf .next-tmp 2>/dev/null
+              rm -f .maintenance
+              if [ -d ".next" ] && [ -f ".next/BUILD_ID" ]; then
+                pm2 reload ecosystem.config.js --only sintak-prod
+                echo "Restarted existing build"
+              else
+                echo "No valid build available — app may be down"
+              fi
+              exit 1
+            fi
+
             touch .maintenance
-            mv .next .next.bak
+
+            # Backup current build (jangan hapus sampai health check lolos)
+            if [ -d ".next" ] && [ -f ".next/BUILD_ID" ]; then
+              rm -rf .next.bak
+              mv .next .next.bak
+            fi
+
+            # Swap new build
             mv .next-tmp/.next .next
-            rmdir .next-tmp
+            rmdir .next-tmp 2>/dev/null
+
             pm2 reload ecosystem.config.js --only sintak-prod
 
             for i in $(seq 1 30); do
@@ -55,14 +77,20 @@ jobs:
               code=$(curl -s -o /dev/null -w "%{http_code}" -m 2 http://localhost:3000/login 2>/dev/null || true)
               if [ "$code" = "200" ]; then
                 rm -f .maintenance
+                rm -rf .next.bak 2>/dev/null
                 echo "Health OK"
                 exit 0
               fi
             done
 
             echo "Health FAILED - rolling back"
+            rm -rf .next-failed 2>/dev/null
             mv .next .next-failed
-            mv .next.bak .next
+            if [ -d ".next.bak" ]; then
+              mv .next.bak .next
+            else
+              echo "No backup — app may be down"
+            fi
             rm -f .maintenance
             pm2 reload ecosystem.config.js --only sintak-prod
             exit 1
