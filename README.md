@@ -140,4 +140,4 @@ Untuk perubahan besar pada database/API/UI, pertimbangkan juga:
 npm run build
 ```
 
-Jika build dijalankan, ingat bahwa `prebuild` akan menjalankan `npm run init-db` terlebih dahulu.
+Jika build dijalankan, ingat bahwa `prebuild` akan menjalankan `npm run init-db` terlebih dahulu. 
