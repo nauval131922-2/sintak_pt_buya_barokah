@@ -3,6 +3,10 @@ import db from '../../../../lib/db';
 
 export const dynamic = 'force-dynamic';
 
+export async function GET() {
+  return NextResponse.json({ ok: true, message: 'Fonnte webhook is active' });
+}
+
 export async function POST(request: NextRequest) {
   try {
     let sender = '';
