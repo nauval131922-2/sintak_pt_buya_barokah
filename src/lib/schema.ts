@@ -320,6 +320,15 @@ export async function initSchema(db: any) {
       value TEXT,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`,
+    `CREATE TABLE IF NOT EXISTS personal_tasks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      task TEXT NOT NULL,
+      status TEXT DEFAULT 'pending',
+      sender TEXT,
+      source TEXT DEFAULT 'web',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      completed_at DATETIME DEFAULT NULL
+    );`,
     `CREATE TABLE IF NOT EXISTS sph_out (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       faktur TEXT UNIQUE NOT NULL,
