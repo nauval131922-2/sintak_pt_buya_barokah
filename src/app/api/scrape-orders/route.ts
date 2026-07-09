@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 export const dynamic = 'force-dynamic';
 import db from "@/lib/db";
 import { getErrorMessage } from "@/lib/api-utils";
-import { ScrapedRecord, BatchOperation } from "@/lib/scraper-utils";
+import { ScrapedRecord, BatchOperation, sendErrorAlert } from "@/lib/scraper-utils";
 import { clearCachedSession, getSession as getScraperSession } from "@/lib/session-cache";
 import { getSession } from "@/lib/session";
 import { encodeScrapedPeriod, getScrapedPeriodSettingKey } from "@/lib/server-scraped-period";
@@ -265,6 +265,7 @@ export async function GET(request: NextRequest) {
 
   } catch (error: any) {
     console.error("Scraping error:", error);
+    sendErrorAlert("scrape-orders", error);
     return NextResponse.json(
       { error: "Failed to scrape data", details: getErrorMessage(error) },
       { status: 500 }

@@ -16,14 +16,13 @@ dotenv.config({ path: `${process.cwd()}/.env` });
 process.env.TZ = 'Asia/Jakarta';
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
-const BAGIAN = process.env.BAGIAN || 'SETTING';
 
 if (!BOT_TOKEN) {
   console.error('❌ BOT_TOKEN tidak ditemukan di .env');
   process.exit(1);
 }
 
-console.log(`🤖 Starting SINTAK Bot - Bagian ${BAGIAN}...`);
+console.log(`🤖 Starting SINTAK Bot (Multi-Bagian)...`);
 
 const bot = new Bot(BOT_TOKEN);
 
@@ -99,7 +98,7 @@ bot.on('callback_query:data', async (ctx) => {
   }
   
   const data = ctx.callbackQuery?.data || '';
-  if (data.startsWith('register_select:')) return handleRegisterCallback(ctx);
+  if (data.startsWith('register_select:') || data.startsWith('register_bagian:')) return handleRegisterCallback(ctx);
   if (data.startsWith('input_')) return handleInputCorrectionCallback(ctx);
   if (data.startsWith('it_')) return handleInputTargetCallback(ctx);
   if (data.startsWith('hist_')) return handleHistoryCallback(ctx);
@@ -185,7 +184,7 @@ bot.catch((err) => {
 bot.start({
   onStart: (botInfo) => {
     console.log(`✅ Bot started: @${botInfo.username}`);
-    console.log(`📍 Bagian: ${BAGIAN}`);
+    console.log(`📍 Multi-Bagian: SETTING, QUALITY CONTROL, CETAK, FINISHING, GUDANG, TEKNISI`);
   }
 });
 

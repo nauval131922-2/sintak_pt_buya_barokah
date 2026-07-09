@@ -58,14 +58,15 @@ export async function GET(req: NextRequest) {
       recordedBy: searchParams.get('recordedBy') || searchParams.get('user') || undefined,
       source: source as 'active' | 'archive',
       // ponytail: raw_data search hanya aktif kalau user centang deepSearch.
-      opts: { skipUserNameSearch: true, skipRawDataSearch: !deepSearch },
+      opts: { skipRawDataSearch: !deepSearch },
     };
     const { whereClause, args } = buildActivityLogWhere(params);
+    const TREND_JOIN = 'LEFT JOIN users u ON al.recorded_by = u.username';
 
     const result = await db.execute({
       sql: `
         SELECT strftime('${dateFormat}', datetime(al.created_at, '+7 hours')) AS period, al.action_type, COUNT(*) AS cnt
-        FROM ${table} al
+        FROM ${table} al ${TREND_JOIN}
         ${whereClause}
         GROUP BY period, al.action_type
         ORDER BY period ASC
@@ -76,7 +77,7 @@ export async function GET(req: NextRequest) {
     const hourlyResult = await db.execute({
       sql: `
         SELECT strftime('%H', datetime(al.created_at, '+7 hours')) AS hour, COUNT(*) AS cnt
-        FROM ${table} al
+        FROM ${table} al ${TREND_JOIN}
         ${whereClause}
         GROUP BY hour
         ORDER BY hour ASC
@@ -90,7 +91,7 @@ export async function GET(req: NextRequest) {
       const minuteResult = await db.execute({
         sql: `
           SELECT strftime('%H:%M', datetime(al.created_at, '+7 hours')) AS minute, COUNT(*) AS cnt
-          FROM ${table} al
+          FROM ${table} al ${TREND_JOIN}
           ${whereClause}
             AND strftime('%H', datetime(al.created_at, '+7 hours')) = ?
           GROUP BY minute

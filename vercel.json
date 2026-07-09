@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/maintenance",
-      "schedule": "0 1 * * 0"
+      "schedule": "0 1 * * 5"
     },
     {
       "path": "/api/cron/archive-logs",

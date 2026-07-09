@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useTransition, useRef, useMemo, Fragment } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-  Database, Loader2, Calendar, X, Table2, Zap, User, ChevronUp, ChevronDown, Trash2, BarChart3, Copy, Gauge
+  Database, Loader2, Calendar, X, Table2, Zap, User, ChevronUp, ChevronDown, Trash2, BarChart3, Copy
 } from 'lucide-react';
 import ActivityLogExportMenu from './ActivityLogExportMenu';
 import SearchableDropdown from '@/components/SearchableDropdown';
@@ -36,24 +36,9 @@ import {
 } from '@/lib/activity-log-url';
 import ActivityLogTrendChart from './ActivityLogTrendChart';
 import type { ActivityLogTrendDay } from '@/app/api/activity-log/trend/route';
-import {
-  QUICK_ACTION_CHIPS,
-} from '@/lib/activity-log-refresh';
 
 interface MatchInfo { field: string; label: string; value: string; }
-interface PerformanceLogRow {
-  id: number;
-  created_at: string;
-  username?: string | null;
-  action: string;
-  endpoint?: string | null;
-  method?: string | null;
-  duration_ms: number;
-  status_code?: number | null;
-  success: number;
-  message?: string | null;
-}
-interface PerformanceSummary { total: number; avg_ms: number; max_ms: number; errors: number; }
+
 const MATCH_FIELDS: { key: keyof ActivityLogRow; label: string; extract: (l: ActivityLogRow) => string }[] = [
   { key: 'action_type', label: 'Aksi', extract: (l) => l.action_type || '' },
   { key: 'table_name', label: 'Tabel', extract: (l) => l.table_name || '' },
@@ -116,34 +101,29 @@ function buildBaseState(defaults: ServerDateDefaults) {
   };
 }
 
-function SortHeader({
-  label,
-  field,
-  sortBy,
-  sortDir,
-  onSort,
-}: {
-  label: string;
-  field: ActivityLogSortField;
-  sortBy: ActivityLogSortField;
-  sortDir: 'asc' | 'desc';
+function SortHeader({ label, field, colIdx, sortBy, sortDir, onSort, onCtx, onResize }: {
+  label: string; field: ActivityLogSortField; colIdx: number;
+  sortBy: ActivityLogSortField; sortDir: 'asc' | 'desc';
   onSort: (f: ActivityLogSortField) => void;
+  onCtx: (i: number, e: React.MouseEvent) => void;
+  onResize: (i: number, e: React.MouseEvent) => void;
 }) {
   const active = sortBy === field;
   return (
-    <th className="px-4 py-3 text-[10px] font-bold text-gray-400 whitespace-nowrap">
+    <th className="px-4 py-3 relative border-r border-gray-200" onContextMenu={(e) => onCtx(colIdx, e)}>
       <button
         type="button"
         onClick={() => onSort(field)}
-        className={`inline-flex items-center gap-1 hover:text-green-700 transition-colors ${active ? 'text-green-700' : ''}`}
+        className={`inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-green-700 transition-colors ${active ? 'text-green-700' : ''}`}
       >
         {label}
-        {active ? (
-          sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
-        ) : (
-          <ChevronDown size={12} className="opacity-30" />
-        )}
+        {active ? (sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />) : <ChevronDown size={12} className="opacity-30" />}
       </button>
+      <div
+        className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
+        onMouseDown={(e) => onResize(colIdx, e)}
+        title="Drag untuk resize kolom"
+      />
     </th>
   );
 }
@@ -192,8 +172,6 @@ export default function ActivityLogClient({
   const [tableStats, setTableStats] = useState<{ value: string; count: number }[]>([]);
   const [userStats, setUserStats] = useState<{ value: string; label: string; count: number }[]>([]);
   const [isFetchingLogs, setIsFetchingLogs] = useState(false);
-  const [perfSummary, setPerfSummary] = useState<PerformanceSummary | null>(null);
-  const [perfRows, setPerfRows] = useState<PerformanceLogRow[]>([]);
   const [filterOptions, setFilterOptions] = useState<{
     tables: string[];
     actions: string[];
@@ -319,7 +297,6 @@ export default function ActivityLogClient({
         ...extra,
       });
       if (debouncedSearch) {
-        console.log('[ActivityLog] buildParams adding search:', debouncedSearch);
         p.set('search', debouncedSearch);
         if (deepSearch) p.set('deepSearch', '1'); // ponytail: enable raw_data search
       }
@@ -328,7 +305,6 @@ export default function ActivityLogClient({
       if (recordedBy) p.set('recordedBy', recordedBy);
       p.set('sortBy', sortBy);
       p.set('sortDir', sortDir);
-      console.log('[ActivityLog] Final params:', p.toString());
       return p;
     },
     [from, to, debouncedSearch, deepSearch, tableName, actionType, recordedBy, source, sortBy, sortDir, page]
@@ -413,25 +389,6 @@ export default function ActivityLogClient({
     } catch { /* ignore */ }
   }, [buildParams]);
 
-  const fetchPerformance = useCallback(async () => {
-    const signal = fetchAcRef.current?.signal;
-    if (signal?.aborted) return;
-    try {
-      const p = new URLSearchParams({ from, to });
-      const res = await fetch(`/api/performance-log?${p.toString()}`, { signal });
-      const data = await res.json();
-      if (data.success) {
-        setPerfSummary({
-          total: Number(data.summary?.total ?? 0),
-          avg_ms: Number(data.summary?.avg_ms ?? 0),
-          max_ms: Number(data.summary?.max_ms ?? 0),
-          errors: Number(data.summary?.errors ?? 0),
-        });
-        setPerfRows(data.data || []);
-      }
-    } catch { /* ignore */ }
-  }, [from, to]);
-
   // Cancel pending fetches immediately when user clicks a navigation link —
   // prevents stale responses from triggering state updates after navigation starts.
   useEffect(() => {
@@ -467,14 +424,13 @@ export default function ActivityLogClient({
 
   useEffect(() => {
     const t = setTimeout(() => {
-      console.log('[ActivityLog] Debounced search:', search);
       setDebouncedSearch(search);
     }, 350);
     return () => clearTimeout(t);
   }, [search]);
 
   // ponytail: reset page ke 1 kalau filter berubah
-  useEffect(() => { setPage(1); }, [from, to, debouncedSearch, tableName, actionType, recordedBy, source, sortBy, sortDir]);
+  useEffect(() => { setPage(1); }, [from, to, debouncedSearch, deepSearch, tableName, actionType, recordedBy, source, sortBy, sortDir]);
 
   useEffect(() => {
     const ac = new AbortController();
@@ -482,9 +438,8 @@ export default function ActivityLogClient({
     fetchLogs();
     fetchTrend();
     fetchStats();
-    fetchPerformance();
     return () => { if (fetchAcRef.current === ac) fetchAcRef.current = null; ac.abort(); };
-  }, [fetchLogs, fetchTrend, fetchStats, fetchPerformance]);
+  }, [fetchLogs, fetchTrend, fetchStats]);
 
   useEffect(() => {
     if (skipUrlSync.current) return;
@@ -516,8 +471,7 @@ export default function ActivityLogClient({
     fetchLogs();
     fetchTrend();
     fetchStats();
-    fetchPerformance();
-  }, [fetchLogs, fetchTrend, fetchStats, fetchPerformance]);
+  }, [fetchLogs, fetchTrend, fetchStats]);
 
   const handleCleanup = async () => {
     setDialog((prev) => ({ ...prev, isLoading: true }));
@@ -945,43 +899,6 @@ export default function ActivityLogClient({
           )}
         </div>
 
-        {perfSummary && perfSummary.total > 0 && (
-          <div className="rounded-2xl border border-amber-100 bg-gradient-to-r from-amber-50 to-white p-3 shadow-sm">
-            <div className="flex flex-wrap items-center gap-3 justify-between">
-              <div className="flex items-center gap-2 text-[12px] font-bold text-amber-800">
-                <Gauge size={14} className="text-amber-600" />
-                Performa lambat/error
-                <span className="text-[10px] font-semibold text-amber-600 bg-white/70 border border-amber-100 px-2 py-0.5 rounded-full">
-                  {perfSummary.total.toLocaleString('id-ID')} event
-                </span>
-              </div>
-              <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold text-amber-700">
-                <span>Avg: {perfSummary.avg_ms.toLocaleString('id-ID')} ms</span>
-                <span>Max: {perfSummary.max_ms.toLocaleString('id-ID')} ms</span>
-                {perfSummary.errors > 0 && <span className="text-rose-600">Error: {perfSummary.errors.toLocaleString('id-ID')}</span>}
-              </div>
-            </div>
-            {perfRows.length > 0 && (
-              <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2">
-                {perfRows.slice(0, 4).map((row) => (
-                  <div key={row.id} className="rounded-xl border border-amber-100 bg-white/80 px-3 py-2 text-[11px] text-gray-600">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-bold text-gray-800 truncate">{row.action}</span>
-                      <span className={`font-bold ${row.success ? 'text-amber-700' : 'text-rose-600'}`}>
-                        {Number(row.duration_ms).toLocaleString('id-ID')} ms
-                      </span>
-                    </div>
-                    <div className="mt-0.5 flex items-center gap-2 text-[10px] text-gray-400 truncate">
-                      <span>{row.method || '—'} {row.endpoint || '—'}</span>
-                      <span>{row.username || 'System'}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
         <div className="flex items-center justify-between gap-2 min-h-[28px] flex-wrap">
           <div className="flex items-center gap-3 flex-wrap">
             {lastUpdated && (
@@ -1046,82 +963,10 @@ export default function ActivityLogClient({
                   </colgroup>
                   <thead className="bg-gray-50 border-b border-gray-100 sticky top-0 z-10">
                     <tr>
-                      <th className="px-4 py-3 relative border-r border-gray-200" onContextMenu={(e) => colCtx(0, e)}>
-                        <button
-                          type="button"
-                          onClick={() => toggleSort('action_type')}
-                          className={`inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-green-700 transition-colors ${sortBy === 'action_type' ? 'text-green-700' : ''}`}
-                        >
-                          Action
-                          {sortBy === 'action_type' ? (
-                            sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
-                          ) : (
-                            <ChevronDown size={12} className="opacity-30" />
-                          )}
-                        </button>
-                        <div
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
-                          onMouseDown={(e) => colResizeStart(0, e)}
-                          title="Drag untuk resize kolom"
-                        />
-                      </th>
-                      <th className="px-4 py-3 relative border-r border-gray-200" onContextMenu={(e) => colCtx(1, e)}>
-                        <button
-                          type="button"
-                          onClick={() => toggleSort('created_at')}
-                          className={`inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-green-700 transition-colors ${sortBy === 'created_at' ? 'text-green-700' : ''}`}
-                        >
-                          Waktu
-                          {sortBy === 'created_at' ? (
-                            sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
-                          ) : (
-                            <ChevronDown size={12} className="opacity-30" />
-                          )}
-                        </button>
-                        <div
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
-                          onMouseDown={(e) => colResizeStart(1, e)}
-                          title="Drag untuk resize kolom"
-                        />
-                      </th>
-                      <th className="px-4 py-3 relative border-r border-gray-200" onContextMenu={(e) => colCtx(2, e)}>
-                        <button
-                          type="button"
-                          onClick={() => toggleSort('recorded_by')}
-                          className={`inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-green-700 transition-colors ${sortBy === 'recorded_by' ? 'text-green-700' : ''}`}
-                        >
-                          User
-                          {sortBy === 'recorded_by' ? (
-                            sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
-                          ) : (
-                            <ChevronDown size={12} className="opacity-30" />
-                          )}
-                        </button>
-                        <div
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
-                          onMouseDown={(e) => colResizeStart(2, e)}
-                          title="Drag untuk resize kolom"
-                        />
-                      </th>
-                      <th className="px-4 py-3 relative border-r border-gray-200" onContextMenu={(e) => colCtx(3, e)}>
-                        <button
-                          type="button"
-                          onClick={() => toggleSort('table_name')}
-                          className={`inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-green-700 transition-colors ${sortBy === 'table_name' ? 'text-green-700' : ''}`}
-                        >
-                          Tabel
-                          {sortBy === 'table_name' ? (
-                            sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
-                          ) : (
-                            <ChevronDown size={12} className="opacity-30" />
-                          )}
-                        </button>
-                        <div
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
-                          onMouseDown={(e) => colResizeStart(3, e)}
-                          title="Drag untuk resize kolom"
-                        />
-                      </th>
+                      <SortHeader label="Action"  field="action_type" colIdx={0} sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} onCtx={colCtx} onResize={colResizeStart} />
+                      <SortHeader label="Waktu"   field="created_at"  colIdx={1} sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} onCtx={colCtx} onResize={colResizeStart} />
+                      <SortHeader label="User"    field="recorded_by" colIdx={2} sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} onCtx={colCtx} onResize={colResizeStart} />
+                      <SortHeader label="Tabel"   field="table_name"  colIdx={3} sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} onCtx={colCtx} onResize={colResizeStart} />
                       <th className="px-4 py-3 relative" onContextMenu={(e) => colCtx(4, e)}>
                         <span className="text-[10px] font-bold text-gray-400">Keterangan</span>
                         <div

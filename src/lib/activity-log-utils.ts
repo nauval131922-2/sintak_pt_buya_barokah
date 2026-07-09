@@ -243,44 +243,6 @@ export function computeExplicitDiff(raw: Record<string, unknown> | null): FieldD
     .slice(0, 40);
 }
 
-export function formatLogDateGroupLabel(createdAt?: string | null): string {
-  if (!createdAt) return 'Tanpa tanggal';
-  try {
-    const normalized = createdAt.includes('T') || createdAt.endsWith('Z')
-      ? createdAt
-      : createdAt.replace(' ', 'T') + 'Z';
-    const d = new Date(normalized);
-    if (isNaN(d.getTime())) return createdAt.slice(0, 10);
-    return new Intl.DateTimeFormat('id-ID', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      timeZone: 'Asia/Jakarta',
-    }).format(d);
-  } catch {
-    return createdAt.slice(0, 10);
-  }
-}
-
-export function groupActivityLogsByDate(logs: ActivityLogRow[]): {
-  dateKey: string;
-  label: string;
-  items: ActivityLogRow[];
-}[] {
-  const map = new Map<string, ActivityLogRow[]>();
-  for (const log of logs) {
-    const dateKey = log.created_at?.slice(0, 10) ?? 'unknown';
-    if (!map.has(dateKey)) map.set(dateKey, []);
-    map.get(dateKey)!.push(log);
-  }
-  return Array.from(map.entries()).map(([dateKey, items]) => ({
-    dateKey,
-    label: formatLogDateGroupLabel(items[0]?.created_at),
-    items,
-  }));
-}
-
 export function toPlainActivityRows(rows: Record<string, unknown>[]): ActivityLogRow[] {
   return rows.map((row) => {
     const plain: ActivityLogRow = { id: 0 };

@@ -11,7 +11,6 @@ import {
   type ActivityLogSortDir,
 } from '@/lib/activity-log-query';
 import type { ActivityLogSource } from '@/lib/activity-log-utils';
-import { recordPerformanceLog } from '@/lib/performance-log';
 
 import { canViewActivityLog } from '@/lib/activity-log-permissions';
 
@@ -63,16 +62,12 @@ async function queryLogs(params: ActivityLogQueryParams, withStats = false) {
   const page = params.page ?? 1;
   const pageSize = params.pageSize ?? 50;
 
-  // Build two WHERE variants:
-  // - fullWhere: for data query (needs user JOIN for u.name + raw_data search)
-  // - countWhere: for COUNT/STATS — skip expensive user name JOIN only
-  const countParams = { ...params, opts: { ...params.opts, skipUserNameSearch: true } };
+  // Build one WHERE — always includes u.name JOIN agar count & data konsisten
   const { whereClause: fullWhere, args: fullArgs } = buildActivityLogWhere(params);
-  const { whereClause: countWhere, args: countArgs } = buildActivityLogWhere(countParams);
-
+  const JOIN = 'LEFT JOIN users u ON al.recorded_by = u.username';
   const orderBy = buildActivityLogOrderBy(params.sortBy, params.sortDir);
 
-  // 1) COUNT query — cached, no JOIN, no raw_data LIKE
+  // 1) COUNT query — cached, dengan JOIN agar u.name search konsisten dengan data query
   const ck = cacheKey(params);
   let total: number;
   const cachedCount = cacheGet<number>(ck + ':count');
@@ -80,8 +75,8 @@ async function queryLogs(params: ActivityLogQueryParams, withStats = false) {
     total = cachedCount;
   } else {
     const countResult = await db.execute({
-      sql: `SELECT COUNT(*) AS total FROM ${table} al ${countWhere}`,
-      args: countArgs,
+      sql: `SELECT COUNT(*) AS total FROM ${table} al ${JOIN} ${fullWhere}`,
+      args: fullArgs,
     });
     total = Number(countResult.rows[0]?.total ?? 0);
     cacheSet(ck + ':count', total, CACHE_TTL);
@@ -110,7 +105,7 @@ async function queryLogs(params: ActivityLogQueryParams, withStats = false) {
     args: [...fullArgs, pageSize, safeOffset],
   });
 
-  // 3) STATS queries — cached, no JOIN, no raw_data LIKE
+  // 3) STATS queries — cached, dengan JOIN agar konsisten dengan data query
   let actionStats: { value: string; count: number }[] = [];
   let tableStats: { value: string; count: number }[] = [];
   let userStats: { value: string; label: string; count: number }[] = [];
@@ -120,8 +115,8 @@ async function queryLogs(params: ActivityLogQueryParams, withStats = false) {
       actionStats = cachedAction;
     } else {
       const r = await db.execute({
-        sql: `SELECT al.action_type AS value, COUNT(*) AS count FROM ${table} al ${countWhere} GROUP BY al.action_type ORDER BY count DESC LIMIT 12`,
-        args: countArgs,
+        sql: `SELECT al.action_type AS value, COUNT(*) AS count FROM ${table} al ${JOIN} ${fullWhere} GROUP BY al.action_type ORDER BY count DESC LIMIT 12`,
+        args: fullArgs,
       });
       actionStats = r.rows.map((r) => ({ value: String(r.value ?? ''), count: Number(r.count ?? 0) }));
       cacheSet(ck + ':stats:action', actionStats, CACHE_TTL);
@@ -132,8 +127,8 @@ async function queryLogs(params: ActivityLogQueryParams, withStats = false) {
       tableStats = cachedTable;
     } else {
       const r = await db.execute({
-        sql: `SELECT al.table_name AS value, COUNT(*) AS count FROM ${table} al ${countWhere} GROUP BY al.table_name ORDER BY count DESC LIMIT 10`,
-        args: countArgs,
+        sql: `SELECT al.table_name AS value, COUNT(*) AS count FROM ${table} al ${JOIN} ${fullWhere} GROUP BY al.table_name ORDER BY count DESC LIMIT 10`,
+        args: fullArgs,
       });
       tableStats = r.rows.map((r) => ({ value: String(r.value ?? ''), count: Number(r.count ?? 0) }));
       cacheSet(ck + ':stats:table', tableStats, CACHE_TTL);
@@ -144,8 +139,8 @@ async function queryLogs(params: ActivityLogQueryParams, withStats = false) {
       userStats = cachedUser;
     } else {
       const r = await db.execute({
-        sql: `SELECT al.recorded_by AS value, COUNT(*) AS count FROM ${table} al ${countWhere} GROUP BY al.recorded_by ORDER BY count DESC LIMIT 10`,
-        args: countArgs,
+        sql: `SELECT al.recorded_by AS value, COUNT(*) AS count FROM ${table} al ${JOIN} ${fullWhere} GROUP BY al.recorded_by ORDER BY count DESC LIMIT 10`,
+        args: fullArgs,
       });
       userStats = r.rows.map((r) => ({ value: String(r.value ?? ''), label: '', count: Number(r.count ?? 0) }));
       // Populate names
@@ -182,12 +177,9 @@ async function queryLogs(params: ActivityLogQueryParams, withStats = false) {
 }
 
 export async function GET(req: NextRequest) {
-  const start = performance.now();
-  let username: string | null = null;
-  const { pathname, searchParams } = new URL(req.url);
+  const { searchParams } = new URL(req.url);
   try {
     const session = await getSession();
-    username = session?.username || null;
     if (!session?.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -236,44 +228,9 @@ export async function GET(req: NextRequest) {
     const params = parseQuery(searchParams);
     const withStats = searchParams.get('stats') === '1';
     const result = await queryLogs(params, withStats);
-    recordPerformanceLog({
-      username,
-      type: 'api',
-      source: 'backend',
-      module: 'log-aktivitas',
-      action: withStats ? 'fetch_activity_log_stats' : 'fetch_activity_logs',
-      endpoint: pathname,
-      method: req.method,
-      durationMs: performance.now() - start,
-      statusCode: 200,
-      success: true,
-      metadata: {
-        page: params.page,
-        pageSize: params.pageSize,
-        from: params.from,
-        to: params.to,
-        hasSearch: !!params.search,
-        deepSearch: !params.opts?.skipRawDataSearch,
-        total: result.total,
-      },
-    }).catch(() => {});
-
     return NextResponse.json({ success: true, ...result });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    recordPerformanceLog({
-      username,
-      type: 'api',
-      source: 'backend',
-      module: 'log-aktivitas',
-      action: 'fetch_activity_logs',
-      endpoint: pathname,
-      method: req.method,
-      durationMs: performance.now() - start,
-      statusCode: 500,
-      success: false,
-      message,
-    }).catch(() => {});
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

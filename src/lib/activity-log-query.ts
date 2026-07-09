@@ -57,7 +57,6 @@ export function buildActivityLogWhere(params: ActivityLogQueryParams) {
     // Convert to SQLite format: 'YYYY-MM-DD HH:MM:SS' (UTC)
     const fromSQL = fromDate.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '');
     const toSQL = toDate.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '');
-    console.log('[buildActivityLogWhere] Date range:', { from: params.from, to: params.to, fromSQL, toSQL });
     args.push(fromSQL, toSQL);
   }
 
@@ -77,22 +76,22 @@ export function buildActivityLogWhere(params: ActivityLogQueryParams) {
   }
 
   if (params.search?.trim()) {
-    const term = `%${params.search.trim()}%`;
+    const term = `%${params.search.trim().toLowerCase()}%`;
     const searchParts: string[] = [
-      'al.message LIKE ?',
-      'al.action_type LIKE ?',
-      'al.table_name LIKE ?',
-      'al.recorded_by LIKE ?',
+      "LOWER(COALESCE(al.message, '')) LIKE ?",
+      "LOWER(COALESCE(al.action_type, '')) LIKE ?",
+      "LOWER(COALESCE(al.table_name, '')) LIKE ?",
+      "LOWER(COALESCE(al.recorded_by, '')) LIKE ?",
     ];
     const searchArgs: unknown[] = [term, term, term, term];
 
     if (!opts.skipUserNameSearch) {
-      searchParts.push("COALESCE(u.name, '') LIKE ?");
+      searchParts.push("LOWER(COALESCE(u.name, '')) LIKE ?");
       searchArgs.push(term);
     }
 
     if (!opts.skipRawDataSearch) {
-      searchParts.push('al.raw_data LIKE ?');
+      searchParts.push("LOWER(COALESCE(al.raw_data, '')) LIKE ?");
       searchArgs.push(term);
     }
 

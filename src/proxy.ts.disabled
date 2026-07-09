@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getSession } from './lib/session';
+
+// Force Node.js runtime instead of Edge Runtime to allow db.ts usage
+export const runtime = 'nodejs';
 
 // Tentukan rute yang tidak memerlukan autentikasi
 const publicRoutes = ['/login'];
 // Tentukan pola rute yang selalu bisa diakses (aset statis, api tertentu opsional)
-const publicPathPrefixes = ['/_next', '/favicon.ico', '/api/auth', '/api/push', '/api/telegram/register-webhook', '/api/telegram/register-request'];
+const publicPathPrefixes = ['/_next', '/favicon.ico', '/api/auth', '/api/push', '/api/telegram/register-webhook', '/api/telegram/register-request', '/api/maintenance', '/api/cron'];
 
 export default async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
@@ -18,7 +20,9 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Cek session
+  // Cek session (hanya untuk rute UI yang terproteksi)
+  // Dynamic import to avoid Edge Runtime issues with db.ts
+  const { getSession } = await import('./lib/session');
   const session = await getSession();
 
   // Jika tidak ada session dan mencoba akses rute terproteksi, arahkan ke login
@@ -33,12 +37,12 @@ export default async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes, but we handle auth inside or above)
+     * Match all request paths EXCEPT:
+     * - /api/* (API routes handle their own auth)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico, sitemap.xml, robots.txt (metadata files)
      */
-    '/((?!api/auth|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
   ],
 };

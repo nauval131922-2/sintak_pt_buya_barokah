@@ -1,7 +1,6 @@
 import { Context, InlineKeyboard } from 'grammy';
 import { api } from '../utils/api';
 
-const BAGIAN = process.env.BAGIAN || 'SETTING';
 const PER_PAGE = 5;
 
 // ponytail: in-memory state
@@ -45,7 +44,7 @@ export async function handleInputTargetCommand(ctx: Context) {
     }
 
     const today = new Date().toISOString().split('T')[0];
-    const bagian = status.bagian || BAGIAN;
+    const bagian = status.bagian;
     const result = await api.searchTargets(bagian, today, undefined, 50);
 
     if (!result.data.length) {
@@ -309,7 +308,7 @@ export async function handleInputTargetText(ctx: Context) {
 
     try {
       const status = await api.checkStatus(String(telegramId));
-      const result = await api.searchTargets(status.bagian || BAGIAN, tgl, undefined, 50);
+      const result = await api.searchTargets(status.bagian, tgl, undefined, 50);
 
       if (result.data.length === 0) {
         const keyboard = new InlineKeyboard()
@@ -343,7 +342,7 @@ export async function handleInputTargetText(ctx: Context) {
     try {
       let suggestions: any = { data: [] };
       if (searchType === 'pekerjaan') {
-        const bagianCategory = state.status?.bagian || BAGIAN;
+        const bagianCategory = state.status?.bagian;
         suggestions = await api.cariPekerjaan(keyword, bagianCategory, 10);
       } else if (searchType === 'order') {
         suggestions = await api.cariOrder(keyword, 10);
@@ -478,7 +477,7 @@ async function validateAndSubmit(ctx: Context, telegramId: number, state: Target
 
   // Validasi pekerjaan
   if (data.jenis_pekerjaan_2) {
-    const bagianCategory = state.status?.bagian || BAGIAN;
+    const bagianCategory = state.status?.bagian;
     const found = await api.validatePekerjaan(data.jenis_pekerjaan_2, bagianCategory);
     if (!found.valid) {
       const suggestions = await api.cariPekerjaan(data.jenis_pekerjaan_2, bagianCategory, 15);
@@ -555,7 +554,7 @@ async function validateAndSubmit(ctx: Context, telegramId: number, state: Target
       const d = new Date(data.tgl || target.tgl || new Date().toISOString().split('T')[0]);
       return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
     })();
-    const bagian = state.status?.bagian || BAGIAN;
+    const bagian = state.status?.bagian;
     const targetVal = data.target || target.target || '-';
     const realVal = data.realisasi || '-';
     let pctStr = '';
@@ -571,8 +570,16 @@ async function validateAndSubmit(ctx: Context, telegramId: number, state: Target
       `📅 Tanggal   : ${tglFormatted}`,
       `⏰ Shift     : ${target.shift || '-'}`,
       `🏭 Bagian    : ${bagian}`,
-      `📦 Order     : ${data.no_order_2 || target.no_order || '-'}`,
+      `📦 Order     : ${data.no_order_2 || target.no_order || '-'}${data.nama_order_2 || target.nama_order ? ` — ${data.nama_order_2 || target.nama_order}` : ''}`,
       `⚙️ Pekerjaan : ${data.jenis_pekerjaan_2 || target.jenis_pekerjaan || '-'}`,
+      `📄 Bhn Kertas: ${data.bahan_kertas || target.bahan_kertas || '-'}`,
+      `🎨 Warna     : ${data.warna || target.warna || '-'}`,
+      `🔢 Plate     : ${data.jml_plate || target.jml_plate || '-'}`,
+      `📋 Insheet   : ${data.inscheet || target.inscheet || '-'}`,
+      `♻️ Rijek     : ${data.rijek || target.rijek || '-'}`,
+      `⏱ Jam Kerja : ${data.jam || target.jam || '-'}`,
+      `⚠️ Kendala   : ${data.kendala || target.kendala || '-'}`,
+      `💬 Keterangan: ${data.keterangan || target.keterangan || ''}`,
       `🎯 Target    : ${targetVal}`,
       `✔️ Realisasi : ${realVal}${pctStr}`,
       `━━━━━━━━━━━━━━━━━━`,

@@ -3,7 +3,6 @@ import { api } from '../utils/api';
 import { formatDate, formatNumber } from '../utils/formatter';
 
 const PER_PAGE = 5;
-const BAGIAN = process.env.BAGIAN || 'SETTING';
 
 // ponytail: inline state, one map to rule them all
 const historyStates = new Map<number, { data: any[]; page?: number; editingId?: number; editing?: boolean; editPending?: Record<string, any>; searchType?: string; days?: number }>();
@@ -293,7 +292,7 @@ export async function handleHistoryText(ctx: Context) {
       let suggestions: any = { data: [] };
 
       if (searchType === 'pekerjaan') {
-        const bagianCategory = status?.bagian || BAGIAN;
+        const bagianCategory = status?.bagian;
         suggestions = await api.cariPekerjaan(keyword, bagianCategory, 10);
       } else if (searchType === 'order') {
         suggestions = await api.cariOrder(keyword, 10);
@@ -355,7 +354,7 @@ async function validateEditAndSave(
 ): Promise<boolean> {
   // Validasi pekerjaan
   if (data.jenis_pekerjaan_2) {
-    const bagianCategory = status?.bagian || BAGIAN;
+    const bagianCategory = status?.bagian;
     const found = await api.validatePekerjaan(data.jenis_pekerjaan_2, bagianCategory);
     if (!found.valid) {
       const suggestions = await api.cariPekerjaan(data.jenis_pekerjaan_2, bagianCategory, 15);

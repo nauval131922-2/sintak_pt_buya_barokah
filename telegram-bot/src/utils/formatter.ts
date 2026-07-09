@@ -31,12 +31,18 @@ ${inputByLine}
 📅 *Tanggal*   : ${formatDate(data.tgl)}
 ⏰ *Shift*     : ${data.shift}
 🏭 *Bagian*    : ${data.bagian}
-📦 *Order*     : ${data.no_order || '-'}
+📦 *Order*     : ${data.no_order || '-'}${data.nama_order ? ` — ${data.nama_order}` : ''}
 ⚙️ *Pekerjaan* : ${data.pekerjaan || '-'}
+📄 *Bhn Kertas*: ${data.bahan_kertas || '-'}
+🎨 *Warna*     : ${data.warna || '-'}
+🔢 *Plate*     : ${data.jml_plate || '-'}
+📋 *Insheet*   : ${data.inscheet || '-'}
+♻️ *Rijek*     : ${data.rijek || '-'}
+⏱ *Jam Kerja* : ${data.jam || '-'}
+⚠️ *Kendala*   : ${data.kendala || '-'}
+💬 *Ket.*      : ${data.keterangan || '-'}
 ${data.target ? `🎯 *Target*    : ${formatNumber(data.target)}` : ''}
 ✔️ *Realisasi* : ${formatNumber(data.realisasi)}${percentage ? ` (${percentage}%)` : ''}
-${data.inscheet ? `📄 *Inscheet*  : ${formatNumber(data.inscheet)}` : ''}
-${data.rijek ? `❌ *Rijek*     : ${formatNumber(data.rijek)}` : ''}
 ━━━━━━━━━━━━━━━━━━
 
 Gunakan /history untuk melihat riwayat.
@@ -88,7 +94,7 @@ Nama: Budi
 Tgl: 2026-06-29
 Shift: 1
 Order: OP.001.SOPd.I.2026
-Pekerjaan: Setting Mesin
+Pekerjaan: Print
 Bahan Kertas:
 Jml. Plate:
 Warna:

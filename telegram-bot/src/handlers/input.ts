@@ -3,8 +3,6 @@ import { api } from '../utils/api';
 import { parseRealisasiTemplate, validateRealisasiData } from '../utils/parser';
 import { formatRealisasiSummary } from '../utils/formatter';
 
-const BAGIAN = process.env.BAGIAN || 'SETTING';
-
 type ParsedRealisasiData = ReturnType<typeof parseRealisasiTemplate>;
 type CorrectionStep = 'nama' | 'order' | 'pekerjaan' | 'cari_order' | 'cari_nama' | 'cari_pekerjaan';
 
@@ -46,7 +44,7 @@ export async function handleInputCommand(ctx: Context) {
       `Tgl: ${today}\n` +
       `Shift: 1\n` +
       `Order: OP.001.SOPd.${monthRoman}.${year}\n` +
-      `Pekerjaan: Setting Mesin\n` +
+      `Pekerjaan: Print\n` +
       `Bahan Kertas:\n` +
       `Jml. Plate:\n` +
       `Warna:\n` +
@@ -122,7 +120,7 @@ export async function handleInputTemplate(ctx: Context) {
   const searchStates: Record<string, { apiFn: (q: string, l: number, opts?: any) => Promise<any>; prefix: string; parentState: CorrectionStep; labelField: string; labelExtra?: string }> = {
     cari_order: { apiFn: (q, l) => api.cariOrder(q, l), prefix: 'input_order', parentState: 'order', labelField: 'no_sopd', labelExtra: 'nama_order' },
     cari_nama: { apiFn: (q, l) => api.findKaryawan(q, undefined, l), prefix: 'input_nama', parentState: 'nama', labelField: 'nama_karyawan', labelExtra: 'absensi' },
-    cari_pekerjaan: { apiFn: (q, l, opts) => api.cariPekerjaan(q, (opts?.bagian || BAGIAN), l), prefix: 'input_pekerjaan', parentState: 'pekerjaan', labelField: 'name', labelExtra: 'category' },
+    cari_pekerjaan: { apiFn: (q, l, opts) => api.cariPekerjaan(q, opts?.bagian, l), prefix: 'input_pekerjaan', parentState: 'pekerjaan', labelField: 'name', labelExtra: 'category' },
   };
 
   const searchCfg = searchStates[userState?.state as string];
@@ -299,7 +297,13 @@ async function validateOrder(
   data: ParsedRealisasiData, corrections: Partial<ParsedRealisasiData>,
   status: any
 ): Promise<'ok' | 'waiting'> {
-  if (!merged.order || merged.order === '-') return 'ok';
+  // ponytail: skip validasi kalau manual order (prefix MANUAL:)
+  if (!merged.order || merged.order === '-' || merged.order.startsWith('MANUAL:')) {
+    if (merged.order?.startsWith('MANUAL:')) {
+      merged.order = merged.order.replace('MANUAL:', ''); // strip prefix
+    }
+    return 'ok';
+  }
 
   const orderCheck = await api.validateOrder(merged.order);
   if (orderCheck.valid) {
@@ -352,7 +356,7 @@ async function validatePekerjaan(
 ): Promise<'ok' | 'waiting'> {
   if (!merged.pekerjaan) return 'ok';
 
-  const bagianCategory = status.bagian || BAGIAN;
+  const bagianCategory = status.bagian;
   const found = await api.validatePekerjaan(merged.pekerjaan, bagianCategory);
   if (found.valid) {
     merged.pekerjaan_nama = found.name;
@@ -429,7 +433,8 @@ export async function handleInputCorrectionCallback(ctx: Context) {
           return;
         }
         if (value === 'manual') {
-          corrections.order = '';
+          // ponytail: manual order, prefix MANUAL: untuk skip validasi
+          corrections.order = 'MANUAL:' + (userState.pendingData.order || '');
         } else if (s.prefix === 'input_nama') {
           corrections.nama_karyawan = value;
           corrections.absensi = '';
@@ -456,14 +461,17 @@ export async function handleInputCorrectionCallback(ctx: Context) {
 // ─── Submit ──────────────────────────────────────────────────────
 
 async function submitRealisasi(ctx: Context, data: any, userStatus: any) {
+  // ponytail: check apakah order valid di DB atau manual
+  const isManualOrder = data.order && data.order !== '-' ? !(await api.validateOrder(data.order)).valid : false;
+  
   const payload = {
     telegram_id: String(ctx.from?.id),
     nama_karyawan: data.nama_karyawan || '',
     absensi: data.absensi || '',
     tgl: data.tgl,
     shift: data.shift,
-    no_order_2: data.order && data.order !== '-' ? data.order : '',
-    nama_order_manual_2: data.order && data.order !== '-' ? '' : (data.nama_order || ''),
+    no_order_2: isManualOrder ? '' : (data.order && data.order !== '-' ? data.order : ''),
+    nama_order_manual_2: isManualOrder ? data.order : '',
     jenis_pekerjaan_2: data.pekerjaan || '',
     target: data.target || '',
     realisasi: data.realisasi,

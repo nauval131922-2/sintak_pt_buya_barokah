@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getSession } from '@/lib/session';
 import { getRolePermissions } from '@/lib/permissions';
+import { sendErrorAlert } from '@/lib/scraper-utils';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300; // 5 menit max (diperlukan untuk proses batch MDT)
@@ -67,6 +68,7 @@ async function safeFetchJson(url: string): Promise<{ ok: boolean; data?: any; er
       return { ok: false, error: `Respons bukan JSON (status ${res.status}): ${preview}` };
     }
   } catch (err: any) {
+    sendErrorAlert('sync-batch-queue', `Network error: ${err.message || 'Koneksi gagal'}`);
     return { ok: false, error: err.message || 'Koneksi gagal' };
   }
 }
@@ -108,6 +110,7 @@ async function processModule(
     } catch {}
   } else {
     const errMsg = error || data?.error || 'Gagal sinkronisasi';
+    sendErrorAlert(`sync-${modId}`, errMsg);
     try {
       await db.execute({
         sql: `INSERT INTO sync_job_modules (job_id, module_id, status, error_message)
