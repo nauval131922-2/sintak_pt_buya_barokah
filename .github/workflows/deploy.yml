@@ -12,11 +12,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'npm'
 
       - run: npm ci
       - run: npm run build
         env:
-          # ponytail: cache skip dulu — rebuild segar
           SESSION_SECRET: build_placeholder
           SCRAPER_EMAIL: build_placeholder
           SCRAPER_PASSWORD: build_placeholder
