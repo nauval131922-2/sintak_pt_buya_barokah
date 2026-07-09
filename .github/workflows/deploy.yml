@@ -61,10 +61,10 @@ jobs:
             touch .maintenance
 
             # Backup current build (jangan hapus sampai health check lolos)
-            if [ -d ".next" ] && [ -f ".next/BUILD_ID" ]; then
-              rm -rf .next.bak
-              mv .next .next.bak
-            fi
+            rm -rf .next.bak
+            [ -d ".next" ] && mv .next .next.bak
+            # rm target biar gak nesting: mv existing-dir new-dir → new-dir/existing-dir
+            rm -rf .next 2>/dev/null || true
 
             # Swap new build
             mv .next-tmp/.next .next
