@@ -21,6 +21,10 @@ const MODULE_ENDPOINTS = [
   '/api/scrape-sales',
   '/api/scrape-pengiriman',
   '/api/scrape-pelunasan-piutang',
+  '/api/scrape-jurnal-umum',
+  '/api/scrape-produksi-selesai',
+  '/api/scrape-master-barang',
+  '/api/scrape-rek-akuntansi',
 ];
 
 export async function GET(request: Request) {
