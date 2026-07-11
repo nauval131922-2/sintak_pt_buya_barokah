@@ -307,7 +307,7 @@ export default function AutoGenerateModal({
     );
 
     setPhase('draft');
-  }, [getFirstDayOfMonth, getTodayStr, fetchDraft]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [getFirstDayOfMonth, getTodayStr, fetchDraft]);  
 
   const handleSkipScrape = useCallback(async () => {
     setScrapeOrders('done');

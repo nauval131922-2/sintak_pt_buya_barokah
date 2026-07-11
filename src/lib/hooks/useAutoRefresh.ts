@@ -22,11 +22,6 @@ export function useAutoRefresh(
     callbackRef.current = callback;
   }, [callback]);
 
-  // Set waktu mount di client saja (hindari hydration mismatch)
-  useEffect(() => {
-    setLastUpdated(new Date());
-  }, []);
-
   const runAndMark = useCallback(() => {
     callbackRef.current();
     setLastUpdated(new Date());

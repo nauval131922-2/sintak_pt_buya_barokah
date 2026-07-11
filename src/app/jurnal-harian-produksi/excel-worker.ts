@@ -144,7 +144,7 @@ self.addEventListener('message', async (e) => {
       });
 
       const sheetName = 'JURNAL';
-      let worksheet = workbook.Sheets[sheetName];
+      const worksheet = workbook.Sheets[sheetName];
       
       if (!worksheet) {
         self.postMessage({ type: 'skip', reason: `Sheet '${sheetName}' tidak ditemukan di dalam file Excel.` });

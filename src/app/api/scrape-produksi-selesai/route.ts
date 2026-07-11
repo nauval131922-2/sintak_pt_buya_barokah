@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     // endDate tetap sama
 
     // Login / ambil session
-    let cookies = await getScraperSession(async () => {
+    const cookies = await getScraperSession(async () => {
       const loginRes = await fetch(BASE_URL + "v1/auth/login", {
         method: "POST",
         headers: {

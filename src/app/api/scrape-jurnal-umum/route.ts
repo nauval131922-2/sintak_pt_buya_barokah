@@ -83,7 +83,7 @@ export async function GET(req: NextRequest) {
 
     await ensureTable();
 
-    let cookies = await getScraperSession(async () => {
+    const cookies = await getScraperSession(async () => {
       const loginRes = await fetch(BASE_URL + "v1/auth/login", {
         method: "POST",
         headers: {

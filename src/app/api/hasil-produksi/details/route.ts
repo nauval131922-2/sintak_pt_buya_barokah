@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
     const availableBagian = (batchResults[0].rows as any[]).map(r => r.bagian);
     const availablePekerjaan = (batchResults[1].rows as any[]).map(r => r.jenis_pekerjaan);
     const bjRows = batchResults[2].rows as any[];
-    let jurnalRows = batchResults[3].rows as any[];
+    const jurnalRows = batchResults[3].rows as any[];
 
     // Build name-to-code map from master_pekerjaan
     const nameToCode = new Map<string, string>();

@@ -547,7 +547,7 @@ export default function HasilProduksiClient() {
       if (row.type === 'subtotal') {
         const cols: [string, string, React.ReactNode?][] = [
           [`${colWidths.slice(0, 9).reduce((a, b) => a + b, 0)}px`, 'border-r border-emerald-200 bg-emerald-100 text-right',
-            <span className="inline-flex items-baseline gap-1.5"><span className="text-[13px] font-semibold text-emerald-700">Total</span>{row.code ? <span className="text-[13px] font-bold text-gray-500 font-mono">{row.code}</span> : null}<span className="text-[15px] font-extrabold text-gray-900 tracking-tight">{row.jobDisplayName || 'Pekerjaan'}</span><span className="text-[11px] font-semibold text-gray-400">—</span><span className="text-[12px] font-semibold text-gray-500">{row.dateLabel}</span></span>
+            <span key="subtotal-label" className="inline-flex items-baseline gap-1.5"><span className="text-[13px] font-semibold text-emerald-700">Total</span>{row.code ? <span className="text-[13px] font-bold text-gray-500 font-mono">{row.code}</span> : null}<span className="text-[15px] font-extrabold text-gray-900 tracking-tight">{row.jobDisplayName || 'Pekerjaan'}</span><span className="text-[11px] font-semibold text-gray-400">—</span><span className="text-[12px] font-semibold text-gray-500">{row.dateLabel}</span></span>
           ],
           [`${colWidths[9]}px`, 'border-r border-emerald-200 bg-rose-100/60 text-right', row.totalRijek.toLocaleString('id-ID')],
           [`${colWidths.slice(10, 13).reduce((a, b) => a + b, 0)}px`, 'border-r border-emerald-200 bg-emerald-100', undefined],

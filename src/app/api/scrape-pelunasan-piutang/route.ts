@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
     const metaStart = searchParams.get("metaStart") || startIndo;
     const metaEnd = searchParams.get("metaEnd") || endIndo;
 
-    let cookies = await getScraperSession(async () => {
+    const cookies = await getScraperSession(async () => {
       const loginRes = await fetch(BASE_URL + "v1/auth/login", {
         method: "POST",
         headers: {

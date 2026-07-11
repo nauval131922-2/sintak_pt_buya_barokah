@@ -55,7 +55,7 @@ function evaluateMathExpression(expr: string): string {
   if (!rawFormula) return expr;
 
   // Hapus semua spasi
-  let formula = rawFormula.replace(/\s+/g, '');
+  const formula = rawFormula.replace(/\s+/g, '');
 
   // Helper untuk menormalkan angka berformat Indonesia/Inggris ke format standar JS
   const normalizeNumberString = (numStr: string): string => {
@@ -78,7 +78,7 @@ function evaluateMathExpression(expr: string): string {
   };
 
   // Normalisasi semua angka di dalam formula
-  let processedFormula = formula.replace(/[0-9.,]+/g, (match) => {
+  const processedFormula = formula.replace(/[0-9.,]+/g, (match) => {
     return normalizeNumberString(match);
   });
 
@@ -89,7 +89,7 @@ function evaluateMathExpression(expr: string): string {
 
   try {
     // Evaluasi ekspresi matematika dengan aman
-    // eslint-disable-next-line no-new-func
+     
     const result = Function(`"use strict"; return (${processedFormula})`)();
     if (typeof result === 'number' && !isNaN(result) && isFinite(result)) {
       const isInteger = Number.isInteger(result);

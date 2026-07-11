@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Invalid date format. Use YYYY-MM-DD" }, { status: 400 });
     }
 
-    let cookies = await getScraperSession(async () => {
+    const cookies = await getScraperSession(async () => {
       const loginReqUrl = BASE_URL + "v1/auth/login";
       const loginBody = JSON.stringify({
         username: API_EMAIL,

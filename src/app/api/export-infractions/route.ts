@@ -45,8 +45,8 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get("endDate");
     const search = searchParams.get("search");
 
-    let whereParts: string[] = [];
-    let args: any[] = [];
+    const whereParts: string[] = [];
+    const args: any[] = [];
 
     if (startDate && endDate) {
       whereParts.push(`(i.date >= ? AND i.date <= ?)`);

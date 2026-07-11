@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown, Search } from 'lucide-react';
 
@@ -135,7 +135,7 @@ export default function InlineDropdown({
   }, [isOpen, searchable, freeInput, value]);
 
   // Generate stable ID for this dropdown instance
-  const dropdownId = useMemo(() => Math.random().toString(36).slice(2), []);
+  const dropdownId = useId();
 
   const handleToggle = () => {
     if (!isOpen) {

@@ -442,7 +442,7 @@ export default function RecordsForm({
   };
 
   const allEmployees = useMemo(() => {
-    let list = [...employees];
+    const list = [...employees];
     if (editingInfraction) {
       if (editingInfraction.employee_id && !list.find(e => e.id === editingInfraction.employee_id)) {
         list.push({ 
@@ -457,7 +457,7 @@ export default function RecordsForm({
   }, [employees, editingInfraction]);
 
   const allOrders = useMemo(() => {
-    let list = [...orders];
+    const list = [...orders];
     if (editingInfraction && editingInfraction.order_faktur && !list.find(o => o.faktur === editingInfraction.order_faktur)) {
       list.push({ faktur: editingInfraction.order_faktur, nama_prd: editingInfraction.order_name || 'Archived' } as any);
     }

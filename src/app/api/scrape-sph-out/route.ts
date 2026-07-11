@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
 
     const currentUserSession = await getSession();
 
-    let cookies = await getScraperSession(async () => {
+    const cookies = await getScraperSession(async () => {
       const loginReqUrl = BASE_URL + "v1/auth/login";
       const loginBody = JSON.stringify({
         username: API_EMAIL,

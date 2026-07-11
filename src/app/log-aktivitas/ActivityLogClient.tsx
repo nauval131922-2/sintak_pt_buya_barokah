@@ -1033,7 +1033,7 @@ export default function ActivityLogClient({
                                   {getMatchedFields(log, debouncedSearch).map((m) => (
                                     <span key={m.field} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold bg-green-50 text-green-700 border border-green-100">
                                       {m.field}
-                                      <span className="text-green-400 font-normal truncate max-w-[120px]">"{m.value.slice(0, 40)}"</span>
+                                       <span className="text-green-400 font-normal truncate max-w-[120px]">&quot;{m.value.slice(0, 40)}&quot;</span>
                                     </span>
                                   ))}
                                 </div>

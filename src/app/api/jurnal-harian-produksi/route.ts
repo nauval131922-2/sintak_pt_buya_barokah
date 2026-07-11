@@ -32,8 +32,8 @@ export async function GET(request: NextRequest) {
     const belumRealisasi = searchParams.get("belumRealisasi");
     const needTotals = searchParams.get("needTotals") === 'true';
 
-    let whereParts: string[] = [];
-    let args: any[] = [];
+    const whereParts: string[] = [];
+    const args: any[] = [];
 
     if (belumRealisasi === 'true') {
       // Sama dengan logika tombol "+" di tabel: belum realisasi jika semua field realisasi kosong
@@ -308,7 +308,7 @@ export async function POST(request: NextRequest) {
           await db.execute("ALTER TABLE jurnal_harian_produksi ADD COLUMN is_manual_input INTEGER DEFAULT 0");
         } catch (e) {} // Kolom sudah ada
 
-        let pendingRows: any[][] = [];
+        const pendingRows: any[][] = [];
 
         for (const row of validAdditional) {
           // Prioritas nama_order_2: nama_order_manual_2 per baris jika diisi, lalu dari row
@@ -403,7 +403,7 @@ export async function POST(request: NextRequest) {
     }
 
     let importedCount = 0;
-    let debugInfo: any = null;
+    const debugInfo: any = null;
 
     // Cari baris header untuk deteksi index kolom secara dinamis
     let headerRowIndex = -1;

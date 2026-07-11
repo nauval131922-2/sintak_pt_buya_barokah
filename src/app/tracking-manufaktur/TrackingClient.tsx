@@ -212,7 +212,6 @@ const RenderAllFieldsRaw = ({
   excludeKeys?: string[];
   highlightText?: string;
 }) => {
-  if (!data) return null;
   const normalizeKey = (key: string) =>
     String(key)
       .toLowerCase()
@@ -223,13 +222,15 @@ const RenderAllFieldsRaw = ({
   );
   const entries = useMemo(
     () =>
-      Object.entries(data).filter(
-        ([key]) => !handledKeys.has(normalizeKey(String(key))),
-      ),
+      data
+        ? Object.entries(data).filter(
+            ([key]) => !handledKeys.has(normalizeKey(String(key))),
+          )
+        : [],
     [data, handledKeys],
   );
 
-  if (entries.length === 0) return null;
+  if (!data || entries.length === 0) return null;
 
   const rawFields = [
     "id",
@@ -1305,7 +1306,7 @@ export default function TrackingClient() {
       setTrackingPath("rekap");
       fetchTrackingData(savedPO);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   // Auto-refresh when sync happens from another tab
@@ -1320,7 +1321,7 @@ export default function TrackingClient() {
     };
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [selectedFaktur]);
 
   // Validation: Clear selected PB if it doesn't match the selected PO

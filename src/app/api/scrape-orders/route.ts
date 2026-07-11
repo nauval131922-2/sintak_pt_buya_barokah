@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     const startTime = Date.now();
     console.log(`[SCRAPE] Starting Order Produksi scrape for range: ${startParam} - ${endParam}`);
 
-    let cookies = await getScraperSession(async () => {
+    const cookies = await getScraperSession(async () => {
       const loginReqUrl = BASE_URL + "v1/auth/login";
       const loginBody = JSON.stringify({
         username: API_EMAIL,

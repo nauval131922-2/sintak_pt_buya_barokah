@@ -122,7 +122,7 @@ export async function updateProfile(data: {
       return { success: false, message: 'Username sudah digunakan oleh akun lain.' };
     }
 
-    let queryObj = { sql: '', args: [] as any[] };
+    const queryObj = { sql: '', args: [] as any[] };
     if (data.password) {
       const salt = await bcrypt.genSalt(10);
       const hash = await bcrypt.hash(data.password, salt);

@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     const startTime = Date.now();
     const currentUserSession = await getSession();
     
-    let cookies = await getScraperSession(async () => {
+    const cookies = await getScraperSession(async () => {
       const loginReqUrl = BASE_URL + "v1/auth/login";
       const loginBody = JSON.stringify({
         username: API_EMAIL,
@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
     // 1. Fetch existing keys efficiently
     // bahan_baku has composite primary key logic (faktur, kd_barang, tgl)
     // We'll skip pre-calculating exact 'newInsertedCount' if complex, or just use a sample count
-    let newInsertedCount = 0;
+    const newInsertedCount = 0;
     
     // 2. Prepare batch inserts
     const batchOps: any[] = [];

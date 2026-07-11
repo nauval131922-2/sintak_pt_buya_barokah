@@ -293,7 +293,7 @@ export default function MasterPekerjaanUpload() {
               if (v === null || v === undefined || v === '') return null;
               if (typeof v === 'number') return v;
               
-              let strVal = String(v).trim();
+              const strVal = String(v).trim();
               const numStr = strVal.split(' ')[0]; // E.g., "4" from "4 Plate"
               
               let cleanNum = numStr;

@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     // --- LEVEL 1: BOM (The root of the tracking) ---
     // We try to find the root BOM. If targetFaktur is not a BOM, we try to trace it back from rekap_pembelian_barang.
-    let bomRes = await db.execute({
+    const bomRes = await db.execute({
       sql: `SELECT * FROM bill_of_materials WHERE faktur = ? OR faktur_prd = ? OR raw_data LIKE ? LIMIT 1`,
       args: [targetFaktur, targetFaktur, `%${targetFaktur}%`]
     });
@@ -31,8 +31,8 @@ export async function GET(request: NextRequest) {
     let purchaseRequests: any[] = [];
 
     // If not found in BOM, check if it's a Rekap Pembelian record or a PO record and trace back
-    let tracedPrdFakturs = new Set<string>();
-    let tracedResultFakturs = new Set<string>();
+    const tracedPrdFakturs = new Set<string>();
+    const tracedResultFakturs = new Set<string>();
 
     if (!bom) {
       // 1. Try Rekap Pembelian

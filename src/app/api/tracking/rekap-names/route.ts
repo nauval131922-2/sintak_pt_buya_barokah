@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const po = searchParams.get("po") || "";
 
     let whereClause = "WHERE 1=1";
-    let args: any[] = [];
+    const args: any[] = [];
 
     if (q) {
       whereClause += " AND (faktur LIKE ? OR kd_barang LIKE ? OR faktur_po LIKE ?)";

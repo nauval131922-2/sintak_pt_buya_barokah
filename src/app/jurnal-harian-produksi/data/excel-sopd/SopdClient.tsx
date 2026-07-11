@@ -62,8 +62,8 @@ const formatIDR = (val: string): string => {
     const isNegative = work.startsWith('-');
     if (isNegative) work = work.slice(1);
     const parts = work.split('.');
-    let intPartRaw = parts[0].replace(/\D/g, '');
-    let decPartRaw = parts.length > 1 ? parts[parts.length - 1].replace(/\D/g, '') : null;
+    const intPartRaw = parts[0].replace(/\D/g, '');
+    const decPartRaw = parts.length > 1 ? parts[parts.length - 1].replace(/\D/g, '') : null;
     if (intPartRaw === '' && decPartRaw === null) return isNegative ? '-' : '';
     const intFormatted = intPartRaw ? Number(intPartRaw).toLocaleString('id-ID') : '0';
     let result = intFormatted;

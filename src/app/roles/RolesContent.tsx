@@ -659,11 +659,11 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
               <div className="flex items-start gap-2.5 p-3 bg-amber-50 border border-amber-100 rounded-xl mb-4">
                 <AlertCircle size={15} className="text-amber-500 shrink-0 mt-0.5" />
                 <p className="text-[12px] font-semibold text-amber-700">
-                  User yang memiliki role <b>"{deleteConfirm}"</b> tidak akan bisa login sampai Super Admin menugaskan role baru.
+                  User yang memiliki role <b>&quot;{deleteConfirm}&quot;</b> tidak akan bisa login sampai Super Admin menugaskan role baru.
                 </p>
               </div>
               <p className="text-[12px] text-gray-600 font-medium">
-                Yakin ingin menghapus role <span className="font-bold text-gray-800">"{deleteConfirm}"</span>?
+                Yakin ingin menghapus role <span className="font-bold text-gray-800">&quot;{deleteConfirm}&quot;</span>?
               </p>
             </div>
             <div className="flex items-center justify-between px-5 py-3.5 border-t border-gray-100 bg-gray-50/50">
