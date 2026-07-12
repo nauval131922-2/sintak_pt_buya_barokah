@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
+import { highlightText } from '@/lib/highlight';
 
 interface SearchResult {
   type: string;
@@ -10,21 +11,6 @@ interface SearchResult {
   label: string;
   source: string;
   category?: string;
-}
-
-// Function to highlight matched search terms
-function highlightText(text: string, search: string) {
-  if (!search.trim()) return text;
-  const parts = text.split(new RegExp(`(${search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'));
-  return (
-    <>
-      {parts.map((part, i) => 
-        part.toLowerCase() === search.toLowerCase() 
-          ? <mark key={i} className="bg-yellow-100 text-yellow-900 px-0.5 rounded font-bold">{part}</mark>
-          : part
-      )}
-    </>
-  );
 }
 
 export default function GlobalSearch() {
@@ -144,31 +130,31 @@ export default function GlobalSearch() {
       // Route to detail pages with query params for filtering/highlighting
       switch (item.source) {
         case 'purchase_orders':
-          router.push(`/purchase-orders?search=${encodeURIComponent(item.id)}`);
+          router.push(`/purchase-orders?search=${encodeURIComponent(item.id)}&highlight=${encodeURIComponent(query)}`);
           break;
         case 'sales_orders':
-          router.push(`/sales-orders?search=${encodeURIComponent(item.id)}`);
+          router.push(`/sales-orders?search=${encodeURIComponent(item.id)}&highlight=${encodeURIComponent(query)}`);
           break;
         case 'bahan_baku':
-          router.push(`/data-digit/stok/master-barang?search=${encodeURIComponent(item.label)}`);
+          router.push(`/data-digit/stok/master-barang?search=${encodeURIComponent(item.label)}&highlight=${encodeURIComponent(query)}`);
           break;
         case 'employees':
-          router.push(`/employees?search=${encodeURIComponent(item.label)}`);
+          router.push(`/employees?search=${encodeURIComponent(item.label)}&highlight=${encodeURIComponent(query)}`);
           break;
         case 'orders':
-          router.push(`/orders?search=${encodeURIComponent(item.id)}`);
+          router.push(`/orders?search=${encodeURIComponent(item.id)}&highlight=${encodeURIComponent(query)}`);
           break;
         case 'purchase_requests':
-          router.push(`/pr?search=${encodeURIComponent(item.id)}`);
+          router.push(`/pr?search=${encodeURIComponent(item.id)}&highlight=${encodeURIComponent(query)}`);
           break;
         case 'produksi_selesai':
-          router.push(`/data-digit/produksi/produksi-selesai?search=${encodeURIComponent(item.id)}`);
+          router.push(`/data-digit/produksi/produksi-selesai?search=${encodeURIComponent(item.id)}&highlight=${encodeURIComponent(query)}`);
           break;
         case 'sph_out':
-          router.push(`/sph-out?search=${encodeURIComponent(item.id)}`);
+          router.push(`/sph-out?search=${encodeURIComponent(item.id)}&highlight=${encodeURIComponent(query)}`);
           break;
         case 'jurnal_harian_produksi':
-          router.push(`/jurnal-harian-produksi?search=${encodeURIComponent(item.label)}`);
+          router.push(`/jurnal-harian-produksi?search=${encodeURIComponent(item.label)}&highlight=${encodeURIComponent(query)}`);
           break;
         default:
           // Fallback untuk source yang belum di-handle

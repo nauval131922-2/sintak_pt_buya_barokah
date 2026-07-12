@@ -9,6 +9,7 @@ import { DataTable } from "@/components/ui/DataTable";
 import TableFooter from "@/components/TableFooter";
 import CopyButton from "@/components/ui/CopyButton";
 import { CellContext, ColumnDef, SortingState, Updater } from "@tanstack/react-table";
+import { highlightText } from "@/lib/highlight";
 
 interface Employee {
   id: number;
@@ -28,9 +29,9 @@ interface EmployeeTableProps {
 
 const PAGE_SIZE = 50;
 
-const NameCell = ({ name }: { name: string }) => (
+const NameCell = ({ name, highlight = '' }: { name: string; highlight?: string }) => (
   <div className="flex items-center justify-between group w-full pr-4">
-    <span className="font-semibold text-gray-800 truncate">{name}</span>
+    <span className="font-semibold text-gray-800 truncate">{highlightText(name, highlight)}</span>
     <CopyButton text={name} />
   </div>
 );
@@ -39,6 +40,7 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const mountedRef = useRef(true);
+  const urlSearchRef = useRef<string | null>(null);
   
   // State
   const [isMounted, setIsMounted] = useState(false);
@@ -51,6 +53,7 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
   // Search & Pagination
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || "");
   const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || "");
+  const [highlightQuery, setHighlightQuery] = useState(() => searchParams.get('highlight') || searchParams.get('search') || "");
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
@@ -75,15 +78,18 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
   // Debounce search
   useEffect(() => {
     const urlSearch = searchParams.get('search');
+    const urlHighlight = searchParams.get('highlight');
     if (urlSearch !== null) {
+      urlSearchRef.current = urlSearch;
       setSearchQuery(urlSearch);
       setDebouncedQuery(urlSearch);
+      setHighlightQuery(urlHighlight || urlSearch);
       setPage(1);
     }
   }, [searchParams]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedQuery(searchQuery), 350);
+    const timer = setTimeout(() => { setDebouncedQuery(searchQuery); if (searchQuery !== urlSearchRef.current) setHighlightQuery(searchQuery); }, 350);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
@@ -180,7 +186,7 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
         accessorKey: "name", 
         header: "Nama Karyawan",
         size: 320,
-        cell: (info: CellContext<Employee, string>) => <NameCell name={info.getValue()} />
+        cell: (info: CellContext<Employee, string>) => <NameCell name={info.getValue()} highlight={highlightQuery} />
     },
     { 
         accessorKey: "position", 
@@ -233,7 +239,7 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
             );
         }
     }
-  ], [handleToggleActive, toggleLoading]);
+  ], [handleToggleActive, toggleLoading, highlightQuery]);
 
   // Handlers
   const handleResize = useCallback((widths: Record<string, number>) => {

@@ -10,6 +10,7 @@ import { DataTable } from '@/components/ui/DataTable';
 import ScrapingHeader from '@/components/ScrapingHeader';
 import { useTableSelection } from '@/lib/hooks/useTableSelection';
 import { formatLastUpdate } from '@/lib/date-utils';
+import { highlightText } from '@/lib/highlight';
 
 import { useSearchParams } from 'next/navigation';
 
@@ -27,11 +28,13 @@ export default function MasterBarangClient() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
   const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || '');
+  const [highlightQuery, setHighlightQuery] = useState(() => searchParams.get('highlight') || searchParams.get('search') || '');
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
   const isLoadingMore = useRef(false);
   const mountedRef = useRef(true);
+  const urlSearchRef = useRef<string | null>(null);
 
   const [isSyncing, setIsSyncing] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -55,9 +58,12 @@ export default function MasterBarangClient() {
   useEffect(() => {
     // If URL search parameter changes, sync it to state
     const urlSearch = searchParams.get('search');
+    const urlHighlight = searchParams.get('highlight');
     if (urlSearch !== null) {
+      urlSearchRef.current = urlSearch;
       setSearchQuery(urlSearch);
       setDebouncedQuery(urlSearch);
+      setHighlightQuery(urlHighlight || urlSearch);
       setPage(1);
     }
   }, [searchParams]);
@@ -65,6 +71,7 @@ export default function MasterBarangClient() {
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedQuery(searchQuery);
+      if (searchQuery !== urlSearchRef.current) setHighlightQuery(searchQuery);
       setPage(1);
     }, 500);
     return () => clearTimeout(handler);
@@ -148,7 +155,7 @@ export default function MasterBarangClient() {
       accessorKey: 'kode',
       header: 'Kode',
       size: 120,
-      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-600' : 'text-gray-700'}`}>{String(getValue())}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-600' : 'text-gray-700'}`}>{highlightText(String(getValue()), highlightQuery)}</span>
     },
     {
       accessorKey: 'barcode',
@@ -160,7 +167,7 @@ export default function MasterBarangClient() {
       accessorKey: 'nama',
       header: 'Nama Barang',
       size: 350,
-      cell: ({ getValue, row }: any) => <span className={`font-bold tracking-tight ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'}`}>{String(getValue())}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold tracking-tight ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'}`}>{highlightText(String(getValue()), highlightQuery)}</span>
     },
     {
       accessorKey: 'kd_satuan',
@@ -264,7 +271,7 @@ export default function MasterBarangClient() {
       size: 140,
       cell: ({ getValue }: any) => <span className="text-[11px] font-bold text-gray-400">@{String(getValue() || '–')}</span>
     }
-  ], []);
+  ], [highlightQuery]);
 
   if (!isMounted) return null;
 

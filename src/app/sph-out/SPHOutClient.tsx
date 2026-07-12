@@ -16,6 +16,7 @@ import DateRangeCard from '@/components/DateRangeCard';
 import { splitDateRangeIntoMonths } from '@/lib/date-utils';
 import { useTableSelection } from '@/lib/hooks/useTableSelection';
 import ScrapingHeader from '@/components/ScrapingHeader';
+import { highlightText } from '@/lib/highlight';
 
 import { useSearchParams } from 'next/navigation';
 
@@ -57,11 +58,13 @@ export default function SphOutClient() {
   // Initialize search state from URL ?search= if present
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
   const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || '');
+  const [highlightQuery, setHighlightQuery] = useState(() => searchParams.get('highlight') || searchParams.get('search') || '');
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
   const isLoadingMore = useRef(false);
   const mountedRef = useRef(true);
+  const urlSearchRef = useRef<string | null>(null);
 
   const { selectedIds, setSelectedIds, handleRowClick, clearSelection } = useTableSelection(data || []);
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
@@ -81,9 +84,12 @@ export default function SphOutClient() {
   useEffect(() => {
     // If URL search parameter changes, sync it to state
     const urlSearch = searchParams.get('search');
+    const urlHighlight = searchParams.get('highlight');
     if (urlSearch !== null) {
+      urlSearchRef.current = urlSearch;
       setSearchQuery(urlSearch);
       setDebouncedQuery(urlSearch);
+      setHighlightQuery(urlHighlight || urlSearch);
       setPage(1);
     }
   }, [searchParams]);
@@ -91,6 +97,7 @@ export default function SphOutClient() {
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedQuery(searchQuery);
+      if (searchQuery !== urlSearchRef.current) setHighlightQuery(searchQuery);
       setPage(1);
     }, 500);
     return () => clearTimeout(handler);
@@ -229,13 +236,13 @@ export default function SphOutClient() {
       accessorKey: 'faktur',
       header: 'Faktur SPH',
       size: 220,
-      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-600' : 'text-gray-700'}`}>{String(getValue())}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-600' : 'text-gray-700'}`}>{highlightText(String(getValue()), highlightQuery)}</span>
     },
     {
       accessorKey: 'kd_pelanggan',
       header: 'Pelanggan',
       size: 250,
-      cell: ({ getValue, row }: any) => <span className={`font-semibold  tracking-tight ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'}`}>{String(getValue())}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-semibold  tracking-tight ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'}`}>{highlightText(String(getValue()), highlightQuery)}</span>
     },
     {
       accessorKey: 'faktur_so',
@@ -259,7 +266,7 @@ export default function SphOutClient() {
       accessorKey: 'keterangan',
       header: 'Keterangan',
       size: 250,
-      cell: ({ getValue, row }: any) => <span className={`font-medium transition-colors truncate block ${row.getIsSelected() ? 'text-green-800' : 'text-gray-700'}`}>{String(getValue() || '–')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium transition-colors truncate block ${row.getIsSelected() ? 'text-green-800' : 'text-gray-700'}`}>{highlightText(String(getValue() || '–'), highlightQuery)}</span>
     },
     {
       accessorKey: 'total',
@@ -303,7 +310,7 @@ export default function SphOutClient() {
         size: 80, 
         cell: ({ getValue }: any) => <span className="text-[11px] font-semibold text-gray-700/60 tabular-nums">{String(getValue())}</span> 
     }
-  ], []);
+  ], [highlightQuery]);
 
   if (!isMounted) return null;
 

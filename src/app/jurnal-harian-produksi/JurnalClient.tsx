@@ -14,6 +14,7 @@ import DatePicker from '@/components/DatePicker';
 import BaseModal from '@/components/ui/BaseModal';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { persistDateStore, hydrateDateStore } from '@/lib/scraper-period';
+import { highlightText } from '@/lib/highlight';
 
 // Mapping Bagian -> Category master_pekerjaan_jurnal_produksi
 const BAGIAN_CATEGORY_MAP: Record<string, string> = {
@@ -362,6 +363,8 @@ export default function JurnalClient({
   // Search & Pagination
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
   const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || '');
+  const [highlightQuery, setHighlightQuery] = useState(() => searchParams.get('highlight') || searchParams.get('search') || '');
+  const urlSearchRef = useRef<string | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [page, setPage] = useState(1);
@@ -496,9 +499,12 @@ export default function JurnalClient({
   useEffect(() => {
     // If URL search parameter changes, sync it to state
     const urlSearch = searchParams.get('search');
+    const urlHighlight = searchParams.get('highlight');
     if (urlSearch !== null) {
+      urlSearchRef.current = urlSearch;
       setSearchQuery(urlSearch);
       setDebouncedQuery(urlSearch);
+      setHighlightQuery(urlHighlight || urlSearch);
       setPage(1);
     }
   }, [searchParams]);
@@ -506,6 +512,7 @@ export default function JurnalClient({
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(searchQuery);
+      if (searchQuery !== urlSearchRef.current) setHighlightQuery(searchQuery);
       setPage(1);
     }, 350);
     return () => clearTimeout(timer);

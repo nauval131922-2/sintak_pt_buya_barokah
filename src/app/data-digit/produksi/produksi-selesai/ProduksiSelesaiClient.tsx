@@ -15,6 +15,7 @@ import { useTableSelection } from '@/lib/hooks/useTableSelection';
 import { formatLastUpdate } from '@/lib/date-utils';
 import { getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod } from '@/lib/scraper-period';
 import { splitDateRangeIntoMonths } from '@/lib/date-utils';
+import { highlightText } from '@/lib/highlight';
 
 const STATE_KEY  = 'produksiSelesaiState';
 const PERIOD_KEY = 'ProduksiSelesaiClient_scrapedPeriod';
@@ -69,6 +70,7 @@ export default function ProduksiSelesaiClient() {
   // Initialize search state from URL ?search= if present
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
   const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || '');
+  const [highlightQuery, setHighlightQuery] = useState(() => searchParams.get('highlight') || searchParams.get('search') || '');
   const [startDate, setStartDate] = useState<Date>(() => getDefaultScraperDateRange().startDate);
   const [endDate, setEndDate] = useState<Date>(() => getDefaultScraperDateRange().endDate);
 
@@ -81,6 +83,7 @@ export default function ProduksiSelesaiClient() {
   const [scrapeProgress, setScrapeProgress] = useState(0);
   const [scrapeStatus, setScrapeStatus] = useState('');
   const [dialog, setDialog] = useState({ isOpen: false, type: 'success' as 'success' | 'error' | 'danger' | 'alert' | 'confirm', title: '', message: '' });
+  const urlSearchRef = useRef<string | null>(null);
 
   const { selectedIds, handleRowClick, clearSelection } = useTableSelection(data || []);
 
@@ -119,15 +122,18 @@ export default function ProduksiSelesaiClient() {
   useEffect(() => {
     // If URL search parameter changes, sync it to state
     const urlSearch = searchParams.get('search');
+    const urlHighlight = searchParams.get('highlight');
     if (urlSearch !== null) {
+      urlSearchRef.current = urlSearch;
       setSearchQuery(urlSearch);
       setDebouncedQuery(urlSearch);
+      setHighlightQuery(urlHighlight || urlSearch);
       setPage(1);
     }
   }, [searchParams]);
 
   useEffect(() => {
-    const timer = setTimeout(() => { setDebouncedQuery(searchQuery); setPage(1); }, 350);
+    const timer = setTimeout(() => { setDebouncedQuery(searchQuery); if (searchQuery !== urlSearchRef.current) setHighlightQuery(searchQuery); setPage(1); }, 350);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
@@ -317,7 +323,7 @@ export default function ProduksiSelesaiClient() {
       meta: { sticky: true },
       cell: ({ getValue, row }: any) => (
         <span className={`font-semibold tracking-tight text-[12px] ${row.getIsSelected() ? 'text-green-600' : 'text-gray-700'}`}>
-          {String(getValue() || '—')}
+          {highlightText(String(getValue() || '—'), highlightQuery)}
         </span>
       ),
     },
@@ -331,7 +337,7 @@ export default function ProduksiSelesaiClient() {
           className={`font-semibold text-[12px] truncate block ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'}`}
           title={String(getValue())}
         >
-          {String(getValue() || '—')}
+          {highlightText(String(getValue() || '—'), highlightQuery)}
         </span>
       ),
     },
@@ -341,7 +347,7 @@ export default function ProduksiSelesaiClient() {
       size: 200,
       cell: ({ getValue }: any) => (
         <span className="text-[12px] font-medium text-gray-600 truncate block" title={String(getValue())}>
-          {String(getValue() || '—')}
+          {highlightText(String(getValue() || '—'), highlightQuery)}
         </span>
       ),
     },
@@ -441,7 +447,7 @@ export default function ProduksiSelesaiClient() {
         );
       },
     },
-  ], [page]);
+  ], [page, highlightQuery]);
 
   if (!isMounted) return null;
 
