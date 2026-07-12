@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useTransition, useRef, useMemo, Fragment } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-  Database, Loader2, Calendar, X, Table2, Zap, User, ChevronUp, ChevronDown, Trash2, BarChart3, Copy
+  Database, Loader2, Calendar, X, Table2, Zap, User, ChevronUp, ChevronDown, Trash2, BarChart3, Copy, Undo2
 } from 'lucide-react';
 import ActivityLogExportMenu from './ActivityLogExportMenu';
 import SearchableDropdown from '@/components/SearchableDropdown';
@@ -26,6 +26,7 @@ import {
   formatDateStrId,
   computeExplicitDiff,
   stringifyAuditData,
+  formatAuditFieldValue,
 } from '@/lib/activity-log-utils';
 import type { ActivityLogSortField } from '@/lib/activity-log-query';
 import {
@@ -153,6 +154,7 @@ export default function ActivityLogClient({
   const [search, setSearch] = useState(initialState.search);
   const [debouncedSearch, setDebouncedSearch] = useState(initialState.search);
   const [deepSearch, setDeepSearch] = useState(false); // ponytail: toggle untuk cari di raw_data JSON
+  const [hideSystemCols, setHideSystemCols] = useState(true); // ponytail: hide system columns (id, dates) by default
   const [total, setTotal] = useState(0);
   const [loadTime, setLoadTime] = useState<number | null>(null);
   const [page, setPage] = useState(1);
@@ -472,6 +474,37 @@ export default function ActivityLogClient({
     fetchTrend();
     fetchStats();
   }, [fetchLogs, fetchTrend, fetchStats]);
+
+  const handleUndo = (logId: number | string) => {
+    setDialog({
+      isOpen: true,
+      type: 'confirm',
+      title: 'Konfirmasi Undo',
+      message: 'Apakah Anda yakin ingin membatalkan perubahan ini dan mengembalikan data ke kondisi semula?',
+      onConfirm: async () => {
+        setDialog((prev) => ({ ...prev, isLoading: true }));
+        try {
+          const res = await fetch('/api/activity-log/revert', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ logId })
+          });
+          const data = await res.json();
+          if (data.success) {
+            toast.success('Perubahan berhasil dibatalkan (Undo)!');
+            setDialog({ isOpen: false, type: 'success', title: '', message: '' });
+            refreshCallback();
+          } else {
+            toast.error(data.error || 'Gagal membatalkan perubahan');
+            setDialog({ isOpen: false, type: 'error', title: '', message: '' });
+          }
+        } catch {
+          toast.error('Terjadi kesalahan koneksi');
+          setDialog({ isOpen: false, type: 'error', title: '', message: '' });
+        }
+      }
+    });
+  };
 
   const handleCleanup = async () => {
     setDialog((prev) => ({ ...prev, isLoading: true }));
@@ -930,17 +963,81 @@ export default function ActivityLogClient({
               />
             </div>
           </div>
-          {debouncedSearch && (
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5">
+            {debouncedSearch && (
+              <label className="flex items-center gap-2 text-[11px] text-gray-600 font-medium cursor-pointer hover:text-green-700 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={deepSearch}
+                  onChange={(e) => setDeepSearch(e.target.checked)}
+                  className="w-3.5 h-3.5 rounded border-gray-300 text-green-600 focus:ring-green-500 focus:ring-offset-0 focus:ring-2 cursor-pointer"
+                />
+                <span>Cari di detail data JSON (lebih lambat)</span>
+              </label>
+            )}
             <label className="flex items-center gap-2 text-[11px] text-gray-600 font-medium cursor-pointer hover:text-green-700 transition-colors">
               <input
                 type="checkbox"
-                checked={deepSearch}
-                onChange={(e) => setDeepSearch(e.target.checked)}
+                checked={hideSystemCols}
+                onChange={(e) => setHideSystemCols(e.target.checked)}
                 className="w-3.5 h-3.5 rounded border-gray-300 text-green-600 focus:ring-green-500 focus:ring-offset-0 focus:ring-2 cursor-pointer"
               />
-              <span>Cari di detail data JSON (lebih lambat, lebih lengkap)</span>
+              <span>Sederhanakan detail (sembunyikan ID & tanggal sistem)</span>
             </label>
-          )}
+          </div>
+
+          {/* ponytail: Quick filter chips */}
+          <div className="flex flex-wrap items-center gap-1.5 mt-1">
+            <span className="text-[10px] font-bold text-gray-400 mr-1">Filter Cepat:</span>
+            
+            <button
+              type="button"
+              onClick={() => setSearch(search === 'Gagal' ? '' : 'Gagal')}
+              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-all ${
+                search === 'Gagal'
+                  ? 'bg-rose-50 text-rose-700 border-rose-200 ring-2 ring-rose-200'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              ⚠️ Hanya Error
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActionType(actionType === 'DELETE' ? '' : 'DELETE')}
+              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-all ${
+                actionType === 'DELETE'
+                  ? 'bg-rose-50 text-rose-700 border-rose-200 ring-2 ring-rose-200'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              🗑️ Aksi Hapus (DELETE)
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActionType(actionType === 'SCRAPE' ? '' : 'SCRAPE')}
+              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-all ${
+                actionType === 'SCRAPE'
+                  ? 'bg-cyan-50 text-cyan-700 border-cyan-200 ring-2 ring-cyan-200'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              🤖 Sync Otomatis (SCRAPE)
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActionType(actionType === 'UPDATE' ? '' : 'UPDATE')}
+              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-all ${
+                actionType === 'UPDATE'
+                  ? 'bg-blue-50 text-blue-700 border-blue-200 ring-2 blue-200'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              📝 Aksi Edit (UPDATE)
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1061,89 +1158,112 @@ export default function ActivityLogClient({
                                         </button>
                                       )}
                                     </div>
-                                    {beforeJson ? (
-                                      <pre className="text-[10px] leading-relaxed text-gray-700 max-h-[200px] overflow-y-auto custom-scrollbar whitespace-pre-wrap">{beforeJson}</pre>
-                                    ) : (
+                                     {beforeJson ? (
+                                       <pre className="text-[10px] leading-relaxed text-gray-700 max-h-[200px] overflow-y-auto custom-scrollbar whitespace-pre-wrap">{debouncedSearch ? highlightText(beforeJson, debouncedSearch) : beforeJson}</pre>
+                                     ) : (
+                                       <p className="text-[11px] text-gray-400 italic">—</p>
+                                     )}
+                                   </div>
+                                   <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
+                                     <div className="flex items-center justify-between mb-2">
+                                       <div className="text-[10px] font-bold text-gray-400">After</div>
+                                       {afterJson && (
+                                         <button
+                                           type="button"
+                                           onClick={() => copyToClipboard(afterJson, 'After')}
+                                           className="text-gray-400 hover:text-green-600 transition-colors"
+                                           title="Copy After"
+                                         >
+                                           <Copy size={12} />
+                                         </button>
+                                       )}
+                                     </div>
+                                     {afterJson ? (
+                                       <pre className="text-[10px] leading-relaxed text-gray-700 max-h-[200px] overflow-y-auto custom-scrollbar whitespace-pre-wrap">{debouncedSearch ? highlightText(afterJson, debouncedSearch) : afterJson}</pre>
+                                     ) : (
                                       <p className="text-[11px] text-gray-400 italic">—</p>
                                     )}
                                   </div>
-                                  <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
-                                    <div className="flex items-center justify-between mb-2">
-                                      <div className="text-[10px] font-bold text-gray-400">After</div>
-                                      {afterJson && (
-                                        <button
-                                          type="button"
-                                          onClick={() => copyToClipboard(afterJson, 'After')}
-                                          className="text-gray-400 hover:text-green-600 transition-colors"
-                                          title="Copy After"
-                                        >
-                                          <Copy size={12} />
-                                        </button>
-                                      )}
-                                    </div>
-                                    {afterJson ? (
-                                      <pre className="text-[10px] leading-relaxed text-gray-700 max-h-[200px] overflow-y-auto custom-scrollbar whitespace-pre-wrap">{afterJson}</pre>
-                                    ) : (
-                                      <p className="text-[11px] text-gray-400 italic">—</p>
-                                    )}
-                                  </div>
-                                  <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
-                                    <div className="flex items-center justify-between mb-2">
-                                      <div className="text-[10px] font-bold text-gray-400">Diff</div>
-                                      {(() => {
-                                        let diffs = computeExplicitDiff(rawParsed);
-                                        if (diffs.length === 0 && rawParsed && !rawParsed.before && !rawParsed.after) {
-                                          if (log.action_type === 'INSERT') {
-                                            diffs = Object.entries(rawParsed).map(([key, value]) => ({ key, before: '', after: String(value ?? '') }));
-                                          } else if (log.action_type === 'DELETE') {
-                                            diffs = Object.entries(rawParsed).map(([key, value]) => ({ key, before: String(value ?? ''), after: '' }));
-                                          }
-                                        }
-                                        const diffText = diffs.map(d => `${d.key}: "${d.before}" → "${d.after}"`).join('\n');
-                                        return diffs.length > 0 && (
-                                          <button
-                                            type="button"
-                                            onClick={() => copyToClipboard(diffText, 'Diff')}
-                                            className="text-gray-400 hover:text-green-600 transition-colors"
-                                            title="Copy Diff"
-                                          >
-                                            <Copy size={12} />
-                                          </button>
-                                        );
-                                      })()}
-                                    </div>
-                                    {(() => {
-                                      let diffs = computeExplicitDiff(rawParsed);
-                                      if (diffs.length === 0 && rawParsed && !rawParsed.before && !rawParsed.after) {
-                                        if (log.action_type === 'INSERT') {
-                                          diffs = Object.entries(rawParsed).map(([key, value]) => ({ key, before: '', after: String(value ?? '') }));
-                                        } else if (log.action_type === 'DELETE') {
-                                          diffs = Object.entries(rawParsed).map(([key, value]) => ({ key, before: String(value ?? ''), after: '' }));
-                                        }
-                                      }
-                                      return diffs.length > 0 ? (
-                                        <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
-                                          <table className="w-full table-fixed text-[10px]">
-                                            <colgroup>
-                                              <col style={{ width: '30%' }} />
-                                              <col style={{ width: '35%' }} />
-                                              <col style={{ width: '35%' }} />
-                                            </colgroup>
-                                            <thead>
-                                              <tr className="text-left text-gray-400 font-bold border-b border-gray-50">
-                                                <th className="pb-1 pr-2">Kolom</th>
-                                                <th className="pb-1 pr-2">Sebelum</th>
-                                                <th className="pb-1">Sesudah</th>
-                                              </tr>
-                                            </thead>
-                                            <tbody>
-                                              {diffs.map((d) => (
-                                                <tr key={d.key} className="border-b border-gray-50/50">
-                                                  <td className="py-1 pr-2 font-semibold text-gray-700 break-words">{d.key}</td>
-                                                  <td className="py-1 pr-2 text-rose-500 break-words">{d.before || <span className="italic text-gray-300">—</span>}</td>
-                                                  <td className="py-1 text-emerald-700 break-words">{d.after || <span className="italic text-gray-300">—</span>}</td>
-                                                </tr>
-                                              ))}
+                                   <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
+                                     <div className="flex items-center justify-between mb-2">
+                                       <div className="text-[10px] font-bold text-gray-400">Diff</div>
+                                       <div className="flex items-center gap-1.5">
+                                          {log.action_type === 'UPDATE' && rawParsed?.before && !String(log.message || '').startsWith('Undo Perubahan') && (
+                                            <button
+                                              type="button"
+                                              onClick={() => handleUndo(log.id)}
+                                              className="text-gray-500 hover:text-amber-700 bg-amber-50 hover:bg-amber-100/80 border border-amber-200 hover:border-amber-300 px-2 py-0.5 rounded text-[9px] font-bold flex items-center gap-1 transition-all shadow-sm active:scale-95"
+                                              title="Batalkan perubahan ini (kembalikan ke data awal)"
+                                            >
+                                              <Undo2 size={10} />
+                                              Undo
+                                            </button>
+                                          )}
+                                         {(() => {
+                                           let diffs = computeExplicitDiff(rawParsed);
+                                           if (diffs.length === 0 && rawParsed && !rawParsed.before && !rawParsed.after) {
+                                             if (log.action_type === 'INSERT') {
+                                               diffs = Object.entries(rawParsed).map(([key, value]) => ({ key, before: '', after: formatAuditFieldValue(key, value) }));
+                                             } else if (log.action_type === 'DELETE') {
+                                               diffs = Object.entries(rawParsed).map(([key, value]) => ({ key, before: formatAuditFieldValue(key, value), after: '' }));
+                                             }
+                                           }
+                                           if (hideSystemCols) {
+                                             diffs = diffs.filter(d => !['id', 'created_at', 'updated_at', 'deleted_at', 'created_by', 'updated_by', 'deleted_by', 'is_manual_input', 'additional_ids'].includes(d.key));
+                                           }
+                                           const diffText = diffs.map(d => `${d.key}: "${d.before}" → "${d.after}"`).join('\n');
+                                           return diffs.length > 0 && (
+                                             <button
+                                               type="button"
+                                               onClick={() => copyToClipboard(diffText, 'Diff')}
+                                               className="text-gray-400 hover:text-green-600 transition-colors"
+                                               title="Copy Diff"
+                                             >
+                                               <Copy size={12} />
+                                             </button>
+                                           );
+                                         })()}
+                                       </div>
+                                     </div>
+                                     {(() => {
+                                       let diffs = computeExplicitDiff(rawParsed);
+                                       if (diffs.length === 0 && rawParsed && !rawParsed.before && !rawParsed.after) {
+                                         if (log.action_type === 'INSERT') {
+                                           diffs = Object.entries(rawParsed).map(([key, value]) => ({ key, before: '', after: formatAuditFieldValue(key, value) }));
+                                         } else if (log.action_type === 'DELETE') {
+                                           diffs = Object.entries(rawParsed).map(([key, value]) => ({ key, before: formatAuditFieldValue(key, value), after: '' }));
+                                         }
+                                       }
+                                       if (hideSystemCols) {
+                                         diffs = diffs.filter(d => !['id', 'created_at', 'updated_at', 'deleted_at', 'created_by', 'updated_by', 'deleted_by', 'is_manual_input', 'additional_ids'].includes(d.key));
+                                       }
+                                       return diffs.length > 0 ? (
+                                         <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                                           <table className="w-full table-fixed text-[10px]">
+                                             <colgroup>
+                                               <col style={{ width: '30%' }} />
+                                               <col style={{ width: '35%' }} />
+                                               <col style={{ width: '35%' }} />
+                                             </colgroup>
+                                             <thead>
+                                               <tr className="text-left text-gray-400 font-bold border-b border-gray-50">
+                                                 <th className="pb-1 pr-2">Kolom</th>
+                                                 <th className="pb-1 pr-2">Sebelum</th>
+                                                 <th className="pb-1">Sesudah</th>
+                                               </tr>
+                                             </thead>
+                                             <tbody>
+                                                {diffs.map((d) => (
+                                                  <tr key={d.key} className="border-b border-gray-50/50">
+                                                    <td className="py-1 pr-2 font-semibold text-gray-700 break-words">{d.key}</td>
+                                                    <td className="py-1 pr-2 text-rose-500 break-words whitespace-pre-wrap">
+                                                      {d.before ? (debouncedSearch ? highlightText(d.before, debouncedSearch) : d.before) : <span className="italic text-gray-300">—</span>}
+                                                    </td>
+                                                    <td className="py-1 text-emerald-700 break-words whitespace-pre-wrap">
+                                                      {d.after ? (debouncedSearch ? highlightText(d.after, debouncedSearch) : d.after) : <span className="italic text-gray-300">—</span>}
+                                                    </td>
+                                                  </tr>
+                                                ))}
                                             </tbody>
                                           </table>
                                         </div>

@@ -64,10 +64,26 @@ export async function GET(request: Request) {
           const res = await fetch(url, { method: 'GET', cache: 'no-store' });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const data = await res.json();
-          if (data && !data.error) totalSuccess++;
+          if (data && data.error) throw new Error(String(data.error));
+          totalSuccess++;
           return data;
         })
       );
+
+      // Catat kegagalan individual per modul jika ada
+      for (let j = 0; j < results.length; j++) {
+        const res = results[j];
+        if (res.status === 'rejected') {
+          const endpoint = batch[j];
+          const tableName = endpoint.replace('/api/scrape-', '');
+          const errorMsg = res.reason?.message || 'Unknown error';
+          await db.execute({
+            sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, recorded_by) 
+                  VALUES (?, ?, 0, ?, ?)`,
+            args: ['SCRAPE', tableName, `Gagal sync otomatis ${tableName}: ${errorMsg}`, 'System']
+          }).catch(() => {});
+        }
+      }
     }
 
     // Catat ke log histori

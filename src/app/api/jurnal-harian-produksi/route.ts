@@ -248,6 +248,19 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Data realisasi kosong' }, { status: 400 });
       }
 
+      // Ambil seluruh data baris sebelum update untuk log target awal (SELECT * agar restore presisi)
+      const beforeQuery = await db.execute({
+        sql: `SELECT * FROM jurnal_harian_produksi WHERE id = ? AND deleted_at IS NULL`,
+        args: [id]
+      });
+      const beforeData = beforeQuery.rows[0] as any;
+
+      // Set bypass trigger agar trigger database untuk table jurnal_harian_produksi tidak mencatat log redundan
+      await db.execute({
+        sql: `INSERT OR REPLACE INTO session_context (id, username, last_menu) VALUES (1, ?, 'BYPASS_TRIGGER')`,
+        args: [session.username || 'System']
+      });
+
       // Filter baris tambahan yang kosong (no_order_2, jenis_pekerjaan_2, target, dan realisasi semuanya kosong)
       const validAdditional = multiRealisasi.slice(1).filter((row: any) => {
         const noOrder = String(row.no_order_2 || '').trim();
@@ -303,6 +316,7 @@ export async function POST(request: NextRequest) {
       }
 
       // 2. Insert baris ke-2 hingga selesai (generate new rows, skip yang kosong)
+      let newIds: number[] = [];
       if (validAdditional.length > 0) {
         try {
           await db.execute("ALTER TABLE jurnal_harian_produksi ADD COLUMN is_manual_input INTEGER DEFAULT 0");
@@ -330,31 +344,47 @@ export async function POST(request: NextRequest) {
                   posisi, absensi, tgl, shift, nama_karyawan, no_order, nama_order, jenis_pekerjaan, keterangan, target, realisasi,
                   no_order_2, nama_order_2, jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, is_manual_input, created_by, nama_order_manual, nama_order_manual_2
                 ) VALUES ${placeholders}`;
-        await db.execute({ sql, args });
+        const insertResult = await db.execute({ sql, args });
+        const lastId = Number(insertResult.lastInsertRowid ?? 0);
+        const count = validAdditional.length;
+        if (lastId > 0) {
+          newIds = Array.from({ length: count }, (_, i) => lastId - count + 1 + i);
+        }
       }
 
       await db.execute({
         sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
               VALUES (?, ?, ?, ?, ?, ?)`,
         args: [
-          'INSERT',
+          'UPDATE',
           'jurnal_harian_produksi',
           id,
           `Input Multi Realisasi (${filteredMulti.length} baris)`,
           JSON.stringify({
-            id,
-            count: filteredMulti.length,
-            realisasi: filteredMulti.map((r: any, i: number) => ({
-              baris: i + 1,
-              nama_order: r.nama_order_2 || r.nama_order_manual_2 || '-',
-              jenis_pekerjaan: r.jenis_pekerjaan_2 || '-',
-              target: r.target || 0,
-              realisasi: r.realisasi || 0,
-              jam: r.jam || '-',
-            }))
+            before: beforeData,
+            after: {
+              id,
+              additional_ids: newIds,
+              count: filteredMulti.length,
+              realisasi: filteredMulti.map((r: any, i: number) => ({
+                baris: i + 1,
+                id: i === 0 ? id : (newIds[i - 1] || null),
+                nama_order: r.nama_order_2 || r.nama_order_manual_2 || '-',
+                jenis_pekerjaan: r.jenis_pekerjaan_2 || '-',
+                target: r.target || 0,
+                realisasi: r.realisasi || 0,
+                jam: r.jam || '-',
+              }))
+            }
           }),
           session.username || 'System'
         ]
+      });
+
+      // Restore session_context back to normal
+      await db.execute({
+        sql: `INSERT OR REPLACE INTO session_context (id, username, last_menu) VALUES (1, ?, 'Jurnal Harian Produksi')`,
+        args: [session.username || 'System']
       });
 
       return NextResponse.json({ success: true });

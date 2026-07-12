@@ -21,11 +21,13 @@ export async function login(
 
     if (!user) {
       console.log(`[AUTH] User not found: ${username}`);
+      logActivity('LOGIN', 'users', `Percobaan login gagal: Username "${username}" tidak ditemukan`, {}, username).catch(() => {});
       return { success: false, message: 'Username tidak ditemukan.' };
     }
 
     if (user.hasOwnProperty('is_active') && Number(user.is_active) === 0) {
       console.log(`[AUTH] User is inactive: ${username}`);
+      logActivity('LOGIN', 'users', `Percobaan login gagal: Akun "${username}" dinonaktifkan`, {}, username).catch(() => {});
       return { success: false, message: 'Akun Anda dinonaktifkan. Hubungi Super Admin.' };
     }
 
@@ -33,6 +35,7 @@ export async function login(
     const isMatch = await bcrypt.compare(password, user.password as string);
     if (!isMatch) {
       console.log(`[AUTH] Password mismatch for user: ${username}`);
+      logActivity('LOGIN', 'users', `Percobaan login gagal: Password salah untuk user "${username}"`, {}, username).catch(() => {});
       return { success: false, message: 'Password salah.' };
     }
 

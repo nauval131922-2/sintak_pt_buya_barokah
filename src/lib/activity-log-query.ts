@@ -76,27 +76,36 @@ export function buildActivityLogWhere(params: ActivityLogQueryParams) {
   }
 
   if (params.search?.trim()) {
-    const term = `%${params.search.trim().toLowerCase()}%`;
-    const searchParts: string[] = [
-      "LOWER(COALESCE(al.message, '')) LIKE ?",
-      "LOWER(COALESCE(al.action_type, '')) LIKE ?",
-      "LOWER(COALESCE(al.table_name, '')) LIKE ?",
-      "LOWER(COALESCE(al.recorded_by, '')) LIKE ?",
-    ];
-    const searchArgs: unknown[] = [term, term, term, term];
+    const rawSearch = params.search.trim();
+    const isIdSearch = /^\d+$/.test(rawSearch) || /^#\d+$/.test(rawSearch);
 
-    if (!opts.skipUserNameSearch) {
-      searchParts.push("LOWER(COALESCE(u.name, '')) LIKE ?");
-      searchArgs.push(term);
+    if (isIdSearch) {
+      const targetId = parseInt(rawSearch.replace('#', ''), 10);
+      conditions.push('al.id = ?');
+      args.push(targetId);
+    } else {
+      const term = `%${rawSearch.toLowerCase()}%`;
+      const searchParts: string[] = [
+        "LOWER(COALESCE(al.message, '')) LIKE ?",
+        "LOWER(COALESCE(al.action_type, '')) LIKE ?",
+        "LOWER(COALESCE(al.table_name, '')) LIKE ?",
+        "LOWER(COALESCE(al.recorded_by, '')) LIKE ?",
+      ];
+      const searchArgs: unknown[] = [term, term, term, term];
+
+      if (!opts.skipUserNameSearch) {
+        searchParts.push("LOWER(COALESCE(u.name, '')) LIKE ?");
+        searchArgs.push(term);
+      }
+
+      if (!opts.skipRawDataSearch) {
+        searchParts.push("LOWER(COALESCE(al.raw_data, '')) LIKE ?");
+        searchArgs.push(term);
+      }
+
+      conditions.push(`(${searchParts.join(' OR ')})`);
+      args.push(...searchArgs);
     }
-
-    if (!opts.skipRawDataSearch) {
-      searchParts.push("LOWER(COALESCE(al.raw_data, '')) LIKE ?");
-      searchArgs.push(term);
-    }
-
-    conditions.push(`(${searchParts.join(' OR ')})`);
-    args.push(...searchArgs);
   }
 
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';

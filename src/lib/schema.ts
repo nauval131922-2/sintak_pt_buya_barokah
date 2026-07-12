@@ -1568,7 +1568,9 @@ async function initDynamicTriggers(db: any) {
         `DROP TRIGGER IF EXISTS trg_${table}_update`,
         `DROP TRIGGER IF EXISTS trg_${table}_delete`,
 
-        `CREATE TRIGGER trg_${table}_insert AFTER INSERT ON ${table} BEGIN
+        `CREATE TRIGGER trg_${table}_insert AFTER INSERT ON ${table}
+         WHEN (SELECT COALESCE(last_menu, '') FROM session_context WHERE id = 1) != 'BYPASS_TRIGGER'
+         BEGIN
           INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
           VALUES ('INSERT', '${table}', ${newRecordId}, 
             CASE 
@@ -1581,7 +1583,9 @@ async function initDynamicTriggers(db: any) {
           );
         END;`,
 
-        `CREATE TRIGGER trg_${table}_update AFTER UPDATE ON ${table} BEGIN
+        `CREATE TRIGGER trg_${table}_update AFTER UPDATE ON ${table}
+         WHEN (SELECT COALESCE(last_menu, '') FROM session_context WHERE id = 1) != 'BYPASS_TRIGGER'
+         BEGIN
           INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
           VALUES ('UPDATE', '${table}', ${newRecordId}, 
             CASE 
@@ -1593,7 +1597,9 @@ async function initDynamicTriggers(db: any) {
           );
         END;`,
 
-        `CREATE TRIGGER trg_${table}_delete AFTER DELETE ON ${table} BEGIN
+        `CREATE TRIGGER trg_${table}_delete AFTER DELETE ON ${table}
+         WHEN (SELECT COALESCE(last_menu, '') FROM session_context WHERE id = 1) != 'BYPASS_TRIGGER'
+         BEGIN
           INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
           VALUES ('DELETE', '${table}', ${oldRecordId}, 
             'Hapus ' || '${table}' || ': ' || ${oldLabel}, 

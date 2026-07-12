@@ -148,14 +148,14 @@ export interface FieldDiff {
   after: string;
 }
 
-function formatAuditFieldValue(key: string, value: unknown): string {
+export function formatAuditFieldValue(key: string, value: unknown): string {
   if (value === null || value === undefined) return '';
   if (typeof value === 'string' && /(?:^|_)at$/.test(key)) {
     const formatted = formatLastUpdate(value);
     return formatted || value;
   }
   if (typeof value === 'object') {
-    return JSON.stringify(value);
+    return JSON.stringify(value, null, 2);
   }
   return String(value);
 }
