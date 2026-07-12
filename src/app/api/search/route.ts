@@ -44,22 +44,22 @@ export async function GET(request: Request) {
             SELECT 'SO' as type, f.faktur as id, f.faktur as label, 'sales_orders' as source, f.nama_pelanggan as category
             FROM sales_orders f JOIN sales_orders_fts fts ON f.id = fts.rowid WHERE sales_orders_fts MATCH ?
             UNION ALL
-            SELECT 'Barang' as type, CAST(f.id as TEXT) as id, f.nama_barang as label, 'bahan_baku' as source, f.kd_barang as category
+            SELECT 'Barang' as type, CAST(f.id as TEXT) as id, f.nama_barang as label, 'bahan_baku' as source, f.kd_barang || ' · Order: ' || COALESCE(f.nama_prd, '') || ' · Pelanggan: ' || COALESCE(f.kd_pelanggan, '') as category
             FROM bahan_baku f JOIN bahan_baku_fts fts ON f.id = fts.rowid WHERE bahan_baku_fts MATCH ?
             UNION ALL
-            SELECT 'Karyawan' as type, CAST(f.id as TEXT) as id, f.name as label, 'employees' as source, f.employee_no as category
+            SELECT 'Karyawan' as type, CAST(f.id as TEXT) as id, f.name as label, 'employees' as source, f.employee_no || ' · Dept: ' || f.department as category
             FROM employees f JOIN employees_fts fts ON f.id = fts.rowid WHERE employees_fts MATCH ?
             UNION ALL
-            SELECT 'Produksi Selesai' as type, f.faktur as id, f.faktur as label, 'produksi_selesai' as source, f.nama_prd as category
+            SELECT 'Produksi Selesai' as type, f.faktur as id, f.faktur as label, 'produksi_selesai' as source, f.nama_prd || ' · Pelanggan: ' || COALESCE(f.kd_pelanggan, '') as category
             FROM produksi_selesai f JOIN produksi_selesai_fts fts ON f.id = fts.rowid WHERE produksi_selesai_fts MATCH ?
             UNION ALL
-            SELECT 'Order Produksi' as type, f.faktur as id, f.faktur as label, 'orders' as source, f.nama_prd as category
+            SELECT 'Order Produksi' as type, f.faktur as id, f.faktur as label, 'orders' as source, f.nama_prd || ' · Pelanggan: ' || COALESCE(f.nama_pelanggan, '') as category
             FROM orders f JOIN orders_fts fts ON f.id = fts.rowid WHERE orders_fts MATCH ?
             UNION ALL
-            SELECT 'SPH Out' as type, f.faktur as id, f.faktur as label, 'sph_out' as source, f.barang as category
+            SELECT 'SPH Out' as type, f.faktur as id, f.faktur as label, 'sph_out' as source, f.barang || ' · Pelanggan: ' || COALESCE(f.kd_pelanggan, '') as category
             FROM sph_out f JOIN sph_out_fts fts ON f.id = fts.rowid WHERE sph_out_fts MATCH ?
             UNION ALL
-            SELECT 'JHP' as type, CAST(f.id as TEXT) as id, f.nama_order as label, 'jurnal_harian_produksi' as source, f.nama_karyawan || ' (' || f.jenis_pekerjaan || ')' as category
+            SELECT 'JHP' as type, CAST(f.id as TEXT) as id, f.nama_order as label, 'jurnal_harian_produksi' as source, f.nama_karyawan || ' (' || f.jenis_pekerjaan || ') · Order: ' || COALESCE(f.nama_order, '') as category
             FROM jurnal_harian_produksi f JOIN jurnal_harian_produksi_fts fts ON f.id = fts.rowid WHERE jurnal_harian_produksi_fts MATCH ? AND f.deleted_at IS NULL
             LIMIT 30
           `,
@@ -85,29 +85,29 @@ export async function GET(request: Request) {
             SELECT 'SO' as type, faktur as id, faktur as label, 'sales_orders' as source, nama_pelanggan as category
             FROM sales_orders WHERE faktur LIKE ? COLLATE NOCASE OR nama_pelanggan LIKE ? COLLATE NOCASE
             UNION ALL
-            SELECT 'Barang' as type, CAST(id as TEXT) as id, nama_barang as label, 'bahan_baku' as source, kd_barang as category
-            FROM bahan_baku WHERE nama_barang LIKE ? COLLATE NOCASE OR kd_barang LIKE ? COLLATE NOCASE
+            SELECT 'Barang' as type, CAST(id as TEXT) as id, nama_barang as label, 'bahan_baku' as source, kd_barang || ' · Pelanggan: ' || COALESCE(kd_pelanggan, '') as category
+            FROM bahan_baku WHERE nama_barang LIKE ? COLLATE NOCASE OR kd_barang LIKE ? COLLATE NOCASE OR kd_pelanggan LIKE ? COLLATE NOCASE
             UNION ALL
-            SELECT 'Karyawan' as type, CAST(id as TEXT) as id, name as label, 'employees' as source, employee_no as category
+            SELECT 'Karyawan' as type, CAST(id as TEXT) as id, name as label, 'employees' as source, employee_no || ' · Dept: ' || department as category
             FROM employees WHERE name LIKE ? COLLATE NOCASE OR employee_no LIKE ? COLLATE NOCASE
             UNION ALL
-            SELECT 'Produksi Selesai' as type, faktur as id, faktur as label, 'produksi_selesai' as source, nama_prd as category
-            FROM produksi_selesai WHERE faktur LIKE ? COLLATE NOCASE OR nama_prd LIKE ? COLLATE NOCASE
+            SELECT 'Produksi Selesai' as type, faktur as id, faktur as label, 'produksi_selesai' as source, nama_prd || ' · Pelanggan: ' || COALESCE(kd_pelanggan, '') as category
+            FROM produksi_selesai WHERE faktur LIKE ? COLLATE NOCASE OR nama_prd LIKE ? COLLATE NOCASE OR kd_pelanggan LIKE ? COLLATE NOCASE
             UNION ALL
-            SELECT 'Order Produksi' as type, faktur as id, faktur as label, 'orders' as source, nama_prd as category
-            FROM orders WHERE faktur LIKE ? COLLATE NOCASE OR nama_prd LIKE ? COLLATE NOCASE
+            SELECT 'Order Produksi' as type, faktur as id, faktur as label, 'orders' as source, nama_prd || ' · Pelanggan: ' || COALESCE(nama_pelanggan, '') as category
+            FROM orders WHERE faktur LIKE ? COLLATE NOCASE OR nama_prd LIKE ? COLLATE NOCASE OR nama_pelanggan LIKE ? COLLATE NOCASE
             UNION ALL
-            SELECT 'JHP' as type, CAST(id as TEXT) as id, nama_order as label, 'jurnal_harian_produksi' as source, nama_karyawan || ' (' || jenis_pekerjaan || ')' as category
+            SELECT 'JHP' as type, CAST(id as TEXT) as id, nama_order as label, 'jurnal_harian_produksi' as source, nama_karyawan || ' (' || jenis_pekerjaan || ') · Order: ' || COALESCE(nama_order, '') as category
             FROM jurnal_harian_produksi WHERE (nama_order LIKE ? COLLATE NOCASE OR nama_karyawan LIKE ? COLLATE NOCASE OR no_order LIKE ? COLLATE NOCASE) AND deleted_at IS NULL
             LIMIT 30
           `,
           args: [
             pattern, pattern,  // PO
             pattern, pattern,  // SO
-            pattern, pattern,  // Barang
+            pattern, pattern, pattern, // Barang
             pattern, pattern,  // Karyawan
-            pattern, pattern,  // Produksi Selesai
-            pattern, pattern,  // Orders
+            pattern, pattern, pattern, // Produksi Selesai
+            pattern, pattern, pattern, // Orders
             pattern, pattern, pattern // JHP
           ]
         });
