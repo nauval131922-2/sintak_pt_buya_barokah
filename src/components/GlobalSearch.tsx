@@ -20,7 +20,28 @@ export default function GlobalSearch() {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const activeItemRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  // Scroll active item into view inside dropdown
+  useEffect(() => {
+    if (selectedIndex >= 0 && activeItemRef.current && dropdownRef.current) {
+      const activeEl = activeItemRef.current;
+      const dropdownEl = dropdownRef.current;
+
+      const activeTop = activeEl.offsetTop;
+      const activeHeight = activeEl.offsetHeight;
+      const dropdownScrollTop = dropdownEl.scrollTop;
+      const dropdownHeight = dropdownEl.offsetHeight;
+
+      if (activeTop < dropdownScrollTop) {
+        dropdownEl.scrollTop = activeTop - 10;
+      } else if (activeTop + activeHeight > dropdownScrollTop + dropdownHeight) {
+        dropdownEl.scrollTop = activeTop + activeHeight - dropdownHeight + 10;
+      }
+    }
+  }, [selectedIndex]);
 
   useEffect(() => {
     if (query.length < 2) {
@@ -191,7 +212,10 @@ export default function GlobalSearch() {
       </div>
       
       {isOpen && (
-        <div className="absolute z-[9999] w-full mt-2 bg-white border border-slate-100 rounded-xl shadow-xl overflow-hidden max-h-[420px] overflow-y-auto divide-y divide-slate-50 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div 
+          ref={dropdownRef}
+          className="absolute z-[9999] w-full mt-2 bg-white border border-slate-100 rounded-xl shadow-xl overflow-hidden max-h-[420px] overflow-y-auto divide-y divide-slate-50 animate-in fade-in slide-in-from-top-2 duration-200"
+        >
           {results.length === 0 ? (
             <div className="px-4 py-8 text-center text-slate-400 text-sm">
               Tidak ada hasil untuk &quot;{query}&quot;
@@ -208,11 +232,13 @@ export default function GlobalSearch() {
                     .filter(r => r.source === 'menu')
                     .map((item, idx) => {
                       const actualIndex = results.indexOf(item);
+                      const isSelected = selectedIndex === actualIndex;
                       return (
                         <div
                           key={`menu-${idx}`}
+                          ref={isSelected ? activeItemRef : null}
                           className={`mx-2 my-0.5 px-3 py-2 rounded-lg cursor-pointer flex justify-between items-center transition-all ${
-                            selectedIndex === actualIndex
+                            isSelected
                               ? 'bg-emerald-50 text-emerald-950 font-medium'
                               : 'hover:bg-slate-50 text-slate-700'
                           }`}
@@ -242,6 +268,7 @@ export default function GlobalSearch() {
                     .filter(r => r.source !== 'menu')
                     .map((item, idx) => {
                       const actualIndex = results.indexOf(item);
+                      const isSelected = selectedIndex === actualIndex;
                       const isPoOrSo = item.type === 'PO' || item.type === 'SO';
                       const badgeBg = isPoOrSo 
                         ? 'bg-blue-50 text-blue-700 border-blue-100/50' 
@@ -252,8 +279,9 @@ export default function GlobalSearch() {
                       return (
                         <div
                           key={`data-${idx}`}
+                          ref={isSelected ? activeItemRef : null}
                           className={`mx-2 my-0.5 px-3 py-2 rounded-lg cursor-pointer flex justify-between items-center transition-all ${
-                            selectedIndex === actualIndex
+                            isSelected
                               ? 'bg-emerald-50 text-emerald-950 font-medium'
                               : 'hover:bg-slate-50 text-slate-700'
                           }`}
