@@ -1183,6 +1183,9 @@ export async function initSchema(db: any) {
       await db.execute(`DROP TABLE IF EXISTS employees_fts`);
       await db.execute(`DROP TABLE IF EXISTS sph_out_fts`);
       await db.execute(`DROP TABLE IF EXISTS hpp_kalkulasi_fts`);
+      await db.execute(`DROP TABLE IF EXISTS purchase_orders_fts`);
+      await db.execute(`DROP TABLE IF EXISTS produksi_selesai_fts`);
+      await db.execute(`DROP TABLE IF EXISTS jurnal_harian_produksi_fts`);
 
       // --- FTS5 FOR BAHAN BAKU ---
       await db.execute(`
@@ -1246,6 +1249,30 @@ export async function initSchema(db: any) {
       await db.execute(`
          CREATE VIRTUAL TABLE sph_out_fts USING fts5(
             id, faktur, kd_pelanggan, barang, faktur_so,
+            tokenize='unicode61 remove_diacritics 1'
+         );
+      `);
+
+      // --- FTS5 FOR PURCHASE ORDERS ---
+      await db.execute(`
+         CREATE VIRTUAL TABLE purchase_orders_fts USING fts5(
+            id, faktur, kd_supplier, faktur_pr, faktur_sph, status,
+            tokenize='unicode61 remove_diacritics 1'
+         );
+      `);
+
+      // --- FTS5 FOR PRODUKSI SELESAI ---
+      await db.execute(`
+         CREATE VIRTUAL TABLE produksi_selesai_fts USING fts5(
+            id, faktur, nama_prd, kd_pelanggan, regu, username,
+            tokenize='unicode61 remove_diacritics 1'
+         );
+      `);
+
+      // --- FTS5 FOR JURNAL HARIAN PRODUKSI ---
+      await db.execute(`
+         CREATE VIRTUAL TABLE jurnal_harian_produksi_fts USING fts5(
+            id, nama_karyawan, no_order, nama_order, jenis_pekerjaan, keterangan, bagian, shift, no_order_2, nama_order_2, jenis_pekerjaan_2,
             tokenize='unicode61 remove_diacritics 1'
          );
       `);
@@ -1337,6 +1364,39 @@ export async function initSchema(db: any) {
               "DELETE FROM sph_out_fts",
               `INSERT INTO sph_out_fts(id, rowid, faktur, kd_pelanggan, barang, faktur_so)
                SELECT id, id, faktur, kd_pelanggan, barang, faktur_so FROM sph_out`
+           ], "write");
+        }
+
+        // Sync Purchase Orders
+        const ftsCountPO = await db.execute("SELECT COUNT(*) as count FROM purchase_orders_fts");
+        const poCount = await db.execute("SELECT COUNT(*) as count FROM purchase_orders");
+        if (Number(ftsCountPO.rows[0].count) < Number(poCount.rows[0].count)) {
+           await db.batch([
+              "DELETE FROM purchase_orders_fts",
+              `INSERT INTO purchase_orders_fts(id, rowid, faktur, kd_supplier, faktur_pr, faktur_sph, status)
+               SELECT id, id, faktur, kd_supplier, faktur_pr, faktur_sph, status FROM purchase_orders`
+           ], "write");
+        }
+
+        // Sync Produksi Selesai
+        const ftsCountPS = await db.execute("SELECT COUNT(*) as count FROM produksi_selesai_fts");
+        const psCount = await db.execute("SELECT COUNT(*) as count FROM produksi_selesai");
+        if (Number(ftsCountPS.rows[0].count) < Number(psCount.rows[0].count)) {
+           await db.batch([
+              "DELETE FROM produksi_selesai_fts",
+              `INSERT INTO produksi_selesai_fts(id, rowid, faktur, nama_prd, kd_pelanggan, regu, username)
+               SELECT id, id, faktur, nama_prd, kd_pelanggan, regu, username FROM produksi_selesai`
+           ], "write");
+        }
+
+        // Sync Jurnal Harian Produksi
+        const ftsCountJHP = await db.execute("SELECT COUNT(*) as count FROM jurnal_harian_produksi_fts");
+        const jhpCount = await db.execute("SELECT COUNT(*) as count FROM jurnal_harian_produksi WHERE deleted_at IS NULL");
+        if (Number(ftsCountJHP.rows[0].count) < Number(jhpCount.rows[0].count)) {
+           await db.batch([
+              "DELETE FROM jurnal_harian_produksi_fts",
+              `INSERT INTO jurnal_harian_produksi_fts(id, rowid, nama_karyawan, no_order, nama_order, jenis_pekerjaan, keterangan, bagian, shift, no_order_2, nama_order_2, jenis_pekerjaan_2)
+               SELECT id, id, nama_karyawan, no_order, nama_order, jenis_pekerjaan, keterangan, bagian, shift, no_order_2, nama_order_2, jenis_pekerjaan_2 FROM jurnal_harian_produksi WHERE deleted_at IS NULL`
            ], "write");
         }
       } catch (err) {
@@ -1479,6 +1539,57 @@ export async function initSchema(db: any) {
           `DROP TRIGGER IF EXISTS trg_sph_out_fts_delete;`,
           `CREATE TRIGGER trg_sph_out_fts_delete AFTER DELETE ON sph_out BEGIN
             DELETE FROM sph_out_fts WHERE rowid = OLD.id;
+          END;`,
+
+          // Purchase Orders
+          `DROP TRIGGER IF EXISTS trg_purchase_orders_fts_insert;`,
+          `CREATE TRIGGER trg_purchase_orders_fts_insert AFTER INSERT ON purchase_orders BEGIN
+            INSERT INTO purchase_orders_fts(id, rowid, faktur, kd_supplier, faktur_pr, faktur_sph, status)
+            VALUES (NEW.id, NEW.id, NEW.faktur, NEW.kd_supplier, NEW.faktur_pr, NEW.faktur_sph, NEW.status);
+          END;`,
+          `DROP TRIGGER IF EXISTS trg_purchase_orders_fts_update;`,
+          `CREATE TRIGGER trg_purchase_orders_fts_update AFTER UPDATE ON purchase_orders BEGIN
+            DELETE FROM purchase_orders_fts WHERE rowid = OLD.id;
+            INSERT INTO purchase_orders_fts(id, rowid, faktur, kd_supplier, faktur_pr, faktur_sph, status)
+            VALUES (NEW.id, NEW.id, NEW.faktur, NEW.kd_supplier, NEW.faktur_pr, NEW.faktur_sph, NEW.status);
+          END;`,
+          `DROP TRIGGER IF EXISTS trg_purchase_orders_fts_delete;`,
+          `CREATE TRIGGER trg_purchase_orders_fts_delete AFTER DELETE ON purchase_orders BEGIN
+            DELETE FROM purchase_orders_fts WHERE rowid = OLD.id;
+          END;`,
+
+          // Produksi Selesai
+          `DROP TRIGGER IF EXISTS trg_produksi_selesai_fts_insert;`,
+          `CREATE TRIGGER trg_produksi_selesai_fts_insert AFTER INSERT ON produksi_selesai BEGIN
+            INSERT INTO produksi_selesai_fts(id, rowid, faktur, nama_prd, kd_pelanggan, regu, username)
+            VALUES (NEW.id, NEW.id, NEW.faktur, NEW.nama_prd, NEW.kd_pelanggan, NEW.regu, NEW.username);
+          END;`,
+          `DROP TRIGGER IF EXISTS trg_produksi_selesai_fts_update;`,
+          `CREATE TRIGGER trg_produksi_selesai_fts_update AFTER UPDATE ON produksi_selesai BEGIN
+            DELETE FROM produksi_selesai_fts WHERE rowid = OLD.id;
+            INSERT INTO produksi_selesai_fts(id, rowid, faktur, nama_prd, kd_pelanggan, regu, username)
+            VALUES (NEW.id, NEW.id, NEW.faktur, NEW.nama_prd, NEW.kd_pelanggan, NEW.regu, NEW.username);
+          END;`,
+          `DROP TRIGGER IF EXISTS trg_produksi_selesai_fts_delete;`,
+          `CREATE TRIGGER trg_produksi_selesai_fts_delete AFTER DELETE ON produksi_selesai BEGIN
+            DELETE FROM produksi_selesai_fts WHERE rowid = OLD.id;
+          END;`,
+
+          // Jurnal Harian Produksi (only non-deleted)
+          `DROP TRIGGER IF EXISTS trg_jurnal_harian_produksi_fts_insert;`,
+          `CREATE TRIGGER trg_jurnal_harian_produksi_fts_insert AFTER INSERT ON jurnal_harian_produksi BEGIN
+            INSERT INTO jurnal_harian_produksi_fts(id, rowid, nama_karyawan, no_order, nama_order, jenis_pekerjaan, keterangan, bagian, shift, no_order_2, nama_order_2, jenis_pekerjaan_2)
+            VALUES (NEW.id, NEW.id, NEW.nama_karyawan, NEW.no_order, NEW.nama_order, NEW.jenis_pekerjaan, NEW.keterangan, NEW.bagian, NEW.shift, NEW.no_order_2, NEW.nama_order_2, NEW.jenis_pekerjaan_2);
+          END;`,
+          `DROP TRIGGER IF EXISTS trg_jurnal_harian_produksi_fts_update;`,
+          `CREATE TRIGGER trg_jurnal_harian_produksi_fts_update AFTER UPDATE ON jurnal_harian_produksi WHEN NEW.deleted_at IS NULL BEGIN
+            DELETE FROM jurnal_harian_produksi_fts WHERE rowid = OLD.id;
+            INSERT INTO jurnal_harian_produksi_fts(id, rowid, nama_karyawan, no_order, nama_order, jenis_pekerjaan, keterangan, bagian, shift, no_order_2, nama_order_2, jenis_pekerjaan_2)
+            VALUES (NEW.id, NEW.id, NEW.nama_karyawan, NEW.no_order, NEW.nama_order, NEW.jenis_pekerjaan, NEW.keterangan, NEW.bagian, NEW.shift, NEW.no_order_2, NEW.nama_order_2, NEW.jenis_pekerjaan_2);
+          END;`,
+          `DROP TRIGGER IF EXISTS trg_jurnal_harian_produksi_fts_delete;`,
+          `CREATE TRIGGER trg_jurnal_harian_produksi_fts_delete AFTER DELETE ON jurnal_harian_produksi BEGIN
+            DELETE FROM jurnal_harian_produksi_fts WHERE rowid = OLD.id;
           END;`
       ], "write");
 

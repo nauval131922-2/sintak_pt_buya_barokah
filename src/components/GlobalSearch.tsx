@@ -12,6 +12,21 @@ interface SearchResult {
   category?: string;
 }
 
+// Function to highlight matched search terms
+function highlightText(text: string, search: string) {
+  if (!search.trim()) return text;
+  const parts = text.split(new RegExp(`(${search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'));
+  return (
+    <>
+      {parts.map((part, i) => 
+        part.toLowerCase() === search.toLowerCase() 
+          ? <mark key={i} className="bg-yellow-100 text-yellow-900 px-0.5 rounded font-bold">{part}</mark>
+          : part
+      )}
+    </>
+  );
+}
+
 export default function GlobalSearch() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -152,6 +167,9 @@ export default function GlobalSearch() {
         case 'sph_out':
           router.push(`/sph-out?search=${encodeURIComponent(item.id)}`);
           break;
+        case 'jurnal_harian_produksi':
+          router.push(`/jurnal-harian-produksi?search=${encodeURIComponent(item.label)}`);
+          break;
         default:
           // Fallback untuk source yang belum di-handle
           alert(`Detail ${item.type}: ${item.label}`);
@@ -245,9 +263,13 @@ export default function GlobalSearch() {
                           onClick={() => handleSelectResult(item)}
                         >
                           <div className="flex flex-col gap-0.5 min-w-0">
-                            <span className="font-semibold text-xs truncate leading-snug">{item.label}</span>
+                            <span className="font-semibold text-xs truncate leading-snug">
+                              {highlightText(item.label, query)}
+                            </span>
                             {item.category && (
-                              <span className="text-[10px] text-slate-400 font-medium">{item.category}</span>
+                              <span className="text-[10px] text-slate-400 font-medium">
+                                {highlightText(item.category, query)}
+                              </span>
                             )}
                           </div>
                           <span className="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-100/50 px-2 py-0.5 rounded-md font-bold shrink-0 ml-2">
@@ -274,6 +296,8 @@ export default function GlobalSearch() {
                         ? 'bg-blue-50 text-blue-700 border-blue-100/50' 
                         : item.type === 'Karyawan' 
                         ? 'bg-purple-50 text-purple-700 border-purple-100/50' 
+                        : item.type === 'JHP'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100/50'
                         : 'bg-amber-50 text-amber-700 border-amber-100/50';
 
                       return (
@@ -288,9 +312,13 @@ export default function GlobalSearch() {
                           onClick={() => handleSelectResult(item)}
                         >
                           <div className="flex flex-col gap-0.5 min-w-0">
-                            <span className="font-bold text-xs truncate leading-snug">{item.label}</span>
+                            <span className="font-bold text-xs truncate leading-snug">
+                              {highlightText(item.label, query)}
+                            </span>
                             {item.category && (
-                              <span className="text-[10px] text-slate-400 font-medium">{item.category}</span>
+                              <span className="text-[10px] text-slate-400 font-medium">
+                                {highlightText(item.category, query)}
+                              </span>
                             )}
                           </div>
                           <span className={`text-[9px] border px-2 py-0.5 rounded-md font-bold shrink-0 ml-2 ${badgeBg}`}>

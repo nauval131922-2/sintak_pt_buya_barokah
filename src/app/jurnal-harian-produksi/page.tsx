@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import JurnalClient from "./JurnalClient";
 import type { Metadata } from "next";
 import PageHeader from "@/components/PageHeader";
@@ -74,14 +75,16 @@ export default async function JurnalHarianPage() {
         description="Laporan target dan realisasi pekerjaan harian produksi."
       />
 
-      <JurnalClient
-        initData={initialData}
-        canInputTarget={canInputTarget}
-        canInputRealisasi={canInputRealisasi}
-        canCopyJadwal={canCopyJadwal}
-        isSuperAdmin={isSuperAdmin}
-        userRole={session?.role || ""}
-      />
+      <Suspense fallback={<div className="h-40 bg-white rounded-2xl animate-pulse" />}>
+        <JurnalClient
+          initData={initialData}
+          canInputTarget={canInputTarget}
+          canInputRealisasi={canInputRealisasi}
+          canCopyJadwal={canCopyJadwal}
+          isSuperAdmin={isSuperAdmin}
+          userRole={session?.role || ""}
+        />
+      </Suspense>
     </div>
   );
 }

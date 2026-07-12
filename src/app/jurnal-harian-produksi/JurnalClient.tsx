@@ -5,7 +5,7 @@ import { SortingState } from '@tanstack/react-table';
 import { Loader2, AlertCircle, AlertTriangle, ClipboardList, RotateCcw, Filter, Plus, Trash2, Edit2, Save, X, CheckCircle2, ChevronDown, Search, PlusSquare, Copy, FileText, Download, BookOpen, FileSpreadsheet, Pencil, Users } from 'lucide-react';
 import SearchableDropdown from '@/components/SearchableDropdown';
 import SearchAndReload from '@/components/SearchAndReload';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import ViewActivityLogLink from '@/components/ViewActivityLogLink';
 import { DataTable } from '@/components/ui/DataTable';
@@ -327,6 +327,7 @@ export default function JurnalClient({
   userRole?: string;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const initDone = useRef(false);
   
   // State
@@ -359,8 +360,8 @@ export default function JurnalClient({
   const [copyKaryawanSearch, setCopyKaryawanSearch] = useState('');
 
   // Search & Pagination
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
+  const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || '');
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [page, setPage] = useState(1);
@@ -491,6 +492,16 @@ export default function JurnalClient({
       bagian: 150
     };
   });
+
+  useEffect(() => {
+    // If URL search parameter changes, sync it to state
+    const urlSearch = searchParams.get('search');
+    if (urlSearch !== null) {
+      setSearchQuery(urlSearch);
+      setDebouncedQuery(urlSearch);
+      setPage(1);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
