@@ -39,6 +39,21 @@ function formatIndoDateStr(tglStr: string) {
 
 const PAGE_SIZE = 50;
 
+// Helper to highlight matching text
+function highlightText(text: string, search: string) {
+  if (!search.trim()) return text;
+  const parts = text.split(new RegExp(`(${search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'));
+  return (
+    <>
+      {parts.map((part, i) => 
+        part.toLowerCase() === search.toLowerCase() 
+          ? <mark key={i} className="bg-yellow-100 text-yellow-950 px-0.5 rounded font-bold">{part}</mark>
+          : part
+      )}
+    </>
+  );
+}
+
 export default function SalesOrderClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -233,19 +248,19 @@ export default function SalesOrderClient() {
       accessorKey: 'faktur',
       header: 'Faktur SO',
       size: 180,
-      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-600' : 'text-gray-700'}`}>{String(getValue())}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-600' : 'text-gray-700'}`}>{highlightText(String(getValue() || '-'), debouncedQuery)}</span>
     },
     {
       accessorKey: 'nama_pelanggan',
       header: 'Pelanggan',
       size: 280,
-      cell: ({ getValue, row }: any) => <span className={`font-semibold  tracking-tight ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'}`}>{String(getValue())}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-semibold  tracking-tight ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'}`}>{highlightText(String(getValue() || '-'), debouncedQuery)}</span>
     },
     {
       accessorKey: 'nama_prd',
       header: 'Produk',
       size: 350,
-      cell: ({ getValue, row }: any) => <span className={`font-bold  ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'}`}>{String(getValue())}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold  ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'}`}>{highlightText(String(getValue() || '-'), debouncedQuery)}</span>
     },
     {
       accessorKey: 'faktur_sph',
@@ -269,7 +284,7 @@ export default function SalesOrderClient() {
       accessorKey: 'keterangan',
       header: 'Keterangan',
       size: 250,
-      cell: ({ getValue, row }: any) => <span className={`font-medium transition-colors truncate block ${row.getIsSelected() ? 'text-green-800' : 'text-gray-700'}`}>{String(getValue() || '–')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium transition-colors truncate block ${row.getIsSelected() ? 'text-green-800' : 'text-gray-700'}`}>{highlightText(String(getValue() || '–'), debouncedQuery)}</span>
     },
     {
       accessorKey: 'qty',
