@@ -124,6 +124,12 @@ export default function GlobalSearch() {
         case 'purchase_requests':
           router.push(`/pr?search=${encodeURIComponent(item.id)}`);
           break;
+        case 'produksi_selesai':
+          router.push(`/data-digit/produksi/produksi-selesai?search=${encodeURIComponent(item.id)}`);
+          break;
+        case 'sph_out':
+          router.push(`/sph-out?search=${encodeURIComponent(item.id)}`);
+          break;
         default:
           // Fallback untuk source yang belum di-handle
           alert(`Detail ${item.type}: ${item.label}`);

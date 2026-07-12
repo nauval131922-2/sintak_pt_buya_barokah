@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import OrderProduksiClient from "./OrderProduksiClient";
 import type { Metadata } from "next";
 import PageHeader from "@/components/PageHeader";
@@ -30,7 +31,9 @@ export default async function OrdersPage() {
         }
       />
 
-      <OrderProduksiClient />
+      <Suspense fallback={<div className="h-40 bg-white rounded-2xl animate-pulse" />}>
+        <OrderProduksiClient />
+      </Suspense>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { SortingState } from '@tanstack/react-table';
 import { Loader2, CheckCircle2 } from 'lucide-react';
 import { DataTable } from '@/components/ui/DataTable';
@@ -54,6 +55,8 @@ interface ProduksiSelesaiRecord {
 }
 
 export default function ProduksiSelesaiClient() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [isMounted, setIsMounted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<ProduksiSelesaiRecord[] | null>(null);
@@ -63,8 +66,9 @@ export default function ProduksiSelesaiClient() {
   const [loadTime, setLoadTime] = useState<number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
+  // Initialize search state from URL ?search= if present
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
+  const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || '');
   const [startDate, setStartDate] = useState<Date>(() => getDefaultScraperDateRange().startDate);
   const [endDate, setEndDate] = useState<Date>(() => getDefaultScraperDateRange().endDate);
 
@@ -111,6 +115,16 @@ export default function ProduksiSelesaiClient() {
       fetchedOn: new Date().toLocaleDateString('en-CA'),
     }));
   }, [startDate, endDate, isMounted]);
+
+  useEffect(() => {
+    // If URL search parameter changes, sync it to state
+    const urlSearch = searchParams.get('search');
+    if (urlSearch !== null) {
+      setSearchQuery(urlSearch);
+      setDebouncedQuery(urlSearch);
+      setPage(1);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const timer = setTimeout(() => { setDebouncedQuery(searchQuery); setPage(1); }, 350);

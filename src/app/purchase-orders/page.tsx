@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Metadata } from "next";
 import PurchaseOrderClient from "./PurchaseOrderClient";
 import PageHeader from "@/components/PageHeader";
@@ -30,7 +31,9 @@ export default async function PurchaseOrderPage() {
         }
       />
 
-      <PurchaseOrderClient />
+      <Suspense fallback={<div className="h-40 bg-white rounded-2xl animate-pulse" />}>
+        <PurchaseOrderClient />
+      </Suspense>
     </div>
   );
 }

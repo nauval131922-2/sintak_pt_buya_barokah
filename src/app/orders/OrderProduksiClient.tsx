@@ -17,6 +17,8 @@ import { formatLastUpdate } from '@/lib/date-utils';
 import { formatScrapedPeriodDate, getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod, persistScraperPeriodFull } from '@/lib/scraper-period';
 import ScrapingHeader from '@/components/ScrapingHeader';
 
+import { useSearchParams } from 'next/navigation';
+
 function formatDateToYYYYMMDD(date: Date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -40,6 +42,7 @@ const PAGE_SIZE = 50;
 
 export default function OrderProduksiClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isMounted, setIsMounted] = useState(false);
   const [startDate, setStartDate] = useState<Date>(() => getDefaultScraperDateRange().startDate);
   const [endDate, setEndDate] = useState<Date>(() => getDefaultScraperDateRange().endDate);
@@ -51,8 +54,9 @@ export default function OrderProduksiClient() {
   const [loadTime, setLoadTime] = useState<number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
+  // Initialize search state from URL ?search= if present
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
+  const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || '');
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
@@ -73,6 +77,16 @@ export default function OrderProduksiClient() {
   useEffect(() => {
     localStorage.setItem('orders_columnWidths', JSON.stringify(columnWidths));
   }, [columnWidths]);
+
+  useEffect(() => {
+    // If URL search parameter changes, sync it to state
+    const urlSearch = searchParams.get('search');
+    if (urlSearch !== null) {
+      setSearchQuery(urlSearch);
+      setDebouncedQuery(urlSearch);
+      setPage(1);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const handler = setTimeout(() => {

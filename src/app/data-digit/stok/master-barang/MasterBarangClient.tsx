@@ -11,9 +11,13 @@ import ScrapingHeader from '@/components/ScrapingHeader';
 import { useTableSelection } from '@/lib/hooks/useTableSelection';
 import { formatLastUpdate } from '@/lib/date-utils';
 
+import { useSearchParams } from 'next/navigation';
+
 const PAGE_SIZE = 50;
 
 export default function MasterBarangClient() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [isMounted, setIsMounted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any[] | null>(null);
@@ -21,8 +25,8 @@ export default function MasterBarangClient() {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [loadTime, setLoadTime] = useState<number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
+  const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || '');
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
@@ -32,7 +36,6 @@ export default function MasterBarangClient() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [dialog, setDialog] = useState({ isOpen: false, type: 'success' as any, title: '', message: '' });
-  const router = useRouter();
 
   const { selectedIds, setSelectedIds, handleRowClick, clearSelection } = useTableSelection(data || []);
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
@@ -48,6 +51,16 @@ export default function MasterBarangClient() {
   useEffect(() => {
     localStorage.setItem('masterBarang_columnWidths', JSON.stringify(columnWidths));
   }, [columnWidths]);
+
+  useEffect(() => {
+    // If URL search parameter changes, sync it to state
+    const urlSearch = searchParams.get('search');
+    if (urlSearch !== null) {
+      setSearchQuery(urlSearch);
+      setDebouncedQuery(urlSearch);
+      setPage(1);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const handler = setTimeout(() => {

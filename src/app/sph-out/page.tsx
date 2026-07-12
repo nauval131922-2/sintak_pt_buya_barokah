@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import SPHOutClient from "./SPHOutClient";
 import type { Metadata } from "next";
 import PageHeader from "@/components/PageHeader";
@@ -31,7 +32,9 @@ export default async function SPHOutPage() {
         }
       />
 
-      <SPHOutClient />
+      <Suspense fallback={<div className="h-40 bg-white rounded-2xl animate-pulse" />}>
+        <SPHOutClient />
+      </Suspense>
     </div>
   );
 }

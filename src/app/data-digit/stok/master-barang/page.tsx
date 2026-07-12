@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { requirePermission } from '@/lib/permissions';
 import MasterBarangClient from './MasterBarangClient';
@@ -31,7 +32,9 @@ export default async function MasterBarangPage() {
         }
       />
 
-      <MasterBarangClient />
+      <Suspense fallback={<div className="h-40 bg-white rounded-2xl animate-pulse" />}>
+        <MasterBarangClient />
+      </Suspense>
     </div>
   );
 }

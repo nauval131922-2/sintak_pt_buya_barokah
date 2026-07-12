@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getEmployees, getLastEmployeeImport } from "@/lib/actions";
 import type { Metadata } from "next";
 import ExcelUpload from "@/components/ExcelUpload";
@@ -39,13 +40,15 @@ export default async function EmployeesPage() {
         <ExcelUpload />
 
         <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-          <EmployeeTable
-            importInfo={
-              importFileName
-                ? { fileName: importFileName, time: importTime }
-                : undefined
-            }
-          />
+          <Suspense fallback={<div className="h-40 bg-white rounded-2xl animate-pulse" />}>
+            <EmployeeTable
+              importInfo={
+                importFileName
+                  ? { fileName: importFileName, time: importTime }
+                  : undefined
+              }
+            />
+          </Suspense>
         </div>
       </div>
     </div>

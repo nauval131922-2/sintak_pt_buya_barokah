@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { requirePermission } from "@/lib/permissions";
 import ProduksiSelesaiClient from "./ProduksiSelesaiClient";
@@ -30,7 +31,9 @@ export default async function ProduksiSelesaiPage() {
           </>
         }
       />
-      <ProduksiSelesaiClient />
+      <Suspense fallback={<div className="h-40 bg-white rounded-2xl animate-pulse" />}>
+        <ProduksiSelesaiClient />
+      </Suspense>
     </div>
   );
 }

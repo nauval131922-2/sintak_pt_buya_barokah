@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Metadata } from "next";
 import PRClient from "./PRClient";
 import PageHeader from "@/components/PageHeader";
@@ -30,7 +31,9 @@ export default async function PRPage() {
         }
       />
 
-      <PRClient />
+      <Suspense fallback={<div className="h-40 bg-white rounded-2xl animate-pulse" />}>
+        <PRClient />
+      </Suspense>
     </div>
   );
 }

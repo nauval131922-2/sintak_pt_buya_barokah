@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { Loader2, AlertCircle, Users } from "lucide-react";
 import ImportInfo from "@/components/ImportInfo";
 import SearchAndReload from "@/components/SearchAndReload";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { DataTable } from "@/components/ui/DataTable";
 import TableFooter from "@/components/TableFooter";
 import CopyButton from "@/components/ui/CopyButton";
@@ -37,6 +37,7 @@ const NameCell = ({ name }: { name: string }) => (
 
 export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const mountedRef = useRef(true);
   
   // State
@@ -48,8 +49,8 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Search & Pagination
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || "");
+  const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || "");
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
@@ -72,6 +73,15 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
   });
 
   // Debounce search
+  useEffect(() => {
+    const urlSearch = searchParams.get('search');
+    if (urlSearch !== null) {
+      setSearchQuery(urlSearch);
+      setDebouncedQuery(urlSearch);
+      setPage(1);
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(searchQuery), 350);
     return () => clearTimeout(timer);
