@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { Search } from 'lucide-react';
 
 interface SearchResult {
   type: string;
@@ -154,54 +155,54 @@ export default function GlobalSearch() {
         <input
           ref={inputRef}
           type="text"
-          placeholder="Find everything..."
-          className="w-full pl-10 pr-10 py-2 border rounded-xl border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+          placeholder="Cari menu, PO, SO, barang, karyawan..."
+          className="w-full pl-10 pr-12 py-2.5 border rounded-xl border-slate-200 bg-slate-50/50 hover:bg-slate-50 hover:border-emerald-300 focus:bg-white focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 text-sm transition-all font-medium placeholder-slate-400"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyNavigation}
         />
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-          <kbd className="px-1.5 py-0.5 text-[10px] font-semibold text-gray-400 bg-gray-100 border border-gray-200 rounded">
-            /
-          </kbd>
+        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-slate-400 pointer-events-none">
+          <Search size={16} />
         </div>
         
-        {/* Loading spinner or Clear button */}
-        {query && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-            {isLoading ? (
-              <svg className="animate-spin h-4 w-4 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        {/* Loading spinner or Clear button or Slash key hint */}
+        <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-2">
+          {isLoading ? (
+            <svg className="animate-spin h-4 w-4 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          ) : query ? (
+            <button
+              onClick={handleClearQuery}
+              className="text-slate-400 hover:text-slate-600 transition-colors p-0.5 rounded-md hover:bg-slate-100"
+              aria-label="Clear search"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
               </svg>
-            ) : (
-              <button
-                onClick={handleClearQuery}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-                aria-label="Clear search"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-              </button>
-            )}
-          </div>
-        )}
+            </button>
+          ) : (
+            <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-bold text-slate-400 bg-white border border-slate-200 rounded-md shadow-sm pointer-events-none">
+              /
+            </kbd>
+          )}
+        </div>
       </div>
       
       {isOpen && (
-        <div className="absolute z-[9999] w-full mt-2 bg-white border border-emerald-100 rounded-xl shadow-lg overflow-hidden max-h-96 overflow-y-auto">
+        <div className="absolute z-[9999] w-full mt-2 bg-white border border-slate-100 rounded-xl shadow-xl overflow-hidden max-h-[420px] overflow-y-auto divide-y divide-slate-50 animate-in fade-in slide-in-from-top-2 duration-200">
           {results.length === 0 ? (
-            <div className="px-4 py-8 text-center text-gray-500 text-sm">
+            <div className="px-4 py-8 text-center text-slate-400 text-sm">
               Tidak ada hasil untuk &quot;{query}&quot;
             </div>
           ) : (
             <>
               {/* Group by source: Menu first, then Data */}
               {results.some(r => r.source === 'menu') && (
-                <>
-                  <div className="px-4 py-1.5 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                    Menu
+                <div className="py-2">
+                  <div className="px-4 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    Menu Navigasi
                   </div>
                   {results
                     .filter(r => r.source === 'menu')
@@ -210,60 +211,67 @@ export default function GlobalSearch() {
                       return (
                         <div
                           key={`menu-${idx}`}
-                          className={`px-4 py-2.5 cursor-pointer flex justify-between items-center border-b border-gray-50 last:border-0 transition-colors ${
+                          className={`mx-2 my-0.5 px-3 py-2 rounded-lg cursor-pointer flex justify-between items-center transition-all ${
                             selectedIndex === actualIndex
-                              ? 'bg-emerald-100'
-                              : 'hover:bg-emerald-50'
+                              ? 'bg-emerald-50 text-emerald-950 font-medium'
+                              : 'hover:bg-slate-50 text-slate-700'
                           }`}
                           onClick={() => handleSelectResult(item)}
                         >
                           <div className="flex flex-col gap-0.5 min-w-0">
-                            <span className="font-medium text-gray-800 truncate">{item.label}</span>
+                            <span className="font-semibold text-xs truncate leading-snug">{item.label}</span>
                             {item.category && (
-                              <span className="text-xs text-gray-400">{item.category}</span>
+                              <span className="text-[10px] text-slate-400 font-medium">{item.category}</span>
                             )}
                           </div>
-                          <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-medium shrink-0 ml-2">
+                          <span className="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-100/50 px-2 py-0.5 rounded-md font-bold shrink-0 ml-2">
                             {item.type}
                           </span>
                         </div>
                       );
                     })}
-                </>
+                </div>
               )}
               
               {results.some(r => r.source !== 'menu') && (
-                <>
-                  <div className="px-4 py-1.5 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                    Data
+                <div className="py-2">
+                  <div className="px-4 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    Data Master & Transaksi
                   </div>
                   {results
                     .filter(r => r.source !== 'menu')
                     .map((item, idx) => {
                       const actualIndex = results.indexOf(item);
+                      const isPoOrSo = item.type === 'PO' || item.type === 'SO';
+                      const badgeBg = isPoOrSo 
+                        ? 'bg-blue-50 text-blue-700 border-blue-100/50' 
+                        : item.type === 'Karyawan' 
+                        ? 'bg-purple-50 text-purple-700 border-purple-100/50' 
+                        : 'bg-amber-50 text-amber-700 border-amber-100/50';
+
                       return (
                         <div
                           key={`data-${idx}`}
-                          className={`px-4 py-2.5 cursor-pointer flex justify-between items-center border-b border-gray-50 last:border-0 transition-colors ${
+                          className={`mx-2 my-0.5 px-3 py-2 rounded-lg cursor-pointer flex justify-between items-center transition-all ${
                             selectedIndex === actualIndex
-                              ? 'bg-emerald-100'
-                              : 'hover:bg-emerald-50'
+                              ? 'bg-emerald-50 text-emerald-950 font-medium'
+                              : 'hover:bg-slate-50 text-slate-700'
                           }`}
                           onClick={() => handleSelectResult(item)}
                         >
                           <div className="flex flex-col gap-0.5 min-w-0">
-                            <span className="font-medium text-gray-800 truncate">{item.label}</span>
+                            <span className="font-bold text-xs truncate leading-snug">{item.label}</span>
                             {item.category && (
-                              <span className="text-xs text-gray-400">{item.category}</span>
+                              <span className="text-[10px] text-slate-400 font-medium">{item.category}</span>
                             )}
                           </div>
-                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium shrink-0 ml-2">
+                          <span className={`text-[9px] border px-2 py-0.5 rounded-md font-bold shrink-0 ml-2 ${badgeBg}`}>
                             {item.type}
                           </span>
                         </div>
                       );
                     })}
-                </>
+                </div>
               )}
             </>
           )}
