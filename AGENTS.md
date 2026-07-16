@@ -21,7 +21,7 @@ Project ERP/internal web Next.js 16 App Router (TypeScript, Tailwind v4, SQLite/
 - **DB**: Lokal SQLite (`database.sqlite` / `database_dev.sqlite`) atau Turso cloud. Deteksi otomatis: `USE_REMOTE_DB=true` + `TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN`.
 - **Body size limit**: `next.config.ts` set `proxyClientMaxBodySize: '500mb'` dan `serverActions.bodySizeLimit: '500mb'` — penting untuk upload Excel besar.
 - **PM2**: `ecosystem.config.js` untuk production — nama app `sintak-prod`, port 3000.
-- **Vercel cron**: 3 job — maintenance (Minggu 01:00), archive-logs (harian 02:00), sync-daily (harian 03:00) — lihat `vercel.json`.
+- **Cron jobs**: 3 job via **crontab VPS** — maintenance (Minggu 01:00), archive-logs (harian 02:00), sync-daily (harian 03:00). Lihat `src/app/api/cron/` dan `docs/VPS_CRON_MIGRATION.md`.
 
 ## Activity Log — Manual Wajib untuk Scraping/Import Massal
 
