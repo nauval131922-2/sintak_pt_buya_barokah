@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { evaluateMathExpression, formatFormulaNumbers, formatIndoDateStr } from '@/app/jurnal-harian-produksi/jurnal-utils';
+import { formatIndoDateStr, evaluateMathExpression, formatFormulaNumbers } from '../src/app/jurnal-harian-produksi/jurnal-utils';
 
 describe('evaluateMathExpression', () => {
   it('returns non-formula strings unchanged', () => {
