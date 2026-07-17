@@ -37,97 +37,18 @@ import {
 } from '@/lib/activity-log-url';
 import ActivityLogTrendChart from './ActivityLogTrendChart';
 import type { ActivityLogTrendDay } from '@/app/api/activity-log/trend/route';
-
-interface MatchInfo { field: string; label: string; value: string; }
-
-const MATCH_FIELDS: { key: keyof ActivityLogRow; label: string; extract: (l: ActivityLogRow) => string }[] = [
-  { key: 'action_type', label: 'Aksi', extract: (l) => l.action_type || '' },
-  { key: 'table_name', label: 'Tabel', extract: (l) => l.table_name || '' },
-  { key: 'recorded_by', label: 'User', extract: (l) => l.recorded_by_name || l.recorded_by || '' },
-  { key: 'message', label: 'Keterangan', extract: (l) => l.message || '' },
-];
-function getMatchedFields(log: ActivityLogRow, q: string): MatchInfo[] {
-  if (!q.trim()) return [];
-  const t = q.toLowerCase();
-  const fromFields = MATCH_FIELDS
-    .map(({ label, extract }) => ({ field: label, value: extract(log), label }))
-    .filter(({ value }) => value.toLowerCase().includes(t));
-  if (fromFields.length >= 2) return fromFields.slice(0, 2);
-  if (log.raw_data) {
-    try {
-      const raw = JSON.parse(log.raw_data as string);
-      const data = raw.before || raw.after || raw;
-      if (typeof data === 'object' && data) {
-        for (const [key, val] of Object.entries(data)) {
-          if (String(val).toLowerCase().includes(t)) {
-            fromFields.push({ field: key, value: String(val).slice(0, 80), label: key });
-            if (fromFields.length >= 2) break;
-          }
-        }
-      }
-    } catch {}
-  }
-  return fromFields.slice(0, 2);
-}
-
-// ponytail: highlight helper — wrap matches dengan <mark>
-function highlightText(text: string, search: string): React.ReactNode {
-  if (!search.trim()) return text;
-  const parts = text.split(new RegExp(`(${search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'));
-  return parts.map((part, i) => 
-    part.toLowerCase() === search.toLowerCase() 
-      ? <mark key={i} className="bg-yellow-200 text-gray-900 px-0.5 rounded">{part}</mark>
-      : part
-  );
-}
-
-// ponytail: copy to clipboard helper
-function copyToClipboard(text: string, label: string) {
-  navigator.clipboard.writeText(text).then(
-    () => toast.success(`${label} berhasil disalin`),
-    () => toast.error('Gagal menyalin')
-  );
-}
-
-function strToDate(s: string): Date { return new Date(`${s}T12:00:00+07:00`); }
-function dateToStr(d: Date): string { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(d); }
+import {
+  type MatchInfo,
+  getMatchedFields,
+  highlightText,
+  copyToClipboard,
+  strToDate,
+  dateToStr,
+  buildBaseState,
+} from './activity-log-client-utils';
+import { SortHeader } from './activity-log-components';
 
 type ServerDateDefaults = ReturnType<typeof getDefaultActivityLogFilters>;
-
-function buildBaseState(defaults: ServerDateDefaults) {
-  return {
-    ...defaults,
-    sortBy: 'created_at' as ActivityLogSortField,
-    sortDir: 'desc' as const,
-  };
-}
-
-function SortHeader({ label, field, colIdx, sortBy, sortDir, onSort, onCtx, onResize }: {
-  label: string; field: ActivityLogSortField; colIdx: number;
-  sortBy: ActivityLogSortField; sortDir: 'asc' | 'desc';
-  onSort: (f: ActivityLogSortField) => void;
-  onCtx: (i: number, e: React.MouseEvent) => void;
-  onResize: (i: number, e: React.MouseEvent) => void;
-}) {
-  const active = sortBy === field;
-  return (
-    <th className="px-4 py-3 relative border-r border-gray-200" onContextMenu={(e) => onCtx(colIdx, e)}>
-      <button
-        type="button"
-        onClick={() => onSort(field)}
-        className={`inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-green-700 transition-colors ${active ? 'text-green-700' : ''}`}
-      >
-        {label}
-        {active ? (sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />) : <ChevronDown size={12} className="opacity-30" />}
-      </button>
-      <div
-        className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
-        onMouseDown={(e) => onResize(colIdx, e)}
-        title="Drag untuk resize kolom"
-      />
-    </th>
-  );
-}
 
 export default function ActivityLogClient({
   canAdminLogs = false,
