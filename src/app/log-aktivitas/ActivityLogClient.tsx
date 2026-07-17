@@ -815,7 +815,7 @@ export default function ActivityLogClient({
         )}
 
         {/* Collapsible Graph Trend Chart */}
-        <div className="border border-gray-100 rounded-2xl overflow-hidden bg-white shadow-sm">
+        <div className="card overflow-hidden border-gray-200/60">
           <button
             type="button"
             onClick={() => setShowChart(!showChart)}
@@ -964,7 +964,7 @@ export default function ActivityLogClient({
 
       <div className="flex flex-col gap-3">
         <div className="relative flex flex-col gap-2">
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
+          <div className="card flex flex-col overflow-hidden border-gray-200/60">
             {logs.length === 0 ? (
               <div className="p-8 text-center text-gray-400 text-[13px] font-bold">
                 Tidak ada log yang sesuai filter.
@@ -1065,7 +1065,7 @@ export default function ActivityLogClient({
                             <tr className="bg-gray-50/80">
                               <td colSpan={5} className="px-4 py-3">
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                  <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
+                                  <div className="card p-3 border-gray-200/60 overflow-hidden">
                                     <div className="flex items-center justify-between mb-2">
                                       <div className="text-[10px] font-bold text-gray-400">Before</div>
                                       {beforeJson && (
@@ -1085,7 +1085,7 @@ export default function ActivityLogClient({
                                        <p className="text-[11px] text-gray-400 italic">—</p>
                                      )}
                                    </div>
-                                   <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
+                                   <div className="card p-3 border-gray-200/60 overflow-hidden">
                                      <div className="flex items-center justify-between mb-2">
                                        <div className="text-[10px] font-bold text-gray-400">After</div>
                                        {afterJson && (
@@ -1105,7 +1105,7 @@ export default function ActivityLogClient({
                                       <p className="text-[11px] text-gray-400 italic">—</p>
                                     )}
                                   </div>
-                                   <div className="bg-white rounded-xl border border-gray-100 p-3 overflow-hidden">
+                                   <div className="card p-3 border-gray-200/60 overflow-hidden">
                                      <div className="flex items-center justify-between mb-2">
                                        <div className="text-[10px] font-bold text-gray-400">Diff</div>
                                        <div className="flex items-center gap-1.5">
