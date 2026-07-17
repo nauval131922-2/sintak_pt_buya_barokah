@@ -16,6 +16,7 @@ import type { Infraction } from './types';
 import { useTableSelection } from '@/lib/hooks/useTableSelection';
 import { formatDateToYYYYMMDD, formatIndoDateStr, parseLocalDate } from '@/lib/utils/date-formatters';
 import { DataTable } from '@/components/ui/DataTable';
+import { toast } from '@/lib/toast';
 
 const PAGE_SIZE = 50;
 
@@ -341,10 +342,10 @@ export default function InfractionsTable({
         document.body.removeChild(a);
       } else {
         const err = await res.json().catch(() => ({}));
-        alert('Gagal export Excel: ' + (err.error || res.statusText));
+        toast.error('Gagal export Excel: ' + (err.error || res.statusText));
       }
     } catch (e) {
-      alert('Terjadi kesalahan saat export Excel.');
+      toast.error('Terjadi kesalahan saat export Excel.');
     } finally {
       setIsExporting(false);
     }

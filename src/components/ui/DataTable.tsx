@@ -319,17 +319,20 @@ function DataTableInner<TData extends { id: number | string }>({
           </div>
         </div>
         
-        {/* Minimalist Loading Overlay */}
+        {/* Skeleton loading overlay */}
         {isLoading && (
-          <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm animate-in fade-in duration-300">
-             <div className="flex flex-col items-center gap-4 bg-white p-8 rounded-[12px] shadow-md border border-gray-100">
-                <div className="relative">
-                   <div className="w-12 h-12 border-4 border-gray-100 rounded-full border-t-green-600 animate-spin" />
+          <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm animate-in fade-in duration-300 p-6">
+            <div className="w-full max-w-4xl space-y-3">
+              {Array.from({ length: 8 }).map((_, r) => (
+                <div key={r} className="flex items-center gap-4 px-2">
+                  <div className="h-4 w-4 rounded bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 bg-[length:200%_100%] animate-pulse" />
+                  <div className="h-4 flex-1 rounded bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 bg-[length:200%_100%] animate-pulse" />
+                  <div className="h-4 w-24 rounded bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 bg-[length:200%_100%] animate-pulse" />
+                  <div className="h-4 w-16 rounded bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 bg-[length:200%_100%] animate-pulse" />
                 </div>
-                <div className="flex flex-col items-center gap-1">
-                   <span className="text-[12px] font-bold text-gray-700 tracking-tight animate-pulse">Memproses Data...</span>
-                </div>
-             </div>
+              ))}
+            </div>
+            <span className="mt-4 text-[12px] font-bold text-gray-500 tracking-tight animate-pulse">Memproses Data...</span>
           </div>
         )}
       </div>

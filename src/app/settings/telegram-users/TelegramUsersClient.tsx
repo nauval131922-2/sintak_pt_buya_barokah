@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Loader2, CheckCircle, XCircle, RefreshCw, MessageSquare, Bell, BellOff } from 'lucide-react';
 import { toast } from '@/lib/toast';
+import ConfirmDialog, { DialogType } from '@/components/ConfirmDialog';
 
 interface TelegramUser {
   id: number;
@@ -44,6 +45,8 @@ export default function TelegramUsersClient() {
 
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [countdown, setCountdown] = useState(REFRESH_INTERVAL);
+  const [dialogConfig, setDialogConfig] = useState<{ isOpen: boolean; type: DialogType; title: string; message: string; confirmLabel?: string; onConfirm?: () => void }>({ isOpen: false, type: 'confirm', title: '', message: '' });
+  const closeDialog = () => setDialogConfig(prev => ({ ...prev, isOpen: false }));
 
   const subscribePush = async () => {
     try {
@@ -178,30 +181,39 @@ export default function TelegramUsersClient() {
     }
   };
 
-  const handleDelete = async (telegramId: string, nama: string, isPending: boolean) => {
+  const handleDelete = (telegramId: string, nama: string, isPending: boolean) => {
     const msg = isPending
       ? `Tolak permintaan akses dari ${nama}? Data akan dihapus.`
       : `Hapus user ${nama}? Data akan dihapus permanen.`;
-    if (!window.confirm(msg)) return;
-    setActionLoading(telegramId);
-    try {
-      const res = await fetch('/api/telegram-users/reject', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegram_id: telegramId }),
-      });
-      const json = await res.json();
-      if (json.success) {
-        showToast('success', isPending ? `Permintaan dari ${nama} ditolak.` : `${nama} berhasil dihapus.`);
-        fetchUsers();
-      } else {
-        showToast('error', json.error || 'Gagal memproses');
+    setDialogConfig({
+      isOpen: true,
+      type: 'danger',
+      title: 'Konfirmasi',
+      message: msg,
+      confirmLabel: 'Ya, Hapus',
+      onConfirm: async () => {
+        setActionLoading(telegramId);
+        try {
+          const res = await fetch('/api/telegram-users/reject', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ telegram_id: telegramId }),
+          });
+          const json = await res.json();
+          if (json.success) {
+            showToast('success', isPending ? `Permintaan dari ${nama} ditolak.` : `${nama} berhasil dihapus.`);
+            fetchUsers();
+          } else {
+            showToast('error', json.error || 'Gagal memproses');
+          }
+        } catch {
+          showToast('error', 'Terjadi kesalahan sistem');
+        } finally {
+          setActionLoading(null);
+        }
+        closeDialog();
       }
-    } catch {
-      showToast('error', 'Terjadi kesalahan sistem');
-    } finally {
-      setActionLoading(null);
-    }
+    });
   };
 
   const pendingUsers = users.filter(u => u.is_active === 0);
@@ -374,6 +386,15 @@ export default function TelegramUsersClient() {
             ))}
           </div>
         )}
+      <ConfirmDialog
+        isOpen={dialogConfig.isOpen}
+        type={dialogConfig.type}
+        title={dialogConfig.title}
+        message={dialogConfig.message}
+        confirmLabel={dialogConfig.confirmLabel}
+        onConfirm={() => dialogConfig.onConfirm?.()}
+        onCancel={closeDialog}
+      />
       </div>
     </div>
   );
