@@ -477,9 +477,9 @@ export default function BOMClient() {
           <button
             onClick={handleExportExcel}
             disabled={exporting || !(data?.length)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shadow-emerald-900/5 shrink-0"
+            className="flex items-center justify-center gap-1.5 min-w-[140px] px-5 py-2.5 text-[12px] font-bold text-emerald-700 bg-white border-2 border-emerald-200 hover:bg-emerald-50 rounded-xl shadow-sm shadow-emerald-900/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {exporting ? <Loader2 size={13} className="animate-spin" /> : <FileSpreadsheet size={13} />}
+            {exporting ? <Loader2 size={16} className="animate-spin" /> : <FileSpreadsheet size={16} />}
             Excel
           </button>
         }

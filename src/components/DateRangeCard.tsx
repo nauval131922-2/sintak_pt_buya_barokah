@@ -114,11 +114,6 @@ export default function DateRangeCard({
           )}
         </div>
         
-        <div className="flex items-center gap-3">
-          {action}
-          {children}
-        </div>
-
         <div className="shrink-0 flex items-center gap-3">
           {isFetching && statusText && (
              <div className="flex flex-col items-end gap-1.5">
@@ -147,8 +142,9 @@ export default function DateRangeCard({
                  <><DownloadCloud size={compact ? 13 : 16} className="group-hover/btn:-translate-y-0.5 transition-transform duration-300" /> {fetchText}</>
                )}
              </span>
-           </button>
-        </div>
+             </button>
+             {action}
+             </div>
       </div>
     </div>
   );
