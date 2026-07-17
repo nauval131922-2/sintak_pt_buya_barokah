@@ -1,14 +1,15 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { Search, RefreshCw, Loader2, AlertCircle, Clock, FileSpreadsheet } from 'lucide-react';
+import { Search, RefreshCw, Loader2, AlertCircle, Clock, FileSpreadsheet, SlidersHorizontal } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, VisibilityState } from '@tanstack/react-table';
 
 import DatePicker from '@/components/DatePicker';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { formatLastUpdate } from '@/lib/date-utils';
 import { exportRowsToExcel } from '@/lib/export-excel';
+import { ColumnToggle } from '@/components/ui/ColumnToggle';
 import { formatScrapedPeriodDate, getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod, persistScraperPeriodFull } from '@/lib/scraper-period';
 import { DataTable } from '@/components/ui/DataTable';
 import SearchAndReload from '@/components/SearchAndReload';
@@ -49,6 +50,7 @@ export default function BOMClient() {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [scrapedPeriod, setScrapedPeriod] = useState<{start: string, end: string} | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const handleExportExcel = () => {
     if (!data?.length) return;
@@ -307,6 +309,7 @@ export default function BOMClient() {
       accessorKey: 'id',
       header: 'ID',
       size: 80,
+      enableHiding: false,
       cell: ({ getValue, row }: any) => <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-400'}`}>{String(getValue())}</span>
     },
     {
@@ -470,6 +473,16 @@ export default function BOMClient() {
         progress={isBatching ? batchProgress : undefined}
         statusText={isBatching ? batchStatus : undefined}
         fetchText="Tarik Data"
+        action={
+          <button
+            onClick={handleExportExcel}
+            disabled={exporting || !(data?.length)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shadow-emerald-900/5 shrink-0"
+          >
+            {exporting ? <Loader2 size={13} className="animate-spin" /> : <FileSpreadsheet size={13} />}
+            Excel
+          </button>
+        }
       />
 
       {error && (
@@ -484,14 +497,17 @@ export default function BOMClient() {
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
             <ScrapingHeader title="Hasil Scrapping Bill of Material Produksi" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} activityLogTable="bill_of_materials" />
 
-            <button
-              onClick={handleExportExcel}
-              disabled={exporting || !(data?.length)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shadow-emerald-900/5 shrink-0"
-            >
-              {exporting ? <Loader2 size={13} className="animate-spin" /> : <FileSpreadsheet size={13} />}
-              Excel
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              <ColumnToggle
+                columns={(columns as any[]).map((c) => ({
+                  id: c.accessorKey as string,
+                  header: typeof c.header === 'string' ? c.header : (c.accessorKey as string),
+                  canHide: c.enableHiding !== false,
+                }))}
+                visibility={columnVisibility}
+                onChange={setColumnVisibility}
+              />
+            </div>
 
             {loading && (data?.length || 0) > 0 && (
               <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse leading-none">
@@ -515,6 +531,9 @@ export default function BOMClient() {
             columnWidths={columnWidths}
             onColumnWidthChange={setColumnWidths}
             rowHeight="h-11"
+            enableHiding
+            columnVisibility={columnVisibility}
+            onColumnVisibilityChange={setColumnVisibility}
           />
 
           <TableFooter 
