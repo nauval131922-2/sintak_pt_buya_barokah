@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { highlightText } from '@/lib/highlight';
+import { toast } from '@/lib/toast';
 
 interface SearchResult {
   type: string;
@@ -158,7 +159,7 @@ export default function GlobalSearch() {
           break;
         default:
           // Fallback untuk source yang belum di-handle
-          alert(`Detail ${item.type}: ${item.label}`);
+          toast.info(`Detail ${item.type}: ${item.label}`);
       }
     }
     setIsOpen(false);

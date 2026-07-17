@@ -10,6 +10,7 @@ import AutoGenerateModal from '@/components/AutoGenerateModal';
 import { domToBlob, domToPng } from 'modern-screenshot';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { toast } from '@/lib/toast';
 
 function formatIndoDate(dateStr: string) {
   if (!dateStr) return '';
@@ -334,7 +335,7 @@ export default function TargetClient() {
       window.open(URL.createObjectURL(file), '_blank');
     } catch (err) {
       console.error('Failed to generate PDF', err);
-      alert('Gagal membuat PDF.');
+      toast.error('Gagal membuat PDF.');
     } finally {
       setGeneratingPdf(false);
     }
@@ -371,7 +372,7 @@ export default function TargetClient() {
       }
     } catch (err) {
       console.error('Failed to download images', err);
-      alert('Gagal mendownload gambar. Pastikan Anda mengizinkan download otomatis.');
+      toast.error('Gagal mendownload gambar. Pastikan Anda mengizinkan download otomatis.');
     } finally {
       setSavingImage(false);
     }

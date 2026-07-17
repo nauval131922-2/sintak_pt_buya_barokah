@@ -1031,38 +1031,56 @@ export default function JurnalClient({
     await performSave();
   };
 
-  const handleDelete = async (id: number | string) => {
-    if (!window.confirm('Yakin ingin menghapus data ini?')) return;
-    try {
-      const res = await fetch('/api/jurnal-harian-produksi', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: [id] })
-      });
-      if (res.ok) {
-        showMessage('success', 'Data berhasil dihapus');
-        setRefreshKey(k => k + 1);
-        router.refresh();
+  const handleDelete = (id: number | string) => {
+    setDialogConfig({
+      isOpen: true,
+      type: 'danger',
+      title: 'Hapus Data',
+      message: 'Yakin ingin menghapus data ini?',
+      confirmLabel: 'Ya, Hapus',
+      onConfirm: async () => {
+        try {
+          const res = await fetch('/api/jurnal-harian-produksi', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids: [id] })
+          });
+          if (res.ok) {
+            showMessage('success', 'Data berhasil dihapus');
+            setRefreshKey(k => k + 1);
+            router.refresh();
+          }
+        } catch (err) {}
+        closeDialog();
       }
-    } catch (err) {}
+    });
   };
 
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = () => {
     if (selectedIds.size === 0) return;
-    if (!window.confirm(`Yakin ingin menghapus ${selectedIds.size} data terpilih?`)) return;
-    try {
-      const res = await fetch('/api/jurnal-harian-produksi', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: Array.from(selectedIds) })
-      });
-      if (res.ok) {
-        showMessage('success', `${selectedIds.size} data berhasil dihapus`);
-        setSelectedIds(new Set());
-        setRefreshKey(k => k + 1);
-        router.refresh();
+    setDialogConfig({
+      isOpen: true,
+      type: 'danger',
+      title: 'Hapus Data Terpilih',
+      message: `Yakin ingin menghapus ${selectedIds.size} data terpilih?`,
+      confirmLabel: 'Ya, Hapus',
+      onConfirm: async () => {
+        try {
+          const res = await fetch('/api/jurnal-harian-produksi', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids: Array.from(selectedIds) })
+          });
+          if (res.ok) {
+            showMessage('success', `${selectedIds.size} data berhasil dihapus`);
+            setSelectedIds(new Set());
+            setRefreshKey(k => k + 1);
+            router.refresh();
+          }
+        } catch (err) {}
+        closeDialog();
       }
-    } catch (err) {}
+    });
   };
 
   const [showShiftModal, setShowShiftModal] = useState(false);
@@ -1115,57 +1133,74 @@ export default function JurnalClient({
 
   const handleOpenTrash = () => { setShowTrashModal(true); fetchTrash(1); };
 
-  const handleRestore = async () => {
+  const handleRestore = () => {
     if (selectedTrashIds.size === 0) return;
     const confirmMsg = isSelectedAllTrash 
       ? `Restore SEMUA ${trashTotal} data yang terhapus?` 
       : `Restore ${selectedTrashIds.size} data yang terhapus?`;
-    if (!window.confirm(confirmMsg)) return;
-    setIsRestoring(true);
-    try {
-      const res = await fetch('/api/jurnal-harian-produksi/trash', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(isSelectedAllTrash ? { all: true } : { ids: Array.from(selectedTrashIds) })
-      });
-      const json = await res.json();
-      if (json.success) {
-        showMessage('success', `${json.restoredCount} data berhasil direstore`);
-        setIsSelectedAllTrash(false);
-        fetchTrash(trashPage);
-        setRefreshKey(k => k + 1);
-      } else {
-        showMessage('error', json.error || 'Gagal restore data');
+    setDialogConfig({
+      isOpen: true,
+      type: 'confirm',
+      title: 'Restore Data',
+      message: confirmMsg,
+      confirmLabel: 'Ya, Restore',
+      onConfirm: async () => {
+        setIsRestoring(true);
+        try {
+          const res = await fetch('/api/jurnal-harian-produksi/trash', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(isSelectedAllTrash ? { all: true } : { ids: Array.from(selectedTrashIds) })
+          });
+          const json = await res.json();
+          if (json.success) {
+            showMessage('success', `${json.restoredCount} data berhasil direstore`);
+            setIsSelectedAllTrash(false);
+            fetchTrash(trashPage);
+            setRefreshKey(k => k + 1);
+          } else {
+            showMessage('error', json.error || 'Gagal restore data');
+          }
+        } catch { showMessage('error', 'Terjadi kesalahan'); }
+        finally { setIsRestoring(false); }
+        closeDialog();
       }
-    } catch { showMessage('error', 'Terjadi kesalahan'); }
-    finally { setIsRestoring(false); }
+    });
   };
 
-  const handlePermanentDelete = async () => {
+  const handlePermanentDelete = () => {
     if (selectedTrashIds.size === 0) return;
     const confirmMsg = isSelectedAllTrash 
       ? `PERINGATAN: Hapus permanen SEMUA ${trashTotal} data ini?\nTindakan ini tidak dapat dibatalkan!` 
       : `PERINGATAN: Hapus permanen ${selectedTrashIds.size} data ini?\nTindakan ini tidak dapat dibatalkan!`;
-    if (!window.confirm(confirmMsg)) return;
-    setIsDeletingPermanently(true);
-    try {
-      const res = await fetch('/api/jurnal-harian-produksi/trash', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(isSelectedAllTrash ? { all: true } : { ids: Array.from(selectedTrashIds) })
-      });
-      const json = await res.json();
-      if (json.success) {
-        showMessage('success', `${json.deletedCount} data berhasil dihapus permanen`);
-        setIsSelectedAllTrash(false);
-        fetchTrash(trashPage);
-        // Refresh tabel utama (meski trash, terkadang update data perlu reset context)
-        setRefreshKey(k => k + 1);
-      } else {
-        showMessage('error', json.error || 'Gagal menghapus permanen data');
+    setDialogConfig({
+      isOpen: true,
+      type: 'danger',
+      title: 'Hapus Permanen',
+      message: confirmMsg,
+      confirmLabel: 'Ya, Hapus Permanen',
+      onConfirm: async () => {
+        setIsDeletingPermanently(true);
+        try {
+          const res = await fetch('/api/jurnal-harian-produksi/trash', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(isSelectedAllTrash ? { all: true } : { ids: Array.from(selectedTrashIds) })
+          });
+          const json = await res.json();
+          if (json.success) {
+            showMessage('success', `${json.deletedCount} data berhasil dihapus permanen`);
+            setIsSelectedAllTrash(false);
+            fetchTrash(trashPage);
+            setRefreshKey(k => k + 1);
+          } else {
+            showMessage('error', json.error || 'Gagal menghapus permanen data');
+          }
+        } catch { showMessage('error', 'Terjadi kesalahan sistem'); }
+        finally { setIsDeletingPermanently(false); }
+        closeDialog();
       }
-    } catch { showMessage('error', 'Terjadi kesalahan sistem'); }
-    finally { setIsDeletingPermanently(false); }
+    });
   };
 
   const columns = useMemo(() => [
@@ -1537,11 +1572,11 @@ export default function JurnalClient({
         document.body.removeChild(a);
       } else {
         clearInterval(progressInterval);
-        alert('Gagal mengambil data untuk diexport');
+        showMessage('error', 'Gagal mengambil data untuk diexport');
       }
     } catch {
       clearInterval(progressInterval);
-      alert('Gagal export excel');
+      showMessage('error', 'Gagal export excel');
     } finally {
       setIsExporting(false);
     }
