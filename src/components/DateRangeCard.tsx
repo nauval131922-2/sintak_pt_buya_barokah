@@ -44,6 +44,7 @@ interface DateRangeCardProps {
   children?: React.ReactNode;
   fetchDisabled?: boolean;
   compact?: boolean;
+  action?: React.ReactNode;
 }
 
 export default function DateRangeCard({
@@ -59,7 +60,8 @@ export default function DateRangeCard({
   title = 'Rentang Tanggal',
   children,
   fetchDisabled = false,
-  compact = false
+  compact = false,
+  action
 }: DateRangeCardProps) {
   const pathname = usePathname();
   const hasDates = onStartDateChange && onEndDateChange;
@@ -112,11 +114,10 @@ export default function DateRangeCard({
           )}
         </div>
         
-        {children && (
-          <div className="flex items-center gap-4">
-            {children}
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          {action}
+          {children}
+        </div>
 
         <div className="shrink-0 flex items-center gap-3">
           {isFetching && statusText && (

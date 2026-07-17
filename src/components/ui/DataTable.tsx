@@ -4,6 +4,7 @@ import * as React from 'react';
 import {
   ColumnDef,
   ColumnSizingState,
+  VisibilityState,
   SortingState,
   OnChangeFn,
   flexRender,
@@ -12,7 +13,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { ArrowUp, ArrowDown, ArrowUpDown, AlertCircle } from 'lucide-react';
+import { ArrowUp, ArrowDown, ArrowUpDown, AlertCircle, SlidersHorizontal, Check } from 'lucide-react';
 
 export const ScrollContext = React.createContext<React.RefObject<HTMLDivElement | null> | null>(null);
 
@@ -37,6 +38,9 @@ interface DataTableProps<TData> {
   sorting?: SortingState;
   onSortingChange?: OnChangeFn<SortingState>;
   manualSorting?: boolean;
+  enableHiding?: boolean;
+  columnVisibility?: VisibilityState;
+  onColumnVisibilityChange?: OnChangeFn<VisibilityState>;
 }
 
 function DataTableInner<TData extends { id: number | string }>({
@@ -60,10 +64,16 @@ function DataTableInner<TData extends { id: number | string }>({
   sorting,
   onSortingChange,
   manualSorting = false,
+  enableHiding = false,
+  columnVisibility: controlledVisibility,
+  onColumnVisibilityChange,
 }: DataTableProps<TData>) {
   const [localSorting, setLocalSorting] = React.useState<SortingState>([]);
   const activeSorting = sorting !== undefined ? sorting : localSorting;
   const activeOnSortingChange = onSortingChange !== undefined ? onSortingChange : setLocalSorting;
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const activeVisibility = controlledVisibility !== undefined ? controlledVisibility : columnVisibility;
+  const activeOnVisibilityChange = onColumnVisibilityChange !== undefined ? onColumnVisibilityChange : setColumnVisibility;
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>(
     initialColumnWidths 
       ? Object.entries(initialColumnWidths).reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
@@ -135,11 +145,13 @@ function DataTableInner<TData extends { id: number | string }>({
     state: {
       sorting: activeSorting,
       columnSizing,
+      columnVisibility: activeVisibility,
     },
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
     onSortingChange: activeOnSortingChange,
     onColumnSizingChange: setColumnSizing,
+    onColumnVisibilityChange: activeOnVisibilityChange,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: manualSorting ? undefined : getSortedRowModel(),
     manualSorting,
@@ -173,7 +185,7 @@ function DataTableInner<TData extends { id: number | string }>({
     <ScrollContext.Provider value={parentRef}>
       <div className={`bg-white border border-gray-100 shadow-sm rounded-[12px] overflow-hidden flex flex-col min-h-0 relative ${height} ${className} ${isResizingColumn ? 'is-resizing' : ''} ${isDragging ? 'is-dragging' : ''}`}>
         <style dangerouslySetInnerHTML={{ __html: `.is-resizing * { user-select: none !important; transition: none !important; cursor: col-resize !important; } .is-dragging * { user-select: none !important; cursor: grabbing !important; }` }} />
-        <div 
+        <div
           ref={parentRef}
           className={`overflow-auto custom-scrollbar flex-1 min-h-0 relative bg-white ${isDragging ? 'cursor-grabbing select-none' : ''}`} 
           onScroll={onScroll}
