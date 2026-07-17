@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
     "init-db": "npx tsx scripts/init-db.ts",
     "init-db:dev": "npx tsx -e \"process.env.DB_PATH='database_dev.sqlite'\" scripts/init-db.ts",
     "prebuild": "npm run init-db",
@@ -49,6 +50,7 @@
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }
