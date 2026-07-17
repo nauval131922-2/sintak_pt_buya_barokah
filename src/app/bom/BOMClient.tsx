@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { Search, RefreshCw, Loader2, AlertCircle, Clock } from 'lucide-react';
+import { Search, RefreshCw, Loader2, AlertCircle, Clock, FileSpreadsheet } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ColumnDef } from '@tanstack/react-table';
 
 import DatePicker from '@/components/DatePicker';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { formatLastUpdate } from '@/lib/date-utils';
+import { exportRowsToExcel } from '@/lib/export-excel';
 import { formatScrapedPeriodDate, getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod, persistScraperPeriodFull } from '@/lib/scraper-period';
 import { DataTable } from '@/components/ui/DataTable';
 import SearchAndReload from '@/components/SearchAndReload';
@@ -47,7 +48,23 @@ export default function BOMClient() {
   const [error, setError] = useState('');
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [scrapedPeriod, setScrapedPeriod] = useState<{start: string, end: string} | null>(null);
+  const [exporting, setExporting] = useState(false);
 
+  const handleExportExcel = () => {
+    if (!data?.length) return;
+    setExporting(true);
+    try {
+      const cols = (columns as any[])
+        .map((c) => c.accessorKey)
+        .filter(Boolean) as string[];
+      const ok = exportRowsToExcel(data, `BOM_${scrapedPeriod?.start ?? 'data'}_sd_${scrapedPeriod?.end ?? ''}.xlsx`, cols as any);
+      if (!ok) setError('Tidak ada data untuk diexport.');
+    } catch (e) {
+      setError('Gagal export Excel.');
+    } finally {
+      setExporting(false);
+    }
+  };
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [page, setPage] = useState(1);
@@ -466,6 +483,15 @@ export default function BOMClient() {
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
             <ScrapingHeader title="Hasil Scrapping Bill of Material Produksi" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} activityLogTable="bill_of_materials" />
+
+            <button
+              onClick={handleExportExcel}
+              disabled={exporting || !(data?.length)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shadow-emerald-900/5 shrink-0"
+            >
+              {exporting ? <Loader2 size={13} className="animate-spin" /> : <FileSpreadsheet size={13} />}
+              Excel
+            </button>
 
             {loading && (data?.length || 0) > 0 && (
               <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse leading-none">
