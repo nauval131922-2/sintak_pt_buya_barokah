@@ -180,11 +180,40 @@ bot.catch((err) => {
   console.error(err.error);
 });
 
+// ponytail: health-check SINTAK webhook URL pas boot — fail loud, not silent 404
+async function checkSintakWebhook() {
+  const base = process.env.WEBHOOK_URL || 'http://localhost:3000';
+  const url = `${base}/api/telegram/register-webhook`;
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nama_karyawan: '__health_check__', bagian: 'HEALTH' })
+    });
+    if (res.status === 404) {
+      console.error(`\n❌ [WEBHOOK HEALTH] ${url} -> 404 NOT FOUND`);
+      console.error(`   Push notification TIDAK AKAN JALAN. Kemungkinan:`);
+      console.error(`   1. SINTAK server mati / port salah (cek WEBHOOK_URL di .env bot)`);
+      console.error(`   2. SINTAK jalan di port beda dari WEBHOOK_URL`);
+      console.error(`   Fix: set WEBHOOK_URL ke URL SINTAK yang benar, lalu restart bot.\n`);
+    } else if (res.status >= 500) {
+      console.error(`\n⚠️  [WEBHOOK HEALTH] ${url} -> ${res.status} (server error, push mungkin gagal)\n`);
+    } else {
+      console.log(`✅ [WEBHOOK HEALTH] ${url} -> ${res.status} OK`);
+    }
+  } catch (err: any) {
+    console.error(`\n❌ [WEBHOOK HEALTH] ${url} -> ERROR: ${err.message}`);
+    console.error(`   SINTAK server tidak reachable. Push notification TIDAK AKAN JALAN.`);
+    console.error(`   Fix: pastikan SINTAK jalan & WEBHOOK_URL benar, lalu restart bot.\n`);
+  }
+}
+
 // Start bot
 bot.start({
   onStart: (botInfo) => {
     console.log(`✅ Bot started: @${botInfo.username}`);
     console.log(`📍 Multi-Bagian: SETTING, QUALITY CONTROL, CETAK, FINISHING, GUDANG, TEKNISI`);
+    checkSintakWebhook();
   }
 });
 
