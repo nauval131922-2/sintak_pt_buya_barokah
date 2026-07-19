@@ -4,7 +4,8 @@
   "description": "Telegram Bot untuk input realisasi produksi SINTAK",
   "main": "dist/bot.js",
   "scripts": {
-    "dev": "tsx src/bot.ts",
+    "dev": "set NODE_EXTRA_CA_CERTS=D:\\Projects\\sintak_pt_buya_barokah\\.certs\\cert.pem && tsx src/bot.ts",
+    "dev:http": "tsx src/bot.ts",
     "build": "tsc",
     "start": "node dist/bot.js",
     "approve": "tsx src/approve-user.ts"
