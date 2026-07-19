@@ -2,7 +2,7 @@
 
 @theme {
   /* Premium Light Theme Palette */
-  --color-bg-deep: #f8fafc; /* Slate 50 */
+  --color-bg-deep: #ffffff; /* Clean white, no grayish tint */
   --color-bg-surface: #ffffff;
   --color-bg-elevated: #f1f5f9; /* Slate 100 */
   --color-accent-primary: #10b981; /* Emerald 500 */
