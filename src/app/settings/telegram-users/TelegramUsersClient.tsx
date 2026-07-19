@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Loader2, CheckCircle, XCircle, RefreshCw, MessageSquare, Bell, BellOff } from 'lucide-react';
+import { Loader2, XCircle, RefreshCw, Bell, BellOff } from 'lucide-react';
 import { toast } from '@/lib/toast';
 import ConfirmDialog, { DialogType } from '@/components/ConfirmDialog';
 
@@ -221,29 +221,15 @@ export default function TelegramUsersClient() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="card p-5 border-amber-200/60">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
-              <MessageSquare size={20} className="text-amber-600" />
-            </div>
-            <div>
-              <p className="text-[11px] font-bold text-amber-600 uppercase leading-tight">Menunggu Persetujuan</p>
-              <p className="text-2xl font-black text-amber-700 leading-tight">{pendingUsers.length}</p>
-            </div>
-          </div>
+      {/* Stats - inline, no card */}
+      <div className="flex items-center gap-5 text-sm">
+        <div className="flex items-center gap-1.5">
+          <span className="text-gray-500">Menunggu Persetujuan:</span>
+          <span className="font-bold text-amber-600">{pendingUsers.length}</span>
         </div>
-        <div className="card p-5 border-emerald-200/60">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
-              <CheckCircle size={20} className="text-emerald-600" />
-            </div>
-            <div>
-              <p className="text-[11px] font-bold text-emerald-600 uppercase leading-tight">User Aktif</p>
-              <p className="text-2xl font-black text-emerald-700 leading-tight">{activeUsers.length}</p>
-            </div>
-          </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-gray-500">User Aktif:</span>
+          <span className="font-bold text-emerald-600">{activeUsers.length}</span>
         </div>
       </div>
 
