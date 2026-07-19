@@ -86,3 +86,4 @@ testsprite_tests/
 
 # Zip/archive files
 *.zip
+.certs/
