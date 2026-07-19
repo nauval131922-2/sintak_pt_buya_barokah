@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { sendPushNotification } from '@/lib/push';
 
 export const dynamic = 'force-dynamic';
 
@@ -85,6 +86,17 @@ export async function POST(req: NextRequest) {
         'telegram-bot'
       ]
     });
+
+    // ponytail: trigger browser push ke admin yg sudah subscribe
+    try {
+      await sendPushNotification(
+        'SINTAK - Pendaftaran Baru',
+        `${employee.name} (${bagian}) meminta akses Telegram Bot`,
+        '/settings/telegram-users'
+      );
+    } catch (pushErr: any) {
+      console.error('[API] register-request push error (non-fatal):', pushErr.message);
+    }
 
     return NextResponse.json({
       success: true,
