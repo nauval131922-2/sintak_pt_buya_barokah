@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Loader2, XCircle, RefreshCw, Bell, BellOff } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, RefreshCw, Bell, BellOff } from 'lucide-react';
 import { toast } from '@/lib/toast';
 import ConfirmDialog, { DialogType } from '@/components/ConfirmDialog';
 
