@@ -349,7 +349,7 @@ export default function TelegramUsersClient() {
 
       {/* Active Users */}
       <div className="card overflow-hidden border-gray-200/60 shadow-sm rounded-xl">
-        <div className="px-4 py-2.5 border-b border-gray-100">
+        <div className="border-b border-gray-100">
           <h2 className="text-[14px] font-bold text-gray-800">User Aktif</h2>
         </div>
 
