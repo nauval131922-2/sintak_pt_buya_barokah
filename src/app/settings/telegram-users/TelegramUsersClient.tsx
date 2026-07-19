@@ -222,26 +222,26 @@ export default function TelegramUsersClient() {
   return (
     <div className="flex flex-col gap-6">
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="card p-3 border-amber-200/60">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
-              <MessageSquare size={16} className="text-amber-600" />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+              <MessageSquare size={20} className="text-amber-600" />
             </div>
             <div>
-              <p className="text-[10px] font-bold text-amber-600 uppercase leading-tight">Menunggu Persetujuan</p>
-              <p className="text-xl font-black text-amber-700 leading-tight">{pendingUsers.length}</p>
+              <p className="text-[11px] font-bold text-amber-600 uppercase leading-tight">Menunggu Persetujuan</p>
+              <p className="text-2xl font-black text-amber-700 leading-tight">{pendingUsers.length}</p>
             </div>
           </div>
         </div>
         <div className="card p-3 border-emerald-200/60">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
-              <CheckCircle size={16} className="text-emerald-600" />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
+              <CheckCircle size={20} className="text-emerald-600" />
             </div>
             <div>
-              <p className="text-[10px] font-bold text-emerald-600 uppercase leading-tight">User Aktif</p>
-              <p className="text-xl font-black text-emerald-700 leading-tight">{activeUsers.length}</p>
+              <p className="text-[11px] font-bold text-emerald-600 uppercase leading-tight">User Aktif</p>
+              <p className="text-2xl font-black text-emerald-700 leading-tight">{activeUsers.length}</p>
             </div>
           </div>
         </div>
@@ -278,7 +278,7 @@ export default function TelegramUsersClient() {
 
       {/* Pending Requests */}
       <div className="card overflow-hidden border-gray-200/60">
-        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-3">
+        <div className="px-4 py-2.5 border-b border-gray-100 flex items-center justify-between gap-3">
           <h2 className="text-[14px] font-bold text-gray-800">Permintaan Pending</h2>
           <div className="flex items-center gap-2 ml-auto">
             <div className="text-right">
