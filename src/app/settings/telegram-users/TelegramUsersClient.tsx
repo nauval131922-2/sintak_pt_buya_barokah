@@ -223,7 +223,7 @@ export default function TelegramUsersClient() {
     <div className="flex flex-col gap-6">
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="card p-3 border-amber-200/60">
+        <div className="card p-5 border-amber-200/60">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
               <MessageSquare size={20} className="text-amber-600" />
@@ -234,7 +234,7 @@ export default function TelegramUsersClient() {
             </div>
           </div>
         </div>
-        <div className="card p-3 border-emerald-200/60">
+        <div className="card p-5 border-emerald-200/60">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
               <CheckCircle size={20} className="text-emerald-600" />
@@ -277,7 +277,7 @@ export default function TelegramUsersClient() {
       )}
 
       {/* Pending Requests */}
-      <div className="card overflow-hidden border-gray-200/60">
+      <div className="card overflow-hidden border-gray-200/60 shadow-sm rounded-xl">
         <div className="px-4 py-2.5 border-b border-gray-100 flex items-center justify-between gap-3">
           <h2 className="text-[14px] font-bold text-gray-800">Permintaan Pending</h2>
           <div className="flex items-center gap-2 ml-auto">
@@ -310,9 +310,9 @@ export default function TelegramUsersClient() {
         ) : (
           <div className="divide-y divide-gray-50" key={'pending-' + pendingUsers.length + '-' + (pendingUsers[0]?.id || 'none')}>
             {pendingUsers.map(user => (
-              <div key={user.telegram_id} className="px-5 py-4 flex items-center gap-4 hover:bg-gray-50/50 transition-colors">
-                <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-                  <span className="text-sm font-bold text-amber-700">{user.nama_karyawan.charAt(0)}</span>
+              <div key={user.telegram_id} className="px-4 py-2.5 flex items-center gap-3 hover:bg-gray-50/60 transition-colors">
+                <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                  <span className="text-[13px] font-bold text-amber-700">{user.nama_karyawan.charAt(0)}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-bold text-gray-800 truncate">{user.nama_karyawan}</p>
@@ -348,8 +348,8 @@ export default function TelegramUsersClient() {
       </div>
 
       {/* Active Users */}
-      <div className="card overflow-hidden border-gray-200/60">
-        <div className="px-5 py-4 border-b border-gray-100">
+      <div className="card overflow-hidden border-gray-200/60 shadow-sm rounded-xl">
+        <div className="px-4 py-2.5 border-b border-gray-100">
           <h2 className="text-[14px] font-bold text-gray-800">User Aktif</h2>
         </div>
 
@@ -358,7 +358,7 @@ export default function TelegramUsersClient() {
         ) : (
           <div className="divide-y divide-gray-50" key={'active-' + activeUsers.length + '-' + (activeUsers[0]?.id || 'none')}>
             {activeUsers.map(user => (
-              <div key={user.telegram_id} className="px-5 py-3 flex items-center gap-4 hover:bg-gray-50/50 transition-colors">
+              <div key={user.telegram_id} className="px-4 py-2.5 flex items-center gap-3 hover:bg-gray-50/60 transition-colors">
                 <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
                   <span className="text-xs font-bold text-emerald-700">{user.nama_karyawan.charAt(0)}</span>
                 </div>
