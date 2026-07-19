@@ -223,7 +223,7 @@ export default function TelegramUsersClient() {
     <div className="flex flex-col gap-6">
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="card p-5 border-amber-200/60">
+        <div className="card p-3 border-amber-200/60">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
               <MessageSquare size={20} className="text-amber-600" />
@@ -234,7 +234,7 @@ export default function TelegramUsersClient() {
             </div>
           </div>
         </div>
-        <div className="card p-5 border-emerald-200/60">
+        <div className="card p-3 border-emerald-200/60">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
               <CheckCircle size={20} className="text-emerald-600" />
