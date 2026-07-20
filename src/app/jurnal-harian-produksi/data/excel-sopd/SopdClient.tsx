@@ -768,10 +768,9 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
         compact
       />
       <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden">
-        <div className="flex flex-col gap-3 shrink-0 px-1">
-          <div className="bg-white rounded-2xl border border-gray-100 px-5 py-3 shadow-sm shadow-green-900/5 flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-4 min-h-[32px]">
-              <div className="flex items-center gap-5">
+        <div className="flex flex-col gap-4 shrink-0 px-1">
+          <div className="flex items-center justify-between gap-4 min-h-[32px]">
+            <div className="flex items-center gap-5">
                 <ScrapingHeader
                   title="Data Order Produksi (SOPd)"
                   lastUpdated={lastUpdated}
@@ -780,61 +779,56 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
                   scrapedPeriod={scrapedPeriod}
                   activityLogTable="sopd"
                 />
-              <ImportInfo info={importInfo} />
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => { setPasteActive(false); setCopiedValue(null); }}
-                  className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] leading-none font-bold transition-all ${
-                    pasteActive && !loading
-                      ? 'opacity-100 visible bg-red-50 text-red-600 border border-red-200 hover:bg-red-100'
-                      : 'opacity-0 invisible pointer-events-none'
+               <ImportInfo info={importInfo} />
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => { setPasteActive(false); setCopiedValue(null); }}
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] leading-none font-bold transition-all ${
+                  pasteActive && !loading
+                    ? 'opacity-100 visible bg-red-50 text-red-600 border border-red-200 hover:bg-red-100'
+                    : 'opacity-0 invisible pointer-events-none'
+                }`}
+              >
+                <X size={12} />
+                Stop Copy (Esc)
+              </button>
+              <button
+                onClick={() => setSorting([])}
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] leading-none font-bold transition-all ${
+                  sorting.length > 0 && !loading
+                    ? 'opacity-100 visible bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100'
+                    : 'opacity-0 invisible pointer-events-none'
+                }`}
+              >
+                <X size={12} />
+                Reset Sort
+              </button>
+              {loading && (data?.length || 0) > 0 && (
+                  <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse leading-none">
+                    <Loader2 size={12} className="animate-spin" />
+                    <span>Memproses data...</span>
+                  </div>
+              )}
+            </div>
+          </div>
+          <SearchAndReload searchQuery={searchQuery} setSearchQuery={setSearchQuery} onReload={() => setRefreshKey(k => k + 1)} loading={loading} placeholder="Cari berdasarkan nama order..." />
+          <div className="flex items-center gap-1.5">
+            {(['all', 'yes', 'no'] as const).map(val => {
+              const label = val === 'all' ? 'Semua' : val === 'yes' ? 'Selesai' : 'Belum Selesai';
+              return (
+                <button key={val}
+                  onClick={() => setProduksiFilter(val)}
+                  className={`px-3 py-1.5 rounded-lg text-[11px] leading-none font-bold transition-all border ${
+                    produksiFilter === val
+                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                      : 'bg-white text-gray-500 border-gray-100 hover:bg-gray-50 hover:text-gray-700'
                   }`}
                 >
-                  <X size={12} />
-                  Stop Copy (Esc)
+                  {label}
                 </button>
-                <button
-                  onClick={() => setSorting([])}
-                  className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] leading-none font-bold transition-all ${
-                    sorting.length > 0 && !loading
-                      ? 'opacity-100 visible bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100'
-                      : 'opacity-0 invisible pointer-events-none'
-                  }`}
-                >
-                  <X size={12} />
-                  Reset Sort
-                </button>
-                {loading && (data?.length || 0) > 0 && (
-                    <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse leading-none">
-                      <Loader2 size={12} className="animate-spin" />
-                      <span>Memproses data...</span>
-                    </div>
-                )}
-              </div>
-            </div>
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="flex-1 min-w-[200px]">
-                <SearchAndReload searchQuery={searchQuery} setSearchQuery={setSearchQuery} onReload={() => setRefreshKey(k => k + 1)} loading={loading} placeholder="Cari berdasarkan nama order..." />
-              </div>
-              <div className="flex items-center gap-1.5">
-                {(['all', 'yes', 'no'] as const).map(val => {
-                  const label = val === 'all' ? 'Semua' : val === 'yes' ? 'Selesai' : 'Belum Selesai';
-                  return (
-                    <button key={val}
-                      onClick={() => setProduksiFilter(val)}
-                      className={`px-3 py-1.5 rounded-lg text-[11px] leading-none font-bold transition-all border ${
-                        produksiFilter === val
-                          ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
-                          : 'bg-white text-gray-500 border-gray-100 hover:bg-gray-50 hover:text-gray-700'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+              );
+            })}
           </div>
         </div>
 
