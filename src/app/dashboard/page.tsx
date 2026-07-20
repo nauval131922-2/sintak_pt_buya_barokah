@@ -150,7 +150,7 @@ function AktivitasSkeleton() {
 export default async function Home() {
   await requirePermission("dashboard");
   return (
-    <div className="app-bg flex flex-col gap-6 pb-6 px-1 animate-in fade-in slide-in-from-bottom-2 duration-700">
+    <div className="flex flex-col gap-6 pb-6 px-1 animate-in fade-in slide-in-from-bottom-2 duration-700">
       <PageHeader
         title="Dashboard Umum"
         description="Ringkasan operasional harian sistem SINTAK – produksi, SDM, dan aktivitas sistem."
