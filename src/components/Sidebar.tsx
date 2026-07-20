@@ -314,7 +314,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
       onMouseLeave={() => { if (!isTouchDevice && !isResizing) setIsHovered(false); }}
       style={{ width: currentWidth }}
       className={`
-        fixed xl:relative h-screen bg-white border-r border-gray-100 shrink-0 flex flex-col z-[100]
+        fixed xl:sticky xl:top-0 h-screen bg-white border-r border-gray-100 shrink-0 flex flex-col z-[100]
         ${isMobileOpen ? 'translate-x-0 shadow-2xl opacity-100 visible' : '-translate-x-full xl:translate-x-0 xl:opacity-100 xl:visible opacity-0 invisible'}
         ${isResizing ? '' : 'transition-[width,transform,opacity,visibility] duration-300 ease-in-out'}
       `}
