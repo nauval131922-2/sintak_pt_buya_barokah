@@ -87,9 +87,9 @@ function MainContentInner({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--bg-deep)]">
+    <div className="flex min-h-screen bg-[var(--bg-deep)]">
       <Sidebar user={user} permissions={permissions} />
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen">
         {/* Header with Title and Global Search */}
         <div className="flex items-center justify-between gap-4 px-4 xl:px-8 py-4 xl:py-5 bg-white border-b border-gray-100">
           <div className="flex items-start gap-2 flex-1 min-w-0">
@@ -132,8 +132,8 @@ function MainContentInner({
           </div>
         </div>
         
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-y-auto custom-scrollbar bg-[var(--bg-deep)] px-4 xl:px-8 pt-2 xl:pt-3 pb-4 xl:pb-6">
+        {/* Main Content - page scrolls naturally (body-level), not internal clip */}
+        <div className="flex-1 flex flex-col min-w-0 bg-[var(--bg-deep)] px-4 xl:px-8 pt-2 xl:pt-3 pb-4 xl:pb-6">
           {children}
         </div>
       </div>
