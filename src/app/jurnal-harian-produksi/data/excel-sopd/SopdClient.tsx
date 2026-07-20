@@ -754,9 +754,8 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
 
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-6 animate-in fade-in duration-700 overflow-hidden">
-      <div className="bg-white rounded-2xl border border-gray-100 px-5 py-2.5 shadow-sm shadow-green-900/5 flex items-center justify-between gap-4 relative z-50 overflow-visible">
       <DateRangeCard
-        title=""
+        title="Rentang Tanggal"
         startDate={startDate}
         endDate={endDate}
         onStartDateChange={setStartDate}
@@ -768,7 +767,6 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
         fetchText="Tarik Data"
         compact
       />
-      </div>
       <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden">
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
