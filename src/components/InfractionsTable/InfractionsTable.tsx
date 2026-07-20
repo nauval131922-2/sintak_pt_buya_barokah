@@ -723,13 +723,13 @@ export default function InfractionsTable({
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-6 animate-in fade-in duration-500 overflow-hidden">
       {/* Top Filter Bar */}
-      <div className="flex gap-6 shrink-0 min-h-[105px]">
-        <div className="flex-1 bg-white rounded-2xl border border-gray-100 px-6 py-4 shadow-sm shadow-green-900/5 flex flex-col justify-center relative z-50 overflow-visible h-full">
+      <div className="flex gap-4 shrink-0">
+        <div className="flex-1 bg-white rounded-2xl border border-gray-100 px-4 py-2.5 shadow-sm shadow-green-900/5 flex flex-col justify-center relative z-50 overflow-visible">
           <div className="flex items-center justify-between gap-6">
             <div className="flex items-center gap-6">
               {/* Rentang Tanggal */}
               <div className="flex flex-col">
-                <span className="block text-[13px] font-semibold text-gray-500 mb-2 ml-1 tracking-tight select-none">Rentang Tanggal</span>
+                <span className="block text-[12px] font-semibold text-gray-500 mb-1 ml-1 tracking-tight select-none">Rentang Tanggal</span>
                 <div className="flex items-center gap-3">
                   <div className="w-[150px] relative group">
                     <DatePicker name="startDate" value={startDate} onChange={setStartDate} />
@@ -748,24 +748,23 @@ export default function InfractionsTable({
             </div>
             {/* Tombol Ekspor */}
             <div className="flex flex-col">
-              <span className="block text-[13px] font-semibold text-transparent mb-2 ml-1 tracking-tight select-none">Aksi</span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={generateExcel}
-                  disabled={isExporting}
-                  className="h-11 px-5 bg-green-50 text-green-600 border border-green-100 font-semibold rounded-lg hover:bg-green-600 hover:text-white hover:border-green-600 transition-all flex items-center gap-2 shadow-sm text-[12px] disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {isExporting ? <Loader2 size={16} className="animate-spin" /> : <FileSpreadsheet size={16} />}
-                  <span>{isExporting ? 'Mengekspor...' : 'Ekspor Excel'}</span>
-                </button>
-                <button
-                  onClick={generatePDF}
-                  className="h-11 px-5 bg-red-50 text-red-600 border border-red-100 font-semibold rounded-lg hover:bg-red-600 hover:text-white hover:border-red-600 transition-all flex items-center gap-2 shadow-sm text-[12px]"
-                >
-                  <Printer size={16} />
-                  <span>Cetak Rekap PDF</span>
-                </button>
-              </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={generateExcel}
+                disabled={isExporting}
+                className="h-9 px-3 bg-green-50 text-green-600 border border-green-100 font-semibold rounded-lg hover:bg-green-600 hover:text-white hover:border-green-600 transition-all flex items-center gap-2 shadow-sm text-[12px] disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isExporting ? <Loader2 size={16} className="animate-spin" /> : <FileSpreadsheet size={16} />}
+                <span>{isExporting ? 'Mengekspor...' : 'Ekspor Excel'}</span>
+              </button>
+              <button
+                onClick={generatePDF}
+                className="h-9 px-3 bg-red-50 text-red-600 border border-red-100 font-semibold rounded-lg hover:bg-red-600 hover:text-white hover:border-red-600 transition-all flex items-center gap-2 shadow-sm text-[12px]"
+              >
+                <Printer size={16} />
+                <span>Cetak Rekap PDF</span>
+              </button>
+            </div>
             </div>
           </div>
         </div>
