@@ -1026,7 +1026,7 @@ export default function ActivityLogClient({
                             className={`hover:bg-emerald-50/40 cursor-pointer transition-colors ${isExpanded ? 'bg-emerald-50/60' : ''}`}
                           >
                             <td className="px-4 py-2.5 whitespace-nowrap overflow-hidden text-ellipsis max-w-[110px]">
-                              <span className={`inline-flex px-2 py-0.5 rounded-md text-[11px] font-bold border ${getActionColor(log.action_type || '')}`}>
+                              <span className={`inline-flex px-2 py-0.5 rounded-lg text-[11px] font-bold border ${getActionColor(log.action_type || '')}`}>
                                 {log.action_type}
                               </span>
                             </td>

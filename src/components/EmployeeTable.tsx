@@ -304,7 +304,7 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
 
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative">
          {error ? (
-           <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-white rounded-2xl border border-gray-100 shadow-sm shadow-emerald-900/5">
+           <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-sm shadow-emerald-900/5">
               <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center mb-6 shadow-sm shadow-rose-900/5">
                   <AlertCircle size={40} />
               </div>

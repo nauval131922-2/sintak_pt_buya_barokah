@@ -339,12 +339,12 @@ function ActivityLogTrendChart({
               <button
                 type="button"
                 onClick={onHourBack}
-                className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200"
+                className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200"
               >
                 ← Kembali
               </button>
             )}
-            <div className="text-[11px] font-semibold text-gray-500 bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100">
+            <div className="text-[11px] font-semibold text-gray-500 bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-100">
               Total: {detailHour
                 ? minutes.reduce((acc, curr) => acc + curr.count, 0).toLocaleString('id-ID')
                 : hourly.reduce((acc, curr) => acc + curr.count, 0).toLocaleString('id-ID')

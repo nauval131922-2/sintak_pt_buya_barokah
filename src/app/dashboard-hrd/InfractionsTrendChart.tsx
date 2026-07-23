@@ -187,7 +187,7 @@ export default function InfractionsTrendChart() {
   const xTickMap = buildXTicks(data);
 
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm flex flex-col gap-4">
+    <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl p-5 shadow-sm flex flex-col gap-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-[11px] font-bold text-gray-400 tracking-wide">Tren Kesalahan Karyawan</p>

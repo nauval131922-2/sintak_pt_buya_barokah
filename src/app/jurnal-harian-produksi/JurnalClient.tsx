@@ -1607,7 +1607,7 @@ export default function JurnalClient({
       {/* TAB CONTENT: LIST */}
       <div className={`flex-1 flex flex-col gap-4 overflow-hidden ${activeTab === 'list' ? 'flex' : 'hidden'}`}>
         {/* Top Filter Bar */}
-        <div className="shrink-0 bg-white rounded-2xl border border-gray-100 px-4 py-3 shadow-sm shadow-emerald-900/5 relative z-50 overflow-visible">
+        <div className="shrink-0 bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-3 shadow-sm shadow-emerald-900/5 relative z-50 overflow-visible">
           <div className="flex flex-wrap items-center gap-2">
             {/* Rentang Tanggal */}
             <div className="flex items-center gap-1.5 shrink-0">
@@ -1912,7 +1912,7 @@ export default function JurnalClient({
 
         <div className="flex-1 min-h-0 flex flex-col gap-5 overflow-hidden relative">
            {error ? (
-             <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-white rounded-2xl border border-gray-100 shadow-sm shadow-emerald-900/5">
+             <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-sm shadow-emerald-900/5">
                 <div className="w-20 h-20 bg-rose-50 rounded-2xl flex items-center justify-center mb-6 shadow-sm shadow-rose-900/5">
                     <AlertCircle className="text-rose-500" size={40} />
                 </div>
@@ -1960,7 +1960,7 @@ export default function JurnalClient({
       {/* TAB CONTENT: FORM */}
       <div className={`flex-1 flex flex-col gap-4 overflow-y-auto pr-2 pb-10 ${activeTab === 'form' ? 'flex' : 'hidden'}`}>
           {(isAdding || editingId !== null) && (
-          <form onSubmit={(e) => { e.preventDefault(); saveForm(); }} className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm animate-in slide-in-from-top-4 fade-in duration-300">
+          <form onSubmit={(e) => { e.preventDefault(); saveForm(); }} className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-sm animate-in slide-in-from-top-4 fade-in duration-300">
 
             {userRole?.toLowerCase() === 'admin penjadwalan' && editingId !== null && formData.tgl && (() => {
               const tomorrow = new Date();
@@ -2222,7 +2222,7 @@ export default function JurnalClient({
                         { label: 'Order', val: selectedTargetRow.no_order ? `${selectedTargetRow.no_order} — ${selectedTargetRow.nama_order || '-'}` : '' },
                         { label: 'Bagian', val: selectedTargetRow.bagian },
                       ].map(item => item.val ? (
-                        <span key={item.label} className="text-[11px] font-bold bg-white text-sky-700 px-2.5 py-1 rounded-md border border-sky-100 shadow-sm">{item.label}: {item.val}</span>
+                        <span key={item.label} className="text-[11px] font-bold bg-white text-sky-700 px-2.5 py-1 rounded-lg border border-sky-100 shadow-sm">{item.label}: {item.val}</span>
                       ) : null)}
                     </div>
                   </div>
@@ -2238,7 +2238,7 @@ export default function JurnalClient({
                         { label: 'Order', val: formData.no_order ? `${formData.no_order}${formData.nama_order ? ' — ' + formData.nama_order : ''}` : '' },
                         { label: 'Bagian', val: formData.bagian || '' },
                       ].map(item => item.val ? (
-                        <span key={item.label} className="text-[11px] font-bold bg-white text-yellow-700 px-2.5 py-1 rounded-md border border-yellow-200 shadow-sm">{item.label}: {item.val}</span>
+                        <span key={item.label} className="text-[11px] font-bold bg-white text-yellow-700 px-2.5 py-1 rounded-lg border border-yellow-200 shadow-sm">{item.label}: {item.val}</span>
                       ) : null)}
                     </div>
                     {![formData.tgl, formData.shift, formData.nama_karyawan].some(Boolean) && (
@@ -2603,7 +2603,7 @@ export default function JurnalClient({
               <button
                 type="button"
                 onClick={() => { setCopyBagian([]); setCopyKaryawan([]); setCopyBagianSearch(''); }}
-                className="flex items-center gap-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2 py-0.5 rounded-md transition-all"
+                className="flex items-center gap-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2 py-0.5 rounded-lg transition-all"
               >
                 <X size={10} /> Hapus filter
               </button>
@@ -2669,7 +2669,7 @@ export default function JurnalClient({
               <button
                 type="button"
                 onClick={() => setCopyKaryawan([])}
-                className="flex items-center gap-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2 py-0.5 rounded-md transition-all"
+                className="flex items-center gap-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2 py-0.5 rounded-lg transition-all"
               >
                 <X size={10} /> Hapus filter
               </button>

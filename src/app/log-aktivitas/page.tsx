@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic';
 
 function LogSkeleton() {
   return (
-    <div className="flex-1 min-h-[600px] bg-white border border-gray-100 rounded-2xl animate-pulse shadow-sm" />
+    <div className="flex-1 min-h-[600px] bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl animate-pulse shadow-sm" />
   );
 }
 

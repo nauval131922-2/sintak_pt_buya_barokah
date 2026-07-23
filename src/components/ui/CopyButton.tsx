@@ -43,7 +43,7 @@ export default function CopyButton({ text, size = 14 }: CopyButtonProps) {
   return (
     <button
       onClick={handleCopy}
-      className="p-1.5 rounded-md hover:bg-emerald-100 text-gray-400 hover:text-emerald-600 transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center bg-white shadow-sm border border-gray-100"
+      className="p-1.5 rounded-lg hover:bg-emerald-100 text-gray-400 hover:text-emerald-600 transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center bg-white shadow-sm border border-gray-100"
       title="Salin"
     >
       {copied ? <Check size={size} className="text-emerald-500" /> : <Copy size={size} />}

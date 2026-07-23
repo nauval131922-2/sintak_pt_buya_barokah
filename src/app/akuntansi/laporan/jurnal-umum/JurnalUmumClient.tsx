@@ -397,7 +397,7 @@ export default function JurnalUmumClient() {
         const isSaldoAwal = row.original._isSaldoAwal;
         if (isSaldoAwal) return (
           <span className="flex items-center gap-1.5">
-            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-100 text-amber-700 text-[11px] font-bold tracking-wide border border-amber-200">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-amber-100 text-amber-700 text-[11px] font-bold tracking-wide border border-amber-200">
               Saldo Awal
             </span>
           </span>

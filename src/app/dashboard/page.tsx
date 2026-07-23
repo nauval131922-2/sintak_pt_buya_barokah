@@ -94,7 +94,7 @@ async function DashboardStats() {
     <div className="flex flex-col gap-5 shrink-0">
       <UsersStatCard />
 
-      <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm flex flex-col gap-3">
+      <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl p-5 shadow-sm flex flex-col gap-3">
         <div>
           <p className="text-[13px] font-extrabold text-gray-700 tracking-tight">Akses Cepat</p>
           <p className="text-[11px] font-medium text-gray-400 mt-0.5">Menu Administrasi</p>
@@ -135,15 +135,15 @@ async function DashboardAktivitasPreview() {
 function StatSkeleton() {
   return (
     <div className="flex flex-col gap-5 shrink-0">
-      <div className="bg-white border border-gray-100 rounded-2xl p-5 h-[110px] animate-pulse shadow-sm" />
-      <div className="bg-white border border-gray-100 rounded-2xl h-[120px] animate-pulse shadow-sm" />
+      <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl p-5 h-[110px] animate-pulse shadow-sm" />
+      <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl h-[120px] animate-pulse shadow-sm" />
     </div>
   );
 }
 
 function AktivitasSkeleton() {
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl h-[280px] animate-pulse shadow-sm" />
+    <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl h-[280px] animate-pulse shadow-sm" />
   );
 }
 

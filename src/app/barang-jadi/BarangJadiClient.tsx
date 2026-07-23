@@ -392,7 +392,7 @@ export default function BarangJadiClient() {
 
         if (so_ord === 0 && so_penj === 0) {
           return (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200/60 rounded-md text-[11px] font-bold w-fit shadow-sm">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200/60 rounded-lg text-[11px] font-bold w-fit shadow-sm">
               <AlertCircle size={12} />
               <span>SO Kosong</span>
             </div>

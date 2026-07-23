@@ -100,7 +100,7 @@ export default function JurnalTerbaruCard({ initialData }: { initialData: Jurnal
   const lastUpdated = useAutoRefresh(fetchData);
 
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+    <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-sm overflow-hidden">
       <div className="p-5 flex items-start justify-between gap-3">
         <div>
           <p className="text-[11px] font-bold text-gray-400 tracking-widest">Jurnal terbaru</p>
@@ -141,7 +141,7 @@ export default function JurnalTerbaruCard({ initialData }: { initialData: Jurnal
                   }`}>
                     {/* Action badge */}
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold border tracking-wider ${b.cls}`}>{b.label}</span>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-bold border tracking-wider ${b.cls}`}>{b.label}</span>
                     </td>
                     {/* Waktu input + user */}
                     <td className="px-5 py-3 min-w-[160px]">

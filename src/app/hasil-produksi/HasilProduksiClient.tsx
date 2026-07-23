@@ -755,7 +755,7 @@ export default function HasilProduksiClient() {
               {isDropdownOpen && (
                 <Portal>
                   <div 
-                    className="fixed bg-white border border-gray-100 rounded-2xl shadow-xl z-[9999] animate-in fade-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[450px]"
+                    className="fixed bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl z-[9999] animate-in fade-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[450px]"
                     style={{
                       top: `${dropdownRef.current?.getBoundingClientRect().bottom || 0 + 8}px`,
                       left: `${dropdownRef.current?.getBoundingClientRect().left || 0}px`,

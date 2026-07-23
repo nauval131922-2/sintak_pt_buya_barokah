@@ -134,7 +134,7 @@ export default function KeteranganEditableCell({
                 setIsSaving(false);
               }
             }}
-            className="p-1 rounded-md text-emerald-400 hover:text-emerald-600 hover:bg-emerald-100 transition-all shrink-0"
+            className="p-1 rounded-lg text-emerald-400 hover:text-emerald-600 hover:bg-emerald-100 transition-all shrink-0"
             title="Tempel keterangan yang di-copy"
             tabIndex={-1}
           >
@@ -146,7 +146,7 @@ export default function KeteranganEditableCell({
       {/* Normal display */}
       {canEdit && !isSaving && !isEditing && !pasteActive && (
         <div
-          className="group flex items-center gap-1 cursor-pointer rounded-md px-1 -mx-1 hover:bg-yellow-50 transition-colors"
+          className="group flex items-center gap-1 cursor-pointer rounded-lg px-1 -mx-1 hover:bg-yellow-50 transition-colors"
           onDoubleClick={e => {
             e.stopPropagation();
             isSavingGuard.current = false;
@@ -160,7 +160,7 @@ export default function KeteranganEditableCell({
           </span>
           <button
             onClick={e => { e.stopPropagation(); onCopyValue?.(localVal); }}
-            className="p-1 rounded-md text-gray-300 hover:text-yellow-500 hover:bg-yellow-100 transition-all shrink-0"
+            className="p-1 rounded-lg text-gray-300 hover:text-yellow-500 hover:bg-yellow-100 transition-all shrink-0"
             title="Copy keterangan"
             tabIndex={-1}
           >
@@ -173,7 +173,7 @@ export default function KeteranganEditableCell({
               setValue(localVal);
               setIsEditing(true);
             }}
-            className="p-1 rounded-md text-gray-300 hover:text-yellow-500 hover:bg-yellow-100 transition-all shrink-0"
+            className="p-1 rounded-lg text-gray-300 hover:text-yellow-500 hover:bg-yellow-100 transition-all shrink-0"
             title="Edit keterangan"
             tabIndex={-1}
           >

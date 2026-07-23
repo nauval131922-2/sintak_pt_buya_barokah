@@ -477,7 +477,7 @@ export default function HppKalkulasiClient() {
 
         <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative">
           {error ? (
-            <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-white rounded-2xl border border-gray-100 shadow-sm">
+            <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-sm">
               <div className="w-20 h-20 bg-rose-50 rounded-2xl border border-rose-100 flex items-center justify-center mb-6">
                 <AlertCircle className="text-rose-500" size={40} />
               </div>

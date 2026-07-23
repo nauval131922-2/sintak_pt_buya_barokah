@@ -206,7 +206,7 @@ const EditableCell = ({
               await onSave(row.no_sopd, copiedValue, field as string);
             }
           }}
-          className="p-1 hover:bg-emerald-100 rounded-md text-emerald-400 hover:text-emerald-600 transition-all shrink-0"
+          className="p-1 hover:bg-emerald-100 rounded-lg text-emerald-400 hover:text-emerald-600 transition-all shrink-0"
           title="Tempel value yang di-copy"
         >
           <ClipboardList size={12} />
@@ -326,7 +326,7 @@ const EditableCell = ({
               const cellValue = val !== null && val !== undefined ? String(val) : '';
               onCopyValue?.(cellValue);
             }}
-            className="p-1 hover:bg-emerald-100 rounded-md text-emerald-400 hover:text-emerald-600 transition-all shrink-0"
+            className="p-1 hover:bg-emerald-100 rounded-lg text-emerald-400 hover:text-emerald-600 transition-all shrink-0"
             title="Copy value cell ini"
           >
             <Copy size={12} />

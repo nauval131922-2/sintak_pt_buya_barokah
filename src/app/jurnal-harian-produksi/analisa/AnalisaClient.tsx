@@ -324,7 +324,7 @@ export default function AnalisaClient() {
                               <td className="px-4 py-2.5 text-gray-600 whitespace-nowrap">{entry.tgl}</td>
                               <td className="px-4 py-2.5 text-gray-600">{entry.shift}</td>
                               <td className="px-4 py-2.5">
-                                <span className={`inline-block px-2 py-0.5 rounded-md text-xs font-medium border ${bagianColor(entry.bagian)}`}>
+                                <span className={`inline-block px-2 py-0.5 rounded-lg text-xs font-medium border ${bagianColor(entry.bagian)}`}>
                                   {entry.bagian}
                                 </span>
                               </td>

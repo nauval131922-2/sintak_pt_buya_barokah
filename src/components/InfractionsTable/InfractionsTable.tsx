@@ -653,7 +653,7 @@ export default function InfractionsTable({
                     <span className="text-[12px] font-bold text-gray-700 line-clamp-1" title={inf.nama_barang_display || inf.nama_barang || '---'}>
                         {inf.nama_barang_display || inf.nama_barang || '---'}
                     </span>
-                    <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 w-fit px-2 py-0.5 rounded-md border border-emerald-100 leading-none">
+                    <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 w-fit px-2 py-0.5 rounded-lg border border-emerald-100 leading-none">
                         {inf.jenis_barang || 'UMUM'}
                     </span>
                 </div>
@@ -724,7 +724,7 @@ export default function InfractionsTable({
     <div className="flex-1 min-h-0 flex flex-col gap-6 animate-in fade-in duration-500 overflow-hidden">
       {/* Top Filter Bar */}
       <div className="flex gap-3 shrink-0">
-        <div className="flex-1 bg-white rounded-2xl border border-gray-100 px-5 py-2.5 shadow-sm shadow-emerald-900/5 flex items-center justify-between gap-4 relative z-50 overflow-visible">
+        <div className="flex-1 bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl px-5 py-2.5 shadow-sm shadow-emerald-900/5 flex items-center justify-between gap-4 relative z-50 overflow-visible">
           <div className="flex items-center gap-3">
             <div className="w-[140px] relative group">
               <DatePicker name="startDate" value={startDate} onChange={setStartDate} />

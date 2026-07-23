@@ -66,7 +66,7 @@ export default function AktivitasTerbaruCard({
   const lastUpdated = useAutoRefresh(fetchData);
 
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+    <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-sm overflow-hidden">
       <div className="p-5 flex items-start justify-between gap-3">
         <div>
           <p className="text-[11px] font-bold text-gray-400 tracking-widest">Aktivitas terkini</p>
@@ -101,7 +101,7 @@ export default function AktivitasTerbaruCard({
                 return (
                   <tr key={log.id} className="hover:bg-gray-50/70 transition-colors">
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold border tracking-wider ${b.cls}`}>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-bold border tracking-wider ${b.cls}`}>
                         {b.label}
                       </span>
                     </td>

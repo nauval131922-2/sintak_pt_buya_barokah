@@ -130,7 +130,7 @@ async function DashboardAkuntansiContent() {
       <WarningBarangJadiCard />
 
       {/* Akses Cepat */}
-      <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+      <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl p-5 shadow-sm">
         <div>
           <p className="text-[13px] font-extrabold text-gray-700 tracking-tight">Akses Cepat</p>
           <p className="text-[11px] font-medium text-gray-400 mt-0.5">Menu operasional akuntansi &amp; keuangan</p>
@@ -166,10 +166,10 @@ async function DashboardAkuntansiContent() {
 function DashboardAkuntansiSkeleton() {
   return (
     <div className="flex flex-col gap-5">
-      <div className="bg-white border border-gray-100 rounded-2xl h-[120px] animate-pulse shadow-sm" />
-      <div className="bg-white border border-gray-100 rounded-2xl h-[100px] animate-pulse shadow-sm" />
-      <div className="bg-white border border-gray-100 rounded-2xl h-[320px] animate-pulse shadow-sm" />
-      <div className="bg-white border border-gray-100 rounded-2xl h-[360px] animate-pulse shadow-sm" />
+      <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl h-[120px] animate-pulse shadow-sm" />
+      <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl h-[100px] animate-pulse shadow-sm" />
+      <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl h-[320px] animate-pulse shadow-sm" />
+      <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl h-[360px] animate-pulse shadow-sm" />
     </div>
   );
 }

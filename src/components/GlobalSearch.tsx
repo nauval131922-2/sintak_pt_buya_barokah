@@ -201,7 +201,7 @@ export default function GlobalSearch() {
           ) : query ? (
             <button
               onClick={handleClearQuery}
-              className="text-slate-400 hover:text-slate-600 transition-colors p-0.5 rounded-md hover:bg-slate-100"
+              className="text-slate-400 hover:text-slate-600 transition-colors p-0.5 rounded-lg hover:bg-slate-100"
               aria-label="Clear search"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -209,7 +209,7 @@ export default function GlobalSearch() {
               </svg>
             </button>
           ) : (
-            <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[11px] font-bold text-slate-400 bg-white border border-slate-200 rounded-md shadow-sm pointer-events-none">
+            <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[11px] font-bold text-slate-400 bg-white border border-slate-200 rounded-lg shadow-sm pointer-events-none">
               /
             </kbd>
           )}
@@ -259,7 +259,7 @@ export default function GlobalSearch() {
                               </span>
                             )}
                           </div>
-                          <span className="text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-100/50 px-2 py-0.5 rounded-md font-bold shrink-0 ml-2">
+                          <span className="text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-100/50 px-2 py-0.5 rounded-lg font-bold shrink-0 ml-2">
                             {item.type}
                           </span>
                         </div>
@@ -308,7 +308,7 @@ export default function GlobalSearch() {
                               </span>
                             )}
                           </div>
-                          <span className={`text-[11px] border px-2 py-0.5 rounded-md font-bold shrink-0 ml-2 ${badgeBg}`}>
+                          <span className={`text-[11px] border px-2 py-0.5 rounded-lg font-bold shrink-0 ml-2 ${badgeBg}`}>
                             {item.type}
                           </span>
                         </div>

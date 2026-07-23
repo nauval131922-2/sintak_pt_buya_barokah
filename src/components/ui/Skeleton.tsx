@@ -14,7 +14,7 @@ export function Skeleton({
 }) {
   return (
     <div
-      className={`animate-pulse rounded-md bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 bg-[length:200%_100%] ${className}`}
+      className={`animate-pulse rounded-lg bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 bg-[length:200%_100%] ${className}`}
       style={style}
       aria-hidden="true"
     />

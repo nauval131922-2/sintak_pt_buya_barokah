@@ -65,7 +65,7 @@ export default async function RecordsPage() {
 
 function RecordsSkeleton() {
   return (
-    <div className="flex-1 bg-white border border-gray-100 rounded-2xl shadow-sm shadow-emerald-900/5 overflow-hidden flex flex-col p-8 animate-pulse">
+    <div className="flex-1 bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-sm shadow-emerald-900/5 overflow-hidden flex flex-col p-8 animate-pulse">
       <div className="flex gap-3 mb-8">
         <div className="h-12 w-40 bg-gray-100 rounded-full"></div>
         <div className="h-12 w-40 bg-gray-100 rounded-full"></div>

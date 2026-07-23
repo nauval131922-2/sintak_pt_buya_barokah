@@ -181,7 +181,7 @@ export default function ProduksiTrendChart() {
   const hasTotal = totalNilaiBBB > 0 || totalHPP > 0 || totalQtyBBB > 0 || totalQtyHasil > 0;
 
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm flex flex-col gap-4">
+    <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl p-5 shadow-sm flex flex-col gap-4">
       {/* Header */}
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>

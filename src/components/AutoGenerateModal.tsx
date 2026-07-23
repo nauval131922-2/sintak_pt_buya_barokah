@@ -462,7 +462,7 @@ export default function AutoGenerateModal({
                     : formatIndoDate(effectiveDate)
                   }
                   {!loading && resolvedDate && resolvedDate !== effectiveDate && (
-                    <span className="ml-2 px-2 py-0.5 bg-blue-50 text-blue-600 text-[11px] rounded-md">
+                    <span className="ml-2 px-2 py-0.5 bg-blue-50 text-blue-600 text-[11px] rounded-lg">
                       {effectiveDate} sudah ada data, digeser ke sini
                     </span>
                   )}
@@ -706,7 +706,7 @@ export default function AutoGenerateModal({
             <p className="text-[11px] font-bold text-gray-400">
               {generateMode === 'historis' && generateMeta ? (
                 <span className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md">Pola {generateMeta.windowHari} hari</span>
+                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-lg">Pola {generateMeta.windowHari} hari</span>
                   <span>{generateMeta.karyawanAktif} karyawan aktif</span>
                   <span>·</span>
                   <span>{generateMeta.orderAktif} order berjalan</span>
@@ -714,7 +714,7 @@ export default function AutoGenerateModal({
                 </span>
               ) : generateMode === 'fallback' && sourceDate ? (
                 <span className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-md">Fallback</span>
+                  <span className="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-lg">Fallback</span>
                   <span>Referensi: {formatIndoDate(sourceDate)}</span>
                   {resolvedDate && <span>· Jadwal untuk: <strong>{formatIndoDate(resolvedDate)}</strong></span>}
                 </span>

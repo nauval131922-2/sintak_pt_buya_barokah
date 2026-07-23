@@ -51,13 +51,13 @@ function JenisAkunBadge({ jenis }: { jenis?: string | null }) {
   if (!jenis) return <span className="text-gray-300 text-[11px]">—</span>;
   if (jenis === 'Laba/Rugi') {
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold border bg-emerald-50 text-emerald-700 border-emerald-200 tracking-wider">
+      <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-bold border bg-emerald-50 text-emerald-700 border-emerald-200 tracking-wider">
         L/R
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold border bg-violet-50 text-violet-700 border-violet-200 tracking-wider">
+    <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-bold border bg-violet-50 text-violet-700 border-violet-200 tracking-wider">
       KAS
     </span>
   );
@@ -84,7 +84,7 @@ export default function JurnalAkuntansiTerbaru({ initialData }: { initialData: J
   const lastUpdated = useAutoRefresh(fetchData);
 
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+    <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-sm overflow-hidden">
       <div className="p-5 flex items-start justify-between gap-3">
         <div>
           <p className="text-[11px] font-bold text-gray-400 tracking-widest">Jurnal Umum terbaru</p>

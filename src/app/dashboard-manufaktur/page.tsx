@@ -60,7 +60,7 @@ async function DashboardProductionContent() {
       </div>
 
       {/* Akses Cepat — di atas grafik */}
-      <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+      <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl p-5 shadow-sm">
         <div>
           <p className="text-[13px] font-extrabold text-gray-700 tracking-tight">Akses Cepat</p>
           <p className="text-[11px] font-medium text-gray-400 mt-0.5">Menu operasional produksi</p>
@@ -97,12 +97,12 @@ function DashboardProductionSkeleton() {
   return (
     <div className="flex flex-col gap-5">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="bg-white border border-gray-100 rounded-2xl h-[110px] animate-pulse shadow-sm" />
-        <div className="bg-white border border-gray-100 rounded-2xl h-[110px] animate-pulse shadow-sm" />
+        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl h-[110px] animate-pulse shadow-sm" />
+        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl h-[110px] animate-pulse shadow-sm" />
       </div>
-      <div className="bg-white border border-gray-100 rounded-2xl h-[80px] animate-pulse shadow-sm" />
-      <div className="bg-white border border-gray-100 rounded-2xl h-[300px] animate-pulse shadow-sm" />
-      <div className="bg-white border border-gray-100 rounded-2xl h-[320px] animate-pulse shadow-sm" />
+      <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl h-[80px] animate-pulse shadow-sm" />
+      <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl h-[300px] animate-pulse shadow-sm" />
+      <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl h-[320px] animate-pulse shadow-sm" />
     </div>
   );
 }
