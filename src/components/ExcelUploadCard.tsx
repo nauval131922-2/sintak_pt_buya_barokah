@@ -95,7 +95,7 @@ export default function ExcelUploadCard({
       </div>
 
       {status === 'error' && errorMessage && (
-        <div className="absolute top-full left-0 right-0 mt-3 p-3 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl shadow-sm shadow-rose-900/5 text-[10px] font-bold flex items-start gap-2 animate-in slide-in-from-top-2 z-20 uppercase tracking-widest">
+        <div className="absolute top-full left-0 right-0 mt-3 p-3 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl shadow-sm shadow-rose-900/5 text-[10px] font-bold flex items-start gap-2 animate-in slide-in-from-top-2 z-20">
           <XCircle className="w-4 h-4 shrink-0" />
           <p>{errorMessage}</p>
         </div>

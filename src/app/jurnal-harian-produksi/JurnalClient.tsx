@@ -1916,11 +1916,11 @@ export default function JurnalClient({
                 <div className="w-20 h-20 bg-rose-50 rounded-2xl flex items-center justify-center mb-6 shadow-sm shadow-rose-900/5">
                     <AlertCircle className="text-rose-500" size={40} />
                 </div>
-                <p className="text-lg font-bold text-gray-800 uppercase tracking-tight mb-2">Gagal Memuat Data</p>
+                <p className="text-lg font-bold text-gray-800 mb-2">Gagal Memuat Data</p>
                 <p className="text-sm text-gray-400 font-medium mb-8 max-w-md">{error}</p>
                 <button
                   onClick={() => setRefreshKey(k => k + 1)}
-                  className="px-10 py-4 bg-emerald-600 text-white font-bold rounded-xl shadow-sm shadow-emerald-100 hover:bg-emerald-700 transition-all active:scale-95 uppercase tracking-widest text-[13px]"
+                  className="px-10 py-4 bg-emerald-600 text-white font-bold rounded-xl shadow-sm shadow-emerald-100 hover:bg-emerald-700 transition-all active:scale-95 text-[13px]"
                 >
                   Coba Muat Ulang
                 </button>
@@ -2584,7 +2584,7 @@ export default function JurnalClient({
         {/* Divider */}
         <div className="flex items-center gap-3">
           <div className="flex-1 h-px bg-gray-100" />
-          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Filter Opsional</span>
+          <span className="text-[10px] font-bold text-gray-400">Filter Opsional</span>
           <div className="flex-1 h-px bg-gray-100" />
         </div>
 

@@ -286,7 +286,7 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
              <ImportInfo info={importInfo} />
           </div>
           {loading && (data?.length || 0) > 0 && (
-              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
+              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Memproses Data...</span>
               </div>
@@ -308,11 +308,11 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
               <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center mb-6 shadow-sm shadow-rose-900/5">
                   <AlertCircle size={40} />
               </div>
-              <p className="text-lg font-bold text-gray-800 uppercase tracking-tight mb-2">Terjadi Kesalahan</p>
+              <p className="text-lg font-bold text-gray-800 mb-2">Terjadi Kesalahan</p>
               <p className="text-sm text-gray-400 font-medium mb-8 max-w-md">{error}</p>
               <button 
                 onClick={() => setRefreshKey(k => k + 1)}
-                className="px-10 py-4 bg-emerald-600 text-white font-bold uppercase tracking-widest text-[13px] rounded-xl shadow-sm shadow-emerald-100 hover:bg-emerald-700 transition-all active:scale-95"
+                className="px-10 py-4 bg-emerald-600 text-white font-bold text-[13px] rounded-xl shadow-sm shadow-emerald-100 hover:bg-emerald-700 transition-all active:scale-95"
               >
                 Coba Muat Ulang
               </button>

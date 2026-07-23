@@ -23,7 +23,7 @@ export default function Error({ error, reset }: ErrorProps) {
             <AlertTriangle size={40} />
           </div>
 
-          <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tighter mb-3">
+          <h2 className="text-2xl font-black text-slate-800er mb-3">
             Terjadi Kesalahan
           </h2>
           
@@ -44,7 +44,7 @@ export default function Error({ error, reset }: ErrorProps) {
           <div className="grid gap-4">
             <button
               onClick={reset}
-              className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-3 shadow-sm shadow-emerald-900/10 uppercase tracking-widest text-[13px] ring-4 ring-emerald-500/0 hover:ring-emerald-500/5"
+              className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-3 shadow-sm shadow-emerald-900/10 text-[13px] ring-4 ring-emerald-500/0 hover:ring-emerald-500/5"
             >
               <RefreshCw size={18} />
               Coba Muat Ulang
@@ -52,14 +52,14 @@ export default function Error({ error, reset }: ErrorProps) {
 
             <button
               onClick={() => window.location.href = '/dashboard'}
-              className="w-full h-14 bg-white hover:bg-gray-50 text-gray-600 font-bold rounded-lg border border-gray-200 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-[13px]"
+              className="w-full h-14 bg-white hover:bg-gray-50 text-gray-600 font-bold rounded-lg border border-gray-200 transition-all flex items-center justify-center gap-3 text-[13px]"
             >
               <Home size={18} />
               Ke Dashboard
             </button>
           </div>
 
-          <p className="mt-10 text-[10px] font-bold text-gray-300 uppercase tracking-[0.3em]">
+          <p className="mt-10 text-[10px] font-bold text-gray-300">
             SINTAK • Error
           </p>
         </div>

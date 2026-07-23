@@ -567,7 +567,7 @@ export default function InfractionsTable({
                 <div className="flex items-center gap-2 opacity-100 transition-opacity">
                     <button
                         onClick={(e) => { e.stopPropagation(); generateSinglePDF(inf); }}
-                        className="flex items-center gap-1.5 text-[10px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-600 hover:text-white border border-rose-200 px-3 py-1.5 rounded-lg transition-colors leading-none uppercase tracking-wider"
+                        className="flex items-center gap-1.5 text-[10px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-600 hover:text-white border border-rose-200 px-3 py-1.5 rounded-lg transition-colors leading-noner"
                         title="Cetak PDF Faktur"
                     >
                         <FileText size={12} />
@@ -653,7 +653,7 @@ export default function InfractionsTable({
                     <span className="text-[12px] font-bold text-gray-700 line-clamp-1" title={inf.nama_barang_display || inf.nama_barang || '---'}>
                         {inf.nama_barang_display || inf.nama_barang || '---'}
                     </span>
-                    <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 w-fit px-2 py-0.5 rounded-md border border-emerald-100 uppercase tracking-widest leading-none">
+                    <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 w-fit px-2 py-0.5 rounded-md border border-emerald-100 leading-none">
                         {inf.jenis_barang || 'UMUM'}
                     </span>
                 </div>

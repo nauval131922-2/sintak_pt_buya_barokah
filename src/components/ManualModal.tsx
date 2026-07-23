@@ -418,7 +418,7 @@ export default function ManualModal() {
             {/* Description / Kegunaan */}
             {currentGuide.description && (
               <div className="p-5 bg-gray-50 rounded-xl border border-gray-100">
-                <div className="flex items-center gap-2 text-[11px] text-gray-400 font-bold uppercase tracking-widest mb-2">
+                <div className="flex items-center gap-2 text-[11px] text-gray-400 font-bold mb-2">
                   <Database size={14} />
                   <span>Kegunaan Menu</span>
                 </div>
@@ -466,7 +466,7 @@ export default function ManualModal() {
               <div className="p-5 bg-emerald-600 rounded-xl flex gap-4 shadow-sm shadow-emerald-200">
                 <Info size={24} className="text-white shrink-0" />
                 <div>
-                  <p className="text-[11px] font-bold text-emerald-100 uppercase tracking-widest mb-1">Tips Berguna</p>
+                  <p className="text-[11px] font-bold text-emerald-100 mb-1">Tips Berguna</p>
                   <p className="text-[14px] font-bold text-white leading-relaxed">
                     {renderText((currentGuide as any).tips)}
                   </p>

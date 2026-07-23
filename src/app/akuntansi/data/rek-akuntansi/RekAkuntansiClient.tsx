@@ -218,7 +218,7 @@ export default function RekAkuntansiClient() {
     <div className="flex-1 min-h-0 flex flex-col gap-6 animate-in fade-in duration-500 overflow-hidden">
 
       {error && (
-        <div className="p-4 bg-red-50 text-red-600 border border-red-100 rounded-xl shadow-sm shadow-red-900/5 text-sm font-bold flex items-start gap-3 animate-in fade-in shrink-0 uppercase tracking-widest">
+        <div className="p-4 bg-red-50 text-red-600 border border-red-100 rounded-xl shadow-sm shadow-red-900/5 text-sm font-bold flex items-start gap-3 animate-in fade-in shrink-0">
           <AlertCircle className="w-5 h-5 shrink-0" />
           <p>{error}</p>
         </div>
@@ -230,7 +230,7 @@ export default function RekAkuntansiClient() {
             <div className="flex items-center gap-4">
               <ScrapingHeader title="Rekening Akuntansi" lastUpdated={lastUpdated} />
               {loading && data && data.length > 0 && (
-                <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
+                <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
                   <Loader2 size={12} className="animate-spin" />
                   <span>Memproses Data...</span>
                 </div>

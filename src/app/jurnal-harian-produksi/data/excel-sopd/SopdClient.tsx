@@ -288,7 +288,7 @@ const EditableCell = ({
       return (
           <div className="flex items-center justify-end gap-2 text-emerald-600 animate-pulse pr-4 h-11">
               <Loader2 size={14} className="animate-spin" />
-              <span className="text-[11px] font-bold uppercase tracking-widest">Saving...</span>
+              <span className="text-[11px] font-bold">Saving...</span>
           </div>
       );
   }

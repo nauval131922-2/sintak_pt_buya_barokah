@@ -288,7 +288,7 @@ export default function SphOutClient() {
         const isActive = getValue() === '1';
         return (
           <span className={`
-            px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border
+            px-3 py-1 rounded-full text-[10px] font-boldr border
             ${isActive 
               ? 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-sm shadow-emerald-900/5' 
               : 'bg-gray-50 text-gray-400 border-gray-100'}
@@ -329,7 +329,7 @@ export default function SphOutClient() {
       />
 
       {error && (
-        <div className="p-4 bg-red-50 text-red-600 border border-red-100 rounded-xl shadow-sm shadow-red-900/5 text-sm font-bold flex items-start gap-3 animate-in fade-in shrink-0 uppercase tracking-widest">
+        <div className="p-4 bg-red-50 text-red-600 border border-red-100 rounded-xl shadow-sm shadow-red-900/5 text-sm font-bold flex items-start gap-3 animate-in fade-in shrink-0">
           <AlertCircle className="w-5 h-5 shrink-0" />
           <p>{error}</p>
         </div>
@@ -341,7 +341,7 @@ export default function SphOutClient() {
             <ScrapingHeader title="Hasil Scrapping SPH Keluar" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
 
             {loading && data && data.length > 0 && (
-              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
+              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Memproses Data...</span>
               </div>

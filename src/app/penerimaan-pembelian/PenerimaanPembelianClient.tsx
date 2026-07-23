@@ -290,7 +290,7 @@ export default function PenerimaanPembelianClient() {
       />
 
       {error && (
-        <div className="p-4 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl text-[11px] font-bold flex items-start gap-3 animate-in slide-in-from-top-2 z-20 shadow-sm shadow-rose-900/5 uppercase tracking-widest">
+        <div className="p-4 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl text-[11px] font-bold flex items-start gap-3 animate-in slide-in-from-top-2 z-20 shadow-sm shadow-rose-900/5">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <p>{error}</p>
         </div>
@@ -302,7 +302,7 @@ export default function PenerimaanPembelianClient() {
             <ScrapingHeader title="Hasil Scrapping Penerimaan Barang" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
 
             {loading && (data?.length || 0) > 0 && (
-              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
+              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Syncing...</span>
               </div>

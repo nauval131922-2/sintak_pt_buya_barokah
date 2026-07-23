@@ -437,7 +437,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
           {/* Super Admin card */}
           <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
             <div className="px-4 py-2.5 border-b border-gray-50 bg-gray-50/50">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Sistem</span>
+              <span className="text-[10px] font-bold text-gray-400">Sistem</span>
             </div>
             <div className="p-3.5 flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center text-white shrink-0">
@@ -453,7 +453,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
           {/* Configurable roles */}
           <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden flex flex-col">
             <div className="px-4 py-2.5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between shrink-0">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Role</span>
+              <span className="text-[10px] font-bold text-gray-400">Role</span>
               <button
                 onClick={() => { setIsAddingRole(v => !v); setEditingRole(null); }}
                 className="w-6 h-6 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all border border-emerald-100"

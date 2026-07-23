@@ -232,7 +232,7 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
                <ImportInfo info={importInfo} />
             </div>
             {loading && (data?.length || 0) > 0 && (
-                <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
+                <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
                   <Loader2 size={12} className="animate-spin" />
                   <span>Loading Data...</span>
                 </div>
@@ -255,11 +255,11 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
               <div className="w-20 h-20 bg-rose-50 rounded-2xl border border-rose-100 shadow-sm flex items-center justify-center mb-6">
                   <AlertCircle className="text-rose-500" size={40} />
               </div>
-              <p className="text-sm font-bold text-gray-800 uppercase tracking-[0.2em] mb-2">Terjadi Kesalahan</p>
+              <p className="text-sm font-bold text-gray-800 mb-2">Terjadi Kesalahan</p>
               <p className="text-gray-500 text-sm mb-8 max-w-xs">{error}</p>
               <button 
                 onClick={() => setRefreshKey(k => k + 1)}
-                className="px-10 py-4 bg-emerald-600 text-white font-bold rounded-xl transition-all shadow-sm shadow-emerald-900/10 hover:bg-emerald-700 hover:-translate-y-1 hover:shadow-sm hover:shadow-emerald-900/20 active:translate-y-0 uppercase tracking-widest text-[11px]"
+                className="px-10 py-4 bg-emerald-600 text-white font-bold rounded-xl transition-all shadow-sm shadow-emerald-900/10 hover:bg-emerald-700 hover:-translate-y-1 hover:shadow-sm hover:shadow-emerald-900/20 active:translate-y-0 text-[11px]"
               >
                 Coba Lagi
               </button>
@@ -270,7 +270,7 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
                 <Database className="text-gray-400" size={40} strokeWidth={1.5} />
               </div>
               <div className="text-center max-w-sm">
-                <p className="text-[14px] text-gray-800 font-bold uppercase tracking-widest mb-2">Data Tidak Ditemukan</p>
+                <p className="text-[14px] text-gray-800 font-bold mb-2">Data Tidak Ditemukan</p>
                 <p className="text-[13px] text-gray-400 font-medium leading-relaxed px-6">
                   {debouncedQuery || categoryFilter
                     ? 'Coba ubah kata kunci pencarian atau bersihkan filter yang aktif.'
@@ -284,7 +284,7 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
                     setCategoryFilter(''); 
                     setPage(1);
                   }}
-                  className="mt-4 px-8 py-3 bg-gray-800 text-white hover:bg-gray-900 text-[11px] font-bold rounded-lg transition-all shadow-sm uppercase tracking-widest"
+                  className="mt-4 px-8 py-3 bg-gray-800 text-white hover:bg-gray-900 text-[11px] font-bold rounded-lg transition-all shadow-sm"
                 >
                   Reset Filter
                 </button>

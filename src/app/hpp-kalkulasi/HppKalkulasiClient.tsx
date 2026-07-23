@@ -131,7 +131,7 @@ function EditableCell({
     return (
       <div className="flex items-center justify-end gap-2 text-emerald-600 animate-pulse pr-4 h-11">
         <Loader2 size={14} className="animate-spin" />
-        <span className="text-[11px] font-bold uppercase tracking-widest">Saving...</span>
+        <span className="text-[11px] font-bold">Saving...</span>
       </div>
     );
   }
@@ -459,7 +459,7 @@ export default function HppKalkulasiClient() {
               />
             </div>
             {loading && (
-              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
+              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Memuat...</span>
               </div>
@@ -481,11 +481,11 @@ export default function HppKalkulasiClient() {
               <div className="w-20 h-20 bg-rose-50 rounded-2xl border border-rose-100 flex items-center justify-center mb-6">
                 <AlertCircle className="text-rose-500" size={40} />
               </div>
-              <p className="text-sm font-bold text-gray-800 uppercase tracking-[0.2em] mb-2">Terjadi Kesalahan</p>
+              <p className="text-sm font-bold text-gray-800 mb-2">Terjadi Kesalahan</p>
               <p className="text-gray-500 text-sm mb-8 max-w-xs">{error}</p>
               <button
                 onClick={() => setRefreshKey(k => k + 1)}
-                className="px-10 py-4 bg-emerald-600 text-white font-bold rounded-xl shadow-sm hover:bg-emerald-700 uppercase tracking-widest text-[11px] transition-all"
+                className="px-10 py-4 bg-emerald-600 text-white font-bold rounded-xl shadow-sm hover:bg-emerald-700 text-[11px] transition-all"
               >
                 Coba Lagi
               </button>

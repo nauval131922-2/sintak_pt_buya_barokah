@@ -166,7 +166,7 @@ export default function MasterPekerjaanJurnalProduksiUpload() {
 
             <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Sandi Berkas Excel</label>
+                <label className="text-[10px] font-bold text-gray-400r ml-0.5">Sandi Berkas Excel</label>
                 <input
                   type="text"
                   autoFocus
@@ -185,13 +185,13 @@ export default function MasterPekerjaanJurnalProduksiUpload() {
                     setPendingFile(null);
                     setTypedPassword('');
                   }}
-                  className="px-5 h-10 bg-gray-50 border border-gray-100 hover:bg-gray-100 text-gray-500 font-bold rounded-lg text-[11px] tracking-wide uppercase transition-all"
+                  className="px-5 h-10 bg-gray-50 border border-gray-100 hover:bg-gray-100 text-gray-500 font-bold rounded-lg text-[11px] transition-all"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-6 h-10 bg-emerald-600 border border-emerald-500 hover:bg-emerald-700 text-white font-bold rounded-lg text-[11px] tracking-wide uppercase transition-all shadow-sm shadow-emerald-900/10"
+                  className="px-6 h-10 bg-emerald-600 border border-emerald-500 hover:bg-emerald-700 text-white font-bold rounded-lg text-[11px] transition-all shadow-sm shadow-emerald-900/10"
                 >
                   Kirim Sandi
                 </button>

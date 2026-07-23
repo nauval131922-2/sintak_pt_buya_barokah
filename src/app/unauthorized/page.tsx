@@ -15,7 +15,7 @@ export default function UnauthorizedPage() {
       
       <h1 className="text-7xl font-bold text-gray-900 tracking-tight leading-none mb-4">403</h1>
       <div className="inline-block border border-emerald-100 bg-emerald-50 px-6 py-2 rounded-full shadow-sm mb-8">
-        <p className="text-[12px] font-bold text-emerald-700 uppercase tracking-[0.2em]">Akses Ditolak</p>
+        <p className="text-[12px] font-bold text-emerald-700">Akses Ditolak</p>
       </div>
       
       <p className="text-gray-500 font-medium mb-10 max-w-md text-center leading-relaxed text-sm">
@@ -24,7 +24,7 @@ export default function UnauthorizedPage() {
 
       <Link 
         href="/dashboard"
-        className="px-10 py-4 bg-emerald-600 text-white font-bold rounded-xl transition-all shadow-sm shadow-emerald-900/10 hover:bg-emerald-700 hover:-translate-y-1 hover:shadow-sm hover:shadow-emerald-900/20 active:translate-y-0 uppercase tracking-widest text-[13px]"
+        className="px-10 py-4 bg-emerald-600 text-white font-bold rounded-xl transition-all shadow-sm shadow-emerald-900/10 hover:bg-emerald-700 hover:-translate-y-1 hover:shadow-sm hover:shadow-emerald-900/20 active:translate-y-0 text-[13px]"
       >
         Kembali ke Dashboard
       </Link>

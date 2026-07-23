@@ -747,7 +747,7 @@ export default function ActivityLogClient({
           <div className="grid grid-cols-1 gap-2">
             {actionStats.length > 0 && (
               <div className="flex items-start gap-2">
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide shrink-0 pt-1">Action</span>
+                <span className="text-[10px] font-bold text-gray-500 shrink-0 pt-1">Action</span>
                 <div className="flex flex-wrap gap-1.5">
                   {actionStats.map((s) => (
                     <button
@@ -769,7 +769,7 @@ export default function ActivityLogClient({
             )}
             {tableStats.length > 0 && (
               <div className="flex items-start gap-2">
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide shrink-0 pt-1">Tabel</span>
+                <span className="text-[10px] font-bold text-gray-500 shrink-0 pt-1">Tabel</span>
                 <div className="flex flex-wrap gap-1.5">
                   {tableStats.map((s) => (
                     <button
@@ -791,7 +791,7 @@ export default function ActivityLogClient({
             )}
             {userStats.length > 0 && (
               <div className="flex items-start gap-2">
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide shrink-0 pt-1">User</span>
+                <span className="text-[10px] font-bold text-gray-500 shrink-0 pt-1">User</span>
                 <div className="flex flex-wrap gap-1.5">
                   {userStats.map((s) => (
                     <button

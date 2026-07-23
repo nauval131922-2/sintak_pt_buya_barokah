@@ -100,7 +100,7 @@ export default function LoginContent() {
             <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center">
               <Printer size={16} className="text-white" />
             </div>
-            <h1 className="text-2xl font-black text-gray-800 tracking-tight uppercase">SINTAK</h1>
+            <h1 className="text-2xl font-black text-gray-800">SINTAK</h1>
           </div>
           <p className="text-[11px] text-gray-400 font-semibold tracking-[0.15em] uppercase">
             Sistem Informasi Cetak

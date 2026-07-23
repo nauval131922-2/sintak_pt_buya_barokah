@@ -613,7 +613,7 @@ export default function AutoGenerateModal({
                 <div className="grid grid-cols-2 gap-3">
                   {/* Rekap Order */}
                   <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-wide mb-2">
+                    <p className="text-[10px] font-black text-gray-400 mb-2">
                       Rekap Order ({rekapOrder.length})
                     </p>
                     <div className="flex flex-col gap-1.5 max-h-[140px] overflow-y-auto">
@@ -641,7 +641,7 @@ export default function AutoGenerateModal({
 
                   {/* Rekap Pekerjaan */}
                   <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-wide mb-2">
+                    <p className="text-[10px] font-black text-gray-400 mb-2">
                       Rekap Jenis Pekerjaan ({rekapPekerjaan.length})
                     </p>
                     <div className="flex flex-col gap-1 max-h-[140px] overflow-y-auto">

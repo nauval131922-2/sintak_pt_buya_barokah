@@ -113,7 +113,7 @@ export default function AktivitasTerbaruCard({
                       </p>
                     </td>
                     <td className="px-5 py-3 whitespace-nowrap">
-                      <p className="text-[12px] font-bold text-gray-700 uppercase tracking-tight">{log.table_name || '—'}</p>
+                      <p className="text-[12px] font-bold text-gray-700">{log.table_name || '—'}</p>
                     </td>
                     <td className="px-5 py-3 min-w-[240px]">
                       <p className="text-[12px] font-bold text-gray-700 line-clamp-2">{log.message || '—'}</p>

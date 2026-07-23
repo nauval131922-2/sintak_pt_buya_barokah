@@ -230,7 +230,7 @@ export default function GlobalSearch() {
               {/* Group by source: Menu first, then Data */}
               {results.some(r => r.source === 'menu') && (
                 <div className="py-2">
-                  <div className="px-4 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  <div className="px-4 py-1 text-[10px] font-bold text-slate-400r">
                     Menu Navigasi
                   </div>
                   {results
@@ -270,7 +270,7 @@ export default function GlobalSearch() {
               
               {results.some(r => r.source !== 'menu') && (
                 <div className="py-2">
-                  <div className="px-4 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  <div className="px-4 py-1 text-[10px] font-bold text-slate-400r">
                     Data Master & Transaksi
                   </div>
                   {results
