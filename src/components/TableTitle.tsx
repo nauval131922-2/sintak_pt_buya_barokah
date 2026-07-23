@@ -9,7 +9,7 @@ interface TableTitleProps {
 export default function TableTitle({ 
   icon: Icon, 
   title, 
-  iconColor = "text-green-600" 
+  iconColor = "text-emerald-600" 
 }: TableTitleProps) {
   return (
     <h3 className="text-[14px] font-extrabold text-gray-800 flex items-center gap-2.5 leading-none">

@@ -894,32 +894,32 @@ export default function TrackingClient() {
 
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-6 animate-in fade-in duration-700 overflow-hidden">
-      {/* SELECTORS SECTION */}
-      <div className="flex flex-col xl:flex-row gap-6 shrink-0 relative z-50 min-w-0">
-        {/* BOM Selector Card - Dynamic flex based on open state */}
-        <div className="bg-white border border-gray-100 py-4 px-6 shadow-sm shadow-green-900/5 rounded-2xl flex flex-col relative min-w-0 flex-[1.5]">
-          <div className="flex flex-col relative z-10 w-full">
-            <div className="flex items-center justify-between mb-2 pl-1 whitespace-nowrap">
-              <span className="text-[13px] font-semibold text-gray-500">
+      {/* SELECTORS SECTION - Single Card */}
+      <div className="bg-white/80 backdrop-blur-md border border-white/20 shadow-lg shadow-gray-900/5 rounded-2xl p-3 shrink-0 relative z-50">
+        <div className="flex flex-col xl:flex-row gap-3 min-w-0 items-center">
+          {/* BOM Selector */}
+          <div className="flex flex-col relative z-10 w-full xl:w-auto xl:min-w-[280px]">
+            <div className="flex items-center justify-between mb-2 whitespace-nowrap">
+              <span className="text-[11px] font-bold text-gray-500">
                 Pilih BOM (Bill of Material)
               </span>
             </div>
             <div className="relative" ref={suggestionRef}>
               <div
-                className={`w-full bg-white border border-gray-100 rounded-xl px-4 h-12 text-sm flex items-center justify-between transition-all text-gray-700 cursor-pointer shadow-sm hover:shadow-sm hover:shadow-green-900/5 hover:border-green-200 ${open ? "ring-4 ring-green-500/5 border-green-200" : ""}`}
+                className={`w-full h-10 px-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${open ? "border-emerald-200 bg-emerald-50/30 ring-2 ring-emerald-500/10" : "border-gray-100 bg-gray-50/50 hover:border-emerald-200 hover:bg-white"}`}
                 onClick={() => {
                   setOpen(!open);
                   setQ("");
                 }}
               >
-                <div className="flex items-center gap-4 min-w-0 flex-1 overflow-hidden">
+                <div className="flex items-center gap-3 min-w-0 flex-1 overflow-hidden">
                   <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${loadingData && trackingData?.bom ? "bg-amber-50 text-amber-600" : "bg-green-50 text-green-600"}`}
+                    className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${loadingData && trackingData?.bom ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-600"}`}
                   >
                     {loadingData && trackingData?.bom ? (
-                      <RefreshCw size={16} className="animate-spin" />
+                      <RefreshCw size={14} className="animate-spin" />
                     ) : (
-                      <Package size={16} />
+                      <Package size={14} />
                     )}
                   </div>
                   <div className="flex items-center min-w-0 flex-1 overflow-hidden leading-tight">
@@ -929,7 +929,7 @@ export default function TrackingClient() {
                           ? `[${selectedFaktur}] ${selectedNama}`
                           : ""
                       }
-                      className={`truncate text-[13px] ${selectedFaktur && trackingPath === "bom" ? "text-gray-800 font-bold" : "text-gray-400 font-normal"}`}
+                      className={`truncate text-[12px] ${selectedFaktur && trackingPath === "bom" ? "text-gray-800 font-bold" : "text-gray-400 font-normal"}`}
                     >
                       {selectedFaktur && trackingPath === "bom"
                         ? `[${selectedFaktur}] ${selectedNama}`
@@ -938,7 +938,7 @@ export default function TrackingClient() {
                   </div>
                 </div>
                 <ChevronDown
-                  size={20}
+                  size={18}
                   className={`text-gray-300 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
                 />
               </div>
@@ -955,7 +955,7 @@ export default function TrackingClient() {
                         autoFocus
                         type="text"
                         placeholder="Cari nomor BOM atau nama produk..."
-                        className="w-full pl-12 pr-4 h-12 text-[13px] border border-gray-100 rounded-lg focus:outline-none focus:ring-4 focus:ring-green-500/5 focus:border-green-200 bg-white font-bold placeholder:text-gray-300"
+                        className="w-full pl-12 pr-4 h-12 text-[13px] border border-gray-100 rounded-lg focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-200 bg-white font-bold placeholder:text-gray-300"
                         value={q}
                         onChange={(e) => setQ(e.target.value)}
                       />
@@ -963,7 +963,7 @@ export default function TrackingClient() {
                         <div className="absolute right-4 top-1/2 -translate-y-1/2">
                           <Loader2
                             size={18}
-                            className="animate-spin text-green-600"
+                            className="animate-spin text-emerald-600"
                           />
                         </div>
                       )}
@@ -978,7 +978,7 @@ export default function TrackingClient() {
                         <button
                           key={`${s.faktur}-${idx}`}
                           onClick={() => handleSelect(s)}
-                          className={`w-full px-5 py-4 text-left rounded-lg transition-all flex items-center justify-between group/item mb-1 last:mb-0 ${selectedFaktur === s.faktur && trackingData?.bom ? "bg-green-600 text-white shadow-sm shadow-green-200" : "text-gray-700 hover:bg-green-50 hover:text-green-600"}`}
+                          className={`w-full px-5 py-4 text-left rounded-lg transition-all flex items-center justify-between group/item mb-1 last:mb-0 ${selectedFaktur === s.faktur && trackingData?.bom ? "bg-emerald-600 text-white shadow-sm shadow-emerald-200" : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"}`}
                         >
                           <div className="flex flex-col min-w-0">
                             <span className="text-[12px] font-bold">
@@ -1004,17 +1004,20 @@ export default function TrackingClient() {
               )}
             </div>
           </div>
-        </div>
-        <div className="bg-white border border-gray-100 py-4 px-8 shadow-sm shadow-green-900/5 rounded-2xl flex flex-col relative min-w-0 flex-[3.5]">
-          <div className="flex flex-col lg:flex-row gap-6 relative z-10 min-w-0">
+
+          {/* Divider */}
+          <div className="hidden lg:block w-px bg-gray-200/60 mx-2 self-stretch"></div>
+
+          {/* Rest of filters */}
+          <div className="flex flex-col lg:flex-row gap-4 relative z-10 flex-1 min-w-0 items-center">
             {/* Left: Searchable Selects (Supplier, PO & Barang) */}
-            <div className="flex-[1.5] flex flex-col lg:flex-row gap-4 min-w-0">
+            <div className="flex-[1.5] flex flex-col lg:flex-row gap-3 min-w-0 w-full items-center">
               {/* Supplier Selector */}
               <div
                 className={`flex flex-col min-w-0 transition-all duration-300 flex-1`}
               >
-                <div className="flex items-center justify-between mb-2 pl-1">
-                  <span className="text-[13px] font-semibold text-gray-500">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-bold text-gray-500">
                     Pilih Supplier (Opsional)
                   </span>
                   {selectedSupplier && (
@@ -1030,7 +1033,7 @@ export default function TrackingClient() {
                           resetTracking();
                         }
                       }}
-                      className="text-[10px] font-bold text-red-500 hover:text-red-600 flex items-center gap-1"
+                      className="text-[10px] font-bold text-rose-500 hover:text-rose-600 flex items-center gap-1"
                     >
                       <X size={12} /> Hapus
                     </button>
@@ -1042,23 +1045,23 @@ export default function TrackingClient() {
                       setOpenSupplier(!openSupplier);
                       setQSupplier("");
                     }}
-                    className={`h-14 px-5 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between group ${openSupplier ? "border-green-600 bg-green-50/30 shadow-md shadow-green-100" : "border-gray-100 bg-gray-50/50 hover:border-green-200 hover:bg-white"}`}
+                    className={`h-10 px-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${openSupplier ? "border-emerald-200 bg-emerald-50/30 ring-2 ring-emerald-500/10" : "border-gray-100 bg-gray-50/50 hover:border-emerald-200 hover:bg-white"}`}
                   >
-                    <div className="flex items-center gap-4 min-w-0 flex-1 overflow-hidden">
-                      <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shrink-0">
-                        <Truck size={16} />
+                    <div className="flex items-center gap-3 min-w-0 flex-1 overflow-hidden">
+                      <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                        <Truck size={14} />
                       </div>
                       <div className="flex items-center min-w-0 flex-1 overflow-hidden leading-tight">
                         <span
                           title={selectedSupplier || ""}
-                          className={`truncate text-[13px] ${selectedSupplier ? "text-gray-800 font-bold" : "text-gray-400 font-normal"}`}
+                          className={`truncate text-[12px] ${selectedSupplier ? "text-gray-800 font-bold" : "text-gray-400 font-normal"}`}
                         >
                           {selectedSupplier || "Cari Supplier..."}
                         </span>
                       </div>
                     </div>
                     <ChevronDown
-                      size={20}
+                      size={18}
                       className={`text-gray-300 transition-transform duration-300 ${openSupplier ? "rotate-180" : ""}`}
                     />
                   </div>
@@ -1075,7 +1078,7 @@ export default function TrackingClient() {
                             autoFocus
                             type="text"
                             placeholder="Ketik nama supplier..."
-                            className="w-full pl-12 pr-4 h-12 text-[13px] border border-gray-100 rounded-lg focus:outline-none focus:ring-4 focus:ring-green-500/5 focus:border-green-200 bg-white font-bold placeholder:text-gray-300"
+                            className="w-full pl-12 pr-4 h-12 text-[13px] border border-gray-100 rounded-lg focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-200 bg-white font-bold placeholder:text-gray-300"
                             value={qSupplier}
                             onChange={(e) => setQSupplier(e.target.value)}
                           />
@@ -1083,7 +1086,7 @@ export default function TrackingClient() {
                             <div className="absolute right-4 top-1/2 -translate-y-1/2">
                               <Loader2
                                 size={18}
-                                className="animate-spin text-green-600"
+                                className="animate-spin text-emerald-600"
                               />
                             </div>
                           )}
@@ -1106,7 +1109,7 @@ export default function TrackingClient() {
                                 );
                                 localStorage.removeItem("tracking_selected_po");
                               }}
-                              className={`w-full px-5 py-4 text-left rounded-lg transition-all flex items-center justify-between group/item mb-1 last:mb-0 ${selectedSupplier === s.supplier ? "bg-green-600 text-white shadow-sm shadow-green-200" : "text-gray-700 hover:bg-green-50 hover:text-green-600"}`}
+                              className={`w-full px-5 py-4 text-left rounded-lg transition-all flex items-center justify-between group/item mb-1 last:mb-0 ${selectedSupplier === s.supplier ? "bg-emerald-600 text-white shadow-sm shadow-emerald-200" : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"}`}
                             >
                               <div className="flex flex-col min-w-0">
                                 <span className="text-[12px] font-bold">
@@ -1136,7 +1139,7 @@ export default function TrackingClient() {
                 className={`flex flex-col min-w-0 transition-all duration-300 flex-1`}
               >
                 <div className="flex items-center justify-between mb-2 pl-1">
-                  <span className="text-[13px] font-semibold text-gray-500">
+                  <span className="text-[11px] font-bold text-gray-500">
                     Pilih Nomor PO (Opsional)
                   </span>
                   {selectedPO && (
@@ -1163,16 +1166,16 @@ export default function TrackingClient() {
                       setOpenPO(!openPO);
                       setQPO("");
                     }}
-                    className={`h-14 px-5 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between group ${openPO ? "border-green-600 bg-green-50/30 shadow-md shadow-green-100" : "border-gray-100 bg-gray-50/50 hover:border-green-200 hover:bg-white"}`}
+                    className={`h-10 px-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${openPO ? "border-emerald-200 bg-emerald-50/30 ring-2 ring-emerald-500/10" : "border-gray-100 bg-gray-50/50 hover:border-emerald-200 hover:bg-white"}`}
                   >
-                    <div className="flex items-center gap-4 min-w-0 flex-1 overflow-hidden">
-                      <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shrink-0">
-                        <Hash size={16} />
-                      </div>
-                      <div className="flex items-center min-w-0 flex-1 overflow-hidden leading-tight">
-                        <span
-                          title={selectedPO || ""}
-                          className={`truncate text-[13px] ${selectedPO ? "text-gray-800 font-bold" : "text-gray-400 font-normal"}`}
+                      <div className="flex items-center gap-3 min-w-0 flex-1 overflow-hidden">
+                        <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                          <Hash size={14} />
+                        </div>
+                        <div className="flex items-center min-w-0 flex-1 overflow-hidden leading-tight">
+                          <span
+                            title={selectedPO || ""}
+                            className={`truncate text-[12px] ${selectedPO ? "text-gray-800 font-bold" : "text-gray-400 font-normal"}`}
                         >
                           {selectedPO ||
                             (selectedSupplier
@@ -1203,7 +1206,7 @@ export default function TrackingClient() {
                                 ? `Cari PO dari ${selectedSupplier}...`
                                 : "Cari nomor PO..."
                             }
-                            className="w-full pl-12 pr-4 h-12 text-[13px] border border-gray-100 rounded-lg focus:outline-none focus:ring-4 focus:ring-green-500/5 focus:border-green-200 bg-white font-bold placeholder:text-gray-300"
+                            className="w-full pl-12 pr-4 h-12 text-[13px] border border-gray-100 rounded-lg focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-200 bg-white font-bold placeholder:text-gray-300"
                             value={qPO}
                             onChange={(e) => setQPO(e.target.value)}
                           />
@@ -1211,7 +1214,7 @@ export default function TrackingClient() {
                             <div className="absolute right-4 top-1/2 -translate-y-1/2">
                               <Loader2
                                 size={18}
-                                className="animate-spin text-green-600"
+                                className="animate-spin text-emerald-600"
                               />
                             </div>
                           )}
@@ -1264,7 +1267,7 @@ export default function TrackingClient() {
                                   fetchTrackingData(s.faktur);
                                 }
                               }}
-                              className={`w-full px-5 py-4 text-left rounded-lg transition-all flex items-center justify-between group/item mb-1 last:mb-0 ${selectedPO === s.faktur ? "bg-green-600 text-white shadow-sm shadow-green-200" : "text-gray-700 hover:bg-green-50 hover:text-green-600"}`}
+                              className={`w-full px-5 py-4 text-left rounded-lg transition-all flex items-center justify-between group/item mb-1 last:mb-0 ${selectedPO === s.faktur ? "bg-emerald-600 text-white shadow-sm shadow-emerald-200" : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"}`}
                             >
                               <div className="flex flex-col min-w-0">
                                 <div className="flex items-center gap-2">
@@ -1329,30 +1332,30 @@ export default function TrackingClient() {
                 </div>
                 <div className="relative" ref={rekapSuggestionRef}>
                   <div
-                    className={`h-14 px-5 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between group ${openRekap ? "border-green-600 bg-green-50/30 shadow-md shadow-green-100" : "border-gray-100 bg-gray-50/50 hover:border-green-200 hover:bg-white"}`}
+                    className={`h-10 px-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${openRekap ? "border-emerald-200 bg-emerald-50/30 ring-2 ring-emerald-500/10" : "border-gray-100 bg-gray-50/50 hover:border-emerald-200 hover:bg-white"}`}
                     onClick={() => {
                       setOpenRekap(!openRekap);
                       setQRekap("");
                     }}
                   >
-                    <div className="flex items-center gap-4 min-w-0 flex-1 overflow-hidden">
-                      <div
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${loadingData && trackingPath === "rekap" ? "bg-amber-50 text-amber-600" : "bg-green-50 text-green-600"}`}
-                      >
-                        {loadingData && trackingPath === "rekap" ? (
-                          <RefreshCw size={16} className="animate-spin" />
-                        ) : (
-                          <ShoppingCart size={16} />
-                        )}
-                      </div>
-                      <div className="flex items-center min-w-0 flex-1 overflow-hidden leading-tight">
-                        <span
-                          title={
-                            selectedFaktur && trackingPath === "rekap"
-                              ? `[${selectedFaktur}] ${selectedNama}`
-                              : ""
-                          }
-                          className={`truncate text-[13px] ${selectedFaktur && trackingPath === "rekap" ? "text-gray-800 font-bold" : "text-gray-400 font-normal"}`}
+                      <div className="flex items-center gap-3 min-w-0 flex-1 overflow-hidden">
+                        <div
+                          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${loadingData && trackingPath === "rekap" ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-600"}`}
+                        >
+                          {loadingData && trackingPath === "rekap" ? (
+                            <RefreshCw size={14} className="animate-spin" />
+                          ) : (
+                            <ShoppingCart size={14} />
+                          )}
+                        </div>
+                        <div className="flex items-center min-w-0 flex-1 overflow-hidden leading-tight">
+                          <span
+                            title={
+                              selectedFaktur && trackingPath === "rekap"
+                                ? `[${selectedFaktur}] ${selectedNama}`
+                                : ""
+                            }
+                            className={`truncate text-[12px] ${selectedFaktur && trackingPath === "rekap" ? "text-gray-800 font-bold" : "text-gray-400 font-normal"}`}
                         >
                           {selectedFaktur && trackingPath === "rekap"
                             ? `[${selectedFaktur}] ${selectedNama}`
@@ -1384,7 +1387,7 @@ export default function TrackingClient() {
                                   ? `Cari barang dari ${selectedSupplier}...`
                                   : "Cari faktur atau nama barang..."
                             }
-                            className="w-full pl-12 pr-4 h-12 text-[13px] border border-gray-100 rounded-lg focus:outline-none focus:ring-4 focus:ring-green-500/5 focus:border-green-200 bg-white font-bold placeholder:text-gray-300"
+                            className="w-full pl-12 pr-4 h-12 text-[13px] border border-gray-100 rounded-lg focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-200 bg-white font-bold placeholder:text-gray-300"
                             value={qRekap}
                             onChange={(e) => setQRekap(e.target.value)}
                           />
@@ -1392,7 +1395,7 @@ export default function TrackingClient() {
                             <div className="absolute right-4 top-1/2 -translate-y-1/2">
                               <Loader2
                                 size={18}
-                                className="animate-spin text-green-600"
+                                className="animate-spin text-emerald-600"
                               />
                             </div>
                           )}
@@ -1433,7 +1436,7 @@ export default function TrackingClient() {
                                 );
                                 fetchTrackingData(s.faktur);
                               }}
-                              className={`w-full px-5 py-4 text-left rounded-lg transition-all flex items-center justify-between group/item mb-1 last:mb-0 ${selectedFaktur === s.faktur && trackingPath === "rekap" ? "bg-green-600 text-white shadow-sm shadow-green-200" : "text-gray-700 hover:bg-green-50 hover:text-green-600"}`}
+                              className={`w-full px-5 py-4 text-left rounded-lg transition-all flex items-center justify-between group/item mb-1 last:mb-0 ${selectedFaktur === s.faktur && trackingPath === "rekap" ? "bg-emerald-600 text-white shadow-sm shadow-emerald-200" : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"}`}
                             >
                               <div className="flex flex-col min-w-0">
                                 <div className="flex items-center gap-2">
@@ -1467,9 +1470,9 @@ export default function TrackingClient() {
             </div>
 
             {/* Part 2: Date Range */}
-            <div className="lg:w-auto lg:min-w-[300px] flex flex-col shrink-0 border-t lg:border-t-0 lg:border-l border-gray-100 pt-4 lg:pt-0 lg:pl-8">
-              <div className="flex flex-col mb-2.5">
-                <span className="block text-[13px] font-semibold text-gray-500 mb-2 ml-1 tracking-tight select-none">
+            <div className="lg:w-auto lg:min-w-[300px] flex flex-col shrink-0 border-t lg:border-t-0 lg:border-l border-gray-100 pt-4 lg:pt-0 lg:pl-8 justify-center">
+              <div className="flex flex-col mb-2">
+                <span className="block text-[11px] font-bold text-gray-500 mb-2">
                   Rentang Tanggal
                 </span>
                 <div className="flex items-center gap-3">
@@ -1509,7 +1512,7 @@ export default function TrackingClient() {
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
             <h3 className="text-[14px] font-bold text-gray-800 flex items-center gap-3 leading-none overflow-hidden pr-4">
-              <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shadow-sm shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm shrink-0">
                 <Clock size={16} />
               </div>
               <span className="shrink-0">Visualisasi Alur Manufaktur</span>
@@ -1536,7 +1539,7 @@ export default function TrackingClient() {
                         {selectedSupplier || "-"}
                       </span>
                       <span className="shrink-0 ml-1">PO:</span>
-                      <span className="bg-green-50 text-green-700 px-2 py-0.5 rounded border border-green-100 shrink-0 font-bold">
+                      <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-100 shrink-0 font-bold">
                         {selectedPO || "-"}
                       </span>
                       <span className="shrink-0 ml-1 text-gray-300">|</span>
@@ -1563,7 +1566,7 @@ export default function TrackingClient() {
               )}
             </h3>
             {isAutoRefreshing && (
-              <div className="flex items-center gap-3 text-[10px] font-bold text-green-600 animate-pulse bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm leading-none">
+              <div className="flex items-center gap-3 text-[10px] font-bold text-emerald-600 animate-pulse bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Memproses Data...</span>
               </div>
@@ -1581,11 +1584,11 @@ export default function TrackingClient() {
         </div>
 
         {/* Tab bar + table area */}
-        <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-white border border-gray-100 shadow-sm rounded-2xl">
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-white/80 backdrop-blur-md border border-white/20 shadow-lg shadow-gray-900/5 rounded-2xl">
           {loadingData ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="flex flex-col items-center gap-4">
-                <div className="w-12 h-12 border-4 border-gray-100 rounded-full border-t-green-600 animate-spin" />
+                <div className="w-12 h-12 border-4 border-gray-100 rounded-full border-t-emerald-600 animate-spin" />
                 <span className="text-[12px] font-bold text-gray-500 animate-pulse">
                   Menelusuri alur produksi...
                 </span>
@@ -1615,20 +1618,20 @@ export default function TrackingClient() {
                       onClick={() => setActiveTab(tab.id)}
                       className={`flex items-center gap-2 px-4 py-2.5 rounded-t-lg whitespace-nowrap text-[12px] font-bold transition-all shrink-0 border-b-2 ${
                         isActive
-                          ? "bg-green-50 text-green-700 border-green-500"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-500"
                           : "text-gray-400 border-transparent hover:text-gray-600 hover:bg-gray-50"
                       }`}
                     >
                       <span>{tab.label}</span>
                       {tab.badge && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-bold tracking-wide">
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold tracking-wide">
                           {tab.badge}
                         </span>
                       )}
                       <span
                         className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
                           count > 0
-                            ? "bg-green-600 text-white"
+                            ? "bg-emerald-600 text-white"
                             : "bg-gray-100 text-gray-400"
                         }`}
                       >
@@ -1679,7 +1682,7 @@ export default function TrackingClient() {
                         return (
                           <tr
                             key={rowIdx}
-                            className={`border-b border-gray-50 transition-colors hover:bg-green-50/40 ${
+                            className={`border-b border-gray-50 transition-colors hover:bg-emerald-50/40 ${
                               rowIdx % 2 === 1 ? "bg-gray-50/30" : "bg-white"
                             }`}
                           >
@@ -1755,7 +1758,7 @@ export default function TrackingClient() {
                     <div
                       className={`text-[9px] px-2 py-1 rounded-full font-bold flex items-center gap-1.5 border tracking-wide ${
                         loadTime < 300
-                          ? "bg-green-50 text-green-600 border-green-100"
+                          ? "bg-emerald-50 text-emerald-600 border-emerald-100"
                           : loadTime < 1000
                             ? "bg-amber-50 text-amber-600 border-amber-100"
                             : "bg-red-50 text-red-600 border-red-100"
@@ -1773,7 +1776,7 @@ export default function TrackingClient() {
                     activeTabData.rows.length > 0 && (
                       <div className="text-[11px] font-bold text-gray-600 bg-white px-3 py-1 rounded-lg border border-gray-200 shadow-sm flex items-center gap-2">
                         <span>Total Qty:</span>
-                        <span className="text-green-700 text-[12px]">
+                        <span className="text-emerald-700 text-[12px]">
                           {activeTabData.totalQty.toLocaleString("id-ID")}
                         </span>
                       </div>
@@ -1786,7 +1789,7 @@ export default function TrackingClient() {
                     <button
                       onClick={() => setCurrentPage(1)}
                       disabled={currentPage === 1}
-                      className="w-7 h-7 flex items-center justify-center rounded-lg text-[11px] font-bold text-gray-400 hover:bg-green-50 hover:text-green-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                      className="w-7 h-7 flex items-center justify-center rounded-lg text-[11px] font-bold text-gray-400 hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                       title="Halaman pertama"
                     >
                       «
@@ -1794,7 +1797,7 @@ export default function TrackingClient() {
                     <button
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
-                      className="w-7 h-7 flex items-center justify-center rounded-lg text-[11px] font-bold text-gray-400 hover:bg-green-50 hover:text-green-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                      className="w-7 h-7 flex items-center justify-center rounded-lg text-[11px] font-bold text-gray-400 hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                     >
                       <ChevronLeft size={14} />
                     </button>
@@ -1827,8 +1830,8 @@ export default function TrackingClient() {
                             onClick={() => setCurrentPage(p as number)}
                             className={`w-7 h-7 flex items-center justify-center rounded-lg text-[11px] font-bold transition-all ${
                               currentPage === p
-                                ? "bg-green-600 text-white shadow-sm"
-                                : "text-gray-500 hover:bg-green-50 hover:text-green-700"
+                                ? "bg-emerald-600 text-white shadow-sm"
+                                : "text-gray-500 hover:bg-emerald-50 hover:text-emerald-700"
                             }`}
                           >
                             {p}
@@ -1841,14 +1844,14 @@ export default function TrackingClient() {
                         setCurrentPage((p) => Math.min(totalPages, p + 1))
                       }
                       disabled={currentPage === totalPages}
-                      className="w-7 h-7 flex items-center justify-center rounded-lg text-[11px] font-bold text-gray-400 hover:bg-green-50 hover:text-green-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                      className="w-7 h-7 flex items-center justify-center rounded-lg text-[11px] font-bold text-gray-400 hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                     >
                       <ChevronRight size={14} />
                     </button>
                     <button
                       onClick={() => setCurrentPage(totalPages)}
                       disabled={currentPage === totalPages}
-                      className="w-7 h-7 flex items-center justify-center rounded-lg text-[11px] font-bold text-gray-400 hover:bg-green-50 hover:text-green-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                      className="w-7 h-7 flex items-center justify-center rounded-lg text-[11px] font-bold text-gray-400 hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                       title="Halaman terakhir"
                     >
                       »

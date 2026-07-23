@@ -20,7 +20,7 @@ export default async function SyncPage() {
         description={
           <>
             Pusat kendali sinkronisasi seluruh modul operasional secara langsung
-            dari <span className="text-green-600 font-bold">MDT Host</span>
+            dari <span className="text-emerald-600 font-bold">MDT Host</span>
           </>
         }
       />

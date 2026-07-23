@@ -42,10 +42,10 @@ export default function ViewActivityLogLink({
   return (
     <Link
       href={href}
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-100 bg-white text-[10px] font-bold text-gray-600 hover:border-green-200 hover:text-green-700 hover:bg-green-50 transition-all shrink-0 ${className}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-100 bg-white text-[10px] font-bold text-gray-600 hover:border-emerald-200 hover:text-emerald-700 hover:bg-emerald-50 transition-all shrink-0 ${className}`}
       title="Buka log aktivitas dengan filter tabel & tanggal hari ini"
     >
-      <History size={12} className="text-green-600" />
+      <History size={12} className="text-emerald-600" />
       Log aktivitas
     </Link>
   );

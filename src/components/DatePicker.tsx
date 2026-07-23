@@ -216,8 +216,8 @@ export default function DatePicker({ name, required, label, onChange, value, cus
                 onClick={() => selectDay(cell)}
                 className={`
                   h-8 w-8 mx-auto rounded-lg text-[13px] font-medium transition-all flex items-center justify-center
-                  ${sel ? 'bg-green-600 text-white shadow-sm shadow-green-100 font-bold' : ''}
-                  ${!sel && tod && !dim ? 'bg-green-50 text-green-600 font-bold border border-green-100' : ''}
+                  ${sel ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-100 font-bold' : ''}
+                  ${!sel && tod && !dim ? 'bg-emerald-50 text-emerald-600 font-bold border border-emerald-100' : ''}
                   ${!sel && !tod && dim ? 'text-gray-300 font-normal' : ''}   {/* abu2 = prev/next month */}
                   ${!sel && !tod && !dim ? 'text-gray-600 hover:bg-gray-50' : ''}
                 `}
@@ -255,7 +255,7 @@ export default function DatePicker({ name, required, label, onChange, value, cus
               }}
               className={`
                 h-12 rounded-lg text-[13px] font-bold transition-all border
-                ${sel ? 'bg-green-600 text-white border-transparent shadow-sm shadow-green-100' : 'text-gray-600 border-gray-50 hover:bg-gray-50'}
+                ${sel ? 'bg-emerald-600 text-white border-transparent shadow-sm shadow-emerald-100' : 'text-gray-600 border-gray-50 hover:bg-gray-50'}
               `}
             >
               {m}
@@ -281,7 +281,7 @@ export default function DatePicker({ name, required, label, onChange, value, cus
               onClick={() => { setViewYear(y); setViewMode('months'); }}
               className={`
                 h-12 rounded-lg text-[13px] font-bold transition-all border
-                ${sel ? 'bg-green-600 text-white border-transparent shadow-sm shadow-green-100' : ''}
+                ${sel ? 'bg-emerald-600 text-white border-transparent shadow-sm shadow-emerald-100' : ''}
                 ${!sel && isEdge ? 'text-gray-300 bg-gray-50 border-transparent hover:bg-gray-100' : ''}
                 ${!sel && !isEdge ? 'text-gray-600 border-gray-50 hover:bg-gray-50' : ''}
               `}
@@ -308,11 +308,11 @@ export default function DatePicker({ name, required, label, onChange, value, cus
       {/* TRIGGER: bagian yang diklik untuk buka popup */}
       <div ref={triggerRef} data-date-picker-trigger={name} onClick={toggleOpen}>
         {customTrigger ? customTrigger(toggleOpen) : (
-          <div className="w-full h-11 bg-white border border-gray-100 rounded-lg px-2.5 sm:px-4 text-xs sm:text-sm cursor-pointer flex items-center justify-between shadow-sm transition-all hover:border-green-500 group">
-            <span className={`font-bold sm:font-semibold whitespace-nowrap ${formatted ? 'text-gray-800' : 'text-gray-300'}`}>
+          <div className="w-full h-10 bg-white border border-gray-100 rounded-lg px-3 text-[12px] cursor-pointer flex items-center justify-between shadow-sm transition-all hover:border-emerald-500 group">
+            <span className={`font-bold whitespace-nowrap ${formatted ? 'text-gray-800' : 'text-gray-300'}`}>
               {formatted || 'Pilih tanggal...'}
             </span>
-            <Calendar size={16} className="text-gray-300 group-hover:text-green-500 transition-colors ml-1 shrink-0" />
+            <Calendar size={14} className="text-gray-300 group-hover:text-emerald-500 transition-colors ml-1 shrink-0" />
           </div>
         )}
       </div>
@@ -332,7 +332,7 @@ export default function DatePicker({ name, required, label, onChange, value, cus
           >
             {/* HEADER: navigasi bulan/tahun */}
             <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-50">
-              <button type="button" onClick={prevView} className="w-9 h-9 rounded-lg bg-gray-50 text-gray-500 hover:bg-green-50 hover:text-green-600 transition-all flex items-center justify-center font-bold">
+              <button type="button" onClick={prevView} className="w-9 h-9 rounded-lg bg-gray-50 text-gray-500 hover:bg-emerald-50 hover:text-emerald-600 transition-all flex items-center justify-center font-bold">
                 ‹
               </button>
               {/* Tombol tengah: klik buat ganti mode (days -> months -> years) */}
@@ -342,14 +342,14 @@ export default function DatePicker({ name, required, label, onChange, value, cus
                   if (viewMode === 'days') setViewMode('months');
                   else if (viewMode === 'months') setViewMode('years');
                 }}
-                className="text-[13px] font-bold text-gray-800 hover:text-green-600 transition-all px-2"
+                className="text-[13px] font-bold text-gray-800 hover:text-emerald-600 transition-all px-2"
                 disabled={viewMode === 'years'}
               >
                 {viewMode === 'days' && `${MONTHS_ID[viewMonth]} ${viewYear}`}
                 {viewMode === 'months' && `${viewYear}`}
                 {viewMode === 'years' && `${startDecade}-${startDecade + 9}`}
               </button>
-              <button type="button" onClick={nextView} className="w-9 h-9 rounded-lg bg-gray-50 text-gray-500 hover:bg-green-50 hover:text-green-600 transition-all flex items-center justify-center font-bold">
+              <button type="button" onClick={nextView} className="w-9 h-9 rounded-lg bg-gray-50 text-gray-500 hover:bg-emerald-50 hover:text-emerald-600 transition-all flex items-center justify-center font-bold">
                 ›
               </button>
             </div>

@@ -45,7 +45,7 @@ const quickLinks = [
   { label: "Bahan Baku", sub: "Produksi", href: "/bahan-baku", icon: Boxes, color: "text-cyan-600 bg-cyan-50 border-cyan-100" },
   { label: "Barang", sub: "Jadi", href: "/barang-jadi", icon: Package, color: "text-orange-600 bg-orange-50 border-orange-100" },
   { label: "Jurnal Harian", sub: "Produksi", href: "/jurnal-harian-produksi", icon: BookOpen, color: "text-emerald-600 bg-emerald-50 border-emerald-100" },
-  { label: "Detail Hasil", sub: "Produksi", href: "/hasil-produksi", icon: Factory, color: "text-green-600 bg-green-50 border-green-100" },
+  { label: "Detail Hasil", sub: "Produksi", href: "/hasil-produksi", icon: Factory, color: "text-emerald-600 bg-emerald-50 border-emerald-100" },
 ];
 
 async function DashboardProductionContent() {

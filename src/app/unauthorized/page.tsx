@@ -9,7 +9,7 @@ export const metadata = {
 export default function UnauthorizedPage() {
   return (
     <div className="flex-1 flex flex-col items-center justify-center min-h-[80vh] text-center p-8 animate-in fade-in duration-700">
-      <div className="w-28 h-28 bg-emerald-50 rounded-2xl border border-emerald-100 shadow-sm shadow-green-900/5 flex items-center justify-center mb-10 group hover:scale-105 transition-transform duration-500">
+      <div className="w-28 h-28 bg-emerald-50 rounded-2xl border border-emerald-100 shadow-sm shadow-emerald-900/5 flex items-center justify-center mb-10 group hover:scale-105 transition-transform duration-500">
         <ShieldAlert size={52} strokeWidth={2} className="text-emerald-600 group-hover:animate-pulse" />
       </div>
       
@@ -24,7 +24,7 @@ export default function UnauthorizedPage() {
 
       <Link 
         href="/dashboard"
-        className="px-10 py-4 bg-emerald-600 text-white font-bold rounded-xl transition-all shadow-sm shadow-green-900/10 hover:bg-emerald-700 hover:-translate-y-1 hover:shadow-sm hover:shadow-green-900/20 active:translate-y-0 uppercase tracking-widest text-[13px]"
+        className="px-10 py-4 bg-emerald-600 text-white font-bold rounded-xl transition-all shadow-sm shadow-emerald-900/10 hover:bg-emerald-700 hover:-translate-y-1 hover:shadow-sm hover:shadow-emerald-900/20 active:translate-y-0 uppercase tracking-widest text-[13px]"
       >
         Kembali ke Dashboard
       </Link>

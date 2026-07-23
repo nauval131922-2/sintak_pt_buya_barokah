@@ -193,7 +193,7 @@ const EditableCell = ({
     return (
       <div className="flex items-center justify-end w-[calc(100%+2rem)] h-11 pr-2 -mr-4 gap-1 select-none overflow-hidden">
         {formatted ? (
-          <span className={`font-bold transition-colors ${isSelected ? 'text-green-800' : 'text-green-700'} truncate ${!isActuallyNumeric ? 'text-[12px]' : 'tabular-nums'}`}>
+          <span className={`font-bold transition-colors ${isSelected ? 'text-emerald-800' : 'text-emerald-700'} truncate ${!isActuallyNumeric ? 'text-[12px]' : 'tabular-nums'}`}>
             {formatted}
           </span>
         ) : (
@@ -242,7 +242,7 @@ const EditableCell = ({
                         setTimeout(() => { isSavingGuard.current = false; }, 300);
                     }
                 }}
-                className={`w-full text-right font-bold text-[13px] text-gray-800 bg-green-50 z-50 relative border border-green-200 rounded-lg py-1.5 focus:outline-none focus:ring-4 focus:ring-green-500/10 transition-all ${(field === 'deadline_date' || field === 'finished_date') ? 'pr-10 pl-3' : 'px-3'}`}
+                className={`w-full text-right font-bold text-[13px] text-gray-800 bg-emerald-50 z-50 relative border border-emerald-200 rounded-lg py-1.5 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all ${(field === 'deadline_date' || field === 'finished_date') ? 'pr-10 pl-3' : 'px-3'}`}
             />
             {(field === 'deadline_date' || field === 'finished_date') && (
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 z-[60] flex items-center">
@@ -272,7 +272,7 @@ const EditableCell = ({
                                 onClick={(e) => {
                                   e.stopPropagation();
                                 }}
-                                className="p-1.5 hover:bg-green-100 rounded-lg text-green-600 transition-colors"
+                                className="p-1.5 hover:bg-emerald-100 rounded-lg text-emerald-600 transition-colors"
                             >
                                 <Calendar size={16} />
                             </button>
@@ -286,7 +286,7 @@ const EditableCell = ({
 
   if (isSaving) {
       return (
-          <div className="flex items-center justify-end gap-2 text-green-600 animate-pulse pr-4 h-11">
+          <div className="flex items-center justify-end gap-2 text-emerald-600 animate-pulse pr-4 h-11">
               <Loader2 size={14} className="animate-spin" />
               <span className="text-[11px] font-bold uppercase tracking-widest">Saving...</span>
           </div>
@@ -295,7 +295,7 @@ const EditableCell = ({
 
   return (
       <div
-          className="flex items-center justify-end w-[calc(100%+2rem)] h-11 pr-2 -mr-4 cursor-pointer group/cell select-none overflow-hidden transition-colors hover:bg-green-50/30 gap-1"
+          className="flex items-center justify-end w-[calc(100%+2rem)] h-11 pr-2 -mr-4 cursor-pointer group/cell select-none overflow-hidden transition-colors hover:bg-emerald-50/30 gap-1"
           onDoubleClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -314,11 +314,11 @@ const EditableCell = ({
           title="Klik 2x untuk mengisi"
       >
           {formatted ? (
-              <span className={`font-bold transition-colors ${isSelected ? 'text-green-800' : 'text-green-700'} truncate ${!isActuallyNumeric ? 'text-[12px]' : 'tabular-nums'}`}>
+              <span className={`font-bold transition-colors ${isSelected ? 'text-emerald-800' : 'text-emerald-700'} truncate ${!isActuallyNumeric ? 'text-[12px]' : 'tabular-nums'}`}>
                   {formatted}
               </span>
           ) : (
-              <span className="text-gray-300 italic text-[11px] font-bold group-hover:text-green-400 transition-colors">{placeholder}</span>
+              <span className="text-gray-300 italic text-[11px] font-bold group-hover:text-emerald-400 transition-colors">{placeholder}</span>
           )}
           <button
             onClick={(e) => {
@@ -326,7 +326,7 @@ const EditableCell = ({
               const cellValue = val !== null && val !== undefined ? String(val) : '';
               onCopyValue?.(cellValue);
             }}
-            className="p-1 hover:bg-green-100 rounded-md text-green-400 hover:text-green-600 transition-all shrink-0"
+            className="p-1 hover:bg-emerald-100 rounded-md text-emerald-400 hover:text-emerald-600 transition-all shrink-0"
             title="Copy value cell ini"
           >
             <Copy size={12} />
@@ -621,7 +621,7 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
         header: 'No.', 
         size: 80,
         meta: { sticky: true },
-        cell: ({ row }: any) => <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-400'}`}>{(page - 1) * PAGE_SIZE + (row.index + 1)}</span>
+        cell: ({ row }: any) => <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-400'}`}>{(page - 1) * PAGE_SIZE + (row.index + 1)}</span>
     },
     { 
         accessorKey: 'tgl', header: 'Tanggal', size: 130, meta: { sticky: true },
@@ -635,9 +635,9 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
                 const year = parts[2];
                 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
                 const monthName = months[monthIdx] || parts[1];
-                return <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>{day} {monthName} {year}</span>;
+                return <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>{day} {monthName} {year}</span>;
             }
-            return <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>{String(val)}</span>;
+            return <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>{String(val)}</span>;
         }
     },
     { 
@@ -645,14 +645,14 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
         header: 'No. Order', 
         size: 180, 
         meta: { sticky: true },
-        cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-600' : 'text-gray-700'}`}>{String(getValue() || '—')}</span> 
+        cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-700'}`}>{String(getValue() || '—')}</span> 
     },
     { 
         accessorKey: 'nama_order', 
         header: 'Nama Order', 
         size: 400, 
         meta: { sticky: true },
-        cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'} truncate block`} title={String(getValue())}>{String(getValue() || '—')}</span> 
+        cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'} truncate block`} title={String(getValue())}>{String(getValue() || '—')}</span> 
     },
     {
         accessorKey: 'produk',
@@ -661,7 +661,7 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
         cell: ({ getValue, row }: any) => {
             const val = getValue();
             return val
-                ? <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'} truncate block`} title={String(val)}>{String(val)}</span>
+                ? <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'} truncate block`} title={String(val)}>{String(val)}</span>
                 : <span className="text-gray-200 italic text-[11px]">—</span>;
         }
     },
@@ -696,7 +696,7 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
             const num = Number(val);
             const formatted = isNaN(num) ? val : num.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             return (
-              <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-green-700' : 'text-blue-600'}`}>
+              <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-blue-600'}`}>
                 <span>{String(formatted)}</span>
               </div>
             );
@@ -777,7 +777,6 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
                   lastExcelUpdate={lastExcelUpdate}
                   lastScrapedUpdate={lastScrapedUpdate}
                   scrapedPeriod={scrapedPeriod}
-                  activityLogTable="sopd"
                 />
                <ImportInfo info={importInfo} />
             </div>
@@ -805,7 +804,7 @@ export default function SopdClient({ importInfo }: SopdClientProps) {
                 Reset Sort
               </button>
               {loading && (data?.length || 0) > 0 && (
-                  <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse leading-none">
+                  <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
                     <Loader2 size={12} className="animate-spin" />
                     <span>Memproses data...</span>
                   </div>

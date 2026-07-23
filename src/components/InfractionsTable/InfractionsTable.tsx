@@ -567,7 +567,7 @@ export default function InfractionsTable({
                 <div className="flex items-center gap-2 opacity-100 transition-opacity">
                     <button
                         onClick={(e) => { e.stopPropagation(); generateSinglePDF(inf); }}
-                        className="flex items-center gap-1.5 text-[10px] font-bold text-green-600 bg-green-50 hover:bg-green-600 hover:text-white border border-green-100 px-3 py-1.5 rounded-lg transition-all leading-none uppercase tracking-wider"
+                        className="flex items-center gap-1.5 text-[10px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-600 hover:text-white border border-rose-200 px-3 py-1.5 rounded-lg transition-colors leading-none uppercase tracking-wider"
                         title="Cetak PDF Faktur"
                     >
                         <FileText size={12} />
@@ -608,8 +608,8 @@ export default function InfractionsTable({
         cell: (info: any) => {
             const isSelected = info.row.getIsSelected();
             return (
-                <div className={`flex items-center gap-2 text-[13px] font-bold ${isSelected ? 'text-green-700' : 'text-gray-700'}`}>
-                    <Calendar size={14} className={isSelected ? 'text-green-500' : 'text-gray-300'} />
+                <div className={`flex items-center gap-2 text-[13px] font-bold ${isSelected ? 'text-emerald-700' : 'text-gray-700'}`}>
+                    <Calendar size={14} className={isSelected ? 'text-emerald-500' : 'text-gray-300'} />
                     {formatIndoDateStr(info.getValue() as string)}
                 </div>
             );
@@ -653,7 +653,7 @@ export default function InfractionsTable({
                     <span className="text-[12px] font-bold text-gray-700 line-clamp-1" title={inf.nama_barang_display || inf.nama_barang || '---'}>
                         {inf.nama_barang_display || inf.nama_barang || '---'}
                     </span>
-                    <span className="text-[9px] font-bold text-green-600 bg-green-50 w-fit px-2 py-0.5 rounded-md border border-green-100 uppercase tracking-widest leading-none">
+                    <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 w-fit px-2 py-0.5 rounded-md border border-emerald-100 uppercase tracking-widest leading-none">
                         {inf.jenis_barang || 'UMUM'}
                     </span>
                 </div>
@@ -724,7 +724,7 @@ export default function InfractionsTable({
     <div className="flex-1 min-h-0 flex flex-col gap-6 animate-in fade-in duration-500 overflow-hidden">
       {/* Top Filter Bar */}
       <div className="flex gap-3 shrink-0">
-        <div className="flex-1 bg-white rounded-2xl border border-gray-100 px-5 py-2.5 shadow-sm shadow-green-900/5 flex items-center justify-between gap-4 relative z-50 overflow-visible">
+        <div className="flex-1 bg-white rounded-2xl border border-gray-100 px-5 py-2.5 shadow-sm shadow-emerald-900/5 flex items-center justify-between gap-4 relative z-50 overflow-visible">
           <div className="flex items-center gap-3">
             <div className="w-[140px] relative group">
               <DatePicker name="startDate" value={startDate} onChange={setStartDate} />
@@ -734,21 +734,21 @@ export default function InfractionsTable({
               <DatePicker name="endDate" value={endDate} onChange={setEndDate} popupAlign="right" />
             </div>
             {isRefreshing && (
-              <RefreshCw size={16} className="animate-spin text-green-600" />
+              <RefreshCw size={16} className="animate-spin text-emerald-600" />
             )}
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={generateExcel}
               disabled={isExporting}
-              className="h-9 px-3 bg-green-50 text-green-600 border border-green-100 font-semibold rounded-lg hover:bg-green-600 hover:text-white hover:border-green-600 transition-all flex items-center gap-1.5 text-[12px] disabled:opacity-60"
+              className="h-10 px-3 bg-emerald-50 text-emerald-600 border border-emerald-100 font-semibold rounded-lg hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all flex items-center gap-1.5 text-[12px] disabled:opacity-60"
             >
               {isExporting ? <Loader2 size={14} className="animate-spin" /> : <FileSpreadsheet size={14} />}
               <span>{isExporting ? '...' : 'Excel'}</span>
             </button>
             <button
               onClick={generatePDF}
-              className="h-9 px-3 bg-red-50 text-red-600 border border-red-100 font-semibold rounded-lg hover:bg-red-600 hover:text-white hover:border-red-600 transition-all flex items-center gap-1.5 text-[12px]"
+              className="h-10 px-3 bg-red-50 text-red-600 border border-red-100 font-semibold rounded-lg hover:bg-red-600 hover:text-white hover:border-red-600 transition-all flex items-center gap-1.5 text-[12px]"
             >
               <Printer size={14} />
               <span>PDF</span>
@@ -763,14 +763,14 @@ export default function InfractionsTable({
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
             <div className="flex items-center gap-5">
               <div className="text-[14px] font-bold text-gray-800 flex items-center gap-3 leading-none tracking-tight">
-                <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shadow-sm">
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
                   <ClipboardList size={16} />
                 </div>
                 <span>Riwayat Kesalahan Karyawan</span>
               </div>
             </div>
             {isRefreshing && data.length > 0 && (
-              <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse tracking-tight leading-none">
+              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse tracking-tight leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Memproses Data...</span>
               </div>

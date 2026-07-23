@@ -7,7 +7,7 @@ import SearchableDropdown from '@/components/SearchableDropdown';
 import SearchAndReload from '@/components/SearchAndReload';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import ViewActivityLogLink from '@/components/ViewActivityLogLink';
+
 import { DataTable } from '@/components/ui/DataTable';
 import TableFooter from '@/components/TableFooter';
 import DatePicker from '@/components/DatePicker';
@@ -1227,49 +1227,49 @@ export default function JurnalClient({
       header: 'Posisi',
       size: columnWidths.posisi,
       meta: { headerBg: '#79f2c0' },
-      cell: ({ getValue, row }: any) => <span className={`font-medium tracking-tight ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>{String(getValue() || '-')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium tracking-tight ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>{String(getValue() || '-')}</span>
     },
     {
       accessorKey: 'absensi',
       header: 'Abs.',
       size: columnWidths.absensi,
       meta: { headerBg: '#79f2c0' },
-      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>{Number(getValue() || 0)}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>{Number(getValue() || 0)}</span>
     },
     { 
       accessorKey: 'tgl', 
       header: 'Tanggal',
       size: columnWidths.tgl,
       meta: { headerBg: '#79f2c0' },
-      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>{formatIndoDateStr(getValue() as string)}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>{formatIndoDateStr(getValue() as string)}</span>
     },
     { 
       accessorKey: 'shift', 
       header: 'Sift',
       size: columnWidths.shift,
       meta: { headerBg: '#fef9c3' },
-      cell: ({ getValue, row }: any) => <span className={`font-bold tracking-tight ${row.getIsSelected() ? 'text-green-600' : 'text-gray-700'}`}>{String(getValue() || '-')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold tracking-tight ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-700'}`}>{String(getValue() || '-')}</span>
     },
     { 
       accessorKey: 'nama_karyawan', 
       header: 'Nama Karyawan',
       size: columnWidths.nama_karyawan,
       meta: { headerBg: '#79f2c0' },
-      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'}`}>{String(getValue() || '-')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'}`}>{String(getValue() || '-')}</span>
     },
     { 
       accessorKey: 'no_order', 
       header: 'NO. Order (PPIC)',
       size: columnWidths.no_order,
       meta: { headerBg: '#fef9c3' },
-      cell: ({ getValue, row }: any) => <span className={`font-bold transition-colors truncate ${row.getIsSelected() ? 'text-green-600' : 'text-gray-600'}`}>{String(getValue() || '-')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-600'}`}>{String(getValue() || '-')}</span>
     },
     { 
       accessorKey: 'nama_order', 
       header: 'Nama Order',
       size: columnWidths.nama_order,
       meta: { headerBg: '#fef9c3' },
-      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'}`}>{String(getValue() || '-')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'}`}>{String(getValue() || '-')}</span>
     },
     { 
       accessorKey: 'jenis_pekerjaan', 
@@ -1277,7 +1277,7 @@ export default function JurnalClient({
       size: columnWidths.jenis_pekerjaan,
       meta: { headerBg: '#fef9c3' },
       cell: ({ getValue }: any) => (
-        <span className="text-[12px] font-bold bg-green-50 text-green-700 px-3 py-1 border border-green-100 rounded-lg block w-fit truncate tracking-tight">
+        <span className="text-[12px] font-bold bg-emerald-50 text-emerald-700 px-3 py-1 border border-emerald-100 rounded-lg block w-fit truncate tracking-tight">
           {String(getValue() || '-')}
         </span>
       )
@@ -1312,7 +1312,7 @@ export default function JurnalClient({
           display = isNum ? Number(val).toLocaleString('id-ID') : String(val);
         }
         return (
-          <div className={`font-bold whitespace-pre-wrap ${isNum ? 'tabular-nums text-right' : 'text-left'} ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>
+          <div className={`font-bold whitespace-pre-wrap ${isNum ? 'tabular-nums text-right' : 'text-left'} ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>
             {display}
           </div>
         );
@@ -1331,7 +1331,7 @@ export default function JurnalClient({
           display = isNum ? Number(val).toLocaleString('id-ID') : String(val);
         }
         return (
-          <div className={`font-semibold whitespace-pre-wrap ${isNum ? 'tabular-nums text-right' : 'text-left'} ${row.getIsSelected() ? 'text-green-700' : 'text-black'}`}>
+          <div className={`font-semibold whitespace-pre-wrap ${isNum ? 'tabular-nums text-right' : 'text-left'} ${row.getIsSelected() ? 'text-emerald-700' : 'text-black'}`}>
             {display}
           </div>
         );
@@ -1342,14 +1342,14 @@ export default function JurnalClient({
       header: 'No. Order',
       size: columnWidths.no_order_2,
       meta: { headerBg: '#bae6fd' },
-      cell: ({ getValue, row }: any) => <span className={`font-bold transition-colors truncate ${row.getIsSelected() ? 'text-green-600' : 'text-gray-600'}`}>{String(getValue() || '-')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-600'}`}>{String(getValue() || '-')}</span>
     },
     {
       accessorKey: 'nama_order_2',
       header: 'Nama Order',
       size: columnWidths.nama_order_2,
       meta: { headerBg: '#bae6fd' },
-      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'}`}>{String(getValue() || '-')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'}`}>{String(getValue() || '-')}</span>
     },
     {
       accessorKey: 'jenis_pekerjaan_2',
@@ -1367,7 +1367,7 @@ export default function JurnalClient({
       header: 'Bahan Kertas',
       size: columnWidths.bahan_kertas,
       meta: { headerBg: '#bae6fd' },
-      cell: ({ getValue, row }: any) => <span className={`font-medium tracking-tight ${row.getIsSelected() ? 'text-green-800' : 'text-gray-600'}`}>{String(getValue() || '-')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium tracking-tight ${row.getIsSelected() ? 'text-emerald-800' : 'text-gray-600'}`}>{String(getValue() || '-')}</span>
     },
     {
       accessorKey: 'jml_plate',
@@ -1382,7 +1382,7 @@ export default function JurnalClient({
           display = isNum ? Number(val).toLocaleString('id-ID') : String(val);
         }
         return (
-          <div className={`font-bold whitespace-pre-wrap ${isNum ? 'tabular-nums text-right' : 'text-left'} ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>
+          <div className={`font-bold whitespace-pre-wrap ${isNum ? 'tabular-nums text-right' : 'text-left'} ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>
             {display}
           </div>
         );
@@ -1393,7 +1393,7 @@ export default function JurnalClient({
       header: 'Warna',
       size: columnWidths.warna,
       meta: { headerBg: '#bae6fd' },
-      cell: ({ getValue, row }: any) => <span className={`font-medium tracking-tight ${row.getIsSelected() ? 'text-green-800' : 'text-gray-600'}`}>{String(getValue() || '-')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium tracking-tight ${row.getIsSelected() ? 'text-emerald-800' : 'text-gray-600'}`}>{String(getValue() || '-')}</span>
     },
     {
       accessorKey: 'inscheet',
@@ -1408,7 +1408,7 @@ export default function JurnalClient({
           display = isNum ? Number(val).toLocaleString('id-ID') : String(val);
         }
         return (
-          <div className={`font-bold whitespace-pre-wrap ${isNum ? 'tabular-nums text-right' : 'text-left'} ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>
+          <div className={`font-bold whitespace-pre-wrap ${isNum ? 'tabular-nums text-right' : 'text-left'} ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>
             {display}
           </div>
         );
@@ -1427,7 +1427,7 @@ export default function JurnalClient({
           display = isNum ? Number(val).toLocaleString('id-ID') : String(val);
         }
         return (
-          <div className={`font-bold whitespace-pre-wrap ${isNum ? 'tabular-nums text-right' : 'text-left'} ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>
+          <div className={`font-bold whitespace-pre-wrap ${isNum ? 'tabular-nums text-right' : 'text-left'} ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>
             {display}
           </div>
         );
@@ -1438,21 +1438,21 @@ export default function JurnalClient({
       header: 'Jam',
       size: columnWidths.jam,
       meta: { headerBg: '#bae6fd' },
-      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>{String(getValue() || '-')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>{String(getValue() || '-')}</span>
     },
     {
       accessorKey: 'kendala',
       header: 'Kendala',
       size: columnWidths.kendala,
       meta: { headerBg: '#bae6fd' },
-      cell: ({ getValue, row }: any) => <span className={`font-medium truncate block ${row.getIsSelected() ? 'text-green-800' : 'text-gray-500'}`}>{String(getValue() || '-')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium truncate block ${row.getIsSelected() ? 'text-emerald-800' : 'text-gray-500'}`}>{String(getValue() || '-')}</span>
     },
     {
       accessorKey: 'bagian',
       header: 'Bagian',
       size: columnWidths.bagian,
       meta: { headerBg: '#79f2c0' },
-      cell: ({ getValue, row }: any) => <span className={`font-medium truncate block tracking-tight ${row.getIsSelected() ? 'text-green-800' : 'text-gray-600'}`}>{String(getValue() || '-')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium truncate block tracking-tight ${row.getIsSelected() ? 'text-emerald-800' : 'text-gray-600'}`}>{String(getValue() || '-')}</span>
     }
   ], [columnWidths, page, handleSaveKeterangan, canInputTarget, canInputRealisasi, keteranganPasteActive, keteranganCopiedValue, handleKeteranganCopy, handleKeteranganPasteDone, data]);
 
@@ -1607,7 +1607,7 @@ export default function JurnalClient({
       {/* TAB CONTENT: LIST */}
       <div className={`flex-1 flex flex-col gap-4 overflow-hidden ${activeTab === 'list' ? 'flex' : 'hidden'}`}>
         {/* Top Filter Bar */}
-        <div className="shrink-0 bg-white rounded-2xl border border-gray-100 px-4 py-3 shadow-sm shadow-green-900/5 relative z-50 overflow-visible">
+        <div className="shrink-0 bg-white rounded-2xl border border-gray-100 px-4 py-3 shadow-sm shadow-emerald-900/5 relative z-50 overflow-visible">
           <div className="flex flex-wrap items-center gap-2">
             {/* Rentang Tanggal */}
             <div className="flex items-center gap-1.5 shrink-0">
@@ -1617,7 +1617,7 @@ export default function JurnalClient({
                 onChange={(d) => { setStartDate(d); setPage(1); }}
                 customTrigger={(toggle) => (
                   <button type="button" onClick={toggle}
-                    className="h-9 px-3 bg-gray-50 border border-gray-100 rounded-lg text-[11px] font-semibold text-gray-700 flex items-center gap-2 hover:border-green-300 hover:bg-white transition-all whitespace-nowrap min-w-[120px]">
+                    className="h-10 px-3 bg-gray-50 border border-gray-100 rounded-lg text-[11px] font-semibold text-gray-700 flex items-center gap-2 hover:border-emerald-300 hover:bg-white transition-all whitespace-nowrap min-w-[120px]">
                     <Filter size={12} className="text-gray-400 shrink-0" />
                     {startDate ? startDate.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : <span className="text-gray-300">Dari</span>}
                   </button>
@@ -1631,7 +1631,7 @@ export default function JurnalClient({
                 popupAlign="right"
                 customTrigger={(toggle) => (
                   <button type="button" onClick={toggle}
-                    className="h-9 px-3 bg-gray-50 border border-gray-100 rounded-lg text-[11px] font-semibold text-gray-700 flex items-center gap-2 hover:border-green-300 hover:bg-white transition-all whitespace-nowrap min-w-[120px]">
+                    className="h-10 px-3 bg-gray-50 border border-gray-100 rounded-lg text-[11px] font-semibold text-gray-700 flex items-center gap-2 hover:border-emerald-300 hover:bg-white transition-all whitespace-nowrap min-w-[120px]">
                     <Filter size={12} className="text-gray-400 shrink-0" />
                     {endDate ? endDate.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : <span className="text-gray-300">Sampai</span>}
                   </button>
@@ -1652,7 +1652,7 @@ export default function JurnalClient({
               triggerWidth="w-[160px]"
               panelWidth="w-[260px]"
               compact
-              icon={<Filter size={13} className={bagianFilter ? 'text-green-600' : 'text-gray-400'} />}
+              icon={<Filter size={14} className={bagianFilter ? 'text-emerald-600' : 'text-gray-400'} />}
               onChange={(val) => { setBagianFilter(val); setPage(1); }}
             />
 
@@ -1666,7 +1666,7 @@ export default function JurnalClient({
               triggerWidth="w-[170px]"
               panelWidth="w-[260px]"
               compact
-              icon={<Filter size={13} className={namaKaryawanFilter ? 'text-green-600' : 'text-gray-400'} />}
+              icon={<Filter size={14} className={namaKaryawanFilter ? 'text-emerald-600' : 'text-gray-400'} />}
               onChange={(val) => { setNamaKaryawanFilter(val); setPage(1); }}
             />
 
@@ -1680,7 +1680,7 @@ export default function JurnalClient({
               triggerWidth="w-[190px]"
               panelWidth="w-[320px]"
               compact
-              icon={<Filter size={13} className={noOrderFilter ? 'text-green-600' : 'text-gray-400'} />}
+              icon={<Filter size={14} className={noOrderFilter ? 'text-emerald-600' : 'text-gray-400'} />}
               onChange={(val) => { setNoOrderFilter(val.split(' — ')[0]); setPage(1); }}
             />
 
@@ -1695,7 +1695,7 @@ export default function JurnalClient({
               panelWidth="w-[280px]"
               compact
               maxDisplay={300}
-              icon={<Filter size={13} className={jenisPekerjaanFilter ? 'text-green-600' : 'text-gray-400'} />}
+              icon={<Filter size={14} className={jenisPekerjaanFilter ? 'text-emerald-600' : 'text-gray-400'} />}
               onChange={(val) => { setJenisPekerjaanFilter(val); setPage(1); }}
             />
 
@@ -1704,16 +1704,16 @@ export default function JurnalClient({
               onClick={() => { setBelumRealisasiFilter(prev => !prev); setPage(1); }}
               className={`h-9 px-3 rounded-lg border transition-all flex items-center gap-2 text-[11px] font-bold shrink-0 ${belumRealisasiFilter ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-gray-50 text-gray-400 border-gray-100 hover:border-amber-100 hover:text-amber-500'}`}
             >
-              <Filter size={13} />
+              <Filter size={14} />
               {belumRealisasiFilter ? 'Belum Realisasi' : 'Semua Status'}
             </button>
 
             {/* Reset — ikut filter */}
             <button
               onClick={() => { handleResetFilter(); setSearchQuery(''); }}
-              className="h-9 px-3 bg-white hover:bg-rose-50 text-gray-400 hover:text-rose-600 border border-gray-100 hover:border-rose-100 rounded-lg transition-all flex items-center gap-1.5 text-[11px] font-bold shrink-0"
+              className="h-10 px-3 bg-white hover:bg-rose-50 text-gray-400 hover:text-rose-600 border border-gray-100 hover:border-rose-100 rounded-lg transition-all flex items-center gap-1.5 text-[11px] font-bold shrink-0"
             >
-              <RotateCcw size={13} />
+              <RotateCcw size={14} />
               Reset
             </button>
 
@@ -1722,9 +1722,9 @@ export default function JurnalClient({
             <button
               onClick={handleExportExcel}
               disabled={isExporting}
-              className="h-9 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-100 hover:border-emerald-200 rounded-lg transition-all flex items-center gap-1.5 text-[11px] font-bold disabled:opacity-50 shrink-0"
+              className="h-10 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-100 hover:border-emerald-200 rounded-lg transition-all flex items-center gap-1.5 text-[11px] font-bold disabled:opacity-50 shrink-0"
             >
-              {isExporting ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
+              {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
               {isExporting ? 'Proses...' : 'Export'}
             </button>
           </div>
@@ -1733,11 +1733,10 @@ export default function JurnalClient({
         <div className="flex flex-wrap items-center gap-2 shrink-0 px-1">
           {/* Judul + icon */}
           <div className="flex items-center gap-2 shrink-0">
-            <div className="w-7 h-7 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shadow-sm">
+            <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
               <ClipboardList size={14} />
             </div>
             <span className="text-[13px] font-bold text-gray-800 leading-none tracking-tight whitespace-nowrap">Jurnal Harian Produksi</span>
-            <ViewActivityLogLink tableName="jurnal_harian_produksi" />
           </div>
 
           {/* Copy Jadwal / Status / Revert */}
@@ -1844,7 +1843,7 @@ export default function JurnalClient({
 
           {/* Loading badge */}
           {loading && (data?.length || 0) > 0 && (
-            <div className="text-[10px] font-bold text-green-600 flex items-center gap-1.5 bg-green-50 px-3 py-1 rounded-full border border-green-100 animate-pulse leading-none">
+            <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-1.5 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 animate-pulse leading-none">
               <Loader2 size={11} className="animate-spin" />
               <span>Memuat...</span>
             </div>
@@ -1913,7 +1912,7 @@ export default function JurnalClient({
 
         <div className="flex-1 min-h-0 flex flex-col gap-5 overflow-hidden relative">
            {error ? (
-             <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-white rounded-2xl border border-gray-100 shadow-sm shadow-green-900/5">
+             <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-white rounded-2xl border border-gray-100 shadow-sm shadow-emerald-900/5">
                 <div className="w-20 h-20 bg-rose-50 rounded-2xl flex items-center justify-center mb-6 shadow-sm shadow-rose-900/5">
                     <AlertCircle className="text-rose-500" size={40} />
                 </div>
@@ -1921,7 +1920,7 @@ export default function JurnalClient({
                 <p className="text-sm text-gray-400 font-medium mb-8 max-w-md">{error}</p>
                 <button
                   onClick={() => setRefreshKey(k => k + 1)}
-                  className="px-10 py-4 bg-green-600 text-white font-bold rounded-xl shadow-sm shadow-green-100 hover:bg-green-700 transition-all active:scale-95 uppercase tracking-widest text-[13px]"
+                  className="px-10 py-4 bg-emerald-600 text-white font-bold rounded-xl shadow-sm shadow-emerald-100 hover:bg-emerald-700 transition-all active:scale-95 uppercase tracking-widest text-[13px]"
                 >
                   Coba Muat Ulang
                 </button>
@@ -2544,7 +2543,7 @@ export default function JurnalClient({
             <button
               onClick={handleCopyJadwal}
               disabled={isCopyingJadwal || !copyFrom || !copyTo}
-              className="px-6 py-2.5 text-[13px] font-bold text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 rounded-xl shadow-sm transition-all flex items-center gap-2"
+              className="px-6 py-2.5 text-[13px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-xl shadow-sm transition-all flex items-center gap-2"
             >
               {isCopyingJadwal ? (
                 <><Loader2 size={15} className="animate-spin" /> Menyalin...</>
@@ -2568,7 +2567,7 @@ export default function JurnalClient({
             />
           </div>
           <div className="flex items-center pb-3 shrink-0">
-            <div className="w-6 h-0.5 bg-green-200 rounded-full" />
+            <div className="w-6 h-0.5 bg-emerald-200 rounded-full" />
           </div>
           <div className="flex-1">
             <label className="block text-[12px] font-bold text-gray-600 mb-2">
@@ -2595,7 +2594,7 @@ export default function JurnalClient({
             <label className="text-[12px] font-bold text-gray-600">
               Filter Bagian
               {copyBagian.length > 0 && (
-                <span className="ml-1.5 text-[10px] font-bold text-green-600 bg-green-100 px-1.5 py-0.5 rounded-full">
+                <span className="ml-1.5 text-[10px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full">
                   {copyBagian.length}
                 </span>
               )}
@@ -2618,7 +2617,7 @@ export default function JurnalClient({
               placeholder="Cari bagian..."
               value={copyBagianSearch}
               onChange={e => setCopyBagianSearch(e.target.value)}
-              className="w-full pl-8 pr-3 py-2 text-[12px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-green-400 focus:outline-none transition-all"
+              className="w-full pl-8 pr-3 py-2 text-[12px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all"
             />
           </div>
           <div className="grid grid-cols-2 gap-1.5 max-h-[140px] overflow-y-auto pr-1 custom-scrollbar">
@@ -2636,8 +2635,8 @@ export default function JurnalClient({
                   }}
                   className={`px-3 py-2 rounded-lg text-[12px] font-bold text-left transition-all border ${
                     isBagianSelected
-                      ? 'bg-green-600 text-white border-green-700 shadow-sm'
-                      : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-green-50 hover:text-green-700 hover:border-green-200'
+                      ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm'
+                      : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200'
                   }`}
                 >
                   {isBagianSelected ? '✓ ' : ''}{opt}
@@ -2649,7 +2648,7 @@ export default function JurnalClient({
             )}
           </div>
           {copyBagian.length > 0 && (
-            <p className="text-[10px] text-green-600 font-semibold mt-2 ml-0.5">
+            <p className="text-[10px] text-emerald-600 font-semibold mt-2 ml-0.5">
               ✓ Hanya bagian <b>{copyBagian.join(', ')}</b> yang akan disalin
             </p>
           )}
@@ -2661,7 +2660,7 @@ export default function JurnalClient({
             <label className="text-[12px] font-bold text-gray-600">
               Filter Karyawan
               {copyKaryawan.length > 0 && (
-                <span className="ml-1.5 text-[10px] font-bold text-green-600 bg-green-100 px-1.5 py-0.5 rounded-full">
+                <span className="ml-1.5 text-[10px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full">
                   {copyKaryawan.length}
                 </span>
               )}
@@ -2697,7 +2696,7 @@ export default function JurnalClient({
                     placeholder="Cari karyawan..."
                     value={copyKaryawanSearch}
                     onChange={e => setCopyKaryawanSearch(e.target.value)}
-                    className="w-full pl-8 pr-3 py-2 text-[12px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-green-400 focus:outline-none transition-all"
+                    className="w-full pl-8 pr-3 py-2 text-[12px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all"
                   />
                 </div>
                 <div className="flex flex-col gap-1 max-h-[140px] overflow-y-auto pr-1 custom-scrollbar">
@@ -2712,8 +2711,8 @@ export default function JurnalClient({
                         onClick={() => setCopyKaryawan(prev => prev.includes(nama) ? prev.filter(n => n !== nama) : [...prev, nama])}
                         className={`px-3 py-2 rounded-lg text-[12px] font-semibold text-left transition-all border ${
                           isSelected
-                            ? 'bg-green-600 text-white border-green-700 shadow-sm'
-                            : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-green-50 hover:text-green-700 hover:border-green-200'
+                            ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm'
+                            : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200'
                         }`}
                       >
                         {isSelected ? '✓ ' : ''}{nama}
@@ -2725,7 +2724,7 @@ export default function JurnalClient({
             );
           })()}
           {copyKaryawan.length > 0 && (
-            <p className="text-[10px] text-green-600 font-semibold mt-2 ml-0.5">
+            <p className="text-[10px] text-emerald-600 font-semibold mt-2 ml-0.5">
               ✓ Hanya karyawan <b>{copyKaryawan.join(', ')}</b> yang akan disalin
             </p>
           )}
@@ -2772,7 +2771,7 @@ export default function JurnalClient({
                     disabled={isDeletingPermanently || isRestoring}
                     className="flex items-center gap-1.5 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-[12px] font-bold rounded-lg transition-all disabled:opacity-50"
                   >
-                    {isDeletingPermanently ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                    {isDeletingPermanently ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                     {isSelectedAllTrash ? `Hapus Permanen Semua ${trashTotal} Data` : `Hapus Permanen ${selectedTrashIds.size} Data`}
                   </button>
                   <button
@@ -2780,7 +2779,7 @@ export default function JurnalClient({
                     disabled={isRestoring || isDeletingPermanently}
                     className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-bold rounded-lg transition-all disabled:opacity-50"
                   >
-                    {isRestoring ? <Loader2 size={13} className="animate-spin" /> : <RotateCcw size={13} />}
+                    {isRestoring ? <Loader2 size={14} className="animate-spin" /> : <RotateCcw size={14} />}
                     {isSelectedAllTrash ? `Restore Semua ${trashTotal} Data` : `Restore ${selectedTrashIds.size} Data`}
                   </button>
                 </div>
@@ -3120,7 +3119,7 @@ export default function JurnalClient({
                     onClick={() => { setCekActiveTab('belum'); setCekSearch(''); }}
                     className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] font-bold transition-all ${cekActiveTab === 'belum' ? 'bg-white shadow-sm text-rose-600' : 'text-gray-500 hover:text-gray-700'}`}
                   >
-                    <AlertTriangle size={13} />
+                    <AlertTriangle size={14} />
                     Belum dapat pekerjaan
                     <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${cekActiveTab === 'belum' ? 'bg-rose-100 text-rose-700' : 'bg-gray-200 text-gray-500'}`}>
                       {cekKaryawanData.belum.length}
@@ -3130,7 +3129,7 @@ export default function JurnalClient({
                     onClick={() => { setCekActiveTab('sudah'); setCekSearch(''); }}
                     className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] font-bold transition-all ${cekActiveTab === 'sudah' ? 'bg-white shadow-sm text-emerald-600' : 'text-gray-500 hover:text-gray-700'}`}
                   >
-                    <CheckCircle2 size={13} />
+                    <CheckCircle2 size={14} />
                     Sudah dapat pekerjaan
                     <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${cekActiveTab === 'sudah' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-500'}`}>
                       {/* hitung karyawan unik, bukan jumlah baris */}
@@ -3141,7 +3140,7 @@ export default function JurnalClient({
 
                 {/* Search */}
                 <div className="relative shrink-0">
-                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                   <input
                     type="text"
                     value={cekSearch}
@@ -3151,7 +3150,7 @@ export default function JurnalClient({
                   />
                   {cekSearch && (
                     <button onClick={() => setCekSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                      <X size={13} />
+                      <X size={14} />
                     </button>
                   )}
                 </div>

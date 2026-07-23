@@ -25,7 +25,7 @@ export default function ActivityLogExportMenu({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="h-10 px-3 flex items-center gap-1.5 bg-white border border-gray-100 rounded-lg text-[11px] font-bold text-gray-600 hover:border-green-200 hover:text-green-700 shadow-sm"
+        className="h-10 px-3 flex items-center gap-1.5 bg-white border border-gray-100 rounded-lg text-[11px] font-bold text-gray-600 hover:border-emerald-200 hover:text-emerald-700 shadow-sm"
       >
         <Download size={14} /> Export CSV <ChevronDown size={12} className={open ? 'rotate-180' : ''} />
       </button>
@@ -36,7 +36,7 @@ export default function ActivityLogExportMenu({
               type="checkbox"
               checked={includeRaw}
               onChange={(e) => setIncludeRaw(e.target.checked)}
-              className="mt-0.5 rounded border-gray-300 text-green-600"
+              className="mt-0.5 rounded border-gray-300 text-emerald-600"
             />
             <span>Sertakan kolom <code className="text-[10px] bg-gray-100 px-1 rounded">raw_data</code> (file lebih besar)</span>
           </label>
@@ -46,7 +46,7 @@ export default function ActivityLogExportMenu({
               onExport(includeRaw);
               setOpen(false);
             }}
-            className="mt-3 w-full py-2 bg-green-600 text-white rounded-lg text-[11px] font-bold hover:bg-green-700"
+            className="mt-3 w-full py-2 bg-emerald-600 text-white rounded-lg text-[11px] font-bold hover:bg-emerald-700"
           >
             Unduh CSV
           </button>

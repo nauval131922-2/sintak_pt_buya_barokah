@@ -193,7 +193,7 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
         header: "Jabatan",
         size: 220,
         cell: (info: CellContext<Employee, string>) => (
-            <span className="text-[11px] font-bold text-green-600 bg-green-50 px-3 py-1 rounded-lg border border-green-100 block w-fit truncate tracking-tight">
+            <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100 block w-fit truncate tracking-tight">
               {info.getValue()}
             </span>
         )
@@ -226,7 +226,7 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
                         onClick={(e) => { e.stopPropagation(); handleToggleActive(employee); }}
                         className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                             loading ? 'opacity-50 cursor-wait' :
-                            isActive ? 'bg-green-500' : 'bg-gray-300'
+                            isActive ? 'bg-emerald-500' : 'bg-gray-300'
                         }`}
                         role="switch"
                         aria-checked={isActive}
@@ -278,7 +278,7 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
         <div className="flex items-center justify-between gap-4 min-h-[32px]">
           <div className="flex items-center gap-5">
              <h3 className="text-[14px] font-bold text-gray-800 flex items-center gap-3 leading-none">
-                <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shadow-sm shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm shrink-0">
                   <Users size={16} />
                 </div>
                 <span>Data Master Karyawan</span>
@@ -286,7 +286,7 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
              <ImportInfo info={importInfo} />
           </div>
           {loading && (data?.length || 0) > 0 && (
-              <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
+              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Memproses Data...</span>
               </div>
@@ -304,7 +304,7 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
 
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative">
          {error ? (
-           <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-white rounded-2xl border border-gray-100 shadow-sm shadow-green-900/5">
+           <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-white rounded-2xl border border-gray-100 shadow-sm shadow-emerald-900/5">
               <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center mb-6 shadow-sm shadow-rose-900/5">
                   <AlertCircle size={40} />
               </div>
@@ -312,7 +312,7 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
               <p className="text-sm text-gray-400 font-medium mb-8 max-w-md">{error}</p>
               <button 
                 onClick={() => setRefreshKey(k => k + 1)}
-                className="px-10 py-4 bg-green-600 text-white font-bold uppercase tracking-widest text-[13px] rounded-xl shadow-sm shadow-green-100 hover:bg-green-700 transition-all active:scale-95"
+                className="px-10 py-4 bg-emerald-600 text-white font-bold uppercase tracking-widest text-[13px] rounded-xl shadow-sm shadow-emerald-100 hover:bg-emerald-700 transition-all active:scale-95"
               >
                 Coba Muat Ulang
               </button>

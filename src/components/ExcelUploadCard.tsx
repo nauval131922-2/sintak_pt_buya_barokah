@@ -37,19 +37,19 @@ export default function ExcelUploadCard({
   };
 
   return (
-    <div className="relative bg-white border border-gray-100 shadow-sm shadow-green-900/5 rounded-xl px-6 py-4 flex items-center justify-between gap-6 z-50 h-full">
-      <div className="flex items-center gap-5 flex-1">
-        <div className="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center shrink-0">
-          <Upload size={24} />
+    <div className="relative bg-white/80 backdrop-blur-md border border-white/20 shadow-lg shadow-gray-900/5 rounded-2xl px-4 py-3 flex items-center justify-between gap-6 z-50 h-full">
+      <div className="flex items-center gap-4 flex-1">
+        <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+          <Upload size={20} />
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-bold text-gray-800 leading-none mb-1.5 tracking-tight">{title}</h3>
-          <div className="text-[11px] text-gray-400 font-medium leading-relaxed">
+          <h3 className="text-[12px] font-bold text-gray-800 leading-none mb-1 tracking-tight">{title}</h3>
+          <div className="text-[10px] text-gray-400 font-medium leading-relaxed">
             {description}
           </div>
 
           {status === 'loading' && (
-            <div className="mt-3 space-y-2">
+            <div className="mt-2 space-y-1.5">
               <div className="flex items-center justify-between text-[10px] font-bold tracking-tight">
                 <span className="text-emerald-600">
                   Data: {currentRows.toLocaleString('id-ID')} / {totalRows.toLocaleString('id-ID')}
@@ -83,19 +83,19 @@ export default function ExcelUploadCard({
         <button
           onClick={() => fileRef.current?.click()}
           disabled={status === 'loading'}
-          className="px-6 h-11 bg-green-600 hover:bg-green-700 text-white text-[13px] font-bold rounded-lg transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed shadow-sm shadow-green-100 tracking-wide"
+          className="px-5 h-9 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-xl transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed shadow-sm tracking-wide"
         >
           {status === 'loading' ? (
-            <Loader2 size={18} className="animate-spin" />
+            <Loader2 size={16} className="animate-spin" />
           ) : (
-            <FileSpreadsheet size={18} />
+            <FileSpreadsheet size={16} />
           )}
           <span>{status === 'loading' ? 'Mengunggah...' : 'Pilih & Upload Excel'}</span>
         </button>
       </div>
 
       {status === 'error' && errorMessage && (
-        <div className="absolute top-full left-0 right-0 mt-3 p-4 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl shadow-sm shadow-rose-900/5 text-[11px] font-bold flex items-start gap-3 animate-in slide-in-from-top-2 z-20 uppercase tracking-widest">
+        <div className="absolute top-full left-0 right-0 mt-3 p-3 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl shadow-sm shadow-rose-900/5 text-[10px] font-bold flex items-start gap-2 animate-in slide-in-from-top-2 z-20 uppercase tracking-widest">
           <XCircle className="w-4 h-4 shrink-0" />
           <p>{errorMessage}</p>
         </div>

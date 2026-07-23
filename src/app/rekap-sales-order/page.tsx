@@ -17,14 +17,14 @@ export default async function RekapSalesOrderPage() {
         title="Rekap Sales Order Barang"
         description={
           <>
-            Rekap detail baris Sales Order — filter berdasarkan rentang tanggal,{" "}
-            <span className="font-bold text-green-700">harga</span>, atau pencarian faktur &amp; produk.
+            Rekap detail baris Sales Order — filter berdasarkan{" "}
+            <span className="font-bold text-emerald-700">harga</span>, atau pencarian faktur &amp; produk.
             Data bersumber dari{" "}
             <a
               href="https://buyapercetakan.mdthoster.com/#cGovcl9zb19icmc="
               target="_blank"
               rel="noopener noreferrer"
-              className="text-green-600 hover:underline font-bold"
+              className="text-emerald-600 hover:underline font-bold"
             >
               Digit
             </a>

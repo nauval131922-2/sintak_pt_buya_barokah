@@ -168,7 +168,7 @@ export default function UsersContent({
           <div className="flex items-center gap-2">
             <button
               onClick={e => { e.stopPropagation(); handleEdit(user); }}
-              className="p-2.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
+              className="p-2.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
               title="Edit User"
             >
               <Edit2 size={16} />
@@ -195,7 +195,7 @@ export default function UsersContent({
         const user = info.row.original as User;
         return (
           <div className="flex items-center gap-4">
-            <div className="w-11 h-11 rounded-lg bg-green-50 flex items-center justify-center text-green-600 font-bold text-[12px] shrink-0 overflow-hidden border border-green-100">
+            <div className="w-11 h-11 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 font-bold text-[12px] shrink-0 overflow-hidden border border-emerald-100">
               {user.photo ? (
                 <img src={user.photo} alt={user.name} className="w-full h-full object-cover" />
               ) : getInitials(user.name)}
@@ -224,7 +224,7 @@ export default function UsersContent({
                 className={`px-2.5 py-1 rounded-lg text-[10px] font-bold inline-flex items-center gap-1.5 leading-none border ${
                   r === 'Super Admin'
                     ? 'bg-emerald-50 text-emerald-700 border-emerald-100 shadow-sm'
-                    : 'bg-green-50 text-green-600 border-green-100'
+                    : 'bg-emerald-50 text-emerald-600 border-emerald-100'
                 }`}
               >
                 {r === 'Super Admin' ? <ShieldCheck size={10} /> : <UserCog size={10} />}
@@ -251,7 +251,7 @@ export default function UsersContent({
               onClick={() => handleToggleStatus(user)}
               disabled={isSelf}
               className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-50 ${
-                isActive ? 'bg-green-600' : 'bg-gray-200'
+                isActive ? 'bg-emerald-600' : 'bg-gray-200'
               }`}
               title={isSelf ? 'Anda tidak dapat menonaktifkan akun sendiri' : `Klik untuk ${isActive ? 'nonaktifkan' : 'aktifkan'}`}
             >
@@ -261,7 +261,7 @@ export default function UsersContent({
                 }`}
               />
             </button>
-            <span className={`text-[11px] font-bold ${isActive ? 'text-green-600' : 'text-gray-400'}`}>
+            <span className={`text-[11px] font-bold ${isActive ? 'text-emerald-600' : 'text-gray-400'}`}>
               {isActive ? 'Aktif' : 'Nonaktif'}
             </span>
           </div>
@@ -303,8 +303,9 @@ export default function UsersContent({
 
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-3 animate-in fade-in duration-500 overflow-hidden">
-      <div className="shrink-0 flex items-center justify-between gap-3 z-50">
-        <div className="flex items-center gap-3">
+      {/* Filter and action bar */}
+      <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg shadow-gray-900/5 p-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2 flex-1">
           <SearchableDropdown
             id="users-role"
             value={roleFilter}
@@ -312,10 +313,11 @@ export default function UsersContent({
             allLabel="Semua Jabatan"
             placeholder="Filter Jabatan"
             searchPlaceholder="Cari role..."
-            triggerWidth="w-[200px]"
-            panelWidth="w-[200px]"
-            icon={<Users size={16} className={roleFilter ? 'text-green-600' : 'text-gray-400'} />}
+            triggerWidth="w-full sm:w-[180px]"
+            panelWidth="w-[220px]"
+            icon={<Users size={14} className={roleFilter ? 'text-emerald-600' : 'text-gray-400'} />}
             onChange={val => startTransition(() => setRoleFilter(val))}
+            compact={true}
           />
           <SearchableDropdown
             id="users-status"
@@ -324,22 +326,28 @@ export default function UsersContent({
             allLabel="Semua Status"
             placeholder="Filter Status"
             searchPlaceholder="Cari status..."
-            triggerWidth="w-[180px]"
-            panelWidth="w-[180px]"
-            icon={<UserCog size={16} className={statusFilter ? 'text-green-600' : 'text-gray-400'} />}
+            triggerWidth="w-full sm:w-[140px]"
+            panelWidth="w-[160px]"
+            icon={<UserCog size={14} className={statusFilter ? 'text-emerald-600' : 'text-gray-400'} />}
             onChange={val => startTransition(() => setStatusFilter(val))}
+            compact={true}
           />
         </div>
+
+        {/* Divider */}
+        <div className="hidden sm:block w-px h-8 bg-gray-200/60"></div>
+
+        {/* Add button */}
         <button
           onClick={handleCreate}
-          className="flex items-center justify-center gap-3 px-6 h-12 bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold rounded-xl transition-all shadow-md shadow-emerald-900/10 active:scale-95"
+          className="flex items-center justify-center gap-2 px-6 h-10 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-xl transition-colors shadow-sm shrink-0"
         >
-          <Plus size={20} />
-          <span className="hidden sm:inline">Tambah Akun Baru</span>
-          <span className="sm:hidden">Tambah</span>
+          <Plus size={15} />
+          <span>Tambah Akun Baru</span>
         </button>
       </div>
 
+      {/* Search bar */}
       <div className="shrink-0">
         <SearchAndReload
           searchQuery={searchImmediate}

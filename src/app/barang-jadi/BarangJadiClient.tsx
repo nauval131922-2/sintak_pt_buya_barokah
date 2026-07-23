@@ -217,25 +217,25 @@ export default function BarangJadiClient() {
       id: 'no',
       header: 'No.',
       size: 60,
-      cell: ({ row }: any) => <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-400'}`}>{(page - 1) * PAGE_SIZE + row.index + 1}</span>
+      cell: ({ row }: any) => <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-400'}`}>{(page - 1) * PAGE_SIZE + row.index + 1}</span>
     },
     {
       accessorKey: 'faktur',
       header: 'Faktur',
       size: 180,
-      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-600' : 'text-gray-700'}`}>{String(getValue())}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-700'}`}>{String(getValue())}</span>
     },
     {
       accessorKey: 'tgl',
       header: 'Tanggal',
       size: 120,
-      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>{formatIndoDateStr(getValue() as string)}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>{formatIndoDateStr(getValue() as string)}</span>
     },
     {
       accessorKey: 'faktur_prd',
       header: 'Faktur Prd',
       size: 200,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-green-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
     },
     {
       accessorKey: 'faktur_so',
@@ -247,7 +247,7 @@ export default function BarangJadiClient() {
         return (
           <div className="flex items-center justify-between group w-full pr-2">
              <div 
-              className={`font-bold tracking-tight transition-colors truncate flex-1 ${row.getIsSelected() ? 'text-green-600' : 'text-gray-500'}`} 
+              className={`font-bold tracking-tight transition-colors truncate flex-1 ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} 
               dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} 
             />
             {hasValue && (
@@ -263,26 +263,26 @@ export default function BarangJadiClient() {
       accessorKey: 'kd_pelanggan',
       header: 'Pelanggan',
       size: 250,
-      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'}`}>{String(getValue())}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'}`}>{String(getValue())}</span>
     },
     {
       accessorKey: 'nama_barang',
       header: 'Nama Barang',
       size: 350,
-      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'}`}>{String(getValue())}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'}`}>{String(getValue())}</span>
     },
     {
       accessorKey: 'qty',
       header: 'Qty',
       size: 100,
       meta: { align: 'right' },
-      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-slate-700'}`}>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-slate-700'}`}>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
     },
     {
       accessorKey: 'satuan',
       header: 'Satuan',
       size: 100,
-      cell: ({ getValue, row }: any) => <span className={`font-bold transition-colors ${row.getIsSelected() ? 'text-green-700' : 'text-slate-600'}`}>{String(getValue() || '—')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-slate-600'}`}>{String(getValue() || '—')}</span>
     },
     {
       accessorKey: 'hp',
@@ -290,8 +290,8 @@ export default function BarangJadiClient() {
       size: 130,
       meta: { align: 'right' },
       cell: ({ getValue, row }: any) => (
-        <div className={`flex items-center justify-between font-semibold tabular-nums transition-colors w-full ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>
-          <span className={`text-[10px] opacity-40 ${row.getIsSelected() ? 'text-green-400' : 'text-gray-400'}`}>Rp</span>
+        <div className={`flex items-center justify-between font-semibold tabular-nums transition-colors w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>
+          <span className={`text-[10px] opacity-40 ${row.getIsSelected() ? 'text-emerald-400' : 'text-gray-400'}`}>Rp</span>
           <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
         </div>
       )
@@ -302,7 +302,7 @@ export default function BarangJadiClient() {
       size: 130,
       meta: { align: 'right' },
       cell: ({ getValue, row }: any) => (
-        <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-green-700' : 'text-emerald-700'}`}>
+        <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-emerald-700'}`}>
           <span className="text-[10px] opacity-40 mr-1">Rp</span>
           <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
         </div>
@@ -312,7 +312,7 @@ export default function BarangJadiClient() {
       accessorKey: 'keterangan',
       header: 'Keterangan',
       size: 250,
-      cell: ({ getValue, row }: any) => <span className={`font-medium transition-colors truncate block ${row.getIsSelected() ? 'text-green-800' : 'text-gray-700'}`}>{String(getValue() || '–')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium transition-colors truncate block ${row.getIsSelected() ? 'text-emerald-800' : 'text-gray-700'}`}>{String(getValue() || '–')}</span>
     },
     {
       id: 'hp_barang_jadi',
@@ -321,7 +321,7 @@ export default function BarangJadiClient() {
       size: 130,
       meta: { align: 'right', headerBg: '#fff7ed' },
       cell: ({ getValue, row }: any) => (
-        <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-green-700' : 'text-orange-700'}`}>
+        <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-orange-700'}`}>
           <span className="text-[10px] opacity-40 mr-1">Rp</span>
           <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
         </div>
@@ -333,7 +333,7 @@ export default function BarangJadiClient() {
       size: 130,
       meta: { align: 'right', headerBg: '#faf5ff' },
       cell: ({ getValue, row }: any) => (
-        <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-green-700' : 'text-purple-700'}`}>
+        <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-purple-700'}`}>
           <span className="text-[10px] opacity-40 mr-1">Rp</span>
           <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
         </div>
@@ -354,7 +354,7 @@ export default function BarangJadiClient() {
         }
 
         return (
-          <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-green-700' : 'text-blue-700'}`}>
+          <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-blue-700'}`}>
             <span className="text-[10px] opacity-40 mr-1">Rp</span>
             <span>{val.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
           </div>
@@ -372,7 +372,7 @@ export default function BarangJadiClient() {
            return <span className="text-[10px] font-bold text-teal-400/60 italic leading-tight">Belum dilakukan transaksi Penjualan</span>;
         }
         return (
-          <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-green-700' : 'text-teal-700'}`}>
+          <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-teal-700'}`}>
             <span className="text-[10px] opacity-40 mr-1">Rp</span>
             <span>{val.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
           </div>
@@ -469,10 +469,10 @@ export default function BarangJadiClient() {
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
         <div className="flex flex-col gap-3 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
-            <ScrapingHeader title="Hasil Scrapping Penerimaan Barang Hasil Produksi" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} activityLogTable="barang_jadi" />
+            <ScrapingHeader title="Hasil Scrapping Penerimaan Barang Hasil Produksi" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
 
             {loading && data && data.length > 0 && (
-              <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
+              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Memproses Data...</span>
               </div>

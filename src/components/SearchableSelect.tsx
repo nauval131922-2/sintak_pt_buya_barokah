@@ -77,13 +77,13 @@ export default function SearchableSelect({
       {label && <label className="flex items-center gap-1.5 text-[12px] font-semibold text-gray-500 mb-1.5 ml-1">{label}{required && <span className="text-red-500 font-bold">*</span>}</label>}
       <input type="hidden" name={name} value={selected ? String(valueFn(selected)) : ''} />
       <div
-        className={`w-full bg-white border border-gray-100 rounded-lg px-4 h-11 text-sm flex items-center justify-between transition-all shadow-sm ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-green-500 focus-within:ring-4 focus-within:ring-green-500/5 focus-within:border-green-500'}`}
+        className={`w-full bg-white border border-gray-100 rounded-lg px-4 h-11 text-sm flex items-center justify-between transition-all shadow-sm ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/5 focus-within:border-emerald-500'}`}
         onClick={() => { if (!disabled) { setOpen((o) => !o); setQuery(''); } }}
       >
         <span className={selected ? 'text-gray-800 truncate font-semibold' : 'text-gray-300 font-medium truncate'}>
           {selected ? displayFn(selected) : placeholder}
         </span>
-        <ChevronDown size={18} className={`text-gray-300 transition-transform duration-300 ${open ? 'rotate-180 text-green-500' : ''}`} />
+        <ChevronDown size={18} className={`text-gray-300 transition-transform duration-300 ${open ? 'rotate-180 text-emerald-500' : ''}`} />
       </div>
 
       {open && !disabled && (
@@ -99,7 +99,7 @@ export default function SearchableSelect({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Cari..."
-                className="w-full pl-10 pr-3 h-10 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-green-500 bg-white font-medium"
+                className="w-full pl-10 pr-3 h-10 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 bg-white font-medium"
               />
             </div>
           </div>
@@ -114,7 +114,7 @@ export default function SearchableSelect({
             )}
             {isLoading ? (
               <li className="px-3 py-10 text-xs text-gray-400 flex flex-col items-center justify-center gap-3">
-                <Loader2 size={24} className="animate-spin text-green-500" />
+                <Loader2 size={24} className="animate-spin text-emerald-500" />
                 <span className="font-medium">Memuat data...</span>
               </li>
             ) : filtered.length === 0 ? (
@@ -127,7 +127,7 @@ export default function SearchableSelect({
                   key={i}
                   className={`px-4 py-3 text-sm cursor-pointer rounded-lg transition-all mb-1 last:mb-0 border border-transparent ${
                     selected && valueFn(selected) === valueFn(o) 
-                      ? 'bg-green-50 text-green-600 border-green-100 font-bold' 
+                      ? 'bg-emerald-50 text-emerald-600 border-emerald-100 font-bold' 
                       : 'text-gray-600 font-medium hover:bg-gray-50'
                   }`}
                   onClick={() => handleSelect(o)}

@@ -446,12 +446,12 @@ export default function ManualModal() {
                       {isHeader ? null : isSubStep ? (
                         <div className="flex-shrink-0 w-1.5 h-1.5 mt-2 rounded-full bg-gray-300" />
                       ) : (
-                        <div className="flex-shrink-0 w-6 h-6 rounded-lg bg-green-100 text-green-600 flex items-center justify-center text-[11px] font-bold shadow-sm">
+                        <div className="flex-shrink-0 w-6 h-6 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center text-[11px] font-bold shadow-sm">
                           {stepCounter}
                         </div>
                       )}
                       <p className={`text-[14px] leading-relaxed ${
-                        isHeader ? 'font-bold text-gray-800 text-sm border-b-2 border-green-100 pb-1' : 
+                        isHeader ? 'font-bold text-gray-800 text-sm border-b-2 border-emerald-100 pb-1' : 
                         isSubStep ? 'text-gray-500 font-medium' : 'text-gray-700 font-medium'
                       }`}>
                         {renderText(cleanText)}
@@ -463,10 +463,10 @@ export default function ManualModal() {
             </div>
 
             {(currentGuide as any).tips && (
-              <div className="p-5 bg-green-600 rounded-xl flex gap-4 shadow-sm shadow-green-200">
+              <div className="p-5 bg-emerald-600 rounded-xl flex gap-4 shadow-sm shadow-emerald-200">
                 <Info size={24} className="text-white shrink-0" />
                 <div>
-                  <p className="text-[11px] font-bold text-green-100 uppercase tracking-widest mb-1">Tips Berguna</p>
+                  <p className="text-[11px] font-bold text-emerald-100 uppercase tracking-widest mb-1">Tips Berguna</p>
                   <p className="text-[14px] font-bold text-white leading-relaxed">
                     {renderText((currentGuide as any).tips)}
                   </p>

@@ -121,7 +121,7 @@ function EditableCell({
               setTimeout(() => { isSavingGuard.current = false; }, 300);
             }
           }}
-          className="w-full text-right font-bold text-[13px] text-gray-800 bg-green-50 border border-green-200 rounded-lg py-1.5 px-3 focus:outline-none focus:ring-4 focus:ring-green-500/10 transition-all"
+          className="w-full text-right font-bold text-[13px] text-gray-800 bg-emerald-50 border border-emerald-200 rounded-lg py-1.5 px-3 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all"
         />
       </div>
     );
@@ -129,7 +129,7 @@ function EditableCell({
 
   if (isSaving) {
     return (
-      <div className="flex items-center justify-end gap-2 text-green-600 animate-pulse pr-4 h-11">
+      <div className="flex items-center justify-end gap-2 text-emerald-600 animate-pulse pr-4 h-11">
         <Loader2 size={14} className="animate-spin" />
         <span className="text-[11px] font-bold uppercase tracking-widest">Saving...</span>
       </div>
@@ -144,7 +144,7 @@ function EditableCell({
 
   return (
     <div
-      className="flex items-center justify-end w-[calc(100%+2rem)] h-11 pr-8 -mr-4 cursor-pointer group select-none overflow-hidden transition-colors hover:bg-green-50/30"
+      className="flex items-center justify-end w-[calc(100%+2rem)] h-11 pr-8 -mr-4 cursor-pointer group select-none overflow-hidden transition-colors hover:bg-emerald-50/30"
       onDoubleClick={e => {
         e.preventDefault(); e.stopPropagation();
         isSavingGuard.current = false;
@@ -158,12 +158,12 @@ function EditableCell({
       title="Klik 2x untuk mengisi"
     >
       {(isNumeric ? (localVal !== null && localVal !== undefined && localVal !== '') : !!formatted) ? (
-        <span className={`font-bold transition-colors ${isSelected ? 'text-green-800' : 'text-green-700'} truncate ${isNumeric ? 'tabular-nums' : 'text-[12px]'}`}>
+        <span className={`font-bold transition-colors ${isSelected ? 'text-emerald-800' : 'text-emerald-700'} truncate ${isNumeric ? 'tabular-nums' : 'text-[12px]'}`}>
           {isNumeric && <span className="text-[10px] opacity-40 mr-1">Rp</span>}
           {formatted}
         </span>
       ) : (
-        <span className="text-gray-300 italic text-[11px] font-bold group-hover:text-green-400 transition-colors">{placeholder}</span>
+        <span className="text-gray-300 italic text-[11px] font-bold group-hover:text-emerald-400 transition-colors">{placeholder}</span>
       )}
     </div>
   );
@@ -377,7 +377,7 @@ export default function HppKalkulasiClient() {
     {
       accessorKey: 'id', header: 'No.', size: columnWidths.no,
       cell: ({ row }: any) => (
-        <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-400'}`}>
+        <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-400'}`}>
           {(page - 1) * PAGE_SIZE + row.index + 1}
         </span>
       ),
@@ -388,7 +388,7 @@ export default function HppKalkulasiClient() {
         const val = String(getValue());
         return (
           <div className="flex items-center justify-between w-full pr-4 group relative h-full">
-            <span className={`font-semibold tracking-tight ${row.getIsSelected() ? "text-green-600" : "text-gray-700"} truncate mr-2`}>
+            <span className={`font-semibold tracking-tight ${row.getIsSelected() ? "text-emerald-600" : "text-gray-700"} truncate mr-2`}>
               {val}
             </span>
             <div className="shrink-0">
@@ -459,7 +459,7 @@ export default function HppKalkulasiClient() {
               />
             </div>
             {loading && (
-              <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
+              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Memuat...</span>
               </div>

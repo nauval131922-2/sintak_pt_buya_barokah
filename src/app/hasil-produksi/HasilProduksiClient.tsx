@@ -9,6 +9,7 @@ import {
 import DatePicker from '@/components/DatePicker';
 import SearchableDropdown from '@/components/SearchableDropdown';
 import TableFooter from '@/components/TableFooter';
+import Portal from '@/components/Portal';
 import { persistDateStore, hydrateDateStore } from '@/lib/scraper-period';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { formatToDayMonthYear, formatCellVal } from './hasil-produksi-utils';
@@ -715,7 +716,7 @@ export default function HasilProduksiClient() {
       {/* 1. Header Section - Fixed */}
       <div id="filter-control-container" className="flex flex-col gap-3 shrink-0 relative bg-[var(--bg-deep)] pt-0 pb-1 -mx-4 px-4 lg:-mx-8 lg:px-8">
         {/* 1. Filter Control Center */}
-        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-3 flex flex-col 2xl:flex-row items-stretch 2xl:items-end gap-2 lg:gap-3 relative">
+        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg shadow-gray-900/5 p-3 flex flex-col 2xl:flex-row items-stretch 2xl:items-end gap-2 lg:gap-3 relative">
           {/* SOPd Selection Group */}
           <div className="flex-1 min-w-[300px]">
             <label className="block text-[11px] font-semibold text-gray-500 mb-1 ml-1 tracking-tight select-none">
@@ -724,10 +725,10 @@ export default function HasilProduksiClient() {
             <div className="relative sopd-dropdown-container" ref={dropdownRef}>
               <button
                 onClick={() => setIsDropdownOpen(prev => !prev)}
-                className={`w-full h-9 px-3 bg-gray-50/50 border rounded-xl transition-all flex items-center justify-between group ${
+                className={`w-full h-9 px-3 backdrop-blur-sm border rounded-xl transition-all flex items-center justify-between group shadow-sm ${
                   selectedSopd 
-                  ? 'border-emerald-100 bg-emerald-50/20' 
-                  : 'border-gray-100 hover:border-emerald-500'
+                  ? 'bg-emerald-50/60 border-emerald-200/60' 
+                  : 'bg-white/40 border-white/60 hover:border-emerald-500/60'
                 }`}
               >
                 {selectedSopd ? (
@@ -752,7 +753,15 @@ export default function HasilProduksiClient() {
               </button>
 
               {isDropdownOpen && (
-                <div className="absolute top-[calc(100%+8px)] left-0 w-full bg-white border border-gray-100 rounded-2xl shadow-xl z-[90] animate-in fade-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[450px]">
+                <Portal>
+                  <div 
+                    className="fixed bg-white border border-gray-100 rounded-2xl shadow-xl z-[9999] animate-in fade-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[450px]"
+                    style={{
+                      top: `${dropdownRef.current?.getBoundingClientRect().bottom || 0 + 8}px`,
+                      left: `${dropdownRef.current?.getBoundingClientRect().left || 0}px`,
+                      width: `${dropdownRef.current?.getBoundingClientRect().width || 0}px`,
+                    }}
+                  >
                   <div className="p-4 border-b border-gray-50 bg-gray-50/30">
                     <div className="relative">
                       <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" />
@@ -826,6 +835,7 @@ export default function HasilProduksiClient() {
                     )}
                   </div>
                 </div>
+                </Portal>
               )}
             </div>
           </div>
@@ -889,7 +899,7 @@ export default function HasilProduksiClient() {
               {/* Reset Button */}
               <button
                 onClick={resetFilters}
-                className="h-9 px-4 sm:w-auto flex items-center justify-center gap-2 shrink-0 bg-rose-50 text-rose-600 font-bold text-[12px] border border-rose-200 rounded-xl hover:bg-rose-100 transition-all group shadow-sm"
+                className="h-10 px-4 sm:w-auto flex items-center justify-center gap-2 shrink-0 bg-rose-50 text-rose-600 font-bold text-[12px] border border-rose-200 rounded-xl hover:bg-rose-100 transition-all group shadow-sm"
                 title="Reset semua filter"
               >
                 <X size={14} />
@@ -899,7 +909,7 @@ export default function HasilProduksiClient() {
               {/* Refresh Button */}
               <button
                 onClick={() => fetchDetails()}
-                className="h-9 px-4 sm:w-auto flex items-center justify-center gap-2 shrink-0 bg-emerald-50 text-emerald-600 font-bold text-[12px] border border-emerald-200 rounded-xl hover:bg-emerald-100 transition-all group shadow-sm"
+                className="h-10 px-4 sm:w-auto flex items-center justify-center gap-2 shrink-0 bg-emerald-50 text-emerald-600 font-bold text-[12px] border border-emerald-200 rounded-xl hover:bg-emerald-100 transition-all group shadow-sm"
                 title="Refresh Data"
               >
                 <RotateCcw size={14} className={`group-hover:rotate-[-180deg] transition-transform duration-500 ${loadingDetails ? 'animate-spin' : ''}`} />
@@ -919,7 +929,7 @@ export default function HasilProduksiClient() {
               /* === MODE PEKERJAAN DIPILIH: 1 baris, Card Tren menempel di ujung === */
               <div className="flex flex-col lg:flex-row items-stretch gap-3 sm:gap-4">
                 {/* Card 1: Order Produksi | WIP | Hasil Produksi */}
-                <div className="bg-white border border-gray-100 rounded-xl shadow-sm px-3 sm:px-5 py-2.5 sm:py-3.5 flex items-center shrink-0 min-w-0">
+                <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-lg shadow-gray-900/5 px-3 sm:px-5 py-2.5 sm:py-3.5 flex items-center shrink-0 min-w-0">
                   <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                     <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Jumlah Order</span>
                     <div className="flex items-baseline gap-1 min-w-0">
@@ -946,7 +956,7 @@ export default function HasilProduksiClient() {
                 </div>
 
                 {/* Card 2: Pekerjaan | Realisasi | WIP */}
-                <div className="bg-white border border-gray-100 rounded-xl shadow-sm px-3 sm:px-5 py-2.5 sm:py-3.5 flex items-center shrink-0 min-w-0">
+                <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-lg shadow-gray-900/5 px-3 sm:px-5 py-2.5 sm:py-3.5 flex items-center shrink-0 min-w-0">
                   <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                     <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Pekerjaan</span>
                     <span className="text-[13px] sm:text-[14px] font-semibold text-gray-800 capitalize truncate max-w-[180px]" title={selectedPekerjaan}>{selectedPekerjaan}</span>
@@ -970,7 +980,7 @@ export default function HasilProduksiClient() {
                 </div>
 
                 {/* Card Tren — hanya tombol Tren, sebelum Tab */}
-                <div className="bg-white border border-gray-100 rounded-xl shadow-sm px-3 sm:px-5 py-2.5 sm:py-3.5 flex items-center shrink-0">
+                <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-lg shadow-gray-900/5 px-3 sm:px-5 py-2.5 sm:py-3.5 flex items-center shrink-0">
                   <button
                     onClick={() => setShowChart(!showChart)}
                     className={`px-4 py-1.5 rounded-lg border text-[10px] font-semibold uppercase tracking-wide transition-all shadow-sm shrink-0 ${showChart ? 'bg-emerald-600 text-white border-emerald-600' : 'border-emerald-100 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white'}`}
@@ -980,7 +990,7 @@ export default function HasilProduksiClient() {
                 </div>
 
                 {/* Tab — flex-1 agar mengisi sisa ruang */}
-                <div className="hidden lg:flex items-stretch flex-1 shrink-0 bg-white border border-gray-100 rounded-xl shadow-sm px-1.5 gap-1">
+                <div className="hidden lg:flex items-stretch flex-1 shrink-0 bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-lg shadow-gray-900/5 px-1.5 gap-1">
                   <button
                     onClick={() => setActiveTab('jurnal')}
                     className={`flex-1 my-2 rounded-lg text-[12px] font-bold capitalize tracking-tight whitespace-nowrap transition-all duration-300 ${activeTab === 'jurnal' ? 'bg-gray-100 text-emerald-600 border border-gray-200/50 shadow-inner' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
@@ -999,7 +1009,7 @@ export default function HasilProduksiClient() {
               /* === MODE TANPA PEKERJAAN: 1 baris, card stats & tren terpisah === */
               <div className="flex flex-col lg:flex-row items-stretch gap-3 sm:gap-4">
                 {/* Card 1: Order Produksi | WIP | Hasil Produksi */}
-                <div className="bg-white border border-gray-100 rounded-xl shadow-sm px-3 sm:px-5 py-2.5 sm:py-3.5 flex items-center shrink-0 min-w-0">
+                <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-lg shadow-gray-900/5 px-3 sm:px-5 py-2.5 sm:py-3.5 flex items-center shrink-0 min-w-0">
                   <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                     <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight">Jumlah Order</span>
                     <div className="flex items-baseline gap-1">
@@ -1030,7 +1040,7 @@ export default function HasilProduksiClient() {
                 </div>
 
                 {/* Card Tren — flex-1 agar mengisi sisa ruang, sebelum Tab */}
-                <div className="flex-1 bg-white border border-gray-100 rounded-xl shadow-sm px-3 sm:px-5 py-2.5 sm:py-3.5 flex items-center gap-2 sm:gap-6 min-w-0">
+                <div className="flex-1 bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-lg shadow-gray-900/5 px-3 sm:px-5 py-2.5 sm:py-3.5 flex items-center gap-2 sm:gap-6 min-w-0">
                   <button
                     onClick={() => setShowChart(!showChart)}
                     className={`px-4 py-1.5 rounded-lg border text-[10px] font-semibold uppercase tracking-wide transition-all shadow-sm shrink-0 ${showChart ? 'bg-emerald-600 text-white border-emerald-600' : 'border-emerald-100 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white'}`}
@@ -1048,7 +1058,7 @@ export default function HasilProduksiClient() {
                 </div>
 
                 {/* Tab */}
-                <div className="hidden lg:flex items-stretch shrink-0 bg-white border border-gray-100 rounded-xl shadow-sm px-1.5 gap-1">
+                <div className="hidden lg:flex items-stretch shrink-0 bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-lg shadow-gray-900/5 px-1.5 gap-1">
                   <button
                     onClick={() => setActiveTab('jurnal')}
                     className={`lg:px-10 my-2 rounded-lg text-[12px] font-bold capitalize tracking-tight whitespace-nowrap transition-all duration-300 ${activeTab === 'jurnal' ? 'bg-gray-100 text-emerald-600 border border-gray-200/50 shadow-inner' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
@@ -1070,7 +1080,7 @@ export default function HasilProduksiClient() {
         {/* Tab Navigation — Mobile/MD (shown below cards, separate layer) */}
         {selectedSopd && (
           <div id="sticky-tabs-container" className="shrink-0 z-[70] bg-[var(--bg-deep)] pb-1.5 -mx-4 px-4 lg:hidden">
-            <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-1.5 flex items-center gap-1 w-full">
+            <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-lg shadow-gray-900/5 p-1.5 flex items-center gap-1 w-full">
               <button 
                 onClick={() => setActiveTab('jurnal')}
                 className={`flex-1 py-2.5 rounded-lg text-[12px] font-bold capitalize tracking-tight whitespace-nowrap transition-all duration-300 ${
@@ -1108,7 +1118,7 @@ export default function HasilProduksiClient() {
                   {/* Modal Header */}
                   <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-50 bg-gray-50/50">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                         <TrendingUp size={16} />
                       </div>
                       <div className="flex flex-col">
@@ -1229,7 +1239,7 @@ export default function HasilProduksiClient() {
         
         {selectedSopd ? (
           <>
-          <div className="bg-white border border-gray-100 rounded-xl shadow-sm shadow-green-900/5 flex flex-col flex-1 min-h-0 -mt-2">
+          <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-lg shadow-gray-900/5 shadow-emerald-900/5 flex flex-col flex-1 min-h-0 -mt-2">
             {activeTab === 'barang_jadi' ? (
             <div className="flex flex-col flex-1 min-h-0">
               {/* Scrollable container - header + body in same scroll area */}
@@ -1359,7 +1369,7 @@ export default function HasilProduksiClient() {
                     <span className="text-[11px] font-bold text-gray-400 tracking-wide">Menampilkan {totalJurnalItems} dari {totalJurnalItems} baris data</span>
                     {loadTime !== null && loadTime !== undefined && (
                       <div className={`text-[9px] px-2 py-1 rounded-full font-bold flex items-center gap-1.5 border tracking-wide shadow-sm ${
-                        loadTime < 300  ? 'bg-green-50 text-green-600 border-green-100' :
+                        loadTime < 300  ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
                         loadTime < 1000 ? 'bg-amber-50 text-amber-600 border-amber-100' :
                                           'bg-red-50 text-red-600 border-red-100'
                       }`}>
@@ -1418,4 +1428,5 @@ export default function HasilProduksiClient() {
     </div>
   );
 }
+
 

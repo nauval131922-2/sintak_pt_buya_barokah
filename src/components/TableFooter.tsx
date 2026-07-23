@@ -35,7 +35,7 @@ export default function TableFooter({
 
         {loadTime !== null && loadTime !== undefined && (
           <div className={`text-[9px] px-2 py-1 rounded-full font-bold flex items-center gap-1.5 border tracking-wide shadow-sm ${
-            loadTime < 300  ? 'bg-green-50 text-green-600 border-green-100' :
+            loadTime < 300  ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
             loadTime < 1000 ? 'bg-amber-50 text-amber-600 border-amber-100' :
                               'bg-red-50 text-red-600 border-red-100'
           }`}>
@@ -46,7 +46,7 @@ export default function TableFooter({
         
         {selectedCount > 0 && (
           <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2">
-            <span className="text-[11px] font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full border border-green-100 tracking-wide shadow-sm">
+            <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 tracking-wide shadow-sm">
               {selectedCount} dipilih
             </span>
             <button 
@@ -68,13 +68,13 @@ export default function TableFooter({
               disabled={page <= 1}
               onClick={() => onPageChange(1)}
               suppressHydrationWarning
-              className="min-w-[32px] h-8 px-2 flex items-center justify-center text-[12px] font-bold border border-gray-100 bg-white hover:bg-green-50 hover:text-green-600 hover:border-green-100 rounded-lg disabled:opacity-30 transition-all shadow-sm"
+              className="min-w-[32px] h-8 px-2 flex items-center justify-center text-[12px] font-bold border border-gray-100 bg-white hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-100 rounded-lg disabled:opacity-30 transition-all shadow-sm"
               title="Halaman Pertama"
             >«</button>
             <button
               disabled={page <= 1}
               onClick={() => onPageChange(page - 1)}
-              className="w-8 h-8 flex items-center justify-center border border-gray-100 bg-white hover:bg-green-50 hover:text-green-600 hover:border-green-100 rounded-lg disabled:opacity-30 transition-all shadow-sm"
+              className="w-8 h-8 flex items-center justify-center border border-gray-100 bg-white hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-100 rounded-lg disabled:opacity-30 transition-all shadow-sm"
               title="Halaman Sebelumnya"
             ><ChevronLeft size={14} /></button>
 
@@ -107,8 +107,8 @@ export default function TableFooter({
                     suppressHydrationWarning
                     className={`min-w-[32px] h-8 px-2 flex items-center justify-center text-[12px] font-bold rounded-lg border transition-all shadow-sm ${
                       isActive
-                        ? 'bg-green-600 text-white border-green-600 shadow-green-100'
-                        : 'bg-white border-gray-100 text-gray-600 hover:bg-green-50 hover:text-green-600 hover:border-green-100'
+                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-emerald-100'
+                        : 'bg-white border-gray-100 text-gray-600 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-100'
                     }`}
                   >
                     {p}
@@ -121,14 +121,14 @@ export default function TableFooter({
             <button
               disabled={page >= totalPages}
               onClick={() => onPageChange(page + 1)}
-              className="w-8 h-8 flex items-center justify-center border border-gray-100 bg-white hover:bg-green-50 hover:text-green-600 hover:border-green-100 rounded-lg disabled:opacity-30 transition-all shadow-sm"
+              className="w-8 h-8 flex items-center justify-center border border-gray-100 bg-white hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-100 rounded-lg disabled:opacity-30 transition-all shadow-sm"
               title="Halaman Berikutnya"
             ><ChevronRight size={14} /></button>
             <button
               disabled={page >= totalPages}
               onClick={() => onPageChange(totalPages)}
               suppressHydrationWarning
-              className="min-w-[32px] h-8 px-2 flex items-center justify-center text-[12px] font-bold border border-gray-100 bg-white hover:bg-green-50 hover:text-green-600 hover:border-green-100 rounded-lg disabled:opacity-30 transition-all shadow-sm"
+              className="min-w-[32px] h-8 px-2 flex items-center justify-center text-[12px] font-bold border border-gray-100 bg-white hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-100 rounded-lg disabled:opacity-30 transition-all shadow-sm"
               title="Halaman Terakhir"
             >»</button>
           </div>

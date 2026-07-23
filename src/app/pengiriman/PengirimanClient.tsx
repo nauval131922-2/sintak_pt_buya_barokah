@@ -202,56 +202,56 @@ export default function PengirimanClient() {
       accessorKey: 'id',
       header: 'ID',
       size: 80,
-      cell: ({ getValue, row }: any) => <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-400'}`}>{String(getValue())}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-400'}`}>{String(getValue())}</span>
     },
     {
       accessorKey: 'tgl',
       header: 'Tanggal SJ',
       size: 110,
-      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>{formatIndoDateStr(getValue() as string)}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>{formatIndoDateStr(getValue() as string)}</span>
     },
     {
       accessorKey: 'faktur',
       header: 'Faktur SJ',
       size: 200,
-      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-600' : 'text-gray-700'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '-') }} />
+      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-700'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '-') }} />
     },
     {
       accessorKey: 'kd_supir',
       header: 'Sopir',
       size: 180,
-      cell: ({ getValue, row }: any) => <span className={`font-semibold uppercase tracking-tight ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'}`}>{String(getValue())}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-semibold uppercase tracking-tight ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'}`}>{String(getValue())}</span>
     },
     {
       accessorKey: 'kd_armada',
       header: 'Armada',
       size: 180,
-      cell: ({ getValue, row }: any) => <span className={`font-bold transition-colors truncate ${row.getIsSelected() ? 'text-green-600' : 'text-gray-500'}`}>{String(getValue() || '–')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`}>{String(getValue() || '–')}</span>
     },
     {
       accessorKey: 'no_resi',
       header: 'No Resi',
       size: 180,
-      cell: ({ getValue, row }: any) => <span className={`font-bold transition-colors truncate ${row.getIsSelected() ? 'text-green-600' : 'text-gray-500'}`}>{String(getValue() || '–')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`}>{String(getValue() || '–')}</span>
     },
     {
       accessorKey: 'total_faktur',
       header: 'Fkt',
       size: 80,
       meta: { align: 'center' },
-      cell: ({ getValue, row }: any) => <span className={`font-semibold tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-500'}`}>{Number(getValue() || 0)}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-semibold tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-500'}`}>{Number(getValue() || 0)}</span>
     },
     {
       accessorKey: 'status_faktur',
       header: 'Status',
       size: 120,
-      cell: ({ getValue, row }: any) => <span className={`font-bold transition-colors truncate ${row.getIsSelected() ? 'text-green-600' : 'text-gray-500'}`}>{String(getValue() || '–')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`}>{String(getValue() || '–')}</span>
     },
     {
       accessorKey: 'waktu_kirim',
       header: 'Waktu Kirim',
       size: 140,
-      cell: ({ getValue, row }: any) => <span className={`font-bold transition-colors truncate ${row.getIsSelected() ? 'text-green-600' : 'text-gray-500'}`}>{String(getValue() || '–')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`}>{String(getValue() || '–')}</span>
     },
     { 
         accessorKey: 'username', 
@@ -287,10 +287,10 @@ export default function PengirimanClient() {
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
-            <ScrapingHeader title="Hasil Scrapping Pengiriman" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} activityLogTable="pengiriman" />
+            <ScrapingHeader title="Hasil Scrapping Pengiriman" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
 
             {loading && data && data.length > 0 && (
-              <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
+              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Syncing...</span>
               </div>

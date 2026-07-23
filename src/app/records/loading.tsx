@@ -9,7 +9,7 @@ export default function Loading() {
         <div className={`h-4 w-96 rounded-full ${shimmer}`}></div>
       </header>
 
-      <div className="flex-1 bg-white/70 backdrop-blur border border-white/60 rounded-2xl shadow-sm shadow-green-900/5 overflow-hidden flex flex-col p-8">
+      <div className="flex-1 bg-white/70 backdrop-blur border border-white/60 rounded-2xl shadow-sm shadow-emerald-900/5 overflow-hidden flex flex-col p-8">
         <div className="flex gap-3 mb-8">
           <div className={`h-12 w-40 rounded-full ${shimmer}`}></div>
           <div className={`h-12 w-40 rounded-full ${shimmer}`}></div>

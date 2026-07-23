@@ -7,12 +7,12 @@ export default function Loading() {
       </header>
       
       <div className="shrink-0">
-        <div className="h-16 bg-white border border-gray-100 rounded-lg shadow-sm shadow-green-900/5"></div>
+        <div className="h-16 bg-white border border-gray-100 rounded-lg shadow-sm shadow-emerald-900/5"></div>
       </div>
 
       <div className="flex-1 flex flex-col gap-5">
         <div className="h-14 w-full bg-white border border-gray-100 rounded-lg shadow-sm"></div>
-        <div className="flex-1 bg-white border border-gray-100 rounded-lg shadow-sm shadow-green-900/5 overflow-hidden">
+        <div className="flex-1 bg-white border border-gray-100 rounded-lg shadow-sm shadow-emerald-900/5 overflow-hidden">
           <div className="h-12 bg-gray-50/50 border-b border-gray-50"></div>
           <div className="p-6 space-y-4">
             {[...Array(10)].map((_, i) => (

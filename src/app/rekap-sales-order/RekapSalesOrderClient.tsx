@@ -16,6 +16,7 @@ import { useTableSelection } from '@/lib/hooks/useTableSelection';
 import { formatLastUpdate, splitDateRangeIntoMonths } from '@/lib/date-utils';
 import { formatScrapedPeriodDate, getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod } from '@/lib/scraper-period';
 import ScrapingHeader from '@/components/ScrapingHeader';
+import Portal from '@/components/Portal';
 
 const PAGE_SIZE = 50;
 
@@ -204,44 +205,44 @@ export default function RekapSalesOrderClient() {
       accessorKey: 'tgl',
       header: 'Tanggal',
       size: 130,
-      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>{formatIndoDateStr(getValue() as string)}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>{formatIndoDateStr(getValue() as string)}</span>
     },
     {
       accessorKey: 'faktur',
       header: 'Faktur',
       size: 160,
-      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-600' : 'text-gray-700'}`}>{String(getValue())}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-700'}`}>{String(getValue())}</span>
     },
     {
       accessorKey: 'faktur_sph',
       header: 'Faktur SPH',
       size: 160,
-      cell: ({ getValue, row }: any) => <span className={`font-medium tracking-tight ${row.getIsSelected() ? 'text-green-600' : 'text-gray-500'}`}>{String(getValue() || '-')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium tracking-tight ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`}>{String(getValue() || '-')}</span>
     },
     {
       accessorKey: 'nama_pelanggan',
       header: 'Pelanggan',
       size: 220,
-      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'}`}>{String(getValue())}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'}`}>{String(getValue())}</span>
     },
     {
       accessorKey: 'nama_prd',
       header: 'Produk',
       size: 250,
-      cell: ({ getValue, row }: any) => <span className={`font-medium tracking-tight ${row.getIsSelected() ? 'text-green-900' : 'text-gray-700'}`}>{String(getValue() || '-')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium tracking-tight ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-700'}`}>{String(getValue() || '-')}</span>
     },
     {
       accessorKey: 'qty',
       header: 'Qty',
       size: 80,
       meta: { align: 'right' },
-      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>{Number(getValue() || 0).toLocaleString('id-ID')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>{Number(getValue() || 0).toLocaleString('id-ID')}</span>
     },
     {
       accessorKey: 'satuan',
       header: 'Satuan',
       size: 80,
-      cell: ({ getValue, row }: any) => <span className={`font-medium text-gray-500 ${row.getIsSelected() ? 'text-green-700' : ''}`}>{String(getValue() || '-')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium text-gray-500 ${row.getIsSelected() ? 'text-emerald-700' : ''}`}>{String(getValue() || '-')}</span>
     },
     {
       accessorKey: 'harga',
@@ -249,7 +250,7 @@ export default function RekapSalesOrderClient() {
       size: 140,
       meta: { align: 'right' },
       cell: ({ getValue, row }: any) => (
-        <div className={`flex items-center justify-between font-medium tabular-nums w-full ${row.getIsSelected() ? 'text-green-700' : 'text-gray-600'}`}>
+        <div className={`flex items-center justify-between font-medium tabular-nums w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-600'}`}>
           <span className="text-[10px] opacity-40 mr-1">Rp</span>
           <span>{Number(getValue() || 0).toLocaleString('id-ID')}</span>
         </div>
@@ -261,7 +262,7 @@ export default function RekapSalesOrderClient() {
       size: 160,
       meta: { align: 'right' },
       cell: ({ getValue, row }: any) => (
-        <div className={`flex items-center justify-between font-bold tabular-nums w-full ${row.getIsSelected() ? 'text-green-700' : 'text-emerald-700'}`}>
+        <div className={`flex items-center justify-between font-bold tabular-nums w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-emerald-700'}`}>
           <span className="text-[10px] opacity-40 mr-1">Rp</span>
           <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
         </div>
@@ -272,52 +273,60 @@ export default function RekapSalesOrderClient() {
   if (!isMounted) return null;
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col gap-6 animate-in fade-in duration-700 overflow-hidden">
-      {/* Filter row: Rentang Tanggal + Filter Harga side by side */}
-      <div className="grid grid-cols-[1fr_auto] gap-4 shrink-0">
-        <DateRangeCard
-          startDate={startDate}
-          endDate={endDate}
-          onStartDateChange={setStartDate}
-          onEndDateChange={setEndDate}
-          onFetch={handleFetch}
-          isFetching={loading || isBatching}
-          progress={isBatching ? batchProgress : undefined}
-          statusText={isBatching ? batchStatus : undefined}
-          fetchText="Tarik Data"
-        />
+      <div className="flex-1 min-h-0 flex flex-col gap-3 animate-in fade-in duration-700 overflow-hidden">
+      <div className="flex flex-col lg:flex-row items-stretch gap-3 shrink-0">
+        {/* Date range + Fetch button card */}
+        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg shadow-gray-900/5 p-3 flex flex-col lg:flex-row items-stretch lg:items-center gap-3 flex-1">
+          <div className="flex items-center gap-2 flex-1">
+            <DatePicker name="startDate" value={startDate} onChange={setStartDate} />
+            <div className="w-2 h-px bg-gray-300 shrink-0"></div>
+            <DatePicker name="endDate" value={endDate} onChange={setEndDate} popupAlign="right" />
+          </div>
+          <button
+            onClick={handleFetch}
+            disabled={loading || isBatching}
+            className="h-10 px-5 bg-emerald-600/90 backdrop-blur-sm text-white hover:bg-emerald-700/90 border border-emerald-500/40 rounded-xl text-[11px] font-bold transition-all disabled:opacity-50 shadow-sm flex items-center gap-2 lg:w-auto"
+          >
+            {loading || isBatching ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+            <span>{loading || isBatching ? 'Memuat...' : 'Tarik Data'}</span>
+          </button>
+        </div>
 
-        {/* Filter Harga - separate card, same row */}
-        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm px-6 flex flex-col justify-center gap-2 relative" ref={hargaFilterRef}>
-          <div className="flex flex-col gap-2">
-            <span className="text-[13px] font-semibold text-gray-500 mb-0.5 pl-1">Filter Harga</span>
-            <div className="flex items-center gap-3">
-              <button 
-                onClick={() => setShowHargaFilter(v => !v)} 
-                className={`
-                  flex items-center gap-3 px-6 h-12 rounded-lg text-[13px] font-semibold border transition-all shadow-sm
-                  ${appliedMin !== '' || appliedMax !== '' 
-                    ? 'bg-green-600 border-green-500 text-white shadow-green-100' 
-                    : 'bg-white border-gray-100 text-gray-700 hover:bg-gray-50'}
-                `}
+        {/* Price filter card */}
+        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg shadow-gray-900/5 p-3 flex items-center gap-2 lg:w-80" ref={hargaFilterRef}>
+          <button 
+            onClick={() => setShowHargaFilter(v => !v)} 
+            className={`
+              flex-1 flex items-center justify-center gap-2 h-8 rounded-xl text-[11px] font-bold border transition-all shadow-sm
+              ${appliedMin !== '' || appliedMax !== '' 
+                ? 'bg-emerald-600/90 backdrop-blur-sm border-emerald-500/40 text-white' 
+                : 'bg-white/40 backdrop-blur-sm border-white/60 text-gray-700 hover:border-emerald-300/60'}
+            `}
+          >
+            <SlidersHorizontal size={14} />
+            <span className="truncate">{appliedMin !== '' || appliedMax !== '' ? `Rp ${appliedMin || '0'} — ${appliedMax || '∞'}` : 'Filter Harga'}</span>
+          </button>
+          {(appliedMin !== '' || appliedMax !== '') && (
+            <button 
+              onClick={() => { setAppliedMin(''); setAppliedMax(''); setMinHarga(''); setMaxHarga(''); }} 
+              className="w-10 h-10 shrink-0 rounded-xl border border-rose-200/60 flex items-center justify-center bg-rose-50/60 backdrop-blur-sm text-rose-600 hover:bg-rose-100/60 transition-all shadow-sm"
+            >
+              <X size={14} />
+            </button>
+          )}
+          {showHargaFilter && (
+            <Portal>
+              <div 
+                className="fixed bg-white rounded-xl border border-gray-100 shadow-xl shadow-gray-900/10 p-5 z-[9999] animate-in fade-in slide-in-from-top-2"
+                style={{
+                  top: hargaFilterRef.current ? `${hargaFilterRef.current.getBoundingClientRect().bottom + 8}px` : '0px',
+                  left: hargaFilterRef.current ? `${hargaFilterRef.current.getBoundingClientRect().left}px` : '0px',
+                  width: hargaFilterRef.current ? `${hargaFilterRef.current.getBoundingClientRect().width}px` : 'auto'
+                }}
               >
-                <SlidersHorizontal size={16} />
-                <span>{appliedMin !== '' || appliedMax !== '' ? `Rp ${appliedMin || '0'} – ${appliedMax || '∞'}` : 'Atur Rentang'}</span>
-              </button>
-              {(appliedMin !== '' || appliedMax !== '') && (
-                <button 
-                  onClick={() => { setAppliedMin(''); setAppliedMax(''); setMinHarga(''); setMaxHarga(''); }} 
-                  className="w-12 h-12 rounded-lg border border-rose-100 flex items-center justify-center bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all shadow-sm shadow-rose-900/5"
-                >
-                  <X size={18} />
-                </button>
-              )}
-            </div>
-            {showHargaFilter && (
-              <div className="absolute top-full mt-3 right-0 w-72 bg-white rounded-xl border border-gray-100 shadow-md shadow-green-900/10 p-6 z-[100] animate-in fade-in slide-in-from-top-2">
-                <div className="flex flex-col gap-5">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[13px] font-semibold text-gray-500 mb-0.5 pl-1">Min. Harga Satuan (Rp)</label>
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold text-gray-500 pl-1">Min. Harga (Rp)</label>
                     <input 
                       type="text" 
                       value={minHarga} 
@@ -325,12 +334,12 @@ export default function RekapSalesOrderClient() {
                         const val = e.target.value.replace(/[^0-9]/g, '');
                         setMinHarga(val ? Number(val).toLocaleString('id-ID') : '');
                       }} 
-                      className="w-full h-11 bg-gray-50 rounded-lg border border-gray-100 px-4 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:bg-white transition-all" 
+                      className="w-full h-10 bg-gray-50 rounded-lg border border-gray-200 px-3 font-bold text-[12px] focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all" 
                       placeholder="0" 
                     />
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[13px] font-semibold text-gray-500 mb-0.5 pl-1">Max. Harga Satuan (Rp)</label>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold text-gray-500 pl-1">Max. Harga (Rp)</label>
                     <input 
                       type="text" 
                       value={maxHarga} 
@@ -338,20 +347,20 @@ export default function RekapSalesOrderClient() {
                         const val = e.target.value.replace(/[^0-9]/g, '');
                         setMaxHarga(val ? Number(val).toLocaleString('id-ID') : '');
                       }} 
-                      className="w-full h-11 bg-gray-50 rounded-lg border border-gray-100 px-4 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:bg-white transition-all" 
+                      className="w-full h-10 bg-gray-50 rounded-lg border border-gray-200 px-3 font-bold text-[12px] focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all" 
                       placeholder="∞" 
                     />
                   </div>
                   <button 
                     onClick={() => { setAppliedMin(minHarga.replace(/\./g, '')); setAppliedMax(maxHarga.replace(/\./g, '')); setShowHargaFilter(false); setPage(1); }} 
-                    className="w-full h-11 bg-green-600 text-white font-bold text-[13px] rounded-lg hover:bg-green-700 transition-colors shadow-sm shadow-green-100"
+                    className="w-full h-10 bg-emerald-600 text-white font-bold text-[12px] rounded-lg hover:bg-emerald-700 transition-colors shadow-sm"
                   >
-                    Terapkan Filter
+                    Terapkan
                   </button>
                 </div>
               </div>
-            )}
-          </div>
+            </Portal>
+          )}
         </div>
       </div>
 
@@ -368,7 +377,7 @@ export default function RekapSalesOrderClient() {
             <ScrapingHeader title="Hasil Scrapping Rekap Sales Order" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
 
             {loading && data && data.length > 0 && (
-              <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
+              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Syncing...</span>
               </div>
@@ -398,6 +407,7 @@ export default function RekapSalesOrderClient() {
     </div>
   );
 }
+
 
 
 

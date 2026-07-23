@@ -76,10 +76,10 @@ export default function AktivitasTerbaruCard({
         {showFullLink && (
           <Link
             href="/log-aktivitas"
-            className="group text-[11px] font-bold text-green-600 hover:text-green-700 flex items-center gap-1 shrink-0 mt-0.5"
+            className="group text-[11px] font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 shrink-0 mt-0.5"
           >
             Lihat semua
-            <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+            <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
           </Link>
         )}
       </div>

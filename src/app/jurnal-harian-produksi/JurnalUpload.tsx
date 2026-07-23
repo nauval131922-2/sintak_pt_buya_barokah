@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import ExcelUploadCard from '@/components/ExcelUploadCard';
-import ViewActivityLogLink from '@/components/ViewActivityLogLink';
+
 
 export default function JurnalUpload() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -124,7 +124,6 @@ export default function JurnalUpload() {
         progress={progress}
         currentRows={currentRows}
         totalRows={totalRows}
-        extraAction={<ViewActivityLogLink tableName="jurnal_harian_produksi" />}
       />
 
       <ConfirmDialog 

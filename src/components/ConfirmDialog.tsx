@@ -43,16 +43,16 @@ export default function ConfirmDialog({
 
   const bgStyles: Record<DialogType, string> = {
     alert: 'bg-amber-50 text-amber-600',
-    confirm: 'bg-green-50 text-green-600',
-    success: 'bg-green-50 text-green-600',
+    confirm: 'bg-emerald-50 text-emerald-600',
+    success: 'bg-emerald-50 text-emerald-600',
     error: 'bg-red-50 text-red-600',
     danger: 'bg-red-50 text-red-600',
   };
 
   const btnConfirmStyles: Record<DialogType, string> = {
     alert: 'bg-amber-500 hover:bg-amber-600 text-white',
-    confirm: 'bg-green-600 hover:bg-green-700 text-white',
-    success: 'bg-green-600 hover:bg-green-700 text-white',
+    confirm: 'bg-emerald-600 hover:bg-emerald-700 text-white',
+    success: 'bg-emerald-600 hover:bg-emerald-700 text-white',
     error: 'bg-red-600 hover:bg-red-700 text-white',
     danger: 'bg-red-600 hover:bg-red-700 text-white',
   };
@@ -114,7 +114,7 @@ export default function ConfirmDialog({
             <button
               onClick={!isConfirmType ? () => { onConfirm(); onCancel?.(); } : onConfirm}
               disabled={isLoading}
-              className={`flex-1 px-4 py-3 font-bold rounded-lg transition-all text-sm flex items-center justify-center min-w-[100px] shadow-sm shadow-green-900/5 ${btnConfirmStyles[type]} disabled:opacity-70`}
+              className={`flex-1 px-4 py-3 font-bold rounded-lg transition-all text-sm flex items-center justify-center min-w-[100px] shadow-sm shadow-emerald-900/5 ${btnConfirmStyles[type]} disabled:opacity-70`}
             >
               {isLoading ? (
                 <Loader2 size={18} className="animate-spin" />

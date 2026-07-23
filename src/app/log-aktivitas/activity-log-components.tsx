@@ -20,13 +20,13 @@ export function SortHeader({ label, field, colIdx, sortBy, sortDir, onSort, onCt
       <button
         type="button"
         onClick={() => onSort(field)}
-        className={`inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-green-700 transition-colors ${active ? 'text-green-700' : ''}`}
+        className={`inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-emerald-700 transition-colors ${active ? 'text-emerald-700' : ''}`}
       >
         {label}
         {active ? (sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />) : <ChevronDown size={12} className="opacity-30" />}
       </button>
       <div
-        className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
+        className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-emerald-500 active:bg-emerald-600 transition-colors z-20"
         onMouseDown={(e) => onResize(colIdx, e)}
         title="Drag untuk resize kolom"
       />

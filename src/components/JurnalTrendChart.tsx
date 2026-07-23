@@ -14,7 +14,7 @@ function CustomTooltip({ active, payload, label }: any) {
   return (
     <div className="bg-white border border-gray-100 rounded-xl shadow-lg px-3 py-2 text-[12px]">
       <p className="font-bold text-gray-500 mb-0.5">Tgl {label}</p>
-      <p className="font-extrabold text-green-600">{payload[0].value} entri</p>
+      <p className="font-extrabold text-emerald-600">{payload[0].value} entri</p>
     </div>
   );
 }

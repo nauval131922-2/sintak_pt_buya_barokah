@@ -300,7 +300,7 @@ export default function ProduksiSelesaiClient() {
       size: 60,
       meta: { sticky: true },
       cell: ({ row }: any) => (
-        <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-400'}`}>
+        <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-400'}`}>
           {(page - 1) * PAGE_SIZE + row.index + 1}
         </span>
       ),
@@ -311,7 +311,7 @@ export default function ProduksiSelesaiClient() {
       size: 130,
       meta: { sticky: true },
       cell: ({ getValue, row }: any) => (
-        <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>
+        <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>
           {formatTgl(getValue())}
         </span>
       ),
@@ -322,7 +322,7 @@ export default function ProduksiSelesaiClient() {
       size: 220,
       meta: { sticky: true },
       cell: ({ getValue, row }: any) => (
-        <span className={`font-semibold tracking-tight text-[12px] ${row.getIsSelected() ? 'text-green-600' : 'text-gray-700'}`}>
+        <span className={`font-semibold tracking-tight text-[12px] ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-700'}`}>
           {highlightText(String(getValue() || '—'), highlightQuery)}
         </span>
       ),
@@ -334,7 +334,7 @@ export default function ProduksiSelesaiClient() {
       meta: { sticky: true },
       cell: ({ getValue, row }: any) => (
         <span
-          className={`font-semibold text-[12px] truncate block ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'}`}
+          className={`font-semibold text-[12px] truncate block ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'}`}
           title={String(getValue())}
         >
           {highlightText(String(getValue() || '—'), highlightQuery)}
@@ -410,7 +410,7 @@ export default function ProduksiSelesaiClient() {
         const val = getValue();
         if (val == null) return <span className="text-gray-300 italic text-[11px]">—</span>;
         return (
-          <span className={`font-bold tabular-nums text-[12px] ${row.getIsSelected() ? 'text-green-700' : 'text-blue-600'}`}>
+          <span className={`font-bold tabular-nums text-[12px] ${row.getIsSelected() ? 'text-emerald-700' : 'text-blue-600'}`}>
             {Number(val).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
         );
@@ -425,7 +425,7 @@ export default function ProduksiSelesaiClient() {
         const val = getValue();
         if (val == null) return <span className="text-gray-300 italic text-[11px]">—</span>;
         return (
-          <span className={`font-bold tabular-nums text-[12px] ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>
+          <span className={`font-bold tabular-nums text-[12px] ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>
             {Number(val).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
         );
@@ -473,10 +473,9 @@ export default function ProduksiSelesaiClient() {
               title="Data Produksi Selesai"
               lastUpdated={lastUpdated}
               scrapedPeriod={scrapedPeriod}
-              activityLogTable="produksi_selesai"
             />
             {loading && (data?.length || 0) > 0 && (
-              <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
+              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Memproses...</span>
               </div>

@@ -286,7 +286,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
     <button
       type="button"
       onClick={e => { e.stopPropagation(); onToggle(); }}
-      className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none ${isEnabled ? 'bg-green-500' : 'bg-gray-200'}`}
+      className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none ${isEnabled ? 'bg-emerald-500' : 'bg-gray-200'}`}
     >
       <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${isEnabled ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
     </button>
@@ -298,17 +298,17 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
       <div
         key={item.key}
         onClick={() => togglePermission(item.key)}
-        className="group/row flex items-center justify-between py-2.5 pr-5 cursor-pointer hover:bg-green-50/40 transition-colors border-t border-gray-50"
+        className="group/row flex items-center justify-between py-2.5 pr-5 cursor-pointer hover:bg-emerald-50/40 transition-colors border-t border-gray-50"
         style={{ paddingLeft: `${20 + depth * 20}px` }}
       >
         <div className="flex items-center gap-2.5 min-w-0">
-          <span className={`w-1 h-1 rounded-full shrink-0 ${isEnabled ? 'bg-green-400' : 'bg-gray-200'}`} />
+          <span className={`w-1 h-1 rounded-full shrink-0 ${isEnabled ? 'bg-emerald-400' : 'bg-gray-200'}`} />
           <span className={`text-[12.5px] truncate transition-colors ${isEnabled ? 'text-gray-700 font-semibold' : 'text-gray-400 font-medium'}`}>
             {item.label}
           </span>
         </div>
         <div className="flex items-center gap-2.5 shrink-0 ml-3">
-          <span className={`text-[10px] font-bold w-8 text-right transition-colors ${isEnabled ? 'text-green-600' : 'text-gray-300'}`}>
+          <span className={`text-[10px] font-bold w-8 text-right transition-colors ${isEnabled ? 'text-emerald-600' : 'text-gray-300'}`}>
             {isEnabled ? 'ON' : 'OFF'}
           </span>
           {renderToggle(isEnabled, () => togglePermission(item.key))}
@@ -332,11 +332,11 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
           onClick={() => toggleCollapse(collapseKey, isCollapsed)}
         >
           <div className="flex items-center gap-2 min-w-0">
-            <ChevronRight size={13} className={`text-gray-400 shrink-0 transition-transform duration-200 ${isCollapsed ? '' : 'rotate-90'}`} />
+            <ChevronRight size={14} className={`text-gray-400 shrink-0 transition-transform duration-200 ${isCollapsed ? '' : 'rotate-90'}`} />
             <span className={`truncate transition-colors ${isTop ? 'text-[12.5px] font-bold text-gray-700' : 'text-[12px] font-semibold text-gray-600'}`}>
               {item.label}
             </span>
-            <span className={`shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${nodeEnabled > 0 ? 'text-green-600 bg-green-50 border-green-100' : 'text-gray-400 bg-gray-50 border-gray-100'}`}>
+            <span className={`shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${nodeEnabled > 0 ? 'text-emerald-600 bg-emerald-50 border-emerald-100' : 'text-gray-400 bg-gray-50 border-gray-100'}`}>
               {nodeEnabled}/{nodeKeys.length}
             </span>
           </div>
@@ -344,7 +344,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
             <button
               type="button"
               onClick={e => { e.stopPropagation(); toggleKeysList(nodeKeys, true); }}
-              className="text-[10px] font-bold text-green-600 hover:bg-green-50 px-2 py-1 rounded-lg transition-all"
+              className="text-[10px] font-bold text-emerald-600 hover:bg-emerald-50 px-2 py-1 rounded-lg transition-all"
             >On</button>
             <span className="text-gray-200 text-[10px]">|</span>
             <button
@@ -374,18 +374,18 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
       <div key={groupKey} className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
         {/* Group Header */}
         <div
-          className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-gray-100 cursor-pointer select-none hover:from-green-100/60 hover:to-emerald-100/60 transition-colors"
+          className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-emerald-50 to-emerald-50 border-b border-gray-100 cursor-pointer select-none hover:from-emerald-100/60 hover:to-emerald-100/60 transition-colors"
           onClick={() => toggleCollapse(groupKey, isCollapsed)}
         >
           <div className="flex items-center gap-2.5">
-            <ChevronRight size={15} className={`text-green-600 shrink-0 transition-transform duration-200 ${isCollapsed ? '' : 'rotate-90'}`} />
+            <ChevronRight size={15} className={`text-emerald-600 shrink-0 transition-transform duration-200 ${isCollapsed ? '' : 'rotate-90'}`} />
             <span className="text-[13px] font-bold text-gray-800">{label}</span>
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${allEnabled > 0 ? 'text-green-700 bg-green-100 border-green-200' : 'text-gray-400 bg-white border-gray-200'}`}>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${allEnabled > 0 ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : 'text-gray-400 bg-white border-gray-200'}`}>
               {allEnabled}/{allKeys.length} aktif
             </span>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            <button type="button" onClick={e => { e.stopPropagation(); toggleKeysList(allKeys, true); }} className="text-[11px] font-bold text-green-600 hover:bg-green-100 px-3 py-1.5 rounded-lg transition-all">On All</button>
+            <button type="button" onClick={e => { e.stopPropagation(); toggleKeysList(allKeys, true); }} className="text-[11px] font-bold text-emerald-600 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-all">On All</button>
             <span className="w-px h-3 bg-gray-200" />
             <button type="button" onClick={e => { e.stopPropagation(); toggleKeysList(allKeys, false); }} className="text-[11px] font-bold text-rose-500 hover:bg-rose-50 px-3 py-1.5 rounded-lg transition-all">Off All</button>
           </div>
@@ -404,15 +404,15 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
     const { enabled, total } = getGroupStats(selectedRole, 'Dashboard');
     return (
       <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-gray-100">
+        <div className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-emerald-50 to-emerald-50 border-b border-gray-100">
           <div className="flex items-center gap-2.5">
             <span className="text-[13px] font-bold text-gray-800">Dashboard</span>
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${enabled > 0 ? 'text-green-700 bg-green-100 border-green-200' : 'text-gray-400 bg-white border-gray-200'}`}>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${enabled > 0 ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : 'text-gray-400 bg-white border-gray-200'}`}>
               {enabled}/{total} aktif
             </span>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            <button type="button" onClick={() => toggleGroup('Dashboard', true)} className="text-[11px] font-bold text-green-600 hover:bg-green-100 px-3 py-1.5 rounded-lg transition-all">On All</button>
+            <button type="button" onClick={() => toggleGroup('Dashboard', true)} className="text-[11px] font-bold text-emerald-600 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-all">On All</button>
             <span className="w-px h-3 bg-gray-200" />
             <button type="button" onClick={() => toggleGroup('Dashboard', false)} className="text-[11px] font-bold text-rose-500 hover:bg-rose-50 px-3 py-1.5 rounded-lg transition-all">Off All</button>
           </div>
@@ -456,7 +456,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Role</span>
               <button
                 onClick={() => { setIsAddingRole(v => !v); setEditingRole(null); }}
-                className="w-6 h-6 flex items-center justify-center rounded-lg bg-green-50 text-green-600 hover:bg-green-600 hover:text-white transition-all border border-green-100"
+                className="w-6 h-6 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all border border-emerald-100"
               >
                 {isAddingRole ? <X size={12} /> : <Plus size={12} />}
               </button>
@@ -464,11 +464,11 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
 
             {/* Add role form */}
             {isAddingRole && (
-              <div className="p-3.5 border-b border-gray-100 bg-green-50/30 animate-in slide-in-from-top-2 duration-200">
+              <div className="p-3.5 border-b border-gray-100 bg-emerald-50/30 animate-in slide-in-from-top-2 duration-200">
                 <input
                   type="text"
                   placeholder="Nama role..."
-                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-[12px] font-semibold focus:outline-none focus:border-green-400 mb-2 placeholder:text-gray-300 placeholder:font-normal"
+                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-[12px] font-semibold focus:outline-none focus:border-emerald-400 mb-2 placeholder:text-gray-300 placeholder:font-normal"
                   value={newRoleName}
                   onChange={e => setNewRoleName(e.target.value)}
                   autoFocus
@@ -477,7 +477,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
                 <input
                   type="text"
                   placeholder="Deskripsi (opsional)..."
-                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-[12px] font-medium focus:outline-none focus:border-green-400 mb-3 placeholder:text-gray-300 placeholder:font-normal"
+                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-[12px] font-medium focus:outline-none focus:border-emerald-400 mb-3 placeholder:text-gray-300 placeholder:font-normal"
                   value={newRoleDesc}
                   onChange={e => setNewRoleDesc(e.target.value)}
                 />
@@ -486,7 +486,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
                   <button
                     onClick={handleAddRole}
                     disabled={saving || !newRoleName.trim()}
-                    className="flex items-center gap-1.5 bg-green-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold disabled:opacity-50 transition-all"
+                    className="flex items-center gap-1.5 bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold disabled:opacity-50 transition-all"
                   >
                     {saving ? <Loader2 size={11} className="animate-spin" /> : <Save size={11} />}
                     Simpan
@@ -507,10 +507,10 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
 
                 if (editingRole === role) {
                   return (
-                    <div key={`edit-${role}`} className="p-3.5 bg-green-50/30 animate-in slide-in-from-top-1 duration-200">
+                    <div key={`edit-${role}`} className="p-3.5 bg-emerald-50/30 animate-in slide-in-from-top-1 duration-200">
                       <input
                         type="text"
-                        className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-[12px] font-semibold focus:outline-none focus:border-green-400 mb-2"
+                        className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-[12px] font-semibold focus:outline-none focus:border-emerald-400 mb-2"
                         value={editRoleName}
                         onChange={e => setEditRoleName(e.target.value)}
                         autoFocus
@@ -518,7 +518,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
                       />
                       <input
                         type="text"
-                        className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-[12px] font-medium focus:outline-none focus:border-green-400 mb-3"
+                        className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-[12px] font-medium focus:outline-none focus:border-emerald-400 mb-3"
                         value={editRoleDesc}
                         onChange={e => setEditRoleDesc(e.target.value)}
                         placeholder="Deskripsi..."
@@ -528,7 +528,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
                         <button
                           onClick={handleUpdateRole}
                           disabled={saving}
-                          className="flex items-center gap-1.5 bg-green-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold disabled:opacity-50"
+                          className="flex items-center gap-1.5 bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold disabled:opacity-50"
                         >
                           {saving ? <Loader2 size={11} className="animate-spin" /> : <Save size={11} />}
                           Update
@@ -543,19 +543,19 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
                     <button
                       onClick={() => { setSelectedRole(role); setEditingRole(null); setIsAddingRole(false); }}
                       className={`w-full text-left px-3.5 py-3 flex items-center gap-3 transition-colors ${
-                        isActive ? 'bg-green-50' : 'hover:bg-gray-50'
+                        isActive ? 'bg-emerald-50' : 'hover:bg-gray-50'
                       }`}
                     >
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
-                        isActive ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-400'
+                        isActive ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-400'
                       }`}>
                         <UserCog size={15} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className={`text-[12.5px] font-bold truncate ${isActive ? 'text-gray-800' : 'text-gray-600'}`}>{role}</p>
-                        <p className={`text-[10px] font-semibold ${isActive ? 'text-green-600' : 'text-gray-400'}`}>{enabled}/{total} modul</p>
+                        <p className={`text-[10px] font-semibold ${isActive ? 'text-emerald-600' : 'text-gray-400'}`}>{enabled}/{total} modul</p>
                       </div>
-                      {isActive && <ChevronRight size={14} className="text-green-500 shrink-0" />}
+                      {isActive && <ChevronRight size={14} className="text-emerald-500 shrink-0" />}
                     </button>
                     {/* Edit/Delete — visible on hover */}
                     <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -581,7 +581,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
           {!selectedRole ? (
             /* Empty state */
             <div className="flex-1 flex flex-col items-center justify-center bg-white border border-gray-100 rounded-xl">
-              <div className="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center text-green-500 mb-4 border border-green-100">
+              <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-500 mb-4 border border-emerald-100">
                 <ShieldCheck size={32} />
               </div>
               <h3 className="text-[15px] font-bold text-gray-700 mb-1.5">Pilih Role</h3>
@@ -594,7 +594,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
               {/* Role header bar */}
               <div className="shrink-0 flex items-center justify-between gap-4 px-5 py-3.5 bg-white border border-gray-100 rounded-xl shadow-sm">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-lg bg-green-600 flex items-center justify-center text-white shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center text-white shrink-0">
                     <UserCog size={17} />
                   </div>
                   <div className="min-w-0">
@@ -607,14 +607,14 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
                 <div className="flex items-center gap-2 shrink-0">
                   {saving && (
                     <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 rounded-full border border-gray-100 text-[11px] font-bold text-gray-400">
-                      <Loader2 size={12} className="animate-spin text-green-500" />
+                      <Loader2 size={12} className="animate-spin text-emerald-500" />
                       Menyimpan...
                     </div>
                   )}
                   {result && !saving && (
                     <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] font-bold animate-in fade-in duration-200 ${
                       result.type === 'success'
-                        ? 'bg-green-50 text-green-700 border-green-100'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
                         : 'bg-rose-50 text-rose-700 border-rose-100'
                     }`}>
                       {result.type === 'success' ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
@@ -676,7 +676,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
                 disabled={saving}
                 className="flex items-center gap-2 px-5 py-2 text-[12px] font-bold text-white bg-rose-500 hover:bg-rose-600 disabled:opacity-50 rounded-xl shadow-sm transition-all"
               >
-                {saving ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                {saving ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                 Hapus Role
               </button>
             </div>

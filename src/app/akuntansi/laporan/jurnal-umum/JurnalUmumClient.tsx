@@ -425,8 +425,8 @@ export default function JurnalUmumClient() {
         return (
           <div className={`flex items-center justify-between tabular-nums w-full ${
             isChild
-              ? (row.getIsSelected() ? 'text-green-600 font-semibold' : 'text-emerald-600 font-semibold')
-              : (row.getIsSelected() ? 'text-green-700 font-bold' : 'text-emerald-700 font-bold')
+              ? (row.getIsSelected() ? 'text-emerald-600 font-semibold' : 'text-emerald-600 font-semibold')
+              : (row.getIsSelected() ? 'text-emerald-700 font-bold' : 'text-emerald-700 font-bold')
           }`}>
             <span className="opacity-40 mr-1">Rp</span>
             <span>{formatRupiah(val)}</span>
@@ -447,7 +447,7 @@ export default function JurnalUmumClient() {
           <div className={`flex items-center justify-between tabular-nums w-full ${
             isChild
               ? (row.getIsSelected() ? 'text-rose-500 font-semibold' : 'text-rose-500 font-semibold')
-              : (row.getIsSelected() ? 'text-green-700 font-bold' : 'text-rose-600 font-bold')
+              : (row.getIsSelected() ? 'text-emerald-700 font-bold' : 'text-rose-600 font-bold')
           }`}>
             <span className="opacity-40 mr-1">Rp</span>
             <span>{formatRupiah(val)}</span>
@@ -545,7 +545,7 @@ export default function JurnalUmumClient() {
         if (n === 0) return <span className="text-gray-200 tabular-nums text-right w-full block">—</span>;
         return (
           <div className={`flex items-center justify-between tabular-nums w-full font-semibold ${
-            row.getIsSelected() ? 'text-green-600' : 'text-emerald-600'
+            row.getIsSelected() ? 'text-emerald-600' : 'text-emerald-600'
           }`}>
             <span className="opacity-40 mr-1">Rp</span>
             <span>{formatRupiah(n)}</span>
@@ -590,7 +590,7 @@ export default function JurnalUmumClient() {
         return (
           <div className={`flex items-center justify-between tabular-nums w-full ${
             row.getIsSelected()
-              ? 'text-green-700 font-bold'
+              ? 'text-emerald-700 font-bold'
               : isChild
                 ? (isPositive ? 'text-emerald-600 font-semibold' : 'text-rose-500 font-semibold')
                 : (isPositive ? 'text-emerald-700 font-bold' : 'text-rose-600 font-bold')
@@ -629,10 +629,10 @@ export default function JurnalUmumClient() {
   if (!isMounted) return null;
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col gap-6 animate-in fade-in duration-500 overflow-hidden">
-      {/* Top row: scrape date range + create_at filter side by side */}
-      <div className="flex gap-4 items-stretch shrink-0">
-        <div className="flex-1 min-w-0">
+    <div className="flex-1 min-h-0 flex flex-col gap-3 animate-in fade-in duration-500 overflow-hidden">
+      {/* Top row: scrape date range + filter tanggal dibuat */}
+      <div className="flex flex-col lg:flex-row items-stretch gap-3 shrink-0">
+        <div className="flex-1">
           <DateRangeCard
             startDate={startDate}
             endDate={endDate}
@@ -645,41 +645,37 @@ export default function JurnalUmumClient() {
             fetchText="Tarik Data"
           />
         </div>
-        {/* Filter Tanggal Dibuat — same style as DateRangeCard */}
-        <div className="bg-white rounded-2xl border border-gray-100 py-3.5 px-6 shadow-sm shadow-green-900/5 flex flex-col gap-4 shrink-0 relative z-50 min-w-0">
-          <div className="flex flex-wrap items-center justify-between gap-4 relative z-10">
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2 mb-2 pl-1">
-                <span className="text-[13px] font-semibold text-gray-500">Filter Tanggal Dibuat</span>
-                {(createAtFrom || createAtTo) && (
-                  <button
-                    onClick={() => { setCreateAtFrom(null); setCreateAtTo(null); setPage(1); }}
-                    className="text-[11px] font-bold text-rose-400 hover:text-rose-500 transition-colors ml-1"
-                  >
-                    &times; Reset
-                  </button>
-                )}
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-[150px] relative group">
-                  <DatePicker
-                    name="createAtFrom"
-                    value={createAtFrom}
-                    onChange={(d) => { setCreateAtFrom(d); setPage(1); }}
-                  />
-                </div>
-                <div className="w-4 h-0.5 bg-gray-100 rounded-full" />
-                <div className="w-[150px] relative group">
-                  <DatePicker
-                    name="createAtTo"
-                    value={createAtTo}
-                    onChange={(d) => { setCreateAtTo(d); setPage(1); }}
-                    popupAlign="right"
-                  />
-                </div>
-              </div>
-            </div>
+
+        {/* Filter Tanggal Dibuat */}
+        <div className="flex-1 bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg shadow-gray-900/5 p-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <span className="text-[10px] font-bold text-gray-400 shrink-0 hidden sm:block">Filter Dibuat:</span>
+          <div className="flex items-center gap-2 flex-1">
+            <DatePicker
+              name="createAtFrom"
+              value={createAtFrom}
+              onChange={(d) => { setCreateAtFrom(d); setPage(1); }}
+            />
+            <div className="w-2 h-px bg-gray-300 shrink-0"></div>
+            <DatePicker
+              name="createAtTo"
+              value={createAtTo}
+              onChange={(d) => { setCreateAtTo(d); setPage(1); }}
+              popupAlign="right"
+            />
           </div>
+
+          {(createAtFrom || createAtTo) && (
+            <>
+              <div className="hidden sm:block w-px h-8 bg-gray-200/60"></div>
+              <button
+                onClick={() => { setCreateAtFrom(null); setCreateAtTo(null); setPage(1); }}
+                className="flex items-center justify-center gap-2 px-5 h-10 bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold rounded-xl transition-colors shadow-sm shrink-0"
+              >
+                <span>&times;</span>
+                <span>Reset</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -693,9 +689,9 @@ export default function JurnalUmumClient() {
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
-            <ScrapingHeader title="Hasil Scrapping Jurnal Umum" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} activityLogTable="jurnal_umum" />
+            <ScrapingHeader title="Hasil Scrapping Jurnal Umum" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
             {loading && data && data.length > 0 && (
-              <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
+              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Memproses Data...</span>
               </div>

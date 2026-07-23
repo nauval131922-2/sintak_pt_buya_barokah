@@ -384,48 +384,46 @@ export default function TargetClient() {
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden print:overflow-visible print:block print:h-auto">
 
       {/* ── CONDENSED CONTROL PANEL ── */}
-      <div className="print:hidden bg-white border border-gray-100 rounded-2xl p-3 shadow-sm shrink-0 mb-6 mx-1 flex flex-wrap items-center gap-3">
+      <div className="print:hidden bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl p-3 shadow-lg shadow-gray-900/5 shrink-0 mb-6 mx-1 flex flex-wrap items-center gap-2">
         {/* Date Section */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => fetchData(dateStr)}
             disabled={loading}
             title="Muat Ulang"
-            className="w-10 h-10 flex items-center justify-center bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-green-600 hover:bg-green-50 hover:border-green-200 transition-all disabled:opacity-50"
+            className="w-10 h-10 flex items-center justify-center bg-white/40 backdrop-blur-sm border border-white/60 rounded-xl text-gray-600 hover:text-emerald-600 hover:bg-emerald-50/60 hover:border-emerald-200/60 transition-all disabled:opacity-50 shadow-sm"
           >
-            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           </button>
 
-          <div className="w-[180px]">
-             <DatePicker 
-               name="filter_date"
-               value={selectedDateObj}
-               onChange={(d) => {
-                 const y = d.getFullYear();
-                 const m = String(d.getMonth() + 1).padStart(2, '0');
-                 const day = String(d.getDate()).padStart(2, '0');
-                 setDateStr(`${y}-${m}-${day}`);
-               }}
-             />
-          </div>
+          <DatePicker 
+            name="filter_date"
+            value={selectedDateObj}
+            onChange={(d) => {
+              const y = d.getFullYear();
+              const m = String(d.getMonth() + 1).padStart(2, '0');
+              const day = String(d.getDate()).padStart(2, '0');
+              setDateStr(`${y}-${m}-${day}`);
+            }}
+          />
 
           <button
             onClick={() => setSortByTglOrder(v => !v)}
             title={sortByTglOrder ? 'Urutan: berdasarkan tanggal order (aktif) — klik untuk reset ke urutan bagian' : 'Urutkan berdasarkan tanggal order'}
-            className={`flex items-center gap-1.5 px-3 h-10 rounded-xl border text-[11px] font-bold transition-all active:scale-95 ${
+            className={`flex items-center gap-1.5 px-3 h-10 rounded-xl border text-[11px] font-bold transition-all shadow-sm ${
               sortByTglOrder
-                ? 'bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-100'
-                : 'bg-white text-gray-500 border-gray-200 hover:border-emerald-300 hover:text-emerald-600 hover:bg-emerald-50'
+                ? 'bg-emerald-600/90 backdrop-blur-sm text-white border-emerald-500/40'
+                : 'bg-white/40 backdrop-blur-sm text-gray-700 border-white/60 hover:border-emerald-300/60 hover:text-emerald-600 hover:bg-emerald-50/40'
             }`}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 6h18M7 12h10M11 18h2"/>
             </svg>
             Tgl Order
           </button>
         </div>
 
-        <div className="hidden lg:block w-px h-6 bg-gray-100" />
+        <div className="hidden lg:block w-px h-5 bg-white/30" />
 
         {/* Coordinators Section */}
         <div className="flex-1 flex items-center gap-2 min-w-[400px]">
@@ -438,6 +436,7 @@ export default function TargetClient() {
               placeholder="Koord. Shift 1"
               className="font-bold"
               triggerWidth="w-full"
+              compact
             />
             <SearchableDropdown
               id="ks2"
@@ -447,6 +446,7 @@ export default function TargetClient() {
               placeholder="Koord. Shift 2"
               className="font-bold"
               triggerWidth="w-full"
+              compact
             />
             <SearchableDropdown
               id="ks3"
@@ -456,25 +456,26 @@ export default function TargetClient() {
               placeholder="Koord. Shift 3"
               className="font-bold"
               triggerWidth="w-full"
+              compact
             />
           </div>
           <button
             onClick={() => { setKs1(''); setKs2(''); setKs3(''); }}
             title="Reset Koordinator"
-            className="w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-rose-50 text-gray-400 hover:text-rose-600 rounded-xl transition-all active:scale-90"
+            className="w-10 h-10 flex items-center justify-center bg-white/40 backdrop-blur-sm hover:bg-rose-50/60 text-gray-600 hover:text-rose-600 border border-white/60 hover:border-rose-200/60 rounded-xl transition-all shadow-sm"
           >
             <RotateCcw size={14} />
           </button>
         </div>
 
-        <div className="hidden lg:block w-px h-6 bg-gray-100" />
+        <div className="hidden lg:block w-px h-5 bg-white/30" />
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2">
           <button
             onClick={handleDownloadImage}
             disabled={loading || savingImage || data.length === 0}
-            className="flex items-center gap-2 px-4 h-10 bg-white border border-gray-100 text-gray-700 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 rounded-xl text-[12px] font-bold transition-all disabled:opacity-40 active:scale-95"
+            className="flex items-center gap-1.5 px-3 h-10 bg-white/40 backdrop-blur-sm border border-white/60 text-gray-700 hover:bg-blue-50/60 hover:text-blue-700 hover:border-blue-200/60 rounded-xl text-[11px] font-bold transition-all disabled:opacity-40 shadow-sm"
           >
             {savingImage ? (
               <Loader2 size={14} className="animate-spin" />
@@ -487,7 +488,7 @@ export default function TargetClient() {
           <button
             onClick={handlePrint}
             disabled={loading || generatingPdf || data.length === 0}
-            className="flex items-center gap-2 px-4 h-10 bg-green-600 text-white hover:bg-green-700 rounded-xl text-[12px] font-bold shadow-md shadow-green-100 transition-all disabled:opacity-40 active:scale-95"
+            className="flex items-center gap-1.5 px-3 h-10 bg-emerald-600/90 backdrop-blur-sm text-white hover:bg-emerald-700/90 border border-emerald-500/40 rounded-xl text-[11px] font-bold transition-all disabled:opacity-40 shadow-sm"
           >
             {generatingPdf ? (
               <Loader2 size={14} className="animate-spin" />
@@ -499,7 +500,7 @@ export default function TargetClient() {
 
           <button
             onClick={() => setShowGenerateModal(true)}
-            className="flex items-center gap-2 px-4 h-10 bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl text-[12px] font-bold shadow-md shadow-emerald-100 transition-all active:scale-95"
+            className="flex items-center gap-1.5 px-3 h-10 bg-emerald-600/90 backdrop-blur-sm text-white hover:bg-emerald-700/90 border border-emerald-500/40 rounded-xl text-[11px] font-bold transition-all shadow-sm"
           >
             <Sparkles size={14} />
             <span>Generate Jadwal</span>
@@ -513,7 +514,7 @@ export default function TargetClient() {
           <div className="flex flex-col items-center justify-center min-h-[450px] w-full bg-white/60 backdrop-blur-sm animate-in fade-in duration-300 rounded-2xl">
             <div className="flex flex-col items-center gap-5 bg-white p-10 rounded-[24px] shadow-xl shadow-slate-200/50 border border-slate-50">
               <div className="relative">
-                <div className="w-14 h-14 border-4 border-slate-100 rounded-full border-t-green-600 animate-spin" />
+                <div className="w-14 h-14 border-4 border-slate-100 rounded-full border-t-emerald-600 animate-spin" />
               </div>
               <div className="flex flex-col items-center gap-1">
                 <span className="text-[13px] font-black text-slate-700 tracking-tight animate-pulse">Memproses Data...</span>
@@ -527,7 +528,7 @@ export default function TargetClient() {
               <AlertCircle size={28} className="text-rose-500" />
             </div>
             <p className="font-bold text-rose-600">{error}</p>
-            <button onClick={() => fetchData(dateStr)} className="text-sm font-bold text-green-600 underline underline-offset-2">Coba lagi</button>
+            <button onClick={() => fetchData(dateStr)} className="text-sm font-bold text-emerald-600 underline underline-offset-2">Coba lagi</button>
           </div>
         ) : data.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 w-full bg-white rounded-2xl shadow-sm border border-gray-100 animate-in fade-in duration-300">
@@ -546,20 +547,20 @@ export default function TargetClient() {
                   const el = document.querySelector('[data-date-picker-trigger="filter_date"]');
                   (el as HTMLElement)?.click();
                 }}
-                className="px-5 h-10 text-[13px] font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition-all active:scale-95"
+                className="px-4 h-10 text-[11px] font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition-colors"
               >
                 Pilih Tanggal Lain
               </button>
               <button
                 onClick={() => setShowGenerateModal(true)}
-                className="px-5 h-10 text-[13px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 border border-emerald-600 rounded-xl shadow-md shadow-emerald-100 transition-all active:scale-95 flex items-center gap-2"
+                className="px-4 h-10 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 border border-emerald-600 rounded-xl shadow-sm transition-colors flex items-center gap-2"
               >
                 <Sparkles size={14} />
                 Generate Jadwal
               </button>
               <button
                 onClick={() => fetchData(dateStr)}
-                className="px-5 h-10 text-[13px] font-bold text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl transition-all active:scale-95"
+                className="px-4 h-10 text-[11px] font-bold text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl transition-colors"
               >
                 Muat Ulang
               </button>

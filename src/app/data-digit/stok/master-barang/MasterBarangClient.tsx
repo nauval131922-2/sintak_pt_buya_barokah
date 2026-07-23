@@ -155,64 +155,64 @@ export default function MasterBarangClient() {
       accessorKey: 'kode',
       header: 'Kode',
       size: 120,
-      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-600' : 'text-gray-700'}`}>{highlightText(String(getValue()), highlightQuery)}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-700'}`}>{highlightText(String(getValue()), highlightQuery)}</span>
     },
     {
       accessorKey: 'barcode',
       header: 'Barcode',
       size: 120,
-      cell: ({ getValue, row }: any) => <span className={`font-medium tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-600' : 'text-gray-600'}`}>{String(getValue() || '—')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium tracking-tight transition-colors ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-600'}`}>{String(getValue() || '—')}</span>
     },
     {
       accessorKey: 'nama',
       header: 'Nama Barang',
       size: 350,
-      cell: ({ getValue, row }: any) => <span className={`font-bold tracking-tight ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'}`}>{highlightText(String(getValue()), highlightQuery)}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold tracking-tight ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'}`}>{highlightText(String(getValue()), highlightQuery)}</span>
     },
     {
       accessorKey: 'kd_satuan',
       header: 'Satuan',
       size: 100,
-      cell: ({ getValue, row }: any) => <span className={`font-bold transition-colors ${row.getIsSelected() ? 'text-green-700' : 'text-slate-600'}`}>{String(getValue() || '—')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-slate-600'}`}>{String(getValue() || '—')}</span>
     },
     {
       accessorKey: 'berat_kg',
       header: 'Berat (KG)',
       size: 120,
       meta: { align: 'right' },
-      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-slate-700'}`}>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-slate-700'}`}>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
     },
     {
       accessorKey: 'saldo',
       header: 'Saldo',
       size: 120,
       meta: { align: 'right' },
-      cell: ({ getValue, row }: any) => <span className={`font-extrabold tabular-nums px-2 py-1 rounded bg-green-50/50 ${row.getIsSelected() ? 'text-green-800' : 'text-green-700'}`}>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-extrabold tabular-nums px-2 py-1 rounded bg-emerald-50/50 ${row.getIsSelected() ? 'text-emerald-800' : 'text-emerald-700'}`}>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
     },
     {
       accessorKey: 'kd_golongan',
       header: 'Golongan',
       size: 150,
-      cell: ({ getValue, row }: any) => <span className={`font-medium transition-colors ${row.getIsSelected() ? 'text-green-700' : 'text-gray-600'}`}>{String(getValue() || '—')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-600'}`}>{String(getValue() || '—')}</span>
     },
     {
       accessorKey: 'kd_kelompok',
       header: 'Kelompok',
       size: 150,
-      cell: ({ getValue, row }: any) => <span className={`font-medium transition-colors ${row.getIsSelected() ? 'text-green-700' : 'text-gray-600'}`}>{String(getValue() || '—')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-600'}`}>{String(getValue() || '—')}</span>
     },
     {
       accessorKey: 'spesifikasi',
       header: 'Spesifikasi',
       size: 150,
-      cell: ({ getValue, row }: any) => <span className={`text-[11px] font-medium transition-colors ${row.getIsSelected() ? 'text-green-700' : 'text-gray-500'}`}>{String(getValue() || '—')}</span>
+      cell: ({ getValue, row }: any) => <span className={`text-[11px] font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-500'}`}>{String(getValue() || '—')}</span>
     },
     {
       accessorKey: 'qty_order',
       header: 'Qty Order',
       size: 100,
       meta: { align: 'right' },
-      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-slate-700'}`}>{Number(getValue() || 0).toLocaleString('id-ID')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-slate-700'}`}>{Number(getValue() || 0).toLocaleString('id-ID')}</span>
     },
     {
       accessorKey: 'hj_ppn',
@@ -221,7 +221,7 @@ export default function MasterBarangClient() {
       cell: ({ getValue, row }: any) => {
         const val = String(getValue() || '');
         const isChecked = val.includes('checked');
-        return <input type="checkbox" checked={isChecked} readOnly className="w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500 disabled:opacity-50 cursor-default" />;
+        return <input type="checkbox" checked={isChecked} readOnly className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 disabled:opacity-50 cursor-default" />;
       }
     },
     {
@@ -229,7 +229,7 @@ export default function MasterBarangClient() {
       header: 'PPN',
       size: 100,
       meta: { align: 'right' },
-      cell: ({ getValue, row }: any) => <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-600'}`}>{Number(getValue() || 0).toLocaleString('id-ID')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-600'}`}>{Number(getValue() || 0).toLocaleString('id-ID')}</span>
     },
     {
       accessorKey: 'status',
@@ -238,32 +238,32 @@ export default function MasterBarangClient() {
       cell: ({ getValue, row }: any) => {
         const val = String(getValue() || '');
         const isChecked = val.includes('checked');
-        return <input type="checkbox" checked={isChecked} readOnly className="w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500 disabled:opacity-50 cursor-default" />;
+        return <input type="checkbox" checked={isChecked} readOnly className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 disabled:opacity-50 cursor-default" />;
       }
     },
     {
       accessorKey: 'tampil',
       header: 'Tampil',
       size: 100,
-      cell: ({ getValue, row }: any) => <span className={`text-[11px] ${row.getIsSelected() ? 'text-green-700' : 'text-gray-500'}`}>{String(getValue() || '—')}</span>
+      cell: ({ getValue, row }: any) => <span className={`text-[11px] ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-500'}`}>{String(getValue() || '—')}</span>
     },
     {
       accessorKey: 'prd_std',
       header: 'PRD STD',
       size: 100,
-      cell: ({ getValue, row }: any) => <span className={`text-[11px] ${row.getIsSelected() ? 'text-green-700' : 'text-gray-500'}`}>{String(getValue() || '—')}</span>
+      cell: ({ getValue, row }: any) => <span className={`text-[11px] ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-500'}`}>{String(getValue() || '—')}</span>
     },
     {
       accessorKey: 'pj_hide',
       header: 'PJ Hide',
       size: 100,
-      cell: ({ getValue, row }: any) => <span className={`text-[11px] ${row.getIsSelected() ? 'text-green-700' : 'text-gray-500'}`}>{String(getValue() || '—')}</span>
+      cell: ({ getValue, row }: any) => <span className={`text-[11px] ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-500'}`}>{String(getValue() || '—')}</span>
     },
     {
       accessorKey: 'royalti',
       header: 'Royalti',
       size: 100,
-      cell: ({ getValue, row }: any) => <span className={`text-[11px] ${row.getIsSelected() ? 'text-green-700' : 'text-gray-500'}`}>{String(getValue() || '—')}</span>
+      cell: ({ getValue, row }: any) => <span className={`text-[11px] ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-500'}`}>{String(getValue() || '—')}</span>
     },
     {
       accessorKey: 'username',
@@ -291,7 +291,7 @@ export default function MasterBarangClient() {
               <ScrapingHeader title="Data Master Barang" lastUpdated={lastUpdated} scrapedPeriod={null} />
 
               {loading && data && data.length > 0 && (
-                <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
+                <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
                   <Loader2 size={12} className="animate-spin" />
                   <span>Memuat...</span>
                 </div>
@@ -301,7 +301,7 @@ export default function MasterBarangClient() {
             <button
                onClick={handleSync}
                disabled={isSyncing || loading}
-               className="shrink-0 w-full sm:w-auto min-w-[140px] px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-500 hover:to-green-400 text-white rounded-xl text-[12px] font-bold shadow-sm shadow-emerald-900/20 hover:shadow-emerald-900/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group/btn relative overflow-hidden"
+               className="shrink-0 w-full sm:w-auto min-w-[140px] px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-xl text-[12px] font-bold shadow-sm shadow-emerald-900/20 hover:shadow-emerald-900/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group/btn relative overflow-hidden"
              >
                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out" />
                <span className="relative z-10 flex items-center gap-2">

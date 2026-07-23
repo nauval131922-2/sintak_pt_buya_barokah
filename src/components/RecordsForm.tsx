@@ -446,7 +446,7 @@ export default function RecordsForm({
     finally { setLoading(false); pendingSubmitDataRef.current = null; }
   };
 
-  const inputCls = 'w-full bg-white border border-gray-100 rounded-lg px-4 h-11 text-sm focus:outline-none focus:ring-4 focus:ring-green-500/5 focus:border-green-500 transition-all text-gray-800 font-semibold placeholder:text-gray-300 shadow-sm';
+  const inputCls = 'w-full bg-white border border-gray-100 rounded-lg px-4 h-11 text-sm focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all text-gray-800 font-semibold placeholder:text-gray-300 shadow-sm';
   const labelCls = 'flex items-center gap-1.5 text-[12px] font-semibold text-gray-500 mb-1.5 ml-1';
   const sectionHeaderCls = 'flex items-center gap-3 pb-3 border-b border-gray-50 mb-5 mt-1';
 
@@ -457,9 +457,9 @@ export default function RecordsForm({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
           <div className="lg:col-span-5 flex flex-col gap-6">
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm shadow-green-900/5">
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm shadow-emerald-900/5">
               <div className={sectionHeaderCls}>
-                <div className="w-9 h-9 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                   <ClipboardList size={18} />
                 </div>
                 <div className="flex flex-col">
@@ -502,9 +502,9 @@ export default function RecordsForm({
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm shadow-green-900/5">
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm shadow-emerald-900/5">
               <div className={sectionHeaderCls}>
-                <div className="w-9 h-9 rounded-lg bg-red-50 text-red-600 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-red-50 text-red-600 flex items-center justify-center shrink-0">
                   <ShieldAlert size={18} />
                 </div>
                 <div className="flex flex-col">
@@ -518,9 +518,9 @@ export default function RecordsForm({
                   <label className={labelCls}>Severitas (Tingkat Dampak)</label>
                   <div className="flex flex-wrap gap-3">
                     {[
-                      { label: 'Low', value: 'Low', activeCls: 'bg-blue-600 text-white shadow-sm shadow-blue-200' },
-                      { label: 'Medium', value: 'Medium', activeCls: 'bg-amber-500 text-white shadow-sm shadow-amber-200' },
-                      { label: 'High', value: 'High', activeCls: 'bg-red-600 text-white shadow-sm shadow-red-200' },
+                      { label: 'Low', value: 'Low', activeCls: 'bg-blue-50 text-blue-700 border-blue-200 shadow-sm' },
+                      { label: 'Medium', value: 'Medium', activeCls: 'bg-amber-50 text-amber-700 border-amber-200 shadow-sm' },
+                      { label: 'High', value: 'High', activeCls: 'bg-rose-50 text-rose-700 border-rose-200 shadow-sm' },
                     ].map((opt) => (
                       <button
                         key={opt.value}
@@ -553,7 +553,7 @@ export default function RecordsForm({
           </div>
 
           <div className="lg:col-span-7 flex flex-col gap-6">
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm shadow-green-900/5 overflow-visible text-black">
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm shadow-emerald-900/5 overflow-visible text-black">
               <div className={sectionHeaderCls}>
                 <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                   <Box size={16} />
@@ -628,7 +628,7 @@ export default function RecordsForm({
                           }}
                           className={`px-2 py-2 text-[12px] font-semibold rounded-lg transition-all duration-300 h-9 leading-tight border ${
                             jenisBarang === opt.value
-                              ? 'bg-green-600 text-white border-transparent shadow-sm shadow-green-100'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm'
                               : 'bg-white text-gray-400 border-gray-100 hover:bg-gray-50'
                           }`}
                         >
@@ -700,7 +700,7 @@ export default function RecordsForm({
                           }}
                           className={`px-4 py-2 text-[12px] font-semibold rounded-lg transition-all duration-300 h-10 flex-1 min-w-[120px] border ${
                             jenisHarga === opt.value
-                              ? 'bg-blue-600 text-white border-transparent shadow-sm shadow-blue-100'
+                              ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-sm'
                               : 'bg-white text-gray-400 border-gray-100 hover:bg-gray-50'
                           }`}
                         >
@@ -760,7 +760,7 @@ export default function RecordsForm({
                       </span>
                     </div>
                     <div className="relative z-10 w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
-                      <CheckCircle2 size={24} className="text-green-400" />
+                      <CheckCircle2 size={24} className="text-emerald-400" />
                     </div>
                   </div>
                 </div>
@@ -771,13 +771,13 @@ export default function RecordsForm({
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-[2] h-12 rounded-xl bg-green-600 text-white font-bold text-[13px] shadow-sm shadow-green-100 transition-all flex items-center justify-center gap-2.5 hover:bg-green-700 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed group"
+                className="flex-[2] h-10 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold text-[11px] shadow-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
-                  <Loader2 size={18} className="animate-spin" />
+                  <Loader2 size={16} className="animate-spin" />
                 ) : (
                   <>
-                    <CheckCircle2 size={20} className="group-hover:scale-110 transition-transform" />
+                    <CheckCircle2 size={16} />
                     <span>{editingInfraction ? 'Simpan Perubahan' : 'Catat Kesalahan'}</span>
                   </>
                 )}
@@ -787,7 +787,7 @@ export default function RecordsForm({
                 <button
                   type="button"
                   onClick={onCancelEdit}
-                  className="flex-1 h-12 rounded-xl bg-white border border-gray-200 text-gray-400 font-semibold text-[13px] hover:bg-gray-50 transition-all active:translate-y-0 shadow-sm"
+                  className="flex-1 h-10 rounded-xl bg-white border border-gray-200 text-gray-600 font-bold text-[11px] hover:bg-gray-50 transition-colors shadow-sm"
                 >
                   Batal
                 </button>

@@ -224,49 +224,49 @@ export default function SphOutClient() {
       accessorKey: 'id',
       header: 'ID',
       size: 80,
-      cell: ({ getValue, row }: any) => <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-400'}`}>{String(getValue())}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-400'}`}>{String(getValue())}</span>
     },
     {
       accessorKey: 'tgl',
       header: 'Tanggal',
       size: 120,
-      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>{formatIndoDateStr(getValue() as string)}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>{formatIndoDateStr(getValue() as string)}</span>
     },
     {
       accessorKey: 'faktur',
       header: 'Faktur SPH',
       size: 220,
-      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-600' : 'text-gray-700'}`}>{highlightText(String(getValue()), highlightQuery)}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-700'}`}>{highlightText(String(getValue()), highlightQuery)}</span>
     },
     {
       accessorKey: 'kd_pelanggan',
       header: 'Pelanggan',
       size: 250,
-      cell: ({ getValue, row }: any) => <span className={`font-semibold  tracking-tight ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'}`}>{highlightText(String(getValue()), highlightQuery)}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-semibold  tracking-tight ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'}`}>{highlightText(String(getValue()), highlightQuery)}</span>
     },
     {
       accessorKey: 'faktur_so',
       header: 'Faktur SO',
       size: 200,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-green-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
     },
     {
       accessorKey: 'faktur_surat_jalan',
       header: 'Faktur SJ',
       size: 200,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-green-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
     },
     {
       accessorKey: 'faktur_pelunasan_piutang',
       header: 'Status Lunas',
       size: 200,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-green-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
     },
     {
       accessorKey: 'keterangan',
       header: 'Keterangan',
       size: 250,
-      cell: ({ getValue, row }: any) => <span className={`font-medium transition-colors truncate block ${row.getIsSelected() ? 'text-green-800' : 'text-gray-700'}`}>{highlightText(String(getValue() || '–'), highlightQuery)}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium transition-colors truncate block ${row.getIsSelected() ? 'text-emerald-800' : 'text-gray-700'}`}>{highlightText(String(getValue() || '–'), highlightQuery)}</span>
     },
     {
       accessorKey: 'total',
@@ -274,7 +274,7 @@ export default function SphOutClient() {
       size: 180,
       meta: { align: 'right' },
       cell: ({ getValue, row }: any) => (
-        <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-green-700' : 'text-emerald-700'}`}>
+        <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-emerald-700'}`}>
           <span className="text-[10px] opacity-40 mr-1">Rp</span>
           <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
         </div>
@@ -290,7 +290,7 @@ export default function SphOutClient() {
           <span className={`
             px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border
             ${isActive 
-              ? 'bg-green-50 text-green-600 border-green-100 shadow-sm shadow-green-900/5' 
+              ? 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-sm shadow-emerald-900/5' 
               : 'bg-gray-50 text-gray-400 border-gray-100'}
           `}>
             {isActive ? 'ACTIVE' : 'INACTIVE'}
@@ -338,10 +338,10 @@ export default function SphOutClient() {
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
-            <ScrapingHeader title="Hasil Scrapping SPH Keluar" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} activityLogTable="sph_out" />
+            <ScrapingHeader title="Hasil Scrapping SPH Keluar" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
 
             {loading && data && data.length > 0 && (
-              <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
+              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Memproses Data...</span>
               </div>

@@ -4,7 +4,7 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Upload, FileSpreadsheet, XCircle, Loader2 } from 'lucide-react';
-import ViewActivityLogLink from '@/components/ViewActivityLogLink';
+
 import ConfirmDialog from '@/components/ConfirmDialog';
 
 export default function MasterPekerjaanUpload() {
@@ -405,42 +405,43 @@ export default function MasterPekerjaanUpload() {
   };
 
   return (
-    <div className="h-full shrink-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <div className="relative bg-white border border-gray-100 shadow-sm shadow-green-900/5 rounded-xl px-6 py-4 flex items-center justify-between gap-6 z-50 h-full">
-        <div className="flex items-center gap-5 flex-1">
-          <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
-            <Upload className="text-green-600" size={24} />
+    <div className="shrink-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <div className="relative bg-white border border-gray-100 shadow-sm shadow-emerald-900/5 rounded-xl px-4 py-6 z-50">
+        <div className="flex items-center justify-between gap-3 w-full">
+          <div className="flex items-center gap-2.5 flex-1 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+              <Upload className="text-emerald-600" size={16} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-[12px] font-bold text-gray-800 leading-none tracking-tight">Upload Master Pekerjaan</h3>
+              <p className="text-[10px] text-gray-400 font-medium leading-tight truncate mt-0.5">
+                Unggah file Excel untuk sinkronisasi database
+              </p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <h3 className="text-sm font-bold text-gray-800 leading-none mb-1.5 tracking-tight">Upload Master Pekerjaan</h3>
-            <p className="text-[11px] text-gray-400 font-medium leading-tight line-clamp-2">
-              Unggah file Excel Master Pekerjaan untuk sinkronisasi database.
-            </p>
-          </div>
-        </div>
 
-        <div className="shrink-0 flex items-center gap-2">
-          <ViewActivityLogLink tableName="master_pekerjaan" />
-          <input
-            type="file"
-            accept=".xls, .xlsx, .xlsm"
-            className="hidden"
-            ref={fileRef}
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
-          />
-          <button
-            onClick={() => fileRef.current?.click()}
-            disabled={status === 'loading'}
-            className={`
-              px-6 h-11 rounded-lg font-bold text-[13px] tracking-wide border transition-all flex items-center gap-2 shadow-sm
-              ${status === 'loading' 
-                ? 'bg-gray-50 text-gray-300 border-gray-100' 
-                : 'bg-green-600 text-white border-green-500 hover:bg-green-700 shadow-green-100'}
-            `}
-          >
-            {status === 'loading' ? <Loader2 size={18} className="animate-spin" /> : <FileSpreadsheet size={18} />}
-            <span>{status === 'loading' ? 'Mengunggah...' : 'Pilih & Upload Excel'}</span>
-          </button>
+          <div className="shrink-0 flex items-center gap-2">
+            <input
+              type="file"
+              accept=".xls, .xlsx, .xlsm"
+              className="hidden"
+              ref={fileRef}
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+            />
+            <button
+              onClick={() => fileRef.current?.click()}
+              disabled={status === 'loading'}
+              className={`
+                px-3.5 h-8 rounded-lg font-bold text-[10px] tracking-wide border transition-all flex items-center gap-1.5 shadow-sm
+                ${status === 'loading' 
+                  ? 'bg-gray-50 text-gray-300 border-gray-100' 
+                  : 'bg-emerald-600 text-white border-emerald-500 hover:bg-emerald-700 shadow-emerald-100'}
+              `}
+            >
+              {status === 'loading' ? <Loader2 size={14} className="animate-spin" /> : <FileSpreadsheet size={14} />}
+              <span>{status === 'loading' ? 'Mengunggah...' : 'Upload Excel'}</span>
+            </button>
+          </div>
         </div>
 
         {status === 'error' && (

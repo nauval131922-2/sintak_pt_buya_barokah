@@ -638,8 +638,8 @@ export default function ActivityLogClient({
                 onClick={() => applyPreset(p.key)}
                 className={`px-2.5 py-1 rounded-lg border text-[10px] font-bold transition-all ${
                   datePreset === p.key
-                    ? 'bg-green-600 text-white border-green-600 shadow-sm shadow-green-200'
-                    : 'bg-white text-gray-600 border-gray-100 hover:border-green-200 hover:text-green-700'
+                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm shadow-emerald-200'
+                    : 'bg-white text-gray-600 border-gray-100 hover:border-emerald-200 hover:text-emerald-700'
                 }`}
               >
                 {p.label}
@@ -699,7 +699,7 @@ export default function ActivityLogClient({
             searchPlaceholder="Cari tabel..."
             triggerWidth="w-[170px]"
             compact
-            icon={<Table2 size={14} className={tableName ? 'text-green-600' : 'text-gray-400'} />}
+            icon={<Table2 size={14} className={tableName ? 'text-emerald-600' : 'text-gray-400'} />}
           />
           <SearchableDropdown
             id="activity-log-action"
@@ -711,7 +711,7 @@ export default function ActivityLogClient({
             searchPlaceholder="Cari action..."
             triggerWidth="w-[150px]"
             compact
-            icon={<Zap size={14} className={actionType ? 'text-green-600' : 'text-gray-400'} />}
+            icon={<Zap size={14} className={actionType ? 'text-emerald-600' : 'text-gray-400'} />}
           />
           <SearchableDropdown
             id="activity-log-user"
@@ -724,7 +724,7 @@ export default function ActivityLogClient({
             searchPlaceholder="Cari user..."
             triggerWidth="w-[190px]"
             compact
-            icon={<User size={14} className={recordedBy ? 'text-green-600' : 'text-gray-400'} />}
+            icon={<User size={14} className={recordedBy ? 'text-emerald-600' : 'text-gray-400'} />}
           />
 
           <div className="flex items-center gap-2 ml-auto">
@@ -735,7 +735,7 @@ export default function ActivityLogClient({
                 type="button"
                 onClick={triggerCleanupConfirm}
                 title="Hapus Log Sesuai Filter"
-                className="h-8 px-3 rounded-lg border border-rose-100 bg-rose-50 text-[10px] font-bold text-rose-600 hover:bg-rose-100 transition-all flex items-center gap-1.5 shrink-0 shadow-sm"
+                className="h-10 px-3 rounded-lg border border-rose-100 bg-rose-50 text-[10px] font-bold text-rose-600 hover:bg-rose-100 transition-all flex items-center gap-1.5 shrink-0 shadow-sm"
               >
                 <Trash2 size={12} /> Hapus Log
               </button>
@@ -756,7 +756,7 @@ export default function ActivityLogClient({
                       onClick={() => setActionType(actionType === s.value ? '' : s.value)}
                       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all hover:shadow-md ${
                         actionType === s.value
-                          ? 'ring-2 ring-green-400 shadow-sm ' + getActionColor(s.value)
+                          ? 'ring-2 ring-emerald-400 shadow-sm ' + getActionColor(s.value)
                           : getActionColor(s.value)
                       }`}
                     >
@@ -778,7 +778,7 @@ export default function ActivityLogClient({
                       onClick={() => setTableName(tableName === s.value ? '' : s.value)}
                       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all hover:shadow-md ${
                         tableName === s.value
-                          ? 'ring-2 ring-green-400 border-green-300 bg-green-50 text-green-700 shadow-sm'
+                          ? 'ring-2 ring-emerald-400 border-emerald-300 bg-emerald-50 text-emerald-700 shadow-sm'
                           : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
                       }`}
                     >
@@ -800,7 +800,7 @@ export default function ActivityLogClient({
                       onClick={() => setRecordedBy(recordedBy === s.value ? '' : s.value)}
                       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-all hover:shadow-md ${
                         recordedBy === s.value
-                          ? 'ring-2 ring-green-400 border-green-300 bg-green-50 text-green-700 shadow-sm'
+                          ? 'ring-2 ring-emerald-400 border-emerald-300 bg-emerald-50 text-emerald-700 shadow-sm'
                           : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
                       }`}
                     >
@@ -822,7 +822,7 @@ export default function ActivityLogClient({
             className="w-full px-4 py-2.5 flex items-center justify-between text-[11px] font-semibold text-gray-700 bg-gradient-to-r from-gray-50 to-white hover:from-gray-100 hover:to-gray-50 transition-all border-b border-gray-100"
           >
             <span className="flex items-center gap-2">
-              <BarChart3 size={13} className="text-green-600" />
+              <BarChart3 size={14} className="text-emerald-600" />
               <span>Grafik tren & traffic aktivitas</span>
               <span className="text-[9px] font-bold text-gray-400 bg-white px-2 py-0.5 rounded-full border border-gray-100">
                 {trendGroupBy === 'month' 
@@ -865,7 +865,7 @@ export default function ActivityLogClient({
             </span>
           </div>
           {debouncedSearch && (
-            <span className="text-[10px] bg-green-50 text-green-700 px-2.5 py-1 rounded-full font-bold border border-green-100">
+            <span className="text-[10px] bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full font-bold border border-emerald-100">
               {total.toLocaleString('id-ID')} hasil untuk &quot;{debouncedSearch}&quot;
             </span>
           )}
@@ -886,22 +886,22 @@ export default function ActivityLogClient({
           </div>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5">
             {debouncedSearch && (
-              <label className="flex items-center gap-2 text-[11px] text-gray-600 font-medium cursor-pointer hover:text-green-700 transition-colors">
+              <label className="flex items-center gap-2 text-[11px] text-gray-600 font-medium cursor-pointer hover:text-emerald-700 transition-colors">
                 <input
                   type="checkbox"
                   checked={deepSearch}
                   onChange={(e) => setDeepSearch(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded border-gray-300 text-green-600 focus:ring-green-500 focus:ring-offset-0 focus:ring-2 cursor-pointer"
+                  className="w-3.5 h-3.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0 focus:ring-2 cursor-pointer"
                 />
                 <span>Cari di detail data JSON (lebih lambat)</span>
               </label>
             )}
-            <label className="flex items-center gap-2 text-[11px] text-gray-600 font-medium cursor-pointer hover:text-green-700 transition-colors">
+            <label className="flex items-center gap-2 text-[11px] text-gray-600 font-medium cursor-pointer hover:text-emerald-700 transition-colors">
               <input
                 type="checkbox"
                 checked={hideSystemCols}
                 onChange={(e) => setHideSystemCols(e.target.checked)}
-                className="w-3.5 h-3.5 rounded border-gray-300 text-green-600 focus:ring-green-500 focus:ring-offset-0 focus:ring-2 cursor-pointer"
+                className="w-3.5 h-3.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0 focus:ring-2 cursor-pointer"
               />
               <span>Sederhanakan detail (sembunyikan ID & tanggal sistem)</span>
             </label>
@@ -988,7 +988,7 @@ export default function ActivityLogClient({
                       <th className="px-4 py-3 relative" onContextMenu={(e) => colCtx(4, e)}>
                         <span className="text-[10px] font-bold text-gray-400">Keterangan</span>
                         <div
-                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-green-500 active:bg-green-600 transition-colors z-20"
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-emerald-500 active:bg-emerald-600 transition-colors z-20"
                           onMouseDown={(e) => colResizeStart(4, e)}
                           title="Drag untuk resize kolom"
                         />
@@ -1023,7 +1023,7 @@ export default function ActivityLogClient({
                         <Fragment key={log.id}>
                           <tr
                             onClick={() => toggleExpand(log)}
-                            className={`hover:bg-green-50/40 cursor-pointer transition-colors ${isExpanded ? 'bg-green-50/60' : ''}`}
+                            className={`hover:bg-emerald-50/40 cursor-pointer transition-colors ${isExpanded ? 'bg-emerald-50/60' : ''}`}
                           >
                             <td className="px-4 py-2.5 whitespace-nowrap overflow-hidden text-ellipsis max-w-[110px]">
                               <span className={`inline-flex px-2 py-0.5 rounded-md text-[9px] font-bold border ${getActionColor(log.action_type || '')}`}>
@@ -1049,9 +1049,9 @@ export default function ActivityLogClient({
                               {debouncedSearch && getMatchedFields(log, debouncedSearch).length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-1">
                                   {getMatchedFields(log, debouncedSearch).map((m) => (
-                                    <span key={m.field} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold bg-green-50 text-green-700 border border-green-100">
+                                    <span key={m.field} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
                                       {m.field}
-                                       <span className="text-green-400 font-normal truncate max-w-[120px]">&quot;{m.value.slice(0, 40)}&quot;</span>
+                                       <span className="text-emerald-400 font-normal truncate max-w-[120px]">&quot;{m.value.slice(0, 40)}&quot;</span>
                                     </span>
                                   ))}
                                 </div>
@@ -1072,7 +1072,7 @@ export default function ActivityLogClient({
                                         <button
                                           type="button"
                                           onClick={() => copyToClipboard(beforeJson, 'Before')}
-                                          className="text-gray-400 hover:text-green-600 transition-colors"
+                                          className="text-gray-400 hover:text-emerald-600 transition-colors"
                                           title="Copy Before"
                                         >
                                           <Copy size={12} />
@@ -1092,7 +1092,7 @@ export default function ActivityLogClient({
                                          <button
                                            type="button"
                                            onClick={() => copyToClipboard(afterJson, 'After')}
-                                           className="text-gray-400 hover:text-green-600 transition-colors"
+                                           className="text-gray-400 hover:text-emerald-600 transition-colors"
                                            title="Copy After"
                                          >
                                            <Copy size={12} />
@@ -1137,7 +1137,7 @@ export default function ActivityLogClient({
                                              <button
                                                type="button"
                                                onClick={() => copyToClipboard(diffText, 'Diff')}
-                                               className="text-gray-400 hover:text-green-600 transition-colors"
+                                               className="text-gray-400 hover:text-emerald-600 transition-colors"
                                                title="Copy Diff"
                                              >
                                                <Copy size={12} />
@@ -1240,7 +1240,7 @@ export default function ActivityLogClient({
           >
             <input 
               autoFocus 
-              className="w-20 px-2 py-1.5 text-xs font-bold border border-gray-200 rounded-lg outline-none focus:border-green-400" 
+              className="w-20 px-2 py-1.5 text-xs font-bold border border-gray-200 rounded-lg outline-none focus:border-emerald-400" 
               type="number" 
               value={ctxCol.val} 
               onChange={e => setCtxCol({ ...ctxCol, val: e.target.value })} 
@@ -1264,7 +1264,7 @@ export default function ActivityLogClient({
                 }); 
                 setCtxCol(null); 
               }} 
-              className="text-[11px] font-bold text-white bg-green-600 px-3 py-1.5 rounded-lg hover:bg-green-700"
+              className="text-[11px] font-bold text-white bg-emerald-600 px-3 py-1.5 rounded-lg hover:bg-emerald-700"
             >
               Atur
             </button>

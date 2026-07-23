@@ -310,43 +310,43 @@ export default function BOMClient() {
       header: 'ID',
       size: 80,
       enableHiding: false,
-      cell: ({ getValue, row }: any) => <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-400'}`}>{String(getValue())}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-400'}`}>{String(getValue())}</span>
     },
     {
       accessorKey: 'faktur',
       header: 'Faktur BOM',
       size: 220,
-      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-600' : 'text-gray-700'}`}>{String(getValue())}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-700'}`}>{String(getValue())}</span>
     },
     {
       accessorKey: 'tgl',
       header: 'Tanggal',
       size: 140,
-      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>{formatIndoDateStr(getValue() as string)}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>{formatIndoDateStr(getValue() as string)}</span>
     },
     {
       accessorKey: 'faktur_tplt',
       header: 'Template',
       size: 160,
-      cell: ({ getValue, row }: any) => <span className={`font-medium transition-colors ${row.getIsSelected() ? 'text-green-600' : 'text-gray-400'}`}>{String(getValue() || '—')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-400'}`}>{String(getValue() || '—')}</span>
     },
     {
       accessorKey: 'kd_mtd',
       header: 'Metode',
       size: 120,
-      cell: ({ getValue, row }: any) => <span className={`${row.getIsSelected() ? 'text-green-800' : 'text-gray-600'} font-semibold text-[11px] uppercase`}>{String(getValue())}</span>
+      cell: ({ getValue, row }: any) => <span className={`${row.getIsSelected() ? 'text-emerald-800' : 'text-gray-600'} font-semibold text-[11px] uppercase`}>{String(getValue())}</span>
     },
     {
       accessorKey: 'kd_pelanggan',
       header: 'Pelanggan',
       size: 250,
-      cell: ({ getValue, row }: any) => <span className={`font-medium transition-colors ${row.getIsSelected() ? 'text-green-800' : 'text-gray-700'}`}>{String(getValue())}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-800' : 'text-gray-700'}`}>{String(getValue())}</span>
     },
     {
       accessorKey: 'nama_prd',
       header: 'Nama Prd',
       size: 350,
-      cell: ({ getValue, row }: any) => <span className={`font-bold text-[13px]  tracking-tighter ${row.getIsSelected() ? 'text-green-900' : 'text-slate-800'}`}>{String(getValue())}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold text-[13px]  tracking-tighter ${row.getIsSelected() ? 'text-emerald-900' : 'text-slate-800'}`}>{String(getValue())}</span>
     },
     {
         accessorKey: 'qty_order',
@@ -361,8 +361,8 @@ export default function BOMClient() {
       size: 160,
       meta: { align: 'right' },
       cell: ({ getValue, row }: any) => (
-        <div className={`flex items-center justify-between font-semibold tabular-nums transition-colors w-full ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>
-          <span className={`text-[10px] opacity-40 ${row.getIsSelected() ? 'text-green-400' : 'text-gray-400'}`}>Rp</span>
+        <div className={`flex items-center justify-between font-semibold tabular-nums transition-colors w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>
+          <span className={`text-[10px] opacity-40 ${row.getIsSelected() ? 'text-emerald-400' : 'text-gray-400'}`}>Rp</span>
           <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
         </div>
       )
@@ -373,8 +373,8 @@ export default function BOMClient() {
       size: 160,
       meta: { align: 'right' },
       cell: ({ getValue, row }: any) => (
-        <div className={`flex items-center justify-between font-semibold tabular-nums transition-colors w-full ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>
-          <span className={`text-[10px] opacity-40 ${row.getIsSelected() ? 'text-green-400' : 'text-gray-400'}`}>Rp</span>
+        <div className={`flex items-center justify-between font-semibold tabular-nums transition-colors w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>
+          <span className={`text-[10px] opacity-40 ${row.getIsSelected() ? 'text-emerald-400' : 'text-gray-400'}`}>Rp</span>
           <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
         </div>
       )
@@ -385,8 +385,8 @@ export default function BOMClient() {
       size: 160,
       meta: { align: 'right' },
       cell: ({ getValue, row }: any) => (
-        <div className={`flex items-center justify-between font-semibold tabular-nums transition-colors w-full ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>
-          <span className={`text-[10px] opacity-40 ${row.getIsSelected() ? 'text-green-400' : 'text-gray-400'}`}>Rp</span>
+        <div className={`flex items-center justify-between font-semibold tabular-nums transition-colors w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>
+          <span className={`text-[10px] opacity-40 ${row.getIsSelected() ? 'text-emerald-400' : 'text-gray-400'}`}>Rp</span>
           <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
         </div>
       )
@@ -397,8 +397,8 @@ export default function BOMClient() {
       size: 160,
       meta: { align: 'right' },
       cell: ({ getValue, row }: any) => (
-        <div className={`flex items-center justify-between font-semibold tabular-nums transition-colors w-full ${row.getIsSelected() ? 'text-green-800' : 'text-black'}`}>
-          <span className={`text-[10px] opacity-40 ${row.getIsSelected() ? 'text-green-400' : 'text-black'}`}>Rp</span>
+        <div className={`flex items-center justify-between font-semibold tabular-nums transition-colors w-full ${row.getIsSelected() ? 'text-emerald-800' : 'text-black'}`}>
+          <span className={`text-[10px] opacity-40 ${row.getIsSelected() ? 'text-emerald-400' : 'text-black'}`}>Rp</span>
           <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
         </div>
       )
@@ -407,25 +407,25 @@ export default function BOMClient() {
       accessorKey: 'spesifikasi',
       header: 'Spesifikasi',
       size: 400,
-      cell: ({ getValue, row }: any) => <span className={`font-medium transition-colors ${row.getIsSelected() ? 'text-green-800' : 'text-gray-700'} text-[11px]`}>{String(getValue() || '—')}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-800' : 'text-gray-700'} text-[11px]`}>{String(getValue() || '—')}</span>
     },
     {
       accessorKey: 'faktur_prd',
       header: 'Faktur Prd',
       size: 250,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-green-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
     },
     {
       accessorKey: 'faktur_sph',
       header: 'Faktur SPH',
       size: 250,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-green-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
     },
     {
       accessorKey: 'cmd',
       header: 'CMD',
       size: 250,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-green-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
     },
     {
       accessorKey: 'detil',
@@ -444,7 +444,7 @@ export default function BOMClient() {
         cell: ({ getValue }: any) => {
           const val = String(getValue());
           return (
-            <span className={`font-bold text-[10px] px-2.5 py-1 rounded-lg border ${val === '1' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>
+            <span className={`font-bold text-[10px] px-2.5 py-1 rounded-lg border ${val === '1' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>
               {val === '1' ? 'ACTIVE' : 'INACTIVE'}
             </span>
           );
@@ -454,7 +454,7 @@ export default function BOMClient() {
       accessorKey: 'recid',
       header: 'RecId',
       size: 100,
-      cell: ({ getValue, row }: any) => <span className={`font-mono text-[11px] ${row.getIsSelected() ? 'text-green-600' : 'text-gray-400'}`}>{String(getValue())}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-mono text-[11px] ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-400'}`}>{String(getValue())}</span>
     }
   ], []);
 
@@ -473,16 +473,6 @@ export default function BOMClient() {
         progress={isBatching ? batchProgress : undefined}
         statusText={isBatching ? batchStatus : undefined}
         fetchText="Tarik Data"
-        action={
-          <button
-            onClick={handleExportExcel}
-            disabled={exporting || !(data?.length)}
-            className="flex items-center justify-center gap-1.5 min-w-[140px] px-5 py-2.5 text-[12px] font-bold text-emerald-700 bg-white border-2 border-emerald-200 hover:bg-emerald-50 rounded-xl shadow-sm shadow-emerald-900/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {exporting ? <Loader2 size={16} className="animate-spin" /> : <FileSpreadsheet size={16} />}
-            Excel
-          </button>
-        }
       />
 
       {error && (
@@ -495,7 +485,7 @@ export default function BOMClient() {
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
-            <ScrapingHeader title="Hasil Scrapping Bill of Material Produksi" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} activityLogTable="bill_of_materials" />
+            <ScrapingHeader title="Hasil Scrapping Bill of Material Produksi" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
 
             <div className="flex items-center gap-2 shrink-0">
               <ColumnToggle
@@ -510,7 +500,7 @@ export default function BOMClient() {
             </div>
 
             {loading && (data?.length || 0) > 0 && (
-              <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse leading-none">
+              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Memproses Data...</span>
               </div>

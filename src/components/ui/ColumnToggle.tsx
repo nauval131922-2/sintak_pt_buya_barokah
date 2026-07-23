@@ -36,7 +36,7 @@ export function ColumnToggle({
         onClick={() => setOpen((o) => !o)}
         className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-all list-none select-none cursor-pointer shadow-sm shadow-emerald-900/5"
       >
-        <SlidersHorizontal size={13} />
+        <SlidersHorizontal size={14} />
         Kolom
         {hiddenCount > 0 && (
           <span className="ml-0.5 px-1.5 py-0.5 text-[9px] bg-emerald-600 text-white rounded-full">

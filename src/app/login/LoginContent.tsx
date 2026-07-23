@@ -65,7 +65,7 @@ export default function LoginContent() {
           <h1 className="text-6xl font-black tracking-tight leading-none mb-4 drop-shadow-sm">
             SINTAK
           </h1>
-          <p className="text-green-100 text-sm font-semibold tracking-[0.2em] uppercase mb-12">
+          <p className="text-emerald-100 text-sm font-semibold tracking-[0.2em] uppercase mb-12">
             Sistem Informasi Cetak
           </p>
 
@@ -77,8 +77,8 @@ export default function LoginContent() {
               'Tracking Manufaktur',
               'Rekap dan Analisa Hasil Produksi',
             ].map((feat) => (
-              <div key={feat} className="flex items-center gap-3 text-green-50">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-300 shrink-0" />
+              <div key={feat} className="flex items-center gap-3 text-emerald-50">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-300 shrink-0" />
                 <span className="text-sm font-medium">{feat}</span>
               </div>
             ))}
@@ -86,7 +86,7 @@ export default function LoginContent() {
         </div>
 
         {/* Bottom label */}
-        <p className="absolute bottom-8 text-[11px] text-green-200/60 font-medium tracking-wide">
+        <p className="absolute bottom-8 text-[11px] text-emerald-200/60 font-medium tracking-wide">
           PT. Buya Barokah — Divisi Percetakan
         </p>
       </div>
@@ -97,7 +97,7 @@ export default function LoginContent() {
         {/* Mobile brand header */}
         <div className="lg:hidden text-center mb-10">
           <div className="inline-flex items-center gap-2.5 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center">
               <Printer size={16} className="text-white" />
             </div>
             <h1 className="text-2xl font-black text-gray-800 tracking-tight uppercase">SINTAK</h1>
@@ -133,13 +133,13 @@ export default function LoginContent() {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <User size={16} className="text-gray-300 group-focus-within:text-green-500 transition-colors" />
+                  <User size={16} className="text-gray-300 group-focus-within:text-emerald-500 transition-colors" />
                 </div>
                 <input
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="block w-full h-12 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 focus:bg-white transition-all text-gray-700 placeholder:text-gray-300"
+                  className="block w-full h-12 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:bg-white transition-all text-gray-700 placeholder:text-gray-300"
                   placeholder="Masukkan username"
                   required
                 />
@@ -153,13 +153,13 @@ export default function LoginContent() {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <KeyRound size={16} className="text-gray-300 group-focus-within:text-green-500 transition-colors" />
+                  <KeyRound size={16} className="text-gray-300 group-focus-within:text-emerald-500 transition-colors" />
                 </div>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full h-12 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500 focus:bg-white transition-all text-gray-700 placeholder:text-gray-300"
+                  className="block w-full h-12 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:bg-white transition-all text-gray-700 placeholder:text-gray-300"
                   placeholder="••••••••"
                   required
                 />
@@ -170,7 +170,7 @@ export default function LoginContent() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full h-12 mt-2 flex items-center justify-center gap-2.5 px-6 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-sm shadow-md shadow-green-200 hover:shadow-green-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+              className="w-full h-12 mt-2 flex items-center justify-center gap-2.5 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md shadow-emerald-200 hover:shadow-emerald-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
             >
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

@@ -225,19 +225,19 @@ export default function PRClient() {
       accessorKey: 'id',
       header: 'ID',
       size: 80,
-      cell: ({ getValue, row }: any) => <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-400'}`}>{String(getValue())}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-400'}`}>{String(getValue())}</span>
     },
     {
       accessorKey: 'tgl',
       header: 'Tanggal',
       size: 140,
-      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>{formatIndoDateStr(getValue() as string)}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>{formatIndoDateStr(getValue() as string)}</span>
     },
     {
       accessorKey: 'faktur',
       header: 'Faktur PR',
       size: 220,
-      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-600' : 'text-gray-700'}`}>{highlightText(String(getValue()), highlightQuery)}</span>
+      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-700'}`}>{highlightText(String(getValue()), highlightQuery)}</span>
     },
     {
       accessorKey: 'status',
@@ -251,7 +251,7 @@ export default function PRClient() {
             px-3 py-1 rounded-full text-[10px] font-bold border
             ${isClosed 
               ? 'bg-gray-50 text-gray-400 border-gray-100' 
-              : 'bg-green-50 text-green-600 border-green-100 shadow-sm shadow-green-900/5'}
+              : 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-sm shadow-emerald-900/5'}
           `}>
             {val || 'OPEN'}
           </span>
@@ -262,7 +262,7 @@ export default function PRClient() {
         accessorKey: 'updated_at', 
         header: 'Tgl Update', 
         size: 140, 
-        cell: ({ getValue, row }: any) => <span className={`text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>{String(getValue() || '–')}</span> 
+        cell: ({ getValue, row }: any) => <span className={`text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>{String(getValue() || '–')}</span> 
     },
     { 
         accessorKey: 'username', 
@@ -274,7 +274,7 @@ export default function PRClient() {
         accessorKey: 'edited_at', 
         header: 'Tgl Edit', 
         size: 140, 
-        cell: ({ getValue, row }: any) => <span className={`text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>{String(getValue() || '–')}</span> 
+        cell: ({ getValue, row }: any) => <span className={`text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>{String(getValue() || '–')}</span> 
     },
     { 
         accessorKey: 'username_edited', 
@@ -286,7 +286,7 @@ export default function PRClient() {
         accessorKey: 'deleted_at', 
         header: 'Tgl Hapus', 
         size: 140, 
-        cell: ({ getValue, row }: any) => <span className={`text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>{String(getValue() || '–')}</span> 
+        cell: ({ getValue, row }: any) => <span className={`text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>{String(getValue() || '–')}</span> 
     },
     { 
         accessorKey: 'username_deleted', 
@@ -298,31 +298,31 @@ export default function PRClient() {
         accessorKey: 'faktur_spph',
         header: 'SPPH',
         size: 180,
-        cell: ({ getValue, row }: any) => <div className={`text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+        cell: ({ getValue, row }: any) => <div className={`text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
     },
     {
         accessorKey: 'faktur_po',
         header: 'PO',
         size: 180,
-        cell: ({ getValue, row }: any) => <div className={`text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+        cell: ({ getValue, row }: any) => <div className={`text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
     },
     {
         accessorKey: 'keterangan',
         header: 'Keterangan',
         size: 200,
-        cell: ({ getValue, row }: any) => <span className={`text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`}>{highlightText(String(getValue() || '–'), highlightQuery)}</span> 
+        cell: ({ getValue, row }: any) => <span className={`text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>{highlightText(String(getValue() || '–'), highlightQuery)}</span> 
     },
     {
         accessorKey: 'cmd',
         header: 'Aksi',
         size: 100,
-        cell: ({ getValue, row }: any) => <div className={`flex justify-center text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+        cell: ({ getValue, row }: any) => <div className={`flex justify-center text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
     },
     {
         accessorKey: 'detil',
         header: 'Detil',
         size: 100,
-        cell: ({ getValue, row }: any) => <div className={`flex justify-center text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-green-700' : 'text-gray-700'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+        cell: ({ getValue, row }: any) => <div className={`flex justify-center text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
     },
     { 
         accessorKey: 'recid', 
@@ -359,10 +359,10 @@ export default function PRClient() {
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
-            <ScrapingHeader title="Hasil Scrapping Purchase Request" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} activityLogTable="purchase_requests" />
+            <ScrapingHeader title="Hasil Scrapping Purchase Request" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
 
             {loading && data && data.length > 0 && (
-              <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse leading-none">
+              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Syncing...</span>
               </div>

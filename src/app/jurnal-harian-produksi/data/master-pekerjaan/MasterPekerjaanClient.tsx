@@ -191,24 +191,24 @@ export default function MasterPekerjaanClient({ importInfo }: MasterPekerjaanCli
         accessorKey: 'no', 
         header: 'No.', 
         size: 80,
-        cell: ({ row }: any) => <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-green-700' : 'text-gray-400'}`}>{(page - 1) * PAGE_SIZE + (row.index + 1)}</span>
+        cell: ({ row }: any) => <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-400'}`}>{(page - 1) * PAGE_SIZE + (row.index + 1)}</span>
       },
       { 
         accessorKey: 'code', 
         header: 'Kode', 
         size: 180,
-        cell: ({ getValue, row }: any) => <span className={`font-mono text-[12px] font-bold tracking-tight transition-colors ${row.getIsSelected() ? 'text-green-600' : 'text-gray-700'}`}>{String(getValue())}</span> 
+        cell: ({ getValue, row }: any) => <span className={`font-mono text-[12px] font-bold tracking-tight transition-colors ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-700'}`}>{String(getValue())}</span> 
       },
       { 
         accessorKey: 'name', 
         header: 'Nama Pekerjaan', 
         size: 320,
-        cell: ({ getValue, row }: any) => <span className={`text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-green-900' : 'text-gray-800'}`}>{String(getValue())}</span> 
+        cell: ({ getValue, row }: any) => <span className={`text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'}`}>{String(getValue())}</span> 
       },
       { 
         accessorKey: 'target_value', header: 'Target', size: 90, meta: { align: 'right' },
         cell: ({ getValue, row }: any) => (
-          <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-green-700' : 'text-green-700'}`}>
+          <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-emerald-700'}`}>
             <span>{Number(getValue() || 0).toLocaleString('id-ID')}</span>
           </div>
         )
@@ -309,22 +309,24 @@ export default function MasterPekerjaanClient({ importInfo }: MasterPekerjaanCli
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-6 animate-in fade-in duration-700 overflow-hidden">
       {/* Top Header Row: Upload & Controls */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 shrink-0 h-[105px]">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 shrink-0">
          {/* Upload Card */}
          <MasterPekerjaanUpload />
 
          {/* Filters Card */}
-         <div className="bg-white rounded-2xl border border-gray-100 px-6 py-4 shadow-sm shadow-green-900/5 flex flex-col justify-center relative z-50 h-full">
-          <div className="flex items-center gap-4">
+         <div className="bg-white rounded-xl border border-gray-100 px-4 py-2.5 shadow-sm shadow-emerald-900/5 relative z-50">
+          <div className="flex items-center gap-2 w-full">
                <SearchableDropdown
                  id="mp-category"
                  label="Kategori"
                  value={categoryFilter}
                  items={CATEGORIES}
-                 allLabel="Semua Kategori"
+                 allLabel="Semua"
                  searchPlaceholder="Cari kategori..."
-                 panelWidth="w-[260px]"
-                 icon={<Filter size={16} className={categoryFilter ? 'text-green-600' : 'text-gray-400'} />}
+                 triggerWidth="flex-1"
+                 panelWidth="w-[220px]"
+                 compact
+                 icon={<Filter size={14} className={categoryFilter ? 'text-emerald-600' : 'text-gray-400'} />}
                  onChange={(val) => {
                    setCategoryFilter(val);
                    setSubCategoryFilter('');
@@ -335,13 +337,15 @@ export default function MasterPekerjaanClient({ importInfo }: MasterPekerjaanCli
 
                <SearchableDropdown
                  id="mp-subcategory"
-                 label="Sub Kategori"
+                 label="Sub"
                  value={subCategoryFilter}
                  items={availableSubs}
-                 allLabel="Semua Sub"
-                 searchPlaceholder="Cari sub-kategori..."
-                 panelWidth="w-[260px]"
-                 icon={<Filter size={16} className={subCategoryFilter ? 'text-green-600' : 'text-gray-400'} />}
+                 allLabel="Semua"
+                 searchPlaceholder="Cari sub..."
+                 triggerWidth="flex-1"
+                 panelWidth="w-[220px]"
+                 compact
+                 icon={<Filter size={14} className={subCategoryFilter ? 'text-emerald-600' : 'text-gray-400'} />}
                  onChange={(val) => {
                    setSubCategoryFilter(val);
                    setGroupFilter('');
@@ -354,10 +358,12 @@ export default function MasterPekerjaanClient({ importInfo }: MasterPekerjaanCli
                  label="Grup"
                  value={groupFilter}
                  items={availableGroups}
-                 allLabel="Semua Grup"
+                 allLabel="Semua"
                  searchPlaceholder="Cari grup..."
-                 panelWidth="w-[260px]"
-                 icon={<Filter size={16} className={groupFilter ? 'text-green-600' : 'text-gray-400'} />}
+                 triggerWidth="flex-1"
+                 panelWidth="w-[220px]"
+                 compact
+                 icon={<Filter size={14} className={groupFilter ? 'text-emerald-600' : 'text-gray-400'} />}
                  onChange={(val) => {
                    setGroupFilter(val);
                    setPage(1);
@@ -365,21 +371,21 @@ export default function MasterPekerjaanClient({ importInfo }: MasterPekerjaanCli
                />
 
                {/* Reset Filter Button */}
-               <div className="flex flex-col gap-2">
-                  <span className="text-[13px] font-semibold text-transparent tracking-tight ml-1 select-none">Reset</span>
-                  <button
-                    onClick={() => {
-                      setCategoryFilter('');
-                      setSubCategoryFilter('');
-                      setGroupFilter('');
-                      setSearchQuery('');
-                      setPage(1);
-                    }}
-                    className="h-11 px-6 bg-white hover:bg-rose-50 text-gray-400 hover:text-rose-600 border border-gray-100 hover:border-rose-100 rounded-lg shadow-sm transition-all flex items-center gap-2.5 text-[12px] font-bold tracking-tight"
-                  >
-                    <RotateCcw size={16} />
-                    Reset
-                  </button>
+               <div className="flex flex-col gap-1">
+                 <span className="text-[11px] font-semibold text-transparent ml-1 tracking-tight select-none">.</span>
+                 <button
+                   onClick={() => {
+                     setCategoryFilter('');
+                     setSubCategoryFilter('');
+                     setGroupFilter('');
+                     setSearchQuery('');
+                     setPage(1);
+                   }}
+                   className="h-10 px-3 bg-white hover:bg-rose-50 text-gray-400 hover:text-rose-600 border border-gray-100 hover:border-rose-100 rounded-lg shadow-sm transition-all flex items-center gap-1.5 text-[10px] font-bold whitespace-nowrap"
+                 >
+                   <RotateCcw size={14} />
+                   Reset
+                 </button>
                </div>
             </div>
          </div>
@@ -392,7 +398,7 @@ export default function MasterPekerjaanClient({ importInfo }: MasterPekerjaanCli
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
             <div className="flex items-center gap-5">
                <h3 className="text-[14px] font-bold text-gray-800 flex items-center gap-3 leading-none tracking-tight">
-                  <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shadow-sm">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
                     <Calculator size={16} />
                   </div>
                   <span>Master Pekerjaan</span>
@@ -400,7 +406,7 @@ export default function MasterPekerjaanClient({ importInfo }: MasterPekerjaanCli
                <ImportInfo info={importInfo} />
             </div>
             {loading && (data?.length || 0) > 0 && (
-                <div className="text-[10px] font-bold text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
+                <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse uppercase tracking-widest leading-none">
                   <Loader2 size={12} className="animate-spin" />
                   <span>Loading Data...</span>
                 </div>
@@ -420,7 +426,7 @@ export default function MasterPekerjaanClient({ importInfo }: MasterPekerjaanCli
         {/* Main Table Context */}
         <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative">
          {error ? (
-           <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-white rounded-2xl border border-gray-100 shadow-sm shadow-green-900/5">
+           <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-white rounded-2xl border border-gray-100 shadow-sm shadow-emerald-900/5">
               <div className="w-20 h-20 bg-rose-50 rounded-2xl border border-rose-100 shadow-sm flex items-center justify-center mb-6">
                   <AlertCircle className="text-rose-500" size={40} />
               </div>
@@ -428,13 +434,13 @@ export default function MasterPekerjaanClient({ importInfo }: MasterPekerjaanCli
               <p className="text-gray-500 text-sm mb-8 max-w-xs">{error}</p>
               <button 
                 onClick={() => setRefreshKey(k => k + 1)}
-                className="px-10 py-4 bg-emerald-600 text-white font-bold rounded-xl transition-all shadow-sm shadow-green-900/10 hover:bg-emerald-700 hover:-translate-y-1 hover:shadow-sm hover:shadow-green-900/20 active:translate-y-0 uppercase tracking-widest text-[11px]"
+                className="px-10 py-4 bg-emerald-600 text-white font-bold rounded-xl transition-all shadow-sm shadow-emerald-900/10 hover:bg-emerald-700 hover:-translate-y-1 hover:shadow-sm hover:shadow-emerald-900/20 active:translate-y-0 uppercase tracking-widest text-[11px]"
               >
                 Coba Lagi
               </button>
            </div>
          ) : data !== null && data.length === 0 ? (
-           <div className="flex flex-col items-center justify-center flex-1 gap-5 rounded-2xl border border-gray-100 bg-white shadow-sm shadow-green-900/5">
+           <div className="flex flex-col items-center justify-center flex-1 gap-5 rounded-2xl border border-gray-100 bg-white shadow-sm shadow-emerald-900/5">
               <div className="w-20 h-20 bg-gray-50 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-center mb-2">
                 <Database className="text-gray-400" size={40} strokeWidth={1.5} />
               </div>

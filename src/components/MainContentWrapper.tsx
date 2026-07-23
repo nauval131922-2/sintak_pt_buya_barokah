@@ -99,14 +99,14 @@ function MainContentInner({
               className="xl:hidden flex flex-col gap-1 p-2 -ml-2 mt-1 rounded-xl hover:bg-gray-100 text-gray-500 transition-all shrink-0 group active:scale-95"
               title="Menu"
             >
-              <div className="w-5 h-0.5 bg-gray-400 group-hover:bg-green-600 rounded-full transition-all" />
-              <div className="w-3 h-0.5 bg-gray-400 group-hover:bg-green-600 rounded-full transition-all" />
-              <div className="w-5 h-0.5 bg-gray-400 group-hover:bg-green-600 rounded-full transition-all" />
+              <div className="w-5 h-0.5 bg-gray-400 group-hover:bg-emerald-600 rounded-full transition-all" />
+              <div className="w-3 h-0.5 bg-gray-400 group-hover:bg-emerald-600 rounded-full transition-all" />
+              <div className="w-5 h-0.5 bg-gray-400 group-hover:bg-emerald-600 rounded-full transition-all" />
             </button>
 
             {/* Title Section */}
             <div className="flex flex-col min-w-0 flex-1">
-              <div className="flex items-center gap-2 border-l-4 border-green-500 pl-3">
+              <div className="flex items-center gap-2 border-l-4 border-emerald-500 pl-3">
                 <h1 className="text-[22px] font-extrabold text-gray-800 tracking-tight leading-none truncate">
                   {title || 'SINTAK ERP'}
                 </h1>

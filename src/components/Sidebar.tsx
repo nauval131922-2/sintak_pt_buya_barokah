@@ -276,7 +276,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
     return `
       group flex items-center gap-3 px-3 h-9 rounded-[8px] transition-all text-[12.5px] font-semibold
       ${!isExpanded ? 'justify-center px-0 w-9 mx-auto' : 'w-full'}
-      ${isActive ? 'bg-green-50 text-green-600 font-black sidebar-active' : 'text-gray-500 hover:bg-green-50 hover:text-green-600'}
+      ${isActive ? 'bg-emerald-50 text-emerald-600 font-black sidebar-active' : 'text-gray-500 hover:bg-emerald-50 hover:text-emerald-600'}
     `;
   };
 
@@ -327,7 +327,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
           title="Drag untuk resize · Double-click untuk auto-fit"
           className="absolute -right-1.5 top-0 w-3 h-full cursor-col-resize z-30 group"
         >
-          <div className={`w-0.5 h-full mx-auto transition-colors ${isResizing ? 'bg-green-500' : 'group-hover:bg-green-200'}`} />
+          <div className={`w-0.5 h-full mx-auto transition-colors ${isResizing ? 'bg-emerald-500' : 'group-hover:bg-emerald-200'}`} />
         </div>
       )}
 
@@ -359,7 +359,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
 
       <button
         onClick={() => { setIsCollapsed(!isCollapsed); setIsHovered(false); }}
-        className={`absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white border border-gray-100 rounded-full flex items-center justify-center text-gray-400 shadow-sm hover:text-green-600 z-50 transition-all xl:flex hidden ${
+        className={`absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white border border-gray-100 rounded-full flex items-center justify-center text-gray-400 shadow-sm hover:text-emerald-600 z-50 transition-all xl:flex hidden ${
           (!isExpanded && isCollapsed && !isTouchDevice) ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
       >
@@ -702,12 +702,12 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                 isProfileOpen ? 'bg-white shadow-sm ring-1 ring-black/5' : ''
               } ${!isExpanded ? 'justify-center p-1' : ''}`}
             >
-              <div className="w-8 h-8 rounded-[8px] bg-green-100 flex items-center justify-center overflow-hidden shrink-0 border border-green-200">
+              <div className="w-8 h-8 rounded-[8px] bg-emerald-100 flex items-center justify-center overflow-hidden shrink-0 border border-emerald-200">
                 {user.photo ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={user.photo} alt={user.name} className="w-full h-full object-cover" />
                 ) : (
-                  <User size={14} className="text-green-600" />
+                  <User size={14} className="text-emerald-600" />
                 )}
               </div>
               {isExpanded && (
@@ -778,10 +778,10 @@ function AccordionMenu({
       <div className="flex justify-center my-0.5">
         <div
           className={`w-9 h-9 flex items-center justify-center rounded-[8px] transition-all
-            ${isActive ? 'bg-green-50 text-green-600' : 'text-gray-400 hover:bg-green-50 hover:text-green-600'}
+            ${isActive ? 'bg-emerald-50 text-emerald-600' : 'text-gray-400 hover:bg-emerald-50 hover:text-emerald-600'}
           `}
         >
-          <span className={isActive ? 'text-green-600' : ''}>{icon}</span>
+          <span className={isActive ? 'text-emerald-600' : ''}>{icon}</span>
         </div>
       </div>
     );
@@ -794,16 +794,16 @@ function AccordionMenu({
         onClick={() => toggleMenuId(menuId)}
         className={`
           group flex items-center gap-3 px-3 h-9 rounded-[8px] transition-all text-[12.5px] font-semibold w-full
-          ${isActive && !isOpen ? 'bg-green-50 text-green-600' : isOpen ? 'bg-green-100 text-green-700' : 'text-gray-500 hover:bg-green-50 hover:text-green-600'}
+          ${isActive && !isOpen ? 'bg-emerald-50 text-emerald-600' : isOpen ? 'bg-emerald-100 text-emerald-700' : 'text-gray-500 hover:bg-emerald-50 hover:text-emerald-600'}
         `}
       >
-        <span className={`transition-colors shrink-0 ${isOpen ? 'text-green-700' : isActive ? 'text-green-600' : 'text-gray-400 group-hover:text-green-600'}`}>
+        <span className={`transition-colors shrink-0 ${isOpen ? 'text-emerald-700' : isActive ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-600'}`}>
           {icon}
         </span>
         <span className="flex-1 text-left truncate">{label}</span>
         <ChevronDown
           size={14}
-          className={`transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180 text-green-600' : isActive ? 'text-green-500' : 'text-gray-300'}`}
+          className={`transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180 text-emerald-600' : isActive ? 'text-emerald-500' : 'text-gray-300'}`}
         />
       </button>
 
@@ -843,10 +843,10 @@ function AccordionItem({ item, depth }: { item: MenuItem; depth: number }) {
         href={item.href}
         className={`
           flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-[12px] font-bold transition-all w-full
-          ${isActive ? 'bg-green-50 text-green-600 font-black sidebar-active' : 'text-gray-500 hover:bg-gray-50 hover:text-green-600'}
+          ${isActive ? 'bg-emerald-50 text-emerald-600 font-black sidebar-active' : 'text-gray-500 hover:bg-gray-50 hover:text-emerald-600'}
         `}
       >
-        <span className={`shrink-0 ${isActive ? 'text-green-600' : 'text-gray-400'}`}>{item.icon}</span>
+        <span className={`shrink-0 ${isActive ? 'text-emerald-600' : 'text-gray-400'}`}>{item.icon}</span>
         <span className="truncate">{item.label}</span>
       </Link>
     );
@@ -858,14 +858,14 @@ function AccordionItem({ item, depth }: { item: MenuItem; depth: number }) {
         onClick={() => setLocalOpen(prev => !prev)}
         className={`
           flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-[12px] font-bold transition-all w-full
-          ${isOpen ? 'bg-green-100 text-green-700' : isChildActive ? 'bg-green-50 text-green-600' : 'text-gray-500 hover:bg-gray-50 hover:text-green-600'}
+          ${isOpen ? 'bg-emerald-100 text-emerald-700' : isChildActive ? 'bg-emerald-50 text-emerald-600' : 'text-gray-500 hover:bg-gray-50 hover:text-emerald-600'}
         `}
       >
-        <span className={`shrink-0 ${isOpen ? 'text-green-700' : isChildActive ? 'text-green-600' : 'text-gray-400'}`}>{item.icon}</span>
+        <span className={`shrink-0 ${isOpen ? 'text-emerald-700' : isChildActive ? 'text-emerald-600' : 'text-gray-400'}`}>{item.icon}</span>
         <span className="flex-1 text-left truncate">{item.label}</span>
         <ChevronDown
           size={12}
-          className={`shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 text-green-600' : isChildActive ? 'text-green-500' : 'text-gray-300'}`}
+          className={`shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 text-emerald-600' : isChildActive ? 'text-emerald-500' : 'text-gray-300'}`}
         />
       </button>
       {isOpen && (

@@ -68,7 +68,7 @@ function ToastItem({ message, type, duration = 3000, onClose }: ToastItemProps) 
   }, [duration, onClose]);
 
   const styles: Record<ToastType, { border: string; icon: string; strip: string; iconBg: string }> = {
-    success: { border: 'border-green-100',  icon: 'text-green-500',  strip: 'bg-green-500',  iconBg: 'bg-green-50' },
+    success: { border: 'border-emerald-100',  icon: 'text-emerald-500',  strip: 'bg-emerald-500',  iconBg: 'bg-emerald-50' },
     error:   { border: 'border-red-100',    icon: 'text-red-500',    strip: 'bg-red-500',    iconBg: 'bg-red-50' },
     info:    { border: 'border-blue-100',   icon: 'text-blue-500',   strip: 'bg-blue-500',   iconBg: 'bg-blue-50' },
     warning: { border: 'border-amber-100',  icon: 'text-amber-500',  strip: 'bg-amber-500',  iconBg: 'bg-amber-50' },
@@ -162,7 +162,7 @@ export default function Toast({ message, type = 'success', duration = 3000, onCl
   if (!message && !isShowing) return null;
 
   const styles: Record<ToastType, { border: string; icon: string; strip: string; iconBg: string }> = {
-    success: { border: 'border-green-100',  icon: 'text-green-500',  strip: 'bg-green-500',  iconBg: 'bg-green-50' },
+    success: { border: 'border-emerald-100',  icon: 'text-emerald-500',  strip: 'bg-emerald-500',  iconBg: 'bg-emerald-50' },
     error:   { border: 'border-red-100',    icon: 'text-red-500',    strip: 'bg-red-500',    iconBg: 'bg-red-50' },
     info:    { border: 'border-blue-100',   icon: 'text-blue-500',   strip: 'bg-blue-500',   iconBg: 'bg-blue-50' },
     warning: { border: 'border-amber-100',  icon: 'text-amber-500',  strip: 'bg-amber-500',  iconBg: 'bg-amber-50' },

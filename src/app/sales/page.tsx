@@ -21,7 +21,7 @@ export default async function SalesReportPage() {
               href="https://buyapercetakan.mdthoster.com/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-green-600 hover:underline font-bold"
+              className="text-emerald-600 hover:underline font-bold"
             >
               Digit
             </a>

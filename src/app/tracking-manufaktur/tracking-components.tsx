@@ -20,7 +20,7 @@ export const HighlightedText = React.memo(
           regex.test(part) ? (
             <mark
               key={i}
-              className="bg-green-100 text-green-800 px-0.5 font-bold rounded-sm"
+              className="bg-emerald-100 text-emerald-800 px-0.5 font-bold rounded-sm"
             >
               {part}
             </mark>
@@ -129,7 +129,7 @@ const RenderAllFieldsRaw = ({
           <div className="w-[120px] shrink-0 font-medium text-gray-400">
             {toTitleCase(key)}
           </div>
-          <div className="flex-1 text-gray-800 font-bold break-words group-hover/field:text-green-600 transition-colors">
+          <div className="flex-1 text-gray-800 font-bold break-words group-hover/field:text-emerald-600 transition-colors">
             <DataField
               v={val}
               isRaw={rawFields.includes(key.toLowerCase())}
@@ -305,19 +305,19 @@ export const RenderColumnContent = React.memo(
     return (
       <div className="flex flex-col h-full min-h-0">
         {(totalCount === 0 || extraLabel || subLabels.length > 0) && (
-          <div className="mt-2.5 mb-2 px-3 py-2.5 bg-green-50 border border-green-200 rounded-lg shadow-sm">
-            <p className="text-[11px] text-green-900 leading-tight">
-              <span className="font-bold underline decoration-green-300 underline-offset-4">
+          <div className="mt-2.5 mb-2 px-3 py-2.5 bg-emerald-50 border border-emerald-200 rounded-lg shadow-sm">
+            <p className="text-[11px] text-emerald-900 leading-tight">
+              <span className="font-bold underline decoration-emerald-300 underline-offset-4">
                 {totalCount} Data {label}
               </span>
             </p>
             {extraLabel && (
-              <p className="text-[10px] text-green-700 mt-1.5 font-medium italic">
+              <p className="text-[10px] text-emerald-700 mt-1.5 font-medium italic">
                 {extraLabel}
               </p>
             )}
             {subLabels.length > 0 && (
-              <div className="mt-2 pt-2 border-t border-green-100 flex flex-col gap-1">
+              <div className="mt-2 pt-2 border-t border-emerald-100 flex flex-col gap-1">
                 {subLabels.map((sl: string, i: number) => {
                   const isSubItem = /^\d+\./.test(sl.trim());
                   return (
@@ -326,7 +326,7 @@ export const RenderColumnContent = React.memo(
                       className={`flex items-start gap-1.5 text-[10px] text-gray-800 leading-tight ${isSubItem ? 'ml-4' : ''}`}
                     >
                       {!isSubItem && (
-                        <span className="text-green-600 font-bold shrink-0">
+                        <span className="text-emerald-600 font-bold shrink-0">
                           •
                         </span>
                       )}

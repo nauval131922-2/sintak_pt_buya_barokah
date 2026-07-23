@@ -23,7 +23,7 @@ export default async function PRPage() {
               href="https://buyapercetakan.mdthoster.com/#cGIvdHJwcg=="
               target="_blank"
               rel="noopener noreferrer"
-              className="text-green-600 hover:underline font-bold"
+              className="text-emerald-600 hover:underline font-bold"
             >
               Digit
             </a>

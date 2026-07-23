@@ -86,7 +86,7 @@ async function DashboardStats() {
       sub: "Konversi Data",
       href: "/settings/konversi-data/jurnal-harian-produksi",
       icon: ClipboardList,
-      color: "text-green-600 bg-green-50 border-green-100",
+      color: "text-emerald-600 bg-emerald-50 border-emerald-100",
     },
   ];
 

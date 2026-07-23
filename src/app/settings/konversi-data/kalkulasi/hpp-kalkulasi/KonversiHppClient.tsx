@@ -86,7 +86,7 @@ export default function KonversiHppClient() {
       {/* Upload card */}
       <div className="relative bg-white border border-gray-100 shadow-sm rounded-xl px-6 py-4 flex items-center justify-between gap-6">
         <div className="flex items-center gap-5 flex-1">
-          <div className="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
             <Upload size={24} />
           </div>
           <div className="min-w-0">
@@ -108,7 +108,7 @@ export default function KonversiHppClient() {
           <button
             onClick={() => { if (fileRef.current) fileRef.current.value = ''; fileRef.current?.click(); }}
             disabled={status === 'loading'}
-            className="px-6 h-11 bg-green-600 hover:bg-green-700 text-white text-[13px] font-bold rounded-lg transition-all flex items-center gap-2 disabled:opacity-70 shadow-sm"
+            className="px-6 h-11 bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold rounded-lg transition-all flex items-center gap-2 disabled:opacity-70 shadow-sm"
           >
             {status === 'loading' ? <Loader2 size={18} className="animate-spin" /> : <FileSpreadsheet size={18} />}
             <span>{status === 'loading' ? 'Mengunggah...' : 'Pilih & Upload Excel'}</span>

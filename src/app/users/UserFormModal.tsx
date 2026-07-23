@@ -168,9 +168,9 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
         <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
 
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-green-50 to-emerald-50 shrink-0 rounded-t-2xl">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-emerald-50 to-emerald-50 shrink-0 rounded-t-2xl">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-green-100 text-green-600 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
                 <UserCog size={18} />
               </div>
               <div>
@@ -207,13 +207,13 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
                 Nama Lengkap <span className="text-rose-400">*</span>
               </label>
               <div className="relative">
-                <User size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                 <input
                   ref={nameInputRef}
                   type="text"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-green-400 focus:outline-none transition-all placeholder:text-gray-300"
+                  className="w-full pl-8 pr-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all placeholder:text-gray-300"
                   placeholder="Contoh: Budi Santoso"
                   required
                 />
@@ -226,12 +226,12 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
                 Username <span className="text-rose-400">*</span>
               </label>
               <div className="relative">
-                <ShieldCheck size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <ShieldCheck size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                 <input
                   type="text"
                   value={username}
                   onChange={e => setUsername(e.target.value.toLowerCase().replace(/\s/g, ''))}
-                  className="w-full pl-8 pr-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-green-400 focus:outline-none transition-all lowercase placeholder:text-gray-300 placeholder:normal-case"
+                  className="w-full pl-8 pr-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all lowercase placeholder:text-gray-300 placeholder:normal-case"
                   placeholder="Contoh: budis"
                   required
                 />
@@ -251,16 +251,16 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
                 type="button"
                 onClick={() => isRoleDropdownOpen ? closeDropdown() : openDropdown()}
                 className={`w-full px-3.5 py-2.5 text-left bg-gray-50 border rounded-lg focus:outline-none transition-all text-[13px] font-medium flex items-center justify-between gap-2 ${
-                  isRoleDropdownOpen ? 'border-green-400 bg-white' : 'border-gray-200 hover:border-green-300'
+                  isRoleDropdownOpen ? 'border-emerald-400 bg-white' : 'border-gray-200 hover:border-emerald-300'
                 }`}
               >
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <UserCog size={13} className="text-gray-400 shrink-0" />
+                  <UserCog size={14} className="text-gray-400 shrink-0" />
                   <span className="truncate text-gray-700">{triggerLabel}</span>
                 </div>
                 <ChevronDown
                   size={15}
-                  className={`text-gray-400 shrink-0 transition-transform duration-200 ${isRoleDropdownOpen ? 'rotate-180 text-green-500' : ''}`}
+                  className={`text-gray-400 shrink-0 transition-transform duration-200 ${isRoleDropdownOpen ? 'rotate-180 text-emerald-500' : ''}`}
                 />
               </button>
 
@@ -270,7 +270,7 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
                   {selectedRoles.map(r => (
                     <span
                       key={r}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-50 border border-green-200 text-green-700 text-[11px] font-bold rounded-lg"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold rounded-lg"
                     >
                       {r === 'Super Admin' && <ShieldCheck size={10} />}
                       {r}
@@ -278,7 +278,7 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
                         <button
                           type="button"
                           onClick={() => toggleRole(r)}
-                          className="ml-0.5 text-green-500 hover:text-rose-500 transition-colors"
+                          className="ml-0.5 text-emerald-500 hover:text-rose-500 transition-colors"
                           aria-label={`Hapus role ${r}`}
                         >
                           <X size={10} />
@@ -300,13 +300,13 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
                 )}
               </label>
               <div className="relative">
-                <Lock size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   autoComplete="new-password"
-                  className="w-full pl-8 pr-10 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-green-400 focus:outline-none transition-all placeholder:text-gray-300"
+                  className="w-full pl-8 pr-10 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all placeholder:text-gray-300"
                   placeholder={isEditing ? 'Kosongkan jika tidak diubah' : 'Minimal 6 karakter'}
                   required={!isEditing}
                 />
@@ -340,8 +340,8 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
                   type="button"
                   onClick={() => setIsActive(prev => (prev === 1 ? 0 : 1))}
                   disabled={user.id === currentUserId}
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 ${
-                    isActive === 1 ? 'bg-green-600' : 'bg-gray-200'
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 ${
+                    isActive === 1 ? 'bg-emerald-600' : 'bg-gray-200'
                   }`}
                   title={user.id === currentUserId ? 'Anda tidak dapat menonaktifkan akun sendiri' : ''}
                 >
@@ -369,7 +369,7 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
               type="button"
               onClick={handleSubmit}
               disabled={loading}
-              className="px-6 py-2.5 text-[13px] font-bold text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 rounded-xl shadow-sm transition-all flex items-center gap-2"
+              className="px-6 py-2.5 text-[13px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-xl shadow-sm transition-all flex items-center gap-2"
             >
               {loading ? (
                 <><RefreshCw size={15} className="animate-spin" /> Menyimpan...</>
@@ -398,13 +398,13 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
                 placeholder="Cari role..."
                 value={roleSearchQuery}
                 onChange={e => setRoleSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-2 text-[12px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-green-400 focus:outline-none transition-all"
+                className="w-full pl-8 pr-3 py-2 text-[12px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all"
               />
             </div>
           </div>
           {/* Hint */}
-          <div className="px-3 py-1.5 bg-green-50 border-b border-green-100">
-            <p className="text-[10px] text-green-600 font-semibold">Klik untuk centang / hapus centang role</p>
+          <div className="px-3 py-1.5 bg-emerald-50 border-b border-emerald-100">
+            <p className="text-[10px] text-emerald-600 font-semibold">Klik untuk centang / hapus centang role</p>
           </div>
           {/* Options */}
           <div className="max-h-[200px] overflow-y-auto p-1.5 custom-scrollbar">
@@ -420,8 +420,8 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
                     onClick={() => toggleRole(cr)}
                     className={`w-full text-left px-3 py-2.5 text-[12px] font-semibold rounded-lg transition-all flex items-center gap-2.5 border ${
                       isChecked
-                        ? 'bg-green-600 text-white border-green-700 shadow-sm'
-                        : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-green-50 hover:text-green-700 hover:border-green-200'
+                        ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm'
+                        : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200'
                     }`}
                   >
                     {/* Checkbox visual */}
@@ -449,7 +449,7 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
             <button
               type="button"
               onClick={closeDropdown}
-              className="text-[11px] font-bold text-green-600 hover:text-green-700 transition-colors"
+              className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
             >
               Selesai
             </button>

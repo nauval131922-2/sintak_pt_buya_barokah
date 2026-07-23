@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Upload, FileSpreadsheet, XCircle, Loader2 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import ViewActivityLogLink from '@/components/ViewActivityLogLink';
+
 
 export default function MasterPekerjaanJurnalProduksiUpload() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -99,42 +99,43 @@ export default function MasterPekerjaanJurnalProduksiUpload() {
   };
 
   return (
-    <div className="h-full shrink-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <div className="relative bg-white border border-gray-100 shadow-sm shadow-green-900/5 rounded-xl px-6 py-4 flex items-center justify-between gap-6 z-50 h-full">
-        <div className="flex items-center gap-5 flex-1">
-          <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
-            <Upload className="text-green-600" size={24} />
+    <div className="shrink-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <div className="relative bg-white border border-gray-100 shadow-sm shadow-emerald-900/5 rounded-xl px-4 py-6 z-50">
+        <div className="flex items-center justify-between gap-3 w-full">
+          <div className="flex items-center gap-2.5 flex-1 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+              <Upload className="text-emerald-600" size={16} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-[12px] font-bold text-gray-800 leading-none tracking-tight">Upload Master Pekerjaan Jurnal Produksi</h3>
+              <p className="text-[10px] text-gray-400 font-medium leading-tight truncate mt-0.5">
+                Unggah file Excel 2026 JADWAL PRODUKSI HARIAN (Sheet: MASTER PEKERJAAN)
+              </p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <h3 className="text-sm font-bold text-gray-800 leading-none mb-1.5 tracking-tight">Upload Master Pekerjaan Jurnal Produksi</h3>
-            <p className="text-[11px] text-gray-400 font-medium leading-tight line-clamp-2">
-              Unggah file Excel 2026 JADWAL PRODUKSI HARIAN (Sheet: MASTER PEKERJAAN).
-            </p>
-          </div>
-        </div>
 
-        <div className="shrink-0 flex items-center gap-4">
-          <ViewActivityLogLink tableName="master_pekerjaan_jurnal_produksi" />
-          <input
-            type="file"
-            accept=".xls, .xlsx, .xlsm"
-            className="hidden"
-            ref={fileRef}
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
-          />
-          <button
-            onClick={() => fileRef.current?.click()}
-            disabled={status === 'loading'}
-            className={`
-              px-6 h-11 rounded-lg font-bold text-[13px] tracking-wide border transition-all flex items-center gap-2 shadow-sm
-              ${status === 'loading' 
-                ? 'bg-gray-50 text-gray-300 border-gray-100' 
-                : 'bg-green-600 text-white border-green-500 hover:bg-green-700 shadow-green-100'}
-            `}
-          >
-            {status === 'loading' ? <Loader2 size={18} className="animate-spin" /> : <FileSpreadsheet size={18} />}
-            <span>{status === 'loading' ? 'Mengunggah...' : 'Pilih & Upload Excel'}</span>
-          </button>
+          <div className="shrink-0 flex items-center gap-2">
+            <input
+              type="file"
+              accept=".xls, .xlsx, .xlsm"
+              className="hidden"
+              ref={fileRef}
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+            />
+            <button
+              onClick={() => fileRef.current?.click()}
+              disabled={status === 'loading'}
+              className={`
+                px-3.5 h-8 rounded-lg font-bold text-[10px] tracking-wide border transition-all flex items-center gap-1.5 shadow-sm
+                ${status === 'loading' 
+                  ? 'bg-gray-50 text-gray-300 border-gray-100' 
+                  : 'bg-emerald-600 text-white border-emerald-500 hover:bg-emerald-700 shadow-emerald-100'}
+              `}
+            >
+              {status === 'loading' ? <Loader2 size={14} className="animate-spin" /> : <FileSpreadsheet size={14} />}
+              <span>{status === 'loading' ? 'Mengunggah...' : 'Upload Excel'}</span>
+            </button>
+          </div>
         </div>
 
         {status === 'error' && (
@@ -172,7 +173,7 @@ export default function MasterPekerjaanJurnalProduksiUpload() {
                   value={typedPassword}
                   onChange={(e) => setTypedPassword(e.target.value)}
                   placeholder="Masukkan password excel..."
-                  className="h-11 px-3 bg-gray-50 border border-gray-200 rounded-lg text-[12px] font-semibold text-gray-700 focus:outline-none focus:border-green-500 focus:bg-white transition-all shadow-inner w-full"
+                  className="h-11 px-3 bg-gray-50 border border-gray-200 rounded-lg text-[12px] font-semibold text-gray-700 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner w-full"
                 />
               </div>
 
@@ -190,7 +191,7 @@ export default function MasterPekerjaanJurnalProduksiUpload() {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 h-10 bg-green-600 border border-green-500 hover:bg-green-700 text-white font-bold rounded-lg text-[11px] tracking-wide uppercase transition-all shadow-sm shadow-green-900/10"
+                  className="px-6 h-10 bg-emerald-600 border border-emerald-500 hover:bg-emerald-700 text-white font-bold rounded-lg text-[11px] tracking-wide uppercase transition-all shadow-sm shadow-emerald-900/10"
                 >
                   Kirim Sandi
                 </button>

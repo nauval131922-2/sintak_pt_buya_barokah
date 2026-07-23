@@ -14,11 +14,18 @@ import {
 import DatePicker from '@/components/DatePicker';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import DateRangeCard from '@/components/DateRangeCard';
-import ViewActivityLogLink from '@/components/ViewActivityLogLink';
+
 import { formatLastUpdate } from '@/lib/date-utils';
 import { formatScrapedPeriodDate, getDefaultScraperDateRange, persistScraperPeriod, hydrateScraperPeriod } from '@/lib/scraper-period';
 
 const MODULE_GROUPS = [
+  {
+    group: 'Stok',
+    color: 'indigo',
+    modules: [
+      { id: 'master-barang', name: 'Master Barang', endpoint: '/api/scrape-master-barang', description: 'Data master barang stok', noDateRange: true },
+    ]
+  },
   {
     group: 'Pembelian',
     color: 'blue',
@@ -38,6 +45,7 @@ const MODULE_GROUPS = [
     modules: [
       { id: 'bom', name: 'Bill of Material Produksi', endpoint: '/api/scrape-bom', description: 'Data formula produksi' },
       { id: 'orders', name: 'Order Produksi', endpoint: '/api/scrape-orders', description: 'Surat Perintah Kerja' },
+      { id: 'produksi-selesai', name: 'Produksi Selesai', endpoint: '/api/scrape-produksi-selesai', description: 'Laporan produksi selesai' },
       { id: 'bahan-baku', name: 'BBB Produksi', endpoint: '/api/scrape-bahan-baku', description: 'Pengeluaran bahan produksi' },
       { id: 'barang-jadi', name: 'Penerimaan Barang Hasil Produksi', endpoint: '/api/scrape-barang-jadi', description: 'Stok produk siap kirim' },
     ]
@@ -67,10 +75,12 @@ const MODULE_GROUPS = [
 const MODULES = MODULE_GROUPS.flatMap(g => g.modules);
 
 const PERSISTENCE_KEYS: Record<string, { stateKey: string; periodKey: string }> = {
+  'master-barang': { stateKey: 'masterBarangState', periodKey: 'MasterBarangClient_scrapedPeriod' },
   'bom': { stateKey: 'bomReportState', periodKey: 'BOMClient_scrapedPeriod' },
   'sph-out': { stateKey: 'sphOutState', periodKey: 'SphOutClient_scrapedPeriod' },
   'sales-orders': { stateKey: 'salesOrderState', periodKey: 'SalesOrderClient_scrapedPeriod' },
   'orders': { stateKey: 'orderProduksiState', periodKey: 'OrderProduksiClient_scrapedPeriod' },
+  'produksi-selesai': { stateKey: 'produksiSelesaiState', periodKey: 'ProduksiSelesaiClient_scrapedPeriod' },
   'pr': { stateKey: 'prReportState', periodKey: 'PRClient_scrapedPeriod' },
   'spph-out': { stateKey: 'spphOutState', periodKey: 'SpphOutClient_scrapedPeriod' },
   'sph-in': { stateKey: 'sphInState', periodKey: 'SphInClient_scrapedPeriod' },
@@ -96,6 +106,7 @@ interface ModuleSyncState {
 }
 
 const SYNC_TO_PERM_MAP: Record<string, string> = {
+  'master-barang': 'stok_master_barang',
   'pr': 'pembelian_pr',
   'spph-out': 'pembelian_spph',
   'sph-in': 'pembelian_sph_in',
@@ -105,6 +116,7 @@ const SYNC_TO_PERM_MAP: Record<string, string> = {
   'pelunasan-hutang': 'pembelian_hutang',
   'bom': 'produksi_bom',
   'orders': 'produksi_orders',
+  'produksi-selesai': 'produksi_selesai',
   'bahan-baku': 'produksi_bahan_baku',
   'barang-jadi': 'produksi_barang_jadi',
   'sph-out': 'penjualan_sph_out',
@@ -322,30 +334,29 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
   };
 
   return (
-    <div className="w-full flex-1 min-h-0 overflow-hidden flex flex-col gap-6 animate-in fade-in duration-500">
-      {/* Header Section */}
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="flex-1 min-w-[280px]">
-          <DateRangeCard
-            title="Rentang Tanggal"
-            startDate={startDate}
-            endDate={endDate}
-            onStartDateChange={setStartDate}
-            onEndDateChange={setEndDate}
-            onFetch={runBatchSync}
-            isFetching={isBatchProcessing}
-            fetchText="Mulai Scrape Seluruh Modul"
-          />
+    <div className="w-full flex-1 min-h-0 overflow-hidden flex flex-col gap-3 animate-in fade-in duration-500">
+      {/* Control Bar */}
+      <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg shadow-gray-900/5 p-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2 flex-1">
+          <DatePicker name="startDate" value={startDate} onChange={setStartDate} />
+          <div className="w-2 h-px bg-gray-300 shrink-0"></div>
+          <DatePicker name="endDate" value={endDate} onChange={setEndDate} popupAlign="right" />
         </div>
-      </div>
-
-      {/* Log Aktivitas Button */}
-      <div className="flex items-center gap-2 shrink-0 px-1">
-        <ViewActivityLogLink className="mb-1" />
+        
+        <div className="hidden sm:block w-px h-8 bg-gray-200/60"></div>
+        
+        <button
+          onClick={runBatchSync}
+          disabled={isBatchProcessing}
+          className="flex items-center justify-center gap-2 px-5 h-8 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-[11px] font-bold rounded-xl transition-colors shadow-sm"
+        >
+          {isBatchProcessing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+          <span>{isBatchProcessing ? 'Memproses...' : 'Scrape Semua Modul'}</span>
+        </button>
       </div>
 
       {/* Grouped Modules */}
-      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar min-h-0 pb-10 flex flex-col gap-10">
+      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar min-h-0 pb-10 flex flex-col gap-8">
         {MODULE_GROUPS.map((group) => {
           // Filter modules in this group by permission 
           const visibleMods = group.modules.filter(mod => {
@@ -355,41 +366,43 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
 
           if (visibleMods.length === 0) return null;
 
-          const groupStyles: Record<string, { badge: string; header: string; dot: string; bg: string }> = {
+          const groupStyles: Record<string, { badge: string; card: string }> = {
+            indigo: {
+              badge: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+              card: 'hover:border-indigo-200'
+            },
             green: {
-              badge: 'bg-green-50 text-green-600 border-green-100',
-              header: 'border-green-600',
-              dot: 'bg-green-600',
-              bg: 'group-hover:bg-green-50/30'
+              badge: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+              card: 'hover:border-emerald-200'
             },
             blue: {
-              badge: 'bg-blue-50 text-blue-600 border-blue-100',
-              header: 'border-blue-600',
-              dot: 'bg-blue-600',
-              bg: 'group-hover:bg-blue-50/30'
+              badge: 'bg-blue-50 text-blue-700 border-blue-200',
+              card: 'hover:border-blue-200'
             },
             purple: {
-              badge: 'bg-purple-50 text-purple-600 border-purple-100',
-              header: 'border-purple-600',
-              dot: 'bg-purple-600',
-              bg: 'group-hover:bg-purple-50/30'
+              badge: 'bg-purple-50 text-purple-700 border-purple-200',
+              card: 'hover:border-purple-200'
+            },
+            amber: {
+              badge: 'bg-amber-50 text-amber-700 border-amber-200',
+              card: 'hover:border-amber-200'
             },
           };
           const gs = groupStyles[group.color] || groupStyles.green;
 
           return (
-            <div key={group.group} className="flex flex-col gap-6">
+            <div key={group.group} className="flex flex-col gap-4">
               {/* Group Header */}
-              <div className="flex items-center gap-4">
-                <span className={`text-[11px] font-bold tracking-wide px-4 py-2 rounded-full border shadow-sm ${gs.badge}`}>
+              <div className="flex items-center gap-3">
+                <span className={`text-[11px] font-bold tracking-wide px-3 py-1.5 rounded-lg border ${gs.badge}`}>
                   {group.group}
                 </span>
                 <div className="flex-1 h-px bg-gray-100" />
-                <span className="text-[10px] font-bold text-gray-300 tracking-wide">{visibleMods.length} Modul Terintegrasi</span>
+                <span className="text-[10px] font-bold text-gray-400 tracking-wide">{visibleMods.length} Modul</span>
               </div>
 
               {/* Module Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {visibleMods.map((mod) => {
                   const state = syncStates[mod.id];
                   const isActive = currentModuleId === mod.id;
@@ -398,36 +411,36 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
                     <div
                       key={mod.id}
                       className={`
-                        relative bg-white rounded-xl p-6 transition-all duration-300 border shadow-sm group
-                        ${isActive ? 'border-green-500 ring-4 ring-green-500/5 -translate-y-1 shadow-sm shadow-green-900/5' : 'border-gray-100 hover:-translate-y-1 hover:shadow-sm hover:shadow-green-900/5 hover:border-green-200'}
+                        relative bg-white/80 backdrop-blur-md rounded-2xl p-4 transition-all duration-300 border shadow-sm group
+                        ${isActive ? 'border-emerald-300 shadow-lg shadow-emerald-900/5' : `border-white/20 ${gs.card}`}
                       `}
                     >
-                      <div className="flex flex-col gap-5">
+                      <div className="flex flex-col gap-3">
                         <div className="flex items-start justify-between gap-3">
-                          <div className="flex flex-col min-w-0">
-                            <h3 className="text-[14px] font-bold text-gray-800 leading-tight tracking-tight mb-1">{mod.name}</h3>
-                            <p className="text-[10px] text-gray-400 font-bold tracking-wide truncate">{mod.description}</p>
+                          <div className="flex flex-col min-w-0 flex-1">
+                            <h3 className="text-[12px] font-bold text-gray-800 leading-tight mb-0.5">{mod.name}</h3>
+                            <p className="text-[10px] text-gray-400 font-medium leading-tight">{mod.description}</p>
                           </div>
                           <div className={`
-                            w-12 h-12 rounded-lg flex items-center justify-center shrink-0 border transition-all shadow-sm
-                            ${state?.status === 'success' ? 'bg-green-50 text-green-600 border-green-100' :
-                              state?.status === 'error' ? 'bg-red-50 text-red-600 border-red-100' :
-                              isActive ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-gray-50 text-gray-300 border-gray-100'}
+                            w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border transition-all
+                            ${state?.status === 'success' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
+                              state?.status === 'error' ? 'bg-rose-50 text-rose-600 border-rose-200' :
+                              isActive ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-gray-50 text-gray-300 border-gray-200'}
                           `}>
-                            {state?.status === 'success' ? <CheckCircle2 size={20} /> :
-                             state?.status === 'error' ? <AlertCircle size={20} /> :
-                             isActive ? <Loader2 size={20} className="animate-spin" /> : <Database size={20} />}
+                            {state?.status === 'success' ? <CheckCircle2 size={16} /> :
+                             state?.status === 'error' ? <AlertCircle size={16} /> :
+                             isActive ? <Loader2 size={16} className="animate-spin" /> : <Database size={16} />}
                           </div>
                         </div>
 
-                        <div className="flex flex-col gap-3">
-                          <div className="flex items-start gap-3 text-[11px] font-bold text-gray-400 leading-tight tracking-wide">
-                            <Clock size={14} className="shrink-0" />
-                            <div className="flex flex-col gap-1">
-                              <span>Update: {state?.lastUpdate || '-'}</span>
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-start gap-2 text-[10px] font-medium text-gray-400 leading-tight">
+                            <Clock size={12} className="shrink-0 mt-0.5" />
+                            <div className="flex flex-col gap-0.5">
+                              <span>{state?.lastUpdate || 'Belum pernah disinkronkan'}</span>
                               {state?.period && (
-                                <span className="text-[10px] text-gray-400 font-medium">
-                                  ({formatScrapedPeriodDate(state.period.start)} - {formatScrapedPeriodDate(state.period.end)})
+                                <span className="text-[9px] text-gray-400">
+                                  {formatScrapedPeriodDate(state.period.start)} - {formatScrapedPeriodDate(state.period.end)}
                                 </span>
                               )}
                             </div>
@@ -435,8 +448,8 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
 
                           {state?.message && (
                             <div className={`
-                              text-[10px] font-bold px-3 py-2.5 rounded-lg border leading-tight tracking-wide
-                              ${state.status === 'success' ? 'bg-green-50/50 text-green-600 border-green-100' : 'bg-red-50/50 text-red-600 border-red-100'}
+                              text-[10px] font-medium px-2.5 py-2 rounded-lg border leading-tight
+                              ${state.status === 'success' ? 'bg-emerald-50/50 text-emerald-700 border-emerald-200' : 'bg-rose-50/50 text-rose-700 border-rose-200'}
                             `}>
                               {state.message}
                             </div>
@@ -447,20 +460,20 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
                           onClick={() => runSync(mod.id)}
                           disabled={isBatchProcessing}
                           className={`
-                            w-full h-11 rounded-lg border text-[11px] font-bold transition-all flex items-center justify-center gap-2 tracking-wide
+                            w-full h-8 rounded-xl border text-[10px] font-bold transition-all flex items-center justify-center gap-1.5
                             ${isBatchProcessing 
-                              ? 'bg-gray-50 text-gray-200 border-gray-100 cursor-not-allowed' 
-                              : 'bg-white text-gray-700 border-gray-100 hover:bg-green-600 hover:text-white hover:border-green-500 hover:shadow-sm shadow-green-100'}
+                              ? 'bg-gray-50 text-gray-300 border-gray-200 cursor-not-allowed' 
+                              : 'bg-white/60 text-gray-700 border-gray-200 hover:bg-emerald-600 hover:text-white hover:border-emerald-500'}
                           `}
                         >
-                          <RefreshCw size={14} className={isActive ? 'animate-spin' : ''} />
+                          <RefreshCw size={12} className={isActive ? 'animate-spin' : ''} />
                           Sinkronkan
                         </button>
                       </div>
 
                       {isActive && (
-                        <div className="absolute top-4 right-4 flex gap-1">
-                          <span className="flex h-2 w-2 rounded-full bg-green-500 animate-ping" />
+                        <div className="absolute top-3 right-3">
+                          <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
                         </div>
                       )}
                     </div>
@@ -473,13 +486,13 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
       </div>
 
       {/* Info Section */}
-      <div className="bg-amber-50 border border-amber-100 rounded-2xl p-6 flex items-start gap-5 hover:-translate-y-1 shadow-sm shadow-amber-900/5 transition-all duration-300 mt-auto">
-        <div className="w-14 h-14 rounded-xl bg-white flex items-center justify-center text-amber-600 border border-amber-200 shadow-sm shrink-0">
-          <ShieldCheck size={28} />
+      <div className="bg-amber-50/80 backdrop-blur-md border border-amber-200/60 rounded-2xl p-4 flex items-start gap-4 shadow-sm shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-amber-600 border border-amber-200 shrink-0">
+          <ShieldCheck size={20} />
         </div>
-        <div className="flex flex-col gap-1">
-          <h4 className="text-[14px] font-bold text-amber-900 tracking-wide">Catatan Keamanan & Performa</h4>
-          <p className="text-[12px] text-amber-800/70 font-semibold leading-relaxed tracking-wide">
+        <div className="flex flex-col gap-0.5">
+          <h4 className="text-[11px] font-bold text-amber-900">Catatan Keamanan & Performa</h4>
+          <p className="text-[10px] text-amber-800/70 font-medium leading-relaxed">
             Batch sinkronisasi menjalankan perintah secara paralel terbatas untuk mencegah beban berlebih pada server host. 
             Proses ini mungkin memakan waktu beberapa menit. Pastikan koneksi internet stabil selama proses berlangsung.
           </p>

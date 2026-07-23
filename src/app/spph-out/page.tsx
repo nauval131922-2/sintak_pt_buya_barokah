@@ -24,7 +24,7 @@ export default async function SpphOutPage() {
               href="https://buyapercetakan.mdthoster.com/#cGIvdHJzcHBoX291dA=="
               target="_blank"
               rel="noopener noreferrer"
-              className="text-green-600 hover:underline font-bold"
+              className="text-emerald-600 hover:underline font-bold"
             >
               Digit
             </a>

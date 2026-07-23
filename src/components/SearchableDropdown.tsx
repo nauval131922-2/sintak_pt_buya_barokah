@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { ChevronDown, Search } from 'lucide-react';
+import Portal from './Portal';
 
 interface SearchableDropdownProps {
   /** Currently selected value */
@@ -162,9 +163,9 @@ export default function SearchableDropdown({
         aria-expanded={open}
         aria-controls={`dropdown-panel-${id}`}
         className={`
-          relative w-full ${compact ? 'h-9 pl-9 pr-9 text-[11px]' : 'h-11 pl-10 pr-10 text-[13px]'} rounded-lg border transition-all font-bold flex items-center justify-between shadow-sm
+          relative w-full ${compact ? 'h-10 pl-9 pr-9 text-[11px]' : 'h-10 pl-10 pr-10 text-[12px]'} rounded-lg border transition-all font-bold flex items-center justify-between shadow-sm
           ${open
-            ? 'bg-white border-green-500 ring-4 ring-green-500/5'
+            ? 'bg-white border-emerald-500 ring-4 ring-emerald-500/5'
             : 'bg-gray-50 border-gray-100 hover:bg-white hover:border-gray-200'}
         `}
       >
@@ -172,7 +173,7 @@ export default function SearchableDropdown({
           {displayLabel}
         </span>
         <div className="absolute top-1/2 -translate-y-1/2 left-3.5 pointer-events-none">
-          {icon ?? <Search size={16} className={value ? 'text-green-600' : 'text-gray-400'} />}
+          {icon ?? <Search size={16} className={value ? 'text-emerald-600' : 'text-gray-400'} />}
         </div>
         <div className="absolute top-1/2 -translate-y-1/2 right-3.5 pointer-events-none">
           <ChevronDown
@@ -184,13 +185,18 @@ export default function SearchableDropdown({
 
       {/* Panel */}
       {open && (
-        <div
-          id={`dropdown-panel-${id}`}
-          role="listbox"
-          aria-label={label}
-          className={`absolute top-[calc(100%+8px)] left-0 ${panelWidth ?? triggerWidth} bg-white border border-gray-100 rounded-xl shadow-md shadow-green-900/10 py-3 z-[400] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col max-h-[350px]`}
-          style={{ minWidth: '220px' }}
-        >
+        <Portal>
+          <div
+            id={`dropdown-panel-${id}`}
+            role="listbox"
+            aria-label={label}
+            className={`fixed bg-white border border-gray-100 rounded-xl shadow-md shadow-emerald-900/10 py-3 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col max-h-[350px]`}
+            style={{
+              top: `${containerRef.current?.getBoundingClientRect().bottom || 0 + 8}px`,
+              left: `${containerRef.current?.getBoundingClientRect().left || 0}px`,
+              width: `${containerRef.current?.getBoundingClientRect().width || 0}px`,
+            }}
+          >
           {/* Search */}
           <div className="px-3 pb-3 shrink-0 border-b border-gray-50 mb-1">
             <div className="relative">
@@ -204,7 +210,7 @@ export default function SearchableDropdown({
                 value={query}
                 onChange={e => { setQuery(e.target.value); setFocusedIndex(-1); }}
                 onKeyDown={handleKeyDown}
-                className="w-full pl-10 pr-4 py-2.5 text-[13px] bg-gray-50 border border-transparent focus:bg-white focus:border-green-500 focus:ring-4 focus:ring-green-500/5 rounded-lg transition-all placeholder:text-gray-400 font-medium"
+                className={`w-full pl-10 pr-4 ${compact ? 'py-2 text-[11px]' : 'py-2.5 text-[13px]'} bg-gray-50 border border-transparent focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 rounded-lg transition-all placeholder:text-gray-400 font-medium`}
               />
             </div>
           </div>
@@ -212,7 +218,7 @@ export default function SearchableDropdown({
           {/* Items */}
           <div ref={listRef} className="flex-1 overflow-y-auto px-2 scrollbar-thin">
             {filtered.length === 0 ? (
-              <p className="text-center text-[12px] text-gray-400 py-4 font-medium">Tidak ditemukan</p>
+              <p className={`text-center text-gray-400 py-4 font-medium ${compact ? 'text-[11px]' : 'text-[12px]'}`}>Tidak ditemukan</p>
             ) : (
               filtered.map((item, idx) => (
                 <button
@@ -223,9 +229,9 @@ export default function SearchableDropdown({
                   data-item
                   onClick={() => select(item)}
                   className={`
-                    w-full text-left px-4 py-3 text-[13px] font-bold rounded-lg transition-all mb-0.5
+                    w-full text-left px-4 ${compact ? 'py-2.5 text-[11px]' : 'py-3 text-[12px]'} font-bold rounded-lg transition-all mb-0.5
                     ${value === item
-                      ? 'bg-green-50 text-green-700'
+                      ? 'bg-emerald-50 text-emerald-700'
                       : idx === focusedIndex
                       ? 'bg-gray-100 text-gray-900'
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
@@ -238,6 +244,7 @@ export default function SearchableDropdown({
             )}
           </div>
         </div>
+        </Portal>
       )}
     </div>
   );

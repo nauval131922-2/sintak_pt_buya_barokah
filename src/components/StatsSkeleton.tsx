@@ -2,7 +2,7 @@ import React from 'react';
 
 export function CardSkeleton() {
   return (
-    <div className="bg-white border border-gray-100 p-6 rounded-xl shadow-sm shadow-green-900/5 animate-pulse">
+    <div className="bg-white border border-gray-100 p-6 rounded-xl shadow-sm shadow-emerald-900/5 animate-pulse">
       <div className="flex items-center gap-4">
         <div className="w-12 h-12 bg-gray-50 rounded-lg shrink-0"></div>
         <div className="flex flex-col gap-2 flex-1">
@@ -16,7 +16,7 @@ export function CardSkeleton() {
 
 export function ChartSkeleton({ height = "400px" }: { height?: string }) {
   return (
-    <div className={`bg-white border border-gray-100 p-8 rounded-xl shadow-sm shadow-green-900/5 animate-pulse flex flex-col`} style={{ minHeight: height }}>
+    <div className={`bg-white border border-gray-100 p-8 rounded-xl shadow-sm shadow-emerald-900/5 animate-pulse flex flex-col`} style={{ minHeight: height }}>
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gray-50 rounded-lg"></div>
@@ -48,7 +48,7 @@ export function InsightSkeleton() {
 
 export function TableSkeleton({ rows = 5 }: { rows?: number }) {
   return (
-    <div className="bg-white border border-gray-100 rounded-xl shadow-sm shadow-green-900/5 overflow-hidden animate-pulse">
+    <div className="bg-white border border-gray-100 rounded-xl shadow-sm shadow-emerald-900/5 overflow-hidden animate-pulse">
       <div className="h-12 bg-gray-50/50 border-b border-gray-50"></div>
       <div className="p-4 space-y-3">
         {[...Array(rows)].map((_, i) => (

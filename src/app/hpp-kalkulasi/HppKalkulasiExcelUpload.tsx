@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Upload, FileSpreadsheet, XCircle, Loader2 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import ViewActivityLogLink from '@/components/ViewActivityLogLink';
+
 
 export default function HppKalkulasiExcelUpload() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -95,9 +95,9 @@ export default function HppKalkulasiExcelUpload() {
 
   return (
     <div className="shrink-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <div className="relative bg-white border border-gray-100 shadow-sm shadow-green-900/5 rounded-xl px-6 py-4 flex items-center justify-between gap-6 z-50">
+      <div className="relative bg-white border border-gray-100 shadow-sm shadow-emerald-900/5 rounded-xl px-6 py-4 flex items-center justify-between gap-6 z-50">
         <div className="flex items-center gap-5 flex-1">
-          <div className="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
             <Upload size={24} />
           </div>
           <div className="min-w-0">
@@ -109,7 +109,6 @@ export default function HppKalkulasiExcelUpload() {
         </div>
 
         <div className="shrink-0 flex items-center gap-2">
-          <ViewActivityLogLink tableName="hpp_kalkulasi" />
           <input 
             type="file" 
             accept=".xls, .xlsx, .xlsm"
@@ -123,7 +122,7 @@ export default function HppKalkulasiExcelUpload() {
               fileRef.current?.click();
             }}
             disabled={status === 'loading'}
-            className="px-6 h-11 bg-green-600 hover:bg-green-700 text-white text-[13px] font-bold rounded-lg transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed shadow-sm shadow-green-100 tracking-wide"
+            className="px-6 h-11 bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold rounded-lg transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed shadow-sm shadow-emerald-100 tracking-wide"
           >
             {status === 'loading' ? (
               <Loader2 size={18} className="animate-spin" />
