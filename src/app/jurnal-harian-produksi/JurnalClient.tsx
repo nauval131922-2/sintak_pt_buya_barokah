@@ -1745,7 +1745,7 @@ export default function JurnalClient({
               <div className="w-px h-5 bg-gray-200 shrink-0" />
               <div className="flex items-center gap-1.5">
                 {hasCopiedToday ? (
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-[10px] font-bold" title="Penyalinan jadwal untuk hari ini sudah pernah dilakukan">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-[11px] font-bold" title="Penyalinan jadwal untuk hari ini sudah pernah dilakukan">
                     <CheckCircle2 size={11} className="text-emerald-600" />
                     <span>Jadwal disalin</span>
                   </div>
@@ -1764,7 +1764,7 @@ export default function JurnalClient({
                       setCopyKaryawanSearch('');
                       setShowCopyModal(true);
                     }}
-                    className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-lg border border-emerald-700 transition-all shadow-sm shadow-emerald-100 animate-pulse"
+                    className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg border border-emerald-700 transition-all shadow-sm shadow-emerald-100 animate-pulse"
                     title="Copy jadwal ke tanggal lain"
                   >
                     <Copy size={11} />
@@ -1775,7 +1775,7 @@ export default function JurnalClient({
                   <button
                     onClick={triggerRevertConfirm}
                     disabled={isReverting}
-                    className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 text-[10px] font-bold rounded-lg border border-amber-200 transition-all disabled:opacity-50"
+                    className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 text-[11px] font-bold rounded-lg border border-amber-200 transition-all disabled:opacity-50"
                     title="Batalkan penyalinan jadwal terakhir"
                   >
                     {isReverting ? <Loader2 size={11} className="animate-spin" /> : <RotateCcw size={11} />}
@@ -1792,7 +1792,7 @@ export default function JurnalClient({
               <div className="w-px h-5 bg-gray-200 shrink-0" />
               <button
                 onClick={handleOpenTrash}
-                className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[10px] font-bold rounded-lg border border-rose-200 transition-all"
+                className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-bold rounded-lg border border-rose-200 transition-all"
                 title="Lihat data terhapus"
               >
                 <Trash2 size={11} />
@@ -1812,7 +1812,7 @@ export default function JurnalClient({
               setShowCekKaryawan(true);
               fetchCekKaryawan();
             }}
-            className="flex items-center gap-1.5 px-2.5 py-1 bg-violet-50 hover:bg-violet-100 text-violet-700 text-[10px] font-bold rounded-lg border border-violet-200 transition-all"
+            className="flex items-center gap-1.5 px-2.5 py-1 bg-violet-50 hover:bg-violet-100 text-violet-700 text-[11px] font-bold rounded-lg border border-violet-200 transition-all"
             title="Cek karyawan yang sudah/belum dapat pekerjaan di rentang tanggal aktif"
           >
             <Users size={11} />
@@ -1823,11 +1823,11 @@ export default function JurnalClient({
           {selectedIds.size > 0 && (
             <>
               <div className="w-px h-5 bg-gray-200 shrink-0" />
-              <button onClick={() => setShowShiftModal(true)} className="flex items-center gap-1.5 px-2.5 py-1 bg-sky-50 hover:bg-sky-100 text-sky-600 text-[10px] font-bold rounded-lg border border-sky-200 transition-all animate-in fade-in zoom-in duration-200">
+              <button onClick={() => setShowShiftModal(true)} className="flex items-center gap-1.5 px-2.5 py-1 bg-sky-50 hover:bg-sky-100 text-sky-600 text-[11px] font-bold rounded-lg border border-sky-200 transition-all animate-in fade-in zoom-in duration-200">
                 <RotateCcw size={11} /> Ganti Shift
               </button>
               <div className="w-px h-5 bg-gray-200 shrink-0" />
-              <button onClick={handleBulkDelete} className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[10px] font-bold rounded-lg border border-rose-200 transition-all animate-in fade-in zoom-in duration-200">
+              <button onClick={handleBulkDelete} className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-bold rounded-lg border border-rose-200 transition-all animate-in fade-in zoom-in duration-200">
                 <Trash2 size={11} /> Hapus {selectedIds.size}
               </button>
             </>
@@ -1835,7 +1835,7 @@ export default function JurnalClient({
 
           {/* Action message */}
           {actionMessage && (
-            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold animate-in fade-in slide-in-from-left-2 duration-300 ${actionMessage.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
+            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold animate-in fade-in slide-in-from-left-2 duration-300 ${actionMessage.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
               {actionMessage.type === 'success' ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}
               {actionMessage.text}
             </div>
@@ -1843,7 +1843,7 @@ export default function JurnalClient({
 
           {/* Loading badge */}
           {loading && (data?.length || 0) > 0 && (
-            <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-1.5 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 animate-pulse leading-none">
+            <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-1.5 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 animate-pulse leading-none">
               <Loader2 size={11} className="animate-spin" />
               <span>Memuat...</span>
             </div>
@@ -1852,7 +1852,7 @@ export default function JurnalClient({
           {/* Stop Copy */}
           <button
             onClick={handleKeteranganPasteDone}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] leading-none font-bold transition-all ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] leading-none font-bold transition-all ${
               keteranganPasteActive
                 ? 'opacity-100 visible bg-red-50 text-red-600 border border-red-200 hover:bg-red-100'
                 : 'opacity-0 invisible pointer-events-none'
@@ -1865,7 +1865,7 @@ export default function JurnalClient({
           {/* Reset Sort */}
           <button
             onClick={() => setSorting([])}
-            className={`ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
+            className={`ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
               sorting.length > 0 && !loading
                 ? 'opacity-100 visible bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100'
                 : 'opacity-0 invisible pointer-events-none'
@@ -2584,7 +2584,7 @@ export default function JurnalClient({
         {/* Divider */}
         <div className="flex items-center gap-3">
           <div className="flex-1 h-px bg-gray-100" />
-          <span className="text-[10px] font-bold text-gray-400">Filter Opsional</span>
+          <span className="text-[11px] font-bold text-gray-400">Filter Opsional</span>
           <div className="flex-1 h-px bg-gray-100" />
         </div>
 
@@ -2594,7 +2594,7 @@ export default function JurnalClient({
             <label className="text-[12px] font-bold text-gray-600">
               Filter Bagian
               {copyBagian.length > 0 && (
-                <span className="ml-1.5 text-[10px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full">
+                <span className="ml-1.5 text-[11px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full">
                   {copyBagian.length}
                 </span>
               )}
@@ -2603,7 +2603,7 @@ export default function JurnalClient({
               <button
                 type="button"
                 onClick={() => { setCopyBagian([]); setCopyKaryawan([]); setCopyBagianSearch(''); }}
-                className="flex items-center gap-1 text-[10px] font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2 py-0.5 rounded-md transition-all"
+                className="flex items-center gap-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2 py-0.5 rounded-md transition-all"
               >
                 <X size={10} /> Hapus filter
               </button>
@@ -2648,7 +2648,7 @@ export default function JurnalClient({
             )}
           </div>
           {copyBagian.length > 0 && (
-            <p className="text-[10px] text-emerald-600 font-semibold mt-2 ml-0.5">
+            <p className="text-[11px] text-emerald-600 font-semibold mt-2 ml-0.5">
               ✓ Hanya bagian <b>{copyBagian.join(', ')}</b> yang akan disalin
             </p>
           )}
@@ -2660,7 +2660,7 @@ export default function JurnalClient({
             <label className="text-[12px] font-bold text-gray-600">
               Filter Karyawan
               {copyKaryawan.length > 0 && (
-                <span className="ml-1.5 text-[10px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full">
+                <span className="ml-1.5 text-[11px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full">
                   {copyKaryawan.length}
                 </span>
               )}
@@ -2669,7 +2669,7 @@ export default function JurnalClient({
               <button
                 type="button"
                 onClick={() => setCopyKaryawan([])}
-                className="flex items-center gap-1 text-[10px] font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2 py-0.5 rounded-md transition-all"
+                className="flex items-center gap-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2 py-0.5 rounded-md transition-all"
               >
                 <X size={10} /> Hapus filter
               </button>
@@ -2724,7 +2724,7 @@ export default function JurnalClient({
             );
           })()}
           {copyKaryawan.length > 0 && (
-            <p className="text-[10px] text-emerald-600 font-semibold mt-2 ml-0.5">
+            <p className="text-[11px] text-emerald-600 font-semibold mt-2 ml-0.5">
               ✓ Hanya karyawan <b>{copyKaryawan.join(', ')}</b> yang akan disalin
             </p>
           )}
@@ -2953,7 +2953,7 @@ export default function JurnalClient({
               <span className="text-emerald-600 font-bold text-xs">{exportProgress}%</span>
             </div>
 
-            <div className="text-[10px] text-gray-400 font-normal italic">
+            <div className="text-[11px] text-gray-400 font-normal italic">
               Mohon jangan menutup halaman ini sampai proses selesai.
             </div>
           </div>
@@ -3121,7 +3121,7 @@ export default function JurnalClient({
                   >
                     <AlertTriangle size={14} />
                     Belum dapat pekerjaan
-                    <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${cekActiveTab === 'belum' ? 'bg-rose-100 text-rose-700' : 'bg-gray-200 text-gray-500'}`}>
+                    <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[11px] font-bold ${cekActiveTab === 'belum' ? 'bg-rose-100 text-rose-700' : 'bg-gray-200 text-gray-500'}`}>
                       {cekKaryawanData.belum.length}
                     </span>
                   </button>
@@ -3131,7 +3131,7 @@ export default function JurnalClient({
                   >
                     <CheckCircle2 size={14} />
                     Sudah dapat pekerjaan
-                    <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${cekActiveTab === 'sudah' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-500'}`}>
+                    <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[11px] font-bold ${cekActiveTab === 'sudah' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-500'}`}>
                       {/* hitung karyawan unik, bukan jumlah baris */}
                       {new Set(cekKaryawanData.sudah.map(r => r.employee_id)).size}
                     </span>

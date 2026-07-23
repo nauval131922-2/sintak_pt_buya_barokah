@@ -414,7 +414,7 @@ export default function MasterPekerjaanUpload() {
             </div>
             <div className="min-w-0 flex-1">
               <h3 className="text-[12px] font-bold text-gray-800 leading-none tracking-tight">Upload Master Pekerjaan</h3>
-              <p className="text-[10px] text-gray-400 font-medium leading-tight truncate mt-0.5">
+              <p className="text-[11px] text-gray-400 font-medium leading-tight truncate mt-0.5">
                 Unggah file Excel untuk sinkronisasi database
               </p>
             </div>
@@ -432,7 +432,7 @@ export default function MasterPekerjaanUpload() {
               onClick={() => fileRef.current?.click()}
               disabled={status === 'loading'}
               className={`
-                px-3.5 h-8 rounded-lg font-bold text-[10px] tracking-wide border transition-all flex items-center gap-1.5 shadow-sm
+                px-3.5 h-8 rounded-lg font-bold text-[11px] tracking-wide border transition-all flex items-center gap-1.5 shadow-sm
                 ${status === 'loading' 
                   ? 'bg-gray-50 text-gray-300 border-gray-100' 
                   : 'bg-emerald-600 text-white border-emerald-500 hover:bg-emerald-700 shadow-emerald-100'}

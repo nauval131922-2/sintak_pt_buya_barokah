@@ -51,7 +51,7 @@ export default function UsersStatCard() {
           {loading ? <span className="inline-block w-16 h-6 bg-gray-100 rounded animate-pulse" /> : displayCount.toLocaleString('id-ID')}
         </div>
         <div className="text-[11px] text-gray-400 font-semibold mt-1.5 leading-none">Pengguna Sistem</div>
-        <div className="text-[10px] text-gray-300 font-medium mt-0.5">{subLabel}</div>
+        <div className="text-[11px] text-gray-300 font-medium mt-0.5">{subLabel}</div>
         <LastUpdatedBadge lastUpdated={lastUpdated} />
       </div>
     </Link>

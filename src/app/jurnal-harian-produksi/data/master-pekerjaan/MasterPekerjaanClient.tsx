@@ -381,7 +381,7 @@ export default function MasterPekerjaanClient({ importInfo }: MasterPekerjaanCli
                      setSearchQuery('');
                      setPage(1);
                    }}
-                   className="h-10 px-3 bg-white hover:bg-rose-50 text-gray-400 hover:text-rose-600 border border-gray-100 hover:border-rose-100 rounded-lg shadow-sm transition-all flex items-center gap-1.5 text-[10px] font-bold whitespace-nowrap"
+                   className="h-10 px-3 bg-white hover:bg-rose-50 text-gray-400 hover:text-rose-600 border border-gray-100 hover:border-rose-100 rounded-lg shadow-sm transition-all flex items-center gap-1.5 text-[11px] font-bold whitespace-nowrap"
                  >
                    <RotateCcw size={14} />
                    Reset
@@ -406,7 +406,7 @@ export default function MasterPekerjaanClient({ importInfo }: MasterPekerjaanCli
                <ImportInfo info={importInfo} />
             </div>
             {loading && (data?.length || 0) > 0 && (
-                <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
+                <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
                   <Loader2 size={12} className="animate-spin" />
                   <span>Loading Data...</span>
                 </div>

@@ -90,7 +90,7 @@ export default function DateRangeCard({
 
       {(isFetching && statusText) && (
         <div className="flex flex-col items-end gap-1">
-          <div className="text-[10px] text-emerald-600 font-bold leading-none bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100">
+          <div className="text-[11px] text-emerald-600 font-bold leading-none bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100">
             {statusText}
           </div>
           {progress !== undefined && (

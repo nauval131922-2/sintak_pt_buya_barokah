@@ -221,7 +221,7 @@ export default function UsersContent({
             {roles.map(r => (
               <span
                 key={r}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold inline-flex items-center gap-1.5 leading-none border ${
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold inline-flex items-center gap-1.5 leading-none border ${
                   r === 'Super Admin'
                     ? 'bg-emerald-50 text-emerald-700 border-emerald-100 shadow-sm'
                     : 'bg-emerald-50 text-emerald-600 border-emerald-100'

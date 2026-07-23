@@ -398,7 +398,7 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
                   {group.group}
                 </span>
                 <div className="flex-1 h-px bg-gray-100" />
-                <span className="text-[10px] font-bold text-gray-400 tracking-wide">{visibleMods.length} Modul</span>
+                <span className="text-[11px] font-bold text-gray-400 tracking-wide">{visibleMods.length} Modul</span>
               </div>
 
               {/* Module Cards */}
@@ -419,7 +419,7 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex flex-col min-w-0 flex-1">
                             <h3 className="text-[12px] font-bold text-gray-800 leading-tight mb-0.5">{mod.name}</h3>
-                            <p className="text-[10px] text-gray-400 font-medium leading-tight">{mod.description}</p>
+                            <p className="text-[11px] text-gray-400 font-medium leading-tight">{mod.description}</p>
                           </div>
                           <div className={`
                             w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border transition-all
@@ -434,12 +434,12 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
                         </div>
 
                         <div className="flex flex-col gap-2">
-                          <div className="flex items-start gap-2 text-[10px] font-medium text-gray-400 leading-tight">
+                          <div className="flex items-start gap-2 text-[11px] font-medium text-gray-400 leading-tight">
                             <Clock size={12} className="shrink-0 mt-0.5" />
                             <div className="flex flex-col gap-0.5">
                               <span>{state?.lastUpdate || 'Belum pernah disinkronkan'}</span>
                               {state?.period && (
-                                <span className="text-[9px] text-gray-400">
+                                <span className="text-[11px] text-gray-400">
                                   {formatScrapedPeriodDate(state.period.start)} - {formatScrapedPeriodDate(state.period.end)}
                                 </span>
                               )}
@@ -448,7 +448,7 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
 
                           {state?.message && (
                             <div className={`
-                              text-[10px] font-medium px-2.5 py-2 rounded-lg border leading-tight
+                              text-[11px] font-medium px-2.5 py-2 rounded-lg border leading-tight
                               ${state.status === 'success' ? 'bg-emerald-50/50 text-emerald-700 border-emerald-200' : 'bg-rose-50/50 text-rose-700 border-rose-200'}
                             `}>
                               {state.message}
@@ -460,7 +460,7 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
                           onClick={() => runSync(mod.id)}
                           disabled={isBatchProcessing}
                           className={`
-                            w-full h-8 rounded-xl border text-[10px] font-bold transition-all flex items-center justify-center gap-1.5
+                            w-full h-8 rounded-xl border text-[11px] font-bold transition-all flex items-center justify-center gap-1.5
                             ${isBatchProcessing 
                               ? 'bg-gray-50 text-gray-300 border-gray-200 cursor-not-allowed' 
                               : 'bg-white/60 text-gray-700 border-gray-200 hover:bg-emerald-600 hover:text-white hover:border-emerald-500'}
@@ -492,7 +492,7 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
         </div>
         <div className="flex flex-col gap-0.5">
           <h4 className="text-[11px] font-bold text-amber-900">Catatan Keamanan & Performa</h4>
-          <p className="text-[10px] text-amber-800/70 font-medium leading-relaxed">
+          <p className="text-[11px] text-amber-800/70 font-medium leading-relaxed">
             Batch sinkronisasi menjalankan perintah secara paralel terbatas untuk mencegah beban berlebih pada server host. 
             Proses ini mungkin memakan waktu beberapa menit. Pastikan koneksi internet stabil selama proses berlangsung.
           </p>

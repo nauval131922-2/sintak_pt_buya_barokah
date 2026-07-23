@@ -230,7 +230,7 @@ export default function RekAkuntansiClient() {
             <div className="flex items-center gap-4">
               <ScrapingHeader title="Rekening Akuntansi" lastUpdated={lastUpdated} />
               {loading && data && data.length > 0 && (
-                <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
+                <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
                   <Loader2 size={12} className="animate-spin" />
                   <span>Memproses Data...</span>
                 </div>

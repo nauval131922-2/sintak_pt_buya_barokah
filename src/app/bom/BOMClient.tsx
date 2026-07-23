@@ -362,7 +362,7 @@ export default function BOMClient() {
       meta: { align: 'right' },
       cell: ({ getValue, row }: any) => (
         <div className={`flex items-center justify-between font-semibold tabular-nums transition-colors w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>
-          <span className={`text-[10px] opacity-40 ${row.getIsSelected() ? 'text-emerald-400' : 'text-gray-400'}`}>Rp</span>
+          <span className={`text-[11px] opacity-40 ${row.getIsSelected() ? 'text-emerald-400' : 'text-gray-400'}`}>Rp</span>
           <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
         </div>
       )
@@ -374,7 +374,7 @@ export default function BOMClient() {
       meta: { align: 'right' },
       cell: ({ getValue, row }: any) => (
         <div className={`flex items-center justify-between font-semibold tabular-nums transition-colors w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>
-          <span className={`text-[10px] opacity-40 ${row.getIsSelected() ? 'text-emerald-400' : 'text-gray-400'}`}>Rp</span>
+          <span className={`text-[11px] opacity-40 ${row.getIsSelected() ? 'text-emerald-400' : 'text-gray-400'}`}>Rp</span>
           <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
         </div>
       )
@@ -386,7 +386,7 @@ export default function BOMClient() {
       meta: { align: 'right' },
       cell: ({ getValue, row }: any) => (
         <div className={`flex items-center justify-between font-semibold tabular-nums transition-colors w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>
-          <span className={`text-[10px] opacity-40 ${row.getIsSelected() ? 'text-emerald-400' : 'text-gray-400'}`}>Rp</span>
+          <span className={`text-[11px] opacity-40 ${row.getIsSelected() ? 'text-emerald-400' : 'text-gray-400'}`}>Rp</span>
           <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
         </div>
       )
@@ -398,7 +398,7 @@ export default function BOMClient() {
       meta: { align: 'right' },
       cell: ({ getValue, row }: any) => (
         <div className={`flex items-center justify-between font-semibold tabular-nums transition-colors w-full ${row.getIsSelected() ? 'text-emerald-800' : 'text-black'}`}>
-          <span className={`text-[10px] opacity-40 ${row.getIsSelected() ? 'text-emerald-400' : 'text-black'}`}>Rp</span>
+          <span className={`text-[11px] opacity-40 ${row.getIsSelected() ? 'text-emerald-400' : 'text-black'}`}>Rp</span>
           <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
         </div>
       )
@@ -444,7 +444,7 @@ export default function BOMClient() {
         cell: ({ getValue }: any) => {
           const val = String(getValue());
           return (
-            <span className={`font-bold text-[10px] px-2.5 py-1 rounded-lg border ${val === '1' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>
+            <span className={`font-bold text-[11px] px-2.5 py-1 rounded-lg border ${val === '1' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>
               {val === '1' ? 'ACTIVE' : 'INACTIVE'}
             </span>
           );
@@ -500,7 +500,7 @@ export default function BOMClient() {
             </div>
 
             {loading && (data?.length || 0) > 0 && (
-              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
+              <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Memproses Data...</span>
               </div>

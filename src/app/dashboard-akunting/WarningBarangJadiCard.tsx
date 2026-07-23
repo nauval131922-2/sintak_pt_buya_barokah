@@ -92,7 +92,7 @@ export default function WarningBarangJadiCard() {
         <div className="text-[11px] text-gray-400 font-semibold mt-1.5 leading-none">
           Peringatan Harga
         </div>
-        <div className="text-[10px] text-gray-300 font-medium mt-0.5">
+        <div className="text-[11px] text-gray-300 font-medium mt-0.5">
           Data SO di bawah HPP · Penerimaan Barang Jadi
         </div>
         <LastUpdatedBadge lastUpdated={lastUpdated} />

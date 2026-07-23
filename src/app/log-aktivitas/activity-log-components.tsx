@@ -20,7 +20,7 @@ export function SortHeader({ label, field, colIdx, sortBy, sortDir, onSort, onCt
       <button
         type="button"
         onClick={() => onSort(field)}
-        className={`inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-emerald-700 transition-colors ${active ? 'text-emerald-700' : ''}`}
+        className={`inline-flex items-center gap-1 text-[11px] font-bold text-gray-400 hover:text-emerald-700 transition-colors ${active ? 'text-emerald-700' : ''}`}
       >
         {label}
         {active ? (sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />) : <ChevronDown size={12} className="opacity-30" />}

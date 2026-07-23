@@ -108,7 +108,7 @@ export default function MasterPekerjaanJurnalProduksiUpload() {
             </div>
             <div className="min-w-0 flex-1">
               <h3 className="text-[12px] font-bold text-gray-800 leading-none tracking-tight">Upload Master Pekerjaan Jurnal Produksi</h3>
-              <p className="text-[10px] text-gray-400 font-medium leading-tight truncate mt-0.5">
+              <p className="text-[11px] text-gray-400 font-medium leading-tight truncate mt-0.5">
                 Unggah file Excel 2026 JADWAL PRODUKSI HARIAN (Sheet: MASTER PEKERJAAN)
               </p>
             </div>
@@ -126,7 +126,7 @@ export default function MasterPekerjaanJurnalProduksiUpload() {
               onClick={() => fileRef.current?.click()}
               disabled={status === 'loading'}
               className={`
-                px-3.5 h-8 rounded-lg font-bold text-[10px] tracking-wide border transition-all flex items-center gap-1.5 shadow-sm
+                px-3.5 h-8 rounded-lg font-bold text-[11px] tracking-wide border transition-all flex items-center gap-1.5 shadow-sm
                 ${status === 'loading' 
                   ? 'bg-gray-50 text-gray-300 border-gray-100' 
                   : 'bg-emerald-600 text-white border-emerald-500 hover:bg-emerald-700 shadow-emerald-100'}
@@ -156,7 +156,7 @@ export default function MasterPekerjaanJurnalProduksiUpload() {
               </div>
               <div>
                 <h4 className="text-sm font-bold text-gray-800 leading-tight">Dekripsi Berkas Excel</h4>
-                <p className="text-[10px] text-gray-400 font-medium">Sandi diperlukan untuk memproses data</p>
+                <p className="text-[11px] text-gray-400 font-medium">Sandi diperlukan untuk memproses data</p>
               </div>
             </div>
 
@@ -166,7 +166,7 @@ export default function MasterPekerjaanJurnalProduksiUpload() {
 
             <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-bold text-gray-400r ml-0.5">Sandi Berkas Excel</label>
+                <label className="text-[11px] font-bold text-gray-400r ml-0.5">Sandi Berkas Excel</label>
                 <input
                   type="text"
                   autoFocus

@@ -559,7 +559,7 @@ export default function RecordsForm({
                   <Box size={16} />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-medium text-gray-400">Kalkulasi Beban</span>
+                  <span className="text-[11px] font-medium text-gray-400">Kalkulasi Beban</span>
                   <h3 className="text-[13px] font-bold text-gray-800 leading-tight">Rincian Beban Biaya</h3>
                 </div>
               </div>
@@ -740,7 +740,7 @@ export default function RecordsForm({
                       />
                       {jenisBarang === 'HPP Kalkulasi' && jenisHarga === 'HPP Kalkulasi' && hppKeterangan && (
                         <div className="mt-2 flex items-center gap-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
-                           <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 border border-amber-100 rounded-lg text-[10px] font-medium">
+                           <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 border border-amber-100 rounded-lg text-[11px] font-medium">
                             <span>📌</span>
                             {hppKeterangan}
                           </span>
@@ -754,7 +754,7 @@ export default function RecordsForm({
                       <Box size={120} strokeWidth={1} />
                     </div>
                     <div className="flex flex-col relative z-10">
-                      <span className="text-[10px] font-semibold text-slate-400 mb-1">Total Estimasi Beban</span>
+                      <span className="text-[11px] font-semibold text-slate-400 mb-1">Total Estimasi Beban</span>
                       <span className="text-3xl font-extrabold tracking-tight">
                         Rp {totalValue.toLocaleString('id-ID')}
                       </span>

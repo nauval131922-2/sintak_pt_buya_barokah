@@ -291,7 +291,7 @@ export default function BarangJadiClient() {
       meta: { align: 'right' },
       cell: ({ getValue, row }: any) => (
         <div className={`flex items-center justify-between font-semibold tabular-nums transition-colors w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>
-          <span className={`text-[10px] opacity-40 ${row.getIsSelected() ? 'text-emerald-400' : 'text-gray-400'}`}>Rp</span>
+          <span className={`text-[11px] opacity-40 ${row.getIsSelected() ? 'text-emerald-400' : 'text-gray-400'}`}>Rp</span>
           <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
         </div>
       )
@@ -303,7 +303,7 @@ export default function BarangJadiClient() {
       meta: { align: 'right' },
       cell: ({ getValue, row }: any) => (
         <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-emerald-700'}`}>
-          <span className="text-[10px] opacity-40 mr-1">Rp</span>
+          <span className="text-[11px] opacity-40 mr-1">Rp</span>
           <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
         </div>
       )
@@ -322,7 +322,7 @@ export default function BarangJadiClient() {
       meta: { align: 'right', headerBg: '#fff7ed' },
       cell: ({ getValue, row }: any) => (
         <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-orange-700'}`}>
-          <span className="text-[10px] opacity-40 mr-1">Rp</span>
+          <span className="text-[11px] opacity-40 mr-1">Rp</span>
           <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
         </div>
       )
@@ -334,7 +334,7 @@ export default function BarangJadiClient() {
       meta: { align: 'right', headerBg: '#faf5ff' },
       cell: ({ getValue, row }: any) => (
         <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-purple-700'}`}>
-          <span className="text-[10px] opacity-40 mr-1">Rp</span>
+          <span className="text-[11px] opacity-40 mr-1">Rp</span>
           <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
         </div>
       )
@@ -350,12 +350,12 @@ export default function BarangJadiClient() {
         const hasNoSo = fakturSo === '' || fakturSo === '–' || fakturSo === '-';
 
         if (hasNoSo && val === 0) {
-           return <span className="text-[10px] font-bold text-gray-300 italic">Tidak ada SO</span>;
+           return <span className="text-[11px] font-bold text-gray-300 italic">Tidak ada SO</span>;
         }
 
         return (
           <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-blue-700'}`}>
-            <span className="text-[10px] opacity-40 mr-1">Rp</span>
+            <span className="text-[11px] opacity-40 mr-1">Rp</span>
             <span>{val.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
           </div>
         );
@@ -369,11 +369,11 @@ export default function BarangJadiClient() {
       cell: ({ getValue, row }: any) => {
         const val = Number(getValue() || 0);
         if (val === 0) {
-           return <span className="text-[10px] font-bold text-teal-400/60 italic leading-tight">Belum dilakukan transaksi Penjualan</span>;
+           return <span className="text-[11px] font-bold text-teal-400/60 italic leading-tight">Belum dilakukan transaksi Penjualan</span>;
         }
         return (
           <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-teal-700'}`}>
-            <span className="text-[10px] opacity-40 mr-1">Rp</span>
+            <span className="text-[11px] opacity-40 mr-1">Rp</span>
             <span>{val.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
           </div>
         );
@@ -392,7 +392,7 @@ export default function BarangJadiClient() {
 
         if (so_ord === 0 && so_penj === 0) {
           return (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200/60 rounded-md text-[10px] font-bold w-fit shadow-sm">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200/60 rounded-md text-[11px] font-bold w-fit shadow-sm">
               <AlertCircle size={12} />
               <span>SO Kosong</span>
             </div>
@@ -412,12 +412,12 @@ export default function BarangJadiClient() {
             percentStr = `(${pct.toFixed(1)}%)`;
           }
           return (
-            <div className={`px-2 py-0.5 rounded text-[10px] font-bold shadow-sm flex items-center justify-between border w-full ${isLoss ? 'bg-rose-50 text-rose-700 border-rose-200/60' : 'bg-emerald-50 text-emerald-700 border-emerald-200/60'}`}>
+            <div className={`px-2 py-0.5 rounded text-[11px] font-bold shadow-sm flex items-center justify-between border w-full ${isLoss ? 'bg-rose-50 text-rose-700 border-rose-200/60' : 'bg-emerald-50 text-emerald-700 border-emerald-200/60'}`}>
               <div className="flex items-center gap-1 shrink-0">
-                <span className="text-[10px]">{isLoss ? '⚠️' : '✅'}</span>
+                <span className="text-[11px]">{isLoss ? '⚠️' : '✅'}</span>
                 <span>{label}</span>
               </div>
-              <span className="font-mono tracking-tighter text-right">{formatCurrency(diff)} <span className="opacity-70 font-sans ml-0.5 text-[9px]">{percentStr}</span></span>
+              <span className="font-mono tracking-tighter text-right">{formatCurrency(diff)} <span className="opacity-70 font-sans ml-0.5 text-[11px]">{percentStr}</span></span>
             </div>
           );
         };
@@ -472,7 +472,7 @@ export default function BarangJadiClient() {
             <ScrapingHeader title="Hasil Scrapping Penerimaan Barang Hasil Produksi" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
 
             {loading && data && data.length > 0 && (
-              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
+              <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Memproses Data...</span>
               </div>

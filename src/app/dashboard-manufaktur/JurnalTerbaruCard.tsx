@@ -121,13 +121,13 @@ export default function JurnalTerbaruCard({ initialData }: { initialData: Jurnal
           <table className="min-w-full text-left">
             <thead className="bg-gray-50 border-y border-gray-100">
               <tr>
-                <th className="px-4 py-3 text-[10px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Action</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Waktu Aktivitas / User</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Tgl. jurnal / Shift</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Karyawan / Bagian</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Order realisasi</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Pekerjaan real</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-gray-400 tracking-wider text-right whitespace-nowrap">Target / Real</th>
+                <th className="px-4 py-3 text-[11px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Action</th>
+                <th className="px-5 py-3 text-[11px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Waktu Aktivitas / User</th>
+                <th className="px-5 py-3 text-[11px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Tgl. jurnal / Shift</th>
+                <th className="px-5 py-3 text-[11px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Karyawan / Bagian</th>
+                <th className="px-5 py-3 text-[11px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Order realisasi</th>
+                <th className="px-5 py-3 text-[11px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Pekerjaan real</th>
+                <th className="px-5 py-3 text-[11px] font-bold text-gray-400 tracking-wider text-right whitespace-nowrap">Target / Real</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -141,12 +141,12 @@ export default function JurnalTerbaruCard({ initialData }: { initialData: Jurnal
                   }`}>
                     {/* Action badge */}
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-bold border tracking-wider ${b.cls}`}>{b.label}</span>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold border tracking-wider ${b.cls}`}>{b.label}</span>
                     </td>
                     {/* Waktu input + user */}
                     <td className="px-5 py-3 min-w-[160px]">
                       <p className="text-[11px] font-bold text-gray-600">{inputAt ?? '—'}</p>
-                      <p className="text-[10px] font-semibold text-gray-400">
+                      <p className="text-[11px] font-semibold text-gray-400">
                         {journal.recorded_by || ''}
                         {journal.recorded_by_name ? ` (${journal.recorded_by_name})` : ''}
                       </p>
@@ -154,19 +154,19 @@ export default function JurnalTerbaruCard({ initialData }: { initialData: Jurnal
                     {/* Tanggal jurnal + shift */}
                     <td className="px-5 py-3 whitespace-nowrap">
                       <p className="text-[12px] font-bold text-gray-700">{formatDate(journal.tgl)}</p>
-                      <p className="text-[10px] font-semibold text-gray-400">Shift {journal.shift || '-'}</p>
+                      <p className="text-[11px] font-semibold text-gray-400">Shift {journal.shift || '-'}</p>
                     </td>
                     {/* Nama karyawan + bagian */}
                     <td className="px-5 py-3 min-w-[150px]">
                       <p className="text-[12px] font-bold text-gray-700 line-clamp-1">{journal.nama_karyawan || '-'}</p>
-                      <p className="text-[10px] font-semibold text-gray-400 line-clamp-1">{journal.bagian || '-'}</p>
+                      <p className="text-[11px] font-semibold text-gray-400 line-clamp-1">{journal.bagian || '-'}</p>
                     </td>
                     {/* Order realisasi */}
                     <td className="px-5 py-3 min-w-[170px]">
                       <p className="text-[12px] font-bold text-gray-700 line-clamp-1">
                         {journal.nama_order_2 || journal.no_order_2 || '—'}
                       </p>
-                      <p className="text-[10px] font-semibold text-gray-400">
+                      <p className="text-[11px] font-semibold text-gray-400">
                         {(journal.no_order_2 && journal.nama_order_2) ? journal.no_order_2 : ''}
                       </p>
                     </td>
@@ -183,7 +183,7 @@ export default function JurnalTerbaruCard({ initialData }: { initialData: Jurnal
                     {/* Target / Realisasi */}
                     <td className="px-5 py-3 text-right whitespace-nowrap">
                       <p className="text-[12px] font-extrabold text-gray-800">{formatNilai(journal.realisasi)}</p>
-                      <p className="text-[10px] font-semibold text-gray-400">target {formatNilai(journal.target)}</p>
+                      <p className="text-[11px] font-semibold text-gray-400">target {formatNilai(journal.target)}</p>
                     </td>
                   </tr>
                 );

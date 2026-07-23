@@ -25,7 +25,7 @@ export default function LastUpdatedBadge({ lastUpdated }: LastUpdatedBadgeProps)
   });
 
   return (
-    <div className="flex items-center gap-1 text-[9px] font-semibold text-gray-300 leading-none mt-1">
+    <div className="flex items-center gap-1 text-[11px] font-semibold text-gray-300 leading-none mt-1">
       <Clock size={8} className="shrink-0" />
       <span>{dateStr}, {timeStr}</span>
     </div>

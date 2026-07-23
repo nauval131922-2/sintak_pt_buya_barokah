@@ -111,7 +111,7 @@ async function DashboardStats() {
               </div>
               <div className="min-w-0">
                 <p className="text-[11px] font-bold text-gray-700 leading-tight truncate">{item.label}</p>
-                <p className="text-[10px] text-gray-400 font-medium leading-tight truncate">{item.sub}</p>
+                <p className="text-[11px] text-gray-400 font-medium leading-tight truncate">{item.sub}</p>
               </div>
             </Link>
           ))}

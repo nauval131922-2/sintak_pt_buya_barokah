@@ -567,7 +567,7 @@ export default function InfractionsTable({
                 <div className="flex items-center gap-2 opacity-100 transition-opacity">
                     <button
                         onClick={(e) => { e.stopPropagation(); generateSinglePDF(inf); }}
-                        className="flex items-center gap-1.5 text-[10px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-600 hover:text-white border border-rose-200 px-3 py-1.5 rounded-lg transition-colors leading-noner"
+                        className="flex items-center gap-1.5 text-[11px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-600 hover:text-white border border-rose-200 px-3 py-1.5 rounded-lg transition-colors leading-noner"
                         title="Cetak PDF Faktur"
                     >
                         <FileText size={12} />
@@ -625,7 +625,7 @@ export default function InfractionsTable({
                     {info.getValue() || 'Karyawan Dihapus'}
                 </span>
                 {info.row.original.employee_position && (
-                    <span className="text-[10px] font-bold text-gray-400 line-clamp-1">
+                    <span className="text-[11px] font-bold text-gray-400 line-clamp-1">
                         {info.row.original.employee_position}
                     </span>
                 )}
@@ -653,7 +653,7 @@ export default function InfractionsTable({
                     <span className="text-[12px] font-bold text-gray-700 line-clamp-1" title={inf.nama_barang_display || inf.nama_barang || '---'}>
                         {inf.nama_barang_display || inf.nama_barang || '---'}
                     </span>
-                    <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 w-fit px-2 py-0.5 rounded-md border border-emerald-100 leading-none">
+                    <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 w-fit px-2 py-0.5 rounded-md border border-emerald-100 leading-none">
                         {inf.jenis_barang || 'UMUM'}
                     </span>
                 </div>
@@ -695,7 +695,7 @@ export default function InfractionsTable({
             const formatted = val.toLocaleString('id-ID', { minimumFractionDigits: 0 }).trim();
             return (
                 <div className="flex items-center justify-between w-full font-mono font-bold text-gray-700 pr-1 text-[12px]">
-                    <span className="text-[9px] text-gray-300">Rp</span>
+                    <span className="text-[11px] text-gray-300">Rp</span>
                     <span>{formatted}</span>
                 </div>
             );
@@ -712,7 +712,7 @@ export default function InfractionsTable({
             const formatted = val.toLocaleString('id-ID', { minimumFractionDigits: 0 }).trim();
             return (
                 <div className="flex items-center justify-between w-full font-mono font-bold text-gray-900 pr-1 text-[14px]">
-                    <span className="text-[10px] text-gray-300">Rp</span>
+                    <span className="text-[11px] text-gray-300">Rp</span>
                     <span className="font-extrabold">{formatted}</span>
                 </div>
             );
@@ -770,7 +770,7 @@ export default function InfractionsTable({
               </div>
             </div>
             {isRefreshing && data.length > 0 && (
-              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse tracking-tight leading-none">
+              <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse tracking-tight leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Memproses Data...</span>
               </div>

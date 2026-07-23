@@ -191,19 +191,19 @@ export default function ProduksiTrendChart() {
           </div>
           {initialized && hasTotal && (
             <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-              <span className="inline-flex items-center gap-1 text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
+              <span className="inline-flex items-center gap-1 text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block shrink-0" />
                 Nominal BBB · {formatRupiah(totalNilaiBBB)}
               </span>
-              <span className="inline-flex items-center gap-1 text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100">
+              <span className="inline-flex items-center gap-1 text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100">
                 <span className="w-2 h-2 rounded-full bg-indigo-400 inline-block shrink-0" />
                 HPP Hasil Produksi · {formatRupiah(totalHPP)}
               </span>
-              <span className="inline-flex items-center gap-1 text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+              <span className="inline-flex items-center gap-1 text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
                 <span className="w-2 h-1.5 rounded-sm bg-emerald-300 inline-block shrink-0" />
                 Qty BBB · {totalQtyBBB.toLocaleString('id-ID')}
               </span>
-              <span className="inline-flex items-center gap-1 text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-400 border border-indigo-100">
+              <span className="inline-flex items-center gap-1 text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-400 border border-indigo-100">
                 <span className="w-2 h-1.5 rounded-sm bg-indigo-300 inline-block shrink-0" />
                 Qty Hasil Produksi · {totalQtyHasil.toLocaleString('id-ID')}
               </span>

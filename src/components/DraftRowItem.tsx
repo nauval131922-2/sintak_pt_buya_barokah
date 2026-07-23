@@ -197,9 +197,9 @@ const DraftRowItem = memo(function DraftRowItem({
         </td>
 
         {/* Alasan */}
-        <td className="border border-gray-200 py-1.5 px-2 text-[10px] text-gray-400 max-w-[180px]">
+        <td className="border border-gray-200 py-1.5 px-2 text-[11px] text-gray-400 max-w-[180px]">
           {row._sourceType && (
-            <span className={`inline-block mb-0.5 px-1.5 py-0.5 rounded text-[9px] font-black mr-1 ${
+            <span className={`inline-block mb-0.5 px-1.5 py-0.5 rounded text-[11px] font-black mr-1 ${
               row._sourceType === 'order_aktif'
                 ? 'bg-emerald-50 text-emerald-700'
                 : row._sourceType === 'pola_historis'

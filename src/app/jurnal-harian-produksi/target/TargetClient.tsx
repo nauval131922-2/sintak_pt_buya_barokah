@@ -518,7 +518,7 @@ export default function TargetClient() {
               </div>
               <div className="flex flex-col items-center gap-1">
                 <span className="text-[13px] font-black text-slate-700 tracking-tight animate-pulse">Memproses Data...</span>
-                <span className="text-[10px] font-bold text-slate-400">Harap tunggu sebentar</span>
+                <span className="text-[11px] font-bold text-slate-400">Harap tunggu sebentar</span>
               </div>
             </div>
           </div>
@@ -594,7 +594,7 @@ export default function TargetClient() {
                   {['No.', 'Shift', 'Jam Kerja', 'Nama Karyawan', 'No. Order', 'Nama Order', 'Jenis Pekerjaan', 'Keterangan', 'Target'].map((h, i) => (
                     <th
                       key={h}
-                      className="border border-gray-300 py-1.5 px-2 font-black text-[10px] whitespace-nowrap"
+                      className="border border-gray-300 py-1.5 px-2 font-black text-[11px] whitespace-nowrap"
                       style={{ textAlign: i === 0 || i === 1 || i === 2 ? 'center' : i === 8 ? 'right' : 'left' }}
                     >
                       {h}

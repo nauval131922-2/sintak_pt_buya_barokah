@@ -258,7 +258,7 @@ function DataTableInner<TData extends { id: number | string }>({
                                     <>
                                       {sortingState.desc ? <ArrowDown size={14} className="text-blue-500" /> : <ArrowUp size={14} className="text-blue-500" />}
                                       {activeSorting.length > 1 && (
-                                        <span className="text-[10px] font-bold text-blue-400 leading-none">{sortIndex + 1}</span>
+                                        <span className="text-[11px] font-bold text-blue-400 leading-none">{sortIndex + 1}</span>
                                       )}
                                     </>
                                 ) : (

@@ -207,7 +207,7 @@ export default function AkuntingTrendChart() {
           </div>
           {initialized && hasTotal && (
             <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-              <span className={`inline-flex items-center gap-1 text-[9px] font-extrabold px-2 py-0.5 rounded-full border ${
+              <span className={`inline-flex items-center gap-1 text-[11px] font-extrabold px-2 py-0.5 rounded-full border ${
                 totalLabaRugi >= 0
                   ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
                   : 'bg-rose-50 text-rose-600 border-rose-100'
@@ -215,7 +215,7 @@ export default function AkuntingTrendChart() {
                 <span className={`w-2 h-2 rounded-full inline-block shrink-0 ${totalLabaRugi >= 0 ? 'bg-emerald-400' : 'bg-rose-400'}`} />
                 Laba/Rugi · {formatRupiah(totalLabaRugi)}
               </span>
-              <span className={`inline-flex items-center gap-1 text-[9px] font-extrabold px-2 py-0.5 rounded-full border ${
+              <span className={`inline-flex items-center gap-1 text-[11px] font-extrabold px-2 py-0.5 rounded-full border ${
                 totalArusKas >= 0
                   ? 'bg-violet-50 text-violet-600 border-violet-100'
                   : 'bg-rose-50 text-rose-600 border-rose-100'

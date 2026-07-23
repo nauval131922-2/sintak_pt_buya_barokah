@@ -44,13 +44,13 @@ export default function ExcelUploadCard({
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="text-[12px] font-bold text-gray-800 leading-none mb-1 tracking-tight">{title}</h3>
-          <div className="text-[10px] text-gray-400 font-medium leading-relaxed">
+          <div className="text-[11px] text-gray-400 font-medium leading-relaxed">
             {description}
           </div>
 
           {status === 'loading' && (
             <div className="mt-2 space-y-1.5">
-              <div className="flex items-center justify-between text-[10px] font-bold tracking-tight">
+              <div className="flex items-center justify-between text-[11px] font-bold tracking-tight">
                 <span className="text-emerald-600">
                   Data: {currentRows.toLocaleString('id-ID')} / {totalRows.toLocaleString('id-ID')}
                 </span>
@@ -95,7 +95,7 @@ export default function ExcelUploadCard({
       </div>
 
       {status === 'error' && errorMessage && (
-        <div className="absolute top-full left-0 right-0 mt-3 p-3 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl shadow-sm shadow-rose-900/5 text-[10px] font-bold flex items-start gap-2 animate-in slide-in-from-top-2 z-20">
+        <div className="absolute top-full left-0 right-0 mt-3 p-3 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl shadow-sm shadow-rose-900/5 text-[11px] font-bold flex items-start gap-2 animate-in slide-in-from-top-2 z-20">
           <XCircle className="w-4 h-4 shrink-0" />
           <p>{errorMessage}</p>
         </div>

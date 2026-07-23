@@ -546,13 +546,13 @@ export default function HasilProduksiClient() {
           </td>
           <td className="md:sticky md:z-10 px-4 py-3.5 border-r border-gray-100" style={{ width: cw(1), minWidth: cw(1), backgroundColor: isEven ? '#fff' : '#f9fafb', ...sl(1) }}>
             <div className="flex flex-col min-w-0">
-              <span className="text-[9px] xl:text-[10px] font-bold text-gray-400 uppercase leading-none mb-1 truncate" title={item.bagian}>{item.bagian}</span>
+              <span className="text-[11px] font-bold text-gray-400 uppercase leading-none mb-1 truncate" title={item.bagian}>{item.bagian}</span>
               <span className="text-[11px] xl:text-[12px] font-bold text-gray-800 leading-tight whitespace-nowrap truncate" title={item.nama_karyawan}>{item.nama_karyawan}</span>
             </div>
           </td>
           <td className="lg:sticky lg:z-10 px-4 py-3.5 border-r border-gray-100" style={{ width: cw(2), minWidth: cw(2), backgroundColor: isEven ? '#fff' : '#f9fafb', ...sl(2) }}>
             <div className="flex flex-col min-w-0">
-              <span className="text-[9px] xl:text-[10px] font-bold text-gray-400 leading-none mb-1 truncate" title={item.no_order_2 || ''}>{item.no_order_2 || '-'}</span>
+              <span className="text-[11px] font-bold text-gray-400 leading-none mb-1 truncate" title={item.no_order_2 || ''}>{item.no_order_2 || '-'}</span>
               <span className="text-[11px] xl:text-[12px] font-bold text-gray-700 leading-tight truncate" title={item.nama_order_2 || ''}>{item.nama_order_2 || '-'}</span>
             </div>
           </td>
@@ -561,17 +561,17 @@ export default function HasilProduksiClient() {
               {(item.jenis_pekerjaan_2 || '-').toLowerCase()}
             </div>
           </td>
-          <td className="lg:sticky lg:z-10 px-4 py-3.5 text-[10px] xl:text-[11px] font-mono font-bold border-r border-gray-100 text-emerald-700 truncate" style={{ width: cw(4), minWidth: cw(4), maxWidth: cw(4), backgroundColor: isEven ? '#fff' : '#f9fafb', ...sl(4) }} title={group.code || ''}>
+          <td className="lg:sticky lg:z-10 px-4 py-3.5 text-[11px] font-mono font-bold border-r border-gray-100 text-emerald-700 truncate" style={{ width: cw(4), minWidth: cw(4), maxWidth: cw(4), backgroundColor: isEven ? '#fff' : '#f9fafb', ...sl(4) }} title={group.code || ''}>
               {group.code || '-'}
             </td>
-          <td className="px-4 py-3.5 text-[10px] xl:text-[11px] font-bold border-r border-gray-100 truncate text-gray-600" style={{ width: cw(5), minWidth: cw(5), maxWidth: cw(5) }} title={item.bahan_kertas || ''}>{item.bahan_kertas || '-'}</td>
+          <td className="px-4 py-3.5 text-[11px] font-bold border-r border-gray-100 truncate text-gray-600" style={{ width: cw(5), minWidth: cw(5), maxWidth: cw(5) }} title={item.bahan_kertas || ''}>{item.bahan_kertas || '-'}</td>
           <td className="px-4 py-3.5 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-gray-700" style={{ width: cw(6), minWidth: cw(6) }}>{formatCellVal(item.jml_plate)}</td>
-          <td className="px-4 py-3.5 text-[10px] xl:text-[11px] font-bold border-r border-gray-100 truncate text-gray-600" style={{ width: cw(7), minWidth: cw(7), maxWidth: cw(7) }} title={item.warna || ''}>{item.warna || '-'}</td>
+          <td className="px-4 py-3.5 text-[11px] font-bold border-r border-gray-100 truncate text-gray-600" style={{ width: cw(7), minWidth: cw(7), maxWidth: cw(7) }} title={item.warna || ''}>{item.warna || '-'}</td>
           <td className="px-4 py-3.5 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-gray-700" style={{ width: cw(8), minWidth: cw(8) }}>{formatCellVal(item.inscheet)}</td>
           <td className="px-4 py-3.5 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-rose-600" style={{ width: cw(9), minWidth: cw(9) }}>{formatCellVal(item.rijek)}</td>
           <td className="px-4 py-3.5 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-gray-700 truncate" style={{ width: cw(10), minWidth: cw(10) }} title={item.jam || ''}>{item.jam || '-'}</td>
-          <td className="px-4 py-3.5 text-[10px] xl:text-[11px] font-bold border-r border-gray-100 truncate text-rose-600" style={{ width: cw(11), minWidth: cw(11) }} title={item.kendala || ''}>{item.kendala || '-'}</td>
-          <td className="px-4 py-3.5 text-[10px] xl:text-[11px] font-bold border-r border-gray-100 text-gray-500 truncate" style={{ width: cw(12), minWidth: cw(12) }} title={item.keterangan || ''}>{item.keterangan || '-'}</td>
+          <td className="px-4 py-3.5 text-[11px] font-bold border-r border-gray-100 truncate text-rose-600" style={{ width: cw(11), minWidth: cw(11) }} title={item.kendala || ''}>{item.kendala || '-'}</td>
+          <td className="px-4 py-3.5 text-[11px] font-bold border-r border-gray-100 text-gray-500 truncate" style={{ width: cw(12), minWidth: cw(12) }} title={item.keterangan || ''}>{item.keterangan || '-'}</td>
           <td className="px-4 py-3.5 text-[12px] xl:text-[13px] font-bold text-right tabular-nums border-r border-gray-100 text-gray-700" style={{ width: cw(13), minWidth: cw(13) }}>{Number(item.target).toLocaleString('id-ID')}</td>
           <td className="px-4 py-3.5 text-[13px] xl:text-[15px] font-semibold text-right tabular-nums bg-emerald-50 text-emerald-900" style={{ width: cw(14), minWidth: cw(14) }}>{Number(item.realisasi).toLocaleString('id-ID')}</td>
         </tr>
@@ -611,11 +611,11 @@ export default function HasilProduksiClient() {
           <td className="px-4 py-3 xl:py-4 text-[11px] xl:text-[12px] font-bold text-gray-600 border-r border-gray-50 tracking-tight">
             <div className="truncate max-w-[400px]" title={item.nama_prd}>{item.nama_prd}</div>
           </td>
-          <td className="px-4 py-3 xl:py-4 text-[10px] xl:text-[11px] font-bold text-gray-400 border-r border-gray-50 tabular-nums">
+          <td className="px-4 py-3 xl:py-4 text-[11px] font-bold text-gray-400 border-r border-gray-50 tabular-nums">
             {item.faktur}
           </td>
           <td className="px-4 py-3 xl:py-4 text-[13px] xl:text-[15px] font-bold text-emerald-900 bg-emerald-50 text-right tabular-nums">
-            {Number(item.qty).toLocaleString('id-ID')} <span className="text-[9px] xl:text-[10px] font-bold text-emerald-600/50 ml-1 uppercase">{item.satuan || unit}</span>
+            {Number(item.qty).toLocaleString('id-ID')} <span className="text-[11px] font-bold text-emerald-600/50 ml-1 uppercase">{item.satuan || unit}</span>
           </td>
         </tr>
       );
@@ -625,7 +625,7 @@ export default function HasilProduksiClient() {
           <tr key={`${gIdx}-subtotal`} className="bg-emerald-100 border-t-2 border-emerald-200">
             <td colSpan={3} className="px-5 py-3.5 text-right text-[15px] font-extrabold tracking-tight text-emerald-900 border-r border-emerald-200">Total Harian {formatToDayMonthYear(group.date)}</td>
             <td className="px-5 py-3.5 text-right text-[17px] font-extrabold tabular-nums text-emerald-900 bg-emerald-200/60">
-               {group.total.toLocaleString('id-ID')} <span className="text-[10px] opacity-40 ml-1 uppercase">{group.items[0].satuan || unit}</span>
+               {group.total.toLocaleString('id-ID')} <span className="text-[11px] opacity-40 ml-1 uppercase">{group.items[0].satuan || unit}</span>
             </td>
           </tr>
         );
@@ -737,7 +737,7 @@ export default function HasilProduksiClient() {
                       <ClipboardList size={12} />
                     </div>
                     <div className="flex flex-col items-start flex-1 min-w-0 overflow-hidden">
-                      <span className="text-[10px] font-semibold text-emerald-700 leading-none">{selectedSopd.no_sopd}</span>
+                      <span className="text-[11px] font-semibold text-emerald-700 leading-none">{selectedSopd.no_sopd}</span>
                       <span className="text-[12px] font-semibold text-gray-800 truncate tracking-tight w-full text-left" title={`${selectedSopd.pelanggan} — ${selectedSopd.nama_order}`}>
                         {selectedSopd.pelanggan} — {selectedSopd.nama_order}
                       </span>
@@ -794,7 +794,7 @@ export default function HasilProduksiClient() {
                     {loadingSopd ? (
                       <div className="flex flex-col items-center justify-center py-10 gap-3 opacity-40">
                         <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                        <span className="text-[10px] font-semibold tracking-wide">Mencari data...</span>
+                        <span className="text-[11px] font-semibold tracking-wide">Mencari data...</span>
                       </div>
                     ) : (
                       <>
@@ -814,14 +814,14 @@ export default function HasilProduksiClient() {
                         }`}
                       >
                         <div className="flex flex-col items-start min-w-0 flex-1 mr-3 text-left">
-                          <span className={`text-[10px] font-semibold mb-1 ${selectedSopd?.no_sopd === opt.no_sopd ? 'text-emerald-100' : 'text-emerald-600'}`}>
+                          <span className={`text-[11px] font-semibold mb-1 ${selectedSopd?.no_sopd === opt.no_sopd ? 'text-emerald-100' : 'text-emerald-600'}`}>
                             {opt.no_sopd}
                           </span>
                           <span className={`text-[13px] font-semibold truncate w-full ${selectedSopd?.no_sopd === opt.no_sopd ? 'text-white' : 'text-gray-800'}`} title={`${opt.pelanggan} — ${opt.nama_order}`}>
                             {opt.pelanggan} — {opt.nama_order}
                           </span>
                         </div>
-                        <div className={`px-3 py-1 rounded-full text-[10px] font-semibolder shrink-0 whitespace-nowrap ${selectedSopd?.no_sopd === opt.no_sopd ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                        <div className={`px-3 py-1 rounded-full text-[11px] font-semibolder shrink-0 whitespace-nowrap ${selectedSopd?.no_sopd === opt.no_sopd ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
                           {opt.qty?.toLocaleString('id-ID')} {opt.unit}
                         </div>
                       </button>
@@ -934,7 +934,7 @@ export default function HasilProduksiClient() {
                     <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Jumlah Order</span>
                     <div className="flex items-baseline gap-1 min-w-0">
                       <span className="text-lg sm:text-xl font-semibold text-gray-800 tabular-nums truncate" title={selectedSopd.qty.toLocaleString('id-ID')}>{selectedSopd.qty.toLocaleString('id-ID')}</span>
-                      <span className="text-[9px] sm:text-[10px] font-bold text-gray-400er shrink-0">{selectedSopd.unit}</span>
+                      <span className="text-[11px] font-bold text-gray-400er shrink-0">{selectedSopd.unit}</span>
                     </div>
                   </div>
                   <div className="w-px h-6 bg-gray-100 shrink-0 mx-2 sm:mx-3"></div>
@@ -942,7 +942,7 @@ export default function HasilProduksiClient() {
                     <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight shrink-0">WIP</span>
                     <div className="flex items-baseline gap-1 min-w-0">
                       <span className="text-lg sm:text-xl font-semibold text-rose-600 tabular-nums truncate" title={(selectedSopd.qty - grandTotal).toLocaleString('id-ID')}>{(selectedSopd.qty - grandTotal).toLocaleString('id-ID')}</span>
-                      <span className="text-[9px] sm:text-[10px] font-bold text-gray-400er shrink-0">{selectedSopd.unit}</span>
+                      <span className="text-[11px] font-bold text-gray-400er shrink-0">{selectedSopd.unit}</span>
                     </div>
                   </div>
                   <div className="w-px h-6 bg-gray-100 shrink-0 mx-2 sm:mx-3"></div>
@@ -950,7 +950,7 @@ export default function HasilProduksiClient() {
                     <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Hasil Produksi</span>
                     <div className="flex items-baseline gap-1 min-w-0">
                       <span className="text-lg sm:text-xl font-semibold text-emerald-600 tabular-nums truncate" title={grandTotal.toLocaleString('id-ID')}>{grandTotal.toLocaleString('id-ID')}</span>
-                      <span className="text-[9px] sm:text-[10px] font-bold text-gray-400er shrink-0">{selectedSopd.unit}</span>
+                      <span className="text-[11px] font-bold text-gray-400er shrink-0">{selectedSopd.unit}</span>
                     </div>
                   </div>
                 </div>
@@ -966,7 +966,7 @@ export default function HasilProduksiClient() {
                     <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Realisasi</span>
                     <div className="flex items-baseline gap-1 min-w-0">
                       <span className="text-lg sm:text-xl font-semibold text-emerald-600 tabular-nums truncate" title={grandTotalJurnal.toLocaleString('id-ID')}>{grandTotalJurnal.toLocaleString('id-ID')}</span>
-                      <span className="text-[9px] sm:text-[10px] font-bold text-gray-400er shrink-0">{selectedSopd.unit}</span>
+                      <span className="text-[11px] font-bold text-gray-400er shrink-0">{selectedSopd.unit}</span>
                     </div>
                   </div>
                   <div className="w-px h-6 bg-gray-100 shrink-0 mx-2 sm:mx-3"></div>
@@ -974,7 +974,7 @@ export default function HasilProduksiClient() {
                     <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight shrink-0">WIP</span>
                     <div className="flex items-baseline gap-1 min-w-0">
                       <span className="text-lg sm:text-xl font-semibold text-rose-600 tabular-nums truncate" title={(selectedSopd.qty - grandTotalJurnal).toLocaleString('id-ID')}>{(selectedSopd.qty - grandTotalJurnal).toLocaleString('id-ID')}</span>
-                      <span className="text-[9px] sm:text-[10px] font-bold text-gray-400er shrink-0">{selectedSopd.unit}</span>
+                      <span className="text-[11px] font-bold text-gray-400er shrink-0">{selectedSopd.unit}</span>
                     </div>
                   </div>
                 </div>
@@ -983,7 +983,7 @@ export default function HasilProduksiClient() {
                 <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-lg shadow-gray-900/5 px-3 sm:px-5 py-2.5 sm:py-3.5 flex items-center shrink-0">
                   <button
                     onClick={() => setShowChart(!showChart)}
-                    className={`px-4 py-1.5 rounded-lg border text-[10px] font-semibold transition-all shadow-sm shrink-0 ${showChart ? 'bg-emerald-600 text-white border-emerald-600' : 'border-emerald-100 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white'}`}
+                    className={`px-4 py-1.5 rounded-lg border text-[11px] font-semibold transition-all shadow-sm shrink-0 ${showChart ? 'bg-emerald-600 text-white border-emerald-600' : 'border-emerald-100 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white'}`}
                   >
                     Tren
                   </button>
@@ -1014,7 +1014,7 @@ export default function HasilProduksiClient() {
                     <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight">Jumlah Order</span>
                     <div className="flex items-baseline gap-1">
                       <span className="text-lg sm:text-xl font-semibold text-gray-800 tabular-nums">{selectedSopd.qty.toLocaleString('id-ID')}</span>
-                      <span className="text-[9px] sm:text-[10px] font-bold text-gray-400er">{selectedSopd.unit}</span>
+                      <span className="text-[11px] font-bold text-gray-400er">{selectedSopd.unit}</span>
                     </div>
                   </div>
 
@@ -1024,7 +1024,7 @@ export default function HasilProduksiClient() {
                     <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight">WIP</span>
                     <div className="flex items-baseline gap-1">
                       <span className="text-lg sm:text-xl font-semibold text-rose-600 tabular-nums">{(selectedSopd.qty - grandTotal).toLocaleString('id-ID')}</span>
-                      <span className="text-[9px] sm:text-[10px] font-bold text-gray-400er">{selectedSopd.unit}</span>
+                      <span className="text-[11px] font-bold text-gray-400er">{selectedSopd.unit}</span>
                     </div>
                   </div>
 
@@ -1034,7 +1034,7 @@ export default function HasilProduksiClient() {
                     <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight">Hasil Produksi</span>
                     <div className="flex items-baseline gap-1">
                       <span className="text-lg sm:text-xl font-semibold text-emerald-600 tabular-nums">{grandTotal.toLocaleString('id-ID')}</span>
-                      <span className="text-[9px] sm:text-[10px] font-bold text-gray-400er">{selectedSopd.unit}</span>
+                      <span className="text-[11px] font-bold text-gray-400er">{selectedSopd.unit}</span>
                     </div>
                   </div>
                 </div>
@@ -1043,7 +1043,7 @@ export default function HasilProduksiClient() {
                 <div className="flex-1 bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-lg shadow-gray-900/5 px-3 sm:px-5 py-2.5 sm:py-3.5 flex items-center gap-2 sm:gap-6 min-w-0">
                   <button
                     onClick={() => setShowChart(!showChart)}
-                    className={`px-4 py-1.5 rounded-lg border text-[10px] font-semibold transition-all shadow-sm shrink-0 ${showChart ? 'bg-emerald-600 text-white border-emerald-600' : 'border-emerald-100 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white'}`}
+                    className={`px-4 py-1.5 rounded-lg border text-[11px] font-semibold transition-all shadow-sm shrink-0 ${showChart ? 'bg-emerald-600 text-white border-emerald-600' : 'border-emerald-100 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white'}`}
                   >
                     Tren
                   </button>
@@ -1123,7 +1123,7 @@ export default function HasilProduksiClient() {
                       </div>
                       <div className="flex flex-col">
                         <h3 className="text-lg sm:text-xl font-bold tracking-tight text-gray-800 leading-tight">Tren Produksi Harian</h3>
-                        <span className="text-[10px] sm:text-[12px] font-medium text-gray-500 mt-1">
+                        <span className="text-[11px] sm:text-[12px] font-medium text-gray-500 mt-1">
                           Grafik perbandingan Barang Jadi dan Realisasi Pekerjaan
                         </span>
                       </div>
@@ -1256,10 +1256,10 @@ export default function HasilProduksiClient() {
                   </colgroup>
                   <thead className="sticky top-0 z-20">
                     <tr className="bg-white">
-                      <th className="sticky left-0 z-30 px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]">Tanggal</th>
-                      <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-gray-100 bg-white whitespace-nowrap">Nama Produksi</th>
-                      <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-gray-100 bg-white whitespace-nowrap">No. Faktur</th>
-                      <th className="px-4 py-3 xl:py-5 text-[10px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-gray-100 bg-emerald-50 text-right whitespace-nowrap">Quantity</th>
+                      <th className="sticky left-0 z-30 px-4 py-3 xl:py-5 text-[11px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]">Tanggal</th>
+                      <th className="px-4 py-3 xl:py-5 text-[11px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-gray-100 bg-white whitespace-nowrap">Nama Produksi</th>
+                      <th className="px-4 py-3 xl:py-5 text-[11px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-gray-100 bg-white whitespace-nowrap">No. Faktur</th>
+                      <th className="px-4 py-3 xl:py-5 text-[11px] xl:text-xs font-bold text-gray-400 tracking-tight border-b border-gray-100 bg-emerald-50 text-right whitespace-nowrap">Quantity</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
@@ -1273,7 +1273,7 @@ export default function HasilProduksiClient() {
               {/* Operator Efficiency Summary - Horizontal scrollable row */}
               {jurnalResults.length > 0 && !loadingDetails && selectedPekerjaan && (
                 <div className="bg-white border-b border-gray-100 px-6 py-2.5 flex items-center gap-4 shrink-0 overflow-hidden">
-                  <div className="flex items-center gap-2 text-[10px] font-semibold text-emerald-600 tracking-wide shrink-0">
+                  <div className="flex items-center gap-2 text-[11px] font-semibold text-emerald-600 tracking-wide shrink-0">
                     <TrendingUp size={14} />
                     <span>Realisasi:</span>
                   </div>
@@ -1308,7 +1308,7 @@ export default function HasilProduksiClient() {
                     <tr className="bg-white">
                       {colWidths.map((w, i) => (
                         <th key={i} onClick={() => toggleSort(i)} onContextMenu={(e) => colCtx(i, e)}
-                          className={`px-2 py-3 xl:py-4 text-[10px] xl:text-xs font-bold tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap ${i === 0 ? 'sticky left-0 z-30 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]' : ''} ${i === 1 ? 'md:sticky md:z-30 md:shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]' : ''} ${i === 2 || i === 3 || i === 4 ? 'lg:sticky lg:z-30 lg:shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]' : ''} ${sorting.some(x => x.i === i) ? 'text-emerald-600' : 'text-gray-400'} ${i >= 6 && i <= 9 ? 'text-right' : ''} ${i === 14 ? 'bg-emerald-50' : ''} cursor-pointer hover:bg-gray-50 select-none`}
+                          className={`px-2 py-3 xl:py-4 text-[11px] xl:text-xs font-bold tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap ${i === 0 ? 'sticky left-0 z-30 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]' : ''} ${i === 1 ? 'md:sticky md:z-30 md:shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]' : ''} ${i === 2 || i === 3 || i === 4 ? 'lg:sticky lg:z-30 lg:shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]' : ''} ${sorting.some(x => x.i === i) ? 'text-emerald-600' : 'text-gray-400'} ${i >= 6 && i <= 9 ? 'text-right' : ''} ${i === 14 ? 'bg-emerald-50' : ''} cursor-pointer hover:bg-gray-50 select-none`}
                           style={{ width: `${w}px`, minWidth: `${w}px`, ...(i > 4 ? { position: 'relative' } : {}), ...(i > 0 && i <= 4 ? { left: `${colWidths.slice(0, i).reduce((a, b) => a + b, 0)}px` } : {}) }}>
                           <div className="flex items-center gap-1">
                             <SortIcon i={i} />
@@ -1368,7 +1368,7 @@ export default function HasilProduksiClient() {
                   <div className="flex items-center gap-3">
                     <span className="text-[11px] font-bold text-gray-400 tracking-wide">Menampilkan {totalJurnalItems} dari {totalJurnalItems} baris data</span>
                     {loadTime !== null && loadTime !== undefined && (
-                      <div className={`text-[9px] px-2 py-1 rounded-full font-bold flex items-center gap-1.5 border tracking-wide shadow-sm ${
+                      <div className={`text-[11px] px-2 py-1 rounded-full font-bold flex items-center gap-1.5 border tracking-wide shadow-sm ${
                         loadTime < 300  ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
                         loadTime < 1000 ? 'bg-amber-50 text-amber-600 border-amber-100' :
                                           'bg-red-50 text-red-600 border-red-100'
@@ -1417,7 +1417,7 @@ export default function HasilProduksiClient() {
               Silakan pilih <span className="text-emerald-600 font-bold">Order Produksi (SOPd)</span> melalui panel di atas untuk mulai membandingkan laporan operasional.
             </p>
             
-            <div className="mt-12 flex items-center gap-4 text-[10px] font-semibold text-gray-300">
+            <div className="mt-12 flex items-center gap-4 text-[11px] font-semibold text-gray-300">
               <div className="w-12 h-px bg-gray-100"></div>
               SINTAK ERP SYSTEM
               <div className="w-12 h-px bg-gray-100"></div>

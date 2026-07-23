@@ -254,7 +254,7 @@ export default function PenerimaanPembelianClient() {
       meta: { align: 'right' },
       cell: ({ getValue, row }: any) => (
         <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-emerald-700'}`}>
-          <span className="text-[10px] opacity-40 mr-1">Rp</span>
+          <span className="text-[11px] opacity-40 mr-1">Rp</span>
           <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
         </div>
       )
@@ -302,7 +302,7 @@ export default function PenerimaanPembelianClient() {
             <ScrapingHeader title="Hasil Scrapping Penerimaan Barang" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
 
             {loading && (data?.length || 0) > 0 && (
-              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
+              <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Syncing...</span>
               </div>

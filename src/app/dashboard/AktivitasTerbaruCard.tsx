@@ -89,10 +89,10 @@ export default function AktivitasTerbaruCard({
           <table className="min-w-full text-left">
             <thead className="bg-gray-50 border-y border-gray-100">
               <tr>
-                <th className="px-4 py-3 text-[10px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Action</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Waktu / User</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Tabel</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-gray-400 tracking-wider whitespace-nowrap min-w-[240px]">Keterangan</th>
+                <th className="px-4 py-3 text-[11px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Action</th>
+                <th className="px-5 py-3 text-[11px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Waktu / User</th>
+                <th className="px-5 py-3 text-[11px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Tabel</th>
+                <th className="px-5 py-3 text-[11px] font-bold text-gray-400 tracking-wider whitespace-nowrap min-w-[240px]">Keterangan</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -101,13 +101,13 @@ export default function AktivitasTerbaruCard({
                 return (
                   <tr key={log.id} className="hover:bg-gray-50/70 transition-colors">
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-bold border tracking-wider ${b.cls}`}>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold border tracking-wider ${b.cls}`}>
                         {b.label}
                       </span>
                     </td>
                     <td className="px-5 py-3 min-w-[160px]">
                       <p className="text-[11px] font-bold text-gray-600">{formatLastUpdate(log.created_at)}</p>
-                      <p className="text-[10px] font-semibold text-gray-400">
+                      <p className="text-[11px] font-semibold text-gray-400">
                         {log.recorded_by || 'system'}
                         {log.recorded_by_name ? ` (${log.recorded_by_name})` : ''}
                       </p>

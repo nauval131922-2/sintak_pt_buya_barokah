@@ -312,7 +312,7 @@ export const RenderColumnContent = React.memo(
               </span>
             </p>
             {extraLabel && (
-              <p className="text-[10px] text-emerald-700 mt-1.5 font-medium italic">
+              <p className="text-[11px] text-emerald-700 mt-1.5 font-medium italic">
                 {extraLabel}
               </p>
             )}
@@ -323,7 +323,7 @@ export const RenderColumnContent = React.memo(
                   return (
                     <div
                       key={i}
-                      className={`flex items-start gap-1.5 text-[10px] text-gray-800 leading-tight ${isSubItem ? 'ml-4' : ''}`}
+                      className={`flex items-start gap-1.5 text-[11px] text-gray-800 leading-tight ${isSubItem ? 'ml-4' : ''}`}
                     >
                       {!isSubItem && (
                         <span className="text-emerald-600 font-bold shrink-0">

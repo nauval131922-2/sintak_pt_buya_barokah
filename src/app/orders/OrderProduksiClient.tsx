@@ -333,7 +333,7 @@ export default function OrderProduksiClient() {
             <ScrapingHeader title="Hasil Scrapping Order Produksi" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
 
             {loading && (data?.length || 0) > 0 && (
-              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
+              <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Syncing...</span>
               </div>

@@ -613,7 +613,7 @@ export default function AutoGenerateModal({
                 <div className="grid grid-cols-2 gap-3">
                   {/* Rekap Order */}
                   <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
-                    <p className="text-[10px] font-black text-gray-400 mb-2">
+                    <p className="text-[11px] font-black text-gray-400 mb-2">
                       Rekap Order ({rekapOrder.length})
                     </p>
                     <div className="flex flex-col gap-1.5 max-h-[140px] overflow-y-auto">
@@ -625,15 +625,15 @@ export default function AutoGenerateModal({
                           <div className="min-w-0 flex-1">
                             <span className="text-[11px] font-black text-gray-700">{o.no_order}</span>
                             {o.nama_order && (
-                              <span className="text-[10px] font-medium text-gray-400 ml-1 truncate">— {o.nama_order}</span>
+                              <span className="text-[11px] font-medium text-gray-400 ml-1 truncate">— {o.nama_order}</span>
                             )}
                             <div className="flex flex-wrap gap-1 mt-0.5">
                               {[...o.bagian].map(b => (
-                                <span key={b} className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 text-[9px] font-black rounded">{b}</span>
+                                <span key={b} className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 text-[11px] font-black rounded">{b}</span>
                               ))}
                             </div>
                           </div>
-                          <span className="shrink-0 text-[10px] font-black text-gray-400 mt-0.5">{o.karyawan.size} org</span>
+                          <span className="shrink-0 text-[11px] font-black text-gray-400 mt-0.5">{o.karyawan.size} org</span>
                         </div>
                       ))}
                     </div>
@@ -641,7 +641,7 @@ export default function AutoGenerateModal({
 
                   {/* Rekap Pekerjaan */}
                   <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
-                    <p className="text-[10px] font-black text-gray-400 mb-2">
+                    <p className="text-[11px] font-black text-gray-400 mb-2">
                       Rekap Jenis Pekerjaan ({rekapPekerjaan.length})
                     </p>
                     <div className="flex flex-col gap-1 max-h-[140px] overflow-y-auto">
@@ -651,7 +651,7 @@ export default function AutoGenerateModal({
                       {rekapPekerjaan.map(p => (
                         <div key={p.pekerjaan} className="flex items-center justify-between gap-2">
                           <span className="text-[11px] font-bold text-gray-700 truncate">{p.pekerjaan}</span>
-                          <span className="shrink-0 px-1.5 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-black rounded">{p.jumlah}x</span>
+                          <span className="shrink-0 px-1.5 py-0.5 bg-blue-50 text-blue-700 text-[11px] font-black rounded">{p.jumlah}x</span>
                         </div>
                       ))}
                     </div>
@@ -663,17 +663,17 @@ export default function AutoGenerateModal({
                 <table className="w-full border-collapse text-[12px]">
                   <thead className="bg-gray-50 sticky top-0 z-10">
                     <tr>
-                      <th className="border border-gray-200 py-2 px-2 font-black text-[10px] text-gray-500 text-center w-8">#</th>
-                      <th className="border border-gray-200 py-2 px-2 font-black text-[10px] text-gray-500 text-left">Bagian</th>
-                      <th className="border border-gray-200 py-2 px-2 font-black text-[10px] text-gray-500 text-center w-16">Shift</th>
-                      <th className="border border-gray-200 py-2 px-2 font-black text-[10px] text-gray-500 text-left">Nama Karyawan</th>
-                      <th className="border border-gray-200 py-2 px-2 font-black text-[10px] text-gray-500 text-left">No Order</th>
-                      <th className="border border-gray-200 py-2 px-2 font-black text-[10px] text-gray-500 text-left">Nama Order</th>
-                      <th className="border border-gray-200 py-2 px-2 font-black text-[10px] text-gray-500 text-left">Jenis Pekerjaan</th>
-                      <th className="border border-gray-200 py-2 px-2 font-black text-[10px] text-gray-500 text-left">Keterangan</th>
-                      <th className="border border-gray-200 py-2 px-2 font-black text-[10px] text-gray-500 text-right w-20">Target</th>
-                      <th className="border border-gray-200 py-2 px-2 font-black text-[10px] text-gray-500 text-left max-w-[180px]">Alasan</th>
-                      <th className="border border-gray-200 py-2 px-2 font-black text-[10px] text-gray-500 text-center w-12"></th>
+                      <th className="border border-gray-200 py-2 px-2 font-black text-[11px] text-gray-500 text-center w-8">#</th>
+                      <th className="border border-gray-200 py-2 px-2 font-black text-[11px] text-gray-500 text-left">Bagian</th>
+                      <th className="border border-gray-200 py-2 px-2 font-black text-[11px] text-gray-500 text-center w-16">Shift</th>
+                      <th className="border border-gray-200 py-2 px-2 font-black text-[11px] text-gray-500 text-left">Nama Karyawan</th>
+                      <th className="border border-gray-200 py-2 px-2 font-black text-[11px] text-gray-500 text-left">No Order</th>
+                      <th className="border border-gray-200 py-2 px-2 font-black text-[11px] text-gray-500 text-left">Nama Order</th>
+                      <th className="border border-gray-200 py-2 px-2 font-black text-[11px] text-gray-500 text-left">Jenis Pekerjaan</th>
+                      <th className="border border-gray-200 py-2 px-2 font-black text-[11px] text-gray-500 text-left">Keterangan</th>
+                      <th className="border border-gray-200 py-2 px-2 font-black text-[11px] text-gray-500 text-right w-20">Target</th>
+                      <th className="border border-gray-200 py-2 px-2 font-black text-[11px] text-gray-500 text-left max-w-[180px]">Alasan</th>
+                      <th className="border border-gray-200 py-2 px-2 font-black text-[11px] text-gray-500 text-center w-12"></th>
                     </tr>
                   </thead>
                   <tbody>

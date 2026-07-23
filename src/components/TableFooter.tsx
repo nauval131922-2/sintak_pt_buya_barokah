@@ -34,7 +34,7 @@ export default function TableFooter({
         </span>
 
         {loadTime !== null && loadTime !== undefined && (
-          <div className={`text-[9px] px-2 py-1 rounded-full font-bold flex items-center gap-1.5 border tracking-wide shadow-sm ${
+          <div className={`text-[11px] px-2 py-1 rounded-full font-bold flex items-center gap-1.5 border tracking-wide shadow-sm ${
             loadTime < 300  ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
             loadTime < 1000 ? 'bg-amber-50 text-amber-600 border-amber-100' :
                               'bg-red-50 text-red-600 border-red-100'

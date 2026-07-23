@@ -70,9 +70,9 @@ function CustomTooltip({ active, payload }: any) {
       </div>
       {pt.kasus > 0 && (
         <div className="mt-2 pt-2 border-t border-gray-50 flex items-center gap-2 flex-wrap">
-          {pt.high > 0 && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-50 text-red-500 border border-red-100">High: {pt.high}</span>}
-          {pt.medium > 0 && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100">Medium: {pt.medium}</span>}
-          {pt.low > 0 && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">Low: {pt.low}</span>}
+          {pt.high > 0 && <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-50 text-red-500 border border-red-100">High: {pt.high}</span>}
+          {pt.medium > 0 && <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100">Medium: {pt.medium}</span>}
+          {pt.low > 0 && <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">Low: {pt.low}</span>}
         </div>
       )}
     </div>
@@ -204,19 +204,19 @@ export default function InfractionsTrendChart() {
           {initialized && totalKasus > 0 && (
             <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
               {severity.high > 0 && (
-                <span className="inline-flex items-center gap-1 text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-red-50 text-red-500 border border-red-100">
+                <span className="inline-flex items-center gap-1 text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-red-50 text-red-500 border border-red-100">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-400 inline-block shrink-0" />
                   High · {severity.high} kasus · {formatRupiah(severity.beban_high)}
                 </span>
               )}
               {severity.medium > 0 && (
-                <span className="inline-flex items-center gap-1 text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100">
+                <span className="inline-flex items-center gap-1 text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block shrink-0" />
                   Medium · {severity.medium} kasus · {formatRupiah(severity.beban_medium)}
                 </span>
               )}
               {severity.low > 0 && (
-                <span className="inline-flex items-center gap-1 text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
+                <span className="inline-flex items-center gap-1 text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block shrink-0" />
                   Low · {severity.low} kasus · {formatRupiah(severity.beban_low)}
                 </span>
@@ -321,22 +321,22 @@ export default function InfractionsTrendChart() {
       {/* Leaderboard karyawan */}
       {initialized && topEmployees.length > 0 && (
         <div className="flex flex-col gap-2">
-          <p className="text-[10px] font-bold text-gray-400 tracking-wide">Top Karyawan — Total Beban Tertinggi</p>
+          <p className="text-[11px] font-bold text-gray-400 tracking-wide">Top Karyawan — Total Beban Tertinggi</p>
           <div className="flex flex-col gap-1.5">
             {topEmployees.map((emp, idx) => {
               const maxBeban = topEmployees[0]?.beban || 1;
               const barPct = Math.round((emp.beban / maxBeban) * 100);
               return (
                 <div key={emp.nama} className="flex items-center gap-3">
-                  <span className="text-[10px] font-extrabold text-gray-300 w-4 shrink-0 text-right">{idx + 1}</span>
+                  <span className="text-[11px] font-extrabold text-gray-300 w-4 shrink-0 text-right">{idx + 1}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-0.5">
                       <span className="text-[11px] font-bold text-gray-700 truncate">{emp.nama}</span>
                       <div className="flex items-center gap-1.5 shrink-0">
-                        {emp.high > 0 && <span className="text-[9px] font-bold text-red-500">{emp.high}H</span>}
-                        {emp.medium > 0 && <span className="text-[9px] font-bold text-amber-500">{emp.medium}M</span>}
-                        {emp.low > 0 && <span className="text-[9px] font-bold text-emerald-500">{emp.low}L</span>}
-                        <span className="text-[10px] font-extrabold text-amber-600">
+                        {emp.high > 0 && <span className="text-[11px] font-bold text-red-500">{emp.high}H</span>}
+                        {emp.medium > 0 && <span className="text-[11px] font-bold text-amber-500">{emp.medium}M</span>}
+                        {emp.low > 0 && <span className="text-[11px] font-bold text-emerald-500">{emp.low}L</span>}
+                        <span className="text-[11px] font-extrabold text-amber-600">
                           {emp.beban.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}
                         </span>
                       </div>

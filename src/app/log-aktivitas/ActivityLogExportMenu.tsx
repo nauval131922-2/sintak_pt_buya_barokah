@@ -38,7 +38,7 @@ export default function ActivityLogExportMenu({
               onChange={(e) => setIncludeRaw(e.target.checked)}
               className="mt-0.5 rounded border-gray-300 text-emerald-600"
             />
-            <span>Sertakan kolom <code className="text-[10px] bg-gray-100 px-1 rounded">raw_data</code> (file lebih besar)</span>
+            <span>Sertakan kolom <code className="text-[11px] bg-gray-100 px-1 rounded">raw_data</code> (file lebih besar)</span>
           </label>
           <button
             type="button"

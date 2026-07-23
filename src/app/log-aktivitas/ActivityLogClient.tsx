@@ -636,7 +636,7 @@ export default function ActivityLogClient({
                 key={p.key}
                 type="button"
                 onClick={() => applyPreset(p.key)}
-                className={`px-2.5 py-1 rounded-lg border text-[10px] font-bold transition-all ${
+                className={`px-2.5 py-1 rounded-lg border text-[11px] font-bold transition-all ${
                   datePreset === p.key
                     ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm shadow-emerald-200'
                     : 'bg-white text-gray-600 border-gray-100 hover:border-emerald-200 hover:text-emerald-700'
@@ -651,7 +651,7 @@ export default function ActivityLogClient({
             <button
               type="button"
               onClick={clearFilters}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-rose-100 bg-rose-50 text-[10px] font-bold text-rose-600 hover:bg-rose-100 transition-all shrink-0"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-rose-100 bg-rose-50 text-[11px] font-bold text-rose-600 hover:bg-rose-100 transition-all shrink-0"
             >
               <X size={12} /> Clear filter
             </button>
@@ -735,7 +735,7 @@ export default function ActivityLogClient({
                 type="button"
                 onClick={triggerCleanupConfirm}
                 title="Hapus Log Sesuai Filter"
-                className="h-10 px-3 rounded-lg border border-rose-100 bg-rose-50 text-[10px] font-bold text-rose-600 hover:bg-rose-100 transition-all flex items-center gap-1.5 shrink-0 shadow-sm"
+                className="h-10 px-3 rounded-lg border border-rose-100 bg-rose-50 text-[11px] font-bold text-rose-600 hover:bg-rose-100 transition-all flex items-center gap-1.5 shrink-0 shadow-sm"
               >
                 <Trash2 size={12} /> Hapus Log
               </button>
@@ -747,21 +747,21 @@ export default function ActivityLogClient({
           <div className="grid grid-cols-1 gap-2">
             {actionStats.length > 0 && (
               <div className="flex items-start gap-2">
-                <span className="text-[10px] font-bold text-gray-500 shrink-0 pt-1">Action</span>
+                <span className="text-[11px] font-bold text-gray-500 shrink-0 pt-1">Action</span>
                 <div className="flex flex-wrap gap-1.5">
                   {actionStats.map((s) => (
                     <button
                       key={s.value}
                       type="button"
                       onClick={() => setActionType(actionType === s.value ? '' : s.value)}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all hover:shadow-md ${
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all hover:shadow-md ${
                         actionType === s.value
                           ? 'ring-2 ring-emerald-400 shadow-sm ' + getActionColor(s.value)
                           : getActionColor(s.value)
                       }`}
                     >
                       <span className="font-semibold">{s.value}</span>
-                      <span className="text-[9px] opacity-75">{s.count.toLocaleString('id-ID')}</span>
+                      <span className="text-[11px] opacity-75">{s.count.toLocaleString('id-ID')}</span>
                     </button>
                   ))}
                 </div>
@@ -769,21 +769,21 @@ export default function ActivityLogClient({
             )}
             {tableStats.length > 0 && (
               <div className="flex items-start gap-2">
-                <span className="text-[10px] font-bold text-gray-500 shrink-0 pt-1">Tabel</span>
+                <span className="text-[11px] font-bold text-gray-500 shrink-0 pt-1">Tabel</span>
                 <div className="flex flex-wrap gap-1.5">
                   {tableStats.map((s) => (
                     <button
                       key={s.value}
                       type="button"
                       onClick={() => setTableName(tableName === s.value ? '' : s.value)}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all hover:shadow-md ${
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all hover:shadow-md ${
                         tableName === s.value
                           ? 'ring-2 ring-emerald-400 border-emerald-300 bg-emerald-50 text-emerald-700 shadow-sm'
                           : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
                       }`}
                     >
-                      <span className="font-mono text-[9px]">{s.value}</span>
-                      <span className="text-[9px] opacity-75">{s.count.toLocaleString('id-ID')}</span>
+                      <span className="font-mono text-[11px]">{s.value}</span>
+                      <span className="text-[11px] opacity-75">{s.count.toLocaleString('id-ID')}</span>
                     </button>
                   ))}
                 </div>
@@ -791,21 +791,21 @@ export default function ActivityLogClient({
             )}
             {userStats.length > 0 && (
               <div className="flex items-start gap-2">
-                <span className="text-[10px] font-bold text-gray-500 shrink-0 pt-1">User</span>
+                <span className="text-[11px] font-bold text-gray-500 shrink-0 pt-1">User</span>
                 <div className="flex flex-wrap gap-1.5">
                   {userStats.map((s) => (
                     <button
                       key={s.value}
                       type="button"
                       onClick={() => setRecordedBy(recordedBy === s.value ? '' : s.value)}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-all hover:shadow-md ${
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all hover:shadow-md ${
                         recordedBy === s.value
                           ? 'ring-2 ring-emerald-400 border-emerald-300 bg-emerald-50 text-emerald-700 shadow-sm'
                           : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
                       }`}
                     >
                       <span className="truncate max-w-[200px]">{s.label || s.value}</span>
-                      <span className="text-[9px] opacity-75">{s.count.toLocaleString('id-ID')}</span>
+                      <span className="text-[11px] opacity-75">{s.count.toLocaleString('id-ID')}</span>
                     </button>
                   ))}
                 </div>
@@ -824,7 +824,7 @@ export default function ActivityLogClient({
             <span className="flex items-center gap-2">
               <BarChart3 size={14} className="text-emerald-600" />
               <span>Grafik tren & traffic aktivitas</span>
-              <span className="text-[9px] font-bold text-gray-400 bg-white px-2 py-0.5 rounded-full border border-gray-100">
+              <span className="text-[11px] font-bold text-gray-400 bg-white px-2 py-0.5 rounded-full border border-gray-100">
                 {trendGroupBy === 'month' 
                   ? `${trendDays.length} bulan`
                   : trendGroupBy === 'week'
@@ -833,7 +833,7 @@ export default function ActivityLogClient({
                 }
               </span>
             </span>
-            <span className="text-[10px] text-gray-500 font-medium">{showChart ? '↑ Sembunyikan' : '↓ Tampilkan'}</span>
+            <span className="text-[11px] text-gray-500 font-medium">{showChart ? '↑ Sembunyikan' : '↓ Tampilkan'}</span>
           </button>
           {showChart && (
             <div className="p-4 animate-in fade-in duration-300">
@@ -856,16 +856,16 @@ export default function ActivityLogClient({
         <div className="flex items-center justify-between gap-2 min-h-[28px] flex-wrap">
           <div className="flex items-center gap-3 flex-wrap">
             {lastUpdated && (
-              <span className="text-[10px] text-gray-400 font-semibold">
+              <span className="text-[11px] text-gray-400 font-semibold">
                 Update: {lastUpdated.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })} {lastUpdated.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
               </span>
             )}
-            <span className="text-[10px] text-gray-400 font-semibold">
+            <span className="text-[11px] text-gray-400 font-semibold">
               Refresh dalam: <span className={countdown <= 10 ? 'text-amber-500 font-bold' : ''}>{Math.floor(countdown / 60)}:{String(countdown % 60).padStart(2, '0')}</span>
             </span>
           </div>
           {debouncedSearch && (
-            <span className="text-[10px] bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full font-bold border border-emerald-100">
+            <span className="text-[11px] bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full font-bold border border-emerald-100">
               {total.toLocaleString('id-ID')} hasil untuk &quot;{debouncedSearch}&quot;
             </span>
           )}
@@ -909,12 +909,12 @@ export default function ActivityLogClient({
 
           {/* ponytail: Quick filter chips */}
           <div className="flex flex-wrap items-center gap-1.5 mt-1">
-            <span className="text-[10px] font-bold text-gray-400 mr-1">Filter Cepat:</span>
+            <span className="text-[11px] font-bold text-gray-400 mr-1">Filter Cepat:</span>
             
             <button
               type="button"
               onClick={() => setSearch(search === 'Gagal' ? '' : 'Gagal')}
-              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-all ${
+              className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border transition-all ${
                 search === 'Gagal'
                   ? 'bg-rose-50 text-rose-700 border-rose-200 ring-2 ring-rose-200'
                   : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
@@ -926,7 +926,7 @@ export default function ActivityLogClient({
             <button
               type="button"
               onClick={() => setActionType(actionType === 'DELETE' ? '' : 'DELETE')}
-              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-all ${
+              className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border transition-all ${
                 actionType === 'DELETE'
                   ? 'bg-rose-50 text-rose-700 border-rose-200 ring-2 ring-rose-200'
                   : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
@@ -938,7 +938,7 @@ export default function ActivityLogClient({
             <button
               type="button"
               onClick={() => setActionType(actionType === 'SCRAPE' ? '' : 'SCRAPE')}
-              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-all ${
+              className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border transition-all ${
                 actionType === 'SCRAPE'
                   ? 'bg-cyan-50 text-cyan-700 border-cyan-200 ring-2 ring-cyan-200'
                   : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
@@ -950,7 +950,7 @@ export default function ActivityLogClient({
             <button
               type="button"
               onClick={() => setActionType(actionType === 'UPDATE' ? '' : 'UPDATE')}
-              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-all ${
+              className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border transition-all ${
                 actionType === 'UPDATE'
                   ? 'bg-blue-50 text-blue-700 border-blue-200 ring-2 blue-200'
                   : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
@@ -986,7 +986,7 @@ export default function ActivityLogClient({
                       <SortHeader label="User"    field="recorded_by" colIdx={2} sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} onCtx={colCtx} onResize={colResizeStart} />
                       <SortHeader label="Tabel"   field="table_name"  colIdx={3} sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} onCtx={colCtx} onResize={colResizeStart} />
                       <th className="px-4 py-3 relative" onContextMenu={(e) => colCtx(4, e)}>
-                        <span className="text-[10px] font-bold text-gray-400">Keterangan</span>
+                        <span className="text-[11px] font-bold text-gray-400">Keterangan</span>
                         <div
                           className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-emerald-500 active:bg-emerald-600 transition-colors z-20"
                           onMouseDown={(e) => colResizeStart(4, e)}
@@ -1026,16 +1026,16 @@ export default function ActivityLogClient({
                             className={`hover:bg-emerald-50/40 cursor-pointer transition-colors ${isExpanded ? 'bg-emerald-50/60' : ''}`}
                           >
                             <td className="px-4 py-2.5 whitespace-nowrap overflow-hidden text-ellipsis max-w-[110px]">
-                              <span className={`inline-flex px-2 py-0.5 rounded-md text-[9px] font-bold border ${getActionColor(log.action_type || '')}`}>
+                              <span className={`inline-flex px-2 py-0.5 rounded-md text-[11px] font-bold border ${getActionColor(log.action_type || '')}`}>
                                 {log.action_type}
                               </span>
                             </td>
                             <td className="px-4 py-2.5 text-[11px] font-bold text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px]">
                               {formatLastUpdate(log.created_at)}
                             </td>
-                            <td className="px-4 py-2.5 text-[10px] font-semibold text-gray-500 overflow-hidden text-ellipsis max-w-[180px]">
+                            <td className="px-4 py-2.5 text-[11px] font-semibold text-gray-500 overflow-hidden text-ellipsis max-w-[180px]">
                               {log.recorded_by_name
-                                ? <>{log.recorded_by_name}<br /><span className="text-[9px] text-gray-400">@{log.recorded_by}</span></>
+                                ? <>{log.recorded_by_name}<br /><span className="text-[11px] text-gray-400">@{log.recorded_by}</span></>
                                 : (log.recorded_by || '—')}
                             </td>
                             <td className="px-4 py-2.5 text-[11px] font-bold text-gray-700 uppercase whitespace-nowrap overflow-hidden text-ellipsis max-w-[140px]">
@@ -1067,7 +1067,7 @@ export default function ActivityLogClient({
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                   <div className="card p-3 border-gray-200/60 overflow-hidden">
                                     <div className="flex items-center justify-between mb-2">
-                                      <div className="text-[10px] font-bold text-gray-400">Before</div>
+                                      <div className="text-[11px] font-bold text-gray-400">Before</div>
                                       {beforeJson && (
                                         <button
                                           type="button"
@@ -1080,14 +1080,14 @@ export default function ActivityLogClient({
                                       )}
                                     </div>
                                      {beforeJson ? (
-                                       <pre className="text-[10px] leading-relaxed text-gray-700 max-h-[200px] overflow-y-auto custom-scrollbar whitespace-pre-wrap">{debouncedSearch ? highlightText(beforeJson, debouncedSearch) : beforeJson}</pre>
+                                       <pre className="text-[11px] leading-relaxed text-gray-700 max-h-[200px] overflow-y-auto custom-scrollbar whitespace-pre-wrap">{debouncedSearch ? highlightText(beforeJson, debouncedSearch) : beforeJson}</pre>
                                      ) : (
                                        <p className="text-[11px] text-gray-400 italic">—</p>
                                      )}
                                    </div>
                                    <div className="card p-3 border-gray-200/60 overflow-hidden">
                                      <div className="flex items-center justify-between mb-2">
-                                       <div className="text-[10px] font-bold text-gray-400">After</div>
+                                       <div className="text-[11px] font-bold text-gray-400">After</div>
                                        {afterJson && (
                                          <button
                                            type="button"
@@ -1100,20 +1100,20 @@ export default function ActivityLogClient({
                                        )}
                                      </div>
                                      {afterJson ? (
-                                       <pre className="text-[10px] leading-relaxed text-gray-700 max-h-[200px] overflow-y-auto custom-scrollbar whitespace-pre-wrap">{debouncedSearch ? highlightText(afterJson, debouncedSearch) : afterJson}</pre>
+                                       <pre className="text-[11px] leading-relaxed text-gray-700 max-h-[200px] overflow-y-auto custom-scrollbar whitespace-pre-wrap">{debouncedSearch ? highlightText(afterJson, debouncedSearch) : afterJson}</pre>
                                      ) : (
                                       <p className="text-[11px] text-gray-400 italic">—</p>
                                     )}
                                   </div>
                                    <div className="card p-3 border-gray-200/60 overflow-hidden">
                                      <div className="flex items-center justify-between mb-2">
-                                       <div className="text-[10px] font-bold text-gray-400">Diff</div>
+                                       <div className="text-[11px] font-bold text-gray-400">Diff</div>
                                        <div className="flex items-center gap-1.5">
                                           {log.action_type === 'UPDATE' && rawParsed?.before && !String(log.message || '').startsWith('Undo Perubahan') && (
                                             <button
                                               type="button"
                                               onClick={() => handleUndo(log.id)}
-                                              className="text-gray-500 hover:text-amber-700 bg-amber-50 hover:bg-amber-100/80 border border-amber-200 hover:border-amber-300 px-2 py-0.5 rounded text-[9px] font-bold flex items-center gap-1 transition-all shadow-sm active:scale-95"
+                                              className="text-gray-500 hover:text-amber-700 bg-amber-50 hover:bg-amber-100/80 border border-amber-200 hover:border-amber-300 px-2 py-0.5 rounded text-[11px] font-bold flex items-center gap-1 transition-all shadow-sm active:scale-95"
                                               title="Batalkan perubahan ini (kembalikan ke data awal)"
                                             >
                                               <Undo2 size={10} />
@@ -1160,7 +1160,7 @@ export default function ActivityLogClient({
                                        }
                                        return diffs.length > 0 ? (
                                          <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
-                                           <table className="w-full table-fixed text-[10px]">
+                                           <table className="w-full table-fixed text-[11px]">
                                              <colgroup>
                                                <col style={{ width: '30%' }} />
                                                <col style={{ width: '35%' }} />

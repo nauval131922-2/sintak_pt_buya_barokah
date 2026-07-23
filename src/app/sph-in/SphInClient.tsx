@@ -236,7 +236,7 @@ export default function SphInClient() {
       meta: { align: 'right' },
       cell: ({ getValue, row }: any) => (
         <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-emerald-700'}`}>
-          <span className="text-[10px] opacity-40 mr-1">Rp</span>
+          <span className="text-[11px] opacity-40 mr-1">Rp</span>
           <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
         </div>
       )
@@ -246,7 +246,7 @@ export default function SphInClient() {
       header: 'Status',
       size: 100,
       cell: ({ getValue }: any) => (
-        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold leading-none border ${
+        <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold leading-none border ${
           getValue() === '1' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-gray-50 text-gray-400 border-gray-100'
         }`}>
           {getValue() === '1' ? 'ACTIVE' : 'INACTIVE'}
@@ -303,7 +303,7 @@ export default function SphInClient() {
             <ScrapingHeader title="Hasil Scrapping SPH Masuk" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
 
             {loading && data && data.length > 0 && (
-              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
+              <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Syncing...</span>
               </div>

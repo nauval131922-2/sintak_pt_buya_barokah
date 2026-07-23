@@ -332,7 +332,7 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
               <div className="flex items-center justify-between p-3.5 bg-gray-50 border border-gray-200 rounded-xl">
                 <div className="flex flex-col gap-0.5 leading-tight">
                   <span className="text-[12px] font-bold text-gray-700">Status Akun</span>
-                  <span className="text-[10px] text-gray-400 font-semibold">
+                  <span className="text-[11px] text-gray-400 font-semibold">
                     Nonaktifkan user yang resign atau tidak aktif
                   </span>
                 </div>
@@ -404,7 +404,7 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
           </div>
           {/* Hint */}
           <div className="px-3 py-1.5 bg-emerald-50 border-b border-emerald-100">
-            <p className="text-[10px] text-emerald-600 font-semibold">Klik untuk centang / hapus centang role</p>
+            <p className="text-[11px] text-emerald-600 font-semibold">Klik untuk centang / hapus centang role</p>
           </div>
           {/* Options */}
           <div className="max-h-[200px] overflow-y-auto p-1.5 custom-scrollbar">
@@ -432,7 +432,7 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
                     </span>
                     <span className="flex-1 truncate">{cr}</span>
                     {cr === 'Super Admin' && (
-                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${isChecked ? 'bg-white/20 text-white' : 'bg-amber-50 text-amber-600'}`}>
+                      <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${isChecked ? 'bg-white/20 text-white' : 'bg-amber-50 text-amber-600'}`}>
                         SA
                       </span>
                     )}

@@ -249,7 +249,7 @@ export default function SpphOutClient() {
         const isActive = getValue() === '1';
         return (
           <span className={`
-            px-3 py-1 rounded-full text-[10px] font-bold border
+            px-3 py-1 rounded-full text-[11px] font-bold border
             ${isActive 
               ? 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-sm shadow-emerald-900/5' 
               : 'bg-gray-50 text-gray-400 border-gray-100'}
@@ -303,7 +303,7 @@ export default function SpphOutClient() {
             <ScrapingHeader title="Hasil Scrapping SPPH Keluar" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
 
             {loading && (data?.length || 0) > 0 && (
-              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
+              <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Syncing...</span>
               </div>

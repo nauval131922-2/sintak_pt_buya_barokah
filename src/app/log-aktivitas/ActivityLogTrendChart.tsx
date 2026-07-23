@@ -235,7 +235,7 @@ function ActivityLogTrendChart({
           </div>
         </div>
 
-        <div className="h-64 w-full text-[10px]">
+        <div className="h-64 w-full text-[11px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={dailyChartData}
@@ -339,12 +339,12 @@ function ActivityLogTrendChart({
               <button
                 type="button"
                 onClick={onHourBack}
-                className="text-[9px] font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200"
+                className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200"
               >
                 ← Kembali
               </button>
             )}
-            <div className="text-[9px] font-semibold text-gray-500 bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100">
+            <div className="text-[11px] font-semibold text-gray-500 bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100">
               Total: {detailHour
                 ? minutes.reduce((acc, curr) => acc + curr.count, 0).toLocaleString('id-ID')
                 : hourly.reduce((acc, curr) => acc + curr.count, 0).toLocaleString('id-ID')
@@ -353,7 +353,7 @@ function ActivityLogTrendChart({
           </div>
         </div>
 
-        <div className="h-64 w-full text-[10px]">
+        <div className="h-64 w-full text-[11px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={detailHour ? minuteChartData : hourlyChartData}

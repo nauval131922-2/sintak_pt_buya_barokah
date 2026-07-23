@@ -159,7 +159,7 @@ function EditableCell({
     >
       {(isNumeric ? (localVal !== null && localVal !== undefined && localVal !== '') : !!formatted) ? (
         <span className={`font-bold transition-colors ${isSelected ? 'text-emerald-800' : 'text-emerald-700'} truncate ${isNumeric ? 'tabular-nums' : 'text-[12px]'}`}>
-          {isNumeric && <span className="text-[10px] opacity-40 mr-1">Rp</span>}
+          {isNumeric && <span className="text-[11px] opacity-40 mr-1">Rp</span>}
           {formatted}
         </span>
       ) : (
@@ -459,7 +459,7 @@ export default function HppKalkulasiClient() {
               />
             </div>
             {loading && (
-              <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
+              <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Memuat...</span>
               </div>

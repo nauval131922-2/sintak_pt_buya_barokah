@@ -1033,7 +1033,7 @@ export default function TrackingClient() {
                           resetTracking();
                         }
                       }}
-                      className="text-[10px] font-bold text-rose-500 hover:text-rose-600 flex items-center gap-1"
+                      className="text-[11px] font-bold text-rose-500 hover:text-rose-600 flex items-center gap-1"
                     >
                       <X size={12} /> Hapus
                     </button>
@@ -1154,7 +1154,7 @@ export default function TrackingClient() {
                           resetTracking();
                         }
                       }}
-                      className="text-[10px] font-bold text-red-500 hover:text-red-600 flex items-center gap-1"
+                      className="text-[11px] font-bold text-red-500 hover:text-red-600 flex items-center gap-1"
                     >
                       <X size={12} /> Hapus
                     </button>
@@ -1275,7 +1275,7 @@ export default function TrackingClient() {
                                     {s.faktur}
                                   </span>
                                   <span
-                                    className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${selectedPO === s.faktur ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"}`}
+                                    className={`text-[11px] px-1.5 py-0.5 rounded font-bold ${selectedPO === s.faktur ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"}`}
                                   >
                                     {s.tgl}
                                   </span>
@@ -1324,7 +1324,7 @@ export default function TrackingClient() {
                           resetTracking();
                         }
                       }}
-                      className="text-[10px] font-bold text-red-500 hover:text-red-600 flex items-center gap-1"
+                      className="text-[11px] font-bold text-red-500 hover:text-red-600 flex items-center gap-1"
                     >
                       <X size={12} /> Hapus
                     </button>
@@ -1443,7 +1443,7 @@ export default function TrackingClient() {
                                   <span className="text-[12px] font-bold">
                                     {s.faktur}
                                   </span>
-                                  <span className="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded font-bold">
+                                  <span className="text-[11px] px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded font-bold">
                                     {s.tgl}
                                   </span>
                                 </div>
@@ -1566,7 +1566,7 @@ export default function TrackingClient() {
               )}
             </h3>
             {isAutoRefreshing && (
-              <div className="flex items-center gap-3 text-[10px] font-bold text-emerald-600 animate-pulse bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm leading-none">
+              <div className="flex items-center gap-3 text-[11px] font-bold text-emerald-600 animate-pulse bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Memproses Data...</span>
               </div>
@@ -1624,12 +1624,12 @@ export default function TrackingClient() {
                     >
                       <span>{tab.label}</span>
                       {tab.badge && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold tracking-wide">
+                        <span className="text-[11px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold tracking-wide">
                           {tab.badge}
                         </span>
                       )}
                       <span
-                        className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                        className={`text-[11px] px-1.5 py-0.5 rounded-full font-bold ${
                           count > 0
                             ? "bg-emerald-600 text-white"
                             : "bg-gray-100 text-gray-400"
@@ -1662,13 +1662,13 @@ export default function TrackingClient() {
                   <table className="w-full text-left border-separate border-spacing-0 text-[12px]">
                     <thead className="sticky top-0 z-10">
                       <tr>
-                        <th className="px-4 py-3 bg-gray-50 border-b border-r border-gray-100 text-[10px] font-bold text-gray-400 tracking-widest whitespace-nowrap w-10">
+                        <th className="px-4 py-3 bg-gray-50 border-b border-r border-gray-100 text-[11px] font-bold text-gray-400 tracking-widest whitespace-nowrap w-10">
                           #
                         </th>
                         {activeTabData.columns.map((col) => (
                           <th
                             key={col}
-                            className="px-4 py-3 bg-gray-50 border-b border-r border-gray-100 text-[10px] font-bold text-gray-500 tracking-wide whitespace-nowrap last:border-r-0"
+                            className="px-4 py-3 bg-gray-50 border-b border-r border-gray-100 text-[11px] font-bold text-gray-500 tracking-wide whitespace-nowrap last:border-r-0"
                           >
                             {toTitleCase(col)}
                           </th>
@@ -1756,7 +1756,7 @@ export default function TrackingClient() {
                   {/* Load Time */}
                   {loadTime !== null && (
                     <div
-                      className={`text-[9px] px-2 py-1 rounded-full font-bold flex items-center gap-1.5 border tracking-wide ${
+                      className={`text-[11px] px-2 py-1 rounded-full font-bold flex items-center gap-1.5 border tracking-wide ${
                         loadTime < 300
                           ? "bg-emerald-50 text-emerald-600 border-emerald-100"
                           : loadTime < 1000

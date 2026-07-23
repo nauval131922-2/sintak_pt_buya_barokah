@@ -269,11 +269,11 @@ export default function TelegramUsersClient() {
           <div className="flex items-center gap-2 ml-auto">
             <div className="text-right">
               {lastUpdated && (
-                <p className="text-[10px] text-gray-400">
+                <p className="text-[11px] text-gray-400">
                    Update: {lastUpdated.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })} {lastUpdated.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                 </p>
               )}
-              <p className="text-[10px] text-gray-400">
+              <p className="text-[11px] text-gray-400">
                 Refresh dalam: <span className={countdown <= 10 ? 'text-amber-500 font-bold' : ''}>{Math.floor(countdown / 60)}:{String(countdown % 60).padStart(2, '0')}</span>
               </p>
             </div>
@@ -305,7 +305,7 @@ export default function TelegramUsersClient() {
                   <p className="text-[11px] text-gray-500 truncate">
                     @{user.telegram_username || user.telegram_id} · {user.bagian} · {user.posisi}
                   </p>
-                  <p className="text-[10px] text-gray-400">
+                  <p className="text-[11px] text-gray-400">
                     Request: {formatDateTime(user.requested_at)}
                   </p>
                 </div>
@@ -350,12 +350,12 @@ export default function TelegramUsersClient() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[12px] font-bold text-gray-800 truncate">{user.nama_karyawan}</p>
-                  <p className="text-[10px] text-gray-500 truncate">
+                  <p className="text-[11px] text-gray-500 truncate">
                     @{user.telegram_username || user.telegram_id} · {user.bagian} · {user.posisi}
                   </p>
                 </div>
                 {user.approved_at && (
-                  <p className="text-[10px] text-gray-400 shrink-0 text-right">
+                  <p className="text-[11px] text-gray-400 shrink-0 text-right">
                     Approved: {formatDateTime(user.approved_at)}<br />
                     by {user.approved_by}
                   </p>

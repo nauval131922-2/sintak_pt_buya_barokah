@@ -48,16 +48,16 @@ function formatCreateAt(value?: string | null) {
 }
 
 function JenisAkunBadge({ jenis }: { jenis?: string | null }) {
-  if (!jenis) return <span className="text-gray-300 text-[10px]">—</span>;
+  if (!jenis) return <span className="text-gray-300 text-[11px]">—</span>;
   if (jenis === 'Laba/Rugi') {
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-bold border bg-emerald-50 text-emerald-700 border-emerald-200 tracking-wider">
+      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold border bg-emerald-50 text-emerald-700 border-emerald-200 tracking-wider">
         L/R
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-bold border bg-violet-50 text-violet-700 border-violet-200 tracking-wider">
+    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold border bg-violet-50 text-violet-700 border-violet-200 tracking-wider">
       KAS
     </span>
   );
@@ -105,25 +105,25 @@ export default function JurnalAkuntansiTerbaru({ initialData }: { initialData: J
           <table className="min-w-full text-left">
             <thead className="bg-gray-50 border-y border-gray-100">
               <tr>
-                <th className="px-5 py-3 text-[10px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Tgl. Input</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-gray-400 tracking-wider whitespace-nowrap">User</th>
-                <th className="px-4 py-3 text-[10px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Jenis</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Faktur</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Tgl. Transaksi</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Rekening</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Keterangan</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-gray-400 tracking-wider text-right whitespace-nowrap">Debit</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-gray-400 tracking-wider text-right whitespace-nowrap">Kredit</th>
+                <th className="px-5 py-3 text-[11px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Tgl. Input</th>
+                <th className="px-5 py-3 text-[11px] font-bold text-gray-400 tracking-wider whitespace-nowrap">User</th>
+                <th className="px-4 py-3 text-[11px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Jenis</th>
+                <th className="px-5 py-3 text-[11px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Faktur</th>
+                <th className="px-5 py-3 text-[11px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Tgl. Transaksi</th>
+                <th className="px-5 py-3 text-[11px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Rekening</th>
+                <th className="px-5 py-3 text-[11px] font-bold text-gray-400 tracking-wider whitespace-nowrap">Keterangan</th>
+                <th className="px-5 py-3 text-[11px] font-bold text-gray-400 tracking-wider text-right whitespace-nowrap">Debit</th>
+                <th className="px-5 py-3 text-[11px] font-bold text-gray-400 tracking-wider text-right whitespace-nowrap">Kredit</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {data.map((row) => (
                 <tr key={row.id} className="hover:bg-gray-50/70 transition-colors">
                   <td className="px-5 py-3 whitespace-nowrap">
-                    <p className="text-[10px] font-medium text-gray-400">{formatCreateAt(row.create_at) ?? '-'}</p>
+                    <p className="text-[11px] font-medium text-gray-400">{formatCreateAt(row.create_at) ?? '-'}</p>
                   </td>
                   <td className="px-5 py-3 whitespace-nowrap">
-                    <p className="text-[10px] font-semibold text-gray-400">{row.username || '-'}</p>
+                    <p className="text-[11px] font-semibold text-gray-400">{row.username || '-'}</p>
                   </td>
                   <td className="px-4 py-3">
                     <JenisAkunBadge jenis={row.jenis_akun} />

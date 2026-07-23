@@ -308,7 +308,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
           </span>
         </div>
         <div className="flex items-center gap-2.5 shrink-0 ml-3">
-          <span className={`text-[10px] font-bold w-8 text-right transition-colors ${isEnabled ? 'text-emerald-600' : 'text-gray-300'}`}>
+          <span className={`text-[11px] font-bold w-8 text-right transition-colors ${isEnabled ? 'text-emerald-600' : 'text-gray-300'}`}>
             {isEnabled ? 'ON' : 'OFF'}
           </span>
           {renderToggle(isEnabled, () => togglePermission(item.key))}
@@ -336,7 +336,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
             <span className={`truncate transition-colors ${isTop ? 'text-[12.5px] font-bold text-gray-700' : 'text-[12px] font-semibold text-gray-600'}`}>
               {item.label}
             </span>
-            <span className={`shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${nodeEnabled > 0 ? 'text-emerald-600 bg-emerald-50 border-emerald-100' : 'text-gray-400 bg-gray-50 border-gray-100'}`}>
+            <span className={`shrink-0 text-[11px] font-bold px-1.5 py-0.5 rounded-full border ${nodeEnabled > 0 ? 'text-emerald-600 bg-emerald-50 border-emerald-100' : 'text-gray-400 bg-gray-50 border-gray-100'}`}>
               {nodeEnabled}/{nodeKeys.length}
             </span>
           </div>
@@ -344,13 +344,13 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
             <button
               type="button"
               onClick={e => { e.stopPropagation(); toggleKeysList(nodeKeys, true); }}
-              className="text-[10px] font-bold text-emerald-600 hover:bg-emerald-50 px-2 py-1 rounded-lg transition-all"
+              className="text-[11px] font-bold text-emerald-600 hover:bg-emerald-50 px-2 py-1 rounded-lg transition-all"
             >On</button>
-            <span className="text-gray-200 text-[10px]">|</span>
+            <span className="text-gray-200 text-[11px]">|</span>
             <button
               type="button"
               onClick={e => { e.stopPropagation(); toggleKeysList(nodeKeys, false); }}
-              className="text-[10px] font-bold text-rose-500 hover:bg-rose-50 px-2 py-1 rounded-lg transition-all"
+              className="text-[11px] font-bold text-rose-500 hover:bg-rose-50 px-2 py-1 rounded-lg transition-all"
             >Off</button>
           </div>
         </div>
@@ -380,7 +380,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
           <div className="flex items-center gap-2.5">
             <ChevronRight size={15} className={`text-emerald-600 shrink-0 transition-transform duration-200 ${isCollapsed ? '' : 'rotate-90'}`} />
             <span className="text-[13px] font-bold text-gray-800">{label}</span>
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${allEnabled > 0 ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : 'text-gray-400 bg-white border-gray-200'}`}>
+            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${allEnabled > 0 ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : 'text-gray-400 bg-white border-gray-200'}`}>
               {allEnabled}/{allKeys.length} aktif
             </span>
           </div>
@@ -407,7 +407,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
         <div className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-emerald-50 to-emerald-50 border-b border-gray-100">
           <div className="flex items-center gap-2.5">
             <span className="text-[13px] font-bold text-gray-800">Dashboard</span>
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${enabled > 0 ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : 'text-gray-400 bg-white border-gray-200'}`}>
+            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${enabled > 0 ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : 'text-gray-400 bg-white border-gray-200'}`}>
               {enabled}/{total} aktif
             </span>
           </div>
@@ -437,7 +437,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
           {/* Super Admin card */}
           <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
             <div className="px-4 py-2.5 border-b border-gray-50 bg-gray-50/50">
-              <span className="text-[10px] font-bold text-gray-400">Sistem</span>
+              <span className="text-[11px] font-bold text-gray-400">Sistem</span>
             </div>
             <div className="p-3.5 flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center text-white shrink-0">
@@ -445,7 +445,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
               </div>
               <div className="min-w-0">
                 <p className="text-[13px] font-bold text-gray-800 truncate">Super Admin</p>
-                <p className="text-[10px] text-emerald-600 font-semibold">Akses Penuh</p>
+                <p className="text-[11px] text-emerald-600 font-semibold">Akses Penuh</p>
               </div>
             </div>
           </div>
@@ -453,7 +453,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
           {/* Configurable roles */}
           <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden flex flex-col">
             <div className="px-4 py-2.5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between shrink-0">
-              <span className="text-[10px] font-bold text-gray-400">Role</span>
+              <span className="text-[11px] font-bold text-gray-400">Role</span>
               <button
                 onClick={() => { setIsAddingRole(v => !v); setEditingRole(null); }}
                 className="w-6 h-6 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all border border-emerald-100"
@@ -553,7 +553,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className={`text-[12.5px] font-bold truncate ${isActive ? 'text-gray-800' : 'text-gray-600'}`}>{role}</p>
-                        <p className={`text-[10px] font-semibold ${isActive ? 'text-emerald-600' : 'text-gray-400'}`}>{enabled}/{total} modul</p>
+                        <p className={`text-[11px] font-semibold ${isActive ? 'text-emerald-600' : 'text-gray-400'}`}>{enabled}/{total} modul</p>
                       </div>
                       {isActive && <ChevronRight size={14} className="text-emerald-500 shrink-0" />}
                     </button>

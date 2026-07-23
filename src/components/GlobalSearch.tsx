@@ -209,7 +209,7 @@ export default function GlobalSearch() {
               </svg>
             </button>
           ) : (
-            <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-bold text-slate-400 bg-white border border-slate-200 rounded-md shadow-sm pointer-events-none">
+            <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[11px] font-bold text-slate-400 bg-white border border-slate-200 rounded-md shadow-sm pointer-events-none">
               /
             </kbd>
           )}
@@ -230,7 +230,7 @@ export default function GlobalSearch() {
               {/* Group by source: Menu first, then Data */}
               {results.some(r => r.source === 'menu') && (
                 <div className="py-2">
-                  <div className="px-4 py-1 text-[10px] font-bold text-slate-400r">
+                  <div className="px-4 py-1 text-[11px] font-bold text-slate-400r">
                     Menu Navigasi
                   </div>
                   {results
@@ -254,12 +254,12 @@ export default function GlobalSearch() {
                               {highlightText(item.label, query)}
                             </span>
                             {item.category && (
-                              <span className="text-[10px] text-slate-400 font-medium">
+                              <span className="text-[11px] text-slate-400 font-medium">
                                 {highlightText(item.category, query)}
                               </span>
                             )}
                           </div>
-                          <span className="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-100/50 px-2 py-0.5 rounded-md font-bold shrink-0 ml-2">
+                          <span className="text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-100/50 px-2 py-0.5 rounded-md font-bold shrink-0 ml-2">
                             {item.type}
                           </span>
                         </div>
@@ -270,7 +270,7 @@ export default function GlobalSearch() {
               
               {results.some(r => r.source !== 'menu') && (
                 <div className="py-2">
-                  <div className="px-4 py-1 text-[10px] font-bold text-slate-400r">
+                  <div className="px-4 py-1 text-[11px] font-bold text-slate-400r">
                     Data Master & Transaksi
                   </div>
                   {results
@@ -303,12 +303,12 @@ export default function GlobalSearch() {
                               {highlightText(item.label, query)}
                             </span>
                             {item.category && (
-                              <span className="text-[10px] text-slate-400 font-medium">
+                              <span className="text-[11px] text-slate-400 font-medium">
                                 {highlightText(item.category, query)}
                               </span>
                             )}
                           </div>
-                          <span className={`text-[9px] border px-2 py-0.5 rounded-md font-bold shrink-0 ml-2 ${badgeBg}`}>
+                          <span className={`text-[11px] border px-2 py-0.5 rounded-md font-bold shrink-0 ml-2 ${badgeBg}`}>
                             {item.type}
                           </span>
                         </div>

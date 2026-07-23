@@ -39,7 +39,7 @@ export function ColumnToggle({
         <SlidersHorizontal size={14} />
         Kolom
         {hiddenCount > 0 && (
-          <span className="ml-0.5 px-1.5 py-0.5 text-[9px] bg-emerald-600 text-white rounded-full">
+          <span className="ml-0.5 px-1.5 py-0.5 text-[11px] bg-emerald-600 text-white rounded-full">
             {hiddenCount}
           </span>
         )}

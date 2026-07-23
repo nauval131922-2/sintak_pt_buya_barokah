@@ -283,7 +283,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
   const SectionLabel = ({ label }: { label: string }) => {
     if (!isExpanded) return <div className="h-px bg-gray-100 mx-2 my-4 first:hidden" />;
     return (
-      <h2 className="px-3 text-[10px] font-bold text-gray-400 tracking-wide mt-6 mb-2 truncate first:mt-0">
+      <h2 className="px-3 text-[11px] font-bold text-gray-400 tracking-wide mt-6 mb-2 truncate first:mt-0">
         {label}
       </h2>
     );
@@ -342,11 +342,11 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                 </div>
                 <div className="min-w-0 flex flex-col">
                   <h1 className="text-[15px] font-bold text-gray-800 tracking-tight leading-none uppercase">SINTAK</h1>
-                  <p className="text-[10px] text-gray-400 font-bold mt-1 tracking-wide truncate">PT. Buya Barokah</p>
+                  <p className="text-[11px] text-gray-400 font-bold mt-1 tracking-wide truncate">PT. Buya Barokah</p>
                 </div>
               </div>
               <div className="mt-4 px-3.5 py-1 rounded-[8px] border border-gray-100 inline-flex w-fit bg-gray-50/50">
-                <span className="text-[10px] font-bold text-gray-400">Div. Percetakan</span>
+                <span className="text-[11px] font-bold text-gray-400">Div. Percetakan</span>
               </div>
             </div>
           ) : (
@@ -713,7 +713,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
               {isExpanded && (
                 <div className="flex flex-col min-w-0 text-left">
                   <p className="text-[12px] font-bold text-gray-700 truncate leading-none">{user.name}</p>
-                  <p className="text-[10px] text-gray-400 font-bold mt-1 truncate">
+                  <p className="text-[11px] text-gray-400 font-bold mt-1 truncate">
                     {user.roles && user.roles.length > 0
                       ? user.roles.join(', ')
                       : (user.role || '')}

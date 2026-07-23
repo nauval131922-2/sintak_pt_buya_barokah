@@ -33,7 +33,7 @@ export default function Error({ error, reset }: ErrorProps) {
 
           {process.env.NODE_ENV === 'development' && (
             <div className="bg-slate-900 rounded-lg p-5 mb-10 text-left overflow-auto max-h-48 shadow-inner border border-slate-800">
-              <p className="text-[10px] font-mono text-rose-400 whitespace-pre-wrap break-words leading-relaxed">
+              <p className="text-[11px] font-mono text-rose-400 whitespace-pre-wrap break-words leading-relaxed">
                 {error.message}
                 {error.stack && `\n\n${error.stack}`}
                 {error.digest && `\n\nDigest: ${error.digest}`}
@@ -59,7 +59,7 @@ export default function Error({ error, reset }: ErrorProps) {
             </button>
           </div>
 
-          <p className="mt-10 text-[10px] font-bold text-gray-300">
+          <p className="mt-10 text-[11px] font-bold text-gray-300">
             SINTAK • Error
           </p>
         </div>

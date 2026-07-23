@@ -147,7 +147,7 @@ export default function ProfilePage() {
                   </div>
                   <span className="text-[13px] font-bold text-gray-800">Foto Profil</span>
                 </div>
-                <span className="text-[10px] font-semibold text-gray-400">JPEG / PNG · Maks 2MB</span>
+                <span className="text-[11px] font-semibold text-gray-400">JPEG / PNG · Maks 2MB</span>
               </div>
 
               <div className="px-5 py-5 flex items-center gap-6">
@@ -200,7 +200,7 @@ export default function ProfilePage() {
                     <>
                       <p className="text-[15px] font-bold text-gray-800 truncate">{name || "—"}</p>
                       <p className="text-[12px] text-gray-400 font-medium truncate">@{username || "—"}</p>
-                      <span className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 bg-emerald-50 border border-emerald-100 rounded-lg text-[10px] font-bold text-emerald-700">
+                      <span className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 bg-emerald-50 border border-emerald-100 rounded-lg text-[11px] font-bold text-emerald-700">
                         <ShieldCheck size={10} />
                         {role || "—"}
                       </span>
@@ -285,7 +285,7 @@ export default function ProfilePage() {
                 <div className="flex-1">
                   <span className="text-[13px] font-bold text-gray-800">Keamanan Akun</span>
                 </div>
-                <span className="text-[10px] font-semibold text-gray-400">Kosongkan jika tidak ingin mengubah password</span>
+                <span className="text-[11px] font-semibold text-gray-400">Kosongkan jika tidak ingin mengubah password</span>
               </div>
 
               <div className="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 gap-4">

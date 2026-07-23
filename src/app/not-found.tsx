@@ -39,7 +39,7 @@ export default function NotFound() {
         </Link>
       </div>
 
-      <div className="mt-20 text-[10px] font-bold text-gray-300">
+      <div className="mt-20 text-[11px] font-bold text-gray-300">
         SINTAK • Sistem Informasi Cetak
       </div>
     </div>

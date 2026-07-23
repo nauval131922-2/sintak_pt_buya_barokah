@@ -201,7 +201,7 @@ export default function DatePicker({ name, required, label, onChange, value, cus
       <>
         <div className="grid grid-cols-7 mb-2 border-b border-gray-50 pb-2">
           {DAYS_SHORT.map(d => (
-            <div key={d} className="text-center text-[10px] font-semibold text-gray-400 py-1">{d}</div>
+            <div key={d} className="text-center text-[11px] font-semibold text-gray-400 py-1">{d}</div>
           ))}
         </div>
         <div className="grid grid-cols-7 gap-1">
