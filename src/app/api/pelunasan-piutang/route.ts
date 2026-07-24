@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getScrapedPeriodSettingKey, parseScrapedPeriod } from '@/lib/server-scraped-period';
+import { stripRawData } from '@/lib/api-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,7 +58,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: dataResults.rows,
+      data: stripRawData(dataResults.rows as any[]),
       total,
       lastUpdated,
       scrapedPeriod: parseScrapedPeriod((metadataResults[1].rows[0] as any)?.value)

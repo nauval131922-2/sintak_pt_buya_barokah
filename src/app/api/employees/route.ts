@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * limit;
     const all = searchParams.get("all") === "true";
 
-    const activeFilter = all ? "" : "AND is_active = 1";
+    const activeFilter = all ? "" : "AND e.is_active = 1";
 
     const sortByParam = searchParams.get("sortBy") || "id";
     const sortDirParam = searchParams.get("sortDir") || "asc";
@@ -27,40 +27,38 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       const queryValue = buildFtsQuery(search);
+      // ponytail: JOIN FTS + LIMIT — no unbounded id IN (...)
       try {
-          if (queryValue) {
-            const ftsMatch = await db.execute({
-              sql: "SELECT id FROM employees_fts WHERE employees_fts MATCH ?",
-              args: [queryValue]
-            });
+        if (queryValue) {
+          sqlData = `SELECT e.* FROM employees e
+            JOIN employees_fts fts ON e.id = fts.rowid
+            WHERE employees_fts MATCH ? ${activeFilter}
+            ORDER BY e.${sortBy} ${sortDir}
+            LIMIT ? OFFSET ?`;
+          sqlTotal = `SELECT COUNT(*) as count FROM employees e
+            JOIN employees_fts fts ON e.id = fts.rowid
+            WHERE employees_fts MATCH ? ${activeFilter}`;
+          argsData = [queryValue, limit, offset];
+          argsTotal = [queryValue];
+        }
 
-            if (ftsMatch.rows.length > 0) {
-                const ids = ftsMatch.rows.map(r => r.id).join(',');
-                sqlData = `SELECT * FROM employees WHERE id IN (${ids}) ${activeFilter} ORDER BY ${sortBy} ${sortDir} LIMIT ? OFFSET ?`;
-                sqlTotal = `SELECT COUNT(*) as count FROM employees WHERE id IN (${ids}) ${activeFilter}`;
-                argsData = [limit, offset];
-                argsTotal = [];
-            }
-          }
-
-          if (!sqlData) {
-            const qPattern = `%${search}%`;
-            sqlData = `SELECT * FROM employees WHERE 1=1 ${activeFilter} AND (name LIKE ? OR position LIKE ? OR employee_no LIKE ? OR department LIKE ?) ORDER BY ${sortBy} ${sortDir} LIMIT ? OFFSET ?`;
-            sqlTotal = `SELECT COUNT(*) as count FROM employees WHERE 1=1 ${activeFilter} AND (name LIKE ? OR position LIKE ? OR employee_no LIKE ? OR department LIKE ?)`;
-            argsData = [qPattern, qPattern, qPattern, qPattern, limit, offset];
-            argsTotal = [qPattern, qPattern, qPattern, qPattern];
-          }
-      } catch {
-          // Fallback if FTS table not ready
+        if (!sqlData) {
           const qPattern = `%${search}%`;
-          sqlData = `SELECT * FROM employees WHERE 1=1 ${activeFilter} AND (name LIKE ? OR position LIKE ? OR employee_no LIKE ? OR department LIKE ?) ORDER BY ${sortBy} ${sortDir} LIMIT ? OFFSET ?`;
-          sqlTotal = `SELECT COUNT(*) as count FROM employees WHERE 1=1 ${activeFilter} AND (name LIKE ? OR position LIKE ? OR employee_no LIKE ? OR department LIKE ?)`;
+          sqlData = `SELECT * FROM employees e WHERE 1=1 ${activeFilter} AND (e.name LIKE ? OR e.position LIKE ? OR e.employee_no LIKE ? OR e.department LIKE ?) ORDER BY e.${sortBy} ${sortDir} LIMIT ? OFFSET ?`;
+          sqlTotal = `SELECT COUNT(*) as count FROM employees e WHERE 1=1 ${activeFilter} AND (e.name LIKE ? OR e.position LIKE ? OR e.employee_no LIKE ? OR e.department LIKE ?)`;
           argsData = [qPattern, qPattern, qPattern, qPattern, limit, offset];
           argsTotal = [qPattern, qPattern, qPattern, qPattern];
+        }
+      } catch {
+        const qPattern = `%${search}%`;
+        sqlData = `SELECT * FROM employees e WHERE 1=1 ${activeFilter} AND (e.name LIKE ? OR e.position LIKE ? OR e.employee_no LIKE ? OR e.department LIKE ?) ORDER BY e.${sortBy} ${sortDir} LIMIT ? OFFSET ?`;
+        sqlTotal = `SELECT COUNT(*) as count FROM employees e WHERE 1=1 ${activeFilter} AND (e.name LIKE ? OR e.position LIKE ? OR e.employee_no LIKE ? OR e.department LIKE ?)`;
+        argsData = [qPattern, qPattern, qPattern, qPattern, limit, offset];
+        argsTotal = [qPattern, qPattern, qPattern, qPattern];
       }
     } else {
-      sqlData = `SELECT * FROM employees WHERE 1=1 ${activeFilter} ORDER BY ${sortBy} ${sortDir} LIMIT ? OFFSET ?`;
-      sqlTotal = `SELECT COUNT(*) as count FROM employees WHERE 1=1 ${activeFilter}`;
+      sqlData = `SELECT * FROM employees e WHERE 1=1 ${activeFilter} ORDER BY e.${sortBy} ${sortDir} LIMIT ? OFFSET ?`;
+      sqlTotal = `SELECT COUNT(*) as count FROM employees e WHERE 1=1 ${activeFilter}`;
       argsData = [limit, offset];
       argsTotal = [];
     }

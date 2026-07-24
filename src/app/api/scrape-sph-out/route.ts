@@ -137,6 +137,7 @@ export async function GET(request: NextRequest) {
         total: parseDigitVal(r.total),
         status: String(r.status || "1"), // Preserve original string status for client logic
         faktur_so: r.faktur_so ? r.faktur_so.replace(/<[^>]*>?/gm, '').trim() : '', // Strip HTML from SO indicator
+        faktur_bom: r.faktur_bom || '',
         raw_data: JSON.stringify(r)
       };
     });
@@ -163,8 +164,8 @@ export async function GET(request: NextRequest) {
         
         batchOps.push({
             sql: `
-              INSERT INTO sph_out (faktur, tgl, kd_pelanggan, barang, total, status, faktur_so, raw_data)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+              INSERT INTO sph_out (faktur, tgl, kd_pelanggan, barang, total, status, faktur_so, faktur_bom, raw_data)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
               ON CONFLICT(faktur) DO UPDATE SET
                 tgl = excluded.tgl,
                 kd_pelanggan = excluded.kd_pelanggan,
@@ -172,6 +173,7 @@ export async function GET(request: NextRequest) {
                 total = excluded.total,
                 status = excluded.status,
                 faktur_so = excluded.faktur_so,
+                faktur_bom = excluded.faktur_bom,
                 raw_data = excluded.raw_data
             `,
             args: [
@@ -182,6 +184,7 @@ export async function GET(request: NextRequest) {
               record.total,
               record.status,
               record.faktur_so,
+              record.faktur_bom,
               record.raw_data
             ]
         });

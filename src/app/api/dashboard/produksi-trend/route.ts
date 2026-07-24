@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { cacheGet, cacheSet } from '@/lib/server-cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,6 +13,10 @@ export async function GET(request: NextRequest) {
     if (!from || !to) {
       return NextResponse.json({ error: 'from dan to diperlukan' }, { status: 400 });
     }
+
+    const ck = `dashboard:produksi-trend:${from}:${to}`;
+    const cached = cacheGet<unknown[]>(ck);
+    if (cached) return NextResponse.json({ success: true, data: cached });
 
     // BBB menggunakan format dd/mm/yyyy → konversi di SQL
     const dateConvBBB = `(substr(tgl,7,4) || '-' || substr(tgl,4,2) || '-' || substr(tgl,1,2))`;
@@ -74,6 +79,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    cacheSet(ck, points, 60_000);
     return NextResponse.json({ success: true, data: points });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

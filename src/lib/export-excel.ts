@@ -1,17 +1,15 @@
 'use client';
 
-import * as XLSX from 'xlsx';
+// ponytail: load xlsx only when user clicks export (not on page mount)
 
-// ponytail: client-side Excel export for any array of flat objects.
-// Reuses the already-installed `xlsx` dep. No server route needed.
-
-export function exportRowsToExcel<T extends Record<string, unknown>>(
+export async function exportRowsToExcel<T extends Record<string, unknown>>(
   rows: T[],
   filename: string,
   columnOrder?: (keyof T)[]
 ) {
   if (!rows.length) return false;
 
+  const XLSX = await import('xlsx');
   const keys = (columnOrder ?? (Object.keys(rows[0]) as (keyof T)[])) as string[];
   const data = rows.map((row) =>
     keys.reduce((acc, k) => {

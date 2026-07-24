@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import db from "@/lib/db";
 import { buildFtsQuery } from "@/lib/fts";
 import { getScrapedPeriodSettingKey, parseScrapedPeriod } from "@/lib/server-scraped-period";
+import { stripRawData } from "@/lib/api-utils";
 
 
 export const dynamic = 'force-dynamic';
@@ -122,7 +123,7 @@ export async function GET(request: Request) {
 
       return NextResponse.json({
         success: true,
-        data: records,
+        data: stripRawData(records),
         total,
         lastUpdated: extraResults[0].rows[0]?.value || extraResults[2].rows[0]?.lastUpdated,
         scrapedPeriod: parseScrapedPeriod((extraResults[1].rows[0] as any)?.value),
@@ -151,7 +152,7 @@ export async function GET(request: Request) {
 
       return NextResponse.json({
         success: true,
-        data: results[0].rows,
+        data: stripRawData(results[0].rows as any[]),
         total: Number((results[1].rows[0] as any).count),
         lastUpdated: results[2].rows[0]?.value || results[4].rows[0]?.lastUpdated,
         scrapedPeriod: parseScrapedPeriod((results[3].rows[0] as any)?.value),

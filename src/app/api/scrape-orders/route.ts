@@ -159,10 +159,11 @@ export async function GET(request: NextRequest) {
         if (!record.faktur) continue;
         if (!existingFakturs.has(record.faktur)) newInsertedCount++;
         
+        const raw = rawRecordMap.get(record.faktur) || record;
         batchOps.push({
             sql: `
-              INSERT INTO orders (faktur, nama_prd, nama_pelanggan, tgl, qty, satuan, harga, jumlah, raw_data)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+              INSERT INTO orders (faktur, nama_prd, nama_pelanggan, tgl, qty, satuan, harga, jumlah, faktur_bom, faktur_so, raw_data)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
               ON CONFLICT(faktur) DO UPDATE SET
                 nama_prd = excluded.nama_prd,
                 nama_pelanggan = excluded.nama_pelanggan,
@@ -171,6 +172,8 @@ export async function GET(request: NextRequest) {
                 satuan = excluded.satuan,
                 harga = excluded.harga,
                 jumlah = excluded.jumlah,
+                faktur_bom = excluded.faktur_bom,
+                faktur_so = excluded.faktur_so,
                 raw_data = excluded.raw_data
             `,
             args: [
@@ -182,7 +185,9 @@ export async function GET(request: NextRequest) {
               record.satuan || '',
               record.harga || 0,
               record.jumlah || 0,
-              JSON.stringify(rawRecordMap.get(record.faktur) || record)
+              (raw as any).faktur_bom || '',
+              (raw as any).faktur_so || '',
+              JSON.stringify(raw)
             ]
         });
 

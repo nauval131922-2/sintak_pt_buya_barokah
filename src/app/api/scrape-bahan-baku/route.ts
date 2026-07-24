@@ -120,11 +120,33 @@ export async function GET(request: NextRequest) {
       }
     };
 
+    // ponytail: extract PB fakturs from hp_detil for tracking index (avoids raw_data LIKE)
+    const extractFakturPb = (r: any): string => {
+      const seen = new Set<string>();
+      const add = (s: string) => {
+        const m = s.match(/PB\d{8,}/gi);
+        if (m) m.forEach(x => seen.add(x.toUpperCase()));
+      };
+      if (r.hp_detil) {
+        try {
+          const det = typeof r.hp_detil === 'string' ? JSON.parse(r.hp_detil) : r.hp_detil;
+          if (det && typeof det === 'object') {
+            for (const [k, v] of Object.entries(det as Record<string, any>)) {
+              add(k);
+              if (v && typeof v === 'object' && (v as any).faktur) add(String((v as any).faktur));
+            }
+          } else add(String(r.hp_detil));
+        } catch { add(String(r.hp_detil)); }
+      }
+      return [...seen].join(',');
+    };
+
     const finalRecords = filteredRecords.map((r: any) => {
       return {
         ...r,
         qty: parseNumber(r.qty),
         hp: parseNumber(r.hp),
+        faktur_pb: extractFakturPb(r),
       };
     });
 
@@ -144,10 +166,10 @@ export async function GET(request: NextRequest) {
             tgl, nama_barang, kd_barang, faktur, faktur_prd, 
             faktur_aktifitas, kd_cabang, kd_gudang, qty, satuan, 
             status, hp, hp_total, keterangan, fkt_hasil, 
-            nama_prd, aktifitas, username, kd_pelanggan, recid, 
-            raw_data
+            nama_prd, aktifitas, username, kd_pelanggan, recid,
+            faktur_pb, raw_data
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           ON CONFLICT(faktur, kd_barang, tgl) DO UPDATE SET
             faktur_aktifitas = excluded.faktur_aktifitas,
             kd_cabang = excluded.kd_cabang,
@@ -164,6 +186,7 @@ export async function GET(request: NextRequest) {
             username = excluded.username,
             kd_pelanggan = excluded.kd_pelanggan,
             recid = excluded.recid,
+            faktur_pb = excluded.faktur_pb,
             raw_data = excluded.raw_data
         `,
         args: [
@@ -187,6 +210,7 @@ export async function GET(request: NextRequest) {
           record.username || '',
           record.kd_pelanggan || '',
           record.recid || '',
+          record.faktur_pb || '',
           JSON.stringify(record)
         ]
       });

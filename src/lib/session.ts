@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import db from '@/lib/db';
@@ -51,7 +52,8 @@ export async function createSession(payload: SessionPayload) {
   });
 }
 
-export async function getSession(): Promise<SessionPayload | null> {
+// ponytail: React cache() = 1x DB per request (layout + requirePermission + db inject)
+export const getSession = cache(async (): Promise<SessionPayload | null> => {
   const cookieStore = await cookies();
   const session = cookieStore.get('sintak_session')?.value;
   if (!session) return null;
@@ -99,7 +101,7 @@ export async function getSession(): Promise<SessionPayload | null> {
   }
 
   return payload;
-}
+});
 
 export async function destroySession() {
   const cookieStore = await cookies();

@@ -1,6 +1,50 @@
 import { NextResponse } from 'next/server';
 
 /**
+ * ponytail: list payload without raw_data blob.
+ * Optionally lift keys from raw_data into top-level when column not denorm yet.
+ */
+export function stripRawData(
+  rows: any[],
+  extractKeys?: string[],
+): any[] {
+  if (!rows?.length) return rows || [];
+  return rows.map((row) => {
+    if (!row || row.raw_data == null) {
+      if (!row) return row;
+      const { raw_data: _, ...rest } = row;
+      return rest;
+    }
+    let extra: Record<string, unknown> = {};
+    if (extractKeys?.length) {
+      try {
+        const parsed = typeof row.raw_data === 'string' ? JSON.parse(row.raw_data) : row.raw_data;
+        if (parsed && typeof parsed === 'object') {
+          for (const k of extractKeys) {
+            if (row[k] == null || row[k] === '') {
+              const v = (parsed as any)[k];
+              if (v != null && v !== '') extra[k] = v;
+            }
+          }
+        }
+      } catch { /* ignore bad json */ }
+    }
+    const { raw_data: _, ...rest } = row;
+    return Object.keys(extra).length ? { ...rest, ...extra } : rest;
+  });
+}
+
+/** Keys still only in raw_data for orders list UI */
+export const ORDERS_LIST_RAW_KEYS = [
+  'qty_order', 'spesifikasi', 'cmd', 'detil', 'username', 'recid', 'faktur_pb', 'produk', 'status',
+];
+
+/** Keys still only in raw_data for sales_orders list UI */
+export const SALES_ORDERS_LIST_RAW_KEYS = [
+  'faktur_surat_jalan', 'faktur_pelunasan_piutang',
+];
+
+/**
  * Standardized error response for API routes
  */
 export function apiError(message: string, status: number = 500, details?: any) {

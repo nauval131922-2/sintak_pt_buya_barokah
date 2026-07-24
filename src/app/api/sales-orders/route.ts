@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { buildFtsQuery } from '@/lib/fts';
 import { getScrapedPeriodSettingKey, parseScrapedPeriod } from '@/lib/server-scraped-period';
+import { stripRawData, SALES_ORDERS_LIST_RAW_KEYS } from '@/lib/api-utils';
 
 export const dynamic = 'force-dynamic';
+
+// ponytail: JOIN FTS + LIMIT — never materialize all match ids into IN (...)
+const ORDER_BY = `ORDER BY substr(so.tgl,7,4) DESC, substr(so.tgl,4,2) DESC, substr(so.tgl,1,2) DESC, so.id DESC`;
 
 export async function GET(req: NextRequest) {
   try {
@@ -15,71 +19,79 @@ export async function GET(req: NextRequest) {
     const to = searchParams.get('to');
     const offset = (page - 1) * limit;
 
-    let query = `SELECT * FROM sales_orders WHERE 1=1`;
-    let countQuery = `SELECT COUNT(*) as total FROM sales_orders WHERE 1=1`;
-    const params: any[] = [];
+    const dateFilter = from && to
+      ? ` AND (substr(so.tgl,7,4)||substr(so.tgl,4,2)||substr(so.tgl,1,2)) BETWEEN ? AND ?`
+      : '';
+    const dateArgs = from && to ? [from.replace(/-/g, ''), to.replace(/-/g, '')] : [];
+
+    let records: any[] = [];
+    let total = 0;
 
     if (search) {
-      // Use FTS5 for better performance
-      const ftsSql = `SELECT id FROM sales_orders_fts WHERE sales_orders_fts MATCH ?`;
       const ftsQuery = buildFtsQuery(search);
-      
-      try {
-        if (ftsQuery) {
-          const ftsResult = await db.execute({ sql: ftsSql, args: [ftsQuery] });
-          if (ftsResult.rows.length > 0) {
-            const ids = ftsResult.rows.map(r => r.id).join(',');
-            query += ` AND id IN (${ids})`;
-            countQuery += ` AND id IN (${ids})`;
-          }
-        }
+      let ftsHit = false;
 
-        if (query === `SELECT * FROM sales_orders WHERE 1=1`) {
-          const searchPattern = `%${search}%`;
-          const searchSql = ` AND (faktur LIKE ? OR kd_pelanggan LIKE ? OR nama_pelanggan LIKE ? OR nama_prd LIKE ? OR kd_barang LIKE ?)`;
-          query += searchSql;
-          countQuery += searchSql;
-          params.push(searchPattern, searchPattern, searchPattern, searchPattern, searchPattern);
-        }
-      } catch {
-        // Fallback
-        const searchPattern = `%${search}%`;
-        const searchSql = ` AND (faktur LIKE ? OR kd_pelanggan LIKE ? OR nama_pelanggan LIKE ? OR nama_prd LIKE ? OR kd_barang LIKE ?)`;
-        query += searchSql;
-        countQuery += searchSql;
-        params.push(searchPattern, searchPattern, searchPattern, searchPattern, searchPattern);
+      if (ftsQuery) {
+        try {
+          const ftsResults = await db.batch([
+            {
+              sql: `SELECT so.* FROM sales_orders so
+                    JOIN sales_orders_fts fts ON so.id = fts.rowid
+                    WHERE sales_orders_fts MATCH ? ${dateFilter}
+                    ${ORDER_BY}
+                    LIMIT ? OFFSET ?`,
+              args: [ftsQuery, ...dateArgs, limit, offset],
+            },
+            {
+              sql: `SELECT COUNT(*) as total FROM sales_orders so
+                    JOIN sales_orders_fts fts ON so.id = fts.rowid
+                    WHERE sales_orders_fts MATCH ? ${dateFilter}`,
+              args: [ftsQuery, ...dateArgs],
+            },
+          ], 'read');
+          records = ftsResults[0].rows as any[];
+          total = Number((ftsResults[1].rows[0] as any)?.total || 0);
+          ftsHit = total > 0;
+        } catch { /* LIKE fallback */ }
       }
+
+      if (!ftsHit) {
+        const pat = `%${search}%`;
+        const likeClause = ` AND (so.faktur LIKE ? OR so.kd_pelanggan LIKE ? OR so.nama_pelanggan LIKE ? OR so.nama_prd LIKE ? OR so.kd_barang LIKE ?)`;
+        const likeArgs = [pat, pat, pat, pat, pat, ...dateArgs];
+        const likeResults = await db.batch([
+          {
+            sql: `SELECT so.* FROM sales_orders so WHERE 1=1 ${likeClause}${dateFilter} ${ORDER_BY} LIMIT ? OFFSET ?`,
+            args: [...likeArgs, limit, offset],
+          },
+          {
+            sql: `SELECT COUNT(*) as total FROM sales_orders so WHERE 1=1 ${likeClause}${dateFilter}`,
+            args: likeArgs,
+          },
+        ], 'read');
+        records = likeResults[0].rows as any[];
+        total = Number((likeResults[1].rows[0] as any)?.total || 0);
+      }
+    } else {
+      const standard = await db.batch([
+        {
+          sql: `SELECT so.* FROM sales_orders so WHERE 1=1 ${dateFilter} ${ORDER_BY} LIMIT ? OFFSET ?`,
+          args: [...dateArgs, limit, offset],
+        },
+        {
+          sql: `SELECT COUNT(*) as total FROM sales_orders so WHERE 1=1 ${dateFilter}`,
+          args: dateArgs,
+        },
+      ], 'read');
+      records = standard[0].rows as any[];
+      total = Number((standard[1].rows[0] as any)?.total || 0);
     }
 
-    if (from && to) {
-      // Assuming dates are stored as DD-MM-YYYY in the table, but we might want to convert them for filtering
-      // For now, let's assume the table stores strings we can compare via substring if needed, 
-      // but standard SINTAK pattern uses substr for efficient sorting in indexes.
-      // Filter by converting DD-MM-YYYY to YYYYMMDD for comparison
-      const filterSql = ` AND (substr(tgl,7,4)||substr(tgl,4,2)||substr(tgl,1,2)) BETWEEN ? AND ?`;
-      const fromFormatted = from.replace(/-/g, '');
-      const toFormatted = to.replace(/-/g, '');
-      query += filterSql;
-      countQuery += filterSql;
-      params.push(fromFormatted, toFormatted);
-    }
-
-    // Order by date descending
-    query += ` ORDER BY substr(tgl,7,4) DESC, substr(tgl,4,2) DESC, substr(tgl,1,2) DESC, id DESC LIMIT ? OFFSET ?`;
-    const queryParams = [...params, limit, offset];
-
-    const [dataResults, countResults] = await Promise.all([
-      db.execute({ sql: query, args: queryParams }),
-      db.execute({ sql: countQuery, args: params })
-    ]);
-
-    const total = (countResults.rows[0]?.total as number) || 0;
-    
     const metadataResults = await db.batch([
       { sql: `SELECT value FROM system_settings WHERE key = 'last_scrape_sales_orders'`, args: [] },
       { sql: `SELECT value FROM system_settings WHERE key = ?`, args: [getScrapedPeriodSettingKey('last_scrape_sales_orders')] },
-      { sql: `SELECT strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) as lastUpdated FROM sales_orders`, args: [] }
-    ], "read");
+      { sql: `SELECT strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) as lastUpdated FROM sales_orders`, args: [] },
+    ], 'read');
 
     const lastScrape = metadataResults[0].rows[0] as any;
     const lastUpdatedRaw = (metadataResults[2].rows[0] as any).lastUpdated;
@@ -87,12 +99,11 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: dataResults.rows,
+      data: stripRawData(records, SALES_ORDERS_LIST_RAW_KEYS),
       total,
       lastUpdated,
-      scrapedPeriod: parseScrapedPeriod((metadataResults[1].rows[0] as any)?.value)
+      scrapedPeriod: parseScrapedPeriod((metadataResults[1].rows[0] as any)?.value),
     });
-
   } catch (error: any) {
     console.error('API Error (sales-orders):', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

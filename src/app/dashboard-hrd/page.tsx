@@ -4,11 +4,17 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
+import nextDynamic from "next/dynamic";
 import PageHeader from "@/components/PageHeader";
 import { Suspense } from "react";
 import { requirePermission } from "@/lib/permissions";
 import KaryawanStatCard from "./KaryawanStatCard";
-import InfractionsTrendChart from "./InfractionsTrendChart";
+
+// ponytail: recharts only when chart mounts
+// ponytail: no ssr:false in Server Components (Next 16)
+const InfractionsTrendChart = nextDynamic(() => import("./InfractionsTrendChart"), {
+  loading: () => <div className="bg-white/80 border border-white/20 rounded-2xl h-[300px] animate-pulse shadow-sm" />,
+});
 
 export const metadata: Metadata = {
   title: "SINTAK | Dashboard HRD",

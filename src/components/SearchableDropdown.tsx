@@ -59,6 +59,7 @@ export default function SearchableDropdown({
   const [focusedIndex, setFocusedIndex] = useState(-1);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -73,18 +74,24 @@ export default function SearchableDropdown({
     .filter((i) => labelFor(i).toLowerCase().includes(query.toLowerCase()))
     .slice(0, maxDisplay);
 
-  const displayLabel = value === '' ? (placeholder ?? allLabel) : labelFor(value);
+  // If selected value is outside the sliced list, still show a sensible label
+  const displayLabel = value === ''
+    ? (placeholder ?? allLabel)
+    : (itemLabels?.[value]
+      ?? items.find(i => String(i) === value || String(i).startsWith(value + ' — '))
+      ?? String(value));
 
-  // Close on outside click
+  // Close on outside click — panel is in Portal, so check both refs
   useEffect(() => {
+    if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (!containerRef.current?.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      const t = e.target as Node;
+      if (containerRef.current?.contains(t) || panelRef.current?.contains(t)) return;
+      setOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  }, [open]);
 
   // Auto-focus search when opened, init focused index to current selection
   useEffect(() => {
@@ -187,15 +194,23 @@ export default function SearchableDropdown({
       {open && (
         <Portal>
           <div
+            ref={panelRef}
             id={`dropdown-panel-${id}`}
             role="listbox"
             aria-label={label}
             className={`fixed bg-white border border-gray-100 rounded-xl shadow-md shadow-emerald-900/10 py-3 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col max-h-[350px]`}
-            style={{
-              top: `${containerRef.current?.getBoundingClientRect().bottom || 0 + 8}px`,
-              left: `${containerRef.current?.getBoundingClientRect().left || 0}px`,
-              width: `${containerRef.current?.getBoundingClientRect().width || 0}px`,
-            }}
+            style={(() => {
+              const rect = containerRef.current?.getBoundingClientRect();
+              // panel width = trigger width (collapse size), never wider than viewport
+              const triggerW = rect?.width || 200;
+              const maxW = typeof window !== 'undefined' ? window.innerWidth - 24 : 360;
+              const width = Math.min(triggerW, maxW);
+              return {
+                top: `${(rect?.bottom || 0) + 8}px`,
+                left: `${rect?.left || 0}px`,
+                width: `${width}px`,
+              };
+            })()}
           >
           {/* Search */}
           <div className="px-3 pb-3 shrink-0 border-b border-gray-50 mb-1">

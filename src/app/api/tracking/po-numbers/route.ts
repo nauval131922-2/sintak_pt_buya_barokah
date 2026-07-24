@@ -8,13 +8,20 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const q = searchParams.get("q") || "";
     const supplier = searchParams.get("supplier") || "";
+    const from = searchParams.get("from") || "";
+    const to = searchParams.get("to") || "";
 
     let whereClause = "WHERE (faktur LIKE ? OR ket_pr LIKE ?) AND faktur IS NOT NULL AND faktur != ''";
-    const args = [`%${q}%`, `%${q}%`];
+    const args: string[] = [`%${q}%`, `%${q}%`];
 
     if (supplier) {
       whereClause += " AND kd_supplier = ?";
       args.push(supplier);
+    }
+
+    if (from && to) {
+      whereClause += ` AND (substr(TRIM(tgl),7,4)||'-'||substr(TRIM(tgl),4,2)||'-'||substr(TRIM(tgl),1,2)) BETWEEN ? AND ?`;
+      args.push(from, to);
     }
 
     const res = await db.execute({

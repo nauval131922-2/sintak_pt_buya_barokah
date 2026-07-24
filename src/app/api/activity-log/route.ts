@@ -44,7 +44,7 @@ function parseQuery(searchParams: URLSearchParams): ActivityLogQueryParams {
     recordedBy: searchParams.get('recordedBy') || undefined,
     source: (source === 'archive' ? 'archive' : 'active') as ActivityLogSource,
     page: Math.max(1, parseInt(searchParams.get('page') || '1', 10)),
-    pageSize: Math.min(100000, Math.max(10, parseInt(searchParams.get('pageSize') || '50', 10))),
+    pageSize: Math.min(200, Math.max(10, parseInt(searchParams.get('pageSize') || '50', 10))),
     sortBy: (() => {
       const s = searchParams.get('sortBy');
       const allowed: ActivityLogSortField[] = ['created_at', 'action_type', 'table_name', 'recorded_by'];
@@ -53,7 +53,6 @@ function parseQuery(searchParams: URLSearchParams): ActivityLogQueryParams {
     sortDir: (searchParams.get('sortDir') === 'asc' ? 'asc' : 'desc') as ActivityLogSortDir,
     opts: { skipRawDataSearch: !deepSearch }, // ponytail: raw_data LIKE lambat, skip kecuali user aktifkan deepSearch
   };
-  console.log('[API activity-log] parseQuery result:', { from: params.from, to: params.to, page: params.page, deepSearch });
   return params;
 }
 
@@ -87,14 +86,14 @@ async function queryLogs(params: ActivityLogQueryParams, withStats = false) {
 
   // 2) DATA query — with JOIN for recorded_by_name (always fresh)
   // Force index untuk default sort (created_at DESC) biar ga full scan + sort 2.68M rows
-  // ponytail: exclude raw_data dari list query untuk performa (Priority 2 - lazy load)
+  // ponytail: exclude raw_data dari list — fetch via ?logId= on expand
   const archiveCol = params.source === 'archive' ? ', al.archived_at' : '';
   const indexHint = params.sortBy === 'created_at' && params.sortDir === 'desc'
     ? ' INDEXED BY idx_activity_logs_created_at_id_desc' : '';
   const dataResult = await db.execute({
     sql: `
       SELECT al.id, al.created_at, al.action_type, al.table_name, al.record_id,
-             al.message, al.recorded_by, al.raw_data${archiveCol},
+             al.message, al.recorded_by${archiveCol},
              u.name AS recorded_by_name
       FROM ${table} al${indexHint}
       LEFT JOIN users u ON al.recorded_by = u.username

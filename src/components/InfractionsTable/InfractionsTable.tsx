@@ -8,8 +8,6 @@ import TableFooter from '@/components/TableFooter';
 
 import ConfirmDialog, { DialogType } from '@/components/ConfirmDialog';
 import DatePicker from '@/components/DatePicker';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 import { useInfractionsData, useInfractionsFilter } from './hooks';
 import type { Infraction } from './types';
@@ -213,7 +211,12 @@ export default function InfractionsTable({
     setVisibleCount(PAGE_SIZE);
   };
 
-  const generatePDF = () => {
+  const generatePDF = async () => {
+    // ponytail: load jspdf only on export click
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ]);
     const doc = new jsPDF({ orientation: 'l', unit: 'mm', format: 'a4' });
     const now = new Date();
     const printedOnStr = formatIndoDateStr(formatDateToYYYYMMDD(now));
@@ -351,7 +354,11 @@ export default function InfractionsTable({
     }
   };
 
-  const generateSinglePDF = useCallback((inf: Infraction) => {
+  const generateSinglePDF = useCallback(async (inf: Infraction) => {
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ]);
     const doc = new jsPDF({
       orientation: 'p',
       unit: 'mm',

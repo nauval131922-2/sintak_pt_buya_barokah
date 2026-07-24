@@ -34,7 +34,8 @@ async function getAktivitasTerbaru() {
   try {
     const result = await db.execute({
       sql: `
-        SELECT al.*, u.name AS recorded_by_name
+        SELECT al.id, al.created_at, al.action_type, al.table_name, al.record_id,
+               al.message, al.recorded_by, u.name AS recorded_by_name
         FROM activity_logs al
         LEFT JOIN users u ON al.recorded_by = u.username
         ORDER BY al.created_at DESC

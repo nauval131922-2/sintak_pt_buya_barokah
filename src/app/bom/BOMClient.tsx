@@ -52,14 +52,14 @@ export default function BOMClient() {
   const [exporting, setExporting] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     if (!data?.length) return;
     setExporting(true);
     try {
       const cols = (columns as any[])
         .map((c) => c.accessorKey)
         .filter(Boolean) as string[];
-      const ok = exportRowsToExcel(data, `BOM_${scrapedPeriod?.start ?? 'data'}_sd_${scrapedPeriod?.end ?? ''}.xlsx`, cols as any);
+      const ok = await exportRowsToExcel(data, `BOM_${scrapedPeriod?.start ?? 'data'}_sd_${scrapedPeriod?.end ?? ''}.xlsx`, cols as any);
       if (!ok) setError('Tidak ada data untuk diexport.');
     } catch (e) {
       setError('Gagal export Excel.');

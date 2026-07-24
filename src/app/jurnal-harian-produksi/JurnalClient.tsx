@@ -377,7 +377,8 @@ export default function JurnalClient({
     let active = true;
     async function fetchMaster() {
       try {
-        const res = await fetch('/api/master-pekerjaan-jurnal-produksi?limit=9999');
+        // full master names for filter (~1.3k)
+        const res = await fetch('/api/master-pekerjaan-jurnal-produksi?limit=5000');
         if (!active) return;
         if (res.ok) {
           const json: any = await res.json();
@@ -397,6 +398,7 @@ export default function JurnalClient({
     let active = true;
     async function loadSopd() {
       try {
+        // filter + form order list (union sopd/orders ~6.5k; cap for payload)
         const res = await fetch('/api/sopd?all=true&limit=5000');
         if (!active) return;
         if (res.ok) {
@@ -416,7 +418,8 @@ export default function JurnalClient({
     async function loadFormData() {
       setIsLoadingForm(true);
       try {
-        const res = await fetch('/api/employees?limit=5000');
+        // ponytail: ~100 active employees
+        const res = await fetch('/api/employees?limit=200');
         if (!active) return;
         if (res.ok) {
           const j = await res.json();
@@ -435,7 +438,7 @@ export default function JurnalClient({
     if (!formData.bagian) { setJenisPekerjaanList([]); return; }
     const category = BAGIAN_CATEGORY_MAP[formData.bagian] || '';
     if (!category) { setJenisPekerjaanList([]); return; }
-    fetch(`/api/master-pekerjaan-jurnal-produksi?category=${encodeURIComponent(category)}&limit=2000`)
+    fetch(`/api/master-pekerjaan-jurnal-produksi?category=${encodeURIComponent(category)}&limit=300`)
       .then(r => r.json())
       .then(j => setJenisPekerjaanList((j.data || []).map((x: any) => x.name)))
       .catch(() => setJenisPekerjaanList([]));
@@ -447,7 +450,7 @@ export default function JurnalClient({
     if (!bagian) { setJenisPekerjaan2List([]); return; }
     const category = BAGIAN_CATEGORY_MAP[bagian] || '';
     if (!category) { setJenisPekerjaan2List([]); return; }
-    fetch(`/api/master-pekerjaan-jurnal-produksi?category=${encodeURIComponent(category)}&limit=2000`)
+    fetch(`/api/master-pekerjaan-jurnal-produksi?category=${encodeURIComponent(category)}&limit=300`)
       .then(r => r.json())
       .then(j => setJenisPekerjaan2List((j.data || []).map((x: any) => x.name)))
       .catch(() => setJenisPekerjaan2List([]));
@@ -1694,7 +1697,7 @@ export default function JurnalClient({
               triggerWidth="w-[170px]"
               panelWidth="w-[280px]"
               compact
-              maxDisplay={300}
+              maxDisplay={500}
               icon={<Filter size={14} className={jenisPekerjaanFilter ? 'text-emerald-600' : 'text-gray-400'} />}
               onChange={(val) => { setJenisPekerjaanFilter(val); setPage(1); }}
             />
@@ -2999,7 +3002,6 @@ export default function JurnalClient({
               placeholder="Semua Tahun"
               searchPlaceholder="Cari tahun..."
               triggerWidth="w-full"
-              panelWidth="w-full"
               onChange={(val) => setSelectedExportYear(val === '' ? 'all' : val)}
             />
             <p className="mt-2.5 text-[11px] text-gray-400 font-medium ml-1">

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
+import nextDynamic from 'next/dynamic';
 import {
   BookOpenText,
   Factory,
@@ -9,10 +10,15 @@ import {
 } from 'lucide-react';
 import PageHeader from '@/components/PageHeader';
 import { requirePermission } from '@/lib/permissions';
-import AkuntingTrendChart from './AkuntingTrendChart';
 import JurnalAkuntansiTerbaru from './JurnalAkuntansiTerbaru';
 import WarningBarangJadiCard from './WarningBarangJadiCard';
 import db from '@/lib/db';
+
+// ponytail: recharts only when chart mounts
+// ponytail: no ssr:false in Server Components (Next 16)
+const AkuntingTrendChart = nextDynamic(() => import('./AkuntingTrendChart'), {
+  loading: () => <div className="bg-white/80 border border-white/20 rounded-2xl h-[360px] animate-pulse shadow-sm" />,
+});
 
 export const metadata: Metadata = {
   title: 'SINTAK | Dashboard Akuntansi',

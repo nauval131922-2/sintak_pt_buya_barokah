@@ -3,6 +3,12 @@ import db from "@/lib/db";
 
 export const dynamic = 'force-dynamic';
 
+// ponytail: MDT stores status icons inside faktur_* fields — strip before join
+function cleanFaktur(v: unknown): string {
+  if (v == null) return '';
+  return String(v).replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+}
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -15,12 +21,21 @@ export async function GET(request: NextRequest) {
 
     // --- LEVEL 1: BOM (The root of the tracking) ---
     // We try to find the root BOM. If targetFaktur is not a BOM, we try to trace it back from rekap_pembelian_barang.
+    // ponytail: equality on indexed cols only — raw_data LIKE dropped
     const bomRes = await db.execute({
-      sql: `SELECT * FROM bill_of_materials WHERE faktur = ? OR faktur_prd = ? OR raw_data LIKE ? LIMIT 1`,
+      sql: `SELECT * FROM bill_of_materials WHERE faktur = ? OR faktur_prd = ? OR faktur_prd LIKE ? LIMIT 1`,
       args: [targetFaktur, targetFaktur, `%${targetFaktur}%`]
     });
 
     let bom = bomRes.rows[0] as any || null;
+    if (bom) {
+      bom = {
+        ...bom,
+        faktur: cleanFaktur(bom.faktur) || bom.faktur,
+        faktur_prd: cleanFaktur(bom.faktur_prd),
+        faktur_sph: cleanFaktur(bom.faktur_sph),
+      };
+    }
     
     // Global flags to determine mode
     let isStartingFromRekap = false;
@@ -46,10 +61,10 @@ export async function GET(request: NextRequest) {
         isStartingFromRekap = true;
         pembelianBarang = [rekap];
         
-        // Trace Path 1: via Bahan Baku (Direct Usage)
+        // Trace Path 1: via Bahan Baku (Direct Usage) — faktur_pb denorm
         const bbUsageRes = await db.execute({
-          sql: `SELECT DISTINCT faktur_prd, fkt_hasil FROM bahan_baku WHERE raw_data LIKE ?`,
-          args: [`%${targetFaktur}%`]
+          sql: `SELECT DISTINCT faktur_prd, fkt_hasil FROM bahan_baku WHERE faktur_pb = ? OR faktur_pb LIKE ? OR faktur_pb LIKE ? OR faktur_pb LIKE ?`,
+          args: [targetFaktur, `${targetFaktur},%`, `%,${targetFaktur}`, `%,${targetFaktur},%`]
         });
         bbUsageRes.rows.forEach((r: any) => {
           if (r.faktur_prd) tracedPrdFakturs.add(r.faktur_prd);
@@ -91,9 +106,10 @@ export async function GET(request: NextRequest) {
             pembelianBarang = foundPBs;
             // Trace usage from these PBs
             for (const pb of foundPBs) {
+               const f = pb.faktur;
                const usageRes = await db.execute({
-                  sql: `SELECT DISTINCT faktur_prd, fkt_hasil FROM bahan_baku WHERE raw_data LIKE ?`,
-                  args: [`%${pb.faktur}%`]
+                  sql: `SELECT DISTINCT faktur_prd, fkt_hasil FROM bahan_baku WHERE faktur_pb = ? OR faktur_pb LIKE ? OR faktur_pb LIKE ? OR faktur_pb LIKE ?`,
+                  args: [f, `${f},%`, `%,${f}`, `%,${f},%`]
                });
                usageRes.rows.forEach((r: any) => {
                   if (r.faktur_prd) tracedPrdFakturs.add(r.faktur_prd);
@@ -132,16 +148,21 @@ export async function GET(request: NextRequest) {
             const pr = prRes.rows[0] as any;
             if (pr) {
               purchaseRequests = [pr];
-              if (pr.faktur_prd) tracedPrdFakturs.add(pr.faktur_prd);
-
-              const prdFaktur = pr.faktur_prd;
+              const prdFaktur = cleanFaktur(pr.faktur_prd);
               if (prdFaktur) {
+                tracedPrdFakturs.add(prdFaktur);
                 const bomFromPrd = await db.execute({
-                  sql: `SELECT * FROM bill_of_materials WHERE faktur_prd = ? LIMIT 1`,
-                  args: [prdFaktur]
+                  sql: `SELECT * FROM bill_of_materials WHERE faktur_prd = ? OR faktur_prd LIKE ? LIMIT 1`,
+                  args: [prdFaktur, `%${prdFaktur}%`]
                 });
                 if (bomFromPrd.rows[0]) {
-                  bom = bomFromPrd.rows[0] as any;
+                  const b = bomFromPrd.rows[0] as any;
+                  bom = {
+                    ...b,
+                    faktur: cleanFaktur(b.faktur) || b.faktur,
+                    faktur_prd: cleanFaktur(b.faktur_prd),
+                    faktur_sph: cleanFaktur(b.faktur_sph),
+                  };
                 }
               }
             }
@@ -157,7 +178,7 @@ export async function GET(request: NextRequest) {
 
     const [sphRes, soResByFaktur] = await Promise.all([
       bom?.faktur ? db.execute({
-        sql: `SELECT * FROM sph_out WHERE json_extract(raw_data, '$.faktur_bom') = ? LIMIT 1`,
+        sql: `SELECT * FROM sph_out WHERE faktur_bom = ? LIMIT 1`,
         args: [bom.faktur]
       }) : Promise.resolve({ rows: [] }),
       bom?.faktur_sph ? db.execute({
@@ -182,13 +203,16 @@ export async function GET(request: NextRequest) {
     let productionOrders: any[] = [];
     let laporanPenjualanList: any[] = [];
     
-    // Determine all possible PRD Fakturs to search
+    // Determine all possible PRD Fakturs to search (already cleaned from BOM)
     const prdFaktursToSearch = new Set<string>();
     if (bom?.faktur_prd) prdFaktursToSearch.add(bom.faktur_prd);
-    if (salesOrder?.faktur_prd) prdFaktursToSearch.add(salesOrder.faktur_prd);
-    tracedPrdFakturs.forEach(f => prdFaktursToSearch.add(f));
+    if (salesOrder?.faktur_prd) prdFaktursToSearch.add(cleanFaktur(salesOrder.faktur_prd));
+    tracedPrdFakturs.forEach(f => {
+      const c = cleanFaktur(f);
+      if (c) prdFaktursToSearch.add(c);
+    });
 
-    const fakturPrdArray = Array.from(prdFaktursToSearch);
+    let fakturPrdArray = Array.from(prdFaktursToSearch).filter(Boolean);
     
     const [prdRes, lpRes] = await Promise.all([
       fakturPrdArray.length > 0 ? db.execute({
@@ -197,7 +221,7 @@ export async function GET(request: NextRequest) {
       }) : Promise.resolve({ rows: [] }),
       salesOrder?.faktur ? db.execute({
         sql: `SELECT * FROM sales_reports WHERE faktur_so = ? OR kd_barang = ?`,
-        args: [salesOrder.faktur, salesOrder.kd_barang]
+        args: [cleanFaktur(salesOrder.faktur) || salesOrder.faktur, salesOrder.kd_barang]
       }) : Promise.resolve({ rows: [] })
     ]);
 
@@ -207,8 +231,8 @@ export async function GET(request: NextRequest) {
     // Second try for Production Orders if still empty and we have SO/BOM
     if (productionOrders.length === 0 && salesOrder?.faktur && bom?.faktur) {
       const fuzzyRes = await db.execute({
-        sql: `SELECT * FROM orders WHERE json_extract(raw_data, '$.faktur_so') = ? AND json_extract(raw_data, '$.faktur_bom') = ?`,
-        args: [salesOrder.faktur, bom.faktur]
+        sql: `SELECT * FROM orders WHERE faktur_so = ? AND faktur_bom = ?`,
+        args: [cleanFaktur(salesOrder.faktur) || salesOrder.faktur, bom.faktur]
       });
       productionOrders = fuzzyRes.rows;
     }
@@ -216,16 +240,23 @@ export async function GET(request: NextRequest) {
     // Third try: via BOM Faktur (Fallback if SO link fails or SO is missing)
     if (productionOrders.length === 0 && bom?.faktur) {
       const bomResOnly = await db.execute({
-        sql: `SELECT * FROM orders WHERE json_extract(raw_data, '$.faktur_bom') = ?`,
+        sql: `SELECT * FROM orders WHERE faktur_bom = ?`,
         args: [bom.faktur]
       });
       productionOrders = bomResOnly.rows;
     }
 
+    // Rebuild PRD set from found production orders (authoritative)
+    for (const o of productionOrders as any[]) {
+      const f = cleanFaktur(o.faktur) || o.faktur;
+      if (f) prdFaktursToSearch.add(f);
+    }
+    fakturPrdArray = Array.from(prdFaktursToSearch).filter(Boolean);
+
     // --- LEVEL 4: Sub-branches (Dependent on Production Order & Reports) ---
     // 1. Production Branch: PRs, Bahan Baku, Penerimaan Barang Hasil Produksi
     // 2. Sales Branch: Pengiriman, Pelunasan Piutang Penjualan
-    const prdFaktursForSub = Array.from(prdFaktursToSearch);
+    const prdFaktursForSub = fakturPrdArray;
     const lpFakturs = laporanPenjualanList.map(lp => lp.faktur).filter(Boolean);
 
     let bahanBaku: any[] = [];
@@ -235,23 +266,47 @@ export async function GET(request: NextRequest) {
 
     const dateSort = `ORDER BY substr(tgl,7,4) ASC, substr(tgl,4,2) ASC, substr(tgl,1,2) ASC, faktur ASC`;
 
+    // ponytail: indexed equality / IN — no raw_data LIKE full scan
+    const pbMatch = (f: string) => [
+      `faktur_pb = ? OR faktur_pb LIKE ? OR faktur_pb LIKE ? OR faktur_pb LIKE ?`,
+      [f, `${f},%`, `%,${f}`, `%,${f},%`] as (string)[]
+    ] as const;
+
     const [prRes, bbRes, bjRes, pgRes, ppRes] = await Promise.all([
       prdFaktursForSub.length > 0 ? db.execute({
-        sql: `SELECT * FROM purchase_requests WHERE (faktur_prd IN (${prdFaktursForSub.map(() => '?').join(',')}) OR ${prdFaktursForSub.map(() => `raw_data LIKE ?`).join(" OR ")}) ${dateSort}`,
-        args: [...prdFaktursForSub, ...prdFaktursForSub.map(f => `%${f}%`)]
+        sql: `SELECT * FROM purchase_requests WHERE faktur_prd IN (${prdFaktursForSub.map(() => '?').join(',')}) ${dateSort}`,
+        args: prdFaktursForSub
       }) : Promise.resolve({ rows: [] }),
-      (prdFaktursForSub.length > 0 || isStartingFromPO) ? db.execute({
-        sql: `SELECT * FROM bahan_baku WHERE (faktur_prd IN (${prdFaktursForSub.map(() => '?').join(',')}) OR raw_data LIKE ? OR raw_data LIKE ?) ${dateSort}`,
-        args: [...prdFaktursForSub, `%${targetFaktur}%`, ...purchaseOrders.map(p => `%${p.faktur}%`)]
-      }) : (targetFaktur.startsWith('PB') || targetFaktur.startsWith('RQ') ? db.execute({
-        sql: `SELECT * FROM bahan_baku WHERE raw_data LIKE ? ${dateSort}`,
-        args: [`%${targetFaktur}%`]
-      }) : Promise.resolve({ rows: [] })),
+      (() => {
+        const parts: string[] = [];
+        const args: string[] = [];
+        if (prdFaktursForSub.length > 0) {
+          parts.push(`faktur_prd IN (${prdFaktursForSub.map(() => '?').join(',')})`);
+          args.push(...prdFaktursForSub);
+        }
+        if (isStartingFromRekap || targetFaktur.startsWith('PB')) {
+          const [sql, a] = pbMatch(targetFaktur);
+          parts.push(`(${sql})`);
+          args.push(...a);
+        }
+        if (isStartingFromPO && pembelianBarang.length > 0) {
+          for (const pb of pembelianBarang) {
+            if (!pb.faktur) continue;
+            const [sql, a] = pbMatch(pb.faktur);
+            parts.push(`(${sql})`);
+            args.push(...a);
+          }
+        }
+        if (parts.length === 0) return Promise.resolve({ rows: [] });
+        return db.execute({
+          sql: `SELECT * FROM bahan_baku WHERE (${parts.join(' OR ')}) ${dateSort}`,
+          args
+        });
+      })(),
       (() => {
         const conditions = [
           (!isStartingFromRekap && prdFaktursForSub.length > 0) ? `faktur_prd IN (${prdFaktursForSub.map(() => '?').join(',')})` : '',
           (tracedResultFakturs.size > 0) ? `faktur IN (${Array.from(tracedResultFakturs).map(() => '?').join(',')})` : '',
-          (isStartingFromPO) ? `raw_data LIKE ?` : ''
         ].filter(Boolean);
 
         if (conditions.length === 0) return Promise.resolve({ rows: [] });
@@ -259,7 +314,6 @@ export async function GET(request: NextRequest) {
         const args = [
           ...(!isStartingFromRekap && prdFaktursForSub.length > 0 ? prdFaktursForSub : []),
           ...(tracedResultFakturs.size > 0 ? Array.from(tracedResultFakturs) : []),
-          ...(isStartingFromPO ? [`%${targetFaktur}%`] : [])
         ];
 
         return db.execute({
@@ -310,17 +364,13 @@ export async function GET(request: NextRequest) {
 
     purchaseRequests = dedupe([...purchaseRequests, ...prRes.rows]);
     
-    // Filter bahanBaku based on mode
+    // Filter bahanBaku based on mode — use denorm faktur_pb
     if (isStartingFromRekap || isStartingFromPO) {
-      // Collect all related PB fakturs if starting from PO
-      const relatedPBFakturs = isStartingFromPO ? pembelianBarang.map(pb => pb.faktur) : [targetFaktur];
-      
-      // Strictly only show BBB that actually used these specific PB fakturs or the PO itself
+      const relatedPBFakturs = (isStartingFromPO ? pembelianBarang.map(pb => pb.faktur) : [targetFaktur])
+        .filter(Boolean).map((f: string) => String(f).toUpperCase());
       bahanBaku = dedupe(bbRes.rows.filter((r: any) => {
-        const content = (String(r.hp_detil || "") + String(r.raw_data || "")).toLowerCase();
-        const matchesPB = relatedPBFakturs.some(f => content.includes(String(f).toLowerCase()));
-        const matchesPO = isStartingFromPO && content.includes(targetFaktur.toLowerCase());
-        return matchesPB || matchesPO;
+        const pbs = String(r.faktur_pb || '').toUpperCase().split(',').filter(Boolean);
+        return relatedPBFakturs.some(f => pbs.includes(f));
       }));
     } else {
       bahanBaku = dedupe(bbRes.rows);
@@ -426,12 +476,18 @@ export async function GET(request: NextRequest) {
       pelunasanHutang = phRes.rows;
     }
 
+    // Merge raw JSON under denorm cols so tgl/faktur_* stay for client date filter
     const parseRawData = (item: any) => {
       if (!item) return null;
+      let parsed: Record<string, unknown> = {};
       if (item.raw_data) {
-        try { return JSON.parse(item.raw_data); } catch(e){}
+        try {
+          const p = JSON.parse(item.raw_data);
+          if (p && typeof p === 'object') parsed = p;
+        } catch { /* ignore */ }
       }
-      return { ...item };
+      const { raw_data: _, ...rest } = item;
+      return { ...parsed, ...rest };
     };
 
     return NextResponse.json({

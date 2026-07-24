@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
-import { apiError } from "@/lib/api-utils";
+import { apiError, stripRawData } from "@/lib/api-utils";
 import { buildFtsQuery } from "@/lib/fts";
 import { getScrapedPeriodSettingKey, parseScrapedPeriod } from "@/lib/server-scraped-period";
 
@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: records,
+      data: stripRawData(records),
       total,
       lastUpdated,
       scrapedPeriod: parseScrapedPeriod((metadataResults[1].rows[0] as any)?.value),

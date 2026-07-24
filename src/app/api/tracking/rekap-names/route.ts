@@ -12,6 +12,8 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * pageSize;
     const supplier = searchParams.get("supplier") || "";
     const po = searchParams.get("po") || "";
+    const from = searchParams.get("from") || "";
+    const to = searchParams.get("to") || "";
 
     let whereClause = "WHERE 1=1";
     const args: any[] = [];
@@ -29,6 +31,12 @@ export async function GET(request: NextRequest) {
     if (po) {
       whereClause += ` AND faktur_po LIKE ? `;
       args.push(`%${po}%`);
+    }
+
+    // ponytail: rentang tanggal filter dropdown jalur rekap (tgl DD-MM-YYYY)
+    if (from && to) {
+      whereClause += ` AND (substr(TRIM(tgl),7,4)||'-'||substr(TRIM(tgl),4,2)||'-'||substr(TRIM(tgl),1,2)) BETWEEN ? AND ?`;
+      args.push(from, to);
     }
 
     let sql = `

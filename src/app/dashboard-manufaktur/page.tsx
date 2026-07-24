@@ -1,14 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import nextDynamic from "next/dynamic";
 import { BookOpen, Boxes, ClipboardList, Factory, Package } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import JurnalStatCard from "../dashboard/JurnalStatCard";
 import OrdersStatCard from "../dashboard/OrdersStatCard";
-import ProduksiTrendChart from "./ProduksiTrendChart";
 import JurnalTerbaruCard from "./JurnalTerbaruCard";
 import { getProductionDashboardSummary } from "@/lib/actions";
 import { requirePermission } from "@/lib/permissions";
+
+// ponytail: recharts only when chart mounts
+// ponytail: no ssr:false here — Next 16 forbids it in Server Components; client chart still code-splits
+const ProduksiTrendChart = nextDynamic(() => import("./ProduksiTrendChart"), {
+  loading: () => <div className="bg-white/80 border border-white/20 rounded-2xl h-[360px] animate-pulse shadow-sm" />,
+});
 
 export const metadata: Metadata = {
   title: "SINTAK | Dashboard Produksi",

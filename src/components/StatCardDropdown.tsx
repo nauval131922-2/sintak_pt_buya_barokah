@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Check, Search } from 'lucide-react';
+import Portal from '@/components/Portal';
 
 export interface DropdownOption {
   value: string;
@@ -24,8 +25,8 @@ interface StatCardDropdownProps {
 }
 
 /**
- * Dropdown searchable yang dipakai di stat card dashboard.
- * Harus di-wrap dalam container yang mencegah propagasi klik ke elemen induk (Link).
+ * Dropdown searchable di stat card dashboard.
+ * Panel via Portal + fixed — tidak terpotong card di bawah (AGENTS: Portal wajib).
  */
 export default function StatCardDropdown({
   options,
@@ -38,7 +39,9 @@ export default function StatCardDropdown({
 }: StatCardDropdownProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [panelStyle, setPanelStyle] = useState<React.CSSProperties>({});
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
   const selected = options.find((o) => o.value === value);
@@ -48,19 +51,40 @@ export default function StatCardDropdown({
     ? options.filter((o) => o.label.toLowerCase().includes(search.toLowerCase()))
     : options;
 
-  // Tutup saat klik luar
+  // Posisi panel fixed di bawah trigger, align kanan
   useEffect(() => {
+    if (!open || !triggerRef.current) return;
+    const update = () => {
+      const rect = triggerRef.current!.getBoundingClientRect();
+      setPanelStyle({
+        position: 'fixed',
+        top: rect.bottom + 4,
+        right: window.innerWidth - rect.right,
+        zIndex: 9999,
+      });
+    };
+    update();
+    window.addEventListener('scroll', update, true);
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update, true);
+      window.removeEventListener('resize', update);
+    };
+  }, [open]);
+
+  // Tutup saat klik luar — panel di Portal, cek kedua ref
+  useEffect(() => {
+    if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setOpen(false);
-        setSearch('');
-      }
+      const t = e.target as Node;
+      if (triggerRef.current?.contains(t) || panelRef.current?.contains(t)) return;
+      setOpen(false);
+      setSearch('');
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  }, [open]);
 
-  // Fokus ke input saat dropdown terbuka
   useEffect(() => {
     if (open) {
       setTimeout(() => searchRef.current?.focus(), 50);
@@ -97,7 +121,7 @@ export default function StatCardDropdown({
 
   return (
     <div
-      ref={dropdownRef}
+      ref={triggerRef}
       className="relative"
       onClick={(e) => e.preventDefault()}
     >
@@ -119,59 +143,65 @@ export default function StatCardDropdown({
       </button>
 
       {open && (
-        <div
-          className={`absolute right-0 top-full mt-1 ${widthClass} bg-white border border-gray-100 rounded-xl shadow-lg z-50 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150`}
-        >
-          {/* Search input */}
-          <div className="p-2 border-b border-gray-100">
-            <div className="flex items-center gap-2 px-2 py-1.5 bg-gray-50 rounded-lg border border-gray-100">
-              <Search size={11} className="text-gray-400 shrink-0" />
-              <input
-                ref={searchRef}
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-                placeholder={searchPlaceholder}
-                className="flex-1 text-[11px] font-semibold bg-transparent outline-none text-gray-700 placeholder:text-gray-400 min-w-0"
-              />
+        <Portal>
+          <div
+            ref={panelRef}
+            style={panelStyle}
+            className={`${widthClass} bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
+            <div className="p-2 border-b border-gray-100">
+              <div className="flex items-center gap-2 px-2 py-1.5 bg-gray-50 rounded-lg border border-gray-100">
+                <Search size={11} className="text-gray-400 shrink-0" />
+                <input
+                  ref={searchRef}
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  placeholder={searchPlaceholder}
+                  className="flex-1 text-[11px] font-semibold bg-transparent outline-none text-gray-700 placeholder:text-gray-400 min-w-0"
+                />
+              </div>
+            </div>
+
+            <div className="max-h-48 overflow-y-auto custom-scrollbar">
+              {filtered.length === 0 ? (
+                <p className="px-3 py-2.5 text-[11px] text-gray-400 font-medium text-center">
+                  Tidak ditemukan
+                </p>
+              ) : (
+                filtered.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onChange(opt.value);
+                      setOpen(false);
+                      setSearch('');
+                    }}
+                    className={`w-full flex items-center justify-between px-3 py-2 text-[11px] font-semibold transition-colors ${
+                      value === opt.value ? activeRow : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="truncate">{opt.label}</span>
+                    <span className="flex items-center gap-1 shrink-0 ml-2">
+                      {opt.count !== undefined && (
+                        <span className="text-[11px] text-gray-400 font-medium">{opt.count}</span>
+                      )}
+                      {value === opt.value && <Check size={10} className={checkCls} />}
+                    </span>
+                  </button>
+                ))
+              )}
             </div>
           </div>
-
-          {/* Options list */}
-          <div className="max-h-48 overflow-y-auto custom-scrollbar">
-            {filtered.length === 0 ? (
-              <p className="px-3 py-2.5 text-[11px] text-gray-400 font-medium text-center">
-                Tidak ditemukan
-              </p>
-            ) : (
-              filtered.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onChange(opt.value);
-                    setOpen(false);
-                    setSearch('');
-                  }}
-                  className={`w-full flex items-center justify-between px-3 py-2 text-[11px] font-semibold transition-colors ${
-                    value === opt.value ? activeRow : 'text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  <span className="truncate">{opt.label}</span>
-                  <span className="flex items-center gap-1 shrink-0 ml-2">
-                    {opt.count !== undefined && (
-                      <span className="text-[11px] text-gray-400 font-medium">{opt.count}</span>
-                    )}
-                    {value === opt.value && <Check size={10} className={checkCls} />}
-                  </span>
-                </button>
-              ))
-            )}
-          </div>
-        </div>
+        </Portal>
       )}
     </div>
   );

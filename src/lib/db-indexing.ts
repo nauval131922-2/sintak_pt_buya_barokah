@@ -113,6 +113,12 @@ export async function initIndexing(database: { execute: (sql: string) => Promise
     "CREATE INDEX IF NOT EXISTS idx_sales_reports_faktur_so ON sales_reports(faktur_so);",
     "CREATE INDEX IF NOT EXISTS idx_sales_reports_kd_barang ON sales_reports(kd_barang);",
     "CREATE INDEX IF NOT EXISTS idx_pelunasan_piutang_fkt ON pelunasan_piutang(fkt);",
+    // ponytail: denorm tracking columns
+    "CREATE INDEX IF NOT EXISTS idx_orders_faktur_bom ON orders(faktur_bom);",
+    "CREATE INDEX IF NOT EXISTS idx_orders_faktur_so ON orders(faktur_so);",
+    "CREATE INDEX IF NOT EXISTS idx_sph_out_faktur_bom ON sph_out(faktur_bom);",
+    "CREATE INDEX IF NOT EXISTS idx_bahan_baku_faktur_pb ON bahan_baku(faktur_pb);",
+    "CREATE INDEX IF NOT EXISTS idx_bahan_baku_fkt_hasil ON bahan_baku(fkt_hasil);",
 
     // 10. System Optimization
     "ANALYZE;", // Update SQLite statistics for query planner

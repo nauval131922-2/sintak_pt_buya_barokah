@@ -20,6 +20,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  RotateCcw,
   Truck,
   ShoppingCart,
   Hash,
@@ -202,6 +203,49 @@ export default function TrackingClient() {
     localStorage.removeItem("tracking_selected_po");
     localStorage.removeItem("tracking_selected_supplier");
   };
+
+  // Clear ALL filters: BOM/PO/supplier + tanggal + search tabel
+  const clearFilters = () => {
+    setTrackingData(null);
+    setTrackingMeta(null);
+    setSelectedFaktur(null);
+    setSelectedNama("");
+    setSelectedPO(null);
+    setSelectedFakturPO(null);
+    setSelectedSupplier(null);
+    setSelectedFakturSupplier(null);
+    setTrackingPath(null);
+    setStartDate(null);
+    setEndDate(null);
+    setFilterText("");
+    setDebouncedFilterText("");
+    setError("");
+    setLoadTime(null);
+    setOpen(false);
+    setOpenRekap(false);
+    setOpenPO(false);
+    setOpenSupplier(false);
+    try {
+      localStorage.removeItem("tracking_dates");
+      localStorage.removeItem("tracking_selected_faktur");
+      localStorage.removeItem("tracking_selected_nama");
+      localStorage.removeItem("tracking_selected_path");
+      localStorage.removeItem("tracking_selected_faktur_supplier");
+      localStorage.removeItem("tracking_selected_po");
+      localStorage.removeItem("tracking_selected_supplier");
+      localStorage.removeItem("tracking_selectedSupplier");
+    } catch { /* ignore */ }
+  };
+
+  const hasActiveFilters = !!(
+    startDate ||
+    endDate ||
+    filterText.trim() ||
+    selectedFaktur ||
+    selectedPO ||
+    selectedSupplier ||
+    trackingPath
+  );
   useEffect(() => {
     localStorage.setItem("tracking_columnWidths", JSON.stringify(columnWidths));
   }, [columnWidths]);
@@ -359,27 +403,36 @@ export default function TrackingClient() {
   // Helper to apply current filters (date and text) to a list of rows
   const filterRows = useCallback(
     (rawRows: any[]) => {
-      let rows = [...rawRows];
+      let rows = Array.isArray(rawRows) ? [...rawRows] : [];
 
-      // Apply date filter ONLY for "Jalur Barang" (rekap)
-      if (trackingPath === "rekap" && (startDate || endDate)) {
+      // Apply date filter on tab table rows (BOM + rekap)
+      if (startDate || endDate) {
+        const start = startDate
+          ? (() => {
+              const d = new Date(startDate);
+              d.setHours(0, 0, 0, 0);
+              return d;
+            })()
+          : null;
+        const end = endDate
+          ? (() => {
+              const d = new Date(endDate);
+              d.setHours(23, 59, 59, 999);
+              return d;
+            })()
+          : null;
+
         rows = rows.filter((r: any) => {
-          const tglStr =
-            r.tgl || r.tanggal || r.date || r.Tgl || r.Tanggal || r.Date;
-          if (!tglStr) return true; // Keep items without date field
+          if (!r || typeof r !== "object") return false;
+          const tglStr = String(
+            r.tgl ?? r.tanggal ?? r.date ?? r.Tgl ?? r.Tanggal ?? r.Date ?? "",
+          ).trim();
+          // no date → exclude when filter active (otherwise table looks "unfiltered")
+          if (!tglStr) return false;
           const itemDate = parseIndoDate(tglStr);
-          if (!itemDate) return true;
-
-          if (startDate) {
-            const start = new Date(startDate);
-            start.setHours(0, 0, 0, 0);
-            if (itemDate < start) return false;
-          }
-          if (endDate) {
-            const end = new Date(endDate);
-            end.setHours(23, 59, 59, 999);
-            if (itemDate > end) return false;
-          }
+          if (!itemDate) return false;
+          if (start && itemDate < start) return false;
+          if (end && itemDate > end) return false;
           return true;
         });
       }
@@ -395,7 +448,7 @@ export default function TrackingClient() {
       }
       return rows;
     },
-    [trackingPath, startDate, endDate, debouncedFilterText],
+    [startDate, endDate, debouncedFilterText],
   );
 
   // Get raw items for the active tab, applying text search filter
@@ -442,7 +495,7 @@ export default function TrackingClient() {
   // Reset to page 1 when tab or filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeTab, debouncedFilterText]);
+  }, [activeTab, debouncedFilterText, startDate, endDate]);
 
   const totalPages = Math.max(
     1,
@@ -453,21 +506,14 @@ export default function TrackingClient() {
     currentPage * PAGE_SIZE,
   );
 
-  // Initial load for persistence and new day reset
+  // Initial load for persistence — default null = Semua Waktu (tracking multi-tahun)
   useEffect(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
     const hydrated = hydrateDateStore('tracking_dates');
     if (hydrated.startDate && hydrated.endDate) {
       setStartDate(hydrated.startDate);
       setEndDate(hydrated.endDate);
-      persistDateStore('tracking_dates', hydrated.startDate, hydrated.endDate);
-    } else {
-      setStartDate(today);
-      setEndDate(today);
-      persistDateStore('tracking_dates', today, today);
     }
+    // else keep null — "Semua Waktu"; jangan default ke hari ini (kosongkan jalur rekap)
 
     const savedSupplier = localStorage.getItem("tracking_selectedSupplier");
     if (savedSupplier) {
@@ -547,6 +593,10 @@ export default function TrackingClient() {
           supplier: selectedSupplier || "",
           po: selectedPO || "",
         });
+        const from = fmtDate(startDate);
+        const to = fmtDate(endDate);
+        if (from) params.set("from", from);
+        if (to) params.set("to", to);
 
         const res = await fetch(
           `/api/tracking/rekap-names?${params.toString()}`,
@@ -580,7 +630,7 @@ export default function TrackingClient() {
     return () => {
       active = false;
     };
-  }, [qRekap, openRekap, selectedSupplier, selectedPO]);
+  }, [qRekap, openRekap, selectedSupplier, selectedPO, startDate, endDate]);
 
   // Search logic for PO Number dropdown
   useEffect(() => {
@@ -588,11 +638,21 @@ export default function TrackingClient() {
     const fetchPONumbers = async (query: string) => {
       setLoadingPO(true);
       try {
+        const fmtDate = (d: Date | null) => {
+          if (!d) return "";
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, "0");
+          const day = String(d.getDate()).padStart(2, "0");
+          return `${y}-${m}-${day}`;
+        };
         const params = new URLSearchParams({
           q: query,
           supplier: selectedSupplier || "",
-          po: selectedPO || "",
         });
+        const from = fmtDate(startDate);
+        const to = fmtDate(endDate);
+        if (from) params.set("from", from);
+        if (to) params.set("to", to);
         const res = await fetch(
           `/api/tracking/po-numbers?${params.toString()}`,
         );
@@ -620,7 +680,7 @@ export default function TrackingClient() {
     return () => {
       active = false;
     };
-  }, [qPO, openPO, selectedSupplier]);
+  }, [qPO, openPO, selectedSupplier, startDate, endDate]);
 
   // Search logic for Supplier dropdown
   useEffect(() => {
@@ -699,59 +759,8 @@ export default function TrackingClient() {
 
     if (items.length === 0) return [];
 
-    // Date Range Filtering - ONLY apply for Rekap (Barang) path
-    // If trackingData is the flow object, check trackingData.bom
-    // If it's the wrapped object, check trackingData.bom or type
-    const isRekapPath = trackingPath === "rekap";
-
-    if (isRekapPath && (startDate || endDate)) {
-      items = items.filter((row) => {
-        // Collect ALL possible dates from this sequence components
-        const dateStrings: string[] = [
-          row.rekap?.tgl,
-          row.bom?.tgl,
-          row.salesOrder?.tgl,
-          ...(row.pembelianBarang || []).map((i: any) => i.tgl),
-          ...(row.bahanBaku || []).map((i: any) => i.tgl),
-          ...(row.barangJadi || []).map((i: any) => i.tgl),
-          ...(row.productionOrders || []).map((i: any) => i.tgl),
-          ...(row.penerimaanPembelian || []).map((i: any) => i.tgl),
-          ...(row.purchaseOrders || []).map((i: any) => i.tgl),
-          ...(row.purchaseRequests || []).map((i: any) => i.tgl),
-          ...(row.spphOut || []).map((i: any) => i.tgl),
-          ...(row.sphIn || []).map((i: any) => i.tgl),
-          ...(row.laporanPenjualan || []).map((i: any) => i.tgl),
-          ...(row.pengiriman || []).map((i: any) => i.tgl),
-          ...(row.pelunasanPiutang || []).map((i: any) => i.tgl),
-          ...(row.pelunasanHutang || []).map((i: any) => i.tgl),
-        ].filter(Boolean);
-
-        if (dateStrings.length === 0) return true;
-
-        // Check if ANY date in this sequence matches the range
-        return dateStrings.some((dStr) => {
-          const itemDate = parseIndoDate(dStr);
-          if (!itemDate) return false;
-
-          let matchesStart = true;
-          if (startDate) {
-            const start = new Date(startDate);
-            start.setHours(0, 0, 0, 0);
-            matchesStart = itemDate >= start;
-          }
-
-          let matchesEnd = true;
-          if (endDate) {
-            const end = new Date(endDate);
-            end.setHours(23, 59, 59, 999);
-            matchesEnd = itemDate <= end;
-          }
-
-          return matchesStart && matchesEnd;
-        });
-      });
-    }
-
+    // Date range on whole-flow object is handled per-tab via filterRows.
+    // Keep full flow here so BOM path tabs stay populated.
     return items;
   }, [trackingData, startDate, endDate]);
 
@@ -1469,22 +1478,22 @@ export default function TrackingClient() {
               </div>
             </div>
 
-            {/* Part 2: Date Range */}
-            <div className="lg:w-auto lg:min-w-[300px] flex flex-col shrink-0 border-t lg:border-t-0 lg:border-l border-gray-100 pt-4 lg:pt-0 lg:pl-8 justify-center">
+            {/* Part 2: Date Range + Reset */}
+            <div className="lg:w-auto lg:min-w-[340px] flex flex-col shrink-0 border-t lg:border-t-0 lg:border-l border-gray-100 pt-4 lg:pt-0 lg:pl-8 justify-center">
               <div className="flex flex-col mb-2">
                 <span className="block text-[11px] font-bold text-gray-500 mb-2">
                   Rentang Tanggal
                 </span>
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 relative group">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 relative group min-w-0">
                     <DatePicker
                       name="startDate"
                       value={startDate}
                       onChange={(d) => setStartDate(d)}
                     />
                   </div>
-                  <div className="w-4 h-0.5 bg-gray-100 rounded-full shrink-0"></div>
-                  <div className="flex-1 relative group">
+                  <div className="w-3 h-0.5 bg-gray-100 rounded-full shrink-0" />
+                  <div className="flex-1 relative group min-w-0">
                     <DatePicker
                       name="endDate"
                       value={endDate}
@@ -1492,6 +1501,24 @@ export default function TrackingClient() {
                       popupAlign="right"
                     />
                   </div>
+                  <button
+                    type="button"
+                    onClick={clearFilters}
+                    disabled={!hasActiveFilters}
+                    title={
+                      hasActiveFilters
+                        ? "Reset semua filter (BOM, supplier, PO, tanggal, pencarian)"
+                        : "Belum ada filter aktif"
+                    }
+                    className={`h-10 px-3 rounded-xl border text-[11px] font-bold transition-all flex items-center gap-1.5 shrink-0 ${
+                      hasActiveFilters
+                        ? "bg-white hover:bg-rose-50 text-gray-500 hover:text-rose-600 border-gray-100 hover:border-rose-100 shadow-sm"
+                        : "bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed"
+                    }`}
+                  >
+                    <RotateCcw size={14} className={hasActiveFilters ? "" : "opacity-50"} />
+                    Reset
+                  </button>
                 </div>
               </div>
             </div>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
+import { stripRawData } from "@/lib/api-utils";
 
 export async function GET(request: NextRequest) {
   try {
@@ -64,7 +65,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: dataRes.rows,
+      data: stripRawData(dataRes.rows as any[]),
       total: Number(totalRes.rows[0].count),
       lastUpdated,
       scrapedPeriod

@@ -96,7 +96,8 @@ export const getRolePermissions = cache(async (role: string): Promise<Permission
 });
 
 // ─── Merge permissions dari array roles (union: true jika salah satu role mengizinkan) ──
-export async function getMergedPermissions(roles: string[]): Promise<PermissionMap> {
+// ponytail: cache by roles key — layout + requirePermission share 1 merge/request
+export const getMergedPermissions = cache(async (roles: string[]): Promise<PermissionMap> => {
   if (!roles || roles.length === 0) {
     return Object.fromEntries(MODULE_REGISTRY.map(m => [m.key, false]));
   }
@@ -114,7 +115,7 @@ export async function getMergedPermissions(roles: string[]): Promise<PermissionM
     merged[m.key] = allMaps.some(map => map[m.key] === true);
   }
   return merged;
-}
+});
 
 // ─── Fetch permissions untuk semua role (untuk matrix UI) ─────────────────────
 export async function getAllPermissions(): Promise<Record<string, PermissionMap>> {

@@ -4,7 +4,7 @@ import db from '@/lib/db';
 export const dynamic = 'force-dynamic';
 
 const cache = new Map<string, { data: unknown; expiry: number }>();
-const CACHE_TTL = 10_000; // 10 detik
+const CACHE_TTL = 60_000; // ponytail: 60s — options jarang berubah
 
 export async function GET() {
   try {

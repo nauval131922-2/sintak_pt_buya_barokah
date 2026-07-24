@@ -1,5 +1,40 @@
 # AI Session Summary
 
+## Update Sesi — 2026-07-23
+
+### Konteks Sesi
+- Audit performa project SINTAK + implementasi fix hot-path prioritas ROI (ponytail).
+- Capture Obsidian: `SINTAK-ERP/Sessions/Session-2026-07-23-Performance-Audit.md`
+
+### Pekerjaan Sesi Ini
+
+1. **Audit performa** — bottleneck server/DB (session thrash, tracking JSON scan, barang-jadi subquery, prefetch JHP, payload `raw_data`), bukan React re-render.
+2. **Session/permission**: `getSession` + `getMergedPermissions` di-wrap `React.cache()`.
+3. **Activity log**: list tanpa `raw_data` (lazy `?logId=`), pageSize cap 200.
+4. **Barang jadi**: JOIN pre-aggregate; warning dashboard 1 query + cache 2 menit.
+5. **Tracking**: denorm `faktur_bom`/`faktur_so`/`faktur_pb` + index; scraper isi kolom; drop `raw_data LIKE`/`json_extract`.
+6. **JHP prefetch**: limit 9999/5000 → 2000/500/200/300.
+7. **List API**: `stripRawData()` di `api-utils` untuk modul utama (orders lift keys dulu).
+8. **Dashboard cache**: summary 60s, aktivitas/jurnal 30s, produksi-trend 60s, JHP options 60s.
+
+### Keputusan Teknis
+- Denorm tracking keys saat scrape + one-shot backfill (`scripts/backfill-tracking-cols.mjs`).
+- Strip blob di response JSON (bukan rewrite semua SELECT) — orders/sales-orders extract field UI dulu.
+- Cache TTL pendek (30–120s) untuk dashboard; data transactional list tetap dynamic.
+
+### File Kunci
+- `src/lib/session.ts`, `permissions.ts`, `api-utils.ts`, `actions.ts`, `schema.ts`, `db-indexing.ts`
+- `src/app/api/tracking/route.ts`, `barang-jadi/`, `dashboard/*`, `activity-log/`, list + scrape routes
+- `JurnalClient.tsx`, `ActivityLogClient.tsx`
+- `scripts/backfill-tracking-cols.mjs`
+
+### Backlog Performa
+- FTS unbounded `id IN`; export jurnal full-year; cron HTTP loopback
+- `next/dynamic` chart/xlsx; soften `force-dynamic` page shell
+- Denorm penuh kolom orders list (qty_order, spesifikasi, …)
+
+---
+
 ## Update Sesi — 2026-06-24
 
 ### Konteks Sesi

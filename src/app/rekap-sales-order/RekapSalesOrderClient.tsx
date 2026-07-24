@@ -14,7 +14,7 @@ import { DataTable } from '@/components/ui/DataTable';
 import DateRangeCard from '@/components/DateRangeCard';
 import { useTableSelection } from '@/lib/hooks/useTableSelection';
 import { formatLastUpdate, splitDateRangeIntoMonths } from '@/lib/date-utils';
-import { formatScrapedPeriodDate, getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod } from '@/lib/scraper-period';
+import { formatScrapedPeriodDate, getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod, persistDateStore, hydrateDateStore } from '@/lib/scraper-period';
 import ScrapingHeader from '@/components/ScrapingHeader';
 import Portal from '@/components/Portal';
 
@@ -55,6 +55,7 @@ export default function RekapSalesOrderClient() {
   const [appliedMax, setAppliedMax] = useState('');
   const [showHargaFilter, setShowHargaFilter] = useState(false);
   const hargaFilterRef = useRef<HTMLDivElement>(null);
+  const hargaPanelRef = useRef<HTMLDivElement>(null);
 
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -82,11 +83,23 @@ export default function RekapSalesOrderClient() {
 
   useEffect(() => {
     setIsMounted(true);
+    // ponytail: filter dates = date store (seperti JHP); scraped period terpisah
+    const dateStore = hydrateDateStore('rekapSalesOrder_dates');
     const hydrated = hydrateScraperPeriod({ stateKey: 'rekapSalesOrderState', periodKey: 'RekapSalesOrderClient_scrapedPeriod' });
-    setStartDate(hydrated.startDate);
-    setEndDate(hydrated.endDate);
+    if (dateStore.startDate && dateStore.endDate) {
+      setStartDate(dateStore.startDate);
+      setEndDate(dateStore.endDate);
+    } else {
+      setStartDate(hydrated.startDate);
+      setEndDate(hydrated.endDate);
+    }
     setScrapedPeriod(hydrated.scrapedPeriod);
   }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+    persistDateStore('rekapSalesOrder_dates', startDate, endDate);
+  }, [startDate, endDate, isMounted]);
 
   useEffect(() => {
     const h = setTimeout(() => {
@@ -97,14 +110,16 @@ export default function RekapSalesOrderClient() {
   }, [searchQuery]);
 
   useEffect(() => {
+    if (!showHargaFilter) return;
+    // Portal panel is outside hargaFilterRef — must check both
     const handleClickOutside = (e: MouseEvent) => {
-      if (hargaFilterRef.current && !hargaFilterRef.current.contains(e.target as Node)) {
-        setShowHargaFilter(false);
-      }
+      const t = e.target as Node;
+      if (hargaFilterRef.current?.contains(t) || hargaPanelRef.current?.contains(t)) return;
+      setShowHargaFilter(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [showHargaFilter]);
 
   useEffect(() => {
     if (!isMounted) return;
@@ -145,8 +160,9 @@ export default function RekapSalesOrderClient() {
 
   const handleFetch = async () => {
     if (!startDate || !endDate) return;
+    persistDateStore('rekapSalesOrder_dates', startDate, endDate);
     localStorage.setItem('rekapSalesOrderState', JSON.stringify({
-      startDate: startDate.toISOString(), endDate: endDate.toISOString(), sessionDate: new Date().toLocaleDateString('en-CA')
+      startDate: startDate.toISOString(), endDate: endDate.toISOString(), sessionDate: new Date().toLocaleDateString('en-CA'), fetchedOn: new Date().toLocaleDateString('en-CA')
     }));
     setError(''); setData([]); setPage(1); setIsBatching(true); setBatchProgress(0);
     const startStr = formatDateToYYYYMMDD(startDate);
@@ -316,7 +332,8 @@ export default function RekapSalesOrderClient() {
           )}
           {showHargaFilter && (
             <Portal>
-              <div 
+              <div
+                ref={hargaPanelRef}
                 className="fixed bg-white rounded-xl border border-gray-100 shadow-xl shadow-gray-900/10 p-5 z-[9999] animate-in fade-in slide-in-from-top-2"
                 style={{
                   top: hargaFilterRef.current ? `${hargaFilterRef.current.getBoundingClientRect().bottom + 8}px` : '0px',
@@ -324,7 +341,16 @@ export default function RekapSalesOrderClient() {
                   width: hargaFilterRef.current ? `${hargaFilterRef.current.getBoundingClientRect().width}px` : 'auto'
                 }}
               >
-                <div className="flex flex-col gap-4">
+                <form
+                  className="flex flex-col gap-4"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setAppliedMin(minHarga.replace(/\./g, ''));
+                    setAppliedMax(maxHarga.replace(/\./g, ''));
+                    setShowHargaFilter(false);
+                    setPage(1);
+                  }}
+                >
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[11px] font-semibold text-gray-500 pl-1">Min. Harga (Rp)</label>
                     <input 
@@ -352,12 +378,12 @@ export default function RekapSalesOrderClient() {
                     />
                   </div>
                   <button 
-                    onClick={() => { setAppliedMin(minHarga.replace(/\./g, '')); setAppliedMax(maxHarga.replace(/\./g, '')); setShowHargaFilter(false); setPage(1); }} 
+                    type="submit"
                     className="w-full h-10 bg-emerald-600 text-white font-bold text-[12px] rounded-lg hover:bg-emerald-700 transition-colors shadow-sm"
                   >
                     Terapkan
                   </button>
-                </div>
+                </form>
               </div>
             </Portal>
           )}

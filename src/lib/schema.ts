@@ -885,7 +885,15 @@ export async function initSchema(db: any) {
       unit TEXT DEFAULT 'Unit/Jam',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`,
-    "UPDATE produksi_selesai SET nama_prd = TRIM(nama_prd);"
+    "UPDATE produksi_selesai SET nama_prd = TRIM(nama_prd);",
+    // ponytail: denorm tracking keys — equality index instead of json_extract/raw_data LIKE
+    "ALTER TABLE orders ADD COLUMN faktur_bom TEXT;",
+    "ALTER TABLE orders ADD COLUMN faktur_so TEXT;",
+    "ALTER TABLE sph_out ADD COLUMN faktur_bom TEXT;",
+    "ALTER TABLE bahan_baku ADD COLUMN faktur_pb TEXT;",
+    "UPDATE orders SET faktur_bom = json_extract(raw_data,'$.faktur_bom') WHERE (faktur_bom IS NULL OR faktur_bom = '') AND raw_data IS NOT NULL;",
+    "UPDATE orders SET faktur_so = json_extract(raw_data,'$.faktur_so') WHERE (faktur_so IS NULL OR faktur_so = '') AND raw_data IS NOT NULL;",
+    "UPDATE sph_out SET faktur_bom = json_extract(raw_data,'$.faktur_bom') WHERE (faktur_bom IS NULL OR faktur_bom = '') AND raw_data IS NOT NULL;",
   ];
 
   const executor = db.client || db;
@@ -901,6 +909,57 @@ export async function initSchema(db: any) {
         console.warn(`[DB] Migration failed for: ${sql.slice(0, 50)}...`, e.message);
       }
     }
+  }
+
+  // ponytail: one-shot backfill bahan_baku.faktur_pb from hp_detil/raw_data (scraper fills going forward)
+  try {
+    if (executor.execute) {
+      const need = await executor.execute({
+        sql: `SELECT COUNT(*) AS c FROM bahan_baku WHERE (faktur_pb IS NULL OR faktur_pb = '') AND raw_data IS NOT NULL AND raw_data LIKE '%PB%'`,
+        args: [],
+      });
+      const c = Number((need.rows[0] as any)?.c ?? 0);
+      if (c > 0 && c < 50000) {
+        const rows = await executor.execute({
+          sql: `SELECT id, raw_data FROM bahan_baku WHERE (faktur_pb IS NULL OR faktur_pb = '') AND raw_data LIKE '%PB%'`,
+          args: [],
+        });
+        const ops: { sql: string; args: any[] }[] = [];
+        for (const row of rows.rows as any[]) {
+          const seen = new Set<string>();
+          const add = (s: string) => {
+            const m = String(s).match(/PB\d{8,}/gi);
+            if (m) m.forEach(x => seen.add(x.toUpperCase()));
+          };
+          try {
+            const raw = JSON.parse(row.raw_data || '{}');
+            if (raw.hp_detil) {
+              try {
+                const det = typeof raw.hp_detil === 'string' ? JSON.parse(raw.hp_detil) : raw.hp_detil;
+                if (det && typeof det === 'object') {
+                  for (const [k, v] of Object.entries(det as Record<string, any>)) {
+                    add(k);
+                    if (v && typeof v === 'object' && v.faktur) add(String(v.faktur));
+                  }
+                } else add(String(raw.hp_detil));
+              } catch { add(String(raw.hp_detil)); }
+            } else add(row.raw_data);
+          } catch { add(row.raw_data || ''); }
+          if (seen.size === 0) continue;
+          ops.push({
+            sql: `UPDATE bahan_baku SET faktur_pb = ? WHERE id = ?`,
+            args: [[...seen].join(','), row.id],
+          });
+        }
+        const chunk = 100;
+        for (let i = 0; i < ops.length; i += chunk) {
+          await db.batch(ops.slice(i, i + chunk), 'write');
+        }
+        if (ops.length) console.log(`[DB] Backfilled faktur_pb on ${ops.length} bahan_baku rows`);
+      }
+    }
+  } catch (e) {
+    console.warn('[DB] faktur_pb backfill skipped:', e);
   }
 
   // 2.5 Seed default roles ONLY if app_roles table is entirely empty

@@ -2,8 +2,28 @@ import { NextResponse } from "next/server";
 import db from "@/lib/db";
 import { buildFtsQuery } from "@/lib/fts";
 import { getScrapedPeriodSettingKey, parseScrapedPeriod } from "@/lib/server-scraped-period";
+import { stripRawData } from "@/lib/api-utils";
 
 export const dynamic = 'force-dynamic';
+
+// ponytail: JOIN once instead of 3 correlated subqueries per row (incl. COUNT)
+const ENRICH_JOINS = `
+  LEFT JOIN (
+    SELECT faktur_prd, kd_barang,
+      SUM(hp_total)*1.0 / NULLIF(SUM(qty), 0) AS hp_rata_rata
+    FROM barang_jadi
+    GROUP BY faktur_prd, kd_barang
+  ) avg ON avg.faktur_prd = bj.faktur_prd AND avg.kd_barang = bj.kd_barang
+  LEFT JOIN (
+    SELECT faktur, MIN(harga) AS harga FROM sales_orders GROUP BY faktur
+  ) so ON so.faktur = bj.faktur_so
+  LEFT JOIN (
+    SELECT faktur_so, MIN(harga) AS harga FROM sales_reports GROUP BY faktur_so
+  ) sr ON sr.faktur_so = bj.faktur_so
+`;
+
+const ENRICH_SELECT = `bj.*, avg.hp_rata_rata, so.harga AS harga_so_sales_order, sr.harga AS harga_so_penjualan`;
+const ORDER_BY = `ORDER BY substr(bj.tgl, 7, 4) DESC, substr(bj.tgl, 4, 2) DESC, substr(bj.tgl, 1, 2) DESC, bj.id DESC`;
 
 export async function GET(request: Request) {
   try {
@@ -14,19 +34,30 @@ export async function GET(request: Request) {
     const offset = (page - 1) * limit;
     const fromDate = searchParams.get('from') || '';
     const toDate = searchParams.get('to') || '';
-    
+
     const warningOnly = searchParams.get('warning_only') === 'true';
     const soOnly = searchParams.get('so_only') === 'true';
 
-    const warningFilterSQL = warningOnly ? `(harga_so_sales_order > 0 AND (harga_so_sales_order < hp OR harga_so_sales_order < hp_rata_rata)) OR (harga_so_penjualan > 0 AND (harga_so_penjualan < hp OR harga_so_penjualan < hp_rata_rata))` : '';
-    const soFilterSQL = soOnly ? `(faktur_so IS NOT NULL AND TRIM(faktur_so) NOT IN ('', '-', '–', '—'))` : '';
+    const warningFilterSQL = warningOnly
+      ? `((so.harga > 0 AND (so.harga < bj.hp OR so.harga < avg.hp_rata_rata)) OR (sr.harga > 0 AND (sr.harga < bj.hp OR sr.harga < avg.hp_rata_rata)))`
+      : '';
+    const soFilterSQL = soOnly
+      ? `(bj.faktur_so IS NOT NULL AND TRIM(bj.faktur_so) NOT IN ('', '-', '–', '—'))`
+      : '';
 
-    const combinedFilters = [warningFilterSQL, soFilterSQL].filter(f => f !== '');
-    const finalFilterSQL = combinedFilters.length > 0 ? `WHERE ` + combinedFilters.map(f => `(${f})`).join(' AND ') : '';
+    const postFilters = [warningFilterSQL, soFilterSQL].filter(Boolean);
+    const postWhere = postFilters.length > 0
+      ? ` AND ` + postFilters.map(f => `(${f})`).join(' AND ')
+      : '';
 
-    const dateFilterSQL = (fromDate && toDate) 
-      ? ` AND (substr(tgl, 7, 4) || '-' || substr(tgl, 4, 2) || '-' || substr(tgl, 1, 2) BETWEEN ? AND ?)`
+    // COUNT needs enrich JOINs only when filtering on computed harga/hp_rata_rata
+    const countJoins = warningOnly ? ENRICH_JOINS : '';
+    const countPostWhere = postWhere;
+
+    const dateFilterSQL = (fromDate && toDate)
+      ? ` AND (substr(bj.tgl, 7, 4) || '-' || substr(bj.tgl, 4, 2) || '-' || substr(bj.tgl, 1, 2) BETWEEN ? AND ?)`
       : ``;
+    const dateArgs = fromDate && toDate ? [fromDate, toDate] : [];
 
     let records: any[] = [];
     let total = 0;
@@ -37,32 +68,22 @@ export async function GET(request: Request) {
       if (ftsQuery) {
         const ftsResults = await db.batch([
           {
-            sql: `WITH base_query AS (
-                    SELECT bj.*, 
-                      (SELECT SUM(hp_total)*1.0 / NULLIF(SUM(qty), 0) FROM barang_jadi bj_inner WHERE bj_inner.faktur_prd = bj.faktur_prd AND bj_inner.kd_barang = bj.kd_barang) AS hp_rata_rata,
-                      (SELECT harga FROM sales_orders WHERE faktur = bj.faktur_so LIMIT 1) as harga_so_sales_order,
-                      (SELECT harga FROM sales_reports WHERE faktur_so = bj.faktur_so LIMIT 1) as harga_so_penjualan
-                    FROM barang_jadi bj JOIN barang_jadi_fts fts ON bj.id = fts.rowid
-                    WHERE barang_jadi_fts MATCH ? ${dateFilterSQL}
-                  )
-                  SELECT * FROM base_query
-                  ${finalFilterSQL}
-                  ORDER BY substr(tgl, 7, 4) DESC, substr(tgl, 4, 2) DESC, substr(tgl, 1, 2) DESC, id DESC
+            sql: `SELECT ${ENRICH_SELECT}
+                  FROM barang_jadi bj
+                  JOIN barang_jadi_fts fts ON bj.id = fts.rowid
+                  ${ENRICH_JOINS}
+                  WHERE barang_jadi_fts MATCH ? ${dateFilterSQL}${postWhere}
+                  ${ORDER_BY}
                   LIMIT ? OFFSET ?`,
-            args: [ftsQuery, ...(fromDate && toDate ? [fromDate, toDate] : []), limit, offset]
+            args: [ftsQuery, ...dateArgs, limit, offset]
           },
           {
-            sql: `WITH base_query AS (
-                    SELECT bj.*, 
-                      (SELECT SUM(hp_total)*1.0 / NULLIF(SUM(qty), 0) FROM barang_jadi bj_inner WHERE bj_inner.faktur_prd = bj.faktur_prd AND bj_inner.kd_barang = bj.kd_barang) AS hp_rata_rata,
-                      (SELECT harga FROM sales_orders WHERE faktur = bj.faktur_so LIMIT 1) as harga_so_sales_order,
-                      (SELECT harga FROM sales_reports WHERE faktur_so = bj.faktur_so LIMIT 1) as harga_so_penjualan
-                    FROM barang_jadi bj JOIN barang_jadi_fts fts ON bj.id = fts.rowid
-                    WHERE barang_jadi_fts MATCH ? ${dateFilterSQL}
-                  )
-                  SELECT COUNT(*) as count FROM base_query
-                  ${finalFilterSQL}`,
-            args: [ftsQuery, ...(fromDate && toDate ? [fromDate, toDate] : [])]
+            sql: `SELECT COUNT(*) as count
+                  FROM barang_jadi bj
+                  JOIN barang_jadi_fts fts ON bj.id = fts.rowid
+                  ${countJoins}
+                  WHERE barang_jadi_fts MATCH ? ${dateFilterSQL}${countPostWhere}`,
+            args: [ftsQuery, ...dateArgs]
           }
         ], "read");
 
@@ -70,39 +91,26 @@ export async function GET(request: Request) {
         total = Number((ftsResults[1].rows[0] as any).count);
       }
 
-      // 2. Fallback to LIKE if FTS fails (Robustness)
       if (total === 0) {
         const query = `%${search}%`;
-        const likeArgs = Array(7).fill(query);
-        if (fromDate && toDate) { likeArgs.push(fromDate, toDate); }
+        const likeArgs = [...Array(7).fill(query), ...dateArgs];
+        const likeWhere = `(CAST(bj.id AS TEXT) LIKE ? OR bj.nama_barang LIKE ? OR bj.nama_prd LIKE ? OR bj.kd_barang LIKE ? OR bj.faktur LIKE ? OR bj.faktur_prd LIKE ? OR bj.satuan LIKE ?)`;
 
         const likeResults = await db.batch([
           {
-            sql: `WITH base_query AS (
-                    SELECT *, 
-                      (SELECT SUM(hp_total)*1.0 / NULLIF(SUM(qty), 0) FROM barang_jadi bj_inner WHERE bj_inner.faktur_prd = barang_jadi.faktur_prd AND bj_inner.kd_barang = barang_jadi.kd_barang) AS hp_rata_rata,
-                      (SELECT harga FROM sales_orders WHERE faktur = barang_jadi.faktur_so LIMIT 1) as harga_so_sales_order,
-                      (SELECT harga FROM sales_reports WHERE faktur_so = barang_jadi.faktur_so LIMIT 1) as harga_so_penjualan
-                    FROM barang_jadi 
-                    WHERE (CAST(id AS TEXT) LIKE ? OR nama_barang LIKE ? OR nama_prd LIKE ? OR kd_barang LIKE ? OR faktur LIKE ? OR faktur_prd LIKE ? OR satuan LIKE ?) ${dateFilterSQL}
-                  )
-                  SELECT * FROM base_query
-                  ${finalFilterSQL}
-                  ORDER BY substr(tgl, 7, 4) DESC, substr(tgl, 4, 2) DESC, substr(tgl, 1, 2) DESC, id DESC 
+            sql: `SELECT ${ENRICH_SELECT}
+                  FROM barang_jadi bj
+                  ${ENRICH_JOINS}
+                  WHERE ${likeWhere}${dateFilterSQL}${postWhere}
+                  ${ORDER_BY}
                   LIMIT ? OFFSET ?`,
             args: [...likeArgs, limit, offset]
           },
           {
-            sql: `WITH base_query AS (
-                    SELECT *, 
-                      (SELECT SUM(hp_total)*1.0 / NULLIF(SUM(qty), 0) FROM barang_jadi bj_inner WHERE bj_inner.faktur_prd = barang_jadi.faktur_prd AND bj_inner.kd_barang = barang_jadi.kd_barang) AS hp_rata_rata,
-                      (SELECT harga FROM sales_orders WHERE faktur = barang_jadi.faktur_so LIMIT 1) as harga_so_sales_order,
-                      (SELECT harga FROM sales_reports WHERE faktur_so = barang_jadi.faktur_so LIMIT 1) as harga_so_penjualan
-                    FROM barang_jadi 
-                    WHERE (CAST(id AS TEXT) LIKE ? OR nama_barang LIKE ? OR nama_prd LIKE ? OR kd_barang LIKE ? OR faktur LIKE ? OR faktur_prd LIKE ? OR satuan LIKE ?) ${dateFilterSQL}
-                  )
-                  SELECT COUNT(*) as count FROM base_query
-                  ${finalFilterSQL}`,
+            sql: `SELECT COUNT(*) as count
+                  FROM barang_jadi bj
+                  ${countJoins}
+                  WHERE ${likeWhere}${dateFilterSQL}${countPostWhere}`,
             args: likeArgs
           }
         ], "read");
@@ -111,38 +119,24 @@ export async function GET(request: Request) {
         total = Number((likeResults[1].rows[0] as any).count);
       }
     } else {
-      // Regular Fetch (No Search)
-      const baseArgs = [];
-      if (fromDate && toDate) { baseArgs.push(fromDate, toDate); }
+      const baseWhere = `WHERE 1=1${dateFilterSQL}`;
 
       const standardResults = await db.batch([
         {
-          sql: `WITH base_query AS (
-                  SELECT *, 
-                    (SELECT SUM(hp_total)*1.0 / NULLIF(SUM(qty), 0) FROM barang_jadi bj_inner WHERE bj_inner.faktur_prd = barang_jadi.faktur_prd AND bj_inner.kd_barang = barang_jadi.kd_barang) AS hp_rata_rata,
-                    (SELECT harga FROM sales_orders WHERE faktur = barang_jadi.faktur_so LIMIT 1) as harga_so_sales_order,
-                    (SELECT harga FROM sales_reports WHERE faktur_so = barang_jadi.faktur_so LIMIT 1) as harga_so_penjualan
-                  FROM barang_jadi 
-                  ${(fromDate && toDate) ? `WHERE 1=1 ${dateFilterSQL}` : ''}
-                )
-                SELECT * FROM base_query
-                ${finalFilterSQL}
-                ORDER BY substr(tgl, 7, 4) DESC, substr(tgl, 4, 2) DESC, substr(tgl, 1, 2) DESC, id DESC 
+          sql: `SELECT ${ENRICH_SELECT}
+                FROM barang_jadi bj
+                ${ENRICH_JOINS}
+                ${baseWhere}${postWhere}
+                ${ORDER_BY}
                 LIMIT ? OFFSET ?`,
-          args: [...baseArgs, limit, offset]
+          args: [...dateArgs, limit, offset]
         },
         {
-          sql: `WITH base_query AS (
-                  SELECT *, 
-                    (SELECT SUM(hp_total)*1.0 / NULLIF(SUM(qty), 0) FROM barang_jadi bj_inner WHERE bj_inner.faktur_prd = barang_jadi.faktur_prd AND bj_inner.kd_barang = barang_jadi.kd_barang) AS hp_rata_rata,
-                    (SELECT harga FROM sales_orders WHERE faktur = barang_jadi.faktur_so LIMIT 1) as harga_so_sales_order,
-                    (SELECT harga FROM sales_reports WHERE faktur_so = barang_jadi.faktur_so LIMIT 1) as harga_so_penjualan
-                  FROM barang_jadi
-                  ${(fromDate && toDate) ? `WHERE 1=1 ${dateFilterSQL}` : ''}
-                )
-                SELECT COUNT(*) as count FROM base_query
-                ${finalFilterSQL}`,
-          args: baseArgs
+          sql: `SELECT COUNT(*) as count
+                FROM barang_jadi bj
+                ${countJoins}
+                ${baseWhere}${countPostWhere}`,
+          args: dateArgs
         }
       ], "read");
 
@@ -150,7 +144,6 @@ export async function GET(request: Request) {
       total = Number((standardResults[1].rows[0] as any).count);
     }
 
-    // Execute metadata queries separately for clarity
     const metadataResults = await db.batch([
       { sql: `SELECT value FROM system_settings WHERE key = 'last_scrape_barang_jadi'`, args: [] },
       { sql: `SELECT value FROM system_settings WHERE key = ?`, args: [getScrapedPeriodSettingKey('last_scrape_barang_jadi')] },
@@ -163,7 +156,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       success: true,
-      data: records,
+      data: stripRawData(records),
       total,
       lastUpdated,
       scrapedPeriod: parseScrapedPeriod((metadataResults[1].rows[0] as any)?.value),
@@ -179,4 +172,3 @@ export async function GET(request: Request) {
     );
   }
 }
-

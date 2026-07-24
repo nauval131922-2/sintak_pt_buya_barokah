@@ -8,8 +8,6 @@ import DatePicker from '@/components/DatePicker';
 import SearchableDropdown from '@/components/SearchableDropdown';
 import AutoGenerateModal from '@/components/AutoGenerateModal';
 import { domToBlob, domToPng } from 'modern-screenshot';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { toast } from '@/lib/toast';
 
 function formatIndoDate(dateStr: string) {
@@ -297,6 +295,11 @@ export default function TargetClient() {
     const headerWidthMm = 200;
     const headerHeightMm = (headerImg.height / headerImg.width) * headerWidthMm;
 
+    // ponytail: load jspdf only when building PDF
+    const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ]);
     const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
     doc.setProperties({ title: `Jadwal_Produksi_${dateStr}` });
     doc.addImage(headerDataUrl, 'PNG', 5, 5, headerWidthMm, headerHeightMm, undefined, 'FAST');

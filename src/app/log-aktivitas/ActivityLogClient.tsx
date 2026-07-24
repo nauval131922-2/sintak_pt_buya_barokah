@@ -35,8 +35,14 @@ import {
   mergeActivityLogState,
   parseActivityLogUrl,
 } from '@/lib/activity-log-url';
-import ActivityLogTrendChart from './ActivityLogTrendChart';
+import dynamic from 'next/dynamic';
 import type { ActivityLogTrendDay } from '@/app/api/activity-log/trend/route';
+
+// ponytail: recharts chart only when user opens trend panel
+const ActivityLogTrendChart = dynamic(() => import('./ActivityLogTrendChart'), {
+  ssr: false,
+  loading: () => <div className="h-[220px] rounded-xl bg-gray-50 animate-pulse" />,
+});
 import {
   type MatchInfo,
   getMatchedFields,
@@ -622,8 +628,21 @@ export default function ActivityLogClient({
     window.open(`/api/activity-log/export?${p.toString()}`, '_blank');
   };
 
-  const toggleExpand = (log: ActivityLogRow) => {
-    setExpandedId(prev => prev === log.id ? null : log.id);
+  const toggleExpand = async (log: ActivityLogRow) => {
+    const next = expandedId === log.id ? null : log.id;
+    setExpandedId(next);
+    // ponytail: lazy-load raw_data only when expanding (list API no longer returns it)
+    if (next != null && log.raw_data == null) {
+      try {
+        const res = await fetch(`/api/activity-log?logId=${log.id}`);
+        if (!res.ok) return;
+        const json = await res.json();
+        const full = json.data?.[0];
+        if (full?.raw_data != null) {
+          setLogs(prev => prev.map(l => l.id === log.id ? { ...l, raw_data: full.raw_data } : l));
+        }
+      } catch { /* ignore */ }
+    }
   };
 
   return (

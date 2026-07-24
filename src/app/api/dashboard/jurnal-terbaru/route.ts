@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { cacheGet, cacheSet } from '@/lib/server-cache';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(_request: NextRequest) {
   try {
+    const ck = 'dashboard:jurnal-terbaru';
+    const cached = cacheGet<unknown[]>(ck);
+    if (cached) return NextResponse.json({ success: true, data: cached });
+
     const result = await db.execute({
       sql: `
         SELECT
@@ -27,7 +32,7 @@ export async function GET(_request: NextRequest) {
       args: [],
     });
 
-
+    cacheSet(ck, result.rows, 30_000);
     return NextResponse.json({ success: true, data: result.rows });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
