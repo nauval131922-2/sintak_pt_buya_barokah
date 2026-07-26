@@ -725,7 +725,7 @@ export default function HasilProduksiClient() {
             <div className="relative sopd-dropdown-container" ref={dropdownRef}>
               <button
                 onClick={() => setIsDropdownOpen(prev => !prev)}
-                className={`w-full h-9 px-3 backdrop-blur-sm border rounded-xl transition-all flex items-center justify-between group shadow-sm ${
+                className={`w-full h-10 px-3 backdrop-blur-sm border rounded-xl transition-all flex items-center justify-between group shadow-sm ${
                   selectedSopd 
                   ? 'bg-emerald-50/60 border-emerald-200/60' 
                   : 'bg-white/40 border-white/60 hover:border-emerald-500/60'
@@ -890,9 +890,9 @@ export default function HasilProduksiClient() {
               {/* Level */}
               <div className="flex flex-col gap-0.5 shrink-0">
                 <span className="block font-semibold text-gray-500 ml-1 tracking-tight select-none text-[11px] mb-1">Level</span>
-                <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-xl p-0.5 shadow-sm">
-                  <button onClick={() => setDetailLevel(1)} className={`px-3 h-7 text-[11px] font-bold rounded-lg transition-all ${detailLevel === 1 ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>1</button>
-                  <button onClick={() => setDetailLevel(2)} className={`px-3 h-7 text-[11px] font-bold rounded-lg transition-all ${detailLevel === 2 ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>2</button>
+                <div className="flex items-stretch gap-0.5 h-10 bg-white border border-gray-200 rounded-xl p-0.5 shadow-sm">
+                  <button type="button" onClick={() => setDetailLevel(1)} className={`px-3 h-full min-w-[2.25rem] text-[11px] font-bold rounded-lg transition-all ${detailLevel === 1 ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>1</button>
+                  <button type="button" onClick={() => setDetailLevel(2)} className={`px-3 h-full min-w-[2.25rem] text-[11px] font-bold rounded-lg transition-all ${detailLevel === 2 ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>2</button>
                 </div>
               </div>
 
@@ -934,7 +934,7 @@ export default function HasilProduksiClient() {
                     <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Jumlah Order</span>
                     <div className="flex items-baseline gap-1 min-w-0">
                       <span className="text-lg sm:text-xl font-semibold text-gray-800 tabular-nums truncate" title={selectedSopd.qty.toLocaleString('id-ID')}>{selectedSopd.qty.toLocaleString('id-ID')}</span>
-                      <span className="text-[11px] font-bold text-gray-400er shrink-0">{selectedSopd.unit}</span>
+                      <span className="text-[11px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
                     </div>
                   </div>
                   <div className="w-px h-6 bg-gray-100 shrink-0 mx-2 sm:mx-3"></div>
@@ -942,7 +942,7 @@ export default function HasilProduksiClient() {
                     <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight shrink-0">WIP</span>
                     <div className="flex items-baseline gap-1 min-w-0">
                       <span className="text-lg sm:text-xl font-semibold text-rose-600 tabular-nums truncate" title={(selectedSopd.qty - grandTotal).toLocaleString('id-ID')}>{(selectedSopd.qty - grandTotal).toLocaleString('id-ID')}</span>
-                      <span className="text-[11px] font-bold text-gray-400er shrink-0">{selectedSopd.unit}</span>
+                      <span className="text-[11px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
                     </div>
                   </div>
                   <div className="w-px h-6 bg-gray-100 shrink-0 mx-2 sm:mx-3"></div>
@@ -950,7 +950,7 @@ export default function HasilProduksiClient() {
                     <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Hasil Produksi</span>
                     <div className="flex items-baseline gap-1 min-w-0">
                       <span className="text-lg sm:text-xl font-semibold text-emerald-600 tabular-nums truncate" title={grandTotal.toLocaleString('id-ID')}>{grandTotal.toLocaleString('id-ID')}</span>
-                      <span className="text-[11px] font-bold text-gray-400er shrink-0">{selectedSopd.unit}</span>
+                      <span className="text-[11px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
                     </div>
                   </div>
                 </div>
@@ -966,7 +966,7 @@ export default function HasilProduksiClient() {
                     <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Realisasi</span>
                     <div className="flex items-baseline gap-1 min-w-0">
                       <span className="text-lg sm:text-xl font-semibold text-emerald-600 tabular-nums truncate" title={grandTotalJurnal.toLocaleString('id-ID')}>{grandTotalJurnal.toLocaleString('id-ID')}</span>
-                      <span className="text-[11px] font-bold text-gray-400er shrink-0">{selectedSopd.unit}</span>
+                      <span className="text-[11px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
                     </div>
                   </div>
                   <div className="w-px h-6 bg-gray-100 shrink-0 mx-2 sm:mx-3"></div>
@@ -974,7 +974,7 @@ export default function HasilProduksiClient() {
                     <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight shrink-0">WIP</span>
                     <div className="flex items-baseline gap-1 min-w-0">
                       <span className="text-lg sm:text-xl font-semibold text-rose-600 tabular-nums truncate" title={(selectedSopd.qty - grandTotalJurnal).toLocaleString('id-ID')}>{(selectedSopd.qty - grandTotalJurnal).toLocaleString('id-ID')}</span>
-                      <span className="text-[11px] font-bold text-gray-400er shrink-0">{selectedSopd.unit}</span>
+                      <span className="text-[11px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
                     </div>
                   </div>
                 </div>
@@ -1014,7 +1014,7 @@ export default function HasilProduksiClient() {
                     <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight">Jumlah Order</span>
                     <div className="flex items-baseline gap-1">
                       <span className="text-lg sm:text-xl font-semibold text-gray-800 tabular-nums">{selectedSopd.qty.toLocaleString('id-ID')}</span>
-                      <span className="text-[11px] font-bold text-gray-400er">{selectedSopd.unit}</span>
+                      <span className="text-[11px] font-bold text-gray-400">{selectedSopd.unit}</span>
                     </div>
                   </div>
 
@@ -1024,7 +1024,7 @@ export default function HasilProduksiClient() {
                     <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight">WIP</span>
                     <div className="flex items-baseline gap-1">
                       <span className="text-lg sm:text-xl font-semibold text-rose-600 tabular-nums">{(selectedSopd.qty - grandTotal).toLocaleString('id-ID')}</span>
-                      <span className="text-[11px] font-bold text-gray-400er">{selectedSopd.unit}</span>
+                      <span className="text-[11px] font-bold text-gray-400">{selectedSopd.unit}</span>
                     </div>
                   </div>
 
@@ -1034,7 +1034,7 @@ export default function HasilProduksiClient() {
                     <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 capitalize tracking-tight">Hasil Produksi</span>
                     <div className="flex items-baseline gap-1">
                       <span className="text-lg sm:text-xl font-semibold text-emerald-600 tabular-nums">{grandTotal.toLocaleString('id-ID')}</span>
-                      <span className="text-[11px] font-bold text-gray-400er">{selectedSopd.unit}</span>
+                      <span className="text-[11px] font-bold text-gray-400">{selectedSopd.unit}</span>
                     </div>
                   </div>
                 </div>
