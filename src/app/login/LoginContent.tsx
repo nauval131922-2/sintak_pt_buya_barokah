@@ -92,19 +92,19 @@ export default function LoginContent() {
       </div>
 
       {/* ── Right Panel (Form) ── */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8 sm:p-12 bg-white">
+      <div className="flex-1 flex flex-col items-center justify-center p-8 sm:p-12 bg-white relative">
         
-        {/* Mobile brand header */}
-        <div className="lg:hidden text-center mb-10">
-          <div className="inline-flex items-center gap-2.5 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center">
-              <Printer size={16} className="text-white" />
-            </div>
-            <h1 className="text-2xl font-black text-gray-800">SINTAK</h1>
+        {/* Mobile brand header (Pojok Kiri Atas) */}
+        <div className="lg:hidden absolute top-6 left-6 flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0 shadow-sm shadow-emerald-200">
+            <Printer size={16} className="text-white" />
           </div>
-          <p className="text-[11px] text-gray-400 font-semibold tracking-[0.15em] uppercase">
-            Sistem Informasi Cetak
-          </p>
+          <div>
+            <h1 className="text-base font-black text-gray-800 leading-none">SINTAK</h1>
+            <p className="text-[10px] text-gray-400 font-semibold mt-0.5">
+              Sistem Informasi Cetak
+            </p>
+          </div>
         </div>
 
         {/* Form container */}
