@@ -35,6 +35,7 @@ import {
   History,
   CheckCircle,
   MessageSquare,
+  Sparkles,
 } from 'lucide-react';
 import type { PermissionMap } from '@/lib/permissions-constants';
 
@@ -726,6 +727,10 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                 <Link href="/profile" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-2 px-3 py-2 text-[11px] font-bold text-gray-600 hover:bg-gray-50 rounded-[8px] transition-colors">
                   <Settings size={14} />
                   <span>Pengaturan Profil</span>
+                </Link>
+                <Link href="/log-perubahan" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-2 px-3 py-2 text-[11px] font-bold text-gray-600 hover:bg-gray-50 rounded-[8px] transition-colors">
+                  <Sparkles size={14} />
+                  <span>Log Perubahan</span>
                 </Link>
                 <button onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-2 text-[11px] font-bold text-red-500 hover:bg-red-50 rounded-[8px] transition-colors">
                   <LogOut size={14} />

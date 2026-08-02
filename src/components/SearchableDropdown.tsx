@@ -35,6 +35,8 @@ interface SearchableDropdownProps {
   itemLabels?: Record<string, string>;
   /** Compact trigger height for dense toolbars */
   compact?: boolean;
+  /** Optional callback triggered when the search query changes (for server-side searching) */
+  onSearchQueryChange?: (query: string) => void;
 }
 
 export default function SearchableDropdown({
@@ -53,10 +55,12 @@ export default function SearchableDropdown({
   maxDisplay = 50,
   itemLabels,
   compact = false,
+  onSearchQueryChange,
 }: SearchableDropdownProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(-1);
+  const [panelPos, setPanelPos] = useState({ top: 0, left: 0, width: 0 });
 
   const containerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -93,14 +97,44 @@ export default function SearchableDropdown({
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
+  // Update panel position on scroll/resize
+  const updatePos = useCallback(() => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const maxW = typeof window !== 'undefined' ? window.innerWidth - 24 : 360;
+    setPanelPos({ top: rect.bottom + 8, left: rect.left, width: Math.min(rect.width, maxW) });
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    updatePos();
+    window.addEventListener('scroll', updatePos, true);
+    window.addEventListener('resize', updatePos);
+    return () => {
+      window.removeEventListener('scroll', updatePos, true);
+      window.removeEventListener('resize', updatePos);
+    };
+  }, [open, updatePos]);
+
   // Auto-focus search when opened, init focused index to current selection
   useEffect(() => {
     if (open) {
       setQuery('');
+      onSearchQueryChange?.('');
       // Find where the current value sits so first ↓ moves to the next item
       const idx = ['', ...items].findIndex(item => item === value);
       setFocusedIndex(idx >= 0 ? idx : 0);
-      setTimeout(() => searchRef.current?.focus(), 0);
+      
+      // ponytail: on mobile, wait for keyboard to open, then scroll dropdown trigger into view
+      if (typeof window !== 'undefined' && window.innerWidth < 768) {
+        setTimeout(() => {
+          containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 300); // 300ms is usually enough for the mobile keyboard slide-up animation
+      }
+
+      if (typeof window === 'undefined' || window.innerWidth >= 768) {
+        setTimeout(() => searchRef.current?.focus(), 50);
+      }
     }
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -199,18 +233,7 @@ export default function SearchableDropdown({
             role="listbox"
             aria-label={label}
             className={`fixed bg-white border border-gray-100 rounded-xl shadow-md shadow-emerald-900/10 py-3 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col max-h-[350px]`}
-            style={(() => {
-              const rect = containerRef.current?.getBoundingClientRect();
-              // panel width = trigger width (collapse size), never wider than viewport
-              const triggerW = rect?.width || 200;
-              const maxW = typeof window !== 'undefined' ? window.innerWidth - 24 : 360;
-              const width = Math.min(triggerW, maxW);
-              return {
-                top: `${(rect?.bottom || 0) + 8}px`,
-                left: `${rect?.left || 0}px`,
-                width: `${width}px`,
-              };
-            })()}
+            style={{ top: `${panelPos.top}px`, left: `${panelPos.left}px`, width: `${panelPos.width}px` }}
           >
           {/* Search */}
           <div className="px-3 pb-3 shrink-0 border-b border-gray-50 mb-1">
@@ -223,7 +246,12 @@ export default function SearchableDropdown({
                 type="text"
                 placeholder={searchPlaceholder}
                 value={query}
-                onChange={e => { setQuery(e.target.value); setFocusedIndex(-1); }}
+                onChange={e => {
+                  const q = e.target.value;
+                  setQuery(q);
+                  setFocusedIndex(-1);
+                  onSearchQueryChange?.(q);
+                }}
                 onKeyDown={handleKeyDown}
                 className={`w-full pl-10 pr-4 ${compact ? 'py-2 text-[11px]' : 'py-2.5 text-[13px]'} bg-gray-50 border border-transparent focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 rounded-lg transition-all placeholder:text-gray-400 font-medium`}
               />

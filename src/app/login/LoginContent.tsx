@@ -113,7 +113,7 @@ export default function LoginContent() {
           <div className="mb-8">
             <h2 className="text-2xl font-black text-gray-800 tracking-tight">Selamat Datang</h2>
             <p className="mt-1.5 text-sm text-gray-400 font-medium">
-              Masuk untuk mengakses sistem SINTAK
+              Masuk untuk mengakses SINTAK
             </p>
           </div>
 

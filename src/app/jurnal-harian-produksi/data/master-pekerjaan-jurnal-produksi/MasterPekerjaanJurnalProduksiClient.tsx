@@ -1,13 +1,17 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Loader2, AlertCircle, Database, RotateCcw, Filter, Wrench } from 'lucide-react';
+import { Loader2, AlertCircle, Database, RotateCcw, Filter, Wrench, Plus, Edit2, Trash2, Save } from 'lucide-react';
 import SearchableDropdown from '@/components/SearchableDropdown';
 import { DataTable } from '@/components/ui/DataTable';
 import MasterPekerjaanJurnalProduksiUpload from './MasterPekerjaanJurnalProduksiUpload';
 import ImportInfo from '@/components/ImportInfo';
 import SearchAndReload from '@/components/SearchAndReload';
 import TableFooter from '@/components/TableFooter';
+import BaseModal from '@/components/ui/BaseModal';
+import ConfirmDialog from '@/components/ConfirmDialog';
+import { toast } from '@/lib/toast';
+import { useTableSelection } from '@/lib/hooks/useTableSelection';
 
 interface PekerjaanJurnalProduksiRecord {
   id: number;
@@ -17,6 +21,16 @@ interface PekerjaanJurnalProduksiRecord {
 }
 
 const PAGE_SIZE = 100;
+
+const CANONICAL_CATEGORIES = [
+  'Setting',
+  'Quality Control',
+  'Cetak',
+  'Finishing',
+  'Gudang',
+  'Teknisi',
+  'Mesin',
+];
 
 interface MasterPekerjaanJurnalProduksiClientProps {
   importInfo?: {
@@ -33,13 +47,12 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
 
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [categoryFilter, setCategoryFilter] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
-  
+
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
     if (typeof window !== 'undefined') {
@@ -47,23 +60,40 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
       if (saved) return JSON.parse(saved);
     }
     return {
-      'no': 80,
-      'category': 250,
-      'name': 600,
+      no: 70,
+      action: 160,
+      category: 200,
+      name: 480,
     };
   });
 
+  const { selectedIds, handleRowClick, clearSelection } = useTableSelection(data || []);
+
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<PekerjaanJurnalProduksiRecord | null>(null);
+  const [formCategory, setFormCategory] = useState('');
+  const [formName, setFormName] = useState('');
+  const [formSaving, setFormSaving] = useState(false);
+  const [formError, setFormError] = useState('');
+
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    ids: number[];
+    label: string;
+  }>({ open: false, ids: [], label: '' });
+  const [deleting, setDeleting] = useState(false);
+
   // Debounce search
   useEffect(() => {
-    const t = setTimeout(() => { 
-      setDebouncedQuery(searchQuery); 
-      setPage(1); 
+    const t = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+      setPage(1);
     }, 350);
     return () => clearTimeout(t);
   }, [searchQuery]);
 
-  useEffect(() => { 
-    setPage(1); 
+  useEffect(() => {
+    setPage(1);
   }, [categoryFilter]);
 
   // Listen for cross-tab refresh
@@ -80,6 +110,12 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
     };
   }, []);
 
+  const notifyDataUpdated = useCallback(() => {
+    window.dispatchEvent(new Event('sintak:data-updated'));
+    localStorage.setItem('sintak_data_updated', Date.now().toString());
+    setRefreshKey(k => k + 1);
+  }, []);
+
   // Fetch filter categories
   const loadFilters = useCallback(async () => {
     try {
@@ -93,9 +129,14 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshKey]);
 
-  useEffect(() => { 
-    loadFilters(); 
+  useEffect(() => {
+    loadFilters();
   }, [loadFilters]);
+
+  const formCategoryItems = useMemo(() => {
+    const set = new Set([...CANONICAL_CATEGORIES, ...availableCategories]);
+    return Array.from(set);
+  }, [availableCategories]);
 
   // Fetch data
   const loadData = useCallback(async () => {
@@ -127,40 +168,159 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, debouncedQuery, categoryFilter, refreshKey]);
 
-  useEffect(() => { 
-    loadData(); 
+  useEffect(() => {
+    loadData();
   }, [loadData]);
+
+  const openCreate = () => {
+    setEditing(null);
+    setFormCategory(categoryFilter || CANONICAL_CATEGORIES[0]);
+    setFormName('');
+    setFormError('');
+    setFormOpen(true);
+  };
+
+  const openEdit = (row: PekerjaanJurnalProduksiRecord) => {
+    setEditing(row);
+    setFormCategory(row.category);
+    setFormName(row.name);
+    setFormError('');
+    setFormOpen(true);
+  };
+
+  const closeForm = () => {
+    if (formSaving) return;
+    setFormOpen(false);
+    setEditing(null);
+    setFormError('');
+  };
+
+  const handleSave = async () => {
+    const category = formCategory.trim();
+    const name = formName.trim();
+    if (!category || !name) {
+      setFormError('Bagian dan nama pekerjaan wajib diisi.');
+      return;
+    }
+
+    setFormSaving(true);
+    setFormError('');
+    try {
+      const res = await fetch('/api/master-pekerjaan-jurnal-produksi', {
+        method: editing ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editing ? { id: editing.id, category, name } : { category, name }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setFormError(json.error || 'Gagal menyimpan data.');
+        return;
+      }
+      toast.success(editing ? 'Data berhasil diubah.' : 'Data berhasil ditambahkan.');
+      setFormOpen(false);
+      setEditing(null);
+      notifyDataUpdated();
+    } catch {
+      setFormError('Terjadi kesalahan sistem.');
+    } finally {
+      setFormSaving(false);
+    }
+  };
+
+  const requestDelete = (ids: number[], label: string) => {
+    if (ids.length === 0) return;
+    setDeleteDialog({ open: true, ids, label });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (deleteDialog.ids.length === 0) return;
+    setDeleting(true);
+    try {
+      const res = await fetch('/api/master-pekerjaan-jurnal-produksi', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: deleteDialog.ids }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(json.error || 'Gagal menghapus data.');
+        return;
+      }
+      toast.success(
+        deleteDialog.ids.length === 1
+          ? 'Data berhasil dihapus.'
+          : `${deleteDialog.ids.length} data berhasil dihapus.`
+      );
+      setDeleteDialog({ open: false, ids: [], label: '' });
+      clearSelection();
+      notifyDataUpdated();
+    } catch {
+      toast.error('Terjadi kesalahan sistem.');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const columns = useMemo(() => {
     return [
-      { 
-        accessorKey: 'no', 
-        header: 'No.', 
-        size: 80,
+      {
+        accessorKey: 'no',
+        header: 'No.',
+        size: 70,
         cell: ({ row }: { row: { index: number; getIsSelected: () => boolean } }) => (
           <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-400'}`}>
             {(page - 1) * PAGE_SIZE + (row.index + 1)}
           </span>
         )
       },
-      { 
-        accessorKey: 'category', 
-        header: 'Bagian', 
-        size: 250,
+      {
+        id: 'action',
+        header: 'Aksi',
+        size: 160,
+        cell: ({ row }: { row: { original: PekerjaanJurnalProduksiRecord } }) => {
+          const record = row.original;
+          return (
+            <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                title="Edit"
+                onClick={() => openEdit(record)}
+                className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+              >
+                <Edit2 size={12} />
+                Edit
+              </button>
+              <button
+                type="button"
+                title="Hapus"
+                onClick={() => requestDelete([record.id], `"${record.name}" (${record.category})`)}
+                className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+              >
+                <Trash2 size={12} />
+                Hapus
+              </button>
+            </div>
+          );
+        }
+      },
+      {
+        accessorKey: 'category',
+        header: 'Bagian',
+        size: 200,
         cell: ({ getValue, row }: { getValue: () => unknown; row: { getIsSelected: () => boolean } }) => (
           <span className={`text-[12px] font-bold tracking-tight transition-colors ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-700'}`}>
             {String(getValue())}
-          </span> 
+          </span>
         )
       },
-      { 
-        accessorKey: 'name', 
-        header: 'Nama Pekerjaan / Mesin', 
-        size: 600,
+      {
+        accessorKey: 'name',
+        header: 'Nama Pekerjaan / Mesin',
+        size: 480,
         cell: ({ getValue, row }: { getValue: () => unknown; row: { getIsSelected: () => boolean } }) => (
           <span className={`text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'}`}>
             {String(getValue())}
-          </span> 
+          </span>
         )
       },
     ];
@@ -231,15 +391,40 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
                </h3>
                <ImportInfo info={importInfo} />
             </div>
-            {loading && (data?.length || 0) > 0 && (
-                <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
-                  <Loader2 size={12} className="animate-spin" />
-                  <span>Loading Data...</span>
-                </div>
-            )}
+            <div className="flex items-center gap-2">
+              {loading && (data?.length || 0) > 0 && (
+                  <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
+                    <Loader2 size={12} className="animate-spin" />
+                    <span>Loading Data...</span>
+                  </div>
+              )}
+              {selectedIds.size > 0 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    requestDelete(
+                      Array.from(selectedIds).map(Number),
+                      `${selectedIds.size} data terpilih`
+                    )
+                  }
+                  className="flex items-center justify-center gap-1.5 px-3 h-9 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-bold rounded-xl border border-rose-200 transition-colors shrink-0"
+                >
+                  <Trash2 size={13} />
+                  Hapus {selectedIds.size}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={openCreate}
+                className="flex items-center justify-center gap-2 px-4 h-9 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-xl transition-colors shadow-sm shrink-0"
+              >
+                <Plus size={14} />
+                <span>Tambah</span>
+              </button>
+            </div>
           </div>
 
-          <SearchAndReload 
+          <SearchAndReload
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             onReload={() => setRefreshKey(k => k + 1)}
@@ -257,7 +442,7 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
               </div>
               <p className="text-sm font-bold text-gray-800 mb-2">Terjadi Kesalahan</p>
               <p className="text-gray-500 text-sm mb-8 max-w-xs">{error}</p>
-              <button 
+              <button
                 onClick={() => setRefreshKey(k => k + 1)}
                 className="px-10 py-4 bg-emerald-600 text-white font-bold rounded-xl transition-all shadow-sm shadow-emerald-900/10 hover:bg-emerald-700 hover:-translate-y-1 hover:shadow-sm hover:shadow-emerald-900/20 active:translate-y-0 text-[11px]"
               >
@@ -274,19 +459,27 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
                 <p className="text-[13px] text-gray-400 font-medium leading-relaxed px-6">
                   {debouncedQuery || categoryFilter
                     ? 'Coba ubah kata kunci pencarian atau bersihkan filter yang aktif.'
-                    : 'Belum ada data. Upload file Excel Master Pekerjaan Jurnal Produksi untuk memulai.'}
+                    : 'Belum ada data. Upload file Excel atau tambah manual untuk memulai.'}
                 </p>
               </div>
-              {(debouncedQuery || categoryFilter) && (
+              {(debouncedQuery || categoryFilter) ? (
                 <button
-                  onClick={() => { 
-                    setSearchQuery(''); 
-                    setCategoryFilter(''); 
+                  onClick={() => {
+                    setSearchQuery('');
+                    setCategoryFilter('');
                     setPage(1);
                   }}
                   className="mt-4 px-8 py-3 bg-gray-800 text-white hover:bg-gray-900 text-[11px] font-bold rounded-lg transition-all shadow-sm"
                 >
                   Reset Filter
+                </button>
+              ) : (
+                <button
+                  onClick={openCreate}
+                  className="mt-4 px-8 py-3 bg-emerald-600 text-white hover:bg-emerald-700 text-[11px] font-bold rounded-lg transition-all shadow-sm flex items-center gap-2"
+                >
+                  <Plus size={14} />
+                  Tambah Manual
                 </button>
               )}
            </div>
@@ -298,24 +491,113 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
              onColumnWidthChange={handleColumnWidthChange}
              isLoading={loading && data === null}
              rowHeight="h-11"
-             selectedIds={selectedId ? new Set([selectedId]) : undefined}
-             onRowClick={(id) => setSelectedId(id === selectedId ? null : id)}
+             selectedIds={selectedIds}
+             onRowClick={handleRowClick}
            />
          )}
         </div>
 
-        <TableFooter 
+        <TableFooter
           totalCount={totalCount}
           currentCount={data?.length || 0}
           label="Item Master Pekerjaan Jurnal Produksi"
-          selectedCount={selectedId ? 1 : 0}
-          onClearSelection={() => setSelectedId(null)}
+          selectedCount={selectedIds.size}
+          onClearSelection={clearSelection}
           loadTime={loadTime}
           page={page}
           totalPages={totalPages}
           onPageChange={setPage}
         />
       </div>
+
+      <BaseModal
+        isOpen={formOpen}
+        onClose={closeForm}
+        title={editing ? 'Edit Pekerjaan' : 'Tambah Pekerjaan'}
+        subtitle="Master Pekerjaan Jurnal Produksi"
+        icon={editing ? Edit2 : Plus}
+        maxWidth="max-w-md"
+        closeOnBackdrop={false}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={closeForm}
+              disabled={formSaving}
+              className="px-5 h-10 text-[12px] font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors disabled:opacity-50"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={formSaving}
+              className="flex items-center gap-2 px-5 h-10 bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-bold rounded-xl transition-colors shadow-sm disabled:opacity-60"
+            >
+              {formSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+              {editing ? 'Simpan Perubahan' : 'Tambah'}
+            </button>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-bold text-gray-600 ml-0.5">Bagian</label>
+            <SearchableDropdown
+              id="mp-jhp-form-category"
+              value={formCategory}
+              items={formCategoryItems}
+              allLabel=""
+              placeholder="Pilih bagian..."
+              searchPlaceholder="Cari bagian..."
+              triggerWidth="w-full"
+              panelWidth="w-full"
+              compact
+              onChange={setFormCategory}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-bold text-gray-600 ml-0.5">Nama Pekerjaan / Mesin</label>
+            <input
+              type="text"
+              value={formName}
+              onChange={(e) => setFormName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSave();
+                }
+              }}
+              placeholder="Contoh: Setting Mesin"
+              className="h-10 w-full px-3 rounded-xl border border-gray-200 bg-white text-[13px] font-medium text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 transition-all"
+              autoFocus
+            />
+          </div>
+          {formError && (
+            <p className="text-[12px] font-medium text-rose-600 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2">
+              {formError}
+            </p>
+          )}
+        </div>
+      </BaseModal>
+
+      <ConfirmDialog
+        isOpen={deleteDialog.open}
+        type="danger"
+        title={deleteDialog.ids.length > 1 ? 'Hapus Data Terpilih' : 'Hapus Pekerjaan'}
+        message={
+          deleteDialog.ids.length > 1
+            ? `Yakin ingin menghapus ${deleteDialog.label}? Tindakan ini tidak dapat dibatalkan.`
+            : `Hapus ${deleteDialog.label}? Tindakan ini tidak dapat dibatalkan.`
+        }
+        confirmLabel="Hapus"
+        cancelLabel="Batal"
+        isLoading={deleting}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => {
+          if (!deleting) setDeleteDialog({ open: false, ids: [], label: '' });
+        }}
+      />
     </div>
   );
 }

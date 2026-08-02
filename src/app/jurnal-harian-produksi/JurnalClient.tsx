@@ -118,9 +118,10 @@ export default function JurnalClient({
   const [karyawanByBagian, setKaryawanByBagian] = useState<Record<string, string[]>>({});
   const [allEmployeeNames, setAllEmployeeNames] = useState<string[]>([]);
   const [namaOptions, setNamaOptions] = useState<string[]>([]);
-  const [noOrderFilter, setNoOrderFilter] = useState('');
-  const [jenisPekerjaanFilter, setJenisPekerjaanFilter] = useState('');
-  const [masterPekerjaanOptions, setMasterPekerjaanOptions] = useState<string[]>([]);
+   const [noOrderFilter, setNoOrderFilter] = useState('');
+   const [jenisPekerjaanFilter, setJenisPekerjaanFilter] = useState('');
+   const [masterPekerjaanOptions, setMasterPekerjaanOptions] = useState<string[]>([]);
+   const [pekerjaanByOrderOptions, setPekerjaanByOrderOptions] = useState<string[]>([]);
   const [isBagianDropdownOpen, setIsBagianDropdownOpen] = useState(false);
   const [isNamaDropdownOpen, setIsNamaDropdownOpen] = useState(false);
   const [bagianSearchQuery, setBagianSearchQuery] = useState('');
@@ -372,26 +373,58 @@ export default function JurnalClient({
     fetchOptions();
   }, [refreshKey]);
 
-  // Fetch master pekerjaan for jenis pekerjaan filter
-  useEffect(() => {
-    let active = true;
-    async function fetchMaster() {
-      try {
-        // full master names for filter (~1.3k)
-        const res = await fetch('/api/master-pekerjaan-jurnal-produksi?limit=5000');
-        if (!active) return;
-        if (res.ok) {
-          const json: any = await res.json();
-          if (json.success) {
-            const names = [...new Set(((json.data || []) as any[]).map((r: any) => r.name).filter(Boolean))].sort() as string[];
-            setMasterPekerjaanOptions(names);
-          }
-        }
-      } catch {}
-    }
-    fetchMaster();
-    return () => { active = false; };
-  }, []);
+   // Fetch master pekerjaan for jenis pekerjaan filter
+   useEffect(() => {
+     let active = true;
+     async function fetchMaster() {
+       try {
+         // full master names for filter (~1.3k)
+         const res = await fetch('/api/master-pekerjaan-jurnal-produksi?limit=5000');
+         if (!active) return;
+         if (res.ok) {
+           const json: any = await res.json();
+           if (json.success) {
+             const names = [...new Set(((json.data || []) as any[]).map((r: any) => r.name).filter(Boolean))].sort() as string[];
+             setMasterPekerjaanOptions(names);
+           }
+         }
+       } catch {}
+     }
+     fetchMaster();
+     return () => { active = false; };
+   }, []);
+
+   // Fetch pekerjaan filtered by selected order and active filters
+   useEffect(() => {
+     let active = true;
+     async function fetchPekerjaanByOrder() {
+       if (!noOrderFilter) {
+         setPekerjaanByOrderOptions([]);
+         return;
+       }
+       try {
+         const params = new URLSearchParams({ noOrder: noOrderFilter });
+         if (startDate && endDate) {
+           params.set('startDate', startDate.toISOString().split('T')[0]);
+           params.set('endDate', endDate.toISOString().split('T')[0]);
+         }
+         if (bagianFilter) params.set('bagian', bagianFilter);
+         if (namaKaryawanFilter) params.set('namaKaryawan', namaKaryawanFilter);
+         if (belumRealisasiFilter) params.set('belumRealisasi', 'true');
+         const res = await fetch(`/api/jurnal-harian-produksi/pekerjaan-by-order?${params.toString()}`);
+         if (!active) return;
+         if (res.ok) {
+           const json: any = await res.json();
+           if (json.success) {
+             setPekerjaanByOrderOptions(json.data || []);
+             setJenisPekerjaanFilter('');
+           }
+         }
+       } catch {}
+     }
+     fetchPekerjaanByOrder();
+     return () => { active = false; };
+   }, [noOrderFilter, startDate, endDate, bagianFilter, namaKaryawanFilter, belumRealisasiFilter]);
 
   // Fetch SOPD list for filter dropdown & form
   useEffect(() => {
@@ -491,16 +524,20 @@ export default function JurnalClient({
     }
   }, [bagianFilter, allEmployeeNames, karyawanByBagian]);
 
-  const jenisPekerjaanFilterOptions = useMemo(() => masterPekerjaanOptions, [masterPekerjaanOptions]);
+   const jenisPekerjaanFilterOptions = useMemo(() => {
+     if (noOrderFilter && pekerjaanByOrderOptions.length > 0) return pekerjaanByOrderOptions;
+     return masterPekerjaanOptions;
+   }, [noOrderFilter, pekerjaanByOrderOptions, masterPekerjaanOptions]);
 
-  const handleResetFilter = useCallback(() => {
-    setBagianFilter('');
-    setNamaKaryawanFilter('');
-    setNoOrderFilter('');
-    setJenisPekerjaanFilter('');
-    setBelumRealisasiFilter(false);
-    setPage(1);
-  }, []);
+   const handleResetFilter = useCallback(() => {
+     setBagianFilter('');
+     setNamaKaryawanFilter('');
+     setNoOrderFilter('');
+     setJenisPekerjaanFilter('');
+     setBelumRealisasiFilter(false);
+     setPekerjaanByOrderOptions([]);
+     setPage(1);
+   }, []);
 
   const checkCopyStatus = useCallback(async () => {
     if (!canCopyJadwal) return;

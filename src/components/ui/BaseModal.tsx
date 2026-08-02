@@ -13,6 +13,7 @@ interface BaseModalProps {
   footer?: React.ReactNode;
   maxWidth?: string; // e.g., 'max-w-lg', 'max-w-2xl'
   bodyClassName?: string;
+  closeOnBackdrop?: boolean;
 }
 
 export default function BaseModal({
@@ -24,7 +25,8 @@ export default function BaseModal({
   children,
   footer,
   maxWidth = 'max-w-lg',
-  bodyClassName
+  bodyClassName,
+  closeOnBackdrop = true,
 }: BaseModalProps) {
   
   // Close on ESC
@@ -41,7 +43,7 @@ export default function BaseModal({
   return (
     <div
       className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200"
-      onClick={onClose}
+      onClick={closeOnBackdrop ? onClose : undefined}
     >
       <div
         className={`w-full ${maxWidth} bg-white rounded-2xl shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]`}
