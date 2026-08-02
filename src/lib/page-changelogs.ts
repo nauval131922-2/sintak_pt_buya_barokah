@@ -42,7 +42,8 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
-  login: entry({
+  // ─── Login ───
+  'login-2026-08-02': entry({
     pageKey: 'login',
     title: 'Halaman Login',
     permissionKeys: [],
@@ -55,7 +56,8 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     ],
   }),
 
-  dashboard: entry({
+  // ─── Dashboard ───
+  'dashboard-2026-07-25': entry({
     pageKey: 'dashboard',
     title: 'Dashboard',
     permissionKeys: ['dashboard'],
@@ -67,7 +69,8 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     ],
   }),
 
-  'dashboard-manufaktur': entry({
+  // ─── Dashboard Manufaktur ───
+  'dashboard-manufaktur-2026-07-25': entry({
     pageKey: 'dashboard-manufaktur',
     title: 'Dashboard Manufaktur',
     permissionKeys: ['produksi_dashboard'],
@@ -79,7 +82,8 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     ],
   }),
 
-  'dashboard-akunting': entry({
+  // ─── Dashboard Akunting ───
+  'dashboard-akunting-2026-07-25': entry({
     pageKey: 'dashboard-akunting',
     title: 'Dashboard Akunting',
     permissionKeys: ['akt_dashboard'],
@@ -90,7 +94,8 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     ],
   }),
 
-  'dashboard-hrd': entry({
+  // ─── Dashboard HRD ───
+  'dashboard-hrd-2026-07-25': entry({
     pageKey: 'dashboard-hrd',
     title: 'Dashboard HRD',
     permissionKeys: ['hrd_dashboard'],
@@ -101,20 +106,31 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     ],
   }),
 
-   'jurnal-harian-produksi': entry({
-     pageKey: 'jurnal-harian-produksi',
-     title: 'Jurnal Harian Produksi',
-     version: '2026-07-30-filter-pekerjaan',
-     date: '30 Jul 2026',
-     sortDate: '2026-07-30',
-     permissionKeys: ['produksi_jhp'],
-     items: [
-       'Filter Pekerjaan otomatis mengikuti Order yang dipilih — hanya menampilkan pekerjaan relevan',
-       'Filter Pekerjaan reset otomatis saat Order diganti',
-     ],
-   }),
+  // ─── Jurnal Harian Produksi ───
+  'jurnal-harian-produksi-2026-07-30': entry({
+    pageKey: 'jurnal-harian-produksi',
+    title: 'Jurnal Harian Produksi',
+    version: '2026-07-30-1',
+    date: '30 Jul 2026',
+    sortDate: '2026-07-30',
+    permissionKeys: ['produksi_jhp'],
+    items: [
+      'Filter Pekerjaan otomatis mengikuti Order yang dipilih — hanya menampilkan pekerjaan relevan',
+      'Filter Pekerjaan reset otomatis saat Order diganti',
+    ],
+  }),
+  'jurnal-harian-produksi-2026-07-25': entry({
+    pageKey: 'jurnal-harian-produksi',
+    title: 'Jurnal Harian Produksi',
+    permissionKeys: ['produksi_jhp'],
+    items: [
+      'Tampilan kartu dan tabel diseragamkan dengan desain SINTAK',
+      'Performa pemuatan data ditingkatkan',
+    ],
+  }),
 
-  'excel-sopd': entry({
+  // ─── Excel SOPd ───
+  'excel-sopd-2026-07-25': entry({
     pageKey: 'excel-sopd',
     title: 'Data Excel SOPd',
     permissionKeys: ['produksi_jhp_sopd'],
@@ -125,7 +141,8 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     ],
   }),
 
-  'master-pekerjaan': entry({
+  // ─── Master Pekerjaan ───
+  'master-pekerjaan-2026-07-25': entry({
     pageKey: 'master-pekerjaan',
     title: 'Master Pekerjaan',
     permissionKeys: ['produksi_jhp_master_pekerjaan'],
@@ -135,20 +152,33 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     ],
   }),
 
-  'master-pekerjaan-jurnal-produksi': entry({
+  // ─── Master Pekerjaan Jurnal Produksi ───
+  'master-pekerjaan-jurnal-produksi-2026-07-26': entry({
     pageKey: 'master-pekerjaan-jurnal-produksi',
     title: 'Master Pekerjaan Jurnal Produksi',
+    sortDate: '2026-07-26',
+    date: '26 Jul 2026',
+    version: '2026-07-26-1',
     permissionKeys: ['produksi_jhp_master_pekerjaan_jurnal_produksi'],
     items: [
       'Input manual: tambah, edit, dan hapus per baris',
       'Bulk hapus: pilih baris (klik / Ctrl / Shift) lalu Hapus N',
       'Upload Excel jadi merge-only — data manual tidak terhapus',
       'Modal form tidak tertutup saat klik di luar; kolom Aksi dengan teks Edit & Hapus',
-      'Tampilan daftar diseragamkan; ada log perubahan di ikon header',
+    ],
+  }),
+  'master-pekerjaan-jurnal-produksi-2026-07-25': entry({
+    pageKey: 'master-pekerjaan-jurnal-produksi',
+    title: 'Master Pekerjaan Jurnal Produksi',
+    permissionKeys: ['produksi_jhp_master_pekerjaan_jurnal_produksi'],
+    items: [
+      'Tampilan daftar diseragamkan',
+      'Ikon log perubahan ditambahkan di header',
     ],
   }),
 
-  'jurnal-harian-produksi-target': entry({
+  // ─── Target Jurnal Harian Produksi ───
+  'jurnal-harian-produksi-target-2026-07-25': entry({
     pageKey: 'jurnal-harian-produksi-target',
     title: 'Target Jurnal Harian Produksi',
     permissionKeys: ['produksi_jhp_target'],
@@ -158,7 +188,8 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     ],
   }),
 
-  'jurnal-harian-produksi-analisa': entry({
+  // ─── Analisa Jurnal Harian Produksi ───
+  'jurnal-harian-produksi-analisa-2026-07-25': entry({
     pageKey: 'jurnal-harian-produksi-analisa',
     title: 'Analisa Jurnal Harian Produksi',
     permissionKeys: ['produksi_jhp_analisa'],
@@ -168,40 +199,79 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     ],
   }),
 
-  'tracking-manufaktur': entry({
+  // ─── Tracking Manufaktur ───
+  'tracking-manufaktur-2026-07-30': entry({
+    pageKey: 'tracking-manufaktur',
+    title: 'Tracking Manufaktur',
+    sortDate: '2026-07-30',
+    date: '30 Jul 2026',
+    version: '2026-07-30-1',
+    permissionKeys: ['tracking_manufaktur'],
+    items: [
+      'Pemuatan data tracking lebih ringan dan stabil',
+      'Dropdown dan filter lebih responsif',
+    ],
+  }),
+  'tracking-manufaktur-2026-07-25': entry({
     pageKey: 'tracking-manufaktur',
     title: 'Tracking Manufaktur',
     permissionKeys: ['tracking_manufaktur'],
     items: [
-      'Pemuatan data tracking lebih ringan dan stabil',
       'Tampilan tabel dan label diseragamkan',
-      'Dropdown dan filter lebih responsif',
     ],
   }),
 
-  'log-aktivitas': entry({
+  // ─── Log Aktivitas ───
+  'log-aktivitas-2026-07-18': entry({
+    pageKey: 'log-aktivitas',
+    title: 'Log Aktivitas',
+    sortDate: '2026-07-18',
+    date: '18 Jul 2026',
+    version: '2026-07-18-1',
+    permissionKeys: ['activity_log_view', 'activity_log'],
+    items: [
+      'Fitur Undo cepat untuk membatalkan perubahan',
+      'Filter cepat berdasarkan aksi atau tabel',
+      'Pencarian berdasarkan ID Log',
+      'Visualisasi JSON detail yang lebih rapi',
+    ],
+  }),
+  'log-aktivitas-2026-07-25': entry({
     pageKey: 'log-aktivitas',
     title: 'Log Aktivitas',
     permissionKeys: ['activity_log_view', 'activity_log'],
     items: [
       'Tampilan daftar dan grafik diseragamkan',
       'Label dan empty state lebih mudah dibaca',
-      'Beberapa query log dimuat lebih ringan',
+      'Query log dimuat lebih ringan',
     ],
   }),
 
-  records: entry({
+  // ─── Records ───
+  'records-2026-07-26': entry({
+    pageKey: 'records',
+    title: 'Catatan / Records',
+    sortDate: '2026-07-26',
+    date: '26 Jul 2026',
+    version: '2026-07-26-1',
+    permissionKeys: ['catat_kesalahan'],
+    items: [
+      'Bilah filter lebih ringkas (satu baris, tombol outline)',
+      'Integrasi cepat data HPP Digit',
+    ],
+  }),
+  'records-2026-07-25': entry({
     pageKey: 'records',
     title: 'Catatan / Records',
     permissionKeys: ['catat_kesalahan'],
     items: [
-      'Bilah filter lebih ringkas (satu baris, tombol outline)',
       'Kartu dan form diseragamkan dengan desain SINTAK',
       'Teks label lebih jelas di seluruh halaman',
     ],
   }),
 
-  bom: entry({
+  // ─── BOM ───
+  'bom-2026-07-25': entry({
     pageKey: 'bom',
     title: 'Bill of Materials (BOM)',
     permissionKeys: ['produksi_bom'],
@@ -211,7 +281,8 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     ],
   }),
 
-  'hasil-produksi': entry({
+  // ─── Hasil Produksi ───
+  'hasil-produksi-2026-08-02': entry({
     pageKey: 'hasil-produksi',
     title: 'Hasil Produksi',
     permissionKeys: ['produksi_hasil'],
@@ -221,15 +292,34 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     items: [
       'Layout responsif kartu statistik (Card Order & Pekerjaan 50/50 di SM, Card Tren 100%, Grand Total mendatar di SM+)',
       'Nama pekerjaan otomatis truncate 1 baris dengan floating tooltip presisi saat diklik (hanya jika terpotong)',
-      'Standardisasi sudut rounded-xl dan bayangan shadow-sm seragam di seluruh dashboard & komponen bersama',
-      'Header subtitle auto-truncate sebelum menyentuh Global Search + brand disesuaikan ke "SINTAK-PT. Buya Barokah"',
+      'Standardisasi sudut rounded-xl dan bayangan shadow-sm seragam di seluruh dashboard',
+    ],
+  }),
+  'hasil-produksi-2026-07-28': entry({
+    pageKey: 'hasil-produksi',
+    title: 'Hasil Produksi',
+    sortDate: '2026-07-28',
+    date: '28 Jul 2026',
+    version: '2026-07-28-1',
+    permissionKeys: ['produksi_hasil'],
+    items: [
+      'Filter Level & SOPd diseragamkan dengan ketinggian h-10',
+    ],
+  }),
+  'hasil-produksi-2026-07-25': entry({
+    pageKey: 'hasil-produksi',
+    title: 'Hasil Produksi',
+    permissionKeys: ['produksi_hasil'],
+    items: [
+      'Standardisasi nama produksi dan data sumber di dashboard',
+      'Tampilan kartu dan grafik diseragamkan',
     ],
   }),
 
-  'log-perubahan': entry({
+  // ─── Log Perubahan ───
+  'log-perubahan-2026-07-26': entry({
     pageKey: 'log-perubahan',
     title: 'Log Perubahan',
-    // kosong = semua user login (hub di menu profil)
     permissionKeys: [],
     sortDate: '2026-07-26',
     date: '26 Jul 2026',
@@ -243,163 +333,174 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // —— Catch-up sisa path vs origin/master (design system massal) ——
-  'rek-akuntansi': entry({
+  'rek-akuntansi-2026-07-25': entry({
     pageKey: 'rek-akuntansi',
     title: 'Rek Akuntansi',
     permissionKeys: ['akt_mrek'],
     items: [...UI_POLISH],
   }),
-  'jurnal-umum': entry({
+  'jurnal-umum-2026-07-25': entry({
     pageKey: 'jurnal-umum',
     title: 'Jurnal Umum',
     permissionKeys: ['akt_jurnal_umum'],
     items: [...UI_POLISH],
   }),
-  'bahan-baku': entry({
+  'bahan-baku-2026-07-25': entry({
     pageKey: 'bahan-baku',
     title: 'BBB Produksi',
     permissionKeys: ['produksi_bahan_baku'],
     items: [...UI_POLISH, 'Daftar dan filter lebih rapi'],
   }),
-  'barang-jadi': entry({
+  'barang-jadi-2026-07-25': entry({
     pageKey: 'barang-jadi',
     title: 'Penerimaan Barang Hasil Produksi',
     permissionKeys: ['produksi_barang_jadi'],
     items: [...UI_POLISH, 'Daftar dan filter lebih rapi'],
   }),
-  'produksi-selesai': entry({
+  'produksi-selesai-2026-07-25': entry({
     pageKey: 'produksi-selesai',
     title: 'Produksi Selesai',
     permissionKeys: ['produksi_selesai'],
     items: [...UI_POLISH],
   }),
-  'master-barang': entry({
+  'master-barang-2026-07-25': entry({
     pageKey: 'master-barang',
     title: 'Master Barang',
     permissionKeys: ['stok_master_barang'],
     items: [...UI_POLISH],
   }),
-  'hpp-kalkulasi': entry({
+  'hpp-kalkulasi-2026-07-25': entry({
     pageKey: 'hpp-kalkulasi',
     title: 'HPP Kalkulasi',
     permissionKeys: ['hpp_kalkulasi'],
     items: [...UI_POLISH],
   }),
-  orders: entry({
+  'orders-2026-07-25': entry({
     pageKey: 'orders',
     title: 'Order Produksi',
     permissionKeys: ['produksi_orders'],
     items: [...UI_POLISH, 'Daftar order lebih rapi'],
   }),
-  'pelunasan-hutang': entry({
+  'pelunasan-hutang-2026-07-25': entry({
     pageKey: 'pelunasan-hutang',
     title: 'Pelunasan Hutang',
     permissionKeys: ['pembelian_hutang'],
     items: [...UI_POLISH],
   }),
-  'pelunasan-piutang': entry({
+  'pelunasan-piutang-2026-07-25': entry({
     pageKey: 'pelunasan-piutang',
     title: 'Pelunasan Piutang',
     permissionKeys: ['penjualan_piutang'],
     items: [...UI_POLISH],
   }),
-  'penerimaan-pembelian': entry({
+  'penerimaan-pembelian-2026-07-25': entry({
     pageKey: 'penerimaan-pembelian',
     title: 'Penerimaan Barang Pembelian',
     permissionKeys: ['pembelian_penerimaan'],
     items: [...UI_POLISH],
   }),
-  pengiriman: entry({
+  'pengiriman-2026-07-25': entry({
     pageKey: 'pengiriman',
     title: 'Pengiriman',
     permissionKeys: ['penjualan_pengiriman'],
     items: [...UI_POLISH],
   }),
-  pr: entry({
+  'pr-2026-07-25': entry({
     pageKey: 'pr',
     title: 'Purchase Request (PR)',
     permissionKeys: ['pembelian_pr'],
     items: [...UI_POLISH],
   }),
-  profile: entry({
+  'profile-2026-07-25': entry({
     pageKey: 'profile',
     title: 'Pengaturan Profil',
     permissionKeys: [],
     items: [...UI_POLISH],
   }),
-  'purchase-orders': entry({
+  'purchase-orders-2026-07-25': entry({
     pageKey: 'purchase-orders',
     title: 'Purchase Order (PO)',
     permissionKeys: ['pembelian_po'],
     items: [...UI_POLISH],
   }),
-  'rekap-pembelian-barang': entry({
+  'rekap-pembelian-barang-2026-07-25': entry({
     pageKey: 'rekap-pembelian-barang',
     title: 'Rekap Pembelian Barang',
     permissionKeys: ['pembelian_rekap'],
     items: [...UI_POLISH],
   }),
-  'rekap-sales-order': entry({
+  'rekap-sales-order-2026-07-25': entry({
     pageKey: 'rekap-sales-order',
     title: 'Rekap Sales Order',
     permissionKeys: ['kalkulasi_rekap_so'],
     items: [...UI_POLISH],
   }),
-  roles: entry({
+  'roles-2026-07-25': entry({
     pageKey: 'roles',
     title: 'Hak Akses (Roles)',
     permissionKeys: [...SUPER_ADMIN_ONLY],
     items: [...UI_POLISH],
   }),
-  sales: entry({
+  'sales-2026-07-25': entry({
     pageKey: 'sales',
     title: 'Laporan Penjualan',
     permissionKeys: ['penjualan_laporan'],
     items: [...UI_POLISH],
   }),
-  'sales-orders': entry({
+  'sales-orders-2026-07-25': entry({
     pageKey: 'sales-orders',
     title: 'Sales Order',
     permissionKeys: ['penjualan_so'],
     items: [...UI_POLISH],
   }),
-  'konversi-hpp': entry({
+  'konversi-hpp-2026-07-25': entry({
     pageKey: 'konversi-hpp',
     title: 'Konversi Data HPP',
     permissionKeys: ['settings_konversi_data_hpp'],
     items: [...UI_POLISH],
   }),
-  'telegram-users': entry({
+  'telegram-users-2026-07-30': entry({
+    pageKey: 'telegram-users',
+    title: 'Telegram Users',
+    sortDate: '2026-07-30',
+    date: '30 Jul 2026',
+    version: '2026-07-30-1',
+    permissionKeys: ['telegram_users'],
+    items: [
+      'Kartu statistik lebih ringkas dengan tampilan inline',
+    ],
+  }),
+  'telegram-users-2026-07-25': entry({
     pageKey: 'telegram-users',
     title: 'Telegram Users',
     permissionKeys: ['telegram_users'],
-    items: [...UI_POLISH, 'Kartu statistik lebih ringkas'],
+    items: [...UI_POLISH],
   }),
-  'sph-in': entry({
+  'sph-in-2026-07-25': entry({
     pageKey: 'sph-in',
     title: 'SPH Masuk',
     permissionKeys: ['pembelian_sph_in'],
     items: [...UI_POLISH],
   }),
-  'sph-out': entry({
+  'sph-out-2026-07-25': entry({
     pageKey: 'sph-out',
     title: 'SPH Keluar',
     permissionKeys: ['penjualan_sph_out'],
     items: [...UI_POLISH],
   }),
-  'spph-out': entry({
+  'spph-out-2026-07-25': entry({
     pageKey: 'spph-out',
     title: 'SPPH Keluar',
     permissionKeys: ['pembelian_spph'],
     items: [...UI_POLISH],
   }),
-  sync: entry({
+  'sync-2026-07-25': entry({
     pageKey: 'sync',
     title: 'Sinkronisasi Data',
     permissionKeys: ['sync'],
     items: [...UI_POLISH],
   }),
-  users: entry({
+  'users-2026-07-25': entry({
     pageKey: 'users',
     title: 'Kelola User',
     permissionKeys: [...SUPER_ADMIN_ONLY],
@@ -455,8 +556,20 @@ export const PAGE_CHANGELOG_PATHS: Record<string, string> = {
   '/users': 'users',
 };
 
+/** Get latest changelog for a pageKey (untuk modal per-halaman) */
 export function getPageChangelog(pageKey: string): PageChangelog | null {
-  return PAGE_CHANGELOGS[pageKey] ?? null;
+  // Cari entry terbaru untuk pageKey ini
+  const entries = Object.values(PAGE_CHANGELOGS).filter(e => e.pageKey === pageKey);
+  if (entries.length === 0) return null;
+  entries.sort((a, b) => (b.sortDate || '').localeCompare(a.sortDate || ''));
+  return entries[0];
+}
+
+/** Get all changelog releases for a pageKey (untuk modal multi-history) */
+export function getAllPageChangelogs(pageKey: string): PageChangelog[] {
+  const entries = Object.values(PAGE_CHANGELOGS).filter(e => e.pageKey === pageKey);
+  entries.sort((a, b) => (b.sortDate || '').localeCompare(a.sortDate || ''));
+  return entries;
 }
 
 export function getPageChangelogByPath(pathname: string | null): PageChangelog | null {
@@ -464,6 +577,14 @@ export function getPageChangelogByPath(pathname: string | null): PageChangelog |
   const pageKey = PAGE_CHANGELOG_PATHS[pathname];
   if (!pageKey) return null;
   return getPageChangelog(pageKey);
+}
+
+/** Get all changelog releases by pathname (untuk modal multi-history) */
+export function getAllPageChangelogsByPath(pathname: string | null): PageChangelog[] {
+  if (!pathname) return [];
+  const pageKey = PAGE_CHANGELOG_PATHS[pathname];
+  if (!pageKey) return [];
+  return getAllPageChangelogs(pageKey);
 }
 
 export function getPathForPageKey(pageKey: string): string | null {

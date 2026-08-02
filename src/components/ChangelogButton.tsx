@@ -2,18 +2,18 @@
 
 import { usePathname } from 'next/navigation';
 import { Sparkles } from 'lucide-react';
-import { getPageChangelogByPath } from '@/lib/page-changelogs';
+import { getAllPageChangelogsByPath } from '@/lib/page-changelogs';
 
 export default function ChangelogButton({ className = '' }: { className?: string }) {
   const pathname = usePathname();
-  const changelog = getPageChangelogByPath(pathname);
+  const changelogs = getAllPageChangelogsByPath(pathname);
 
-  if (!changelog) return null;
+  if (!changelogs || changelogs.length === 0) return null;
 
   const handleClick = () => {
     window.dispatchEvent(
       new CustomEvent('open-page-changelog', {
-        detail: { pageKey: changelog.pageKey },
+        detail: { pageKey: changelogs[0].pageKey },
       })
     );
   };

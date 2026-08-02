@@ -14,7 +14,7 @@ export default function LogPerubahanClient({ entries }: { entries: Entry[] }) {
   const groups = useMemo(() => groupChangelogsBySortDate(entries), [entries]);
 
   const [openKeys, setOpenKeys] = useState<Set<string>>(() =>
-    new Set(entries.map((e) => e.pageKey))
+    new Set(entries.map((e) => `${e.pageKey}-${e.version}`))
   );
 
   const toggle = (key: string) => {
@@ -57,16 +57,17 @@ export default function LogPerubahanClient({ entries }: { entries: Entry[] }) {
 
           <div className="flex flex-col gap-2">
             {group.entries.map((e) => {
-              const isOpen = openKeys.has(e.pageKey);
+              const uniqueKey = `${e.pageKey}-${e.version}`;
+              const isOpen = openKeys.has(uniqueKey);
               return (
                 <article
-                  key={e.pageKey}
+                  key={uniqueKey}
                   className="bg-white rounded-xl border border-gray-100 shadow-sm shadow-emerald-900/5 overflow-hidden"
                 >
                   <div className="flex items-center gap-2 border-l-4 border-emerald-500 pl-1 pr-3 py-2.5">
                     <button
                       type="button"
-                      onClick={() => toggle(e.pageKey)}
+                      onClick={() => toggle(uniqueKey)}
                       className="flex-1 flex items-center gap-3 min-w-0 px-2 py-1 text-left rounded-lg hover:bg-gray-50/80 transition-colors"
                     >
                       <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">

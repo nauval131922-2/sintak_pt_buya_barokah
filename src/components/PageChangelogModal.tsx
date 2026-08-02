@@ -2,12 +2,12 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, ChevronDown } from 'lucide-react';
 import BaseModal from '@/components/ui/BaseModal';
 import {
   changelogDismissKey,
-  getPageChangelog,
-  getPageChangelogByPath,
+  getAllPageChangelogs,
+  getAllPageChangelogsByPath,
   type PageChangelog,
 } from '@/lib/page-changelogs';
 
@@ -20,26 +20,34 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [forced, setForced] = useState(false);
-  const [active, setActive] = useState<PageChangelog | null>(null);
+  const [active, setActive] = useState<PageChangelog[] | null>(null);
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set());
 
-  const resolveChangelog = useCallback((): PageChangelog | null => {
-    if (pageKey) return getPageChangelog(pageKey);
-    return getPageChangelogByPath(pathname);
+  const resolveChangelog = useCallback((): PageChangelog[] => {
+    if (pageKey) return getAllPageChangelogs(pageKey);
+    return getAllPageChangelogsByPath(pathname);
   }, [pageKey, pathname]);
 
-  const tryAutoOpen = useCallback((changelog: PageChangelog | null) => {
-    if (!changelog) {
+  const tryAutoOpen = useCallback((changelogs: PageChangelog[]) => {
+    if (!changelogs || changelogs.length === 0) {
       setOpen(false);
       setForced(false);
       setActive(null);
+      setOpenSections(new Set());
       return;
     }
-    setActive(changelog);
+    setActive(changelogs);
+    
+    // Default: buka semua accordion
+    const allKeys = new Set(changelogs.map(c => c.version));
+    setOpenSections(allKeys);
+    
+    // Cek dismiss: jika SEMUA rilis sudah dismissed, jangan buka modal
     try {
-      const dismissed = localStorage.getItem(
-        changelogDismissKey(changelog.pageKey, changelog.version)
+      const allDismissed = changelogs.every(c => 
+        localStorage.getItem(changelogDismissKey(c.pageKey, c.version)) === '1'
       );
-      if (dismissed === '1') {
+      if (allDismissed) {
         setOpen(false);
         setForced(false);
         return;
@@ -60,11 +68,13 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<{ pageKey?: string }>).detail;
-      const changelog = detail?.pageKey
-        ? getPageChangelog(detail.pageKey)
+      const changelogs = detail?.pageKey
+        ? getAllPageChangelogs(detail.pageKey)
         : resolveChangelog();
-      if (!changelog) return;
-      setActive(changelog);
+      if (!changelogs || changelogs.length === 0) return;
+      setActive(changelogs);
+      const allKeys = new Set(changelogs.map(c => c.version));
+      setOpenSections(allKeys);
       setForced(true);
       setOpen(true);
     };
@@ -81,10 +91,13 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
   const handleDontShowAgain = () => {
     if (!active) return;
     try {
-      localStorage.setItem(
-        changelogDismissKey(active.pageKey, active.version),
-        '1'
-      );
+      // Dismiss SEMUA rilis sekaligus
+      active.forEach(changelog => {
+        localStorage.setItem(
+          changelogDismissKey(changelog.pageKey, changelog.version),
+          '1'
+        );
+      });
     } catch {
       // ignore
     }
@@ -92,16 +105,28 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
     setForced(false);
   };
 
-  if (!active) return null;
+  if (!active || active.length === 0) return null;
+
+  const toggleSection = (version: string) => {
+    setOpenSections(prev => {
+      const next = new Set(prev);
+      if (next.has(version)) {
+        next.delete(version);
+      } else {
+        next.add(version);
+      }
+      return next;
+    });
+  };
 
   return (
     <BaseModal
       isOpen={open}
       onClose={handleClose}
-      title={active.title}
-      subtitle={active.date ? `Log perubahan · ${active.date}` : 'Log perubahan'}
+      title={active[0].title}
+      subtitle="Log perubahan"
       icon={Sparkles}
-      maxWidth="max-w-md"
+      maxWidth="max-w-lg"
       closeOnBackdrop={true}
       footer={
         <>
@@ -126,17 +151,50 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
         </>
       }
     >
-      <ul className="flex flex-col gap-2.5">
-        {active.items.map((item, i) => (
-          <li
-            key={i}
-            className="flex items-start gap-2.5 text-[13px] text-gray-700 font-medium leading-snug"
-          >
-            <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-            <span>{item}</span>
-          </li>
-        ))}
-      </ul>
+      <div className="flex flex-col gap-3">
+        {active.map((changelog) => {
+          const isOpen = openSections.has(changelog.version);
+          return (
+            <div key={changelog.version} className="border border-gray-100 rounded-xl overflow-hidden">
+              {/* Accordion Header */}
+              <button
+                type="button"
+                onClick={() => toggleSection(changelog.version)}
+                className="w-full flex items-center justify-between px-4 py-3 bg-gray-50/50 hover:bg-gray-100/80 transition-colors text-left"
+              >
+                <div className="flex items-center gap-2">
+                  <Sparkles size={14} className="text-emerald-600 shrink-0" />
+                  <span className="text-[13px] font-bold text-gray-800">
+                    {changelog.date || changelog.sortDate}
+                  </span>
+                  <span className="text-[11px] text-gray-400 font-medium">
+                    · {changelog.items.length} poin
+                  </span>
+                </div>
+                <ChevronDown
+                  size={16}
+                  className={`text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {/* Accordion Body */}
+              {isOpen && (
+                <ul className="flex flex-col gap-2.5 px-4 py-3 bg-white">
+                  {changelog.items.map((item, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start gap-2.5 text-[13px] text-gray-700 font-medium leading-snug"
+                    >
+                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </BaseModal>
   );
 }
