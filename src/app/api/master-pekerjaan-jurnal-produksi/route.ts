@@ -69,7 +69,54 @@ export async function GET(request: NextRequest) {
   }
 }
 
+function isUniqueError(error: unknown): boolean {
+  const msg = error instanceof Error ? error.message : String(error ?? '');
+  return /UNIQUE constraint failed/i.test(msg);
+}
+
 export async function POST(request: NextRequest) {
+  const contentType = request.headers.get('content-type') || '';
+
+  // JSON create single — dual mode dengan Excel upload
+  if (contentType.includes('application/json')) {
+    try {
+      const session = await getSession();
+      if (!session) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+
+      const body = await request.json();
+      const category = String(body?.category ?? '').trim();
+      const name = String(body?.name ?? '').trim();
+
+      if (!category || !name) {
+        return NextResponse.json({ error: 'Bagian dan nama pekerjaan wajib diisi.' }, { status: 400 });
+      }
+
+      const result = await db.execute({
+        sql: `INSERT INTO master_pekerjaan_jurnal_produksi (category, name) VALUES (?, ?)`,
+        args: [category, name],
+      });
+
+      return NextResponse.json({
+        success: true,
+        id: Number(result.lastInsertRowid),
+        category,
+        name,
+      });
+    } catch (error: unknown) {
+      if (isUniqueError(error)) {
+        return NextResponse.json(
+          { error: 'Pekerjaan dengan bagian dan nama yang sama sudah ada.' },
+          { status: 409 }
+        );
+      }
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('API POST (JSON) Master Pekerjaan Jurnal Produksi Error:', error);
+      return NextResponse.json({ error: errorMessage }, { status: 500 });
+    }
+  }
+
   let tempInputPath = '';
   let tempOutputPath = '';
 
@@ -208,38 +255,8 @@ export async function POST(request: NextRequest) {
       throw new Error("Tidak ada data pekerjaan yang ditemukan di sheet 'MASTER PEKERJAAN'.");
     }
 
-    // Dapatkan data master pekerjaan yang ada di database saat ini
-    const existingResult = await db.execute("SELECT id, category, name FROM master_pekerjaan_jurnal_produksi");
-    const existingRows = existingResult.rows as unknown as Array<{ id: number; category: string; name: string }>;
-
-    // Buat set untuk pencarian cepat dari Excel baru
-    const newKeys = new Set(items.map(item => `${item.category.trim()}|${item.name.trim()}`));
-
-    // Cari ID mana saja yang perlu dihapus (karena tidak ada di Excel baru)
-    const deleteIds: number[] = [];
-    for (const row of existingRows) {
-      const key = `${row.category}|${row.name}`;
-      if (!newKeys.has(key)) {
-        deleteIds.push(row.id);
-      }
-    }
-
+    // Merge-only: hanya tambah data baru dari Excel, tidak hapus baris yang sudah ada di DB
     const batchOps: Array<{ sql: string; args: (string | number)[] }> = [];
-
-    // 1. Tambahkan operasi DELETE jika ada data yang dihapus
-    if (deleteIds.length > 0) {
-      const chunkSize = 500;
-      for (let i = 0; i < deleteIds.length; i += chunkSize) {
-        const chunk = deleteIds.slice(i, i + chunkSize);
-        const placeholders = chunk.map(() => '?').join(',');
-        batchOps.push({
-          sql: `DELETE FROM master_pekerjaan_jurnal_produksi WHERE id IN (${placeholders})`,
-          args: chunk
-        });
-      }
-    }
-
-    // 2. Tambahkan operasi INSERT OR IGNORE untuk data baru (agar tidak merusak ID data lama yang tetap ada)
     let imported = 0;
     for (const item of items) {
       if (!item.category || !item.name) continue;
@@ -250,7 +267,9 @@ export async function POST(request: NextRequest) {
       imported++;
     }
 
-    await db.batch(batchOps, 'write');
+    if (batchOps.length > 0) {
+      await db.batch(batchOps, 'write');
+    }
 
     const session = await getSession();
 
@@ -284,5 +303,95 @@ export async function POST(request: NextRequest) {
         fs.unlinkSync(tempOutputPath);
       } catch {}
     }
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const id = Number(body?.id);
+    const category = String(body?.category ?? '').trim();
+    const name = String(body?.name ?? '').trim();
+
+    if (!id || Number.isNaN(id)) {
+      return NextResponse.json({ error: 'ID tidak valid.' }, { status: 400 });
+    }
+    if (!category || !name) {
+      return NextResponse.json({ error: 'Bagian dan nama pekerjaan wajib diisi.' }, { status: 400 });
+    }
+
+    const existing = await db.execute({
+      sql: `SELECT id FROM master_pekerjaan_jurnal_produksi WHERE id = ?`,
+      args: [id],
+    });
+    if (existing.rows.length === 0) {
+      return NextResponse.json({ error: 'Data tidak ditemukan.' }, { status: 404 });
+    }
+
+    await db.execute({
+      sql: `UPDATE master_pekerjaan_jurnal_produksi SET category = ?, name = ? WHERE id = ?`,
+      args: [category, name, id],
+    });
+
+    return NextResponse.json({ success: true, id, category, name });
+  } catch (error: unknown) {
+    if (isUniqueError(error)) {
+      return NextResponse.json(
+        { error: 'Pekerjaan dengan bagian dan nama yang sama sudah ada.' },
+        { status: 409 }
+      );
+    }
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('API PUT Master Pekerjaan Jurnal Produksi Error:', error);
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    let ids: number[] = [];
+    const idParam = request.nextUrl.searchParams.get('id');
+    if (idParam) {
+      const id = Number(idParam);
+      if (!Number.isNaN(id) && id > 0) ids = [id];
+    } else {
+      try {
+        const body = await request.json();
+        const raw = Array.isArray(body?.ids) ? body.ids : body?.id != null ? [body.id] : [];
+        ids = raw.map((v: unknown) => Number(v)).filter((n: number) => !Number.isNaN(n) && n > 0);
+      } catch {
+        // no body
+      }
+    }
+
+    if (ids.length === 0) {
+      return NextResponse.json({ error: 'ID tidak valid.' }, { status: 400 });
+    }
+
+    const chunkSize = 500;
+    for (let i = 0; i < ids.length; i += chunkSize) {
+      const chunk = ids.slice(i, i + chunkSize);
+      const placeholders = chunk.map(() => '?').join(',');
+      await db.execute({
+        sql: `DELETE FROM master_pekerjaan_jurnal_produksi WHERE id IN (${placeholders})`,
+        args: chunk,
+      });
+    }
+
+    return NextResponse.json({ success: true, deleted: ids.length });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('API DELETE Master Pekerjaan Jurnal Produksi Error:', error);
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

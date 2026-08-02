@@ -27,6 +27,8 @@ export async function GET(request: NextRequest) {
     });
 
     // Query 2: Available jobs (using jenis_pekerjaan_2 to match frontend)
+    // ponytail: jobs option should depend only on SOPD + optionally selected Bagian (NOT selected Pekerjaan itself)
+    // to prevent list collapse to 1 selected item on refresh.
     let jobSql = `SELECT DISTINCT jenis_pekerjaan_2 as jenis_pekerjaan FROM jurnal_harian_produksi WHERE (no_order = ? OR no_order_2 = ?) AND jenis_pekerjaan_2 != '' AND deleted_at IS NULL`;
     const jobArgs: any[] = [noSopd, noSopd];
     if (bagian) {
@@ -38,8 +40,8 @@ export async function GET(request: NextRequest) {
     // Query 3: Barang Jadi Items
     let bjSql = `SELECT tgl, qty, satuan, faktur, nama_barang, nama_prd, raw_data 
                  FROM barang_jadi 
-                 WHERE (faktur_prd LIKE ? OR nama_prd LIKE ?)`;
-    const bjArgs: any[] = [`%${noSopd}%`, `%${noSopd}%`];
+                 WHERE (faktur_prd LIKE ? OR nama_prd LIKE ? OR faktur = ?)`;
+    const bjArgs: any[] = [`%${noSopd}%`, `%${noSopd}%`, noSopd];
 
     if (startDate) {
       bjSql += ` AND (substr(tgl, 7, 4) || '-' || substr(tgl, 4, 2) || '-' || substr(tgl, 1, 2)) >= ?`;
@@ -80,6 +82,20 @@ export async function GET(request: NextRequest) {
 
     // Query 5: Master pekerjaan for code mapping
     queries.push({ sql: 'SELECT code, name FROM master_pekerjaan', args: [] });
+
+    // Query 6: Unfiltered timeseries data for trend chart (only bounded by SOPD and Dates)
+    // ponytail: get Jurnal timeseries unfiltered by Bagian / Pekerjaan to keep trend accurate
+    let trendSql = `SELECT tgl, realisasi FROM jurnal_harian_produksi WHERE (no_order = ? OR no_order_2 = ?) AND deleted_at IS NULL`;
+    const trendArgs: any[] = [noSopd, noSopd];
+    if (startDate) {
+      trendSql += ` AND tgl >= ?`;
+      trendArgs.push(startDate);
+    }
+    if (endDate) {
+      trendSql += ` AND tgl <= ?`;
+      trendArgs.push(endDate);
+    }
+    queries.push({ sql: trendSql, args: trendArgs });
 
     // Execute all in one go
     const batchResults = await db.batch(queries);
@@ -186,6 +202,14 @@ export async function GET(request: NextRequest) {
       grandTotalTarget += Number(row.target) || 0;
     });
 
+    // Query 6 results
+    const trendRows = (batchResults[5]?.rows as any[]) || [];
+    const trendMap: Record<string, number> = {};
+    trendRows.forEach(row => {
+      const tgl = row.tgl;
+      trendMap[tgl] = (trendMap[tgl] || 0) + (Number(row.realisasi) || 0);
+    });
+
     return NextResponse.json({ 
       success: true, 
       barang_jadi: Object.values(groupedByDate),
@@ -196,7 +220,8 @@ export async function GET(request: NextRequest) {
       grandTotalTarget,
       unit: bjRows[0]?.satuan || '',
       availableBagian,
-      availablePekerjaan
+      availablePekerjaan,
+      trendJurnal: Object.entries(trendMap).map(([date, total]) => ({ date, total }))
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
