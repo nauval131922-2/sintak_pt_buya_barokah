@@ -40,6 +40,12 @@ Cara memastikan fitur/perbaikan berhasil.
 Hal-hal yang perlu diperhatikan.
 ```
 
+## Daftar Tutorial
+
+- `01-migrasi-desain-neobrutalism.md`
+- `04-modernisasi-dashboard-hasil-produksi.md`
+- `24-solusi-layout-fixed-100vh-dan-performa-virtualizer.md`
+
 ---
 
 > File-file tutorial akan otomatis dibuat/diperbarui oleh AI agent

@@ -585,8 +585,9 @@ hermes cron run <job_id>
 **Laptop Job IDs (Current):**
 - `37c4502d26e5` — SINTAK Weekly Intelligence (Kamis 12:00)
 - `7cdbf02f45d1` — Pre-Push Build & Lint Watchdog (Sat-Thu 14:00)
-- `cc6654ab3d58` — Activity Log Integrity Checker (Kamis 15:00)
 - `5ed8d4645ce4` — Daily Capture Afternoon Primary (Sat-Thu 15:00)
+- `4af13e416be9` — Tidy Downloads (daily 15:00)
+- `260c3d0479ce` — SINTAK Changelog Check (Sat-Thu 15:05, `check:changelog` = path coverage di working tree **+** commit vs `origin/master`; silent if OK; fail → notif + **prompt agent**; script: `%LOCALAPPDATA%\hermes\scripts\sintak_check_changelog.py`)
 
 ---
 
