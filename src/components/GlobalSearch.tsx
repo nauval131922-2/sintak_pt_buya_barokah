@@ -22,6 +22,7 @@ export default function GlobalSearch() {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const mobileInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const activeItemRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -79,11 +80,15 @@ export default function GlobalSearch() {
     return () => clearTimeout(timer);
   }, [query]);
 
+  // ponytail: handle mobile search overlay
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+
   // Close when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setIsOpen(false);
+        setIsMobileSearchOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -93,14 +98,16 @@ export default function GlobalSearch() {
   // Trigger search on "/" key press
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === '/' && document.activeElement !== inputRef.current && !/^(INPUT|TEXTAREA)$/i.test(document.activeElement?.tagName || '') && !(document.activeElement as HTMLElement)?.isContentEditable) {
+      if (e.key === '/' && document.activeElement !== inputRef.current && document.activeElement !== mobileInputRef.current && !/^(INPUT|TEXTAREA)$/i.test(document.activeElement?.tagName || '') && !(document.activeElement as HTMLElement)?.isContentEditable) {
         e.preventDefault();
-        inputRef.current?.focus();
+        setIsMobileSearchOpen(true);
+        setTimeout(() => mobileInputRef.current?.focus(), 50);
       }
       
       // ESC to close
       if (e.key === 'Escape') {
         setIsOpen(false);
+        setIsMobileSearchOpen(false);
         setSelectedIndex(-1);
       }
     };
@@ -176,12 +183,25 @@ export default function GlobalSearch() {
   };
 
   return (
-    <div ref={containerRef} className="relative w-full max-w-2xl">
-      <div className="relative">
+    <div ref={containerRef} className="relative sm:w-full max-w-2xl flex justify-end">
+      {/* Mobile Icon-only trigger (hidden on sm and up) */}
+      <button
+        onClick={() => {
+          setIsMobileSearchOpen(true);
+          setTimeout(() => mobileInputRef.current?.focus(), 50);
+        }}
+        className="flex sm:hidden items-center justify-center w-10 h-10 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 text-slate-500 hover:text-slate-800 transition-all shrink-0 active:scale-95"
+        title="Cari..."
+      >
+        <Search size={18} />
+      </button>
+
+      {/* Desktop/Tablet Input (visible on sm and up) */}
+      <div className="relative hidden sm:block w-full">
         <input
           ref={inputRef}
           type="text"
-          placeholder="Cari menu, PO, SO, barang, karyawan..."
+          placeholder="Search everything..."
           className="w-full pl-10 pr-12 py-2.5 border rounded-xl border-slate-200 bg-slate-50/50 hover:bg-slate-50 hover:border-emerald-300 focus:bg-white focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 text-sm transition-all font-medium placeholder-slate-400"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -215,11 +235,12 @@ export default function GlobalSearch() {
           )}
         </div>
       </div>
-      
-      {isOpen && (
+
+      {/* Desktop/Tablet Dropdown */}
+      {isOpen && !isMobileSearchOpen && (
         <div 
           ref={dropdownRef}
-          className="absolute z-[9999] w-full mt-2 bg-white border border-slate-100 rounded-xl shadow-xl overflow-hidden max-h-[420px] overflow-y-auto divide-y divide-slate-50 animate-in fade-in slide-in-from-top-2 duration-200"
+          className="absolute z-[9999] w-full mt-12 bg-white border border-slate-100 rounded-xl shadow-xl overflow-hidden max-h-[420px] overflow-y-auto divide-y divide-slate-50 animate-in fade-in slide-in-from-top-2 duration-200"
         >
           {results.length === 0 ? (
             <div className="px-4 py-8 text-center text-slate-400 text-sm">
@@ -318,6 +339,120 @@ export default function GlobalSearch() {
               )}
             </>
           )}
+        </div>
+      )}
+
+      {/* Mobile Search Modal (Overlay) */}
+      {isMobileSearchOpen && (
+        <div className="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-sm flex items-start justify-center p-4">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[75vh] animate-in fade-in zoom-in-95 duration-200 mt-12 mb-12">
+            {/* Header / Input field */}
+            <div className="flex items-center gap-2 p-3 border-b border-gray-100 shrink-0">
+              <div className="relative flex-1">
+                <input
+                  ref={mobileInputRef}
+                  type="text"
+                  placeholder="Search everything..."
+                  className="w-full pl-10 pr-10 py-3 border rounded-xl border-slate-200 bg-slate-50/50 focus:bg-white focus:border-emerald-500 focus:outline-none text-sm transition-all font-medium placeholder-slate-400"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={handleKeyNavigation}
+                />
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center text-slate-400 pointer-events-none">
+                  <Search size={16} />
+                </div>
+                {query && (
+                  <button
+                    onClick={() => {
+                      setQuery('');
+                      setResults([]);
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+              <button
+                onClick={() => {
+                  setIsMobileSearchOpen(false);
+                  setQuery('');
+                  setResults([]);
+                  setIsOpen(false);
+                }}
+                className="text-sm font-bold text-gray-500 hover:text-gray-800 px-2 py-1 transition-colors shrink-0"
+              >
+                Batal
+              </button>
+            </div>
+
+            {/* Results scroll area */}
+            <div className="flex-1 overflow-y-auto min-h-[150px] divide-y divide-slate-50">
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center py-10 gap-3 text-slate-400">
+                  <svg className="animate-spin h-6 w-6 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span className="text-xs font-semibold">Mencari...</span>
+                </div>
+              ) : query.length < 2 ? (
+                <div className="px-6 py-10 text-center text-slate-400 text-sm">
+                  Masukkan minimal 2 karakter untuk mulai mencari
+                </div>
+              ) : results.length === 0 ? (
+                <div className="px-6 py-10 text-center text-slate-400 text-sm">
+                  Tidak ada hasil untuk &quot;{query}&quot;
+                </div>
+              ) : (
+                <div className="py-2">
+                  {results.map((item, idx) => {
+                    const isSelected = selectedIndex === idx;
+                    const isMenu = item.source === 'menu';
+                    const isPoOrSo = item.type === 'PO' || item.type === 'SO';
+                    const badgeBg = isMenu 
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-100/50'
+                      : isPoOrSo 
+                      ? 'bg-blue-50 text-blue-700 border-blue-100/50' 
+                      : item.type === 'Karyawan' 
+                      ? 'bg-purple-50 text-purple-700 border-purple-100/50' 
+                      : item.type === 'JHP'
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-100/50'
+                      : 'bg-amber-50 text-amber-700 border-amber-100/50';
+
+                    return (
+                      <div
+                        key={`mobile-result-${idx}`}
+                        className={`mx-3 my-1 px-3 py-2.5 rounded-xl cursor-pointer flex justify-between items-center transition-all border border-transparent ${
+                          isSelected ? 'bg-emerald-50 border-emerald-100' : 'active:bg-slate-50 hover:bg-slate-50'
+                        }`}
+                        onClick={() => {
+                          handleSelectResult(item);
+                          setIsMobileSearchOpen(false);
+                        }}
+                      >
+                        <div className="flex flex-col gap-0.5 min-w-0">
+                          <span className="font-bold text-sm text-slate-800 truncate leading-snug">
+                            {highlightText(item.label, query)}
+                          </span>
+                          {item.category && (
+                            <span className="text-xs text-slate-400 font-medium">
+                              {highlightText(item.category, query)}
+                            </span>
+                          )}
+                        </div>
+                        <span className={`text-[11px] border px-2 py-0.5 rounded-lg font-bold shrink-0 ml-2 ${badgeBg}`}>
+                          {item.type}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

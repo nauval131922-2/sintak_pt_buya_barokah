@@ -292,7 +292,7 @@ export default function RekapSalesOrderClient() {
       <div className="flex-1 min-h-0 flex flex-col gap-3 animate-in fade-in duration-700 overflow-hidden">
       <div className="flex flex-col lg:flex-row items-stretch gap-3 shrink-0">
         {/* Date range + Fetch button card */}
-        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg shadow-gray-900/5 p-3 flex flex-col lg:flex-row items-stretch lg:items-center gap-3 flex-1">
+        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-3 flex flex-col lg:flex-row items-stretch lg:items-center gap-3 flex-1">
           <div className="flex items-center gap-2 flex-1">
             <DatePicker name="startDate" value={startDate} onChange={setStartDate} />
             <div className="w-2 h-px bg-gray-300 shrink-0"></div>
@@ -309,7 +309,7 @@ export default function RekapSalesOrderClient() {
         </div>
 
         {/* Price filter card */}
-        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg shadow-gray-900/5 p-3 flex items-center gap-2 lg:w-80" ref={hargaFilterRef}>
+        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-3 flex items-center gap-2 lg:w-80" ref={hargaFilterRef}>
           <button 
             onClick={() => setShowHargaFilter(v => !v)} 
             className={`

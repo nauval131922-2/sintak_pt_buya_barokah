@@ -753,7 +753,7 @@ export default function TrackingClient() {
   const filteredData = useMemo(() => {
     if (!trackingData) return [];
     // Handle single flow object (standard API response)
-    let items: any[] = Array.isArray(trackingData)
+    const items: any[] = Array.isArray(trackingData)
       ? [...trackingData]
       : [trackingData];
 
@@ -904,7 +904,7 @@ export default function TrackingClient() {
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-6 animate-in fade-in duration-700 overflow-hidden">
       {/* SELECTORS SECTION - Single Card */}
-      <div className="bg-white/80 backdrop-blur-md border border-white/20 shadow-lg shadow-gray-900/5 rounded-2xl p-3 shrink-0 relative z-50">
+      <div className="bg-white/80 backdrop-blur-md border border-white/20 shadow-sm rounded-xl p-3 shrink-0 relative z-50">
         <div className="flex flex-col xl:flex-row gap-3 min-w-0 items-center">
           {/* BOM Selector */}
           <div className="flex flex-col relative z-10 w-full xl:w-auto xl:min-w-[280px]">
@@ -1611,7 +1611,7 @@ export default function TrackingClient() {
         </div>
 
         {/* Tab bar + table area */}
-        <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-white/80 backdrop-blur-md border border-white/20 shadow-lg shadow-gray-900/5 rounded-2xl">
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-white/80 backdrop-blur-md border border-white/20 shadow-sm rounded-xl">
           {loadingData ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="flex flex-col items-center gap-4">

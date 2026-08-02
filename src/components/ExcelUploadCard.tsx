@@ -37,7 +37,7 @@ export default function ExcelUploadCard({
   };
 
   return (
-    <div className="relative bg-white/80 backdrop-blur-md border border-white/20 shadow-lg shadow-gray-900/5 rounded-2xl px-4 py-3 flex items-center justify-between gap-6 z-50 h-full">
+    <div className="relative bg-white/80 backdrop-blur-md border border-white/20 shadow-sm rounded-xl px-4 py-3 flex items-center justify-between gap-6 z-50 h-full">
       <div className="flex items-center gap-4 flex-1">
         <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
           <Upload size={20} />
