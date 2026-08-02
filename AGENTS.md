@@ -37,6 +37,24 @@ pelunasan_piutang, pengiriman, spph_out, sph_in, hpp_kalkulasi
 
 Pola log manual ada di `docs/DEV_RULES.md` (Bagian 1).
 
+## Page Changelog (modal log perubahan)
+
+Infra global: `src/lib/page-changelogs.ts` + `PageChangelogModal` / `ChangelogButton` di header (`MainContentWrapper`). Isi **manual per rilis**, bukan live GitHub API.
+
+Kriteria sederhana: **apakah user di halaman itu merasakan bedanya?** Jika ya → tulis log.
+
+- **Wajib** update jika sesi menyentuh hal yang user rasakan di halaman, antara lain:
+  - **Fitur / alur** — input baru, tombol, CRUD, filter, bulk action, validasi
+  - **UI** — layout, kolom tabel, label, modal, empty state, ikon yang kelihatan
+  - **Perilaku data** — merge vs replace, default filter, urutan, hapus/aman data
+  - **Performa** — load lebih cepat, lag berkurang, pagination/lazy yang user spasi (tulis ramah: “Daftar lebih cepat dimuat”, bukan “memoize query”)
+  - **Fix bug user-facing** — tombol rusak, data salah tampil, modal macet, error yang user alami (bukan cuma log server)
+- Langkah: daftarkan path di `PAGE_CHANGELOG_PATHS`, entry di `PAGE_CHANGELOGS` (**`permissionKeys`**, **`sortDate`** `YYYY-MM-DD`, bump **`version`**, **replace** `items` 3–6 bullet bahasa user — jangan append rilis lama).
+- Hub arsip user: `/log-perubahan` (menu profil) memfilter entry lewat `permissionKeys` + urut `sortDate` terbaru di atas. Modal ✨ per page = rilis terkini saja.
+- **Skip** jika user **tidak** merasakan: refactor internal, lint, typo kode, schema-only, API murni tanpa UI, micro-opt tak kasat mata, dependency bump tanpa efek halaman.
+- Jangan bulk-isi semua halaman — hanya path yang disentuh sesi ini. Halaman tanpa entry = tidak ada modal/icon log.
+- Sebelum bilang selesai setelah ubah UI page: jalankan `npm run check:changelog` (exit 1 = path belum punya entry). Scope: **working tree + commit lokal sejak `origin/master`**. Lulus hanya jika **setiap path** halaman yang berubah ada di `PAGE_CHANGELOG_PATHS` + `PAGE_CHANGELOGS` (bukan cuma menyentuh file changelog). Skip sadar: `SKIP_CHANGELOG_CHECK=1` atau `--allow-skip`. Hanya dirty tree: `--working-tree-only`.
+
 ## Gaya & Tema
 
 - **Warna utama**: Emerald/hijau (`emerald-600`, `green-600`) — **bukan biru**. Gunakan `rounded-xl`/`rounded-2xl`, shadow halus.
@@ -58,7 +76,7 @@ Pola log manual ada di `docs/DEV_RULES.md` (Bagian 1).
 
 ## Bacaan Konteks Awal
 
-Urutan: `AGENTS.md` → `docs/REPO_MAP.md` → `docs/DEV_RULES.md` → `docs/RESUME_SESSION.md` → `docs/AI_SESSION_SUMMARY.md`. Jika task terkait scraping/import, baca juga `docs/SCRAPING_FLOW.md`.
+Urutan: `AGENTS.md` → `docs/REPO_MAP.md` → `docs/DEV_RULES.md` → `docs/RESUME_SESSION.md` → `docs/AI_SESSION_SUMMARY.md`. Jika task terkait scraping/import, baca juga `docs/SCRAPING_FLOW.md`. Jika task mengubah UI/perilaku halaman, cek juga `src/lib/page-changelogs.ts`.
 
 ---
 

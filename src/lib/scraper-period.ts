@@ -146,17 +146,20 @@ const DATE_STORE_VERSION = 1;
 
 interface DateStore {
   v: number;
-  startDate: string;
-  endDate: string;
+  startDate: string | null;
+  endDate: string | null;
   dateTag: string;
 }
 
 export function persistDateStore(key: string, startDate: Date | null, endDate: Date | null) {
-  if (!startDate || !endDate) return;
+  if (!startDate && !endDate) {
+    localStorage.removeItem(key);
+    return;
+  }
   const store: DateStore = {
     v: DATE_STORE_VERSION,
-    startDate: startDate.toISOString(),
-    endDate: endDate.toISOString(),
+    startDate: startDate ? startDate.toISOString() : null,
+    endDate: endDate ? endDate.toISOString() : null,
     dateTag: new Date().toDateString(),
   };
   localStorage.setItem(key, JSON.stringify(store));
@@ -169,20 +172,37 @@ export function hydrateDateStore(key: string): { startDate: Date | null; endDate
     const store: DateStore = JSON.parse(raw);
     if (!store || store.v !== DATE_STORE_VERSION) return { startDate: null, endDate: null };
 
-    const isNewDay = store.dateTag !== new Date().toDateString();
+    const todayStr = new Date().toDateString();
+    const isNewDay = store.dateTag !== todayStr;
+    const dStart = store.startDate ? new Date(store.startDate) : null;
+    const dEnd = store.endDate ? new Date(store.endDate) : null;
+
     if (isNewDay) {
-      localStorage.removeItem(key);
-      return { startDate: null, endDate: null };
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // ponytail: jika ganti hari, endDate yang diset ke hari sebelumnya otomatis diperbarui ke hari terbaru (today)
+      let newEndDate = dEnd;
+      if (!dEnd || (dEnd && dEnd.toDateString() === store.dateTag) || (dEnd && dEnd < today)) {
+        newEndDate = today;
+      }
+
+      let newStartDate = dStart;
+      if (dStart && dStart.toDateString() === store.dateTag) {
+        newStartDate = today;
+      }
+
+      persistDateStore(key, newStartDate, newEndDate);
+      return {
+        startDate: newStartDate,
+        endDate: newEndDate,
+      };
     }
 
-    const dStart = new Date(store.startDate);
-    const dEnd = new Date(store.endDate);
-    if (isNaN(dStart.getTime()) || isNaN(dEnd.getTime())) {
-      localStorage.removeItem(key);
-      return { startDate: null, endDate: null };
-    }
-
-    return { startDate: dStart, endDate: dEnd };
+    return {
+      startDate: dStart && !isNaN(dStart.getTime()) ? dStart : null,
+      endDate: dEnd && !isNaN(dEnd.getTime()) ? dEnd : null,
+    };
   } catch {
     localStorage.removeItem(key);
     return { startDate: null, endDate: null };

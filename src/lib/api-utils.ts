@@ -15,7 +15,7 @@ export function stripRawData(
       const { raw_data: _, ...rest } = row;
       return rest;
     }
-    let extra: Record<string, unknown> = {};
+    const extra: Record<string, unknown> = {};
     if (extractKeys?.length) {
       try {
         const parsed = typeof row.raw_data === 'string' ? JSON.parse(row.raw_data) : row.raw_data;
