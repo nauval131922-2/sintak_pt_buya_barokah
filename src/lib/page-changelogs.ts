@@ -465,10 +465,11 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     title: 'Telegram Users',
     sortDate: '2026-07-30',
     date: '30 Jul 2026',
-    version: '2026-07-30-1',
+    version: '2026-07-30-2',
     permissionKeys: ['telegram_users'],
     items: [
       'Kartu statistik lebih ringkas dengan tampilan inline',
+      'Panduan notifikasi push untuk penanganan akses HTTP/IP dan izin diblokir browser',
     ],
   }),
   'telegram-users-2026-07-25': entry({

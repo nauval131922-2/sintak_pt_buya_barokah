@@ -50,11 +50,18 @@ export default function TelegramUsersClient() {
 
   const subscribePush = async () => {
     try {
+      if (!window.isSecureContext) {
+        showToast('error', 'Push notification butuh HTTPS atau localhost. IP HTTP tidak didukung browser.');
+        return;
+      }
+
       const permission = await Notification.requestPermission();
       setNotificationPermission(permission);
 
       if (permission !== 'granted') {
-        showToast('error', 'Izin notifikasi ditolak');
+        showToast('error', permission === 'denied' 
+          ? 'Izin diblokir browser. Klik ikon gembok di URL bar > Setelan Situs > Izinkan Notifikasi.' 
+          : 'Izin notifikasi ditolak');
         return;
       }
 
@@ -233,34 +240,65 @@ export default function TelegramUsersClient() {
         </div>
       </div>
 
-      {/* Notification Permission */}
-      {!pushSubscribed && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center gap-3">
-          <Bell size={20} className="text-blue-600 shrink-0" />
-          <div className="flex-1">
-            <p className="text-[13px] font-bold text-blue-800">Aktifkan Notifikasi Push</p>
-            <p className="text-[11px] text-blue-600">Terima notifikasi otomatis bahkan saat tab ditutup</p>
+      {/* Notification Permission & Guide Notes */}
+      <div className="flex flex-col gap-3">
+        {typeof window !== 'undefined' && !window.isSecureContext && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+            <BellOff size={20} className="text-amber-600 shrink-0 mt-0.5" />
+            <div className="flex-1 text-[11px] text-amber-800 space-y-1">
+              <p className="font-bold text-[13px]">Notifikasi Push Membutuhkan HTTPS / Localhost</p>
+              <p>Browser memblokir Push Notification & Service Worker jika diakses via alamat IP (HTTP).</p>
+              <div className="mt-2 pt-2 border-t border-amber-200/60 font-mono text-[10.5px]">
+                <p className="font-bold font-sans text-amber-900">Solusi agar notifikasi bisa aktif:</p>
+                <ol className="list-decimal list-inside space-y-0.5 mt-0.5 text-amber-800">
+                  <li><b>Server (Permanen):</b> Pasang domain HTTPS / SSL (misal: <code>https://app.domain.com</code>).</li>
+                  <li><b>Manual PC Client (Temporary IP):</b> Buka <code>chrome://flags/#unsafely-treat-insecure-origin-as-secure</code> di Chrome → Masukkan URL IP server → Set <i>Enabled</i> → Relaunch Browser.</li>
+                </ol>
+              </div>
+            </div>
           </div>
-          <button
-            onClick={requestNotificationPermission}
-            className="px-3 py-1.5 text-[11px] font-bold text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors shrink-0"
-          >
-            Aktifkan
-          </button>
-        </div>
-      )}
-      {pushSubscribed && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
-          <Bell size={20} className="text-emerald-600 shrink-0" />
-          <p className="text-[11px] text-emerald-700 flex-1">✅ Notifikasi push aktif · Anda akan menerima notif bahkan saat tab ditutup</p>
-          <button
-            onClick={unsubscribePush}
-            className="px-3 py-1.5 text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition-colors shrink-0"
-          >
-            Nonaktifkan
-          </button>
-        </div>
-      )}
+        )}
+
+        {notificationPermission === 'denied' && (typeof window === 'undefined' || window.isSecureContext) && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+            <BellOff size={20} className="text-amber-600 shrink-0 mt-0.5" />
+            <div className="flex-1 text-[11px] text-amber-800 space-y-1">
+              <p className="font-bold text-[13px]">Izin Notifikasi Diblokir Browser</p>
+              <p>Notifikasi ditolak. Untuk mengaktifkan kembali:</p>
+              <p className="font-medium">Klik ikon 🔒 / 🛠️ di sebelah kiri alamat URL browser → pilih <b>Setelan Situs / Site Settings</b> → ubah <b>Notifikasi</b> menjadi <b>Izinkan</b>, lalu refresh halaman.</p>
+            </div>
+          </div>
+        )}
+
+        {!pushSubscribed && notificationPermission !== 'denied' && (typeof window === 'undefined' || window.isSecureContext) && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center gap-3">
+            <Bell size={20} className="text-blue-600 shrink-0" />
+            <div className="flex-1">
+              <p className="text-[13px] font-bold text-blue-800">Aktifkan Notifikasi Push</p>
+              <p className="text-[11px] text-blue-600">Terima notifikasi otomatis bahkan saat tab ditutup</p>
+            </div>
+            <button
+              onClick={requestNotificationPermission}
+              className="px-3 py-1.5 text-[11px] font-bold text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors shrink-0"
+            >
+              Aktifkan
+            </button>
+          </div>
+        )}
+
+        {pushSubscribed && (
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
+            <Bell size={20} className="text-emerald-600 shrink-0" />
+            <p className="text-[11px] text-emerald-700 flex-1">✅ Notifikasi push aktif · Anda akan menerima notif bahkan saat tab ditutup</p>
+            <button
+              onClick={unsubscribePush}
+              className="px-3 py-1.5 text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition-colors shrink-0"
+            >
+              Nonaktifkan
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Pending Requests */}
       <div className="card overflow-hidden border-gray-200/60 shadow-sm rounded-xl">
