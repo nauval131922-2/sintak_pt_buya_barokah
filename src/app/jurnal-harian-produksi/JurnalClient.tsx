@@ -482,7 +482,8 @@ export default function JurnalClient({
     if (!formData.bagian) { setJenisPekerjaanList([]); return; }
     const category = BAGIAN_CATEGORY_MAP[formData.bagian] || '';
     if (!category) { setJenisPekerjaanList([]); return; }
-    fetch(`/api/master-pekerjaan-jurnal-produksi?category=${encodeURIComponent(category)}&limit=300`)
+    // ponytail: limit 1000 cukup untuk semua category (max Quality Control 333). upgrade ke server-side search jika ada category > 1000 items.
+    fetch(`/api/master-pekerjaan-jurnal-produksi?category=${encodeURIComponent(category)}&limit=1000`)
       .then(r => r.json())
       .then(j => setJenisPekerjaanList((j.data || []).map((x: any) => x.name)))
       .catch(() => setJenisPekerjaanList([]));
@@ -494,7 +495,7 @@ export default function JurnalClient({
     if (!bagian) { setJenisPekerjaan2List([]); return; }
     const category = BAGIAN_CATEGORY_MAP[bagian] || '';
     if (!category) { setJenisPekerjaan2List([]); return; }
-    fetch(`/api/master-pekerjaan-jurnal-produksi?category=${encodeURIComponent(category)}&limit=300`)
+    fetch(`/api/master-pekerjaan-jurnal-produksi?category=${encodeURIComponent(category)}&limit=1000`)
       .then(r => r.json())
       .then(j => setJenisPekerjaan2List((j.data || []).map((x: any) => x.name)))
       .catch(() => setJenisPekerjaan2List([]));
