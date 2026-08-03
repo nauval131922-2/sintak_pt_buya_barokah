@@ -460,12 +460,12 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     permissionKeys: ['settings_konversi_data_hpp'],
     items: [...UI_POLISH],
   }),
-  'telegram-users-2026-03-30': entry({
+  'telegram-users-2026-08-03': entry({
     pageKey: 'telegram-users',
     title: 'Telegram Users',
-    sortDate: '2026-03-30',
-    date: '30 Mar 2026',
-    version: '2026-03-30-1',
+    sortDate: '2026-08-03',
+    date: '03 Agu 2026',
+    version: '2026-08-03-1',
     permissionKeys: ['telegram_users'],
     items: [
       'Panduan notifikasi push untuk penanganan akses HTTP/IP dan izin diblokir browser',
