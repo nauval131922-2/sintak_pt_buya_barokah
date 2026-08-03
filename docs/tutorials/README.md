@@ -45,6 +45,7 @@ Hal-hal yang perlu diperhatikan.
 - `01-migrasi-desain-neobrutalism.md`
 - `04-modernisasi-dashboard-hasil-produksi.md`
 - `24-solusi-layout-fixed-100vh-dan-performa-virtualizer.md`
+- `25-konfigurasi-akses-dev-server-via-lan-hp.md`
 
 ---
 
