@@ -29,6 +29,17 @@ export async function GET(request: NextRequest) {
 
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
+    
+    // Debug logging
+    console.log('[pekerjaan-by-order] Query params:', {
+      noOrder,
+      startDate,
+      endDate,
+      bagian: searchParams.get('bagian'),
+      namaKaryawan: searchParams.get('namaKaryawan'),
+      belumRealisasi: searchParams.get('belumRealisasi')
+    });
+    
     if (startDate && endDate) {
       whereParts.push('tgl BETWEEN ? AND ?');
       args.push(startDate, endDate);
@@ -52,18 +63,35 @@ export async function GET(request: NextRequest) {
     }
 
     whereParts.push('deleted_at IS NULL');
-    whereParts.push('jenis_pekerjaan IS NOT NULL');
-    whereParts.push('jenis_pekerjaan != ?');
-    args.push('');
 
-    const whereClause = whereParts.length > 0 ? `WHERE ${whereParts.join(' AND ')}` : '';
+    const whereClause = whereParts.join(' AND ');
 
-    const sql = `SELECT DISTINCT jenis_pekerjaan FROM jurnal_harian_produksi ${whereClause} ORDER BY jenis_pekerjaan ASC`;
-    const result = await db.execute({ sql, args });
+    // UNION query untuk ambil distinct dari jenis_pekerjaan dan jenis_pekerjaan_2
+    const sql = `
+      SELECT DISTINCT jenis_pekerjaan FROM (
+        SELECT jenis_pekerjaan 
+        FROM jurnal_harian_produksi 
+        WHERE ${whereClause}
+          AND jenis_pekerjaan IS NOT NULL 
+          AND jenis_pekerjaan != ''
+        UNION
+        SELECT jenis_pekerjaan_2 as jenis_pekerjaan 
+        FROM jurnal_harian_produksi 
+        WHERE ${whereClause}
+          AND jenis_pekerjaan_2 IS NOT NULL 
+          AND jenis_pekerjaan_2 != ''
+      ) 
+      ORDER BY jenis_pekerjaan ASC`;
+    
+    // Duplikasi args untuk kedua subquery dalam UNION
+    const finalArgs = [...args, ...args];
+    
+    const result = await db.execute({ sql, args: finalArgs });
     const data = (result.rows as any[]).map((r: any) => r.jenis_pekerjaan).filter(Boolean);
 
     return NextResponse.json({ success: true, data });
   } catch (error: any) {
+    console.error('[pekerjaan-by-order] Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

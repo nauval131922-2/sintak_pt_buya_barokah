@@ -107,16 +107,17 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Jurnal Harian Produksi ───
-  'jurnal-harian-produksi-2026-07-30': entry({
+  'jurnal-harian-produksi-2026-08-02': entry({
     pageKey: 'jurnal-harian-produksi',
     title: 'Jurnal Harian Produksi',
-    version: '2026-07-30-1',
-    date: '30 Jul 2026',
-    sortDate: '2026-07-30',
+    version: '2026-08-02-1',
+    date: '02 Agu 2026',
+    sortDate: '2026-08-02',
     permissionKeys: ['produksi_jhp'],
     items: [
-      'Filter Pekerjaan otomatis mengikuti Order yang dipilih — hanya menampilkan pekerjaan relevan',
-      'Filter Pekerjaan reset otomatis saat Order diganti',
+      'Filter Pekerjaan sekarang mengikuti Order + semua filter aktif (tanggal, bagian, karyawan)',
+      'Dropdown Pekerjaan hanya tampilkan pekerjaan yang ada di data sesuai filter',
+      'Mencakup pekerjaan dari kolom target dan realisasi',
     ],
   }),
   'jurnal-harian-produksi-2026-07-25': entry({

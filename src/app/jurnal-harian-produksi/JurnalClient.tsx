@@ -402,25 +402,36 @@ export default function JurnalClient({
          setPekerjaanByOrderOptions([]);
          return;
        }
-       try {
-         const params = new URLSearchParams({ noOrder: noOrderFilter });
-         if (startDate && endDate) {
-           params.set('startDate', startDate.toISOString().split('T')[0]);
-           params.set('endDate', endDate.toISOString().split('T')[0]);
-         }
-         if (bagianFilter) params.set('bagian', bagianFilter);
-         if (namaKaryawanFilter) params.set('namaKaryawan', namaKaryawanFilter);
-         if (belumRealisasiFilter) params.set('belumRealisasi', 'true');
-         const res = await fetch(`/api/jurnal-harian-produksi/pekerjaan-by-order?${params.toString()}`);
-         if (!active) return;
-         if (res.ok) {
-           const json: any = await res.json();
-           if (json.success) {
-             setPekerjaanByOrderOptions(json.data || []);
-             setJenisPekerjaanFilter('');
-           }
-         }
-       } catch {}
+       // Wait for date state to hydrate before fetching
+       if (!startDate || !endDate) {
+         return;
+       }
+        try {
+          const params = new URLSearchParams({ noOrder: noOrderFilter });
+          if (startDate && endDate) {
+            // Format tanggal tanpa timezone shift (local date)
+            const fmtDate = (d: Date) => {
+              const y = d.getFullYear();
+              const m = String(d.getMonth() + 1).padStart(2, '0');
+              const day = String(d.getDate()).padStart(2, '0');
+              return `${y}-${m}-${day}`;
+            };
+            params.set('startDate', fmtDate(startDate));
+            params.set('endDate', fmtDate(endDate));
+          }
+          if (bagianFilter) params.set('bagian', bagianFilter);
+          if (namaKaryawanFilter) params.set('namaKaryawan', namaKaryawanFilter);
+          if (belumRealisasiFilter) params.set('belumRealisasi', 'true');
+          const res = await fetch(`/api/jurnal-harian-produksi/pekerjaan-by-order?${params.toString()}`);
+          if (!active) return;
+          if (res.ok) {
+            const json: any = await res.json();
+            if (json.success) {
+              setPekerjaanByOrderOptions(json.data || []);
+              setJenisPekerjaanFilter('');
+            }
+          }
+        } catch {}
      }
      fetchPekerjaanByOrder();
      return () => { active = false; };
