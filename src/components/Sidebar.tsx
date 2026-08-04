@@ -610,25 +610,26 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                 id="produksi-sistem"
                 label="Produksi"
                 icon={<Package size={18} />}
-                items={[{
-                  label: 'Jurnal Harian Produksi',
-                  icon: <ClipboardList size={16} />,
-                  items: [
-                    ...(canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp_master_pekerjaan_jurnal_produksi') ? [{
-                      label: 'Data',
-                      icon: <Database size={14} />,
-                      items: [
-                        ...(canAccess('produksi_jhp_sopd') ? [{ label: 'SOPd', href: '/jurnal-harian-produksi/data/excel-sopd', icon: <FileText size={12} /> }] : []),
-                        ...(canAccess('produksi_jhp_master_pekerjaan') ? [{ label: 'Master Pekerjaan', href: '/jurnal-harian-produksi/data/master-pekerjaan', icon: <Database size={12} /> }] : []),
-                        ...(canAccess('produksi_jhp_master_pekerjaan_jurnal_produksi') ? [{ label: 'Master Pekerjaan Jurnal Produksi', href: '/jurnal-harian-produksi/data/master-pekerjaan-jurnal-produksi', icon: <Database size={12} /> }] : []),
-                      ]
-                    }] : []),
-                    ...(canAccess('produksi_jhp') ? [{ label: 'Jurnal Harian Produksi', href: '/jurnal-harian-produksi', icon: <ClipboardList size={14} />, exact: true }] : []),
-                    ...(canAccess('produksi_jhp_target') ? [{ label: 'Target Harian', href: '/jurnal-harian-produksi/target', icon: <TrendingUp size={14} /> }] : []),
-                    ...(canAccess('produksi_jhp_analisa') ? [{ label: 'Analisa Produksi', href: '/jurnal-harian-produksi/analisa', icon: <BarChart2 size={14} /> }] : []),
-                  ]
-                },
-                ...(canAccess('produksi_hasil') ? [{ label: 'Hasil Produksi', href: '/hasil-produksi', icon: <BarChart3 size={16} /> }] : []),
+                items={[
+                  ...((canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp_master_pekerjaan_jurnal_produksi') || canAccess('produksi_jhp') || canAccess('produksi_jhp_target') || canAccess('produksi_jhp_analisa')) ? [{
+                    label: 'Jurnal Harian Produksi',
+                    icon: <ClipboardList size={16} />,
+                    items: [
+                      ...(canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp_master_pekerjaan_jurnal_produksi') ? [{
+                        label: 'Data',
+                        icon: <Database size={14} />,
+                        items: [
+                          ...(canAccess('produksi_jhp_sopd') ? [{ label: 'SOPd', href: '/jurnal-harian-produksi/data/excel-sopd', icon: <FileText size={12} /> }] : []),
+                          ...(canAccess('produksi_jhp_master_pekerjaan') ? [{ label: 'Master Pekerjaan', href: '/jurnal-harian-produksi/data/master-pekerjaan', icon: <Database size={12} /> }] : []),
+                          ...(canAccess('produksi_jhp_master_pekerjaan_jurnal_produksi') ? [{ label: 'Master Pekerjaan Jurnal Produksi', href: '/jurnal-harian-produksi/data/master-pekerjaan-jurnal-produksi', icon: <Database size={12} /> }] : []),
+                        ]
+                      }] : []),
+                      ...(canAccess('produksi_jhp') ? [{ label: 'Jurnal Harian Produksi', href: '/jurnal-harian-produksi', icon: <ClipboardList size={14} />, exact: true }] : []),
+                      ...(canAccess('produksi_jhp_target') ? [{ label: 'Target Harian', href: '/jurnal-harian-produksi/target', icon: <TrendingUp size={14} /> }] : []),
+                      ...(canAccess('produksi_jhp_analisa') ? [{ label: 'Analisa Produksi', href: '/jurnal-harian-produksi/analisa', icon: <BarChart2 size={14} /> }] : []),
+                    ]
+                  }] : []),
+                  ...(canAccess('produksi_hasil') ? [{ label: 'Hasil Produksi', href: '/hasil-produksi', icon: <BarChart3 size={16} /> }] : []),
                 ]}
               />
             )}
