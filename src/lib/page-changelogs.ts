@@ -118,6 +118,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
       'Optimasi Zoom 80% (md:[zoom:0.82]) menyeluruh untuk Laptop & Tablet tanpa scrollbar luar ganda',
       'Peningkatan Tampilan Mobile (Card View): row info umum truncate (untruncate saat diklik), label Pekerjaan Realisasi terpisah & rapi',
       'Popup portal (DatePicker & Dropdown) terkalibrasi presisi di tablet & laptop',
+      'Form Input JHP disempurnakan: Tab Target/Realisasi & tombol Simpan/Batal terkunci diam (fixed header & footer) saat isi form di-scroll',
     ],
   }),
   'jurnal-harian-produksi-2026-08-02': entry({
