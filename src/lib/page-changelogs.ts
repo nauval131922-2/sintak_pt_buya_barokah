@@ -107,6 +107,19 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Jurnal Harian Produksi ───
+  'jurnal-harian-produksi-2026-08-03': entry({
+    pageKey: 'jurnal-harian-produksi',
+    title: 'Jurnal Harian Produksi',
+    version: '2026-08-03-1',
+    date: '03 Agu 2026',
+    sortDate: '2026-08-03',
+    permissionKeys: ['produksi_jhp'],
+    items: [
+      'Optimasi Zoom 80% (md:[zoom:0.82]) menyeluruh untuk Laptop & Tablet tanpa scrollbar luar ganda',
+      'Peningkatan Tampilan Mobile (Card View): row info umum truncate (untruncate saat diklik), label Pekerjaan Realisasi terpisah & rapi',
+      'Popup portal (DatePicker & Dropdown) terkalibrasi presisi di tablet & laptop',
+    ],
+  }),
   'jurnal-harian-produksi-2026-08-02': entry({
     pageKey: 'jurnal-harian-produksi',
     title: 'Jurnal Harian Produksi',

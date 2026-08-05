@@ -27,14 +27,14 @@ export default function TableFooter({
   onPageChange
 }: TableFooterProps) {
   return (
-    <div className="flex items-center justify-between shrink-0 px-2 min-h-[30px]">
-      <div className="flex items-center gap-3">
-        <span className="text-[11px] font-bold text-gray-400 tracking-wide">
+    <div className="flex flex-col sm:flex-row items-center justify-between shrink-0 px-2 min-h-[30px] gap-2 sm:gap-0 py-1 sm:py-0">
+      <div className="flex flex-wrap items-center justify-between sm:justify-start w-full sm:w-auto gap-2 sm:gap-3">
+        <span className="text-[11px] font-bold text-gray-400 tracking-wide truncate">
           {totalCount === 0 ? `Tidak ada ${label}` : `Menampilkan ${currentCount} dari ${totalCount} ${label}`}
         </span>
 
         {loadTime !== null && loadTime !== undefined && (
-          <div className={`text-[11px] px-2 py-1 rounded-full font-bold flex items-center gap-1.5 border tracking-wide shadow-sm ${
+          <div className={`text-[10px] sm:text-[11px] px-2 py-0.5 sm:py-1 rounded-full font-bold flex items-center gap-1 border tracking-wide shadow-sm shrink-0 ${
             loadTime < 300  ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
             loadTime < 1000 ? 'bg-amber-50 text-amber-600 border-amber-100' :
                               'bg-red-50 text-red-600 border-red-100'
@@ -45,13 +45,13 @@ export default function TableFooter({
         )}
         
         {selectedCount > 0 && (
-          <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2">
-            <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 tracking-wide shadow-sm">
+          <div className="hidden sm:flex items-center gap-2 animate-in fade-in slide-in-from-left-2 shrink-0">
+            <span className="text-[10px] sm:text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100 tracking-wide shadow-sm">
               {selectedCount} dipilih
             </span>
             <button 
               onClick={onClearSelection}
-              className="text-[11px] font-bold text-gray-400 hover:text-red-600 tracking-wide transition-colors"
+              className="text-[10px] sm:text-[11px] font-bold text-gray-400 hover:text-red-600 tracking-wide transition-colors"
             >
               Batal
             </button>
@@ -59,10 +59,10 @@ export default function TableFooter({
         )}
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center justify-center w-full sm:w-auto gap-1 sm:gap-6 overflow-x-auto custom-scrollbar py-0.5">
         {/* Pagination Controls */}
         {page !== undefined && totalPages !== undefined && onPageChange && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 shrink-0">
             {/* First + Prev */}
             <button
               disabled={page <= 1}
@@ -81,7 +81,7 @@ export default function TableFooter({
             {/* Page number buttons */}
             {(() => {
               const pages: (number | 'ellipsis-start' | 'ellipsis-end')[] = [];
-              const delta = 2; // pages around current
+              const delta = 1; // delta 1 on mobile to prevent overflow
               const rangeStart = Math.max(2, page - delta);
               const rangeEnd = Math.min(totalPages - 1, page + delta);
 

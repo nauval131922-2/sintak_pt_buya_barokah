@@ -112,6 +112,7 @@ export default function JurnalClient({
   const [bagianFilter, setBagianFilter] = useState('');
   const [namaKaryawanFilter, setNamaKaryawanFilter] = useState('');
   const [belumRealisasiFilter, setBelumRealisasiFilter] = useState(false);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [totalRealisasi, setTotalRealisasi] = useState(0);
   const [totalRijek, setTotalRijek] = useState(0);
   const [bagianOptions, setBagianOptions] = useState<string[]>([]);
@@ -193,6 +194,17 @@ export default function JurnalClient({
   // Table State
   const [selectedIds, setSelectedIds] = useState<Set<number | string>>(new Set());
   const [lastSelectedId, setLastSelectedId] = useState<string | number | null>(null);
+  const [expandedCardIds, setExpandedCardIds] = useState<Set<number | string>>(new Set());
+
+  const toggleExpandCard = useCallback((id: number | string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpandedCardIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('jurnal_columnWidths_v2');
@@ -1637,19 +1649,19 @@ export default function JurnalClient({
   if (!isMounted) return null;
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col gap-6 animate-in fade-in duration-700 overflow-hidden">
+    <div className="flex-1 min-h-0 flex flex-col gap-4 sm:gap-6 animate-in fade-in duration-700 overflow-hidden">
       {/* TABS Navigation */}
-      <div className="flex gap-6 border-b border-gray-100 shrink-0 px-2 mt-1">
+      <div className="flex gap-2 sm:gap-6 border-b border-gray-100 shrink-0 px-2 mt-1">
         <button 
           onClick={() => { setActiveTab('list'); cancelForm(); }} 
-          className={`flex items-center gap-1.5 pb-3 px-2 text-[13px] font-bold border-b-2 transition-all ${activeTab === 'list' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          className={`flex items-center justify-center gap-1.5 pb-3 px-2 text-[13px] font-bold border-b-2 transition-all flex-1 sm:flex-initial ${activeTab === 'list' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
         >
           <ClipboardList size={14} />
           Daftar Jurnal
         </button>
         <button 
           onClick={() => { if(activeTab !== 'form') startAdd(); }} 
-          className={`flex items-center gap-1.5 pb-3 px-2 text-[13px] font-bold border-b-2 transition-all ${activeTab === 'form' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          className={`flex items-center justify-center gap-1.5 pb-3 px-2 text-[13px] font-bold border-b-2 transition-all flex-1 sm:flex-initial ${activeTab === 'form' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
         >
           {editingId ? <Edit2 size={14} /> : <PlusSquare size={14} />}
           {editingId ? 'Edit Jurnal' : 'Tambah Jurnal'}
@@ -1657,149 +1669,290 @@ export default function JurnalClient({
       </div>
 
       {/* TAB CONTENT: LIST */}
-      <div className={`flex-1 flex flex-col gap-4 overflow-hidden ${activeTab === 'list' ? 'flex' : 'hidden'}`}>
+      <div className={`flex-1 min-h-0 flex flex-col gap-4 overflow-hidden ${activeTab === 'list' ? 'flex' : 'hidden'}`}>
         {/* Top Filter Bar */}
-        <div className="shrink-0 bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-3 shadow-sm shadow-emerald-900/5 relative z-50 overflow-visible">
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Rentang Tanggal */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              <DatePicker
-                name="startDate"
-                value={startDate}
-                onChange={(d) => { setStartDate(d); setPage(1); }}
-                customTrigger={(toggle) => (
-                  <button type="button" onClick={toggle}
-                    className="h-10 px-3 bg-gray-50 border border-gray-100 rounded-lg text-[11px] font-semibold text-gray-700 flex items-center gap-2 hover:border-emerald-300 hover:bg-white transition-all whitespace-nowrap min-w-[120px]">
-                    <Filter size={12} className="text-gray-400 shrink-0" />
-                    {startDate ? startDate.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : <span className="text-gray-300">Dari</span>}
-                  </button>
-                )}
-              />
-              <span className="text-gray-300 text-[11px] font-bold">—</span>
-              <DatePicker
-                name="endDate"
-                value={endDate}
-                onChange={(d) => { setEndDate(d); setPage(1); }}
-                popupAlign="right"
-                customTrigger={(toggle) => (
-                  <button type="button" onClick={toggle}
-                    className="h-10 px-3 bg-gray-50 border border-gray-100 rounded-lg text-[11px] font-semibold text-gray-700 flex items-center gap-2 hover:border-emerald-300 hover:bg-white transition-all whitespace-nowrap min-w-[120px]">
-                    <Filter size={12} className="text-gray-400 shrink-0" />
-                    {endDate ? endDate.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : <span className="text-gray-300">Sampai</span>}
-                  </button>
-                )}
-              />
-            </div>
-
-            {/* divider */}
-            <div className="w-px h-5 bg-gray-200 shrink-0" />
-
-            {/* Bagian Filter */}
-            <SearchableDropdown
-              id="jurnal-bagian"
-              value={bagianFilter}
-              items={bagianOptions}
-              allLabel="Semua Bagian"
-              searchPlaceholder="Cari bagian..."
-              triggerWidth="w-[160px]"
-              panelWidth="w-[260px]"
-              compact
-              icon={<Filter size={14} className={bagianFilter ? 'text-emerald-600' : 'text-gray-400'} />}
-              onChange={(val) => { setBagianFilter(val); setPage(1); }}
-            />
-
-            {/* Nama Karyawan Filter */}
-            <SearchableDropdown
-              id="jurnal-karyawan"
-              value={namaKaryawanFilter}
-              items={namaOptions}
-              allLabel="Semua Karyawan"
-              searchPlaceholder="Cari karyawan..."
-              triggerWidth="w-[170px]"
-              panelWidth="w-[260px]"
-              compact
-              icon={<Filter size={14} className={namaKaryawanFilter ? 'text-emerald-600' : 'text-gray-400'} />}
-              onChange={(val) => { setNamaKaryawanFilter(val); setPage(1); }}
-            />
-
-            {/* Nama Order Filter */}
-            <SearchableDropdown
-              id="jurnal-no-order"
-              value={noOrderFilter}
-              items={sopdList.map(s => s.nama_order ? `${s.no_sopd} — ${s.nama_order}` : s.no_sopd)}
-              allLabel="Semua Order"
-              searchPlaceholder="Cari no. order..."
-              triggerWidth="w-[190px]"
-              panelWidth="w-[320px]"
-              compact
-              icon={<Filter size={14} className={noOrderFilter ? 'text-emerald-600' : 'text-gray-400'} />}
-              onChange={(val) => { setNoOrderFilter(val.split(' — ')[0]); setPage(1); }}
-            />
-
-            {/* Jenis Pekerjaan Filter */}
-            <SearchableDropdown
-              id="jurnal-jenis-pekerjaan"
-              value={jenisPekerjaanFilter}
-              items={jenisPekerjaanFilterOptions}
-              allLabel="Semua Pekerjaan"
-              searchPlaceholder="Cari pekerjaan..."
-              triggerWidth="w-[170px]"
-              panelWidth="w-[280px]"
-              compact
-              maxDisplay={500}
-              icon={<Filter size={14} className={jenisPekerjaanFilter ? 'text-emerald-600' : 'text-gray-400'} />}
-              onChange={(val) => { setJenisPekerjaanFilter(val); setPage(1); }}
-            />
-
-            {/* Belum Realisasi Toggle */}
+        <div className="shrink-0 bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl px-2.5 sm:px-4 py-2 sm:py-3 shadow-sm shadow-emerald-900/5 relative z-50 overflow-visible text-[11px] xl:text-xs">
+          {/* Header Mobile Toggle (< sm) */}
+          <div className="flex sm:hidden items-center justify-between">
             <button
-              onClick={() => { setBelumRealisasiFilter(prev => !prev); setPage(1); }}
-              className={`h-9 px-3 rounded-lg border transition-all flex items-center gap-2 text-[11px] font-bold shrink-0 ${belumRealisasiFilter ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-gray-50 text-gray-400 border-gray-100 hover:border-amber-100 hover:text-amber-500'}`}
+              onClick={() => setIsMobileFilterOpen(prev => !prev)}
+              className="flex items-center gap-2 text-xs font-bold text-gray-700 py-1"
             >
-              <Filter size={14} />
-              {belumRealisasiFilter ? 'Belum Realisasi' : 'Semua Status'}
+              <Filter size={14} className={bagianFilter || namaKaryawanFilter || noOrderFilter || jenisPekerjaanFilter || belumRealisasiFilter ? 'text-emerald-600' : 'text-gray-400'} />
+              <span>Filter Data</span>
+              {(bagianFilter || namaKaryawanFilter || noOrderFilter || jenisPekerjaanFilter || belumRealisasiFilter) && (
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              )}
+              <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${isMobileFilterOpen ? 'rotate-180' : ''}`} />
             </button>
 
-            {/* Reset — ikut filter */}
-            <button
-              onClick={() => { handleResetFilter(); setSearchQuery(''); }}
-              className="h-10 px-3 bg-white hover:bg-rose-50 text-gray-400 hover:text-rose-600 border border-gray-100 hover:border-rose-100 rounded-lg transition-all flex items-center gap-1.5 text-[11px] font-bold shrink-0"
-            >
-              <RotateCcw size={14} />
-              Reset
-            </button>
-
-            {/* divider + Export sendiri di kanan */}
-            <div className="w-px h-5 bg-gray-200 shrink-0 ml-auto" />
             <button
               onClick={handleExportExcel}
               disabled={isExporting}
-              className="h-10 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-100 hover:border-emerald-200 rounded-lg transition-all flex items-center gap-1.5 text-[11px] font-bold disabled:opacity-50 shrink-0"
+              className="h-8 px-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-100 rounded-lg flex items-center gap-1 text-[11px] font-bold disabled:opacity-50"
             >
-              {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
-              {isExporting ? 'Proses...' : 'Export'}
+              {isExporting ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
+              <span>Export</span>
             </button>
           </div>
+
+          <div className={`flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-between gap-2.5 ${isMobileFilterOpen ? 'flex pt-2 border-t border-gray-100 sm:border-t-0 sm:pt-0' : 'hidden sm:flex'}`}>
+            {/* Tablet View Layout (sm:flex lg:hidden) - 2 Baris Presisi sesuai konfigurasi Tablet */}
+            <div className="flex flex-col lg:hidden gap-2 w-full">
+              {/* Baris 1 Filter Tablet */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full">
+                {/* Rentang Tanggal */}
+                <div className="flex items-center gap-1.5 shrink-0 w-full sm:w-auto">
+                  <div className="flex-1 sm:flex-initial">
+                    <DatePicker
+                      name="startDate"
+                      value={startDate}
+                      onChange={(d) => { setStartDate(d); setPage(1); }}
+                    />
+                  </div>
+                  <span className="text-gray-300 text-[11px] font-bold shrink-0">—</span>
+                  <div className="flex-1 sm:flex-initial">
+                    <DatePicker
+                      name="endDate"
+                      value={endDate}
+                      onChange={(d) => { setEndDate(d); setPage(1); }}
+                      popupAlign="right"
+                    />
+                  </div>
+                </div>
+
+                {/* Bagian & Karyawan (Tablet 50:50) */}
+                <div className="flex flex-col sm:flex-row sm:flex-1 items-center gap-2 w-full">
+                  <div className="w-full sm:flex-[1]">
+                    <SearchableDropdown
+                      id="jurnal-bagian"
+                      value={bagianFilter}
+                      items={bagianOptions}
+                      allLabel="Semua Bagian"
+                      searchPlaceholder="Cari bagian..."
+                      triggerWidth="w-full"
+                      panelWidth="w-[240px]"
+                      compact
+                      icon={<Filter size={14} className={bagianFilter ? 'text-emerald-600' : 'text-gray-400'} />}
+                      onChange={(val) => { setBagianFilter(val); setPage(1); }}
+                    />
+                  </div>
+
+                  <div className="w-full sm:flex-[1.5]">
+                    <SearchableDropdown
+                      id="jurnal-karyawan"
+                      value={namaKaryawanFilter}
+                      items={namaOptions}
+                      allLabel="Semua Karyawan"
+                      searchPlaceholder="Cari karyawan..."
+                      triggerWidth="w-full"
+                      panelWidth="w-[240px]"
+                      compact
+                      icon={<Filter size={14} className={namaKaryawanFilter ? 'text-emerald-600' : 'text-gray-400'} />}
+                      onChange={(val) => { setNamaKaryawanFilter(val); setPage(1); }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Baris 2 Filter Tablet */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 w-full">
+                <div className="flex flex-col sm:flex-row sm:flex-1 items-center gap-2 w-full">
+                  <div className="w-full sm:flex-[1.5]">
+                    <SearchableDropdown
+                      id="jurnal-no-order"
+                      value={noOrderFilter}
+                      items={sopdList.map(s => s.nama_order ? `${s.no_sopd} — ${s.nama_order}` : s.no_sopd)}
+                      allLabel="Semua Order"
+                      searchPlaceholder="Cari no. order..."
+                      triggerWidth="w-full"
+                      panelWidth="w-[300px]"
+                      compact
+                      icon={<Filter size={14} className={noOrderFilter ? 'text-emerald-600' : 'text-gray-400'} />}
+                      onChange={(val) => { setNoOrderFilter(val.split(' — ')[0]); setPage(1); }}
+                    />
+                  </div>
+
+                  <div className="w-full sm:flex-[1]">
+                    <SearchableDropdown
+                      id="jurnal-jenis-pekerjaan"
+                      value={jenisPekerjaanFilter}
+                      items={jenisPekerjaanFilterOptions}
+                      allLabel="Semua Pekerjaan"
+                      searchPlaceholder="Cari pekerjaan..."
+                      triggerWidth="w-full"
+                      panelWidth="w-[260px]"
+                      compact
+                      maxDisplay={500}
+                      icon={<Filter size={14} className={jenisPekerjaanFilter ? 'text-emerald-600' : 'text-gray-400'} />}
+                      onChange={(val) => { setJenisPekerjaanFilter(val); setPage(1); }}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100 w-full sm:w-auto justify-between sm:justify-end">
+                  <button
+                    onClick={() => { setBelumRealisasiFilter(prev => !prev); setPage(1); }}
+                    className={`h-9 px-3 rounded-lg border transition-all flex items-center justify-center gap-1.5 text-[11px] font-bold flex-1 sm:flex-initial shrink-0 ${belumRealisasiFilter ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-gray-50 text-gray-500 border-gray-200 hover:border-amber-200 hover:text-amber-600'}`}
+                  >
+                    <Filter size={13} />
+                    {belumRealisasiFilter ? 'Belum Realisasi' : 'Semua Status'}
+                  </button>
+
+                  <button
+                    onClick={() => { handleResetFilter(); setSearchQuery(''); }}
+                    className="h-9 px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg transition-all flex items-center justify-center gap-1.5 text-[11px] font-bold flex-1 sm:flex-initial shrink-0"
+                  >
+                    <RotateCcw size={13} />
+                    Reset
+                  </button>
+
+                  <button
+                    onClick={handleExportExcel}
+                    disabled={isExporting}
+                    className="hidden sm:flex h-9 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 hover:border-emerald-300 rounded-lg transition-all items-center justify-center gap-1.5 text-[11px] font-bold disabled:opacity-50 shrink-0"
+                  >
+                    {isExporting ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
+                    {isExporting ? 'Proses...' : 'Export'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Dynamic Flex Wrap Layout KHUSUS Laptop/Desktop (lg:flex) */}
+            <div className="hidden lg:flex flex-wrap items-center justify-between gap-2 w-full">
+              {/* Rentang Tanggal */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                <DatePicker
+                  name="startDate"
+                  value={startDate}
+                  onChange={(d) => { setStartDate(d); setPage(1); }}
+                />
+                <span className="text-gray-300 text-[11px] font-bold shrink-0">—</span>
+                <DatePicker
+                  name="endDate"
+                  value={endDate}
+                  onChange={(d) => { setEndDate(d); setPage(1); }}
+                  popupAlign="right"
+                />
+              </div>
+
+              <div className="w-px h-5 bg-gray-200 shrink-0" />
+
+              {/* Bagian Filter */}
+              <div className="flex-[1] min-w-[120px]">
+                <SearchableDropdown
+                  id="jurnal-bagian"
+                  value={bagianFilter}
+                  items={bagianOptions}
+                  allLabel="Semua Bagian"
+                  searchPlaceholder="Cari bagian..."
+                  triggerWidth="w-full"
+                  panelWidth="w-[240px]"
+                  compact
+                  icon={<Filter size={14} className={bagianFilter ? 'text-emerald-600' : 'text-gray-400'} />}
+                  onChange={(val) => { setBagianFilter(val); setPage(1); }}
+                />
+              </div>
+
+              {/* Karyawan Filter */}
+              <div className="flex-[1.2] min-w-[130px]">
+                <SearchableDropdown
+                  id="jurnal-karyawan"
+                  value={namaKaryawanFilter}
+                  items={namaOptions}
+                  allLabel="Semua Karyawan"
+                  searchPlaceholder="Cari karyawan..."
+                  triggerWidth="w-full"
+                  panelWidth="w-[240px]"
+                  compact
+                  icon={<Filter size={14} className={namaKaryawanFilter ? 'text-emerald-600' : 'text-gray-400'} />}
+                  onChange={(val) => { setNamaKaryawanFilter(val); setPage(1); }}
+                />
+              </div>
+
+              {/* Order Filter (Dibuat paling lebar) */}
+              <div className="flex-[2] min-w-[160px]">
+                <SearchableDropdown
+                  id="jurnal-no-order"
+                  value={noOrderFilter}
+                  items={sopdList.map(s => s.nama_order ? `${s.no_sopd} — ${s.nama_order}` : s.no_sopd)}
+                  allLabel="Semua Order"
+                  searchPlaceholder="Cari no. order..."
+                  triggerWidth="w-full"
+                  panelWidth="w-[300px]"
+                  compact
+                  icon={<Filter size={14} className={noOrderFilter ? 'text-emerald-600' : 'text-gray-400'} />}
+                  onChange={(val) => { setNoOrderFilter(val.split(' — ')[0]); setPage(1); }}
+                />
+              </div>
+
+              {/* Pekerjaan Filter */}
+              <div className="flex-[1.2] min-w-[130px]">
+                <SearchableDropdown
+                  id="jurnal-jenis-pekerjaan"
+                  value={jenisPekerjaanFilter}
+                  items={jenisPekerjaanFilterOptions}
+                  allLabel="Semua Pekerjaan"
+                  searchPlaceholder="Cari pekerjaan..."
+                  triggerWidth="w-full"
+                  panelWidth="w-[260px]"
+                  compact
+                  maxDisplay={500}
+                  icon={<Filter size={14} className={jenisPekerjaanFilter ? 'text-emerald-600' : 'text-gray-400'} />}
+                  onChange={(val) => { setJenisPekerjaanFilter(val); setPage(1); }}
+                />
+              </div>
+
+              {/* Sektor Tombol Aksi Laptop */}
+              <div className="flex items-center gap-2 shrink-0 ml-auto">
+                <button
+                  onClick={() => { setBelumRealisasiFilter(prev => !prev); setPage(1); }}
+                  className={`h-9 px-3 rounded-lg border transition-all flex items-center justify-center gap-1.5 text-[11px] font-bold shrink-0 ${belumRealisasiFilter ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-gray-50 text-gray-500 border-gray-200 hover:border-amber-200 hover:text-amber-600'}`}
+                >
+                  <Filter size={13} />
+                  {belumRealisasiFilter ? 'Belum Realisasi' : 'Semua Status'}
+                </button>
+
+                <button
+                  onClick={() => { handleResetFilter(); setSearchQuery(''); }}
+                  className="h-9 px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg transition-all flex items-center justify-center gap-1.5 text-[11px] font-bold shrink-0"
+                >
+                  <RotateCcw size={13} />
+                  Reset
+                </button>
+
+                <button
+                  onClick={handleExportExcel}
+                  disabled={isExporting}
+                  className="h-9 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 hover:border-emerald-300 rounded-lg transition-all flex items-center justify-center gap-1.5 text-[11px] font-bold disabled:opacity-50 shrink-0"
+                >
+                  {isExporting ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
+                  {isExporting ? 'Proses...' : 'Export'}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      <div className="flex-1 flex flex-col gap-3 overflow-hidden relative min-h-0">
-        <div className="flex flex-wrap items-center gap-2 shrink-0 px-1">
-          {/* Judul + icon */}
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
+        <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden relative">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 shrink-0 px-1">
+          {/* Judul + icon (Desktop only) */}
+          <div className="hidden md:flex items-center gap-2 shrink-0">
+            <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm shrink-0">
               <ClipboardList size={14} />
             </div>
             <span className="text-[13px] font-bold text-gray-800 leading-none tracking-tight whitespace-nowrap">Jurnal Harian Produksi</span>
           </div>
 
-          {/* Copy Jadwal / Status / Revert */}
-          {canCopyJadwal && (
-            <>
-              <div className="w-px h-5 bg-gray-200 shrink-0" />
-              <div className="flex items-center gap-1.5">
+          {/* Action Buttons Toolbar */}
+          <div className="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
+            {/* Copy Jadwal / Status / Revert */}
+            {canCopyJadwal && (
+              <>
                 {hasCopiedToday ? (
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-[11px] font-bold" title="Penyalinan jadwal untuk hari ini sudah pernah dilakukan">
-                    <CheckCircle2 size={11} className="text-emerald-600" />
-                    <span>Jadwal disalin</span>
+                  <div className="flex items-center justify-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-[10px] md:text-[11px] font-bold flex-1 md:flex-initial whitespace-nowrap" title="Penyalinan jadwal untuk hari ini sudah pernah dilakukan">
+                    <CheckCircle2 size={11} className="text-emerald-600 shrink-0" />
+                    <span className="whitespace-nowrap">Disalin</span>
                   </div>
                 ) : (
                   <button
@@ -1816,117 +1969,114 @@ export default function JurnalClient({
                       setCopyKaryawanSearch('');
                       setShowCopyModal(true);
                     }}
-                    className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg border border-emerald-700 transition-all shadow-sm shadow-emerald-100 animate-pulse"
+                    className="flex items-center justify-center gap-1 px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] md:text-[11px] font-bold rounded-lg border border-emerald-700 transition-all shadow-sm shadow-emerald-100 animate-pulse flex-1 md:flex-initial whitespace-nowrap"
                     title="Copy jadwal ke tanggal lain"
                   >
-                    <Copy size={11} />
-                    Copy Jadwal
+                    <Copy size={11} className="shrink-0" />
+                    <span className="whitespace-nowrap">Copy Jadwal</span>
                   </button>
                 )}
                 {canRevert && (
                   <button
                     onClick={triggerRevertConfirm}
                     disabled={isReverting}
-                    className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 text-[11px] font-bold rounded-lg border border-amber-200 transition-all disabled:opacity-50"
+                    className="flex items-center justify-center gap-1 px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 text-[10px] md:text-[11px] font-bold rounded-lg border border-amber-200 transition-all disabled:opacity-50 flex-1 md:flex-initial whitespace-nowrap"
                     title="Batalkan penyalinan jadwal terakhir"
                   >
-                    {isReverting ? <Loader2 size={11} className="animate-spin" /> : <RotateCcw size={11} />}
-                    Revert
+                    {isReverting ? <Loader2 size={11} className="animate-spin shrink-0" /> : <RotateCcw size={11} className="shrink-0" />}
+                    <span className="whitespace-nowrap">Revert</span>
                   </button>
                 )}
-              </div>
-            </>
-          )}
+              </>
+            )}
 
-          {/* Trash — Super Admin only */}
-          {isSuperAdmin && (
-            <>
-              <div className="w-px h-5 bg-gray-200 shrink-0" />
+            {/* Trash — Super Admin only */}
+            {isSuperAdmin && (
               <button
                 onClick={handleOpenTrash}
-                className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-bold rounded-lg border border-rose-200 transition-all"
+                className="flex items-center justify-center gap-1 px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[10px] md:text-[11px] font-bold rounded-lg border border-rose-200 transition-all flex-1 md:flex-initial whitespace-nowrap"
                 title="Lihat data terhapus"
               >
-                <Trash2 size={11} />
-                Trash
+                <Trash2 size={11} className="shrink-0" />
+                <span className="whitespace-nowrap">Trash</span>
               </button>
-            </>
-          )}
+            )}
 
-          {/* Cek Karyawan — siapa belum/sudah dapat pekerjaan */}
-          <div className="w-px h-5 bg-gray-200 shrink-0" />
-          <button
-            onClick={() => {
-              setCekKaryawanError('');
-              setCekKaryawanData(null);
-              setCekActiveTab('belum');
-              setCekSearch('');
-              setShowCekKaryawan(true);
-              fetchCekKaryawan();
-            }}
-            className="flex items-center gap-1.5 px-2.5 py-1 bg-violet-50 hover:bg-violet-100 text-violet-700 text-[11px] font-bold rounded-lg border border-violet-200 transition-all"
-            title="Cek karyawan yang sudah/belum dapat pekerjaan di rentang tanggal aktif"
-          >
-            <Users size={11} />
-            Cek Karyawan
-          </button>
+            {/* Cek Karyawan — siapa belum/sudah dapat pekerjaan */}
+            <button
+              onClick={() => {
+                setCekKaryawanError('');
+                setCekKaryawanData(null);
+                setCekActiveTab('belum');
+                setCekSearch('');
+                setShowCekKaryawan(true);
+                fetchCekKaryawan();
+              }}
+              className="flex items-center justify-center gap-1 px-2 py-1 bg-violet-50 hover:bg-violet-100 text-violet-700 text-[10px] md:text-[11px] font-bold rounded-lg border border-violet-200 transition-all flex-1 md:flex-initial whitespace-nowrap"
+              title="Cek karyawan yang sudah/belum dapat pekerjaan di rentang tanggal aktif"
+            >
+              <Users size={11} className="shrink-0" />
+              <span className="whitespace-nowrap">Cek Karyawan</span>
+            </button>
 
-          {/* Contextual — bulk actions */}
-          {selectedIds.size > 0 && (
-            <>
-              <div className="w-px h-5 bg-gray-200 shrink-0" />
-              <button onClick={() => setShowShiftModal(true)} className="flex items-center gap-1.5 px-2.5 py-1 bg-sky-50 hover:bg-sky-100 text-sky-600 text-[11px] font-bold rounded-lg border border-sky-200 transition-all animate-in fade-in zoom-in duration-200">
-                <RotateCcw size={11} /> Ganti Shift
-              </button>
-              <div className="w-px h-5 bg-gray-200 shrink-0" />
-              <button onClick={handleBulkDelete} className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-bold rounded-lg border border-rose-200 transition-all animate-in fade-in zoom-in duration-200">
-                <Trash2 size={11} /> Hapus {selectedIds.size}
-              </button>
-            </>
-          )}
+            {/* Contextual — bulk actions */}
+            {selectedIds.size > 0 && (
+              <>
+                <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-[10px] md:text-[11px] font-bold shrink-0">
+                  <span>{selectedIds.size} dipilih</span>
+                  <button
+                    onClick={() => setSelectedIds(new Set())}
+                    className="text-gray-400 hover:text-rose-600 transition-colors ml-1"
+                    title="Batal seleksi"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+                <button onClick={() => setShowShiftModal(true)} className="flex items-center justify-center gap-1 px-2 py-1 bg-sky-50 hover:bg-sky-100 text-sky-600 text-[10px] md:text-[11px] font-bold rounded-lg border border-sky-200 transition-all flex-1 md:flex-initial whitespace-nowrap">
+                  <RotateCcw size={11} className="shrink-0" /> <span className="whitespace-nowrap">Shift</span>
+                </button>
+                <button onClick={handleBulkDelete} className="flex items-center justify-center gap-1 px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[10px] md:text-[11px] font-bold rounded-lg border border-rose-200 transition-all flex-1 md:flex-initial whitespace-nowrap">
+                  <Trash2 size={11} className="shrink-0" /> <span className="whitespace-nowrap">Hapus</span>
+                </button>
+              </>
+            )}
 
-          {/* Action message */}
-          {actionMessage && (
-            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold animate-in fade-in slide-in-from-left-2 duration-300 ${actionMessage.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
-              {actionMessage.type === 'success' ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}
-              {actionMessage.text}
-            </div>
-          )}
+            {/* Stop Copy */}
+            <button
+              onClick={handleKeteranganPasteDone}
+              className={`flex items-center justify-center gap-1 px-2 py-1 rounded-lg text-[10px] md:text-[11px] font-bold transition-all whitespace-nowrap ${
+                keteranganPasteActive
+                  ? 'opacity-100 visible bg-red-50 text-red-600 border border-red-200 hover:bg-red-100'
+                  : 'hidden'
+              }`}
+            >
+              <X size={11} className="shrink-0" />
+              <span className="whitespace-nowrap">Stop Copy</span>
+            </button>
 
-          {/* Loading badge */}
-          {loading && (data?.length || 0) > 0 && (
-            <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-1.5 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 animate-pulse leading-none">
-              <Loader2 size={11} className="animate-spin" />
-              <span>Memuat...</span>
-            </div>
-          )}
+            {/* Reset Sort */}
+            <button
+              onClick={() => setSorting([])}
+              className={`flex items-center justify-center gap-1 px-2 py-1 rounded-lg text-[10px] md:text-[11px] font-bold transition-all whitespace-nowrap ${
+                sorting.length > 0 && !loading
+                  ? 'opacity-100 visible bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100'
+                  : 'hidden'
+              }`}
+            >
+              <X size={11} className="shrink-0" />
+              <span className="whitespace-nowrap">Reset Sort</span>
+            </button>
 
-          {/* Stop Copy */}
-          <button
-            onClick={handleKeteranganPasteDone}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] leading-none font-bold transition-all ${
-              keteranganPasteActive
-                ? 'opacity-100 visible bg-red-50 text-red-600 border border-red-200 hover:bg-red-100'
-                : 'opacity-0 invisible pointer-events-none'
-            }`}
-          >
-            <X size={11} />
-            Stop Copy (Esc)
-          </button>
+            {/* Action message */}
+            {actionMessage && (
+              <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] md:text-[11px] font-bold ${actionMessage.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
+                {actionMessage.type === 'success' ? <CheckCircle2 size={11} className="shrink-0" /> : <AlertCircle size={11} className="shrink-0" />}
+                <span className="whitespace-nowrap">{actionMessage.text}</span>
+              </div>
+            )}
 
-          {/* Reset Sort */}
-          <button
-            onClick={() => setSorting([])}
-            className={`ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
-              sorting.length > 0 && !loading
-                ? 'opacity-100 visible bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100'
-                : 'opacity-0 invisible pointer-events-none'
-            }`}
-          >
-            <X size={11} />
-            Reset Sort
-          </button>
 
+          </div>
         </div>
 
         {/* Search bar — 1 baris penuh di antara toolbar dan tabel */}
@@ -1979,19 +2129,173 @@ export default function JurnalClient({
              </div>
            ) : (
              <>
-               <DataTable
-                 data={data || []}
-                 columns={columns}
-                 columnWidths={columnWidths}
-                 onColumnWidthChange={handleResize}
-                 isLoading={loading || data === null}
-                 selectedIds={selectedIds}
-                 onRowClick={handleSelection}
-                 rowHeight="h-11"
-                 sorting={sorting}
-                 onSortingChange={handleSortingChange}
-                 manualSorting={true}
-               />
+               {/* Mobile Card View (< md) */}
+               <div className="block md:hidden flex-1 overflow-y-auto space-y-2.5 pr-1">
+                 {loading && (data === null || data.length === 0) ? (
+                   <div className="p-8 text-center bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center gap-2">
+                     <Loader2 size={24} className="animate-spin text-emerald-600" />
+                     <span className="text-xs font-bold text-gray-500">Memuat data JHP...</span>
+                   </div>
+                 ) : !data || data.length === 0 ? (
+                   <div className="p-8 text-center bg-white rounded-2xl border border-gray-100 shadow-sm text-xs font-bold text-gray-400">
+                     Tidak ada data jurnal.
+                   </div>
+                 ) : (
+                   data.map((row, idx) => {
+                     const isSel = selectedIds.has(row.id);
+                     const isExp = expandedCardIds.has(row.id);
+                     return (
+                       <div
+                         key={row.id || idx}
+                         onClick={(e) => {
+                           handleSelection(row.id, e);
+                           toggleExpandCard(row.id, e);
+                         }}
+                         className={`bg-white rounded-xl border p-3 shadow-sm transition-all relative space-y-2 cursor-pointer ${
+                           isSel ? 'border-emerald-500 bg-emerald-50/20 ring-1 ring-emerald-500' : 'border-gray-100 hover:border-gray-200'
+                         }`}
+                       >
+                         {/* Header Info Umum */}
+                         <div className="border-b border-gray-100 pb-2 space-y-1">
+                           <div className="flex items-start justify-between gap-2">
+                             <div className="flex items-center gap-1.5 flex-wrap text-[11px] min-w-0 flex-1">
+                               <span className="font-bold text-gray-400">#{((page - 1) * PAGE_SIZE) + idx + 1}</span>
+                               <span className={`font-bold text-gray-800 text-[13px] ${isExp ? 'break-words' : 'truncate'}`}>{row.nama_karyawan || '-'}</span>
+                               <span className="text-[10px] font-semibold bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-100">
+                                 {row.bagian || '-'}
+                               </span>
+                             </div>
+                             <div className="flex items-center gap-1 shrink-0">
+                               {canInputTarget && (
+                                 <button
+                                   type="button"
+                                   onClick={(e) => { e.stopPropagation(); startCopy(row); }}
+                                   className="p-1 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
+                                   title="Duplikat Jadwal"
+                                 >
+                                   <Copy size={13} />
+                                 </button>
+                               )}
+                               {canInputRealisasi && (!row.no_order_2 && !row.jenis_pekerjaan_2) && (
+                                 <button
+                                   type="button"
+                                   onClick={(e) => { e.stopPropagation(); startInputRealisasi(row); }}
+                                   className="p-1 text-sky-600 hover:bg-sky-50 rounded transition-colors"
+                                   title="Input Realisasi"
+                                 >
+                                   <PlusSquare size={13} />
+                                 </button>
+                               )}
+                               <button
+                                 type="button"
+                                 onClick={(e) => { e.stopPropagation(); startEdit(row); }}
+                                 className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                 title="Edit Jurnal"
+                               >
+                                 <Edit2 size={13} />
+                               </button>
+                               <button
+                                 type="button"
+                                 onClick={(e) => { e.stopPropagation(); handleDelete(row.id); }}
+                                 className="p-1 text-rose-600 hover:bg-rose-50 rounded transition-colors"
+                                 title="Hapus Jurnal"
+                               >
+                                 <Trash2 size={13} />
+                               </button>
+                             </div>
+                           </div>
+
+                           <div className={`flex items-center gap-1.5 text-[10px] text-gray-500 font-medium ${isExp ? 'flex-wrap break-words' : 'truncate'}`}>
+                             <span>{row.tgl ? formatIndoDateStr(row.tgl) : '-'}</span>
+                             {row.posisi && <span>• Pos: {row.posisi}</span>}
+                             {row.absensi && <span>• Abs: {row.absensi}</span>}
+                             {row.mesin && <span>• {row.mesin}</span>}
+                           </div>
+                         </div>
+
+                         {/* Section Target (Kuning Soft) */}
+                         <div className="bg-amber-50/50 p-2 rounded-lg border border-amber-100/60 space-y-1">
+                           <div className="flex items-center justify-between text-[10px] font-semibold text-amber-800">
+                             <span>Target (Shift {row.shift || '-'})</span>
+                             <span className="font-bold text-amber-900">
+                               Target: {row.target !== null && row.target !== undefined && row.target !== '' ? Number(row.target).toLocaleString('id-ID') : '-'}
+                             </span>
+                           </div>
+                           <div className={`text-[11px] font-semibold text-gray-800 ${isExp ? 'break-words' : 'truncate'}`}>
+                             Order: {row.no_order ? `${row.no_sopd ? `${row.no_sopd} — ` : ''}${row.no_order}` : row.nama_order_manual || '-'}{row.nama_order ? ` - ${row.nama_order}` : ''}
+                           </div>
+                           {row.jenis_pekerjaan && (
+                             <div className={`text-[10px] text-gray-600 ${isExp ? 'break-words' : 'truncate'}`}>
+                               Pekerjaan: {row.jenis_pekerjaan}
+                             </div>
+                           )}
+                         </div>
+
+                         {/* Section Realisasi (Biru Soft) */}
+                         <div className="bg-sky-50/50 p-2 rounded-lg border border-sky-100/60 space-y-1">
+                           <div className="flex items-center justify-between text-[10px] font-semibold text-sky-800">
+                             <span>Realisasi {row.jam ? `(${row.jam})` : ''}</span>
+                             <div className="flex items-center gap-2 font-bold">
+                               <span className="text-sky-900">Realisasi: {row.realisasi !== null && row.realisasi !== undefined && row.realisasi !== '' ? Number(row.realisasi).toLocaleString('id-ID') : '-'}</span>
+                               <span className="text-amber-800">Rijek: {row.rijek !== null && row.rijek !== undefined && row.rijek !== '' ? Number(row.rijek).toLocaleString('id-ID') : '-'}</span>
+                             </div>
+                           </div>
+
+                           {(row.no_order_2 || row.nama_order_manual_2 || row.nama_order_2) && (
+                             <div className={`text-[11px] font-semibold text-gray-800 ${isExp ? 'break-words' : 'truncate'}`}>
+                               Order: {row.no_order_2 || row.nama_order_manual_2 || '-'}{row.nama_order_2 ? ` - ${row.nama_order_2}` : ''}
+                             </div>
+                           )}
+                           {row.jenis_pekerjaan_2 && (
+                             <div className={`text-[10px] text-gray-600 ${isExp ? 'break-words' : 'truncate'}`}>
+                               Pekerjaan: {row.jenis_pekerjaan_2}
+                             </div>
+                           )}
+
+                           {(row.bahan_kertas || row.jml_plate || row.warna || row.inscheet) && (
+                             <div className="flex flex-wrap items-center gap-x-2.5 text-[10px] text-gray-500 pt-0.5">
+                               {row.bahan_kertas && <span>Bahan: {row.bahan_kertas}</span>}
+                               {row.jml_plate && <span>Plate: {row.jml_plate}</span>}
+                               {row.warna && <span>Warna: {row.warna}</span>}
+                               {row.inscheet && <span>Inscheet: {row.inscheet}</span>}
+                             </div>
+                           )}
+
+                           {row.kendala && (
+                             <div className={`text-[10px] text-rose-600 font-medium pt-0.5 ${isExp ? 'break-words' : 'truncate'}`}>
+                               Kendala: {row.kendala}
+                             </div>
+                           )}
+                         </div>
+
+                         {row.keterangan && (
+                           <div className={`text-[10px] italic text-gray-500 px-0.5 ${isExp ? 'break-words' : 'truncate'}`}>
+                             Ket: {row.keterangan}
+                           </div>
+                         )}
+                       </div>
+                     );
+                   })
+                 )}
+               </div>
+
+               {/* Desktop Table View (>= md) */}
+               <div className="hidden md:block flex-1 min-h-0 relative overflow-hidden">
+                  <DataTable
+                    data={data || []}
+                    columns={columns}
+                    columnWidths={columnWidths}
+                    onColumnWidthChange={handleResize}
+                    isLoading={loading || data === null}
+                    selectedIds={selectedIds}
+                    onRowClick={handleSelection}
+                    rowHeight="h-11"
+                    height="h-full"
+                    sorting={sorting}
+                    onSortingChange={handleSortingChange}
+                    manualSorting={true}
+                  />
+               </div>
              </>
            )}
         </div>
@@ -2010,9 +2314,9 @@ export default function JurnalClient({
       </div> {/* CLOSES activeTab === 'list' */}
 
       {/* TAB CONTENT: FORM */}
-      <div className={`flex-1 flex flex-col gap-4 overflow-y-auto pr-2 pb-10 ${activeTab === 'form' ? 'flex' : 'hidden'}`}>
+      <div className={`flex-1 flex flex-col gap-4 overflow-y-auto pr-0 sm:pr-2 pb-10 ${activeTab === 'form' ? 'flex' : 'hidden'}`}>
           {(isAdding || editingId !== null) && (
-          <form onSubmit={(e) => { e.preventDefault(); saveForm(); }} className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-sm animate-in slide-in-from-top-4 fade-in duration-300">
+          <form onSubmit={(e) => { e.preventDefault(); saveForm(); }} className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl p-3.5 sm:p-6 shadow-sm animate-in slide-in-from-top-4 fade-in duration-300">
 
             {userRole?.toLowerCase() === 'admin penjadwalan' && editingId !== null && formData.tgl && (() => {
               const tomorrow = new Date();
@@ -2020,7 +2324,7 @@ export default function JurnalClient({
               const tomorrowStr = tomorrow.toISOString().split('T')[0];
               if (formData.tgl < tomorrowStr) {
                 return (
-                  <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 text-amber-800 animate-in fade-in duration-300">
+                  <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5 sm:gap-3 text-amber-800 animate-in fade-in duration-300">
                     <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" />
                     <div>
                       <p className="text-[12px] font-bold">Peringatan: Mengedit Data Masa Lalu / Hari Ini</p>
@@ -2036,20 +2340,20 @@ export default function JurnalClient({
 
             {/* Sub-tab: Target / Realisasi - hanya tampil jika punya akses keduanya */}
             {canInputTarget && canInputRealisasi && (
-              <div className="flex gap-1 mb-6 bg-gray-50 p-1 rounded-xl w-fit border border-gray-100">
+              <div className="flex gap-1 mb-4 sm:mb-6 bg-gray-50 p-1 rounded-xl w-full sm:w-fit border border-gray-100">
                 <button
                   type="button"
                   onClick={() => setFormSubTab('target')}
-                  className={`px-5 py-2 text-[12px] font-bold rounded-lg transition-all ${formSubTab === 'target' ? 'bg-white text-emerald-700 shadow-sm border border-emerald-100' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`flex-1 sm:flex-initial px-3 sm:px-5 py-2 text-[11px] sm:text-[12px] font-bold rounded-lg transition-all text-center ${formSubTab === 'target' ? 'bg-white text-emerald-700 shadow-sm border border-emerald-100' : 'text-gray-500 hover:text-gray-700'}`}
                 >
-                  🗓 Target / Penjadwalan
+                  🗓 Target
                 </button>
                 <button
                   type="button"
                   onClick={() => setFormSubTab('realisasi')}
-                  className={`px-5 py-2 text-[12px] font-bold rounded-lg transition-all ${formSubTab === 'realisasi' ? 'bg-white text-sky-700 shadow-sm border border-sky-100' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`flex-1 sm:flex-initial px-3 sm:px-5 py-2 text-[11px] sm:text-[12px] font-bold rounded-lg transition-all text-center ${formSubTab === 'realisasi' ? 'bg-white text-sky-700 shadow-sm border border-sky-100' : 'text-gray-500 hover:text-gray-700'}`}
                 >
-                  📋 Realisasi / Hasil Produksi
+                  📋 Realisasi
                 </button>
               </div>
             )}
@@ -2142,8 +2446,9 @@ export default function JurnalClient({
                     <span className="text-[13px] font-bold text-gray-700">Order &amp; Pekerjaan</span>
                     <div className="flex-1 h-px bg-gray-100"></div>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="space-y-1.5">
+                  <div className="space-y-4">
+                    {/* Baris 1: No. Order (PPIC) 100% full width */}
+                    <div className="space-y-1.5 w-full">
                       <label className="text-[12px] font-bold text-gray-600">No. Order (PPIC)</label>
                       <SearchableDropdown
                         id="form-no-order"
@@ -2161,72 +2466,74 @@ export default function JurnalClient({
                       />
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-gray-600">Nama Order <span className="text-[11px] font-normal text-gray-400">(manual)</span></label>
-                      <input
-                        type="text"
-                        placeholder="Nama Order jika tidak ada di daftar No. Order (PPIC)"
-                        className="w-full bg-yellow-50/50 border border-yellow-300 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-yellow-500/30 focus:border-yellow-500 outline-none h-11"
-                        value={formData.nama_order_manual || ''}
-                        onChange={e => {
-                          // Isi manual → clear no_order dari dropdown
-                          setFormData((prev: any) => ({...prev, nama_order_manual: e.target.value, no_order: '', nama_order: ''}));
-                        }}
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-gray-600">Jenis Pekerjaan</label>
-                      <SearchableDropdown
-                        id="form-jenis-pekerjaan"
-                        value={formData.jenis_pekerjaan || ''}
-                        items={jenisPekerjaanList}
-                        placeholder={formData.bagian ? '-- Pilih Jenis Pekerjaan --' : '-- Pilih Bagian dulu --'}
-                        allLabel={formData.bagian ? '-- Pilih Jenis Pekerjaan --' : '-- Pilih Bagian dulu --'}
-                        triggerWidth="w-full"
-                        onChange={val => setFormData({...formData, jenis_pekerjaan: val})}
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[12px] font-bold text-gray-600">Target</label>
-                      <input 
-                        type="text" 
-                        placeholder="0" 
-                        className="w-full bg-yellow-50/50 border border-yellow-300 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-yellow-500/30 focus:border-yellow-500 outline-none h-11" 
-                        value={formData.target || ''} 
-                        onChange={e => {
-                          const val = e.target.value;
-                          if (val.startsWith('=')) {
-                            const formatted = formatFormulaNumbers(val);
-                            setFormData({...formData, target: formatted});
-                          } else {
-                            const clean = val.replace(/\./g, '');
-                            if (/^\d+$/.test(clean)) {
-                              const formatted = clean.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                    {/* Baris 2: Nama Order Manual & Jenis Pekerjaan & Target */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[12px] font-bold text-gray-600">Nama Order <span className="text-[11px] font-normal text-gray-400">(manual)</span></label>
+                        <input
+                          type="text"
+                          placeholder="Nama Order jika tidak ada di daftar No. Order (PPIC)"
+                          className="w-full bg-yellow-50/50 border border-yellow-300 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-yellow-500/30 focus:border-yellow-500 outline-none h-11"
+                          value={formData.nama_order_manual || ''}
+                          onChange={e => {
+                            // Isi manual → clear no_order dari dropdown
+                            setFormData((prev: any) => ({...prev, nama_order_manual: e.target.value, no_order: '', nama_order: ''}));
+                          }}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[12px] font-bold text-gray-600">Jenis Pekerjaan</label>
+                        <SearchableDropdown
+                          id="form-jenis-pekerjaan"
+                          value={formData.jenis_pekerjaan || ''}
+                          items={jenisPekerjaanList}
+                          placeholder={formData.bagian ? '-- Pilih Jenis Pekerjaan --' : '-- Pilih Bagian dulu --'}
+                          allLabel={formData.bagian ? '-- Pilih Jenis Pekerjaan --' : '-- Pilih Bagian dulu --'}
+                          triggerWidth="w-full"
+                          onChange={val => setFormData({...formData, jenis_pekerjaan: val})}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[12px] font-bold text-gray-600">Target</label>
+                        <input 
+                          type="text" 
+                          placeholder="0" 
+                          className="w-full bg-yellow-50/50 border border-yellow-300 rounded-lg px-3 py-2 text-[13px] font-medium focus:ring-2 focus:ring-yellow-500/30 focus:border-yellow-500 outline-none h-11" 
+                          value={formData.target || ''} 
+                          onChange={e => {
+                            const val = e.target.value;
+                            if (val.startsWith('=')) {
+                              const formatted = formatFormulaNumbers(val);
                               setFormData({...formData, target: formatted});
                             } else {
-                              setFormData({...formData, target: val});
+                              const clean = val.replace(/\./g, '');
+                              if (/^\d+$/.test(clean)) {
+                                const formatted = clean.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                                setFormData({...formData, target: formatted});
+                              } else {
+                                setFormData({...formData, target: val});
+                              }
                             }
-                          }
-                        }} 
-                        onBlur={() => {
-                          const val = formData.target || '';
-                          if (val.startsWith('=')) {
-                            const evaluated = evaluateMathExpression(val);
-                            setFormData({...formData, target: evaluated});
-                          }
-                        }}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter') {
+                          }} 
+                          onBlur={() => {
                             const val = formData.target || '';
                             if (val.startsWith('=')) {
-                              e.preventDefault();
                               const evaluated = evaluateMathExpression(val);
                               setFormData({...formData, target: evaluated});
                             }
-                          }
-                        }}
-                      />
+                          }}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              const val = formData.target || '';
+                              if (val.startsWith('=')) {
+                                e.preventDefault();
+                                const evaluated = evaluateMathExpression(val);
+                                setFormData({...formData, target: evaluated});
+                              }
+                            }
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2308,14 +2615,14 @@ export default function JurnalClient({
                 )}
 
                 {(isMultiRealisasiMode ? multiRealisasi : [formData]).map((rData, rIndex) => (
-                  <div key={rIndex} className={`mb-6 ${isMultiRealisasiMode ? 'p-5 pt-7 border-2 border-dashed border-sky-200 bg-sky-50/20 rounded-xl relative' : ''}`}>
+                  <div key={rIndex} className={`mb-6 ${isMultiRealisasiMode ? 'p-3.5 sm:p-5 pt-6 sm:pt-7 border-2 border-dashed border-sky-200 bg-sky-50/20 rounded-xl relative' : ''}`}>
                     {isMultiRealisasiMode && (
-                      <div className="absolute -top-3 left-4 bg-sky-100 text-sky-800 px-3 py-0.5 rounded-full text-[11px] font-bold border border-sky-200">
+                      <div className="absolute -top-3 left-3 sm:left-4 bg-sky-100 text-sky-800 px-2.5 sm:px-3 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold border border-sky-200">
                         Realisasi #{rIndex + 1} {rIndex === 0 ? '(Utama)' : '(Baris Baru)'}
                       </div>
                     )}
                     {isMultiRealisasiMode && rIndex > 0 && (
-                      <button type="button" onClick={() => setMultiRealisasi(prev => prev.filter((_, i) => i !== rIndex))} className="absolute -top-3 right-4 bg-rose-100 text-rose-600 px-2 py-0.5 rounded-full text-[11px] font-bold hover:bg-rose-200 border border-rose-200 transition-colors">
+                      <button type="button" onClick={() => setMultiRealisasi(prev => prev.filter((_, i) => i !== rIndex))} className="absolute -top-3 right-3 sm:right-4 bg-rose-100 text-rose-600 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold hover:bg-rose-200 border border-rose-200 transition-colors">
                         Hapus
                       </button>
                     )}
@@ -2525,12 +2832,12 @@ export default function JurnalClient({
                 ))}
 
                 {isMultiRealisasiMode && (
-                  <div className="flex gap-3 mb-4">
-                    <button type="button" onClick={() => setMultiRealisasi(prev => [...prev, {}])} className="flex-1 py-3 border-2 border-dashed border-sky-200 text-sky-600 rounded-xl font-bold text-[13px] hover:bg-sky-50 hover:border-sky-300 transition-colors flex items-center justify-center gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2.5 mb-4">
+                    <button type="button" onClick={() => setMultiRealisasi(prev => [...prev, {}])} className="w-full sm:flex-1 py-2.5 sm:py-3 border-2 border-dashed border-sky-200 text-sky-600 rounded-xl font-bold text-[12px] sm:text-[13px] hover:bg-sky-50 hover:border-sky-300 transition-colors flex items-center justify-center gap-2">
                       <PlusSquare size={16} /> Tambah Realisasi Lainnya
                     </button>
-                    <button type="button" onClick={addCopyFromLastRealisasi} className="py-3 px-5 border-2 border-dashed border-emerald-200 text-emerald-600 rounded-xl font-bold text-[13px] hover:bg-emerald-50 hover:border-emerald-300 transition-colors flex items-center justify-center gap-2 whitespace-nowrap">
-                      <Copy size={16} /> Copy dari Realisasi Sebelumnya
+                    <button type="button" onClick={addCopyFromLastRealisasi} className="w-full sm:w-auto py-2.5 sm:py-3 px-4 sm:px-5 border-2 border-dashed border-emerald-200 text-emerald-600 rounded-xl font-bold text-[12px] sm:text-[13px] hover:bg-emerald-50 hover:border-emerald-300 transition-colors flex items-center justify-center gap-2 whitespace-nowrap">
+                      <Copy size={16} /> Copy Realisasi Sebelumnya
                     </button>
                   </div>
                 )}
@@ -2538,22 +2845,22 @@ export default function JurnalClient({
             )}
 
             {/* Action buttons */}
-            <div className="flex justify-between items-center gap-3 pt-5 mt-5 border-t border-gray-100">
+            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 pt-5 mt-5 border-t border-gray-100">
               <div className="flex gap-2">
                 {formSubTab === 'target' && canInputRealisasi && (
-                  <button type="button" onClick={() => setFormSubTab('realisasi')} className="px-4 py-2 text-[12px] font-bold text-sky-600 bg-sky-50 hover:bg-sky-100 rounded-lg border border-sky-200 transition-all">
+                  <button type="button" onClick={() => setFormSubTab('realisasi')} className="w-full sm:w-auto px-4 py-2 text-[12px] font-bold text-sky-600 bg-sky-50 hover:bg-sky-100 rounded-lg border border-sky-200 transition-all text-center">
                     Lanjut ke Realisasi →
                   </button>
                 )}
                 {formSubTab === 'realisasi' && canInputTarget && (
-                  <button type="button" onClick={() => setFormSubTab('target')} className="px-4 py-2 text-[12px] font-bold text-yellow-700 bg-yellow-50 hover:bg-yellow-100 rounded-lg border border-yellow-200 transition-all">
+                  <button type="button" onClick={() => setFormSubTab('target')} className="w-full sm:w-auto px-4 py-2 text-[12px] font-bold text-yellow-700 bg-yellow-50 hover:bg-yellow-100 rounded-lg border border-yellow-200 transition-all text-center">
                     ← Kembali ke Target
                   </button>
                 )}
               </div>
-              <div className="flex gap-3">
-                <button type="button" onClick={cancelForm} className="px-5 py-2.5 text-[13px] font-bold text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all">Batal</button>
-                <button type="submit" disabled={isSaving} className="px-5 py-2.5 text-[13px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-xl shadow-sm transition-all flex items-center gap-2">
+              <div className="flex gap-2 sm:gap-3">
+                <button type="button" onClick={cancelForm} className="flex-1 sm:flex-initial px-5 py-2.5 text-[13px] font-bold text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all text-center">Batal</button>
+                <button type="submit" disabled={isSaving} className="flex-1 sm:flex-initial px-5 py-2.5 text-[13px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2">
                   {isSaving ? <><Loader2 size={16} className="animate-spin" /> Menyimpan...</> : <><Save size={16} /> Simpan Data</>}
                 </button>
               </div>
