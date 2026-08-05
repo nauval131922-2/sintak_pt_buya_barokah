@@ -75,6 +75,7 @@ export default function LoginContent() {
             {[
               'Pencatatan dan Analisa Kesalahan Karyawan',
               'Tracking Manufaktur',
+              'Target dan Realisasi Produksi',
               'Rekap dan Analisa Hasil Produksi',
             ].map((feat) => (
               <div key={feat} className="flex items-center gap-3 text-emerald-50">
