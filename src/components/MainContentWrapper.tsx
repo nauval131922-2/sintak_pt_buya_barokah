@@ -162,7 +162,7 @@ function MainContentInner({
         </div>
         
         {/* Main Content - internal scroll area (fixed layout) */}
-        <div id="main-content-scroll" className="flex-1 min-h-0 flex flex-col min-w-0 overflow-y-auto md:overflow-hidden custom-scrollbar bg-[var(--bg-deep)] px-4 xl:px-8 pt-2 xl:pt-3 pb-4 xl:pb-6">
+        <div id="main-content-scroll" className="flex-1 min-h-0 flex flex-col min-w-0 overflow-y-auto custom-scrollbar bg-[var(--bg-deep)] px-4 xl:px-8 pt-2 xl:pt-3 pb-4 xl:pb-6">
           {children}
         </div>
       </div>
