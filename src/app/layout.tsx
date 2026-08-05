@@ -58,7 +58,7 @@ export default async function RootLayout({
 
   return (
     <html lang="id" className="overflow-hidden">
-      <body className={`${outfit.className} overflow-hidden h-screen w-screen md:[zoom:0.82] md:w-[121.95vw] md:h-[121.95vh]`}>
+      <body className={`${outfit.className} overflow-hidden h-screen w-screen`}>
         <MainContentWrapper user={user} permissions={permissions}>
           {children}
         </MainContentWrapper>
