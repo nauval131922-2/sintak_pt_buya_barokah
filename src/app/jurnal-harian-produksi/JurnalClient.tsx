@@ -2314,49 +2314,54 @@ export default function JurnalClient({
       </div> {/* CLOSES activeTab === 'list' */}
 
       {/* TAB CONTENT: FORM */}
-      <div className={`flex-1 flex flex-col gap-4 overflow-y-auto pr-0 sm:pr-2 pb-10 ${activeTab === 'form' ? 'flex' : 'hidden'}`}>
+      <div className={`flex-1 min-h-0 ${activeTab === 'form' ? 'flex flex-col' : 'hidden'}`}>
           {(isAdding || editingId !== null) && (
-          <form onSubmit={(e) => { e.preventDefault(); saveForm(); }} className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl p-3.5 sm:p-6 shadow-sm animate-in slide-in-from-top-4 fade-in duration-300">
+          <form onSubmit={(e) => { e.preventDefault(); saveForm(); }} className="bg-white border border-gray-100 rounded-2xl shadow-sm animate-in slide-in-from-top-4 fade-in duration-300 flex-1 min-h-0 flex flex-col overflow-hidden">
 
-            {userRole?.toLowerCase() === 'admin penjadwalan' && editingId !== null && formData.tgl && (() => {
-              const tomorrow = new Date();
-              tomorrow.setDate(tomorrow.getDate() + 1);
-              const tomorrowStr = tomorrow.toISOString().split('T')[0];
-              if (formData.tgl < tomorrowStr) {
-                return (
-                  <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5 sm:gap-3 text-amber-800 animate-in fade-in duration-300">
-                    <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-[12px] font-bold">Peringatan: Mengedit Data Masa Lalu / Hari Ini</p>
-                      <p className="text-[11px] mt-0.5 leading-relaxed font-medium">
-                        Jadwal ini untuk tanggal <b>{formatIndoDateStr(formData.tgl)}</b> (sebelum besok). Mengubah data jadwal yang sudah berjalan dapat memengaruhi laporan hasil produksi dan realisasi harian.
-                      </p>
+            {/* HEADER FIXED: Sub-tab Target / Realisasi */}
+            <div className="shrink-0 p-3 sm:p-4 pb-2 border-b border-gray-100 bg-white/95 backdrop-blur-md z-10 flex flex-col gap-2">
+              {userRole?.toLowerCase() === 'admin penjadwalan' && editingId !== null && formData.tgl && (() => {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowStr = tomorrow.toISOString().split('T')[0];
+                if (formData.tgl < tomorrowStr) {
+                  return (
+                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5 text-amber-800 animate-in fade-in duration-300">
+                      <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-[11px] font-bold">Peringatan: Mengedit Data Masa Lalu / Hari Ini</p>
+                        <p className="text-[10px] mt-0.5 leading-relaxed font-medium">
+                          Jadwal ini untuk tanggal <b>{formatIndoDateStr(formData.tgl)}</b>.
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                );
-              }
-              return null;
-            })()}
+                  );
+                }
+                return null;
+              })()}
 
-            {/* Sub-tab: Target / Realisasi - hanya tampil jika punya akses keduanya */}
-            {canInputTarget && canInputRealisasi && (
-              <div className="flex gap-1 mb-4 sm:mb-6 bg-gray-50 p-1 rounded-xl w-full sm:w-fit border border-gray-100">
-                <button
-                  type="button"
-                  onClick={() => setFormSubTab('target')}
-                  className={`flex-1 sm:flex-initial px-3 sm:px-5 py-2 text-[11px] sm:text-[12px] font-bold rounded-lg transition-all text-center ${formSubTab === 'target' ? 'bg-white text-emerald-700 shadow-sm border border-emerald-100' : 'text-gray-500 hover:text-gray-700'}`}
-                >
-                  🗓 Target
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormSubTab('realisasi')}
-                  className={`flex-1 sm:flex-initial px-3 sm:px-5 py-2 text-[11px] sm:text-[12px] font-bold rounded-lg transition-all text-center ${formSubTab === 'realisasi' ? 'bg-white text-sky-700 shadow-sm border border-sky-100' : 'text-gray-500 hover:text-gray-700'}`}
-                >
-                  📋 Realisasi
-                </button>
-              </div>
-            )}
+              {canInputTarget && canInputRealisasi && (
+                <div className="flex gap-1 bg-gray-50 p-1 rounded-xl w-full sm:w-fit border border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => setFormSubTab('target')}
+                    className={`flex-1 sm:flex-initial px-4 sm:px-6 py-2 text-[11px] sm:text-[12px] font-bold rounded-lg transition-all text-center ${formSubTab === 'target' ? 'bg-white text-emerald-700 shadow-sm border border-emerald-100' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    🗓 Target
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormSubTab('realisasi')}
+                    className={`flex-1 sm:flex-initial px-4 sm:px-6 py-2 text-[11px] sm:text-[12px] font-bold rounded-lg transition-all text-center ${formSubTab === 'realisasi' ? 'bg-white text-sky-700 shadow-sm border border-sky-100' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    📋 Realisasi
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* BODY SCROLLABLE: Isian Form */}
+            <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
 
             {/* ---- SUB-TAB: TARGET ---- */}
             {formSubTab === 'target' && (
@@ -2844,8 +2849,10 @@ export default function JurnalClient({
               </div>
             )}
 
-            {/* Action buttons */}
-            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 pt-5 mt-5 border-t border-gray-100">
+            </div> {/* CLOSES BODY SCROLLABLE */}
+
+            {/* FOOTER FIXED: Action buttons */}
+            <div className="shrink-0 p-3 sm:p-4 border-t border-gray-100 bg-white/95 backdrop-blur-md z-10 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
               <div className="flex gap-2">
                 {formSubTab === 'target' && canInputRealisasi && (
                   <button type="button" onClick={() => setFormSubTab('realisasi')} className="w-full sm:w-auto px-4 py-2 text-[12px] font-bold text-sky-600 bg-sky-50 hover:bg-sky-100 rounded-lg border border-sky-200 transition-all text-center">
