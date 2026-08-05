@@ -15,10 +15,7 @@ export default function Portal({ children }: PortalProps) {
     return () => setMounted(false);
   }, []);
 
-  return mounted ? createPortal(
-    <div className="md:[zoom:0.82] contents">{children}</div>,
-    document.body
-  ) : null;
+  return mounted ? createPortal(children, document.body) : null;
 }
 
 
