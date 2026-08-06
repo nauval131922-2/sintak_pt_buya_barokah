@@ -33,7 +33,7 @@ export default function LoginContent() {
   };
 
   return (
-    <div className="min-h-screen w-screen overflow-hidden flex bg-[var(--bg-deep)] animate-in fade-in duration-700 md:[zoom:0.82] md:w-[121.95vw] md:h-[121.95vh] 2xl:[zoom:1] 2xl:w-screen 2xl:h-screen">
+    <div className="min-h-screen w-screen overflow-hidden flex bg-[var(--bg-deep)] animate-in fade-in duration-700 md:[zoom:0.82] md:w-[121.95vw] md:h-[121.95vh]">
       
       {/* ── Left Panel (Brand) ── */}
       <div className="hidden lg:flex lg:w-[45%] xl:w-[40%] relative overflow-hidden flex-col items-center justify-center p-12"
