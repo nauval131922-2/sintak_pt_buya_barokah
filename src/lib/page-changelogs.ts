@@ -115,7 +115,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     sortDate: '2026-08-03',
     permissionKeys: ['produksi_jhp'],
     items: [
-      'Optimasi Zoom 80% (md:[zoom:0.82]) menyeluruh untuk Laptop & Tablet tanpa scrollbar luar ganda',
+      'Optimasi Zoom 80% menyeluruh untuk Tablet & Laptop (768px – 1919px), sementara Monitor PC Desktop (≥1920px) otomatis 100%',
       'Peningkatan Tampilan Mobile (Card View): row info umum truncate (untruncate saat diklik), label Pekerjaan Realisasi terpisah & rapi',
       'Popup portal (DatePicker & Dropdown) terkalibrasi presisi di tablet & laptop',
       'Form Input JHP disempurnakan: Tab Target/Realisasi & tombol Simpan/Batal terkunci diam (fixed header & footer) saat isi form di-scroll',
