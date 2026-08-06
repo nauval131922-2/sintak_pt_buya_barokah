@@ -85,7 +85,7 @@ export default function InlineDropdown({
     setDropdownStyle({
       position: 'fixed',
       left: rect.left / scale,
-      width: Math.max(rect.width, 200),
+      width: Math.max(rect.width / scale, 200),
       zIndex: 99999,
       ...(showAbove
         ? { bottom: (window.innerHeight - rect.top + 4) / scale }

@@ -102,11 +102,11 @@ export default function SearchableDropdown({
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
     const scale = getZoomScale();
-    const maxW = typeof window !== 'undefined' ? window.innerWidth - 24 : 360;
+    const maxW = (typeof window !== 'undefined' ? window.innerWidth - 24 : 360) / scale;
     setPanelPos({
       top: (rect.bottom + 8) / scale,
       left: rect.left / scale,
-      width: Math.min(rect.width, maxW),
+      width: Math.min(rect.width / scale, maxW),
     });
   }, []);
 
