@@ -1,7 +1,7 @@
 'use client'; // <- WAJIB: komponen ini pakai useState/useEffect (hanya jalan di browser)
 
 import React, { useState, useRef, useEffect } from 'react';
-import Portal from './Portal';
+import Portal, { getZoomScale } from './Portal';
 import { Calendar, X } from 'lucide-react';
 
 // Constanta di luar komponen => tidak dibuat ulang tiap render (hemat memory)
@@ -110,9 +110,10 @@ export default function DatePicker({ name, required, label, onChange, value, cus
   const toggleOpen = () => {
     if (!open && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
+      const scale = getZoomScale();
       setCoords({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX,
+        top: (rect.bottom + window.scrollY) / scale,
+        left: (rect.left + window.scrollX) / scale,
         width: rect.width
       });
     }

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { ChevronDown, Search } from 'lucide-react';
-import Portal from './Portal';
+import Portal, { getZoomScale } from './Portal';
 
 interface SearchableDropdownProps {
   /** Currently selected value */
@@ -101,8 +101,13 @@ export default function SearchableDropdown({
   const updatePos = useCallback(() => {
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
+    const scale = getZoomScale();
     const maxW = typeof window !== 'undefined' ? window.innerWidth - 24 : 360;
-    setPanelPos({ top: rect.bottom + 8, left: rect.left, width: Math.min(rect.width, maxW) });
+    setPanelPos({
+      top: (rect.bottom + 8) / scale,
+      left: rect.left / scale,
+      width: Math.min(rect.width, maxW),
+    });
   }, []);
 
   useEffect(() => {

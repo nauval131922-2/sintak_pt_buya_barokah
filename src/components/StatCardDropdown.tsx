@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Check, Search } from 'lucide-react';
-import Portal from '@/components/Portal';
+import Portal, { getZoomScale } from '@/components/Portal';
 
 export interface DropdownOption {
   value: string;
@@ -56,10 +56,11 @@ export default function StatCardDropdown({
     if (!open || !triggerRef.current) return;
     const update = () => {
       const rect = triggerRef.current!.getBoundingClientRect();
+      const scale = getZoomScale();
       setPanelStyle({
         position: 'fixed',
-        top: rect.bottom + 4,
-        right: window.innerWidth - rect.right,
+        top: (rect.bottom + 4) / scale,
+        right: (window.innerWidth - rect.right) / scale,
         zIndex: 9999,
       });
     };

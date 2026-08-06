@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo, useCallback, useId } from 'react';
 import { createPortal } from 'react-dom';
+import { getZoomScale } from './Portal';
 import { ChevronDown, Search } from 'lucide-react';
 
 interface InlineOption {
@@ -74,6 +75,7 @@ export default function InlineDropdown({
   const updateDropdownPosition = useCallback(() => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
+    const scale = getZoomScale();
     const spaceBelow = window.innerHeight - rect.bottom;
     const spaceAbove = rect.top;
     const dropdownMaxH = 240; // max-h kira-kira
@@ -82,12 +84,12 @@ export default function InlineDropdown({
 
     setDropdownStyle({
       position: 'fixed',
-      left: rect.left,
+      left: rect.left / scale,
       width: Math.max(rect.width, 200),
       zIndex: 99999,
       ...(showAbove
-        ? { bottom: window.innerHeight - rect.top + 4 }
-        : { top: rect.bottom + 4 }
+        ? { bottom: (window.innerHeight - rect.top + 4) / scale }
+        : { top: (rect.bottom + 4) / scale }
       ),
     });
   }, []);
