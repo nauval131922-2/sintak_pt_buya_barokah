@@ -544,16 +544,6 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     permissionKeys: [...SUPER_ADMIN_ONLY],
     items: [...UI_POLISH],
   }),
-  'users-2026-08-07': entry({
-    pageKey: 'users',
-    title: 'Kelola User',
-    permissionKeys: [...SUPER_ADMIN_ONLY],
-    sortDate: '2026-08-07',
-    date: '07 Agu 2026',
-    items: [
-      'Perbaikan modal edit user (UserFormModal) agar footer tombol Batal & Simpan Perubahan selalu terkunci di bawah dan tidak terpotong',
-    ],
-  }),
   'laporan-pekerjaan-2026-08-07': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan Setting Buya 2026',

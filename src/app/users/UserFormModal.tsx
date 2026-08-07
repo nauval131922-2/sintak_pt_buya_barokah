@@ -191,7 +191,7 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
           </div>
 
           {/* Body */}
-          <div className="px-6 py-5 flex flex-col gap-5 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
+          <div className="px-6 py-5 flex flex-col gap-5 overflow-y-auto">
 
             {/* Error */}
             {error && (
