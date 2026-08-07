@@ -29,6 +29,7 @@ export const searchableMenuItems = [
   { label: 'Produksi Selesai', href: '/data-digit/produksi/produksi-selesai', category: 'Produksi', keywords: 'selesai complete finish' },
   { label: 'BBB Produksi', href: '/bahan-baku', category: 'Produksi', keywords: 'bahan baku raw material' },
   { label: 'Penerimaan Barang Hasil Produksi', href: '/barang-jadi', category: 'Produksi', keywords: 'finished goods jadi' },
+  { label: 'Laporan Pekerjaan', href: '/laporan-pekerjaan', category: 'Produksi', keywords: 'laporan pekerjaan setting buya google sheet spreadsheet' },
 
   // Penjualan
   { label: 'SPH Keluar', href: '/sph-out', category: 'Penjualan', keywords: 'penawaran sales quotation' },

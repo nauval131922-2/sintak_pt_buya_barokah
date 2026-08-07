@@ -36,6 +36,7 @@ import {
   CheckCircle,
   MessageSquare,
   Sparkles,
+  FileSpreadsheet,
 } from 'lucide-react';
 import type { PermissionMap } from '@/lib/permissions-constants';
 
@@ -263,7 +264,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
     canAccess('tracking_manufaktur') || canAccess('activity_log_view') || canAccess('activity_log') || canAccess('karyawan') ||
     canAccess('catat_kesalahan') ||
     canAccess('hpp_kalkulasi') ||
-    canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp_master_pekerjaan_jurnal_produksi') || canAccess('produksi_jhp') || canAccess('produksi_jhp_target') || canAccess('produksi_hasil') || canAccess('produksi_jhp_analisa') ||
+    canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp_master_pekerjaan_jurnal_produksi') || canAccess('produksi_jhp') || canAccess('produksi_jhp_target') || canAccess('produksi_hasil') || canAccess('produksi_jhp_analisa') || canAccess('produksi_laporan_pekerjaan') ||
     canAccess('kalkulasi_rekap_so');
 
   const isAnyChildActive = (item: MenuItem): boolean => {
@@ -605,7 +606,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
               />
             )}
 
-            {(canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp_master_pekerjaan_jurnal_produksi') || canAccess('produksi_jhp') || canAccess('produksi_jhp_target') || canAccess('produksi_hasil') || canAccess('produksi_jhp_analisa')) && (
+            {(canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp_master_pekerjaan_jurnal_produksi') || canAccess('produksi_jhp') || canAccess('produksi_jhp_target') || canAccess('produksi_hasil') || canAccess('produksi_jhp_analisa') || canAccess('produksi_laporan_pekerjaan')) && (
               <AccordionMenu
                 id="produksi-sistem"
                 label="Produksi"
@@ -630,6 +631,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                     ]
                   }] : []),
                   ...(canAccess('produksi_hasil') ? [{ label: 'Hasil Produksi', href: '/hasil-produksi', icon: <BarChart3 size={16} /> }] : []),
+                  ...(canAccess('produksi_laporan_pekerjaan') ? [{ label: 'Laporan Pekerjaan', href: '/laporan-pekerjaan', icon: <FileSpreadsheet size={16} /> }] : []),
                 ]}
               />
             )}

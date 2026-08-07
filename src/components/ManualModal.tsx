@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
-import { Database, Info, TrendingDown, Monitor, Search, ShieldCheck, Users, FileText, FileCheck, ClipboardList, Calculator, ShoppingCart, Truck, Box, Star, BarChart3, AlertCircle, TrendingUp, CreditCard } from 'lucide-react';
+import { Database, Info, TrendingDown, Monitor, Search, ShieldCheck, Users, FileText, FileCheck, ClipboardList, Calculator, ShoppingCart, Truck, Box, Star, BarChart3, AlertCircle, TrendingUp, CreditCard, FileSpreadsheet } from 'lucide-react';
 import BaseModal from '@/components/ui/BaseModal';
 
 export default function ManualModal() {
@@ -377,6 +377,28 @@ export default function ManualModal() {
         '**Kuantitas (Qty)**: Isi jumlah barang yang mengalami kesalahan.',
         '**Harga Satuan**: Terisi otomatis dari database. Hanya bisa diisi manual jika memilih kategori/jenis harga **Manual**.',
         '**Total Estimasi Beban**: Hasil perhitungan otomatis (**Qty** x **Harga Satuan**).'
+      ]
+    },
+    '/laporan-pekerjaan': {
+      title: 'Laporan Pekerjaan Setting Buya 2026',
+      icon: FileSpreadsheet,
+      description: 'Monitoring & Laporan Pekerjaan Produksi yang terhubung langsung secara live dari Google Spreadsheet.',
+      steps: [
+        'Pantau 5 **Kartu Statistik** di bagian atas untuk melihat total task dan rincian per status (SELESAI, IN PROGRESS, PENDING, CANCEL) secara real-time.',
+        'Lihat 4 **Grafik Visualisasi**:',
+        '  • **Beban Kerja Per PIC**: Grafik batang per PIC dengan perincian status warna.',
+        '  • **Distribusi Pekerjaan Per Divisi**: Grafik batang per divisi dengan perincian status warna.',
+        '  • **Proporsi Status Pekerjaan**: Grafik donat lengkap dengan persentase (%) di potongan donat & legend.',
+        '  • **Tingkat Prioritas Pekerjaan**: Grafik batang horizontal per tingkat prioritas (High/Medium/Low).',
+        'Arahkan kursor (**hover**) pada bagian grafik untuk menampilkan **Tooltip Detail** berwarna.',
+        'Gunakan **Bar Filter & Pencarian** di bawah grafik untuk menyaring data berdasarkan kata kunci, PIC, atau Status.',
+        'Fitur Tabel Interaktif:',
+        '  • **Pengurutan Kolom (Sort)**: Klik header kolom mana saja untuk mengurutkan seluruh isi tabel secara global (lintas halaman).',
+        '  • **Atur Lebar Kolom (Resize)**: Geser garis pemisah di tepi kanan header kolom untuk memperlebar/mempersempit kolom.',
+        '  • **Tooltip Teks Lengkap**: Arahkan kursor pada sel tabel yang terpotong untuk melihat isi teks selengkapnya.',
+        '  • **Pindah Halaman**: Setiap berganti halaman, posisi scroll tabel otomatis kembali ke paling atas.',
+        'Sistem melakukan **Auto Refresh** setiap 2 menit. Klik tombol **Refresh Live** untuk memperbarui data secara manual kapan saja.',
+        'Klik tombol **Spreadsheet** di kanan atas untuk membuka dokumen Google Spreadsheet sumber secara langsung.'
       ]
     }
   }), [pathname]);

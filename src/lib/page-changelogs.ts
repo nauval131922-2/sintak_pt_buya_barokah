@@ -532,6 +532,21 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     permissionKeys: [...SUPER_ADMIN_ONLY],
     items: [...UI_POLISH],
   }),
+  'laporan-pekerjaan-2026-08-07': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan Setting Buya 2026',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-08-07',
+    date: '07 Agu 2026',
+    items: [
+      'Modul baru: Laporan Pekerjaan terhubung live dari Google Spreadsheet (DATABASE_REPORT)',
+      'Statistik real-time 5 kategori & 4 grafik visualisasi Recharts (PIC, Divisi, Donut Status %, Prioritas Horizontal)',
+      'Fitur tabel interaktif: global column sorting, resizable column dengan 60fps smooth dragging, & tooltip sel terpotong',
+      'Responsif HP: Card View modern khusus mobile dengan fitur klik untuk untruncate teks',
+      'Pemisah ribuan (fmtNumber) & sinkronisasi data 100% konsisten antara card, donut, dan grafik',
+      'Optimasi performa tinggi: in-memory TTL cache (< 5ms response) & useDeferredValue search',
+    ],
+  }),
 };
 
 /** pathname → pageKey (hanya path yang punya log) */
@@ -548,6 +563,7 @@ export const PAGE_CHANGELOG_PATHS: Record<string, string> = {
   '/jurnal-harian-produksi/target': 'jurnal-harian-produksi-target',
   '/jurnal-harian-produksi/analisa': 'jurnal-harian-produksi-analisa',
   '/tracking-manufaktur': 'tracking-manufaktur',
+  '/laporan-pekerjaan': 'laporan-pekerjaan',
   '/log-aktivitas': 'log-aktivitas',
   '/records': 'records',
   '/bom': 'bom',

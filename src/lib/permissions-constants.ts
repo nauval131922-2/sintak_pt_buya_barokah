@@ -48,6 +48,7 @@ export const MODULE_REGISTRY = [
   { key: 'produksi_jhp_penjadwalan', label: 'JHP - Input Target (Penjadwalan)', group: 'Sistem - Produksi' },
   { key: 'produksi_jhp_realisasi', label: 'JHP - Input Realisasi',             group: 'Sistem - Produksi' },
   { key: 'produksi_hasil',         label: 'Hasil Produksi',                   group: 'Sistem - Produksi' },
+  { key: 'produksi_laporan_pekerjaan', label: 'Laporan Pekerjaan',            group: 'Sistem - Produksi' },
   { key: 'produksi_jhp_analisa',   label: 'Analisa Produksi',                 group: 'Sistem - Produksi' },
 
   // Sistem - User
