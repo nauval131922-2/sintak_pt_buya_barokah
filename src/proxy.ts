@@ -14,6 +14,8 @@ const PUBLIC_PATHS = [
   '/api/auth/me',
   '/api/telegram',
   '/api/webhook',
+  '/api/cron',
+  '/api/maintenance',
   '/_next',
   '/favicon',
   '/fonts',
