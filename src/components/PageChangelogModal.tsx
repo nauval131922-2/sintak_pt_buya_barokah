@@ -152,10 +152,10 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
       }
     >
       <div className="flex flex-col gap-3">
-        {active.map((changelog) => {
+        {active.map((changelog, idx) => {
           const isOpen = openSections.has(changelog.version);
           return (
-            <div key={changelog.version} className="border border-gray-100 rounded-xl overflow-hidden">
+            <div key={`${changelog.pageKey}-${changelog.version}-${idx}`} className="border border-gray-100 rounded-xl overflow-hidden">
               {/* Accordion Header */}
               <button
                 type="button"

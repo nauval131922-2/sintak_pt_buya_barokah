@@ -33,8 +33,9 @@ function entry(
     sortDate?: string;
   }
 ): PageChangelog {
+  const version = partial.version || (partial.sortDate ? `${partial.pageKey}-${partial.sortDate}` : CATCHUP_VERSION);
   return {
-    version: CATCHUP_VERSION,
+    version,
     date: CATCHUP_DATE,
     sortDate: CATCHUP_SORT,
     ...partial,
