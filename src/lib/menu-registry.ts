@@ -48,6 +48,7 @@ export const searchableMenuItems = [
   { label: 'Hasil Produksi', href: '/hasil-produksi', category: 'Sistem', keywords: 'output produksi' },
   { label: 'Kalkulasi HPP', href: '/hpp-kalkulasi', category: 'Sistem', keywords: 'hpp cost calculation' },
   { label: 'Log Aktivitas', href: '/log-aktivitas', category: 'Sistem', keywords: 'activity log audit trail' },
+  { label: 'Log Perubahan', href: '/log-perubahan', category: 'Sistem', keywords: 'log perubahan changelog history update rilis versi' },
   { label: 'Karyawan', href: '/employees', category: 'Sistem', keywords: 'employee pegawai staff' },
   { label: 'Catat Kesalahan', href: '/catat-kesalahan', category: 'Sistem', keywords: 'infraction pelanggaran' },
 

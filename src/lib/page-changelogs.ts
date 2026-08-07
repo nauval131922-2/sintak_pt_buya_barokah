@@ -456,6 +456,18 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     permissionKeys: [...SUPER_ADMIN_ONLY],
     items: [...UI_POLISH],
   }),
+  'roles-2026-08-07': entry({
+    pageKey: 'roles',
+    title: 'Hak Akses (Roles)',
+    permissionKeys: [...SUPER_ADMIN_ONLY],
+    sortDate: '2026-08-07',
+    date: '07 Agu 2026',
+    items: [
+      'Penambahan hak akses baru: Laporan Pekerjaan di grup Sistem Produksi',
+      'Perbaikan layout 1 layar penuh (100vh) dan penambahan scrollbar internal khusus di Card Role & pohon Hak Akses',
+      'Auto-scroll pada form edit role saat tombol edit diklik sehingga tombol Batal & Update tidak terpotong',
+    ],
+  }),
   'sales-2026-07-25': entry({
     pageKey: 'sales',
     title: 'Laporan Penjualan',
@@ -531,6 +543,16 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     title: 'Kelola User',
     permissionKeys: [...SUPER_ADMIN_ONLY],
     items: [...UI_POLISH],
+  }),
+  'users-2026-08-07': entry({
+    pageKey: 'users',
+    title: 'Kelola User',
+    permissionKeys: [...SUPER_ADMIN_ONLY],
+    sortDate: '2026-08-07',
+    date: '07 Agu 2026',
+    items: [
+      'Perbaikan modal edit user (UserFormModal) agar footer tombol Batal & Simpan Perubahan selalu terkunci di bawah dan tidak terpotong',
+    ],
   }),
   'laporan-pekerjaan-2026-08-07': entry({
     pageKey: 'laporan-pekerjaan',

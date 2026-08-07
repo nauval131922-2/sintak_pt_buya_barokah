@@ -344,8 +344,19 @@ export default function GlobalSearch() {
 
       {/* Mobile Search Modal (Overlay) */}
       {isMobileSearchOpen && (
-        <div className="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-sm flex items-start justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[75vh] animate-in fade-in zoom-in-95 duration-200 mt-12 mb-12">
+        <div 
+          onClick={() => {
+            setIsMobileSearchOpen(false);
+            setIsOpen(false);
+            setQuery('');
+            setResults([]);
+          }}
+          className="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-sm flex items-start justify-center p-4 cursor-pointer"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-lg rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[75vh] animate-in fade-in zoom-in-95 duration-200 mt-12 mb-12 cursor-default"
+          >
             {/* Header / Input field */}
             <div className="flex items-center gap-2 p-3 border-b border-gray-100 shrink-0">
               <div className="relative flex-1">

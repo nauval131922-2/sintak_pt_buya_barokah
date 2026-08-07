@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ShieldCheck, CheckCircle2, XCircle,
@@ -68,6 +68,13 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
   const [editingRole, setEditingRole] = useState<string | null>(null);
   const [editRoleName, setEditRoleName] = useState('');
   const [editRoleDesc, setEditRoleDesc] = useState('');
+  const editFormRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (editingRole) {
+      editFormRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }, [editingRole]);
 
   // Confirm delete dialog
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
@@ -424,19 +431,19 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
   };
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col gap-6 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden h-[calc(100vh-130px)]">
       <PageHeader
         title="Hak Akses & Role"
         description="Konfigurasi izin penggunaan setiap modul operasional SINTAK."
       />
 
-      <div className="flex-1 min-h-0 flex gap-5 overflow-hidden">
+      <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-5 overflow-hidden">
 
         {/* ── LEFT PANEL: ROLES ─────────────────────────────────────────── */}
-        <div className="w-64 shrink-0 flex flex-col gap-3 overflow-y-auto custom-scrollbar pb-10">
+        <div className="w-full md:w-64 shrink-0 flex flex-col gap-3 h-full min-h-0 overflow-hidden">
 
           {/* Super Admin card */}
-          <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden shrink-0">
             <div className="px-4 py-2.5 border-b border-gray-50 bg-gray-50/50">
               <span className="text-[11px] font-bold text-gray-400">Sistem</span>
             </div>
@@ -452,7 +459,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
           </div>
 
           {/* Configurable roles */}
-          <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden flex flex-col">
+          <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden flex flex-col flex-1 min-h-0">
             <div className="px-4 py-2.5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between shrink-0">
               <span className="text-[11px] font-bold text-gray-400">Role</span>
               <button
@@ -465,7 +472,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
 
             {/* Add role form */}
             {isAddingRole && (
-              <div className="p-3.5 border-b border-gray-100 bg-emerald-50/30 animate-in slide-in-from-top-2 duration-200">
+              <div className="p-3.5 border-b border-gray-100 bg-emerald-50/30 animate-in slide-in-from-top-2 duration-200 shrink-0">
                 <input
                   type="text"
                   placeholder="Nama role..."
@@ -497,7 +504,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
             )}
 
             {/* Role list */}
-            <div className="flex flex-col divide-y divide-gray-50">
+            <div className="flex flex-col divide-y divide-gray-50 overflow-y-auto custom-scrollbar flex-1 min-h-0">
               {customRoles.length === 0 && (
                 <p className="text-[11px] text-gray-400 text-center py-6 italic">Belum ada role</p>
               )}
@@ -508,7 +515,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
 
                 if (editingRole === role) {
                   return (
-                    <div key={`edit-${role}`} className="p-3.5 bg-emerald-50/30 animate-in slide-in-from-top-1 duration-200">
+                    <div key={`edit-${role}`} ref={editFormRef} className="p-3.5 bg-emerald-50/30 animate-in slide-in-from-top-1 duration-200">
                       <input
                         type="text"
                         className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-[12px] font-semibold focus:outline-none focus:border-emerald-400 mb-2"
@@ -626,7 +633,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
               </div>
 
               {/* Permission tree */}
-              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pb-10 pr-0.5">
+              <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar space-y-3 pb-10 pr-0.5">
                 {renderDashboardGroup()}
                 {renderTopGroup('Data Digit', ddTree, 'Data Digit')}
                 {renderTopGroup('Sistem', sistemTree, 'Sistem')}
