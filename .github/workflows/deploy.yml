@@ -78,7 +78,7 @@ jobs:
 
             for i in $(seq 1 30); do
               sleep 1
-              code=$(curl -s -o /dev/null -w "%{http_code}" -m 2 http://localhost:3000/login 2>/dev/null || true)
+              code=$(curl -s -o /dev/null -w "%{http_code}" -m 10 http://localhost:3000/login 2>/dev/null || true)
               if [ "$code" = "200" ]; then
                 rm -f .maintenance
                 rm -rf .next.bak 2>/dev/null
