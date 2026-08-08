@@ -27,7 +27,16 @@ function isPublic(pathname: string): boolean {
   return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'));
 }
 
-async function verifySession(token: string | undefined): Promise<boolean> {
+async function verifySession(request: NextRequest): Promise<boolean> {
+  const token = request.cookies.get(SESSION_COOKIE)?.value;
+  const authHeader = request.headers.get('authorization');
+  const cronSecret = process.env.CRON_SECRET;
+
+  // Allow CRON_SECRET authorization for internal cron/scraper calls
+  if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
+    return true;
+  }
+
   if (!token) return false;
   const secret = process.env.SESSION_SECRET;
   if (!secret) {
@@ -44,14 +53,13 @@ async function verifySession(token: string | undefined): Promise<boolean> {
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const token = request.cookies.get(SESSION_COOKIE)?.value;
 
   // Allow public assets / whitelisted routes through
   if (isPublic(pathname)) {
     return NextResponse.next();
   }
 
-  const valid = await verifySession(token);
+  const valid = await verifySession(request);
 
   if (!valid) {
     // API request -> 401 JSON

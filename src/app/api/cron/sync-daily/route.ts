@@ -61,7 +61,11 @@ export async function GET(request: Request) {
       const results = await Promise.allSettled(
         batch.map(async (endpoint) => {
           const url = `${origin}${endpoint}?start=${start}&end=${end}`;
-          const res = await fetch(url, { method: 'GET', cache: 'no-store' });
+          const headers: Record<string, string> = {};
+          if (cronSecret) {
+            headers['Authorization'] = `Bearer ${cronSecret}`;
+          }
+          const res = await fetch(url, { method: 'GET', cache: 'no-store', headers });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const data = await res.json();
           if (data && data.error) throw new Error(String(data.error));
@@ -90,10 +94,16 @@ export async function GET(request: Request) {
     await db.execute({
       sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, user_id) 
             VALUES (?, ?, 0, ?, 0)`,
-      args: ['CRON_SYNC', 'system', `Sinkronisasi Otomatis Sukses. Data ditarik dari ${start} s/d ${end}.`]
+      args: ['CRON_SYNC', 'system', `Sinkronisasi Otomatis Selesai: ${totalSuccess}/${MODULE_ENDPOINTS.length} endpoint berhasil. Data ditarik dari ${start} s/d ${end}.`]
     });
 
-    return NextResponse.json({ success: true, message: 'Cron sync completed.', totalSuccess });
+    const isSuccess = totalSuccess > 0;
+    return NextResponse.json({
+      success: isSuccess,
+      message: isSuccess ? 'Cron sync completed.' : 'Cron sync finished with 0 successful endpoints.',
+      totalSuccess,
+      totalEndpoints: MODULE_ENDPOINTS.length,
+    }, { status: isSuccess ? 200 : 500 });
 
   } catch (error: any) {
     console.error('[CRON SYNC] Error:', error);
