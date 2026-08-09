@@ -108,6 +108,17 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Jurnal Harian Produksi ───
+  'jurnal-harian-produksi-2026-08-09': entry({
+    pageKey: 'jurnal-harian-produksi',
+    title: 'Jurnal Harian Produksi',
+    version: '2026-08-09-1',
+    date: '09 Agu 2026',
+    sortDate: '2026-08-09',
+    permissionKeys: ['produksi_jhp'],
+    items: [
+      'Penyelarasan tata letak responsif dan scroll navigation lintas viewport',
+    ],
+  }),
   'jurnal-harian-produksi-2026-08-03': entry({
     pageKey: 'jurnal-harian-produksi',
     title: 'Jurnal Harian Produksi',
@@ -298,6 +309,17 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Hasil Produksi ───
+  'hasil-produksi-2026-08-09': entry({
+    pageKey: 'hasil-produksi',
+    title: 'Hasil Produksi',
+    permissionKeys: ['produksi_hasil'],
+    sortDate: '2026-08-09',
+    date: '09 Agu 2026',
+    version: '2026-08-09-1',
+    items: [
+      'Penyelarasan tata letak responsif dan scroll navigation lintas viewport',
+    ],
+  }),
   'hasil-produksi-2026-08-02': entry({
     pageKey: 'hasil-produksi',
     title: 'Hasil Produksi',
@@ -486,6 +508,17 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     title: 'Konversi Data HPP',
     permissionKeys: ['settings_konversi_data_hpp'],
     items: [...UI_POLISH],
+  }),
+  'telegram-users-2026-08-09': entry({
+    pageKey: 'telegram-users',
+    title: 'Telegram Users',
+    sortDate: '2026-08-09',
+    date: '09 Agu 2026',
+    version: '2026-08-09-1',
+    permissionKeys: ['telegram_users'],
+    items: [
+      'Perbaikan modal konfirmasi approve/reject agar tidak terpotong skala container & logging integer ID yang sesuai',
+    ],
   }),
   'telegram-users-2026-08-03': entry({
     pageKey: 'telegram-users',
