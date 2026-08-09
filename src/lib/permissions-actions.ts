@@ -30,6 +30,13 @@ export async function saveRolePermissions(
 
     if (queries.length > 0) {
       await db.batch(queries, 'write');
+      const { logActivity } = await import('@/lib/activity');
+      logActivity(
+        'UPDATE',
+        'role_permissions',
+        `Pembaruan hak akses role ${role}`,
+        { role, updatedModulesCount: queries.length }
+      ).catch(() => {});
     }
 
     return { success: true };

@@ -1594,7 +1594,7 @@ async function initDynamicTriggers(db: any) {
       'penerimaan_pembelian', 'rekap_pembelian_barang', 'pelunasan_hutang',
       'pelunasan_piutang', 'pengiriman', 'spph_out', 'sph_in', 'sph_out', 'rek_akuntansi',
       'hpp_kalkulasi', 'stok_master_barang', 'produksi_selesai', 'user_roles',
-      'master_pekerjaan', 'push_subscriptions', 'telegram_users'
+      'master_pekerjaan', 'push_subscriptions', 'telegram_users', 'role_permissions', 'app_roles'
     ];
 
     // Drop triggers for all excluded tables (cleanup from previous runs)
