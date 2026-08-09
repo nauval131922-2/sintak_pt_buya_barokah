@@ -584,6 +584,16 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     permissionKeys: ['sync'],
     items: [...UI_POLISH],
   }),
+  'users-2026-08-09': entry({
+    pageKey: 'users',
+    title: 'Kelola User',
+    permissionKeys: [...SUPER_ADMIN_ONLY],
+    sortDate: '2026-08-09',
+    date: '09 Agu 2026',
+    items: [
+      'Perbaikan posisi dropdown Peran Akses (Role) di modal Tambah/Edit User agar presisi sesuai koordinat tombol pada skala zoom layar',
+    ],
+  }),
   'users-2026-07-25': entry({
     pageKey: 'users',
     title: 'Kelola User',
