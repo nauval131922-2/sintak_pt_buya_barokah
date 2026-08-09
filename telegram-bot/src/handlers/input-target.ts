@@ -24,6 +24,7 @@ function matchTarget(t: any, keyword: string): boolean {
   const keywords = keyword.toLowerCase().split(/\s+/).filter(k => k);
   const searchable = [
     t.nama_karyawan || '',
+    t.bagian || '',
     t.jenis_pekerjaan || '',
     t.jenis_pekerjaan_2 || '',
     t.nama_order || '',
@@ -47,7 +48,7 @@ export async function handleInputTargetCommand(ctx: Context) {
 
     const today = new Date().toISOString().split('T')[0];
     const bagian = status.bagian;
-    const result = await api.searchTargets(bagian, today, undefined, 200);
+    const result = await api.searchTargets(undefined, today, undefined, 500);
 
     if (!result.data.length) {
       targetStates.set(telegramId, { state: 'select_date', status, tgl: today });
@@ -310,7 +311,7 @@ export async function handleInputTargetText(ctx: Context) {
 
     try {
       const status = await api.checkStatus(String(telegramId));
-      const result = await api.searchTargets(status.bagian, tgl, undefined, 200);
+      const result = await api.searchTargets(undefined, tgl, undefined, 500);
 
       if (result.data.length === 0) {
         const keyboard = new InlineKeyboard()

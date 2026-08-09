@@ -353,17 +353,18 @@ export const api = {
     return { success: true, nama_karyawan: user.nama_karyawan, data };
   },
 
-  // Search JHP target rows by bagian + optional date
-  async searchTargets(bagian: string, tgl?: string, namaKaryawan?: string, limit: number = 200) {
-    const whereParts = ['deleted_at IS NULL', 'UPPER(bagian) = UPPER(?)'];
-    const args: any[] = [bagian];
+  // Search JHP target rows by optional bagian + optional date
+  async searchTargets(bagian?: string, tgl?: string, namaKaryawan?: string, limit: number = 500) {
+    const whereParts = ['deleted_at IS NULL'];
+    const args: any[] = [];
 
+    if (bagian) { whereParts.push('UPPER(bagian) = UPPER(?)'); args.push(bagian); }
     if (tgl) { whereParts.push('tgl = ?'); args.push(tgl); }
     if (namaKaryawan) { whereParts.push('nama_karyawan LIKE ?'); args.push(`%${namaKaryawan}%`); }
 
     const result = await db.execute({
       sql: `SELECT id, tgl, shift, nama_karyawan, no_order, nama_order, jenis_pekerjaan, target, realisasi,
-                   no_order_2, jenis_pekerjaan_2
+                   no_order_2, jenis_pekerjaan_2, bagian
             FROM jurnal_harian_produksi
             WHERE ${whereParts.join(' AND ')}
             ORDER BY tgl DESC, shift ASC, nama_karyawan ASC
