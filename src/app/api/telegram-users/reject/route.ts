@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
 
     await db.execute({
       sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by) VALUES (?, ?, ?, ?, ?, ?)`,
-      args: ['REJECT', 'telegram_users', String(telegram_id), `User ${user?.nama_karyawan || '-'} dihapus/ditolak`, '', session.username || 'admin']
+      args: ['REJECT', 'telegram_users', Number(telegram_id) || 0, `User ${user?.nama_karyawan || '-'} dihapus/ditolak`, '', session.username || 'admin']
     });
 
     // Send notification
