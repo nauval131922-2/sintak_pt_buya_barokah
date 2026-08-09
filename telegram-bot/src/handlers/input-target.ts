@@ -49,7 +49,7 @@ export async function handleInputTargetCommand(ctx: Context) {
 
     const today = new Date().toISOString().split('T')[0];
     const bagian = status.bagian;
-    const result = await api.searchTargets(bagian, today, undefined, 50);
+    const result = await api.searchTargets(bagian, today, undefined, 200);
 
     if (!result.data.length) {
       targetStates.set(telegramId, { state: 'select_date', status, tgl: today });
@@ -312,7 +312,7 @@ export async function handleInputTargetText(ctx: Context) {
 
     try {
       const status = await api.checkStatus(String(telegramId));
-      const result = await api.searchTargets(status.bagian, tgl, undefined, 50);
+      const result = await api.searchTargets(status.bagian, tgl, undefined, 200);
 
       if (result.data.length === 0) {
         const keyboard = new InlineKeyboard()
