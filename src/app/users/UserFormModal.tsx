@@ -5,6 +5,7 @@ import {
   X, Save, RefreshCw, AlertCircle, Search,
   User, ShieldCheck, UserCog, Lock, Eye, EyeOff, Check, ChevronDown,
 } from 'lucide-react';
+import Portal, { getZoomScale } from '@/components/Portal';
 import { createUser, updateUser } from '@/lib/users';
 
 interface UserData {
@@ -57,10 +58,11 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
   const openDropdown = useCallback(() => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
+      const scale = getZoomScale();
       setDropdownPos({
-        top: rect.bottom + 6,
-        left: rect.left,
-        width: rect.width,
+        top: (rect.bottom + 6) / scale,
+        left: rect.left / scale,
+        width: rect.width / scale,
       });
     }
     setIsRoleDropdownOpen(true);
@@ -381,80 +383,82 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
         </div>
       </div>
 
-      {/* Dropdown Role — fixed portal agar tidak terpotong overflow */}
+      {/* Dropdown Role — wrapped Portal agar tidak terpotong overflow & terpengaruh zoom */}
       {isRoleDropdownOpen && dropdownPos && (
-        <div
-          ref={dropdownPanelRef}
-          className="fixed z-[200] bg-white border border-gray-100 rounded-xl shadow-lg animate-in fade-in slide-in-from-top-1 duration-150 overflow-hidden"
-          style={{ top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width }}
-        >
-          {/* Search */}
-          <div className="p-2 border-b border-gray-50">
-            <div className="relative">
-              <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-              <input
-                type="text"
-                autoFocus
-                placeholder="Cari role..."
-                value={roleSearchQuery}
-                onChange={e => setRoleSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-2 text-[12px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all"
-              />
+        <Portal>
+          <div
+            ref={dropdownPanelRef}
+            className="fixed z-[200] bg-white border border-gray-100 rounded-xl shadow-lg animate-in fade-in slide-in-from-top-1 duration-150 overflow-hidden"
+            style={{ top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width }}
+          >
+            {/* Search */}
+            <div className="p-2 border-b border-gray-50">
+              <div className="relative">
+                <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <input
+                  type="text"
+                  autoFocus
+                  placeholder="Cari role..."
+                  value={roleSearchQuery}
+                  onChange={e => setRoleSearchQuery(e.target.value)}
+                  className="w-full pl-8 pr-3 py-2 text-[12px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all"
+                />
+              </div>
+            </div>
+            {/* Hint */}
+            <div className="px-3 py-1.5 bg-emerald-50 border-b border-emerald-100">
+              <p className="text-[11px] text-emerald-600 font-semibold">Klik untuk centang / hapus centang role</p>
+            </div>
+            {/* Options */}
+            <div className="max-h-[200px] overflow-y-auto p-1.5 custom-scrollbar">
+              {filteredRoles.length === 0 ? (
+                <p className="text-center text-[11px] text-gray-400 italic py-4">Tidak ada role ditemukan</p>
+              ) : (
+                filteredRoles.map(cr => {
+                  const isChecked = selectedRoles.includes(cr);
+                  return (
+                    <button
+                      type="button"
+                      key={cr}
+                      onClick={() => toggleRole(cr)}
+                      className={`w-full text-left px-3 py-2.5 text-[12px] font-semibold rounded-lg transition-all flex items-center gap-2.5 border ${
+                        isChecked
+                          ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm'
+                          : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200'
+                      }`}
+                    >
+                      {/* Checkbox visual */}
+                      <span className={`w-4 h-4 rounded flex items-center justify-center shrink-0 border ${
+                        isChecked ? 'bg-white/20 border-white/40' : 'border-gray-300 bg-white'
+                      }`}>
+                        {isChecked && <Check size={10} className="text-white" strokeWidth={3} />}
+                      </span>
+                      <span className="flex-1 truncate">{cr}</span>
+                      {cr === 'Super Admin' && (
+                        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${isChecked ? 'bg-white/20 text-white' : 'bg-amber-50 text-amber-600'}`}>
+                          SA
+                        </span>
+                      )}
+                    </button>
+                  );
+                })
+              )}
+            </div>
+            {/* Footer info jumlah terpilih */}
+            <div className="px-3 py-2 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
+              <span className="text-[11px] text-gray-400">
+                {selectedRoles.length} role dipilih
+              </span>
+              <button
+                type="button"
+                onClick={closeDropdown}
+                className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
+              >
+                Selesai
+              </button>
             </div>
           </div>
-          {/* Hint */}
-          <div className="px-3 py-1.5 bg-emerald-50 border-b border-emerald-100">
-            <p className="text-[11px] text-emerald-600 font-semibold">Klik untuk centang / hapus centang role</p>
-          </div>
-          {/* Options */}
-          <div className="max-h-[200px] overflow-y-auto p-1.5 custom-scrollbar">
-            {filteredRoles.length === 0 ? (
-              <p className="text-center text-[11px] text-gray-400 italic py-4">Tidak ada role ditemukan</p>
-            ) : (
-              filteredRoles.map(cr => {
-                const isChecked = selectedRoles.includes(cr);
-                return (
-                  <button
-                    type="button"
-                    key={cr}
-                    onClick={() => toggleRole(cr)}
-                    className={`w-full text-left px-3 py-2.5 text-[12px] font-semibold rounded-lg transition-all flex items-center gap-2.5 border ${
-                      isChecked
-                        ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm'
-                        : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200'
-                    }`}
-                  >
-                    {/* Checkbox visual */}
-                    <span className={`w-4 h-4 rounded flex items-center justify-center shrink-0 border ${
-                      isChecked ? 'bg-white/20 border-white/40' : 'border-gray-300 bg-white'
-                    }`}>
-                      {isChecked && <Check size={10} className="text-white" strokeWidth={3} />}
-                    </span>
-                    <span className="flex-1 truncate">{cr}</span>
-                    {cr === 'Super Admin' && (
-                      <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${isChecked ? 'bg-white/20 text-white' : 'bg-amber-50 text-amber-600'}`}>
-                        SA
-                      </span>
-                    )}
-                  </button>
-                );
-              })
-            )}
-          </div>
-          {/* Footer info jumlah terpilih */}
-          <div className="px-3 py-2 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
-            <span className="text-[11px] text-gray-400">
-              {selectedRoles.length} role dipilih
-            </span>
-            <button
-              type="button"
-              onClick={closeDropdown}
-              className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
-            >
-              Selesai
-            </button>
-          </div>
-        </div>
+        </Portal>
       )}
     </>
   );
