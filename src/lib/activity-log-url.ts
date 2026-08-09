@@ -126,7 +126,8 @@ export function buildActivityLogUrl(state: ActivityLogUrlState, logId?: string |
 }
 
 export function mergeActivityLogState(
-  base: ReturnType<typeof getDefaultActivityLogFilters> & {
+  base: Omit<ReturnType<typeof getDefaultActivityLogFilters>, 'datePreset'> & {
+    datePreset: DatePreset | null;
     sortBy: ActivityLogSortField;
     sortDir: ActivityLogSortDir;
   },

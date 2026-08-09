@@ -273,6 +273,18 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
       'Query log dimuat lebih ringan',
     ],
   }),
+  'log-aktivitas-2026-08-09': entry({
+    pageKey: 'log-aktivitas',
+    title: 'Log Aktivitas',
+    sortDate: '2026-08-09',
+    date: '09 Agu 2026',
+    version: '2026-08-09-1',
+    permissionKeys: ['activity_log_view', 'activity_log'],
+    items: [
+      'Grafik log aktivitas kini selalu tampil secara permanen tanpa accordion',
+      'Container grafik dibuat stabil tanpa shift layout saat dimuat',
+    ],
+  }),
 
   // ─── Records ───
   'records-2026-07-26': entry({

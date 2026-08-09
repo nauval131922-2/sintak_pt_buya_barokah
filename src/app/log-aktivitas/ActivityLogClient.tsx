@@ -38,11 +38,7 @@ import {
 import dynamic from 'next/dynamic';
 import type { ActivityLogTrendDay } from '@/app/api/activity-log/trend/route';
 
-// ponytail: recharts chart only when user opens trend panel
-const ActivityLogTrendChart = dynamic(() => import('./ActivityLogTrendChart'), {
-  ssr: false,
-  loading: () => <div className="h-[220px] rounded-xl bg-gray-50 animate-pulse" />,
-});
+import ActivityLogTrendChart from './ActivityLogTrendChart';
 import {
   type MatchInfo,
   getMatchedFields,
@@ -122,8 +118,6 @@ export default function ActivityLogClient({
     title: '',
     message: '',
   });
-  const [showChart, setShowChart] = useState(false);
-  const [isChartMounted, setIsChartMounted] = useState(false);
   const [trendDays, setTrendDays] = useState<ActivityLogTrendDay[]>([]);
   const [trendHourly, setTrendHourly] = useState<{ hour: string; count: number }[]>([]);
   const [trendGroupBy, setTrendGroupBy] = useState<string>('day'); // 'day' | 'week' | 'month'
@@ -201,19 +195,6 @@ export default function ActivityLogClient({
     document.addEventListener('mousemove', move);
     document.addEventListener('mouseup', up);
   };
-
-  // Save showChart state to localStorage (only after mount to avoid hydration issues)
-  useEffect(() => {
-    if (!isChartMounted) return;
-    localStorage.setItem('activityLog_showChart', String(showChart));
-  }, [showChart, isChartMounted]);
-
-  // Restore showChart from localStorage after mount (avoid hydration mismatch)
-  useEffect(() => {
-    const saved = localStorage.getItem('activityLog_showChart');
-    if (saved) setShowChart(saved === 'true');
-    setIsChartMounted(true);
-  }, []);
 
   const buildParams = useCallback(
     (extra?: Record<string, string>) => {
@@ -833,44 +814,19 @@ export default function ActivityLogClient({
           </div>
         )}
 
-        {/* Collapsible Graph Trend Chart */}
-        <div className="card overflow-hidden border-gray-200/60">
-          <button
-            type="button"
-            onClick={() => setShowChart(!showChart)}
-            className="w-full px-4 py-2.5 flex items-center justify-between text-[11px] font-semibold text-gray-700 bg-gradient-to-r from-gray-50 to-white hover:from-gray-100 hover:to-gray-50 transition-all border-b border-gray-100"
-          >
-            <span className="flex items-center gap-2">
-              <BarChart3 size={14} className="text-emerald-600" />
-              <span>Grafik tren & traffic aktivitas</span>
-              <span className="text-[11px] font-bold text-gray-400 bg-white px-2 py-0.5 rounded-full border border-gray-100">
-                {trendGroupBy === 'month' 
-                  ? `${trendDays.length} bulan`
-                  : trendGroupBy === 'week'
-                  ? `${trendDays.length} minggu`
-                  : `${trendDays.length} hari`
-                }
-              </span>
-            </span>
-            <span className="text-[11px] text-gray-500 font-medium">{showChart ? '↑ Sembunyikan' : '↓ Tampilkan'}</span>
-          </button>
-          {showChart && (
-            <div className="p-4 animate-in fade-in duration-300">
-              <ActivityLogTrendChart
-                days={trendDays}
-                hourly={trendHourly}
-                minutes={minuteData}
-                detailHour={detailHour}
-                loading={isFetchingTrend}
-                activeAction={actionType}
-                onSelectDay={handleTrendDay}
-                onSelectAction={setActionType}
-                onHourClick={setDetailHour}
-                onHourBack={() => { setDetailHour(null); setMinuteData([]); }}
-              />
-            </div>
-          )}
-        </div>
+        {/* Graph Trend Chart */}
+        <ActivityLogTrendChart
+          days={trendDays}
+          hourly={trendHourly}
+          minutes={minuteData}
+          detailHour={detailHour}
+          loading={isFetchingTrend}
+          activeAction={actionType}
+          onSelectDay={handleTrendDay}
+          onSelectAction={setActionType}
+          onHourClick={setDetailHour}
+          onHourBack={() => { setDetailHour(null); setMinuteData([]); }}
+        />
 
         <div className="flex items-center justify-between gap-2 min-h-[28px] flex-wrap">
           <div className="flex items-center gap-3 flex-wrap">

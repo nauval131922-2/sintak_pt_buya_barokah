@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import type { DatePreset } from '@/lib/activity-log-utils';
 import {
   parseActivityLogUrl,
   buildActivityLogUrl,
@@ -137,9 +138,13 @@ describe('mergeActivityLogState', () => {
     source: 'active' as const,
     from: '2026-01-01',
     to: '2026-01-31',
+    tableName: '',
+    actionType: '',
+    recordedBy: '',
+    search: '',
     sortBy: 'created_at' as const,
     sortDir: 'desc' as const,
-    datePreset: null,
+    datePreset: null as DatePreset | null,
   };
 
   it('falls back to base when parsed empty', () => {

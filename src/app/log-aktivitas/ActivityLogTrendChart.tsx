@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useMemo, useState, useRef, useEffect } from 'react';
-import { BarChart3, Clock } from 'lucide-react';
+import { BarChart3, Clock, RefreshCw } from 'lucide-react';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -190,20 +190,6 @@ function ActivityLogTrendChart({
     return result;
   }, [minutes, detailHour]);
 
-  if (loading) {
-    return (
-      <div className="h-56 bg-gray-50 border border-gray-100 rounded-xl animate-pulse" />
-    );
-  }
-
-  if (days.length === 0) {
-    return (
-      <div className="px-3 py-4 rounded-xl border border-gray-100 bg-gray-50/50 text-[11px] font-medium text-gray-400">
-        Tidak ada data trend untuk rentang filter ini.
-      </div>
-    );
-  }
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       {/* Daily Trend Chart */}
@@ -235,95 +221,106 @@ function ActivityLogTrendChart({
           </div>
         </div>
 
-        <div className="h-64 w-full text-[11px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={dailyChartData}
-              margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
-              onMouseDown={(_: any, event: any) => { if (event && isBrushClick(event.target)) handleBrushMouseDown(); }}
-              onClick={(state: any) => {
-                if (brushInteractionRef.current) return;
-                // ponytail: Recharts tidak kasih activePayload di stacked bar, pakai activeIndex instead
-                if (state?.activeIndex !== undefined && dailyChartData[state.activeIndex]) {
-                  const clickedData = dailyChartData[state.activeIndex];
-                  const clickedDate = clickedData.date;
-                  if (clickedDate) onSelectDay(clickedDate);
-                }
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-              <XAxis
-                dataKey="name"
-                axisLine={false}
-                tickLine={false}
-                stroke="#94a3b8"
-                fontSize={8}
-                fontWeight="bold"
-              />
-              <YAxis
-                axisLine={false}
-                tickLine={false}
-                stroke="#94a3b8"
-                fontSize={8}
-                fontWeight="bold"
-              />
-              <Tooltip
-                content={({ active, payload, label }) => {
-                  if (!active || !payload?.length) return null;
-                  const data = payload[0]?.payload;
-                  const total = data?.total ?? 0;
-                  // ponytail: compact custom tooltip, total sekali di atas
-                  return (
-                    <div className="bg-white border border-gray-200 rounded-xl shadow-sm px-3 py-2 text-[11px]">
-                      <div className="font-semibold text-gray-700 mb-1.5">{data?.fullDate || label}</div>
-                      <div className="font-bold text-gray-900 mb-1.5">Total: {total.toLocaleString('id-ID')}</div>
-                      <div className="space-y-0.5">
-                        {payload.toReversed().map((entry: any) => (
-                          <div key={entry.dataKey} className="flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-sm shrink-0" style={{ backgroundColor: entry.color }} />
-                            <span className="text-gray-600">{entry.name}</span>
-                            <span className="ml-auto font-medium text-gray-800">{entry.value?.toLocaleString('id-ID')}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
+        <div className="h-64 w-full text-[11px] relative">
+          {loading ? (
+            <div className="h-full flex items-center justify-center text-slate-400 text-xs">
+              <RefreshCw className="w-4 h-4 animate-spin mr-2 text-emerald-600" />
+              Memuat grafik...
+            </div>
+          ) : days.length === 0 ? (
+            <div className="h-full flex items-center justify-center text-[11px] font-medium text-gray-400">
+              Tidak ada data trend untuk rentang filter ini.
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={dailyChartData}
+                margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
+                onMouseDown={(_: any, event: any) => { if (event && isBrushClick(event.target)) handleBrushMouseDown(); }}
+                onClick={(state: any) => {
+                  if (brushInteractionRef.current) return;
+                  // ponytail: Recharts tidak kasih activePayload di stacked bar, pakai activeIndex instead
+                  if (state?.activeIndex !== undefined && dailyChartData[state.activeIndex]) {
+                    const clickedData = dailyChartData[state.activeIndex];
+                    const clickedDate = clickedData.date;
+                    if (clickedDate) onSelectDay(clickedDate);
+                  }
                 }}
-              />
-              {topActions.map((action) => (
-                <Bar
-                  key={action}
-                  dataKey={action}
-                  stackId="a"
-                  fill={ACTION_COLORS[action] ?? '#94a3b8'}
-                  radius={[2, 2, 0, 0]}
-                  maxBarSize={maxBarSize}
-                  cursor="pointer"
-                  onClick={(data: any) => {
-                    if (data?.date) {
-                      onSelectDay(data.date);
-                      // filter action cuma kalau cuma 1 bar (1 hari)
-                      if (days.length === 1) onSelectAction(action);
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  stroke="#94a3b8"
+                  fontSize={8}
+                  fontWeight="bold"
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  stroke="#94a3b8"
+                  fontSize={8}
+                  fontWeight="bold"
+                />
+                <Tooltip
+                  content={({ active, payload, label }) => {
+                    if (!active || !payload?.length) return null;
+                    const data = payload[0]?.payload;
+                    const total = data?.total ?? 0;
+                    // ponytail: compact custom tooltip, total sekali di atas
+                    return (
+                      <div className="bg-white border border-gray-200 rounded-xl shadow-sm px-3 py-2 text-[11px]">
+                        <div className="font-semibold text-gray-700 mb-1.5">{data?.fullDate || label}</div>
+                        <div className="font-bold text-gray-900 mb-1.5">Total: {total.toLocaleString('id-ID')}</div>
+                        <div className="space-y-0.5">
+                          {payload.toReversed().map((entry: any) => (
+                            <div key={entry.dataKey} className="flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-sm shrink-0" style={{ backgroundColor: entry.color }} />
+                              <span className="text-gray-600">{entry.name}</span>
+                              <span className="ml-auto font-medium text-gray-800">{entry.value?.toLocaleString('id-ID')}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }}
+                />
+                {topActions.map((action) => (
+                  <Bar
+                    key={action}
+                    dataKey={action}
+                    stackId="a"
+                    fill={ACTION_COLORS[action] ?? '#94a3b8'}
+                    radius={[2, 2, 0, 0]}
+                    maxBarSize={maxBarSize}
+                    cursor="pointer"
+                    onClick={(data: any) => {
+                      if (data?.date) {
+                        onSelectDay(data.date);
+                        // filter action cuma kalau cuma 1 bar (1 hari)
+                        if (days.length === 1) onSelectAction(action);
+                      }
+                    }}
+                  />
+                ))}
+                <Brush
+                  dataKey="name"
+                  height={20}
+                  stroke="#10b981"
+                  fill="#f0fdf4"
+                  startIndex={Math.floor((dailyZoomStart / 100) * (dailyChartData.length - 1))}
+                  endIndex={Math.floor((dailyZoomEnd / 100) * (dailyChartData.length - 1))}
+                  onChange={(e) => {
+                    if (e.startIndex !== undefined && e.endIndex !== undefined) {
+                      setDailyZoomStart((e.startIndex / (dailyChartData.length - 1)) * 100);
+                      setDailyZoomEnd((e.endIndex / (dailyChartData.length - 1)) * 100);
                     }
                   }}
                 />
-              ))}
-              <Brush
-                dataKey="name"
-                height={20}
-                stroke="#10b981"
-                fill="#f0fdf4"
-                startIndex={Math.floor((dailyZoomStart / 100) * (dailyChartData.length - 1))}
-                endIndex={Math.floor((dailyZoomEnd / 100) * (dailyChartData.length - 1))}
-                onChange={(e) => {
-                  if (e.startIndex !== undefined && e.endIndex !== undefined) {
-                    setDailyZoomStart((e.startIndex / (dailyChartData.length - 1)) * 100);
-                    setDailyZoomEnd((e.endIndex / (dailyChartData.length - 1)) * 100);
-                  }
-                }}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
 
@@ -353,86 +350,97 @@ function ActivityLogTrendChart({
           </div>
         </div>
 
-        <div className="h-64 w-full text-[11px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={detailHour ? minuteChartData : hourlyChartData}
-              margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
-              onMouseDown={(_: any, event: any) => { if (event && isBrushClick(event.target)) handleBrushMouseDown(); }}
-              onClick={(state: any) => {
-                if (brushInteractionRef.current) return;
-                if (!detailHour && state?.activeLabel) {
-                  handleHourClick(state.activeLabel);
-                }
-              }}
-            >
-              <defs>
-                <linearGradient id="hourlyGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-              <XAxis
-                dataKey="name"
-                axisLine={false}
-                tickLine={false}
-                stroke="#94a3b8"
-                fontSize={8}
-                fontWeight="bold"
-                interval={detailHour ? 4 : 0}
-              />
-              <YAxis
-                axisLine={false}
-                tickLine={false}
-                stroke="#94a3b8"
-                fontSize={8}
-                fontWeight="bold"
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '12px',
-                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06)',
-                  fontSize: '11px',
-                  fontWeight: '500',
-                  padding: '8px 12px',
+        <div className="h-64 w-full text-[11px] relative">
+          {loading ? (
+            <div className="h-full flex items-center justify-center text-slate-400 text-xs">
+              <RefreshCw className="w-4 h-4 animate-spin mr-2 text-blue-600" />
+              Memuat grafik...
+            </div>
+          ) : days.length === 0 ? (
+            <div className="h-full flex items-center justify-center text-[11px] font-medium text-gray-400">
+              Tidak ada data traffic untuk rentang filter ini.
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={detailHour ? minuteChartData : hourlyChartData}
+                margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
+                onMouseDown={(_: any, event: any) => { if (event && isBrushClick(event.target)) handleBrushMouseDown(); }}
+                onClick={(state: any) => {
+                  if (brushInteractionRef.current) return;
+                  if (!detailHour && state?.activeLabel) {
+                    handleHourClick(state.activeLabel);
+                  }
                 }}
-                labelStyle={{
-                  color: '#374151',
-                  fontWeight: '600',
-                  marginBottom: '4px',
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="count"
-                name={detailHour ? 'Jumlah per menit' : 'Jumlah Log'}
-                stroke="#2563eb"
-                strokeWidth={1.8}
-                fillOpacity={1}
-                fill="url(#hourlyGrad)"
-                cursor={detailHour ? 'default' : 'pointer'}
-              />
-              {!detailHour && (
-                <Brush
+              >
+                <defs>
+                  <linearGradient id="hourlyGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                <XAxis
                   dataKey="name"
-                  height={20}
-                  stroke="#3b82f6"
-                  fill="#eff6ff"
-                  startIndex={Math.floor((hourlyZoomStart / 100) * (hourlyChartData.length - 1))}
-                  endIndex={Math.floor((hourlyZoomEnd / 100) * (hourlyChartData.length - 1))}
-                  onChange={(e) => {
-                    if (e.startIndex !== undefined && e.endIndex !== undefined) {
-                      setHourlyZoomStart((e.startIndex / (hourlyChartData.length - 1)) * 100);
-                      setHourlyZoomEnd((e.endIndex / (hourlyChartData.length - 1)) * 100);
-                    }
+                  axisLine={false}
+                  tickLine={false}
+                  stroke="#94a3b8"
+                  fontSize={8}
+                  fontWeight="bold"
+                  interval={detailHour ? 4 : 0}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  stroke="#94a3b8"
+                  fontSize={8}
+                  fontWeight="bold"
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06)',
+                    fontSize: '11px',
+                    fontWeight: '500',
+                    padding: '8px 12px',
+                  }}
+                  labelStyle={{
+                    color: '#374151',
+                    fontWeight: '600',
+                    marginBottom: '4px',
                   }}
                 />
-              )}
-            </AreaChart>
-          </ResponsiveContainer>
+                <Area
+                  type="monotone"
+                  dataKey="count"
+                  name={detailHour ? 'Jumlah per menit' : 'Jumlah Log'}
+                  stroke="#2563eb"
+                  strokeWidth={1.8}
+                  fillOpacity={1}
+                  fill="url(#hourlyGrad)"
+                  cursor={detailHour ? 'default' : 'pointer'}
+                />
+                {!detailHour && (
+                  <Brush
+                    dataKey="name"
+                    height={20}
+                    stroke="#3b82f6"
+                    fill="#eff6ff"
+                    startIndex={Math.floor((hourlyZoomStart / 100) * (hourlyChartData.length - 1))}
+                    endIndex={Math.floor((hourlyZoomEnd / 100) * (hourlyChartData.length - 1))}
+                    onChange={(e) => {
+                      if (e.startIndex !== undefined && e.endIndex !== undefined) {
+                        setHourlyZoomStart((e.startIndex / (hourlyChartData.length - 1)) * 100);
+                        setHourlyZoomEnd((e.endIndex / (hourlyChartData.length - 1)) * 100);
+                      }
+                    }}
+                  />
+                )}
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
     </div>
