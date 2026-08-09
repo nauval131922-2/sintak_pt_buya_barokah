@@ -28,9 +28,7 @@ function matchTarget(t: any, keyword: string): boolean {
     t.jenis_pekerjaan_2 || '',
     t.nama_order || '',
     t.no_order || '',
-    t.no_order_2 || '',
-    t.operator || '',
-    t.mesin || ''
+    t.no_order_2 || ''
   ].join(' ').toLowerCase();
   return keywords.every(kw => searchable.includes(kw));
 }

@@ -363,7 +363,7 @@ export const api = {
 
     const result = await db.execute({
       sql: `SELECT id, tgl, shift, nama_karyawan, no_order, nama_order, jenis_pekerjaan, target, realisasi,
-                   no_order_2, jenis_pekerjaan_2, operator, mesin
+                   no_order_2, jenis_pekerjaan_2
             FROM jurnal_harian_produksi
             WHERE ${whereParts.join(' AND ')}
             ORDER BY tgl DESC, shift ASC, nama_karyawan ASC
