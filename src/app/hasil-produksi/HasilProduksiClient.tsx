@@ -1794,7 +1794,6 @@ export default function HasilProduksiClient() {
               onClick={() => {
                 const el = document.getElementById('main-content-scroll');
                 if (el) el.scrollTo({ top: 0, behavior: 'smooth' });
-                window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               className={`w-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-md shadow-emerald-600/30 hover:shadow-emerald-600/50 hover:scale-110 active:scale-95 transition-all duration-300 ease-out cursor-pointer ${
                 showTopBtn 
@@ -1812,7 +1811,6 @@ export default function HasilProduksiClient() {
               onClick={() => {
                 const el = document.getElementById('main-content-scroll');
                 if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
-                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
               }}
               className={`w-10 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-md shadow-slate-900/30 hover:bg-emerald-600 hover:shadow-emerald-600/40 hover:scale-110 active:scale-95 transition-all duration-300 ease-out cursor-pointer ${
                 showBottomBtn 

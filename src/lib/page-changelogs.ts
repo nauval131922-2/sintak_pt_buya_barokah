@@ -560,6 +560,19 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
       'Optimasi performa tinggi: in-memory TTL cache (< 5ms response) & useDeferredValue search',
     ],
   }),
+  'laporan-pekerjaan-2026-08-09': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan Setting Buya 2026',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-08-09',
+    date: '09 Agu 2026',
+    items: [
+      'Penyesuaian tata letak responsif lintas perangkat: HP (Poco X7 Pro), Tablet (Advan Sketsa 5), Laptop (T470), dan Desktop 24"',
+      'Accordion Ringkasan Statistik & Grafik Analisis dengan penyimpanan status otomatis (localStorage)',
+      'Filter interaktif via Klik Stat Card (Total, Selesai, In Progress, Pending, Cancel) dengan penanda aktif',
+      'Optimasi mode 1 layar (Accordion tertutup) & navigasi scroll melayang (Accordion terbuka) tanpa merusak layout header',
+    ],
+  }),
 };
 
 /** pathname → pageKey (hanya path yang punya log) */

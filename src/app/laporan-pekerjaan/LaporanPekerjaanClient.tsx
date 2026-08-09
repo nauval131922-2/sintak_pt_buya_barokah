@@ -13,11 +13,10 @@ import {
   Layers,
   Filter,
   ChevronDown,
+  ChevronUp,
   Check,
   BarChart3,
   PieChart as PieChartIcon,
-  Flame,
-  Boxes,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
@@ -121,7 +120,9 @@ function SquareDropdown({
 
   useEffect(() => {
     if (open) {
-      setTimeout(() => searchRef.current?.focus(), 50);
+      if (typeof window !== "undefined" && window.innerWidth >= 768) {
+        setTimeout(() => searchRef.current?.focus(), 50);
+      }
     } else {
       setSearch("");
     }
@@ -363,11 +364,114 @@ export default function LaporanPekerjaanClient() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [loadTime, setLoadTime] = useState<number | null>(null);
 
-  // Filters
+  // Filters & Analytics state
   const [selectedPic, setSelectedPic] = useState<string>("ALL");
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const deferredSearchTerm = useDeferredValue(searchTerm);
+
+  // Persistent Mobile Header Card state (default collapsed on mobile)
+  const [isHeaderOpenMobile, setIsHeaderOpenMobile] = useState<boolean>(false);
+
+  // Persistent Accordion state (default collapsed false)
+  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    try {
+      const savedHeader = localStorage.getItem("laporan_pekerjaan_header_open_mobile");
+      if (savedHeader !== null) {
+        setIsHeaderOpenMobile(savedHeader === "true");
+      }
+      const savedAnalytics = localStorage.getItem("laporan_pekerjaan_analytics_open");
+      if (savedAnalytics !== null) {
+        setIsAnalyticsOpen(savedAnalytics === "true");
+      }
+    } catch {
+      // Ignore storage errors
+    }
+  }, []);
+
+  const toggleHeaderMobile = () => {
+    setIsHeaderOpenMobile((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("laporan_pekerjaan_header_open_mobile", String(next));
+      } catch {
+        // Ignore storage errors
+      }
+      return next;
+    });
+  };
+
+  const toggleAnalytics = () => {
+    setIsAnalyticsOpen((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("laporan_pekerjaan_analytics_open", String(next));
+      } catch {
+        // Ignore storage errors
+      }
+      return next;
+    });
+  };
+
+  const handleCardStatusClick = (status: string) => {
+    setSelectedStatus((prev) => (prev === status ? "ALL" : status));
+    setCurrentPage(1);
+  };
+
+  const clientContainerRef = useRef<HTMLDivElement>(null);
+
+  // Floating Navigation Up & Down state
+  const [showTopBtn, setShowTopBtn] = useState(false);
+  const [showBottomBtn, setShowBottomBtn] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const el = document.getElementById("main-content-scroll");
+      const scrollTop = el ? el.scrollTop : (typeof window !== "undefined" ? window.scrollY : 0);
+      const scrollHeight = el ? el.scrollHeight : (typeof document !== "undefined" ? document.body.scrollHeight : 0);
+      const clientHeight = el ? el.clientHeight : (typeof window !== "undefined" ? window.innerHeight : 0);
+
+      const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+      const isScrollable = isMobile || isAnalyticsOpen || scrollHeight > clientHeight + 80;
+
+      if (isScrollable) {
+        setShowTopBtn(scrollTop > 100);
+        setShowBottomBtn(scrollTop + clientHeight < scrollHeight - 80);
+      } else {
+        setShowTopBtn(false);
+        setShowBottomBtn(false);
+      }
+    };
+
+    const scrollEl = document.getElementById("main-content-scroll");
+
+    scrollEl?.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    
+    // Recalculate scroll height after DOM/charts render on reload
+    handleScroll();
+    const t1 = setTimeout(handleScroll, 200);
+    const t2 = setTimeout(handleScroll, 600);
+
+    return () => {
+      scrollEl?.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("scroll", handleScroll);
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [isAnalyticsOpen, loading, tasks.length]);
+
+  const scrollToTop = () => {
+    const el = document.getElementById("main-content-scroll");
+    if (el) el.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const scrollToBottom = () => {
+    const el = document.getElementById("main-content-scroll");
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  };
 
   // Pagination & Sorting
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -574,15 +678,34 @@ export default function LaporanPekerjaanClient() {
     return sortedFilteredTasks.slice(start, start + pageSize);
   }, [sortedFilteredTasks, currentPage, pageSize]);
 
-  // Counts
+  // Tasks filtered by PIC and search term (for stat card counts)
+  const tasksForCounts = useMemo(() => {
+    return tasks.filter((t) => {
+      if (
+        selectedPic !== "ALL" &&
+        t.pic.toUpperCase() !== selectedPic.toUpperCase()
+      ) {
+        return false;
+      }
+      if (deferredSearchTerm) {
+        const term = deferredSearchTerm.toLowerCase();
+        const matchTask = t.task.toLowerCase().includes(term);
+        const matchProj = t.project.toLowerCase().includes(term);
+        if (!matchTask && !matchProj) return false;
+      }
+      return true;
+    });
+  }, [tasks, selectedPic, deferredSearchTerm]);
+
+  // Counts based on tasksForCounts
   const counts = useMemo(() => {
-    let total = filteredTasks.length;
+    let total = tasksForCounts.length;
     let selesai = 0;
     let inProgress = 0;
     let pending = 0;
     let cancel = 0;
 
-    filteredTasks.forEach((t) => {
+    tasksForCounts.forEach((t) => {
       const s = (t.status || "").trim().toUpperCase();
       if (s === "SELESAI") selesai++;
       else if (s === "IN PROGRESS") inProgress++;
@@ -591,7 +714,7 @@ export default function LaporanPekerjaanClient() {
     });
 
     return { total, selesai, inProgress, pending, cancel };
-  }, [filteredTasks]);
+  }, [tasksForCounts]);
 
   // Chart Data 1: Breakdown Pekerjaan per Status per PIC
   const picChartData = useMemo(() => {
@@ -651,27 +774,6 @@ export default function LaporanPekerjaanClient() {
       else if (s === "IN PROGRESS") map[p].InProgress++;
       else if (s === "PENDING") map[p].Pending++;
       else if (s === "CANCEL") map[p].Cancel++;
-    });
-    return Object.values(map).sort((a, b) => b.Total - a.Total);
-  }, [filteredTasks]);
-
-  // Chart Data 4: Division Distribution (breakdown per status)
-  const divisionChartData = useMemo(() => {
-    const map: Record<
-      string,
-      { name: string; Selesai: number; InProgress: number; Pending: number; Cancel: number; Total: number }
-    > = {};
-    filteredTasks.forEach((t) => {
-      const div = t.division ? t.division.trim() : "Lainnya";
-      if (!map[div]) {
-        map[div] = { name: div, Selesai: 0, InProgress: 0, Pending: 0, Cancel: 0, Total: 0 };
-      }
-      map[div].Total++;
-      const s = (t.status || "").trim().toUpperCase();
-      if (s === "SELESAI") map[div].Selesai++;
-      else if (s === "IN PROGRESS") map[div].InProgress++;
-      else if (s === "PENDING") map[div].Pending++;
-      else if (s === "CANCEL") map[div].Cancel++;
     });
     return Object.values(map).sort((a, b) => b.Total - a.Total);
   }, [filteredTasks]);
@@ -838,442 +940,460 @@ export default function LaporanPekerjaanClient() {
   };
 
   return (
-    <div className="space-y-5">
-      {/* Header Info & Action */}
-      <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3.5">
-        <div className="flex items-start sm:items-center space-x-3">
-          <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 shrink-0 mt-0.5 sm:mt-0">
-            <FileSpreadsheet className="w-5 h-5" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <h2 className="text-xs sm:text-sm font-bold text-slate-800 truncate">
-              Laporan Pekerjaan Setting Buya 2026
-            </h2>
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-0.5">
-              <p className="text-[11px] text-slate-500">
-                Data terhubung langsung dari Google Spreadsheet
-              </p>
-              {formattedLastUpdated && (
-                <div className="flex items-center gap-1.5">
-                  <span className="hidden sm:inline text-slate-300">•</span>
-                  <span className="text-[10.5px] sm:text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100/80 whitespace-nowrap">
-                    Update Terakhir: {formattedLastUpdated}
-                  </span>
-                </div>
+    <div
+      ref={clientContainerRef}
+      className={`text-slate-800 ${
+        isAnalyticsOpen
+          ? "flex flex-col gap-4 w-full pb-28 md:pb-24"
+          : "space-y-3 pb-28 md:space-y-0 md:flex-1 md:min-h-0 md:flex md:flex-col md:gap-3 md:overflow-hidden md:pb-0"
+      }`}
+    >
+      {/* Header Info & Action (Collapsible di HP, default collapse) */}
+      <div className="shrink-0 bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
+        {/* Header Trigger khusus HP */}
+        <button
+          type="button"
+          onClick={toggleHeaderMobile}
+          className="w-full p-3 flex md:hidden items-center justify-between bg-slate-50/60 hover:bg-slate-100/80 transition-colors text-left focus:outline-none gap-2"
+        >
+          <div className="flex items-center space-x-2.5 min-w-0 flex-1 overflow-hidden">
+            <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 shrink-0">
+              <FileSpreadsheet className="w-4 h-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-xs font-bold text-slate-800 truncate">
+                Laporan Pekerjaan Setting Buya 2026
+              </h2>
+              {!isHeaderOpenMobile && (
+                <p className="text-[10px] text-slate-500 truncate">
+                  {formattedLastUpdated
+                    ? `Update: ${formattedLastUpdated}`
+                    : "Data Google Spreadsheet"}
+                </p>
               )}
             </div>
           </div>
-        </div>
+          <div className="flex items-center space-x-1 shrink-0 text-slate-400">
+            <ChevronDown
+              className={`w-4 h-4 transition-transform duration-200 ${
+                isHeaderOpenMobile ? "rotate-180" : ""
+              }`}
+            />
+          </div>
+        </button>
 
-        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
-          <span className="text-[11px] sm:text-[11.5px] text-slate-500 font-medium">
-            Auto Refresh:{" "}
-            <span
-              className={
-                countdown <= 10
-                  ? "text-amber-600 font-bold"
-                  : "font-semibold text-slate-700"
-              }
-            >
-              {formatCountdown(countdown)}
+        {/* Detail Header (Selalu tampil di Desktop md:, collapse di Mobile HP) */}
+        <div
+          className={`${
+            isHeaderOpenMobile ? "flex" : "hidden md:flex"
+          } p-3.5 flex-col md:flex-row md:items-center justify-between gap-3.5 border-t md:border-t-0 border-slate-100`}
+        >
+          <div className="flex items-start sm:items-center space-x-3">
+            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 shrink-0 mt-0.5 sm:mt-0 hidden md:block">
+              <FileSpreadsheet className="w-5 h-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              {/* Judul tampil di Desktop, di HP disembunyikan karena sudah ada di header trigger */}
+              <h2 className="hidden md:block text-xs sm:text-sm font-bold text-slate-800 truncate">
+                Laporan Pekerjaan Setting Buya 2026
+              </h2>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-0.5">
+                <p className="text-[11px] text-slate-500">
+                  Data terhubung langsung dari Google Spreadsheet
+                </p>
+                {formattedLastUpdated && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="hidden sm:inline text-slate-300">•</span>
+                    <span className="text-[10.5px] sm:text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100/80 whitespace-nowrap">
+                      Update Terakhir: {formattedLastUpdated}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+            <span className="text-[11px] sm:text-[11.5px] text-slate-500 font-medium">
+              Auto Refresh:{" "}
+              <span
+                className={
+                  countdown <= 10
+                    ? "text-amber-600 font-bold"
+                    : "font-semibold text-slate-700"
+                }
+              >
+                {formatCountdown(countdown)}
+              </span>
             </span>
-          </span>
 
-          <div className="flex items-center gap-2">
-            <a
-              href={`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit?usp=sharing`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors border border-slate-200 whitespace-nowrap"
-            >
-              <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-              Spreadsheet
-            </a>
-            <button
-              onClick={() => fetchData(true)}
-              disabled={loading}
-              className="inline-flex items-center px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-lg transition-all shadow-sm whitespace-nowrap"
-            >
-              <RefreshCw
-                className={`w-3.5 h-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`}
-              />
-              {loading ? "Memuat..." : "Refresh Live"}
-            </button>
+            <div className="flex items-center gap-2">
+              <a
+                href={`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit?usp=sharing`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors border border-slate-200 whitespace-nowrap"
+              >
+                <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                Spreadsheet
+              </a>
+              <button
+                onClick={() => fetchData(true)}
+                disabled={loading}
+                className="inline-flex items-center px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-lg transition-all shadow-sm whitespace-nowrap"
+              >
+                <RefreshCw
+                  className={`w-3.5 h-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`}
+                />
+                {loading ? "Memuat..." : "Refresh Live"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Cards Statistik */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <div className="bg-white p-3 rounded-xl border border-slate-200/80 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 mb-0.5">
-            <span className="text-[11px] font-semibold">Total Task</span>
-            <Layers className="w-3.5 h-3.5 text-slate-400" />
-          </div>
-          <span className="text-xl font-black text-slate-800">
-            {counts.total.toLocaleString("id-ID")}
-          </span>
-        </div>
-
-        <div className="bg-white p-3 rounded-xl border border-emerald-200/80 shadow-sm bg-gradient-to-br from-white to-emerald-50/30">
-          <div className="flex items-center justify-between text-emerald-600 mb-0.5">
-            <span className="text-[11px] font-semibold">Selesai</span>
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-          </div>
-          <span className="text-xl font-black text-emerald-700">
-            {counts.selesai.toLocaleString("id-ID")}
-          </span>
-        </div>
-
-        <div className="bg-white p-3 rounded-xl border border-sky-200/80 shadow-sm bg-gradient-to-br from-white to-sky-50/30">
-          <div className="flex items-center justify-between text-sky-600 mb-0.5">
-            <span className="text-[11px] font-semibold">In Progress</span>
-            <Clock className="w-3.5 h-3.5 text-sky-500" />
-          </div>
-          <span className="text-xl font-black text-sky-700">
-            {counts.inProgress.toLocaleString("id-ID")}
-          </span>
-        </div>
-
-        <div className="bg-white p-3 rounded-xl border border-amber-200/80 shadow-sm bg-gradient-to-br from-white to-amber-50/30">
-          <div className="flex items-center justify-between text-amber-600 mb-0.5">
-            <span className="text-[11px] font-semibold">Pending</span>
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
-          </div>
-          <span className="text-xl font-black text-amber-700">
-            {counts.pending.toLocaleString("id-ID")}
-          </span>
-        </div>
-
-        <div className="bg-white p-3 rounded-xl border border-rose-200/80 shadow-sm bg-gradient-to-br from-white to-rose-50/30 col-span-2 sm:col-span-1">
-          <div className="flex items-center justify-between text-rose-600 mb-0.5">
-            <span className="text-[11px] font-semibold">Cancel</span>
-            <XCircle className="w-3.5 h-3.5 text-rose-500" />
-          </div>
-          <span className="text-xl font-black text-rose-700">
-            {counts.cancel.toLocaleString("id-ID")}
-          </span>
-        </div>
-      </div>
-
-      {/* Visualisasi Dashboard Recharts (Bar Chart PIC, Divisi, Donut Status & Priority) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Bar Chart 1: Beban Kerja per PIC */}
-        <div className="lg:col-span-6 bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col">
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-            <div className="flex items-center space-x-2">
-              <BarChart3 className="w-4 h-4 text-emerald-600" />
-              <h3 className="text-xs font-bold text-slate-800">
-                Beban Kerja Per PIC (Status Lengkap)
-              </h3>
-            </div>
-            <span className="text-[11px] text-slate-400 font-medium">
-              Distribution per PIC
+      {/* Accordion: Statistik & Grafik Analisis */}
+      <div className="shrink-0 bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden transition-all">
+        <button
+          type="button"
+          onClick={toggleAnalytics}
+          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between bg-slate-50/70 hover:bg-slate-100/80 transition-colors text-left focus:outline-none gap-2"
+        >
+          <div className="flex items-center space-x-2 min-w-0 flex-1 overflow-hidden">
+            <BarChart3 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span className="text-[11px] sm:text-xs font-bold text-slate-800 truncate">
+              Ringkasan Statistik & Grafik Analisis
             </span>
-          </div>
-
-          <div className="h-64 w-full">
-            {loading ? (
-              <div className="h-full flex items-center justify-center text-slate-400 text-xs">
-                <RefreshCw className="w-4 h-4 animate-spin mr-2 text-emerald-600" />{" "}
-                Memuat grafik...
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={picChartData}
-                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                >
-                  <defs>
-                    <linearGradient id="gradSelesai" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#10b981" stopOpacity={0.9} />
-                      <stop offset="100%" stopColor="#059669" stopOpacity={0.7} />
-                    </linearGradient>
-                    <linearGradient id="gradInProgress" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#0ea5e9" stopOpacity={0.9} />
-                      <stop offset="100%" stopColor="#0284c7" stopOpacity={0.7} />
-                    </linearGradient>
-                    <linearGradient id="gradPending" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#fbbf24" stopOpacity={0.9} />
-                      <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.7} />
-                    </linearGradient>
-                    <linearGradient id="gradCancel" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#fb7185" stopOpacity={0.9} />
-                      <stop offset="100%" stopColor="#f43f5e" stopOpacity={0.7} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis
-                    dataKey="name"
-                    tick={{ fontSize: 11, fill: "#64748b" }}
-                    axisLine={{ stroke: "#cbd5e1" }}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 11, fill: "#64748b" }}
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={(v: number) => fmtNumber(v)}
-                  />
-                  <RechartsTooltip content={CustomTooltip} />
-                  <Bar
-                    dataKey="Selesai"
-                    fill="url(#gradSelesai)"
-                    radius={[6, 6, 0, 0]}
-                    name="SELESAI"
-                  />
-                  <Bar
-                    dataKey="InProgress"
-                    fill="url(#gradInProgress)"
-                    radius={[6, 6, 0, 0]}
-                    name="IN PROGRESS"
-                  />
-                  <Bar
-                    dataKey="Pending"
-                    fill="url(#gradPending)"
-                    radius={[6, 6, 0, 0]}
-                    name="PENDING"
-                  />
-                  <Bar
-                    dataKey="Cancel"
-                    fill="url(#gradCancel)"
-                    radius={[6, 6, 0, 0]}
-                    name="CANCEL"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+            {selectedStatus !== "ALL" && (
+              <span className="shrink-0 px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-semibold bg-emerald-100 text-emerald-700 rounded-full">
+                {selectedStatus}
+              </span>
             )}
           </div>
-          <ChartLegend items={STATUS_LEGEND} />
-        </div>
-
-        {/* Bar Chart 2: Beban Kerja per Divisi */}
-        <div className="lg:col-span-6 bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col">
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-            <div className="flex items-center space-x-2">
-              <Boxes className="w-4 h-4 text-indigo-600" />
-              <h3 className="text-xs font-bold text-slate-800">
-                Distribusi Pekerjaan Per Divisi
-              </h3>
-            </div>
-            <span className="text-[11px] text-slate-400 font-medium">
-              Task per Division
-            </span>
+          <div className="flex items-center space-x-1.5 text-slate-500 text-[10.5px] sm:text-xs font-medium shrink-0">
+            <span>{isAnalyticsOpen ? "Sembunyikan" : "Tampilkan"}</span>
+            <ChevronDown
+              className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 ${
+                isAnalyticsOpen ? "rotate-180" : ""
+              }`}
+            />
           </div>
+        </button>
 
-          <div className="h-64 w-full">
-            {loading ? (
-              <div className="h-full flex items-center justify-center text-slate-400 text-xs">
-                <RefreshCw className="w-4 h-4 animate-spin mr-2 text-indigo-600" />{" "}
-                Memuat grafik...
+        {isAnalyticsOpen && (
+          <div className="p-4 border-t border-slate-100 space-y-4 animate-in fade-in slide-in-from-top-1 duration-200">
+            {/* Cards Statistik (Klik untuk Filter Status) */}
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              {/* Total Task */}
+              <div
+                onClick={() => handleCardStatusClick("ALL")}
+                className={`p-3 rounded-xl border transition-all cursor-pointer select-none hover:shadow-md ${
+                  selectedStatus === "ALL"
+                    ? "bg-slate-100 border-slate-400 ring-2 ring-slate-400/50 shadow-sm"
+                    : "bg-white border-slate-200/80 hover:bg-slate-50 shadow-sm"
+                }`}
+                title="Klik untuk lihat semua status"
+              >
+                <div className="flex items-center justify-between text-slate-500 mb-0.5">
+                  <span className="text-[11px] font-semibold">Total Task</span>
+                  <Layers className="w-3.5 h-3.5 text-slate-400" />
+                </div>
+                <div className="flex items-baseline justify-between">
+                  <span className="text-xl font-black text-slate-800">
+                    {counts.total.toLocaleString("id-ID")}
+                  </span>
+                  {selectedStatus === "ALL" && (
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-slate-600 bg-slate-200 px-1.5 py-0.5 rounded">
+                      Aktif
+                    </span>
+                  )}
+                </div>
               </div>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={divisionChartData}
-                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                >
-                  <defs>
-                    <linearGradient id="gradDivSelesai" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#10b981" stopOpacity={0.9} />
-                      <stop offset="100%" stopColor="#059669" stopOpacity={0.7} />
-                    </linearGradient>
-                    <linearGradient id="gradDivProgress" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#0ea5e9" stopOpacity={0.9} />
-                      <stop offset="100%" stopColor="#0284c7" stopOpacity={0.7} />
-                    </linearGradient>
-                    <linearGradient id="gradDivPending" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#fbbf24" stopOpacity={0.9} />
-                      <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.7} />
-                    </linearGradient>
-                    <linearGradient id="gradDivCancel" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#fb7185" stopOpacity={0.9} />
-                      <stop offset="100%" stopColor="#f43f5e" stopOpacity={0.7} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis
-                    dataKey="name"
-                    tick={{ fontSize: 11, fill: "#64748b" }}
-                    axisLine={{ stroke: "#cbd5e1" }}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 11, fill: "#64748b" }}
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={(v: number) => fmtNumber(v)}
-                  />
-                  <RechartsTooltip content={CustomTooltip} />
-                  <Bar dataKey="Selesai" fill="url(#gradDivSelesai)" radius={[6,6,0,0]} name="SELESAI" />
-                  <Bar dataKey="InProgress" fill="url(#gradDivProgress)" radius={[6,6,0,0]} name="IN PROGRESS" />
-                  <Bar dataKey="Pending" fill="url(#gradDivPending)" radius={[6,6,0,0]} name="PENDING" />
-                  <Bar dataKey="Cancel" fill="url(#gradDivCancel)" radius={[6,6,0,0]} name="CANCEL" />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-          <ChartLegend items={STATUS_LEGEND} />
-        </div>
 
-        {/* Donut Chart 1: Proporsi Status */}
-        <div className="lg:col-span-6 bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col">
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-            <div className="flex items-center space-x-2">
-              <PieChartIcon className="w-4 h-4 text-emerald-600" />
-              <h3 className="text-xs font-bold text-slate-800">
-                Proporsi Status Pekerjaan
-              </h3>
-            </div>
-            <span className="text-[11px] text-slate-400 font-medium">
-              Overall Status
-            </span>
-          </div>
-
-          <div className="h-60 w-full flex items-center justify-center">
-            {loading ? (
-              <div className="text-slate-400 text-xs flex items-center">
-                <RefreshCw className="w-4 h-4 animate-spin mr-2 text-emerald-600" />{" "}
-                Memuat grafik...
+              {/* Selesai */}
+              <div
+                onClick={() => handleCardStatusClick("SELESAI")}
+                className={`p-3 rounded-xl border transition-all cursor-pointer select-none hover:shadow-md ${
+                  selectedStatus === "SELESAI"
+                    ? "bg-emerald-100/80 border-emerald-500 ring-2 ring-emerald-500/50 shadow-sm"
+                    : "bg-gradient-to-br from-white to-emerald-50/30 border-emerald-200/80 hover:border-emerald-400 shadow-sm"
+                }`}
+                title="Klik untuk filter status SELESAI"
+              >
+                <div className="flex items-center justify-between text-emerald-600 mb-0.5">
+                  <span className="text-[11px] font-semibold">Selesai</span>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                </div>
+                <div className="flex items-baseline justify-between">
+                  <span className="text-xl font-black text-emerald-700">
+                    {counts.selesai.toLocaleString("id-ID")}
+                  </span>
+                  {selectedStatus === "SELESAI" && (
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-200/80 px-1.5 py-0.5 rounded">
+                      Aktif
+                    </span>
+                  )}
+                </div>
               </div>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <defs>
-                    <linearGradient id="gradStatusSelesai" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#10b981" stopOpacity={1} />
-                      <stop offset="100%" stopColor="#059669" stopOpacity={0.85} />
-                    </linearGradient>
-                    <linearGradient id="gradStatusInProgress" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#0ea5e9" stopOpacity={1} />
-                      <stop offset="100%" stopColor="#0284c7" stopOpacity={0.85} />
-                    </linearGradient>
-                    <linearGradient id="gradStatusPending" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#fbbf24" stopOpacity={1} />
-                      <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.85} />
-                    </linearGradient>
-                    <linearGradient id="gradStatusCancel" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#fb7185" stopOpacity={1} />
-                      <stop offset="100%" stopColor="#f43f5e" stopOpacity={0.85} />
-                    </linearGradient>
-                  </defs>
-                  <Pie
-                    data={statusPieData}
-                    cx="50%"
-                    cy="45%"
-                    innerRadius={40}
-                    outerRadius={75}
-                    paddingAngle={3}
-                    dataKey="value"
-                    label={renderPieLabel}
-                    labelLine={false}
-                  >
-                    {statusPieData.map((entry, index) => {
-                      const gradMap: Record<string, string> = {
-                        SELESAI: "url(#gradStatusSelesai)",
-                        "IN PROGRESS": "url(#gradStatusInProgress)",
-                        PENDING: "url(#gradStatusPending)",
-                        CANCEL: "url(#gradStatusCancel)",
-                      };
-                      return (
-                        <Cell key={`cell-${index}`} fill={gradMap[entry.name] || entry.color} />
-                      );
-                    })}
-                  </Pie>
-                  <RechartsTooltip content={CustomTooltip} />
-                  </PieChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-          <ChartLegend
-            items={statusPieData.map((d) => {
-              const total = statusPieData.reduce((acc, x) => acc + x.value, 0);
-              const pct = total ? Math.round((d.value / total) * 100) : 0;
-              return {
-                name: `${d.name} (${pct}%)`,
-                color: d.color,
-                value: d.value,
-              };
-            })}
-          />
-        </div>
 
-        {/* Donut Chart 2: Priority Distribution */}
-        <div className="lg:col-span-6 bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col">
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-            <div className="flex items-center space-x-2">
-              <Flame className="w-4 h-4 text-rose-500" />
-              <h3 className="text-xs font-bold text-slate-800">
-                Tingkat Prioritas Pekerjaan
-              </h3>
-            </div>
-            <span className="text-[11px] text-slate-400 font-medium">
-              High / Medium / Low
-            </span>
-          </div>
-
-          <div className="h-60 w-full flex items-center justify-center">
-            {loading ? (
-              <div className="text-slate-400 text-xs flex items-center">
-                <RefreshCw className="w-4 h-4 animate-spin mr-2 text-emerald-600" />{" "}
-                Memuat grafik...
+              {/* In Progress */}
+              <div
+                onClick={() => handleCardStatusClick("IN PROGRESS")}
+                className={`p-3 rounded-xl border transition-all cursor-pointer select-none hover:shadow-md ${
+                  selectedStatus === "IN PROGRESS"
+                    ? "bg-sky-100/80 border-sky-500 ring-2 ring-sky-500/50 shadow-sm"
+                    : "bg-gradient-to-br from-white to-sky-50/30 border-sky-200/80 hover:border-sky-400 shadow-sm"
+                }`}
+                title="Klik untuk filter status IN PROGRESS"
+              >
+                <div className="flex items-center justify-between text-sky-600 mb-0.5">
+                  <span className="text-[11px] font-semibold">In Progress</span>
+                  <Clock className="w-3.5 h-3.5 text-sky-500" />
+                </div>
+                <div className="flex items-baseline justify-between">
+                  <span className="text-xl font-black text-sky-700">
+                    {counts.inProgress.toLocaleString("id-ID")}
+                  </span>
+                  {selectedStatus === "IN PROGRESS" && (
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-sky-700 bg-sky-200/80 px-1.5 py-0.5 rounded">
+                      Aktif
+                    </span>
+                  )}
+                </div>
               </div>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={priorityChartData}
-                  layout="vertical"
-                  margin={{ top: 5, right: 10, left: 0, bottom: 0 }}
-                >
-                  <defs>
-                    <linearGradient id="gradPrioSelesai" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#10b981" stopOpacity={0.9} />
-                      <stop offset="100%" stopColor="#059669" stopOpacity={0.7} />
-                    </linearGradient>
-                    <linearGradient id="gradPrioProgress" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#0ea5e9" stopOpacity={0.9} />
-                      <stop offset="100%" stopColor="#0284c7" stopOpacity={0.7} />
-                    </linearGradient>
-                    <linearGradient id="gradPrioPending" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#fbbf24" stopOpacity={0.9} />
-                      <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.7} />
-                    </linearGradient>
-                    <linearGradient id="gradPrioCancel" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#fb7185" stopOpacity={0.9} />
-                      <stop offset="100%" stopColor="#f43f5e" stopOpacity={0.7} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                  <XAxis
-                    type="number"
-                    tick={{ fontSize: 11, fill: "#64748b" }}
-                    axisLine={{ stroke: "#cbd5e1" }}
-                    tickLine={false}
-                    tickFormatter={(v: number) => fmtNumber(v)}
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="name"
-                    width={70}
-                    tick={{ fontSize: 11, fill: "#64748b" }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <RechartsTooltip content={CustomTooltip} />
-                  <Bar dataKey="Selesai" fill="url(#gradPrioSelesai)" radius={[0,6,6,0]} name="SELESAI" />
-                  <Bar dataKey="InProgress" fill="url(#gradPrioProgress)" radius={[0,6,6,0]} name="IN PROGRESS" />
-                  <Bar dataKey="Pending" fill="url(#gradPrioPending)" radius={[0,6,6,0]} name="PENDING" />
-                  <Bar dataKey="Cancel" fill="url(#gradPrioCancel)" radius={[0,6,6,0]} name="CANCEL" />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
+
+              {/* Pending */}
+              <div
+                onClick={() => handleCardStatusClick("PENDING")}
+                className={`p-3 rounded-xl border transition-all cursor-pointer select-none hover:shadow-md ${
+                  selectedStatus === "PENDING"
+                    ? "bg-amber-100/80 border-amber-500 ring-2 ring-amber-500/50 shadow-sm"
+                    : "bg-gradient-to-br from-white to-amber-50/30 border-amber-200/80 hover:border-amber-400 shadow-sm"
+                }`}
+                title="Klik untuk filter status PENDING"
+              >
+                <div className="flex items-center justify-between text-amber-600 mb-0.5">
+                  <span className="text-[11px] font-semibold">Pending</span>
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+                </div>
+                <div className="flex items-baseline justify-between">
+                  <span className="text-xl font-black text-amber-700">
+                    {counts.pending.toLocaleString("id-ID")}
+                  </span>
+                  {selectedStatus === "PENDING" && (
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-amber-700 bg-amber-200/80 px-1.5 py-0.5 rounded">
+                      Aktif
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Cancel */}
+              <div
+                onClick={() => handleCardStatusClick("CANCEL")}
+                className={`p-3 rounded-xl border transition-all cursor-pointer select-none hover:shadow-md col-span-2 sm:col-span-1 ${
+                  selectedStatus === "CANCEL"
+                    ? "bg-rose-100/80 border-rose-500 ring-2 ring-rose-500/50 shadow-sm"
+                    : "bg-gradient-to-br from-white to-rose-50/30 border-rose-200/80 hover:border-rose-400 shadow-sm"
+                }`}
+                title="Klik untuk filter status CANCEL"
+              >
+                <div className="flex items-center justify-between text-rose-600 mb-0.5">
+                  <span className="text-[11px] font-semibold">Cancel</span>
+                  <XCircle className="w-3.5 h-3.5 text-rose-500" />
+                </div>
+                <div className="flex items-baseline justify-between">
+                  <span className="text-xl font-black text-rose-700">
+                    {counts.cancel.toLocaleString("id-ID")}
+                  </span>
+                  {selectedStatus === "CANCEL" && (
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-rose-700 bg-rose-200/80 px-1.5 py-0.5 rounded">
+                      Aktif
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Visualisasi Dashboard Recharts */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+              {/* Bar Chart 1: Beban Kerja per PIC */}
+              <div className="lg:col-span-6 bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col">
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100 gap-2">
+                  <div className="flex items-center space-x-2 min-w-0 flex-1 overflow-hidden">
+                    <BarChart3 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <h3 className="text-xs font-bold text-slate-800 truncate">
+                      Beban Kerja Per PIC (Status Lengkap)
+                    </h3>
+                  </div>
+                  <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium shrink-0 hidden sm:inline">
+                    Distribution per PIC
+                  </span>
+                </div>
+
+                <div className="h-64 w-full">
+                  {loading ? (
+                    <div className="h-full flex items-center justify-center text-slate-400 text-xs">
+                      <RefreshCw className="w-4 h-4 animate-spin mr-2 text-emerald-600" />{" "}
+                      Memuat grafik...
+                    </div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={picChartData}
+                        margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                      >
+                        <defs>
+                          <linearGradient id="gradSelesai" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#10b981" stopOpacity={0.9} />
+                            <stop offset="100%" stopColor="#059669" stopOpacity={0.7} />
+                          </linearGradient>
+                          <linearGradient id="gradInProgress" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#0ea5e9" stopOpacity={0.9} />
+                            <stop offset="100%" stopColor="#0284c7" stopOpacity={0.7} />
+                          </linearGradient>
+                          <linearGradient id="gradPending" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#fbbf24" stopOpacity={0.9} />
+                            <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.7} />
+                          </linearGradient>
+                          <linearGradient id="gradCancel" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#fb7185" stopOpacity={0.9} />
+                            <stop offset="100%" stopColor="#f43f5e" stopOpacity={0.7} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <XAxis
+                          dataKey="name"
+                          tick={{ fontSize: 11, fill: "#64748b" }}
+                          axisLine={{ stroke: "#cbd5e1" }}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          tick={{ fontSize: 11, fill: "#64748b" }}
+                          axisLine={false}
+                          tickLine={false}
+                          tickFormatter={(v: number) => fmtNumber(v)}
+                        />
+                        <RechartsTooltip content={CustomTooltip} />
+                        <Bar
+                          dataKey="Selesai"
+                          fill="url(#gradSelesai)"
+                          radius={[6, 6, 0, 0]}
+                          name="SELESAI"
+                        />
+                        <Bar
+                          dataKey="InProgress"
+                          fill="url(#gradInProgress)"
+                          radius={[6, 6, 0, 0]}
+                          name="IN PROGRESS"
+                        />
+                        <Bar
+                          dataKey="Pending"
+                          fill="url(#gradPending)"
+                          radius={[6, 6, 0, 0]}
+                          name="PENDING"
+                        />
+                        <Bar
+                          dataKey="Cancel"
+                          fill="url(#gradCancel)"
+                          radius={[6, 6, 0, 0]}
+                          name="CANCEL"
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
+                <ChartLegend items={STATUS_LEGEND} />
+              </div>
+
+              {/* Donut Chart 1: Proporsi Status */}
+              <div className="lg:col-span-6 bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col">
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100 gap-2">
+                  <div className="flex items-center space-x-2 min-w-0 flex-1 overflow-hidden">
+                    <PieChartIcon className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <h3 className="text-xs font-bold text-slate-800 truncate">
+                      Proporsi Status Pekerjaan
+                    </h3>
+                  </div>
+                  <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium shrink-0 hidden sm:inline">
+                    Overall Status
+                  </span>
+                </div>
+
+                <div className="h-60 w-full flex items-center justify-center">
+                  {loading ? (
+                    <div className="text-slate-400 text-xs flex items-center">
+                      <RefreshCw className="w-4 h-4 animate-spin mr-2 text-emerald-600" />{" "}
+                      Memuat grafik...
+                    </div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <defs>
+                          <linearGradient id="gradStatusSelesai" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#10b981" stopOpacity={1} />
+                            <stop offset="100%" stopColor="#059669" stopOpacity={0.85} />
+                          </linearGradient>
+                          <linearGradient id="gradStatusInProgress" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#0ea5e9" stopOpacity={1} />
+                            <stop offset="100%" stopColor="#0284c7" stopOpacity={0.85} />
+                          </linearGradient>
+                          <linearGradient id="gradStatusPending" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#fbbf24" stopOpacity={1} />
+                            <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.85} />
+                          </linearGradient>
+                          <linearGradient id="gradStatusCancel" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#fb7185" stopOpacity={1} />
+                            <stop offset="100%" stopColor="#f43f5e" stopOpacity={0.85} />
+                          </linearGradient>
+                        </defs>
+                        <Pie
+                          data={statusPieData}
+                          cx="50%"
+                          cy="45%"
+                          innerRadius={40}
+                          outerRadius={75}
+                          paddingAngle={3}
+                          dataKey="value"
+                          label={renderPieLabel}
+                          labelLine={false}
+                        >
+                          {statusPieData.map((entry, index) => {
+                            const gradMap: Record<string, string> = {
+                              SELESAI: "url(#gradStatusSelesai)",
+                              "IN PROGRESS": "url(#gradStatusInProgress)",
+                              PENDING: "url(#gradStatusPending)",
+                              CANCEL: "url(#gradStatusCancel)",
+                            };
+                            return (
+                              <Cell key={`cell-${index}`} fill={gradMap[entry.name] || entry.color} />
+                            );
+                          })}
+                        </Pie>
+                        <RechartsTooltip content={CustomTooltip} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
+                <ChartLegend
+                  items={statusPieData.map((d) => {
+                    const total = statusPieData.reduce((acc, x) => acc + x.value, 0);
+                    const pct = total ? Math.round((d.value / total) * 100) : 0;
+                    return {
+                      name: `${d.name} (${pct}%)`,
+                      color: d.color,
+                      value: d.value,
+                    };
+                  })}
+                />
+              </div>
+            </div>
           </div>
-          <ChartLegend items={STATUS_LEGEND} />
-        </div>
+        )}
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="bg-white p-3 rounded-xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-center gap-3">
+      <div className="shrink-0 bg-white p-3 rounded-xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-center gap-3">
         <div className="relative flex-1 w-full">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
@@ -1317,9 +1437,13 @@ export default function LaporanPekerjaanClient() {
       )}
 
       {/* Tabel Data Pekerjaan (Desktop & Tablet) / Card View (HP) */}
-      <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col">
+      <div
+        className={`bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col relative ${
+          isAnalyticsOpen ? "shrink-0" : "md:flex-1 md:min-h-0"
+        }`}
+      >
         {/* Tampilan Card khusus Layar HP (Mobile View) */}
-        <div className="block md:hidden divide-y divide-slate-100 max-h-[550px] overflow-y-auto custom-scrollbar p-3 space-y-3">
+        <div className="block md:hidden divide-y divide-slate-100 p-3 space-y-3">
           {loading ? (
             <div className="py-12 text-center text-slate-400 text-xs">
               <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-600" />
@@ -1431,7 +1555,11 @@ export default function LaporanPekerjaanClient() {
         {/* Tampilan Tabel Desktop & Tablet (Hidden di HP) */}
         <div
           ref={tableContainerRef}
-          className="hidden md:block overflow-x-auto max-h-[500px]"
+          className={`hidden md:block overflow-x-auto overflow-y-auto custom-scrollbar transition-all duration-200 ${
+            isAnalyticsOpen
+              ? "max-h-[480px] shrink-0"
+              : "flex-1 min-h-0"
+          }`}
           style={
             {
               "--col-task": `${colWidths.task}px`,
@@ -1607,17 +1735,51 @@ export default function LaporanPekerjaanClient() {
           </table>
         </div>
 
-        {/* Footer Sintak Standard TableFooter */}
-        <TableFooter
-          totalCount={filteredTasks.length}
-          currentCount={paginatedTasks.length}
-          label="Task"
-          loadTime={loadTime}
-          page={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
+        {/* Footer Sintak Standard TableFooter (Sticky & Pinned at bottom) */}
+        <div className="shrink-0 bg-white border-t border-slate-100 z-10 pb-3 md:pb-2">
+          <TableFooter
+            totalCount={filteredTasks.length}
+            currentCount={paginatedTasks.length}
+            label="Task"
+            loadTime={loadTime}
+            page={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
       </div>
+
+      {/* Floating Scroll Navigation (Ke Atas & Ke Bawah) */}
+      {(showTopBtn || showBottomBtn) && (
+        <Portal>
+          <div className="fixed bottom-6 right-4 sm:right-6 z-[200] transition-all duration-300 pointer-events-auto">
+            <div className="bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-xl rounded-full p-1 flex flex-col gap-1.5 ring-1 ring-black/5">
+              {showTopBtn && (
+                <button
+                  type="button"
+                  onClick={scrollToTop}
+                  className="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-md hover:bg-emerald-700 active:scale-95 transition-all cursor-pointer"
+                  title="Ke Paling Atas"
+                  aria-label="Ke Paling Atas"
+                >
+                  <ChevronUp className="w-5 h-5 stroke-[2.5]" />
+                </button>
+              )}
+              {showBottomBtn && (
+                <button
+                  type="button"
+                  onClick={scrollToBottom}
+                  className="w-9 h-9 rounded-full bg-slate-800 text-white flex items-center justify-center shadow-md hover:bg-emerald-600 active:scale-95 transition-all cursor-pointer"
+                  title="Ke Paling Bawah"
+                  aria-label="Ke Paling Bawah"
+                >
+                  <ChevronDown className="w-5 h-5 stroke-[2.5]" />
+                </button>
+              )}
+            </div>
+          </div>
+        </Portal>
+      )}
     </div>
   );
 }

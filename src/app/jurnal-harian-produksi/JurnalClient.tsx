@@ -817,7 +817,7 @@ export default function JurnalClient({
     setFormData({ tgl: new Date().toISOString().split('T')[0] });
     setIsMultiRealisasiMode(false);
     setMultiRealisasi([]);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.getElementById('main-content-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
   }, [canInputTarget, canInputRealisasi]);
 
   const startEdit = useCallback((row: any) => {
@@ -847,7 +847,7 @@ export default function JurnalClient({
       setFormData(formattedData);
       setIsMultiRealisasiMode(false);
       setMultiRealisasi([]);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.getElementById('main-content-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     if (isPenjadwalan && isBeforeTomorrow) {
@@ -934,7 +934,7 @@ export default function JurnalClient({
       kendala: row.kendala || ''
     }]);
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.getElementById('main-content-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   const startCopy = useCallback((row: any) => {
@@ -966,7 +966,7 @@ export default function JurnalClient({
     formattedData.nama_order_manual_2 = '';
 
     setFormData(formattedData);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.getElementById('main-content-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   const performSave = async () => {

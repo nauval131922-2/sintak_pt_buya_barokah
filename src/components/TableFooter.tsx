@@ -28,7 +28,7 @@ export default function TableFooter({
 }: TableFooterProps) {
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between shrink-0 px-2 min-h-[30px] gap-2 sm:gap-0 py-1 sm:py-0">
-      <div className="flex flex-wrap items-center justify-start w-full sm:w-auto gap-2 sm:gap-3">
+      <div className="flex flex-wrap items-center justify-center sm:justify-start w-full sm:w-auto gap-1.5 sm:gap-3 text-center sm:text-left">
         <span className="text-[11px] font-bold text-gray-400 tracking-wide truncate">
           {totalCount === 0 ? `Tidak ada ${label}` : `Menampilkan ${currentCount} dari ${totalCount} ${label}`}
         </span>
