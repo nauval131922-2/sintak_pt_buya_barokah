@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react';
+import Portal from '@/components/Portal';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
@@ -32,17 +33,19 @@ export function ToastContainer() {
   }, []);
 
   return (
-    <div className="fixed top-6 right-6 z-[9999999] pointer-events-none flex flex-col gap-3">
-      {toasts.map((toast) => (
-        <ToastItem
-          key={toast.id}
-          message={toast.message}
-          type={toast.type}
-          duration={toast.duration}
-          onClose={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
-        />
-      ))}
-    </div>
+    <Portal>
+      <div className="fixed top-6 right-6 z-[9999999] pointer-events-none flex flex-col gap-3">
+        {toasts.map((toast) => (
+          <ToastItem
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            duration={toast.duration}
+            onClose={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
+          />
+        ))}
+      </div>
+    </Portal>
   );
 }
 
