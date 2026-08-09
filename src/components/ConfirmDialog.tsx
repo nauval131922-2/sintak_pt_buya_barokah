@@ -77,7 +77,7 @@ export default function ConfirmDialog({
 
   return (
     <Portal>
-      <div className={`fixed inset-0 w-screen h-screen z-[999999] flex items-center justify-center p-4 transition-all duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      <div className={`fixed inset-0 z-[999999] flex items-center justify-center p-4 transition-all duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         {/* Backdrop */}
         <div 
           className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
