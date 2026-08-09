@@ -699,7 +699,7 @@ export default function LaporanPekerjaanClient() {
 
   // Counts based on tasksForCounts
   const counts = useMemo(() => {
-    let total = tasksForCounts.length;
+    const total = tasksForCounts.length;
     let selesai = 0;
     let inProgress = 0;
     let pending = 0;
