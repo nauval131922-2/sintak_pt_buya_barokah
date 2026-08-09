@@ -36,7 +36,7 @@ import {
 } from "recharts";
 import TableFooter from "@/components/TableFooter";
 import Portal, { getZoomScale } from "@/components/Portal";
-import { type SpreadsheetTask } from "@/lib/google-sheets";
+import { SPREADSHEET_ID, type SpreadsheetTask } from "@/lib/google-sheets";
 
 const REFRESH_INTERVAL = 2 * 60; // 2 menit cooldown
 
@@ -881,7 +881,7 @@ export default function LaporanPekerjaanClient() {
 
           <div className="flex items-center gap-2">
             <a
-              href="https://docs.google.com/spreadsheets/d/1YivvaNsaYDklhKxNPW3WjctgGTOgbQ1DZhkkxEVxiis/edit?usp=sharing"
+              href={`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit?usp=sharing`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors border border-slate-200 whitespace-nowrap"

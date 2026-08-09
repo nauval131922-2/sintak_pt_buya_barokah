@@ -11,7 +11,7 @@ export interface SpreadsheetTask {
   note?: string;
 }
 
-export const SPREADSHEET_ID = "1YivvaNsaYDklhKxNPW3WjctgGTOgbQ1DZhkkxEVxiis";
+export const SPREADSHEET_ID = "1T-qLsKYGRd1R2DqbKyosmeubxIZ7q5tR0cpjfmx4Rmc";
 
 export const SHEET_GIDS: Record<string, string> = {
   SETTING: "12298478",
