@@ -410,6 +410,8 @@ export default function TelegramUsersClient() {
             ))}
           </div>
         )}
+      </div>
+
       <ConfirmDialog
         isOpen={dialogConfig.isOpen}
         type={dialogConfig.type}
@@ -419,7 +421,6 @@ export default function TelegramUsersClient() {
         onConfirm={() => dialogConfig.onConfirm?.()}
         onCancel={closeDialog}
       />
-      </div>
     </div>
   );
 }
