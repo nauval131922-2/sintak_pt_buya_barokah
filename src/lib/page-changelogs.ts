@@ -285,12 +285,12 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
       'Container grafik dibuat stabil tanpa shift layout saat dimuat',
     ],
   }),
-  'log-aktivitas-2026-08-16': entry({
+  'log-aktivitas-2026-08-10': entry({
     pageKey: 'log-aktivitas',
     title: 'Log Aktivitas',
-    sortDate: '2026-08-16',
-    date: '16 Agu 2026',
-    version: '2026-08-16-1',
+    sortDate: '2026-08-10',
+    date: '10 Agu 2026',
+    version: '2026-08-10-1',
     permissionKeys: ['activity_log_view', 'activity_log'],
     items: [
       'Perbaikan posisi tooltip deskripsi header pada layar HP (layar kecil) agar tidak terpotong tepi layar',
