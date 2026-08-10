@@ -341,6 +341,8 @@ export async function initSchema(db: any) {
       work_days TEXT DEFAULT '',
       note TEXT DEFAULT '',
       status TEXT DEFAULT 'BELUM DIKERJAKAN',
+      source TEXT DEFAULT 'manual',
+      sheet_sync_at DATETIME DEFAULT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT NULL
     );`,

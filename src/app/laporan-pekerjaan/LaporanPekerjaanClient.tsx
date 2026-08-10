@@ -410,6 +410,11 @@ export default function LaporanPekerjaanClient() {
   const [employeeOptions, setEmployeeOptions] = useState<any[]>([]);
   const [pekerjaanOptions, setPekerjaanOptions] = useState<any[]>([]);
 
+  // Conflict state
+  const [conflicts, setConflicts] = useState<any[]>([]);
+  const [showConflictModal, setShowConflictModal] = useState(false);
+  const [currentConflict, setCurrentConflict] = useState<any>(null);
+
   // Filters & Analytics state
   const [selectedPic, setSelectedPic] = useState<string>("ALL");
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
@@ -572,7 +577,7 @@ export default function LaporanPekerjaanClient() {
     setLoading(true);
     setError(null);
     try {
-      const url = "/api/laporan-pekerjaan";
+      const url = force ? "/api/laporan-pekerjaan?sync=true" : "/api/laporan-pekerjaan";
       const res = await fetch(url);
       const json = await res.json();
       if (json.success) {
@@ -580,6 +585,13 @@ export default function LaporanPekerjaanClient() {
         setCountdown(REFRESH_INTERVAL);
         setLastUpdated(new Date());
         setLoadTime(Math.round(performance.now() - startTime));
+        
+        // Handle conflicts
+        if (json.conflicts && json.conflicts.length > 0) {
+          setConflicts(json.conflicts);
+          setCurrentConflict(json.conflicts[0]);
+          setShowConflictModal(true);
+        }
       } else {
         setError(json.error || "Gagal mengambil data laporan pekerjaan");
       }
@@ -1252,7 +1264,7 @@ export default function LaporanPekerjaanClient() {
               </h2>
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-0.5">
                 <p className="text-[11px] text-slate-500">
-                  Data terhubung langsung dari Google Spreadsheet
+                  Hybrid: Data Manual (SINTAK) + Live Spreadsheet
                 </p>
                 {formattedLastUpdated && (
                   <div className="flex items-center gap-1.5">
@@ -1298,7 +1310,7 @@ export default function LaporanPekerjaanClient() {
                 <RefreshCw
                   className={`w-3.5 h-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`}
                 />
-                {loading ? "Memuat..." : "Refresh Live"}
+                {loading ? "Syncing..." : "Sync Spreadsheet"}
               </button>
             </div>
           </div>
@@ -1932,13 +1944,18 @@ export default function LaporanPekerjaanClient() {
                     >
                       <td className="px-3 py-2.5 text-center">
                         <div className="flex items-center justify-center gap-1">
+                          {(t as any).source === 'spreadsheet' && (
+                            <span className="px-1.5 py-0.5 text-[9px] font-bold bg-blue-100 text-blue-700 rounded border border-blue-200">
+                              Sheet
+                            </span>
+                          )}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               openEditModal(t);
                             }}
                             className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                            title="Edit"
+                            title={(t as any).source === 'spreadsheet' ? 'Edit (akan jadi data manual)' : 'Edit'}
                           >
                             <Edit2 size={14} />
                           </button>
@@ -1949,6 +1966,7 @@ export default function LaporanPekerjaanClient() {
                             }}
                             className="p-1.5 text-rose-600 hover:bg-rose-50 rounded transition-colors"
                             title="Hapus"
+                            disabled={(t as any).source === 'spreadsheet'}
                           >
                             <Trash2 size={14} />
                           </button>
@@ -2344,6 +2362,174 @@ export default function LaporanPekerjaanClient() {
                   <Save size={15} />
                   {modalMode === "create" ? "Tambah Data" : "Simpan Perubahan"}
                 </button>
+              </div>
+            </div>
+          </div>
+        </Portal>
+      )}
+
+      {/* Conflict Resolution Modal */}
+      {showConflictModal && currentConflict && (
+        <Portal>
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-amber-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+              
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-amber-100 bg-gradient-to-r from-amber-50 to-amber-50 shrink-0 rounded-t-2xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center">
+                    <AlertTriangle size={18} />
+                  </div>
+                  <div>
+                    <h3 className="text-[15px] font-bold text-gray-800 tracking-tight">
+                      ⚠️ Conflict Detected
+                    </h3>
+                    <p className="text-[11px] text-gray-500 font-medium">
+                      Data berubah di Spreadsheet & SINTAK. Pilih versi mana yang mau dipakai.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowConflictModal(false);
+                    setCurrentConflict(null);
+                  }}
+                  className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white/80 transition-all"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="px-6 py-5 flex flex-col gap-4 overflow-y-auto">
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Versi Manual (SINTAK) */}
+                  <div className="border-2 border-emerald-200 rounded-xl p-4 bg-emerald-50/50">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-bold text-emerald-700">Versi SINTAK (Manual)</h4>
+                      <span className="text-xs text-emerald-600 font-semibold">
+                        {currentConflict.manual.updated_at ? new Date(currentConflict.manual.updated_at).toLocaleString('id-ID') : 'N/A'}
+                      </span>
+                    </div>
+                    <div className="space-y-2 text-xs">
+                      <div><span className="font-bold text-gray-600">Task:</span> {currentConflict.manual.task}</div>
+                      <div><span className="font-bold text-gray-600">Project:</span> {currentConflict.manual.project || '-'}</div>
+                      <div><span className="font-bold text-gray-600">Bagian:</span> {currentConflict.manual.division || '-'}</div>
+                      <div><span className="font-bold text-gray-600">PIC:</span> {currentConflict.manual.pic || '-'}</div>
+                      <div><span className="font-bold text-gray-600">Priority:</span> {currentConflict.manual.priority || '-'}</div>
+                      <div><span className="font-bold text-gray-600">Status:</span> {currentConflict.manual.status || '-'}</div>
+                      <div><span className="font-bold text-gray-600">Note:</span> {currentConflict.manual.note || '-'}</div>
+                    </div>
+                  </div>
+
+                  {/* Versi Spreadsheet */}
+                  <div className="border-2 border-blue-200 rounded-xl p-4 bg-blue-50/50">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-bold text-blue-700">Versi Spreadsheet</h4>
+                      <span className="text-xs text-blue-600 font-semibold">Terbaru dari Sheet</span>
+                    </div>
+                    <div className="space-y-2 text-xs">
+                      <div><span className="font-bold text-gray-600">Task:</span> {currentConflict.spreadsheet.task}</div>
+                      <div><span className="font-bold text-gray-600">Project:</span> {currentConflict.spreadsheet.project || '-'}</div>
+                      <div><span className="font-bold text-gray-600">Bagian:</span> {currentConflict.spreadsheet.division || '-'}</div>
+                      <div><span className="font-bold text-gray-600">PIC:</span> {currentConflict.spreadsheet.pic || '-'}</div>
+                      <div><span className="font-bold text-gray-600">Priority:</span> {currentConflict.spreadsheet.priority || '-'}</div>
+                      <div><span className="font-bold text-gray-600">Status:</span> {currentConflict.spreadsheet.status || '-'}</div>
+                      <div><span className="font-bold text-gray-600">Note:</span> {currentConflict.spreadsheet.note || '-'}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {conflicts.length > 1 && (
+                  <div className="text-xs text-gray-500 text-center font-medium">
+                    Conflict {conflicts.indexOf(currentConflict) + 1} dari {conflicts.length}
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50 shrink-0 rounded-b-2xl">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextIdx = conflicts.indexOf(currentConflict) + 1;
+                    if (nextIdx < conflicts.length) {
+                      setCurrentConflict(conflicts[nextIdx]);
+                    } else {
+                      setShowConflictModal(false);
+                      setCurrentConflict(null);
+                      setConflicts([]);
+                    }
+                  }}
+                  className="px-5 py-2.5 text-[13px] font-bold text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 rounded-xl border border-gray-200 transition-all"
+                >
+                  Skip
+                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const nextIdx = conflicts.indexOf(currentConflict) + 1;
+                      if (nextIdx < conflicts.length) {
+                        setCurrentConflict(conflicts[nextIdx]);
+                      } else {
+                        setShowConflictModal(false);
+                        setCurrentConflict(null);
+                        setConflicts([]);
+                        await fetchData();
+                      }
+                    }}
+                    className="px-6 py-2.5 text-[13px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition-all flex items-center gap-2"
+                  >
+                    <Check size={15} />
+                    Pakai Versi SINTAK
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('/api/laporan-pekerjaan', {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            id: currentConflict.manual.id,
+                            task: currentConflict.spreadsheet.task,
+                            project: currentConflict.spreadsheet.project,
+                            division: currentConflict.spreadsheet.division,
+                            pic: currentConflict.spreadsheet.pic,
+                            priority: currentConflict.spreadsheet.priority,
+                            startDate: currentConflict.spreadsheet.startDate,
+                            endDate: currentConflict.spreadsheet.endDate,
+                            workDays: currentConflict.spreadsheet.workDays,
+                            note: currentConflict.spreadsheet.note,
+                            status: currentConflict.spreadsheet.status,
+                          }),
+                        });
+                        
+                        const json = await res.json();
+                        if (json.success) {
+                          const nextIdx = conflicts.indexOf(currentConflict) + 1;
+                          if (nextIdx < conflicts.length) {
+                            setCurrentConflict(conflicts[nextIdx]);
+                          } else {
+                            setShowConflictModal(false);
+                            setCurrentConflict(null);
+                            setConflicts([]);
+                            await fetchData();
+                          }
+                        } else {
+                          alert(json.error || 'Gagal update data');
+                        }
+                      } catch (err: any) {
+                        alert(err.message || 'Terjadi kesalahan');
+                      }
+                    }}
+                    className="px-6 py-2.5 text-[13px] font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition-all flex items-center gap-2"
+                  >
+                    <FileSpreadsheet size={15} />
+                    Pakai Versi Spreadsheet
+                  </button>
+                </div>
               </div>
             </div>
           </div>
