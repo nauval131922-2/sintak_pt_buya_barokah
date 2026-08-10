@@ -103,12 +103,15 @@ export default function SearchableDropdown({
     if (!rect) return;
     const scale = getZoomScale();
     const maxW = (typeof window !== 'undefined' ? window.innerWidth - 24 : 360) / scale;
+    const computedWidth = panelWidth
+      ? (panelWidth.includes('px') ? parseInt(panelWidth.replace(/[^0-9]/g, ''), 10) : rect.width / scale)
+      : (rect.width / scale);
     setPanelPos({
       top: (rect.bottom + 8) / scale,
       left: rect.left / scale,
-      width: Math.min(rect.width / scale, maxW),
+      width: Math.min(Math.max(computedWidth, rect.width / scale), maxW),
     });
-  }, []);
+  }, [panelWidth]);
 
   useEffect(() => {
     if (!open) return;
