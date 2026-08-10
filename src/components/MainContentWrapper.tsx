@@ -138,7 +138,8 @@ function MainContentInner({
                       const textEl = e.currentTarget;
                       if (textEl.scrollWidth > textEl.clientWidth) {
                         const rect = textEl.getBoundingClientRect();
-                        setDescTooltipPos({ top: rect.bottom + 4, left: Math.max(12, rect.left) });
+                        const left = Math.max(12, Math.min(rect.left, window.innerWidth - 48));
+                        setDescTooltipPos({ top: rect.bottom + 4, left });
                         setShowDescTooltip(prev => !prev);
                       } else if (showDescTooltip) {
                         setShowDescTooltip(false);
