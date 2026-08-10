@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { AlertCircle, Loader2, ChevronDown, ChevronUp, History } from 'lucide-react';
+import { AlertCircle, Loader2, History, Download } from 'lucide-react';
 import { ColumnDef } from '@tanstack/react-table';
 import { useSearchParams } from 'next/navigation';
 
@@ -14,11 +14,13 @@ import { formatLastUpdate } from '@/lib/date-utils';
 import { getDefaultScraperDateRange } from '@/lib/scraper-period';
 import { highlightText } from '@/lib/highlight';
 import { useTableSelection } from '@/lib/hooks/useTableSelection';
+import { exportRowsToExcel } from '@/lib/export-excel';
+import { toast } from '@/lib/toast';
 
 type LogLevel = 'INFO' | 'WARN' | 'ERROR' | string;
 
 interface UserLogRow {
-  id: number; // synthetic index untuk DataTable/useTableSelection
+  id: number;
   Level: LogLevel;
   Datetime: string;
   Channel: string;
@@ -49,33 +51,6 @@ function levelBadge(level: LogLevel) {
   return 'bg-emerald-50 text-emerald-600 border-emerald-100';
 }
 
-function DataDetail({ data }: { data: Record<string, unknown> }) {
-  const [open, setOpen] = useState(false);
-  const entries = Object.entries(data).filter(([, v]) => v !== null && v !== '' && v !== undefined);
-  if (entries.length === 0) return <span className="text-gray-300 text-[11px]">—</span>;
-  return (
-    <div>
-      <button
-        onClick={e => { e.stopPropagation(); setOpen(o => !o); }}
-        className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600 hover:underline"
-      >
-        {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-        {open ? 'Sembunyikan' : `${entries.length} field`}
-      </button>
-      {open && (
-        <div className="mt-1.5 bg-gray-50 border border-gray-100 rounded-lg p-2 space-y-0.5 max-h-48 overflow-auto text-[11px]">
-          {entries.map(([k, v]) => (
-            <div key={k} className="flex gap-2">
-              <span className="text-gray-400 font-semibold shrink-0 min-w-[110px]">{k}</span>
-              <span className="text-gray-700 break-all">{String(v)}</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 const PAGE_SIZE = 50;
 
 export default function LogAktivitasUserClient() {
@@ -87,9 +62,11 @@ export default function LogAktivitasUserClient() {
   const [data, setData] = useState<UserLogRow[] | null>(null);
   const [error, setError] = useState('');
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [scrapedPeriod, setScrapedPeriod] = useState<{ start: string; end: string } | null>(null);
   const [loadTime, setLoadTime] = useState<number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [page, setPage] = useState(1);
+  const [isExporting, setIsExporting] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
   const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || '');
@@ -115,7 +92,6 @@ export default function LogAktivitasUserClient() {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // Filter client-side (data sudah di-fetch semua sekaligus dari Digit)
   const filtered = useMemo(() => {
     const all = data || [];
     if (!debouncedQuery) return all;
@@ -164,6 +140,7 @@ export default function LogAktivitasUserClient() {
       if (mountedRef.current) {
         setData(rows);
         setLastUpdated(formatLastUpdate(new Date()));
+        setScrapedPeriod({ start: toApiDate(startDate), end: toApiDate(endDate) });
         setLoadTime(Math.round(performance.now() - startTimer));
       }
     } catch (err: unknown) {
@@ -177,11 +154,30 @@ export default function LogAktivitasUserClient() {
     }
   }, [startDate, endDate, isMounted]);
 
-  // Reload manual dari tombol refresh di SearchAndReload
   useEffect(() => {
     if (isMounted && refreshKey > 0) handleFetch();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshKey]);
+
+  const handleExport = useCallback(async () => {
+    if (!filtered.length) { toast.error('Tidak ada data untuk diekspor'); return; }
+    setIsExporting(true);
+    try {
+      const rows = filtered.map(r => ({
+        Level: r.Level,
+        Waktu: formatDatetime(r.Datetime),
+        Channel: r.Channel,
+        User: r.User,
+        Pesan: r.Pesan,
+        Data: r.Data ? JSON.stringify(r.Data) : '',
+      }));
+      const period = scrapedPeriod ? `${scrapedPeriod.start}_${scrapedPeriod.end}` : 'export';
+      await exportRowsToExcel(rows, `log-aktivitas-user_${period}`);
+      toast.success(`${rows.length} log berhasil diekspor`);
+    } finally {
+      setIsExporting(false);
+    }
+  }, [filtered, scrapedPeriod]);
 
   const columns = useMemo<ColumnDef<UserLogRow>[]>(() => [
     {
@@ -236,12 +232,21 @@ export default function LogAktivitasUserClient() {
       ),
     },
     {
+      // ponytail: Data ditampilkan sebagai JSON string truncated — virtualizer fixed height tidak support expand
       accessorKey: 'Data',
       header: 'Data',
-      size: 140,
-      cell: ({ getValue }: any) => {
-        const val = getValue();
-        return val ? <DataDetail data={val as Record<string, unknown>} /> : <span className="text-gray-300 text-[11px]">—</span>;
+      size: 340,
+      meta: { wrap: true },
+      cell: ({ getValue, row }: any) => {
+        const val = getValue() as Record<string, unknown> | undefined;
+        if (!val) return <span className="text-gray-300 text-[11px]">—</span>;
+        const entries = Object.entries(val).filter(([, v]) => v !== null && v !== '' && v !== undefined);
+        if (!entries.length) return <span className="text-gray-300 text-[11px]">—</span>;
+        return (
+          <span className={`text-[10.5px] font-mono break-all leading-relaxed ${row.getIsSelected() ? 'text-emerald-800' : 'text-gray-500'}`}>
+            {entries.map(([k, v]) => `${k}: ${String(v)}`).join(' · ')}
+          </span>
+        );
       },
     },
   ], [highlightQuery]);
@@ -274,6 +279,7 @@ export default function LogAktivitasUserClient() {
               title="Log Aktivitas User"
               icon={<History size={16} />}
               lastUpdated={lastUpdated}
+              scrapedPeriod={scrapedPeriod}
             />
             {loading && data && data.length > 0 && (
               <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
@@ -282,13 +288,25 @@ export default function LogAktivitasUserClient() {
               </div>
             )}
           </div>
-          <SearchAndReload
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            onReload={() => setRefreshKey(k => k + 1)}
-            loading={loading}
-            placeholder="Cari channel, user, atau pesan..."
-          />
+          <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <SearchAndReload
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                onReload={() => setRefreshKey(k => k + 1)}
+                loading={loading}
+                placeholder="Cari channel, user, atau pesan..."
+              />
+            </div>
+            <button
+              onClick={handleExport}
+              disabled={isExporting || !filtered.length}
+              className="flex items-center gap-2 px-4 h-9 rounded-xl border border-gray-200 bg-white text-[12px] font-semibold text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0 shadow-sm"
+            >
+              {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+              Export Excel
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden relative">
