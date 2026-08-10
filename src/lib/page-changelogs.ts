@@ -636,12 +636,13 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     permissionKeys: ['usr_log_view'],
     sortDate: '2026-08-10',
     date: '10 Agu 2026',
-    version: '2026-08-10-1',
+    version: '2026-08-10-2',
     items: [
-      'Halaman baru: riwayat aktivitas pengguna dari sistem Digit',
-      'Filter berdasarkan rentang tanggal awal dan akhir',
-      'Tampilkan level log (INFO/WARN/ERROR), channel, user, dan pesan',
-      'Detail data tambahan dapat dibuka per baris untuk melihat informasi lengkap',
+      'Halaman baru di menu Data Digit › Sistem: riwayat aktivitas pengguna dari sistem Digit',
+      'Tarik Data menyimpan log ke database lokal — reload halaman data tetap ada',
+      'Filter rentang tanggal, pencarian teks (channel/user/pesan), dan infinite scroll',
+      'Export Excel mengambil semua data (bukan hanya yang sudah di-scroll)',
+      'Lebar kolom tersimpan otomatis setelah di-resize',
     ],
   }),
 };
