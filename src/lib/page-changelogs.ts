@@ -340,7 +340,8 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     date: '10 Agu 2026',
     version: '2026-08-10-1',
     items: [
-      'Posisi & lebar dropdown portal (SearchableDropdown) otomatis smooth sync saat sidebar hover/collapse',
+      'Refactor panel SearchableDropdown menjadi inline absolute untuk menempel real-time saat sidebar hover/collapse',
+      'Penyesuaian z-index stacking agar panel dropdown SOPd tampil paling depan di atas seluruh komponen',
     ],
   }),
   'hasil-produksi-2026-08-09': entry({
