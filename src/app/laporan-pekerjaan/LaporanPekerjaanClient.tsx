@@ -21,7 +21,7 @@ import {
   ArrowUp,
   ArrowDown,
   Plus,
-  Pencil,
+  Edit2,
   Trash2,
   X,
   Save,
@@ -40,9 +40,23 @@ import {
 } from "recharts";
 import TableFooter from "@/components/TableFooter";
 import Portal, { getZoomScale } from "@/components/Portal";
+import SearchableDropdown from "@/components/SearchableDropdown";
+import DatePicker from "@/components/DatePicker";
 import { SPREADSHEET_ID, type SpreadsheetTask } from "@/lib/google-sheets";
 
 const REFRESH_INTERVAL = 2 * 60; // 2 menit cooldown
+
+const BAGIAN_LIST = ['SETTING', 'QUALITY CONTROL', 'CETAK', 'FINISHING', 'GUDANG', 'TEKNISI', 'MESIN'];
+
+const BAGIAN_CATEGORY_MAP: Record<string, string> = {
+  'SETTING':          'Setting',
+  'QUALITY CONTROL':  'Quality Control',
+  'CETAK':            'Cetak',
+  'FINISHING':        'Finishing',
+  'GUDANG':           'Gudang',
+  'TEKNISI':          'Teknisi',
+  'MESIN':            'Mesin',
+};
 
 export interface FilterOption {
   value: string;
@@ -379,16 +393,22 @@ export default function LaporanPekerjaanClient() {
   const [editingTask, setEditingTask] = useState<any>(null);
   const [formData, setFormData] = useState({
     task: "",
-    project: "",
-    division: "",
+    bagian: "",
+    orderProduksi: "",
+    jenisPekerjaan: "",
     pic: "",
     priority: "Low",
-    startDate: "",
-    endDate: "",
+    startDate: null as Date | null,
+    endDate: null as Date | null,
     workDays: "",
     note: "",
     status: "BELUM DIKERJAKAN",
   });
+
+  // Dropdown options state
+  const [sopdOptions, setSopdOptions] = useState<any[]>([]);
+  const [employeeOptions, setEmployeeOptions] = useState<any[]>([]);
+  const [pekerjaanOptions, setPekerjaanOptions] = useState<any[]>([]);
 
   // Filters & Analytics state
   const [selectedPic, setSelectedPic] = useState<string>("ALL");
@@ -578,44 +598,132 @@ export default function LaporanPekerjaanClient() {
   }, [fetchData]);
 
   // CRUD Handlers
-  const openCreateModal = () => {
+  const openCreateModal = async () => {
     setModalMode("create");
     setFormData({
       task: "",
-      project: "",
-      division: "",
+      bagian: "",
+      orderProduksi: "",
+      jenisPekerjaan: "",
       pic: "",
       priority: "Low",
-      startDate: "",
-      endDate: "",
+      startDate: null,
+      endDate: null,
       workDays: "",
       note: "",
       status: "BELUM DIKERJAKAN",
     });
+    
+    // Fetch dropdown options
+    await Promise.all([
+      fetchSopdOptions(),
+      fetchEmployeeOptions(),
+    ]);
+    
     setShowModal(true);
   };
 
-  const openEditModal = (task: any) => {
+  const openEditModal = async (task: any) => {
     setModalMode("edit");
     setEditingTask(task);
+    
+    // Parse dates jika ada
+    let startDateObj = null;
+    let endDateObj = null;
+    if (task.startDate) {
+      const parts = task.startDate.split('/');
+      if (parts.length === 3) {
+        startDateObj = new Date(parts[2], parseInt(parts[1]) - 1, parseInt(parts[0]));
+      }
+    }
+    if (task.endDate) {
+      const parts = task.endDate.split('/');
+      if (parts.length === 3) {
+        endDateObj = new Date(parts[2], parseInt(parts[1]) - 1, parseInt(parts[0]));
+      }
+    }
+    
     setFormData({
       task: task.task || "",
-      project: task.project || "",
-      division: task.division || "",
+      bagian: task.division || "",
+      orderProduksi: task.project || "",
+      jenisPekerjaan: "",
       pic: task.pic || "",
       priority: task.priority || "Low",
-      startDate: task.startDate || "",
-      endDate: task.endDate || "",
+      startDate: startDateObj,
+      endDate: endDateObj,
       workDays: task.workDays || "",
       note: task.note || "",
       status: task.status || "BELUM DIKERJAKAN",
     });
+    
+    // Fetch dropdown options
+    await Promise.all([
+      fetchSopdOptions(),
+      fetchEmployeeOptions(),
+    ]);
+    
+    // Fetch pekerjaan jika bagian sudah dipilih
+    if (task.division) {
+      await fetchPekerjaanOptions(task.division);
+    }
+    
     setShowModal(true);
+  };
+
+  const fetchSopdOptions = async () => {
+    try {
+      const res = await fetch('/api/orders?limit=500');
+      const json = await res.json();
+      if (json.success) {
+        setSopdOptions(json.data || []);
+      }
+    } catch (err) {
+      console.error('Gagal fetch SOPd:', err);
+    }
+  };
+
+  const fetchEmployeeOptions = async () => {
+    try {
+      const res = await fetch('/api/employees?limit=200');
+      const json = await res.json();
+      if (json.success) {
+        setEmployeeOptions(json.data || []);
+      }
+    } catch (err) {
+      console.error('Gagal fetch employees:', err);
+    }
+  };
+
+  const fetchPekerjaanOptions = async (bagian: string) => {
+    if (!bagian) {
+      setPekerjaanOptions([]);
+      return;
+    }
+    
+    const category = BAGIAN_CATEGORY_MAP[bagian];
+    if (!category) {
+      setPekerjaanOptions([]);
+      return;
+    }
+    
+    try {
+      const res = await fetch(`/api/master-pekerjaan-jurnal-produksi?category=${encodeURIComponent(category)}&limit=1000`);
+      const json = await res.json();
+      if (json.success) {
+        setPekerjaanOptions(json.data || []);
+      }
+    } catch (err) {
+      console.error('Gagal fetch pekerjaan:', err);
+    }
   };
 
   const closeModal = () => {
     setShowModal(false);
     setEditingTask(null);
+    setSopdOptions([]);
+    setEmployeeOptions([]);
+    setPekerjaanOptions([]);
   };
 
   const handleSave = async () => {
@@ -627,7 +735,29 @@ export default function LaporanPekerjaanClient() {
     try {
       const url = modalMode === "create" ? "/api/laporan-pekerjaan" : "/api/laporan-pekerjaan";
       const method = modalMode === "create" ? "POST" : "PUT";
-      const body = modalMode === "edit" ? { ...formData, id: editingTask.id } : formData;
+      
+      // Format dates to dd/mm/yyyy
+      const startDateStr = formData.startDate 
+        ? `${String(formData.startDate.getDate()).padStart(2, '0')}/${String(formData.startDate.getMonth() + 1).padStart(2, '0')}/${formData.startDate.getFullYear()}`
+        : "";
+      const endDateStr = formData.endDate 
+        ? `${String(formData.endDate.getDate()).padStart(2, '0')}/${String(formData.endDate.getMonth() + 1).padStart(2, '0')}/${formData.endDate.getFullYear()}`
+        : "";
+      
+      const payload = {
+        task: formData.task,
+        project: formData.orderProduksi,
+        division: formData.bagian,
+        pic: formData.pic,
+        priority: formData.priority,
+        startDate: startDateStr,
+        endDate: endDateStr,
+        workDays: formData.workDays,
+        note: formData.note,
+        status: formData.status,
+      };
+      
+      const body = modalMode === "edit" ? { ...payload, id: editingTask.id } : payload;
 
       const res = await fetch(url, {
         method,
@@ -1807,20 +1937,20 @@ export default function LaporanPekerjaanClient() {
                               e.stopPropagation();
                               openEditModal(t);
                             }}
-                            className="p-1 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
+                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
                             title="Edit"
                           >
-                            <Pencil className="w-3.5 h-3.5" />
+                            <Edit2 size={14} />
                           </button>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               if (t.id) handleDelete(t.id);
                             }}
-                            className="p-1 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
+                            className="p-1.5 text-rose-600 hover:bg-rose-50 rounded transition-colors"
                             title="Hapus"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 size={14} />
                           </button>
                         </div>
                       </td>
@@ -2026,50 +2156,90 @@ export default function LaporanPekerjaanClient() {
                   />
                 </div>
 
-                {/* Project Order & Divisi */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[12px] font-bold text-gray-600 mb-2">
-                      Project Order
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.project}
-                      onChange={(e) => setFormData({ ...formData, project: e.target.value })}
-                      className="w-full px-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all placeholder:text-gray-300"
-                      placeholder="Contoh: OP.007"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[12px] font-bold text-gray-600 mb-2">
-                      Divisi
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.division}
-                      onChange={(e) => setFormData({ ...formData, division: e.target.value })}
-                      className="w-full px-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all placeholder:text-gray-300"
-                      placeholder="Contoh: Produksi"
-                    />
-                  </div>
+                {/* Bagian */}
+                <div>
+                  <label className="block text-[12px] font-bold text-gray-600 mb-2">
+                    Bagian
+                  </label>
+                  <SearchableDropdown
+                    id="modal-bagian"
+                    value={formData.bagian}
+                    items={BAGIAN_LIST}
+                    onChange={(val) => {
+                      setFormData({ ...formData, bagian: val, jenisPekerjaan: "" });
+                      if (val) fetchPekerjaanOptions(val);
+                      else setPekerjaanOptions([]);
+                    }}
+                    placeholder="Pilih Bagian..."
+                    searchPlaceholder="Cari bagian..."
+                    triggerWidth="w-full"
+                    panelWidth="w-full"
+                    compact
+                  />
                 </div>
 
-                {/* PIC & Priority */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[12px] font-bold text-gray-600 mb-2">
-                      PIC
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.pic}
-                      onChange={(e) => setFormData({ ...formData, pic: e.target.value })}
-                      className="w-full px-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all placeholder:text-gray-300"
-                      placeholder="Nama PIC"
-                    />
-                  </div>
+                {/* Order Produksi */}
+                <div>
+                  <label className="block text-[12px] font-bold text-gray-600 mb-2">
+                    Order Produksi
+                  </label>
+                  <SearchableDropdown
+                    id="modal-order"
+                    value={formData.orderProduksi}
+                    items={sopdOptions.map(s => s.no_order || '')}
+                    itemLabels={sopdOptions.reduce((acc, s) => {
+                      if (s.no_order) {
+                        acc[s.no_order] = `${s.no_order} - ${s.nama_order || ''}`;
+                      }
+                      return acc;
+                    }, {} as Record<string, string>)}
+                    onChange={(val) => setFormData({ ...formData, orderProduksi: val })}
+                    placeholder="Pilih Order..."
+                    searchPlaceholder="Cari nomor order..."
+                    triggerWidth="w-full"
+                    panelWidth="w-full"
+                    compact
+                  />
+                </div>
 
+                {/* Jenis Pekerjaan */}
+                <div>
+                  <label className="block text-[12px] font-bold text-gray-600 mb-2">
+                    Jenis Pekerjaan
+                  </label>
+                  <SearchableDropdown
+                    id="modal-pekerjaan"
+                    value={formData.jenisPekerjaan}
+                    items={pekerjaanOptions.map(p => p.name || '')}
+                    onChange={(val) => setFormData({ ...formData, jenisPekerjaan: val })}
+                    placeholder="Pilih Jenis Pekerjaan..."
+                    searchPlaceholder="Cari pekerjaan..."
+                    triggerWidth="w-full"
+                    panelWidth="w-full"
+                    compact
+                  />
+                </div>
+
+                {/* PIC */}
+                <div>
+                  <label className="block text-[12px] font-bold text-gray-600 mb-2">
+                    PIC
+                  </label>
+                  <SearchableDropdown
+                    id="modal-pic"
+                    value={formData.pic}
+                    items={employeeOptions.map(e => e.name || '')}
+                    onChange={(val) => setFormData({ ...formData, pic: val })}
+                    placeholder="Pilih PIC..."
+                    searchPlaceholder="Cari nama karyawan..."
+                    triggerWidth="w-full"
+                    panelWidth="w-full"
+                    compact
+                  />
+                </div>
+
+                {/* Priority & Work Days */}
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[12px] font-bold text-gray-600 mb-2">
                       Priority
@@ -2084,35 +2254,6 @@ export default function LaporanPekerjaanClient() {
                       <option value="High">High</option>
                     </select>
                   </div>
-                </div>
-
-                {/* Start Date, End Date, Work Days */}
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-[12px] font-bold text-gray-600 mb-2">
-                      Start Date
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.startDate}
-                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                      className="w-full px-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all placeholder:text-gray-300"
-                      placeholder="dd/mm/yyyy"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[12px] font-bold text-gray-600 mb-2">
-                      End Date
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.endDate}
-                      onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                      className="w-full px-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all placeholder:text-gray-300"
-                      placeholder="dd/mm/yyyy"
-                    />
-                  </div>
 
                   <div>
                     <label className="block text-[12px] font-bold text-gray-600 mb-2">
@@ -2123,7 +2264,32 @@ export default function LaporanPekerjaanClient() {
                       value={formData.workDays}
                       onChange={(e) => setFormData({ ...formData, workDays: e.target.value })}
                       className="w-full px-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all placeholder:text-gray-300"
-                      placeholder="Jumlah"
+                      placeholder="Jumlah hari"
+                    />
+                  </div>
+                </div>
+
+                {/* Start Date & End Date */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[12px] font-bold text-gray-600 mb-2">
+                      Start Date
+                    </label>
+                    <DatePicker
+                      name="startDate"
+                      value={formData.startDate}
+                      onChange={(date) => setFormData({ ...formData, startDate: date })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[12px] font-bold text-gray-600 mb-2">
+                      End Date
+                    </label>
+                    <DatePicker
+                      name="endDate"
+                      value={formData.endDate}
+                      onChange={(date) => setFormData({ ...formData, endDate: date })}
                     />
                   </div>
                 </div>
