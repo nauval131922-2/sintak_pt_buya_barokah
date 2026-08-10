@@ -974,7 +974,7 @@ export default function HasilProduksiClient() {
       {/* 1. Header Section - Fixed */}
       <div id="filter-control-container" className="flex flex-col gap-3 shrink-0 relative">
         {/* 1. Filter Control Center — 2 Baris di MD, 1 Baris di LG (1024px+) */}
-        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-2.5 sm:p-3 flex flex-col lg:flex-row items-stretch lg:items-end gap-2 relative">
+        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-2.5 sm:p-3 flex flex-col lg:flex-row items-stretch lg:items-end gap-2 relative z-20">
           {/* Baris 1: SOPd Selection Group (Dinamis mengisi sisa ruang) */}
           <div className="w-full lg:flex-1 lg:min-w-[140px]">
             <SearchableDropdown

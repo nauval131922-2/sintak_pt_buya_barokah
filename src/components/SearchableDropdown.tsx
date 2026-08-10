@@ -165,7 +165,7 @@ export default function SearchableDropdown({
   return (
     <div
       ref={containerRef}
-      className={`relative ${triggerWidth} ${className}`}
+      className={`relative ${triggerWidth} ${className} ${open ? 'z-[50]' : ''}`}
       data-dropdown-id={id}
     >
       {label && (
