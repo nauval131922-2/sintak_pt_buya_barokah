@@ -116,25 +116,18 @@ export default function SearchableDropdown({
     updatePos();
 
     let animId: number;
-    const handleSidebarToggle = () => {
-      const startTime = performance.now();
-      const step = (now: number) => {
-        updatePos();
-        if (now - startTime < 350) {
-          animId = requestAnimationFrame(step);
-        }
-      };
-      animId = requestAnimationFrame(step);
+    const loop = () => {
+      updatePos();
+      animId = requestAnimationFrame(loop);
     };
+    animId = requestAnimationFrame(loop);
 
     window.addEventListener('scroll', updatePos, true);
     window.addEventListener('resize', updatePos);
-    window.addEventListener('sidebar-toggle', handleSidebarToggle);
     return () => {
       if (animId) cancelAnimationFrame(animId);
       window.removeEventListener('scroll', updatePos, true);
       window.removeEventListener('resize', updatePos);
-      window.removeEventListener('sidebar-toggle', handleSidebarToggle);
     };
   }, [open, updatePos]);
 
