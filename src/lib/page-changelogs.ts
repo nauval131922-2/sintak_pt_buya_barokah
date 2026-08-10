@@ -641,6 +641,20 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     ],
   }),
 
+  // ─── Laporan Pekerjaan ───
+  'laporan-pekerjaan-2026-08-10': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan Setting Buya 2026',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-08-10',
+    date: '10 Agu 2026',
+    version: '2026-08-10-1',
+    items: [
+      'Penambahan status "BELUM DIKERJAKAN" pada filter dropdown, stat card, badge, serta grafik Recharts (Bar & Donut)',
+      'Penyesuaian urutan status standar: BELUM DIKERJAKAN → IN PROGRESS → PENDING → CANCEL → SELESAI',
+    ],
+  }),
+
   // ─── Log Aktivitas User ───
   'log-aktivitas-user-2026-08-10': entry({
     pageKey: 'log-aktivitas-user',
