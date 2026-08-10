@@ -206,18 +206,18 @@ function SquareDropdown({
 
 const STATUS_COLORS: Record<string, string> = {
   "BELUM DIKERJAKAN": "#64748b", // slate-500
-  SELESAI: "#10b981", // emerald-500
   "IN PROGRESS": "#0284c7", // sky-600
   PENDING: "#f59e0b", // amber-500
   CANCEL: "#f43f5e", // rose-500
+  SELESAI: "#10b981", // emerald-500
 };
 
 const STATUS_LEGEND = [
   { name: "BELUM DIKERJAKAN", color: "#64748b" },
-  { name: "SELESAI", color: "#10b981" },
   { name: "IN PROGRESS", color: "#0ea5e9" },
   { name: "PENDING", color: "#f59e0b" },
   { name: "CANCEL", color: "#f43f5e" },
+  { name: "SELESAI", color: "#10b981" },
 ];
 
 function parseDateToSort(str: string): number {
@@ -615,10 +615,10 @@ export default function LaporanPekerjaanClient() {
     () => [
       { value: "ALL", label: "Semua Status" },
       { value: "BELUM DIKERJAKAN", label: "BELUM DIKERJAKAN" },
-      { value: "SELESAI", label: "SELESAI" },
       { value: "IN PROGRESS", label: "IN PROGRESS" },
       { value: "PENDING", label: "PENDING" },
       { value: "CANCEL", label: "CANCEL" },
+      { value: "SELESAI", label: "SELESAI" },
     ],
     []
   );
@@ -749,10 +749,10 @@ export default function LaporanPekerjaanClient() {
   const statusPieData = useMemo(() => {
     const map: Record<string, number> = {
       "BELUM DIKERJAKAN": 0,
-      SELESAI: 0,
       "IN PROGRESS": 0,
       PENDING: 0,
       CANCEL: 0,
+      SELESAI: 0,
     };
     filteredTasks.forEach((t) => {
       const s = (t.status || "").trim().toUpperCase();
@@ -1153,32 +1153,6 @@ export default function LaporanPekerjaanClient() {
                 </div>
               </div>
 
-              {/* Selesai */}
-              <div
-                onClick={() => handleCardStatusClick("SELESAI")}
-                className={`p-3 rounded-xl border transition-all cursor-pointer select-none hover:shadow-md ${
-                  selectedStatus === "SELESAI"
-                    ? "bg-emerald-100/80 border-emerald-500 ring-2 ring-emerald-500/50 shadow-sm"
-                    : "bg-gradient-to-br from-white to-emerald-50/30 border-emerald-200/80 hover:border-emerald-400 shadow-sm"
-                }`}
-                title="Klik untuk filter status SELESAI"
-              >
-                <div className="flex items-center justify-between text-emerald-600 mb-0.5">
-                  <span className="text-[11px] font-semibold">Selesai</span>
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                </div>
-                <div className="flex items-baseline justify-between">
-                  <span className="text-xl font-black text-emerald-700">
-                    {counts.selesai.toLocaleString("id-ID")}
-                  </span>
-                  {selectedStatus === "SELESAI" && (
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-200/80 px-1.5 py-0.5 rounded">
-                      Aktif
-                    </span>
-                  )}
-                </div>
-              </div>
-
               {/* In Progress */}
               <div
                 onClick={() => handleCardStatusClick("IN PROGRESS")}
@@ -1251,6 +1225,32 @@ export default function LaporanPekerjaanClient() {
                   </span>
                   {selectedStatus === "CANCEL" && (
                     <span className="text-[9px] font-bold uppercase tracking-wider text-rose-700 bg-rose-200/80 px-1.5 py-0.5 rounded">
+                      Aktif
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Selesai */}
+              <div
+                onClick={() => handleCardStatusClick("SELESAI")}
+                className={`p-3 rounded-xl border transition-all cursor-pointer select-none hover:shadow-md ${
+                  selectedStatus === "SELESAI"
+                    ? "bg-emerald-100/80 border-emerald-500 ring-2 ring-emerald-500/50 shadow-sm"
+                    : "bg-gradient-to-br from-white to-emerald-50/30 border-emerald-200/80 hover:border-emerald-400 shadow-sm"
+                }`}
+                title="Klik untuk filter status SELESAI"
+              >
+                <div className="flex items-center justify-between text-emerald-600 mb-0.5">
+                  <span className="text-[11px] font-semibold">Selesai</span>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                </div>
+                <div className="flex items-baseline justify-between">
+                  <span className="text-xl font-black text-emerald-700">
+                    {counts.selesai.toLocaleString("id-ID")}
+                  </span>
+                  {selectedStatus === "SELESAI" && (
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-200/80 px-1.5 py-0.5 rounded">
                       Aktif
                     </span>
                   )}
@@ -1329,12 +1329,6 @@ export default function LaporanPekerjaanClient() {
                           name="BELUM DIKERJAKAN"
                         />
                         <Bar
-                          dataKey="Selesai"
-                          fill="url(#gradSelesai)"
-                          radius={[6, 6, 0, 0]}
-                          name="SELESAI"
-                        />
-                        <Bar
                           dataKey="InProgress"
                           fill="url(#gradInProgress)"
                           radius={[6, 6, 0, 0]}
@@ -1351,6 +1345,12 @@ export default function LaporanPekerjaanClient() {
                           fill="url(#gradCancel)"
                           radius={[6, 6, 0, 0]}
                           name="CANCEL"
+                        />
+                        <Bar
+                          dataKey="Selesai"
+                          fill="url(#gradSelesai)"
+                          radius={[6, 6, 0, 0]}
+                          name="SELESAI"
                         />
                       </BarChart>
                     </ResponsiveContainer>
