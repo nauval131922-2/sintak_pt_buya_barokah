@@ -14,7 +14,7 @@ export default async function LogAktivitasUserPage() {
   await requirePermission('usr_log_view');
 
   return (
-    <div className="flex flex-col gap-6 pb-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
+    <div className="flex-1 min-h-0 flex flex-col gap-6 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-700">
       <PageHeader
         title="Log Aktivitas User"
         description="Riwayat aktivitas pengguna dari sistem Digit. Filter berdasarkan tanggal."

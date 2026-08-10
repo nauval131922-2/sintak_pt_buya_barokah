@@ -257,7 +257,7 @@ export default function LogAktivitasUserClient() {
         onEndDateChange={setEndDate}
         onFetch={handleFetch}
         isFetching={loading}
-        fetchText="Tampilkan"
+        fetchText="Tarik Data"
       />
 
       {error && (
