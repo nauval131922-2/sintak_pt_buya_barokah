@@ -28,17 +28,20 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
     return getAllPageChangelogsByPath(pathname);
   }, [pageKey, pathname]);
 
-  // ponytail: group by sortDate+pageKey, merge items dengan prefix versionLabel
+  // ponytail: group by sortDate+pageKey, merge items dengan section v1/v2
   const groupByDate = useCallback((changelogs: PageChangelog[]) => {
-    const map = new Map<string, PageChangelog>();
+    const map = new Map<string, PageChangelog & { sections: Array<{label: string; items: string[]}> }>();
     for (const c of changelogs) {
       const key = `${c.sortDate}-${c.pageKey}`;
       const existing = map.get(key);
       if (!existing) {
-        map.set(key, { ...c });
+        map.set(key, { ...c, sections: c.versionLabel ? [{ label: c.versionLabel, items: c.items }] : [] });
       } else {
-        const prefix = c.versionLabel ? `${c.versionLabel}: ` : '';
-        existing.items = [...existing.items, ...c.items.map(i => prefix + i)];
+        if (c.versionLabel) {
+          existing.sections.push({ label: c.versionLabel, items: c.items });
+        } else {
+          existing.items = [...existing.items, ...c.items];
+        }
       }
     }
     return [...map.values()];
@@ -53,7 +56,7 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
       return;
     }
     const grouped = groupByDate(changelogs);
-    setActive(grouped);
+    setActive(grouped as PageChangelog[]);
     
     // Default: buka semua accordion
     const allKeys = new Set(grouped.map(c => c.version));
@@ -90,7 +93,7 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
         : resolveChangelog();
       if (!changelogs || changelogs.length === 0) return;
       const grouped = groupByDate(changelogs);
-      setActive(grouped);
+      setActive(grouped as PageChangelog[]);
       const allKeys = new Set(grouped.map(c => c.version));
       setOpenSections(allKeys);
       setForced(true);
@@ -186,7 +189,9 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
                     {changelog.date || changelog.sortDate}
                   </span>
                   <span className="text-[11px] text-gray-400 font-medium">
-                    · {changelog.items.length} poin
+                    · {('sections' in changelog && Array.isArray((changelog as any).sections)) 
+                      ? (changelog as any).sections.reduce((sum: number, s: any) => sum + s.items.length, 0)
+                      : changelog.items.length} poin
                   </span>
                 </div>
                 <ChevronDown
@@ -197,17 +202,38 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
 
               {/* Accordion Body */}
               {isOpen && (
-                <ul className="flex flex-col gap-2.5 px-4 py-3 bg-white">
-                  {changelog.items.map((item, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-2.5 text-[13px] text-gray-700 font-medium leading-snug"
-                    >
-                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
+                <div className="flex flex-col px-4 py-3 bg-white">
+                  {('sections' in changelog && Array.isArray((changelog as any).sections) && (changelog as any).sections.length > 0) ? (
+                    (changelog as any).sections.map((section: {label: string; items: string[]}, sIdx: number) => (
+                      <div key={sIdx} className={sIdx > 0 ? 'mt-4' : ''}>
+                        <div className="text-[12px] font-bold text-emerald-700 mb-2">{section.label}:</div>
+                        <ul className="flex flex-col gap-2.5">
+                          {section.items.map((item: string, i: number) => (
+                            <li
+                              key={i}
+                              className="flex items-start gap-2.5 text-[13px] text-gray-700 font-medium leading-snug"
+                            >
+                              <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))
+                  ) : (
+                    <ul className="flex flex-col gap-2.5">
+                      {changelog.items.map((item, i) => (
+                        <li
+                          key={i}
+                          className="flex items-start gap-2.5 text-[13px] text-gray-700 font-medium leading-snug"
+                        >
+                          <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               )}
             </div>
           );

@@ -10,17 +10,20 @@ import {
 
 type Entry = PageChangelog & { path: string | null };
 
-// ponytail: merge entries dengan pageKey+sortDate sama, prefix items dengan versionLabel
-function mergeEntriesByPage(entries: Entry[]): Entry[] {
-  const map = new Map<string, Entry>();
+// ponytail: merge entries dengan pageKey+sortDate sama, struktur section v1/v2
+function mergeEntriesByPage(entries: Entry[]): Array<Entry & { sections?: Array<{label: string; items: string[]}> }> {
+  const map = new Map<string, Entry & { sections: Array<{label: string; items: string[]}> }>();
   for (const e of entries) {
     const key = `${e.pageKey}-${e.sortDate}`;
     const existing = map.get(key);
     if (!existing) {
-      map.set(key, { ...e });
+      map.set(key, { ...e, sections: e.versionLabel ? [{ label: e.versionLabel, items: e.items }] : [] });
     } else {
-      const prefix = e.versionLabel ? `${e.versionLabel}: ` : '';
-      existing.items = [...existing.items, ...e.items.map(i => prefix + i)];
+      if (e.versionLabel) {
+        existing.sections.push({ label: e.versionLabel, items: e.items });
+      } else {
+        existing.items = [...existing.items, ...e.items];
+      }
     }
   }
   return [...map.values()];
@@ -95,7 +98,9 @@ export default function LogPerubahanClient({ entries }: { entries: Entry[] }) {
                           {e.title}
                         </h3>
                         <p className="text-[11px] text-gray-400 font-medium mt-0.5">
-                          {e.items.length} poin perubahan
+                          {('sections' in e && Array.isArray(e.sections) && e.sections.length > 0)
+                            ? e.sections.reduce((sum, s) => sum + s.items.length, 0)
+                            : e.items.length} poin perubahan
                         </p>
                       </div>
                       <ChevronDown
@@ -116,17 +121,38 @@ export default function LogPerubahanClient({ entries }: { entries: Entry[] }) {
                   </div>
 
                   {isOpen && (
-                    <ul className="px-4 pb-4 pt-1 flex flex-col gap-2 border-t border-gray-50 ml-1">
-                      {e.items.map((item, i) => (
-                        <li
-                          key={i}
-                          className="flex items-start gap-2.5 text-[13px] text-gray-700 font-medium leading-snug"
-                        >
-                          <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    <div className="px-4 pb-4 pt-1 border-t border-gray-50 ml-1">
+                      {('sections' in e && Array.isArray(e.sections) && e.sections.length > 0) ? (
+                        e.sections.map((section: {label: string; items: string[]}, sIdx: number) => (
+                          <div key={sIdx} className={sIdx > 0 ? 'mt-4' : ''}>
+                            <div className="text-[12px] font-bold text-emerald-700 mb-2">{section.label}:</div>
+                            <ul className="flex flex-col gap-2">
+                              {section.items.map((item: string, i: number) => (
+                                <li
+                                  key={i}
+                                  className="flex items-start gap-2.5 text-[13px] text-gray-700 font-medium leading-snug"
+                                >
+                                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                  <span>{item}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))
+                      ) : (
+                        <ul className="flex flex-col gap-2">
+                          {e.items.map((item, i) => (
+                            <li
+                              key={i}
+                              className="flex items-start gap-2.5 text-[13px] text-gray-700 font-medium leading-snug"
+                            >
+                              <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
                   )}
                 </article>
               );
