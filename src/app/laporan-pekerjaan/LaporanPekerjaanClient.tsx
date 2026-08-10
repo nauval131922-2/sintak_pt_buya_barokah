@@ -1750,6 +1750,9 @@ export default function LaporanPekerjaanClient() {
           <table className="w-full text-left text-xs border-collapse table-fixed">
             <thead className="sticky top-0 z-10 bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 shadow-sm">
               <tr>
+                <th className="px-3 py-2.5 text-center bg-slate-50 sticky top-0 z-10 border-b border-slate-200 w-24">
+                  Aksi
+                </th>
                 {renderSortableHeader("task", "Task / Aktivitas")}
                 {renderSortableHeader("project", "Project Order")}
                 {renderSortableHeader("division", "Divisi")}
@@ -1760,9 +1763,6 @@ export default function LaporanPekerjaanClient() {
                 {renderSortableHeader("workDays", "Work Days", true)}
                 {renderSortableHeader("note", "Note")}
                 {renderSortableHeader("status", "Status", true)}
-                <th className="px-3 py-2.5 text-center bg-slate-50 sticky top-0 z-10 border-b border-slate-200 w-24">
-                  Aksi
-                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -1800,6 +1800,30 @@ export default function LaporanPekerjaanClient() {
                           : "hover:bg-emerald-50/50"
                       }`}
                     >
+                      <td className="px-3 py-2.5 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEditModal(t);
+                            }}
+                            className="p-1 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
+                            title="Edit"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (t.id) handleDelete(t.id);
+                            }}
+                            className="p-1 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
+                            title="Hapus"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
                       <td
                         title={t.task}
                         style={{
@@ -1902,30 +1926,6 @@ export default function LaporanPekerjaanClient() {
                     >
                       {getStatusBadge(t.status)}
                     </td>
-                    <td className="px-3 py-2.5 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openEditModal(t);
-                          }}
-                          className="p-1 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
-                          title="Edit"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (t.id) handleDelete(t.id);
-                          }}
-                          className="p-1 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
-                          title="Hapus"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
                   </tr>
                 );
               })
@@ -1983,84 +1983,101 @@ export default function LaporanPekerjaanClient() {
       {/* Modal CRUD */}
       {showModal && (
         <Portal>
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-                <h3 className="text-lg font-bold text-slate-800">
-                  {modalMode === "create" ? "Tambah Data Pekerjaan" : "Edit Data Pekerjaan"}
-                </h3>
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+              
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-emerald-50 to-emerald-50 shrink-0 rounded-t-2xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                    <FileSpreadsheet size={18} />
+                  </div>
+                  <div>
+                    <h3 className="text-[15px] font-bold text-gray-800 tracking-tight">
+                      {modalMode === "create" ? "Tambah Data Pekerjaan" : "Edit Data Pekerjaan"}
+                    </h3>
+                    <p className="text-[11px] text-gray-500 font-medium">
+                      {modalMode === "create" ? "Isi detail pekerjaan baru" : "Perbarui detail pekerjaan"}
+                    </p>
+                  </div>
+                </div>
                 <button
                   onClick={closeModal}
-                  className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                  className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white/80 transition-all"
                 >
-                  <X className="w-5 h-5" />
+                  <X size={18} />
                 </button>
               </div>
 
-              <div className="p-6 space-y-4">
+              {/* Body */}
+              <div className="px-6 py-5 flex flex-col gap-4 overflow-y-auto">
+                
+                {/* Task / Nama Pekerjaan */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    Task / Nama Pekerjaan <span className="text-rose-600">*</span>
+                  <label className="block text-[12px] font-bold text-gray-600 mb-2">
+                    Task / Nama Pekerjaan <span className="text-rose-400">*</span>
                   </label>
                   <input
                     type="text"
                     value={formData.task}
                     onChange={(e) => setFormData({ ...formData, task: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                    className="w-full px-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all placeholder:text-gray-300"
                     placeholder="Contoh: Finishing OP.007"
                   />
                 </div>
 
+                {/* Project Order & Divisi */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    <label className="block text-[12px] font-bold text-gray-600 mb-2">
                       Project Order
                     </label>
                     <input
                       type="text"
                       value={formData.project}
                       onChange={(e) => setFormData({ ...formData, project: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                      className="w-full px-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all placeholder:text-gray-300"
                       placeholder="Contoh: OP.007"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    <label className="block text-[12px] font-bold text-gray-600 mb-2">
                       Divisi
                     </label>
                     <input
                       type="text"
                       value={formData.division}
                       onChange={(e) => setFormData({ ...formData, division: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                      className="w-full px-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all placeholder:text-gray-300"
                       placeholder="Contoh: Produksi"
                     />
                   </div>
                 </div>
 
+                {/* PIC & Priority */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    <label className="block text-[12px] font-bold text-gray-600 mb-2">
                       PIC
                     </label>
                     <input
                       type="text"
                       value={formData.pic}
                       onChange={(e) => setFormData({ ...formData, pic: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                      className="w-full px-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all placeholder:text-gray-300"
                       placeholder="Nama PIC"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    <label className="block text-[12px] font-bold text-gray-600 mb-2">
                       Priority
                     </label>
                     <select
                       value={formData.priority}
                       onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                      className="w-full px-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all"
                     >
                       <option value="Low">Low</option>
                       <option value="Medium">Medium</option>
@@ -2069,55 +2086,57 @@ export default function LaporanPekerjaanClient() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                {/* Start Date, End Date, Work Days */}
+                <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    <label className="block text-[12px] font-bold text-gray-600 mb-2">
                       Start Date
                     </label>
                     <input
                       type="text"
                       value={formData.startDate}
                       onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                      className="w-full px-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all placeholder:text-gray-300"
                       placeholder="dd/mm/yyyy"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    <label className="block text-[12px] font-bold text-gray-600 mb-2">
                       End Date
                     </label>
                     <input
                       type="text"
                       value={formData.endDate}
                       onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                      className="w-full px-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all placeholder:text-gray-300"
                       placeholder="dd/mm/yyyy"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    <label className="block text-[12px] font-bold text-gray-600 mb-2">
                       Work Days
                     </label>
                     <input
                       type="text"
                       value={formData.workDays}
                       onChange={(e) => setFormData({ ...formData, workDays: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
-                      placeholder="Jumlah hari"
+                      className="w-full px-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all placeholder:text-gray-300"
+                      placeholder="Jumlah"
                     />
                   </div>
                 </div>
 
+                {/* Status */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  <label className="block text-[12px] font-bold text-gray-600 mb-2">
                     Status
                   </label>
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                    className="w-full px-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all"
                   >
                     <option value="BELUM DIKERJAKAN">BELUM DIKERJAKAN</option>
                     <option value="IN PROGRESS">IN PROGRESS</option>
@@ -2127,33 +2146,37 @@ export default function LaporanPekerjaanClient() {
                   </select>
                 </div>
 
+                {/* Note / Catatan */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  <label className="block text-[12px] font-bold text-gray-600 mb-2">
                     Note / Catatan
                   </label>
                   <textarea
                     value={formData.note}
                     onChange={(e) => setFormData({ ...formData, note: e.target.value })}
                     rows={3}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none resize-none"
+                    className="w-full px-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all resize-none placeholder:text-gray-300"
                     placeholder="Catatan tambahan..."
                   />
                 </div>
               </div>
 
-              <div className="sticky bottom-0 bg-slate-50 border-t border-slate-200 px-6 py-4 flex items-center justify-end gap-3">
+              {/* Footer */}
+              <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50 shrink-0 rounded-b-2xl">
                 <button
+                  type="button"
                   onClick={closeModal}
-                  className="px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                  className="px-5 py-2.5 text-[13px] font-bold text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 rounded-xl border border-gray-200 transition-all"
                 >
                   Batal
                 </button>
                 <button
+                  type="button"
                   onClick={handleSave}
-                  className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors"
+                  className="px-6 py-2.5 text-[13px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition-all flex items-center gap-2"
                 >
-                  <Save className="w-4 h-4 mr-1.5" />
-                  Simpan
+                  <Save size={15} />
+                  {modalMode === "create" ? "Tambah Data" : "Simpan Perubahan"}
                 </button>
               </div>
             </div>
