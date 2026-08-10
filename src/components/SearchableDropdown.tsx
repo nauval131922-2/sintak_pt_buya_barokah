@@ -103,29 +103,35 @@ export default function SearchableDropdown({
     if (!rect) return;
     const scale = getZoomScale();
     const maxW = (typeof window !== 'undefined' ? window.innerWidth - 24 : 360) / scale;
-    const computedWidth = panelWidth
-      ? (panelWidth.includes('px') ? parseInt(panelWidth.replace(/[^0-9]/g, ''), 10) : rect.width / scale)
-      : (rect.width / scale);
+    const triggerW = rect.width / scale;
     setPanelPos({
       top: (rect.bottom + 8) / scale,
       left: rect.left / scale,
-      width: Math.min(Math.max(computedWidth, rect.width / scale), maxW),
+      width: Math.min(triggerW, maxW),
     });
-  }, [panelWidth]);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
     updatePos();
 
+    let animId: number;
     const handleSidebarToggle = () => {
-      // Direct update target position so CSS transition animates left & width smoothly alongside sidebar
-      updatePos();
+      const startTime = performance.now();
+      const step = (now: number) => {
+        updatePos();
+        if (now - startTime < 350) {
+          animId = requestAnimationFrame(step);
+        }
+      };
+      animId = requestAnimationFrame(step);
     };
 
     window.addEventListener('scroll', updatePos, true);
     window.addEventListener('resize', updatePos);
     window.addEventListener('sidebar-toggle', handleSidebarToggle);
     return () => {
+      if (animId) cancelAnimationFrame(animId);
       window.removeEventListener('scroll', updatePos, true);
       window.removeEventListener('resize', updatePos);
       window.removeEventListener('sidebar-toggle', handleSidebarToggle);
@@ -248,7 +254,7 @@ export default function SearchableDropdown({
             id={`dropdown-panel-${id}`}
             role="listbox"
             aria-label={label}
-            className={`fixed bg-white border border-gray-100 rounded-xl shadow-md shadow-emerald-900/10 py-3 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col max-h-[350px] transition-[left,width] duration-300 ease-in-out`}
+            className={`fixed bg-white border border-gray-100 rounded-xl shadow-md shadow-emerald-900/10 py-3 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col max-h-[350px]`}
             style={{ top: `${panelPos.top}px`, left: `${panelPos.left}px`, width: `${panelPos.width}px` }}
           >
           {/* Search */}
