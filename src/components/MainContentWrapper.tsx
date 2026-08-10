@@ -138,7 +138,8 @@ function MainContentInner({
                       const textEl = e.currentTarget;
                       if (textEl.scrollWidth > textEl.clientWidth) {
                         const rect = textEl.getBoundingClientRect();
-                        const left = Math.max(12, Math.min(rect.left, window.innerWidth - 48));
+                        const isMobile = window.innerWidth < 640;
+                        const left = isMobile ? 12 : Math.max(12, rect.left);
                         setDescTooltipPos({ top: rect.bottom + 4, left });
                         setShowDescTooltip(prev => !prev);
                       } else if (showDescTooltip) {
@@ -171,7 +172,7 @@ function MainContentInner({
       {showDescTooltip && typeof document !== 'undefined' && createPortal(
         <div 
           style={{ top: `${descTooltipPos.top}px`, left: `${descTooltipPos.left}px` }}
-          className="fixed z-[999999] bg-gray-900 text-white text-[11px] font-semibold px-3 py-2 rounded-lg shadow-xl w-max max-w-[calc(100vw-24px)] sm:max-w-xl break-words pointer-events-none animate-in fade-in duration-100 leading-snug"
+          className="fixed z-[999999] bg-gray-900 text-white text-[11px] font-semibold px-3 py-2 rounded-lg shadow-xl w-[calc(100vw-24px)] sm:w-auto sm:max-w-xl break-words pointer-events-none animate-in fade-in duration-100 leading-snug"
         >
           {description}
         </div>,
