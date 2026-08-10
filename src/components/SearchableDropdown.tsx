@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { ChevronDown, Search } from 'lucide-react';
-import Portal, { getZoomScale } from './Portal';
 
 interface SearchableDropdownProps {
   /** Currently selected value */
@@ -60,7 +59,6 @@ export default function SearchableDropdown({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(-1);
-  const [panelPos, setPanelPos] = useState({ top: 0, left: 0, width: 0 });
 
   const containerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -85,7 +83,7 @@ export default function SearchableDropdown({
       ?? items.find(i => String(i) === value || String(i).startsWith(value + ' — '))
       ?? String(value));
 
-  // Close on outside click — panel is in Portal, so check both refs
+  // Close on outside click
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
@@ -96,40 +94,6 @@ export default function SearchableDropdown({
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
-
-  // Update panel position on scroll/resize
-  const updatePos = useCallback(() => {
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const scale = getZoomScale();
-    const maxW = (typeof window !== 'undefined' ? window.innerWidth - 24 : 360) / scale;
-    const triggerW = rect.width / scale;
-    setPanelPos({
-      top: (rect.bottom + 8) / scale,
-      left: rect.left / scale,
-      width: Math.min(triggerW, maxW),
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!open) return;
-    updatePos();
-
-    let animId: number;
-    const loop = () => {
-      updatePos();
-      animId = requestAnimationFrame(loop);
-    };
-    animId = requestAnimationFrame(loop);
-
-    window.addEventListener('scroll', updatePos, true);
-    window.addEventListener('resize', updatePos);
-    return () => {
-      if (animId) cancelAnimationFrame(animId);
-      window.removeEventListener('scroll', updatePos, true);
-      window.removeEventListener('resize', updatePos);
-    };
-  }, [open, updatePos]);
 
   // Auto-focus search when opened, init focused index to current selection
   useEffect(() => {
@@ -241,15 +205,13 @@ export default function SearchableDropdown({
 
       {/* Panel */}
       {open && (
-        <Portal>
-          <div
-            ref={panelRef}
-            id={`dropdown-panel-${id}`}
-            role="listbox"
-            aria-label={label}
-            className={`fixed bg-white border border-gray-100 rounded-xl shadow-md shadow-emerald-900/10 py-3 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col max-h-[350px]`}
-            style={{ top: `${panelPos.top}px`, left: `${panelPos.left}px`, width: `${panelPos.width}px` }}
-          >
+        <div
+          ref={panelRef}
+          id={`dropdown-panel-${id}`}
+          role="listbox"
+          aria-label={label}
+          className={`absolute left-0 top-full mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-md shadow-emerald-900/10 py-3 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col max-h-[350px]`}
+        >
           {/* Search */}
           <div className="px-3 pb-3 shrink-0 border-b border-gray-50 mb-1">
             <div className="relative">
@@ -302,7 +264,6 @@ export default function SearchableDropdown({
             )}
           </div>
         </div>
-        </Portal>
       )}
     </div>
   );
