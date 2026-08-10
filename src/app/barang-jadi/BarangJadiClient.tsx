@@ -70,7 +70,7 @@ export default function BarangJadiClient() {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('barangJadi_columnWidths');
       return saved ? JSON.parse(saved) : {
-        no: 60, faktur: 180, tgl: 120, kd_barang: 150, qty: 100, hp_total: 130, hp_barang_jadi: 130, hp_rata_rata: 130, harga_so_sales_order: 170, harga_so_penjualan: 170, analisa_harga: 320
+        no: 60, faktur: 180, tgl: 120, kd_barang: 150, qty: 100, hp_total: 130, hp_barang_jadi: 130, profit_30: 130, hp_rata_rata: 130, harga_so_sales_order: 170, harga_so_penjualan: 170, analisa_harga: 320
       };
     }
     return {};
@@ -328,6 +328,23 @@ export default function BarangJadiClient() {
       )
     },
     {
+      id: 'profit_30',
+      accessorKey: 'hp',
+      header: () => <span className="text-amber-600">Profit 30%</span>,
+      size: 130,
+      meta: { align: 'right', headerBg: '#fffbeb' },
+      cell: ({ getValue, row }: any) => {
+        const hp = Number(getValue() || 0);
+        const profit30 = hp * 1.3;
+        return (
+          <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-amber-700'}`}>
+            <span className="text-[11px] opacity-40 mr-1">Rp</span>
+            <span>{profit30.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
+          </div>
+        );
+      }
+    },
+    {
       accessorKey: 'hp_rata_rata',
       header: () => <span className="text-purple-600">HP Rata-rata</span>,
       size: 130,
@@ -335,7 +352,7 @@ export default function BarangJadiClient() {
       cell: ({ getValue, row }: any) => (
         <div className={`flex items-center justify-between font-semibold tabular-nums w-full ${row.getIsSelected() ? 'text-emerald-700' : 'text-purple-700'}`}>
           <span className="text-[11px] opacity-40 mr-1">Rp</span>
-          <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</span>
+          <span>{Number(getValue() || 0).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
       )
     },
