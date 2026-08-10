@@ -78,6 +78,7 @@ export async function GET(request: NextRequest) {
         stgl_awal: startStr,
         stgl_akhir: endStr,
         ppn: "semua",
+        skondisi_diskon: "semua",
       },
     };
 
