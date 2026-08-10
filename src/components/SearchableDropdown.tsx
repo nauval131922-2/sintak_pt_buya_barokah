@@ -116,13 +116,28 @@ export default function SearchableDropdown({
   useEffect(() => {
     if (!open) return;
     updatePos();
+    let animId: number;
+    let startTime: number | null = null;
+    const handleSidebarToggle = () => {
+      updatePos();
+      startTime = performance.now();
+      const step = (now: number) => {
+        updatePos();
+        if (startTime && now - startTime < 350) {
+          animId = requestAnimationFrame(step);
+        }
+      };
+      animId = requestAnimationFrame(step);
+    };
+
     window.addEventListener('scroll', updatePos, true);
     window.addEventListener('resize', updatePos);
-    window.addEventListener('sidebar-toggle', updatePos);
+    window.addEventListener('sidebar-toggle', handleSidebarToggle);
     return () => {
+      if (animId) cancelAnimationFrame(animId);
       window.removeEventListener('scroll', updatePos, true);
       window.removeEventListener('resize', updatePos);
-      window.removeEventListener('sidebar-toggle', updatePos);
+      window.removeEventListener('sidebar-toggle', handleSidebarToggle);
     };
   }, [open, updatePos]);
 

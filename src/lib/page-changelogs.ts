@@ -340,7 +340,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     date: '10 Agu 2026',
     version: '2026-08-10-1',
     items: [
-      'Posisi & lebar dropdown portal (SearchableDropdown) otomatis menyesuaikan saat sidebar toggle/hover',
+      'Posisi & lebar dropdown portal (SearchableDropdown) otomatis smooth sync saat sidebar hover/collapse',
     ],
   }),
   'hasil-produksi-2026-08-09': entry({

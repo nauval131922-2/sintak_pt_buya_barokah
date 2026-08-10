@@ -127,10 +127,10 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
   useEffect(() => {
     if (isMounted) {
       localStorage.setItem('sidebar_collapsed', String(isCollapsed));
-      const event = new CustomEvent('sidebar-toggle', { detail: { isCollapsed, width: currentWidth } });
+      const event = new CustomEvent('sidebar-toggle', { detail: { isCollapsed, isHovered, width: currentWidth } });
       window.dispatchEvent(event);
     }
-  }, [isCollapsed, currentWidth, isMounted]);
+  }, [isCollapsed, isHovered, currentWidth, isMounted]);
 
   // Handle Resizing
   const startResizing = useCallback((e: React.MouseEvent) => {
