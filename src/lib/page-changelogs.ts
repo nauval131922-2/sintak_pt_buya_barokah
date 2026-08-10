@@ -401,6 +401,12 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     permissionKeys: ['produksi_bahan_baku'],
     items: [...UI_POLISH, 'Daftar dan filter lebih rapi'],
   }),
+  'barang-jadi-2026-07-25': entry({
+    pageKey: 'barang-jadi',
+    title: 'Penerimaan Barang Hasil Produksi',
+    permissionKeys: ['produksi_barang_jadi'],
+    items: [...UI_POLISH, 'Daftar dan filter lebih rapi'],
+  }),
   'barang-jadi-2026-08-10': entry({
     pageKey: 'barang-jadi',
     title: 'Penerimaan Barang Hasil Produksi',
