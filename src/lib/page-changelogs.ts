@@ -11,6 +11,8 @@ export type PageChangelog = {
   sortDate: string;
   /** User lihat entry ini jika canAccess salah satu key (OR) */
   permissionKeys: string[];
+  /** Label versi (opsional): "v1", "v2" — untuk multi-rilis di hari sama */
+  versionLabel?: string;
 };
 
 /** Satu gelombang catch-up: 78 commit lokal + perubahan belum commit (25 Jul 2026). */
@@ -684,8 +686,9 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     title: 'Log Aktivitas User',
     permissionKeys: ['usr_log_view'],
     sortDate: '2026-08-10',
-    date: '10 Agu 2026 · v1',
+    date: '10 Agu 2026',
     version: '2026-08-10-1',
+    versionLabel: 'v1',
     items: [
       'Halaman baru: riwayat aktivitas pengguna dari sistem Digit',
       'Filter berdasarkan rentang tanggal awal dan akhir',
@@ -698,8 +701,9 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     title: 'Log Aktivitas User',
     permissionKeys: ['usr_log_view'],
     sortDate: '2026-08-10',
-    date: '10 Agu 2026 · v2',
+    date: '10 Agu 2026',
     version: '2026-08-10-2',
+    versionLabel: 'v2',
     items: [
       'Tarik Data menyimpan log ke database lokal — reload halaman data tetap ada',
       'Filter rentang tanggal, pencarian teks (channel/user/pesan), dan infinite scroll',

@@ -28,6 +28,22 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
     return getAllPageChangelogsByPath(pathname);
   }, [pageKey, pathname]);
 
+  // ponytail: group by sortDate+pageKey, merge items dengan prefix versionLabel
+  const groupByDate = useCallback((changelogs: PageChangelog[]) => {
+    const map = new Map<string, PageChangelog>();
+    for (const c of changelogs) {
+      const key = `${c.sortDate}-${c.pageKey}`;
+      const existing = map.get(key);
+      if (!existing) {
+        map.set(key, { ...c });
+      } else {
+        const prefix = c.versionLabel ? `${c.versionLabel}: ` : '';
+        existing.items = [...existing.items, ...c.items.map(i => prefix + i)];
+      }
+    }
+    return [...map.values()];
+  }, []);
+
   const tryAutoOpen = useCallback((changelogs: PageChangelog[]) => {
     if (!changelogs || changelogs.length === 0) {
       setOpen(false);
@@ -36,10 +52,11 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
       setOpenSections(new Set());
       return;
     }
-    setActive(changelogs);
+    const grouped = groupByDate(changelogs);
+    setActive(grouped);
     
     // Default: buka semua accordion
-    const allKeys = new Set(changelogs.map(c => c.version));
+    const allKeys = new Set(grouped.map(c => c.version));
     setOpenSections(allKeys);
     
     // Cek dismiss: jika SEMUA rilis sudah dismissed, jangan buka modal
@@ -57,7 +74,7 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
     } catch {
       setOpen(false);
     }
-  }, []);
+  }, [groupByDate]);
 
   // Auto-show saat ganti halaman / mount
   useEffect(() => {
@@ -72,15 +89,16 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
         ? getAllPageChangelogs(detail.pageKey)
         : resolveChangelog();
       if (!changelogs || changelogs.length === 0) return;
-      setActive(changelogs);
-      const allKeys = new Set(changelogs.map(c => c.version));
+      const grouped = groupByDate(changelogs);
+      setActive(grouped);
+      const allKeys = new Set(grouped.map(c => c.version));
       setOpenSections(allKeys);
       setForced(true);
       setOpen(true);
     };
     window.addEventListener('open-page-changelog', handler);
     return () => window.removeEventListener('open-page-changelog', handler);
-  }, [resolveChangelog]);
+  }, [resolveChangelog, groupByDate]);
 
   const handleClose = () => {
     // Tutup saja — tidak simpan storage, F5 bisa muncul lagi (kecuali sudah "jangan tampilkan")

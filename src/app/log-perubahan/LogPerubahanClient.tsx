@@ -10,11 +10,28 @@ import {
 
 type Entry = PageChangelog & { path: string | null };
 
+// ponytail: merge entries dengan pageKey+sortDate sama, prefix items dengan versionLabel
+function mergeEntriesByPage(entries: Entry[]): Entry[] {
+  const map = new Map<string, Entry>();
+  for (const e of entries) {
+    const key = `${e.pageKey}-${e.sortDate}`;
+    const existing = map.get(key);
+    if (!existing) {
+      map.set(key, { ...e });
+    } else {
+      const prefix = e.versionLabel ? `${e.versionLabel}: ` : '';
+      existing.items = [...existing.items, ...e.items.map(i => prefix + i)];
+    }
+  }
+  return [...map.values()];
+}
+
 export default function LogPerubahanClient({ entries }: { entries: Entry[] }) {
-  const groups = useMemo(() => groupChangelogsBySortDate(entries), [entries]);
+  const merged = useMemo(() => mergeEntriesByPage(entries), [entries]);
+  const groups = useMemo(() => groupChangelogsBySortDate(merged), [merged]);
 
   const [openKeys, setOpenKeys] = useState<Set<string>>(() =>
-    new Set(entries.map((e) => `${e.pageKey}-${e.version}`))
+    new Set(merged.map((e) => `${e.pageKey}-${e.version}`))
   );
 
   const toggle = (key: string) => {
@@ -26,7 +43,7 @@ export default function LogPerubahanClient({ entries }: { entries: Entry[] }) {
     });
   };
 
-  if (entries.length === 0) {
+  if (merged.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-gray-100 bg-white shadow-sm shadow-emerald-900/5 p-12">
         <div className="w-16 h-16 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center">
