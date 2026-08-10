@@ -635,7 +635,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     title: 'Log Aktivitas User',
     permissionKeys: ['usr_log_view'],
     sortDate: '2026-08-10',
-    date: '10 Agu 2026',
+    date: '10 Agu 2026 · v1',
     version: '2026-08-10-1',
     items: [
       'Halaman baru: riwayat aktivitas pengguna dari sistem Digit',
@@ -649,7 +649,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     title: 'Log Aktivitas User',
     permissionKeys: ['usr_log_view'],
     sortDate: '2026-08-10',
-    date: '10 Agu 2026',
+    date: '10 Agu 2026 · v2',
     version: '2026-08-10-2',
     items: [
       'Tarik Data menyimpan log ke database lokal — reload halaman data tetap ada',
