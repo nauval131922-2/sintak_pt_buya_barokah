@@ -64,9 +64,8 @@ export default function LogAktivitasUserClient() {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [scrapedPeriod, setScrapedPeriod] = useState<{ start: string; end: string } | null>(null);
   const [loadTime, setLoadTime] = useState<number | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [page, setPage] = useState(1);
   const [isExporting, setIsExporting] = useState(false);
+  const [page, setPage] = useState(1);
 
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
   const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || '');
@@ -154,10 +153,13 @@ export default function LogAktivitasUserClient() {
     }
   }, [startDate, endDate, isMounted]);
 
-  useEffect(() => {
-    if (isMounted && refreshKey > 0) handleFetch();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refreshKey]);
+  // Reload manual: hanya reset search/filter, tidak re-fetch dari Digit
+  // (tidak ada DB lokal — data hanya diperbarui saat user klik "Tarik Data")
+  const handleReload = useCallback(() => {
+    setSearchQuery('');
+    setDebouncedQuery('');
+    setPage(1);
+  }, []);
 
   const handleExport = useCallback(async () => {
     if (!filtered.length) { toast.error('Tidak ada data untuk diekspor'); return; }
@@ -232,19 +234,26 @@ export default function LogAktivitasUserClient() {
       ),
     },
     {
-      // ponytail: Data ditampilkan sebagai JSON string truncated — virtualizer fixed height tidak support expand
+      // ponytail: Data sebagai teks truncated + title tooltip — virtualizer fixed-height tidak support expand inline
       accessorKey: 'Data',
       header: 'Data',
       size: 340,
-      meta: { wrap: true },
       cell: ({ getValue, row }: any) => {
         const val = getValue() as Record<string, unknown> | undefined;
         if (!val) return <span className="text-gray-300 text-[11px]">—</span>;
         const entries = Object.entries(val).filter(([, v]) => v !== null && v !== '' && v !== undefined);
         if (!entries.length) return <span className="text-gray-300 text-[11px]">—</span>;
+        const full = entries.map(([k, v]) => `${k}: ${String(v)}`).join('\n');
+        const preview = entries.slice(0, 3).map(([k, v]) => {
+          const vs = String(v);
+          return `${k}: ${vs.length > 30 ? vs.slice(0, 30) + '…' : vs}`;
+        }).join(' · ') + (entries.length > 3 ? ` +${entries.length - 3}` : '');
         return (
-          <span className={`text-[10.5px] font-mono break-all leading-relaxed ${row.getIsSelected() ? 'text-emerald-800' : 'text-gray-500'}`}>
-            {entries.map(([k, v]) => `${k}: ${String(v)}`).join(' · ')}
+          <span
+            title={full}
+            className={`text-[10.5px] truncate block ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-500'}`}
+          >
+            {preview}
           </span>
         );
       },
@@ -293,7 +302,7 @@ export default function LogAktivitasUserClient() {
               <SearchAndReload
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
-                onReload={() => setRefreshKey(k => k + 1)}
+                onReload={handleReload}
                 loading={loading}
                 placeholder="Cari channel, user, atau pesan..."
               />
