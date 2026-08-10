@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession as getScraperSession, getCachedSession, clearCachedSession } from '@/lib/session-cache';
-import { requirePermission } from '@/lib/permissions';
+import { getSession as getScraperSession, clearCachedSession } from '@/lib/session-cache';
+import { getSession } from '@/lib/session';
+import { getMergedPermissions } from '@/lib/permissions';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,45 +25,49 @@ async function getDigitCookies(): Promise<string | null> {
   });
 }
 
-export async function POST(request: NextRequest) {
+async function fetchLog(cookies: string, stglAwal: string, stglAkhir: string) {
+  const url = `${BASE_URL}v1/cfg/usr_log/grid?bsearch[stgl_awal]=${encodeURIComponent(stglAwal)}&bsearch[stgl_akhir]=${encodeURIComponent(stglAkhir)}`;
+  return fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json', Cookie: cookies, 'X-Bismillah-Api-Key': API_KEY },
+  });
+}
+
+export async function GET(request: NextRequest) {
+  // Auth check via session (bukan requirePermission — tidak bisa redirect di API route)
+  const session = await getSession();
+  if (!session?.userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const roles = Array.isArray(session.roles) && session.roles.length > 0 ? session.roles : [session.role];
+  if (!roles.includes('Super Admin')) {
+    const perms = await getMergedPermissions(roles);
+    if (!perms.usr_log_view) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
   try {
-    await requirePermission('usr_log_view');
+    const { searchParams } = request.nextUrl;
+    const stglAwal = searchParams.get('stgl_awal') || '';
+    const stglAkhir = searchParams.get('stgl_akhir') || '';
 
-    const body = await request.text();
-
-    let cookies = await getDigitCookies();
-    if (!cookies) {
-      return NextResponse.json({ error: 'Gagal login ke Digit' }, { status: 401 });
+    if (!stglAwal || !stglAkhir) {
+      return NextResponse.json({ error: 'stgl_awal dan stgl_akhir wajib diisi' }, { status: 400 });
     }
 
-    // Coba request, jika 401 clear cache dan retry sekali
-    let res = await fetch(BASE_URL + 'v1/cfg/usr_log/grid', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Cookie: cookies,
-        'X-Bismillah-Api-Key': API_KEY,
-      },
-      body,
-    });
+    let cookies = await getDigitCookies();
+    if (!cookies) return NextResponse.json({ error: 'Gagal login ke Digit' }, { status: 401 });
+
+    let res = await fetchLog(cookies, stglAwal, stglAkhir);
 
     if (res.status === 401) {
       clearCachedSession();
       cookies = await getDigitCookies();
       if (!cookies) return NextResponse.json({ error: 'Gagal re-login ke Digit' }, { status: 401 });
-      res = await fetch(BASE_URL + 'v1/cfg/usr_log/grid', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          Cookie: cookies,
-          'X-Bismillah-Api-Key': API_KEY,
-        },
-        body,
-      });
+      res = await fetchLog(cookies, stglAwal, stglAkhir);
     }
 
     if (!res.ok) {
-      return NextResponse.json({ error: `Digit API error: HTTP ${res.status}` }, { status: res.status });
+      const text = await res.text();
+      return NextResponse.json({ error: `Digit API error: HTTP ${res.status}`, detail: text.substring(0, 200) }, { status: res.status });
     }
 
     const json = await res.json();
