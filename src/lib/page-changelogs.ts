@@ -628,6 +628,22 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
       'Optimasi mode 1 layar (Accordion tertutup) & navigasi scroll melayang (Accordion terbuka) tanpa merusak layout header',
     ],
   }),
+
+  // ─── Log Aktivitas User ───
+  'log-aktivitas-user-2026-08-10': entry({
+    pageKey: 'log-aktivitas-user',
+    title: 'Log Aktivitas User',
+    permissionKeys: ['usr_log_view'],
+    sortDate: '2026-08-10',
+    date: '10 Agu 2026',
+    version: '2026-08-10-1',
+    items: [
+      'Halaman baru: riwayat aktivitas pengguna dari sistem Digit',
+      'Filter berdasarkan rentang tanggal awal dan akhir',
+      'Tampilkan level log (INFO/WARN/ERROR), channel, user, dan pesan',
+      'Detail data tambahan dapat dibuka per baris untuk melihat informasi lengkap',
+    ],
+  }),
 };
 
 /** pathname → pageKey (hanya path yang punya log) */
@@ -656,6 +672,7 @@ export const PAGE_CHANGELOG_PATHS: Record<string, string> = {
   '/barang-jadi': 'barang-jadi',
   '/data-digit/produksi/produksi-selesai': 'produksi-selesai',
   '/data-digit/stok/master-barang': 'master-barang',
+  '/data-digit/sistem/log-aktivitas-user': 'log-aktivitas-user',
   '/hpp-kalkulasi': 'hpp-kalkulasi',
   '/orders': 'orders',
   '/pelunasan-hutang': 'pelunasan-hutang',

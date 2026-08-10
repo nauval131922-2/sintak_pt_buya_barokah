@@ -391,7 +391,8 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
           canAccess('produksi_bom') || canAccess('produksi_orders') || canAccess('produksi_selesai') || canAccess('produksi_bahan_baku') || canAccess('produksi_barang_jadi') || canAccess('stok_master_barang') ||
           canAccess('penjualan_sph_out') || canAccess('penjualan_so') || canAccess('penjualan_laporan') ||
           canAccess('penjualan_piutang') || canAccess('penjualan_pengiriman') ||
-          canAccess('akt_jurnal_umum') || canAccess('akt_mrek')) && (
+          canAccess('akt_jurnal_umum') || canAccess('akt_mrek') ||
+          canAccess('usr_log_view')) && (
           <>
             <SectionLabel label="DATA DIGIT" />
             <div className="space-y-1">
@@ -555,6 +556,20 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                       items: [{ label: 'Jurnal Umum', href: '/akuntansi/laporan/jurnal-umum', icon: <FileText size={14} /> }]
                     }] : []),
                   ]}
+                />
+              )}
+
+              {/* SISTEM (DATA DIGIT) */}
+              {canAccess('usr_log_view') && (
+                <AccordionMenu
+                  id="sistem-digit"
+                  label="Sistem"
+                  icon={<Monitor size={18} />}
+                  items={[{
+                    label: 'Log Aktivitas User',
+                    href: '/data-digit/sistem/log-aktivitas-user',
+                    icon: <History size={16} />,
+                  }]}
                 />
               )}
             </div>

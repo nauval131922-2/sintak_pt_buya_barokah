@@ -64,6 +64,9 @@ export const MODULE_REGISTRY = [
   { key: 'akt_mrek',               label: 'Rek Akuntansi',                    group: 'Data Digit - Akuntansi & Keuangan' },
   { key: 'akt_jurnal_umum',        label: 'Jurnal Umum',                      group: 'Data Digit - Akuntansi & Keuangan' },
 
+  // Sistem (Data Digit)
+  { key: 'usr_log_view',           label: 'Log Aktivitas User',               group: 'Data Digit - Sistem' },
+
   // Penjualan
   { key: 'penjualan_sph_out',      label: 'SPH Keluar (Penjualan)',           group: 'Data Digit - Penjualan' },
   { key: 'penjualan_so',           label: 'Sales Order Barang',               group: 'Data Digit - Penjualan' },

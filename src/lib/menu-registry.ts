@@ -42,6 +42,9 @@ export const searchableMenuItems = [
   { label: 'Jurnal Umum', href: '/akuntansi', category: 'Akuntansi', keywords: 'journal accounting' },
   { label: 'Master Rekening', href: '/rek-akuntansi', category: 'Akuntansi', keywords: 'coa chart of account' },
 
+  // Data Digit - Sistem
+  { label: 'Log Aktivitas User', href: '/data-digit/sistem/log-aktivitas-user', category: 'Sistem', keywords: 'user log aktivitas digit audit riwayat' },
+
   // Sistem
   { label: 'Tracking Manufaktur', href: '/tracking-manufaktur', category: 'Sistem', keywords: 'track monitoring produksi' },
   { label: 'Jurnal Harian Produksi', href: '/jurnal-harian-produksi', category: 'Sistem', keywords: 'jhp daily production journal' },
