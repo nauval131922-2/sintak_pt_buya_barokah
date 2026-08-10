@@ -1,17 +1,24 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { RefreshCw, Loader2, ChevronDown, ChevronUp, Calendar, User, AlertCircle } from 'lucide-react';
-import TableFooter from '@/components/TableFooter';
-import DatePicker from '@/components/DatePicker';
-import { toast } from '@/lib/toast';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { AlertCircle, Loader2, ChevronDown, ChevronUp, History } from 'lucide-react';
+import { ColumnDef } from '@tanstack/react-table';
+import { useSearchParams } from 'next/navigation';
 
-const API_URL = '/api/usr-log';
-const PAGE_SIZE = 50;
+import DateRangeCard from '@/components/DateRangeCard';
+import ScrapingHeader from '@/components/ScrapingHeader';
+import SearchAndReload from '@/components/SearchAndReload';
+import { DataTable } from '@/components/ui/DataTable';
+import TableFooter from '@/components/TableFooter';
+import { formatLastUpdate } from '@/lib/date-utils';
+import { getDefaultScraperDateRange } from '@/lib/scraper-period';
+import { highlightText } from '@/lib/highlight';
+import { useTableSelection } from '@/lib/hooks/useTableSelection';
 
 type LogLevel = 'INFO' | 'WARN' | 'ERROR' | string;
 
 interface UserLogRow {
+  id: number; // synthetic index untuk DataTable/useTableSelection
   Level: LogLevel;
   Datetime: string;
   Channel: string;
@@ -20,20 +27,10 @@ interface UserLogRow {
   Data?: Record<string, unknown>;
 }
 
-/** Format Date → "DD-MM-YYYY" (format yg dipakai API Digit) */
 function toApiDate(d: Date) {
   const dd = String(d.getDate()).padStart(2, '0');
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   return `${dd}-${mm}-${d.getFullYear()}`;
-}
-
-function today() { return new Date(); }
-
-function levelBadge(level: LogLevel) {
-  const base = 'inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold';
-  if (level === 'ERROR') return `${base} bg-red-100 text-red-700`;
-  if (level === 'WARN')  return `${base} bg-amber-100 text-amber-700`;
-  return `${base} bg-emerald-100 text-emerald-700`;
 }
 
 function formatDatetime(iso: string) {
@@ -43,9 +40,13 @@ function formatDatetime(iso: string) {
       hour: '2-digit', minute: '2-digit', second: '2-digit',
       hour12: false,
     });
-  } catch {
-    return iso;
-  }
+  } catch { return iso; }
+}
+
+function levelBadge(level: LogLevel) {
+  if (level === 'ERROR') return 'bg-red-50 text-red-600 border-red-100';
+  if (level === 'WARN')  return 'bg-amber-50 text-amber-600 border-amber-100';
+  return 'bg-emerald-50 text-emerald-600 border-emerald-100';
 }
 
 function DataDetail({ data }: { data: Record<string, unknown> }) {
@@ -55,17 +56,17 @@ function DataDetail({ data }: { data: Record<string, unknown> }) {
   return (
     <div>
       <button
-        onClick={() => setOpen(o => !o)}
+        onClick={e => { e.stopPropagation(); setOpen(o => !o); }}
         className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600 hover:underline"
       >
         {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-        {open ? 'Sembunyikan' : 'Lihat detail'}
+        {open ? 'Sembunyikan' : `${entries.length} field`}
       </button>
       {open && (
         <div className="mt-1.5 bg-gray-50 border border-gray-100 rounded-lg p-2 space-y-0.5 max-h-48 overflow-auto text-[11px]">
           {entries.map(([k, v]) => (
             <div key={k} className="flex gap-2">
-              <span className="text-gray-400 font-semibold shrink-0 min-w-[100px]">{k}</span>
+              <span className="text-gray-400 font-semibold shrink-0 min-w-[110px]">{k}</span>
               <span className="text-gray-700 break-all">{String(v)}</span>
             </div>
           ))}
@@ -75,155 +76,241 @@ function DataDetail({ data }: { data: Record<string, unknown> }) {
   );
 }
 
-export default function LogAktivitasUserClient() {
-  const [tglAwal, setTglAwal] = useState<Date>(today());
-  const [tglAkhir, setTglAkhir] = useState<Date>(today());
-  const [rows, setRows] = useState<UserLogRow[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [page, setPage] = useState(1);
-  const [lastFetch, setLastFetch] = useState<string | null>(null);
+const PAGE_SIZE = 50;
 
-  const load = useCallback(async (awal: Date, akhir: Date) => {
-    setLoading(true);
-    setError('');
-    setRows([]);
-    setPage(1);
-    try {
-      const body = new URLSearchParams({
-        'bsearch[stgl_awal]': toApiDate(awal),
-        'bsearch[stgl_akhir]': toApiDate(akhir),
-        '_': Date.now().toString(),
-      });
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: body.toString(),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      // API bisa return array langsung atau { data: [] }
-      const data: UserLogRow[] = Array.isArray(json) ? json : (json.data ?? json.rows ?? []);
-      setRows(data);
-      setLastFetch(new Date().toLocaleTimeString('id-ID'));
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Gagal memuat data';
-      setError(msg);
-      toast.error('Gagal memuat log: ' + msg);
-    } finally {
-      setLoading(false);
-    }
+export default function LogAktivitasUserClient() {
+  const searchParams = useSearchParams();
+  const [isMounted, setIsMounted] = useState(false);
+  const [startDate, setStartDate] = useState<Date>(() => getDefaultScraperDateRange().startDate);
+  const [endDate, setEndDate] = useState<Date>(() => getDefaultScraperDateRange().endDate);
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<UserLogRow[] | null>(null);
+  const [error, setError] = useState('');
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [loadTime, setLoadTime] = useState<number | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [page, setPage] = useState(1);
+
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
+  const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || '');
+  const [highlightQuery, setHighlightQuery] = useState(() => searchParams.get('highlight') || searchParams.get('search') || '');
+
+  const mountedRef = useRef(true);
+  const isLoadingMore = useRef(false);
+
+  const { selectedIds, handleRowClick, clearSelection } = useTableSelection(data || []);
+
+  useEffect(() => {
+    setIsMounted(true);
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
   }, []);
 
-  useEffect(() => { load(tglAwal, tglAkhir); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+      setHighlightQuery(searchQuery);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
 
-  const paged = useMemo(() => rows.slice(0, page * PAGE_SIZE), [rows, page]);
-  const hasMore = paged.length < rows.length;
+  // Filter client-side (data sudah di-fetch semua sekaligus dari Digit)
+  const filtered = useMemo(() => {
+    const all = data || [];
+    if (!debouncedQuery) return all;
+    const q = debouncedQuery.toLowerCase();
+    return all.filter(r =>
+      r.Channel?.toLowerCase().includes(q) ||
+      r.User?.toLowerCase().includes(q) ||
+      r.Pesan?.toLowerCase().includes(q) ||
+      r.Level?.toLowerCase().includes(q)
+    );
+  }, [data, debouncedQuery]);
+
+  const paged = useMemo(() => filtered.slice(0, page * PAGE_SIZE), [filtered, page]);
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
+    if (scrollHeight - scrollTop <= clientHeight + 300 && !loading && !isLoadingMore.current && paged.length < filtered.length) {
+      isLoadingMore.current = true;
+      setPage(prev => prev + 1);
+    }
+  }, [loading, paged.length, filtered.length]);
+
+  useEffect(() => {
+    if (!isLoadingMore.current) return;
+    isLoadingMore.current = false;
+  }, [page]);
+
+  const handleFetch = useCallback(async () => {
+    if (!mountedRef.current || !isMounted) return;
+    setLoading(true);
+    setError('');
+    setData([]);
+    setPage(1);
+    setSearchQuery('');
+    const startTimer = performance.now();
+    try {
+      const params = new URLSearchParams({ stgl_awal: toApiDate(startDate), stgl_akhir: toApiDate(endDate) });
+      const res = await fetch(`/api/usr-log?${params}`);
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json.error || `HTTP ${res.status}`);
+      }
+      const json = await res.json();
+      const rows: UserLogRow[] = (Array.isArray(json) ? json : (json.data ?? json.rows ?? []))
+        .map((r: Omit<UserLogRow, 'id'>, i: number) => ({ ...r, id: i }));
+      if (mountedRef.current) {
+        setData(rows);
+        setLastUpdated(formatLastUpdate(new Date()));
+        setLoadTime(Math.round(performance.now() - startTimer));
+      }
+    } catch (err: unknown) {
+      if (mountedRef.current) {
+        const msg = err instanceof Error ? err.message : 'Gagal memuat data';
+        setError(msg);
+        setData([]);
+      }
+    } finally {
+      if (mountedRef.current) setLoading(false);
+    }
+  }, [startDate, endDate, isMounted]);
+
+  // Auto-load saat mount
+  useEffect(() => {
+    if (isMounted) handleFetch();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMounted, refreshKey]);
+
+  const columns = useMemo<ColumnDef<UserLogRow>[]>(() => [
+    {
+      accessorKey: 'Level',
+      header: 'Level',
+      size: 90,
+      cell: ({ getValue }: any) => {
+        const lvl = String(getValue());
+        return (
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${levelBadge(lvl)}`}>
+            {lvl}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: 'Datetime',
+      header: 'Waktu',
+      size: 160,
+      cell: ({ getValue, row }: any) => (
+        <span className={`font-semibold tabular-nums text-[11px] ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-500'}`}>
+          {formatDatetime(String(getValue()))}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'Channel',
+      header: 'Channel',
+      size: 200,
+      cell: ({ getValue, row }: any) => (
+        <span className={`font-semibold ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`}>
+          {highlightText(String(getValue() || '—'), highlightQuery)}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'User',
+      header: 'User',
+      size: 120,
+      cell: ({ getValue }: any) => (
+        <span className="text-[11px] font-bold text-gray-400">@{String(getValue() || '—')}</span>
+      ),
+    },
+    {
+      accessorKey: 'Pesan',
+      header: 'Pesan',
+      size: 300,
+      cell: ({ getValue, row }: any) => (
+        <span className={`font-medium ${row.getIsSelected() ? 'text-emerald-800' : 'text-gray-700'}`}>
+          {highlightText(String(getValue() || '—'), highlightQuery)}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'Data',
+      header: 'Data',
+      size: 140,
+      cell: ({ getValue }: any) => {
+        const val = getValue();
+        return val ? <DataDetail data={val as Record<string, unknown>} /> : <span className="text-gray-300 text-[11px]">—</span>;
+      },
+    },
+  ], [highlightQuery]);
+
+  if (!isMounted) return null;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-      {/* Filter Bar */}
-      <div className="flex flex-wrap items-end gap-3 px-5 py-4 border-b border-gray-100 bg-gray-50/50">
-        <DatePicker
-          name="tgl_awal"
-          label="Tanggal Awal"
-          value={tglAwal}
-          onChange={d => setTglAwal(d)}
-        />
-        <DatePicker
-          name="tgl_akhir"
-          label="Tanggal Akhir"
-          value={tglAkhir}
-          onChange={d => setTglAkhir(d)}
-        />
-        <button
-          onClick={() => load(tglAwal, tglAkhir)}
-          disabled={loading}
-          className="flex items-center gap-2 px-4 h-9 rounded-xl bg-emerald-600 text-white text-[12.5px] font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors self-end"
-        >
-          {loading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
-          Tampilkan
-        </button>
+    <div className="flex-1 min-h-0 flex flex-col gap-6 animate-in fade-in duration-500 overflow-hidden">
+      <DateRangeCard
+        startDate={startDate}
+        endDate={endDate}
+        onStartDateChange={setStartDate}
+        onEndDateChange={setEndDate}
+        onFetch={handleFetch}
+        isFetching={loading}
+        fetchText="Tampilkan"
+      />
 
-        <div className="ml-auto flex items-center gap-2 text-[11px] text-gray-400 self-end pb-1">
-          {lastFetch && <span>Diperbarui {lastFetch}</span>}
-          <span className="font-semibold text-gray-600">{rows.length} log</span>
-        </div>
-      </div>
-
-      {/* Error */}
       {error && (
-        <div className="flex items-center gap-2 px-5 py-3 bg-red-50 text-red-700 text-[12px] font-semibold border-b border-red-100">
-          <AlertCircle size={14} />
-          {error}
+        <div className="p-4 bg-red-50 text-red-600 border border-red-100 rounded-xl shadow-sm text-sm font-bold flex items-start gap-3 animate-in fade-in shrink-0">
+          <AlertCircle className="w-5 h-5 shrink-0" />
+          <p>{error}</p>
         </div>
       )}
 
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-[12px]">
-          <thead>
-            <tr className="border-b border-gray-100 bg-gray-50/50">
-              <th className="px-4 py-2.5 text-left text-[11px] font-bold text-gray-400 w-20">Level</th>
-              <th className="px-4 py-2.5 text-left text-[11px] font-bold text-gray-400 w-40">Waktu</th>
-              <th className="px-4 py-2.5 text-left text-[11px] font-bold text-gray-400 w-36">Channel</th>
-              <th className="px-4 py-2.5 text-left text-[11px] font-bold text-gray-400 w-28">
-                <span className="flex items-center gap-1"><User size={11} />User</span>
-              </th>
-              <th className="px-4 py-2.5 text-left text-[11px] font-bold text-gray-400">Pesan</th>
-              <th className="px-4 py-2.5 text-left text-[11px] font-bold text-gray-400 w-32">Data</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && (
-              <tr>
-                <td colSpan={6} className="px-4 py-12 text-center">
-                  <Loader2 size={24} className="animate-spin text-emerald-500 mx-auto" />
-                </td>
-              </tr>
+      <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
+        <div className="flex flex-col gap-4 shrink-0 px-1">
+          <div className="flex items-center justify-between gap-4 min-h-[32px]">
+            <ScrapingHeader
+              title="Log Aktivitas User"
+              icon={<History size={16} />}
+              lastUpdated={lastUpdated}
+            />
+            {loading && data && data.length > 0 && (
+              <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
+                <Loader2 size={12} className="animate-spin" />
+                <span>Memproses Data...</span>
+              </div>
             )}
-            {!loading && paged.length === 0 && !error && (
-              <tr>
-                <td colSpan={6} className="px-4 py-12 text-center text-gray-400 text-[12px]">
-                  <Calendar size={32} className="mx-auto mb-2 text-gray-200" />
-                  Tidak ada log pada periode ini
-                </td>
-              </tr>
-            )}
-            {paged.map((row, i) => (
-              <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                <td className="px-4 py-2.5">
-                  <span className={levelBadge(row.Level)}>{row.Level}</span>
-                </td>
-                <td className="px-4 py-2.5 text-gray-500 whitespace-nowrap">{formatDatetime(row.Datetime)}</td>
-                <td className="px-4 py-2.5 text-gray-600 font-medium">{row.Channel}</td>
-                <td className="px-4 py-2.5 text-gray-600">{row.User}</td>
-                <td className="px-4 py-2.5 text-gray-700">{row.Pesan}</td>
-                <td className="px-4 py-2.5">
-                  {row.Data ? <DataDetail data={row.Data} /> : <span className="text-gray-300">—</span>}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          </div>
+          <SearchAndReload
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            onReload={() => setRefreshKey(k => k + 1)}
+            loading={loading}
+            placeholder="Cari channel, user, atau pesan..."
+          />
+        </div>
+
+        <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden relative">
+          <DataTable
+            columns={columns}
+            data={paged}
+            isLoading={loading}
+            onScroll={handleScroll}
+            selectedIds={selectedIds}
+            onRowClick={handleRowClick}
+            rowHeight="h-11"
+          />
+          <TableFooter
+            totalCount={filtered.length}
+            currentCount={paged.length}
+            label="log"
+            selectedCount={selectedIds.size}
+            onClearSelection={clearSelection}
+            loadTime={loadTime}
+          />
+        </div>
       </div>
-
-      {/* Load more */}
-      {hasMore && (
-        <div className="px-5 py-3 border-t border-gray-100 flex justify-center">
-          <button
-            onClick={() => setPage(p => p + 1)}
-            className="text-[12px] font-semibold text-emerald-600 hover:underline"
-          >
-            Muat lebih banyak ({rows.length - paged.length} tersisa)
-          </button>
-        </div>
-      )}
-      {!hasMore && rows.length > 0 && (
-        <div className="px-5 py-3 border-t border-gray-100">
-          <TableFooter totalCount={rows.length} currentCount={paged.length} label="log" />
-        </div>
-      )}
     </div>
   );
 }
