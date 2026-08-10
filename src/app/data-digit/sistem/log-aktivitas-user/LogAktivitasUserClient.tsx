@@ -6,7 +6,7 @@ import TableFooter from '@/components/TableFooter';
 import DatePicker from '@/components/DatePicker';
 import { toast } from '@/lib/toast';
 
-const API_URL = 'https://buyapercetakan.mdthoster.com/il/v1/cfg/usr_log/grid';
+const API_URL = '/api/usr-log';
 const PAGE_SIZE = 50;
 
 type LogLevel = 'INFO' | 'WARN' | 'ERROR' | string;
@@ -99,7 +99,6 @@ export default function LogAktivitasUserClient() {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: body.toString(),
-        credentials: 'include',
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
