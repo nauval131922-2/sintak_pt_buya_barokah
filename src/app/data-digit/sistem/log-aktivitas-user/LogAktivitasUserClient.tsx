@@ -184,10 +184,19 @@ export default function LogAktivitasUserClient() {
   };
 
   const handleExport = useCallback(async () => {
-    if (!data?.length) { toast.error('Tidak ada data untuk diekspor'); return; }
+    if (!totalCount) { toast.error('Tidak ada data untuk diekspor'); return; }
     setIsExporting(true);
     try {
-      const rows = (data || []).map(r => ({
+      // Fetch semua data dari DB (bukan hanya yang sudah di-scroll)
+      const params = new URLSearchParams({
+        page: '1', pageSize: String(totalCount),
+        q: debouncedQuery,
+        start: formatDateToYYYYMMDD(startDate), end: formatDateToYYYYMMDD(endDate),
+      });
+      const res = await fetch(`/api/usr-log?${params}`);
+      const json = await res.json();
+      const all: DbRow[] = json.data || [];
+      const rows = all.map(r => ({
         Level: r.level,
         Waktu: formatDatetime(r.datetime),
         Channel: r.channel,
@@ -198,10 +207,12 @@ export default function LogAktivitasUserClient() {
       const period = scrapedPeriod ? `${scrapedPeriod.start}_${scrapedPeriod.end}` : 'export';
       await exportRowsToExcel(rows, `log-aktivitas-user_${period}`);
       toast.success(`${rows.length} log berhasil diekspor`);
+    } catch {
+      toast.error('Gagal export');
     } finally {
       setIsExporting(false);
     }
-  }, [data, scrapedPeriod]);
+  }, [totalCount, debouncedQuery, startDate, endDate, scrapedPeriod]);
 
   const columns = useMemo<ColumnDef<DbRow>[]>(() => [
     {
@@ -263,10 +274,8 @@ export default function LogAktivitasUserClient() {
         try { entries = Object.entries(JSON.parse(raw)).filter(([, v]) => v !== null && v !== ''); } catch { return <span className="text-gray-400 text-[11px]">{raw}</span>; }
         if (!entries.length) return <span className="text-gray-300 text-[11px]">—</span>;
         const full = entries.map(([k, v]) => `${k}: ${String(v)}`).join('\n');
-        const preview = entries.slice(0, 3).map(([k, v]) => {
-          const vs = String(v); return `${k}: ${vs.length > 30 ? vs.slice(0, 30) + '…' : vs}`;
-        }).join(' · ') + (entries.length > 3 ? ` +${entries.length - 3}` : '');
-        return <span title={full} className={`text-[10.5px] truncate block ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-500'}`}>{preview}</span>;
+        const text = entries.map(([k, v]) => `${k}: ${String(v)}`).join(' · ');
+        return <span title={full} className={`text-[10.5px] truncate block ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-500'}`}>{text}</span>;
       },
     },
   ], [highlightQuery]);
@@ -314,7 +323,7 @@ export default function LogAktivitasUserClient() {
             <button
               onClick={handleExport}
               disabled={isExporting || !data?.length}
-              className="flex items-center gap-2 px-4 h-9 rounded-xl border border-gray-200 bg-white text-[12px] font-semibold text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0 shadow-sm"
+              className="flex items-center gap-2 px-4 h-9 rounded-xl border border-emerald-200 bg-emerald-50 text-[12px] font-semibold text-emerald-700 hover:bg-emerald-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0 shadow-sm"
             >
               {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
               Export Excel
