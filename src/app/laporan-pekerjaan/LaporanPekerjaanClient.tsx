@@ -2186,7 +2186,7 @@ export default function LaporanPekerjaanClient() {
                   <SearchableDropdown
                     id="modal-order"
                     value={formData.orderProduksi}
-                    items={sopdOptions.map(s => s.no_order || '')}
+                    items={sopdOptions.filter(s => s.no_order).map(s => s.no_order)}
                     itemLabels={sopdOptions.reduce((acc, s) => {
                       if (s.no_order) {
                         acc[s.no_order] = `${s.no_order} - ${s.nama_order || ''}`;
@@ -2210,7 +2210,7 @@ export default function LaporanPekerjaanClient() {
                   <SearchableDropdown
                     id="modal-pekerjaan"
                     value={formData.jenisPekerjaan}
-                    items={pekerjaanOptions.map(p => p.name || '')}
+                    items={pekerjaanOptions.filter(p => p.name).map(p => p.name)}
                     onChange={(val) => setFormData({ ...formData, jenisPekerjaan: val })}
                     placeholder="Pilih Jenis Pekerjaan..."
                     searchPlaceholder="Cari pekerjaan..."
@@ -2228,7 +2228,7 @@ export default function LaporanPekerjaanClient() {
                   <SearchableDropdown
                     id="modal-pic"
                     value={formData.pic}
-                    items={employeeOptions.map(e => e.name || '')}
+                    items={employeeOptions.filter(e => e.name).map(e => e.name)}
                     onChange={(val) => setFormData({ ...formData, pic: val })}
                     placeholder="Pilih PIC..."
                     searchPlaceholder="Cari nama karyawan..."
