@@ -205,6 +205,7 @@ function SquareDropdown({
 }
 
 const STATUS_COLORS: Record<string, string> = {
+  "BELUM DIKERJAKAN": "#64748b", // slate-500
   SELESAI: "#10b981", // emerald-500
   "IN PROGRESS": "#0284c7", // sky-600
   PENDING: "#f59e0b", // amber-500
@@ -212,6 +213,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const STATUS_LEGEND = [
+  { name: "BELUM DIKERJAKAN", color: "#64748b" },
   { name: "SELESAI", color: "#10b981" },
   { name: "IN PROGRESS", color: "#0ea5e9" },
   { name: "PENDING", color: "#f59e0b" },
@@ -305,10 +307,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload || !payload.length) return null;
 
   const COLOR_MAP: Record<string, string> = {
+    "Belum Dikerjakan": "#64748b",
     Selesai: "#10b981",
     "In Progress": "#0284c7",
     Pending: "#f59e0b",
     Cancel: "#f43f5e",
+    "BELUM DIKERJAKAN": "#64748b",
     SELESAI: "#10b981",
     "IN PROGRESS": "#0284c7",
     PENDING: "#f59e0b",
@@ -610,6 +614,7 @@ export default function LaporanPekerjaanClient() {
   const statusOptions = useMemo<FilterOption[]>(
     () => [
       { value: "ALL", label: "Semua Status" },
+      { value: "BELUM DIKERJAKAN", label: "BELUM DIKERJAKAN" },
       { value: "SELESAI", label: "SELESAI" },
       { value: "IN PROGRESS", label: "IN PROGRESS" },
       { value: "PENDING", label: "PENDING" },
@@ -700,6 +705,7 @@ export default function LaporanPekerjaanClient() {
   // Counts based on tasksForCounts
   const counts = useMemo(() => {
     const total = tasksForCounts.length;
+    let belumDikerjakan = 0;
     let selesai = 0;
     let inProgress = 0;
     let pending = 0;
@@ -707,29 +713,31 @@ export default function LaporanPekerjaanClient() {
 
     tasksForCounts.forEach((t) => {
       const s = (t.status || "").trim().toUpperCase();
-      if (s === "SELESAI") selesai++;
+      if (s === "BELUM DIKERJAKAN") belumDikerjakan++;
+      else if (s === "SELESAI") selesai++;
       else if (s === "IN PROGRESS") inProgress++;
       else if (s === "PENDING") pending++;
       else if (s === "CANCEL") cancel++;
     });
 
-    return { total, selesai, inProgress, pending, cancel };
+    return { total, belumDikerjakan, selesai, inProgress, pending, cancel };
   }, [tasksForCounts]);
 
   // Chart Data 1: Breakdown Pekerjaan per Status per PIC
   const picChartData = useMemo(() => {
     const map: Record<
       string,
-      { name: string; Selesai: number; InProgress: number; Pending: number; Cancel: number; Total: number }
+      { name: string; BelumDikerjakan: number; Selesai: number; InProgress: number; Pending: number; Cancel: number; Total: number }
     > = {};
     filteredTasks.forEach((t) => {
       const pic = t.pic ? t.pic.toUpperCase() : "TANPA PIC";
       if (!map[pic]) {
-        map[pic] = { name: pic, Selesai: 0, InProgress: 0, Pending: 0, Cancel: 0, Total: 0 };
+        map[pic] = { name: pic, BelumDikerjakan: 0, Selesai: 0, InProgress: 0, Pending: 0, Cancel: 0, Total: 0 };
       }
       map[pic].Total++;
       const s = (t.status || "").trim().toUpperCase();
-      if (s === "SELESAI") map[pic].Selesai++;
+      if (s === "BELUM DIKERJAKAN") map[pic].BelumDikerjakan++;
+      else if (s === "SELESAI") map[pic].Selesai++;
       else if (s === "IN PROGRESS") map[pic].InProgress++;
       else if (s === "PENDING") map[pic].Pending++;
       else if (s === "CANCEL") map[pic].Cancel++;
@@ -740,6 +748,7 @@ export default function LaporanPekerjaanClient() {
   // Chart Data 2: Pie Chart Status
   const statusPieData = useMemo(() => {
     const map: Record<string, number> = {
+      "BELUM DIKERJAKAN": 0,
       SELESAI: 0,
       "IN PROGRESS": 0,
       PENDING: 0,
@@ -761,16 +770,17 @@ export default function LaporanPekerjaanClient() {
   const priorityChartData = useMemo(() => {
     const map: Record<
       string,
-      { name: string; Selesai: number; InProgress: number; Pending: number; Cancel: number; Total: number }
+      { name: string; BelumDikerjakan: number; Selesai: number; InProgress: number; Pending: number; Cancel: number; Total: number }
     > = {};
     filteredTasks.forEach((t) => {
       const p = t.priority ? t.priority.trim() : "Low";
       if (!map[p]) {
-        map[p] = { name: p, Selesai: 0, InProgress: 0, Pending: 0, Cancel: 0, Total: 0 };
+        map[p] = { name: p, BelumDikerjakan: 0, Selesai: 0, InProgress: 0, Pending: 0, Cancel: 0, Total: 0 };
       }
       map[p].Total++;
       const s = (t.status || "").trim().toUpperCase();
-      if (s === "SELESAI") map[p].Selesai++;
+      if (s === "BELUM DIKERJAKAN") map[p].BelumDikerjakan++;
+      else if (s === "SELESAI") map[p].Selesai++;
       else if (s === "IN PROGRESS") map[p].InProgress++;
       else if (s === "PENDING") map[p].Pending++;
       else if (s === "CANCEL") map[p].Cancel++;
@@ -904,6 +914,13 @@ export default function LaporanPekerjaanClient() {
 
   const getStatusBadge = (status: string) => {
     const s = status.toUpperCase();
+    if (s === "BELUM DIKERJAKAN") {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-300">
+          <Clock className="w-3 h-3 text-slate-500" /> BELUM DIKERJAKAN
+        </span>
+      );
+    }
     if (s === "SELESAI") {
       return (
         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
@@ -1083,7 +1100,7 @@ export default function LaporanPekerjaanClient() {
         {isAnalyticsOpen && (
           <div className="p-4 border-t border-slate-100 space-y-4 animate-in fade-in slide-in-from-top-1 duration-200">
             {/* Cards Statistik (Klik untuk Filter Status) */}
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
               {/* Total Task */}
               <div
                 onClick={() => handleCardStatusClick("ALL")}
@@ -1104,6 +1121,32 @@ export default function LaporanPekerjaanClient() {
                   </span>
                   {selectedStatus === "ALL" && (
                     <span className="text-[9px] font-bold uppercase tracking-wider text-slate-600 bg-slate-200 px-1.5 py-0.5 rounded">
+                      Aktif
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Belum Dikerjakan */}
+              <div
+                onClick={() => handleCardStatusClick("BELUM DIKERJAKAN")}
+                className={`p-3 rounded-xl border transition-all cursor-pointer select-none hover:shadow-md ${
+                  selectedStatus === "BELUM DIKERJAKAN"
+                    ? "bg-slate-200/80 border-slate-500 ring-2 ring-slate-500/50 shadow-sm"
+                    : "bg-gradient-to-br from-white to-slate-50/30 border-slate-200/80 hover:border-slate-400 shadow-sm"
+                }`}
+                title="Klik untuk filter status BELUM DIKERJAKAN"
+              >
+                <div className="flex items-center justify-between text-slate-600 mb-0.5">
+                  <span className="text-[11px] font-semibold">Belum Dikerjakan</span>
+                  <Clock className="w-3.5 h-3.5 text-slate-500" />
+                </div>
+                <div className="flex items-baseline justify-between">
+                  <span className="text-xl font-black text-slate-700">
+                    {counts.belumDikerjakan.toLocaleString("id-ID")}
+                  </span>
+                  {selectedStatus === "BELUM DIKERJAKAN" && (
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-slate-700 bg-slate-200/80 px-1.5 py-0.5 rounded">
                       Aktif
                     </span>
                   )}
@@ -1191,7 +1234,7 @@ export default function LaporanPekerjaanClient() {
               {/* Cancel */}
               <div
                 onClick={() => handleCardStatusClick("CANCEL")}
-                className={`p-3 rounded-xl border transition-all cursor-pointer select-none hover:shadow-md col-span-2 sm:col-span-1 ${
+                className={`p-3 rounded-xl border transition-all cursor-pointer select-none hover:shadow-md ${
                   selectedStatus === "CANCEL"
                     ? "bg-rose-100/80 border-rose-500 ring-2 ring-rose-500/50 shadow-sm"
                     : "bg-gradient-to-br from-white to-rose-50/30 border-rose-200/80 hover:border-rose-400 shadow-sm"
@@ -1244,6 +1287,10 @@ export default function LaporanPekerjaanClient() {
                         margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                       >
                         <defs>
+                          <linearGradient id="gradBelumDikerjakan" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#94a3b8" stopOpacity={0.9} />
+                            <stop offset="100%" stopColor="#64748b" stopOpacity={0.7} />
+                          </linearGradient>
                           <linearGradient id="gradSelesai" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="0%" stopColor="#10b981" stopOpacity={0.9} />
                             <stop offset="100%" stopColor="#059669" stopOpacity={0.7} />
@@ -1275,6 +1322,12 @@ export default function LaporanPekerjaanClient() {
                           tickFormatter={(v: number) => fmtNumber(v)}
                         />
                         <RechartsTooltip content={CustomTooltip} />
+                        <Bar
+                          dataKey="BelumDikerjakan"
+                          fill="url(#gradBelumDikerjakan)"
+                          radius={[6, 6, 0, 0]}
+                          name="BELUM DIKERJAKAN"
+                        />
                         <Bar
                           dataKey="Selesai"
                           fill="url(#gradSelesai)"
@@ -1330,6 +1383,10 @@ export default function LaporanPekerjaanClient() {
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <defs>
+                          <linearGradient id="gradStatusBelumDikerjakan" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#94a3b8" stopOpacity={1} />
+                            <stop offset="100%" stopColor="#64748b" stopOpacity={0.85} />
+                          </linearGradient>
                           <linearGradient id="gradStatusSelesai" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="0%" stopColor="#10b981" stopOpacity={1} />
                             <stop offset="100%" stopColor="#059669" stopOpacity={0.85} />
@@ -1360,6 +1417,7 @@ export default function LaporanPekerjaanClient() {
                         >
                           {statusPieData.map((entry, index) => {
                             const gradMap: Record<string, string> = {
+                              "BELUM DIKERJAKAN": "url(#gradStatusBelumDikerjakan)",
                               SELESAI: "url(#gradStatusSelesai)",
                               "IN PROGRESS": "url(#gradStatusInProgress)",
                               PENDING: "url(#gradStatusPending)",
