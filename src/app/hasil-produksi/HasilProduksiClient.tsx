@@ -972,9 +972,9 @@ export default function HasilProduksiClient() {
   return (
     <div className={`flex flex-col gap-3 ${viewMode === 'table' ? 'lg:flex-1 lg:min-h-0 lg:overflow-hidden' : ''}`}>
       {/* 1. Header Section - Fixed */}
-      <div id="filter-control-container" className="flex flex-col gap-3 shrink-0 relative">
+      <div id="filter-control-container" className="flex flex-col gap-3 shrink-0 relative z-[80]">
         {/* 1. Filter Control Center — 2 Baris di MD, 1 Baris di LG (1024px+) */}
-        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-2.5 sm:p-3 flex flex-col lg:flex-row items-stretch lg:items-end gap-2 relative z-20">
+        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-2.5 sm:p-3 flex flex-col lg:flex-row items-stretch lg:items-end gap-2 relative">
           {/* Baris 1: SOPd Selection Group (Dinamis mengisi sisa ruang) */}
           <div className="w-full lg:flex-1 lg:min-w-[140px]">
             <SearchableDropdown
@@ -1110,7 +1110,7 @@ export default function HasilProduksiClient() {
 
         {/* Unified Dashboard Control Bar */}
         {selectedSopd && (
-          <div id="desktop-sticky-control-bar" className="shrink-0 z-[70] bg-[var(--bg-deep)] pb-1.5 -mx-4 px-4 xl:-mx-8 xl:px-8 overflow-x-auto custom-scrollbar">
+          <div id="desktop-sticky-control-bar" className="shrink-0 z-[10] bg-[var(--bg-deep)] pb-1.5 -mx-4 px-4 xl:-mx-8 xl:px-8 overflow-x-auto custom-scrollbar">
 
               {selectedPekerjaan ? (
                 <div className="flex flex-col items-stretch gap-2.5 sm:gap-3 pb-0.5 w-full">
