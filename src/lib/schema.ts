@@ -722,6 +722,18 @@ export async function initSchema(db: any) {
       raw_data TEXT,
       fetched_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`,
+    `CREATE TABLE IF NOT EXISTS usr_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      level TEXT,
+      datetime TEXT,
+      channel TEXT,
+      username TEXT,
+      pesan TEXT,
+      data_json TEXT,
+      tgl TEXT,
+      fetched_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );`,
+    `CREATE INDEX IF NOT EXISTS idx_usr_log_tgl ON usr_log(tgl);`,
     `CREATE TABLE IF NOT EXISTS produksi_selesai (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       faktur TEXT UNIQUE NOT NULL,
@@ -1593,7 +1605,7 @@ async function initDynamicTriggers(db: any) {
       'bill_of_materials', 'purchase_requests', 'purchase_orders',
       'penerimaan_pembelian', 'rekap_pembelian_barang', 'pelunasan_hutang',
       'pelunasan_piutang', 'pengiriman', 'spph_out', 'sph_in', 'sph_out', 'rek_akuntansi',
-      'hpp_kalkulasi', 'stok_master_barang', 'produksi_selesai', 'user_roles',
+      'hpp_kalkulasi', 'stok_master_barang', 'usr_log', 'produksi_selesai', 'user_roles',
       'master_pekerjaan', 'push_subscriptions', 'telegram_users', 'role_permissions', 'app_roles'
     ];
 
