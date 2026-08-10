@@ -20,6 +20,11 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  Plus,
+  Pencil,
+  Trash2,
+  X,
+  Save,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -368,6 +373,23 @@ export default function LaporanPekerjaanClient() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [loadTime, setLoadTime] = useState<number | null>(null);
 
+  // CRUD Modal state
+  const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
+  const [editingTask, setEditingTask] = useState<any>(null);
+  const [formData, setFormData] = useState({
+    task: "",
+    project: "",
+    division: "",
+    pic: "",
+    priority: "Low",
+    startDate: "",
+    endDate: "",
+    workDays: "",
+    note: "",
+    status: "BELUM DIKERJAKAN",
+  });
+
   // Filters & Analytics state
   const [selectedPic, setSelectedPic] = useState<string>("ALL");
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
@@ -530,9 +552,7 @@ export default function LaporanPekerjaanClient() {
     setLoading(true);
     setError(null);
     try {
-      const url = force
-        ? "/api/spreadsheet?gid=DATABASE_REPORT&refresh=true"
-        : "/api/spreadsheet?gid=DATABASE_REPORT";
+      const url = "/api/laporan-pekerjaan";
       const res = await fetch(url);
       const json = await res.json();
       if (json.success) {
@@ -541,7 +561,7 @@ export default function LaporanPekerjaanClient() {
         setLastUpdated(new Date());
         setLoadTime(Math.round(performance.now() - startTime));
       } else {
-        setError(json.error || "Gagal mengambil data dari Google Spreadsheet");
+        setError(json.error || "Gagal mengambil data laporan pekerjaan");
       }
     } catch (err: any) {
       setError(err.message || "Terjadi kesalahan koneksi");
@@ -556,6 +576,92 @@ export default function LaporanPekerjaanClient() {
     const interval = setInterval(fetchData, REFRESH_INTERVAL * 1000);
     return () => clearInterval(interval);
   }, [fetchData]);
+
+  // CRUD Handlers
+  const openCreateModal = () => {
+    setModalMode("create");
+    setFormData({
+      task: "",
+      project: "",
+      division: "",
+      pic: "",
+      priority: "Low",
+      startDate: "",
+      endDate: "",
+      workDays: "",
+      note: "",
+      status: "BELUM DIKERJAKAN",
+    });
+    setShowModal(true);
+  };
+
+  const openEditModal = (task: any) => {
+    setModalMode("edit");
+    setEditingTask(task);
+    setFormData({
+      task: task.task || "",
+      project: task.project || "",
+      division: task.division || "",
+      pic: task.pic || "",
+      priority: task.priority || "Low",
+      startDate: task.startDate || "",
+      endDate: task.endDate || "",
+      workDays: task.workDays || "",
+      note: task.note || "",
+      status: task.status || "BELUM DIKERJAKAN",
+    });
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setEditingTask(null);
+  };
+
+  const handleSave = async () => {
+    if (!formData.task.trim()) {
+      alert("Task / Nama pekerjaan wajib diisi");
+      return;
+    }
+
+    try {
+      const url = modalMode === "create" ? "/api/laporan-pekerjaan" : "/api/laporan-pekerjaan";
+      const method = modalMode === "create" ? "POST" : "PUT";
+      const body = modalMode === "edit" ? { ...formData, id: editingTask.id } : formData;
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        await fetchData();
+        closeModal();
+      } else {
+        alert(json.error || "Gagal menyimpan data");
+      }
+    } catch (err: any) {
+      alert(err.message || "Terjadi kesalahan");
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Yakin ingin menghapus data pekerjaan ini?")) return;
+
+    try {
+      const res = await fetch(`/api/laporan-pekerjaan?id=${id}`, { method: "DELETE" });
+      const json = await res.json();
+      if (json.success) {
+        await fetchData();
+      } else {
+        alert(json.error || "Gagal menghapus data");
+      }
+    } catch (err: any) {
+      alert(err.message || "Terjadi kesalahan");
+    }
+  };
 
   // Countdown timer tick per 1 detik
   useEffect(() => {
@@ -656,16 +762,16 @@ export default function LaporanPekerjaanClient() {
       const rawB = b[sortField] || "";
 
       if (sortField === "startDate" || sortField === "endDate") {
-        const timeA = parseDateToSort(rawA);
-        const timeB = parseDateToSort(rawB);
+        const timeA = parseDateToSort(String(rawA));
+        const timeB = parseDateToSort(String(rawB));
         if (timeA !== timeB) {
           return sortOrder === "asc" ? timeA - timeB : timeB - timeA;
         }
       }
 
       if (sortField === "workDays") {
-        const numA = parseFloat(rawA) || 0;
-        const numB = parseFloat(rawB) || 0;
+        const numA = parseFloat(String(rawA)) || 0;
+        const numB = parseFloat(String(rawB)) || 0;
         return sortOrder === "asc" ? numA - numB : numB - numA;
       }
 
@@ -1484,6 +1590,14 @@ export default function LaporanPekerjaanClient() {
             widthClass="w-48"
             alignRight
           />
+
+          <button
+            onClick={openCreateModal}
+            className="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all shadow-sm whitespace-nowrap"
+          >
+            <Plus className="w-3.5 h-3.5 mr-1.5" />
+            Tambah Data
+          </button>
         </div>
       </div>
 
@@ -1646,23 +1760,26 @@ export default function LaporanPekerjaanClient() {
                 {renderSortableHeader("workDays", "Work Days", true)}
                 {renderSortableHeader("note", "Note")}
                 {renderSortableHeader("status", "Status", true)}
+                <th className="px-3 py-2.5 text-center bg-slate-50 sticky top-0 z-10 border-b border-slate-200 w-24">
+                  Aksi
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {loading ? (
                 <tr>
                   <td
-                    colSpan={10}
+                    colSpan={11}
                     className="px-4 py-16 text-center text-slate-400"
                   >
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-600" />
-                    Menghubungkan & memuat data Google Spreadsheet...
+                    Memuat data laporan pekerjaan...
                   </td>
                 </tr>
               ) : paginatedTasks.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={10}
+                    colSpan={11}
                     className="px-4 py-16 text-center text-slate-400"
                   >
                     Tidak ada data pekerjaan yang ditemukan.
@@ -1785,6 +1902,30 @@ export default function LaporanPekerjaanClient() {
                     >
                       {getStatusBadge(t.status)}
                     </td>
+                    <td className="px-3 py-2.5 text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditModal(t);
+                          }}
+                          className="p-1 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
+                          title="Edit"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (t.id) handleDelete(t.id);
+                          }}
+                          className="p-1 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
+                          title="Hapus"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 );
               })
@@ -1834,6 +1975,187 @@ export default function LaporanPekerjaanClient() {
                   <ChevronDown className="w-5 h-5 stroke-[2.5]" />
                 </button>
               )}
+            </div>
+          </div>
+        </Portal>
+      )}
+
+      {/* Modal CRUD */}
+      {showModal && (
+        <Portal>
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+                <h3 className="text-lg font-bold text-slate-800">
+                  {modalMode === "create" ? "Tambah Data Pekerjaan" : "Edit Data Pekerjaan"}
+                </h3>
+                <button
+                  onClick={closeModal}
+                  className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Task / Nama Pekerjaan <span className="text-rose-600">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.task}
+                    onChange={(e) => setFormData({ ...formData, task: e.target.value })}
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                    placeholder="Contoh: Finishing OP.007"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Project Order
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.project}
+                      onChange={(e) => setFormData({ ...formData, project: e.target.value })}
+                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                      placeholder="Contoh: OP.007"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Divisi
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.division}
+                      onChange={(e) => setFormData({ ...formData, division: e.target.value })}
+                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                      placeholder="Contoh: Produksi"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      PIC
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.pic}
+                      onChange={(e) => setFormData({ ...formData, pic: e.target.value })}
+                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                      placeholder="Nama PIC"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Priority
+                    </label>
+                    <select
+                      value={formData.priority}
+                      onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                    >
+                      <option value="Low">Low</option>
+                      <option value="Medium">Medium</option>
+                      <option value="High">High</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Start Date
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.startDate}
+                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                      placeholder="dd/mm/yyyy"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      End Date
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.endDate}
+                      onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                      placeholder="dd/mm/yyyy"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Work Days
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.workDays}
+                      onChange={(e) => setFormData({ ...formData, workDays: e.target.value })}
+                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                      placeholder="Jumlah hari"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Status
+                  </label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                  >
+                    <option value="BELUM DIKERJAKAN">BELUM DIKERJAKAN</option>
+                    <option value="IN PROGRESS">IN PROGRESS</option>
+                    <option value="PENDING">PENDING</option>
+                    <option value="CANCEL">CANCEL</option>
+                    <option value="SELESAI">SELESAI</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Note / Catatan
+                  </label>
+                  <textarea
+                    value={formData.note}
+                    onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                    rows={3}
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none resize-none"
+                    placeholder="Catatan tambahan..."
+                  />
+                </div>
+              </div>
+
+              <div className="sticky bottom-0 bg-slate-50 border-t border-slate-200 px-6 py-4 flex items-center justify-end gap-3">
+                <button
+                  onClick={closeModal}
+                  className="px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleSave}
+                  className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors"
+                >
+                  <Save className="w-4 h-4 mr-1.5" />
+                  Simpan
+                </button>
+              </div>
             </div>
           </div>
         </Portal>

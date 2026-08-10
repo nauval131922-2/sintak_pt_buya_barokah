@@ -1,4 +1,5 @@
 export interface SpreadsheetTask {
+  id?: number;
   task: string;
   project: string;
   division: string;

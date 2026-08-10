@@ -329,6 +329,21 @@ export async function initSchema(db: any) {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       completed_at DATETIME DEFAULT NULL
     );`,
+    `CREATE TABLE IF NOT EXISTS laporan_pekerjaan (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      task TEXT NOT NULL,
+      project TEXT DEFAULT '',
+      division TEXT DEFAULT '',
+      pic TEXT DEFAULT '',
+      priority TEXT DEFAULT 'Low',
+      start_date TEXT DEFAULT '',
+      end_date TEXT DEFAULT '',
+      work_days TEXT DEFAULT '',
+      note TEXT DEFAULT '',
+      status TEXT DEFAULT 'BELUM DIKERJAKAN',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT NULL
+    );`,
     `CREATE TABLE IF NOT EXISTS sph_out (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       faktur TEXT UNIQUE NOT NULL,

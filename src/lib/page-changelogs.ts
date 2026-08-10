@@ -673,10 +673,13 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     permissionKeys: ['produksi_laporan_pekerjaan'],
     sortDate: '2026-08-10',
     date: '10 Agu 2026',
-    version: '2026-08-10-1',
+    version: '2026-08-10-2',
     items: [
-      'Penambahan status "BELUM DIKERJAKAN" pada filter dropdown, stat card, badge, serta grafik Recharts (Bar & Donut)',
-      'Penyesuaian urutan status standar: BELUM DIKERJAKAN → IN PROGRESS → PENDING → CANCEL → SELESAI',
+      'Migrasi data dari Google Spreadsheet ke database lokal (SQLite/Turso) dengan auto-seed pertama kali',
+      'Fitur CRUD lengkap: Tambah, Edit, Hapus data pekerjaan langsung di aplikasi tanpa perlu Spreadsheet',
+      'Modal form input responsif dengan validasi wajib field Task/Nama Pekerjaan',
+      'Tombol aksi Edit & Hapus di setiap baris tabel desktop untuk manajemen data cepat',
+      'Data tetap tersimpan permanen di database aplikasi (tidak lagi tergantung Google Sheets)',
     ],
   }),
 
