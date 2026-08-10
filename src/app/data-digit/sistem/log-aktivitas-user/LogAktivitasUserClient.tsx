@@ -70,6 +70,17 @@ export default function LogAktivitasUserClient() {
   const [page, setPage] = useState(1);
   const [isExporting, setIsExporting] = useState(false);
   const [dialog, setDialog] = useState({ isOpen: false, type: 'success' as 'success' | 'error', title: '', message: '' });
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('usrLog_columnWidths');
+      return saved ? JSON.parse(saved) : { level: 90, datetime: 160, channel: 200, username: 120, pesan: 300, data_json: 340 };
+    }
+    return {};
+  });
+
+  useEffect(() => {
+    localStorage.setItem('usrLog_columnWidths', JSON.stringify(columnWidths));
+  }, [columnWidths]);
 
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
   const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || '');
@@ -319,6 +330,8 @@ export default function LogAktivitasUserClient() {
             onScroll={handleScroll}
             selectedIds={selectedIds}
             onRowClick={handleRowClick}
+            columnWidths={columnWidths}
+            onColumnWidthChange={setColumnWidths}
             rowHeight="h-11"
           />
           <TableFooter
