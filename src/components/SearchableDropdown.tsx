@@ -115,9 +115,11 @@ export default function SearchableDropdown({
     updatePos();
     window.addEventListener('scroll', updatePos, true);
     window.addEventListener('resize', updatePos);
+    window.addEventListener('sidebar-toggle', updatePos);
     return () => {
       window.removeEventListener('scroll', updatePos, true);
       window.removeEventListener('resize', updatePos);
+      window.removeEventListener('sidebar-toggle', updatePos);
     };
   }, [open, updatePos]);
 

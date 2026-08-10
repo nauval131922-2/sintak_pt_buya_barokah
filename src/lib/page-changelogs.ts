@@ -332,6 +332,17 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Hasil Produksi ───
+  'hasil-produksi-2026-08-11': entry({
+    pageKey: 'hasil-produksi',
+    title: 'Hasil Produksi',
+    permissionKeys: ['produksi_hasil'],
+    sortDate: '2026-08-11',
+    date: '11 Agu 2026',
+    version: '2026-08-11-1',
+    items: [
+      'Posisi dropdown portal (SearchableDropdown) otomatis menyesuaikan saat sidebar toggle/hover',
+    ],
+  }),
   'hasil-produksi-2026-08-09': entry({
     pageKey: 'hasil-produksi',
     title: 'Hasil Produksi',
