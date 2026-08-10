@@ -401,11 +401,17 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     permissionKeys: ['produksi_bahan_baku'],
     items: [...UI_POLISH, 'Daftar dan filter lebih rapi'],
   }),
-  'barang-jadi-2026-07-25': entry({
+  'barang-jadi-2026-08-10': entry({
     pageKey: 'barang-jadi',
     title: 'Penerimaan Barang Hasil Produksi',
     permissionKeys: ['produksi_barang_jadi'],
-    items: [...UI_POLISH, 'Daftar dan filter lebih rapi'],
+    sortDate: '2026-08-10',
+    date: '10 Agt 2026',
+    version: '2026-08-10-1',
+    items: [
+      'Kolom "Profit 30%" ditambahkan di sebelah kanan kolom "HP Barang Jadi" — menampilkan harga dengan markup profit 30%',
+      'Kolom "HP Rata-rata" sekarang menampilkan 2 angka desimal untuk presisi lebih baik',
+    ],
   }),
   'produksi-selesai-2026-07-25': entry({
     pageKey: 'produksi-selesai',
