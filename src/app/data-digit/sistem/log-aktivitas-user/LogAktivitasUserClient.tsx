@@ -177,11 +177,11 @@ export default function LogAktivitasUserClient() {
     }
   }, [startDate, endDate, isMounted]);
 
-  // Auto-load saat mount
+  // Reload manual dari tombol refresh di SearchAndReload
   useEffect(() => {
-    if (isMounted) handleFetch();
+    if (isMounted && refreshKey > 0) handleFetch();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMounted, refreshKey]);
+  }, [refreshKey]);
 
   const columns = useMemo<ColumnDef<UserLogRow>[]>(() => [
     {
