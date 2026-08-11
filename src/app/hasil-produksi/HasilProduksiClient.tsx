@@ -1782,7 +1782,7 @@ export default function HasilProduksiClient() {
       {/* Floating Navigation Controls - Smooth Fade & Scale Transitions */}
       {isMounted && typeof document !== 'undefined' && createPortal(
         <div 
-          className={`fixed bottom-6 right-6 z-[99999] transition-all duration-500 ease-out ${
+          className={`fixed bottom-6 right-6 z-[80] transition-all duration-500 ease-out ${
             showTopBtn || showBottomBtn 
               ? 'opacity-100 translate-y-0 pointer-events-auto' 
               : 'opacity-0 translate-y-8 pointer-events-none'

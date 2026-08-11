@@ -104,9 +104,9 @@ function MainContentInner({
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[var(--bg-deep)] md:[zoom:0.82] md:w-[121.95vw] md:h-[121.95vh] min-[1920px]:[zoom:1] min-[1920px]:w-screen min-[1920px]:h-screen">
+    <div className="flex h-[100dvh] w-screen overflow-hidden bg-[var(--bg-deep)] md:[zoom:0.82] md:w-[121.95vw] md:h-[121.95vh] min-[1920px]:[zoom:1] min-[1920px]:w-screen min-[1920px]:h-screen">
       <Sidebar user={user} permissions={permissions} />
-      <div className="flex-1 flex flex-col min-w-0 h-screen md:h-full overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 h-[100dvh] md:h-full overflow-hidden">
         {/* Header with Title and Global Search */}
         <div className="flex items-center justify-between gap-4 px-4 xl:px-8 py-4 xl:py-5 bg-white border-b border-gray-100">
           <div className="flex items-start gap-2 flex-1 min-w-0">

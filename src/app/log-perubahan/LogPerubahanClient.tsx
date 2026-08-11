@@ -17,11 +17,19 @@ function mergeEntriesByPage(entries: Entry[]): Array<Entry & { sections?: Array<
     const key = `${e.pageKey}-${e.sortDate}`;
     const existing = map.get(key);
     if (!existing) {
-      map.set(key, { ...e, sections: e.versionLabel ? [{ label: e.versionLabel, items: e.items }] : [] });
+      const initialSections = e.versionLabel
+        ? [{ label: e.versionLabel, items: e.items }]
+        : e.items.length > 0 ? [{ label: '', items: e.items }] : [];
+      map.set(key, { ...e, sections: initialSections });
     } else {
       if (e.versionLabel) {
         existing.sections.push({ label: e.versionLabel, items: e.items });
       } else {
+        if (existing.sections.length === 0) {
+          existing.sections.push({ label: '', items: e.items });
+        } else {
+          existing.sections[0].items = [...existing.sections[0].items, ...e.items];
+        }
         existing.items = [...existing.items, ...e.items];
       }
     }
@@ -122,10 +130,10 @@ export default function LogPerubahanClient({ entries }: { entries: Entry[] }) {
 
                   {isOpen && (
                     <div className="px-4 pb-4 pt-1 border-t border-gray-50 ml-1">
-                      {('sections' in e && Array.isArray(e.sections) && e.sections.length > 0) ? (
+                      {('sections' in e && Array.isArray(e.sections) && e.sections.length > 0 && e.sections.some(s => s.label)) ? (
                         e.sections.map((section: {label: string; items: string[]}, sIdx: number) => (
                           <div key={sIdx} className={sIdx > 0 ? 'mt-4' : ''}>
-                            <div className="text-[12px] font-bold text-emerald-700 mb-2">{section.label}:</div>
+                            {section.label && <div className="text-[12px] font-bold text-emerald-700 mb-2">{section.label}:</div>}
                             <ul className="flex flex-col gap-2">
                               {section.items.map((item: string, i: number) => (
                                 <li

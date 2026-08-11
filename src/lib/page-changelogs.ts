@@ -110,6 +110,18 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Jurnal Harian Produksi ───
+  'jurnal-harian-produksi-2026-08-11': entry({
+    pageKey: 'jurnal-harian-produksi',
+    title: 'Jurnal Harian Produksi',
+    version: '2026-08-11-1',
+    date: '11 Agu 2026',
+    sortDate: '2026-08-11',
+    permissionKeys: ['produksi_jhp'],
+    items: [
+      'Perbaikan viewport mobile: tombol Simpan di form input dan pagination di tab daftar sekarang selalu terlihat di real device HP',
+      'Layout menggunakan dynamic viewport height (100dvh) agar menyesuaikan dengan address bar dan navigation bar browser HP',
+    ],
+  }),
   'jurnal-harian-produksi-2026-08-09': entry({
     pageKey: 'jurnal-harian-produksi',
     title: 'Jurnal Harian Produksi',
@@ -334,6 +346,17 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Hasil Produksi ───
+  'hasil-produksi-2026-08-11': entry({
+    pageKey: 'hasil-produksi',
+    title: 'Hasil Produksi',
+    permissionKeys: ['produksi_hasil'],
+    sortDate: '2026-08-11',
+    date: '11 Agu 2026',
+    version: '2026-08-11-1',
+    items: [
+      'Penyesuaian z-index tombol navigasi scroll floating (up/down) agar berada di bawah lapisan sidebar',
+    ],
+  }),
   'hasil-produksi-2026-08-10': entry({
     pageKey: 'hasil-produksi',
     title: 'Hasil Produksi',
@@ -667,16 +690,31 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Laporan Pekerjaan ───
+  'laporan-pekerjaan-2026-08-11': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan Setting Buya 2026',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-08-11',
+    date: '11 Agu 2026',
+    version: '2026-08-11-1',
+    items: [
+      'Penyesuaian z-index tombol navigasi scroll floating (up/down) agar tidak menutupi sidebar saat dibuka',
+    ],
+  }),
   'laporan-pekerjaan-2026-08-10': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan Setting Buya 2026',
     permissionKeys: ['produksi_laporan_pekerjaan'],
     sortDate: '2026-08-10',
     date: '10 Agu 2026',
-    version: '2026-08-10-1',
+    version: '2026-08-10-3',
     items: [
-      'Penambahan status "BELUM DIKERJAKAN" pada filter dropdown, stat card, badge, serta grafik Recharts (Bar & Donut)',
-      'Penyesuaian urutan status standar: BELUM DIKERJAKAN → IN PROGRESS → PENDING → CANCEL → SELESAI',
+      'Mode Hybrid: gabungan data manual (SINTAK) dan live dari Google Spreadsheet dalam satu tabel',
+      'Data dari Spreadsheet read-only (badge "Sheet"), data manual bisa diedit & dihapus',
+      'Edit data spreadsheet otomatis convert jadi data manual (tidak kembali ke spreadsheet)',
+      'Conflict resolution: jika data spreadsheet berubah padahal sudah ada versi manual, modal konflik muncul untuk pilih versi mana yang dipakai',
+      'Tombol "Sync Spreadsheet" untuk paksa sinkronisasi manual dengan spreadsheet (ganti dari "Refresh Live")',
+      'Fitur CRUD lengkap: Tambah, Edit, Hapus data manual langsung di aplikasi',
     ],
   }),
 
