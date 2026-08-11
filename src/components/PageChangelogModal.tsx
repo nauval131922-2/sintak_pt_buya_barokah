@@ -35,11 +35,19 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
       const key = `${c.sortDate}-${c.pageKey}`;
       const existing = map.get(key);
       if (!existing) {
-        map.set(key, { ...c, sections: c.versionLabel ? [{ label: c.versionLabel, items: c.items }] : [] });
+        const initialSections = c.versionLabel
+          ? [{ label: c.versionLabel, items: c.items }]
+          : c.items.length > 0 ? [{ label: '', items: c.items }] : [];
+        map.set(key, { ...c, sections: initialSections });
       } else {
         if (c.versionLabel) {
           existing.sections.push({ label: c.versionLabel, items: c.items });
         } else {
+          if (existing.sections.length === 0) {
+            existing.sections.push({ label: '', items: c.items });
+          } else {
+            existing.sections[0].items = [...existing.sections[0].items, ...c.items];
+          }
           existing.items = [...existing.items, ...c.items];
         }
       }
@@ -203,10 +211,10 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
               {/* Accordion Body */}
               {isOpen && (
                 <div className="flex flex-col px-4 py-3 bg-white">
-                  {('sections' in changelog && Array.isArray((changelog as any).sections) && (changelog as any).sections.length > 0) ? (
+                  {('sections' in changelog && Array.isArray((changelog as any).sections) && (changelog as any).sections.length > 0 && (changelog as any).sections.some((s: any) => s.label)) ? (
                     (changelog as any).sections.map((section: {label: string; items: string[]}, sIdx: number) => (
                       <div key={sIdx} className={sIdx > 0 ? 'mt-4' : ''}>
-                        <div className="text-[12px] font-bold text-emerald-700 mb-2">{section.label}:</div>
+                        {section.label && <div className="text-[12px] font-bold text-emerald-700 mb-2">{section.label}:</div>}
                         <ul className="flex flex-col gap-2.5">
                           {section.items.map((item: string, i: number) => (
                             <li
