@@ -110,6 +110,18 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Jurnal Harian Produksi ───
+  'jurnal-harian-produksi-2026-08-11': entry({
+    pageKey: 'jurnal-harian-produksi',
+    title: 'Jurnal Harian Produksi',
+    version: '2026-08-11-1',
+    date: '11 Agu 2026',
+    sortDate: '2026-08-11',
+    permissionKeys: ['produksi_jhp'],
+    items: [
+      'Perbaikan viewport mobile: tombol Simpan di form input dan pagination di tab daftar sekarang selalu terlihat di real device HP',
+      'Layout menggunakan dynamic viewport height (100dvh) agar menyesuaikan dengan address bar dan navigation bar browser HP',
+    ],
+  }),
   'jurnal-harian-produksi-2026-08-09-2': entry({
     pageKey: 'jurnal-harian-produksi',
     title: 'Jurnal Harian Produksi',
