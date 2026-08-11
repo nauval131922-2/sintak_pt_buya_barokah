@@ -2361,7 +2361,7 @@ export default function JurnalClient({
             </div>
 
             {/* BODY SCROLLABLE: Isian Form */}
-            <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
+            <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 pb-8 sm:pb-6 custom-scrollbar">
 
             {/* ---- SUB-TAB: TARGET ---- */}
             {formSubTab === 'target' && (
@@ -2852,7 +2852,7 @@ export default function JurnalClient({
             </div> {/* CLOSES BODY SCROLLABLE */}
 
             {/* FOOTER FIXED: Action buttons */}
-            <div className="shrink-0 p-3 sm:p-4 border-t border-gray-100 bg-white/95 backdrop-blur-md z-10 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+            <div className="shrink-0 p-3 sm:p-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] border-t border-gray-100 bg-white/95 backdrop-blur-md z-10 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
               <div className="flex gap-2">
                 {formSubTab === 'target' && canInputRealisasi && (
                   <button type="button" onClick={() => setFormSubTab('realisasi')} className="w-full sm:w-auto px-4 py-2 text-[12px] font-bold text-sky-600 bg-sky-50 hover:bg-sky-100 rounded-lg border border-sky-200 transition-all text-center">
