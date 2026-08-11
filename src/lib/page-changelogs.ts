@@ -122,17 +122,6 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
       'Layout menggunakan dynamic viewport height (100dvh) agar menyesuaikan dengan address bar dan navigation bar browser HP',
     ],
   }),
-  'jurnal-harian-produksi-2026-08-09-2': entry({
-    pageKey: 'jurnal-harian-produksi',
-    title: 'Jurnal Harian Produksi',
-    version: '2026-08-09-2',
-    date: '09 Agu 2026',
-    sortDate: '2026-08-09-2',
-    permissionKeys: ['produksi_jhp'],
-    items: [
-      'Penambahan safe-area-inset-bottom pada footer form input JHP agar tombol Simpan/Batal tidak tertutup address bar dan bottom navigation bar di real device mobile HP',
-    ],
-  }),
   'jurnal-harian-produksi-2026-08-09': entry({
     pageKey: 'jurnal-harian-produksi',
     title: 'Jurnal Harian Produksi',
