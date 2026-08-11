@@ -738,9 +738,22 @@ export default function LaporanPekerjaanClient() {
     setPekerjaanOptions([]);
   };
 
+  const calcWorkDays = (start?: Date | null, end?: Date | null): string => {
+    if (!start || !end) return "";
+    const s = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    const e = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+    const diffTime = e.getTime() - s.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    return diffDays > 0 ? String(diffDays) : "1";
+  };
+
   const handleSave = async () => {
-    if (!formData.task.trim()) {
-      alert("Task / Nama pekerjaan wajib diisi");
+    const generatedTask = formData.jenisPekerjaan
+      ? (formData.orderProduksi ? `${formData.jenisPekerjaan} ${formData.orderProduksi}` : formData.jenisPekerjaan)
+      : (formData.orderProduksi ? `Pekerjaan ${formData.orderProduksi}` : (formData.task || "Pekerjaan Baru"));
+
+    if (!generatedTask.trim()) {
+      alert("Pilih Jenis Pekerjaan atau Order Produksi terlebih dahulu");
       return;
     }
 
@@ -757,7 +770,7 @@ export default function LaporanPekerjaanClient() {
         : "";
       
       const payload = {
-        task: formData.task,
+        task: generatedTask,
         project: formData.orderProduksi,
         division: formData.bagian,
         pic: formData.pic,
@@ -1039,6 +1052,7 @@ export default function LaporanPekerjaanClient() {
   // Resizable columns state with localStorage persistence
   const DEFAULT_COL_WIDTHS = useMemo(
     () => ({
+      aksi: 120,
       task: 240,
       project: 180,
       division: 120,
@@ -1876,6 +1890,7 @@ export default function LaporanPekerjaanClient() {
           }`}
           style={
             {
+              "--col-aksi": `${colWidths.aksi || 120}px`,
               "--col-task": `${colWidths.task}px`,
               "--col-project": `${colWidths.project}px`,
               "--col-division": `${colWidths.division}px`,
@@ -1892,8 +1907,20 @@ export default function LaporanPekerjaanClient() {
           <table className="w-full text-left text-xs border-collapse table-fixed">
             <thead className="sticky top-0 z-10 bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 shadow-sm">
               <tr>
-                <th className="px-3 py-2.5 text-center bg-slate-50 sticky top-0 z-10 border-b border-slate-200 w-24">
-                  Aksi
+                <th
+                  style={{
+                    width: `var(--col-aksi, ${colWidths.aksi || 120}px)`,
+                    minWidth: `var(--col-aksi, ${colWidths.aksi || 120}px)`,
+                  }}
+                  className="relative px-3 py-2.5 text-center bg-slate-50 sticky top-0 z-10 border-b border-slate-200 select-none group"
+                >
+                  <span className="truncate">Aksi</span>
+                  <div
+                    onMouseDown={(resizeEvt) => handleResizeStart("aksi", resizeEvt)}
+                    onClick={(resizeEvt) => resizeEvt.stopPropagation()}
+                    className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-emerald-500/50 active:bg-emerald-600 z-20 group-hover:bg-slate-300/80 transition-colors"
+                    title="Geser untuk mengatur lebar kolom"
+                  />
                 </th>
                 {renderSortableHeader("task", "Task / Aktivitas")}
                 {renderSortableHeader("project", "Project Order")}
@@ -1938,14 +1965,20 @@ export default function LaporanPekerjaanClient() {
                       }
                       className={`cursor-pointer transition-all ${
                         isSelected
-                          ? "bg-emerald-100/70 border-l-4 border-l-emerald-600 font-semibold"
+                          ? "bg-emerald-100/70 shadow-[inset_4px_0_0_0_#059669] font-semibold"
                           : "hover:bg-emerald-50/50"
                       }`}
                     >
-                      <td className="px-3 py-2.5 text-center">
-                        <div className="flex items-center justify-center gap-1">
+                      <td
+                        style={{
+                          width: "var(--col-aksi)",
+                          maxWidth: "var(--col-aksi)",
+                        }}
+                        className="px-2 py-2.5 text-center truncate"
+                      >
+                        <div className="flex items-center justify-center gap-1.5 shrink-0">
                           {(t as any).source === 'spreadsheet' && (
-                            <span className="px-1.5 py-0.5 text-[9px] font-bold bg-blue-100 text-blue-700 rounded border border-blue-200">
+                            <span className="px-1.5 py-0.5 text-[9px] font-bold bg-blue-100 text-blue-700 rounded border border-blue-200 shrink-0">
                               Sheet
                             </span>
                           )}
@@ -1954,7 +1987,7 @@ export default function LaporanPekerjaanClient() {
                               e.stopPropagation();
                               openEditModal(t);
                             }}
-                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors shrink-0"
                             title={(t as any).source === 'spreadsheet' ? 'Edit (akan jadi data manual)' : 'Edit'}
                           >
                             <Edit2 size={14} />
@@ -1964,7 +1997,7 @@ export default function LaporanPekerjaanClient() {
                               e.stopPropagation();
                               if (t.id) handleDelete(t.id);
                             }}
-                            className="p-1.5 text-rose-600 hover:bg-rose-50 rounded transition-colors"
+                            className="p-1.5 text-rose-600 hover:bg-rose-50 rounded transition-colors shrink-0 disabled:opacity-40"
                             title="Hapus"
                             disabled={(t as any).source === 'spreadsheet'}
                           >
@@ -2099,7 +2132,7 @@ export default function LaporanPekerjaanClient() {
       {/* Floating Scroll Navigation (Ke Atas & Ke Bawah) */}
       {(showTopBtn || showBottomBtn) && (
         <Portal>
-          <div className="fixed bottom-6 right-4 sm:right-6 z-[200] transition-all duration-300 pointer-events-auto">
+          <div className="fixed bottom-6 right-4 sm:right-6 z-[80] transition-all duration-300 pointer-events-auto">
             <div className="bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-xl rounded-full p-1 flex flex-col gap-1.5 ring-1 ring-black/5">
               {showTopBtn && (
                 <button
@@ -2160,20 +2193,6 @@ export default function LaporanPekerjaanClient() {
               {/* Body */}
               <div className="px-6 py-5 flex flex-col gap-4 overflow-y-auto">
                 
-                {/* Task / Nama Pekerjaan */}
-                <div>
-                  <label className="block text-[12px] font-bold text-gray-600 mb-2">
-                    Task / Nama Pekerjaan <span className="text-rose-400">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.task}
-                    onChange={(e) => setFormData({ ...formData, task: e.target.value })}
-                    className="w-full px-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all placeholder:text-gray-300"
-                    placeholder="Contoh: Finishing OP.007"
-                  />
-                </div>
-
                 {/* Bagian */}
                 <div>
                   <label className="block text-[12px] font-bold text-gray-600 mb-2">
@@ -2204,10 +2223,12 @@ export default function LaporanPekerjaanClient() {
                   <SearchableDropdown
                     id="modal-order"
                     value={formData.orderProduksi}
-                    items={sopdOptions.filter(s => s.no_order).map(s => s.no_order)}
+                    items={Array.from(new Set(sopdOptions.map(s => String(s.faktur || s.no_order || '').trim()).filter(Boolean)))}
                     itemLabels={sopdOptions.reduce((acc, s) => {
-                      if (s.no_order) {
-                        acc[s.no_order] = `${s.no_order} - ${s.nama_order || ''}`;
+                      const key = String(s.faktur || s.no_order || '').trim();
+                      if (key) {
+                        const name = s.nama_prd || s.nama_order || '';
+                        acc[key] = name ? `${key} - ${name}` : key;
                       }
                       return acc;
                     }, {} as Record<string, string>)}
@@ -2256,35 +2277,22 @@ export default function LaporanPekerjaanClient() {
                   />
                 </div>
 
-                {/* Priority & Work Days */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[12px] font-bold text-gray-600 mb-2">
-                      Priority
-                    </label>
-                    <select
-                      value={formData.priority}
-                      onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                      className="w-full px-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all"
-                    >
-                      <option value="Low">Low</option>
-                      <option value="Medium">Medium</option>
-                      <option value="High">High</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-[12px] font-bold text-gray-600 mb-2">
-                      Work Days
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.workDays}
-                      onChange={(e) => setFormData({ ...formData, workDays: e.target.value })}
-                      className="w-full px-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all placeholder:text-gray-300"
-                      placeholder="Jumlah hari"
-                    />
-                  </div>
+                {/* Priority */}
+                <div>
+                  <label className="block text-[12px] font-bold text-gray-600 mb-2">
+                    Priority
+                  </label>
+                  <SearchableDropdown
+                    id="modal-priority"
+                    value={formData.priority}
+                    items={["Low", "Medium", "High"]}
+                    onChange={(val) => setFormData({ ...formData, priority: val || "Low" })}
+                    placeholder="Pilih Priority..."
+                    searchPlaceholder="Cari priority..."
+                    triggerWidth="w-full"
+                    panelWidth="w-full"
+                    compact
+                  />
                 </div>
 
                 {/* Start Date & End Date */}
@@ -2296,7 +2304,10 @@ export default function LaporanPekerjaanClient() {
                     <DatePicker
                       name="startDate"
                       value={formData.startDate}
-                      onChange={(date) => setFormData({ ...formData, startDate: date })}
+                      onChange={(date) => {
+                        const wDays = calcWorkDays(date, formData.endDate);
+                        setFormData({ ...formData, startDate: date, workDays: wDays });
+                      }}
                     />
                   </div>
 
@@ -2307,9 +2318,26 @@ export default function LaporanPekerjaanClient() {
                     <DatePicker
                       name="endDate"
                       value={formData.endDate}
-                      onChange={(date) => setFormData({ ...formData, endDate: date })}
+                      onChange={(date) => {
+                        const wDays = calcWorkDays(formData.startDate, date);
+                        setFormData({ ...formData, endDate: date, workDays: wDays });
+                      }}
                     />
                   </div>
+                </div>
+
+                {/* Work Days (Otomatis di bawah Date Picker) */}
+                <div>
+                  <label className="block text-[12px] font-bold text-gray-600 mb-2">
+                    Work Days
+                  </label>
+                  <input
+                    type="text"
+                    readOnly
+                    value={formData.workDays ? `${formData.workDays} Hari` : ""}
+                    className="w-full px-3 py-2.5 text-[13px] font-semibold text-emerald-800 bg-emerald-50/60 border border-emerald-200/80 rounded-lg focus:outline-none placeholder:text-gray-400 cursor-not-allowed"
+                    placeholder="Otomatis dihitung dari Start & End Date"
+                  />
                 </div>
 
                 {/* Status */}
@@ -2317,17 +2345,17 @@ export default function LaporanPekerjaanClient() {
                   <label className="block text-[12px] font-bold text-gray-600 mb-2">
                     Status
                   </label>
-                  <select
+                  <SearchableDropdown
+                    id="modal-status"
                     value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all"
-                  >
-                    <option value="BELUM DIKERJAKAN">BELUM DIKERJAKAN</option>
-                    <option value="IN PROGRESS">IN PROGRESS</option>
-                    <option value="PENDING">PENDING</option>
-                    <option value="CANCEL">CANCEL</option>
-                    <option value="SELESAI">SELESAI</option>
-                  </select>
+                    items={["BELUM DIKERJAKAN", "IN PROGRESS", "PENDING", "CANCEL", "SELESAI"]}
+                    onChange={(val) => setFormData({ ...formData, status: val || "BELUM DIKERJAKAN" })}
+                    placeholder="Pilih Status..."
+                    searchPlaceholder="Cari status..."
+                    triggerWidth="w-full"
+                    panelWidth="w-full"
+                    compact
+                  />
                 </div>
 
                 {/* Note / Catatan */}
@@ -2339,7 +2367,7 @@ export default function LaporanPekerjaanClient() {
                     value={formData.note}
                     onChange={(e) => setFormData({ ...formData, note: e.target.value })}
                     rows={3}
-                    className="w-full px-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all resize-none placeholder:text-gray-300"
+                    className="w-full px-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all min-h-[80px] resize-y placeholder:text-gray-300"
                     placeholder="Catatan tambahan..."
                   />
                 </div>

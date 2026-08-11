@@ -346,6 +346,17 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Hasil Produksi ───
+  'hasil-produksi-2026-08-11': entry({
+    pageKey: 'hasil-produksi',
+    title: 'Hasil Produksi',
+    permissionKeys: ['produksi_hasil'],
+    sortDate: '2026-08-11',
+    date: '11 Agu 2026',
+    version: '2026-08-11-1',
+    items: [
+      'Penyesuaian z-index tombol navigasi scroll floating (up/down) agar berada di bawah lapisan sidebar',
+    ],
+  }),
   'hasil-produksi-2026-08-10': entry({
     pageKey: 'hasil-produksi',
     title: 'Hasil Produksi',
@@ -679,6 +690,17 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Laporan Pekerjaan ───
+  'laporan-pekerjaan-2026-08-11': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan Setting Buya 2026',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-08-11',
+    date: '11 Agu 2026',
+    version: '2026-08-11-1',
+    items: [
+      'Penyesuaian z-index tombol navigasi scroll floating (up/down) agar tidak menutupi sidebar saat dibuka',
+    ],
+  }),
   'laporan-pekerjaan-2026-08-10': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan Setting Buya 2026',
