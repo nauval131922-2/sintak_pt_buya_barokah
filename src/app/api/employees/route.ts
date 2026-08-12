@@ -57,9 +57,14 @@ export async function GET(request: NextRequest) {
         argsTotal = [qPattern, qPattern, qPattern, qPattern];
       }
     } else {
-      sqlData = `SELECT * FROM employees e WHERE 1=1 ${activeFilter} ORDER BY e.${sortBy} ${sortDir} LIMIT ? OFFSET ?`;
+      if (all) {
+        sqlData = `SELECT * FROM employees e ORDER BY e.${sortBy} ${sortDir}`;
+        argsData = [];
+      } else {
+        sqlData = `SELECT * FROM employees e WHERE 1=1 ${activeFilter} ORDER BY e.${sortBy} ${sortDir} LIMIT ? OFFSET ?`;
+        argsData = [limit, offset];
+      }
       sqlTotal = `SELECT COUNT(*) as count FROM employees e WHERE 1=1 ${activeFilter}`;
-      argsData = [limit, offset];
       argsTotal = [];
     }
 

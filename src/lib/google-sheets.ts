@@ -1,7 +1,9 @@
 export interface SpreadsheetTask {
+  id?: number;
   task: string;
   project: string;
   division: string;
+  bagian?: string;
   pic: string;
   priority: string;
   startDate: string;
@@ -115,9 +117,9 @@ export async function getSpreadsheetTasks(
 
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
-    if (row.length >= 2 && row[1]) {
+    if (row.length >= 2 && (row[1] || row[2])) {
       tasks.push({
-        task: row[1] || "",
+        task: row[1] || row[2] || "",
         project: row[2] || "",
         division: row[3] || "",
         pic: row[4] || "",

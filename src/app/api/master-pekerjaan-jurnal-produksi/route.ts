@@ -16,6 +16,8 @@ export async function GET(request: NextRequest) {
   const limit = parseInt(request.nextUrl.searchParams.get('limit') || '100');
   const offset = (page - 1) * limit;
 
+  const all = request.nextUrl.searchParams.get('all') === 'true' || request.nextUrl.searchParams.get('all') === '1';
+
   try {
     let where = '1=1';
     const args: (string | number)[] = [];
@@ -36,7 +38,10 @@ export async function GET(request: NextRequest) {
     });
     const totalCount = (countResult.rows[0] as unknown as { total: number })?.total || 0;
 
-    // Get paginated data
+    const limitClause = all ? '' : 'LIMIT ? OFFSET ?';
+    const queryArgs = all ? args : [...args, limit, offset];
+
+    // Get data
     const result = await db.execute({
       sql: `SELECT * FROM master_pekerjaan_jurnal_produksi WHERE ${where} 
             ORDER BY 
@@ -51,8 +56,8 @@ export async function GET(request: NextRequest) {
                 ELSE 99
               END ASC,
               name ASC
-            LIMIT ? OFFSET ?`,
-      args: [...args, limit, offset]
+            ${limitClause}`,
+      args: queryArgs
     });
 
     return NextResponse.json({

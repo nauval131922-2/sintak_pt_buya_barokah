@@ -65,6 +65,7 @@ export async function initSchema(db: any) {
       { table: 'sopd_harga', column: 'pending_produksi', type: 'INTEGER DEFAULT 0' },
       { table: 'sopd_harga', column: 'alasan_pending', type: 'TEXT' },
       { table: 'users', column: 'is_active', type: 'INTEGER DEFAULT 1' },
+      { table: 'laporan_pekerjaan', column: 'bagian', type: 'TEXT DEFAULT \'\'' },
     ];
 
     for (const col of columns) {
@@ -328,6 +329,24 @@ export async function initSchema(db: any) {
       source TEXT DEFAULT 'web',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       completed_at DATETIME DEFAULT NULL
+    );`,
+    `CREATE TABLE IF NOT EXISTS laporan_pekerjaan (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      task TEXT NOT NULL,
+      project TEXT DEFAULT '',
+      division TEXT DEFAULT '',
+      bagian TEXT DEFAULT '',
+      pic TEXT DEFAULT '',
+      priority TEXT DEFAULT 'Low',
+      start_date TEXT DEFAULT '',
+      end_date TEXT DEFAULT '',
+      work_days TEXT DEFAULT '',
+      note TEXT DEFAULT '',
+      status TEXT DEFAULT 'BELUM DIKERJAKAN',
+      source TEXT DEFAULT 'manual',
+      sheet_sync_at DATETIME DEFAULT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT NULL
     );`,
     `CREATE TABLE IF NOT EXISTS sph_out (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1606,7 +1625,8 @@ async function initDynamicTriggers(db: any) {
       'penerimaan_pembelian', 'rekap_pembelian_barang', 'pelunasan_hutang',
       'pelunasan_piutang', 'pengiriman', 'spph_out', 'sph_in', 'sph_out', 'rek_akuntansi',
       'hpp_kalkulasi', 'stok_master_barang', 'usr_log', 'produksi_selesai', 'user_roles',
-      'master_pekerjaan', 'push_subscriptions', 'telegram_users', 'role_permissions', 'app_roles'
+      'master_pekerjaan', 'push_subscriptions', 'telegram_users', 'role_permissions', 'app_roles',
+      'laporan_pekerjaan'
     ];
 
     // Drop triggers for all excluded tables (cleanup from previous runs)

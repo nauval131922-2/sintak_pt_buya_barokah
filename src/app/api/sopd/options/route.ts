@@ -15,6 +15,8 @@ export async function GET(request: NextRequest) {
     let ordersSql = `SELECT DISTINCT faktur as no_sopd, nama_prd as nama_order, tgl, qty as qty_sopd, satuan as unit FROM orders WHERE faktur IS NOT NULL AND faktur != ''`;
     const args: any[] = [];
 
+    const all = searchParams.get('all') === 'true' || searchParams.get('all') === '1';
+
     if (search) {
       sopdSql += ` AND (no_sopd LIKE ? OR nama_order LIKE ?)`;
       ordersSql += ` AND (faktur LIKE ? OR nama_prd LIKE ?)`;
@@ -22,8 +24,13 @@ export async function GET(request: NextRequest) {
       args.push(searchPattern, searchPattern);
     }
 
-    sopdSql += ` ORDER BY ${sortExpr} DESC LIMIT ${search ? 500 : 300}`;
-    ordersSql += ` ORDER BY ${sortExpr} DESC LIMIT ${search ? 500 : 300}`;
+    if (!all) {
+      sopdSql += ` ORDER BY ${sortExpr} DESC LIMIT ${search ? 500 : 300}`;
+      ordersSql += ` ORDER BY ${sortExpr} DESC LIMIT ${search ? 500 : 300}`;
+    } else {
+      sopdSql += ` ORDER BY ${sortExpr} DESC`;
+      ordersSql += ` ORDER BY ${sortExpr} DESC`;
+    }
 
     const [sopdResult, ordersResult] = await db.batch([
       { sql: sopdSql, args },

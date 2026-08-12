@@ -690,6 +690,22 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Laporan Pekerjaan ───
+  'laporan-pekerjaan-2026-08-12': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan Setting Buya 2026',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-08-12',
+    date: '12 Agu 2026',
+    version: '2026-08-12-1',
+    items: [
+      'Penambahan kolom "Bagian" terpisah di database & tabel Laporan Pekerjaan',
+      'Penyempurnaan Form Input JHP Style: dropdown Bagian tersimpan ke kolom Bagian, Divisi mempertahankan data bawaan Spreadsheet',
+      'Deteksi otomatis Jenis Pekerjaan di form saat mengedit baris pekerjaan',
+      'Penyempurnaan konfirmasi simpan (alert dialog), pembersihan draft sessionStorage saat edit, dan pencegahan duplikasi row saat UPDATE',
+      'Pengecualian tabel laporan_pekerjaan dari auto-trigger audit log (menghemat puluhan ribu log beraudit sync)',
+      'Memoization item & label Order Produksi untuk performa render 4.500+ data instan tanpa nge-lag',
+    ],
+  }),
   'laporan-pekerjaan-2026-08-11': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan Setting Buya 2026',

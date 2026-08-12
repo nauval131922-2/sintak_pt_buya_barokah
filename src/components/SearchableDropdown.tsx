@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { ChevronDown, Search } from 'lucide-react';
+import Portal, { getZoomScale } from './Portal';
 
 interface SearchableDropdownProps {
   /** Currently selected value */
@@ -36,6 +37,8 @@ interface SearchableDropdownProps {
   compact?: boolean;
   /** Optional callback triggered when the search query changes (for server-side searching) */
   onSearchQueryChange?: (query: string) => void;
+  /** Use Portal to float panel outside overflow-hidden parents (default: true) */
+  usePortal?: boolean;
 }
 
 export default function SearchableDropdown({
@@ -55,15 +58,40 @@ export default function SearchableDropdown({
   itemLabels,
   compact = false,
   onSearchQueryChange,
+  usePortal = false,
 }: SearchableDropdownProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(-1);
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
 
   const containerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+
+  const updateCoords = useCallback(() => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const scale = getZoomScale();
+      setCoords({
+        top: (rect.bottom + window.scrollY) / scale,
+        left: (rect.left + window.scrollX) / scale,
+        width: rect.width,
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!open || !usePortal) return;
+    updateCoords();
+    window.addEventListener('scroll', updateCoords, true);
+    window.addEventListener('resize', updateCoords);
+    return () => {
+      window.removeEventListener('scroll', updateCoords, true);
+      window.removeEventListener('resize', updateCoords);
+    };
+  }, [open, usePortal, updateCoords]);
 
   const labelFor = (item: string) => {
     if (item === '') return allLabel;
@@ -162,6 +190,82 @@ export default function SearchableDropdown({
     }
   };
 
+  const toggleOpen = () => {
+    if (!open) {
+      updateCoords();
+    }
+    setOpen(v => !v);
+  };
+
+  const panelContent = (
+    <div
+      ref={panelRef}
+      id={`dropdown-panel-${id}`}
+      role="listbox"
+      aria-label={label}
+      style={usePortal ? {
+        position: 'absolute',
+        top: `${coords.top + 4}px`,
+        left: `${coords.left}px`,
+        width: `${coords.width}px`,
+        zIndex: 9999
+      } : undefined}
+      className={`${usePortal ? '' : `absolute left-0 top-full mt-2 ${panelWidth || 'w-full'}`} bg-white border border-gray-100 rounded-xl shadow-xl shadow-emerald-900/10 py-3 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col max-h-[300px]`}
+    >
+      {/* Search */}
+      <div className="px-3 pb-3 shrink-0 border-b border-gray-50 mb-1">
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+            <Search size={14} className="text-gray-400" />
+          </div>
+          <input
+            ref={searchRef}
+            type="text"
+            placeholder={searchPlaceholder}
+            value={query}
+            onChange={e => {
+              const q = e.target.value;
+              setQuery(q);
+              setFocusedIndex(-1);
+              onSearchQueryChange?.(q);
+            }}
+            onKeyDown={handleKeyDown}
+            className={`w-full pl-10 pr-4 ${compact ? 'py-2 text-[11px]' : 'py-2.5 text-[13px]'} bg-gray-50 border border-transparent focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 rounded-lg transition-all placeholder:text-gray-400 font-medium`}
+          />
+        </div>
+      </div>
+
+      {/* Items */}
+      <div ref={listRef} className="flex-1 overflow-y-auto px-2 scrollbar-thin">
+        {filtered.length === 0 ? (
+          <p className={`text-center text-gray-400 py-4 font-medium ${compact ? 'text-[11px]' : 'text-[12px]'}`}>Tidak ditemukan</p>
+        ) : (
+          filtered.map((item, idx) => (
+            <button
+              key={item === '' ? '__all__' : `${item}-${idx}`}
+              type="button"
+              role="option"
+              aria-selected={value === item}
+              data-item
+              onClick={() => select(item)}
+              className={`
+                w-full text-left px-4 ${compact ? 'py-2.5 text-[11px]' : 'py-3 text-[12px]'} font-bold rounded-lg transition-all mb-0.5
+                ${value === item
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : idx === focusedIndex
+                  ? 'bg-gray-100 text-gray-900'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
+              `}
+              title={labelFor(item)}
+            >
+              {labelFor(item)}
+            </button>
+          ))
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div
       ref={containerRef}
@@ -177,7 +281,7 @@ export default function SearchableDropdown({
       {/* Trigger */}
       <button
         type="button"
-        onClick={() => setOpen(v => !v)}
+        onClick={toggleOpen}
         onKeyDown={handleKeyDown}
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -205,65 +309,13 @@ export default function SearchableDropdown({
 
       {/* Panel */}
       {open && (
-        <div
-          ref={panelRef}
-          id={`dropdown-panel-${id}`}
-          role="listbox"
-          aria-label={label}
-          className={`absolute left-0 top-full mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-md shadow-emerald-900/10 py-3 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col max-h-[350px]`}
-        >
-          {/* Search */}
-          <div className="px-3 pb-3 shrink-0 border-b border-gray-50 mb-1">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                <Search size={14} className="text-gray-400" />
-              </div>
-              <input
-                ref={searchRef}
-                type="text"
-                placeholder={searchPlaceholder}
-                value={query}
-                onChange={e => {
-                  const q = e.target.value;
-                  setQuery(q);
-                  setFocusedIndex(-1);
-                  onSearchQueryChange?.(q);
-                }}
-                onKeyDown={handleKeyDown}
-                className={`w-full pl-10 pr-4 ${compact ? 'py-2 text-[11px]' : 'py-2.5 text-[13px]'} bg-gray-50 border border-transparent focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 rounded-lg transition-all placeholder:text-gray-400 font-medium`}
-              />
-            </div>
-          </div>
-
-          {/* Items */}
-          <div ref={listRef} className="flex-1 overflow-y-auto px-2 scrollbar-thin">
-            {filtered.length === 0 ? (
-              <p className={`text-center text-gray-400 py-4 font-medium ${compact ? 'text-[11px]' : 'text-[12px]'}`}>Tidak ditemukan</p>
-            ) : (
-              filtered.map((item, idx) => (
-                <button
-                  key={item === '' ? '__all__' : `${item}-${idx}`}
-                  type="button"
-                  role="option"
-                  aria-selected={value === item}
-                  data-item
-                  onClick={() => select(item)}
-                  className={`
-                    w-full text-left px-4 ${compact ? 'py-2.5 text-[11px]' : 'py-3 text-[12px]'} font-bold rounded-lg transition-all mb-0.5
-                    ${value === item
-                      ? 'bg-emerald-50 text-emerald-700'
-                      : idx === focusedIndex
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
-                  `}
-                  title={labelFor(item)}
-                >
-                  {labelFor(item)}
-                </button>
-              ))
-            )}
-          </div>
-        </div>
+        usePortal ? (
+          <Portal>
+            {panelContent}
+          </Portal>
+        ) : (
+          panelContent
+        )
       )}
     </div>
   );

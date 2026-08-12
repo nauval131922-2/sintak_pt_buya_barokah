@@ -20,6 +20,15 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  Plus,
+  Edit2,
+  Trash2,
+  X,
+  Save,
+  ArrowLeft,
+  ClipboardList,
+  PlusSquare,
+  RotateCcw,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -35,9 +44,23 @@ import {
 } from "recharts";
 import TableFooter from "@/components/TableFooter";
 import Portal, { getZoomScale } from "@/components/Portal";
+import SearchableDropdown from "@/components/SearchableDropdown";
+import DatePicker from "@/components/DatePicker";
 import { SPREADSHEET_ID, type SpreadsheetTask } from "@/lib/google-sheets";
 
 const REFRESH_INTERVAL = 2 * 60; // 2 menit cooldown
+
+const BAGIAN_LIST = ['SETTING', 'QUALITY CONTROL', 'CETAK', 'FINISHING', 'GUDANG', 'TEKNISI', 'MESIN'];
+
+const BAGIAN_CATEGORY_MAP: Record<string, string> = {
+  'SETTING':          'Setting',
+  'QUALITY CONTROL':  'Quality Control',
+  'CETAK':            'Cetak',
+  'FINISHING':        'Finishing',
+  'GUDANG':           'Gudang',
+  'TEKNISI':          'Teknisi',
+  'MESIN':            'Mesin',
+};
 
 export interface FilterOption {
   value: string;
@@ -368,6 +391,91 @@ export default function LaporanPekerjaanClient() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [loadTime, setLoadTime] = useState<number | null>(null);
 
+  // Tab & Form state
+  const [activeTab, setActiveTab] = useState<"list" | "form">("list");
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
+  const [editingTask, setEditingTask] = useState<any>(null);
+  const [formData, setFormData] = useState({
+    task: "",
+    bagian: "",
+    orderProduksi: "",
+    jenisPekerjaan: "",
+    pic: "",
+    priority: "Low",
+    startDate: new Date() as Date | null,
+    endDate: null as Date | null,
+    workDays: "1",
+    note: "",
+    status: "",
+  });
+
+  const FORM_DRAFT_KEY = "laporan_pekerjaan_form_draft";
+
+  // Reset form to blank state & clear saved draft
+  const resetFormData = useCallback(() => {
+    setFormData({
+      task: "",
+      bagian: "",
+      orderProduksi: "",
+      jenisPekerjaan: "",
+      pic: "",
+      priority: "Low",
+      startDate: new Date(),
+      endDate: null,
+      workDays: "1",
+      note: "",
+      status: "",
+    });
+    setModalMode("create");
+    setEditingTask(null);
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem(FORM_DRAFT_KEY);
+    }
+  }, []);
+
+  // Restore form draft on mount / refresh
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const saved = sessionStorage.getItem(FORM_DRAFT_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.formData) {
+          if (parsed.formData.startDate) parsed.formData.startDate = new Date(parsed.formData.startDate);
+          if (parsed.formData.endDate) parsed.formData.endDate = new Date(parsed.formData.endDate);
+          setFormData(parsed.formData);
+        }
+        if (parsed.modalMode) setModalMode(parsed.modalMode);
+        if (parsed.editingTask) setEditingTask(parsed.editingTask);
+      }
+    } catch (e) {}
+  }, []);
+
+  // Auto-save form draft to sessionStorage when typed
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      sessionStorage.setItem(
+        FORM_DRAFT_KEY,
+        JSON.stringify({
+          formData,
+          modalMode,
+          editingTask,
+        })
+      );
+    } catch (e) {}
+  }, [formData, modalMode, editingTask]);
+
+  // Dropdown options state
+  const [sopdOptions, setSopdOptions] = useState<any[]>([]);
+  const [employeeOptions, setEmployeeOptions] = useState<any[]>([]);
+  const [pekerjaanOptions, setPekerjaanOptions] = useState<any[]>([]);
+
+  // Conflict state
+  const [conflicts, setConflicts] = useState<any[]>([]);
+  const [showConflictModal, setShowConflictModal] = useState(false);
+  const [currentConflict, setCurrentConflict] = useState<any>(null);
+
   // Filters & Analytics state
   const [selectedPic, setSelectedPic] = useState<string>("ALL");
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
@@ -530,9 +638,7 @@ export default function LaporanPekerjaanClient() {
     setLoading(true);
     setError(null);
     try {
-      const url = force
-        ? "/api/spreadsheet?gid=DATABASE_REPORT&refresh=true"
-        : "/api/spreadsheet?gid=DATABASE_REPORT";
+      const url = force ? "/api/laporan-pekerjaan?sync=true" : "/api/laporan-pekerjaan";
       const res = await fetch(url);
       const json = await res.json();
       if (json.success) {
@@ -540,8 +646,15 @@ export default function LaporanPekerjaanClient() {
         setCountdown(REFRESH_INTERVAL);
         setLastUpdated(new Date());
         setLoadTime(Math.round(performance.now() - startTime));
+        
+        // Handle conflicts
+        if (json.conflicts && json.conflicts.length > 0) {
+          setConflicts(json.conflicts);
+          setCurrentConflict(json.conflicts[0]);
+          setShowConflictModal(true);
+        }
       } else {
-        setError(json.error || "Gagal mengambil data dari Google Spreadsheet");
+        setError(json.error || "Gagal mengambil data laporan pekerjaan");
       }
     } catch (err: any) {
       setError(err.message || "Terjadi kesalahan koneksi");
@@ -556,6 +669,229 @@ export default function LaporanPekerjaanClient() {
     const interval = setInterval(fetchData, REFRESH_INTERVAL * 1000);
     return () => clearInterval(interval);
   }, [fetchData]);
+
+  // CRUD Handlers
+  const openCreateModal = async () => {
+    resetFormData();
+    setModalMode("create");
+    setEditingTask(null);
+    
+    // Fetch dropdown options
+    await Promise.all([
+      fetchSopdOptions(),
+      fetchEmployeeOptions(),
+    ]);
+    
+    setActiveTab("form");
+  };
+
+  const openEditModal = async (task: any) => {
+    sessionStorage.removeItem(FORM_DRAFT_KEY);
+    setModalMode("edit");
+    setEditingTask(task);
+    
+    // Parse dates jika ada
+    let startDateObj = null;
+    let endDateObj = null;
+    if (task.startDate) {
+      const parts = task.startDate.split('/');
+      if (parts.length === 3) {
+        startDateObj = new Date(parts[2], parseInt(parts[1]) - 1, parseInt(parts[0]));
+      }
+    }
+    if (task.endDate) {
+      const parts = task.endDate.split('/');
+      if (parts.length === 3) {
+        endDateObj = new Date(parts[2], parseInt(parts[1]) - 1, parseInt(parts[0]));
+      }
+    }
+
+    const selectedBagian = (task as any).bagian || task.division || "";
+    
+    // Deteksi jenisPekerjaan jika nama task diawali dengan nama pekerjaan di master
+    let detectedJenisPekerjaan = "";
+    if (task.task && task.project && task.task.includes(task.project)) {
+      detectedJenisPekerjaan = task.task.replace(task.project, "").trim();
+    }
+    
+    setFormData({
+      task: task.task || "",
+      bagian: selectedBagian,
+      orderProduksi: task.project || "",
+      jenisPekerjaan: detectedJenisPekerjaan,
+      pic: task.pic || "",
+      priority: task.priority || "Low",
+      startDate: startDateObj,
+      endDate: endDateObj,
+      workDays: task.workDays || "",
+      note: task.note || "",
+      status: task.status || "",
+    });
+    
+    // Fetch dropdown options
+    await Promise.all([
+      fetchSopdOptions(),
+      fetchEmployeeOptions(),
+    ]);
+    
+    // Fetch pekerjaan jika bagian sudah dipilih
+    if (selectedBagian) {
+      await fetchPekerjaanOptions(selectedBagian);
+    }
+    
+    setActiveTab("form");
+  };
+
+  const fetchSopdOptions = async () => {
+    try {
+      const res = await fetch('/api/sopd/options?all=true');
+      if (res.ok) {
+        const json = await res.json();
+        setSopdOptions(json.data || []);
+      }
+    } catch (err) {
+      console.error('Gagal fetch SOPd:', err);
+    }
+  };
+
+  const fetchEmployeeOptions = async () => {
+    try {
+      const res = await fetch('/api/employees?all=true');
+      const json = await res.json();
+      if (json.success) {
+        setEmployeeOptions(json.data || []);
+      }
+    } catch (err) {
+      console.error('Gagal fetch employees:', err);
+    }
+  };
+
+  const fetchPekerjaanOptions = async (bagian: string) => {
+    if (!bagian) {
+      setPekerjaanOptions([]);
+      return;
+    }
+    
+    const category = BAGIAN_CATEGORY_MAP[bagian];
+    if (!category) {
+      setPekerjaanOptions([]);
+      return;
+    }
+    
+    try {
+      const res = await fetch(`/api/master-pekerjaan-jurnal-produksi?category=${encodeURIComponent(category)}&all=true`);
+      const json = await res.json();
+      if (json.success) {
+        setPekerjaanOptions(json.data || []);
+      }
+    } catch (err) {
+      console.error('Gagal fetch pekerjaan:', err);
+    }
+  };
+
+  const closeModal = () => {
+    setActiveTab("list");
+    setEditingTask(null);
+    setSopdOptions([]);
+    setEmployeeOptions([]);
+    setPekerjaanOptions([]);
+  };
+
+  const calcWorkDays = useCallback((start?: Date | null, end?: Date | null): string => {
+    if (!start || !end) return "";
+    const s = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    const e = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+    const diffTime = e.getTime() - s.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    return diffDays > 0 ? String(diffDays) : "";
+  }, []);
+
+  // Auto trigger workDays recalculation whenever startDate or endDate changes
+  useEffect(() => {
+    if (formData.startDate && formData.endDate) {
+      const calculated = calcWorkDays(formData.startDate, formData.endDate);
+      if (calculated !== formData.workDays) {
+        setFormData((prev) => ({ ...prev, workDays: calculated }));
+      }
+    }
+  }, [formData.startDate, formData.endDate, calcWorkDays]);
+
+  const handleSave = async () => {
+    if (!confirm(modalMode === "create" ? "Yakin ingin menyimpan data pekerjaan baru ini?" : "Yakin ingin menyimpan perubahan data pekerjaan ini?")) {
+      return;
+    }
+
+    const generatedTask = formData.jenisPekerjaan
+      ? (formData.orderProduksi ? `${formData.jenisPekerjaan} ${formData.orderProduksi}` : formData.jenisPekerjaan)
+      : (formData.task || (formData.orderProduksi ? `Pekerjaan ${formData.orderProduksi}` : "Pekerjaan Baru"));
+
+    if (!generatedTask.trim()) {
+      alert("Pilih Jenis Pekerjaan atau Order Produksi terlebih dahulu");
+      return;
+    }
+
+    try {
+      const url = modalMode === "create" ? "/api/laporan-pekerjaan" : "/api/laporan-pekerjaan";
+      const method = modalMode === "create" ? "POST" : "PUT";
+      
+      // Format dates to dd/mm/yyyy
+      const startDateStr = formData.startDate 
+        ? `${String(formData.startDate.getDate()).padStart(2, '0')}/${String(formData.startDate.getMonth() + 1).padStart(2, '0')}/${formData.startDate.getFullYear()}`
+        : "";
+      const endDateStr = formData.endDate 
+        ? `${String(formData.endDate.getDate()).padStart(2, '0')}/${String(formData.endDate.getMonth() + 1).padStart(2, '0')}/${formData.endDate.getFullYear()}`
+        : "";
+      
+      const payload = {
+        task: generatedTask,
+        project: formData.orderProduksi,
+        division: modalMode === "edit" ? (editingTask?.division || formData.bagian) : formData.bagian,
+        bagian: formData.bagian,
+        pic: formData.pic,
+        priority: formData.priority,
+        startDate: startDateStr,
+        endDate: endDateStr,
+        workDays: formData.workDays,
+        note: formData.note,
+        status: formData.status,
+      };
+      
+      const body = modalMode === "edit" ? { ...payload, id: editingTask.id } : payload;
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        await fetchData();
+        resetFormData();
+        closeModal();
+      } else {
+        alert(json.error || "Gagal menyimpan data");
+      }
+    } catch (err: any) {
+      alert(err.message || "Terjadi kesalahan");
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Yakin ingin menghapus data pekerjaan ini?")) return;
+
+    try {
+      const res = await fetch(`/api/laporan-pekerjaan?id=${id}`, { method: "DELETE" });
+      const json = await res.json();
+      if (json.success) {
+        await fetchData();
+      } else {
+        alert(json.error || "Gagal menghapus data");
+      }
+    } catch (err: any) {
+      alert(err.message || "Terjadi kesalahan");
+    }
+  };
 
   // Countdown timer tick per 1 detik
   useEffect(() => {
@@ -596,6 +932,31 @@ export default function LaporanPekerjaanClient() {
     });
     return `${dateStr}, ${timeStr} WIB`;
   }, [lastUpdated]);
+
+  // Cache Order Produksi dropdown items to prevent re-computation on render
+  const orderProduksiItems = useMemo(() => {
+    return Array.from(new Set([
+      ...sopdOptions.map(s => String(s.nama_order || s.nama_prd || '').trim()).filter(Boolean),
+      ...sopdOptions.map(s => String(s.no_sopd || s.faktur || s.no_order || '').trim()).filter(Boolean),
+      ...tasks.map(t => String(t.project || '').trim()).filter(Boolean)
+    ]));
+  }, [sopdOptions, tasks]);
+
+  const orderProduksiItemLabels = useMemo(() => {
+    return sopdOptions.reduce((acc, s) => {
+      const code = String(s.no_sopd || s.faktur || s.no_order || '').trim();
+      const name = String(s.nama_order || s.nama_prd || '').trim();
+      if (code && name) {
+        acc[code] = `${code} — ${name}`;
+        acc[name] = `${name} (${code})`;
+      } else if (code) {
+        acc[code] = code;
+      } else if (name) {
+        acc[name] = name;
+      }
+      return acc;
+    }, {} as Record<string, string>);
+  }, [sopdOptions]);
 
   // Options PIC untuk SquareDropdown
   const picOptions = useMemo<FilterOption[]>(() => {
@@ -656,16 +1017,16 @@ export default function LaporanPekerjaanClient() {
       const rawB = b[sortField] || "";
 
       if (sortField === "startDate" || sortField === "endDate") {
-        const timeA = parseDateToSort(rawA);
-        const timeB = parseDateToSort(rawB);
+        const timeA = parseDateToSort(String(rawA));
+        const timeB = parseDateToSort(String(rawB));
         if (timeA !== timeB) {
           return sortOrder === "asc" ? timeA - timeB : timeB - timeA;
         }
       }
 
       if (sortField === "workDays") {
-        const numA = parseFloat(rawA) || 0;
-        const numB = parseFloat(rawB) || 0;
+        const numA = parseFloat(String(rawA)) || 0;
+        const numB = parseFloat(String(rawB)) || 0;
         return sortOrder === "asc" ? numA - numB : numB - numA;
       }
 
@@ -791,9 +1152,11 @@ export default function LaporanPekerjaanClient() {
   // Resizable columns state with localStorage persistence
   const DEFAULT_COL_WIDTHS = useMemo(
     () => ({
+      aksi: 120,
       task: 240,
       project: 180,
       division: 120,
+      bagian: 120,
       pic: 110,
       priority: 95,
       startDate: 110,
@@ -965,58 +1328,98 @@ export default function LaporanPekerjaanClient() {
           : "space-y-3 pb-28 md:space-y-0 md:flex-1 md:min-h-0 md:flex md:flex-col md:gap-3 md:overflow-hidden md:pb-0"
       }`}
     >
-      {/* Header Info & Action (Collapsible di HP, default collapse) */}
-      <div className="shrink-0 bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
-        {/* Header Trigger khusus HP */}
+      {/* TABS Navigation (Gaya JHP) */}
+      <div className="flex gap-2 sm:gap-6 border-b border-gray-100 shrink-0 px-2 mt-1">
         <button
           type="button"
-          onClick={toggleHeaderMobile}
-          className="w-full p-3 flex md:hidden items-center justify-between bg-slate-50/60 hover:bg-slate-100/80 transition-colors text-left focus:outline-none gap-2"
+          onClick={() => setActiveTab("list")}
+          className={`flex items-center justify-center gap-1.5 pb-3 px-2 text-[13px] font-bold border-b-2 transition-all flex-1 sm:flex-initial cursor-pointer ${
+            activeTab === "list"
+              ? "border-emerald-600 text-emerald-700"
+              : "border-transparent text-gray-500 hover:text-gray-700"
+          }`}
         >
-          <div className="flex items-center space-x-2.5 min-w-0 flex-1 overflow-hidden">
-            <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 shrink-0">
-              <FileSpreadsheet className="w-4 h-4" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h2 className="text-xs font-bold text-slate-800 truncate">
-                Laporan Pekerjaan Setting Buya 2026
-              </h2>
-              {!isHeaderOpenMobile && (
-                <p className="text-[10px] text-slate-500 truncate">
-                  {formattedLastUpdated
-                    ? `Update: ${formattedLastUpdated}`
-                    : "Data Google Spreadsheet"}
-                </p>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center space-x-1 shrink-0 text-slate-400">
-            <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 ${
-                isHeaderOpenMobile ? "rotate-180" : ""
-              }`}
-            />
-          </div>
+          <ClipboardList size={14} />
+          Daftar Pekerjaan
         </button>
-
-        {/* Detail Header (Selalu tampil di Desktop md:, collapse di Mobile HP) */}
-        <div
-          className={`${
-            isHeaderOpenMobile ? "flex" : "hidden md:flex"
-          } p-3.5 flex-col md:flex-row md:items-center justify-between gap-3.5 border-t md:border-t-0 border-slate-100`}
+        <button
+          type="button"
+          onClick={() => {
+            if (activeTab !== "form") openCreateModal();
+          }}
+          className={`flex items-center justify-center gap-1.5 pb-3 px-2 text-[13px] font-bold border-b-2 transition-all flex-1 sm:flex-initial cursor-pointer ${
+            activeTab === "form"
+              ? "border-emerald-600 text-emerald-700"
+              : "border-transparent text-gray-500 hover:text-gray-700"
+          }`}
         >
-          <div className="flex items-start sm:items-center space-x-3">
-            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 shrink-0 mt-0.5 sm:mt-0 hidden md:block">
-              <FileSpreadsheet className="w-5 h-5" />
+          {modalMode === "edit" && activeTab === "form" ? (
+            <>
+              <Edit2 size={14} />
+              Edit Pekerjaan
+            </>
+          ) : (
+            <>
+              <PlusSquare size={14} />
+              Tambah Pekerjaan
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Header Info & Action (Hanya tampil di Tab List) */}
+      {activeTab === "list" && (
+        <div className="shrink-0 bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
+          {/* Header Trigger khusus HP */}
+          <button
+            type="button"
+            onClick={toggleHeaderMobile}
+            className="w-full p-3 flex md:hidden items-center justify-between bg-slate-50/60 hover:bg-slate-100/80 transition-colors text-left focus:outline-none gap-2"
+          >
+            <div className="flex items-center space-x-2.5 min-w-0 flex-1 overflow-hidden">
+              <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 shrink-0">
+                <FileSpreadsheet className="w-4 h-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-xs font-bold text-slate-800 truncate">
+                  Laporan Pekerjaan
+                </h2>
+                {!isHeaderOpenMobile && (
+                  <p className="text-[10px] text-slate-500 truncate">
+                    {formattedLastUpdated
+                      ? `Update: ${formattedLastUpdated}`
+                      : "Data Google Spreadsheet"}
+                  </p>
+                )}
+              </div>
             </div>
-            <div className="min-w-0 flex-1">
-              {/* Judul tampil di Desktop, di HP disembunyikan karena sudah ada di header trigger */}
-              <h2 className="hidden md:block text-xs sm:text-sm font-bold text-slate-800 truncate">
-                Laporan Pekerjaan Setting Buya 2026
-              </h2>
+            <div className="flex items-center space-x-1 shrink-0 text-slate-400">
+              <ChevronDown
+                className={`w-4 h-4 transition-transform duration-200 ${
+                  isHeaderOpenMobile ? "rotate-180" : ""
+                }`}
+              />
+            </div>
+          </button>
+
+          {/* Detail Header (Selalu tampil di Desktop md:, collapse di Mobile HP) */}
+          <div
+            className={`${
+              isHeaderOpenMobile ? "flex" : "hidden md:flex"
+            } p-3.5 flex-col md:flex-row md:items-center justify-between gap-3.5 border-t md:border-t-0 border-slate-100`}
+          >
+            <div className="flex items-start sm:items-center space-x-3">
+              <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 shrink-0 mt-0.5 sm:mt-0 hidden md:block">
+                <FileSpreadsheet className="w-5 h-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                {/* Judul tampil di Desktop, di HP disembunyikan karena sudah ada di header trigger */}
+                <h2 className="hidden md:block text-xs sm:text-sm font-bold text-slate-800 truncate">
+                  Laporan Pekerjaan
+                </h2>
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-0.5">
                 <p className="text-[11px] text-slate-500">
-                  Data terhubung langsung dari Google Spreadsheet
+                  Hybrid: Data Manual (SINTAK) + Live Spreadsheet
                 </p>
                 {formattedLastUpdated && (
                   <div className="flex items-center gap-1.5">
@@ -1062,14 +1465,18 @@ export default function LaporanPekerjaanClient() {
                 <RefreshCw
                   className={`w-3.5 h-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`}
                 />
-                {loading ? "Memuat..." : "Refresh Live"}
+                {loading ? "Syncing..." : "Sync Spreadsheet"}
               </button>
             </div>
           </div>
         </div>
       </div>
+      )}
 
-      {/* Accordion: Statistik & Grafik Analisis */}
+      {/* TAB 1: LIST DATA PEKERJAAN */}
+      {activeTab === "list" && (
+        <>
+          {/* Accordion: Statistik & Grafik Analisis */}
       <div className="shrink-0 bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden transition-all">
         <button
           type="button"
@@ -1452,15 +1859,30 @@ export default function LaporanPekerjaanClient() {
 
       {/* Filter & Search Bar */}
       <div className="shrink-0 bg-white p-3 rounded-xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-center gap-3">
-        <div className="relative flex-1 w-full">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Cari kata kunci task atau nomor OP (misal: OP.007)..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
-          />
+        <div className="flex items-center gap-2 flex-1 w-full">
+          {/* Tombol Reload Data di Samping Kiri Search Bar */}
+          <button
+            type="button"
+            onClick={() => fetchData(true)}
+            disabled={loading}
+            className="h-8 px-3 text-xs font-bold text-slate-600 hover:text-emerald-700 bg-slate-50 hover:bg-emerald-50 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
+            title="Reload Data (Sync Google Spreadsheet & Database)"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-emerald-600" : ""}`} />
+            <span className="hidden sm:inline">Reload</span>
+          </button>
+
+          {/* Input Search */}
+          <div className="relative flex-1 w-full">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Cari kata kunci task atau nomor OP (misal: OP.007)..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
+            />
+          </div>
         </div>
 
         <div className="flex items-center space-x-2.5 w-full md:w-auto">
@@ -1484,6 +1906,15 @@ export default function LaporanPekerjaanClient() {
             widthClass="w-48"
             alignRight
           />
+
+          <button
+            type="button"
+            onClick={openCreateModal}
+            className="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all shadow-sm whitespace-nowrap cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5 mr-1.5" />
+            Tambah Data
+          </button>
         </div>
       </div>
 
@@ -1620,9 +2051,11 @@ export default function LaporanPekerjaanClient() {
           }`}
           style={
             {
+              "--col-aksi": `${colWidths.aksi || 120}px`,
               "--col-task": `${colWidths.task}px`,
               "--col-project": `${colWidths.project}px`,
               "--col-division": `${colWidths.division}px`,
+              "--col-bagian": `${colWidths.bagian}px`,
               "--col-pic": `${colWidths.pic}px`,
               "--col-priority": `${colWidths.priority}px`,
               "--col-startDate": `${colWidths.startDate}px`,
@@ -1636,9 +2069,25 @@ export default function LaporanPekerjaanClient() {
           <table className="w-full text-left text-xs border-collapse table-fixed">
             <thead className="sticky top-0 z-10 bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 shadow-sm">
               <tr>
+                <th
+                  style={{
+                    width: `var(--col-aksi, ${colWidths.aksi || 120}px)`,
+                    minWidth: `var(--col-aksi, ${colWidths.aksi || 120}px)`,
+                  }}
+                  className="relative px-3 py-2.5 text-center bg-slate-50 sticky top-0 z-10 border-b border-slate-200 select-none group"
+                >
+                  <span className="truncate">Aksi</span>
+                  <div
+                    onMouseDown={(resizeEvt) => handleResizeStart("aksi", resizeEvt)}
+                    onClick={(resizeEvt) => resizeEvt.stopPropagation()}
+                    className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-emerald-500/50 active:bg-emerald-600 z-20 group-hover:bg-slate-300/80 transition-colors"
+                    title="Geser untuk mengatur lebar kolom"
+                  />
+                </th>
                 {renderSortableHeader("task", "Task / Aktivitas")}
                 {renderSortableHeader("project", "Project Order")}
                 {renderSortableHeader("division", "Divisi")}
+                {renderSortableHeader("bagian", "Bagian")}
                 {renderSortableHeader("pic", "PIC")}
                 {renderSortableHeader("priority", "Priority")}
                 {renderSortableHeader("startDate", "Start Date")}
@@ -1652,17 +2101,17 @@ export default function LaporanPekerjaanClient() {
               {loading ? (
                 <tr>
                   <td
-                    colSpan={10}
+                    colSpan={12}
                     className="px-4 py-16 text-center text-slate-400"
                   >
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-600" />
-                    Menghubungkan & memuat data Google Spreadsheet...
+                    Memuat data laporan pekerjaan...
                   </td>
                 </tr>
               ) : paginatedTasks.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={10}
+                    colSpan={12}
                     className="px-4 py-16 text-center text-slate-400"
                   >
                     Tidak ada data pekerjaan yang ditemukan.
@@ -1679,10 +2128,46 @@ export default function LaporanPekerjaanClient() {
                       }
                       className={`cursor-pointer transition-all ${
                         isSelected
-                          ? "bg-emerald-100/70 border-l-4 border-l-emerald-600 font-semibold"
+                          ? "bg-emerald-100/70 shadow-[inset_4px_0_0_0_#059669] font-semibold"
                           : "hover:bg-emerald-50/50"
                       }`}
                     >
+                      <td
+                        style={{
+                          width: "var(--col-aksi)",
+                          maxWidth: "var(--col-aksi)",
+                        }}
+                        className="px-2 py-2.5 text-center truncate"
+                      >
+                        <div className="flex items-center justify-center gap-1.5 shrink-0">
+                          {(t as any).source === 'spreadsheet' && (
+                            <span className="px-1.5 py-0.5 text-[9px] font-bold bg-blue-100 text-blue-700 rounded border border-blue-200 shrink-0">
+                              Sheet
+                            </span>
+                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEditModal(t);
+                            }}
+                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors shrink-0"
+                            title={(t as any).source === 'spreadsheet' ? 'Edit (akan jadi data manual)' : 'Edit'}
+                          >
+                            <Edit2 size={14} />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (t.id) handleDelete(t.id);
+                            }}
+                            className="p-1.5 text-rose-600 hover:bg-rose-50 rounded transition-colors shrink-0 disabled:opacity-40"
+                            title="Hapus"
+                            disabled={(t as any).source === 'spreadsheet'}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
                       <td
                         title={t.task}
                         style={{
@@ -1714,6 +2199,16 @@ export default function LaporanPekerjaanClient() {
                       className="px-3 py-2.5 text-slate-600 truncate"
                     >
                       {t.division}
+                    </td>
+                    <td
+                      title={(t as any).bagian || "-"}
+                      style={{
+                        width: "var(--col-bagian)",
+                        maxWidth: "var(--col-bagian)",
+                      }}
+                      className="px-3 py-2.5 text-slate-600 truncate"
+                    >
+                      {(t as any).bagian || "-"}
                     </td>
                     <td
                       title={t.pic}
@@ -1792,25 +2287,25 @@ export default function LaporanPekerjaanClient() {
             </tbody>
           </table>
         </div>
-
-        {/* Footer Sintak Standard TableFooter (Sticky & Pinned at bottom) */}
-        <div className="shrink-0 bg-white border-t border-slate-100 z-10 pb-3 md:pb-2">
-          <TableFooter
-            totalCount={filteredTasks.length}
-            currentCount={paginatedTasks.length}
-            label="Task"
-            loadTime={loadTime}
-            page={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        </div>
       </div>
+
+      {/* Footer Sintak Standard TableFooter (OUTSIDE Table Card, like /jurnal-harian-produksi/data/excel-sopd) */}
+      <TableFooter
+        totalCount={filteredTasks.length}
+        currentCount={paginatedTasks.length}
+        label="Pekerjaan"
+        selectedCount={selectedRowIndex !== null ? 1 : 0}
+        onClearSelection={() => setSelectedRowIndex(null)}
+        loadTime={loadTime}
+        page={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
 
       {/* Floating Scroll Navigation (Ke Atas & Ke Bawah) */}
       {(showTopBtn || showBottomBtn) && (
         <Portal>
-          <div className="fixed bottom-6 right-4 sm:right-6 z-[200] transition-all duration-300 pointer-events-auto">
+          <div className="fixed bottom-6 right-4 sm:right-6 z-[80] transition-all duration-300 pointer-events-auto">
             <div className="bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-xl rounded-full p-1 flex flex-col gap-1.5 ring-1 ring-black/5">
               {showTopBtn && (
                 <button
@@ -1834,6 +2329,414 @@ export default function LaporanPekerjaanClient() {
                   <ChevronDown className="w-5 h-5 stroke-[2.5]" />
                 </button>
               )}
+            </div>
+          </div>
+        </Portal>
+      )}
+      </>
+      )}
+
+      {/* TAB 2: FORM TAMBAH / EDIT PEKERJAAN (STYLE JHP FORM) */}
+      <div className={`flex-1 min-h-0 ${activeTab === "form" ? "flex flex-col" : "hidden"}`}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSave();
+          }}
+          className="bg-white border border-gray-100 rounded-2xl shadow-sm animate-in slide-in-from-top-4 fade-in duration-300 flex-1 min-h-0 flex flex-col overflow-hidden"
+        >
+          {/* BODY SCROLLABLE: Isian Form JHP Style */}
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 pb-48 custom-scrollbar space-y-6">
+            
+            {/* Section 1: Information Order & Pekerjaan */}
+            <div>
+              {/* Row 1: Bagian, Order Produksi, Jenis Pekerjaan */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[12px] font-bold text-gray-600">
+                    Bagian <span className="text-rose-400">*</span>
+                  </label>
+                  <SearchableDropdown
+                    id="modal-bagian"
+                    value={formData.bagian}
+                    items={BAGIAN_LIST}
+                    onChange={(val) => {
+                      setFormData({ ...formData, bagian: val, jenisPekerjaan: "" });
+                      if (val) fetchPekerjaanOptions(val);
+                      else setPekerjaanOptions([]);
+                    }}
+                    placeholder="-- Pilih Bagian --"
+                    allLabel="-- Pilih Bagian --"
+                    triggerWidth="w-full"
+                    panelWidth="w-full"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[12px] font-bold text-gray-600">
+                    Order Produksi
+                  </label>
+                  <SearchableDropdown
+                    id="modal-order"
+                    value={formData.orderProduksi}
+                    items={orderProduksiItems}
+                    itemLabels={orderProduksiItemLabels}
+                    onChange={(val) => setFormData({ ...formData, orderProduksi: val })}
+                    placeholder="-- Pilih Order --"
+                    allLabel="-- Pilih Order --"
+                    searchPlaceholder="Cari nomor order atau nama order (misal: OP.001)..."
+                    triggerWidth="w-full"
+                    panelWidth="w-full"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[12px] font-bold text-gray-600">
+                    Jenis Pekerjaan <span className="text-rose-400">*</span>
+                  </label>
+                  <SearchableDropdown
+                    id="modal-pekerjaan"
+                    value={formData.jenisPekerjaan}
+                    items={pekerjaanOptions.filter(p => p.name).map(p => p.name)}
+                    onChange={(val) => setFormData({ ...formData, jenisPekerjaan: val })}
+                    placeholder={formData.bagian ? "-- Pilih Jenis Pekerjaan --" : "-- Pilih Bagian dulu --"}
+                    allLabel={formData.bagian ? "-- Pilih Jenis Pekerjaan --" : "-- Pilih Bagian dulu --"}
+                    triggerWidth="w-full"
+                    panelWidth="w-full"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Header / Section Title 2: Penugasan & Waktu */}
+            <div>
+              <div className="flex items-center gap-2.5 mb-5">
+                <span className="text-[13px] font-bold text-gray-700">Penugasan &amp; Jadwal</span>
+                <div className="flex-1 h-px bg-gray-100"></div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="space-y-1.5">
+                  <label className="text-[12px] font-bold text-gray-600">
+                    PIC (Karyawan)
+                  </label>
+                  <SearchableDropdown
+                    id="modal-pic"
+                    value={formData.pic}
+                    items={employeeOptions.filter(e => e.name).map(e => e.name)}
+                    itemLabels={employeeOptions.reduce((acc, e) => {
+                      if (e.name) {
+                        acc[e.name] = e.position ? `${e.name} — ${e.position}` : e.name;
+                      }
+                      return acc;
+                    }, {} as Record<string, string>)}
+                    onChange={(val) => setFormData({ ...formData, pic: val })}
+                    placeholder="-- Pilih PIC --"
+                    allLabel="-- Pilih PIC --"
+                    searchPlaceholder="Cari nama karyawan / jabatan..."
+                    triggerWidth="w-full"
+                    panelWidth="w-full"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[12px] font-bold text-gray-600">
+                    Priority
+                  </label>
+                  <SearchableDropdown
+                    id="modal-priority"
+                    value={formData.priority}
+                    items={["Low", "Medium", "High"]}
+                    onChange={(val) => setFormData({ ...formData, priority: val || "Low" })}
+                    placeholder="-- Pilih Priority --"
+                    allLabel="-- Pilih Priority --"
+                    triggerWidth="w-full"
+                    panelWidth="w-full"
+                  />
+                </div>
+              </div>
+
+              {/* Start Date, End Date, Work Days */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[12px] font-bold text-gray-600">
+                    Start Date
+                  </label>
+                  <DatePicker
+                    name="startDate"
+                    value={formData.startDate}
+                    onChange={(date) => {
+                      const wDays = calcWorkDays(date, formData.endDate);
+                      setFormData({ ...formData, startDate: date, workDays: wDays });
+                    }}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[12px] font-bold text-gray-600">
+                    End Date
+                  </label>
+                  <DatePicker
+                    name="endDate"
+                    value={formData.endDate}
+                    onChange={(date) => {
+                      const wDays = calcWorkDays(formData.startDate, date);
+                      setFormData({ ...formData, endDate: date, workDays: wDays });
+                    }}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[12px] font-bold text-gray-600">
+                    Work Days <span className="text-[11px] font-normal text-gray-400">(otomatis)</span>
+                  </label>
+                  <input
+                    type="text"
+                    readOnly
+                    value={formData.workDays ? `${formData.workDays} Hari` : ""}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-[13px] font-medium text-emerald-800 outline-none cursor-not-allowed h-10"
+                    placeholder="Auto hitung"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Header / Section Title 3: Status & Note */}
+            <div>
+              <div className="flex items-center gap-2.5 mb-5">
+                <span className="text-[13px] font-bold text-gray-700">Status &amp; Catatan</span>
+                <div className="flex-1 h-px bg-gray-100"></div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-1.5 md:col-span-1">
+                  <label className="text-[12px] font-bold text-gray-600">
+                    Status Pekerjaan
+                  </label>
+                  <SearchableDropdown
+                    id="modal-status"
+                    value={formData.status}
+                    items={["BELUM DIKERJAKAN", "IN PROGRESS", "PENDING", "CANCEL", "SELESAI"]}
+                    onChange={(val) => setFormData({ ...formData, status: val || "" })}
+                    placeholder="-- Pilih Status --"
+                    allLabel="-- Pilih Status --"
+                    triggerWidth="w-full"
+                    panelWidth="w-full"
+                  />
+                </div>
+
+                <div className="space-y-1.5 md:col-span-2">
+                  <label className="text-[12px] font-bold text-gray-600">
+                    Note / Catatan
+                  </label>
+                  <textarea
+                    value={formData.note}
+                    onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                    rows={3}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-[13px] font-medium focus:bg-white focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none transition-all min-h-[70px] resize-y placeholder:text-gray-300"
+                    placeholder="Catatan tambahan..."
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* FOOTER FIXED: Action buttons (Persis JHP) */}
+          <div className="shrink-0 p-3 sm:p-4 border-t border-gray-100 bg-white/95 backdrop-blur-md z-10 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={resetFormData}
+                className="w-full sm:w-auto px-4 py-2.5 text-[13px] font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-200 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                title="Reset / Kosongkan Isian Form"
+              >
+                <RotateCcw size={15} />
+                Reset Form
+              </button>
+            </div>
+            <div className="flex gap-2 sm:gap-3">
+              <button
+                type="button"
+                onClick={closeModal}
+                className="flex-1 sm:flex-initial px-5 py-2.5 text-[13px] font-bold text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all text-center cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                className="flex-1 sm:flex-initial px-5 py-2.5 text-[13px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Save size={16} />
+                {modalMode === "create" ? "Simpan Data Baru" : "Simpan Perubahan"}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      {/* Conflict Resolution Modal */}
+      {showConflictModal && currentConflict && (
+        <Portal>
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-amber-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+              
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-amber-100 bg-gradient-to-r from-amber-50 to-amber-50 shrink-0 rounded-t-2xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center">
+                    <AlertTriangle size={18} />
+                  </div>
+                  <div>
+                    <h3 className="text-[15px] font-bold text-gray-800 tracking-tight">
+                      ⚠️ Conflict Detected
+                    </h3>
+                    <p className="text-[11px] text-gray-500 font-medium">
+                      Data berubah di Spreadsheet & SINTAK. Pilih versi mana yang mau dipakai.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowConflictModal(false);
+                    setCurrentConflict(null);
+                  }}
+                  className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white/80 transition-all"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="px-6 py-5 flex flex-col gap-4 overflow-y-auto">
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Versi Manual (SINTAK) */}
+                  <div className="border-2 border-emerald-200 rounded-xl p-4 bg-emerald-50/50">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-bold text-emerald-700">Versi SINTAK (Manual)</h4>
+                      <span className="text-xs text-emerald-600 font-semibold">
+                        {currentConflict.manual.updated_at ? new Date(currentConflict.manual.updated_at).toLocaleString('id-ID') : 'N/A'}
+                      </span>
+                    </div>
+                    <div className="space-y-2 text-xs">
+                      <div><span className="font-bold text-gray-600">Task:</span> {currentConflict.manual.task}</div>
+                      <div><span className="font-bold text-gray-600">Project:</span> {currentConflict.manual.project || '-'}</div>
+                      <div><span className="font-bold text-gray-600">Bagian:</span> {currentConflict.manual.division || '-'}</div>
+                      <div><span className="font-bold text-gray-600">PIC:</span> {currentConflict.manual.pic || '-'}</div>
+                      <div><span className="font-bold text-gray-600">Priority:</span> {currentConflict.manual.priority || '-'}</div>
+                      <div><span className="font-bold text-gray-600">Status:</span> {currentConflict.manual.status || '-'}</div>
+                      <div><span className="font-bold text-gray-600">Note:</span> {currentConflict.manual.note || '-'}</div>
+                    </div>
+                  </div>
+
+                  {/* Versi Spreadsheet */}
+                  <div className="border-2 border-blue-200 rounded-xl p-4 bg-blue-50/50">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-bold text-blue-700">Versi Spreadsheet</h4>
+                      <span className="text-xs text-blue-600 font-semibold">Terbaru dari Sheet</span>
+                    </div>
+                    <div className="space-y-2 text-xs">
+                      <div><span className="font-bold text-gray-600">Task:</span> {currentConflict.spreadsheet.task}</div>
+                      <div><span className="font-bold text-gray-600">Project:</span> {currentConflict.spreadsheet.project || '-'}</div>
+                      <div><span className="font-bold text-gray-600">Bagian:</span> {currentConflict.spreadsheet.division || '-'}</div>
+                      <div><span className="font-bold text-gray-600">PIC:</span> {currentConflict.spreadsheet.pic || '-'}</div>
+                      <div><span className="font-bold text-gray-600">Priority:</span> {currentConflict.spreadsheet.priority || '-'}</div>
+                      <div><span className="font-bold text-gray-600">Status:</span> {currentConflict.spreadsheet.status || '-'}</div>
+                      <div><span className="font-bold text-gray-600">Note:</span> {currentConflict.spreadsheet.note || '-'}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {conflicts.length > 1 && (
+                  <div className="text-xs text-gray-500 text-center font-medium">
+                    Conflict {conflicts.indexOf(currentConflict) + 1} dari {conflicts.length}
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50 shrink-0 rounded-b-2xl">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextIdx = conflicts.indexOf(currentConflict) + 1;
+                    if (nextIdx < conflicts.length) {
+                      setCurrentConflict(conflicts[nextIdx]);
+                    } else {
+                      setShowConflictModal(false);
+                      setCurrentConflict(null);
+                      setConflicts([]);
+                    }
+                  }}
+                  className="px-5 py-2.5 text-[13px] font-bold text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 rounded-xl border border-gray-200 transition-all"
+                >
+                  Skip
+                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const nextIdx = conflicts.indexOf(currentConflict) + 1;
+                      if (nextIdx < conflicts.length) {
+                        setCurrentConflict(conflicts[nextIdx]);
+                      } else {
+                        setShowConflictModal(false);
+                        setCurrentConflict(null);
+                        setConflicts([]);
+                        await fetchData();
+                      }
+                    }}
+                    className="px-6 py-2.5 text-[13px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition-all flex items-center gap-2"
+                  >
+                    <Check size={15} />
+                    Pakai Versi SINTAK
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('/api/laporan-pekerjaan', {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            id: currentConflict.manual.id,
+                            task: currentConflict.spreadsheet.task,
+                            project: currentConflict.spreadsheet.project,
+                            division: currentConflict.spreadsheet.division,
+                            pic: currentConflict.spreadsheet.pic,
+                            priority: currentConflict.spreadsheet.priority,
+                            startDate: currentConflict.spreadsheet.startDate,
+                            endDate: currentConflict.spreadsheet.endDate,
+                            workDays: currentConflict.spreadsheet.workDays,
+                            note: currentConflict.spreadsheet.note,
+                            status: currentConflict.spreadsheet.status,
+                          }),
+                        });
+                        
+                        const json = await res.json();
+                        if (json.success) {
+                          const nextIdx = conflicts.indexOf(currentConflict) + 1;
+                          if (nextIdx < conflicts.length) {
+                            setCurrentConflict(conflicts[nextIdx]);
+                          } else {
+                            setShowConflictModal(false);
+                            setCurrentConflict(null);
+                            setConflicts([]);
+                            await fetchData();
+                          }
+                        } else {
+                          alert(json.error || 'Gagal update data');
+                        }
+                      } catch (err: any) {
+                        alert(err.message || 'Terjadi kesalahan');
+                      }
+                    }}
+                    className="px-6 py-2.5 text-[13px] font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition-all flex items-center gap-2"
+                  >
+                    <FileSpreadsheet size={15} />
+                    Pakai Versi Spreadsheet
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </Portal>
