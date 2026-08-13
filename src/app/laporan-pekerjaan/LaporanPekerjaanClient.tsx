@@ -512,7 +512,7 @@ export default function LaporanPekerjaanClient() {
   const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    const handleScroll = () => {
+    const checkScrollPosition = () => {
       const el = document.getElementById("main-content-scroll");
       const scrollTop = el ? el.scrollTop : (typeof window !== "undefined" ? window.scrollY : 0);
       const scrollHeight = el ? el.scrollHeight : (typeof document !== "undefined" ? document.body.scrollHeight : 0);
@@ -528,8 +528,10 @@ export default function LaporanPekerjaanClient() {
         setShowTopBtn(false);
         setShowBottomBtn(false);
       }
+    };
 
-      // Tampilkan tombol saat scroll, lalu sembunyikan total (fade out) setelah 1.5 detik idle
+    const handleUserScroll = () => {
+      checkScrollPosition();
       setIsNavActive(true);
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
       idleTimerRef.current = setTimeout(() => {
@@ -539,17 +541,19 @@ export default function LaporanPekerjaanClient() {
 
     const scrollEl = document.getElementById("main-content-scroll");
 
-    scrollEl?.addEventListener("scroll", handleScroll);
-    window.addEventListener("scroll", handleScroll);
+    scrollEl?.addEventListener("scroll", handleUserScroll, { passive: true });
+    window.addEventListener("scroll", handleUserScroll, { passive: true });
+    window.addEventListener("resize", checkScrollPosition, { passive: true });
     
-    // Recalculate scroll height after DOM/charts render on reload
-    handleScroll();
-    const t1 = setTimeout(handleScroll, 200);
-    const t2 = setTimeout(handleScroll, 600);
+    // Initial check tanpa mengaktifkan idle timer
+    checkScrollPosition();
+    const t1 = setTimeout(checkScrollPosition, 200);
+    const t2 = setTimeout(checkScrollPosition, 600);
 
     return () => {
-      scrollEl?.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("scroll", handleScroll);
+      scrollEl?.removeEventListener("scroll", handleUserScroll);
+      window.removeEventListener("scroll", handleUserScroll);
+      window.removeEventListener("resize", checkScrollPosition);
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
       clearTimeout(t1);
       clearTimeout(t2);
@@ -2294,7 +2298,14 @@ export default function LaporanPekerjaanClient() {
           <div
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className={`fixed bottom-6 right-6 z-[200] transition-all duration-300 ease-out ${
+            onTouchEnd={() => {
+              if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+              idleTimerRef.current = setTimeout(() => {
+                setIsHovered(false);
+                setIsNavActive(false);
+              }, 1200);
+            }}
+            className={`fixed bottom-6 right-6 z-[80] transition-all duration-300 ease-out ${
               isNavActive || isHovered
                 ? "opacity-100 translate-y-0 scale-100 pointer-events-auto"
                 : "opacity-0 translate-y-4 scale-90 pointer-events-none"
@@ -2304,7 +2315,10 @@ export default function LaporanPekerjaanClient() {
               {showTopBtn && (
                 <button
                   type="button"
-                  onClick={scrollToTop}
+                  onClick={() => {
+                    scrollToTop();
+                    setTimeout(() => setIsHovered(false), 300);
+                  }}
                   className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-md shadow-emerald-600/30 hover:shadow-emerald-600/50 hover:scale-110 active:scale-95 transition-all duration-300 ease-out cursor-pointer"
                   title="Ke Paling Atas"
                   aria-label="Ke Paling Atas"
@@ -2315,7 +2329,10 @@ export default function LaporanPekerjaanClient() {
               {showBottomBtn && (
                 <button
                   type="button"
-                  onClick={scrollToBottom}
+                  onClick={() => {
+                    scrollToBottom();
+                    setTimeout(() => setIsHovered(false), 300);
+                  }}
                   className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-md shadow-slate-900/30 hover:bg-emerald-600 hover:shadow-emerald-600/40 hover:scale-110 active:scale-95 transition-all duration-300 ease-out cursor-pointer"
                   title="Ke Paling Bawah"
                   aria-label="Ke Paling Bawah"

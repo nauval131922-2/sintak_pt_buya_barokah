@@ -203,13 +203,13 @@ function DataTableInner<TData extends { id: number | string }>({
                 <col style={{ width: 6 }} />
                 {headers.map((header) => (<col key={header.id} style={{ width: columnSizing[header.id] || (header.column.columnDef as any).size || 150 }} />))}
             </colgroup>
-            <thead className="sticky top-0 z-[40] shadow-sm">
+            <thead className="sticky top-0 z-[20] shadow-sm">
               {table.getHeaderGroups().map((headerGroup) => {
                 let stickyLeft = 6; // starts after the 6px left indicator column
                 return (
                 <tr key={headerGroup.id}>
                   <th 
-                    className="sticky left-0 w-[6px] p-0 z-30 border-b border-gray-100" 
+                    className="sticky left-0 w-[6px] p-0 z-10 border-b border-gray-100" 
                     style={{ backgroundColor: (headerGroup.headers[0]?.column.columnDef.meta as any)?.headerBg || '#f8fafc' }}
                   />
                   {headerGroup.headers.map((header) => {
@@ -223,7 +223,7 @@ function DataTableInner<TData extends { id: number | string }>({
                     return (<th 
                       key={header.id} 
                       className={`p-0 border-b border-r border-gray-100 relative group transition-colors overflow-hidden last:border-r-0 ${
-                        isSticky ? 'sticky z-[42]' : ''
+                        isSticky ? 'sticky z-[22]' : ''
                       }`}
                       style={{ 
                         backgroundColor: meta?.headerBg || '#f8fafc',

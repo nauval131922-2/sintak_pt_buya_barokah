@@ -312,7 +312,7 @@ export default function HasilProduksiClient() {
   useEffect(() => {
     const mainWrapper = document.getElementById('main-content-scroll');
 
-    const updateScrollButtons = () => {
+    const checkScrollPosition = () => {
       const el = mainWrapper || document.documentElement;
       const scrollPos = el.scrollTop || window.scrollY || 0;
       const scrollHeight = el.scrollHeight || document.body.scrollHeight;
@@ -321,7 +321,10 @@ export default function HasilProduksiClient() {
       setShowTopBtn(scrollPos > 150);
       const distanceToBottom = scrollHeight - (scrollPos + clientHeight);
       setShowBottomBtn(distanceToBottom > 150);
+    };
 
+    const handleUserScroll = () => {
+      checkScrollPosition();
       setIsNavActive(true);
       if (navIdleTimerRef.current) clearTimeout(navIdleTimerRef.current);
       navIdleTimerRef.current = setTimeout(() => {
@@ -330,18 +333,19 @@ export default function HasilProduksiClient() {
     };
 
     if (mainWrapper) {
-      mainWrapper.addEventListener('scroll', updateScrollButtons, { passive: true });
+      mainWrapper.addEventListener('scroll', handleUserScroll, { passive: true });
     }
-    window.addEventListener('scroll', updateScrollButtons, { passive: true });
-    window.addEventListener('resize', updateScrollButtons);
-    updateScrollButtons();
+    window.addEventListener('scroll', handleUserScroll, { passive: true });
+    window.addEventListener('resize', checkScrollPosition, { passive: true });
+    checkScrollPosition();
 
     return () => {
       if (mainWrapper) {
-        mainWrapper.removeEventListener('scroll', updateScrollButtons);
+        mainWrapper.removeEventListener('scroll', handleUserScroll);
       }
-      window.removeEventListener('scroll', updateScrollButtons);
-      window.removeEventListener('resize', updateScrollButtons);
+      window.removeEventListener('scroll', handleUserScroll);
+      window.removeEventListener('resize', checkScrollPosition);
+      if (navIdleTimerRef.current) clearTimeout(navIdleTimerRef.current);
     };
   }, [viewMode, activeTab]);
   // ponytail: multi-column sort + column resize
@@ -1794,7 +1798,14 @@ export default function HasilProduksiClient() {
           <div 
             onMouseEnter={() => setIsNavHovered(true)}
             onMouseLeave={() => setIsNavHovered(false)}
-            className={`fixed bottom-6 right-6 z-[200] transition-all duration-300 ease-out ${
+            onTouchEnd={() => {
+              if (navIdleTimerRef.current) clearTimeout(navIdleTimerRef.current);
+              navIdleTimerRef.current = setTimeout(() => {
+                setIsNavHovered(false);
+                setIsNavActive(false);
+              }, 1200);
+            }}
+            className={`fixed bottom-6 right-6 z-[80] transition-all duration-300 ease-out ${
               isNavActive || isNavHovered
                 ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto' 
                 : 'opacity-0 translate-y-4 scale-90 pointer-events-none'
@@ -1808,6 +1819,7 @@ export default function HasilProduksiClient() {
                   onClick={() => {
                     const el = document.getElementById('main-content-scroll');
                     if (el) el.scrollTo({ top: 0, behavior: 'smooth' });
+                    setTimeout(() => setIsNavHovered(false), 300);
                   }}
                   className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-md shadow-emerald-600/30 hover:shadow-emerald-600/50 hover:scale-110 active:scale-95 transition-all duration-300 ease-out cursor-pointer"
                   title="Ke Paling Atas"
@@ -1824,6 +1836,7 @@ export default function HasilProduksiClient() {
                   onClick={() => {
                     const el = document.getElementById('main-content-scroll');
                     if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+                    setTimeout(() => setIsNavHovered(false), 300);
                   }}
                   className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-md shadow-slate-900/30 hover:bg-emerald-600 hover:shadow-emerald-600/40 hover:scale-110 active:scale-95 transition-all duration-300 ease-out cursor-pointer"
                   title="Ke Grand Total (Paling Bawah)"

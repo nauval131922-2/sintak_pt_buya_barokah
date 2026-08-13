@@ -351,7 +351,7 @@ export default function GlobalSearch() {
             setQuery('');
             setResults([]);
           }}
-          className="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-sm flex items-start justify-center p-4 cursor-pointer"
+          className="fixed inset-0 z-[300] bg-slate-900/40 backdrop-blur-sm flex items-start justify-center p-4 cursor-pointer"
         >
           <div 
             onClick={(e) => e.stopPropagation()}

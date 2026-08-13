@@ -717,16 +717,43 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
       'Penyesuaian z-index tombol navigasi scroll floating (up/down) agar tidak menutupi sidebar saat dibuka',
     ],
   }),
-  'laporan-pekerjaan-2026-08-13': entry({
+  'laporan-pekerjaan-2026-08-13-1': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan Setting Buya 2026',
     permissionKeys: ['produksi_laporan_pekerjaan'],
     sortDate: '2026-08-13',
     date: '13 Agu 2026',
     version: '2026-08-13-1',
+    versionLabel: 'v1',
     items: [
       'Penyelarasan style footer tabel (TableFooter) berdiri sendiri di luar card tabel 100% konsisten dengan halaman SOPd',
-      'Pembaruan komponen DatePicker berbasis Portal untuk mencegah popup terhalang/terpotong oleh container overflow di seluruh halaman aplikasi',
+      'Perbaikan bug tombol floating nav (up/down) yang tertahan active saat idle di HP & touchscreen',
+    ],
+  }),
+  'laporan-pekerjaan-2026-08-13-2': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan Setting Buya 2026',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-08-13',
+    date: '13 Agu 2026',
+    version: '2026-08-13-2',
+    versionLabel: 'v2',
+    items: [
+      'Pembaruan komponen DatePicker dengan smart horizontal shift (transform: translateX) untuk cegah kalender terpotong tepi layar',
+      'Penyelarasan hierarki z-index aplikasi (Modal/Overlay z-[300-400] di atas Sidebar z-[100], Tombol Nav z-[80] di bawah Sidebar z-[100])',
+    ],
+  }),
+  'excel-sopd-2026-08-13-1': entry({
+    pageKey: 'excel-sopd',
+    title: 'Data Order Produksi (SOPd)',
+    permissionKeys: ['jurnal_harian_produksi'],
+    sortDate: '2026-08-13',
+    date: '13 Agu 2026',
+    version: '2026-08-13-1',
+    versionLabel: 'v1',
+    items: [
+      'Pembaruan komponen DatePicker dengan smart horizontal shift (transform: translateX) untuk cegah kalender terpotong tepi layar',
+      'Penyelarasan z-index DateRangeCard (z-30) dan DataTable (z-[20]) agar panel DatePicker tidak tertutup header tabel SOPd',
     ],
   }),
   'laporan-pekerjaan-2026-08-12': entry({
