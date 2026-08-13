@@ -63,7 +63,6 @@ function SquareDropdown({
 }: SquareDropdownProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [panelStyle, setPanelStyle] = useState<React.CSSProperties>({});
   const triggerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -76,34 +75,6 @@ function SquareDropdown({
         o.label.toLowerCase().includes(search.toLowerCase())
       )
     : options;
-
-  useEffect(() => {
-    if (!open || !triggerRef.current) return;
-    const update = () => {
-      const rect = triggerRef.current!.getBoundingClientRect();
-      const scale = getZoomScale();
-      const posStyle: React.CSSProperties = {
-        position: "fixed",
-        top: (rect.bottom + 4) / scale,
-        zIndex: 9999,
-      };
-
-      if (alignRight) {
-        posStyle.right = (window.innerWidth - rect.right) / scale;
-      } else {
-        posStyle.left = rect.left / scale;
-      }
-
-      setPanelStyle(posStyle);
-    };
-    update();
-    window.addEventListener("scroll", update, true);
-    window.addEventListener("resize", update);
-    return () => {
-      window.removeEventListener("scroll", update, true);
-      window.removeEventListener("resize", update);
-    };
-  }, [open, alignRight]);
 
   useEffect(() => {
     if (!open) return;
@@ -129,13 +100,13 @@ function SquareDropdown({
   }, [open]);
 
   return (
-    <div ref={triggerRef} className="relative inline-block">
+    <div ref={triggerRef} className="relative flex-1 min-w-0 md:flex-none md:inline-block">
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="flex items-center justify-between gap-2 px-3 py-1.5 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg text-slate-700 hover:bg-white hover:border-slate-300 focus:outline-none transition-all"
+        className="w-full flex items-center justify-between gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg text-slate-700 hover:bg-white hover:border-slate-300 focus:outline-none transition-all min-w-0"
       >
-        <span className="truncate max-w-[130px]">{displayLabel}</span>
+        <span className="truncate min-w-0 flex-1 text-left">{displayLabel}</span>
         <ChevronDown
           size={14}
           className={`text-slate-400 shrink-0 transition-transform duration-150 ${
@@ -145,60 +116,59 @@ function SquareDropdown({
       </button>
 
       {open && (
-        <Portal>
-          <div
-            ref={panelRef}
-            style={panelStyle}
-            className={`${widthClass} bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150`}
-          >
-            <div className="p-2 border-b border-slate-100 bg-slate-50/50">
-              <div className="flex items-center gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-slate-200">
-                <Search size={12} className="text-slate-400 shrink-0" />
-                <input
-                  ref={searchRef}
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder={searchPlaceholder}
-                  className="flex-1 text-[11px] font-medium bg-transparent outline-none text-slate-700 placeholder:text-slate-400 min-w-0"
-                />
-              </div>
-            </div>
-
-            <div className="max-h-52 overflow-y-auto custom-scrollbar divide-y divide-slate-50">
-              {filtered.length === 0 ? (
-                <p className="px-3 py-3 text-[11px] text-slate-400 font-medium text-center">
-                  Tidak ditemukan
-                </p>
-              ) : (
-                filtered.map((opt) => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => {
-                      onChange(opt.value);
-                      setOpen(false);
-                      setSearch("");
-                    }}
-                    className={`w-full flex items-center justify-between px-3 py-2 text-[11px] font-semibold transition-colors ${
-                      value === opt.value
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "text-slate-700 hover:bg-slate-50"
-                    }`}
-                  >
-                    <span className="truncate">{opt.label}</span>
-                    {value === opt.value && (
-                      <Check
-                        size={12}
-                        className="text-emerald-600 shrink-0 ml-2"
-                      />
-                    )}
-                  </button>
-                ))
-              )}
+        <div
+          ref={panelRef}
+          className={`absolute top-full mt-1.5 ${
+            alignRight ? "right-0" : "left-0"
+          } w-full min-w-[180px] bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-[9999] animate-in fade-in slide-in-from-top-1 duration-150`}
+        >
+          <div className="p-2 border-b border-slate-100 bg-slate-50/50">
+            <div className="flex items-center gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-slate-200">
+              <Search size={12} className="text-slate-400 shrink-0" />
+              <input
+                ref={searchRef}
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={searchPlaceholder}
+                className="flex-1 text-[11px] font-medium bg-transparent outline-none text-slate-700 placeholder:text-slate-400 min-w-0"
+              />
             </div>
           </div>
-        </Portal>
+
+          <div className="max-h-52 overflow-y-auto custom-scrollbar divide-y divide-slate-50">
+            {filtered.length === 0 ? (
+              <p className="px-3 py-3 text-[11px] text-slate-400 font-medium text-center">
+                Tidak ditemukan
+              </p>
+            ) : (
+              filtered.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    onChange(opt.value);
+                    setOpen(false);
+                    setSearch("");
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2 text-[11px] font-semibold transition-colors ${
+                    value === opt.value
+                      ? "bg-emerald-50 text-emerald-700"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  <span className="truncate">{opt.label}</span>
+                  {value === opt.value && (
+                    <Check
+                      size={12}
+                      className="text-emerald-600 shrink-0 ml-2"
+                    />
+                  )}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
@@ -429,6 +399,9 @@ export default function LaporanPekerjaanClient() {
   // Floating Navigation Up & Down state
   const [showTopBtn, setShowTopBtn] = useState(false);
   const [showBottomBtn, setShowBottomBtn] = useState(false);
+  const [isNavActive, setIsNavActive] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -447,6 +420,13 @@ export default function LaporanPekerjaanClient() {
         setShowTopBtn(false);
         setShowBottomBtn(false);
       }
+
+      // Tampilkan tombol saat scroll, lalu sembunyikan total (fade out) setelah 1.5 detik idle
+      setIsNavActive(true);
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = setTimeout(() => {
+        setIsNavActive(false);
+      }, 1500);
     };
 
     const scrollEl = document.getElementById("main-content-scroll");
@@ -462,6 +442,7 @@ export default function LaporanPekerjaanClient() {
     return () => {
       scrollEl?.removeEventListener("scroll", handleScroll);
       window.removeEventListener("scroll", handleScroll);
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
       clearTimeout(t1);
       clearTimeout(t2);
     };
@@ -961,8 +942,8 @@ export default function LaporanPekerjaanClient() {
       ref={clientContainerRef}
       className={`text-slate-800 ${
         isAnalyticsOpen
-          ? "flex flex-col gap-4 w-full pb-28 md:pb-24"
-          : "space-y-3 pb-28 md:space-y-0 md:flex-1 md:min-h-0 md:flex md:flex-col md:gap-3 md:overflow-hidden md:pb-0"
+          ? "flex flex-col gap-4 w-full pb-44 sm:pb-40 md:pb-24"
+          : "space-y-3 pb-44 sm:pb-40 md:space-y-0 md:flex-1 md:min-h-0 md:flex md:flex-col md:gap-3 md:overflow-hidden md:pb-0"
       }`}
     >
       {/* Header Info & Action (Collapsible di HP, default collapse) */}
@@ -1450,40 +1431,43 @@ export default function LaporanPekerjaanClient() {
         )}
       </div>
 
-      {/* Filter & Search Bar */}
-      <div className="shrink-0 bg-white p-3 rounded-xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-center gap-3">
-        <div className="relative flex-1 w-full">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Cari kata kunci task atau nomor OP (misal: OP.007)..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
-          />
-        </div>
-
-        <div className="flex items-center space-x-2.5 w-full md:w-auto">
-          <div className="flex items-center text-xs text-slate-500 font-medium mr-1">
-            <Filter className="w-3.5 h-3.5 mr-1 text-slate-400" /> Filter:
+      {/* Pembungkus Sticky Khusus HP (Portrait & Landscape): Search + Filter */}
+      <div className="sticky -top-2 z-30 bg-[var(--bg-deep)] -mx-4 px-4 pt-2 pb-1 portrait:block landscape:block md:static md:p-0 md:mx-0 md:bg-transparent">
+        {/* Filter & Search Bar */}
+        <div className="shrink-0 bg-white p-3 rounded-xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-center gap-3">
+          <div className="relative flex-1 w-full">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Cari kata kunci task atau nomor OP (misal: OP.007)..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
+            />
           </div>
 
-          <SquareDropdown
-            options={picOptions}
-            value={selectedPic}
-            onChange={setSelectedPic}
-            searchPlaceholder="Cari PIC..."
-            widthClass="w-48"
-          />
+          <div className="flex items-center space-x-2 w-full md:w-auto min-w-0">
+            <div className="flex items-center text-xs text-slate-500 font-medium shrink-0">
+              <Filter className="w-3.5 h-3.5 mr-1 text-slate-400" /> Filter:
+            </div>
 
-          <SquareDropdown
-            options={statusOptions}
-            value={selectedStatus}
-            onChange={setSelectedStatus}
-            searchPlaceholder="Cari Status..."
-            widthClass="w-48"
-            alignRight
-          />
+            <SquareDropdown
+              options={picOptions}
+              value={selectedPic}
+              onChange={setSelectedPic}
+              searchPlaceholder="Cari PIC..."
+              widthClass="w-48"
+            />
+
+            <SquareDropdown
+              options={statusOptions}
+              value={selectedStatus}
+              onChange={setSelectedStatus}
+              searchPlaceholder="Cari Status..."
+              widthClass="w-48"
+              alignRight
+            />
+          </div>
         </div>
       </div>
 
@@ -1496,12 +1480,14 @@ export default function LaporanPekerjaanClient() {
 
       {/* Tabel Data Pekerjaan (Desktop & Tablet) / Card View (HP) */}
       <div
-        className={`bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col relative ${
-          isAnalyticsOpen ? "shrink-0" : "md:flex-1 md:min-h-0"
+        className={`bg-white rounded-xl border border-slate-200/80 shadow-sm relative ${
+          isAnalyticsOpen
+            ? "shrink-0"
+            : "md:flex-1 md:min-h-0 md:flex md:flex-col md:overflow-hidden"
         }`}
       >
-        {/* Tampilan Card khusus Layar HP (Mobile View) */}
-        <div className="block md:hidden divide-y divide-slate-100 p-3 space-y-3">
+        {/* Tampilan Card khusus HP Portrait (Sembunyi di Landscape & Desktop) */}
+        <div className="block landscape:hidden md:hidden divide-y divide-slate-100 p-3 space-y-3">
           {loading ? (
             <div className="py-12 text-center text-slate-400 text-xs">
               <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-600" />
@@ -1526,7 +1512,7 @@ export default function LaporanPekerjaanClient() {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <h4
-                      className={`text-xs font-bold text-slate-800 leading-snug ${
+                      className={`text-xs font-bold text-slate-800 leading-snug min-w-0 flex-1 ${
                         isExpanded ? "break-words" : "line-clamp-2"
                       }`}
                     >
@@ -1610,13 +1596,13 @@ export default function LaporanPekerjaanClient() {
           )}
         </div>
 
-        {/* Tampilan Tabel Desktop & Tablet (Hidden di HP) */}
+        {/* Tampilan Tabel khusus HP Landscape, Tablet, & Desktop */}
         <div
           ref={tableContainerRef}
-          className={`hidden md:block overflow-x-auto overflow-y-auto custom-scrollbar transition-all duration-200 ${
+          className={`hidden landscape:block md:block overflow-x-auto overflow-y-auto custom-scrollbar transition-all duration-200 ${
             isAnalyticsOpen
-              ? "max-h-[480px] shrink-0"
-              : "flex-1 min-h-0"
+              ? "max-h-[300px] sm:max-h-[480px] shrink-0"
+              : "flex-1 min-h-[220px] md:max-h-none max-h-[calc(100vh-130px)]"
           }`}
           style={
             {
@@ -1634,7 +1620,7 @@ export default function LaporanPekerjaanClient() {
           }
         >
           <table className="w-full text-left text-xs border-collapse table-fixed">
-            <thead className="sticky top-0 z-10 bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 shadow-sm">
+            <thead className="sticky top-0 z-20 bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 shadow-sm">
               <tr>
                 {renderSortableHeader("task", "Task / Aktivitas")}
                 {renderSortableHeader("project", "Project Order")}
@@ -1792,46 +1778,52 @@ export default function LaporanPekerjaanClient() {
             </tbody>
           </table>
         </div>
-
-        {/* Footer Sintak Standard TableFooter (Sticky & Pinned at bottom) */}
-        <div className="shrink-0 bg-white border-t border-slate-100 z-10 pb-3 md:pb-2">
-          <TableFooter
-            totalCount={filteredTasks.length}
-            currentCount={paginatedTasks.length}
-            label="Task"
-            loadTime={loadTime}
-            page={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        </div>
       </div>
 
-      {/* Floating Scroll Navigation (Ke Atas & Ke Bawah) */}
+      {/* Footer Sintak Standard TableFooter (Mandiri di luar card tabel, samakan 100% dengan SOPd) */}
+      <TableFooter
+        totalCount={filteredTasks.length}
+        currentCount={paginatedTasks.length}
+        label="Task"
+        loadTime={loadTime}
+        page={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
+
+      {/* Floating Scroll Navigation (Ke Atas & Ke Bawah - Fade total saat idle) */}
       {(showTopBtn || showBottomBtn) && (
         <Portal>
-          <div className="fixed bottom-6 right-4 sm:right-6 z-[200] transition-all duration-300 pointer-events-auto">
-            <div className="bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-xl rounded-full p-1 flex flex-col gap-1.5 ring-1 ring-black/5">
+          <div
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            className={`fixed bottom-6 right-6 z-[200] transition-all duration-300 ease-out ${
+              isNavActive || isHovered
+                ? "opacity-100 translate-y-0 scale-100 pointer-events-auto"
+                : "opacity-0 translate-y-4 scale-90 pointer-events-none"
+            }`}
+          >
+            <div className={`bg-white/80 backdrop-blur-xl border border-white/60 shadow-2xl shadow-emerald-950/20 rounded-full p-1.5 flex flex-col transition-all duration-300 ring-1 ring-black/5 ${showTopBtn && showBottomBtn ? "gap-1.5" : "gap-0"}`}>
               {showTopBtn && (
                 <button
                   type="button"
                   onClick={scrollToTop}
-                  className="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-md hover:bg-emerald-700 active:scale-95 transition-all cursor-pointer"
+                  className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-md shadow-emerald-600/30 hover:shadow-emerald-600/50 hover:scale-110 active:scale-95 transition-all duration-300 ease-out cursor-pointer"
                   title="Ke Paling Atas"
                   aria-label="Ke Paling Atas"
                 >
-                  <ChevronUp className="w-5 h-5 stroke-[2.5]" />
+                  <ChevronUp size={20} strokeWidth={2.5} />
                 </button>
               )}
               {showBottomBtn && (
                 <button
                   type="button"
                   onClick={scrollToBottom}
-                  className="w-9 h-9 rounded-full bg-slate-800 text-white flex items-center justify-center shadow-md hover:bg-emerald-600 active:scale-95 transition-all cursor-pointer"
+                  className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-md shadow-slate-900/30 hover:bg-emerald-600 hover:shadow-emerald-600/40 hover:scale-110 active:scale-95 transition-all duration-300 ease-out cursor-pointer"
                   title="Ke Paling Bawah"
                   aria-label="Ke Paling Bawah"
                 >
-                  <ChevronDown className="w-5 h-5 stroke-[2.5]" />
+                  <ChevronDown size={20} strokeWidth={2.5} />
                 </button>
               )}
             </div>

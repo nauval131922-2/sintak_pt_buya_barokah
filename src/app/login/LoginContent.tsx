@@ -33,7 +33,7 @@ export default function LoginContent() {
   };
 
   return (
-    <div className="min-h-screen w-screen overflow-hidden flex bg-[var(--bg-deep)] animate-in fade-in duration-700 md:[zoom:0.82] md:w-[121.95vw] md:h-[121.95vh] min-[1920px]:[zoom:1] min-[1920px]:w-screen min-[1920px]:h-screen">
+    <div className="h-[111.11vh] w-[111.11vw] md:h-[121.95vh] md:w-[121.95vw] overflow-hidden flex bg-[var(--bg-deep)] animate-in fade-in duration-700 [zoom:0.90] md:[zoom:0.82] min-[1920px]:[zoom:1] min-[1920px]:w-screen min-[1920px]:h-screen">
       
       {/* ── Left Panel (Brand) ── */}
       <div className="hidden lg:flex lg:w-[45%] xl:w-[40%] relative overflow-hidden flex-col items-center justify-center p-12"
@@ -93,7 +93,7 @@ export default function LoginContent() {
       </div>
 
       {/* ── Right Panel (Form) ── */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8 sm:p-12 bg-white relative">
+      <div className="flex-1 h-full flex flex-col items-center justify-center p-8 sm:p-12 bg-white relative overflow-y-auto">
         
         {/* Mobile brand header (Pojok Kiri Atas) */}
         <div className="lg:hidden absolute top-6 left-6 flex items-center gap-2.5">

@@ -99,72 +99,87 @@ function MainContentInner({
 
   const isLoginPage = pathname ? pathname.startsWith('/login') : false;
 
+  const isLaporanPekerjaanPage = pathname === '/laporan-pekerjaan';
+
+  const renderHeaderNode = () => (
+    <div className="shrink-0 flex items-center justify-between gap-4 px-4 xl:px-8 py-4 xl:py-5 bg-white border-b border-gray-100 mb-2 md:mb-0">
+      <div className="flex items-start gap-2 flex-1 min-w-0">
+        {/* Mobile Menu Button */}
+        <button 
+          onClick={() => window.dispatchEvent(new CustomEvent('sidebar-mobile-toggle'))}
+          className="xl:hidden flex items-center justify-center w-10 h-10 -ml-2 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 text-slate-500 hover:text-slate-800 transition-all shrink-0 active:scale-95"
+          title="Menu"
+        >
+          <Menu size={18} />
+        </button>
+
+        {/* Title Section */}
+        <div className="flex flex-col min-w-0 flex-1">
+          <div className="flex items-center gap-2 border-l-4 border-emerald-500 pl-3">
+            <h1 className="text-[16px] sm:text-[22px] font-extrabold text-gray-800 tracking-tight leading-none whitespace-nowrap">
+              {title || 'SINTAK-PT. Buya Barokah'}
+            </h1>
+            {showHelp && <HelpButton />}
+            <ChangelogButton />
+          </div>
+
+          {description && (
+            <div className="pl-4 mt-1.5 min-w-0 max-w-full">
+              <div 
+                className="text-sm text-gray-400 font-medium tracking-tight leading-tight truncate cursor-pointer hover:text-gray-600 transition-colors select-none"
+                title={typeof description === 'string' ? description : undefined}
+                onClick={(e) => {
+                  const textEl = e.currentTarget;
+                  if (textEl.scrollWidth > textEl.clientWidth) {
+                    const rect = textEl.getBoundingClientRect();
+                    const isMobile = window.innerWidth < 640;
+                    const left = isMobile ? 12 : Math.max(12, rect.left);
+                    setDescTooltipPos({ top: rect.bottom + 4, left });
+                    setShowDescTooltip(prev => !prev);
+                  } else if (showDescTooltip) {
+                    setShowDescTooltip(false);
+                  }
+                }}
+              >
+                {description}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Right Section: rightElement + Search */}
+      <div className="flex items-center gap-2 sm:gap-4 shrink-0 justify-end">
+        {rightElement && <div className="shrink-0">{rightElement}</div>}
+        <div className="w-auto sm:w-64 lg:w-80 xl:w-[380px] shrink-0">
+          <GlobalSearch />
+        </div>
+      </div>
+    </div>
+  );
+
   if (isLoginPage) {
     return <>{children}</>;
   }
 
   return (
-    <div className="flex h-[100dvh] w-screen overflow-hidden bg-[var(--bg-deep)] md:[zoom:0.82] md:w-[121.95vw] md:h-[121.95vh] min-[1920px]:[zoom:1] min-[1920px]:w-screen min-[1920px]:h-screen">
+    <div className="flex [zoom:0.90] w-[111.11vw] h-[111.11vh] md:[zoom:0.82] md:w-[121.95vw] md:h-[121.95vh] overflow-hidden bg-[var(--bg-deep)] min-[1920px]:[zoom:1] min-[1920px]:w-screen min-[1920px]:h-screen">
       <Sidebar user={user} permissions={permissions} />
-      <div className="flex-1 flex flex-col min-w-0 h-[100dvh] md:h-full overflow-hidden">
-        {/* Header with Title and Global Search */}
-        <div className="flex items-center justify-between gap-4 px-4 xl:px-8 py-4 xl:py-5 bg-white border-b border-gray-100">
-          <div className="flex items-start gap-2 flex-1 min-w-0">
-            {/* Mobile Menu Button */}
-            <button 
-              onClick={() => window.dispatchEvent(new CustomEvent('sidebar-mobile-toggle'))}
-              className="xl:hidden flex items-center justify-center w-10 h-10 -ml-2 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 text-slate-500 hover:text-slate-800 transition-all shrink-0 active:scale-95"
-              title="Menu"
-            >
-              <Menu size={18} />
-            </button>
-
-            {/* Title Section */}
-            <div className="flex flex-col min-w-0 flex-1">
-              <div className="flex items-center gap-2 border-l-4 border-emerald-500 pl-3">
-                <h1 className="text-[16px] sm:text-[22px] font-extrabold text-gray-800 tracking-tight leading-none whitespace-nowrap">
-                  {title || 'SINTAK-PT. Buya Barokah'}
-                </h1>
-                {showHelp && <HelpButton />}
-                <ChangelogButton />
-              </div>
-
-              {description && (
-                <div className="pl-4 mt-1.5 min-w-0 max-w-full">
-                  <div 
-                    className="text-sm text-gray-400 font-medium tracking-tight leading-tight truncate cursor-pointer hover:text-gray-600 transition-colors select-none"
-                    title={typeof description === 'string' ? description : undefined}
-                    onClick={(e) => {
-                      const textEl = e.currentTarget;
-                      if (textEl.scrollWidth > textEl.clientWidth) {
-                        const rect = textEl.getBoundingClientRect();
-                        const isMobile = window.innerWidth < 640;
-                        const left = isMobile ? 12 : Math.max(12, rect.left);
-                        setDescTooltipPos({ top: rect.bottom + 4, left });
-                        setShowDescTooltip(prev => !prev);
-                      } else if (showDescTooltip) {
-                        setShowDescTooltip(false);
-                      }
-                    }}
-                  >
-                    {description}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Right Section: rightElement + Search */}
-          <div className="flex items-center gap-2 sm:gap-4 shrink-0 justify-end">
-            {rightElement && <div className="shrink-0">{rightElement}</div>}
-            <div className="w-auto sm:w-64 lg:w-80 xl:w-[380px] shrink-0">
-              <GlobalSearch />
-            </div>
-          </div>
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+        {/* Header Fixed untuk halaman selain Laporan Pekerjaan (atau untuk Desktop) */}
+        <div className={isLaporanPekerjaanPage ? 'hidden md:block' : 'block'}>
+          {renderHeaderNode()}
         </div>
         
-        {/* Main Content - internal scroll area (fixed layout) */}
-        <div id="main-content-scroll" className="flex-1 min-h-0 flex flex-col min-w-0 overflow-y-auto custom-scrollbar bg-[var(--bg-deep)] px-4 xl:px-8 pt-2 xl:pt-3 pb-4 xl:pb-6">
+        {/* Main Content - internal scroll area */}
+        <div id="main-content-scroll" className="flex-1 min-h-0 flex flex-col min-w-0 overflow-y-auto custom-scrollbar bg-[var(--bg-deep)] px-4 xl:px-8 pt-2 xl:pt-3 pb-16 xl:pb-6">
+          {/* Header Mobile KHUSUS halaman Laporan Pekerjaan di dalam scroll area */}
+          {isLaporanPekerjaanPage && (
+            <div className="block md:hidden -mx-4 -mt-2 mb-2">
+              {renderHeaderNode()}
+            </div>
+          )}
+
           {children}
         </div>
       </div>

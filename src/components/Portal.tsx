@@ -10,8 +10,9 @@ interface PortalProps {
 export function getZoomScale(): number {
   if (typeof window === 'undefined') return 1;
   const w = window.innerWidth;
-  if (w >= 768 && w < 1920) return 0.82;
-  return 1;
+  if (w >= 1920) return 1;
+  if (w >= 768) return 0.82;
+  return 0.90;
 }
 
 export default function Portal({ children }: PortalProps) {
@@ -23,7 +24,7 @@ export default function Portal({ children }: PortalProps) {
   }, []);
 
   return mounted ? createPortal(
-    <div className="md:[zoom:0.82] min-[1920px]:[zoom:1]">{children}</div>,
+    <div className="[zoom:0.90] md:[zoom:0.82] min-[1920px]:[zoom:1]">{children}</div>,
     document.body
   ) : null;
 }

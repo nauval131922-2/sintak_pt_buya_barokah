@@ -1,6 +1,6 @@
 'use client'; // <- WAJIB: komponen ini pakai useState/useEffect (hanya jalan di browser)
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Portal, { getZoomScale } from './Portal';
 import { Calendar, X } from 'lucide-react';
 
@@ -66,11 +66,46 @@ export default function DatePicker({ name, required, label, onChange, value, cus
   const [viewMode, setViewMode] = useState<'days' | 'months' | 'years'>( // mode tampilan
     selectionMode === 'month' ? 'months' : 'days'
   );
-  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 }); // posisi popup di layar
+  const [popupStyle, setPopupStyle] = useState<React.CSSProperties>({});
 
   // REF: kayak "ID" ke elemen HTML asli (bisa akses DOM langsung)
   const ref = useRef<HTMLDivElement>(null);       // ref ke popup kalender
   const triggerRef = useRef<HTMLDivElement>(null); // ref ke tombol trigger
+
+  // Kalkulasi posisi popup di layar via Portal agar tidak terpotong overflow / terhalang komponen lain
+  const updatePosition = useCallback(() => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const scale = getZoomScale();
+    const popupWidth = 280;
+
+    let top = (rect.bottom + 6) / scale;
+    let left = popupAlign === 'right'
+      ? (rect.right / scale) - popupWidth
+      : rect.left / scale;
+
+    const maxLeft = (window.innerWidth / scale) - popupWidth - 12;
+    if (left > maxLeft) left = maxLeft;
+    if (left < 12) left = 12;
+
+    setPopupStyle({
+      position: 'fixed',
+      top: `${top}px`,
+      left: `${left}px`,
+      zIndex: 99999,
+    });
+  }, [popupAlign]);
+
+  useEffect(() => {
+    if (!open) return;
+    updatePosition();
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [open, updatePosition]);
 
   // ---- EFFECT 1: klik di luar popup -> tutup ----
   useEffect(() => {
@@ -106,17 +141,8 @@ export default function DatePicker({ name, required, label, onChange, value, cus
     }
   }, [open, selectionMode]);
 
-  // Buka/tutup popup + hitung posisi popup (relatif ke trigger)
+  // Buka/tutup popup
   const toggleOpen = () => {
-    if (!open && triggerRef.current) {
-      const rect = triggerRef.current.getBoundingClientRect();
-      const scale = getZoomScale();
-      setCoords({
-        top: (rect.bottom + window.scrollY) / scale,
-        left: (rect.left + window.scrollX) / scale,
-        width: rect.width
-      });
-    }
     setOpen(!open);
   };
 
@@ -318,17 +344,12 @@ export default function DatePicker({ name, required, label, onChange, value, cus
         )}
       </div>
 
-      {/* POPUP KALENDER (hanya muncul kalau open=true) */}
+      {/* POPUP KALENDER (hanya muncul kalau open=true) via Portal */}
       {open && (
-        <Portal> {/* Portal: render di luar hierarki DOM, biar gak kepotong overflow */}
-          <div 
+        <Portal>
+          <div
             ref={ref}
-            style={{ 
-              position: 'absolute', 
-              top: `${coords.top + 8}px`, 
-              left: popupAlign === 'right' ? `${coords.left + coords.width - 280}px` : `${coords.left}px`,
-              zIndex: 9999
-            }}
+            style={popupStyle}
             className="bg-white border border-gray-100 rounded-xl shadow-2xl p-4 w-[280px] animate-in fade-in zoom-in-95 duration-200"
           >
             {/* HEADER: navigasi bulan/tahun */}
