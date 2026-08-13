@@ -203,13 +203,13 @@ function DataTableInner<TData extends { id: number | string }>({
                 <col style={{ width: 6 }} />
                 {headers.map((header) => (<col key={header.id} style={{ width: columnSizing[header.id] || (header.column.columnDef as any).size || 150 }} />))}
             </colgroup>
-            <thead className="sticky top-0 z-[20] shadow-sm">
+            <thead className="sticky top-0 z-[40] shadow-sm">
               {table.getHeaderGroups().map((headerGroup) => {
                 let stickyLeft = 6; // starts after the 6px left indicator column
                 return (
                 <tr key={headerGroup.id}>
                   <th 
-                    className="sticky left-0 w-[6px] p-0 z-10 border-b border-gray-100" 
+                    className="sticky left-0 w-[6px] p-0 z-[45] border-b border-gray-100" 
                     style={{ backgroundColor: (headerGroup.headers[0]?.column.columnDef.meta as any)?.headerBg || '#f8fafc' }}
                   />
                   {headerGroup.headers.map((header) => {
@@ -223,7 +223,7 @@ function DataTableInner<TData extends { id: number | string }>({
                     return (<th 
                       key={header.id} 
                       className={`p-0 border-b border-r border-gray-100 relative group transition-colors overflow-hidden last:border-r-0 ${
-                        isSticky ? 'sticky z-[22]' : ''
+                        isSticky ? 'sticky z-[48]' : ''
                       }`}
                       style={{ 
                         backgroundColor: meta?.headerBg || '#f8fafc',
@@ -391,7 +391,7 @@ const TableRow = ({ row, isSelected, isOdd, onRowClick, onRowDoubleClick, rowHei
       } ${!disableHover && !isSelected ? 'hover:bg-blue-50/30' : ''} text-[13px]`}
     >
       <td 
-        className={`sticky left-0 w-[6px] p-0 z-30 border-none transition-colors ${isSelected ? 'shadow-[2px_0_5px_rgba(0,0,0,0.05)]' : ''}`}
+        className={`sticky left-0 w-[6px] p-0 z-[20] border-none transition-colors ${isSelected ? 'shadow-[2px_0_5px_rgba(0,0,0,0.05)]' : ''}`}
         style={{ backgroundColor: isSelected ? '#3b82f6' : stickyBg }} 
       />
       {row.getVisibleCells().map((cell: any) => {
@@ -405,7 +405,7 @@ const TableRow = ({ row, isSelected, isOdd, onRowClick, onRowDoubleClick, rowHei
           <td 
             key={cell.id} 
             className={`p-0 border-r border-gray-50/50 last:border-r-0 ${
-              isSticky ? 'sticky z-[28]' : ''
+              isSticky ? 'sticky z-[25]' : ''
             }`}
             style={{
               ...(meta?.valign === 'top' ? { verticalAlign: 'top' } : {}),
