@@ -76,7 +76,7 @@ export default function DateRangeCard({
   }, [startDate, endDate, pathname]);
 
   return (
-    <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 relative z-30">
+    <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 relative z-[60]">
       <div className="flex items-center gap-2 flex-1">
         {hasDates ? (
           <>

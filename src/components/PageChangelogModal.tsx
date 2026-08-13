@@ -211,7 +211,7 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
               {/* Accordion Body */}
               {isOpen && (
                 <div className="flex flex-col px-4 py-3 bg-white">
-                  {('sections' in changelog && Array.isArray((changelog as any).sections) && (changelog as any).sections.length > 0 && (changelog as any).sections.some((s: any) => s.label)) ? (
+                  {('sections' in changelog && Array.isArray((changelog as any).sections) && (changelog as any).sections.length > 1 && (changelog as any).sections.some((s: any) => s.label)) ? (
                     (changelog as any).sections.map((section: {label: string; items: string[]}, sIdx: number) => (
                       <div key={sIdx} className={sIdx > 0 ? 'mt-4' : ''}>
                         {section.label && <div className="text-[12px] font-bold text-emerald-700 mb-2">{section.label}:</div>}
