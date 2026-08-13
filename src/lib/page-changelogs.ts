@@ -710,7 +710,9 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     version: '2026-08-13-1',
     items: [
       'Penyelarasan style footer tabel (TableFooter) berdiri sendiri di luar card tabel 100% konsisten dengan halaman SOPd',
-      'Pembaruan komponen DatePicker berbasis Portal untuk mencegah popup terhalang/terpotong oleh container overflow di seluruh halaman aplikasi',
+      'Pembaruan komponen DatePicker dengan smart horizontal shift (transform: translateX) untuk cegah kalender terpotong tepi layar',
+      'Penataan ulang hierarki z-index aplikasi (Sidebar z-[350] di atas tombol nav z-[80] & DateRangeCard z-30)',
+      'Perbaikan bug tombol floating nav (up/down) yang tertahan active saat idle di HP & touchscreen',
     ],
   }),
   'laporan-pekerjaan-2026-08-12': entry({

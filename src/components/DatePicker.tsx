@@ -66,46 +66,39 @@ export default function DatePicker({ name, required, label, onChange, value, cus
   const [viewMode, setViewMode] = useState<'days' | 'months' | 'years'>( // mode tampilan
     selectionMode === 'month' ? 'months' : 'days'
   );
-  const [popupStyle, setPopupStyle] = useState<React.CSSProperties>({});
+  const [shiftX, setShiftX] = useState(0);
 
   // REF: kayak "ID" ke elemen HTML asli (bisa akses DOM langsung)
   const ref = useRef<HTMLDivElement>(null);       // ref ke popup kalender
   const triggerRef = useRef<HTMLDivElement>(null); // ref ke tombol trigger
 
-  // Kalkulasi posisi popup di layar via Portal agar tidak terpotong overflow / terhalang komponen lain
-  const updatePosition = useCallback(() => {
+  // Kalkulasi pergeseran horizontal presisi agar panel 280px tidak terpotong tepi kanan/kiri layar
+  const adjustHorizontalPosition = useCallback(() => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
-    const scale = getZoomScale();
     const popupWidth = 280;
+    const margin = 12;
 
-    let top = (rect.bottom + 6) / scale;
-    let left = popupAlign === 'right'
-      ? (rect.right / scale) - popupWidth
-      : rect.left / scale;
+    let currentLeftInViewport = rect.left;
+    let currentRightInViewport = rect.left + popupWidth;
 
-    const maxLeft = (window.innerWidth / scale) - popupWidth - 12;
-    if (left > maxLeft) left = maxLeft;
-    if (left < 12) left = 12;
+    let delta = 0;
+    if (currentRightInViewport > window.innerWidth - margin) {
+      delta = (window.innerWidth - margin) - currentRightInViewport;
+    }
+    if (currentLeftInViewport + delta < margin) {
+      delta = margin - currentLeftInViewport;
+    }
 
-    setPopupStyle({
-      position: 'fixed',
-      top: `${top}px`,
-      left: `${left}px`,
-      zIndex: 99999,
-    });
-  }, [popupAlign]);
+    setShiftX(delta);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
-    updatePosition();
-    window.addEventListener('scroll', updatePosition, true);
-    window.addEventListener('resize', updatePosition);
-    return () => {
-      window.removeEventListener('scroll', updatePosition, true);
-      window.removeEventListener('resize', updatePosition);
-    };
-  }, [open, updatePosition]);
+    adjustHorizontalPosition();
+    window.addEventListener('resize', adjustHorizontalPosition);
+    return () => window.removeEventListener('resize', adjustHorizontalPosition);
+  }, [open, adjustHorizontalPosition]);
 
   // ---- EFFECT 1: klik di luar popup -> tutup ----
   useEffect(() => {
@@ -344,46 +337,48 @@ export default function DatePicker({ name, required, label, onChange, value, cus
         )}
       </div>
 
-      {/* POPUP KALENDER (hanya muncul kalau open=true) via Portal */}
+      {/* POPUP KALENDER (hanya muncul kalau open=true) */}
       {open && (
-        <Portal>
-          <div
-            ref={ref}
-            style={popupStyle}
-            className="bg-white border border-gray-100 rounded-xl shadow-2xl p-4 w-[280px] animate-in fade-in zoom-in-95 duration-200"
-          >
-            {/* HEADER: navigasi bulan/tahun */}
-            <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-50">
-              <button type="button" onClick={prevView} className="w-9 h-9 rounded-lg bg-gray-50 text-gray-500 hover:bg-emerald-50 hover:text-emerald-600 transition-all flex items-center justify-center font-bold">
-                ‹
-              </button>
-              {/* Tombol tengah: klik buat ganti mode (days -> months -> years) */}
-              <button 
-                type="button" 
-                onClick={() => {
-                  if (viewMode === 'days') setViewMode('months');
-                  else if (viewMode === 'months') setViewMode('years');
-                }}
-                className="text-[13px] font-bold text-gray-800 hover:text-emerald-600 transition-all px-2"
-                disabled={viewMode === 'years'}
-              >
-                {viewMode === 'days' && `${MONTHS_ID[viewMonth]} ${viewYear}`}
-                {viewMode === 'months' && `${viewYear}`}
-                {viewMode === 'years' && `${startDecade}-${startDecade + 9}`}
-              </button>
-              <button type="button" onClick={nextView} className="w-9 h-9 rounded-lg bg-gray-50 text-gray-500 hover:bg-emerald-50 hover:text-emerald-600 transition-all flex items-center justify-center font-bold">
-                ›
-              </button>
-            </div>
-
-            {/* BODY: tampilkan grid sesuai mode */}
-            <div className="px-1">
-              {viewMode === 'days' && renderDays()}
-              {viewMode === 'months' && renderMonths()}
-              {viewMode === 'years' && renderYears()}
-            </div>
+        <div
+          ref={ref}
+          style={{ transform: shiftX ? `translateX(${shiftX}px)` : undefined }}
+          className="absolute top-full mt-1.5 left-0 bg-white border border-gray-100 rounded-xl shadow-2xl p-4 w-[280px] z-[99999] animate-in fade-in zoom-in-95 duration-200"
+        >
+          {/* HEADER: navigasi bulan/tahun */}
+          <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-50">
+            <button type="button" onClick={prevView} className="w-9 h-9 rounded-lg bg-gray-50 text-gray-500 hover:bg-emerald-50 hover:text-emerald-600 transition-all flex items-center justify-center font-bold">
+              ‹
+            </button>
+            {/* Tombol tengah: klik buat ganti mode (days -> months -> years) */}
+            <button 
+              type="button" 
+              onClick={() => {
+                if (viewMode === 'days') setViewMode('months');
+                else if (viewMode === 'months') setViewMode('years');
+              }}
+              className="text-[13px] font-bold text-gray-800 hover:text-emerald-600 transition-all px-2"
+              disabled={viewMode === 'years'}
+            >
+              {viewMonth !== undefined && viewYear !== undefined && (
+                <>
+                  {viewMode === 'days' && `${MONTHS_ID[viewMonth]} ${viewYear}`}
+                  {viewMode === 'months' && `${viewYear}`}
+                  {viewMode === 'years' && `${startDecade}-${startDecade + 9}`}
+                </>
+              )}
+            </button>
+            <button type="button" onClick={nextView} className="w-9 h-9 rounded-lg bg-gray-50 text-gray-500 hover:bg-emerald-50 hover:text-emerald-600 transition-all flex items-center justify-center font-bold">
+              ›
+            </button>
           </div>
-        </Portal>
+
+          {/* BODY: tampilkan grid sesuai mode */}
+          <div className="px-1">
+            {viewMode === 'days' && renderDays()}
+            {viewMode === 'months' && renderMonths()}
+            {viewMode === 'years' && renderYears()}
+          </div>
+        </div>
       )}
     </div>
   );
