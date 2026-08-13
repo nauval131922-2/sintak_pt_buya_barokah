@@ -711,8 +711,20 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     versionLabel: 'v1',
     items: [
       'Penyelarasan style footer tabel (TableFooter) berdiri sendiri di luar card tabel 100% konsisten dengan halaman SOPd',
-      'Penataan ulang hierarki z-index aplikasi (Sidebar z-[350] di atas tombol nav z-[80] & DateRangeCard z-30)',
       'Perbaikan bug tombol floating nav (up/down) yang tertahan active saat idle di HP & touchscreen',
+    ],
+  }),
+  'laporan-pekerjaan-2026-08-13-2': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan Setting Buya 2026',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-08-13',
+    date: '13 Agu 2026',
+    version: '2026-08-13-2',
+    versionLabel: 'v2',
+    items: [
+      'Pembaruan komponen DatePicker dengan smart horizontal shift (transform: translateX) untuk cegah kalender terpotong tepi layar',
+      'Penyelarasan hierarki z-index aplikasi (Modal/Overlay z-[300-400] di atas Sidebar z-[100], Tombol Nav z-[80] di bawah Sidebar z-[100])',
     ],
   }),
   'excel-sopd-2026-08-13-1': entry({

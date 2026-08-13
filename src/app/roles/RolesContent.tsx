@@ -646,7 +646,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
       {/* ── DELETE CONFIRM DIALOG ─────────────────────────────────────── */}
       {deleteConfirm && (
         <div
-          className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200"
+          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200"
         >
           <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200 overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-rose-50 to-red-50">

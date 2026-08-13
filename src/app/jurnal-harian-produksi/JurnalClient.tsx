@@ -3283,7 +3283,7 @@ export default function JurnalClient({
       )}
       {/* Export Progress Overlay */}
       {isExporting && (
-        <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="w-full max-w-md bg-white rounded-2xl p-6 border border-gray-100 shadow-2xl flex flex-col items-center text-center animate-in zoom-in-95 duration-200">
             
             {/* Animated Spreadsheet Icon */}
