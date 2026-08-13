@@ -690,7 +690,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Laporan Pekerjaan ───
-  'laporan-pekerjaan-2026-08-12': entry({
+  'laporan-pekerjaan-2026-08-12-crud': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan Setting Buya 2026',
     permissionKeys: ['produksi_laporan_pekerjaan'],
@@ -715,6 +715,32 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     version: '2026-08-11-1',
     items: [
       'Penyesuaian z-index tombol navigasi scroll floating (up/down) agar tidak menutupi sidebar saat dibuka',
+    ],
+  }),
+  'laporan-pekerjaan-2026-08-13': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan Setting Buya 2026',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-08-13',
+    date: '13 Agu 2026',
+    version: '2026-08-13-1',
+    items: [
+      'Penyelarasan style footer tabel (TableFooter) berdiri sendiri di luar card tabel 100% konsisten dengan halaman SOPd',
+      'Pembaruan komponen DatePicker berbasis Portal untuk mencegah popup terhalang/terpotong oleh container overflow di seluruh halaman aplikasi',
+    ],
+  }),
+  'laporan-pekerjaan-2026-08-12': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan Setting Buya 2026',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-08-12',
+    date: '12 Agu 2026',
+    version: '2026-08-12-1',
+    items: [
+      'Perbaikan dropdown filter yang tembus keluar card saat dipilih di HP',
+      'Perbaikan badge status yang keluar dari card saat toggle expand/collapse card di HP',
+      'Header halaman utama SINTAK dimasukkan ke area scroll utama di HP agar ter-scroll ke atas saat halaman di-scroll',
+      'Header kolom tabel mobile (Task/Project | PIC | Priority | Status) dipindah ke level terluar (sticky top-0 z-30) sehingga di HP portrait & landscape header selalu menempel di atas layar saat di-scroll',
     ],
   }),
   'laporan-pekerjaan-2026-08-10': entry({

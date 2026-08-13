@@ -305,7 +305,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
     <SidebarContext.Provider value={sidebarCtxValue}>
     {isMobileOpen && (
       <div
-        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[90] xl:hidden animate-in fade-in duration-300"
+        className="fixed inset-0 h-full w-full bg-slate-900/40 backdrop-blur-sm z-[90] xl:hidden animate-in fade-in duration-300"
         onClick={() => setIsMobileOpen(false)}
       />
     )}
@@ -316,7 +316,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
       onMouseLeave={() => { if (!isTouchDevice && !isResizing) setIsHovered(false); }}
       style={{ width: currentWidth }}
       className={`
-        fixed xl:sticky xl:top-0 h-[100dvh] md:h-full bg-white border-r border-gray-100 shrink-0 flex flex-col z-[100]
+        fixed xl:sticky top-0 h-full bg-white border-r border-gray-100 shrink-0 flex flex-col z-[100]
         ${isMobileOpen ? 'translate-x-0 shadow-2xl opacity-100 visible' : '-translate-x-full xl:translate-x-0 xl:opacity-100 xl:visible opacity-0 invisible'}
         ${isResizing ? '' : 'transition-[width,transform,opacity,visibility] duration-300 ease-in-out'}
       `}

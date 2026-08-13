@@ -279,6 +279,9 @@ export default function HasilProduksiClient() {
   const [expandedGrandTotal, setExpandedGrandTotal] = useState(false);
   const [showTopBtn, setShowTopBtn] = useState(false);
   const [showBottomBtn, setShowBottomBtn] = useState(false);
+  const [isNavActive, setIsNavActive] = useState(false);
+  const [isNavHovered, setIsNavHovered] = useState(false);
+  const navIdleTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [selectedRowKey, setSelectedRowKey] = useState<string | null>(null);
   const [hideGudang, setHideGudang] = useState(false);
@@ -318,6 +321,12 @@ export default function HasilProduksiClient() {
       setShowTopBtn(scrollPos > 150);
       const distanceToBottom = scrollHeight - (scrollPos + clientHeight);
       setShowBottomBtn(distanceToBottom > 150);
+
+      setIsNavActive(true);
+      if (navIdleTimerRef.current) clearTimeout(navIdleTimerRef.current);
+      navIdleTimerRef.current = setTimeout(() => {
+        setIsNavActive(false);
+      }, 1500);
     };
 
     if (mainWrapper) {
@@ -1779,52 +1788,53 @@ export default function HasilProduksiClient() {
           </div>
         </div>
       )}
-      {/* Floating Navigation Controls - Smooth Fade & Scale Transitions */}
-      {isMounted && typeof document !== 'undefined' && createPortal(
-        <div 
-          className={`fixed bottom-6 right-6 z-[80] transition-all duration-500 ease-out ${
-            showTopBtn || showBottomBtn 
-              ? 'opacity-100 translate-y-0 pointer-events-auto' 
-              : 'opacity-0 translate-y-8 pointer-events-none'
-          }`}
-        >
-          <div className={`bg-white/80 backdrop-blur-xl border border-white/60 shadow-2xl shadow-emerald-950/20 rounded-full p-1.5 flex flex-col transition-all duration-300 ring-1 ring-black/5 ${showTopBtn && showBottomBtn ? 'gap-1.5' : 'gap-0'}`}>
-            {/* Tombol Ke Atas */}
-            <button
-              onClick={() => {
-                const el = document.getElementById('main-content-scroll');
-                if (el) el.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className={`w-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-md shadow-emerald-600/30 hover:shadow-emerald-600/50 hover:scale-110 active:scale-95 transition-all duration-300 ease-out cursor-pointer ${
-                showTopBtn 
-                  ? 'h-10 opacity-100 scale-100 pointer-events-auto' 
-                  : 'h-0 opacity-0 scale-50 pointer-events-none overflow-hidden border-0 p-0'
-              }`}
-              title="Ke Paling Atas"
-              aria-label="Ke Paling Atas"
-            >
-              <ChevronUp size={20} strokeWidth={2.5} />
-            </button>
+      {/* Floating Navigation Controls - Smooth Fade & Scale Transitions (Fade total saat idle) */}
+      {isMounted && (showTopBtn || showBottomBtn) && (
+        <Portal>
+          <div 
+            onMouseEnter={() => setIsNavHovered(true)}
+            onMouseLeave={() => setIsNavHovered(false)}
+            className={`fixed bottom-6 right-6 z-[200] transition-all duration-300 ease-out ${
+              isNavActive || isNavHovered
+                ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto' 
+                : 'opacity-0 translate-y-4 scale-90 pointer-events-none'
+            }`}
+          >
+            <div className={`bg-white/80 backdrop-blur-xl border border-white/60 shadow-2xl shadow-emerald-950/20 rounded-full p-1.5 flex flex-col transition-all duration-300 ring-1 ring-black/5 ${showTopBtn && showBottomBtn ? 'gap-1.5' : 'gap-0'}`}>
+              {/* Tombol Ke Atas */}
+              {showTopBtn && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById('main-content-scroll');
+                    if (el) el.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-md shadow-emerald-600/30 hover:shadow-emerald-600/50 hover:scale-110 active:scale-95 transition-all duration-300 ease-out cursor-pointer"
+                  title="Ke Paling Atas"
+                  aria-label="Ke Paling Atas"
+                >
+                  <ChevronUp size={20} strokeWidth={2.5} />
+                </button>
+              )}
 
-            {/* Tombol Ke Grand Total */}
-            <button
-              onClick={() => {
-                const el = document.getElementById('main-content-scroll');
-                if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
-              }}
-              className={`w-10 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-md shadow-slate-900/30 hover:bg-emerald-600 hover:shadow-emerald-600/40 hover:scale-110 active:scale-95 transition-all duration-300 ease-out cursor-pointer ${
-                showBottomBtn 
-                  ? 'h-10 opacity-100 scale-100 pointer-events-auto' 
-                  : 'h-0 opacity-0 scale-50 pointer-events-none overflow-hidden border-0 p-0'
-              }`}
-              title="Ke Grand Total (Paling Bawah)"
-              aria-label="Ke Grand Total"
-            >
-              <ChevronDown size={20} strokeWidth={2.5} />
-            </button>
+              {/* Tombol Ke Grand Total */}
+              {showBottomBtn && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById('main-content-scroll');
+                    if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+                  }}
+                  className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-md shadow-slate-900/30 hover:bg-emerald-600 hover:shadow-emerald-600/40 hover:scale-110 active:scale-95 transition-all duration-300 ease-out cursor-pointer"
+                  title="Ke Grand Total (Paling Bawah)"
+                  aria-label="Ke Grand Total"
+                >
+                  <ChevronDown size={20} strokeWidth={2.5} />
+                </button>
+              )}
+            </div>
           </div>
-        </div>,
-        document.body
+        </Portal>
       )}
 
       {/* Simple Floating Tooltip Bubble tepat di bawah Card Pekerjaan yang diklik */}
