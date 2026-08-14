@@ -50,7 +50,14 @@ function MainContentInner({
     };
   }, [showDescTooltip]);
 
-  // Sync initial state from localStorage after mount
+  // Reset scroll position on route change
+  useEffect(() => {
+    const el = document.getElementById('main-content-scroll');
+    if (el) {
+      el.scrollTop = 0;
+    }
+    window.scrollTo(0, 0);
+  }, [pathname, searchParams]);
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('sidebar_expanded');

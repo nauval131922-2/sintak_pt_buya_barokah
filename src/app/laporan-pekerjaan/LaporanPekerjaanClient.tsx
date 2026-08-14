@@ -656,16 +656,17 @@ export default function LaporanPekerjaanClient() {
   }, [fetchData]);
 
   // CRUD Handlers
-  const openCreateModal = async () => {
-    resetFormData();
-    setModalMode("create");
-    setEditingTask(null);
+  const openCreateModal = () => {
+    // Hanya reset jika modalMode bukan "create" (misalnya dari "edit")
+    if (modalMode !== "create") {
+      resetFormData();
+      setModalMode("create");
+      setEditingTask(null);
+    }
     
-    // Fetch dropdown options
-    await Promise.all([
-      fetchSopdOptions(),
-      fetchEmployeeOptions(),
-    ]);
+    // Fetch dropdown options asynchronously without blocking tab transition
+    fetchSopdOptions();
+    fetchEmployeeOptions();
     
     setActiveTab("form");
   };
@@ -748,15 +749,11 @@ export default function LaporanPekerjaanClient() {
       status: task.status || "",
     });
     
-    // Fetch dropdown options
-    await Promise.all([
-      fetchSopdOptions(),
-      fetchEmployeeOptions(),
-    ]);
-    
-    // Fetch pekerjaan jika bagian sudah dipilih
+    // Fetch dropdown options asynchronously without blocking tab transition
+    fetchSopdOptions();
+    fetchEmployeeOptions();
     if (selectedBagian) {
-      await fetchPekerjaanOptions(selectedBagian);
+      fetchPekerjaanOptions(selectedBagian);
     }
     
     setActiveTab("form");
@@ -811,10 +808,6 @@ export default function LaporanPekerjaanClient() {
 
   const closeModal = () => {
     setActiveTab("list");
-    setEditingTask(null);
-    setSopdOptions([]);
-    setEmployeeOptions([]);
-    setPekerjaanOptions([]);
   };
 
   const calcWorkDays = useCallback((start?: Date | null, end?: Date | null): string => {
@@ -1367,7 +1360,13 @@ export default function LaporanPekerjaanClient() {
         <button
           type="button"
           onClick={() => {
-            if (activeTab !== "form") openCreateModal();
+            if (activeTab !== "form") {
+              if (modalMode !== "edit") {
+                openCreateModal();
+              } else {
+                setActiveTab("form");
+              }
+            }
           }}
           className={`flex items-center justify-center gap-1.5 pb-3 px-2 text-[13px] font-bold border-b-2 transition-all flex-1 sm:flex-initial cursor-pointer ${
             activeTab === "form"
