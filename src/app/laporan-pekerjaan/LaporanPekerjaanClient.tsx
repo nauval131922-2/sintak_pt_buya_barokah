@@ -82,10 +82,10 @@ function SquareDropdown({
   onChange,
   searchPlaceholder = "Cari...",
   widthClass = "w-48",
-  alignRight = false,
 }: SquareDropdownProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [shiftX, setShiftX] = useState(0);
   const triggerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -98,6 +98,34 @@ function SquareDropdown({
         o.label.toLowerCase().includes(search.toLowerCase())
       )
     : options;
+
+  // Auto detect bound check & smart horizontal shift agar panel tidak terpotong tepi layar
+  const adjustHorizontalPosition = useCallback(() => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const popupWidth = 190;
+    const margin = 12;
+
+    let currentLeftInViewport = rect.left;
+    let currentRightInViewport = rect.left + popupWidth;
+
+    let delta = 0;
+    if (currentRightInViewport > window.innerWidth - margin) {
+      delta = (window.innerWidth - margin) - currentRightInViewport;
+    }
+    if (currentLeftInViewport + delta < margin) {
+      delta = margin - currentLeftInViewport;
+    }
+
+    setShiftX(delta);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    adjustHorizontalPosition();
+    window.addEventListener("resize", adjustHorizontalPosition);
+    return () => window.removeEventListener("resize", adjustHorizontalPosition);
+  }, [open, adjustHorizontalPosition]);
 
   useEffect(() => {
     if (!open) return;
@@ -122,28 +150,36 @@ function SquareDropdown({
     }
   }, [open]);
 
+  const isActive = value !== "ALL" && value !== "";
+
   return (
     <div ref={triggerRef} className="relative flex-1 min-w-0 md:flex-none md:inline-block">
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="w-full flex items-center justify-between gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg text-slate-700 hover:bg-white hover:border-slate-300 focus:outline-none transition-all min-w-0"
+        className={`w-full flex items-center justify-between gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg focus:outline-none transition-all min-w-0 ${
+          isActive
+            ? "bg-emerald-50 border-2 border-emerald-600 text-emerald-800 font-bold shadow-sm shadow-emerald-100"
+            : "bg-slate-50 border border-slate-200 text-slate-700 hover:bg-white hover:border-slate-300"
+        }`}
       >
-        <span className="truncate min-w-0 flex-1 text-left">{displayLabel}</span>
+        <span className="truncate min-w-0 flex-1 text-left flex items-center gap-1.5">
+          {isActive && <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" />}
+          <span className="truncate">{displayLabel}</span>
+        </span>
         <ChevronDown
           size={14}
-          className={`text-slate-400 shrink-0 transition-transform duration-150 ${
-            open ? "rotate-180" : ""
-          }`}
+          className={`shrink-0 transition-transform duration-150 ${
+            isActive ? "text-emerald-700 font-bold" : "text-slate-400"
+          } ${open ? "rotate-180" : ""}`}
         />
       </button>
 
       {open && (
         <div
           ref={panelRef}
-          className={`absolute top-full mt-1.5 ${
-            alignRight ? "right-0" : "left-0"
-          } w-full min-w-[180px] bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-[9999] animate-in fade-in slide-in-from-top-1 duration-150`}
+          style={{ transform: shiftX !== 0 ? `translateX(${shiftX}px)` : undefined }}
+          className="absolute top-full mt-1.5 left-0 w-full min-w-[190px] bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-[9999] animate-in fade-in slide-in-from-top-1 duration-150"
         >
           <div className="p-2 border-b border-slate-100 bg-slate-50/50">
             <div className="flex items-center gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-slate-200">
@@ -448,6 +484,7 @@ export default function LaporanPekerjaanClient() {
 
   // Filters & Analytics state
   const [selectedPic, setSelectedPic] = useState<string>("ALL");
+  const [selectedBagianFilter, setSelectedBagianFilter] = useState<string>("ALL");
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const deferredSearchTerm = useDeferredValue(searchTerm);
@@ -971,10 +1008,26 @@ export default function LaporanPekerjaanClient() {
     }, {} as Record<string, string>);
   }, [sopdOptions]);
 
-  // Options PIC untuk SquareDropdown
+  // Saling-terkait filter options (Bagian, PIC, Status)
+  const bagianOptions = useMemo<FilterOption[]>(() => {
+    const set = new Set<string>();
+    tasks.forEach((t) => {
+      if (selectedPic !== "ALL" && t.pic.toUpperCase() !== selectedPic.toUpperCase()) return;
+      if (selectedStatus !== "ALL" && t.status.toUpperCase() !== selectedStatus.toUpperCase()) return;
+      if (t.bagian) set.add(t.bagian);
+    });
+    const sorted = Array.from(set).sort();
+    return [
+      { value: "ALL", label: "Semua Bagian" },
+      ...sorted.map((b) => ({ value: b, label: b })),
+    ];
+  }, [tasks, selectedPic, selectedStatus]);
+
   const picOptions = useMemo<FilterOption[]>(() => {
     const set = new Set<string>();
     tasks.forEach((t) => {
+      if (selectedBagianFilter !== "ALL" && (t.bagian || "").toUpperCase() !== selectedBagianFilter.toUpperCase()) return;
+      if (selectedStatus !== "ALL" && t.status.toUpperCase() !== selectedStatus.toUpperCase()) return;
       if (t.pic) set.add(t.pic);
     });
     const sorted = Array.from(set).sort();
@@ -982,20 +1035,22 @@ export default function LaporanPekerjaanClient() {
       { value: "ALL", label: "Semua PIC" },
       ...sorted.map((p) => ({ value: p, label: p })),
     ];
-  }, [tasks]);
+  }, [tasks, selectedBagianFilter, selectedStatus]);
 
-  // Options Status untuk SquareDropdown
-  const statusOptions = useMemo<FilterOption[]>(
-    () => [
+  const statusOptions = useMemo<FilterOption[]>(() => {
+    const set = new Set<string>();
+    tasks.forEach((t) => {
+      if (selectedBagianFilter !== "ALL" && (t.bagian || "").toUpperCase() !== selectedBagianFilter.toUpperCase()) return;
+      if (selectedPic !== "ALL" && t.pic.toUpperCase() !== selectedPic.toUpperCase()) return;
+      if (t.status) set.add(t.status.toUpperCase());
+    });
+    const allStatuses = ["BELUM DIKERJAKAN", "IN PROGRESS", "PENDING", "CANCEL", "SELESAI"];
+    const available = allStatuses.filter((s) => set.has(s));
+    return [
       { value: "ALL", label: "Semua Status" },
-      { value: "BELUM DIKERJAKAN", label: "BELUM DIKERJAKAN" },
-      { value: "IN PROGRESS", label: "IN PROGRESS" },
-      { value: "PENDING", label: "PENDING" },
-      { value: "CANCEL", label: "CANCEL" },
-      { value: "SELESAI", label: "SELESAI" },
-    ],
-    []
-  );
+      ...available.map((s) => ({ value: s, label: s })),
+    ];
+  }, [tasks, selectedBagianFilter, selectedPic]);
 
   // Filtered tasks
   const filteredTasks = useMemo(() => {
@@ -1003,6 +1058,12 @@ export default function LaporanPekerjaanClient() {
       if (
         selectedPic !== "ALL" &&
         t.pic.toUpperCase() !== selectedPic.toUpperCase()
+      ) {
+        return false;
+      }
+      if (
+        selectedBagianFilter !== "ALL" &&
+        (t.bagian || "").toUpperCase() !== selectedBagianFilter.toUpperCase()
       ) {
         return false;
       }
@@ -1020,7 +1081,7 @@ export default function LaporanPekerjaanClient() {
       }
       return true;
     });
-  }, [tasks, selectedPic, selectedStatus, deferredSearchTerm]);
+  }, [tasks, selectedPic, selectedBagianFilter, selectedStatus, deferredSearchTerm]);
 
   // Global Sorted Tasks (across ALL pages)
   const sortedFilteredTasks = useMemo(() => {
@@ -1807,22 +1868,45 @@ export default function LaporanPekerjaanClient() {
               <Filter className="w-3.5 h-3.5 mr-1 text-slate-400" /> Filter:
             </div>
 
+            {(selectedBagianFilter !== "ALL" || selectedPic !== "ALL" || selectedStatus !== "ALL" || searchTerm !== "") && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedBagianFilter("ALL");
+                  setSelectedPic("ALL");
+                  setSelectedStatus("ALL");
+                  setSearchTerm("");
+                }}
+                className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0"
+                title="Reset Semua Filter"
+              >
+                <X size={12} /> Reset
+              </button>
+            )}
+
+            <SquareDropdown
+              options={bagianOptions}
+              value={selectedBagianFilter}
+              onChange={setSelectedBagianFilter}
+              searchPlaceholder="Cari Bagian..."
+              widthClass="w-44"
+            />
+
             <SquareDropdown
               options={picOptions}
               value={selectedPic}
               onChange={setSelectedPic}
               searchPlaceholder="Cari PIC..."
-              widthClass="w-48"
+              widthClass="w-44"
             />
 
-          <SquareDropdown
-            options={statusOptions}
-            value={selectedStatus}
-            onChange={setSelectedStatus}
-            searchPlaceholder="Cari Status..."
-            widthClass="w-48"
-            alignRight
-          />
+            <SquareDropdown
+              options={statusOptions}
+              value={selectedStatus}
+              onChange={setSelectedStatus}
+              searchPlaceholder="Cari Status..."
+              widthClass="w-44"
+            />
         </div>
       </div>
       </div>
@@ -1889,13 +1973,13 @@ export default function LaporanPekerjaanClient() {
 
                   <div className="grid grid-cols-2 gap-2 text-[11px] bg-white p-2.5 rounded-lg border border-slate-200/60">
                     <div className="min-w-0">
-                      <span className="text-slate-400 block text-[10px]">Divisi</span>
+                      <span className="text-slate-400 block text-[10px]">Bagian / Divisi</span>
                       <span
                         className={`font-semibold text-slate-700 block ${
                           isExpanded ? "break-words" : "truncate"
                         }`}
                       >
-                        {t.division || "-"}
+                        {(t as any).bagian ? `${(t as any).bagian} (${t.division || "-"})` : t.division || "-"}
                       </span>
                     </div>
                     <div className="min-w-0">

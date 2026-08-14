@@ -711,7 +711,9 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     items: [
       'Peralihan total dari mode hybrid ke Full Input & Kelola di SINTAK (Single Source of Truth)',
       'Modul Konversi Data baru di Settings (/settings/konversi-data/laporan-pekerjaan) untuk reset/reseed data fresh dari Google Spreadsheet dengan kolom Bagian default "SETTING"',
-      'Peningkatan UX Mobile Card View: penambahan tombol Edit & Hapus langsung di setiap card HP',
+      'Penambahan filter Bagian & cascade filtering (Bagian, PIC, Status saling terkait) dengan penanda aktif hijau + tombol Reset cepat',
+      'Smart horizontal shift pada dropdown filter untuk deteksi batas layar otomatis agar panel tidak terpotong tepi layar',
+      'Peningkatan UX Mobile Card View: penambahan info Bagian/Divisi serta tombol Edit & Hapus di setiap card HP',
       'Optimasi performa tab: pemuatan dropdown non-blocking & preservasi data form Tambah Pekerjaan agar tidak ter-reset saat berpindah tab',
       'Penyesuaian tata letak form 1 layar utuh tanpa scroll luar & perbaikan parser tanggal fleksibel (termasuk format 3-Jan-26)',
       'Pembersihan UI: penyelarasan nama modul menjadi "Laporan Pekerjaan", penghapusan card header sekunder & pembuangan tombol Tambah Data duplikat di bar filter',
