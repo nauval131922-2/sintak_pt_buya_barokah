@@ -662,7 +662,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
   'laporan-pekerjaan-2026-08-07': entry({
     pageKey: 'laporan-pekerjaan',
-    title: 'Laporan Pekerjaan Setting Buya 2026',
+    title: 'Laporan Pekerjaan',
     permissionKeys: ['produksi_laporan_pekerjaan'],
     sortDate: '2026-08-07',
     date: '07 Agu 2026',
@@ -677,7 +677,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
   'laporan-pekerjaan-2026-08-09': entry({
     pageKey: 'laporan-pekerjaan',
-    title: 'Laporan Pekerjaan Setting Buya 2026',
+    title: 'Laporan Pekerjaan',
     permissionKeys: ['produksi_laporan_pekerjaan'],
     sortDate: '2026-08-09',
     date: '09 Agu 2026',
@@ -692,7 +692,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   // ─── Laporan Pekerjaan ───
   'laporan-pekerjaan-2026-08-14': entry({
     pageKey: 'laporan-pekerjaan',
-    title: 'Laporan Pekerjaan Setting Buya 2026',
+    title: 'Laporan Pekerjaan',
     permissionKeys: ['produksi_laporan_pekerjaan'],
     sortDate: '2026-08-14',
     date: '14 Agu 2026',
@@ -707,7 +707,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
   'laporan-pekerjaan-2026-08-12-crud': entry({
     pageKey: 'laporan-pekerjaan',
-    title: 'Laporan Pekerjaan Setting Buya 2026',
+    title: 'Laporan Pekerjaan',
     permissionKeys: ['produksi_laporan_pekerjaan'],
     sortDate: '2026-08-12',
     date: '12 Agu 2026',
@@ -723,7 +723,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
   'laporan-pekerjaan-2026-08-11': entry({
     pageKey: 'laporan-pekerjaan',
-    title: 'Laporan Pekerjaan Setting Buya 2026',
+    title: 'Laporan Pekerjaan',
     permissionKeys: ['produksi_laporan_pekerjaan'],
     sortDate: '2026-08-11',
     date: '11 Agu 2026',
@@ -734,7 +734,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
   'laporan-pekerjaan-2026-08-13-1': entry({
     pageKey: 'laporan-pekerjaan',
-    title: 'Laporan Pekerjaan Setting Buya 2026',
+    title: 'Laporan Pekerjaan',
     permissionKeys: ['produksi_laporan_pekerjaan'],
     sortDate: '2026-08-13',
     date: '13 Agu 2026',
@@ -747,7 +747,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
   'laporan-pekerjaan-2026-08-13-2': entry({
     pageKey: 'laporan-pekerjaan',
-    title: 'Laporan Pekerjaan Setting Buya 2026',
+    title: 'Laporan Pekerjaan',
     permissionKeys: ['produksi_laporan_pekerjaan'],
     sortDate: '2026-08-13',
     date: '13 Agu 2026',
@@ -765,7 +765,6 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     sortDate: '2026-08-13',
     date: '13 Agu 2026',
     version: '2026-08-13-1',
-    versionLabel: 'v1',
     items: [
       'Pembaruan komponen DatePicker dengan smart horizontal shift (transform: translateX) untuk cegah kalender terpotong tepi layar',
       'Penyelarasan z-index DateRangeCard (z-30) dan DataTable (z-[20]) agar panel DatePicker tidak tertutup header tabel SOPd',
@@ -773,7 +772,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
   'laporan-pekerjaan-2026-08-12': entry({
     pageKey: 'laporan-pekerjaan',
-    title: 'Laporan Pekerjaan Setting Buya 2026',
+    title: 'Laporan Pekerjaan',
     permissionKeys: ['produksi_laporan_pekerjaan'],
     sortDate: '2026-08-12',
     date: '12 Agu 2026',
@@ -787,7 +786,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
   'laporan-pekerjaan-2026-08-10': entry({
     pageKey: 'laporan-pekerjaan',
-    title: 'Laporan Pekerjaan Setting Buya 2026',
+    title: 'Laporan Pekerjaan',
     permissionKeys: ['produksi_laporan_pekerjaan'],
     sortDate: '2026-08-10',
     date: '10 Agu 2026',

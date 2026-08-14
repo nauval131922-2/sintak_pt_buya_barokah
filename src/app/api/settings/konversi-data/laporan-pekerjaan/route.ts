@@ -30,8 +30,8 @@ export async function POST(request: NextRequest) {
 
     const now = new Date().toISOString();
     const insertBatch = sheetTasks.map((sheetTask) => ({
-      sql: `INSERT INTO laporan_pekerjaan (task, project, division, pic, priority, start_date, end_date, work_days, note, status, source, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'sintak', ?)`,
+      sql: `INSERT INTO laporan_pekerjaan (task, project, division, bagian, pic, priority, start_date, end_date, work_days, note, status, source, created_at)
+            VALUES (?, ?, ?, 'SETTING', ?, ?, ?, ?, ?, ?, ?, 'sintak', ?)`,
       args: [
         sheetTask.task || sheetTask.project || "",
         sheetTask.project || "",

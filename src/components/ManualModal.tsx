@@ -380,7 +380,7 @@ export default function ManualModal() {
       ]
     },
     '/laporan-pekerjaan': {
-      title: 'Laporan Pekerjaan Setting Buya 2026',
+      title: 'Laporan Pekerjaan',
       icon: FileSpreadsheet,
       description: 'Monitoring & Laporan Pekerjaan Produksi yang terhubung langsung secara live dari Google Spreadsheet.',
       steps: [
