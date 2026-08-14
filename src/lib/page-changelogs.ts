@@ -46,6 +46,17 @@ function entry(
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   // ─── Login ───
+  'login-2026-08-14': entry({
+    pageKey: 'login',
+    title: 'Halaman Login',
+    permissionKeys: [],
+    sortDate: '2026-08-14',
+    date: '14 Agu 2026',
+    version: '2026-08-14-1',
+    items: [
+      'Penyempurnaan alur redirect pasca-login: pengguna yang masa sesinya habis saat mengakses halaman terproteksi kini otomatis diarahkan kembali ke halaman awal yang sedang dibuka',
+    ],
+  }),
   'login-2026-08-02': entry({
     pageKey: 'login',
     title: 'Halaman Login',
@@ -699,10 +710,11 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     version: '2026-08-14-1',
     items: [
       'Peralihan total dari mode hybrid ke Full Input & Kelola di SINTAK (Single Source of Truth)',
-      'Modul Konversi Data baru di Settings (/settings/konversi-data/laporan-pekerjaan) untuk reset/reseed data fresh dari Google Spreadsheet',
+      'Modul Konversi Data baru di Settings (/settings/konversi-data/laporan-pekerjaan) untuk reset/reseed data fresh dari Google Spreadsheet dengan kolom Bagian default "SETTING"',
       'Peningkatan UX Mobile Card View: penambahan tombol Edit & Hapus langsung di setiap card HP',
+      'Optimasi performa tab: pemuatan dropdown non-blocking & preservasi data form Tambah Pekerjaan agar tidak ter-reset saat berpindah tab',
       'Penyesuaian tata letak form 1 layar utuh tanpa scroll luar & perbaikan parser tanggal fleksibel (termasuk format 3-Jan-26)',
-      'Pembersihan UI: penghapusan card header sekunder & pembuangan tombol Tambah Data duplikat di bar filter',
+      'Pembersihan UI: penyelarasan nama modul menjadi "Laporan Pekerjaan", penghapusan card header sekunder & pembuangan tombol Tambah Data duplikat di bar filter',
     ],
   }),
   'laporan-pekerjaan-2026-08-12-crud': entry({
