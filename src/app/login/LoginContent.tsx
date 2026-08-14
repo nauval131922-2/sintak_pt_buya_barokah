@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { login } from '@/lib/auth';
 import { KeyRound, User, LogIn, AlertCircle, Printer } from 'lucide-react';
 
 export default function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -20,7 +21,9 @@ export default function LoginContent() {
     try {
       const result = await login(username, password);
       if (result.success) {
-        router.push(result.firstRoute ?? '/dashboard');
+        const redirectTarget = searchParams.get('redirect');
+        const targetRoute = redirectTarget && redirectTarget.startsWith('/') ? redirectTarget : (result.firstRoute ?? '/dashboard');
+        router.push(targetRoute);
         router.refresh();
       } else {
         setError(result.message || 'Login gagal.');
