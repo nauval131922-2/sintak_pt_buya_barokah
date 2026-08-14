@@ -675,23 +675,58 @@ export default function LaporanPekerjaanClient() {
     setModalMode("edit");
     setEditingTask(task);
     
-    // Parse dates jika ada
-    let startDateObj = null;
-    let endDateObj = null;
-    if (task.startDate) {
-      const parts = task.startDate.split('/');
-      if (parts.length === 3) {
-        startDateObj = new Date(parts[2], parseInt(parts[1]) - 1, parseInt(parts[0]));
-      }
-    }
-    if (task.endDate) {
-      const parts = task.endDate.split('/');
-      if (parts.length === 3) {
-        endDateObj = new Date(parts[2], parseInt(parts[1]) - 1, parseInt(parts[0]));
-      }
-    }
+    // Parse dates (bisa format '3-Jan-26', '03/01/2026', '2026-01-03')
+    const parseFlexibleDate = (dateStr?: string) => {
+      if (!dateStr || !dateStr.trim()) return null;
+      const str = dateStr.trim();
 
-    const selectedBagian = (task as any).bagian || task.division || "";
+      // Format spreadsheet: '3-Jan-26', '12-Feb-2026'
+      const monthNames: Record<string, number> = {
+        jan: 0, feb: 1, mar: 2, apr: 3, may: 4, mei: 4, jun: 5,
+        jul: 6, aug: 7, agu: 7, sep: 8, oct: 9, okt: 9, nov: 10, dec: 11, des: 11
+      };
+
+      if (str.includes('-')) {
+        const parts = str.split('-');
+        if (parts.length === 3) {
+          const day = parseInt(parts[0], 10);
+          const monthKey = parts[1].toLowerCase().substring(0, 3);
+          let year = parseInt(parts[2], 10);
+          
+          if (!isNaN(day) && monthNames[monthKey] !== undefined && !isNaN(year)) {
+            if (year < 100) year += 2000;
+            return new Date(year, monthNames[monthKey], day);
+          }
+          // Format ISO: '2026-01-03'
+          const isoMonth = parseInt(parts[1], 10) - 1;
+          if (!isNaN(day) && !isNaN(isoMonth) && !isNaN(year)) {
+            return new Date(year, isoMonth, day);
+          }
+        }
+      }
+
+      // Format slash: '03/01/2026'
+      if (str.includes('/')) {
+        const parts = str.split('/');
+        if (parts.length === 3) {
+          const day = parseInt(parts[0], 10);
+          const month = parseInt(parts[1], 10) - 1;
+          let year = parseInt(parts[2], 10);
+          if (year < 100) year += 2000;
+          if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+            return new Date(year, month, day);
+          }
+        }
+      }
+
+      const d = new Date(str);
+      return isNaN(d.getTime()) ? null : d;
+    };
+
+    const startDateObj = parseFlexibleDate(task.startDate);
+    const endDateObj = parseFlexibleDate(task.endDate);
+
+    const selectedBagian = (task as any).bagian || "";
     
     // Deteksi jenisPekerjaan jika nama task diawali dengan nama pekerjaan di master
     let detectedJenisPekerjaan = "";
@@ -1308,7 +1343,9 @@ export default function LaporanPekerjaanClient() {
     <div
       ref={clientContainerRef}
       className={`text-slate-800 ${
-        isAnalyticsOpen
+        activeTab === "form"
+          ? "h-full flex flex-col min-h-0 overflow-hidden"
+          : isAnalyticsOpen
           ? "flex flex-col gap-4 w-full pb-44 sm:pb-40 md:pb-24"
           : "space-y-3 pb-44 sm:pb-40 md:space-y-0 md:flex-1 md:min-h-0 md:flex md:flex-col md:gap-3 md:overflow-hidden md:pb-0"
       }`}
@@ -1351,112 +1388,6 @@ export default function LaporanPekerjaanClient() {
           )}
         </button>
       </div>
-
-      {/* Header Info & Action (Hanya tampil di Tab List) */}
-      {activeTab === "list" && (
-        <div className="shrink-0 bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
-          {/* Header Trigger khusus HP */}
-          <button
-            type="button"
-            onClick={toggleHeaderMobile}
-            className="w-full p-3 flex md:hidden items-center justify-between bg-slate-50/60 hover:bg-slate-100/80 transition-colors text-left focus:outline-none gap-2"
-          >
-            <div className="flex items-center space-x-2.5 min-w-0 flex-1 overflow-hidden">
-              <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 shrink-0">
-                <FileSpreadsheet className="w-4 h-4" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h2 className="text-xs font-bold text-slate-800 truncate">
-                  Laporan Pekerjaan
-                </h2>
-                {!isHeaderOpenMobile && (
-                  <p className="text-[10px] text-slate-500 truncate">
-                    {formattedLastUpdated
-                      ? `Update: ${formattedLastUpdated}`
-                      : "Data Google Spreadsheet"}
-                  </p>
-                )}
-              </div>
-            </div>
-            <div className="flex items-center space-x-1 shrink-0 text-slate-400">
-              <ChevronDown
-                className={`w-4 h-4 transition-transform duration-200 ${
-                  isHeaderOpenMobile ? "rotate-180" : ""
-                }`}
-              />
-            </div>
-          </button>
-
-          {/* Detail Header (Selalu tampil di Desktop md:, collapse di Mobile HP) */}
-          <div
-            className={`${
-              isHeaderOpenMobile ? "flex" : "hidden md:flex"
-            } p-3.5 flex-col md:flex-row md:items-center justify-between gap-3.5 border-t md:border-t-0 border-slate-100`}
-          >
-            <div className="flex items-start sm:items-center space-x-3">
-              <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 shrink-0 mt-0.5 sm:mt-0 hidden md:block">
-                <FileSpreadsheet className="w-5 h-5" />
-              </div>
-              <div className="min-w-0 flex-1">
-                {/* Judul tampil di Desktop, di HP disembunyikan karena sudah ada di header trigger */}
-                <h2 className="hidden md:block text-xs sm:text-sm font-bold text-slate-800 truncate">
-                  Laporan Pekerjaan
-                </h2>
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-0.5">
-                <p className="text-[11px] text-slate-500">
-                  Hybrid: Data Manual (SINTAK) + Live Spreadsheet
-                </p>
-                {formattedLastUpdated && (
-                  <div className="flex items-center gap-1.5">
-                    <span className="hidden sm:inline text-slate-300">•</span>
-                    <span className="text-[10.5px] sm:text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100/80 whitespace-nowrap">
-                      Update Terakhir: {formattedLastUpdated}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
-            <span className="text-[11px] sm:text-[11.5px] text-slate-500 font-medium">
-              Auto Refresh:{" "}
-              <span
-                className={
-                  countdown <= 10
-                    ? "text-amber-600 font-bold"
-                    : "font-semibold text-slate-700"
-                }
-              >
-                {formatCountdown(countdown)}
-              </span>
-            </span>
-
-            <div className="flex items-center gap-2">
-              <a
-                href={`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit?usp=sharing`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors border border-slate-200 whitespace-nowrap"
-              >
-                <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-                Spreadsheet
-              </a>
-              <button
-                onClick={() => fetchData(true)}
-                disabled={loading}
-                className="inline-flex items-center px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-lg transition-all shadow-sm whitespace-nowrap"
-              >
-                <RefreshCw
-                  className={`w-3.5 h-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`}
-                />
-                {loading ? "Syncing..." : "Sync Spreadsheet"}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      )}
 
       {/* TAB 1: LIST DATA PEKERJAAN */}
       {activeTab === "list" && (
@@ -1885,25 +1816,16 @@ export default function LaporanPekerjaanClient() {
               widthClass="w-48"
             />
 
-            <SquareDropdown
-              options={statusOptions}
-              value={selectedStatus}
-              onChange={setSelectedStatus}
-              searchPlaceholder="Cari Status..."
-              widthClass="w-48"
-              alignRight
-            />
-
-            <button
-              type="button"
-              onClick={openCreateModal}
-              className="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all shadow-sm whitespace-nowrap cursor-pointer shrink-0"
-            >
-              <Plus className="w-3.5 h-3.5 mr-1.5" />
-              Tambah Data
-            </button>
-          </div>
+          <SquareDropdown
+            options={statusOptions}
+            value={selectedStatus}
+            onChange={setSelectedStatus}
+            searchPlaceholder="Cari Status..."
+            widthClass="w-48"
+            alignRight
+          />
         </div>
+      </div>
       </div>
 
       {/* Error Message */}
@@ -2022,8 +1944,34 @@ export default function LaporanPekerjaanClient() {
                     )}
                   </div>
 
-                  <div className="text-[9.5px] font-semibold text-emerald-600/80 text-right pt-0.5">
-                    {isExpanded ? "▲ Klik untuk ciutkan" : "▼ Klik untuk lihat teks lengkap"}
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEditModal(t);
+                        }}
+                        className="px-2.5 py-1 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors flex items-center gap-1 cursor-pointer"
+                      >
+                        <Edit2 size={12} />
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (t.id) handleDelete(t.id);
+                        }}
+                        className="px-2.5 py-1 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg border border-rose-200 transition-colors flex items-center gap-1 cursor-pointer"
+                      >
+                        <Trash2 size={12} />
+                        Hapus
+                      </button>
+                    </div>
+                    <div className="text-[9.5px] font-semibold text-emerald-600/80 text-right">
+                      {isExpanded ? "▲ Ciutkan" : "▼ Rincian"}
+                    </div>
                   </div>
                 </div>
               );
@@ -2130,18 +2078,13 @@ export default function LaporanPekerjaanClient() {
                         className="px-2 py-2.5 text-center truncate"
                       >
                         <div className="flex items-center justify-center gap-1.5 shrink-0">
-                          {(t as any).source === 'spreadsheet' && (
-                            <span className="px-1.5 py-0.5 text-[9px] font-bold bg-blue-100 text-blue-700 rounded border border-blue-200 shrink-0">
-                              Sheet
-                            </span>
-                          )}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               openEditModal(t);
                             }}
                             className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors shrink-0"
-                            title={(t as any).source === 'spreadsheet' ? 'Edit (akan jadi data manual)' : 'Edit'}
+                            title="Edit Pekerjaan"
                           >
                             <Edit2 size={14} />
                           </button>
@@ -2150,9 +2093,8 @@ export default function LaporanPekerjaanClient() {
                               e.stopPropagation();
                               if (t.id) handleDelete(t.id);
                             }}
-                            className="p-1.5 text-rose-600 hover:bg-rose-50 rounded transition-colors shrink-0 disabled:opacity-40"
-                            title="Hapus"
-                            disabled={(t as any).source === 'spreadsheet'}
+                            className="p-1.5 text-rose-600 hover:bg-rose-50 rounded transition-colors shrink-0"
+                            title="Hapus Pekerjaan"
                           >
                             <Trash2 size={14} />
                           </button>
@@ -2348,7 +2290,7 @@ export default function LaporanPekerjaanClient() {
       )}
 
       {/* TAB 2: FORM TAMBAH / EDIT PEKERJAAN (STYLE JHP FORM) */}
-      <div className={`flex-1 min-h-0 ${activeTab === "form" ? "flex flex-col" : "hidden"}`}>
+      <div className={`flex-1 min-h-0 ${activeTab === "form" ? "flex flex-col h-full overflow-hidden" : "hidden"}`}>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -2357,7 +2299,7 @@ export default function LaporanPekerjaanClient() {
           className="bg-white border border-gray-100 rounded-2xl shadow-sm animate-in slide-in-from-top-4 fade-in duration-300 flex-1 min-h-0 flex flex-col overflow-hidden"
         >
           {/* BODY SCROLLABLE: Isian Form JHP Style */}
-          <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 pb-48 custom-scrollbar space-y-6">
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 custom-scrollbar space-y-6">
             
             {/* Section 1: Information Order & Pekerjaan */}
             <div>
@@ -2552,13 +2494,13 @@ export default function LaporanPekerjaanClient() {
             </div>
           </div>
 
-          {/* FOOTER FIXED: Action buttons (Persis JHP) */}
-          <div className="shrink-0 p-3 sm:p-4 border-t border-gray-100 bg-white/95 backdrop-blur-md z-10 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+          {/* FOOTER FIXED: Action buttons (Persis JHP style & fixed layout) */}
+          <div className="shrink-0 p-3 sm:p-4 pb-8 sm:pb-4 border-t border-gray-100 bg-white/95 backdrop-blur-md z-10 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={resetFormData}
-                className="w-full sm:w-auto px-4 py-2.5 text-[13px] font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-200 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                className="w-full sm:w-auto px-4 py-2.5 text-[13px] font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-200 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shrink-0 whitespace-nowrap"
                 title="Reset / Kosongkan Isian Form"
               >
                 <RotateCcw size={15} />
@@ -2569,16 +2511,18 @@ export default function LaporanPekerjaanClient() {
               <button
                 type="button"
                 onClick={closeModal}
-                className="flex-1 sm:flex-initial px-5 py-2.5 text-[13px] font-bold text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all text-center cursor-pointer"
+                className="flex-1 sm:flex-initial px-5 py-2.5 text-[13px] font-bold text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all text-center cursor-pointer shrink-0 whitespace-nowrap"
               >
                 Batal
               </button>
               <button
                 type="submit"
-                className="flex-1 sm:flex-initial px-5 py-2.5 text-[13px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="flex-1 sm:flex-initial px-5 py-2.5 text-[13px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0 whitespace-nowrap"
               >
-                <Save size={16} />
-                {modalMode === "create" ? "Simpan Data Baru" : "Simpan Perubahan"}
+                <Save size={16} className="shrink-0" />
+                <span className="shrink-0 whitespace-nowrap">
+                  {modalMode === "create" ? "Simpan Data Baru" : "Simpan Perubahan"}
+                </span>
               </button>
             </div>
           </div>

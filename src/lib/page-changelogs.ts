@@ -690,6 +690,21 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Laporan Pekerjaan ───
+  'laporan-pekerjaan-2026-08-14': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan Setting Buya 2026',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-08-14',
+    date: '14 Agu 2026',
+    version: '2026-08-14-1',
+    items: [
+      'Peralihan total dari mode hybrid ke Full Input & Kelola di SINTAK (Single Source of Truth)',
+      'Modul Konversi Data baru di Settings (/settings/konversi-data/laporan-pekerjaan) untuk reset/reseed data fresh dari Google Spreadsheet',
+      'Peningkatan UX Mobile Card View: penambahan tombol Edit & Hapus langsung di setiap card HP',
+      'Penyesuaian tata letak form 1 layar utuh tanpa scroll luar & perbaikan parser tanggal fleksibel (termasuk format 3-Jan-26)',
+      'Pembersihan UI: penghapusan card header sekunder & pembuangan tombol Tambah Data duplikat di bar filter',
+    ],
+  }),
   'laporan-pekerjaan-2026-08-12-crud': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan Setting Buya 2026',

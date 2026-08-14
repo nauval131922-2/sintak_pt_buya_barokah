@@ -701,7 +701,10 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                     {
                       label: 'Produksi',
                       icon: <Package size={14} />,
-                      items: [{ label: 'SOPd & Jurnal Harian', href: '/settings/konversi-data/jurnal-harian-produksi', icon: <ClipboardList size={12} />, exact: true }]
+                      items: [
+                        { label: 'SOPd & Jurnal Harian', href: '/settings/konversi-data/jurnal-harian-produksi', icon: <ClipboardList size={12} />, exact: true },
+                        { label: 'Laporan Pekerjaan', href: '/settings/konversi-data/laporan-pekerjaan', icon: <FileSpreadsheet size={12} />, exact: true }
+                      ]
                     }
                   ]
                 }]}
