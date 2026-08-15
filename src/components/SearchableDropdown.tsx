@@ -64,6 +64,7 @@ export default function SearchableDropdown({
   const [query, setQuery] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
+  const [shiftX, setShiftX] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -79,19 +80,38 @@ export default function SearchableDropdown({
         left: (rect.left + window.scrollX) / scale,
         width: rect.width,
       });
+
+      // ponytail: Auto horizontal shift agar panel tidak terpotong tepi layar (kanan/kiri)
+      if (panelRef.current) {
+        const panelWidthPx = panelRef.current.offsetWidth || rect.width;
+        const margin = 12;
+        const rightEdge = rect.left + panelWidthPx;
+        let delta = 0;
+
+        if (rightEdge > window.innerWidth - margin) {
+          delta = (window.innerWidth - margin) - rightEdge;
+        }
+        if (rect.left + delta < margin) {
+          delta = margin - rect.left;
+        }
+        setShiftX(delta);
+      }
     }
   }, []);
 
   useEffect(() => {
-    if (!open || !usePortal) return;
+    if (!open) return;
     updateCoords();
+    // Re-check shiftX setelah render DOM panel selesai
+    const timer = setTimeout(updateCoords, 0);
     window.addEventListener('scroll', updateCoords, true);
     window.addEventListener('resize', updateCoords);
     return () => {
+      clearTimeout(timer);
       window.removeEventListener('scroll', updateCoords, true);
       window.removeEventListener('resize', updateCoords);
     };
-  }, [open, usePortal, updateCoords]);
+  }, [open, updateCoords]);
 
   const labelFor = (item: string) => {
     if (item === '') return allLabel;
@@ -208,8 +228,11 @@ export default function SearchableDropdown({
         top: `${coords.top + 4}px`,
         left: `${coords.left}px`,
         width: `${coords.width}px`,
+        transform: shiftX ? `translateX(${shiftX}px)` : undefined,
         zIndex: 9999
-      } : undefined}
+      } : {
+        transform: shiftX ? `translateX(${shiftX}px)` : undefined,
+      }}
       className={`${usePortal ? '' : `absolute left-0 top-full mt-2 ${panelWidth || 'w-full'}`} bg-white border border-gray-100 rounded-xl shadow-xl shadow-emerald-900/10 py-3 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col max-h-[300px]`}
     >
       {/* Search */}

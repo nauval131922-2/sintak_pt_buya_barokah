@@ -357,6 +357,21 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Hasil Produksi ───
+  'hasil-produksi-2026-08-15': entry({
+    pageKey: 'hasil-produksi',
+    title: 'Hasil Produksi',
+    permissionKeys: ['produksi_hasil'],
+    sortDate: '2026-08-15',
+    date: '15 Agu 2026',
+    version: '2026-08-15-1',
+    items: [
+      'Smart horizontal shift pada SearchableDropdown agar panel otomatis bergeser dan tidak terpotong tepi layar',
+      'Penyelarasan filter Level 1 di mode Card agar hanya menampilkan kartu subtotal ringkasan',
+      'Penambahan metrik Target pada kartu Subtotal (JurnalSubtotalCard) dengan tata letak 2 baris rapi',
+      'Penambahan quick sort bar (Tanggal, Realisasi, Target, Pekerjaan, Kode) pada mode Card',
+      'Indikator visual warna thead tabel saat ada sortir kolom aktif dan perbaikan akurasi hitungan baris data di footer',
+    ],
+  }),
   'hasil-produksi-2026-08-11': entry({
     pageKey: 'hasil-produksi',
     title: 'Hasil Produksi',

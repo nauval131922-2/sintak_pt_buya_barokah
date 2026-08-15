@@ -29,18 +29,34 @@ function JurnalSubtotalCard({ row }: { row: any }) {
   return (
     <div 
       onClick={() => setExpanded(v => !v)}
-      className="relative z-10 w-full px-4 py-2.5 bg-emerald-50 border border-emerald-100/50 rounded-xl flex flex-wrap items-center justify-between gap-2 shadow-sm cursor-pointer select-none"
+      className="relative z-10 w-full px-4 py-2.5 bg-emerald-50 border border-emerald-100/50 rounded-xl flex flex-col gap-1.5 shadow-sm cursor-pointer select-none"
     >
-      <div className="flex items-center gap-1.5 min-w-0 flex-1">
+      {/* Row 1: Nama Pekerjaan & Kode */}
+      <div className="flex items-center justify-between gap-2 min-w-0">
         <span className={`text-[12px] font-bold text-emerald-800 ${expanded ? 'whitespace-normal break-words' : 'truncate'}`}>
           {row.jobDisplayName}
         </span>
         {row.code && <span className="text-[10px] font-bold text-gray-400 font-mono shrink-0">{row.code}</span>}
       </div>
-      <div className="flex items-center gap-2 shrink-0">
-        <span className="text-[11px] font-medium text-gray-400">Total:</span>
-        <span className="text-[14px] font-extrabold text-emerald-950 tabular-nums">{row.totalR.toLocaleString('id-ID')}</span>
-        {row.totalRijek > 0 && <span className="text-[11px] font-semibold text-rose-500 tabular-nums">rijek {row.totalRijek.toLocaleString('id-ID')}</span>}
+
+      {/* Row 2: Target, Total Realisasi, & Rijek */}
+      <div className="flex items-center gap-3 pt-1 border-t border-emerald-100/60 flex-wrap">
+        {row.totalTarget > 0 && (
+          <div className="flex items-center gap-1">
+            <span className="text-[10px] font-bold text-gray-400 tracking-wide">Target</span>
+            <span className="text-[12px] font-bold text-gray-600 tabular-nums">{row.totalTarget.toLocaleString('id-ID')}</span>
+          </div>
+        )}
+        <div className="flex items-center gap-1">
+          <span className="text-[10px] font-bold text-emerald-800/60 tracking-wide">Total</span>
+          <span className="text-[14px] font-extrabold text-emerald-950 tabular-nums">{row.totalR.toLocaleString('id-ID')}</span>
+        </div>
+        {row.totalRijek > 0 && (
+          <div className="flex items-center gap-1">
+            <span className="text-[10px] font-bold text-rose-400 tracking-wide">Rijek</span>
+            <span className="text-[12px] font-semibold text-rose-600 tabular-nums">{row.totalRijek.toLocaleString('id-ID')}</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -707,12 +723,11 @@ export default function HasilProduksiClient() {
   }, [sortedJurnalResults, sorting]);
 
   const displayRows = React.useMemo(() => {
-    if (detailLevel === 1 && viewMode === 'table') return flatRows.filter(r => r.type === 'subtotal');
+    if (detailLevel === 1) return flatRows.filter(r => r.type === 'subtotal');
     return flatRows;
-  }, [flatRows, detailLevel, viewMode]);
+  }, [flatRows, detailLevel]);
 
-  // Card view renderer — Jurnal Produksi
-  // ponytail: di Card View selalu render flatRows (subtotal & detail data) agar kartu data rincian selalu muncul
+  // Card view renderer — Jurnal Produksi (Standard Flex Layout)
   const jurnalCardContent = React.useMemo(() => {
     if (loadingDetails) {
       return [...Array(4)].map((_, i) => (
@@ -726,7 +741,7 @@ export default function HasilProduksiClient() {
         </div>
       ));
     }
-    if (!flatRows || flatRows.length === 0) {
+    if (!displayRows || displayRows.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center py-12 text-center opacity-40">
           <BarChart3 size={32} className="text-gray-400 mb-2" />
@@ -735,7 +750,7 @@ export default function HasilProduksiClient() {
       );
     }
 
-    return flatRows.map((row, idx) => {
+    return displayRows.map((row, idx) => {
       if (row.type === 'subtotal') {
         return <JurnalSubtotalCard key={`sc-${idx}`} row={row} />;
       }
@@ -752,7 +767,7 @@ export default function HasilProduksiClient() {
       );
       return <JurnalCard key={`jc-${idx}`} item={item} hasExtra={hasExtra} />;
     });
-  }, [flatRows, loadingDetails]);
+  }, [displayRows, loadingDetails]);
 
   const rowVirtualizer = useVirtualizer({
     count: viewMode === 'table' ? displayRows.length : 0,
@@ -979,7 +994,7 @@ export default function HasilProduksiClient() {
   // Cleaned up unused scroll reflow listener
   if (!isMounted) return null;
 
-  const totalJurnalItems = flatRows.length;
+  const totalJurnalItems = jurnalResults.reduce((acc, group) => acc + (group.items?.length || 0), 0);
   const totalBarangJadiItems = results.reduce((acc, group) => acc + group.items.length, 0);
 
   return (
@@ -1060,7 +1075,6 @@ export default function HasilProduksiClient() {
                     icon={<Filter size={14} className={selectedPekerjaan ? 'text-emerald-600' : 'text-gray-400'} />}
                     onChange={(val) => {
                       setSelectedPekerjaan(val);
-                      if (val) setDetailLevel(2);
                     }}
                     compact
                   />
@@ -1650,9 +1664,53 @@ export default function HasilProduksiClient() {
                )}
 
               {viewMode === 'card' ? (
-                <div className="flex flex-col gap-2 p-3 isolate">
-                  {jurnalCardContent}
-                </div>
+                <>
+                  {/* Card Quick Sort Bar */}
+                  {activeTab === 'jurnal' && jurnalResults.length > 0 && !loadingDetails && (
+                    <div className="flex items-center gap-1.5 px-3 py-2 bg-white border-b border-gray-100 overflow-x-auto custom-scrollbar shrink-0 select-none">
+                      <span className="text-[11px] font-bold text-gray-400 shrink-0 flex items-center gap-1">
+                        <ArrowUpDown size={12} />
+                        <span>Urutkan:</span>
+                      </span>
+                      {[
+                        { i: 0, label: 'Tanggal' },
+                        { i: 14, label: 'Realisasi' },
+                        { i: 13, label: 'Target' },
+                        { i: 3, label: 'Pekerjaan' },
+                        { i: 4, label: 'Kode' },
+                      ].map(item => {
+                        const currentSort = sorting.find(s => s.i === item.i);
+                        return (
+                          <button
+                            key={item.i}
+                            onClick={() => toggleSort(item.i)}
+                            className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all shrink-0 border ${
+                              currentSort
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm'
+                                : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-gray-100'
+                            }`}
+                          >
+                            <span>{item.label}</span>
+                            {currentSort ? (
+                              currentSort.desc ? <ArrowDown size={11} className="text-emerald-700" /> : <ArrowUp size={11} className="text-emerald-700" />
+                            ) : null}
+                          </button>
+                        );
+                      })}
+                      {sorting.length > 0 && (
+                        <button
+                          onClick={() => setSorting([])}
+                          className="text-[10.5px] font-semibold text-rose-500 hover:text-rose-700 hover:underline px-1.5 shrink-0"
+                        >
+                          Reset Urutan
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-2 p-3 isolate">
+                    {jurnalCardContent}
+                  </div>
+                </>
               ) : (
               <div
                 ref={jurnalBodyRef}
@@ -1663,18 +1721,31 @@ export default function HasilProduksiClient() {
                     {colWidths.map((w, i) => <col key={i} style={{ width: `${w}px` }} />)}
                   </colgroup>
                   <thead className="sticky top-0 z-20">
-                    <tr className="bg-white">
-                      {colWidths.map((w, i) => (
-                        <th key={i} onClick={() => toggleSort(i)} onContextMenu={(e) => colCtx(i, e)}
-                          className={`px-2 py-3 xl:py-4 text-[11px] xl:text-xs font-bold tracking-tight border-b border-r border-gray-100 bg-white whitespace-nowrap ${i === 0 ? 'sticky left-0 z-30 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]' : ''} ${i === 1 ? 'md:sticky md:z-30 md:shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]' : ''} ${i === 2 || i === 3 || i === 4 ? 'lg:sticky lg:z-30 lg:shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]' : ''} ${sorting.some(x => x.i === i) ? 'text-emerald-600' : 'text-gray-400'} ${i >= 6 && i <= 9 ? 'text-right' : ''} ${i === 14 ? 'bg-emerald-50' : ''} cursor-pointer hover:bg-gray-50 select-none`}
-                          style={{ width: `${w}px`, minWidth: `${w}px`, ...(i > 4 ? { position: 'relative' } : {}), ...(i > 0 && i <= 4 ? { left: `${colWidths.slice(0, i).reduce((a, b) => a + b, 0)}px` } : {}) }}>
-                          <div className="flex items-center gap-1">
-                            <SortIcon i={i} />
-                            <span className="truncate">{['Tanggal','Bagian / Karyawan','No. & Nama Order','Jenis Pekerjaan','Kode','Bahan Kertas','Jml. Plate','Warna','Inscheet','Rijek','Jam','Kendala','Keterangan','Target','Realisasi'][i]}</span>
-                          </div>
-                          <div onMouseDown={(e) => colResizeStart(i, e)} onDoubleClick={(e) => colAutoFit(i, e)} className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-blue-300/50 z-10" />
-                        </th>
-                      ))}
+                    <tr className={sorting.length > 0 ? 'bg-amber-50/90' : 'bg-white'}>
+                      {colWidths.map((w, i) => {
+                        const isSorted = sorting.some(x => x.i === i);
+                        return (
+                          <th key={i} onClick={() => toggleSort(i)} onContextMenu={(e) => colCtx(i, e)}
+                            className={`px-2 py-3 xl:py-4 text-[11px] xl:text-xs font-bold tracking-tight border-b border-r ${
+                              sorting.length > 0 
+                                ? 'border-amber-200/80 bg-amber-50/90' 
+                                : 'border-gray-100 bg-white'
+                            } whitespace-nowrap ${i === 0 ? 'sticky left-0 z-30 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]' : ''} ${i === 1 ? 'md:sticky md:z-30 md:shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]' : ''} ${i === 2 || i === 3 || i === 4 ? 'lg:sticky lg:z-30 lg:shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]' : ''} ${
+                              isSorted 
+                                ? 'text-amber-900 bg-amber-100/90' 
+                                : sorting.length > 0 
+                                ? 'text-amber-800/70 hover:bg-amber-100/50' 
+                                : 'text-gray-400 hover:bg-gray-50'
+                            } ${i >= 6 && i <= 9 ? 'text-right' : ''} ${i === 14 && sorting.length === 0 ? 'bg-emerald-50' : ''} cursor-pointer select-none`}
+                            style={{ width: `${w}px`, minWidth: `${w}px`, ...(i > 4 ? { position: 'relative' } : {}), ...(i > 0 && i <= 4 ? { left: `${colWidths.slice(0, i).reduce((a, b) => a + b, 0)}px` } : {}) }}>
+                            <div className="flex items-center gap-1">
+                              <SortIcon i={i} />
+                              <span className="truncate">{['Tanggal','Bagian / Karyawan','No. & Nama Order','Jenis Pekerjaan','Kode','Bahan Kertas','Jml. Plate','Warna','Inscheet','Rijek','Jam','Kendala','Keterangan','Target','Realisasi'][i]}</span>
+                            </div>
+                            <div onMouseDown={(e) => colResizeStart(i, e)} onDoubleClick={(e) => colAutoFit(i, e)} className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-blue-300/50 z-10" />
+                          </th>
+                        );
+                      })}
                     </tr>
                   </thead>
                   <tbody style={{ display: 'block', height: `${rowVirtualizer.getTotalSize()}px`, position: 'relative' }}>
