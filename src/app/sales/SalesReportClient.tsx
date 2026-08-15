@@ -65,7 +65,7 @@ export default function SalesReportClient() {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('salesReport_columnWidths');
       return saved ? JSON.parse(saved) : {
-        tgl: 140, faktur: 180, nama_pelanggan: 280, nama_prd: 350, jumlah: 180
+        tgl: 140, faktur: 180, faktur_prd: 180, kd_barang: 220, nama_pelanggan: 280, nama_prd: 350, jumlah: 180
       };
     }
     return {};
@@ -212,6 +212,23 @@ export default function SalesReportClient() {
       header: 'Faktur SO',
       size: 200,
       cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+    },
+    {
+      accessorKey: 'faktur_prd',
+      header: 'Faktur Prd',
+      size: 180,
+      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-700'}`}>{String(getValue() || '–')}</span>
+    },
+    {
+      accessorKey: 'kd_barang',
+      header: 'Kode Barang',
+      size: 220,
+      cell: ({ getValue, row }: any) => {
+        const val = String(getValue() || '–');
+        // ponytail: strip leading "satuan - " prefix if present
+        const cleaned = val.includes(' - ') ? val.split(' - ').slice(1).join(' - ') : val;
+        return <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-800'}`}>{cleaned}</span>;
+      }
     },
     {
       accessorKey: 'faktur_sj',

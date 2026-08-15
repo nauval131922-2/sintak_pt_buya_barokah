@@ -574,6 +574,16 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
       'Auto-scroll pada form edit role saat tombol edit diklik sehingga tombol Batal & Update tidak terpotong',
     ],
   }),
+  'sales-2026-08-15': entry({
+    pageKey: 'sales',
+    title: 'Laporan Penjualan',
+    permissionKeys: ['penjualan_laporan'],
+    sortDate: '2026-08-15',
+    date: '15 Agu 2026',
+    items: [
+      'Penambahan kolom Faktur Prd dan Kode Barang (tanpa prefix satuan) pada tabel Laporan Penjualan',
+    ],
+  }),
   'sales-2026-07-25': entry({
     pageKey: 'sales',
     title: 'Laporan Penjualan',
