@@ -596,7 +596,7 @@ export default function LaporanPekerjaanClient() {
       clearTimeout(t1);
       clearTimeout(t2);
     };
-  }, [isAnalyticsOpen, loading, tasks.length]);
+  }, [isAnalyticsOpen, loading, tasks.length, activeTab]);
 
   const scrollToTop = () => {
     const el = document.getElementById("main-content-scroll");
@@ -1382,14 +1382,14 @@ export default function LaporanPekerjaanClient() {
       ref={clientContainerRef}
       className={`text-slate-800 ${
         activeTab === "form"
-          ? "h-full flex flex-col min-h-0 overflow-hidden"
+          ? "portrait:max-sm:h-full portrait:max-sm:flex portrait:max-sm:flex-col portrait:max-sm:min-h-0 portrait:max-sm:overflow-hidden md:flex md:flex-col md:flex-1 md:min-h-0 md:overflow-hidden"
           : isAnalyticsOpen
           ? "flex flex-col gap-4 w-full pb-44 sm:pb-40 md:pb-24"
           : "space-y-3 pb-44 sm:pb-40 md:space-y-0 md:flex-1 md:min-h-0 md:flex md:flex-col md:gap-3 md:overflow-hidden md:pb-0"
       }`}
     >
       {/* TABS Navigation (Gaya JHP) */}
-      <div className="flex gap-2 sm:gap-6 border-b border-gray-100 shrink-0 px-2 mt-1">
+      <div className="portrait:max-sm:sticky portrait:max-sm:-top-2 portrait:max-sm:z-40 portrait:max-sm:bg-[#f8fafc] portrait:max-sm:-mx-4 portrait:max-sm:px-4 portrait:max-sm:pt-2 static mx-0 px-0 pt-0 flex gap-2 sm:gap-6 border-b border-gray-100 shrink-0">
         <button
           type="button"
           onClick={() => setActiveTab("list")}
@@ -1817,9 +1817,8 @@ export default function LaporanPekerjaanClient() {
         )}
       </div>
 
-      {/* Pembungkus Sticky Khusus HP (Portrait & Landscape): Search + Filter */}
-      <div className="sticky -top-2 z-30 bg-[var(--bg-deep)] -mx-4 px-4 pt-2 pb-1 portrait:block landscape:block md:static md:p-0 md:mx-0 md:bg-transparent">
-        {/* Filter & Search Bar */}
+      {/* Filter & Search Bar */}
+      <div className="portrait:max-sm:sticky portrait:max-sm:top-7 portrait:max-sm:z-30 portrait:max-sm:bg-[#f8fafc] portrait:max-sm:-mx-4 portrait:max-sm:px-4 portrait:max-sm:pt-1 portrait:max-sm:pb-2 portrait:max-sm:mb-1 portrait:max-sm:shadow-md portrait:max-sm:border-b portrait:max-sm:border-slate-200/80 static p-0 mx-0 mb-0 shadow-none border-none bg-transparent">
         <div className="shrink-0 bg-white p-3 rounded-xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-center gap-3">
           <div className="flex items-center gap-2 flex-1 w-full">
             {/* Tombol Reload Data di Samping Kiri Search Bar */}
@@ -1891,8 +1890,8 @@ export default function LaporanPekerjaanClient() {
               searchPlaceholder="Cari Status..."
               widthClass="w-44"
             />
+          </div>
         </div>
-      </div>
       </div>
 
       {/* Error Message */}
@@ -2300,6 +2299,8 @@ export default function LaporanPekerjaanClient() {
         totalPages={totalPages}
         onPageChange={setCurrentPage}
       />
+      </>
+      )}
 
       {/* Floating Scroll Navigation (Ke Atas & Ke Bawah - Fade total saat idle) */}
       {(showTopBtn || showBottomBtn) && (
@@ -2353,20 +2354,18 @@ export default function LaporanPekerjaanClient() {
           </div>
         </Portal>
       )}
-      </>
-      )}
 
       {/* TAB 2: FORM TAMBAH / EDIT PEKERJAAN (STYLE JHP FORM) */}
-      <div className={`flex-1 min-h-0 ${activeTab === "form" ? "flex flex-col h-full overflow-hidden" : "hidden"}`}>
+      <div className={activeTab === "form" ? "portrait:max-sm:flex-1 portrait:max-sm:min-h-0 portrait:max-sm:flex portrait:max-sm:flex-col portrait:max-sm:h-full portrait:max-sm:overflow-hidden landscape:block landscape:pb-40 md:flex md:flex-col md:flex-1 md:min-h-0 md:overflow-hidden" : "hidden"}>
         <form
           onSubmit={(e) => {
             e.preventDefault();
             handleSave();
           }}
-          className="bg-white border border-gray-100 rounded-2xl shadow-sm animate-in slide-in-from-top-4 fade-in duration-300 flex-1 min-h-0 flex flex-col overflow-hidden"
+          className="bg-white border border-gray-100 rounded-2xl shadow-sm animate-in slide-in-from-top-4 fade-in duration-300 portrait:max-sm:flex-1 portrait:max-sm:min-h-0 portrait:max-sm:flex portrait:max-sm:flex-col portrait:max-sm:overflow-hidden landscape:block md:flex md:flex-col md:flex-1 md:min-h-0 md:overflow-hidden"
         >
           {/* BODY SCROLLABLE: Isian Form JHP Style */}
-          <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 custom-scrollbar space-y-6">
+          <div className="portrait:max-sm:flex-1 portrait:max-sm:min-h-0 portrait:max-sm:overflow-y-auto flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 custom-scrollbar space-y-6">
             
             {/* Section 1: Information Order & Pekerjaan */}
             <div>
@@ -2562,7 +2561,7 @@ export default function LaporanPekerjaanClient() {
           </div>
 
           {/* FOOTER FIXED: Action buttons (Persis JHP style & fixed layout) */}
-          <div className="shrink-0 p-3 sm:p-4 pb-8 sm:pb-4 border-t border-gray-100 bg-white/95 backdrop-blur-md z-10 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+          <div className="shrink-0 p-3 sm:p-4 pb-8 sm:pb-4 border-t border-gray-100 bg-white/95 backdrop-blur-md z-10 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 rounded-b-2xl">
             <div className="flex gap-2">
               <button
                 type="button"

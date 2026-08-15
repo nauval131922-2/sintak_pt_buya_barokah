@@ -719,6 +719,8 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     date: '15 Agu 2026',
     version: '2026-08-15-1',
     items: [
+      'Penyempurnaan tata letak responsif lintas perangkat (HP Portrait, HP Landscape, Tablet & Desktop)',
+      'Optimalisasi sticky header navigasi tab dan filter bar khusus HP portrait tanpa celah/transparansi',
       'Pencatatan Audit Trail / Log Aktivitas lengkap untuk setiap aksi CRUD (Tambah, Edit, Hapus) & Bulk Import dengan dukungan visualisasi Diff (Before/After)',
       'Penambahan notifikasi Toast feedback (sukses/gagal) saat aksi simpan dan hapus data pekerjaan',
       'Pemisahan nilai Divisi pada data baru (dikosongkan agar murni menggunakan Bagian) serta preservasi Divisi asli saat edit',
