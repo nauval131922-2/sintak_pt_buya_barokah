@@ -46,7 +46,8 @@ import TableFooter from "@/components/TableFooter";
 import Portal, { getZoomScale } from "@/components/Portal";
 import SearchableDropdown from "@/components/SearchableDropdown";
 import DatePicker from "@/components/DatePicker";
-import { SPREADSHEET_ID, type SpreadsheetTask } from "@/lib/google-sheets";
+import { toast } from "@/lib/toast";
+import { type SpreadsheetTask } from "@/lib/google-sheets";
 
 
 
@@ -892,7 +893,7 @@ export default function LaporanPekerjaanClient() {
       const payload = {
         task: generatedTask,
         project: formData.orderProduksi,
-        division: modalMode === "edit" ? (editingTask?.division || formData.bagian) : formData.bagian,
+        division: modalMode === "edit" ? (editingTask?.division || "") : "",
         bagian: formData.bagian,
         pic: formData.pic,
         priority: formData.priority,
@@ -913,14 +914,15 @@ export default function LaporanPekerjaanClient() {
 
       const json = await res.json();
       if (json.success) {
+        toast.success(modalMode === "create" ? "Data pekerjaan berhasil ditambahkan!" : "Data pekerjaan berhasil diperbarui!");
         await fetchData();
         resetFormData();
         closeModal();
       } else {
-        alert(json.error || "Gagal menyimpan data");
+        toast.error(json.error || "Gagal menyimpan data");
       }
     } catch (err: any) {
-      alert(err.message || "Terjadi kesalahan");
+      toast.error(err.message || "Terjadi kesalahan");
     }
   };
 
@@ -931,12 +933,13 @@ export default function LaporanPekerjaanClient() {
       const res = await fetch(`/api/laporan-pekerjaan?id=${id}`, { method: "DELETE" });
       const json = await res.json();
       if (json.success) {
+        toast.success("Data pekerjaan berhasil dihapus!");
         await fetchData();
       } else {
-        alert(json.error || "Gagal menghapus data");
+        toast.error(json.error || "Gagal menghapus data");
       }
     } catch (err: any) {
-      alert(err.message || "Terjadi kesalahan");
+      toast.error(err.message || "Terjadi kesalahan");
     }
   };
 

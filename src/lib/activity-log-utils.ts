@@ -214,21 +214,21 @@ export function computeSnapshotLiveDiff(
 export function computeExplicitDiff(raw: Record<string, unknown> | null): FieldDiff[] {
   if (!raw) return [];
   const pairs: [string, unknown, unknown][] = [];
-  if (raw.before && raw.after) {
-    const prev = raw.before as Record<string, unknown>;
-    const curr = raw.after as Record<string, unknown>;
+  if (raw.before !== undefined && raw.after !== undefined) {
+    const prev = (raw.before || {}) as Record<string, unknown>;
+    const curr = (raw.after || {}) as Record<string, unknown>;
     for (const k of new Set([...Object.keys(prev), ...Object.keys(curr)])) {
       pairs.push([k, prev[k], curr[k]]);
     }
-  } else if (raw.previous && raw.current) {
-    const prev = raw.previous as Record<string, unknown>;
-    const curr = raw.current as Record<string, unknown>;
+  } else if (raw.previous !== undefined && raw.current !== undefined) {
+    const prev = (raw.previous || {}) as Record<string, unknown>;
+    const curr = (raw.current || {}) as Record<string, unknown>;
     for (const k of new Set([...Object.keys(prev), ...Object.keys(curr)])) {
       pairs.push([k, prev[k], curr[k]]);
     }
-  } else if (raw.old && raw.new) {
-    const prev = raw.old as Record<string, unknown>;
-    const curr = raw.new as Record<string, unknown>;
+  } else if (raw.old !== undefined && raw.new !== undefined) {
+    const prev = (raw.old || {}) as Record<string, unknown>;
+    const curr = (raw.new || {}) as Record<string, unknown>;
     for (const k of new Set([...Object.keys(prev), ...Object.keys(curr)])) {
       pairs.push([k, prev[k], curr[k]]);
     }

@@ -127,11 +127,25 @@ export async function POST(request: NextRequest) {
 
     const insertId = Number(res.lastInsertRowid);
 
+    const afterData = {
+      task: task.trim(),
+      project: project?.trim() || "",
+      division: division?.trim() || "",
+      bagian: bagian?.trim() || "",
+      pic: pic?.trim() || "",
+      priority: priority?.trim() || "Low",
+      start_date: startDate?.trim() || "",
+      end_date: endDate?.trim() || "",
+      work_days: workDays?.trim() || "",
+      note: note?.trim() || "",
+      status: status?.trim() || "BELUM DIKERJAKAN",
+    };
+
     logActivity(
       "CREATE",
       "laporan_pekerjaan",
       `Menambahkan laporan pekerjaan: "${task.trim()}" (Project: ${project?.trim() || "-"}, PIC: ${pic?.trim() || "-"})`,
-      { id: insertId, task: task.trim(), project, division, bagian, pic, priority, status }
+      { id: insertId, before: null, after: afterData }
     ).catch(() => {});
 
     return NextResponse.json({
@@ -166,6 +180,41 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    // Ambil data lama sebelum update untuk mencatat Diff di audit log
+    const oldRowRes = await db.execute({
+      sql: "SELECT * FROM laporan_pekerjaan WHERE id = ?",
+      args: [id],
+    });
+    const oldData = oldRowRes.rows?.[0] as any;
+
+    const beforeData = oldData ? {
+      task: oldData.task || "",
+      project: oldData.project || "",
+      division: oldData.division || "",
+      bagian: oldData.bagian || "",
+      pic: oldData.pic || "",
+      priority: oldData.priority || "",
+      start_date: oldData.start_date || "",
+      end_date: oldData.end_date || "",
+      work_days: oldData.work_days || "",
+      note: oldData.note || "",
+      status: oldData.status || "",
+    } : null;
+
+    const afterData = {
+      task: task.trim(),
+      project: project?.trim() || "",
+      division: division?.trim() || "",
+      bagian: bagian?.trim() || "",
+      pic: pic?.trim() || "",
+      priority: priority?.trim() || "Low",
+      start_date: startDate?.trim() || "",
+      end_date: endDate?.trim() || "",
+      work_days: workDays?.trim() || "",
+      note: note?.trim() || "",
+      status: status?.trim() || "BELUM DIKERJAKAN",
+    };
+
     // Update data di database lokal Sintak
     await db.execute({
       sql: `UPDATE laporan_pekerjaan SET 
@@ -175,17 +224,17 @@ export async function PUT(request: NextRequest) {
               updated_at = CURRENT_TIMESTAMP
             WHERE id = ?`,
       args: [
-        task.trim(),
-        project?.trim() || "",
-        division?.trim() || "",
-        bagian?.trim() || "",
-        pic?.trim() || "",
-        priority?.trim() || "Low",
-        startDate?.trim() || "",
-        endDate?.trim() || "",
-        workDays?.trim() || "",
-        note?.trim() || "",
-        status?.trim() || "BELUM DIKERJAKAN",
+        afterData.task,
+        afterData.project,
+        afterData.division,
+        afterData.bagian,
+        afterData.pic,
+        afterData.priority,
+        afterData.start_date,
+        afterData.end_date,
+        afterData.work_days,
+        afterData.note,
+        afterData.status,
         id,
       ],
     });
@@ -194,7 +243,7 @@ export async function PUT(request: NextRequest) {
       "UPDATE",
       "laporan_pekerjaan",
       `Mengubah laporan pekerjaan #${id}: "${task.trim()}"`,
-      { id, task: task.trim(), project, division, bagian, pic, priority, status }
+      { id, before: beforeData, after: afterData }
     ).catch(() => {});
 
     return NextResponse.json({
@@ -221,16 +270,43 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    // Ambil data lengkap sebelum dihapus untuk snapshot log aktivitas
+    const rowRes = await db.execute({
+      sql: "SELECT * FROM laporan_pekerjaan WHERE id = ?",
+      args: [id],
+    });
+    const deletedRow = rowRes.rows?.[0] as any;
+
     await db.execute({
       sql: "DELETE FROM laporan_pekerjaan WHERE id = ?",
       args: [id],
     });
 
+    const taskName = deletedRow?.task || `#${id}`;
+
+    const beforeData = deletedRow ? {
+      task: deletedRow.task || "",
+      project: deletedRow.project || "",
+      division: deletedRow.division || "",
+      bagian: deletedRow.bagian || "",
+      pic: deletedRow.pic || "",
+      priority: deletedRow.priority || "",
+      start_date: deletedRow.start_date || "",
+      end_date: deletedRow.end_date || "",
+      work_days: deletedRow.work_days || "",
+      note: deletedRow.note || "",
+      status: deletedRow.status || "",
+    } : { id };
+
     logActivity(
       "DELETE",
       "laporan_pekerjaan",
-      `Menghapus laporan pekerjaan #${id}`,
-      { id }
+      `Menghapus laporan pekerjaan #${id}: "${taskName}"`,
+      {
+        id,
+        before: beforeData,
+        after: null,
+      }
     ).catch(() => {});
 
     return NextResponse.json({
