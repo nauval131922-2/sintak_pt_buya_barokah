@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
+import { logActivity } from "@/lib/activity";
 import { getSpreadsheetTasks } from "@/lib/google-sheets";
 
 export const dynamic = "force-dynamic";
@@ -124,9 +125,18 @@ export async function POST(request: NextRequest) {
       ],
     });
 
+    const insertId = Number(res.lastInsertRowid);
+
+    logActivity(
+      "CREATE",
+      "laporan_pekerjaan",
+      `Menambahkan laporan pekerjaan: "${task.trim()}" (Project: ${project?.trim() || "-"}, PIC: ${pic?.trim() || "-"})`,
+      { id: insertId, task: task.trim(), project, division, bagian, pic, priority, status }
+    ).catch(() => {});
+
     return NextResponse.json({
       success: true,
-      id: Number(res.lastInsertRowid),
+      id: insertId,
       message: "Data pekerjaan berhasil ditambahkan",
     });
   } catch (error: any) {
@@ -180,6 +190,13 @@ export async function PUT(request: NextRequest) {
       ],
     });
 
+    logActivity(
+      "UPDATE",
+      "laporan_pekerjaan",
+      `Mengubah laporan pekerjaan #${id}: "${task.trim()}"`,
+      { id, task: task.trim(), project, division, bagian, pic, priority, status }
+    ).catch(() => {});
+
     return NextResponse.json({
       success: true,
       message: "Data pekerjaan berhasil diperbarui",
@@ -208,6 +225,13 @@ export async function DELETE(request: NextRequest) {
       sql: "DELETE FROM laporan_pekerjaan WHERE id = ?",
       args: [id],
     });
+
+    logActivity(
+      "DELETE",
+      "laporan_pekerjaan",
+      `Menghapus laporan pekerjaan #${id}`,
+      { id }
+    ).catch(() => {});
 
     return NextResponse.json({
       success: true,

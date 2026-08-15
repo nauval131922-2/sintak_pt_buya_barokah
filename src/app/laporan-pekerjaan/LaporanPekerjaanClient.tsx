@@ -48,7 +48,7 @@ import SearchableDropdown from "@/components/SearchableDropdown";
 import DatePicker from "@/components/DatePicker";
 import { SPREADSHEET_ID, type SpreadsheetTask } from "@/lib/google-sheets";
 
-const REFRESH_INTERVAL = 2 * 60; // 2 menit cooldown
+
 
 const BAGIAN_LIST = ['SETTING', 'QUALITY CONTROL', 'CETAK', 'FINISHING', 'GUDANG', 'TEKNISI', 'MESIN'];
 
@@ -393,7 +393,7 @@ export default function LaporanPekerjaanClient() {
   const [tasks, setTasks] = useState<SpreadsheetTask[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState<number>(REFRESH_INTERVAL);
+
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [loadTime, setLoadTime] = useState<number | null>(null);
 
@@ -665,7 +665,6 @@ export default function LaporanPekerjaanClient() {
       const json = await res.json();
       if (json.success) {
         setTasks(json.data);
-        setCountdown(REFRESH_INTERVAL);
         setLastUpdated(new Date());
         setLoadTime(Math.round(performance.now() - startTime));
         
@@ -685,11 +684,9 @@ export default function LaporanPekerjaanClient() {
     }
   }, []);
 
-  // Auto refresh interval
+  // Initial fetch on mount
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, REFRESH_INTERVAL * 1000);
-    return () => clearInterval(interval);
   }, [fetchData]);
 
   // CRUD Handlers
@@ -943,26 +940,10 @@ export default function LaporanPekerjaanClient() {
     }
   };
 
-  // Countdown timer tick per 1 detik
-  useEffect(() => {
-    const timer = setInterval(
-      () => setCountdown((c) => Math.max(0, c - 1)),
-      1000
-    );
-    return () => clearInterval(timer);
-  }, []);
-
   // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedPic, selectedStatus, searchTerm]);
-
-  // Format detik menjadi mm:ss
-  const formatCountdown = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = String(seconds % 60).padStart(2, "0");
-    return `${m}:${s}`;
-  };
 
   // Format tanggal & waktu WIB
   const formattedLastUpdated = useMemo(() => {
@@ -1844,7 +1825,7 @@ export default function LaporanPekerjaanClient() {
               onClick={() => fetchData(true)}
               disabled={loading}
               className="h-8 px-3 text-xs font-bold text-slate-600 hover:text-emerald-700 bg-slate-50 hover:bg-emerald-50 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
-              title="Reload Data (Sync Google Spreadsheet & Database)"
+              title="Reload Data Laporan Pekerjaan"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-emerald-600" : ""}`} />
               <span className="hidden sm:inline">Reload</span>
@@ -1931,7 +1912,7 @@ export default function LaporanPekerjaanClient() {
           {loading ? (
             <div className="py-12 text-center text-slate-400 text-xs">
               <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-600" />
-              Menghubungkan & memuat data Google Spreadsheet...
+              Memuat data laporan pekerjaan...
             </div>
           ) : paginatedTasks.length === 0 ? (
             <div className="py-12 text-center text-slate-400 text-xs">

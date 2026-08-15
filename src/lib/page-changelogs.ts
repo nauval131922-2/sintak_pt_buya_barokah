@@ -701,6 +701,18 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Laporan Pekerjaan ───
+  'laporan-pekerjaan-2026-08-15': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-08-15',
+    date: '15 Agu 2026',
+    version: '2026-08-15-1',
+    items: [
+      'Pencatatan Audit Trail / Log Aktivitas lengkap untuk setiap aksi CRUD (Tambah, Edit, Hapus) & Bulk Import Konversi Data',
+      'Pembersihan auto-refresh timer berkala & penyelarasan teks indikator/loading menjadi murni SINTAK',
+    ],
+  }),
   'laporan-pekerjaan-2026-08-14': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan',

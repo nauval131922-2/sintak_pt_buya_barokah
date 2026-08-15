@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { getSession } from "@/lib/session";
 import { getSpreadsheetTasks } from "@/lib/google-sheets";
+import { logActivity } from "@/lib/activity";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +49,13 @@ export async function POST(request: NextRequest) {
     }));
 
     await db.batch(insertBatch, "write");
+
+    logActivity(
+      "IMPORT",
+      "laporan_pekerjaan",
+      `Konversi Data: Berhasil mengimpor ${sheetTasks.length} data fresh Laporan Pekerjaan dari Google Spreadsheet`,
+      { count: sheetTasks.length }
+    ).catch(() => {});
 
     return NextResponse.json({
       success: true,

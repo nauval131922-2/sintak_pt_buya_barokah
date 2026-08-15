@@ -382,7 +382,7 @@ export default function ManualModal() {
     '/laporan-pekerjaan': {
       title: 'Laporan Pekerjaan',
       icon: FileSpreadsheet,
-      description: 'Monitoring & Laporan Pekerjaan Produksi yang terhubung langsung secara live dari Google Spreadsheet.',
+      description: 'Monitoring & Laporan Pekerjaan Produksi SINTAK (Single Source of Truth).',
       steps: [
         'Pantau 5 **Kartu Statistik** di bagian atas untuk melihat total task dan rincian per status (SELESAI, IN PROGRESS, PENDING, CANCEL) secara real-time.',
         'Lihat 4 **Grafik Visualisasi**:',
@@ -398,7 +398,7 @@ export default function ManualModal() {
         '  • **Tooltip Teks Lengkap**: Arahkan kursor pada sel tabel yang terpotong untuk melihat isi teks selengkapnya.',
         '  • **Pindah Halaman**: Setiap berganti halaman, posisi scroll tabel otomatis kembali ke paling atas.',
         'Sistem melakukan **Auto Refresh** setiap 2 menit. Klik tombol **Refresh Live** untuk memperbarui data secara manual kapan saja.',
-        'Klik tombol **Spreadsheet** di kanan atas untuk membuka dokumen Google Spreadsheet sumber secara langsung.'
+        'Fitur CRUD Lengkap (Tambah/Edit/Hapus) dapat dilakukan langsung di SINTAK.'
       ]
     }
   }), [pathname]);
