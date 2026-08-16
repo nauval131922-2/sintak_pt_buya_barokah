@@ -954,6 +954,7 @@ export const PAGE_CHANGELOG_PATHS: Record<string, string> = {
   '/penerimaan-pembelian': 'penerimaan-pembelian',
   '/pengiriman': 'pengiriman',
   '/pr': 'pr',
+  '/pricelist': 'pricelist',
   '/profile': 'profile',
   '/purchase-orders': 'purchase-orders',
   '/rekap-pembelian-barang': 'rekap-pembelian-barang',
