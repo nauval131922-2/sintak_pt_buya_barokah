@@ -261,6 +261,7 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
     ]},
     { type: 'node', label: 'Kalkulasi', colorKey: 'Sistem - Kalkulasi', children: [
       { type: 'leaf', key: 'hpp_kalkulasi', label: 'HPP Kalkulasi' },
+      { type: 'leaf', key: 'pricelist_kalkulasi', label: 'Pricelist' },
     ]},
     { type: 'node', label: 'Produksi', colorKey: 'Sistem - Produksi', children: [
       { type: 'leaf', key: 'produksi_hasil', label: 'Hasil Produksi' },

@@ -609,15 +609,20 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
               />
             )}
 
-            {canAccess('hpp_kalkulasi') && (
+            {(canAccess('hpp_kalkulasi') || canAccess('pricelist_kalkulasi')) && (
               <AccordionMenu
                 label="Kalkulasi"
                 icon={<Calculator size={18} />}
-                items={[{
-                  label: 'Data',
-                  icon: <Database size={16} />,
-                  items: [{ label: 'HPP Kalkulasi', href: '/hpp-kalkulasi', icon: <Calculator size={14} /> }]
-                }]}
+                items={[
+                  ...(canAccess('hpp_kalkulasi') ? [{
+                    label: 'Data',
+                    icon: <Database size={16} />,
+                    items: [
+                      { label: 'HPP Kalkulasi', href: '/hpp-kalkulasi', icon: <Calculator size={14} /> },
+                    ]
+                  }] : []),
+                  ...(canAccess('pricelist_kalkulasi') ? [{ label: 'Pricelist', href: '/pricelist', icon: <FileSpreadsheet size={16} /> }] : []),
+                ]}
               />
             )}
 

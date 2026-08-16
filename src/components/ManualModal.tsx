@@ -321,6 +321,29 @@ export default function ManualModal() {
         'Harga Satuan pada form pencatatan akan otomatis terisi berdasarkan nilai **HPP Kalkulasi** di menu ini.'
       ]
     },
+    '/pricelist': {
+      title: 'Pricelist Kalender',
+      icon: FileSpreadsheet,
+      description: 'Master data tarif, HPP, margin keuntungan, dan harga jual kalender dinding spiral 2027.',
+      steps: [
+        '**Aturan File Excel yang Diupload**:',
+        '  • **Format File**: Mendukung format **.xlsx**, **.xlsm**, atau **.xls**.',
+        '  • **Nama Sheet Wajib**: File harus memiliki sheet bernama **HARGA**.',
+        '  • **Struktur Header**: Header bahan (**HVS 70**, **ART PAPER 120**, **ART PAPER 150**) dan sub-kolom (**HPP**, **HARGA**) harus sesuai template master pricelist kalender spiral.',
+        '  • **Sifat Pembaruan Data**: Mengunggah file baru akan menggantikan (replace) data pricelist sebelumnya dengan data terbaru dari file.',
+        '**Upload File Excel**: Klik tombol **Pilih & Upload Excel** pada card atas untuk memilih file master pricelist.',
+        '**Informasi Update**: Status waktu pembaruan dan nama file yang aktif ditampilkan langsung pada badge di card upload.',
+        '**Penyaringan Data (Filter)**:',
+        '  • Gunakan dropdown **Jenis** untuk menyaring jenis kalender (Eko Wulan / 12 Lbr, Dwi Wulan / 6 Lbr, Tri Wulan / 4 Lbr).',
+        '  • Gunakan dropdown **Bahan** untuk menyaring jenis kertas (HVS 70, Art Paper 120, Art Paper 150).',
+        '  • Gunakan **Kotak Pencarian** untuk mencari berdasarkan kata kunci ukuran, oplah, atau mesin.',
+        '  • Klik tombol **Reset** merah untuk mengembalikan seluruh filter ke kondisi awal.',
+        '**Mode Tampilan**:',
+        '  • **Matriks**: Menampilkan matriks perbandingan harga & HPP per oplah dan ukuran mirip format Excel asli.',
+        '  • **Tabel Rinci**: Menampilkan data detail baris per baris lengkap dengan persentase margin & total profit.'
+      ],
+      tips: 'Pastikan file yang diupload memiliki sheet HARGA dengan template master pricelist kalender spiral agar data terbaca dengan sempurna.'
+    },
     '/hasil-produksi': {
       title: 'Hasil Produksi',
       icon: BarChart3,

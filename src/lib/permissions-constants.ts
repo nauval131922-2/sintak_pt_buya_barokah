@@ -20,6 +20,7 @@ export const MODULE_REGISTRY = [
   // Kalkulasi
   { key: 'kalkulasi_rekap_so',     label: 'Rekap Sales Order Barang',         group: 'Sistem - Penjualan' },
   { key: 'hpp_kalkulasi',          label: 'HPP Kalkulasi',                    group: 'Sistem - Kalkulasi' },
+  { key: 'pricelist_kalkulasi',    label: 'Pricelist',                        group: 'Sistem - Kalkulasi' },
 
   // Pembelian
   { key: 'pembelian_pr',           label: 'Purchase Request (PR)',            group: 'Data Digit - Pembelian' },

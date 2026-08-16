@@ -50,6 +50,7 @@ export const searchableMenuItems = [
   { label: 'Jurnal Harian Produksi', href: '/jurnal-harian-produksi', category: 'Sistem', keywords: 'jhp daily production journal' },
   { label: 'Hasil Produksi', href: '/hasil-produksi', category: 'Sistem', keywords: 'output produksi' },
   { label: 'Kalkulasi HPP', href: '/hpp-kalkulasi', category: 'Sistem', keywords: 'hpp cost calculation' },
+  { label: 'Pricelist', href: '/pricelist', category: 'Sistem', keywords: 'pricelist harga kalender spiral eko dwi tri wulan' },
   { label: 'Log Aktivitas', href: '/log-aktivitas', category: 'Sistem', keywords: 'activity log audit trail' },
   { label: 'Log Perubahan', href: '/log-perubahan', category: 'Sistem', keywords: 'log perubahan changelog history update rilis versi' },
   { label: 'Karyawan', href: '/employees', category: 'Sistem', keywords: 'employee pegawai staff' },

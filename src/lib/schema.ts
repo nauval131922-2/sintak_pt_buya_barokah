@@ -286,6 +286,22 @@ export async function initSchema(db: any) {
       keterangan TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`,
+    `CREATE TABLE IF NOT EXISTS pricelist_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      jenis_kalender TEXT NOT NULL,
+      oplah INTEGER NOT NULL,
+      proses TEXT NOT NULL,
+      bahan TEXT NOT NULL,
+      ukuran TEXT NOT NULL,
+      hpp REAL NOT NULL DEFAULT 0,
+      harga REAL NOT NULL DEFAULT 0,
+      harga_nego REAL NOT NULL DEFAULT 0,
+      profit_pct REAL NOT NULL DEFAULT 0,
+      profit_pct_nego REAL NOT NULL DEFAULT 0,
+      profit_tot REAL NOT NULL DEFAULT 0,
+      profit_tot_nego REAL NOT NULL DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );`,
 
     `CREATE TABLE IF NOT EXISTS sales_reports (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1021,6 +1037,7 @@ export async function initSchema(db: any) {
           "INSERT OR IGNORE INTO role_permissions (role, module_key, can_access) VALUES ('Admin', 'penjualan_pengiriman', 1);",
           "INSERT OR IGNORE INTO role_permissions (role, module_key, can_access) VALUES ('Admin', 'karyawan', 1);",
           "INSERT OR IGNORE INTO role_permissions (role, module_key, can_access) VALUES ('Admin', 'hpp_kalkulasi', 1);",
+          "INSERT OR IGNORE INTO role_permissions (role, module_key, can_access) VALUES ('Admin', 'pricelist_kalkulasi', 1);",
           "INSERT OR IGNORE INTO role_permissions (role, module_key, can_access) VALUES ('Admin', 'catat_kesalahan', 1);",
           "INSERT OR IGNORE INTO role_permissions (role, module_key, can_access) VALUES ('Admin', 'tracking_manufaktur', 1);"
         ], "write");
@@ -1624,7 +1641,7 @@ async function initDynamicTriggers(db: any) {
       'bill_of_materials', 'purchase_requests', 'purchase_orders',
       'penerimaan_pembelian', 'rekap_pembelian_barang', 'pelunasan_hutang',
       'pelunasan_piutang', 'pengiriman', 'spph_out', 'sph_in', 'sph_out', 'rek_akuntansi',
-      'hpp_kalkulasi', 'stok_master_barang', 'usr_log', 'produksi_selesai', 'user_roles',
+      'hpp_kalkulasi', 'pricelist_items', 'stok_master_barang', 'usr_log', 'produksi_selesai', 'user_roles',
       'master_pekerjaan', 'push_subscriptions', 'telegram_users', 'role_permissions', 'app_roles',
       'laporan_pekerjaan'
     ];

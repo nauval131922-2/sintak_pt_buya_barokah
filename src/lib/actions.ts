@@ -548,7 +548,7 @@ export async function getActivityLogs(limit = 1000) {
 export async function getLiveRecord(tableName: string, recordId: number | string) {
   try {
     const allowedTables = [
-      'users', 'employees', 'infractions', 'orders', 'bahan_baku', 'barang_jadi', 'hpp_kalkulasi', 
+      'users', 'employees', 'infractions', 'orders', 'bahan_baku', 'barang_jadi', 'hpp_kalkulasi', 'pricelist_items', 
       'sales_reports', 'sph_out', 'sales_orders', 'bill_of_materials', 'purchase_requests', 
       'spph_out', 'sph_in', 'purchase_orders'
     ];

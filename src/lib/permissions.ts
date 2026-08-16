@@ -38,6 +38,7 @@ const MODULE_TO_ROUTE: Array<{ key: string; route: string }> = [
   { key: 'kalkulasi_rekap_so',    route: '/rekap-sales-order' },
   { key: 'karyawan',              route: '/employees' },
   { key: 'hpp_kalkulasi',         route: '/hpp-kalkulasi' },
+  { key: 'pricelist_kalkulasi',   route: '/pricelist' },
   { key: 'catat_kesalahan',       route: '/records' },
   { key: 'tracking_manufaktur',   route: '/tracking-manufaktur' },
   { key: 'activity_log_view',     route: '/log-aktivitas' },

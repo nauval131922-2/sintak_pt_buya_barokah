@@ -45,6 +45,24 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
+  // ─── Pricelist Kalender ───
+  'pricelist-2026-08-16': entry({
+    pageKey: 'pricelist',
+    title: 'Pricelist Kalender',
+    permissionKeys: ['pricelist_kalkulasi'],
+    sortDate: '2026-08-16',
+    date: '16 Agu 2026',
+    version: '2026-08-16-1',
+    items: [
+      'Penambahan menu baru Pricelist Kalender pada hierarki Sistem > Kalkulasi > Pricelist (/pricelist)',
+      'Dukungan upload dan parser otomatis sheet HARGA dari file master Pricelist Kalender 2027 Spiral.xlsx / xlsm',
+      'Fitur validasi ketat file Excel (wajib sheet HARGA dan struktur header yang sesuai)',
+      'Tampilan matriks perbandingan harga per oplah dan ukuran mirip format Excel asli serta tampilan tabel rinci',
+      'Bar filter SquareDropdown untuk Jenis Kalender & Bahan, bar pencarian live, serta toggle mode tampilan',
+      'Responsif mobile dengan accordion card upload otomatis tersimpan di localStorage',
+    ],
+  }),
+
   // ─── Login ───
   'login-2026-08-14': entry({
     pageKey: 'login',
