@@ -32,8 +32,8 @@ export async function GET(request: Request) {
     const authHeader = request.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
     
-    // Auth untuk Vercel Cron
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    // Auth untuk Vercel Cron — fail-closed: tanpa CRON_SECRET endpoint tidak berfungsi
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

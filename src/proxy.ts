@@ -13,7 +13,6 @@ const PUBLIC_PATHS = [
   '/login',
   '/api/auth/me',
   '/api/telegram',
-  '/api/webhook',
   '/api/cron',
   '/api/maintenance',
   '/_next',

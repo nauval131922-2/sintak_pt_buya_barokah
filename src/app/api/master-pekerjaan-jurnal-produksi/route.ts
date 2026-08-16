@@ -4,10 +4,11 @@ import { getSession } from '@/lib/session';
 import * as XLSX from 'xlsx';
 import path from 'path';
 import fs from 'fs';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 
-const execPromise = promisify(exec);
+// ponytail: execFile (bukan exec) — argumen array tanpa shell, mencegah command injection via password Excel
+const execFilePromise = promisify(execFile);
 
 export async function GET(request: NextRequest) {
   const search = request.nextUrl.searchParams.get('search') || '';
@@ -82,14 +83,14 @@ function isUniqueError(error: unknown): boolean {
 export async function POST(request: NextRequest) {
   const contentType = request.headers.get('content-type') || '';
 
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   // JSON create single — dual mode dengan Excel upload
   if (contentType.includes('application/json')) {
     try {
-      const session = await getSession();
-      if (!session) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
-
       const body = await request.json();
       const category = String(body?.category ?? '').trim();
       const name = String(body?.name ?? '').trim();
@@ -153,7 +154,7 @@ export async function POST(request: NextRequest) {
 
     // Check if the file is encrypted
     try {
-      await execPromise(`msoffcrypto-tool -t "${tempInputPath}"`);
+      await execFilePromise('msoffcrypto-tool', ['-t', tempInputPath]);
       isEncrypted = true;
     } catch {
       isEncrypted = false;
@@ -172,8 +173,7 @@ export async function POST(request: NextRequest) {
 
       let decryptSuccess = false;
       try {
-        const cleanPassword = password.replace(/"/g, '\\"');
-        await execPromise(`msoffcrypto-tool -p "${cleanPassword}" "${tempInputPath}" "${tempOutputPath}"`);
+        await execFilePromise('msoffcrypto-tool', ['-p', password, tempInputPath, tempOutputPath]);
         
         // Verifikasi apakah file output didekripsi benar-benar ada dan tidak kosong (minimal 100 bytes)
         if (fs.existsSync(tempOutputPath) && fs.statSync(tempOutputPath).size > 100) {

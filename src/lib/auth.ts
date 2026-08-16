@@ -6,12 +6,43 @@ import { createSession, destroySession, getSession } from '@/lib/session';
 import { getFirstAccessibleRoute } from '@/lib/permissions';
 import { logActivity } from '@/lib/activity';
 
+// ponytail: rate limit login per-username (in-memory, sliding window 15 menit).
+// Keterbatasan: state per-instance proses — dengan PM2 multi-instance, limit
+// berlaku per-instance (bukan global). Cukup untuk memblokir brute-force sederhana.
+const LOGIN_MAX_FAILS = 10;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const loginFailures = new Map<string, number[]>();
+
+function isLoginBlocked(username: string): boolean {
+  const now = Date.now();
+  const fails = (loginFailures.get(username) || []).filter((t) => now - t < LOGIN_WINDOW_MS);
+  if (fails.length === 0) loginFailures.delete(username);
+  else loginFailures.set(username, fails);
+  return fails.length >= LOGIN_MAX_FAILS;
+}
+
+function recordLoginFailure(username: string) {
+  const now = Date.now();
+  const fails = (loginFailures.get(username) || []).filter((t) => now - t < LOGIN_WINDOW_MS);
+  fails.push(now);
+  loginFailures.set(username, fails);
+}
+
+function clearLoginFailures(username: string) {
+  loginFailures.delete(username);
+}
+
 export async function login(
   username: string,
   password: string
 ): Promise<{ success: boolean; message?: string; firstRoute?: string }> {
   console.log(`[AUTH] Login attempt for user: ${username}`);
   try {
+    if (isLoginBlocked(username)) {
+      console.log(`[AUTH] Login blocked (rate limit): ${username}`);
+      return { success: false, message: 'Terlalu banyak percobaan login gagal. Coba lagi dalam beberapa menit.' };
+    }
+
     const result = await db.execute({
       sql: 'SELECT * FROM users WHERE LOWER(username) = LOWER(?)',
       args: [username],
@@ -21,12 +52,14 @@ export async function login(
 
     if (!user) {
       console.log(`[AUTH] User not found: ${username}`);
+      recordLoginFailure(username);
       logActivity('LOGIN', 'users', `Percobaan login gagal: Username "${username}" tidak ditemukan`, {}, username).catch(() => {});
       return { success: false, message: 'Username tidak ditemukan.' };
     }
 
     if (user.hasOwnProperty('is_active') && Number(user.is_active) === 0) {
       console.log(`[AUTH] User is inactive: ${username}`);
+      recordLoginFailure(username);
       logActivity('LOGIN', 'users', `Percobaan login gagal: Akun "${username}" dinonaktifkan`, {}, username).catch(() => {});
       return { success: false, message: 'Akun Anda dinonaktifkan. Hubungi Super Admin.' };
     }
@@ -35,6 +68,7 @@ export async function login(
     const isMatch = await bcrypt.compare(password, user.password as string);
     if (!isMatch) {
       console.log(`[AUTH] Password mismatch for user: ${username}`);
+      recordLoginFailure(username);
       logActivity('LOGIN', 'users', `Percobaan login gagal: Password salah untuk user "${username}"`, {}, username).catch(() => {});
       return { success: false, message: 'Password salah.' };
     }
@@ -75,6 +109,8 @@ export async function login(
 
     // role (singular) = 'Super Admin' jika ada, otherwise first
     const primaryRole = roles.includes('Super Admin') ? 'Super Admin' : roles[0];
+
+    clearLoginFailures(username);
 
     await createSession({
       userId: Number(user.id),

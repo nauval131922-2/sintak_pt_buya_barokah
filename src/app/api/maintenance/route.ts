@@ -6,12 +6,11 @@ export const maxDuration = 60;
 
 export async function GET(request: Request) {
   try {
-    // Keamanan sederhana via Bearer token atau secret key dari environment
+    // Keamanan via Bearer token — fail-closed: tanpa CRON_SECRET endpoint tidak berfungsi
     const authHeader = request.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
-    
-    // Jika CRON_SECRET terpasang di environment (.env), pastikan request memiliki token yang sesuai
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
