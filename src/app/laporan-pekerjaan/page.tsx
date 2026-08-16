@@ -11,7 +11,7 @@ export default async function LaporanPekerjaanPage() {
   await requirePermission("produksi_laporan_pekerjaan");
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col">
+    <div className="flex-1 min-h-0 flex flex-col md:overflow-hidden">
       <PageHeader
         title="Laporan Pekerjaan"
         description="Monitoring & Laporan Pekerjaan Produksi SINTAK"

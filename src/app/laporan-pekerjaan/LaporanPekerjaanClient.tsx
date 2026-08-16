@@ -1215,10 +1215,10 @@ export default function LaporanPekerjaanClient() {
       ref={clientContainerRef}
       className={`text-slate-800 ${
         activeTab === "form"
-          ? "portrait:max-sm:h-full portrait:max-sm:flex portrait:max-sm:flex-col portrait:max-sm:min-h-0 portrait:max-sm:overflow-hidden md:flex md:flex-col md:flex-1 md:min-h-0 md:overflow-hidden"
+          ? "portrait:max-sm:h-full portrait:max-sm:flex portrait:max-sm:flex-col portrait:max-sm:min-h-0 portrait:max-sm:overflow-hidden md:flex md:flex-col md:flex-1 md:min-h-0 md:h-full md:overflow-hidden"
           : isAnalyticsOpen
           ? "flex flex-col gap-4 w-full pb-44 sm:pb-40 md:pb-24"
-          : "space-y-3 pb-44 sm:pb-40 md:space-y-0 md:flex-1 md:min-h-0 md:flex md:flex-col md:gap-3 md:overflow-hidden md:pb-0"
+          : "space-y-3 pb-44 sm:max-md:pb-36 sm:pb-40 md:space-y-0 md:flex-1 md:min-h-0 md:flex md:flex-col md:gap-3 md:overflow-hidden md:pb-0"
       }`}
     >
       {/* TABS Navigation (Gaya JHP) */}
@@ -2189,13 +2189,13 @@ export default function LaporanPekerjaanClient() {
       )}
 
       {/* TAB 2: FORM TAMBAH / EDIT PEKERJAAN (STYLE JHP FORM) */}
-      <div className={activeTab === "form" ? "portrait:max-sm:flex-1 portrait:max-sm:min-h-0 portrait:max-sm:flex portrait:max-sm:flex-col portrait:max-sm:h-full portrait:max-sm:overflow-hidden landscape:block landscape:pb-40 md:flex md:flex-col md:flex-1 md:min-h-0 md:overflow-hidden" : "hidden"}>
+      <div className={activeTab === "form" ? "portrait:max-sm:flex-1 portrait:max-sm:min-h-0 portrait:max-sm:flex portrait:max-sm:flex-col portrait:max-sm:h-full portrait:max-sm:overflow-hidden max-sm:landscape:block max-sm:landscape:pb-40 sm:max-md:pb-36 md:flex md:flex-col md:flex-1 md:min-h-0 md:h-full md:overflow-hidden" : "hidden"}>
         <form
           onSubmit={(e) => {
             e.preventDefault();
             handleSave();
           }}
-          className="bg-white border border-gray-100 rounded-2xl shadow-sm animate-in slide-in-from-top-4 fade-in duration-300 portrait:max-sm:flex-1 portrait:max-sm:min-h-0 portrait:max-sm:flex portrait:max-sm:flex-col portrait:max-sm:overflow-hidden landscape:block md:flex md:flex-col md:flex-1 md:min-h-0 md:overflow-hidden"
+          className="bg-white border border-gray-100 rounded-2xl shadow-sm animate-in slide-in-from-top-4 fade-in duration-300 portrait:max-sm:flex-1 portrait:max-sm:min-h-0 portrait:max-sm:flex portrait:max-sm:flex-col portrait:max-sm:overflow-hidden max-sm:landscape:block sm:max-md:block md:flex md:flex-col md:flex-1 md:min-h-0 md:h-full md:overflow-hidden"
         >
           {/* BODY SCROLLABLE: Isian Form JHP Style */}
           <div className="portrait:max-sm:flex-1 portrait:max-sm:min-h-0 portrait:max-sm:overflow-y-auto flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 custom-scrollbar space-y-6">
