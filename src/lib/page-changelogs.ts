@@ -735,6 +735,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     version: '2026-08-16-1',
     items: [
       'Penyelarasan tata letak responsif Form Tambah Pekerjaan & Daftar Pekerjaan di resolusi laptop (fixed bottom action button) dan sm landscape',
+      'Perbaikan scrollability halaman saat Accordion Grafik Analisis diekspansi di resolusi laptop',
       'Ekstraksi komponen SquareDropdown modular dan penyeragaman orientasi popup otomatis (right-0 / left-0)',
     ],
   }),

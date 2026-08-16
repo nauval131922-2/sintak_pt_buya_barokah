@@ -1218,7 +1218,7 @@ export default function LaporanPekerjaanClient() {
           ? "portrait:max-sm:h-full portrait:max-sm:flex portrait:max-sm:flex-col portrait:max-sm:min-h-0 portrait:max-sm:overflow-hidden md:flex md:flex-col md:flex-1 md:min-h-0 md:h-full md:overflow-hidden"
           : isAnalyticsOpen
           ? "flex flex-col gap-4 w-full pb-44 sm:pb-40 md:pb-24"
-          : "space-y-3 pb-44 sm:max-md:pb-36 sm:pb-40 md:space-y-0 md:flex-1 md:min-h-0 md:flex md:flex-col md:gap-3 md:overflow-hidden md:pb-0"
+          : "space-y-3 pb-44 sm:max-md:pb-36 sm:pb-40 md:space-y-0 md:flex-1 md:min-h-0 md:flex md:flex-col md:gap-3 md:h-full md:overflow-hidden md:pb-0"
       }`}
     >
       {/* TABS Navigation (Gaya JHP) */}
