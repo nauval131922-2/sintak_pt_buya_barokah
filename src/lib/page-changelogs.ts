@@ -357,15 +357,15 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Hasil Produksi ───
-  'hasil-produksi-2026-08-15': entry({
+  'hasil-produksi-2026-08-16': entry({
     pageKey: 'hasil-produksi',
     title: 'Hasil Produksi',
     permissionKeys: ['produksi_hasil'],
-    sortDate: '2026-08-15',
-    date: '15 Agu 2026',
-    version: '2026-08-15-1',
+    sortDate: '2026-08-16',
+    date: '16 Agu 2026',
+    version: '2026-08-16-1',
     items: [
-      'Smart horizontal shift pada SearchableDropdown agar panel otomatis bergeser dan tidak terpotong tepi layar',
+      'Penyelarasan arsitektur auto alignment (right-0/left-0) & proteksi batas aman sidebar laptop pada SearchableDropdown dan DatePicker',
       'Penyelarasan filter Level 1 di mode Card agar hanya menampilkan kartu subtotal ringkasan',
       'Penambahan metrik Target pada kartu Subtotal (JurnalSubtotalCard) dengan tata letak 2 baris rapi',
       'Penambahan quick sort bar (Tanggal, Realisasi, Target, Pekerjaan, Kode) pada mode Card',
@@ -726,6 +726,17 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Laporan Pekerjaan ───
+  'laporan-pekerjaan-2026-08-16': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-08-16',
+    date: '16 Agu 2026',
+    version: '2026-08-16-1',
+    items: [
+      'Ekstraksi komponen SquareDropdown modular dan penyeragaman orientasi popup otomatis (right-0 / left-0)',
+    ],
+  }),
   'laporan-pekerjaan-2026-08-15': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan',

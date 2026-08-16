@@ -1,0 +1,177 @@
+'use client';
+
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { ChevronDown, Search } from 'lucide-react';
+
+export interface SquareDropdownOption {
+  value: string;
+  label: string;
+  count?: number;
+}
+
+export interface SquareDropdownProps {
+  options: SquareDropdownOption[];
+  value: string;
+  onChange: (value: string) => void;
+  searchPlaceholder?: string;
+  widthClass?: string;
+  alignRight?: boolean;
+}
+
+export default function SquareDropdown({
+  options,
+  value,
+  onChange,
+  searchPlaceholder = 'Cari...',
+  widthClass = 'w-48',
+  alignRight: propAlignRight,
+}: SquareDropdownProps) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [alignRight, setAlignRight] = useState(false);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  const selected = options.find((o) => o.value === value);
+  const displayLabel = selected?.label ?? options[0]?.label ?? '—';
+
+  const filtered = search.trim()
+    ? options.filter((o) =>
+        o.label.toLowerCase().includes(search.toLowerCase())
+      )
+    : options;
+
+  // Auto deteksi orientasi: selalu rata kiri (merentang ke kanan) jika ruang kanan cukup
+  const updateAlignment = useCallback(() => {
+    if (!triggerRef.current) return;
+    if (propAlignRight !== undefined) {
+      setAlignRight(propAlignRight);
+      return;
+    }
+    const rect = triggerRef.current.getBoundingClientRect();
+    const popupWidth = 190;
+    const spaceRight = window.innerWidth - rect.left;
+    const leftWhenAlignRight = rect.right - popupWidth;
+    const minLeftAllowed = window.innerWidth >= 1024 ? 260 : 12;
+
+    // Jika ruang di sebelah kanan masih cukup luas (>= 200px), WAJIB rata kiri (left-0)
+    if (spaceRight >= popupWidth + 10) {
+      setAlignRight(false);
+      return;
+    }
+
+    // Jika ruang kanan mepet, beralih ke rata kanan (right-0) HANYA jika sisi kiri tidak menabrak sidebar
+    setAlignRight(leftWhenAlignRight >= minLeftAllowed);
+  }, [propAlignRight]);
+
+  useEffect(() => {
+    if (!open) return;
+    updateAlignment();
+    window.addEventListener('resize', updateAlignment);
+    return () => window.removeEventListener('resize', updateAlignment);
+  }, [open, updateAlignment]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      const t = e.target as Node;
+      if (triggerRef.current?.contains(t) || panelRef.current?.contains(t))
+        return;
+      setOpen(false);
+      setSearch('');
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  useEffect(() => {
+    if (open) {
+      if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+        setTimeout(() => searchRef.current?.focus(), 50);
+      }
+    } else {
+      setSearch('');
+    }
+  }, [open]);
+
+  const isActive = value !== 'ALL' && value !== '';
+
+  return (
+    <div ref={triggerRef} className="relative flex-1 min-w-0 md:flex-none md:inline-block">
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className={`w-full flex items-center justify-between gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg focus:outline-none transition-all min-w-0 ${
+          isActive
+            ? 'bg-emerald-50 border-2 border-emerald-600 text-emerald-800 font-bold shadow-sm shadow-emerald-100'
+            : 'bg-slate-50 border border-slate-200 text-slate-700 hover:bg-white hover:border-slate-300'
+        }`}
+      >
+        <span className="truncate min-w-0 flex-1 text-left flex items-center gap-1.5">
+          {isActive && <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" />}
+          <span className="truncate">{displayLabel}</span>
+        </span>
+        <ChevronDown
+          size={14}
+          className={`shrink-0 transition-transform duration-150 ${
+            isActive ? 'text-emerald-700 font-bold' : 'text-slate-400'
+          } ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+
+      {open && (
+        <div
+          ref={panelRef}
+          className={`absolute top-full mt-1.5 ${alignRight ? 'right-0' : 'left-0'} w-full min-w-[190px] bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-[9999] animate-in fade-in slide-in-from-top-1 duration-150`}
+        >
+          <div className="p-2 border-b border-slate-100 bg-slate-50/50">
+            <div className="flex items-center gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-slate-200">
+              <Search size={12} className="text-slate-400 shrink-0" />
+              <input
+                ref={searchRef}
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={searchPlaceholder}
+                className="flex-1 text-[11px] font-medium bg-transparent outline-none text-slate-700 placeholder:text-slate-400 min-w-0"
+              />
+            </div>
+          </div>
+
+          <div className="max-h-52 overflow-y-auto custom-scrollbar divide-y divide-slate-50">
+            {filtered.length === 0 ? (
+              <p className="px-3 py-3 text-[11px] text-slate-400 font-medium text-center">
+                Tidak ditemukan
+              </p>
+            ) : (
+              filtered.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    onChange(opt.value);
+                    setOpen(false);
+                    setSearch('');
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2 text-[11px] font-semibold transition-colors ${
+                    value === opt.value
+                      ? 'bg-emerald-50 text-emerald-700'
+                      : 'text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  <span className="truncate">{opt.label}</span>
+                  {opt.count !== undefined && (
+                    <span className="text-[10px] text-slate-400 font-mono ml-2 shrink-0">
+                      {opt.count}
+                    </span>
+                  )}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

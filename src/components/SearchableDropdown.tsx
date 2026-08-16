@@ -64,7 +64,7 @@ export default function SearchableDropdown({
   const [query, setQuery] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
-  const [shiftX, setShiftX] = useState(0);
+  const [alignRight, setAlignRight] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -81,20 +81,18 @@ export default function SearchableDropdown({
         width: rect.width,
       });
 
-      // ponytail: Auto horizontal shift agar panel tidak terpotong tepi layar (kanan/kiri)
-      if (panelRef.current) {
-        const panelWidthPx = panelRef.current.offsetWidth || rect.width;
-        const margin = 12;
-        const rightEdge = rect.left + panelWidthPx;
-        let delta = 0;
+      // ponytail: Selalu rata kiri (merentang ke kanan) jika ruang kanan cukup. Hanya rata kanan jika ruang kanan mepet.
+      const spaceRight = window.innerWidth - rect.left;
+      const panelWidthEstimated = 280;
+      const leftWhenAlignRight = rect.right - panelWidthEstimated;
+      const minLeftAllowed = window.innerWidth >= 1024 ? 260 : 12;
 
-        if (rightEdge > window.innerWidth - margin) {
-          delta = (window.innerWidth - margin) - rightEdge;
-        }
-        if (rect.left + delta < margin) {
-          delta = margin - rect.left;
-        }
-        setShiftX(delta);
+      // Jika ruang di sebelah kanan masih cukup luas (>= 280px), WAJIB rata kiri (left-0)
+      if (spaceRight >= panelWidthEstimated) {
+        setAlignRight(false);
+      } else {
+        // Jika ruang kanan mepet, beralih ke rata kanan (right-0) HANYA jika sisi kiri tidak menabrak sidebar
+        setAlignRight(leftWhenAlignRight >= minLeftAllowed);
       }
     }
   }, []);
@@ -102,12 +100,9 @@ export default function SearchableDropdown({
   useEffect(() => {
     if (!open) return;
     updateCoords();
-    // Re-check shiftX setelah render DOM panel selesai
-    const timer = setTimeout(updateCoords, 0);
     window.addEventListener('scroll', updateCoords, true);
     window.addEventListener('resize', updateCoords);
     return () => {
-      clearTimeout(timer);
       window.removeEventListener('scroll', updateCoords, true);
       window.removeEventListener('resize', updateCoords);
     };
@@ -228,12 +223,9 @@ export default function SearchableDropdown({
         top: `${coords.top + 4}px`,
         left: `${coords.left}px`,
         width: `${coords.width}px`,
-        transform: shiftX ? `translateX(${shiftX}px)` : undefined,
         zIndex: 9999
-      } : {
-        transform: shiftX ? `translateX(${shiftX}px)` : undefined,
-      }}
-      className={`${usePortal ? '' : `absolute left-0 top-full mt-2 ${panelWidth || 'w-full'}`} bg-white border border-gray-100 rounded-xl shadow-xl shadow-emerald-900/10 py-3 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col max-h-[300px]`}
+      } : undefined}
+      className={`${usePortal ? '' : `absolute ${alignRight ? 'right-0' : 'left-0'} top-full mt-2 min-w-full ${panelWidth || 'w-full'}`} bg-white border border-gray-100 rounded-xl shadow-xl shadow-emerald-900/10 py-3 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col max-h-[300px]`}
     >
       {/* Search */}
       <div className="px-3 pb-3 shrink-0 border-b border-gray-50 mb-1">

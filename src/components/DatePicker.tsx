@@ -57,7 +57,7 @@ interface DatePickerProps {
 }
 
 // ---- KOMPONEN UTAMA ----
-export default function DatePicker({ name, required, label, onChange, value, customTrigger, popupAlign = 'left', selectionMode = 'day', usePortal = false }: DatePickerProps) {
+export default function DatePicker({ name, required, label, onChange, value, customTrigger, popupAlign, selectionMode = 'day', usePortal = false }: DatePickerProps) {
   const today = new Date();
 
   // STATE: data yang bisa berubah & render ulang otomatis kalau diubah
@@ -67,39 +67,37 @@ export default function DatePicker({ name, required, label, onChange, value, cus
   const [viewMode, setViewMode] = useState<'days' | 'months' | 'years'>( // mode tampilan
     selectionMode === 'month' ? 'months' : 'days'
   );
-  const [shiftX, setShiftX] = useState(0);
+  const [alignRight, setAlignRight] = useState(false);
 
   // REF: kayak "ID" ke elemen HTML asli (bisa akses DOM langsung)
   const ref = useRef<HTMLDivElement>(null);       // ref ke popup kalender
   const triggerRef = useRef<HTMLDivElement>(null); // ref ke tombol trigger
 
-  // Kalkulasi pergeseran horizontal presisi agar panel 280px tidak terpotong tepi kanan/kiri layar
-  const adjustHorizontalPosition = useCallback(() => {
+  // Deteksi otomatis orientasi horizontal (selalu rata kiri / merentang ke kanan jika ruang kanan masih ada, hanya rata kanan jika mepet tepi kanan layar)
+  const updateAlignment = useCallback(() => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
     const popupWidth = 280;
-    const margin = 12;
+    const spaceRight = window.innerWidth - rect.left;
+    const leftWhenAlignRight = rect.right - popupWidth;
+    const minLeftAllowed = window.innerWidth >= 1024 ? 260 : 12;
 
-    let currentLeftInViewport = rect.left;
-    let currentRightInViewport = rect.left + popupWidth;
-
-    let delta = 0;
-    if (currentRightInViewport > window.innerWidth - margin) {
-      delta = (window.innerWidth - margin) - currentRightInViewport;
-    }
-    if (currentLeftInViewport + delta < margin) {
-      delta = margin - currentLeftInViewport;
+    // Jika ruang di sebelah kanan masih cukup luas (>= 290px), WAJIB rata kiri (left-0 / merentang ke kanan)
+    if (spaceRight >= 290) {
+      setAlignRight(false);
+      return;
     }
 
-    setShiftX(delta);
+    // Jika ruang kanan mepet (< 290px), beralih ke rata kanan (right-0) HANYA jika sisi kiri tidak menabrak sidebar
+    setAlignRight(leftWhenAlignRight >= minLeftAllowed);
   }, []);
 
   useEffect(() => {
     if (!open) return;
-    adjustHorizontalPosition();
-    window.addEventListener('resize', adjustHorizontalPosition);
-    return () => window.removeEventListener('resize', adjustHorizontalPosition);
-  }, [open, adjustHorizontalPosition]);
+    updateAlignment();
+    window.addEventListener('resize', updateAlignment);
+    return () => window.removeEventListener('resize', updateAlignment);
+  }, [open, updateAlignment]);
 
   // ---- EFFECT 1: klik di luar popup -> tutup ----
   useEffect(() => {
@@ -342,8 +340,7 @@ export default function DatePicker({ name, required, label, onChange, value, cus
       {open && (
         <div
           ref={ref}
-          style={{ transform: shiftX ? `translateX(${shiftX}px)` : undefined }}
-          className="absolute top-full mt-1.5 left-0 bg-white border border-gray-100 rounded-xl shadow-2xl p-4 w-[280px] z-[99999] animate-in fade-in zoom-in-95 duration-200"
+          className={`absolute top-full mt-1.5 ${alignRight ? 'right-0' : 'left-0'} bg-white border border-gray-100 rounded-xl shadow-2xl p-4 w-[280px] z-[99999] animate-in fade-in zoom-in-95 duration-200`}
         >
           {/* HEADER: navigasi bulan/tahun */}
           <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-50">
