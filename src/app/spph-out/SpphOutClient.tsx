@@ -239,7 +239,7 @@ export default function SpphOutClient() {
       accessorKey: 'faktur_sph',
       header: 'Status SPH',
       size: 150,
-      cell: ({ getValue, row }: any) => <div className={`flex items-center text-[12px] font-bold ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-400'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`flex items-center text-[12px] font-bold ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-400'}`}>{String(getValue() || '–')}</div>
     },
     {
       accessorKey: 'status',

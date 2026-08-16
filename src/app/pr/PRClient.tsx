@@ -298,13 +298,13 @@ export default function PRClient() {
         accessorKey: 'faktur_spph',
         header: 'SPPH',
         size: 180,
-        cell: ({ getValue, row }: any) => <div className={`text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+        cell: ({ getValue, row }: any) => <div className={`text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`} >{String(getValue() || '–')}</div>
     },
     {
         accessorKey: 'faktur_po',
         header: 'PO',
         size: 180,
-        cell: ({ getValue, row }: any) => <div className={`text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+        cell: ({ getValue, row }: any) => <div className={`text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`} >{String(getValue() || '–')}</div>
     },
     {
         accessorKey: 'keterangan',
@@ -316,13 +316,13 @@ export default function PRClient() {
         accessorKey: 'cmd',
         header: 'Aksi',
         size: 100,
-        cell: ({ getValue, row }: any) => <div className={`flex justify-center text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+        cell: ({ getValue, row }: any) => <div className={`flex justify-center text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`} >{String(getValue() || '–')}</div>
     },
     {
         accessorKey: 'detil',
         header: 'Detil',
         size: 100,
-        cell: ({ getValue, row }: any) => <div className={`flex justify-center text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+        cell: ({ getValue, row }: any) => <div className={`flex justify-center text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-700'}`} >{String(getValue() || '–')}</div>
     },
     { 
         accessorKey: 'recid', 

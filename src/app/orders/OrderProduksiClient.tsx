@@ -17,6 +17,7 @@ import { formatLastUpdate } from '@/lib/date-utils';
 import { formatScrapedPeriodDate, getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod, persistScraperPeriodFull } from '@/lib/scraper-period';
 import ScrapingHeader from '@/components/ScrapingHeader';
 import { highlightText } from '@/lib/highlight';
+import { stripHtml } from '@/lib/utils/html';
 
 import { useSearchParams } from 'next/navigation';
 
@@ -257,25 +258,25 @@ export default function OrderProduksiClient() {
       accessorKey: 'qty_order',
       header: 'Qty Order',
       size: columnWidths.qty_order,
-      cell: (info: any) => <div className="font-bold tabular-nums" dangerouslySetInnerHTML={{ __html: String(info.getValue() || '-') }} />
+      cell: (info: any) => <div className="font-bold tabular-nums">{String(info.getValue() || '-')}</div>
     },
     {
       accessorKey: 'faktur_bom',
       header: 'Faktur BOM',
       size: 200,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} >{String(getValue() || '–')}</div>
     },
     {
       accessorKey: 'faktur_so',
       header: 'Faktur SO',
       size: 200,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} >{String(getValue() || '–')}</div>
     },
     {
       accessorKey: 'faktur_pb',
       header: 'Faktur PB',
       size: 200,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} >{String(getValue() || '–')}</div>
     },
     {
       accessorKey: 'spesifikasi',
@@ -287,7 +288,7 @@ export default function OrderProduksiClient() {
       accessorKey: 'cmd',
       header: 'CMD',
       size: 200,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} >{String(getValue() || '–')}</div>
     },
     {
       accessorKey: 'detil',
@@ -295,7 +296,7 @@ export default function OrderProduksiClient() {
       size: 250,
       cell: ({ row }: any) => (
         <div className="flex items-center">
-          {row.original.detil ? <div className="scale-75 origin-left" dangerouslySetInnerHTML={{ __html: row.original.detil }} /> : '–'}
+          {row.original.detil ? <div className="scale-75 origin-left">{stripHtml(row.original.detil)}</div> : '–'}
         </div>
       )
     },

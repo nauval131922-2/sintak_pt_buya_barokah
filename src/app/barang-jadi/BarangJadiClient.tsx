@@ -235,7 +235,7 @@ export default function BarangJadiClient() {
       accessorKey: 'faktur_prd',
       header: 'Faktur Prd',
       size: 200,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`}>{String(getValue() || '–')}</div>
     },
     {
       accessorKey: 'faktur_so',
@@ -248,8 +248,7 @@ export default function BarangJadiClient() {
           <div className="flex items-center justify-between group w-full pr-2">
              <div 
               className={`font-bold tracking-tight transition-colors truncate flex-1 ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} 
-              dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} 
-            />
+            >{String(getValue() || '–')}</div>
             {hasValue && (
               <div className="shrink-0 ml-2">
                 <CopyButton text={val} />

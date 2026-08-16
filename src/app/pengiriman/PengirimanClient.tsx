@@ -214,7 +214,7 @@ export default function PengirimanClient() {
       accessorKey: 'faktur',
       header: 'Faktur SJ',
       size: 200,
-      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-700'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '-') }} />
+      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-700'}`}>{String(getValue() || '-')}</span>
     },
     {
       accessorKey: 'kd_supir',

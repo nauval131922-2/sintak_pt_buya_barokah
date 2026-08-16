@@ -18,6 +18,7 @@ import DateRangeCard from '@/components/DateRangeCard';
 import { splitDateRangeIntoMonths } from '@/lib/date-utils';
 import { useTableSelection } from '@/lib/hooks/useTableSelection';
 import ScrapingHeader from '@/components/ScrapingHeader';
+import { stripHtml } from '@/lib/utils/html';
 
 function formatDateToYYYYMMDD(date: Date) {
   const y = date.getFullYear();
@@ -413,19 +414,19 @@ export default function BOMClient() {
       accessorKey: 'faktur_prd',
       header: 'Faktur Prd',
       size: 250,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} >{String(getValue() || '–')}</div>
     },
     {
       accessorKey: 'faktur_sph',
       header: 'Faktur SPH',
       size: 250,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} >{String(getValue() || '–')}</div>
     },
     {
       accessorKey: 'cmd',
       header: 'CMD',
       size: 250,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} >{String(getValue() || '–')}</div>
     },
     {
       accessorKey: 'detil',
@@ -433,7 +434,7 @@ export default function BOMClient() {
       size: 180,
       cell: ({ row }: any) => (
         <div className="flex items-center">
-          {row.original.detil ? <div className="scale-75 origin-left" dangerouslySetInnerHTML={{ __html: row.original.detil }} /> : '–'}
+          {row.original.detil ? <div className="scale-75 origin-left">{stripHtml(row.original.detil)}</div> : '–'}
         </div>
       )
     },

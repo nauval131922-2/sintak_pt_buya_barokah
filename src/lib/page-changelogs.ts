@@ -364,6 +364,17 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── BOM ───
+  'bom-2026-08-17': entry({
+    pageKey: 'bom',
+    title: 'Bill of Materials (BOM)',
+    permissionKeys: ['produksi_bom'],
+    sortDate: '2026-08-17',
+    date: '17 Agu 2026',
+    version: '2026-08-17-1',
+    items: [
+      'Kolom detail BOM kini tampil sebagai teks bersih — tombol/widget warisan sistem lama yang tidak berfungsi dihilangkan',
+    ],
+  }),
   'bom-2026-07-25': entry({
     pageKey: 'bom',
     title: 'Bill of Materials (BOM)',
@@ -529,17 +540,50 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     permissionKeys: ['hpp_kalkulasi'],
     items: [...UI_POLISH],
   }),
+  'orders-2026-08-17': entry({
+    pageKey: 'orders',
+    title: 'Order Produksi',
+    permissionKeys: ['produksi_orders'],
+    sortDate: '2026-08-17',
+    date: '17 Agu 2026',
+    version: '2026-08-17-1',
+    items: [
+      'Kolom detail order kini tampil sebagai teks bersih — tombol warisan sistem lama yang tidak berfungsi dihilangkan',
+    ],
+  }),
   'orders-2026-07-25': entry({
     pageKey: 'orders',
     title: 'Order Produksi',
     permissionKeys: ['produksi_orders'],
     items: [...UI_POLISH, 'Daftar order lebih rapi'],
   }),
+  'pelunasan-hutang-2026-08-17': entry({
+    pageKey: 'pelunasan-hutang',
+    title: 'Pelunasan Hutang',
+    permissionKeys: ['pembelian_hutang'],
+    sortDate: '2026-08-17',
+    date: '17 Agu 2026',
+    version: '2026-08-17-1',
+    items: [
+      'Kolom detail pelunasan kini tampil sebagai teks bersih — tombol/widget warisan sistem lama yang tidak berfungsi dihilangkan',
+    ],
+  }),
   'pelunasan-hutang-2026-07-25': entry({
     pageKey: 'pelunasan-hutang',
     title: 'Pelunasan Hutang',
     permissionKeys: ['pembelian_hutang'],
     items: [...UI_POLISH],
+  }),
+  'pelunasan-piutang-2026-08-17': entry({
+    pageKey: 'pelunasan-piutang',
+    title: 'Pelunasan Piutang',
+    permissionKeys: ['penjualan_piutang'],
+    sortDate: '2026-08-17',
+    date: '17 Agu 2026',
+    version: '2026-08-17-1',
+    items: [
+      'Kolom detail pelunasan kini tampil sebagai teks bersih — tombol/widget warisan sistem lama yang tidak berfungsi dihilangkan',
+    ],
   }),
   'pelunasan-piutang-2026-07-25': entry({
     pageKey: 'pelunasan-piutang',

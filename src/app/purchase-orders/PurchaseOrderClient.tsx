@@ -238,7 +238,7 @@ export default function PurchaseOrderClient() {
       accessorKey: 'faktur',
       header: 'Faktur PO',
       size: 220,
-      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-700'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '-') }} />
+      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-700'}`}>{String(getValue() || '-')}</span>
     },
     {
       accessorKey: 'kd_supplier',
@@ -250,13 +250,13 @@ export default function PurchaseOrderClient() {
       accessorKey: 'faktur_pr',
       header: 'Faktur PR',
       size: 220,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} >{String(getValue() || '–')}</div>
     },
     {
       accessorKey: 'faktur_sph',
       header: 'Faktur SPH',
       size: 220,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} >{String(getValue() || '–')}</div>
     },
     {
       accessorKey: 'total',
@@ -274,7 +274,7 @@ export default function PurchaseOrderClient() {
       accessorKey: 'faktur_pb',
       header: 'Status PB',
       size: 150,
-      cell: ({ getValue, row }: any) => <div className={`flex items-center text-[12px] font-bold ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-400'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`flex items-center text-[12px] font-bold ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-400'}`} >{String(getValue() || '–')}</div>
     },
     { 
         accessorKey: 'username', 

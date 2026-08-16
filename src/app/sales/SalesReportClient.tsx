@@ -211,7 +211,7 @@ export default function SalesReportClient() {
       accessorKey: 'faktur_so',
       header: 'Faktur SO',
       size: 200,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} >{String(getValue() || '–')}</div>
     },
     {
       accessorKey: 'faktur_prd',
@@ -234,13 +234,13 @@ export default function SalesReportClient() {
       accessorKey: 'faktur_sj',
       header: 'Faktur SJ',
       size: 200,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} >{String(getValue() || '–')}</div>
     },
     {
       accessorKey: 'faktur_pelunasan_piutang',
       header: 'Status Lunas',
       size: 200,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} >{String(getValue() || '–')}</div>
     },
     {
       accessorKey: 'nama_pelanggan',

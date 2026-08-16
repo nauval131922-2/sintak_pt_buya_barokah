@@ -257,7 +257,7 @@ export default function SphInClient() {
       accessorKey: 'faktur_po',
       header: 'Status PO',
       size: 150,
-      cell: ({ getValue, row }: any) => <div className={`flex items-center text-[12px] font-bold ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-400'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`flex items-center text-[12px] font-bold ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-400'}`}>{String(getValue() || '–')}</div>
     },
     { 
         accessorKey: 'username', 

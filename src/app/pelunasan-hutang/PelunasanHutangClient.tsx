@@ -15,6 +15,7 @@ import TableFooter from '@/components/TableFooter';
 import DateRangeCard from '@/components/DateRangeCard';
 import { useTableSelection } from '@/lib/hooks/useTableSelection';
 import ScrapingHeader from '@/components/ScrapingHeader';
+import { stripHtml } from '@/lib/utils/html';
 
 function formatDateToYYYYMMDD(date: Date) {
   const y = date.getFullYear();
@@ -227,31 +228,31 @@ export default function PelunasanHutangClient() {
       accessorKey: 'faktur_pb',
       header: 'Faktur PB',
       size: 200,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} >{String(getValue() || '–')}</div>
     },
     {
       accessorKey: 'faktur_po',
       header: 'Faktur PO',
       size: 200,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} >{String(getValue() || '–')}</div>
     },
     {
       accessorKey: 'faktur_pr',
       header: 'Faktur PR',
       size: 200,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} >{String(getValue() || '–')}</div>
     },
     {
       accessorKey: 'faktur_sph',
       header: 'Faktur SPH',
       size: 200,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} >{String(getValue() || '–')}</div>
     },
     {
       accessorKey: 'faktur_spph',
       header: 'Faktur SPPH',
       size: 200,
-      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} dangerouslySetInnerHTML={{ __html: String(getValue() || '–') }} />
+      cell: ({ getValue, row }: any) => <div className={`font-bold tracking-tight transition-colors truncate ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-500'}`} >{String(getValue() || '–')}</div>
     },
     {
       accessorKey: 'potongan',
@@ -278,7 +279,7 @@ export default function PelunasanHutangClient() {
       size: 250,
       cell: ({ row }: any) => (
         <div className="flex items-center">
-          {row.original.detil ? <div className="scale-75 origin-left" dangerouslySetInnerHTML={{ __html: row.original.detil }} /> : '–'}
+          {row.original.detil ? <div className="scale-75 origin-left">{stripHtml(row.original.detil)}</div> : '–'}
         </div>
       )
     },
