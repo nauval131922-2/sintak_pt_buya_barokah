@@ -16,7 +16,7 @@ import { useTableSelection } from '@/lib/hooks/useTableSelection';
 import { formatLastUpdate, splitDateRangeIntoMonths } from '@/lib/date-utils';
 import { formatScrapedPeriodDate, getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod, persistDateStore, hydrateDateStore } from '@/lib/scraper-period';
 import ScrapingHeader from '@/components/ScrapingHeader';
-import Portal from '@/components/Portal';
+import Portal, { getZoomScale } from '@/components/Portal';
 
 const PAGE_SIZE = 50;
 
@@ -54,6 +54,7 @@ export default function RekapSalesOrderClient() {
   const [appliedMin, setAppliedMin] = useState('');
   const [appliedMax, setAppliedMax] = useState('');
   const [showHargaFilter, setShowHargaFilter] = useState(false);
+  const [hargaPanelStyle, setHargaPanelStyle] = useState<React.CSSProperties>({});
   const hargaFilterRef = useRef<HTMLDivElement>(null);
   const hargaPanelRef = useRef<HTMLDivElement>(null);
 
@@ -119,6 +120,31 @@ export default function RekapSalesOrderClient() {
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showHargaFilter]);
+
+  // Posisi panel filter harga: wrapper Portal ber-zoom (0.82 di laptop), jadi koordinat
+  // getBoundingClientRect harus dibagi skala zoom agar nempel presisi di bawah tombol
+  // Filter Harga (pola StatCardDropdown) — tanpa ini posisi meleset ~18%.
+  useEffect(() => {
+    if (!showHargaFilter) return;
+    const update = () => {
+      const rect = hargaFilterRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const scale = getZoomScale();
+      setHargaPanelStyle({
+        position: 'fixed',
+        top: (rect.bottom + 8) / scale,
+        left: rect.left / scale,
+        width: rect.width / scale,
+      });
+    };
+    update();
+    window.addEventListener('scroll', update, true);
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update, true);
+      window.removeEventListener('resize', update);
+    };
   }, [showHargaFilter]);
 
   useEffect(() => {
@@ -292,7 +318,7 @@ export default function RekapSalesOrderClient() {
       <div className="flex-1 min-h-0 flex flex-col gap-3 animate-in fade-in duration-700 overflow-hidden">
       <div className="flex flex-col lg:flex-row items-stretch gap-3 shrink-0">
         {/* Date range + Fetch button card */}
-        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-3 flex flex-col lg:flex-row items-stretch lg:items-center gap-3 flex-1">
+        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-3 flex flex-col lg:flex-row items-stretch lg:items-center gap-3 flex-1 relative z-[60]">
           <div className="flex items-center gap-2 flex-1">
             <DatePicker name="startDate" value={startDate} onChange={setStartDate} />
             <div className="w-2 h-px bg-gray-300 shrink-0"></div>
@@ -334,12 +360,8 @@ export default function RekapSalesOrderClient() {
             <Portal>
               <div
                 ref={hargaPanelRef}
-                className="fixed bg-white rounded-xl border border-gray-100 shadow-xl shadow-gray-900/10 p-5 z-[9999] animate-in fade-in slide-in-from-top-2"
-                style={{
-                  top: hargaFilterRef.current ? `${hargaFilterRef.current.getBoundingClientRect().bottom + 8}px` : '0px',
-                  left: hargaFilterRef.current ? `${hargaFilterRef.current.getBoundingClientRect().left}px` : '0px',
-                  width: hargaFilterRef.current ? `${hargaFilterRef.current.getBoundingClientRect().width}px` : 'auto'
-                }}
+                className="bg-white rounded-xl border border-gray-100 shadow-xl shadow-gray-900/10 p-5 z-[9999] animate-in fade-in slide-in-from-top-2"
+                style={hargaPanelStyle}
               >
                 <form
                   className="flex flex-col gap-4"

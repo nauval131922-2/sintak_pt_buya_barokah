@@ -49,8 +49,8 @@ Kriteria sederhana: **apakah user di halaman itu merasakan bedanya?** Jika ya �
   - **Perilaku data** — merge vs replace, default filter, urutan, hapus/aman data
   - **Performa** — load lebih cepat, lag berkurang, pagination/lazy yang user spasi (tulis ramah: “Daftar lebih cepat dimuat”, bukan “memoize query”)
   - **Fix bug user-facing** — tombol rusak, data salah tampil, modal macet, error yang user alami (bukan cuma log server)
-- Langkah: daftarkan path di `PAGE_CHANGELOG_PATHS`, entry di `PAGE_CHANGELOGS` (**`permissionKeys`**, **`sortDate`** `YYYY-MM-DD`, bump **`version`**, **replace** `items` 3–6 bullet bahasa user — jangan append rilis lama).
-- Hub arsip user: `/log-perubahan` (menu profil) memfilter entry lewat `permissionKeys` + urut `sortDate` terbaru di atas. Modal ✨ per page = rilis terkini saja.
+- Langkah: daftarkan path di `PAGE_CHANGELOG_PATHS`, entry baru di `PAGE_CHANGELOGS` (**`permissionKeys`**, **`sortDate`** `YYYY-MM-DD`, bump **`version`**, 3–6 bullet bahasa user). **Jangan hapus/replace entry rilis lama** — selalu tambah entry baru supaya history rilis tetap tersimpan.
+- Hub arsip user: `/log-perubahan` (menu profil) memfilter entry lewat `permissionKeys` + urut `sortDate` terbaru di atas. Modal ✨ per page menampilkan **semua rilis** halaman itu (accordion per tanggal) — karena itu entry lama wajib dipertahankan.
 - **Skip** jika user **tidak** merasakan: refactor internal, lint, typo kode, schema-only, API murni tanpa UI, micro-opt tak kasat mata, dependency bump tanpa efek halaman.
 - Jangan bulk-isi semua halaman — hanya path yang disentuh sesi ini. Halaman tanpa entry = tidak ada modal/icon log.
 - Sebelum bilang selesai setelah ubah UI page: jalankan `npm run check:changelog` (exit 1 = path belum punya entry). Scope: **working tree + commit lokal sejak `origin/master`**. Lulus hanya jika **setiap path** halaman yang berubah ada di `PAGE_CHANGELOG_PATHS` + `PAGE_CHANGELOGS` (bukan cuma menyentuh file changelog). Skip sadar: `SKIP_CHANGELOG_CHECK=1` atau `--allow-skip`. Hanya dirty tree: `--working-tree-only`.

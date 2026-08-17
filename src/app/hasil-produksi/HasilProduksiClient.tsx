@@ -10,7 +10,6 @@ import {
 import PageHeader from "@/components/PageHeader";
 import DatePicker from '@/components/DatePicker';
 import SearchableDropdown from '@/components/SearchableDropdown';
-import InlineDropdown from '@/components/InlineDropdown';
 import TableFooter from '@/components/TableFooter';
 import Portal from '@/components/Portal';
 import { persistDateStore, hydrateDateStore } from '@/lib/scraper-period';

@@ -47,6 +47,7 @@ Hal-hal yang perlu diperhatikan.
 - `24-solusi-layout-fixed-100vh-dan-performa-virtualizer.md`
 - `25-konfigurasi-akses-dev-server-via-lan-hp.md`
 - `26-optimasi-responsive-zoom-80-tablet-laptop-dan-portal-calibration.md`
+- `27-aturan-posisi-panel-portal-zoom.md`
 
 ---
 

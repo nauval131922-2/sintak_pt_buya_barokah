@@ -79,10 +79,23 @@ Gunakan komponen yang sudah ada, jangan buat duplikat:
 | Kebutuhan | Komponen |
 |-----------|----------|
 | Dropdown dengan search | `SearchableDropdown` (`src/components/SearchableDropdown.tsx`) |
+| Dropdown ringan di baris tabel/draft | `InlineDropdown` (`src/components/InlineDropdown.tsx`) |
+| Dropdown kompak di stat card | `StatCardDropdown` (`src/components/StatCardDropdown.tsx`) |
+| Dropdown kotak filter (pricelist, dll) | `SquareDropdown` (`src/components/SquareDropdown.tsx`) |
 | Pilih tanggal | `DatePicker` (`src/components/DatePicker.tsx`) |
+| Kartu tanggal + tombol Tarik Data | `DateRangeCard` (`src/components/DateRangeCard.tsx`) |
 | Notifikasi sukses/gagal | `Toast` — jangan pakai `alert()` atau modal konfirmasi |
 | Pagination tabel | `TableFooter` (`src/components/TableFooter.tsx`) |
 | Popup di dalam modal | Pastikan z-index panel > z-index modal (min `z-[400]`) |
+
+### 3.1. Posisi Panel Popup di Arsitektur Zoom 80%
+
+Konten app berada dalam zoom `0.82` (laptop/tablet), begitu juga wrapper `<Portal>`. **Aturan baku** (hasil audit 17 Agu 2026, detail: `docs/tutorials/27-aturan-posisi-panel-portal-zoom.md`):
+
+- Panel yang dirender lewat `<Portal>` (wrapper ber-zoom) → koordinat `getBoundingClientRect()` **WAJIB dibagi `getZoomScale()`** (contoh: `StatCardDropdown`, panel Filter Harga `/rekap-sales-order`).
+- Panel yang dirender `createPortal` mentah ke `document.body` (tanpa wrapper) → pakai koordinat **mentah** (jangan dibagi).
+- Jangan pernah gabungkan `createPortal` mentah dengan koordinat terbagi scale — panel akan meleset ~22% (bug `InlineDropdown` yang sudah diperbaiki).
+- Kartu induk popup inline (bukan portal) harus diberi `relative z-[60]` agar popup tidak tertutup komponen setelahnya (pola `DateRangeCard`).
 
 ---
 
@@ -94,6 +107,8 @@ Sebelum menyatakan fitur selesai, pastikan:
 - [ ] Warna tema konsisten (hijau, bukan biru)
 - [ ] Tidak ada `alert()` atau `window.confirm()` — ganti dengan Toast atau modal proper
 - [ ] Dropdown dalam modal → z-index panel sudah lebih tinggi dari modal
+- [ ] Ubah UI/perilaku halaman → entry baru di `PAGE_CHANGELOGS` (`src/lib/page-changelogs.ts`) — **jangan hapus entry lama** (history rilis wajib dipertahankan, lihat aturan Page Changelog di `AGENTS.md`), lalu jalankan `npm run check:changelog`
+- [ ] Panel popup via `<Portal>` → koordinat sudah dibagi `getZoomScale()` (lihat 3.1)
 
 ---
 

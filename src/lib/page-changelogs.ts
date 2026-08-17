@@ -248,6 +248,17 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Target Jurnal Harian Produksi ───
+  'jurnal-harian-produksi-target-2026-08-17': entry({
+    pageKey: 'jurnal-harian-produksi-target',
+    title: 'Target Jurnal Harian Produksi',
+    permissionKeys: ['produksi_jhp_target'],
+    sortDate: '2026-08-17',
+    date: '17 Agu 2026',
+    version: '2026-08-17-1',
+    items: [
+      'Dropdown pilihan bagian/shift/karyawan/order/pekerjaan pada baris draft kini membuka tepat di bawah kolomnya (sebelumnya posisinya meleset di layar laptop/tablet)',
+    ],
+  }),
   'jurnal-harian-produksi-target-2026-07-25': entry({
     pageKey: 'jurnal-harian-produksi-target',
     title: 'Target Jurnal Harian Produksi',
@@ -626,6 +637,19 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     title: 'Rekap Pembelian Barang',
     permissionKeys: ['pembelian_rekap'],
     items: [...UI_POLISH],
+  }),
+  'rekap-sales-order-2026-08-17': entry({
+    pageKey: 'rekap-sales-order',
+    title: 'Rekap Sales Order',
+    permissionKeys: ['kalkulasi_rekap_so'],
+    sortDate: '2026-08-17',
+    date: '17 Agu 2026',
+    version: '2026-08-17-1',
+    items: [
+      'Panel kalender pemilihan tanggal tidak lagi tertutup komponen lain saat dibuka',
+      'Kalender tanggal Mulai/Selesai kini tampil di atas kartu filter harga, daftar hasil, dan tabel',
+      'Panel Filter Harga kini membuka tepat di bawah tombolnya dan tetap menempel saat halaman di-scroll',
+    ],
   }),
   'rekap-sales-order-2026-07-25': entry({
     pageKey: 'rekap-sales-order',

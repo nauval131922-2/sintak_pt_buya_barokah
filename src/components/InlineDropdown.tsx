@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo, useCallback, useId } from 'react';
-import { createPortal } from 'react-dom';
-import { getZoomScale } from './Portal';
+import Portal, { getZoomScale } from './Portal';
 import { ChevronDown, Search } from 'lucide-react';
 
 interface InlineOption {
@@ -187,49 +186,52 @@ export default function InlineDropdown({
 
   const inputPlaceholder = freeInput ? placeholder : 'Cari...';
 
-  const dropdownContent = isOpen && mounted ? createPortal(
-    <div
-      data-inline-dropdown-portal={dropdownId}
-      style={dropdownStyle}
-      className="bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden"
-    >
-      {(searchable || freeInput) && (
-        <div className="p-2 border-b border-gray-100">
-          <div className="relative">
-            <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              ref={inputRef}
-              type="text"
-              value={freeInput ? inputValue : searchQuery}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              className="w-full pl-7 pr-2 py-1.5 text-[11px] border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/10"
-              placeholder={inputPlaceholder}
-            />
+  // ponytail: render lewat <Portal> (bukan createPortal mentah) karena koordinat dropdownStyle
+  // sudah dibagi getZoomScale — tanpa wrapper zoom Portal, posisi meleset ~22% di layar ber-zoom.
+  const dropdownContent = isOpen && mounted ? (
+    <Portal>
+      <div
+        data-inline-dropdown-portal={dropdownId}
+        style={dropdownStyle}
+        className="bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden"
+      >
+        {(searchable || freeInput) && (
+          <div className="p-2 border-b border-gray-100">
+            <div className="relative">
+              <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                ref={inputRef}
+                type="text"
+                value={freeInput ? inputValue : searchQuery}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                className="w-full pl-7 pr-2 py-1.5 text-[11px] border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/10"
+                placeholder={inputPlaceholder}
+              />
+            </div>
           </div>
-        </div>
-      )}
-      <div className="max-h-[200px] overflow-y-auto">
-        {displayOptions.length > 0 ? displayOptions.map((opt, i) => (
-          <button
-            key={opt.key ?? opt.value}
-            type="button"
-            onMouseDown={e => { e.preventDefault(); handleSelect(opt); }}
-            onMouseEnter={() => setFocusedIndex(i)}
-            className={`w-full text-left px-3 py-1.5 text-[11px] font-bold transition-colors ${
-              opt.value === value
-                ? 'bg-emerald-50 text-emerald-700'
-                : i === focusedIndex ? 'bg-gray-50 text-gray-900' : 'text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            {opt.label}
-          </button>
-        )) : freeInput ? null : (
-          <div className="px-3 py-4 text-[11px] text-gray-400 text-center">Tidak ditemukan</div>
         )}
+        <div className="max-h-[200px] overflow-y-auto">
+          {displayOptions.length > 0 ? displayOptions.map((opt, i) => (
+            <button
+              key={opt.key ?? opt.value}
+              type="button"
+              onMouseDown={e => { e.preventDefault(); handleSelect(opt); }}
+              onMouseEnter={() => setFocusedIndex(i)}
+              className={`w-full text-left px-3 py-1.5 text-[11px] font-bold transition-colors ${
+                opt.value === value
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : i === focusedIndex ? 'bg-gray-50 text-gray-900' : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              {opt.label}
+            </button>
+          )) : freeInput ? null : (
+            <div className="px-3 py-4 text-[11px] text-gray-400 text-center">Tidak ditemukan</div>
+          )}
+        </div>
       </div>
-    </div>,
-    document.body
+    </Portal>
   ) : null;
 
   return (

@@ -1,6 +1,6 @@
 # Repo Map
 
-Dokumen ini adalah peta cepat struktur repository untuk membantu AI agent atau developer baru memahami arah kerja tanpa perlu scan ulang dari nol. Detail aturan kerja tetap mengikuti `AGENTS.md`, lalu `docs/DEV_RULES.md`, `AI_RULES.md`, dan dokumen relevan lain di `docs/`.
+Dokumen ini adalah peta cepat struktur repository untuk membantu AI agent atau developer baru memahami arah kerja tanpa perlu scan ulang dari nol. Urutan bacaan konteks awal (wajib): `AGENTS.md` -> `docs/REPO_MAP.md` -> `docs/DEV_RULES.md` -> `docs/RESUME_SESSION.md` -> `docs/AI_SESSION_SUMMARY.md`. Aturan kerja rinci ada di `AGENTS.md` dan `docs/DEV_RULES.md`; `AI_RULES.md` (di root) adalah aturan tambahan lama.
 
 ## Purpose
 
@@ -30,9 +30,9 @@ Project ini adalah aplikasi Next.js App Router berbasis TypeScript untuk operasi
 
 ### Dashboard, Tracking, Sync
 
-- Pages: `src/app/dashboard/`, `src/app/dashboard-manufaktur/`, `src/app/tracking-manufaktur/`, `src/app/stats/`, `src/app/sync/`.
+- Pages: `src/app/dashboard/`, `src/app/dashboard-manufaktur/`, `src/app/dashboard-hrd/`, `src/app/dashboard-akunting/`, `src/app/tracking-manufaktur/`, `src/app/stats/`, `src/app/sync/`.
 - APIs: `src/app/api/stats/`, `src/app/api/tracking/`, `src/app/api/sync-status/`, `src/app/api/sync-job-status/`, `src/app/api/sync-batch-queue/`.
-- Fokus: ringkasan operasional, status sinkronisasi, tracking manufaktur, dan statistik.
+- Fokus: ringkasan operasional, dashboard manufaktur/HRD/akunting, status sinkronisasi, tracking manufaktur, dan statistik.
 
 ### Master Data, Items, Production
 
@@ -45,6 +45,16 @@ Project ini adalah aplikasi Next.js App Router berbasis TypeScript untuk operasi
 - Pages: `src/app/sales/`, `src/app/sales-orders/`, `src/app/orders/`, `src/app/rekap-sales-order/`, `src/app/pengiriman/`.
 - APIs: `src/app/api/sales/`, `src/app/api/sales-orders/`, `src/app/api/orders/`, `src/app/api/rekap-sales-order/`, `src/app/api/pengiriman/`.
 - Fokus: sales, sales order, order, rekap order, dan pengiriman.
+
+### Pricelist, Laporan Pekerjaan, Log Perubahan
+
+- Pages: `src/app/pricelist/` (Pricelist Kalender, Sistem > Kalkulasi), `src/app/laporan-pekerjaan/` (Sistem > Produksi), `src/app/log-perubahan/` (arsip changelog user).
+- Fokus: parser Excel Pricelist Kalender, manajemen CRUD Laporan Pekerjaan + konversi data, dan arsip log perubahan per rilis.
+
+### Data Digit (Import/View Data Eksternal)
+
+- Pages: `src/app/data-digit/` — `stok/master-barang`, `produksi/produksi-selesai`, `sistem/log-aktivitas-user`.
+- Fokus: lihat/import data dari Digit (sistem eksternal) dengan pola scraper + simpan ke SQLite lokal.
 
 ### Purchasing and Payables
 
@@ -60,7 +70,7 @@ Project ini adalah aplikasi Next.js App Router berbasis TypeScript untuk operasi
 
 ### Admin, Auth, Users
 
-- Pages: `src/app/login/`, `src/app/profile/`, `src/app/users/`, `src/app/roles/`, `src/app/settings/`, `src/app/audit-logs/`, `src/app/unauthorized/`.
+- Pages: `src/app/login/`, `src/app/profile/`, `src/app/users/`, `src/app/roles/`, `src/app/settings/`, `src/app/audit-logs/`, `src/app/unauthorized/`, `src/app/log-aktivitas/`.
 - APIs: `src/app/api/auth/`, `src/app/api/activity-log/`, `src/app/api/infractions/`.
 - Libraries: `src/lib/auth.ts`, `src/lib/session.ts`, `src/lib/session-cache.ts`, `src/lib/permissions.ts`, `src/lib/permissions-actions.ts`, `src/lib/permissions-constants.ts`, `src/lib/users.ts`.
 - Fokus: autentikasi, session, permission, user/role, audit log, dan infractions.
@@ -99,13 +109,18 @@ Project ini adalah aplikasi Next.js App Router berbasis TypeScript untuk operasi
 - `src/lib/date-utils.ts` — helper tanggal.
 - `src/lib/fts.ts` — full-text/search helper bila digunakan modul terkait.
 - `src/lib/scraper-period.ts` dan `src/lib/server-scraped-period.ts` — helper periode scraping.
+- `src/lib/page-changelogs.ts` — registri changelog per halaman (modal ✨ & `/log-perubahan`); aturan isi ada di `AGENTS.md` (entry baru per rilis, jangan hapus entry lama).
+- `src/lib/menu-registry.ts` — registri menu sidebar/pencarian.
+- `src/lib/date-utils.ts`, `src/lib/scraper-utils.ts`, `src/lib/api-utils.ts` — helper tanggal, scraping, dan API bersama.
 
 ## Shared Components
 
 - Layout/navigation: `src/components/Sidebar.tsx`, `src/components/MainContentWrapper.tsx`, `src/components/PageHeader.tsx`.
 - Table/data display: `src/components/ui/DataTable.tsx`, `src/components/TableFooter.tsx`, `src/components/TableTitle.tsx`, `src/components/ActivityTable.tsx`, `src/components/EmployeeTable.tsx`.
-- Form/input: `src/components/DatePicker.tsx`, `src/components/SearchableDropdown.tsx`, `src/components/SearchAndReload.tsx`, `src/components/RecordsForm.tsx`, `src/components/RecordsTabs.tsx`.
+- Form/input: `src/components/DatePicker.tsx`, `src/components/DateRangeCard.tsx`, `src/components/SearchableDropdown.tsx`, `src/components/InlineDropdown.tsx`, `src/components/SquareDropdown.tsx`, `src/components/StatCardDropdown.tsx`, `src/components/SearchAndReload.tsx`, `src/components/RecordsForm.tsx`, `src/components/RecordsTabs.tsx`.
 - Modal/dialog/toast: `src/components/ui/BaseModal.tsx`, `src/components/ConfirmDialog.tsx`, `src/components/ManualModal.tsx`, `src/components/Portal.tsx`, `src/components/Toast.tsx`.
+- Changelog: `src/components/ChangelogButton.tsx`, `src/components/PageChangelogModal.tsx` (modal ✨ per halaman, menampilkan semua rilis).
+- Drag/draft: `src/components/DraftRowItem.tsx`, `src/components/AutoGenerateModal.tsx` (baris draft JHP + dropdown `InlineDropdown`).
 - Import/scraping: `src/components/ExcelUpload.tsx`, `src/components/ExcelUploadCard.tsx`, `src/components/ImportInfo.tsx`, `src/components/ScrapingHeader.tsx`.
 - Misc UI: `src/components/HelpButton.tsx`, `src/components/StatsSkeleton.tsx`, `src/components/JurnalTrendChart.tsx`, `src/components/ui/CopyButton.tsx`.
 
@@ -116,6 +131,7 @@ Project ini adalah aplikasi Next.js App Router berbasis TypeScript untuk operasi
 - `npm run lint` — linting.
 - `npm run init-db` — inisialisasi database utama.
 - `npm run init-db:dev` — inisialisasi database development.
+- `npm run check:changelog` — cek setiap path halaman yang berubah sudah punya entry di `PAGE_CHANGELOGS` (wajib sebelum selesai setelah ubah UI page).
 - `npm run migrate:sales2025` — migrasi sales 2025.
 
 ## Data and DB Notes
@@ -125,6 +141,13 @@ Project ini adalah aplikasi Next.js App Router berbasis TypeScript untuk operasi
 - Untuk perubahan schema, cari jalur migrasi/init yang sudah ada sebelum membuat script baru.
 - Untuk scraping/import, pastikan perubahan selaras dengan aturan activity log dan dokumentasi developer.
 
+## Arsitektur Penting (Baca Sebelum Ubah UI)
+
+- **Zoom 80% + Portal**: konten app dan wrapper `<Portal>` ber-zoom `0.82` (laptop/tablet). Panel popup via `<Portal>` **wajib** membagi koordinat `getBoundingClientRect()` dengan `getZoomScale()`; `createPortal` mentah ke body memakai koordinat mentah. Detail + contoh: `docs/tutorials/27-aturan-posisi-panel-portal-zoom.md`.
+- **Hierarki z-index**: modal (z-300+) > sidebar (z-100) > tombol nav (z-80). Popup dropdown pakai `z-[9999]`+. Kartu induk popup inline perlu `relative z-[60]` (pola `DateRangeCard`).
+- **Page Changelog**: entry manual per rilis di `src/lib/page-changelogs.ts` — tambah entry baru, **jangan hapus entry lama** (history rilis tampil di modal ✨ & `/log-perubahan`).
+- **Activity Log manual**: tabel bervolume tinggi (lihat daftar di `AGENTS.md`) tidak punya trigger otomatis — scraping/import massal wajib insert `activity_logs` manual.
+
 ## Tests and Verification
 
 - Test/verifier yang terlihat: `test/infractions_timestamp_test.js` dan `test/verify_updated_at.js`.
@@ -133,6 +156,6 @@ Project ini adalah aplikasi Next.js App Router berbasis TypeScript untuk operasi
 
 ## Documentation Continuity
 
-- Update `docs/RESUME_SESSION.md` atau `docs/AI_SESSION_SUMMARY.md` bila pekerjaan perlu dilanjutkan di sesi berikutnya.
-- Update `docs/task.md` bila ada daftar task aktif yang perlu dijaga.
-- Jika menemukan aturan kerja baru yang berlaku umum, pertimbangkan update `AGENTS.md` atau `docs/DEV_RULES.md`.
+- Update `docs/AI_SESSION_SUMMARY.md` (ringkasan sesi) dan `docs/task.md` (status task) di akhir sesi agar sesi berikutnya langsung paham konteks.
+- Aturan kerja baru yang berlaku umum → update `AGENTS.md` atau `docs/DEV_RULES.md`; solusi teknis spesifik → tambah tutorial di `docs/tutorials/`.
+- Tutorial terbaru: `docs/tutorials/27-aturan-posisi-panel-portal-zoom.md` (aturan posisi popup di arsitektur zoom).

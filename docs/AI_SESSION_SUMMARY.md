@@ -1,5 +1,46 @@
 # AI Session Summary
 
+## Update Sesi — 2026-08-17
+
+### Konteks Sesi
+- Perbaikan UI `/rekap-sales-order` + audit menyeluruh komponen portal (posisi panel popup di arsitektur zoom 80%) + pembaruan aturan changelog & dokumentasi konteks agent.
+
+### Pekerjaan Sesi Ini
+
+1. **Fix `/rekap-sales-order` — datepicker tertutup komponen lain**: kartu tanggal diberi `relative z-[60]` (pola `DateRangeCard`), popup kalender kini tampil di atas komponen lain.
+2. **Fix panel Filter Harga** `/rekap-sales-order`: posisi panel meleset dari trigger → koordinat dibagi `getZoomScale()` + listener scroll/resize (pola `StatCardDropdown`).
+3. **Audit portal** (diverifikasi empiris Chrome headless): `getBoundingClientRect()` mengembalikan koordinat **visual (post-zoom)**; offset `position: fixed` di dalam wrapper zoom ikut ter-skalakan; `inset: 0` tetap menutup penuh viewport.
+4. **Fix `InlineDropdown`**: `createPortal` mentah ke body + koordinat dibagi scale → panel meleset ~22% di layar ber-zoom; diperbaiki dengan render lewat `<Portal>` (pola `StatCardDropdown`). Terpakai di dropdown baris draft Target JHP (`/jurnal-harian-produksi/target`).
+5. **Aturan changelog diubah** (`AGENTS.md`): entry rilis baru **tidak** lagi mengganti entry lama — history rilis wajib dipertahankan (modal ✨ & `/log-perubahan` menampilkan semua rilis per halaman).
+6. **Dokumentasi agent diperbarui**: tutorial baru `docs/tutorials/27-aturan-posisi-panel-portal-zoom.md`, `docs/REPO_MAP.md` & `docs/DEV_RULES.md` di-refresh.
+
+### Rekap Kerja 24 Jul – 16 Agu 2026 (sejak ringkasan terakhir)
+
+- **Laporan Pekerjaan** (`/laporan-pekerjaan`): modul lengkap — CRUD + audit logging, konversi data, cascade filter (Bagian/PIC/Status), status BELUM DIKERJAKAN, responsive mobile/tablet/laptop.
+- **Pricelist Kalender** (`/pricelist`): upload & parser Excel (sheet HARGA), matriks perbandingan harga, filter `SquareDropdown`.
+- **Hasil Produksi** (`/hasil-produksi`): smart dropdown shift, card target & quick sort, level 1 sync, indikator kolom aktif saat sort.
+- **Sales** (`/sales`): kolom Faktur Prd & Kode Barang.
+- **UI dropdown/datepicker**: unifikasi arsitektur alignment + guard sidebar laptop + ekstrak `SquareDropdown`; perbaikan hierarki z-index (modal > sidebar z-100 > nav z-80).
+- **Log Aktivitas User** (`/data-digit/sistem/log-aktivitas-user`): simpan ke SQLite lokal, export Excel, persist lebar kolom, tombol Tarik Data.
+- **Barang Jadi** (`/barang-jadi`): kolom Profit 30% + format HP Rata-rata 2 desimal.
+- **Keamanan**: tutup celah RCE & auth, cron fail-closed, rate limit login, hapus webhook Fonnte; XSS — sel tabel hasil scraping dirender plain text + strip HTML detil lama.
+
+### Keputusan Teknis Penting
+
+- **Aturan posisi popup (zoom 80%)**: panel via `<Portal>` wajib `/getZoomScale()`; `createPortal` mentah ke body pakai koordinat mentah; kartu induk popup inline perlu `relative z-[60]`. Detail: tutorial 27.
+- **Changelog multi-rilis**: entry lama dipertahankan, entry baru ditambahkan per rilis (bukan replace).
+- **Hierarki z-index**: modals (z-300+) > sidebar (z-100) > nav buttons (z-80).
+
+### File Kunci Sesi Ini
+- `src/app/rekap-sales-order/RekapSalesOrderClient.tsx`, `src/components/InlineDropdown.tsx`, `src/lib/page-changelogs.ts`, `AGENTS.md`, `docs/REPO_MAP.md`, `docs/DEV_RULES.md`, `docs/tutorials/27-aturan-posisi-panel-portal-zoom.md`
+
+### Backlog / Saran Berikutnya
+- Verifikasi visual di browser: `/rekap-sales-order` (datepicker + panel filter), `/jurnal-harian-produksi/target` (dropdown draft).
+- Konsistensi kosmetik tooltip (header `MainContentWrapper` & hasil-produksi) jika ingin konten ikut skala 82%.
+- Implementasi prop `usePortal` yang belum diaktifkan di `DatePicker`.
+
+---
+
 ## Update Sesi — 2026-07-23
 
 ### Konteks Sesi
