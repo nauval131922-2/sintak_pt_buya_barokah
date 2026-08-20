@@ -78,7 +78,20 @@ export default function DatePicker({ name, required, label, onChange, value, cus
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
     const popupWidth = 280;
-    const spaceRight = window.innerWidth - rect.left;
+
+    // ponytail: cari parent container (modal/overflow-hidden), kalau ada pakai edge modal, kalau ngga pakai window
+    let container = triggerRef.current.parentElement;
+    while (container && container !== document.body) {
+      const overflow = getComputedStyle(container).overflow;
+      if (overflow === 'hidden' || overflow === 'auto' || overflow === 'scroll') break;
+      container = container.parentElement;
+    }
+
+    const rightEdge = container && container !== document.body
+      ? container.getBoundingClientRect().right
+      : window.innerWidth;
+
+    const spaceRight = rightEdge - rect.left;
     const leftWhenAlignRight = rect.right - popupWidth;
     const minLeftAllowed = window.innerWidth >= 1024 ? 260 : 12;
 

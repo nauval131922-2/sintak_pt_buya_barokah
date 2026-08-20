@@ -139,6 +139,18 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Jurnal Harian Produksi ───
+  'jurnal-harian-produksi-2026-08-20': entry({
+    pageKey: 'jurnal-harian-produksi',
+    title: 'Jurnal Harian Produksi',
+    version: '2026-08-20-1',
+    date: '20 Agu 2026',
+    sortDate: '2026-08-20',
+    permissionKeys: ['produksi_jhp'],
+    items: [
+      'Perbaikan posisi popup kalender di modal Copy Jadwal: sekarang ngitung ruang dari edge modal, bukan window',
+      'Popup datepicker tidak lagi memicu scroll horizontal di dalam modal',
+    ],
+  }),
   'jurnal-harian-produksi-2026-08-11': entry({
     pageKey: 'jurnal-harian-produksi',
     title: 'Jurnal Harian Produksi',
