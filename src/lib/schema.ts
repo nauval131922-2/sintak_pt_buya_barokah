@@ -869,16 +869,15 @@ export async function initSchema(db: any) {
     "ALTER TABLE bahan_baku ADD COLUMN username TEXT;",
     "ALTER TABLE bahan_baku ADD COLUMN kd_pelanggan TEXT;",
     "ALTER TABLE bahan_baku ADD COLUMN recid TEXT;",
+    "ALTER TABLE sales_orders ADD COLUMN recid TEXT;",
 
     "CREATE UNIQUE INDEX IF NOT EXISTS idx_employee_no ON employees(employee_no);",
     "CREATE UNIQUE INDEX IF NOT EXISTS idx_sales_unique ON sales_reports(faktur, kd_barang, tgl);",
     "CREATE UNIQUE INDEX IF NOT EXISTS idx_barang_jadi_unique ON barang_jadi(faktur, kd_barang, tgl);",
     "CREATE UNIQUE INDEX IF NOT EXISTS idx_bahan_baku_unique ON bahan_baku(faktur, kd_barang, tgl);",
-    "CREATE UNIQUE INDEX IF NOT EXISTS idx_sales_orders_recid ON sales_orders(recid);",
     "CREATE UNIQUE INDEX IF NOT EXISTS idx_bom_unique ON bill_of_materials(faktur);",
     "CREATE UNIQUE INDEX IF NOT EXISTS idx_pr_unique ON purchase_requests(faktur);",
     "CREATE UNIQUE INDEX IF NOT EXISTS idx_role_permissions_unique ON role_permissions(role, module_key);",
-    "ALTER TABLE sales_orders ADD COLUMN recid TEXT;",
     "ALTER TABLE sales_orders ADD COLUMN satuan TEXT;",
     "ALTER TABLE barang_jadi ADD COLUMN faktur_so TEXT;",
     "ALTER TABLE barang_jadi ADD COLUMN kd_cabang TEXT;",
@@ -1074,6 +1073,17 @@ export async function initSchema(db: any) {
     }
   } catch (e: any) {
     console.warn("[DB] Failed backfill user_roles:", e.message);
+  }
+
+  // ponytail: ensure sales_orders recid populated + unique index created
+  try {
+    if (executor.execute) {
+      await executor.execute(`UPDATE sales_orders SET recid = json_extract(raw_data, '$.recid') WHERE (recid IS NULL OR recid = '') AND raw_data LIKE '{%' AND json_extract(raw_data, '$.recid') IS NOT NULL;`);
+      await executor.execute(`UPDATE sales_orders SET recid = 'legacy_' || id WHERE (recid IS NULL OR recid = '');`);
+      await executor.execute(`CREATE UNIQUE INDEX IF NOT EXISTS idx_sales_orders_recid ON sales_orders(recid);`);
+    }
+  } catch (e: any) {
+    console.warn('[DB] Failed initializing sales_orders recid unique index:', e.message);
   }
 
   // 2.7 Fix: Hapus UNIQUE constraint pada kolom faktur di sales_orders
