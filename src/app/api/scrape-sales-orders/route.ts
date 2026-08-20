@@ -122,16 +122,20 @@ export async function GET(req: NextRequest) {
       gol_barang: r.gol_barang || '',
       spesifikasi: r.spesifikasi || '',
       keterangan: r.keterangan || '',
+      recid: String(r.recid || r.id || ''),
       raw_data: JSON.stringify(r)
     }));
 
     const insertSql = `
       INSERT INTO sales_orders (
         faktur, kd_pelanggan, tgl, kd_barang, faktur_sph, top_hari, harga, qty, satuan, jumlah, ppn, 
-        faktur_prd, nama_prd, nama_pelanggan, dati_2, gol_barang, spesifikasi, keterangan, raw_data
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(faktur, kd_barang, tgl) DO UPDATE SET
+        faktur_prd, nama_prd, nama_pelanggan, dati_2, gol_barang, spesifikasi, keterangan, recid, raw_data
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(recid) DO UPDATE SET
+        faktur=excluded.faktur,
         kd_pelanggan=excluded.kd_pelanggan,
+        tgl=excluded.tgl,
+        kd_barang=excluded.kd_barang,
         faktur_sph=excluded.faktur_sph,
         top_hari=excluded.top_hari,
         harga=excluded.harga,
@@ -149,12 +153,12 @@ export async function GET(req: NextRequest) {
         raw_data=excluded.raw_data
     `;
 
-    const queries = finalRecords.map((r: ScrapedRecord) => ({
+    const queries = finalRecords.map((r: any) => ({
       sql: insertSql,
       args: [
         r.faktur, r.kd_pelanggan, r.tgl, r.kd_barang, r.faktur_sph, r.top_hari, 
         r.harga, r.qty, r.satuan, r.jumlah, r.ppn, r.faktur_prd, r.nama_prd, r.nama_pelanggan, 
-        r.dati_2, r.gol_barang, r.spesifikasi, r.keterangan, r.raw_data
+        r.dati_2, r.gol_barang, r.spesifikasi, r.keterangan, r.recid, r.raw_data
       ]
     }));
 

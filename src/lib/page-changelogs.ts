@@ -691,6 +691,17 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     permissionKeys: ['penjualan_laporan'],
     items: [...UI_POLISH],
   }),
+  'sales-orders-2026-08-20': entry({
+    pageKey: 'sales-orders',
+    title: 'Sales Order',
+    sortDate: '2026-08-20',
+    date: '20 Agu 2026',
+    version: '2026-08-20-1',
+    permissionKeys: ['penjualan_so'],
+    items: [
+      'Perbaikan UPSERT sync scraper menggunakan recid agar revisi item dari Digit langsung menimpa data lama dan tidak menimbulkan duplikasi',
+    ],
+  }),
   'sales-orders-2026-07-25': entry({
     pageKey: 'sales-orders',
     title: 'Sales Order',
