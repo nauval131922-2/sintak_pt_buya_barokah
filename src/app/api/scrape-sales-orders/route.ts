@@ -102,6 +102,16 @@ export async function GET(req: NextRequest) {
     }
 
     // 3. Save to Database (UPSERT)
+    // ponytail: ensure recid column and unique index exist defensively before upserting
+    try {
+      await db.execute(`ALTER TABLE sales_orders ADD COLUMN recid TEXT;`);
+    } catch {}
+    try {
+      await db.execute(`UPDATE sales_orders SET recid = json_extract(raw_data, '$.recid') WHERE (recid IS NULL OR recid = '') AND raw_data LIKE '{%' AND json_extract(raw_data, '$.recid') IS NOT NULL;`);
+      await db.execute(`UPDATE sales_orders SET recid = 'legacy_' || id WHERE (recid IS NULL OR recid = '');`);
+      await db.execute(`CREATE UNIQUE INDEX IF NOT EXISTS idx_sales_orders_recid ON sales_orders(recid);`);
+    } catch {}
+
     // Map with defensive parsing
     const finalRecords = rows.map((r: ScrapedRecord) => ({
       faktur: r.faktur,
