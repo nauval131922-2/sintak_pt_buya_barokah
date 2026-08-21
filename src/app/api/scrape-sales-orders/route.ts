@@ -109,6 +109,13 @@ export async function GET(req: NextRequest) {
     try {
       await db.execute(`UPDATE sales_orders SET recid = json_extract(raw_data, '$.recid') WHERE (recid IS NULL OR recid = '') AND raw_data LIKE '{%' AND json_extract(raw_data, '$.recid') IS NOT NULL;`);
       await db.execute(`UPDATE sales_orders SET recid = 'legacy_' || id WHERE (recid IS NULL OR recid = '');`);
+      // ponytail: if existing database has duplicate recid from previous scrapings, keep only newest ID before creating unique index
+      await db.execute(`
+        DELETE FROM sales_orders 
+        WHERE id NOT IN (
+          SELECT MAX(id) FROM sales_orders GROUP BY recid
+        );
+      `);
       await db.execute(`CREATE UNIQUE INDEX IF NOT EXISTS idx_sales_orders_recid ON sales_orders(recid);`);
     } catch {}
 
