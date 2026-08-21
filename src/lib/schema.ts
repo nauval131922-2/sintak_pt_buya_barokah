@@ -869,12 +869,14 @@ export async function initSchema(db: any) {
     "ALTER TABLE bahan_baku ADD COLUMN username TEXT;",
     "ALTER TABLE bahan_baku ADD COLUMN kd_pelanggan TEXT;",
     "ALTER TABLE bahan_baku ADD COLUMN recid TEXT;",
+    "ALTER TABLE barang_jadi ADD COLUMN recid TEXT;",
+    "ALTER TABLE sales_reports ADD COLUMN recid TEXT;",
     "ALTER TABLE sales_orders ADD COLUMN recid TEXT;",
 
     "CREATE UNIQUE INDEX IF NOT EXISTS idx_employee_no ON employees(employee_no);",
-    "CREATE UNIQUE INDEX IF NOT EXISTS idx_sales_unique ON sales_reports(faktur, kd_barang, tgl);",
-    "CREATE UNIQUE INDEX IF NOT EXISTS idx_barang_jadi_unique ON barang_jadi(faktur, kd_barang, tgl);",
-    "CREATE UNIQUE INDEX IF NOT EXISTS idx_bahan_baku_unique ON bahan_baku(faktur, kd_barang, tgl);",
+    "CREATE UNIQUE INDEX IF NOT EXISTS idx_sales_recid ON sales_reports(recid);",
+    "CREATE UNIQUE INDEX IF NOT EXISTS idx_barang_jadi_recid ON barang_jadi(recid);",
+    "CREATE UNIQUE INDEX IF NOT EXISTS idx_bahan_baku_recid ON bahan_baku(recid);",
     "CREATE UNIQUE INDEX IF NOT EXISTS idx_bom_unique ON bill_of_materials(faktur);",
     "CREATE UNIQUE INDEX IF NOT EXISTS idx_pr_unique ON purchase_requests(faktur);",
     "CREATE UNIQUE INDEX IF NOT EXISTS idx_role_permissions_unique ON role_permissions(role, module_key);",
@@ -1075,21 +1077,35 @@ export async function initSchema(db: any) {
     console.warn("[DB] Failed backfill user_roles:", e.message);
   }
 
-  // ponytail: ensure sales_orders recid populated + unique index created
+  // ponytail: ensure recid populated + unique index created for item-level tables
   try {
     if (executor.execute) {
-      await executor.execute(`UPDATE sales_orders SET recid = json_extract(raw_data, '$.recid') WHERE (recid IS NULL OR recid = '') AND raw_data LIKE '{%' AND json_extract(raw_data, '$.recid') IS NOT NULL;`);
-      await executor.execute(`UPDATE sales_orders SET recid = 'legacy_' || id WHERE (recid IS NULL OR recid = '');`);
-      await executor.execute(`
-        DELETE FROM sales_orders 
-        WHERE id NOT IN (
-          SELECT MAX(id) FROM sales_orders GROUP BY recid
-        );
-      `);
-      await executor.execute(`CREATE UNIQUE INDEX IF NOT EXISTS idx_sales_orders_recid ON sales_orders(recid);`);
+      // sales_orders
+      await executor.execute(`UPDATE sales_orders SET recid = json_extract(raw_data, '$.recid') WHERE (recid IS NULL OR recid = '') AND raw_data LIKE '{%' AND json_extract(raw_data, '$.recid') IS NOT NULL;`).catch(() => {});
+      await executor.execute(`UPDATE sales_orders SET recid = 'legacy_' || id WHERE (recid IS NULL OR recid = '');`).catch(() => {});
+      await executor.execute(`DELETE FROM sales_orders WHERE id NOT IN (SELECT MAX(id) FROM sales_orders GROUP BY recid);`).catch(() => {});
+      await executor.execute(`CREATE UNIQUE INDEX IF NOT EXISTS idx_sales_orders_recid ON sales_orders(recid);`).catch(() => {});
+
+      // sales_reports
+      await executor.execute(`UPDATE sales_reports SET recid = json_extract(raw_data, '$.recid') WHERE (recid IS NULL OR recid = '') AND raw_data LIKE '{%' AND json_extract(raw_data, '$.recid') IS NOT NULL;`).catch(() => {});
+      await executor.execute(`UPDATE sales_reports SET recid = 'legacy_' || id WHERE (recid IS NULL OR recid = '');`).catch(() => {});
+      await executor.execute(`DELETE FROM sales_reports WHERE id NOT IN (SELECT MAX(id) FROM sales_reports GROUP BY recid);`).catch(() => {});
+      await executor.execute(`CREATE UNIQUE INDEX IF NOT EXISTS idx_sales_recid ON sales_reports(recid);`).catch(() => {});
+
+      // barang_jadi
+      await executor.execute(`UPDATE barang_jadi SET recid = json_extract(raw_data, '$.recid') WHERE (recid IS NULL OR recid = '') AND raw_data LIKE '{%' AND json_extract(raw_data, '$.recid') IS NOT NULL;`).catch(() => {});
+      await executor.execute(`UPDATE barang_jadi SET recid = 'legacy_' || id WHERE (recid IS NULL OR recid = '');`).catch(() => {});
+      await executor.execute(`DELETE FROM barang_jadi WHERE id NOT IN (SELECT MAX(id) FROM barang_jadi GROUP BY recid);`).catch(() => {});
+      await executor.execute(`CREATE UNIQUE INDEX IF NOT EXISTS idx_barang_jadi_recid ON barang_jadi(recid);`).catch(() => {});
+
+      // bahan_baku
+      await executor.execute(`UPDATE bahan_baku SET recid = json_extract(raw_data, '$.recid') WHERE (recid IS NULL OR recid = '') AND raw_data LIKE '{%' AND json_extract(raw_data, '$.recid') IS NOT NULL;`).catch(() => {});
+      await executor.execute(`UPDATE bahan_baku SET recid = 'legacy_' || id WHERE (recid IS NULL OR recid = '');`).catch(() => {});
+      await executor.execute(`DELETE FROM bahan_baku WHERE id NOT IN (SELECT MAX(id) FROM bahan_baku GROUP BY recid);`).catch(() => {});
+      await executor.execute(`CREATE UNIQUE INDEX IF NOT EXISTS idx_bahan_baku_recid ON bahan_baku(recid);`).catch(() => {});
     }
   } catch (e: any) {
-    console.warn('[DB] Failed initializing sales_orders recid unique index:', e.message);
+    console.warn('[DB] Failed initializing recid unique indexes:', e.message);
   }
 
   // 2.7 Fix: Hapus UNIQUE constraint pada kolom faktur di sales_orders

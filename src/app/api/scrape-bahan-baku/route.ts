@@ -150,6 +150,31 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    // ponytail: ensure recid column and unique index exist defensively
+    try {
+      await db.execute(`ALTER TABLE bahan_baku ADD COLUMN recid TEXT;`);
+    } catch {}
+    try {
+      await db.execute(`UPDATE bahan_baku SET recid = json_extract(raw_data, '$.recid') WHERE (recid IS NULL OR recid = '') AND raw_data LIKE '{%' AND json_extract(raw_data, '$.recid') IS NOT NULL;`);
+      await db.execute(`UPDATE bahan_baku SET recid = 'legacy_' || id WHERE (recid IS NULL OR recid = '');`);
+      await db.execute(`DELETE FROM bahan_baku WHERE id NOT IN (SELECT MAX(id) FROM bahan_baku GROUP BY recid);`);
+      await db.execute(`CREATE UNIQUE INDEX IF NOT EXISTS idx_bahan_baku_recid ON bahan_baku(recid);`);
+    } catch {}
+
+    // ponytail: delete orphaned records for this date range that no longer exist in Digit
+    const incomingRecids = finalRecords.map((r: any) => String(r.recid || r.id || '')).filter(Boolean);
+    if (incomingRecids.length > 0) {
+      const placeholders = incomingRecids.map(() => '?').join(',');
+      await db.execute({
+        sql: `
+          DELETE FROM bahan_baku 
+          WHERE (substr(tgl,7,4)||'-'||substr(tgl,4,2)||'-'||substr(tgl,1,2)) BETWEEN ? AND ?
+            AND recid NOT IN (${placeholders})
+        `,
+        args: [startParam, endParam, ...incomingRecids]
+      });
+    }
+
     // 1. Fetch existing keys efficiently
     // bahan_baku has composite primary key logic (faktur, kd_barang, tgl)
     // We'll skip pre-calculating exact 'newInsertedCount' if complex, or just use a sample count
@@ -159,6 +184,7 @@ export async function GET(request: NextRequest) {
     const batchOps: any[] = [];
     for (const record of finalRecords) {
       if (!record.nama_barang) continue;
+      const rRecid = String(record.recid || record.id || '');
       
       batchOps.push({
         sql: `
@@ -170,7 +196,12 @@ export async function GET(request: NextRequest) {
             faktur_pb, raw_data
           )
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          ON CONFLICT(faktur, kd_barang, tgl) DO UPDATE SET
+          ON CONFLICT(recid) DO UPDATE SET
+            tgl = excluded.tgl,
+            nama_barang = excluded.nama_barang,
+            kd_barang = excluded.kd_barang,
+            faktur = excluded.faktur,
+            faktur_prd = excluded.faktur_prd,
             faktur_aktifitas = excluded.faktur_aktifitas,
             kd_cabang = excluded.kd_cabang,
             kd_gudang = excluded.kd_gudang,
@@ -185,7 +216,6 @@ export async function GET(request: NextRequest) {
             aktifitas = excluded.aktifitas,
             username = excluded.username,
             kd_pelanggan = excluded.kd_pelanggan,
-            recid = excluded.recid,
             faktur_pb = excluded.faktur_pb,
             raw_data = excluded.raw_data
         `,
@@ -209,7 +239,7 @@ export async function GET(request: NextRequest) {
           record.aktifitas || '',
           record.username || '',
           record.kd_pelanggan || '',
-          record.recid || '',
+          rRecid,
           record.faktur_pb || '',
           JSON.stringify(record)
         ]

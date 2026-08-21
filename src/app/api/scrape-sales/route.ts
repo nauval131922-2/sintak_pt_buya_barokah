@@ -106,9 +106,35 @@ export async function GET(request: NextRequest) {
         String(r.kd_barang || "").toLowerCase().trim() !== "total"
     );
 
+    // ponytail: ensure recid column and unique index exist defensively
+    try {
+      await db.execute(`ALTER TABLE sales_reports ADD COLUMN recid TEXT;`);
+    } catch {}
+    try {
+      await db.execute(`UPDATE sales_reports SET recid = json_extract(raw_data, '$.recid') WHERE (recid IS NULL OR recid = '') AND raw_data LIKE '{%' AND json_extract(raw_data, '$.recid') IS NOT NULL;`);
+      await db.execute(`UPDATE sales_reports SET recid = 'legacy_' || id WHERE (recid IS NULL OR recid = '');`);
+      await db.execute(`DELETE FROM sales_reports WHERE id NOT IN (SELECT MAX(id) FROM sales_reports GROUP BY recid);`);
+      await db.execute(`CREATE UNIQUE INDEX IF NOT EXISTS idx_sales_recid ON sales_reports(recid);`);
+    } catch {}
+
+    // ponytail: delete orphaned records for this date range that no longer exist in Digit
+    const incomingRecids = allRecords.map((r: ScrapedRecord) => String(r.recid || r.id || '')).filter(Boolean);
+    if (incomingRecids.length > 0) {
+      const placeholders = incomingRecids.map(() => '?').join(',');
+      await db.execute({
+        sql: `
+          DELETE FROM sales_reports 
+          WHERE (substr(tgl,7,4)||'-'||substr(tgl,4,2)||'-'||substr(tgl,1,2)) BETWEEN ? AND ?
+            AND recid NOT IN (${placeholders})
+        `,
+        args: [startParam, endParam, ...incomingRecids]
+      });
+    }
+
     // 1. Prepare batch inserts
     const batchOps: BatchOperation[] = [];
     for (const record of allRecords) {
+      const rRecid = String(record.recid || record.id || '');
       batchOps.push({
         sql: `
           INSERT INTO sales_reports (
@@ -118,8 +144,11 @@ export async function GET(request: NextRequest) {
             gol_barang, keterangan_so, recid, raw_data
           )
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          ON CONFLICT(faktur, kd_barang, tgl) DO UPDATE SET
+          ON CONFLICT(recid) DO UPDATE SET
+            faktur = excluded.faktur,
             kd_pelanggan = excluded.kd_pelanggan,
+            tgl = excluded.tgl,
+            kd_barang = excluded.kd_barang,
             faktur_so = excluded.faktur_so,
             jthtmp = excluded.jthtmp,
             harga = excluded.harga,
@@ -133,7 +162,6 @@ export async function GET(request: NextRequest) {
             dati_2 = excluded.dati_2,
             gol_barang = excluded.gol_barang,
             keterangan_so = excluded.keterangan_so,
-            recid = excluded.recid,
             raw_data = excluded.raw_data
         `,
         args: [
@@ -154,7 +182,7 @@ export async function GET(request: NextRequest) {
           record.dati_2 || '',
           record.gol_barang || '',
           record.keterangan_so || '',
-          record.recid || '',
+          rRecid,
           JSON.stringify(record)
         ]
       });

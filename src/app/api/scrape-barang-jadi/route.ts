@@ -139,10 +139,36 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    // ponytail: ensure recid column and unique index exist defensively
+    try {
+      await db.execute(`ALTER TABLE barang_jadi ADD COLUMN recid TEXT;`);
+    } catch {}
+    try {
+      await db.execute(`UPDATE barang_jadi SET recid = json_extract(raw_data, '$.recid') WHERE (recid IS NULL OR recid = '') AND raw_data LIKE '{%' AND json_extract(raw_data, '$.recid') IS NOT NULL;`);
+      await db.execute(`UPDATE barang_jadi SET recid = 'legacy_' || id WHERE (recid IS NULL OR recid = '');`);
+      await db.execute(`DELETE FROM barang_jadi WHERE id NOT IN (SELECT MAX(id) FROM barang_jadi GROUP BY recid);`);
+      await db.execute(`CREATE UNIQUE INDEX IF NOT EXISTS idx_barang_jadi_recid ON barang_jadi(recid);`);
+    } catch {}
+
+    // ponytail: delete orphaned records for this date range that no longer exist in Digit
+    const incomingRecids = finalRecords.map((r: any) => String(r.recid || r.id || '')).filter(Boolean);
+    if (incomingRecids.length > 0) {
+      const placeholders = incomingRecids.map(() => '?').join(',');
+      await db.execute({
+        sql: `
+          DELETE FROM barang_jadi 
+          WHERE (substr(tgl,7,4)||'-'||substr(tgl,4,2)||'-'||substr(tgl,1,2)) BETWEEN ? AND ?
+            AND recid NOT IN (${placeholders})
+        `,
+        args: [startParam, endParam, ...incomingRecids]
+      });
+    }
+
     // 1. Prepare batch inserts
     const batchOps: any[] = [];
     for (const record of finalRecords) {
       if (!record.nama_barang) continue;
+      const rRecid = String(record.recid || record.id || '');
       
       batchOps.push({
         sql: `
@@ -154,8 +180,11 @@ export async function GET(request: NextRequest) {
             keterangan, username, kd_pelanggan, nama_prd, qty_order, qty_so, recid, raw_data
           )
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          ON CONFLICT(faktur, kd_barang, tgl) DO UPDATE SET
+          ON CONFLICT(recid) DO UPDATE SET
+            tgl = excluded.tgl,
             nama_barang = excluded.nama_barang,
+            kd_barang = excluded.kd_barang,
+            faktur = excluded.faktur,
             faktur_prd = excluded.faktur_prd,
             faktur_so = excluded.faktur_so,
             kd_cabang = excluded.kd_cabang,
@@ -180,7 +209,6 @@ export async function GET(request: NextRequest) {
             nama_prd = excluded.nama_prd,
             qty_order = excluded.qty_order,
             qty_so = excluded.qty_so,
-            recid = excluded.recid,
             raw_data = excluded.raw_data
         `,
         args: [
@@ -212,7 +240,7 @@ export async function GET(request: NextRequest) {
           record.nama_prd || '',
           record.qty_order || 0,
           record.qty_so || 0,
-          record.recid || '',
+          rRecid,
           JSON.stringify(record)
         ]
       });
