@@ -144,7 +144,7 @@ export async function GET(req: NextRequest) {
     }));
 
     // ponytail: delete orphaned records for this date range that no longer exist in Digit
-    const incomingRecids = finalRecords.map(r => r.recid).filter(Boolean);
+    const incomingRecids = finalRecords.map((r: { recid: string }) => r.recid).filter(Boolean);
     if (incomingRecids.length > 0) {
       const placeholders = incomingRecids.map(() => '?').join(',');
       await db.execute({
