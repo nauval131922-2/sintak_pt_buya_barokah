@@ -143,6 +143,20 @@ export async function GET(req: NextRequest) {
       raw_data: JSON.stringify(r)
     }));
 
+    // ponytail: delete orphaned records for this date range that no longer exist in Digit
+    const incomingRecids = finalRecords.map(r => r.recid).filter(Boolean);
+    if (incomingRecids.length > 0) {
+      const placeholders = incomingRecids.map(() => '?').join(',');
+      await db.execute({
+        sql: `
+          DELETE FROM sales_orders 
+          WHERE (substr(tgl,7,4)||'-'||substr(tgl,4,2)||'-'||substr(tgl,1,2)) BETWEEN ? AND ?
+            AND recid NOT IN (${placeholders})
+        `,
+        args: [startParam, endParam, ...incomingRecids]
+      });
+    }
+
     const insertSql = `
       INSERT INTO sales_orders (
         faktur, kd_pelanggan, tgl, kd_barang, faktur_sph, top_hari, harga, qty, satuan, jumlah, ppn, 
