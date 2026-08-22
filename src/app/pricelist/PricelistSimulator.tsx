@@ -171,8 +171,16 @@ export default function PricelistSimulator({
             </div>
           </div>
         </div>
-        {onOpenMasterParam && (
-          <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent('open-manual'))}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer"
+          >
+            <Info size={14} />
+            <span>Panduan Simulator</span>
+          </button>
+          {onOpenMasterParam && (
             <button
               type="button"
               onClick={onOpenMasterParam}
@@ -181,8 +189,8 @@ export default function PricelistSimulator({
               <Settings2 size={14} />
               <span>Lihat Master Parameter</span>
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Main Grid: Form Inputs (Left) & Results Summary (Right) */}
