@@ -11,26 +11,35 @@ interface ThousandInputProps extends Omit<React.InputHTMLAttributes<HTMLInputEle
 }
 
 /**
- * Format angka ke format Indonesia: ribuan titik (.) dan desimal koma (,)
- * Contoh: 15700.5 -> "15.700,50"
+ * Format persis seperti formatNumberIndo di RecordsForm.tsx:
+ * Mengizinkan input koma secara bebas dan memformat ribuan titik secara real-time.
  */
-function formatNumberToIndo(num: number, showDecimals: boolean): string {
-  if (num === 0) return showDecimals ? '0,00' : '0';
-  if (!num && num !== 0) return '';
+function formatNumberIndo(val: string | number): string {
+  if (val === undefined || val === null || val === '') return '';
 
-  if (showDecimals) {
-    const fixed = num.toFixed(2);
-    const [intPart, decPart] = fixed.split('.');
-    const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    return `${formattedInt},${decPart}`;
+  const isNumType = typeof val === 'number';
+  let s = String(val);
+  if (!isNumType) {
+    s = s.replace(/\./g, '').replace(/,/g, '.');
   }
 
-  const [intPart, decPart] = String(num).split('.');
-  const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  if (decPart !== undefined) {
-    return `${formattedInt},${decPart}`;
+  const num = parseFloat(s);
+  if (isNaN(num)) return String(val);
+
+  const parts = s.split('.');
+  let res = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  if (parts.length > 1) {
+    const decimalPart = parts[1].substring(0, 2);
+    res += ',' + decimalPart;
   }
-  return formattedInt;
+  return res;
+}
+
+function parseNumberIndo(val: string): number {
+  if (!val) return 0;
+  const clean = val.replace(/\./g, '').replace(/,/g, '.');
+  const num = parseFloat(clean);
+  return isNaN(num) ? 0 : num;
 }
 
 export default function ThousandInput({
@@ -44,47 +53,45 @@ export default function ThousandInput({
   disabled,
   ...props
 }: ThousandInputProps) {
-  const [isFocused, setIsFocused] = useState(false);
-  const [inputValue, setInputValue] = useState('');
+  const [displayValue, setDisplayValue] = useState<string>('');
 
-  // Sinkronisasi saat nilai eksternal berubah dan input tidak sedang aktif diketik
+  // Sinkronisasi dari prop value luar
   useEffect(() => {
-    if (!isFocused) {
-      setInputValue(formatNumberToIndo(value, allowDecimals));
+    if (value !== undefined && value !== null) {
+      const currentParsed = parseNumberIndo(displayValue);
+      // Hanya set jika nilai angka berbeda (mencegah gangguan saat mengetik koma di tengah jalan)
+      if (currentParsed !== value || displayValue === '') {
+        setDisplayValue(formatNumberIndo(value));
+      }
+    } else {
+      setDisplayValue('');
     }
-  }, [value, isFocused, allowDecimals]);
-
-  const handleFocus = () => {
-    setIsFocused(true);
-    // Saat fokus, tampilkan angka tanpa trailing zero paksa agar mudah diedit
-    setInputValue(formatNumberToIndo(value, false));
-  };
-
-  const handleBlur = () => {
-    setIsFocused(false);
-    // Saat blur, format rapi dengan 2 angka di belakang koma
-    setInputValue(formatNumberToIndo(value, allowDecimals));
-  };
+  }, [value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let raw = e.target.value;
 
-    // Hanya izinkan angka, koma, dan titik
-    raw = raw.replace(/[^0-9,.]/g, '');
+    if (!allowDecimals) {
+      raw = raw.replace(/[^0-9]/g, '');
+    } else {
+      raw = raw.replace(/[^0-9,]/g, '');
+    }
 
-    // Standarisasi desimal: ubah titik menjadi koma jika dimasukkan
-    // Jika ada koma, hanya izinkan 1 koma
-    const parts = raw.split(/[,.]/);
-    let intRaw = parts[0].replace(/\D/g, '');
-    let decRaw = parts.length > 1 ? parts.slice(1).join('').replace(/\D/g, '').slice(0, 2) : undefined;
+    // Tangani jika ada koma di posisi terakhir saat user baru mengetik koma (contoh: "15.700,")
+    if (raw.endsWith(',')) {
+      // Pastikan hanya 1 koma
+      const parts = raw.split(',');
+      if (parts.length <= 2) {
+        const intFormatted = parts[0] ? formatNumberIndo(parts[0].replace(/\./g, '')) : '0';
+        setDisplayValue(`${intFormatted},`);
+        onValueChange(parseNumberIndo(intFormatted));
+        return;
+      }
+    }
 
-    const formattedInt = intRaw ? intRaw.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '0';
-    const displayStr = decRaw !== undefined ? `${formattedInt},${decRaw}` : formattedInt;
-
-    setInputValue(displayStr);
-
-    const parsedNum = parseFloat(`${intRaw || '0'}.${decRaw || '0'}`);
-    onValueChange(isNaN(parsedNum) ? 0 : parsedNum);
+    const formatted = formatNumberIndo(raw);
+    setDisplayValue(formatted);
+    onValueChange(parseNumberIndo(formatted));
   };
 
   return (
@@ -96,10 +103,8 @@ export default function ThousandInput({
       )}
       <input
         type="text"
-        inputMode="decimal"
-        value={inputValue}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
+        inputMode={allowDecimals ? 'decimal' : 'numeric'}
+        value={displayValue}
         onChange={handleChange}
         disabled={disabled}
         placeholder={placeholder}
