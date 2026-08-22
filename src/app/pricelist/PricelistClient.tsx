@@ -19,6 +19,7 @@ import PricelistSimulator from './PricelistSimulator';
 import PricelistMasterParameter from './PricelistMasterParameter';
 import SquareDropdown from '@/components/SquareDropdown';
 import { DEFAULT_MASTER_PARAMS, SimulatorMasterParams } from '@/lib/pricelist-simulator';
+import { recalculatePricelistFromParams } from '@/lib/pricelist-calculator';
 
 interface PricelistItem {
   id: number;
@@ -71,15 +72,20 @@ export default function PricelistClient() {
     fetchData();
   }, [fetchData]);
 
+  // Data terhitung secara reaktif: jika Master Parameter diubah, seluruh tabel pricelist langsung ikut terupdate
+  const activeItems = useMemo(() => {
+    return recalculatePricelistFromParams(customParams, items);
+  }, [customParams, items]);
+
   // Options for SquareDropdown
   const jenisOptions = useMemo(() => {
     const counts: Record<string, number> = {};
-    items.forEach((i) => {
+    activeItems.forEach((i) => {
       counts[i.jenis_kalender] = (counts[i.jenis_kalender] || 0) + 1;
     });
 
     const opts = [
-      { value: 'ALL', label: 'Semua Jenis', count: items.length },
+      { value: 'ALL', label: 'Semua Jenis', count: activeItems.length },
       ...Object.keys(counts).map((k) => ({
         value: k,
         label: k,
@@ -87,16 +93,16 @@ export default function PricelistClient() {
       })),
     ];
     return opts;
-  }, [items]);
+  }, [activeItems]);
 
   const bahanOptions = useMemo(() => {
     const counts: Record<string, number> = {};
-    items.forEach((i) => {
+    activeItems.forEach((i) => {
       counts[i.bahan] = (counts[i.bahan] || 0) + 1;
     });
 
     const opts = [
-      { value: 'ALL', label: 'Semua Bahan', count: items.length },
+      { value: 'ALL', label: 'Semua Bahan', count: activeItems.length },
       ...Object.keys(counts).map((k) => ({
         value: k,
         label: k,
@@ -104,11 +110,11 @@ export default function PricelistClient() {
       })),
     ];
     return opts;
-  }, [items]);
+  }, [activeItems]);
 
   const filteredItems = useMemo(() => {
     const q = searchTerm.toLowerCase().trim();
-    return items.filter((item) => {
+    return activeItems.filter((item) => {
       if (selectedJenis !== 'ALL' && item.jenis_kalender !== selectedJenis) return false;
       if (selectedBahan !== 'ALL' && item.bahan !== selectedBahan) return false;
       if (q) {
@@ -123,7 +129,7 @@ export default function PricelistClient() {
       }
       return true;
     });
-  }, [items, selectedJenis, selectedBahan, searchTerm]);
+  }, [activeItems, selectedJenis, selectedBahan, searchTerm]);
 
   // Grouping for matrix view: Jenis -> Bahan -> List of Rows (grouped by Oplah + Proses)
   const groupedData = useMemo(() => {
@@ -329,7 +335,7 @@ export default function PricelistClient() {
               <Loader2 size={32} className="animate-spin text-amber-500 mb-2" />
               <p className="text-xs text-slate-500 font-medium">Memuat data pricelist...</p>
             </div>
-          ) : items.length === 0 ? (
+          ) : activeItems.length === 0 ? (
             <div className="flex-1 min-h-[300px] flex flex-col items-center justify-center bg-white rounded-xl border border-slate-200 p-8 text-center">
               <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center mb-3">
                 <FileSpreadsheet size={24} />
