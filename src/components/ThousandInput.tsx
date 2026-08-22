@@ -13,7 +13,7 @@ interface ThousandInputProps extends Omit<React.InputHTMLAttributes<HTMLInputEle
 /**
  * Format angka ke standar Indonesia:
  * - Menghilangkan leading zero yang tidak perlu (misal '05' jadi '5', kecuali '0,' untuk desimal).
- * - Pemisah ribuan titik (.) dan desimal koma (,).
+ * - Pemisah ribuan titik (.) dan desimal koma (,) tanpa membatasi jumlah digit desimal.
  */
 function formatNumberIndo(val: string | number): string {
   if (val === undefined || val === null || val === '') return '';
@@ -34,7 +34,7 @@ function formatNumberIndo(val: string | number): string {
   const formattedInt = intStr.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
   if (parts.length > 1) {
-    const decimalPart = parts[1].substring(0, 2);
+    const decimalPart = parts[1]; // fleksibel tanpa limit digit
     return `${formattedInt},${decimalPart}`;
   }
   return formattedInt;
