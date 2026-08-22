@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Database,
   Sliders,
@@ -17,6 +17,7 @@ import {
   SimulatorMasterParams,
 } from '@/lib/pricelist-simulator';
 import ThousandInput from '@/components/ThousandInput';
+import { toast } from '@/lib/toast';
 
 interface MasterParameterProps {
   customParams: SimulatorMasterParams;
@@ -27,16 +28,13 @@ export default function PricelistMasterParameter({
   customParams,
   setCustomParams,
 }: MasterParameterProps) {
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
-
   const handleChange = (key: keyof SimulatorMasterParams, val: number) => {
     setCustomParams((prev) => ({ ...prev, [key]: Math.max(0, val) }));
   };
 
   const handleReset = () => {
     setCustomParams(DEFAULT_MASTER_PARAMS);
-    setSuccessMsg('Tarif berhasil dikembalikan ke standar master grafika.');
-    setTimeout(() => setSuccessMsg(null), 3000);
+    toast.success('Tarif berhasil dikembalikan ke standar master.');
   };
 
   return (
@@ -67,13 +65,6 @@ export default function PricelistMasterParameter({
           </button>
         </div>
       </div>
-
-      {successMsg && (
-        <div className="flex items-center gap-2 px-3.5 py-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 font-medium animate-in fade-in duration-300">
-          <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
-          <span>{successMsg}</span>
-        </div>
-      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Section 1: Harga Bahan Kertas */}
