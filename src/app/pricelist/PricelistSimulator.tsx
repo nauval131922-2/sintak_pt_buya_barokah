@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   FileText,
   RotateCcw,
+  X,
 } from 'lucide-react';
 import {
   calculatePricelistSimulator,
