@@ -31,76 +31,130 @@ const MATERIALS = ['HVS 70', 'ART PAPER 120', 'ART PAPER 150'];
 const SIZES = ['32 x 48', '38 x 54', '46 x 64', '48 x 64'];
 
 /**
- * Menghitung ulang seluruh 216 kombinasi Pricelist Kalender secara real-time
- * berdasarkan Master Parameter yang sedang aktif.
+ * Menghitung ulang seluruh 216 kombinasi Pricelist Kalender secara instan.
  */
 export function recalculatePricelistFromParams(
   customParams: SimulatorMasterParams,
   baseItems: PricelistItem[]
 ): PricelistItem[] {
-  // Jika baseItems sudah ada dari database/upload, kita update nilai hpp, harga, profit-nya secara reaktif
+  // Pre-calculate konstanta dan harga plano untuk 3 bahan & 4 ukuran agar O(1) di loop
+  const p = customParams;
+  const ppn = p.ppnMarginKertas || 1.05;
+  const rimConst = p.konstantaBeratRim || 20000;
+  const lbrPerRim = p.lembarPerRim || 500;
+
+  // Cache perhitungan plano & colator per ukuran
+  const sizeMeta: Record<string, { planoL: number; planoP: number; potong: number; colator: number }> = {
+    '32 x 48': { planoL: 65, planoP: 100, potong: p.potong32x48 || 4, colator: p.colator32x48 || 40 },
+    '38 x 54': { planoL: 79, planoP: 109, potong: p.potong38x54 || 4, colator: p.colator38x54 || 55 },
+    '46 x 64': { planoL: 65, planoP: 100, potong: p.potong46x64 || 2, colator: p.colator46x64 || 70 },
+    '48 x 64': { planoL: 65, planoP: 100, potong: p.potong48x64 || 2, colator: p.colator48x64 || 75 },
+  };
+
+  const matMeta: Record<string, { gsm: number; tarif: number }> = {
+    'HVS 70': { gsm: 70, tarif: p.tarifHvs70 || 15700 },
+    'ART PAPER 120': { gsm: 120, tarif: p.tarifAp120 || 17400 },
+    'ART PAPER 150': { gsm: 150, tarif: p.tarifAp150 || 17400 },
+  };
+
+  const calcRow = (
+    jenis_kalender: string,
+    bahan: string,
+    ukuran: string,
+    oplah: number,
+    proses: string
+  ) => {
+    let lembar = 12;
+    if (jenis_kalender.includes('Dwi')) lembar = 6;
+    else if (jenis_kalender.includes('Tri')) lembar = 4;
+
+    const s = sizeMeta[ukuran] || sizeMeta['32 x 48'];
+    const m = matMeta[bahan] || matMeta['ART PAPER 150'];
+    const isOliver = proses !== 'SM';
+
+    const insheet = isOliver ? p.oliverInsheet : p.smInsheet;
+    const biayaPlatUnit = isOliver ? p.oliverPlatUnit : p.smPlatUnit;
+    const ongkosCetakDasar = isOliver ? p.oliverMinOngkos : p.smMinOngkos;
+    const tarifDrekOver = isOliver ? p.oliverDrekOver : p.smDrekOver;
+    const biayaTransport = isOliver ? p.oliverTransport : p.smTransport;
+    const batasDrek = isOliver ? p.oliverBatasDrek : p.smBatasDrek;
+
+    const areaCetak = isOliver ? (ukuran === '32 x 48' ? 2 : 1) : (ukuran === '32 x 48' ? 4 : 2);
+
+    // 1. Kertas
+    const beratRimKg = (s.planoL * s.planoP * m.gsm) / rimConst;
+    const hargaPerPlano = (beratRimKg * (m.tarif * ppn)) / lbrPerRim;
+    const totalPlano = ((oplah + insheet) * lembar) / s.potong;
+    const biayaKertas = hargaPerPlano * totalPlano;
+
+    // 2. Plat
+    const jmlPlat = Math.ceil(lembar / areaCetak) * 4;
+    const biayaPlat = jmlPlat * biayaPlatUnit;
+
+    // 3. Mesin
+    const drekOver = Math.max(0, oplah + insheet - batasDrek);
+    const ongkosCetakMesin = jmlPlat * ongkosCetakDasar + drekOver * tarifDrekOver * jmlPlat;
+
+    // 4-11
+    const biayaDesain = p.tarifDesain * lembar;
+    const biayaAlmanak = p.tarifAlmanakDesain + biayaPlatUnit + ongkosCetakDasar + drekOver * tarifDrekOver;
+    const biayaRoyalty = p.tarifRoyalty * oplah;
+    const biayaPotong = p.tarifPotongDasar * lembar + p.tarifPotongDasar * (lembar / s.potong);
+    const biayaColator = lembar * s.colator * (oplah + insheet / 2);
+    const lebarCm = parseFloat(ukuran.split('x')[0]) || 32;
+    const biayaSpiral = Math.max(p.tarifSpiralMin, lebarCm * p.tarifSpiralLubang * (oplah + 5));
+    const biayaLakban = Math.max(p.tarifLakbanRoll, (oplah / 50 / (p.kapasitasLakbanRoll || 133.33)) * p.tarifLakbanRoll);
+
+    const totalBiayaProduksi =
+      biayaKertas +
+      biayaPlat +
+      ongkosCetakMesin +
+      biayaDesain +
+      biayaAlmanak +
+      biayaRoyalty +
+      biayaPotong +
+      biayaColator +
+      biayaSpiral +
+      biayaLakban +
+      biayaTransport;
+
+    const hpp = totalBiayaProduksi / oplah;
+    const harga = Math.ceil((hpp * 1.30) / 100) * 100;
+    const harga_nego = Math.ceil((harga * 0.96) / 100) * 100;
+    const profit_tot = (harga - hpp) * oplah;
+    const profit_tot_nego = (harga_nego - hpp) * oplah;
+    const profit_pct = hpp > 0 ? (harga - hpp) / hpp : 0;
+    const profit_pct_nego = hpp > 0 ? (harga_nego - hpp) / hpp : 0;
+
+    return {
+      hpp,
+      harga,
+      harga_nego,
+      profit_pct,
+      profit_pct_nego,
+      profit_tot,
+      profit_tot_nego,
+    };
+  };
+
   if (baseItems && baseItems.length > 0) {
     return baseItems.map((item) => {
-      const calc = calculatePricelistSimulator({
-        modelKalender: item.jenis_kalender,
-        bahan: item.bahan,
-        ukuran: item.ukuran,
-        oplah: item.oplah,
-        pilihanMesin: (item.proses === 'SM' ? 'SM' : 'Oliver') as 'SM' | 'Oliver',
-        marginPct: 0.30,
-        negoDiskonPct: 0.04,
-        customParams,
-      });
-
-      const hpp = calc.summary.hppPerPcs;
-      const harga = calc.summary.hargaJualPerPcs;
-      const harga_nego = calc.summary.hargaNegoPerPcs;
-      const profit_tot = calc.summary.estimasiProfit;
-      const profit_tot_nego = calc.summary.estimasiProfitNego;
-      const profit_pct = hpp > 0 ? (harga - hpp) / hpp : 0;
-      const profit_pct_nego = hpp > 0 ? (harga_nego - hpp) / hpp : 0;
-
+      const calc = calcRow(item.jenis_kalender, item.bahan, item.ukuran, item.oplah, item.proses);
       return {
         ...item,
-        hpp,
-        harga,
-        harga_nego,
-        profit_pct,
-        profit_pct_nego,
-        profit_tot,
-        profit_tot_nego,
+        ...calc,
       };
     });
   }
 
-  // Jika belum ada data dari upload sama sekali, generate langsung 216 kombinasi standar
   let idCounter = 1;
   const items: PricelistItem[] = [];
-
   for (const block of BLOCKS) {
     for (const oplah of block.oplahs) {
       const proses = oplah >= 3000 ? 'SM' : 'Oliver';
       for (const bahan of MATERIALS) {
         for (const ukuran of SIZES) {
-          const calc = calculatePricelistSimulator({
-            modelKalender: block.name,
-            bahan,
-            ukuran,
-            oplah,
-            pilihanMesin: proses as 'SM' | 'Oliver',
-            marginPct: 0.30,
-            negoDiskonPct: 0.04,
-            customParams,
-          });
-
-          const hpp = calc.summary.hppPerPcs;
-          const harga = calc.summary.hargaJualPerPcs;
-          const harga_nego = calc.summary.hargaNegoPerPcs;
-          const profit_tot = calc.summary.estimasiProfit;
-          const profit_tot_nego = calc.summary.estimasiProfitNego;
-          const profit_pct = hpp > 0 ? (harga - hpp) / hpp : 0;
-          const profit_pct_nego = hpp > 0 ? (harga_nego - hpp) / hpp : 0;
-
+          const calc = calcRow(block.name, bahan, ukuran, oplah, proses);
           items.push({
             id: idCounter++,
             jenis_kalender: block.name,
@@ -108,13 +162,7 @@ export function recalculatePricelistFromParams(
             proses,
             bahan,
             ukuran,
-            hpp,
-            harga,
-            harga_nego,
-            profit_pct,
-            profit_pct_nego,
-            profit_tot,
-            profit_tot_nego,
+            ...calc,
           });
         }
       }

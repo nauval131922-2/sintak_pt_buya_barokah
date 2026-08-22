@@ -112,19 +112,22 @@ export default function PricelistSimulator({
     return 4;
   });
 
-  // Sync states to localStorage
+  // Sync states to localStorage (debounced 400ms agar input responsif dan tidak lag)
   React.useEffect(() => {
-    try {
-      localStorage.setItem('sintak_sim_model', modelKalender);
-      localStorage.setItem('sintak_sim_bahan', bahan);
-      localStorage.setItem('sintak_sim_ukuran', ukuran);
-      localStorage.setItem('sintak_sim_oplah', String(oplah));
-      localStorage.setItem('sintak_sim_mesin', pilihanMesin);
-      localStorage.setItem('sintak_sim_margin', String(marginPct));
-      localStorage.setItem('sintak_sim_nego', String(negoDiskonPct));
-    } catch (e) {
-      console.error('Failed to save simulator state to localStorage:', e);
-    }
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem('sintak_sim_model', modelKalender);
+        localStorage.setItem('sintak_sim_bahan', bahan);
+        localStorage.setItem('sintak_sim_ukuran', ukuran);
+        localStorage.setItem('sintak_sim_oplah', String(oplah));
+        localStorage.setItem('sintak_sim_mesin', pilihanMesin);
+        localStorage.setItem('sintak_sim_margin', String(marginPct));
+        localStorage.setItem('sintak_sim_nego', String(negoDiskonPct));
+      } catch (e) {
+        console.error('Failed to save simulator state to localStorage:', e);
+      }
+    }, 400);
+    return () => clearTimeout(timer);
   }, [modelKalender, bahan, ukuran, oplah, pilihanMesin, marginPct, negoDiskonPct]);
 
   // Quick preset oplah buttons

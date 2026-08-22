@@ -63,40 +63,25 @@ export default function PricelistClient() {
   const [selectedBahan, setSelectedBahan] = useState<string>('ALL');
   const [viewMode, setViewMode] = useState<'matrix' | 'table'>('matrix');
 
-  // Simpan master parameter ke localStorage setiap kali ada perubahan
+  // Simpan master parameter ke localStorage setiap kali ada perubahan (debounced 400ms agar tidak lag saat mengetik)
   useEffect(() => {
-    try {
-      localStorage.setItem('sintak_pricelist_master_params', JSON.stringify(customParams));
-    } catch (e) {
-      console.error('Failed to save master params to localStorage:', e);
-    }
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem('sintak_pricelist_master_params', JSON.stringify(customParams));
+      } catch (e) {
+        console.error('Failed to save master params to localStorage:', e);
+      }
+    }, 400);
+    return () => clearTimeout(timer);
   }, [customParams]);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/pricelist?_t=${Date.now()}`);
-      const json = await res.json();
-      if (json.success) {
-        setItems(json.data || []);
-        setLastExcelUpdate(json.lastExcelUpdate || null);
-        setFileName(json.fileName || null);
-      }
-    } catch (e) {
-      console.error('Failed to fetch pricelist:', e);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  // Data terhitung secara reaktif: jika Master Parameter diubah, seluruh tabel pricelist langsung ikut terupdate
+  // Data terhitung secara reaktif: dihitung hanya jika activeTab === 'matrix' atau saat data dibutuhkan
   const activeItems = useMemo(() => {
+    if (activeTab !== 'matrix' && items.length > 0) {
+      return items;
+    }
     return recalculatePricelistFromParams(customParams, items);
-  }, [customParams, items]);
+  }, [customParams, items, activeTab]);
 
   // Options for SquareDropdown
   const jenisOptions = useMemo(() => {
