@@ -113,8 +113,25 @@ export default function PricelistMasterParameter({
                 <span className="block text-[10px] text-slate-500 mt-1">Tebal & Premium</span>
               </div>
             </div>
-            <div className="bg-emerald-50/50 p-2.5 rounded-lg border border-emerald-100 text-[11px] text-emerald-900">
-              💡 <em>Perhitungan otomatis ditambahkan faktor PPN / margin distributor sebesar <strong>+5%</strong> (faktor 1.05).</em>
+
+            {/* Setting Faktor PPN / Margin Kertas */}
+            <div className="bg-emerald-50/60 p-3 rounded-lg border border-emerald-200/70 flex items-center justify-between gap-3 text-xs text-emerald-950">
+              <div>
+                <span className="font-bold block text-xs">Faktor PPN / Margin Toko Kertas:</span>
+                <span className="text-[10.5px] text-emerald-800">
+                  Pengali harga distributor (contoh: 1.05 = +5% margin/PPN)
+                </span>
+              </div>
+              <div className="w-28 shrink-0">
+                <input
+                  type="number"
+                  step={0.01}
+                  min={1}
+                  value={customParams.ppnMarginKertas}
+                  onChange={(e) => handleChange('ppnMarginKertas', parseFloat(e.target.value) || 1.05)}
+                  className="w-full py-1 px-2.5 text-xs font-mono font-bold bg-white border border-emerald-300 rounded-md text-right focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -406,7 +423,7 @@ export default function PricelistMasterParameter({
                   />
                 </div>
               </div>
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center justify-between gap-2 border-b border-violet-200/50 pb-2">
                 <span className="font-bold">Standar Isi 1 Rim (Lembar):</span>
                 <div className="w-28">
                   <ThousandInput
@@ -414,6 +431,20 @@ export default function PricelistMasterParameter({
                     value={customParams.lembarPerRim}
                     onValueChange={(val) => handleChange('lembarPerRim', val)}
                     className="w-full pr-7 py-1 text-xs font-mono font-bold bg-white border border-violet-200 rounded-md text-right"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <span className="font-bold block">Kapasitas Lakban per Roll:</span>
+                  <span className="text-[10px] text-violet-800">8.000 cm / 60 cm keliling ikat</span>
+                </div>
+                <div className="w-28">
+                  <ThousandInput
+                    suffix="ikat"
+                    value={customParams.kapasitasLakbanRoll}
+                    onValueChange={(val) => handleChange('kapasitasLakbanRoll', val)}
+                    className="w-full pr-8 py-1 text-xs font-mono font-bold bg-white border border-violet-200 rounded-md text-right"
                   />
                 </div>
               </div>
