@@ -244,7 +244,7 @@ export function calculatePricelistSimulator(input: SimulatorInput): SimulatorOut
   // 7. Finishing Potong Dasar
   const biayaPotong =
     params.tarifPotongDasar * lembar +
-    params.tarifPotongDasar * (lembar / (planoPotong || 1));
+    params.tarifPotongDasar * (lembar / (ukuran === '32 x 48' ? 4 : 2));
 
   // 8. Susun / Colator
   const biayaColator = lembar * ongkosColatorPerLbr * (safeOplah + insheet / 2);

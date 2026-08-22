@@ -99,7 +99,9 @@ export function recalculatePricelistFromParams(
     const biayaDesain = p.tarifDesain * lembar;
     const biayaAlmanak = p.tarifAlmanakDesain + biayaPlatUnit + ongkosCetakDasar + drekOver * tarifDrekOver;
     const biayaRoyalty = p.tarifRoyalty * oplah;
-    const biayaPotong = p.tarifPotongDasar * lembar + p.tarifPotongDasar * (lembar / s.potong);
+    const biayaPotong =
+      p.tarifPotongDasar * lembar +
+      p.tarifPotongDasar * (lembar / (ukuran === '32 x 48' ? 4 : 2));
     const biayaColator = lembar * s.colator * (oplah + insheet / 2);
     const lebarCm = parseFloat(ukuran.split('x')[0]) || 32;
     const biayaSpiral = Math.max(p.tarifSpiralMin, lebarCm * p.tarifSpiralLubang * (oplah + 5));
