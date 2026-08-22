@@ -487,7 +487,7 @@ export default function PricelistMasterParameter({
 
       {/* Modal Manual Pengguna & Pemetaan Excel */}
       {showManualModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
           <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden">
             {/* Modal Header */}
             <div className="px-6 py-4 bg-emerald-900 text-white flex items-center justify-between">
@@ -517,20 +517,26 @@ export default function PricelistMasterParameter({
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
                 <div className="flex items-center gap-2 text-slate-900 font-bold">
                   <FolderTree className="w-4 h-4 text-emerald-700" />
-                  <span>Lokasi File Acuan Master di Server/Drive:</span>
+                  <span>Lokasi File Sumber Percetakan di Server/Drive:</span>
                 </div>
                 <div className="space-y-1.5 font-mono text-[11px]">
                   <div className="p-2 bg-white rounded border border-slate-200">
-                    <span className="text-emerald-700 font-bold">1. File Master Terpadu:</span>
+                    <span className="text-emerald-700 font-bold">1. File Rekap Pricelist (.xlsx):</span>
                     <p className="text-slate-800 break-all select-all mt-0.5">
                       H:\percetakan buya barokah\backup\a1\02__PEMASARAN\0203_SURAT PENAWARAN HARGA (SPH) out\020326 2026 SURAT PENAWARAN HARGA (SPH) out\Pricelist Juli 2026\22. Pricelist Kalender 2027 Spiral\Pricelist Kalender 2027 Spiral.xlsx
                     </p>
+                    <span className="text-[10px] text-slate-500 font-sans block mt-1">
+                      (Struktur Sheet: <span className="font-mono">_CalFormulas</span>, <span className="font-mono">Source Buku Tulis</span>, <span className="font-mono">HARGA</span>)
+                    </span>
                   </div>
                   <div className="p-2 bg-white rounded border border-slate-200">
                     <span className="text-emerald-700 font-bold">2. Folder Kalkulasi Satuan (72 File .xlsm):</span>
                     <p className="text-slate-800 break-all select-all mt-0.5">
                       H:\percetakan buya barokah\backup\a1\02__PEMASARAN\0203_SURAT PENAWARAN HARGA (SPH) out\020326 2026 SURAT PENAWARAN HARGA (SPH) out\Pricelist Juli 2026\22. Pricelist Kalender 2027 Spiral\Source\
                     </p>
+                    <span className="text-[10px] text-slate-500 font-sans block mt-1">
+                      (Struktur Sheet Tiap File: <span className="font-mono">Dashboard</span> dan <span className="font-mono">KALENDER</span>)
+                    </span>
                   </div>
                 </div>
               </div>
@@ -539,15 +545,14 @@ export default function PricelistMasterParameter({
               <div className="space-y-3">
                 <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                  Pemetaan Cell & Sheet 11 Komponen Biaya Produksi
+                  Pemetaan Cell & Sheet 11 Komponen Biaya Produksi (Dari Folder Source)
                 </h4>
                 <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
                   <table className="w-full text-left border-collapse">
                     <thead className="bg-slate-100/80 border-b border-slate-200 font-bold text-slate-800 text-[11px]">
                       <tr>
                         <th className="py-2.5 px-3">Komponen Biaya</th>
-                        <th className="py-2.5 px-3">Lokasi di File Master (.xlsx)</th>
-                        <th className="py-2.5 px-3">Lokasi di File Satuan (.xlsm)</th>
+                        <th className="py-2.5 px-3">Lokasi di 72 File Satuan (.xlsm)</th>
                         <th className="py-2.5 px-3">Formula / Logika Grafika</th>
                       </tr>
                     </thead>
@@ -555,13 +560,9 @@ export default function PricelistMasterParameter({
                       <tr>
                         <td className="py-2 px-3 font-semibold text-slate-900">1. Bahan Kertas</td>
                         <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-emerald-700">MASTER PARAMETER!B6:D8</span><br />
-                          Sheet <span className="font-mono text-slate-600">DATABASE HPP!N2:N433</span>
-                        </td>
-                        <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-slate-600">Dashboard!D27</span> (Harga/kg)<br />
-                          Sheet <span className="font-mono text-slate-600">Dashboard!E27</span> (PPN 5%)<br />
-                          Sheet <span className="font-mono text-slate-600">KALENDER!BE29</span>
+                          Sheet <span className="font-mono text-emerald-700">Dashboard!D27</span> (Tarif/kg)<br />
+                          Sheet <span className="font-mono text-emerald-700">Dashboard!E27</span> (PPN/Margin 5%)<br />
+                          Sheet <span className="font-mono text-slate-600">KALENDER!BE29</span> (Harga per Rim)
                         </td>
                         <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
                           [(L*P*GSM)/20.000] * (Tarif + 5% PPN) / 500 * (Oplah+Insheet)*Lbr / Potong
@@ -570,27 +571,19 @@ export default function PricelistMasterParameter({
                       <tr>
                         <td className="py-2 px-3 font-semibold text-slate-900">2. Biaya Plat CTP</td>
                         <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-emerald-700">MASTER PARAMETER!C14 (Oliver) / C19 (SM)</span><br />
-                          Sheet <span className="font-mono text-slate-600">DATABASE HPP!P2:P433</span>
-                        </td>
-                        <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-slate-600">KALENDER!BG6</span> (Rp 45rb / Rp 78rb)<br />
+                          Sheet <span className="font-mono text-emerald-700">KALENDER!BG6</span> (Rp 45rb Oliver / Rp 78rb SM)<br />
                           Sheet <span className="font-mono text-slate-600">KALENDER!BG7</span> (=BG6 * Jml Plat)
                         </td>
                         <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
-                          Ceil(Lembar / Area Cetak) * 4 Plat * Tarif Plat
+                          Ceil(Lembar / Area Cetak) * 4 Plat * Biaya Plat Unit
                         </td>
                       </tr>
                       <tr>
                         <td className="py-2 px-3 font-semibold text-slate-900">3. Ongkos Mesin Cetak</td>
                         <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-emerald-700">MASTER PARAMETER!C12, C15, C17, C20</span><br />
-                          Sheet <span className="font-mono text-slate-600">DATABASE HPP!R2:R433</span>
-                        </td>
-                        <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-slate-600">KALENDER!BJ6</span> (Min Order)<br />
-                          Sheet <span className="font-mono text-slate-600">KALENDER!BK7</span> (Drek Over)<br />
-                          Sheet <span className="font-mono text-slate-600">KALENDER!BM7</span> (Batas Min Drek)
+                          Sheet <span className="font-mono text-emerald-700">KALENDER!BJ6</span> (Min Order: Rp 90rb Oliver / Rp 310rb SM)<br />
+                          Sheet <span className="font-mono text-emerald-700">KALENDER!BK7</span> (Drek Over: Rp 40 Oliver / Rp 100 SM)<br />
+                          Sheet <span className="font-mono text-emerald-700">KALENDER!BM7</span> (Batas Min Drek: Oliver 1.000 / SM 3.000)
                         </td>
                         <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
                           (Jml Plat * Min Order) + (MAX(0, Oplah+Insheet - Batas) * Over * Jml Plat)
@@ -599,11 +592,7 @@ export default function PricelistMasterParameter({
                       <tr>
                         <td className="py-2 px-3 font-semibold text-slate-900">4. Desain Kalender</td>
                         <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-emerald-700">MASTER PARAMETER!C32</span><br />
-                          Sheet <span className="font-mono text-slate-600">DATABASE HPP!T2:T433</span>
-                        </td>
-                        <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-slate-600">Dashboard!D30</span> (Rp 30.000)<br />
+                          Sheet <span className="font-mono text-emerald-700">Dashboard!D30</span> (Rp 30.000/lbr)<br />
                           Sheet <span className="font-mono text-slate-600">KALENDER!BD6:BD13</span>
                         </td>
                         <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
@@ -613,13 +602,9 @@ export default function PricelistMasterParameter({
                       <tr>
                         <td className="py-2 px-3 font-semibold text-slate-900">5. Plat & Cetak Almanak</td>
                         <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-emerald-700">MASTER PARAMETER!C33</span><br />
-                          Sheet <span className="font-mono text-slate-600">DATABASE HPP!V2:V433</span>
-                        </td>
-                        <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-slate-600">KALENDER!CF6:CF13</span> (Desain)<br />
-                          Sheet <span className="font-mono text-slate-600">KALENDER!CI6</span> (Plat Almanak)<br />
-                          Sheet <span className="font-mono text-slate-600">KALENDER!CN6</span> (Cetak Almanak)
+                          Sheet <span className="font-mono text-emerald-700">KALENDER!CF6</span> (Desain Almanak Rp 30.000)<br />
+                          Sheet <span className="font-mono text-emerald-700">KALENDER!CI6</span> (1 Plat Almanak: Rp 45rb / Rp 78rb)<br />
+                          Sheet <span className="font-mono text-emerald-700">KALENDER!CN6</span> (Cetak Almanak Dasar + Over)
                         </td>
                         <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
                           Desain Almanak + 1 Plat Unit + Ongkos Min (+ Over drek)
@@ -628,11 +613,7 @@ export default function PricelistMasterParameter({
                       <tr>
                         <td className="py-2 px-3 font-semibold text-slate-900">6. Royalty Kalender</td>
                         <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-emerald-700">MASTER PARAMETER!C34</span><br />
-                          Sheet <span className="font-mono text-slate-600">DATABASE HPP!X2:X433</span>
-                        </td>
-                        <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-slate-600">Dashboard!D41</span> (Rp 150)<br />
+                          Sheet <span className="font-mono text-emerald-700">Dashboard!D41</span> (Rp 150/pcs)<br />
                           Sheet <span className="font-mono text-slate-600">KALENDER!CR6:CR13</span>
                         </td>
                         <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
@@ -642,11 +623,7 @@ export default function PricelistMasterParameter({
                       <tr>
                         <td className="py-2 px-3 font-semibold text-slate-900">7. Potong Dasar</td>
                         <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-emerald-700">MASTER PARAMETER!C31</span><br />
-                          Sheet <span className="font-mono text-slate-600">DATABASE HPP!Z2:Z433</span>
-                        </td>
-                        <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-slate-600">KALENDER!CT6</span> (Rp 2.000)
+                          Sheet <span className="font-mono text-emerald-700">KALENDER!CT6</span> (Rp 2.000/lbr)
                         </td>
                         <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
                           (Tarif * Lembar) + (Tarif * (Lembar / IF(32x48, 4, 2)))
@@ -655,39 +632,27 @@ export default function PricelistMasterParameter({
                       <tr>
                         <td className="py-2 px-3 font-semibold text-slate-900">8. Susun / Colator</td>
                         <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-emerald-700">MASTER PARAMETER!C27:C30</span><br />
-                          Sheet <span className="font-mono text-slate-600">DATABASE HPP!AB2:AB433</span>
-                        </td>
-                        <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-slate-600">KALENDER!CW6</span> (Rp 40/55/70/75)
+                          Sheet <span className="font-mono text-emerald-700">KALENDER!CW6</span> (Rp 40/55/70/75 per lbr per ukuran)
                         </td>
                         <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
-                          Lembar * Tarif Colator Ukuran * (Oplah + Insheet/2)
+                          Lembar * Tarif Colator * (Oplah + Insheet/2)
                         </td>
                       </tr>
                       <tr>
                         <td className="py-2 px-3 font-semibold text-slate-900">9. Spiral Kawat (Jilid)</td>
                         <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-emerald-700">MASTER PARAMETER!C25:C26</span><br />
-                          Sheet <span className="font-mono text-slate-600">DATABASE HPP!AD2:AD433</span>
-                        </td>
-                        <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-slate-600">Dashboard!D39</span> (Rp 150/lubang)<br />
-                          Sheet <span className="font-mono text-slate-600">KALENDER!CX6:CX13</span>
+                          Sheet <span className="font-mono text-emerald-700">Dashboard!D39</span> (Rp 150/lubang)<br />
+                          Sheet <span className="font-mono text-slate-600">KALENDER!CX6:CX13</span> (Min Rp 250.000)
                         </td>
                         <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
-                          MAX(Min Rp 250rb, (Lebar cm * Tarif) * (Oplah + 5))
+                          MAX(Min Rp 250.000, (Lebar cm * Tarif) * (Oplah + 5))
                         </td>
                       </tr>
                       <tr>
                         <td className="py-2 px-3 font-semibold text-slate-900">10. Lakban & Packing</td>
                         <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-emerald-700">MASTER PARAMETER!C35, C49</span><br />
-                          Sheet <span className="font-mono text-slate-600">DATABASE HPP!AF2:AF433</span>
-                        </td>
-                        <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-slate-600">Dashboard!D40</span> (Rp 9.600)<br />
-                          Sheet <span className="font-mono text-slate-600">KALENDER!CV6:CV13</span>
+                          Sheet <span className="font-mono text-emerald-700">Dashboard!D40</span> (Rp 9.600/roll)<br />
+                          Sheet <span className="font-mono text-slate-600">KALENDER!CV6:CV13</span> (Kapasitas: 8000/60 = 133.33 ikat)
                         </td>
                         <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
                           MAX(Tarif 1 Roll, ((Oplah / 50) / 133.33) * Tarif Roll)
@@ -696,14 +661,10 @@ export default function PricelistMasterParameter({
                       <tr>
                         <td className="py-2 px-3 font-semibold text-slate-900">11. Transportasi</td>
                         <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-emerald-700">MASTER PARAMETER!C16 (Oliver) / C21 (SM)</span><br />
-                          Sheet <span className="font-mono text-slate-600">DATABASE HPP!AH2:AH433</span>
-                        </td>
-                        <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-slate-600">KALENDER!CU6</span> (Rp 100rb Oliver / Rp 50rb SM)
+                          Sheet <span className="font-mono text-emerald-700">KALENDER!CU6</span> (Oliver: Rp 100.000 / SM: Rp 50.000)
                         </td>
                         <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
-                          Biaya flat per job sesuai mesin cetak
+                          Biaya flat per job sesuai mesin cetak yang digunakan
                         </td>
                       </tr>
                     </tbody>
