@@ -324,25 +324,24 @@ export default function ManualModal() {
     '/pricelist': {
       title: 'Pricelist Kalender',
       icon: FileSpreadsheet,
-      description: 'Master data tarif, HPP, margin keuntungan, dan harga jual kalender dinding spiral 2027.',
+      description: 'Master data tarif, simulator estimasi biaya, kalkulasi HPP, margin keuntungan, dan pricelist matrix kalender dinding spiral 2027.',
       steps: [
-        '**Aturan File Excel yang Diupload**:',
-        '  • **Format File**: Mendukung format **.xlsx**, **.xlsm**, atau **.xls**.',
-        '  • **Nama Sheet Wajib**: File harus memiliki sheet bernama **HARGA**.',
-        '  • **Struktur Header**: Header bahan (**HVS 70**, **ART PAPER 120**, **ART PAPER 150**) dan sub-kolom (**HPP**, **HARGA**) harus sesuai template master pricelist kalender spiral.',
-        '  • **Sifat Pembaruan Data**: Mengunggah file baru akan menggantikan (replace) data pricelist sebelumnya dengan data terbaru dari file.',
-        '**Upload File Excel**: Klik tombol **Pilih & Upload Excel** pada card atas untuk memilih file master pricelist.',
-        '**Informasi Update**: Status waktu pembaruan dan nama file yang aktif ditampilkan langsung pada badge di card upload.',
-        '**Penyaringan Data (Filter)**:',
-        '  • Gunakan dropdown **Jenis** untuk menyaring jenis kalender (Eko Wulan / 12 Lbr, Dwi Wulan / 6 Lbr, Tri Wulan / 4 Lbr).',
-        '  • Gunakan dropdown **Bahan** untuk menyaring jenis kertas (HVS 70, Art Paper 120, Art Paper 150).',
-        '  • Gunakan **Kotak Pencarian** untuk mencari berdasarkan kata kunci ukuran, oplah, atau mesin.',
-        '  • Klik tombol **Reset** merah untuk mengembalikan seluruh filter ke kondisi awal.',
-        '**Mode Tampilan**:',
-        '  • **Matriks**: Menampilkan matriks perbandingan harga & HPP per oplah dan ukuran mirip format Excel asli.',
-        '  • **Tabel Rinci**: Menampilkan data detail baris per baris lengkap dengan persentase margin & total profit.'
+        '**Struktur 3 Tab Fitur Utama**:',
+        '  • **1. Master Parameter**: Mengatur tarif acuan bahan kertas, standar mesin cetak offset (Oliver & SM), ongkos finishing (spiral, potong, colator, dll.), serta konstanta grafika. Nilai disimpan otomatis di browser.',
+        '  • **2. Simulator**: Menghitung simulasi biaya riil produksi dan rincian 11 komponen biaya untuk satu pesanan kustom lengkap dengan estimasi profit & diskon nego.',
+        '  • **3. Pricelist Matrix**: Menampilkan 216 kombinasi harga dan HPP yang langsung bereaksi dan terhitung ulang seketika saat Master Parameter diubah.',
+        '**Fitur Simulator Kalender**:',
+        '  • Pilih **Model Kalender** (12/6/4 Lbr), **Bahan Kertas**, dan **Ukuran**.',
+        '  • Masukkan jumlah **Oplah** dan pilih **Mesin Cetak** (Otomatis / Oliver / Speedmaster SM).',
+        '  • Sesuaikan target **Margin Profit (+%)** dan batas **Diskon Nego (-%)**.',
+        '  • Periksa tabel **Rincian 11 Komponen Biaya** untuk melihat porsi subtotal biaya produksi.',
+        '**Fitur Matriks & Tabel Pricelist**:',
+        '  • Gunakan filter **Jenis Kalender** dan **Bahan** untuk menyaring tabel.',
+        '  • Gunakan **Kotak Pencarian** untuk mencari berdasarkan ukuran, oplah, atau proses mesin.',
+        '  • Alihkan antara **Mode Matriks** (layout Excel) dan **Mode Tabel Rinci**.',
+        '  • Tombol **Pilih & Upload Excel** dapat digunakan jika ingin memperbarui master template dasar file.'
       ],
-      tips: 'Pastikan file yang diupload memiliki sheet HARGA dengan template master pricelist kalender spiral agar data terbaca dengan sempurna.'
+      tips: 'Setiap perubahan tarif di tab Master Parameter langsung mengalkulasi ulang seluruh angka pada tab Simulator dan Pricelist secara instan tanpa perlu reload halaman.'
     },
     '/hasil-produksi': {
       title: 'Hasil Produksi',
