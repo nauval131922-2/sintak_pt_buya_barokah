@@ -78,6 +78,31 @@ export default function ThousandInput({
     if (onFocus) onFocus(e);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Jika allowDecimals aktif dan user menekan tombol '.' (titik / numpad dot),
+    // otomatis ubah jadi koma (',') seperti perilaku input number desimal
+    if (allowDecimals && (e.key === '.' || e.key === 'Decimal')) {
+      e.preventDefault();
+      const input = e.currentTarget;
+      const start = input.selectionStart || 0;
+      const end = input.selectionEnd || 0;
+      const val = input.value;
+
+      // Jika belum ada koma, masukkan koma
+      if (!val.includes(',')) {
+        const nextVal = val.slice(0, start) + ',' + val.slice(end);
+        let intPart = nextVal.split(',')[0].replace(/\./g, '');
+        if (intPart.length > 1 && intPart.startsWith('0')) {
+          intPart = intPart.replace(/^0+/, '') || '0';
+        }
+        const intFormatted = intPart ? intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '0';
+        const finalDisplay = `${intFormatted},`;
+        setDisplayValue(finalDisplay);
+        onValueChange(parseNumberIndo(intFormatted));
+      }
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let raw = e.target.value;
 
@@ -133,6 +158,7 @@ export default function ThousandInput({
         inputMode={allowDecimals ? 'decimal' : 'numeric'}
         value={displayValue}
         onFocus={handleFocus}
+        onKeyDown={handleKeyDown}
         onChange={handleChange}
         disabled={disabled}
         placeholder={placeholder}
