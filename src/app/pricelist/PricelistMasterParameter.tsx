@@ -41,24 +41,26 @@ export default function PricelistMasterParameter({
 
   return (
     <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
-      {/* Header Info */}
-      <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-5 text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Header Info - Soft Emerald/Slate Style */}
+      <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-slate-700/80 rounded-lg">
-              <Database className="w-5 h-5 text-emerald-400" />
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
+              <Database className="w-5 h-5" />
             </div>
-            <h2 className="text-lg font-bold tracking-tight">Master Parameter Tarif Grafika</h2>
+            <div>
+              <h2 className="text-sm sm:text-base font-bold text-emerald-950 tracking-tight">Master Parameter Tarif Percetakan</h2>
+              <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
+                Tabel acuan tarif dasar bahan kertas, mesin cetak offset, ongkos finishing, ukuran plano, dan konstanta kalender.
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-slate-300 mt-1 max-w-2xl">
-            Tabel basis acuan tarif dasar kertas, mesin cetak offset, ongkos finishing, standar plano, dan konstanta kalkulasi kalender dinding.
-          </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={handleReset}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-700 hover:bg-slate-600 text-slate-200 transition-all cursor-pointer shadow-xs"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all cursor-pointer shadow-2xs"
           >
             <RotateCcw size={13} />
             <span>Reset Standar Master</span>

@@ -93,33 +93,33 @@ export default function PricelistSimulator({
 
   return (
     <div className="flex flex-col gap-5 pb-6">
-      {/* Top Banner / Card header */}
-      <div className="bg-gradient-to-r from-emerald-800 to-teal-900 rounded-2xl p-5 text-white shadow-md relative overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-emerald-700/60 rounded-lg backdrop-blur-xs">
-                <Calculator className="w-5 h-5 text-emerald-200" />
-              </div>
-              <h2 className="text-lg font-bold tracking-tight">Simulator & Kalkulator Kalender Spiral 2027</h2>
+      {/* Top Banner / Card header - Soft Style */}
+      <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
+              <Calculator className="w-5 h-5" />
             </div>
-            <p className="text-xs text-emerald-100/80 mt-1 max-w-2xl">
-              Hitung simulasi HPP, Harga Jual, Nego, Omset, dan Estimasi Profit secara akurat & transparan untuk kuantitas oplah kustom.
-            </p>
+            <div>
+              <h2 className="text-sm sm:text-base font-bold text-emerald-950 tracking-tight">Simulator & Kalkulator Kalender Spiral 2027</h2>
+              <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
+                Hitung simulasi HPP, Harga Jual, Nego, Omset, dan Estimasi Profit secara akurat & transparan untuk kuantitas oplah kustom.
+              </p>
+            </div>
           </div>
-          {onOpenMasterParam && (
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={onOpenMasterParam}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-700/70 hover:bg-emerald-700 text-emerald-100 transition-all shadow-xs cursor-pointer"
-              >
-                <Settings2 size={14} />
-                <span>Lihat Master Parameter</span>
-              </button>
-            </div>
-          )}
         </div>
+        {onOpenMasterParam && (
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={onOpenMasterParam}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer"
+            >
+              <Settings2 size={14} />
+              <span>Lihat Master Parameter</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Main Grid: Form Inputs (Left) & Results Summary (Right) */}
