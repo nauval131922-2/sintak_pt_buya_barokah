@@ -44,7 +44,20 @@ export default function PricelistClient() {
   const [fileName, setFileName] = useState<string | null>(null);
 
   // Filters state
-  const [activeTab, setActiveTab] = useState<'parameter' | 'simulator' | 'matrix'>('parameter');
+  const [activeTab, setActiveTab] = useState<'parameter' | 'simulator' | 'matrix'>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const savedTab = localStorage.getItem('sintak_pricelist_active_tab');
+        if (savedTab === 'parameter' || savedTab === 'simulator' || savedTab === 'matrix') {
+          return savedTab;
+        }
+      } catch (e) {
+        console.error('Failed to parse saved active tab:', e);
+      }
+    }
+    return 'parameter';
+  });
+
   const [customParams, setCustomParams] = useState<SimulatorMasterParams>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -61,7 +74,36 @@ export default function PricelistClient() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedJenis, setSelectedJenis] = useState<string>('ALL');
   const [selectedBahan, setSelectedBahan] = useState<string>('ALL');
-  const [viewMode, setViewMode] = useState<'matrix' | 'table'>('matrix');
+  const [viewMode, setViewMode] = useState<'matrix' | 'table'>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const savedView = localStorage.getItem('sintak_pricelist_view_mode');
+        if (savedView === 'matrix' || savedView === 'table') {
+          return savedView;
+        }
+      } catch (e) {
+        console.error('Failed to parse saved view mode:', e);
+      }
+    }
+    return 'matrix';
+  });
+
+  // Simpan posisi tab aktif dan view mode ke localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('sintak_pricelist_active_tab', activeTab);
+    } catch (e) {
+      console.error('Failed to save active tab to localStorage:', e);
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('sintak_pricelist_view_mode', viewMode);
+    } catch (e) {
+      console.error('Failed to save view mode to localStorage:', e);
+    }
+  }, [viewMode]);
 
   // Simpan master parameter ke localStorage setiap kali ada perubahan (debounced 400ms agar tidak lag saat mengetik)
   useEffect(() => {
