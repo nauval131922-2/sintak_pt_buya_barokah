@@ -96,13 +96,10 @@ export default function PricelistClient() {
     fetchData();
   }, [fetchData]);
 
-  // Data terhitung secara reaktif: dihitung hanya jika activeTab === 'matrix' atau saat data dibutuhkan
+  // Data terhitung secara reaktif: selalu sinkron dengan Master Parameter yang sedang aktif
   const activeItems = useMemo(() => {
-    if (activeTab !== 'matrix' && items.length > 0) {
-      return items;
-    }
     return recalculatePricelistFromParams(customParams, items);
-  }, [customParams, items, activeTab]);
+  }, [customParams, items]);
 
   // Options for SquareDropdown
   const jenisOptions = useMemo(() => {
