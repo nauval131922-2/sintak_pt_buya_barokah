@@ -11,8 +11,9 @@ interface ThousandInputProps extends Omit<React.InputHTMLAttributes<HTMLInputEle
 }
 
 /**
- * Format persis seperti formatNumberIndo di RecordsForm.tsx:
- * Mengizinkan input koma secara bebas dan memformat ribuan titik secara real-time.
+ * Format angka ke standar Indonesia:
+ * - Menghilangkan leading zero yang tidak perlu (misal '05' jadi '5', kecuali '0,' untuk desimal).
+ * - Pemisah ribuan titik (.) dan desimal koma (,).
  */
 function formatNumberIndo(val: string | number): string {
   if (val === undefined || val === null || val === '') return '';
@@ -23,16 +24,20 @@ function formatNumberIndo(val: string | number): string {
     s = s.replace(/\./g, '').replace(/,/g, '.');
   }
 
-  const num = parseFloat(s);
-  if (isNaN(num)) return String(val);
-
   const parts = s.split('.');
-  let res = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  // Hilangkan leading zero pada bagian bulat jika angka bukan '0' tunggal
+  let intStr = parts[0];
+  if (intStr.length > 1 && intStr.startsWith('0')) {
+    intStr = intStr.replace(/^0+/, '') || '0';
+  }
+
+  const formattedInt = intStr.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
   if (parts.length > 1) {
     const decimalPart = parts[1].substring(0, 2);
-    res += ',' + decimalPart;
+    return `${formattedInt},${decimalPart}`;
   }
-  return res;
+  return formattedInt;
 }
 
 function parseNumberIndo(val: string): number {
@@ -51,6 +56,7 @@ export default function ThousandInput({
   className = '',
   placeholder = '0',
   disabled,
+  onFocus,
   ...props
 }: ThousandInputProps) {
   const [displayValue, setDisplayValue] = useState<string>('');
@@ -68,6 +74,12 @@ export default function ThousandInput({
     }
   }, [value]);
 
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Jika nilainya 0 atau '0', langsung select all agar ketika user mengetik angka baru, 0 otomatis terganti
+    e.target.select();
+    if (onFocus) onFocus(e);
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let raw = e.target.value;
 
@@ -77,15 +89,32 @@ export default function ThousandInput({
       raw = raw.replace(/[^0-9,]/g, '');
     }
 
+    if (raw === '') {
+      setDisplayValue('');
+      onValueChange(0);
+      return;
+    }
+
     // Tangani jika ada koma di posisi terakhir saat user baru mengetik koma (contoh: "15.700,")
     if (raw.endsWith(',')) {
-      // Pastikan hanya 1 koma
       const parts = raw.split(',');
       if (parts.length <= 2) {
-        const intFormatted = parts[0] ? formatNumberIndo(parts[0].replace(/\./g, '')) : '0';
+        let intPart = parts[0].replace(/\./g, '');
+        if (intPart.length > 1 && intPart.startsWith('0')) {
+          intPart = intPart.replace(/^0+/, '') || '0';
+        }
+        const intFormatted = intPart ? intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '0';
         setDisplayValue(`${intFormatted},`);
         onValueChange(parseNumberIndo(intFormatted));
         return;
+      }
+    }
+
+    // Jika user mengetik angka di belakang '0' tanpa koma (misal awalnya '0' lalu ketik '5' -> '05'), otomatis jadikan '5'
+    if (!raw.includes(',')) {
+      const cleanInt = raw.replace(/\./g, '');
+      if (cleanInt.length > 1 && cleanInt.startsWith('0')) {
+        raw = cleanInt.replace(/^0+/, '') || '0';
       }
     }
 
@@ -105,6 +134,7 @@ export default function ThousandInput({
         type="text"
         inputMode={allowDecimals ? 'decimal' : 'numeric'}
         value={displayValue}
+        onFocus={handleFocus}
         onChange={handleChange}
         disabled={disabled}
         placeholder={placeholder}
