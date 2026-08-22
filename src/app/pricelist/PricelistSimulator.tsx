@@ -645,7 +645,7 @@ export default function PricelistSimulator({
               <div className="space-y-3">
                 <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                  Memahami Kartu Hasil & Breakdown Biaya
+                  Memahami 4 Kartu Finansial & Target Margin
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
                   <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-1.5">
@@ -658,15 +658,146 @@ export default function PricelistSimulator({
                     </ul>
                   </div>
 
-                  <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-1.5">
-                    <span className="font-bold text-slate-800 block">Tabel 11 Komponen Biaya:</span>
-                    <p className="text-slate-600 leading-snug">
-                      Menampilkan perincian subtotal rupiah dan <strong>% Porsi Biaya</strong> dari bahan kertas, plat CTP, ongkos mesin, desain, almanak, royalty, potong dasar, susun colator, spiral jilid, lakban packing, dan transportasi.
-                    </p>
-                    <span className="text-[10.5px] text-emerald-800 font-semibold block">
-                      * Semua tarif mengacu langsung pada tab Master Parameter yang sedang aktif.
-                    </span>
+                  <div className="p-3 bg-emerald-50/60 rounded-xl border border-emerald-200/80 space-y-1.5 text-emerald-950">
+                    <span className="font-bold block">Rumus Finansial Baku:</span>
+                    <ul className="space-y-1 text-[10.5px] font-mono text-emerald-900 list-disc list-inside">
+                      <li><strong>HPP</strong>: Total Biaya Produksi / Oplah</li>
+                      <li><strong>Harga Jual (+30%)</strong>: ROUNDUP(HPP * 1.30, -2)</li>
+                      <li><strong>Harga Nego (-4%)</strong>: ROUNDUP(Harga Jual * 0.96, -2)</li>
+                      <li><strong>Profit Total</strong>: (Harga - HPP) * Oplah</li>
+                    </ul>
                   </div>
+                </div>
+              </div>
+
+              {/* Tabel Pemetaan Lengkap 11 Komponen Biaya Produksi */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                  Rincian & Formula 11 Komponen Pembentuk Total HPP (Rumus: KALENDER!DA7)
+                </h4>
+                <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="bg-slate-100/80 border-b border-slate-200 font-bold text-slate-800 text-[11px]">
+                      <tr>
+                        <th className="py-2.5 px-3">Komponen Biaya</th>
+                        <th className="py-2.5 px-3">Cell di File Satuan (.xlsm)</th>
+                        <th className="py-2.5 px-3">Formula / Logika Grafika</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-[11px]">
+                      <tr>
+                        <td className="py-2 px-3 font-semibold text-slate-900">1. Bahan Kertas</td>
+                        <td className="py-2 px-3">
+                          Sheet <span className="font-mono text-emerald-700">Dashboard!D27</span> (Tarif/kg)<br />
+                          Sheet <span className="font-mono text-emerald-700">Dashboard!E27</span> (PPN/Margin 5%)<br />
+                          Sheet <span className="font-mono text-slate-600">KALENDER!BE29</span> (Harga per Rim)
+                        </td>
+                        <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
+                          [(L*P*GSM)/20.000] * (Tarif + 5% PPN) / 500 * (Oplah+Insheet)*Lbr / Potong
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-semibold text-slate-900">2. Biaya Plat CTP</td>
+                        <td className="py-2 px-3">
+                          Sheet <span className="font-mono text-emerald-700">KALENDER!BG6</span> (Rp 45rb Oliver / Rp 78rb SM)<br />
+                          Sheet <span className="font-mono text-slate-600">KALENDER!BG7</span> (=BG6 * Jml Plat)
+                        </td>
+                        <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
+                          Ceil(Lembar / Area Cetak) * 4 Plat * Biaya Plat Unit
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-semibold text-slate-900">3. Ongkos Mesin Cetak</td>
+                        <td className="py-2 px-3">
+                          Sheet <span className="font-mono text-emerald-700">KALENDER!BJ6</span> (Min Order: Rp 90rb Oliver / Rp 310rb SM)<br />
+                          Sheet <span className="font-mono text-emerald-700">KALENDER!BK7</span> (Drek Over: Rp 40 Oliver / Rp 100 SM)<br />
+                          Sheet <span className="font-mono text-emerald-700">KALENDER!BM7</span> (Batas Min Drek: Oliver 1.000 / SM 3.000)
+                        </td>
+                        <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
+                          (Jml Plat * Min Order) + (MAX(0, Oplah+Insheet - Batas) * Over * Jml Plat)
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-semibold text-slate-900">4. Desain Kalender</td>
+                        <td className="py-2 px-3">
+                          Sheet <span className="font-mono text-emerald-700">Dashboard!D30</span> (Rp 30.000/lbr)<br />
+                          Sheet <span className="font-mono text-slate-600">KALENDER!BD6:BD13</span>
+                        </td>
+                        <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
+                          Tarif Desain * Jumlah Lembar Kalender
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-semibold text-slate-900">5. Plat & Cetak Almanak</td>
+                        <td className="py-2 px-3">
+                          Sheet <span className="font-mono text-emerald-700">KALENDER!CF6</span> (Desain Almanak Rp 30.000)<br />
+                          Sheet <span className="font-mono text-emerald-700">KALENDER!CI6</span> (1 Plat Almanak: Rp 45rb / Rp 78rb)<br />
+                          Sheet <span className="font-mono text-emerald-700">KALENDER!CN6</span> (Cetak Almanak Dasar + Over)
+                        </td>
+                        <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
+                          Desain Almanak + 1 Plat Unit + Ongkos Min (+ Over drek)
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-semibold text-slate-900">6. Royalty Kalender</td>
+                        <td className="py-2 px-3">
+                          Sheet <span className="font-mono text-emerald-700">Dashboard!D41</span> (Rp 150/pcs)<br />
+                          Sheet <span className="font-mono text-slate-600">KALENDER!CR6:CR13</span>
+                        </td>
+                        <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
+                          Tarif Royalty * Oplah
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-semibold text-slate-900">7. Potong Dasar</td>
+                        <td className="py-2 px-3">
+                          Sheet <span className="font-mono text-emerald-700">KALENDER!CT6</span> (Rp 2.000/lbr)
+                        </td>
+                        <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
+                          (Tarif * Lembar) + (Tarif * (Lembar / IF(32x48, 4, 2)))
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-semibold text-slate-900">8. Susun / Colator</td>
+                        <td className="py-2 px-3">
+                          Sheet <span className="font-mono text-emerald-700">KALENDER!CW6</span> (Rp 40/55/70/75 per lbr per ukuran)
+                        </td>
+                        <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
+                          Lembar * Tarif Colator * (Oplah + Insheet/2)
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-semibold text-slate-900">9. Spiral Kawat (Jilid)</td>
+                        <td className="py-2 px-3">
+                          Sheet <span className="font-mono text-emerald-700">Dashboard!D39</span> (Rp 150/lubang)<br />
+                          Sheet <span className="font-mono text-slate-600">KALENDER!CX6:CX13</span> (Min Rp 250.000)
+                        </td>
+                        <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
+                          MAX(Min Rp 250.000, (Lebar cm * Tarif) * (Oplah + 5))
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-semibold text-slate-900">10. Lakban & Packing</td>
+                        <td className="py-2 px-3">
+                          Sheet <span className="font-mono text-emerald-700">Dashboard!D40</span> (Rp 9.600/roll)<br />
+                          Sheet <span className="font-mono text-slate-600">KALENDER!CV6:CV13</span> (Kapasitas: 8000/60 = 133.33 ikat)
+                        </td>
+                        <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
+                          MAX(Tarif 1 Roll, ((Oplah / 50) / 133.33) * Tarif Roll)
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-semibold text-slate-900">11. Transportasi</td>
+                        <td className="py-2 px-3">
+                          Sheet <span className="font-mono text-emerald-700">KALENDER!CU6</span> (Oliver: Rp 100.000 / SM: Rp 50.000)
+                        </td>
+                        <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
+                          Biaya flat per job sesuai mesin cetak yang digunakan
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
