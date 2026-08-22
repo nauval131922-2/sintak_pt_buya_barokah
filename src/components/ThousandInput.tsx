@@ -146,6 +146,16 @@ export default function ThousandInput({
     onValueChange(parseNumberIndo(formatted));
   };
 
+  // Hitung padding kanan dinamis berdasarkan panjang suffix agar tidak bentrok dengan angka
+  const getSuffixPaddingClass = () => {
+    if (!suffix) return '';
+    const len = suffix.length;
+    if (len >= 4) return 'pr-11'; // misal 'drek', 'ikat'
+    if (len === 3) return 'pr-9';  // misal 'lbr', 'ptg'
+    if (len === 2) return 'pr-7';  // misal 'cm', 'kg'
+    return 'pr-6';                 // misal '%'
+  };
+
   return (
     <div className="relative w-full">
       {prefix && (
@@ -162,7 +172,7 @@ export default function ThousandInput({
         onChange={handleChange}
         disabled={disabled}
         placeholder={placeholder}
-        className={`${prefix ? 'pl-8' : ''} ${suffix ? 'pr-7' : ''} ${className}`}
+        className={`${prefix ? 'pl-8' : ''} ${getSuffixPaddingClass()} ${className}`}
         {...props}
       />
       {suffix && (

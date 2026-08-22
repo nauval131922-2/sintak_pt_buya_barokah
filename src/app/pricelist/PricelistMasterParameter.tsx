@@ -234,7 +234,7 @@ export default function PricelistMasterParameter({
                       suffix="drek"
                       value={customParams.oliverBatasDrek}
                       onValueChange={(val) => handleChange('oliverBatasDrek', val)}
-                      className="w-full pr-8 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                      className="w-full py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
                     />
                   </td>
                   <td className="py-1.5 px-2">
@@ -242,7 +242,7 @@ export default function PricelistMasterParameter({
                       suffix="drek"
                       value={customParams.smBatasDrek}
                       onValueChange={(val) => handleChange('smBatasDrek', val)}
-                      className="w-full pr-8 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                      className="w-full py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
                     />
                   </td>
                 </tr>
