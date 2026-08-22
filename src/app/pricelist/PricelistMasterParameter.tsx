@@ -519,18 +519,87 @@ export default function PricelistMasterParameter({
 
             {/* Modal Body */}
             <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-700 leading-relaxed">
-              {/* Tabel Pemetaan 11 Komponen Biaya */}
+              {/* Bagian 1: Pemetaan 4 Kelompok Master Parameter */}
               <div className="space-y-3">
                 <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                  Pemetaan Cell & Sheet 11 Komponen Biaya Produksi
+                  Pemetaan 4 Bagian Master Parameter ke File Excel (Folder Source/*.xlsm)
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                  {/* Poin 1 */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center gap-2 font-bold text-slate-900">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                      <span>1. Harga Bahan Kertas (Per Kg)</span>
+                    </div>
+                    <ul className="space-y-1.5 text-[11px] text-slate-600">
+                      <li>• <strong>Harga Dasar / Kg</strong>: <span className="font-mono text-emerald-700">Dashboard!D27</span> (HVS 70: Rp 15.700, AP 120/150: Rp 17.400).</li>
+                      <li>• <strong>PPN / Margin Kertas</strong>: <span className="font-mono text-emerald-700">Dashboard!E27</span> (Nilai: 0.05 = 5%).</li>
+                      <li>• <strong>Harga per Ream Plano</strong>: <span className="font-mono text-slate-600">KALENDER!BE29</span> = <code className="text-[10px] bg-white px-1 py-0.5 rounded border">[(L*P*GSM)/20.000] * (Tarif * 1.05)</code>.</li>
+                    </ul>
+                  </div>
+
+                  {/* Poin 2 */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center gap-2 font-bold text-slate-900">
+                      <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                      <span>2. Standar Mesin Cetak & Tarif</span>
+                    </div>
+                    <ul className="space-y-1.5 text-[11px] text-slate-600">
+                      <li>• <strong>Insheet Plat</strong>: <span className="font-mono text-blue-700">Dashboard!D29</span> (Oliver: 100 lbr, SM: 300 lbr).</li>
+                      <li>• <strong>Biaya Plat CTP / Unit</strong>: <span className="font-mono text-blue-700">KALENDER!BG6</span> (Oliver: Rp 45.000, SM: Rp 78.000).</li>
+                      <li>• <strong>Ongkos Cetak Min Order</strong>: <span className="font-mono text-blue-700">KALENDER!BJ6</span> (Oliver: Rp 90.000, SM: Rp 310.000).</li>
+                      <li>• <strong>Batas Min Drek (Kapasitas)</strong>: <span className="font-mono text-blue-700">KALENDER!BM7</span> (Oliver: 1.000 drek, SM: 3.000 drek).</li>
+                      <li>• <strong>Tarif Drek Over</strong>: <span className="font-mono text-blue-700">KALENDER!BK7</span> (Oliver: Rp 40, SM: Rp 100).</li>
+                      <li>• <strong>Biaya Transport Mesin</strong>: <span className="font-mono text-blue-700">KALENDER!CU6</span> (Oliver: Rp 100.000, SM: Rp 50.000).</li>
+                    </ul>
+                  </div>
+
+                  {/* Poin 3 */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center gap-2 font-bold text-slate-900">
+                      <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                      <span>3. Ongkos Finishing & Jasa Cetak</span>
+                    </div>
+                    <ul className="space-y-1.5 text-[11px] text-slate-600">
+                      <li>• <strong>Desain Kalender</strong>: <span className="font-mono text-amber-700">Dashboard!D30</span> (Rp 30.000 per lembar kalender).</li>
+                      <li>• <strong>Almanak Desain</strong>: <span className="font-mono text-amber-700">KALENDER!CF6</span> (Rp 30.000 setting almanak).</li>
+                      <li>• <strong>Royalty Kalender</strong>: <span className="font-mono text-amber-700">Dashboard!D41</span> (Rp 150 per pcs / eksemplar).</li>
+                      <li>• <strong>Ongkos Potong Dasar</strong>: <span className="font-mono text-amber-700">KALENDER!CT6</span> (Rp 2.000 per lembar potong).</li>
+                      <li>• <strong>Susun / Colator</strong>: <span className="font-mono text-amber-700">KALENDER!CW6</span> (32x48: Rp 40, 38x54: Rp 55, 46x64: Rp 70, 48x64: Rp 75).</li>
+                      <li>• <strong>Spiral Per Lubang & Min</strong>: <span className="font-mono text-amber-700">Dashboard!D39 & KALENDER!CX6</span> (Rp 150/cm lubang, min Rp 250rb).</li>
+                      <li>• <strong>Lakban & Packing</strong>: <span className="font-mono text-amber-700">Dashboard!D40</span> (Rp 9.600 per roll lakban).</li>
+                    </ul>
+                  </div>
+
+                  {/* Poin 4 */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center gap-2 font-bold text-slate-900">
+                      <span className="w-2 h-2 rounded-full bg-violet-500"></span>
+                      <span>4. Standar Ukuran Plano & Konstanta</span>
+                    </div>
+                    <ul className="space-y-1.5 text-[11px] text-slate-600">
+                      <li>• <strong>Plano Potong</strong>: <span className="font-mono text-violet-700">KALENDER!AX7</span> (32x48: 4 ptg, 38x54: 4 ptg, 46x64 & 48x64: 2 ptg).</li>
+                      <li>• <strong>Konstanta Berat 1 Rim</strong>: <span className="font-mono text-violet-700">KALENDER!BE29</span> (Angka konversi baku: 20.000).</li>
+                      <li>• <strong>Standar Isi 1 Rim</strong>: <span className="font-mono text-violet-700">KALENDER!BE32</span> (500 lembar plano).</li>
+                      <li>• <strong>Kapasitas Lakban</strong>: <span className="font-mono text-violet-700">KALENDER!CV6</span> (8.000 cm / 60 cm keliling ikat = 133.33 ikat).</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bagian 2: Tabel Pemetaan 11 Komponen Biaya Total HPP */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                  Rincian 11 Komponen Pembentuk Total HPP (Rumus: KALENDER!DA7)
                 </h4>
                 <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
                   <table className="w-full text-left border-collapse">
                     <thead className="bg-slate-100/80 border-b border-slate-200 font-bold text-slate-800 text-[11px]">
                       <tr>
                         <th className="py-2.5 px-3">Komponen Biaya</th>
-                        <th className="py-2.5 px-3">Lokasi di 72 File Satuan (.xlsm)</th>
+                        <th className="py-2.5 px-3">Cell di File Satuan (.xlsm)</th>
                         <th className="py-2.5 px-3">Formula / Logika Grafika</th>
                       </tr>
                     </thead>
