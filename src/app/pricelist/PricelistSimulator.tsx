@@ -269,6 +269,7 @@ export default function PricelistSimulator({
               <div className="flex items-center gap-2">
                 <ThousandInput
                   value={oplah}
+                  allowDecimals={false}
                   onValueChange={(val) => setOplah(Math.max(1, val))}
                   placeholder="Ketik oplah..."
                   className="w-full px-3 py-2 text-sm font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
