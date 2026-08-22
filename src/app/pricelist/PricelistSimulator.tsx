@@ -58,14 +58,74 @@ export default function PricelistSimulator({
   setCustomParams,
   onOpenMasterParam,
 }: PricelistSimulatorProps) {
-  // Input states
-  const [modelKalender, setModelKalender] = useState<string>('Eko Wulan (12 Lbr)');
-  const [bahan, setBahan] = useState<string>('Art Paper 150');
-  const [ukuran, setUkuran] = useState<string>('32 x 48');
-  const [oplah, setOplah] = useState<number>(1500);
-  const [pilihanMesin, setPilihanMesin] = useState<'Otomatis' | 'Oliver' | 'SM'>('Otomatis');
-  const [marginPct, setMarginPct] = useState<number>(30); // in percent (30%)
-  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(4); // in percent (4%)
+  // Input states with persistent localStorage support
+  const [modelKalender, setModelKalender] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('sintak_sim_model') || 'Eko Wulan (12 Lbr)';
+    }
+    return 'Eko Wulan (12 Lbr)';
+  });
+
+  const [bahan, setBahan] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('sintak_sim_bahan') || 'Art Paper 150';
+    }
+    return 'Art Paper 150';
+  });
+
+  const [ukuran, setUkuran] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('sintak_sim_ukuran') || '32 x 48';
+    }
+    return '32 x 48';
+  });
+
+  const [oplah, setOplah] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sintak_sim_oplah');
+      if (saved) return Number(saved) || 1500;
+    }
+    return 1500;
+  });
+
+  const [pilihanMesin, setPilihanMesin] = useState<'Otomatis' | 'Oliver' | 'SM'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sintak_sim_mesin');
+      if (saved === 'Oliver' || saved === 'SM' || saved === 'Otomatis') return saved;
+    }
+    return 'Otomatis';
+  });
+
+  const [marginPct, setMarginPct] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sintak_sim_margin');
+      if (saved) return Number(saved) || 30;
+    }
+    return 30;
+  });
+
+  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sintak_sim_nego');
+      if (saved) return Number(saved) || 4;
+    }
+    return 4;
+  });
+
+  // Sync states to localStorage
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('sintak_sim_model', modelKalender);
+      localStorage.setItem('sintak_sim_bahan', bahan);
+      localStorage.setItem('sintak_sim_ukuran', ukuran);
+      localStorage.setItem('sintak_sim_oplah', String(oplah));
+      localStorage.setItem('sintak_sim_mesin', pilihanMesin);
+      localStorage.setItem('sintak_sim_margin', String(marginPct));
+      localStorage.setItem('sintak_sim_nego', String(negoDiskonPct));
+    } catch (e) {
+      console.error('Failed to save simulator state to localStorage:', e);
+    }
+  }, [modelKalender, bahan, ukuran, oplah, pilihanMesin, marginPct, negoDiskonPct]);
 
   // Quick preset oplah buttons
   const presetOplahs = [300, 500, 1000, 1500, 2000, 3000, 5000, 10000];
@@ -391,23 +451,23 @@ export default function PricelistSimulator({
             </div>
           </div>
 
-          {/* Ringkasan Finansial Banner */}
-          <div className="bg-slate-900 text-white rounded-xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          {/* Ringkasan Finansial Banner - Soft Emerald Style */}
+          <div className="bg-emerald-50/80 border border-emerald-200/90 text-emerald-950 rounded-xl p-4 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-slate-800 rounded-lg text-emerald-400">
+              <div className="p-2 bg-emerald-100/80 rounded-lg text-emerald-700 border border-emerald-200">
                 <CheckCircle2 size={18} />
               </div>
               <div>
-                <span className="text-slate-400 block text-[11px]">Total Omset Penjualan ({oplah.toLocaleString('id-ID')} pcs)</span>
-                <span className="text-base font-bold font-mono text-emerald-400">
+                <span className="text-emerald-700 block text-[11px] font-semibold">Total Omset Penjualan ({oplah.toLocaleString('id-ID')} pcs)</span>
+                <span className="text-base font-bold font-mono text-emerald-900">
                   Rp {formatRp(result.summary.totalOmset)}
                 </span>
               </div>
             </div>
-            <div className="h-px sm:h-8 w-full sm:w-px bg-slate-700"></div>
+            <div className="h-px sm:h-8 w-full sm:w-px bg-emerald-200"></div>
             <div>
-              <span className="text-slate-400 block text-[11px]">Total Biaya Produksi</span>
-              <span className="text-base font-bold font-mono text-slate-200">
+              <span className="text-emerald-700 block text-[11px] font-semibold">Total Biaya Produksi</span>
+              <span className="text-base font-bold font-mono text-emerald-900">
                 Rp {formatRp(result.summary.totalBiayaProduksi)}
               </span>
             </div>
