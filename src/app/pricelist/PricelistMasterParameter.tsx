@@ -487,8 +487,14 @@ export default function PricelistMasterParameter({
 
       {/* Modal Manual Pengguna & Pemetaan Excel */}
       {showManualModal && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden">
+        <div
+          onClick={() => setShowManualModal(false)}
+          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden cursor-default"
+          >
             {/* Modal Header */}
             <div className="px-6 py-4 bg-emerald-900 text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -498,7 +504,7 @@ export default function PricelistMasterParameter({
                 <div>
                   <h3 className="text-base font-bold tracking-tight">Manual Pengguna & Pemetaan Sumber Excel</h3>
                   <p className="text-xs text-emerald-200/90 mt-0.5">
-                    Dokumentasi referensi letak sheet, cell, dan formula dari file master percetakan
+                    Dokumentasi referensi letak sheet, cell, dan formula dari 72 file kalkulasi satuan percetakan
                   </p>
                 </div>
               </div>
@@ -513,39 +519,11 @@ export default function PricelistMasterParameter({
 
             {/* Modal Body */}
             <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-700 leading-relaxed">
-              {/* Lokasi Path File Master */}
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
-                <div className="flex items-center gap-2 text-slate-900 font-bold">
-                  <FolderTree className="w-4 h-4 text-emerald-700" />
-                  <span>Lokasi File Sumber Percetakan di Server/Drive:</span>
-                </div>
-                <div className="space-y-1.5 font-mono text-[11px]">
-                  <div className="p-2 bg-white rounded border border-slate-200">
-                    <span className="text-emerald-700 font-bold">1. File Rekap Pricelist (.xlsx):</span>
-                    <p className="text-slate-800 break-all select-all mt-0.5">
-                      H:\percetakan buya barokah\backup\a1\02__PEMASARAN\0203_SURAT PENAWARAN HARGA (SPH) out\020326 2026 SURAT PENAWARAN HARGA (SPH) out\Pricelist Juli 2026\22. Pricelist Kalender 2027 Spiral\Pricelist Kalender 2027 Spiral.xlsx
-                    </p>
-                    <span className="text-[10px] text-slate-500 font-sans block mt-1">
-                      (Struktur Sheet: <span className="font-mono">_CalFormulas</span>, <span className="font-mono">Source Buku Tulis</span>, <span className="font-mono">HARGA</span>)
-                    </span>
-                  </div>
-                  <div className="p-2 bg-white rounded border border-slate-200">
-                    <span className="text-emerald-700 font-bold">2. Folder Kalkulasi Satuan (72 File .xlsm):</span>
-                    <p className="text-slate-800 break-all select-all mt-0.5">
-                      H:\percetakan buya barokah\backup\a1\02__PEMASARAN\0203_SURAT PENAWARAN HARGA (SPH) out\020326 2026 SURAT PENAWARAN HARGA (SPH) out\Pricelist Juli 2026\22. Pricelist Kalender 2027 Spiral\Source\
-                    </p>
-                    <span className="text-[10px] text-slate-500 font-sans block mt-1">
-                      (Struktur Sheet Tiap File: <span className="font-mono">Dashboard</span> dan <span className="font-mono">KALENDER</span>)
-                    </span>
-                  </div>
-                </div>
-              </div>
-
               {/* Tabel Pemetaan 11 Komponen Biaya */}
               <div className="space-y-3">
                 <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                  Pemetaan Cell & Sheet 11 Komponen Biaya Produksi (Dari Folder Source)
+                  Pemetaan Cell & Sheet 11 Komponen Biaya Produksi
                 </h4>
                 <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
                   <table className="w-full text-left border-collapse">
