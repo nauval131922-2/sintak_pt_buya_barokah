@@ -75,6 +75,27 @@ export default function PricelistClient() {
     return () => clearTimeout(timer);
   }, [customParams]);
 
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/pricelist?_t=${Date.now()}`);
+      const json = await res.json();
+      if (json.success) {
+        setItems(json.data || []);
+        setLastExcelUpdate(json.lastExcelUpdate || null);
+        setFileName(json.fileName || null);
+      }
+    } catch (e) {
+      console.error('Failed to fetch pricelist:', e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   // Data terhitung secara reaktif: dihitung hanya jika activeTab === 'matrix' atau saat data dibutuhkan
   const activeItems = useMemo(() => {
     if (activeTab !== 'matrix' && items.length > 0) {
