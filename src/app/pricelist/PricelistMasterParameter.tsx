@@ -31,8 +31,6 @@ export default function PricelistMasterParameter({
 
   const handleChange = (key: keyof SimulatorMasterParams, val: number) => {
     setCustomParams((prev) => ({ ...prev, [key]: Math.max(0, val) }));
-    setSuccessMsg('Parameter berhasil disesuaikan secara lokal untuk kalkulator.');
-    setTimeout(() => setSuccessMsg(null), 3000);
   };
 
   const handleReset = () => {
