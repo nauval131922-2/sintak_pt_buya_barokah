@@ -20,6 +20,7 @@ import {
   DEFAULT_MASTER_PARAMS,
   SimulatorMasterParams,
 } from '@/lib/pricelist-simulator';
+import ThousandInput from '@/components/ThousandInput';
 
 const MODEL_OPTIONS = [
   { value: 'Eko Wulan (12 Lbr)', label: 'Eko Wulan (12 Lbr)', desc: '12 Lembar / Kalender' },
@@ -206,12 +207,9 @@ export default function PricelistSimulator({
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min={1}
-                  step={50}
+                <ThousandInput
                   value={oplah}
-                  onChange={(e) => setOplah(Math.max(1, Number(e.target.value) || 0))}
+                  onValueChange={(val) => setOplah(Math.max(1, val))}
                   placeholder="Ketik oplah..."
                   className="w-full px-3 py-2 text-sm font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
                 />

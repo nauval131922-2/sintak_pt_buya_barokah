@@ -16,6 +16,7 @@ import {
   DEFAULT_MASTER_PARAMS,
   SimulatorMasterParams,
 } from '@/lib/pricelist-simulator';
+import ThousandInput from '@/components/ThousandInput';
 
 interface MasterParameterProps {
   customParams: SimulatorMasterParams;
@@ -90,43 +91,34 @@ export default function PricelistMasterParameter({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
                 <label className="block text-[11px] font-bold text-slate-700 mb-1">HVS 70 gsm</label>
-                <div className="relative">
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Rp</span>
-                  <input
-                    type="number"
-                    value={customParams.tarifHvs70}
-                    onChange={(e) => handleChange('tarifHvs70', Number(e.target.value))}
-                    className="w-full pl-8 pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md"
-                  />
-                </div>
+                <ThousandInput
+                  prefix="Rp"
+                  value={customParams.tarifHvs70}
+                  onValueChange={(val) => handleChange('tarifHvs70', val)}
+                  className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                />
                 <span className="block text-[10px] text-slate-500 mt-1">Ekonomis</span>
               </div>
 
               <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
                 <label className="block text-[11px] font-bold text-slate-700 mb-1">Art Paper 120</label>
-                <div className="relative">
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Rp</span>
-                  <input
-                    type="number"
-                    value={customParams.tarifAp120}
-                    onChange={(e) => handleChange('tarifAp120', Number(e.target.value))}
-                    className="w-full pl-8 pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md"
-                  />
-                </div>
+                <ThousandInput
+                  prefix="Rp"
+                  value={customParams.tarifAp120}
+                  onValueChange={(val) => handleChange('tarifAp120', val)}
+                  className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                />
                 <span className="block text-[10px] text-slate-500 mt-1">Standar Kilap</span>
               </div>
 
               <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
                 <label className="block text-[11px] font-bold text-slate-700 mb-1">Art Paper 150</label>
-                <div className="relative">
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Rp</span>
-                  <input
-                    type="number"
-                    value={customParams.tarifAp150}
-                    onChange={(e) => handleChange('tarifAp150', Number(e.target.value))}
-                    className="w-full pl-8 pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md"
-                  />
-                </div>
+                <ThousandInput
+                  prefix="Rp"
+                  value={customParams.tarifAp150}
+                  onValueChange={(val) => handleChange('tarifAp150', val)}
+                  className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                />
                 <span className="block text-[10px] text-slate-500 mt-1">Tebal & Premium</span>
               </div>
             </div>
@@ -201,85 +193,67 @@ export default function PricelistMasterParameter({
           <div className="p-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
               <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Spiral (cm x Rp)</label>
-              <div className="relative">
-                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Rp</span>
-                <input
-                  type="number"
-                  value={customParams.tarifSpiralLubang}
-                  onChange={(e) => handleChange('tarifSpiralLubang', Number(e.target.value))}
-                  className="w-full pl-7 pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md"
-                />
-              </div>
+              <ThousandInput
+                prefix="Rp"
+                value={customParams.tarifSpiralLubang}
+                onValueChange={(val) => handleChange('tarifSpiralLubang', val)}
+                className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+              />
               <span className="block text-[9.5px] text-slate-500 mt-1">Per lubang spiral</span>
             </div>
 
             <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
               <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Spiral Min Order</label>
-              <div className="relative">
-                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Rp</span>
-                <input
-                  type="number"
-                  value={customParams.tarifSpiralMin}
-                  onChange={(e) => handleChange('tarifSpiralMin', Number(e.target.value))}
-                  className="w-full pl-7 pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md"
-                />
-              </div>
+              <ThousandInput
+                prefix="Rp"
+                value={customParams.tarifSpiralMin}
+                onValueChange={(val) => handleChange('tarifSpiralMin', val)}
+                className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+              />
               <span className="block text-[9.5px] text-slate-500 mt-1">Batas minimum</span>
             </div>
 
             <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
               <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Desain Kalender</label>
-              <div className="relative">
-                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Rp</span>
-                <input
-                  type="number"
-                  value={customParams.tarifDesain}
-                  onChange={(e) => handleChange('tarifDesain', Number(e.target.value))}
-                  className="w-full pl-7 pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md"
-                />
-              </div>
+              <ThousandInput
+                prefix="Rp"
+                value={customParams.tarifDesain}
+                onValueChange={(val) => handleChange('tarifDesain', val)}
+                className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+              />
               <span className="block text-[9.5px] text-slate-500 mt-1">Per lembar kalender</span>
             </div>
 
             <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
               <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Almanak Desain</label>
-              <div className="relative">
-                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Rp</span>
-                <input
-                  type="number"
-                  value={customParams.tarifAlmanakDesain}
-                  onChange={(e) => handleChange('tarifAlmanakDesain', Number(e.target.value))}
-                  className="w-full pl-7 pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md"
-                />
-              </div>
+              <ThousandInput
+                prefix="Rp"
+                value={customParams.tarifAlmanakDesain}
+                onValueChange={(val) => handleChange('tarifAlmanakDesain', val)}
+                className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+              />
               <span className="block text-[9.5px] text-slate-500 mt-1">Biaya setting almanak</span>
             </div>
 
             <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
               <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Royalty Kalender</label>
-              <div className="relative">
-                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Rp</span>
-                <input
-                  type="number"
-                  value={customParams.tarifRoyalty}
-                  onChange={(e) => handleChange('tarifRoyalty', Number(e.target.value))}
-                  className="w-full pl-7 pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md"
-                />
-              </div>
+              <ThousandInput
+                prefix="Rp"
+                value={customParams.tarifRoyalty}
+                onValueChange={(val) => handleChange('tarifRoyalty', val)}
+                className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+              />
               <span className="block text-[9.5px] text-slate-500 mt-1">Per pcs kalender</span>
             </div>
 
             <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
               <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Potong Dasar</label>
-              <div className="relative">
-                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Rp</span>
-                <input
-                  type="number"
-                  value={customParams.tarifPotongDasar}
-                  onChange={(e) => handleChange('tarifPotongDasar', Number(e.target.value))}
-                  className="w-full pl-7 pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md"
-                />
-              </div>
+              <ThousandInput
+                prefix="Rp"
+                value={customParams.tarifPotongDasar}
+                onValueChange={(val) => handleChange('tarifPotongDasar', val)}
+                className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+              />
               <span className="block text-[9.5px] text-slate-500 mt-1">Per lembar potong</span>
             </div>
           </div>
