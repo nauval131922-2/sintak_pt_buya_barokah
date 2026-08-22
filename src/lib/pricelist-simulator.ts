@@ -220,7 +220,7 @@ export function calculatePricelistSimulator(input: SimulatorInput): SimulatorOut
 
   // 1. Biaya Bahan Kertas
   const beratRimKg = (planoLebar * planoPanjang * gsm) / (params.konstantaBeratRim || 20000);
-  const hargaPerPlano = (beratRimKg * (tarifPerKg * (params.ppnMarginKertas || 1.05))) / (params.lembarPerRim || 500);
+  const hargaPerPlano = (beratRimKg * (tarifPerKg * (params.ppnMarginKertas ?? 1.05))) / (params.lembarPerRim || 500);
   const totalPlanoDibutuhkan = ((safeOplah + insheet) * lembar) / (planoPotong || 1);
   const biayaKertas = hargaPerPlano * totalPlanoDibutuhkan;
 

@@ -117,19 +117,17 @@ export default function PricelistMasterParameter({
             {/* Setting Faktor PPN / Margin Kertas */}
             <div className="bg-emerald-50/60 p-3 rounded-lg border border-emerald-200/70 flex items-center justify-between gap-3 text-xs text-emerald-950">
               <div>
-                <span className="font-bold block text-xs">Faktor PPN / Margin Toko Kertas:</span>
+                <span className="font-bold block text-xs">PPN / Margin Toko Kertas:</span>
                 <span className="text-[10.5px] text-emerald-800">
-                  Pengali harga distributor (contoh: 1.05 = +5% margin/PPN)
+                  Persentase tambahan margin/PPN pada harga distributor kertas
                 </span>
               </div>
-              <div className="w-28 shrink-0">
-                <input
-                  type="number"
-                  step={0.01}
-                  min={1}
-                  value={customParams.ppnMarginKertas}
-                  onChange={(e) => handleChange('ppnMarginKertas', parseFloat(e.target.value) || 1.05)}
-                  className="w-full py-1 px-2.5 text-xs font-mono font-bold bg-white border border-emerald-300 rounded-md text-right focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+              <div className="w-24 shrink-0">
+                <ThousandInput
+                  suffix="%"
+                  value={Math.round((customParams.ppnMarginKertas - 1) * 100 * 100) / 100}
+                  onValueChange={(val) => handleChange('ppnMarginKertas', 1 + (val || 0) / 100)}
+                  className="w-full pr-6 py-1 text-xs font-mono font-bold bg-white border border-emerald-300 rounded-md text-right focus:ring-1 focus:ring-emerald-500 focus:outline-none"
                 />
               </div>
             </div>

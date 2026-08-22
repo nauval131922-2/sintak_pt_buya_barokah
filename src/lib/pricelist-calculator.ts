@@ -39,22 +39,22 @@ export function recalculatePricelistFromParams(
 ): PricelistItem[] {
   // Pre-calculate konstanta dan harga plano untuk 3 bahan & 4 ukuran agar O(1) di loop
   const p = customParams;
-  const ppn = p.ppnMarginKertas || 1.05;
+  const ppn = p.ppnMarginKertas ?? 1.05;
   const rimConst = p.konstantaBeratRim || 20000;
   const lbrPerRim = p.lembarPerRim || 500;
 
   // Cache perhitungan plano & colator per ukuran
   const sizeMeta: Record<string, { planoL: number; planoP: number; potong: number; colator: number }> = {
-    '32 x 48': { planoL: 65, planoP: 100, potong: p.potong32x48 || 4, colator: p.colator32x48 || 40 },
-    '38 x 54': { planoL: 79, planoP: 109, potong: p.potong38x54 || 4, colator: p.colator38x54 || 55 },
-    '46 x 64': { planoL: 65, planoP: 100, potong: p.potong46x64 || 2, colator: p.colator46x64 || 70 },
-    '48 x 64': { planoL: 65, planoP: 100, potong: p.potong48x64 || 2, colator: p.colator48x64 || 75 },
+    '32 x 48': { planoL: 65, planoP: 100, potong: p.potong32x48 ?? 4, colator: p.colator32x48 ?? 40 },
+    '38 x 54': { planoL: 79, planoP: 109, potong: p.potong38x54 ?? 4, colator: p.colator38x54 ?? 55 },
+    '46 x 64': { planoL: 65, planoP: 100, potong: p.potong46x64 ?? 2, colator: p.colator46x64 ?? 70 },
+    '48 x 64': { planoL: 65, planoP: 100, potong: p.potong48x64 ?? 2, colator: p.colator48x64 ?? 75 },
   };
 
   const matMeta: Record<string, { gsm: number; tarif: number }> = {
-    'HVS 70': { gsm: 70, tarif: p.tarifHvs70 || 15700 },
-    'ART PAPER 120': { gsm: 120, tarif: p.tarifAp120 || 17400 },
-    'ART PAPER 150': { gsm: 150, tarif: p.tarifAp150 || 17400 },
+    'HVS 70': { gsm: 70, tarif: p.tarifHvs70 ?? 15700 },
+    'ART PAPER 120': { gsm: 120, tarif: p.tarifAp120 ?? 17400 },
+    'ART PAPER 150': { gsm: 150, tarif: p.tarifAp150 ?? 17400 },
   };
 
   const calcRow = (
