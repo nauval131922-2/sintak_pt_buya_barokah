@@ -58,6 +58,8 @@ export default function PricelistSimulator({
   setCustomParams,
   onOpenMasterParam,
 }: PricelistSimulatorProps) {
+  const [showSimulatorManual, setShowSimulatorManual] = useState(false);
+
   // Input states with persistent localStorage support
   const [modelKalender, setModelKalender] = useState<string>(() => {
     if (typeof window !== 'undefined') {
@@ -174,7 +176,7 @@ export default function PricelistSimulator({
         <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
-            onClick={() => window.dispatchEvent(new CustomEvent('open-manual'))}
+            onClick={() => setShowSimulatorManual(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer"
           >
             <Info size={14} />
@@ -553,6 +555,134 @@ export default function PricelistSimulator({
           </div>
         </div>
       </div>
+
+      {/* Modal Panduan Penggunaan Simulator */}
+      {showSimulatorManual && (
+        <div
+          onClick={() => setShowSimulatorManual(false)}
+          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden cursor-default"
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-emerald-900 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-800/80 rounded-xl border border-emerald-700 text-emerald-200">
+                  <Calculator className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold tracking-tight">Panduan Penggunaan Simulator & Kalkulator Kalender</h3>
+                  <p className="text-xs text-emerald-200/90 mt-0.5">
+                    Cara kerja perhitungan instan, pemilihan spesifikasi mesin, serta interpretasi hasil biaya dan margin keuntungan
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSimulatorManual(false)}
+                className="p-1.5 rounded-lg text-emerald-200 hover:text-white hover:bg-emerald-800/60 transition-all cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-700 leading-relaxed">
+              {/* Alur Kerja Simulator */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                  Langkah Menggunakan Simulator
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                    <span className="font-bold text-emerald-800 text-xs">1. Pilih Spesifikasi</span>
+                    <p className="text-[11px] text-slate-600">
+                      Tentukan <strong>Model Kalender</strong> (12/6/4 Lbr), jenis <strong>Bahan Kertas</strong> (HVS 70 / AP 120 / AP 150), dan <strong>Ukuran Kalender</strong>.
+                    </p>
+                  </div>
+                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                    <span className="font-bold text-emerald-800 text-xs">2. Input Oplah & Mesin</span>
+                    <p className="text-[11px] text-slate-600">
+                      Ketik jumlah kuantitas <strong>Oplah (Pcs)</strong>. Gunakan pilihan mesin <strong>Otomatis</strong> (rekomendasi sistem) atau tentukan secara manual (<strong>Oliver</strong> vs <strong>Speedmaster SM</strong>).
+                    </p>
+                  </div>
+                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                    <span className="font-bold text-emerald-800 text-xs">3. Atur Margin & Nego</span>
+                    <p className="text-[11px] text-slate-600">
+                      Sesuaikan persentase target <strong>Margin Profit (+%)</strong> (default 30%) dan batas <strong>Diskon Nego (-%)</strong> (default 4%).
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Penjelasan Pilihan Mesin Cetak */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5">
+                <h5 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
+                  <Cpu className="w-4 h-4 text-emerald-700" />
+                  Logika Otomatis Mesin Cetak (Oliver vs SM)
+                </h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
+                  <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">
+                    <span className="font-bold text-blue-900 block">Mesin Oliver (Oplah &lt; 3.000 Pcs):</span>
+                    <p className="text-slate-600 leading-snug">
+                      Lebih hemat biaya plat CTP (Rp 45.000/plat) dan ongkos minimum (Rp 90.000/4 plat) dengan insheet plat 100 lembar. Sangat ekonomis untuk cetak skala kecil & menengah.
+                    </p>
+                  </div>
+                  <div className="p-2.5 bg-white rounded border border-purple-100 space-y-1">
+                    <span className="font-bold text-purple-900 block">Mesin Speedmaster SM (Oplah &ge; 3.000 Pcs):</span>
+                    <p className="text-slate-600 leading-snug">
+                      Mampu mencetak 2x lipat area sekaligus (misal ukuran 32x48 masuk 4 lembar per putaran), sehingga jumlah plat lebih sedikit dan waktu cetak jauh lebih efisien untuk oplah besar.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Memahami Kartu Hasil & Rincian 11 Biaya */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                  Memahami Kartu Hasil & Breakdown Biaya
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
+                  <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-1.5">
+                    <span className="font-bold text-slate-800 block">4 Kartu Finansial Utama:</span>
+                    <ul className="space-y-1 text-slate-600 list-disc list-inside">
+                      <li><strong>HPP per Pcs</strong>: Total biaya riil produksi dibagi kuantitas oplah.</li>
+                      <li><strong>Harga Jual per Pcs</strong>: Nilai penawaran standar (+30% pembulatan ratusan).</li>
+                      <li><strong>Harga Nego per Pcs</strong>: Batas aman harga diskon marketing (-4% pembulatan).</li>
+                      <li><strong>Estimasi Profit Bersih</strong>: Total margin laba bersih yang didapat dari seluruh pesanan.</li>
+                    </ul>
+                  </div>
+
+                  <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-1.5">
+                    <span className="font-bold text-slate-800 block">Tabel 11 Komponen Biaya:</span>
+                    <p className="text-slate-600 leading-snug">
+                      Menampilkan perincian subtotal rupiah dan <strong>% Porsi Biaya</strong> dari bahan kertas, plat CTP, ongkos mesin, desain, almanak, royalty, potong dasar, susun colator, spiral jilid, lakban packing, dan transportasi.
+                    </p>
+                    <span className="text-[10.5px] text-emerald-800 font-semibold block">
+                      * Semua tarif mengacu langsung pada tab Master Parameter yang sedang aktif.
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowSimulatorManual(false)}
+                className="px-4 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition-all cursor-pointer shadow-xs"
+              >
+                Tutup Panduan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
