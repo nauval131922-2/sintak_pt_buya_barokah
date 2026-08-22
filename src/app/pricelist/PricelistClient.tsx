@@ -1,10 +1,24 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Loader2, FileSpreadsheet, RefreshCw, Search, Filter, X, LayoutGrid, TableProperties, Layers, Calculator } from 'lucide-react';
+import {
+  Loader2,
+  FileSpreadsheet,
+  RefreshCw,
+  Search,
+  Filter,
+  X,
+  LayoutGrid,
+  TableProperties,
+  Layers,
+  Calculator,
+  Database,
+} from 'lucide-react';
 import PricelistExcelUpload from './PricelistExcelUpload';
 import PricelistSimulator from './PricelistSimulator';
+import PricelistMasterParameter from './PricelistMasterParameter';
 import SquareDropdown from '@/components/SquareDropdown';
+import { DEFAULT_MASTER_PARAMS, SimulatorMasterParams } from '@/lib/pricelist-simulator';
 
 interface PricelistItem {
   id: number;
@@ -29,7 +43,8 @@ export default function PricelistClient() {
   const [fileName, setFileName] = useState<string | null>(null);
 
   // Filters state
-  const [activeTab, setActiveTab] = useState<'matrix' | 'simulator'>('matrix');
+  const [activeTab, setActiveTab] = useState<'matrix' | 'simulator' | 'parameter'>('matrix');
+  const [customParams, setCustomParams] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedJenis, setSelectedJenis] = useState<string>('ALL');
   const [selectedBahan, setSelectedBahan] = useState<string>('ALL');
@@ -145,45 +160,67 @@ export default function PricelistClient() {
 
   return (
     <div className="flex flex-col gap-4 flex-1 min-h-0">
-      {/* Top Navigation Tabs */}
-      <div className="flex items-center justify-between border-b border-slate-200 shrink-0 pb-1">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setActiveTab('matrix')}
-            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
-              activeTab === 'matrix'
-                ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs'
-                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-            }`}
-          >
-            <FileSpreadsheet size={15} className={activeTab === 'matrix' ? 'text-emerald-700' : 'text-slate-400'} />
-            <span>Master Pricelist</span>
-            {items.length > 0 && (
-              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-100/80 text-emerald-800 font-mono">
-                {items.length}
-              </span>
-            )}
-          </button>
+      {/* TABS Navigation - Presisi seperti JHP */}
+      <div className="flex gap-2 sm:gap-6 border-b border-gray-100 shrink-0 px-2 mt-1">
+        <button
+          type="button"
+          onClick={() => setActiveTab('matrix')}
+          className={`flex items-center justify-center gap-1.5 pb-3 px-2 text-[13px] font-bold border-b-2 transition-all flex-1 sm:flex-initial cursor-pointer ${
+            activeTab === 'matrix'
+              ? 'border-emerald-600 text-emerald-700'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <FileSpreadsheet size={14} />
+          <span>Master Pricelist</span>
+          {items.length > 0 && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono font-bold">
+              {items.length}
+            </span>
+          )}
+        </button>
 
-          <button
-            type="button"
-            onClick={() => setActiveTab('simulator')}
-            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
-              activeTab === 'simulator'
-                ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs'
-                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-            }`}
-          >
-            <Calculator size={15} className={activeTab === 'simulator' ? 'text-emerald-700' : 'text-slate-400'} />
-            <span>Simulator & Kalkulator Order</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setActiveTab('simulator')}
+          className={`flex items-center justify-center gap-1.5 pb-3 px-2 text-[13px] font-bold border-b-2 transition-all flex-1 sm:flex-initial cursor-pointer ${
+            activeTab === 'simulator'
+              ? 'border-emerald-600 text-emerald-700'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Calculator size={14} />
+          <span>Simulator & Kalkulator Order</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('parameter')}
+          className={`flex items-center justify-center gap-1.5 pb-3 px-2 text-[13px] font-bold border-b-2 transition-all flex-1 sm:flex-initial cursor-pointer ${
+            activeTab === 'parameter'
+              ? 'border-emerald-600 text-emerald-700'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Database size={14} />
+          <span>Master Parameter</span>
+        </button>
       </div>
 
       {activeTab === 'simulator' ? (
         <div className="flex-1 overflow-y-auto pr-1">
-          <PricelistSimulator />
+          <PricelistSimulator
+            customParams={customParams}
+            setCustomParams={setCustomParams}
+            onOpenMasterParam={() => setActiveTab('parameter')}
+          />
+        </div>
+      ) : activeTab === 'parameter' ? (
+        <div className="flex-1 overflow-y-auto pr-1">
+          <PricelistMasterParameter
+            customParams={customParams}
+            setCustomParams={setCustomParams}
+          />
         </div>
       ) : (
         <>

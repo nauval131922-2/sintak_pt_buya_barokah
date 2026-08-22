@@ -46,7 +46,17 @@ const MESIN_OPTIONS = [
   { value: 'SM', label: 'Speedmaster (SM)', desc: 'Kapasitas besar >= 3.000 pcs' },
 ];
 
-export default function PricelistSimulator() {
+interface PricelistSimulatorProps {
+  customParams: SimulatorMasterParams;
+  setCustomParams: React.Dispatch<React.SetStateAction<SimulatorMasterParams>>;
+  onOpenMasterParam?: () => void;
+}
+
+export default function PricelistSimulator({
+  customParams,
+  setCustomParams,
+  onOpenMasterParam,
+}: PricelistSimulatorProps) {
   // Input states
   const [modelKalender, setModelKalender] = useState<string>('Eko Wulan (12 Lbr)');
   const [bahan, setBahan] = useState<string>('Art Paper 150');
@@ -55,10 +65,6 @@ export default function PricelistSimulator() {
   const [pilihanMesin, setPilihanMesin] = useState<'Otomatis' | 'Oliver' | 'SM'>('Otomatis');
   const [marginPct, setMarginPct] = useState<number>(30); // in percent (30%)
   const [negoDiskonPct, setNegoDiskonPct] = useState<number>(4); // in percent (4%)
-
-  // Master parameter customization (accordion/toggle)
-  const [showAdvancedParams, setShowAdvancedParams] = useState(false);
-  const [customParams, setCustomParams] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS);
 
   // Quick preset oplah buttons
   const presetOplahs = [300, 500, 1000, 1500, 2000, 3000, 5000, 10000];
@@ -100,134 +106,20 @@ export default function PricelistSimulator() {
               Hitung simulasi HPP, Harga Jual, Nego, Omset, dan Estimasi Profit secara akurat & transparan untuk kuantitas oplah kustom.
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setShowAdvancedParams(!showAdvancedParams)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-xs cursor-pointer ${
-                showAdvancedParams
-                  ? 'bg-emerald-600 text-white ring-2 ring-emerald-300'
-                  : 'bg-emerald-700/70 hover:bg-emerald-700 text-emerald-100'
-              }`}
-            >
-              <Settings2 size={14} />
-              <span>{showAdvancedParams ? 'Tutup Tarif Master' : 'Sesuaikan Tarif Master'}</span>
-            </button>
-          </div>
+          {onOpenMasterParam && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onOpenMasterParam}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-700/70 hover:bg-emerald-700 text-emerald-100 transition-all shadow-xs cursor-pointer"
+              >
+                <Settings2 size={14} />
+                <span>Lihat Master Parameter</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Advanced Master Parameter Panel (Collapsible) */}
-      {showAdvancedParams && (
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs animate-in fade-in slide-in-from-top-2 duration-300">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-3">
-            <div className="flex items-center gap-2">
-              <Sliders size={16} className="text-emerald-700" />
-              <h3 className="text-xs font-bold text-slate-800">Master Tarif Dasar Grafika (Sheet: MASTER PARAMETER)</h3>
-            </div>
-            <button
-              type="button"
-              onClick={handleResetParams}
-              className="text-[11px] font-bold text-slate-500 hover:text-emerald-700 flex items-center gap-1 cursor-pointer"
-            >
-              <RotateCcw size={12} /> Reset Standar
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 text-xs">
-            <div>
-              <label className="block text-[11px] font-medium text-slate-600 mb-1">Tarif HVS 70 (/kg)</label>
-              <input
-                type="number"
-                value={customParams.tarifHvs70}
-                onChange={(e) => setCustomParams({ ...customParams, tarifHvs70: Number(e.target.value) || 0 })}
-                className="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-md font-mono"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-medium text-slate-600 mb-1">Tarif AP 120 (/kg)</label>
-              <input
-                type="number"
-                value={customParams.tarifAp120}
-                onChange={(e) => setCustomParams({ ...customParams, tarifAp120: Number(e.target.value) || 0 })}
-                className="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-md font-mono"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-medium text-slate-600 mb-1">Tarif AP 150 (/kg)</label>
-              <input
-                type="number"
-                value={customParams.tarifAp150}
-                onChange={(e) => setCustomParams({ ...customParams, tarifAp150: Number(e.target.value) || 0 })}
-                className="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-md font-mono"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-medium text-slate-600 mb-1">Tarif Desain (/lbr)</label>
-              <input
-                type="number"
-                value={customParams.tarifDesain}
-                onChange={(e) => setCustomParams({ ...customParams, tarifDesain: Number(e.target.value) || 0 })}
-                className="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-md font-mono"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-medium text-slate-600 mb-1">Royalty (/pcs)</label>
-              <input
-                type="number"
-                value={customParams.tarifRoyalty}
-                onChange={(e) => setCustomParams({ ...customParams, tarifRoyalty: Number(e.target.value) || 0 })}
-                className="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-md font-mono"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-medium text-slate-600 mb-1">Spiral/Lubang (cm x Rp)</label>
-              <input
-                type="number"
-                value={customParams.tarifSpiralLubang}
-                onChange={(e) => setCustomParams({ ...customParams, tarifSpiralLubang: Number(e.target.value) || 0 })}
-                className="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-md font-mono"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-medium text-slate-600 mb-1">Spiral Min Order</label>
-              <input
-                type="number"
-                value={customParams.tarifSpiralMin}
-                onChange={(e) => setCustomParams({ ...customParams, tarifSpiralMin: Number(e.target.value) || 0 })}
-                className="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-md font-mono"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-medium text-slate-600 mb-1">Potong Dasar (/lbr)</label>
-              <input
-                type="number"
-                value={customParams.tarifPotongDasar}
-                onChange={(e) => setCustomParams({ ...customParams, tarifPotongDasar: Number(e.target.value) || 0 })}
-                className="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-md font-mono"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-medium text-slate-600 mb-1">Almanak Desain (Job)</label>
-              <input
-                type="number"
-                value={customParams.tarifAlmanakDesain}
-                onChange={(e) => setCustomParams({ ...customParams, tarifAlmanakDesain: Number(e.target.value) || 0 })}
-                className="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-md font-mono"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-medium text-slate-600 mb-1">Lakban (/roll)</label>
-              <input
-                type="number"
-                value={customParams.tarifLakbanRoll}
-                onChange={(e) => setCustomParams({ ...customParams, tarifLakbanRoll: Number(e.target.value) || 0 })}
-                className="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-md font-mono"
-              />
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Main Grid: Form Inputs (Left) & Results Summary (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
@@ -321,7 +213,7 @@ export default function PricelistSimulator() {
                   value={oplah}
                   onChange={(e) => setOplah(Math.max(1, Number(e.target.value) || 0))}
                   placeholder="Ketik oplah..."
-                  className="flex-1 px-3 py-2 text-sm font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+                  className="w-full px-3 py-2 text-sm font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
                 />
               </div>
 
