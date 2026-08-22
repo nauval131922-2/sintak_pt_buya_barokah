@@ -213,6 +213,25 @@ export default function PricelistMasterParameter({
                   </td>
                 </tr>
                 <tr>
+                  <td className="py-2 px-2.5 text-slate-700">Batas Min Drek (Kapasitas Min)</td>
+                  <td className="py-1.5 px-2">
+                    <ThousandInput
+                      suffix="drek"
+                      value={customParams.oliverBatasDrek}
+                      onValueChange={(val) => handleChange('oliverBatasDrek', val)}
+                      className="w-full pr-8 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                    />
+                  </td>
+                  <td className="py-1.5 px-2">
+                    <ThousandInput
+                      suffix="drek"
+                      value={customParams.smBatasDrek}
+                      onValueChange={(val) => handleChange('smBatasDrek', val)}
+                      className="w-full pr-8 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                    />
+                  </td>
+                </tr>
+                <tr>
                   <td className="py-2 px-2.5 text-slate-700">Drek Over / Drek</td>
                   <td className="py-1.5 px-2">
                     <ThousandInput
