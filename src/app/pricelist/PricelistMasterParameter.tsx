@@ -141,36 +141,106 @@ export default function PricelistMasterParameter({
             <table className="w-full text-xs text-left border-collapse">
               <thead>
                 <tr className="bg-slate-100/70 border-b border-slate-200 text-slate-600 font-semibold text-[11px]">
-                  <th className="py-1.5 px-2.5">Parameter Mesin</th>
-                  <th className="py-1.5 px-2.5 text-center bg-blue-50/40 text-blue-900">Mesin Oliver</th>
-                  <th className="py-1.5 px-2.5 text-center bg-purple-50/40 text-purple-900">Mesin SM</th>
+                  <th className="py-2 px-2.5">Parameter Mesin</th>
+                  <th className="py-2 px-2.5 text-center bg-blue-50/40 text-blue-900 w-36">Mesin Oliver</th>
+                  <th className="py-2 px-2.5 text-center bg-purple-50/40 text-purple-900 w-36">Mesin SM</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-[11.5px]">
                 <tr>
                   <td className="py-2 px-2.5 text-slate-700">Ongkos Min Order (4 plat)</td>
-                  <td className="py-2 px-2.5 text-center font-mono font-bold text-slate-800">Rp 90.000 (s/d 1.000 drek)</td>
-                  <td className="py-2 px-2.5 text-center font-mono font-bold text-slate-800">Rp 310.000 (s/d 3.000 drek)</td>
+                  <td className="py-1.5 px-2">
+                    <ThousandInput
+                      prefix="Rp"
+                      value={customParams.oliverMinOngkos}
+                      onValueChange={(val) => handleChange('oliverMinOngkos', val)}
+                      className="w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                    />
+                  </td>
+                  <td className="py-1.5 px-2">
+                    <ThousandInput
+                      prefix="Rp"
+                      value={customParams.smMinOngkos}
+                      onValueChange={(val) => handleChange('smMinOngkos', val)}
+                      className="w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                    />
+                  </td>
                 </tr>
                 <tr>
                   <td className="py-2 px-2.5 text-slate-700">Insheet Plat Cetak</td>
-                  <td className="py-2 px-2.5 text-center font-mono text-slate-700">100 lbr</td>
-                  <td className="py-2 px-2.5 text-center font-mono text-slate-700">300 lbr</td>
+                  <td className="py-1.5 px-2">
+                    <ThousandInput
+                      suffix="lbr"
+                      value={customParams.oliverInsheet}
+                      onValueChange={(val) => handleChange('oliverInsheet', val)}
+                      className="w-full pr-7 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                    />
+                  </td>
+                  <td className="py-1.5 px-2">
+                    <ThousandInput
+                      suffix="lbr"
+                      value={customParams.smInsheet}
+                      onValueChange={(val) => handleChange('smInsheet', val)}
+                      className="w-full pr-7 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                    />
+                  </td>
                 </tr>
                 <tr>
                   <td className="py-2 px-2.5 text-slate-700">Biaya Plat CTP / Unit</td>
-                  <td className="py-2 px-2.5 text-center font-mono text-slate-700">Rp 45.000 / plat</td>
-                  <td className="py-2 px-2.5 text-center font-mono text-slate-700">Rp 78.000 / plat</td>
+                  <td className="py-1.5 px-2">
+                    <ThousandInput
+                      prefix="Rp"
+                      value={customParams.oliverPlatUnit}
+                      onValueChange={(val) => handleChange('oliverPlatUnit', val)}
+                      className="w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                    />
+                  </td>
+                  <td className="py-1.5 px-2">
+                    <ThousandInput
+                      prefix="Rp"
+                      value={customParams.smPlatUnit}
+                      onValueChange={(val) => handleChange('smPlatUnit', val)}
+                      className="w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                    />
+                  </td>
                 </tr>
                 <tr>
                   <td className="py-2 px-2.5 text-slate-700">Drek Over / Drek</td>
-                  <td className="py-2 px-2.5 text-center font-mono text-slate-700">Rp 40 / drek</td>
-                  <td className="py-2 px-2.5 text-center font-mono text-slate-700">Rp 100 / drek</td>
+                  <td className="py-1.5 px-2">
+                    <ThousandInput
+                      prefix="Rp"
+                      value={customParams.oliverDrekOver}
+                      onValueChange={(val) => handleChange('oliverDrekOver', val)}
+                      className="w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                    />
+                  </td>
+                  <td className="py-1.5 px-2">
+                    <ThousandInput
+                      prefix="Rp"
+                      value={customParams.smDrekOver}
+                      onValueChange={(val) => handleChange('smDrekOver', val)}
+                      className="w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                    />
+                  </td>
                 </tr>
                 <tr>
                   <td className="py-2 px-2.5 text-slate-700">Biaya Transportasi Mesin</td>
-                  <td className="py-2 px-2.5 text-center font-mono text-slate-700">Rp 100.000 / job</td>
-                  <td className="py-2 px-2.5 text-center font-mono text-slate-700">Rp 50.000 / job</td>
+                  <td className="py-1.5 px-2">
+                    <ThousandInput
+                      prefix="Rp"
+                      value={customParams.oliverTransport}
+                      onValueChange={(val) => handleChange('oliverTransport', val)}
+                      className="w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                    />
+                  </td>
+                  <td className="py-1.5 px-2">
+                    <ThousandInput
+                      prefix="Rp"
+                      value={customParams.smTransport}
+                      onValueChange={(val) => handleChange('smTransport', val)}
+                      className="w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                    />
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -270,29 +340,90 @@ export default function PricelistMasterParameter({
           </div>
           <div className="p-4 flex flex-col gap-3">
             <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="p-2.5 bg-slate-50 rounded border border-slate-200">
-                <span className="font-bold text-slate-800 block">Ukuran 32 x 48 cm</span>
-                <span className="text-[11px] text-slate-600">Plano 65 x 100 → <strong>Bagi 4 potong</strong></span>
+              <div className="p-2.5 bg-slate-50 rounded border border-slate-200 flex items-center justify-between">
+                <div>
+                  <span className="font-bold text-slate-800 block text-xs">Ukuran 32 x 48 cm</span>
+                  <span className="text-[10px] text-slate-500">Plano 65 x 100</span>
+                </div>
+                <div className="w-20">
+                  <ThousandInput
+                    suffix="ptg"
+                    value={customParams.potong32x48}
+                    onValueChange={(val) => handleChange('potong32x48', val)}
+                    className="w-full pr-7 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                  />
+                </div>
               </div>
-              <div className="p-2.5 bg-slate-50 rounded border border-slate-200">
-                <span className="font-bold text-slate-800 block">Ukuran 38 x 54 cm</span>
-                <span className="text-[11px] text-slate-600">Plano 79 x 109 → <strong>Bagi 4 potong</strong></span>
+
+              <div className="p-2.5 bg-slate-50 rounded border border-slate-200 flex items-center justify-between">
+                <div>
+                  <span className="font-bold text-slate-800 block text-xs">Ukuran 38 x 54 cm</span>
+                  <span className="text-[10px] text-slate-500">Plano 79 x 109</span>
+                </div>
+                <div className="w-20">
+                  <ThousandInput
+                    suffix="ptg"
+                    value={customParams.potong38x54}
+                    onValueChange={(val) => handleChange('potong38x54', val)}
+                    className="w-full pr-7 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                  />
+                </div>
               </div>
-              <div className="p-2.5 bg-slate-50 rounded border border-slate-200">
-                <span className="font-bold text-slate-800 block">Ukuran 46 x 64 cm</span>
-                <span className="text-[11px] text-slate-600">Plano 65 x 100 → <strong>Bagi 2 potong</strong></span>
+
+              <div className="p-2.5 bg-slate-50 rounded border border-slate-200 flex items-center justify-between">
+                <div>
+                  <span className="font-bold text-slate-800 block text-xs">Ukuran 46 x 64 cm</span>
+                  <span className="text-[10px] text-slate-500">Plano 65 x 100</span>
+                </div>
+                <div className="w-20">
+                  <ThousandInput
+                    suffix="ptg"
+                    value={customParams.potong46x64}
+                    onValueChange={(val) => handleChange('potong46x64', val)}
+                    className="w-full pr-7 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                  />
+                </div>
               </div>
-              <div className="p-2.5 bg-slate-50 rounded border border-slate-200">
-                <span className="font-bold text-slate-800 block">Ukuran 48 x 64 cm</span>
-                <span className="text-[11px] text-slate-600">Plano 65 x 100 → <strong>Bagi 2 potong</strong></span>
+
+              <div className="p-2.5 bg-slate-50 rounded border border-slate-200 flex items-center justify-between">
+                <div>
+                  <span className="font-bold text-slate-800 block text-xs">Ukuran 48 x 64 cm</span>
+                  <span className="text-[10px] text-slate-500">Plano 65 x 100</span>
+                </div>
+                <div className="w-20">
+                  <ThousandInput
+                    suffix="ptg"
+                    value={customParams.potong48x64}
+                    onValueChange={(val) => handleChange('potong48x64', val)}
+                    className="w-full pr-7 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="p-3 bg-violet-50/60 rounded-lg border border-violet-100 text-[11px] text-violet-950 space-y-1">
-              <p className="font-bold">Konstanta Berat 1 Rim Kertas Plano (20.000):</p>
-              <p className="text-[10.5px] text-violet-900 leading-relaxed">
-                Rumus: <code>(Lebar x Panjang x GSM) / 20.000</code> menghasilkan Berat 1 Rim (500 Lembar) dalam satuan Kilogram (Kg).
-              </p>
+            {/* Konstanta Grafika */}
+            <div className="p-3 bg-violet-50/60 rounded-lg border border-violet-100 flex flex-col gap-2.5 text-xs text-violet-950">
+              <div className="flex items-center justify-between gap-2 border-b border-violet-200/50 pb-2">
+                <span className="font-bold">Konstanta Berat 1 Rim Kertas Plano:</span>
+                <div className="w-28">
+                  <ThousandInput
+                    value={customParams.konstantaBeratRim}
+                    onValueChange={(val) => handleChange('konstantaBeratRim', val)}
+                    className="w-full py-1 px-2 text-xs font-mono font-bold bg-white border border-violet-200 rounded-md text-right"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-bold">Standar Isi 1 Rim (Lembar):</span>
+                <div className="w-28">
+                  <ThousandInput
+                    suffix="lbr"
+                    value={customParams.lembarPerRim}
+                    onValueChange={(val) => handleChange('lembarPerRim', val)}
+                    className="w-full pr-7 py-1 text-xs font-mono font-bold bg-white border border-violet-200 rounded-md text-right"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>

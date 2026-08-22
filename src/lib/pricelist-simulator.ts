@@ -1,9 +1,29 @@
 // ponytail: simulator & kalkulator kalender dinding spiral 2027 logic
 
 export interface SimulatorMasterParams {
+  // 1. Kertas
   tarifHvs70: number;
   tarifAp120: number;
   tarifAp150: number;
+  ppnMarginKertas: number; // 1.05
+
+  // 2. Mesin Oliver
+  oliverMinOngkos: number; // 90000
+  oliverInsheet: number; // 100
+  oliverPlatUnit: number; // 45000
+  oliverDrekOver: number; // 40
+  oliverTransport: number; // 100000
+  oliverBatasDrek: number; // 1000
+
+  // Mesin SM
+  smMinOngkos: number; // 310000
+  smInsheet: number; // 300
+  smPlatUnit: number; // 78000
+  smDrekOver: number; // 100
+  smTransport: number; // 50000
+  smBatasDrek: number; // 3000
+
+  // 3. Jasa & Finishing
   tarifDesain: number;
   tarifAlmanakDesain: number;
   tarifRoyalty: number;
@@ -11,12 +31,45 @@ export interface SimulatorMasterParams {
   tarifLakbanRoll: number;
   tarifSpiralLubang: number;
   tarifSpiralMin: number;
+  colator32x48: number; // 40
+  colator38x54: number; // 55
+  colator46x64: number; // 70
+  colator48x64: number; // 75
+
+  // 4. Standar Plano & Konstanta
+  potong32x48: number; // 4
+  potong38x54: number; // 4
+  potong46x64: number; // 2
+  potong48x64: number; // 2
+  konstantaBeratRim: number; // 20000
+  lembarPerRim: number; // 500
+  kapasitasLakbanRoll: number; // 133.33
 }
 
 export const DEFAULT_MASTER_PARAMS: SimulatorMasterParams = {
+  // 1. Kertas
   tarifHvs70: 15700,
   tarifAp120: 17400,
   tarifAp150: 17400,
+  ppnMarginKertas: 1.05,
+
+  // 2. Mesin Oliver
+  oliverMinOngkos: 90000,
+  oliverInsheet: 100,
+  oliverPlatUnit: 45000,
+  oliverDrekOver: 40,
+  oliverTransport: 100000,
+  oliverBatasDrek: 1000,
+
+  // Mesin SM
+  smMinOngkos: 310000,
+  smInsheet: 300,
+  smPlatUnit: 78000,
+  smDrekOver: 100,
+  smTransport: 50000,
+  smBatasDrek: 3000,
+
+  // 3. Jasa & Finishing
   tarifDesain: 30000,
   tarifAlmanakDesain: 30000,
   tarifRoyalty: 150,
@@ -24,6 +77,19 @@ export const DEFAULT_MASTER_PARAMS: SimulatorMasterParams = {
   tarifLakbanRoll: 9600,
   tarifSpiralLubang: 150,
   tarifSpiralMin: 250000,
+  colator32x48: 40,
+  colator38x54: 55,
+  colator46x64: 70,
+  colator48x64: 75,
+
+  // 4. Standar Plano & Konstanta
+  potong32x48: 4,
+  potong38x54: 4,
+  potong46x64: 2,
+  potong48x64: 2,
+  konstantaBeratRim: 20000,
+  lembarPerRim: 500,
+  kapasitasLakbanRoll: 133.33,
 };
 
 export interface SimulatorInput {
@@ -125,7 +191,10 @@ export function calculatePricelistSimulator(input: SimulatorInput): SimulatorOut
     planoPanjang = 109;
   }
 
-  const planoPotong = ukuran === '32 x 48' || ukuran === '38 x 54' ? 4 : 2;
+  let planoPotong = params.potong32x48;
+  if (ukuran === '38 x 54') planoPotong = params.potong38x54;
+  else if (ukuran === '46 x 64') planoPotong = params.potong46x64;
+  else if (ukuran === '48 x 64') planoPotong = params.potong48x64;
 
   let areaCetak = 2;
   if (mesin === 'Oliver') {
@@ -134,25 +203,25 @@ export function calculatePricelistSimulator(input: SimulatorInput): SimulatorOut
     areaCetak = ukuran === '32 x 48' ? 4 : 2;
   }
 
-  const insheet = mesin === 'Oliver' ? 100 : 300;
-  const biayaPlatUnit = mesin === 'Oliver' ? 45000 : 78000;
-  const ongkosCetakDasar = mesin === 'Oliver' ? 90000 : 310000;
-  const tarifDrekOver = mesin === 'Oliver' ? 40 : 100;
-  const biayaTransport = mesin === 'Oliver' ? 100000 : 50000;
-  const batasDrekMin = mesin === 'Oliver' ? 1000 : 3000;
+  const insheet = mesin === 'Oliver' ? params.oliverInsheet : params.smInsheet;
+  const biayaPlatUnit = mesin === 'Oliver' ? params.oliverPlatUnit : params.smPlatUnit;
+  const ongkosCetakDasar = mesin === 'Oliver' ? params.oliverMinOngkos : params.smMinOngkos;
+  const tarifDrekOver = mesin === 'Oliver' ? params.oliverDrekOver : params.smDrekOver;
+  const biayaTransport = mesin === 'Oliver' ? params.oliverTransport : params.smTransport;
+  const batasDrekMin = mesin === 'Oliver' ? params.oliverBatasDrek : params.smBatasDrek;
 
-  let ongkosColatorPerLbr = 40;
-  if (ukuran === '38 x 54') ongkosColatorPerLbr = 55;
-  else if (ukuran === '46 x 64') ongkosColatorPerLbr = 70;
-  else if (ukuran === '48 x 64') ongkosColatorPerLbr = 75;
+  let ongkosColatorPerLbr = params.colator32x48;
+  if (ukuran === '38 x 54') ongkosColatorPerLbr = params.colator38x54;
+  else if (ukuran === '46 x 64') ongkosColatorPerLbr = params.colator46x64;
+  else if (ukuran === '48 x 64') ongkosColatorPerLbr = params.colator48x64;
 
   // 2. Kalkulasi Rincian Biaya
   const safeOplah = Math.max(1, oplah);
 
   // 1. Biaya Bahan Kertas
-  const beratRimKg = (planoLebar * planoPanjang * gsm) / 20000;
-  const hargaPerPlano = (beratRimKg * (tarifPerKg * 1.05)) / 500;
-  const totalPlanoDibutuhkan = ((safeOplah + insheet) * lembar) / planoPotong;
+  const beratRimKg = (planoLebar * planoPanjang * gsm) / (params.konstantaBeratRim || 20000);
+  const hargaPerPlano = (beratRimKg * (tarifPerKg * (params.ppnMarginKertas || 1.05))) / (params.lembarPerRim || 500);
+  const totalPlanoDibutuhkan = ((safeOplah + insheet) * lembar) / (planoPotong || 1);
   const biayaKertas = hargaPerPlano * totalPlanoDibutuhkan;
 
   // 2. Biaya Plat CTP
@@ -175,7 +244,7 @@ export function calculatePricelistSimulator(input: SimulatorInput): SimulatorOut
   // 7. Finishing Potong Dasar
   const biayaPotong =
     params.tarifPotongDasar * lembar +
-    params.tarifPotongDasar * (lembar / (ukuran === '32 x 48' ? 4 : 2));
+    params.tarifPotongDasar * (lembar / (planoPotong || 1));
 
   // 8. Susun / Colator
   const biayaColator = lembar * ongkosColatorPerLbr * (safeOplah + insheet / 2);
@@ -184,9 +253,10 @@ export function calculatePricelistSimulator(input: SimulatorInput): SimulatorOut
   const biayaSpiral = Math.max(params.tarifSpiralMin, lebarCm * params.tarifSpiralLubang * (safeOplah + 5));
 
   // 10. Lakban & Packing
+  const lakbanKapasitas = params.kapasitasLakbanRoll || 133.33;
   const biayaLakban = Math.max(
     params.tarifLakbanRoll,
-    (safeOplah / 50 / (8000 / 60)) * params.tarifLakbanRoll
+    (safeOplah / 50 / lakbanKapasitas) * params.tarifLakbanRoll
   );
 
   // 11. Biaya Transportasi
