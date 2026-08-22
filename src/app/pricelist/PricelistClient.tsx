@@ -43,7 +43,7 @@ export default function PricelistClient() {
   const [fileName, setFileName] = useState<string | null>(null);
 
   // Filters state
-  const [activeTab, setActiveTab] = useState<'matrix' | 'simulator' | 'parameter'>('matrix');
+  const [activeTab, setActiveTab] = useState<'parameter' | 'simulator' | 'matrix'>('parameter');
   const [customParams, setCustomParams] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedJenis, setSelectedJenis] = useState<string>('ALL');
@@ -164,20 +164,15 @@ export default function PricelistClient() {
       <div className="flex gap-2 sm:gap-6 border-b border-gray-100 shrink-0 px-2 mt-1">
         <button
           type="button"
-          onClick={() => setActiveTab('matrix')}
+          onClick={() => setActiveTab('parameter')}
           className={`flex items-center justify-center gap-1.5 pb-3 px-2 text-[13px] font-bold border-b-2 transition-all flex-1 sm:flex-initial cursor-pointer ${
-            activeTab === 'matrix'
+            activeTab === 'parameter'
               ? 'border-emerald-600 text-emerald-700'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
-          <FileSpreadsheet size={14} />
-          <span>Master Pricelist</span>
-          {items.length > 0 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono font-bold">
-              {items.length}
-            </span>
-          )}
+          <Database size={14} />
+          <span>Master Parameter</span>
         </button>
 
         <button
@@ -190,36 +185,41 @@ export default function PricelistClient() {
           }`}
         >
           <Calculator size={14} />
-          <span>Simulator & Kalkulator Order</span>
+          <span>Simulator</span>
         </button>
 
         <button
           type="button"
-          onClick={() => setActiveTab('parameter')}
+          onClick={() => setActiveTab('matrix')}
           className={`flex items-center justify-center gap-1.5 pb-3 px-2 text-[13px] font-bold border-b-2 transition-all flex-1 sm:flex-initial cursor-pointer ${
-            activeTab === 'parameter'
+            activeTab === 'matrix'
               ? 'border-emerald-600 text-emerald-700'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
-          <Database size={14} />
-          <span>Master Parameter</span>
+          <FileSpreadsheet size={14} />
+          <span>Pricelist</span>
+          {items.length > 0 && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono font-bold">
+              {items.length}
+            </span>
+          )}
         </button>
       </div>
 
-      {activeTab === 'simulator' ? (
+      {activeTab === 'parameter' ? (
+        <div className="flex-1 overflow-y-auto pr-1">
+          <PricelistMasterParameter
+            customParams={customParams}
+            setCustomParams={setCustomParams}
+          />
+        </div>
+      ) : activeTab === 'simulator' ? (
         <div className="flex-1 overflow-y-auto pr-1">
           <PricelistSimulator
             customParams={customParams}
             setCustomParams={setCustomParams}
             onOpenMasterParam={() => setActiveTab('parameter')}
-          />
-        </div>
-      ) : activeTab === 'parameter' ? (
-        <div className="flex-1 overflow-y-auto pr-1">
-          <PricelistMasterParameter
-            customParams={customParams}
-            setCustomParams={setCustomParams}
           />
         </div>
       ) : (
