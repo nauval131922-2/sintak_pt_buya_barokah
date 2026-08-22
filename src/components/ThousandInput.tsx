@@ -75,8 +75,6 @@ export default function ThousandInput({
   }, [value]);
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    // Jika nilainya 0 atau '0', langsung select all agar ketika user mengetik angka baru, 0 otomatis terganti
-    e.target.select();
     if (onFocus) onFocus(e);
   };
 
