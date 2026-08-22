@@ -45,11 +45,32 @@ export default function PricelistClient() {
 
   // Filters state
   const [activeTab, setActiveTab] = useState<'parameter' | 'simulator' | 'matrix'>('parameter');
-  const [customParams, setCustomParams] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS);
+  const [customParams, setCustomParams] = useState<SimulatorMasterParams>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('sintak_pricelist_master_params');
+        if (saved) {
+          return { ...DEFAULT_MASTER_PARAMS, ...JSON.parse(saved) };
+        }
+      } catch (e) {
+        console.error('Failed to parse saved master params:', e);
+      }
+    }
+    return DEFAULT_MASTER_PARAMS;
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedJenis, setSelectedJenis] = useState<string>('ALL');
   const [selectedBahan, setSelectedBahan] = useState<string>('ALL');
   const [viewMode, setViewMode] = useState<'matrix' | 'table'>('matrix');
+
+  // Simpan master parameter ke localStorage setiap kali ada perubahan
+  useEffect(() => {
+    try {
+      localStorage.setItem('sintak_pricelist_master_params', JSON.stringify(customParams));
+    } catch (e) {
+      console.error('Failed to save master params to localStorage:', e);
+    }
+  }, [customParams]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
