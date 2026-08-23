@@ -1245,7 +1245,8 @@ export default function LaporanPekerjaanClient() {
   const renderSortableHeader = (
     field: keyof SpreadsheetTask,
     label: string,
-    alignCenter = false
+    alignCenter = false,
+    enableResize = true
   ) => {
     const isSorted = sortField === field;
     return (
@@ -1277,12 +1278,14 @@ export default function LaporanPekerjaanClient() {
           )}
         </div>
         {/* Resizer Handle */}
-        <div
-          onMouseDown={(resizeEvt) => handleResizeStart(field, resizeEvt)}
-          onClick={(resizeEvt) => resizeEvt.stopPropagation()}
-          className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-emerald-500/50 active:bg-emerald-600 z-20 group-hover:bg-slate-300/80 transition-colors"
-          title="Geser untuk mengatur lebar kolom"
-        />
+        {enableResize && (
+          <div
+            onMouseDown={(resizeEvt) => handleResizeStart(field, resizeEvt)}
+            onClick={(resizeEvt) => resizeEvt.stopPropagation()}
+            className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-emerald-500/50 active:bg-emerald-600 z-20 group-hover:bg-slate-300/80 transition-colors"
+            title="Geser untuk mengatur lebar kolom"
+          />
+        )}
       </th>
     );
   };
@@ -1987,14 +1990,8 @@ export default function LaporanPekerjaanClient() {
                   className="relative px-3 py-2.5 text-center bg-slate-50 sticky top-0 z-10 border-b border-slate-200 select-none group"
                 >
                   <span className="truncate">Aksi</span>
-                  <div
-                    onMouseDown={(resizeEvt) => handleResizeStart("aksi", resizeEvt)}
-                    onClick={(resizeEvt) => resizeEvt.stopPropagation()}
-                    className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-emerald-500/50 active:bg-emerald-600 z-20 group-hover:bg-slate-300/80 transition-colors"
-                    title="Geser untuk mengatur lebar kolom"
-                  />
                 </th>
-                {renderSortableHeader("tglOrder" as any, "Tanggal Order")}
+                {renderSortableHeader("tglOrder" as any, "Tanggal Order", false, false)}
                 {renderSortableHeader("project", "Project Order")}
                 <th
                   style={{
@@ -2041,13 +2038,15 @@ export default function LaporanPekerjaanClient() {
                     title="Geser untuk mengatur lebar kolom"
                   />
                 </th>
+                {/* Spacer: menyerap sisa lebar tabel agar resize tidak menggeser kolom lain */}
+                <th className="px-0" aria-hidden />
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {loading ? (
                 <tr>
                   <td
-                    colSpan={3}
+                    colSpan={7}
                     className="px-4 py-16 text-center text-slate-400"
                   >
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-600" />
@@ -2057,7 +2056,7 @@ export default function LaporanPekerjaanClient() {
               ) : paginatedOrders.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={3}
+                    colSpan={7}
                     className="px-4 py-16 text-center text-slate-400"
                   >
                     Tidak ada data order pekerjaan yang ditemukan.
@@ -2168,6 +2167,7 @@ export default function LaporanPekerjaanClient() {
                       >
                         {group.pekerjaanSelanjutnya || "-"}
                       </td>
+                      <td className="px-0" aria-hidden />
                     </tr>
                   );
                 })
