@@ -620,15 +620,11 @@ export default function LaporanPekerjaanClient() {
 
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const isResizingRef = useRef<boolean>(false);
-  // ponytail: lock 600ms anti loncat 2 halaman sekaligus saat wheel beruntun
-  const lastAutoPageRef = useRef<number>(0);
-  const pageNavDirRef = useRef<"top" | "bottom">("top");
 
-  // Scroll ke atas (next) / bawah (prev) & reset row selection on page change
+  // Scroll ke atas & reset row selection saat ganti halaman
   useEffect(() => {
-    const el = tableContainerRef.current;
-    if (el) {
-      el.scrollTop = pageNavDirRef.current === "bottom" ? el.scrollHeight : 0;
+    if (tableContainerRef.current) {
+      tableContainerRef.current.scrollTop = 0;
     }
     setSelectedRowIndex(null);
   }, [currentPage]);
@@ -646,24 +642,6 @@ export default function LaporanPekerjaanClient() {
       setSortField(field);
       setSortOrder("asc");
     }
-  };
-
-  // Auto pindah halaman saat overscroll: wheel bawah di dasar → next, wheel atas di puncak → prev
-  const handleTableWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    const el = tableContainerRef.current;
-    if (!el) return;
-    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
-    const atTop = el.scrollTop <= 0;
-    const goNext = e.deltaY > 0 && atBottom && currentPage < totalPages;
-    const goPrev = e.deltaY < 0 && atTop && currentPage > 1;
-    if (!goNext && !goPrev) return;
-    const now = Date.now();
-    if (now - lastAutoPageRef.current < 600) return;
-    lastAutoPageRef.current = now;
-    pageNavDirRef.current = goNext ? "top" : "bottom";
-    setCurrentPage((p) =>
-      goNext ? Math.min(p + 1, totalPages) : Math.max(p - 1, 1)
-    );
   };
 
   const fetchData = useCallback(async (force = false) => {
@@ -2220,7 +2198,6 @@ export default function LaporanPekerjaanClient() {
         {/* Tampilan Tabel khusus HP Landscape, Tablet, & Desktop */}
         <div
           ref={tableContainerRef}
-          onWheel={handleTableWheel}
           className={`hidden landscape:block md:block overflow-x-auto overflow-y-auto custom-scrollbar transition-all duration-200 ${
             isAnalyticsOpen
               ? "max-h-[300px] sm:max-h-[480px] shrink-0"
@@ -2400,10 +2377,7 @@ export default function LaporanPekerjaanClient() {
         loadTime={loadTime}
         page={currentPage}
         totalPages={totalPages}
-        onPageChange={(p) => {
-          pageNavDirRef.current = "top";
-          setCurrentPage(p);
-        }}
+        onPageChange={setCurrentPage}
       />
       </>
       )}
