@@ -172,7 +172,7 @@ export default function SquareDropdown({
   );
 
   return (
-    <div ref={triggerRef} className="relative flex-1 min-w-0 md:flex-none md:inline-block">
+    <div ref={triggerRef} className={`relative ${widthClass || 'w-full'} min-w-0`}>
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}

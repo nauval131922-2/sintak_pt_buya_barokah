@@ -2448,18 +2448,30 @@ function TaskDetailModal({
           {/* Body: Tabel List Task dari Order tersebut */}
           <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto p-4 sm:p-6 custom-scrollbar space-y-4">
             <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-              <table className="w-full text-left text-xs border-collapse min-w-[1100px]">
+              <table className="w-full text-left text-xs border-collapse table-fixed min-w-[1150px]">
+                <colgroup>
+                  <col className="w-10" />
+                  <col className="w-32" />
+                  <col className="w-40" />
+                  <col className="w-56" />
+                  <col className="w-28" />
+                  <col className="w-52" />
+                  <col className="w-20" />
+                  <col className="w-40" />
+                  <col className="w-auto" />
+                  <col className="w-20" />
+                </colgroup>
                 <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
                   <tr>
                     <th className="px-2.5 py-2.5 text-center w-10">No</th>
                     <th className="px-2.5 py-2.5 w-32">Bagian</th>
-                    <th className="px-2.5 py-2.5 w-36">PIC</th>
-                    <th className="px-2.5 py-2.5 w-44">Task / Aktivitas</th>
-                    <th className="px-2.5 py-2.5 w-24">Priority</th>
+                    <th className="px-2.5 py-2.5 w-40">PIC</th>
+                    <th className="px-2.5 py-2.5 w-56">Task / Aktivitas</th>
+                    <th className="px-2.5 py-2.5 w-28">Priority</th>
                     <th className="px-2.5 py-2.5 w-52">Start ~ End</th>
                     <th className="px-2.5 py-2.5 text-center w-20">Work Days</th>
                     <th className="px-2.5 py-2.5 w-40">Status</th>
-                    <th className="px-2.5 py-2.5 min-w-[200px]">Note</th>
+                    <th className="px-2.5 py-2.5">Note</th>
                     <th className="px-2.5 py-2.5 text-center w-20">Aksi</th>
                   </tr>
                 </thead>
