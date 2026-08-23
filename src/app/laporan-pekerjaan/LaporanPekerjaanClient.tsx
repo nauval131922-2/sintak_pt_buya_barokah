@@ -944,8 +944,16 @@ export default function LaporanPekerjaanClient() {
   }, [filteredTasks]);
 
   // Global Sorted Unique Orders
+  // ponytail: tanpa sort pun tetap urut tgl order terlama dulu (fallback urutan dasar)
   const sortedGroupedOrders = useMemo(() => {
-    if (!sortField) return groupedOrders;
+    if (!sortField) {
+      return [...groupedOrders].sort((a, b) => {
+        const timeA = parseDateToSort(a.tglOrder);
+        const timeB = parseDateToSort(b.tglOrder);
+        if (timeA !== timeB) return timeA - timeB;
+        return (a.project || "").localeCompare(b.project || "", "id", { numeric: true });
+      });
+    }
     return [...groupedOrders].sort((a, b) => {
       if (sortField === "tglOrder") {
         const timeA = parseDateToSort(a.tglOrder);
