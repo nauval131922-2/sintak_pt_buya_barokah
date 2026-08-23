@@ -145,12 +145,18 @@ const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
     }
   }
 
+  // Task CANCEL tidak dianggap sebagai pekerjaan selanjutnya
+  const isCancel = (t: SpreadsheetTask) =>
+    (t.status || "").toUpperCase() === "CANCEL";
+  let nextIdx = lastIdx + 1;
+  while (nextIdx < total && isCancel(sorted[nextIdx])) nextIdx++;
+
   return {
     progressPct: total > 0 ? Math.round((selesaiCount / total) * 100) : 0,
     // ponytail: lastIdx -1 (belum ada yg selesai) → selanjutnya = task pertama
     pekerjaanTerakhir: lastIdx >= 0 ? cleanName(sorted[lastIdx].task || "") : "",
     pekerjaanSelanjutnya:
-      lastIdx + 1 < total ? cleanName(sorted[lastIdx + 1].task || "") : "",
+      nextIdx < total ? cleanName(sorted[nextIdx].task || "") : "",
   };
 };
 
