@@ -3413,6 +3413,3 @@ function InlineAddRow({
     </tr>
   );
 }
-    </div>
-  );
-}
