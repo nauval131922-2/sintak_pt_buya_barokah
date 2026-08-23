@@ -484,6 +484,8 @@ export default function LaporanPekerjaanClient() {
 
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const isResizingRef = useRef<boolean>(false);
+  // ponytail: lock 600ms anti loncat 2 halaman sekaligus saat wheel beruntun
+  const lastAutoPageRef = useRef<number>(0);
 
   // Scroll to top of table & reset row selection on page change
   useEffect(() => {
@@ -506,6 +508,18 @@ export default function LaporanPekerjaanClient() {
       setSortField(field);
       setSortOrder("asc");
     }
+  };
+
+  // Auto pindah halaman berikutnya saat wheel ke bawah di dasar tabel
+  const handleTableWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    const el = tableContainerRef.current;
+    if (!el || e.deltaY <= 0) return;
+    if (el.scrollTop + el.clientHeight < el.scrollHeight - 2) return;
+    if (currentPage >= totalPages) return;
+    const now = Date.now();
+    if (now - lastAutoPageRef.current < 600) return;
+    lastAutoPageRef.current = now;
+    setCurrentPage((p) => Math.min(p + 1, totalPages));
   };
 
   const fetchData = useCallback(async (force = false) => {
@@ -1838,6 +1852,7 @@ export default function LaporanPekerjaanClient() {
         {/* Tampilan Tabel khusus HP Landscape, Tablet, & Desktop */}
         <div
           ref={tableContainerRef}
+          onWheel={handleTableWheel}
           className={`hidden landscape:block md:block overflow-x-auto overflow-y-auto custom-scrollbar transition-all duration-200 ${
             isAnalyticsOpen
               ? "max-h-[300px] sm:max-h-[480px] shrink-0"
