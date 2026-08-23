@@ -85,9 +85,15 @@ const STATUS_LEGEND = [
   { name: "SELESAI", color: "#10b981" },
 ];
 
+const dateSortCache = new Map<string, number>();
+
 function parseDateToSort(str: string): number {
   if (!str || !str.trim()) return 0;
+  const cached = dateSortCache.get(str);
+  if (cached !== undefined) return cached;
+
   const s = str.trim();
+  let result = 0;
 
   // Check DD/MM/YYYY or D/M/YYYY or DD-MM-YYYY
   const ddmmyyyy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
@@ -95,21 +101,23 @@ function parseDateToSort(str: string): number {
     const day = parseInt(ddmmyyyy[1], 10);
     const month = parseInt(ddmmyyyy[2], 10) - 1;
     const year = parseInt(ddmmyyyy[3], 10);
-    return new Date(year, month, day).getTime();
+    result = new Date(year, month, day).getTime();
+  } else {
+    // Check YYYY-MM-DD
+    const yyyymmdd = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+    if (yyyymmdd) {
+      const year = parseInt(yyyymmdd[1], 10);
+      const month = parseInt(yyyymmdd[2], 10) - 1;
+      const day = parseInt(yyyymmdd[3], 10);
+      result = new Date(year, month, day).getTime();
+    } else {
+      const parsed = Date.parse(s);
+      result = isNaN(parsed) ? 0 : parsed;
+    }
   }
 
-  // Check YYYY-MM-DD
-  const yyyymmdd = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
-  if (yyyymmdd) {
-    const year = parseInt(yyyymmdd[1], 10);
-    const month = parseInt(yyyymmdd[2], 10) - 1;
-    const day = parseInt(yyyymmdd[3], 10);
-    return new Date(year, month, day).getTime();
-  }
-
-  // Standard Date.parse fallback
-  const parsed = Date.parse(s);
-  return isNaN(parsed) ? 0 : parsed;
+  dateSortCache.set(str, result);
+  return result;
 }
 
 const fmtTglOrder = (s?: string): string => {
@@ -1366,8 +1374,9 @@ export default function LaporanPekerjaanClient() {
     return { total, belumDikerjakan, selesai, inProgress, pending, cancel };
   }, [tasksForCounts]);
 
-  // Chart Data 1: Breakdown Pekerjaan per Status per PIC
+  // Chart Data 1: Breakdown Pekerjaan per Status per PIC (Lazy: hanya dihitung saat accordion terbuka)
   const picChartData = useMemo(() => {
+    if (!isAnalyticsOpen) return [];
     const map: Record<
       string,
       { name: string; BelumDikerjakan: number; Selesai: number; InProgress: number; Pending: number; Cancel: number; Total: number }
@@ -1386,10 +1395,11 @@ export default function LaporanPekerjaanClient() {
       else if (s === "CANCEL") map[pic].Cancel++;
     });
     return Object.values(map).sort((a, b) => b.Total - a.Total);
-  }, [filteredTasks]);
+  }, [filteredTasks, isAnalyticsOpen]);
 
-  // Chart Data 2: Pie Chart Status
+  // Chart Data 2: Pie Chart Status (Lazy: hanya dihitung saat accordion terbuka)
   const statusPieData = useMemo(() => {
+    if (!isAnalyticsOpen) return [];
     const map: Record<string, number> = {
       "BELUM DIKERJAKAN": 0,
       "IN PROGRESS": 0,
@@ -1407,10 +1417,11 @@ export default function LaporanPekerjaanClient() {
       value: map[k],
       color: STATUS_COLORS[k] || "#94a3b8",
     }));
-  }, [filteredTasks]);
+  }, [filteredTasks, isAnalyticsOpen]);
 
-  // Chart Data 3: Priority Distribution (breakdown per status)
+  // Chart Data 3: Priority Distribution (Lazy: hanya dihitung saat accordion terbuka)
   const priorityChartData = useMemo(() => {
+    if (!isAnalyticsOpen) return [];
     const map: Record<
       string,
       { name: string; BelumDikerjakan: number; Selesai: number; InProgress: number; Pending: number; Cancel: number; Total: number }
@@ -1429,7 +1440,7 @@ export default function LaporanPekerjaanClient() {
       else if (s === "CANCEL") map[p].Cancel++;
     });
     return Object.values(map).sort((a, b) => b.Total - a.Total);
-  }, [filteredTasks]);
+  }, [filteredTasks, isAnalyticsOpen]);
 
   // Resizable columns state with localStorage persistence
   const DEFAULT_COL_WIDTHS = useMemo(
