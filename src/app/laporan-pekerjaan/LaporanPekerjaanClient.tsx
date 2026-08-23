@@ -2693,7 +2693,13 @@ export default function LaporanPekerjaanClient() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
-                      {selectedProjectGroup.tasks.map((task, idx) => (
+                      {[...selectedProjectGroup.tasks]
+                        .sort(
+                          (a, b) =>
+                            parseDateToSort(a.startDate || "") -
+                            parseDateToSort(b.startDate || "")
+                        )
+                        .map((task, idx) => (
                         <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
                           <td className="px-3 py-2.5 text-center font-medium text-slate-400">
                             {idx + 1}
