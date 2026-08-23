@@ -59,24 +59,33 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Query data murni dari database lokal Sintak
-    let sql = "SELECT * FROM laporan_pekerjaan WHERE 1=1";
+    // Query data murni dari database lokal Sintak dengan join tgl_order dari sopd / orders
+    let sql = `
+      SELECT lp.*,
+             COALESCE(
+               (SELECT s.tgl FROM sopd s WHERE s.nama_order = lp.project OR s.no_sopd = lp.project LIMIT 1),
+               (SELECT o.tgl FROM orders o WHERE o.nama_prd = lp.project OR o.faktur = lp.project LIMIT 1),
+               ''
+             ) as tgl_order
+      FROM laporan_pekerjaan lp
+      WHERE 1=1
+    `;
     const args: any[] = [];
 
     if (pic) {
-      sql += " AND LOWER(pic) = ?";
+      sql += " AND LOWER(lp.pic) = ?";
       args.push(pic);
     }
     if (status) {
-      sql += " AND LOWER(status) = ?";
+      sql += " AND LOWER(lp.status) = ?";
       args.push(status);
     }
     if (search) {
-      sql += " AND (LOWER(task) LIKE ? OR LOWER(project) LIKE ?)";
+      sql += " AND (LOWER(lp.task) LIKE ? OR LOWER(lp.project) LIKE ?)";
       args.push(`%${search}%`, `%${search}%`);
     }
 
-    sql += " ORDER BY id DESC";
+    sql += " ORDER BY lp.id DESC";
 
     const res = await db.execute({ sql, args });
     const tasks = res.rows.map((row: any) => ({
@@ -93,6 +102,7 @@ export async function GET(request: NextRequest) {
       note: String(row.note || ""),
       status: String(row.status || "BELUM DIKERJAKAN"),
       source: String(row.source || "sintak"),
+      tglOrder: String(row.tgl_order || ""),
       updated_at: row.updated_at,
     }));
 

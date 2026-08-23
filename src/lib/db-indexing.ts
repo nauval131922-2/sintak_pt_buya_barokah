@@ -43,6 +43,7 @@ export async function initIndexing(database: { execute: (sql: string) => Promise
     // Expression index sopd: konversi DD-MM-YYYY → YYYY-MM-DD untuk filter/sort tanggal
     "CREATE INDEX IF NOT EXISTS idx_sopd_tgl_iso ON sopd(substr(tgl,7,4)||'-'||substr(tgl,4,2)||'-'||substr(tgl,1,2));",
     "CREATE INDEX IF NOT EXISTS idx_sopd_tgl ON sopd(tgl);",
+    "CREATE INDEX IF NOT EXISTS idx_sopd_nama_order ON sopd(nama_order);",
     "CREATE INDEX IF NOT EXISTS idx_stok_master_barang_nama ON stok_master_barang(nama);",
     "CREATE INDEX IF NOT EXISTS idx_produksi_selesai_nama_prd ON produksi_selesai(nama_prd);",
     "CREATE INDEX IF NOT EXISTS idx_bahan_baku_faktur_prd ON bahan_baku(faktur_prd);",

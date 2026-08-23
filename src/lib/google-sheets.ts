@@ -11,6 +11,7 @@ export interface SpreadsheetTask {
   status: string;
   workDays?: string;
   note?: string;
+  tglOrder?: string;
 }
 
 export const SPREADSHEET_ID = "1T-qLsKYGRd1R2DqbKyosmeubxIZ7q5tR0cpjfmx4Rmc";

@@ -29,6 +29,7 @@ import {
   ClipboardList,
   PlusSquare,
   RotateCcw,
+  Eye,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -315,6 +316,13 @@ export default function LaporanPekerjaanClient() {
   const [conflicts, setConflicts] = useState<any[]>([]);
   const [showConflictModal, setShowConflictModal] = useState(false);
   const [currentConflict, setCurrentConflict] = useState<any>(null);
+
+  // Detail Modal state
+  const [selectedProjectGroup, setSelectedProjectGroup] = useState<{
+    project: string;
+    tglOrder: string;
+    tasks: SpreadsheetTask[];
+  } | null>(null);
 
   // Filters & Analytics state
   const [selectedPic, setSelectedPic] = useState<string>("ALL");
@@ -900,40 +908,54 @@ export default function LaporanPekerjaanClient() {
     });
   }, [tasks, selectedPic, selectedBagianFilter, selectedStatus, deferredSearchTerm]);
 
-  // Global Sorted Tasks (across ALL pages)
-  const sortedFilteredTasks = useMemo(() => {
-    if (!sortField) return filteredTasks;
-    return [...filteredTasks].sort((a, b) => {
-      const rawA = a[sortField] || "";
-      const rawB = b[sortField] || "";
+  // Group filtered tasks by unique project order
+  const groupedOrders = useMemo(() => {
+    const map = new Map<string, { project: string; tglOrder: string; tasks: SpreadsheetTask[] }>();
 
-      if (sortField === "startDate" || sortField === "endDate") {
-        const timeA = parseDateToSort(String(rawA));
-        const timeB = parseDateToSort(String(rawB));
+    filteredTasks.forEach((t) => {
+      const proj = t.project || "Tanpa Project Order";
+      if (!map.has(proj)) {
+        map.set(proj, {
+          project: proj,
+          tglOrder: t.tglOrder || "",
+          tasks: [t],
+        });
+      } else {
+        const group = map.get(proj)!;
+        if (!group.tglOrder && t.tglOrder) {
+          group.tglOrder = t.tglOrder;
+        }
+        group.tasks.push(t);
+      }
+    });
+
+    return Array.from(map.values());
+  }, [filteredTasks]);
+
+  // Global Sorted Unique Orders
+  const sortedGroupedOrders = useMemo(() => {
+    if (!sortField) return groupedOrders;
+    return [...groupedOrders].sort((a, b) => {
+      if (sortField === "tglOrder") {
+        const timeA = parseDateToSort(a.tglOrder);
+        const timeB = parseDateToSort(b.tglOrder);
         if (timeA !== timeB) {
           return sortOrder === "asc" ? timeA - timeB : timeB - timeA;
         }
       }
-
-      if (sortField === "workDays") {
-        const numA = parseFloat(String(rawA)) || 0;
-        const numB = parseFloat(String(rawB)) || 0;
-        return sortOrder === "asc" ? numA - numB : numB - numA;
-      }
-
-      const valA = rawA.toString().toLowerCase();
-      const valB = rawB.toString().toLowerCase();
+      const valA = (a.project || "").toLowerCase();
+      const valB = (b.project || "").toLowerCase();
       const comp = valA.localeCompare(valB, "id", { numeric: true });
       return sortOrder === "asc" ? comp : -comp;
     });
-  }, [filteredTasks, sortField, sortOrder]);
+  }, [groupedOrders, sortField, sortOrder]);
 
-  // Pagination calculation
-  const totalPages = Math.ceil(sortedFilteredTasks.length / pageSize) || 1;
-  const paginatedTasks = useMemo(() => {
+  // Pagination calculation based on unique orders
+  const totalPages = Math.ceil(sortedGroupedOrders.length / pageSize) || 1;
+  const paginatedOrders = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
-    return sortedFilteredTasks.slice(start, start + pageSize);
-  }, [sortedFilteredTasks, currentPage, pageSize]);
+    return sortedGroupedOrders.slice(start, start + pageSize);
+  }, [sortedGroupedOrders, currentPage, pageSize]);
 
   // Tasks filtered by PIC and search term (for stat card counts)
   const tasksForCounts = useMemo(() => {
@@ -1043,17 +1065,9 @@ export default function LaporanPekerjaanClient() {
   // Resizable columns state with localStorage persistence
   const DEFAULT_COL_WIDTHS = useMemo(
     () => ({
-      aksi: 120,
-      task: 240,
-      project: 180,
-      bagian: 120,
-      pic: 110,
-      priority: 95,
-      startDate: 110,
-      endDate: 110,
-      workDays: 90,
-      note: 180,
-      status: 120,
+      aksi: 110,
+      tglOrder: 150,
+      project: 550,
     }),
     []
   );
@@ -1748,128 +1762,53 @@ export default function LaporanPekerjaanClient() {
               <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-600" />
               Memuat data laporan pekerjaan...
             </div>
-          ) : paginatedTasks.length === 0 ? (
+          ) : paginatedOrders.length === 0 ? (
             <div className="py-12 text-center text-slate-400 text-xs">
-              Tidak ada data pekerjaan yang ditemukan.
+              Tidak ada data order pekerjaan yang ditemukan.
             </div>
           ) : (
-            paginatedTasks.map((t, idx) => {
-              const isExpanded = expandedCardIndices.has(idx);
+            paginatedOrders.map((group, idx) => {
+              const totalTask = group.tasks.length;
+              const selesaiTask = group.tasks.filter((t) => (t.status || "").toUpperCase() === "SELESAI").length;
+
               return (
                 <div
                   key={idx}
-                  onClick={() => toggleCardExpand(idx)}
-                  className={`bg-slate-50/80 p-3.5 rounded-xl border transition-all cursor-pointer select-none space-y-2.5 ${
-                    isExpanded
-                      ? "border-emerald-300 ring-2 ring-emerald-500/10 bg-emerald-50/30"
-                      : "border-slate-200/80 hover:border-slate-300 hover:bg-slate-100/50"
-                  }`}
+                  className="bg-slate-50/80 p-3.5 rounded-xl border border-slate-200/80 hover:border-slate-300 hover:bg-slate-100/50 transition-all select-none space-y-2.5"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <h4
-                      className={`text-xs font-bold text-slate-800 leading-snug min-w-0 flex-1 ${
-                        isExpanded ? "break-words" : "line-clamp-2"
-                      }`}
-                    >
-                      {t.task}
+                    <h4 className="text-xs font-bold text-slate-800 leading-snug min-w-0 flex-1 break-words">
+                      {group.project}
                     </h4>
-                    <div className="shrink-0">{getStatusBadge(t.status)}</div>
+                    <span className="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      {selesaiTask}/{totalTask} Selesai
+                    </span>
                   </div>
 
-                  {t.project && (
-                    <p
-                      className={`text-[11px] text-slate-600 font-medium ${
-                        isExpanded ? "break-words" : "truncate"
-                      }`}
-                    >
-                      <span className="text-slate-400">Project:</span> {t.project}
-                    </p>
-                  )}
-
-                  <div className="grid grid-cols-2 gap-2 text-[11px] bg-white p-2.5 rounded-lg border border-slate-200/60">
-                    <div className="min-w-0">
-                      <span className="text-slate-400 block text-[10px]">Bagian</span>
-                      <span
-                        className={`font-semibold text-slate-700 block ${
-                          isExpanded ? "break-words" : "truncate"
-                        }`}
-                      >
-                        {(t as any).bagian || "-"}
-                      </span>
-                    </div>
-                    <div className="min-w-0">
-                      <span className="text-slate-400 block text-[10px]">PIC</span>
-                      <span
-                        className={`font-bold text-emerald-700 block ${
-                          isExpanded ? "break-words" : "truncate"
-                        }`}
-                      >
-                        {t.pic || "-"}
-                      </span>
-                    </div>
-                    <div className="min-w-0">
-                      <span className="text-slate-400 block text-[10px]">Priority</span>
-                      <span className="font-medium text-slate-700 block truncate">
-                        {t.priority || "-"}
-                      </span>
-                    </div>
-                    <div className="min-w-0">
-                      <span className="text-slate-400 block text-[10px]">Work Days</span>
-                      <span className="font-semibold text-slate-700 block truncate">
-                        {t.workDays ? `${t.workDays} hari` : "-"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between text-[10.5px] text-slate-500 pt-1.5 border-t border-slate-200/60 gap-1">
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 bg-white p-2.5 rounded-lg border border-slate-200/60">
                     <div>
-                      <span className="text-slate-400">Periode:</span>{" "}
-                      <span className="font-medium text-slate-600">
-                        {t.startDate || "-"} ~ {t.endDate || "-"}
+                      <span className="text-slate-400 block text-[10px]">Tanggal Order</span>
+                      <span className="font-semibold text-slate-700">
+                        {group.tglOrder || "-"}
                       </span>
                     </div>
-                    {t.note && (
-                      <div
-                        className={`text-slate-500 italic ${
-                          isExpanded ? "break-words" : "truncate max-w-full"
-                        }`}
-                      >
-                        <span className="text-slate-400 not-italic font-medium">
-                          Note:
-                        </span>{" "}
-                        {t.note}
-                      </div>
-                    )}
+                    <div>
+                      <span className="text-slate-400 block text-[10px]">Total Aktivitas</span>
+                      <span className="font-bold text-emerald-700">
+                        {totalTask} Task
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 gap-2">
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openEditModal(t);
-                        }}
-                        className="px-2.5 py-1 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors flex items-center gap-1 cursor-pointer"
-                      >
-                        <Edit2 size={12} />
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (t.id) handleDelete(t.id);
-                        }}
-                        className="px-2.5 py-1 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg border border-rose-200 transition-colors flex items-center gap-1 cursor-pointer"
-                      >
-                        <Trash2 size={12} />
-                        Hapus
-                      </button>
-                    </div>
-                    <div className="text-[9.5px] font-semibold text-emerald-600/80 text-right">
-                      {isExpanded ? "▲ Ciutkan" : "▼ Rincian"}
-                    </div>
+                  <div className="flex items-center justify-end pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedProjectGroup(group)}
+                      className="px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
+                    >
+                      <Eye size={13} />
+                      Detail
+                    </button>
                   </div>
                 </div>
               );
@@ -1887,17 +1826,9 @@ export default function LaporanPekerjaanClient() {
           }`}
           style={
             {
-              "--col-aksi": `${colWidths.aksi || 120}px`,
-              "--col-task": `${colWidths.task}px`,
-              "--col-project": `${colWidths.project}px`,
-              "--col-bagian": `${colWidths.bagian}px`,
-              "--col-pic": `${colWidths.pic}px`,
-              "--col-priority": `${colWidths.priority}px`,
-              "--col-startDate": `${colWidths.startDate}px`,
-              "--col-endDate": `${colWidths.endDate}px`,
-              "--col-workDays": `${colWidths.workDays}px`,
-              "--col-note": `${colWidths.note}px`,
-              "--col-status": `${colWidths.status}px`,
+              "--col-aksi": `${colWidths.aksi || 110}px`,
+              "--col-tglOrder": `${colWidths.tglOrder || 150}px`,
+              "--col-project": `${colWidths.project || 550}px`,
             } as React.CSSProperties
           }
         >
@@ -1906,8 +1837,8 @@ export default function LaporanPekerjaanClient() {
               <tr>
                 <th
                   style={{
-                    width: `var(--col-aksi, ${colWidths.aksi || 120}px)`,
-                    minWidth: `var(--col-aksi, ${colWidths.aksi || 120}px)`,
+                    width: `var(--col-aksi, ${colWidths.aksi || 110}px)`,
+                    minWidth: `var(--col-aksi, ${colWidths.aksi || 110}px)`,
                   }}
                   className="relative px-3 py-2.5 text-center bg-slate-50 sticky top-0 z-10 border-b border-slate-200 select-none group"
                 >
@@ -1919,40 +1850,32 @@ export default function LaporanPekerjaanClient() {
                     title="Geser untuk mengatur lebar kolom"
                   />
                 </th>
-                {renderSortableHeader("task", "Task / Aktivitas")}
+                {renderSortableHeader("tglOrder" as any, "Tanggal Order")}
                 {renderSortableHeader("project", "Project Order")}
-                {renderSortableHeader("bagian", "Bagian")}
-                {renderSortableHeader("pic", "PIC")}
-                {renderSortableHeader("priority", "Priority")}
-                {renderSortableHeader("startDate", "Start Date")}
-                {renderSortableHeader("endDate", "End Date")}
-                {renderSortableHeader("workDays", "Work Days", true)}
-                {renderSortableHeader("note", "Note")}
-                {renderSortableHeader("status", "Status", true)}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {loading ? (
                 <tr>
                   <td
-                    colSpan={11}
+                    colSpan={3}
                     className="px-4 py-16 text-center text-slate-400"
                   >
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-600" />
                     Memuat data laporan pekerjaan...
                   </td>
                 </tr>
-              ) : paginatedTasks.length === 0 ? (
+              ) : paginatedOrders.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={11}
+                    colSpan={3}
                     className="px-4 py-16 text-center text-slate-400"
                   >
-                    Tidak ada data pekerjaan yang ditemukan.
+                    Tidak ada data order pekerjaan yang ditemukan.
                   </td>
                 </tr>
               ) : (
-                paginatedTasks.map((t, idx) => {
+                paginatedOrders.map((group, idx) => {
                   const isSelected = selectedRowIndex === idx;
                   return (
                     <tr
@@ -1973,135 +1896,51 @@ export default function LaporanPekerjaanClient() {
                         }}
                         className="px-2 py-2.5 text-center truncate"
                       >
-                        <div className="flex items-center justify-center gap-1.5 shrink-0">
+                        <div className="flex items-center justify-center">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              openEditModal(t);
+                              setSelectedProjectGroup(group);
                             }}
-                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors shrink-0"
-                            title="Edit Pekerjaan"
+                            className="px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
+                            title="Lihat Detail Task Order"
                           >
-                            <Edit2 size={14} />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (t.id) handleDelete(t.id);
-                            }}
-                            className="p-1.5 text-rose-600 hover:bg-rose-50 rounded transition-colors shrink-0"
-                            title="Hapus Pekerjaan"
-                          >
-                            <Trash2 size={14} />
+                            <Eye size={13} />
+                            Detail
                           </button>
                         </div>
                       </td>
                       <td
-                        title={t.task}
+                        title={group.tglOrder || "-"}
                         style={{
-                          width: "var(--col-task)",
-                          maxWidth: "var(--col-task)",
+                          width: "var(--col-tglOrder)",
+                          maxWidth: "var(--col-tglOrder)",
+                        }}
+                        className="px-3 py-2.5 whitespace-nowrap text-slate-600 truncate font-medium"
+                      >
+                        {group.tglOrder || "-"}
+                      </td>
+                      <td
+                        title={group.project}
+                        style={{
+                          width: "var(--col-project)",
+                          maxWidth: "var(--col-project)",
                         }}
                         className={`px-3 py-2.5 truncate ${
                           isSelected ? "text-emerald-950 font-bold" : "font-semibold text-slate-800"
                         }`}
                       >
-                        {t.task}
+                        <div className="flex items-center gap-2">
+                          <span className="truncate">{group.project}</span>
+                          <span className="shrink-0 text-[10.5px] font-normal px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                            {group.tasks.length} task
+                          </span>
+                        </div>
                       </td>
-                    <td
-                      title={t.project}
-                      style={{
-                        width: "var(--col-project)",
-                        maxWidth: "var(--col-project)",
-                      }}
-                      className="px-3 py-2.5 text-slate-600 truncate"
-                    >
-                      {t.project}
-                    </td>
-                    <td
-                      title={(t as any).bagian || "-"}
-                      style={{
-                        width: "var(--col-bagian)",
-                        maxWidth: "var(--col-bagian)",
-                      }}
-                      className="px-3 py-2.5 text-slate-600 truncate"
-                    >
-                      {(t as any).bagian || "-"}
-                    </td>
-                    <td
-                      title={t.pic}
-                      style={{
-                        width: "var(--col-pic)",
-                        maxWidth: "var(--col-pic)",
-                      }}
-                      className="px-3 py-2.5 font-bold text-emerald-700 truncate"
-                    >
-                      {t.pic}
-                    </td>
-                    <td
-                      title={t.priority}
-                      style={{
-                        width: "var(--col-priority)",
-                        maxWidth: "var(--col-priority)",
-                      }}
-                      className="px-3 py-2.5 text-slate-600 truncate"
-                    >
-                      {t.priority}
-                    </td>
-                    <td
-                      title={t.startDate}
-                      style={{
-                        width: "var(--col-startDate)",
-                        maxWidth: "var(--col-startDate)",
-                      }}
-                      className="px-3 py-2.5 whitespace-nowrap text-slate-500 truncate"
-                    >
-                      {t.startDate}
-                    </td>
-                    <td
-                      title={t.endDate}
-                      style={{
-                        width: "var(--col-endDate)",
-                        maxWidth: "var(--col-endDate)",
-                      }}
-                      className="px-3 py-2.5 whitespace-nowrap text-slate-500 truncate"
-                    >
-                      {t.endDate}
-                    </td>
-                    <td
-                      title={t.workDays ? `${t.workDays} hari` : "-"}
-                      style={{
-                        width: "var(--col-workDays)",
-                        maxWidth: "var(--col-workDays)",
-                      }}
-                      className="px-3 py-2.5 whitespace-nowrap text-center text-slate-600 font-medium truncate"
-                    >
-                      {t.workDays || "-"}
-                    </td>
-                    <td
-                      title={t.note || "-"}
-                      style={{
-                        width: "var(--col-note)",
-                        maxWidth: "var(--col-note)",
-                      }}
-                      className="px-3 py-2.5 text-slate-500 truncate"
-                    >
-                      {t.note || "-"}
-                    </td>
-                    <td
-                      title={t.status}
-                      style={{
-                        width: "var(--col-status)",
-                        maxWidth: "var(--col-status)",
-                      }}
-                      className="px-3 py-2.5 whitespace-nowrap text-center"
-                    >
-                      {getStatusBadge(t.status)}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -2109,9 +1948,9 @@ export default function LaporanPekerjaanClient() {
 
       {/* Footer Sintak Standard TableFooter (Mandiri di luar card tabel, samakan 100% dengan SOPd) */}
       <TableFooter
-        totalCount={filteredTasks.length}
-        currentCount={paginatedTasks.length}
-        label="Task"
+        totalCount={groupedOrders.length}
+        currentCount={paginatedOrders.length}
+        label="Order"
         selectedCount={selectedRowIndex !== null ? 1 : 0}
         onClearSelection={() => setSelectedRowIndex(null)}
         loadTime={loadTime}
@@ -2577,6 +2416,142 @@ export default function LaporanPekerjaanClient() {
                     Pakai Versi Spreadsheet
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </Portal>
+      )}
+
+      {/* Modal Detail Task Order */}
+      {selectedProjectGroup && (
+        <Portal>
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] overflow-hidden">
+              {/* Header Modal */}
+              <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100 bg-slate-50/80 shrink-0">
+                <div className="min-w-0 flex-1 pr-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      {selectedProjectGroup.tglOrder ? `Tgl: ${selectedProjectGroup.tglOrder}` : "Tgl: -"}
+                    </span>
+                    <span className="text-xs text-slate-500 font-medium">
+                      {selectedProjectGroup.tasks.length} Aktivitas Pekerjaan
+                    </span>
+                  </div>
+                  <h3 className="text-sm sm:text-base font-bold text-slate-800 truncate" title={selectedProjectGroup.project}>
+                    {selectedProjectGroup.project}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedProjectGroup(null)}
+                  className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-all cursor-pointer shrink-0"
+                  title="Tutup Modal"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Body: Tabel List Task dari Order tersebut */}
+              <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto p-4 sm:p-6 custom-scrollbar space-y-4">
+                <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                      <tr>
+                        <th className="px-3 py-2.5 text-center w-14">No</th>
+                        <th className="px-3 py-2.5">Task / Aktivitas</th>
+                        <th className="px-3 py-2.5">Bagian</th>
+                        <th className="px-3 py-2.5">PIC</th>
+                        <th className="px-3 py-2.5">Priority</th>
+                        <th className="px-3 py-2.5">Start ~ End</th>
+                        <th className="px-3 py-2.5 text-center">Work Days</th>
+                        <th className="px-3 py-2.5">Status</th>
+                        <th className="px-3 py-2.5">Note</th>
+                        <th className="px-3 py-2.5 text-center w-20">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
+                      {selectedProjectGroup.tasks.map((task, idx) => (
+                        <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="px-3 py-2.5 text-center font-medium text-slate-400">
+                            {idx + 1}
+                          </td>
+                          <td className="px-3 py-2.5 font-semibold text-slate-800">
+                            {task.task}
+                          </td>
+                          <td className="px-3 py-2.5 text-slate-600">
+                            {(task as any).bagian || "-"}
+                          </td>
+                          <td className="px-3 py-2.5 font-bold text-emerald-700">
+                            {task.pic || "-"}
+                          </td>
+                          <td className="px-3 py-2.5 text-slate-600">
+                            {task.priority || "-"}
+                          </td>
+                          <td className="px-3 py-2.5 whitespace-nowrap text-slate-500">
+                            {task.startDate || "-"} ~ {task.endDate || "-"}
+                          </td>
+                          <td className="px-3 py-2.5 text-center font-medium text-slate-600">
+                            {task.workDays ? `${task.workDays} hari` : "-"}
+                          </td>
+                          <td className="px-3 py-2.5 whitespace-nowrap">
+                            {getStatusBadge(task.status)}
+                          </td>
+                          <td className="px-3 py-2.5 text-slate-500 max-w-[180px] truncate" title={task.note}>
+                            {task.note || "-"}
+                          </td>
+                          <td className="px-3 py-2.5 text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedProjectGroup(null);
+                                  openEditModal(task);
+                                }}
+                                className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                                title="Edit Aktivitas Ini"
+                              >
+                                <Edit2 size={13} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  if (task.id) {
+                                    await handleDelete(task.id);
+                                    setSelectedProjectGroup((prev) => {
+                                      if (!prev) return null;
+                                      const remaining = prev.tasks.filter((t) => t.id !== task.id);
+                                      if (remaining.length === 0) return null;
+                                      return { ...prev, tasks: remaining };
+                                    });
+                                  }
+                                }}
+                                className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                                title="Hapus Aktivitas Ini"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Footer Modal */}
+              <div className="flex items-center justify-between px-5 sm:px-6 py-3 border-t border-slate-100 bg-slate-50/80 shrink-0">
+                <span className="text-xs text-slate-500">
+                  Total: <b className="text-slate-800">{selectedProjectGroup.tasks.length}</b> task aktivitas
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedProjectGroup(null)}
+                  className="px-4 py-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl transition-all cursor-pointer shadow-sm"
+                >
+                  Tutup
+                </button>
               </div>
             </div>
           </div>
