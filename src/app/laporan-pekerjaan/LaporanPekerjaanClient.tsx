@@ -150,6 +150,23 @@ const toDisplayDate = (str?: string): string => {
   return str;
 };
 
+const parseDateToDateObj = (str?: string): Date | null => {
+  if (!str || !str.trim()) return null;
+  const time = parseDateToSort(str);
+  return time ? new Date(time) : null;
+};
+
+const formatDateForApi = (val?: Date | string | null): string => {
+  if (!val) return "";
+  if (val instanceof Date) {
+    const day = String(val.getDate()).padStart(2, "0");
+    const month = String(val.getMonth() + 1).padStart(2, "0");
+    const year = val.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+  return toDisplayDate(val);
+};
+
 // Progress & penanda pekerjaan terakhir (SELESAI terakhir)/selanjutnya per order,
 // urutan task berdasarkan tanggal mulai.
 const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
@@ -944,13 +961,13 @@ export default function LaporanPekerjaanClient() {
       return;
     }
 
-    const startDateStr = data.startDate ? toDisplayDate(data.startDate) : "";
-    const endDateStr = data.endDate ? toDisplayDate(data.endDate) : "";
+    const startDateStr = formatDateForApi(data.startDate);
+    const endDateStr = formatDateForApi(data.endDate);
 
     let workDays = "";
     if (data.startDate && data.endDate) {
-      const s = new Date(data.startDate);
-      const e = new Date(data.endDate);
+      const s = data.startDate instanceof Date ? data.startDate : new Date(data.startDate);
+      const e = data.endDate instanceof Date ? data.endDate : new Date(data.endDate);
       const diffTime = e.getTime() - s.getTime();
       const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
       if (diffDays > 0) workDays = String(diffDays);
@@ -1022,13 +1039,13 @@ export default function LaporanPekerjaanClient() {
       return;
     }
 
-    const startDateStr = data.startDate ? toDisplayDate(data.startDate) : "";
-    const endDateStr = data.endDate ? toDisplayDate(data.endDate) : "";
+    const startDateStr = formatDateForApi(data.startDate);
+    const endDateStr = formatDateForApi(data.endDate);
 
     let workDays = "";
     if (data.startDate && data.endDate) {
-      const s = new Date(data.startDate);
-      const e = new Date(data.endDate);
+      const s = data.startDate instanceof Date ? data.startDate : new Date(data.startDate);
+      const e = data.endDate instanceof Date ? data.endDate : new Date(data.endDate);
       const diffTime = e.getTime() - s.getTime();
       const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
       if (diffDays > 0) workDays = String(diffDays);
@@ -2873,6 +2890,24 @@ export default function LaporanPekerjaanClient() {
 // seluruh halaman (grafik, tabel utama ribuan data, dll).
 // ----------------------------------------------------------------------
 
+const fetchPekerjaanForCategory = async (bagian: string): Promise<string[]> => {
+  if (!bagian) return [];
+  const category = BAGIAN_CATEGORY_MAP[bagian];
+  if (!category) return [];
+  try {
+    const res = await fetch(
+      `/api/master-pekerjaan-jurnal-produksi?category=${encodeURIComponent(category)}&all=true`
+    );
+    const json = await res.json();
+    if (json.success && Array.isArray(json.data)) {
+      return json.data.filter((p: any) => p.name).map((p: any) => p.name);
+    }
+  } catch (err) {
+    console.error("Gagal fetch pekerjaan:", err);
+  }
+  return [];
+};
+
 function TaskDetailModal({
   selectedProjectGroup,
   onClose,
@@ -2907,14 +2942,7 @@ function TaskDetailModal({
   return (
     <Portal>
       <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-        <div className="w-full max-w-6xl bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] overflow-hidden">
-          {/* Datalist untuk dropdown PIC cepat */}
-          <datalist id="modal-employee-list">
-            {employeeOptions.map((e, idx) => (
-              <option key={idx} value={e.name || e.label || e} />
-            ))}
-          </datalist>
-
+        <div className="w-full max-w-7xl bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[92vh] overflow-hidden">
           {/* Header Modal */}
           <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100 bg-slate-50/80 shrink-0 gap-3">
             <div className="min-w-0 flex-1 pr-2">
@@ -2938,7 +2966,7 @@ function TaskDetailModal({
                   setIsAddingTask(true);
                   setEditingTaskId(null);
                 }}
-                className="px-3 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
+                className="px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
                 title="Tambah Pekerjaan ke Order ini"
               >
                 <Plus size={14} />
@@ -2958,34 +2986,23 @@ function TaskDetailModal({
 
           {/* Body: Tabel List Task dari Order tersebut */}
           <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto p-4 sm:p-6 custom-scrollbar space-y-4">
-            <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+            <div className="border border-slate-200 rounded-xl overflow-visible shadow-sm">
               <table className="w-full text-left text-xs border-collapse">
                 <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
                   <tr>
                     <th className="px-3 py-2.5 text-center w-12">No</th>
-                    <th className="px-3 py-2.5 min-w-[160px]">Task / Aktivitas</th>
-                    <th className="px-3 py-2.5 w-28">Bagian</th>
-                    <th className="px-3 py-2.5 w-32">PIC</th>
+                    <th className="px-3 py-2.5 w-32">Bagian</th>
+                    <th className="px-3 py-2.5 w-36">PIC</th>
+                    <th className="px-3 py-2.5 min-w-[170px]">Task / Aktivitas</th>
                     <th className="px-3 py-2.5 w-24">Priority</th>
-                    <th className="px-3 py-2.5 w-40">Start ~ End</th>
-                    <th className="px-3 py-2.5 text-center w-20">Work Days</th>
-                    <th className="px-3 py-2.5 w-32">Status</th>
-                    <th className="px-3 py-2.5 min-w-[120px]">Note</th>
+                    <th className="px-3 py-2.5 w-44">Start ~ End</th>
+                    <th className="px-3 py-2.5 text-center w-24">Work Days</th>
+                    <th className="px-3 py-2.5 w-36">Status</th>
+                    <th className="px-3 py-2.5 min-w-[150px]">Note</th>
                     <th className="px-3 py-2.5 text-center w-20">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
-                  {/* Baris Tambah Pekerjaan Baru Inline */}
-                  {isAddingTask && (
-                    <InlineAddRow
-                      onSave={async (data) => {
-                        await onCreateTask(data);
-                        setIsAddingTask(false);
-                      }}
-                      onCancel={() => setIsAddingTask(false)}
-                    />
-                  )}
-
                   {/* List Pekerjaan dari Order */}
                   {sortedTasks.map((task, idx) =>
                     editingTaskId === task.id ? (
@@ -2994,6 +3011,7 @@ function TaskDetailModal({
                         idx={idx}
                         task={task}
                         project={selectedProjectGroup.project}
+                        employeeOptions={employeeOptions}
                         onSave={async (data) => {
                           await onSaveTask(task.id!, data);
                           setEditingTaskId(null);
@@ -3010,17 +3028,17 @@ function TaskDetailModal({
                         <td className="px-3 py-2.5 text-center font-medium text-slate-400">
                           {idx + 1}
                         </td>
+                        <td className="px-3 py-2.5 text-slate-700 font-medium">
+                          {(task as any).bagian || "-"}
+                        </td>
+                        <td className="px-3 py-2.5 font-bold text-emerald-700">
+                          {task.pic || "-"}
+                        </td>
                         <td
                           className="px-3 py-2.5 font-semibold text-slate-800"
                           title={cleanTaskName(task.task, selectedProjectGroup.project) || task.task}
                         >
                           {cleanTaskName(task.task, selectedProjectGroup.project) || task.task}
-                        </td>
-                        <td className="px-3 py-2.5 text-slate-600">
-                          {(task as any).bagian || "-"}
-                        </td>
-                        <td className="px-3 py-2.5 font-bold text-emerald-700">
-                          {task.pic || "-"}
                         </td>
                         <td className="px-3 py-2.5 text-slate-600">
                           {task.priority || "-"}
@@ -3034,7 +3052,7 @@ function TaskDetailModal({
                         <td className="px-3 py-2.5 whitespace-nowrap">
                           {getStatusBadge(task.status)}
                         </td>
-                        <td className="px-3 py-2.5 text-slate-500 max-w-[180px] truncate" title={task.note}>
+                        <td className="px-3 py-2.5 text-slate-600 min-w-[150px] max-w-[260px] break-words whitespace-pre-wrap leading-relaxed">
                           {task.note || "-"}
                         </td>
                         <td className="px-3 py-2.5 text-center">
@@ -3066,6 +3084,18 @@ function TaskDetailModal({
                       </tr>
                     )
                   )}
+
+                  {/* Baris Tambah Pekerjaan Baru di Bawah */}
+                  {isAddingTask && (
+                    <InlineAddRow
+                      employeeOptions={employeeOptions}
+                      onSave={async (data) => {
+                        await onCreateTask(data);
+                        setIsAddingTask(false);
+                      }}
+                      onCancel={() => setIsAddingTask(false)}
+                    />
+                  )}
                 </tbody>
               </table>
             </div>
@@ -3094,6 +3124,7 @@ function InlineEditRow({
   idx,
   task,
   project,
+  employeeOptions,
   onSave,
   onCancel,
   onDelete,
@@ -3101,21 +3132,36 @@ function InlineEditRow({
   idx: number;
   task: SpreadsheetTask;
   project: string;
+  employeeOptions: any[];
   onSave: (data: any) => Promise<void>;
   onCancel: () => void;
   onDelete: () => void;
 }) {
+  const initialBagian = (task as any).bagian || "SETTING";
+  const initialTask = cleanTaskName(task.task, project) || task.task;
+
   const [form, setForm] = useState(() => ({
-    task: cleanTaskName(task.task, project) || task.task,
-    bagian: (task as any).bagian || "SETTING",
+    bagian: initialBagian,
     pic: task.pic || "",
+    task: initialTask,
     priority: task.priority || "Low",
-    startDate: toInputDate(task.startDate),
-    endDate: toInputDate(task.endDate),
+    startDate: parseDateToDateObj(task.startDate),
+    endDate: parseDateToDateObj(task.endDate),
     status: task.status || "BELUM DIKERJAKAN",
     note: task.note || "",
   }));
+
+  const [pekerjaanList, setPekerjaanList] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+
+  // Load master pekerjaan on mount & when bagian changes
+  useEffect(() => {
+    if (form.bagian) {
+      fetchPekerjaanForCategory(form.bagian).then(setPekerjaanList);
+    } else {
+      setPekerjaanList([]);
+    }
+  }, [form.bagian]);
 
   const handleSave = async () => {
     if (saving) return;
@@ -3127,104 +3173,148 @@ function InlineEditRow({
     }
   };
 
+  const workDaysDisplay = useMemo(() => {
+    if (!form.startDate || !form.endDate) return "-";
+    const s = new Date(form.startDate.getFullYear(), form.startDate.getMonth(), form.startDate.getDate());
+    const e = new Date(form.endDate.getFullYear(), form.endDate.getMonth(), form.endDate.getDate());
+    const diffDays = Math.round((e.getTime() - s.getTime()) / 86400000) + 1;
+    return diffDays > 0 ? `${diffDays} hari` : "-";
+  }, [form.startDate, form.endDate]);
+
+  const taskOptions = useMemo(() => {
+    const list = [...pekerjaanList];
+    if (form.task && !list.includes(form.task)) {
+      list.unshift(form.task);
+    }
+    return list.map((p) => ({ value: p, label: p }));
+  }, [pekerjaanList, form.task]);
+
+  const picOptions = useMemo(() => {
+    return employeeOptions
+      .filter((e) => e.name)
+      .map((e) => ({ value: e.name, label: e.name }));
+  }, [employeeOptions]);
+
   return (
-    <tr className="bg-sky-50/80 border-y-2 border-sky-300">
-      <td className="px-2 py-2 text-center font-medium text-slate-400 text-xs">
+    <tr className="bg-sky-50/90 border-y-2 border-sky-300">
+      <td className="px-2.5 py-2.5 text-center font-bold text-sky-700 text-xs">
         {idx + 1}
       </td>
+      {/* 1. Bagian */}
       <td className="px-2 py-2">
-        <input
-          type="text"
-          value={form.task}
-          onChange={(e) => setForm((p) => ({ ...p, task: e.target.value }))}
-          className="w-full px-2 py-1 text-xs border border-sky-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-sky-500 font-medium"
-        />
-      </td>
-      <td className="px-2 py-2">
-        <select
+        <SquareDropdown
+          options={BAGIAN_LIST.map((b) => ({ value: b, label: b }))}
           value={form.bagian}
-          onChange={(e) => setForm((p) => ({ ...p, bagian: e.target.value }))}
-          className="w-full px-1.5 py-1 text-xs border border-sky-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-sky-500"
-        >
-          {BAGIAN_LIST.map((b) => (
-            <option key={b} value={b}>
-              {b}
-            </option>
-          ))}
-        </select>
-      </td>
-      <td className="px-2 py-2">
-        <input
-          list="modal-employee-list"
-          type="text"
-          value={form.pic}
-          onChange={(e) => setForm((p) => ({ ...p, pic: e.target.value }))}
-          className="w-full px-2 py-1 text-xs border border-sky-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+          onChange={(val) => {
+            setForm((p) => ({ ...p, bagian: val, task: "" }));
+          }}
+          searchPlaceholder="Cari Bagian..."
+          widthClass="w-full min-w-[130px]"
         />
       </td>
+      {/* 2. PIC */}
       <td className="px-2 py-2">
-        <select
-          value={form.priority}
-          onChange={(e) => setForm((p) => ({ ...p, priority: e.target.value }))}
-          className="w-full px-1.5 py-1 text-xs border border-sky-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-sky-500"
-        >
-          <option value="Low">Low</option>
-          <option value="Medium">Medium</option>
-          <option value="High">High</option>
-        </select>
+        <SquareDropdown
+          options={picOptions}
+          value={form.pic}
+          onChange={(val) => setForm((p) => ({ ...p, pic: val }))}
+          searchPlaceholder="Cari PIC..."
+          widthClass="w-full min-w-[150px]"
+        />
       </td>
+      {/* 3. Task / Aktivitas */}
       <td className="px-2 py-2">
-        <div className="flex items-center gap-1">
-          <input
-            type="date"
-            value={form.startDate}
-            onChange={(e) => setForm((p) => ({ ...p, startDate: e.target.value }))}
-            className="w-full px-1 py-0.5 text-[11px] border border-sky-400 rounded-md bg-white focus:outline-none"
-          />
-          <span className="text-slate-400 text-xs">~</span>
-          <input
-            type="date"
-            value={form.endDate}
-            onChange={(e) => setForm((p) => ({ ...p, endDate: e.target.value }))}
-            className="w-full px-1 py-0.5 text-[11px] border border-sky-400 rounded-md bg-white focus:outline-none"
-          />
+        <SquareDropdown
+          options={
+            taskOptions.length > 0
+              ? taskOptions
+              : [{ value: "", label: "-- Pilih Bagian dulu --" }]
+          }
+          value={form.task}
+          onChange={(val) => setForm((p) => ({ ...p, task: val }))}
+          searchPlaceholder="Cari Task / Pekerjaan..."
+          widthClass="w-full min-w-[170px]"
+        />
+      </td>
+      {/* 4. Priority */}
+      <td className="px-2 py-2">
+        <SquareDropdown
+          options={[
+            { value: "Low", label: "Low" },
+            { value: "Medium", label: "Medium" },
+            { value: "High", label: "High" },
+          ]}
+          value={form.priority}
+          onChange={(val) => setForm((p) => ({ ...p, priority: val }))}
+          searchPlaceholder="Priority..."
+          widthClass="w-full min-w-[105px]"
+        />
+      </td>
+      {/* 5. Start ~ End */}
+      <td className="px-2 py-2">
+        <div className="flex items-center gap-1 min-w-[210px]">
+          <div className="flex-1 min-w-[95px]">
+            <DatePicker
+              name="start_date"
+              value={form.startDate}
+              onChange={(d) => setForm((p) => ({ ...p, startDate: d }))}
+              usePortal={true}
+            />
+          </div>
+          <span className="text-slate-400 text-xs font-semibold">~</span>
+          <div className="flex-1 min-w-[95px]">
+            <DatePicker
+              name="end_date"
+              value={form.endDate}
+              onChange={(d) => setForm((p) => ({ ...p, endDate: d }))}
+              usePortal={true}
+            />
+          </div>
         </div>
       </td>
-      <td className="px-2 py-2 text-center">
-        <span className="text-[11px] font-semibold text-sky-700">
-          {form.startDate && form.endDate
-            ? `${Math.max(
-                1,
-                Math.round(
-                  (new Date(form.endDate).getTime() -
-                    new Date(form.startDate).getTime()) /
-                    86400000
-                ) + 1
-              )} hr`
-            : "-"}
+      {/* 6. Work Days */}
+      <td className="px-2 py-2 text-center whitespace-nowrap">
+        <span className="text-[11px] font-bold text-sky-700">
+          {workDaysDisplay}
         </span>
       </td>
+      {/* 7. Status */}
       <td className="px-2 py-2">
-        <select
+        <SquareDropdown
+          options={[
+            { value: "BELUM DIKERJAKAN", label: "BELUM DIKERJAKAN" },
+            { value: "IN PROGRESS", label: "IN PROGRESS" },
+            { value: "PENDING", label: "PENDING" },
+            { value: "CANCEL", label: "CANCEL" },
+            { value: "SELESAI", label: "SELESAI" },
+          ]}
           value={form.status}
-          onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))}
-          className="w-full px-1.5 py-1 text-xs border border-sky-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-sky-500"
-        >
-          <option value="BELUM DIKERJAKAN">BELUM DIKERJAKAN</option>
-          <option value="IN PROGRESS">IN PROGRESS</option>
-          <option value="PENDING">PENDING</option>
-          <option value="CANCEL">CANCEL</option>
-          <option value="SELESAI">SELESAI</option>
-        </select>
-      </td>
-      <td className="px-2 py-2">
-        <input
-          type="text"
-          value={form.note}
-          onChange={(e) => setForm((p) => ({ ...p, note: e.target.value }))}
-          className="w-full px-2 py-1 text-xs border border-sky-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+          onChange={(val) => setForm((p) => ({ ...p, status: val }))}
+          searchPlaceholder="Status..."
+          widthClass="w-full min-w-[150px]"
         />
       </td>
+      {/* 8. Note */}
+      <td className="px-2 py-2">
+        <textarea
+          value={form.note}
+          rows={1}
+          placeholder="Catatan..."
+          onChange={(e) => {
+            setForm((p) => ({ ...p, note: e.target.value }));
+            e.target.style.height = "auto";
+            e.target.style.height = `${e.target.scrollHeight}px`;
+          }}
+          ref={(el) => {
+            if (el) {
+              el.style.height = "auto";
+              el.style.height = `${el.scrollHeight}px`;
+            }
+          }}
+          className="w-full min-w-[150px] px-2 py-1.5 text-xs border border-sky-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-sky-500 custom-scrollbar resize-none break-words leading-relaxed"
+        />
+      </td>
+      {/* 9. Aksi */}
       <td className="px-2 py-2 text-center">
         <div className="flex items-center justify-center gap-1">
           <button
@@ -3259,23 +3349,35 @@ function InlineEditRow({
 }
 
 function InlineAddRow({
+  employeeOptions,
   onSave,
   onCancel,
 }: {
+  employeeOptions: any[];
   onSave: (data: any) => Promise<void>;
   onCancel: () => void;
 }) {
   const [form, setForm] = useState({
-    task: "",
     bagian: "SETTING",
     pic: "",
+    task: "",
     priority: "Low",
-    startDate: "",
-    endDate: "",
+    startDate: new Date() as Date | null,
+    endDate: null as Date | null,
     status: "BELUM DIKERJAKAN",
     note: "",
   });
+
+  const [pekerjaanList, setPekerjaanList] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (form.bagian) {
+      fetchPekerjaanForCategory(form.bagian).then(setPekerjaanList);
+    } else {
+      setPekerjaanList([]);
+    }
+  }, [form.bagian]);
 
   const handleSave = async () => {
     if (saving) return;
@@ -3287,108 +3389,148 @@ function InlineAddRow({
     }
   };
 
+  const workDaysDisplay = useMemo(() => {
+    if (!form.startDate || !form.endDate) return "-";
+    const s = new Date(form.startDate.getFullYear(), form.startDate.getMonth(), form.startDate.getDate());
+    const e = new Date(form.endDate.getFullYear(), form.endDate.getMonth(), form.endDate.getDate());
+    const diffDays = Math.round((e.getTime() - s.getTime()) / 86400000) + 1;
+    return diffDays > 0 ? `${diffDays} hari` : "-";
+  }, [form.startDate, form.endDate]);
+
+  const taskOptions = useMemo(() => {
+    const list = [...pekerjaanList];
+    if (form.task && !list.includes(form.task)) {
+      list.unshift(form.task);
+    }
+    return list.map((p) => ({ value: p, label: p }));
+  }, [pekerjaanList, form.task]);
+
+  const picOptions = useMemo(() => {
+    return employeeOptions
+      .filter((e) => e.name)
+      .map((e) => ({ value: e.name, label: e.name }));
+  }, [employeeOptions]);
+
   return (
-    <tr className="bg-emerald-50/80 border-b-2 border-emerald-300">
-      <td className="px-2 py-2 text-center font-bold text-emerald-700 text-xs">
+    <tr className="bg-emerald-50/90 border-y-2 border-emerald-300">
+      <td className="px-2.5 py-2.5 text-center font-bold text-emerald-700 text-xs">
         +
       </td>
+      {/* 1. Bagian */}
       <td className="px-2 py-2">
-        <input
-          type="text"
-          placeholder="Nama Pekerjaan..."
-          value={form.task}
-          onChange={(e) => setForm((p) => ({ ...p, task: e.target.value }))}
-          className="w-full px-2 py-1 text-xs border border-emerald-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 font-medium"
-          autoFocus
-        />
-      </td>
-      <td className="px-2 py-2">
-        <select
+        <SquareDropdown
+          options={BAGIAN_LIST.map((b) => ({ value: b, label: b }))}
           value={form.bagian}
-          onChange={(e) => setForm((p) => ({ ...p, bagian: e.target.value }))}
-          className="w-full px-1.5 py-1 text-xs border border-emerald-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-        >
-          {BAGIAN_LIST.map((b) => (
-            <option key={b} value={b}>
-              {b}
-            </option>
-          ))}
-        </select>
-      </td>
-      <td className="px-2 py-2">
-        <input
-          list="modal-employee-list"
-          type="text"
-          placeholder="Pilih / isi PIC..."
-          value={form.pic}
-          onChange={(e) => setForm((p) => ({ ...p, pic: e.target.value }))}
-          className="w-full px-2 py-1 text-xs border border-emerald-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+          onChange={(val) => {
+            setForm((p) => ({ ...p, bagian: val, task: "" }));
+          }}
+          searchPlaceholder="Cari Bagian..."
+          widthClass="w-full min-w-[130px]"
         />
       </td>
+      {/* 2. PIC */}
       <td className="px-2 py-2">
-        <select
-          value={form.priority}
-          onChange={(e) => setForm((p) => ({ ...p, priority: e.target.value }))}
-          className="w-full px-1.5 py-1 text-xs border border-emerald-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-        >
-          <option value="Low">Low</option>
-          <option value="Medium">Medium</option>
-          <option value="High">High</option>
-        </select>
+        <SquareDropdown
+          options={picOptions}
+          value={form.pic}
+          onChange={(val) => setForm((p) => ({ ...p, pic: val }))}
+          searchPlaceholder="Cari PIC..."
+          widthClass="w-full min-w-[150px]"
+        />
       </td>
+      {/* 3. Task / Aktivitas */}
       <td className="px-2 py-2">
-        <div className="flex items-center gap-1">
-          <input
-            type="date"
-            value={form.startDate}
-            onChange={(e) => setForm((p) => ({ ...p, startDate: e.target.value }))}
-            className="w-full px-1 py-0.5 text-[11px] border border-emerald-400 rounded-md bg-white focus:outline-none"
-          />
-          <span className="text-slate-400 text-xs">~</span>
-          <input
-            type="date"
-            value={form.endDate}
-            onChange={(e) => setForm((p) => ({ ...p, endDate: e.target.value }))}
-            className="w-full px-1 py-0.5 text-[11px] border border-emerald-400 rounded-md bg-white focus:outline-none"
-          />
+        <SquareDropdown
+          options={
+            taskOptions.length > 0
+              ? taskOptions
+              : [{ value: "", label: "-- Pilih Bagian dulu --" }]
+          }
+          value={form.task}
+          onChange={(val) => setForm((p) => ({ ...p, task: val }))}
+          searchPlaceholder="Cari Task / Pekerjaan..."
+          widthClass="w-full min-w-[170px]"
+        />
+      </td>
+      {/* 4. Priority */}
+      <td className="px-2 py-2">
+        <SquareDropdown
+          options={[
+            { value: "Low", label: "Low" },
+            { value: "Medium", label: "Medium" },
+            { value: "High", label: "High" },
+          ]}
+          value={form.priority}
+          onChange={(val) => setForm((p) => ({ ...p, priority: val }))}
+          searchPlaceholder="Priority..."
+          widthClass="w-full min-w-[105px]"
+        />
+      </td>
+      {/* 5. Start ~ End */}
+      <td className="px-2 py-2">
+        <div className="flex items-center gap-1 min-w-[210px]">
+          <div className="flex-1 min-w-[95px]">
+            <DatePicker
+              name="new_start_date"
+              value={form.startDate}
+              onChange={(d) => setForm((p) => ({ ...p, startDate: d }))}
+              usePortal={true}
+            />
+          </div>
+          <span className="text-slate-400 text-xs font-semibold">~</span>
+          <div className="flex-1 min-w-[95px]">
+            <DatePicker
+              name="new_end_date"
+              value={form.endDate}
+              onChange={(d) => setForm((p) => ({ ...p, endDate: d }))}
+              usePortal={true}
+            />
+          </div>
         </div>
       </td>
-      <td className="px-2 py-2 text-center">
-        <span className="text-[11px] font-semibold text-emerald-700">
-          {form.startDate && form.endDate
-            ? `${Math.max(
-                1,
-                Math.round(
-                  (new Date(form.endDate).getTime() -
-                    new Date(form.startDate).getTime()) /
-                    86400000
-                ) + 1
-              )} hr`
-            : "-"}
+      {/* 6. Work Days */}
+      <td className="px-2 py-2 text-center whitespace-nowrap">
+        <span className="text-[11px] font-bold text-emerald-700">
+          {workDaysDisplay}
         </span>
       </td>
+      {/* 7. Status */}
       <td className="px-2 py-2">
-        <select
+        <SquareDropdown
+          options={[
+            { value: "BELUM DIKERJAKAN", label: "BELUM DIKERJAKAN" },
+            { value: "IN PROGRESS", label: "IN PROGRESS" },
+            { value: "PENDING", label: "PENDING" },
+            { value: "CANCEL", label: "CANCEL" },
+            { value: "SELESAI", label: "SELESAI" },
+          ]}
           value={form.status}
-          onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))}
-          className="w-full px-1.5 py-1 text-xs border border-emerald-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-        >
-          <option value="BELUM DIKERJAKAN">BELUM DIKERJAKAN</option>
-          <option value="IN PROGRESS">IN PROGRESS</option>
-          <option value="PENDING">PENDING</option>
-          <option value="CANCEL">CANCEL</option>
-          <option value="SELESAI">SELESAI</option>
-        </select>
-      </td>
-      <td className="px-2 py-2">
-        <input
-          type="text"
-          placeholder="Catatan..."
-          value={form.note}
-          onChange={(e) => setForm((p) => ({ ...p, note: e.target.value }))}
-          className="w-full px-2 py-1 text-xs border border-emerald-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+          onChange={(val) => setForm((p) => ({ ...p, status: val }))}
+          searchPlaceholder="Status..."
+          widthClass="w-full min-w-[150px]"
         />
       </td>
+      {/* 8. Note */}
+      <td className="px-2 py-2">
+        <textarea
+          value={form.note}
+          rows={1}
+          placeholder="Catatan..."
+          onChange={(e) => {
+            setForm((p) => ({ ...p, note: e.target.value }));
+            e.target.style.height = "auto";
+            e.target.style.height = `${e.target.scrollHeight}px`;
+          }}
+          ref={(el) => {
+            if (el) {
+              el.style.height = "auto";
+              el.style.height = `${el.scrollHeight}px`;
+            }
+          }}
+          className="w-full min-w-[150px] px-2 py-1.5 text-xs border border-emerald-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 custom-scrollbar resize-none break-words leading-relaxed"
+        />
+      </td>
+      {/* 9. Aksi */}
       <td className="px-2 py-2 text-center">
         <div className="flex items-center justify-center gap-1">
           <button
