@@ -124,7 +124,11 @@ const fmtTglOrder = (s?: string): string => {
 
 // Progress & penanda pekerjaan terakhir (SELESAI terakhir)/selanjutnya per order,
 // urutan task berdasarkan tanggal mulai.
-const summarizeOrderTasks = (tasks: SpreadsheetTask[]) => {
+const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
+  const cleanName = (name: string) =>
+    project && name && name.includes(project)
+      ? name.replace(project, "").replace(/\s+/g, " ").trim()
+      : name;
   const sorted = [...tasks].sort(
     (a, b) => parseDateToSort(a.startDate || "") - parseDateToSort(b.startDate || "")
   );
@@ -144,11 +148,14 @@ const summarizeOrderTasks = (tasks: SpreadsheetTask[]) => {
   return {
     progressPct: total > 0 ? Math.round((selesaiCount / total) * 100) : 0,
     // ponytail: lastIdx -1 (belum ada yg selesai) → selanjutnya = task pertama
-    pekerjaanTerakhir: lastIdx >= 0 ? sorted[lastIdx].task || "" : "",
+    pekerjaanTerakhir: lastIdx >= 0 ? cleanName(sorted[lastIdx].task || "") : "",
     pekerjaanSelanjutnya:
-      lastIdx + 1 < total ? sorted[lastIdx + 1].task || "" : "",
+      lastIdx + 1 < total ? cleanName(sorted[lastIdx + 1].task || "") : "",
   };
 };
+
+// Tanggal kosong/tak valid = Infinity agar selalu urut paling akhir
+const tglOrderSortTime = (s?: string) => parseDateToSort(s || "") || Number.MAX_SAFE_INTEGER;
 
 const fmtNumber = (n: number) =>
   Number(n).toLocaleString("id-ID", { maximumFractionDigits: 0 });
@@ -992,7 +999,7 @@ export default function LaporanPekerjaanClient() {
 
     return Array.from(map.values()).map((g) => ({
       ...g,
-      ...summarizeOrderTasks(g.tasks),
+      ...summarizeOrderTasks(g.tasks, g.project),
     }));
   }, [filteredTasks]);
 
@@ -1001,16 +1008,16 @@ export default function LaporanPekerjaanClient() {
   const sortedGroupedOrders = useMemo(() => {
     if (!sortField) {
       return [...groupedOrders].sort((a, b) => {
-        const timeA = parseDateToSort(a.tglOrder);
-        const timeB = parseDateToSort(b.tglOrder);
+        const timeA = tglOrderSortTime(a.tglOrder);
+        const timeB = tglOrderSortTime(b.tglOrder);
         if (timeA !== timeB) return timeA - timeB;
         return (a.project || "").localeCompare(b.project || "", "id", { numeric: true });
       });
     }
     return [...groupedOrders].sort((a, b) => {
       if (sortField === "tglOrder") {
-        const timeA = parseDateToSort(a.tglOrder);
-        const timeB = parseDateToSort(b.tglOrder);
+        const timeA = tglOrderSortTime(a.tglOrder);
+        const timeB = tglOrderSortTime(b.tglOrder);
         if (timeA !== timeB) {
           return sortOrder === "asc" ? timeA - timeB : timeB - timeA;
         }
@@ -1943,7 +1950,10 @@ export default function LaporanPekerjaanClient() {
             } as React.CSSProperties
           }
         >
-          <table className="w-full text-left text-xs border-collapse table-fixed">
+          <table
+            className="text-left text-xs border-collapse table-fixed"
+            style={{ width: "max-content", minWidth: "100%" }}
+          >
             <thead className="sticky top-0 z-20 bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 shadow-sm">
               <tr>
                 <th
