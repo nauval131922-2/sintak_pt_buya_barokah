@@ -130,7 +130,11 @@ const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
       ? name.replace(project, "").replace(/\s+/g, " ").trim()
       : name;
   const sorted = [...tasks].sort(
-    (a, b) => parseDateToSort(a.startDate || "") - parseDateToSort(b.startDate || "")
+    (a, b) =>
+      parseDateToSort(a.startDate || "") -
+        parseDateToSort(b.startDate || "") ||
+      // ponytail: tanggal sama/kosong → ikuti urutan asli data (id asc)
+      a.id - b.id
   );
   const total = sorted.length;
   const selesaiCount = sorted.filter(
@@ -2697,7 +2701,8 @@ export default function LaporanPekerjaanClient() {
                         .sort(
                           (a, b) =>
                             parseDateToSort(a.startDate || "") -
-                            parseDateToSort(b.startDate || "")
+                              parseDateToSort(b.startDate || "") ||
+                            a.id - b.id
                         )
                         .map((task, idx) => (
                         <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
