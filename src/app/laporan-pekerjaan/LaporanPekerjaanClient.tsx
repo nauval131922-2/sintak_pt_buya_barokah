@@ -463,7 +463,7 @@ export default function LaporanPekerjaanClient() {
   // Pagination & Sorting
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize] = useState<number>(50);
-  const [sortField, setSortField] = useState<keyof SpreadsheetTask | null>("tglOrder");
+  const [sortField, setSortField] = useState<keyof SpreadsheetTask | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   // Mobile card expand state & Table row selection state
@@ -510,16 +510,21 @@ export default function LaporanPekerjaanClient() {
     }
   };
 
-  // Auto pindah halaman berikutnya saat wheel ke bawah di dasar tabel
+  // Auto pindah halaman saat overscroll: wheel bawah di dasar → next, wheel atas di puncak → prev
   const handleTableWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     const el = tableContainerRef.current;
-    if (!el || e.deltaY <= 0) return;
-    if (el.scrollTop + el.clientHeight < el.scrollHeight - 2) return;
-    if (currentPage >= totalPages) return;
+    if (!el) return;
+    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
+    const atTop = el.scrollTop <= 0;
+    const goNext = e.deltaY > 0 && atBottom && currentPage < totalPages;
+    const goPrev = e.deltaY < 0 && atTop && currentPage > 1;
+    if (!goNext && !goPrev) return;
     const now = Date.now();
     if (now - lastAutoPageRef.current < 600) return;
     lastAutoPageRef.current = now;
-    setCurrentPage((p) => Math.min(p + 1, totalPages));
+    setCurrentPage((p) =>
+      goNext ? Math.min(p + 1, totalPages) : Math.max(p - 1, 1)
+    );
   };
 
   const fetchData = useCallback(async (force = false) => {
