@@ -122,13 +122,37 @@ const fmtTglOrder = (s?: string): string => {
   });
 };
 
+const cleanTaskName = (name?: string, project?: string) => {
+  if (!name) return "";
+  if (!project) return name;
+  return name.includes(project)
+    ? name.replace(project, "").replace(/\s+/g, " ").trim()
+    : name;
+};
+
+const toInputDate = (str?: string): string => {
+  if (!str || !str.trim()) return "";
+  const time = parseDateToSort(str);
+  if (!time) return "";
+  const d = new Date(time);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+const toDisplayDate = (str?: string): string => {
+  if (!str || !str.trim()) return "";
+  const parts = str.split("-");
+  if (parts.length === 3) {
+    return `${parts[2]}/${parts[1]}/${parts[0]}`; // DD/MM/YYYY
+  }
+  return str;
+};
+
 // Progress & penanda pekerjaan terakhir (SELESAI terakhir)/selanjutnya per order,
 // urutan task berdasarkan tanggal mulai.
 const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
-  const cleanName = (name: string) =>
-    project && name && name.includes(project)
-      ? name.replace(project, "").replace(/\s+/g, " ").trim()
-      : name;
   const sorted = [...tasks].sort(
     (a, b) =>
       parseDateToSort(a.startDate || "") -
@@ -158,9 +182,9 @@ const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
   return {
     progressPct: total > 0 ? Math.round((selesaiCount / total) * 100) : 0,
     // ponytail: lastIdx -1 (belum ada yg selesai) → selanjutnya = task pertama
-    pekerjaanTerakhir: lastIdx >= 0 ? cleanName(sorted[lastIdx].task || "") : "",
+    pekerjaanTerakhir: lastIdx >= 0 ? cleanTaskName(sorted[lastIdx].task || "", project) : "",
     pekerjaanSelanjutnya:
-      nextIdx < total ? cleanName(sorted[nextIdx].task || "") : "",
+      nextIdx < total ? cleanTaskName(sorted[nextIdx].task || "", project) : "",
   };
 };
 
@@ -379,6 +403,30 @@ export default function LaporanPekerjaanClient() {
     tglOrder: string;
     tasks: SpreadsheetTask[];
   } | null>(null);
+
+  // Modal Inline Edit & Add Task state
+  const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
+  const [inlineEditData, setInlineEditData] = useState({
+    task: "",
+    bagian: "SETTING",
+    pic: "",
+    priority: "Low",
+    startDate: "",
+    endDate: "",
+    status: "BELUM DIKERJAKAN",
+    note: "",
+  });
+  const [isAddingTask, setIsAddingTask] = useState<boolean>(false);
+  const [newTaskData, setNewTaskData] = useState({
+    task: "",
+    bagian: "SETTING",
+    pic: "",
+    priority: "Low",
+    startDate: "",
+    endDate: "",
+    status: "BELUM DIKERJAKAN",
+    note: "",
+  });
 
   // Filters & Analytics state
   const [selectedPic, setSelectedPic] = useState<string>("ALL");
@@ -613,6 +661,7 @@ export default function LaporanPekerjaanClient() {
   // Initial fetch on mount
   useEffect(() => {
     fetchData();
+    fetchEmployeeOptions();
   }, [fetchData]);
 
   // CRUD Handlers
@@ -860,6 +909,214 @@ export default function LaporanPekerjaanClient() {
       if (json.success) {
         toast.success("Data pekerjaan berhasil dihapus!");
         await fetchData();
+      } else {
+        toast.error(json.error || "Gagal menghapus data");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Terjadi kesalahan");
+    }
+  };
+
+  // Modal Detail: Handlers untuk Inline Edit & Tambah Pekerjaan
+  const startInlineEdit = (task: SpreadsheetTask) => {
+    const proj = selectedProjectGroup?.project || "";
+    const cleanedTask = cleanTaskName(task.task, proj) || task.task;
+    setEditingTaskId(task.id || null);
+    setInlineEditData({
+      task: cleanedTask,
+      bagian: (task as any).bagian || "SETTING",
+      pic: task.pic || "",
+      priority: task.priority || "Low",
+      startDate: toInputDate(task.startDate),
+      endDate: toInputDate(task.endDate),
+      status: task.status || "BELUM DIKERJAKAN",
+      note: task.note || "",
+    });
+  };
+
+  const handleSaveInlineEdit = async (taskId: number) => {
+    if (!inlineEditData.task.trim()) {
+      toast.error("Nama pekerjaan wajib diisi");
+      return;
+    }
+
+    const startDateStr = inlineEditData.startDate ? toDisplayDate(inlineEditData.startDate) : "";
+    const endDateStr = inlineEditData.endDate ? toDisplayDate(inlineEditData.endDate) : "";
+
+    let workDays = "";
+    if (inlineEditData.startDate && inlineEditData.endDate) {
+      const s = new Date(inlineEditData.startDate);
+      const e = new Date(inlineEditData.endDate);
+      const diffTime = e.getTime() - s.getTime();
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      if (diffDays > 0) workDays = String(diffDays);
+    }
+
+    const proj = selectedProjectGroup?.project || "";
+    const fullTaskName = inlineEditData.task.trim();
+    const savedTaskName = proj && !fullTaskName.includes(proj)
+      ? `${fullTaskName} ${proj}`
+      : fullTaskName;
+
+    try {
+      const res = await fetch("/api/laporan-pekerjaan", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: taskId,
+          task: savedTaskName,
+          project: proj,
+          division: "",
+          bagian: inlineEditData.bagian,
+          pic: inlineEditData.pic,
+          priority: inlineEditData.priority || "Low",
+          startDate: startDateStr,
+          endDate: endDateStr,
+          workDays: workDays,
+          note: inlineEditData.note,
+          status: inlineEditData.status || "BELUM DIKERJAKAN",
+        }),
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        toast.success("Pekerjaan berhasil diperbarui!");
+        setEditingTaskId(null);
+        await fetchData();
+        setSelectedProjectGroup((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            tasks: prev.tasks.map((t) =>
+              t.id === taskId
+                ? {
+                    ...t,
+                    task: savedTaskName,
+                    bagian: inlineEditData.bagian,
+                    pic: inlineEditData.pic,
+                    priority: inlineEditData.priority,
+                    startDate: startDateStr,
+                    endDate: endDateStr,
+                    workDays: workDays,
+                    status: inlineEditData.status,
+                    note: inlineEditData.note,
+                  }
+                : t
+            ),
+          };
+        });
+      } else {
+        toast.error(json.error || "Gagal menyimpan perubahan");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Terjadi kesalahan");
+    }
+  };
+
+  const handleCreateInlineTask = async () => {
+    if (!newTaskData.task.trim()) {
+      toast.error("Nama pekerjaan wajib diisi");
+      return;
+    }
+
+    const startDateStr = newTaskData.startDate ? toDisplayDate(newTaskData.startDate) : "";
+    const endDateStr = newTaskData.endDate ? toDisplayDate(newTaskData.endDate) : "";
+
+    let workDays = "";
+    if (newTaskData.startDate && newTaskData.endDate) {
+      const s = new Date(newTaskData.startDate);
+      const e = new Date(newTaskData.endDate);
+      const diffTime = e.getTime() - s.getTime();
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      if (diffDays > 0) workDays = String(diffDays);
+    }
+
+    const proj = selectedProjectGroup?.project || "";
+    const fullTaskName = newTaskData.task.trim();
+    const savedTaskName = proj && !fullTaskName.includes(proj)
+      ? `${fullTaskName} ${proj}`
+      : fullTaskName;
+
+    try {
+      const res = await fetch("/api/laporan-pekerjaan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          task: savedTaskName,
+          project: proj,
+          division: "",
+          bagian: newTaskData.bagian || "SETTING",
+          pic: newTaskData.pic,
+          priority: newTaskData.priority || "Low",
+          startDate: startDateStr,
+          endDate: endDateStr,
+          workDays: workDays,
+          note: newTaskData.note,
+          status: newTaskData.status || "BELUM DIKERJAKAN",
+        }),
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        toast.success("Pekerjaan berhasil ditambahkan ke order!");
+        setIsAddingTask(false);
+        setNewTaskData({
+          task: "",
+          bagian: "SETTING",
+          pic: "",
+          priority: "Low",
+          startDate: "",
+          endDate: "",
+          status: "BELUM DIKERJAKAN",
+          note: "",
+        });
+        await fetchData();
+        if (json.id) {
+          const createdTask: SpreadsheetTask = {
+            id: json.id,
+            task: savedTaskName,
+            project: proj,
+            division: "",
+            bagian: newTaskData.bagian || "SETTING",
+            pic: newTaskData.pic,
+            priority: newTaskData.priority || "Low",
+            startDate: startDateStr,
+            endDate: endDateStr,
+            workDays: workDays,
+            note: newTaskData.note,
+            status: newTaskData.status || "BELUM DIKERJAKAN",
+            source: "sintak",
+          };
+          setSelectedProjectGroup((prev) => {
+            if (!prev) return null;
+            return {
+              ...prev,
+              tasks: [...prev.tasks, createdTask],
+            };
+          });
+        }
+      } else {
+        toast.error(json.error || "Gagal menambahkan pekerjaan");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Terjadi kesalahan");
+    }
+  };
+
+  const handleDeleteInlineTask = async (taskId: number) => {
+    if (!confirm("Yakin ingin menghapus aktivitas pekerjaan ini?")) return;
+    try {
+      const res = await fetch(`/api/laporan-pekerjaan?id=${taskId}`, { method: "DELETE" });
+      const json = await res.json();
+      if (json.success) {
+        toast.success("Pekerjaan berhasil dihapus");
+        if (editingTaskId === taskId) setEditingTaskId(null);
+        await fetchData();
+        setSelectedProjectGroup((prev) => {
+          if (!prev) return null;
+          const remaining = prev.tasks.filter((t) => t.id !== taskId);
+          return { ...prev, tasks: remaining };
+        });
       } else {
         toast.error(json.error || "Gagal menghapus data");
       }
@@ -2652,10 +2909,17 @@ export default function LaporanPekerjaanClient() {
       {selectedProjectGroup && (
         <Portal>
           <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] overflow-hidden">
+            <div className="w-full max-w-6xl bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] overflow-hidden">
+              {/* Datalist untuk dropdown PIC cepat */}
+              <datalist id="modal-employee-list">
+                {employeeOptions.map((e, idx) => (
+                  <option key={idx} value={e.name || e.label || e} />
+                ))}
+              </datalist>
+
               {/* Header Modal */}
-              <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100 bg-slate-50/80 shrink-0">
-                <div className="min-w-0 flex-1 pr-3">
+              <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100 bg-slate-50/80 shrink-0 gap-3">
+                <div className="min-w-0 flex-1 pr-2">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-100 text-emerald-800 border border-emerald-200">
                       {selectedProjectGroup.tglOrder ? `Tgl: ${fmtTglOrder(selectedProjectGroup.tglOrder)}` : "Tgl: -"}
@@ -2668,14 +2932,34 @@ export default function LaporanPekerjaanClient() {
                     {selectedProjectGroup.project}
                   </h3>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setSelectedProjectGroup(null)}
-                  className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-all cursor-pointer shrink-0"
-                  title="Tutup Modal"
-                >
-                  <X size={18} />
-                </button>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAddingTask(true);
+                      setEditingTaskId(null);
+                    }}
+                    className="px-3 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
+                    title="Tambah Pekerjaan ke Order ini"
+                  >
+                    <Plus size={14} />
+                    <span className="hidden sm:inline">Tambah Pekerjaan</span>
+                    <span className="sm:hidden">Tambah</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedProjectGroup(null);
+                      setEditingTaskId(null);
+                      setIsAddingTask(false);
+                    }}
+                    className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-all cursor-pointer"
+                    title="Tutup Modal"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
               </div>
 
               {/* Body: Tabel List Task dari Order tersebut */}
@@ -2684,18 +2968,162 @@ export default function LaporanPekerjaanClient() {
                   <table className="w-full text-left text-xs border-collapse">
                     <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
                       <tr>
-                        <th className="px-3 py-2.5 text-center w-14">No</th>
-                        <th className="px-3 py-2.5">Task / Aktivitas</th>
-                        <th className="px-3 py-2.5">Bagian</th>
-                        <th className="px-3 py-2.5">PIC</th>
-                        <th className="px-3 py-2.5">Priority</th>
-                        <th className="px-3 py-2.5">Start ~ End</th>
-                        <th className="px-3 py-2.5 text-center">Work Days</th>
-                        <th className="px-3 py-2.5">Status</th>
-                        <th className="px-3 py-2.5">Note</th>
+                        <th className="px-3 py-2.5 text-center w-12">No</th>
+                        <th className="px-3 py-2.5 min-w-[160px]">Task / Aktivitas</th>
+                        <th className="px-3 py-2.5 w-28">Bagian</th>
+                        <th className="px-3 py-2.5 w-32">PIC</th>
+                        <th className="px-3 py-2.5 w-24">Priority</th>
+                        <th className="px-3 py-2.5 w-40">Start ~ End</th>
+                        <th className="px-3 py-2.5 text-center w-20">Work Days</th>
+                        <th className="px-3 py-2.5 w-32">Status</th>
+                        <th className="px-3 py-2.5 min-w-[120px]">Note</th>
+                        <th className="px-3 py-2.5 text-center w-20">Aksi</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
+                      {/* Baris Tambah Pekerjaan Baru Inline */}
+                      {isAddingTask && (
+                        <tr className="bg-emerald-50/80 border-b-2 border-emerald-300">
+                          <td className="px-2 py-2 text-center font-bold text-emerald-700 text-xs">
+                            +
+                          </td>
+                          <td className="px-2 py-2">
+                            <input
+                              type="text"
+                              placeholder="Nama Pekerjaan..."
+                              value={newTaskData.task}
+                              onChange={(e) =>
+                                setNewTaskData((p) => ({ ...p, task: e.target.value }))
+                              }
+                              className="w-full px-2 py-1 text-xs border border-emerald-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 font-medium"
+                              autoFocus
+                            />
+                          </td>
+                          <td className="px-2 py-2">
+                            <select
+                              value={newTaskData.bagian}
+                              onChange={(e) =>
+                                setNewTaskData((p) => ({ ...p, bagian: e.target.value }))
+                              }
+                              className="w-full px-1.5 py-1 text-xs border border-emerald-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                            >
+                              {BAGIAN_LIST.map((b) => (
+                                <option key={b} value={b}>
+                                  {b}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="px-2 py-2">
+                            <input
+                              list="modal-employee-list"
+                              type="text"
+                              placeholder="Pilih / isi PIC..."
+                              value={newTaskData.pic}
+                              onChange={(e) =>
+                                setNewTaskData((p) => ({ ...p, pic: e.target.value }))
+                              }
+                              className="w-full px-2 py-1 text-xs border border-emerald-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                            />
+                          </td>
+                          <td className="px-2 py-2">
+                            <select
+                              value={newTaskData.priority}
+                              onChange={(e) =>
+                                setNewTaskData((p) => ({ ...p, priority: e.target.value }))
+                              }
+                              className="w-full px-1.5 py-1 text-xs border border-emerald-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                            >
+                              <option value="Low">Low</option>
+                              <option value="Medium">Medium</option>
+                              <option value="High">High</option>
+                            </select>
+                          </td>
+                          <td className="px-2 py-2">
+                            <div className="flex items-center gap-1">
+                              <input
+                                type="date"
+                                value={newTaskData.startDate}
+                                onChange={(e) =>
+                                  setNewTaskData((p) => ({ ...p, startDate: e.target.value }))
+                                }
+                                className="w-full px-1 py-0.5 text-[11px] border border-emerald-400 rounded-md bg-white focus:outline-none"
+                              />
+                              <span className="text-slate-400 text-xs">~</span>
+                              <input
+                                type="date"
+                                value={newTaskData.endDate}
+                                onChange={(e) =>
+                                  setNewTaskData((p) => ({ ...p, endDate: e.target.value }))
+                                }
+                                className="w-full px-1 py-0.5 text-[11px] border border-emerald-400 rounded-md bg-white focus:outline-none"
+                              />
+                            </div>
+                          </td>
+                          <td className="px-2 py-2 text-center">
+                            <span className="text-[11px] font-semibold text-emerald-700">
+                              {newTaskData.startDate && newTaskData.endDate
+                                ? `${Math.max(
+                                    1,
+                                    Math.round(
+                                      (new Date(newTaskData.endDate).getTime() -
+                                        new Date(newTaskData.startDate).getTime()) /
+                                        86400000
+                                    ) + 1
+                                  )} hr`
+                                : "-"}
+                            </span>
+                          </td>
+                          <td className="px-2 py-2">
+                            <select
+                              value={newTaskData.status}
+                              onChange={(e) =>
+                                setNewTaskData((p) => ({ ...p, status: e.target.value }))
+                              }
+                              className="w-full px-1.5 py-1 text-xs border border-emerald-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                            >
+                              <option value="BELUM DIKERJAKAN">BELUM DIKERJAKAN</option>
+                              <option value="IN PROGRESS">IN PROGRESS</option>
+                              <option value="PENDING">PENDING</option>
+                              <option value="CANCEL">CANCEL</option>
+                              <option value="SELESAI">SELESAI</option>
+                            </select>
+                          </td>
+                          <td className="px-2 py-2">
+                            <input
+                              type="text"
+                              placeholder="Catatan..."
+                              value={newTaskData.note}
+                              onChange={(e) =>
+                                setNewTaskData((p) => ({ ...p, note: e.target.value }))
+                              }
+                              className="w-full px-2 py-1 text-xs border border-emerald-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                            />
+                          </td>
+                          <td className="px-2 py-2 text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <button
+                                type="button"
+                                onClick={handleCreateInlineTask}
+                                className="p-1.5 text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition-all cursor-pointer"
+                                title="Simpan Pekerjaan Baru"
+                              >
+                                <Save size={13} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setIsAddingTask(false)}
+                                className="p-1.5 text-slate-500 hover:bg-slate-200 rounded-lg transition-all cursor-pointer"
+                                title="Batal"
+                              >
+                                <X size={13} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+
+                      {/* List Pekerjaan dari Order */}
                       {[...selectedProjectGroup.tasks]
                         .sort(
                           (a, b) =>
@@ -2703,37 +3131,221 @@ export default function LaporanPekerjaanClient() {
                               parseDateToSort(b.startDate || "") ||
                             a.id - b.id
                         )
-                        .map((task, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
-                          <td className="px-3 py-2.5 text-center font-medium text-slate-400">
-                            {idx + 1}
-                          </td>
-                          <td className="px-3 py-2.5 font-semibold text-slate-800">
-                            {task.task}
-                          </td>
-                          <td className="px-3 py-2.5 text-slate-600">
-                            {(task as any).bagian || "-"}
-                          </td>
-                          <td className="px-3 py-2.5 font-bold text-emerald-700">
-                            {task.pic || "-"}
-                          </td>
-                          <td className="px-3 py-2.5 text-slate-600">
-                            {task.priority || "-"}
-                          </td>
-                          <td className="px-3 py-2.5 whitespace-nowrap text-slate-500">
-                            {task.startDate || "-"} ~ {task.endDate || "-"}
-                          </td>
-                          <td className="px-3 py-2.5 text-center font-medium text-slate-600">
-                            {task.workDays ? `${task.workDays} hari` : "-"}
-                          </td>
-                          <td className="px-3 py-2.5 whitespace-nowrap">
-                            {getStatusBadge(task.status)}
-                          </td>
-                          <td className="px-3 py-2.5 text-slate-500 max-w-[180px] truncate" title={task.note}>
-                            {task.note || "-"}
-                          </td>
-                        </tr>
-                      ))}
+                        .map((task, idx) => {
+                          const isEditing = editingTaskId === task.id;
+
+                          if (isEditing) {
+                            return (
+                              <tr key={task.id || idx} className="bg-sky-50/80 border-y-2 border-sky-300">
+                                <td className="px-2 py-2 text-center font-medium text-slate-400 text-xs">
+                                  {idx + 1}
+                                </td>
+                                <td className="px-2 py-2">
+                                  <input
+                                    type="text"
+                                    value={inlineEditData.task}
+                                    onChange={(e) =>
+                                      setInlineEditData((p) => ({ ...p, task: e.target.value }))
+                                    }
+                                    className="w-full px-2 py-1 text-xs border border-sky-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-sky-500 font-medium"
+                                  />
+                                </td>
+                                <td className="px-2 py-2">
+                                  <select
+                                    value={inlineEditData.bagian}
+                                    onChange={(e) =>
+                                      setInlineEditData((p) => ({ ...p, bagian: e.target.value }))
+                                    }
+                                    className="w-full px-1.5 py-1 text-xs border border-sky-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                                  >
+                                    {BAGIAN_LIST.map((b) => (
+                                      <option key={b} value={b}>
+                                        {b}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </td>
+                                <td className="px-2 py-2">
+                                  <input
+                                    list="modal-employee-list"
+                                    type="text"
+                                    value={inlineEditData.pic}
+                                    onChange={(e) =>
+                                      setInlineEditData((p) => ({ ...p, pic: e.target.value }))
+                                    }
+                                    className="w-full px-2 py-1 text-xs border border-sky-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                                  />
+                                </td>
+                                <td className="px-2 py-2">
+                                  <select
+                                    value={inlineEditData.priority}
+                                    onChange={(e) =>
+                                      setInlineEditData((p) => ({ ...p, priority: e.target.value }))
+                                    }
+                                    className="w-full px-1.5 py-1 text-xs border border-sky-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                                  >
+                                    <option value="Low">Low</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="High">High</option>
+                                  </select>
+                                </td>
+                                <td className="px-2 py-2">
+                                  <div className="flex items-center gap-1">
+                                    <input
+                                      type="date"
+                                      value={inlineEditData.startDate}
+                                      onChange={(e) =>
+                                        setInlineEditData((p) => ({ ...p, startDate: e.target.value }))
+                                      }
+                                      className="w-full px-1 py-0.5 text-[11px] border border-sky-400 rounded-md bg-white focus:outline-none"
+                                    />
+                                    <span className="text-slate-400 text-xs">~</span>
+                                    <input
+                                      type="date"
+                                      value={inlineEditData.endDate}
+                                      onChange={(e) =>
+                                        setInlineEditData((p) => ({ ...p, endDate: e.target.value }))
+                                      }
+                                      className="w-full px-1 py-0.5 text-[11px] border border-sky-400 rounded-md bg-white focus:outline-none"
+                                    />
+                                  </div>
+                                </td>
+                                <td className="px-2 py-2 text-center">
+                                  <span className="text-[11px] font-semibold text-sky-700">
+                                    {inlineEditData.startDate && inlineEditData.endDate
+                                      ? `${Math.max(
+                                          1,
+                                          Math.round(
+                                            (new Date(inlineEditData.endDate).getTime() -
+                                              new Date(inlineEditData.startDate).getTime()) /
+                                              86400000
+                                          ) + 1
+                                        )} hr`
+                                      : "-"}
+                                  </span>
+                                </td>
+                                <td className="px-2 py-2">
+                                  <select
+                                    value={inlineEditData.status}
+                                    onChange={(e) =>
+                                      setInlineEditData((p) => ({ ...p, status: e.target.value }))
+                                    }
+                                    className="w-full px-1.5 py-1 text-xs border border-sky-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                                  >
+                                    <option value="BELUM DIKERJAKAN">BELUM DIKERJAKAN</option>
+                                    <option value="IN PROGRESS">IN PROGRESS</option>
+                                    <option value="PENDING">PENDING</option>
+                                    <option value="CANCEL">CANCEL</option>
+                                    <option value="SELESAI">SELESAI</option>
+                                  </select>
+                                </td>
+                                <td className="px-2 py-2">
+                                  <input
+                                    type="text"
+                                    value={inlineEditData.note}
+                                    onChange={(e) =>
+                                      setInlineEditData((p) => ({ ...p, note: e.target.value }))
+                                    }
+                                    className="w-full px-2 py-1 text-xs border border-sky-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                                  />
+                                </td>
+                                <td className="px-2 py-2 text-center">
+                                  <div className="flex items-center justify-center gap-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSaveInlineEdit(task.id!)}
+                                      className="p-1.5 text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition-all cursor-pointer"
+                                      title="Simpan Perubahan"
+                                    >
+                                      <Save size={13} />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingTaskId(null)}
+                                      className="p-1.5 text-slate-500 hover:bg-slate-200 rounded-lg transition-all cursor-pointer"
+                                      title="Batal"
+                                    >
+                                      <X size={13} />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteInlineTask(task.id!)}
+                                      className="p-1.5 text-rose-600 hover:bg-rose-100 rounded-lg transition-all cursor-pointer"
+                                      title="Hapus Pekerjaan Ini"
+                                    >
+                                      <Trash2 size={13} />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          }
+
+                          return (
+                            <tr
+                              key={task.id || idx}
+                              onDoubleClick={() => startInlineEdit(task)}
+                              className="hover:bg-slate-50/80 transition-colors group cursor-default"
+                            >
+                              <td className="px-3 py-2.5 text-center font-medium text-slate-400">
+                                {idx + 1}
+                              </td>
+                              <td
+                                className="px-3 py-2.5 font-semibold text-slate-800"
+                                title={cleanTaskName(task.task, selectedProjectGroup.project) || task.task}
+                              >
+                                {cleanTaskName(task.task, selectedProjectGroup.project) || task.task}
+                              </td>
+                              <td className="px-3 py-2.5 text-slate-600">
+                                {(task as any).bagian || "-"}
+                              </td>
+                              <td className="px-3 py-2.5 font-bold text-emerald-700">
+                                {task.pic || "-"}
+                              </td>
+                              <td className="px-3 py-2.5 text-slate-600">
+                                {task.priority || "-"}
+                              </td>
+                              <td className="px-3 py-2.5 whitespace-nowrap text-slate-500">
+                                {task.startDate || "-"} ~ {task.endDate || "-"}
+                              </td>
+                              <td className="px-3 py-2.5 text-center font-medium text-slate-600">
+                                {task.workDays ? `${task.workDays} hari` : "-"}
+                              </td>
+                              <td className="px-3 py-2.5 whitespace-nowrap">
+                                {getStatusBadge(task.status)}
+                              </td>
+                              <td className="px-3 py-2.5 text-slate-500 max-w-[180px] truncate" title={task.note}>
+                                {task.note || "-"}
+                              </td>
+                              <td className="px-3 py-2.5 text-center">
+                                <div className="flex items-center justify-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      startInlineEdit(task);
+                                    }}
+                                    className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                                    title="Edit Pekerjaan Inline"
+                                  >
+                                    <Edit2 size={13} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteInlineTask(task.id!);
+                                    }}
+                                    className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                                    title="Hapus Pekerjaan"
+                                  >
+                                    <Trash2 size={13} />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
                     </tbody>
                   </table>
                 </div>
@@ -2746,7 +3358,11 @@ export default function LaporanPekerjaanClient() {
                 </span>
                 <button
                   type="button"
-                  onClick={() => setSelectedProjectGroup(null)}
+                  onClick={() => {
+                    setSelectedProjectGroup(null);
+                    setEditingTaskId(null);
+                    setIsAddingTask(false);
+                  }}
                   className="px-4 py-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl transition-all cursor-pointer shadow-sm"
                 >
                   Tutup
