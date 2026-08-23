@@ -252,35 +252,40 @@ const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
     if (timeA !== timeB) return timeA - timeB;
     return a.id - b.id;
   });
-  const total = sorted.length;
-  const selesaiCount = sorted.filter(
+
+  const activeTasks = sorted.filter(
+    (t) => (t.status || "").toUpperCase() !== "CANCEL"
+  );
+  const selesaiCount = activeTasks.filter(
     (t) => (t.status || "").toUpperCase() === "SELESAI"
   ).length;
 
-  let lastIdx = -1;
-  for (let i = total - 1; i >= 0; i--) {
+  // Cari pekerjaan yang terakhir selesai
+  let lastSelesaiTask: SpreadsheetTask | undefined;
+  for (let i = sorted.length - 1; i >= 0; i--) {
     if ((sorted[i].status || "").toUpperCase() === "SELESAI") {
-      lastIdx = i;
+      lastSelesaiTask = sorted[i];
       break;
     }
   }
 
-  // Task CANCEL tidak dianggap sebagai pekerjaan selanjutnya
-  const isCancel = (t: SpreadsheetTask) =>
-    (t.status || "").toUpperCase() === "CANCEL";
-  let nextIdx = lastIdx + 1;
-  while (nextIdx < total && isCancel(sorted[nextIdx])) nextIdx++;
+  // Cari pekerjaan selanjutnya: task urutan teratas yang belum selesai dan bukan CANCEL
+  const nextTask = sorted.find((t) => {
+    const s = (t.status || "").toUpperCase();
+    return s !== "SELESAI" && s !== "CANCEL";
+  });
 
   return {
-    progressPct: total > 0 ? Math.round((selesaiCount / total) * 100) : 0,
-    // ponytail: lastIdx -1 (belum ada yg selesai) → selanjutnya = task pertama
-    pekerjaanTerakhir: lastIdx >= 0 ? cleanTaskName(sorted[lastIdx].task || "", project) : "-",
-    pekerjaanSelanjutnya:
-      total === 0
-        ? "-"
-        : nextIdx < total
-        ? cleanTaskName(sorted[nextIdx].task || "", project)
-        : "Semua Selesai",
+    progressPct:
+      activeTasks.length > 0
+        ? Math.round((selesaiCount / activeTasks.length) * 100)
+        : 0,
+    pekerjaanTerakhir: lastSelesaiTask
+      ? cleanTaskName(lastSelesaiTask.task || "", project)
+      : "-",
+    pekerjaanSelanjutnya: nextTask
+      ? cleanTaskName(nextTask.task || "", project)
+      : "-",
   };
 };
 
