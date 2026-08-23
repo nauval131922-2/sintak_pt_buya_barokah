@@ -2960,21 +2960,21 @@ function TaskDetailModal({
           </div>
 
           {/* Body: Tabel List Task dari Order tersebut */}
-          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 custom-scrollbar space-y-4">
+          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto p-4 sm:p-6 custom-scrollbar space-y-4">
             <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-              <table className="w-full text-left text-xs border-collapse table-fixed">
+              <table className="w-full text-left text-xs border-collapse min-w-[1100px]">
                 <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
                   <tr>
-                    <th className="px-2 py-2.5 text-center w-[3.5%]">No</th>
-                    <th className="px-2 py-2.5 w-[11%]">Bagian</th>
-                    <th className="px-2 py-2.5 w-[12%]">PIC</th>
-                    <th className="px-2 py-2.5 w-[16%]">Task / Aktivitas</th>
-                    <th className="px-2 py-2.5 w-[8%]">Priority</th>
-                    <th className="px-2 py-2.5 w-[15%]">Start ~ End</th>
-                    <th className="px-2 py-2.5 text-center w-[6%]">Work Days</th>
-                    <th className="px-2 py-2.5 w-[11%]">Status</th>
-                    <th className="px-2 py-2.5 w-[22%]">Note</th>
-                    <th className="px-2 py-2.5 text-center w-[5.5%]">Aksi</th>
+                    <th className="px-2.5 py-2.5 text-center w-10">No</th>
+                    <th className="px-2.5 py-2.5 w-32">Bagian</th>
+                    <th className="px-2.5 py-2.5 w-36">PIC</th>
+                    <th className="px-2.5 py-2.5 w-44">Task / Aktivitas</th>
+                    <th className="px-2.5 py-2.5 w-24">Priority</th>
+                    <th className="px-2.5 py-2.5 w-52">Start ~ End</th>
+                    <th className="px-2.5 py-2.5 text-center w-20">Work Days</th>
+                    <th className="px-2.5 py-2.5 w-40">Status</th>
+                    <th className="px-2.5 py-2.5 min-w-[200px]">Note</th>
+                    <th className="px-2.5 py-2.5 text-center w-28">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
@@ -3320,32 +3320,32 @@ function InlineEditRow({
         />
       </td>
       {/* 9. Aksi */}
-      <td className="px-2 py-2 text-center">
-        <div className="flex items-center justify-center gap-1">
+      <td className="px-2.5 py-2 text-center whitespace-nowrap">
+        <div className="flex items-center justify-center gap-1.5 min-w-[95px]">
           <button
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="p-1.5 text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-lg shadow-sm transition-all cursor-pointer"
+            className="p-1.5 text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-lg shadow-sm transition-all cursor-pointer shrink-0"
             title="Simpan Perubahan"
           >
-            <Save size={13} />
+            <Save size={14} />
           </button>
           <button
             type="button"
             onClick={onCancel}
-            className="p-1.5 text-slate-500 hover:bg-slate-200 rounded-lg transition-all cursor-pointer"
+            className="p-1.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all cursor-pointer shrink-0 border border-slate-200"
             title="Batal"
           >
-            <X size={13} />
+            <X size={14} />
           </button>
           <button
             type="button"
             onClick={onDelete}
-            className="p-1.5 text-rose-600 hover:bg-rose-100 rounded-lg transition-all cursor-pointer"
+            className="p-1.5 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-all cursor-pointer shrink-0 border border-rose-200"
             title="Hapus Pekerjaan Ini"
           >
-            <Trash2 size={13} />
+            <Trash2 size={14} />
           </button>
         </div>
       </td>
@@ -3566,24 +3566,24 @@ function InlineAddRow({
         />
       </td>
       {/* 9. Aksi */}
-      <td className="px-2 py-2 text-center">
-        <div className="flex items-center justify-center gap-1">
+      <td className="px-2.5 py-2 text-center whitespace-nowrap">
+        <div className="flex items-center justify-center gap-1.5 min-w-[95px]">
           <button
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="p-1.5 text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-lg shadow-sm transition-all cursor-pointer"
+            className="p-1.5 text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-lg shadow-sm transition-all cursor-pointer shrink-0"
             title="Simpan Pekerjaan Baru"
           >
-            <Save size={13} />
+            <Save size={14} />
           </button>
           <button
             type="button"
             onClick={onCancel}
-            className="p-1.5 text-slate-500 hover:bg-slate-200 rounded-lg transition-all cursor-pointer"
+            className="p-1.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all cursor-pointer shrink-0 border border-slate-200"
             title="Batal"
           >
-            <X size={13} />
+            <X size={14} />
           </button>
         </div>
       </td>
