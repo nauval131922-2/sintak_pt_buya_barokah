@@ -176,18 +176,18 @@ export default function SquareDropdown({
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className={`w-full flex items-center justify-between gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg focus:outline-none transition-all min-w-0 ${
+        className={`w-full flex items-center justify-between gap-1 px-2 py-1 text-[11px] font-medium rounded-lg focus:outline-none transition-all min-w-0 ${
           isActive
-            ? 'bg-emerald-50 border-2 border-emerald-600 text-emerald-800 font-bold shadow-sm shadow-emerald-100'
+            ? 'bg-emerald-50 border-2 border-emerald-600 text-emerald-800 font-bold shadow-xs shadow-emerald-100'
             : 'bg-slate-50 border border-slate-200 text-slate-700 hover:bg-white hover:border-slate-300'
         }`}
       >
-        <span className="truncate min-w-0 flex-1 text-left flex items-center gap-1.5">
+        <span className="truncate min-w-0 flex-1 text-left flex items-center gap-1">
           {isActive && <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" />}
           <span className={`truncate ${!selected ? 'text-slate-400 font-normal' : ''}`}>{displayLabel}</span>
         </span>
         <ChevronDown
-          size={14}
+          size={13}
           className={`shrink-0 transition-transform duration-150 ${
             isActive ? 'text-emerald-700 font-bold' : 'text-slate-400'
           } ${open ? 'rotate-180' : ''}`}

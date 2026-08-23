@@ -2453,32 +2453,32 @@ function TaskDetailModal({
 
           {/* Body: Tabel List Task dari Order tersebut */}
           <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 custom-scrollbar space-y-4">
-            <div className="border border-slate-200 rounded-xl overflow-x-auto shadow-sm custom-scrollbar">
-              <table className="w-full text-left text-xs border-collapse table-fixed min-w-[1200px]">
+            <div className="border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+              <table className="w-full text-left text-xs border-collapse table-fixed">
                 <colgroup>
-                  <col style={{ width: '45px' }} />
-                  <col style={{ width: '130px' }} />
-                  <col style={{ width: '150px' }} />
-                  <col style={{ width: '220px' }} />
-                  <col style={{ width: '100px' }} />
-                  <col style={{ width: '210px' }} />
-                  <col style={{ width: '75px' }} />
-                  <col style={{ width: '150px' }} />
-                  <col style={{ width: '260px' }} />
-                  <col style={{ width: '60px' }} />
+                  <col style={{ width: '3%' }} />
+                  <col style={{ width: '11%' }} />
+                  <col style={{ width: '13%' }} />
+                  <col style={{ width: '17%' }} />
+                  <col style={{ width: '8%' }} />
+                  <col style={{ width: '17%' }} />
+                  <col style={{ width: '6%' }} />
+                  <col style={{ width: '11%' }} />
+                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '4%' }} />
                 </colgroup>
                 <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
                   <tr>
-                    <th className="px-2.5 py-2.5 text-center">No</th>
-                    <th className="px-2.5 py-2.5">Bagian</th>
-                    <th className="px-2.5 py-2.5">PIC</th>
-                    <th className="px-2.5 py-2.5">Task / Aktivitas</th>
-                    <th className="px-2.5 py-2.5">Priority</th>
-                    <th className="px-2.5 py-2.5">Start ~ End</th>
-                    <th className="px-2.5 py-2.5 text-center">Work Days</th>
-                    <th className="px-2.5 py-2.5">Status</th>
-                    <th className="px-2.5 py-2.5">Note</th>
-                    <th className="px-2.5 py-2.5 text-center">Aksi</th>
+                    <th className="px-1.5 py-2.5 text-center">No</th>
+                    <th className="px-1.5 py-2.5">Bagian</th>
+                    <th className="px-1.5 py-2.5">PIC</th>
+                    <th className="px-1.5 py-2.5">Task / Aktivitas</th>
+                    <th className="px-1.5 py-2.5">Priority</th>
+                    <th className="px-1.5 py-2.5">Start ~ End</th>
+                    <th className="px-1.5 py-2.5 text-center">Work Days</th>
+                    <th className="px-1.5 py-2.5">Status</th>
+                    <th className="px-1.5 py-2.5">Note</th>
+                    <th className="px-1.5 py-2.5 text-center">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
@@ -2504,37 +2504,37 @@ function TaskDetailModal({
                         onDoubleClick={() => setEditingTaskId(task.id || null)}
                         className="hover:bg-slate-50/80 transition-colors group cursor-default"
                       >
-                        <td className="px-2.5 py-2.5 text-center font-medium text-slate-400">
+                        <td className="px-1.5 py-2 text-center font-medium text-slate-400">
                           {idx + 1}
                         </td>
-                        <td className="px-2.5 py-2.5 text-slate-700 font-medium truncate">
+                        <td className="px-1.5 py-2 text-slate-700 font-medium truncate">
                           {(task as any).bagian || "-"}
                         </td>
-                        <td className="px-2.5 py-2.5 font-bold text-emerald-700 truncate">
+                        <td className="px-1.5 py-2 font-bold text-emerald-700 truncate">
                           {task.pic || "-"}
                         </td>
                         <td
-                          className="px-2.5 py-2.5 font-semibold text-slate-800 break-words"
+                          className="px-1.5 py-2 font-semibold text-slate-800 break-words"
                           title={cleanTaskName(task.task, selectedProjectGroup.project) || task.task}
                         >
                           {cleanTaskName(task.task, selectedProjectGroup.project) || task.task}
                         </td>
-                        <td className="px-2.5 py-2.5 text-slate-600">
+                        <td className="px-1.5 py-2 text-slate-600 truncate">
                           {task.priority || "-"}
                         </td>
-                        <td className="px-2.5 py-2.5 whitespace-nowrap text-slate-500 text-[11px]">
+                        <td className="px-1.5 py-2 whitespace-nowrap text-slate-500 text-[11px]">
                           {task.startDate ? formatDateDisplay(task.startDate) : "-"} ~ {task.endDate ? formatDateDisplay(task.endDate) : "-"}
                         </td>
-                        <td className="px-2.5 py-2.5 text-center font-medium text-slate-600 text-[11px]">
+                        <td className="px-1.5 py-2 text-center font-medium text-slate-600 text-[11px]">
                           {task.workDays ? `${task.workDays} hari` : "-"}
                         </td>
-                        <td className="px-2.5 py-2.5 whitespace-nowrap">
+                        <td className="px-1.5 py-2 whitespace-nowrap">
                           {getStatusBadge(task.status)}
                         </td>
-                        <td className="px-2.5 py-2.5 text-slate-600 break-words whitespace-pre-wrap leading-relaxed">
+                        <td className="px-1.5 py-2 text-slate-600 break-words whitespace-pre-wrap leading-tight text-[11px]">
                           {task.note || "-"}
                         </td>
-                        <td className="px-2.5 py-2.5 text-center">
+                        <td className="px-1.5 py-2 text-center">
                           <div className="flex items-center justify-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
                             <button
                               type="button"
@@ -2542,7 +2542,7 @@ function TaskDetailModal({
                                 e.stopPropagation();
                                 setEditingTaskId(task.id || null);
                               }}
-                              className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                              className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors cursor-pointer"
                               title="Edit Pekerjaan Inline"
                             >
                               <Edit2 size={13} />
@@ -2553,7 +2553,7 @@ function TaskDetailModal({
                                 e.stopPropagation();
                                 onDeleteTask(task.id!);
                               }}
-                              className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                              className="p-1 text-rose-600 hover:bg-rose-50 rounded transition-colors cursor-pointer"
                               title="Hapus Pekerjaan"
                             >
                               <Trash2 size={13} />
@@ -2740,11 +2740,11 @@ function InlineEditRow({
 
   return (
     <tr ref={rowRef} className="bg-sky-50/90 border-y-2 border-sky-300">
-      <td className="px-2.5 py-2.5 text-center font-bold text-sky-700 text-xs">
+      <td className="px-1 py-1.5 text-center font-bold text-sky-700 text-xs">
         {idx + 1}
       </td>
       {/* 1. Bagian */}
-      <td className="px-2 py-2">
+      <td className="px-1 py-1.5">
         <SquareDropdown
           options={BAGIAN_LIST.map((b) => ({ value: b, label: b }))}
           value={form.bagian}
@@ -2757,7 +2757,7 @@ function InlineEditRow({
         />
       </td>
       {/* 2. PIC */}
-      <td className="px-2 py-2">
+      <td className="px-1 py-1.5">
         <SquareDropdown
           options={picOptions}
           value={form.pic}
@@ -2768,7 +2768,7 @@ function InlineEditRow({
         />
       </td>
       {/* 3. Task / Aktivitas */}
-      <td className="px-2 py-2">
+      <td className="px-1 py-1.5">
         <SquareDropdown
           options={
             taskOptions.length > 0
@@ -2783,7 +2783,7 @@ function InlineEditRow({
         />
       </td>
       {/* 4. Priority */}
-      <td className="px-2 py-2">
+      <td className="px-1 py-1.5">
         <SquareDropdown
           options={[
             { value: "Low", label: "Low" },
@@ -2798,8 +2798,8 @@ function InlineEditRow({
         />
       </td>
       {/* 5. Start ~ End */}
-      <td className="px-2 py-2">
-        <div className="flex items-center gap-1 w-full">
+      <td className="px-1 py-1.5">
+        <div className="flex items-center gap-0.5 w-full">
           <div className="flex-1 min-w-0">
             <DatePicker
               name="start_date"
@@ -2810,15 +2810,15 @@ function InlineEditRow({
                 <button
                   type="button"
                   onClick={toggle}
-                  className="w-full h-8 bg-white border border-slate-200 hover:border-emerald-500 rounded-lg px-2 text-[11px] font-medium flex items-center justify-between shadow-xs transition-colors"
+                  className="w-full h-7 bg-white border border-slate-200 hover:border-emerald-500 rounded-md px-1 text-[10px] font-medium flex items-center justify-between shadow-2xs transition-colors"
                 >
-                  <span className="truncate">{form.startDate ? formatDateDisplay(form.startDate) : 'Pilih...'}</span>
-                  <Calendar size={12} className="text-slate-400 shrink-0 ml-0.5" />
+                  <span className="truncate">{form.startDate ? formatDateDisplay(form.startDate) : 'Pilih'}</span>
+                  <Calendar size={11} className="text-slate-400 shrink-0" />
                 </button>
               )}
             />
           </div>
-          <span className="text-slate-400 text-xs font-semibold shrink-0">~</span>
+          <span className="text-slate-300 text-[10px] font-bold shrink-0">~</span>
           <div className="flex-1 min-w-0">
             <DatePicker
               name="end_date"
@@ -2829,10 +2829,10 @@ function InlineEditRow({
                 <button
                   type="button"
                   onClick={toggle}
-                  className="w-full h-8 bg-white border border-slate-200 hover:border-emerald-500 rounded-lg px-2 text-[11px] font-medium flex items-center justify-between shadow-xs transition-colors"
+                  className="w-full h-7 bg-white border border-slate-200 hover:border-emerald-500 rounded-md px-1 text-[10px] font-medium flex items-center justify-between shadow-2xs transition-colors"
                 >
-                  <span className="truncate">{form.endDate ? formatDateDisplay(form.endDate) : 'Pilih...'}</span>
-                  <Calendar size={12} className="text-slate-400 shrink-0 ml-0.5" />
+                  <span className="truncate">{form.endDate ? formatDateDisplay(form.endDate) : 'Pilih'}</span>
+                  <Calendar size={11} className="text-slate-400 shrink-0" />
                 </button>
               )}
             />
@@ -2840,13 +2840,13 @@ function InlineEditRow({
         </div>
       </td>
       {/* 6. Work Days */}
-      <td className="px-2 py-2 text-center whitespace-nowrap">
+      <td className="px-1 py-1.5 text-center whitespace-nowrap">
         <span className="text-[11px] font-bold text-sky-700">
           {workDaysDisplay}
         </span>
       </td>
       {/* 7. Status */}
-      <td className="px-2 py-2">
+      <td className="px-1 py-1.5">
         <SquareDropdown
           options={[
             { value: "BELUM DIKERJAKAN", label: "BELUM DIKERJAKAN" },
@@ -2863,7 +2863,7 @@ function InlineEditRow({
         />
       </td>
       {/* 8. Note */}
-      <td className="px-2 py-2">
+      <td className="px-1 py-1.5">
         <textarea
           value={form.note}
           rows={1}
@@ -2871,27 +2871,27 @@ function InlineEditRow({
           onChange={(e) => {
             setForm((p) => ({ ...p, note: e.target.value }));
             e.target.style.height = "auto";
-            e.target.style.height = `${Math.max(32, e.target.scrollHeight)}px`;
+            e.target.style.height = `${Math.max(30, e.target.scrollHeight)}px`;
           }}
           ref={(el) => {
             if (el) {
               el.style.height = "auto";
-              el.style.height = `${Math.max(32, el.scrollHeight)}px`;
+              el.style.height = `${Math.max(30, el.scrollHeight)}px`;
             }
           }}
-          className="w-full min-h-[32px] px-2 py-1.5 text-xs border border-sky-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-sky-500 custom-scrollbar resize-y break-words leading-tight"
+          className="w-full min-h-[30px] px-2 py-1 text-[11px] border border-sky-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-sky-500 custom-scrollbar resize-y break-words leading-tight"
         />
       </td>
       {/* 9. Aksi */}
-      <td className="px-2.5 py-2 text-center whitespace-nowrap">
+      <td className="px-1 py-1.5 text-center whitespace-nowrap">
         <div className="flex items-center justify-center">
           <button
             type="button"
             onClick={onDelete}
-            className="p-1.5 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-all cursor-pointer border border-rose-200"
+            className="p-1 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-all cursor-pointer border border-rose-200"
             title="Hapus Pekerjaan Ini"
           >
-            <Trash2 size={14} />
+            <Trash2 size={13} />
           </button>
         </div>
       </td>
@@ -2999,11 +2999,11 @@ function InlineAddRow({
 
   return (
     <tr ref={rowRef} className="bg-emerald-50/90 border-y-2 border-emerald-300">
-      <td className="px-2.5 py-2.5 text-center font-bold text-emerald-700 text-xs">
+      <td className="px-1 py-1.5 text-center font-bold text-emerald-700 text-xs">
         +
       </td>
       {/* 1. Bagian */}
-      <td className="px-2 py-2">
+      <td className="px-1 py-1.5">
         <SquareDropdown
           options={BAGIAN_LIST.map((b) => ({ value: b, label: b }))}
           value={form.bagian}
@@ -3017,7 +3017,7 @@ function InlineAddRow({
         />
       </td>
       {/* 2. PIC */}
-      <td className="px-2 py-2">
+      <td className="px-1 py-1.5">
         <SquareDropdown
           options={picOptions}
           value={form.pic}
@@ -3029,7 +3029,7 @@ function InlineAddRow({
         />
       </td>
       {/* 3. Task / Aktivitas */}
-      <td className="px-2 py-2">
+      <td className="px-1 py-1.5">
         <SquareDropdown
           options={
             taskOptions.length > 0
@@ -3045,7 +3045,7 @@ function InlineAddRow({
         />
       </td>
       {/* 4. Priority */}
-      <td className="px-2 py-2">
+      <td className="px-1 py-1.5">
         <SquareDropdown
           options={[
             { value: "Low", label: "Low" },
@@ -3061,8 +3061,8 @@ function InlineAddRow({
         />
       </td>
       {/* 5. Start ~ End */}
-      <td className="px-2 py-2">
-        <div className="flex items-center gap-1 w-full">
+      <td className="px-1 py-1.5">
+        <div className="flex items-center gap-0.5 w-full">
           <div className="flex-1 min-w-0">
             <DatePicker
               name="new_start_date"
@@ -3073,17 +3073,17 @@ function InlineAddRow({
                 <button
                   type="button"
                   onClick={toggle}
-                  className="w-full h-8 bg-white border border-slate-200 hover:border-emerald-500 rounded-lg px-2 text-[11px] font-medium flex items-center justify-between shadow-xs transition-colors"
+                  className="w-full h-7 bg-white border border-slate-200 hover:border-emerald-500 rounded-md px-1 text-[10px] font-medium flex items-center justify-between shadow-2xs transition-colors"
                 >
                   <span className={`truncate ${!form.startDate ? 'text-slate-400 font-normal' : ''}`}>
-                    {form.startDate ? formatDateDisplay(form.startDate) : 'Pilih...'}
+                    {form.startDate ? formatDateDisplay(form.startDate) : 'Pilih'}
                   </span>
-                  <Calendar size={12} className="text-slate-400 shrink-0 ml-0.5" />
+                  <Calendar size={11} className="text-slate-400 shrink-0" />
                 </button>
               )}
             />
           </div>
-          <span className="text-slate-400 text-xs font-semibold shrink-0">~</span>
+          <span className="text-slate-300 text-[10px] font-bold shrink-0">~</span>
           <div className="flex-1 min-w-0">
             <DatePicker
               name="new_end_date"
@@ -3094,12 +3094,12 @@ function InlineAddRow({
                 <button
                   type="button"
                   onClick={toggle}
-                  className="w-full h-8 bg-white border border-slate-200 hover:border-emerald-500 rounded-lg px-2 text-[11px] font-medium flex items-center justify-between shadow-xs transition-colors"
+                  className="w-full h-7 bg-white border border-slate-200 hover:border-emerald-500 rounded-lg px-1 text-[10px] font-medium flex items-center justify-between shadow-2xs transition-colors"
                 >
                   <span className={`truncate ${!form.endDate ? 'text-slate-400 font-normal' : ''}`}>
-                    {form.endDate ? formatDateDisplay(form.endDate) : 'Pilih...'}
+                    {form.endDate ? formatDateDisplay(form.endDate) : 'Pilih'}
                   </span>
-                  <Calendar size={12} className="text-slate-400 shrink-0 ml-0.5" />
+                  <Calendar size={11} className="text-slate-400 shrink-0" />
                 </button>
               )}
             />
@@ -3107,13 +3107,13 @@ function InlineAddRow({
         </div>
       </td>
       {/* 6. Work Days */}
-      <td className="px-2 py-2 text-center whitespace-nowrap">
+      <td className="px-1 py-1.5 text-center whitespace-nowrap">
         <span className="text-[11px] font-bold text-emerald-700">
           {workDaysDisplay}
         </span>
       </td>
       {/* 7. Status */}
-      <td className="px-2 py-2">
+      <td className="px-1 py-1.5">
         <SquareDropdown
           options={[
             { value: "BELUM DIKERJAKAN", label: "BELUM DIKERJAKAN" },
@@ -3131,7 +3131,7 @@ function InlineAddRow({
         />
       </td>
       {/* 8. Note */}
-      <td className="px-2 py-2">
+      <td className="px-1 py-1.5">
         <textarea
           value={form.note}
           rows={1}
@@ -3139,27 +3139,27 @@ function InlineAddRow({
           onChange={(e) => {
             setForm((p) => ({ ...p, note: e.target.value }));
             e.target.style.height = "auto";
-            e.target.style.height = `${Math.max(32, e.target.scrollHeight)}px`;
+            e.target.style.height = `${Math.max(30, e.target.scrollHeight)}px`;
           }}
           ref={(el) => {
             if (el) {
               el.style.height = "auto";
-              el.style.height = `${Math.max(32, el.scrollHeight)}px`;
+              el.style.height = `${Math.max(30, e.target.scrollHeight)}px`;
             }
           }}
-          className="w-full min-h-[32px] px-2 py-1.5 text-xs border border-emerald-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 custom-scrollbar resize-y break-words leading-tight"
+          className="w-full min-h-[30px] px-2 py-1 text-[11px] border border-emerald-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 custom-scrollbar resize-y break-words leading-tight"
         />
       </td>
       {/* 9. Aksi */}
-      <td className="px-2.5 py-2 text-center whitespace-nowrap">
+      <td className="px-1 py-1.5 text-center whitespace-nowrap">
         <div className="flex items-center justify-center">
           <button
             type="button"
             onClick={onCancel}
-            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer"
+            className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer"
             title="Batal Tambah Pekerjaan"
           >
-            <X size={14} />
+            <X size={13} />
           </button>
         </div>
       </td>
