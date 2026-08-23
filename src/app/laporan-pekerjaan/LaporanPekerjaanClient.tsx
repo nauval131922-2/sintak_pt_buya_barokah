@@ -2961,19 +2961,19 @@ function TaskDetailModal({
           {/* Body: Tabel List Task dari Order tersebut */}
           <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 custom-scrollbar space-y-4">
             <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full text-left text-xs border-collapse table-fixed">
                 <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
                   <tr>
-                    <th className="px-2.5 py-2.5 text-center w-8">No</th>
-                    <th className="px-2.5 py-2.5 w-28">Bagian</th>
-                    <th className="px-2.5 py-2.5 w-32">PIC</th>
-                    <th className="px-2.5 py-2.5 w-[18%]">Task / Aktivitas</th>
-                    <th className="px-2.5 py-2.5 w-24">Priority</th>
-                    <th className="px-2.5 py-2.5 w-44">Start ~ End</th>
-                    <th className="px-2.5 py-2.5 text-center w-20">Work Days</th>
-                    <th className="px-2.5 py-2.5 w-36">Status</th>
-                    <th className="px-2.5 py-2.5">Note</th>
-                    <th className="px-2.5 py-2.5 text-center w-16">Aksi</th>
+                    <th className="px-2 py-2.5 text-center w-[3.5%]">No</th>
+                    <th className="px-2 py-2.5 w-[11%]">Bagian</th>
+                    <th className="px-2 py-2.5 w-[12%]">PIC</th>
+                    <th className="px-2 py-2.5 w-[16%]">Task / Aktivitas</th>
+                    <th className="px-2 py-2.5 w-[8%]">Priority</th>
+                    <th className="px-2 py-2.5 w-[15%]">Start ~ End</th>
+                    <th className="px-2 py-2.5 text-center w-[6%]">Work Days</th>
+                    <th className="px-2 py-2.5 w-[11%]">Status</th>
+                    <th className="px-2 py-2.5 w-[22%]">Note</th>
+                    <th className="px-2 py-2.5 text-center w-[5.5%]">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
@@ -3242,6 +3242,16 @@ function InlineEditRow({
               value={form.startDate}
               onChange={(d) => setForm((p) => ({ ...p, startDate: d }))}
               usePortal={true}
+              customTrigger={(toggle) => (
+                <button
+                  type="button"
+                  onClick={toggle}
+                  className="w-full h-8 bg-white border border-slate-200 hover:border-emerald-500 rounded-lg px-2 text-[11px] font-medium flex items-center justify-between shadow-xs transition-colors"
+                >
+                  <span className="truncate">{form.startDate ? formatDateForApi(form.startDate) : 'Pilih...'}</span>
+                  <Calendar size={12} className="text-slate-400 shrink-0 ml-0.5" />
+                </button>
+              )}
             />
           </div>
           <span className="text-slate-400 text-xs font-semibold shrink-0">~</span>
@@ -3251,6 +3261,16 @@ function InlineEditRow({
               value={form.endDate}
               onChange={(d) => setForm((p) => ({ ...p, endDate: d }))}
               usePortal={true}
+              customTrigger={(toggle) => (
+                <button
+                  type="button"
+                  onClick={toggle}
+                  className="w-full h-8 bg-white border border-slate-200 hover:border-emerald-500 rounded-lg px-2 text-[11px] font-medium flex items-center justify-between shadow-xs transition-colors"
+                >
+                  <span className="truncate">{form.endDate ? formatDateForApi(form.endDate) : 'Pilih...'}</span>
+                  <Calendar size={12} className="text-slate-400 shrink-0 ml-0.5" />
+                </button>
+              )}
             />
           </div>
         </div>
@@ -3287,15 +3307,15 @@ function InlineEditRow({
           onChange={(e) => {
             setForm((p) => ({ ...p, note: e.target.value }));
             e.target.style.height = "auto";
-            e.target.style.height = `${e.target.scrollHeight}px`;
+            e.target.style.height = `${Math.max(32, e.target.scrollHeight)}px`;
           }}
           ref={(el) => {
             if (el) {
               el.style.height = "auto";
-              el.style.height = `${el.scrollHeight}px`;
+              el.style.height = `${Math.max(32, el.scrollHeight)}px`;
             }
           }}
-          className="w-full px-2 py-1.5 text-xs border border-sky-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-sky-500 custom-scrollbar resize-none break-words leading-relaxed"
+          className="w-full min-h-[32px] px-2 py-1.5 text-xs border border-sky-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-sky-500 custom-scrollbar resize-y break-words leading-tight"
         />
       </td>
       {/* 9. Aksi */}
@@ -3468,6 +3488,16 @@ function InlineAddRow({
               value={form.startDate}
               onChange={(d) => setForm((p) => ({ ...p, startDate: d }))}
               usePortal={true}
+              customTrigger={(toggle) => (
+                <button
+                  type="button"
+                  onClick={toggle}
+                  className="w-full h-8 bg-white border border-slate-200 hover:border-emerald-500 rounded-lg px-2 text-[11px] font-medium flex items-center justify-between shadow-xs transition-colors"
+                >
+                  <span className="truncate">{form.startDate ? formatDateForApi(form.startDate) : 'Pilih...'}</span>
+                  <Calendar size={12} className="text-slate-400 shrink-0 ml-0.5" />
+                </button>
+              )}
             />
           </div>
           <span className="text-slate-400 text-xs font-semibold shrink-0">~</span>
@@ -3477,6 +3507,16 @@ function InlineAddRow({
               value={form.endDate}
               onChange={(d) => setForm((p) => ({ ...p, endDate: d }))}
               usePortal={true}
+              customTrigger={(toggle) => (
+                <button
+                  type="button"
+                  onClick={toggle}
+                  className="w-full h-8 bg-white border border-slate-200 hover:border-emerald-500 rounded-lg px-2 text-[11px] font-medium flex items-center justify-between shadow-xs transition-colors"
+                >
+                  <span className="truncate">{form.endDate ? formatDateForApi(form.endDate) : 'Pilih...'}</span>
+                  <Calendar size={12} className="text-slate-400 shrink-0 ml-0.5" />
+                </button>
+              )}
             />
           </div>
         </div>
@@ -3513,15 +3553,15 @@ function InlineAddRow({
           onChange={(e) => {
             setForm((p) => ({ ...p, note: e.target.value }));
             e.target.style.height = "auto";
-            e.target.style.height = `${e.target.scrollHeight}px`;
+            e.target.style.height = `${Math.max(32, e.target.scrollHeight)}px`;
           }}
           ref={(el) => {
             if (el) {
               el.style.height = "auto";
-              el.style.height = `${el.scrollHeight}px`;
+              el.style.height = `${Math.max(32, el.scrollHeight)}px`;
             }
           }}
-          className="w-full px-2 py-1.5 text-xs border border-emerald-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 custom-scrollbar resize-none break-words leading-relaxed"
+          className="w-full min-h-[32px] px-2 py-1.5 text-xs border border-emerald-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 custom-scrollbar resize-y break-words leading-tight"
         />
       </td>
       {/* 9. Aksi */}

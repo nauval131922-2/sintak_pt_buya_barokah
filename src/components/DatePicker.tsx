@@ -97,7 +97,6 @@ export default function DatePicker({ name, required, label, onChange, value, cus
         left: isRight
           ? Math.max(10, rect.right - popupWidth) / scale
           : Math.max(10, rect.left) / scale,
-        width: `${popupWidth / scale}px`,
         zIndex: 10000,
       });
     }

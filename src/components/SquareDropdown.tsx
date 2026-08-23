@@ -69,7 +69,7 @@ export default function SquareDropdown({
         position: 'fixed',
         top: (rect.bottom + 4) / scale,
         left: isRight ? Math.max(10, rect.right - popupWidth) / scale : rect.left / scale,
-        width: popupWidth / scale,
+        width: `${popupWidth}px`,
         zIndex: 10000,
       });
     }
