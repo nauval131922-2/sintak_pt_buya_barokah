@@ -3115,13 +3115,16 @@ function InlineEditRow({
   const initialBagian = (task as any).bagian || "SETTING";
   const initialTask = cleanTaskName(task.task, project) || task.task;
 
+  const initialStartDateObj = parseDateToDateObj(task.startDate);
+  const initialEndDateObj = parseDateToDateObj(task.endDate);
+
   const [form, setForm] = useState(() => ({
     bagian: initialBagian,
     pic: task.pic || "",
     task: initialTask,
     priority: task.priority || "Low",
-    startDate: parseDateToDateObj(task.startDate),
-    endDate: parseDateToDateObj(task.endDate),
+    startDate: initialStartDateObj,
+    endDate: initialEndDateObj,
     status: task.status || "BELUM DIKERJAKAN",
     note: task.note || "",
   }));
@@ -3144,13 +3147,32 @@ function InlineEditRow({
 
   const saveCurrentForm = useCallback(async () => {
     if (isSavingRef.current) return;
+
+    // Cek apakah ada perubahan data (isDirty)
+    const current = formRef.current;
+    const isDirty =
+      current.bagian !== initialBagian ||
+      current.pic !== (task.pic || "") ||
+      current.task.trim() !== initialTask.trim() ||
+      current.priority !== (task.priority || "Low") ||
+      formatDateForApi(current.startDate) !== formatDateForApi(initialStartDateObj) ||
+      formatDateForApi(current.endDate) !== formatDateForApi(initialEndDateObj) ||
+      current.status !== (task.status || "BELUM DIKERJAKAN") ||
+      current.note.trim() !== (task.note || "").trim();
+
+    // Jika tidak ada perubahan, langsung keluar dari mode edit tanpa panggil API
+    if (!isDirty) {
+      onCancel();
+      return;
+    }
+
     isSavingRef.current = true;
     try {
-      await onSave(formRef.current);
+      await onSave(current);
     } finally {
       isSavingRef.current = false;
     }
-  }, [onSave]);
+  }, [initialBagian, initialTask, initialStartDateObj, initialEndDateObj, task, onSave, onCancel]);
 
   // Auto-save saat klik di luar baris yang sedang diedit
   useEffect(() => {
