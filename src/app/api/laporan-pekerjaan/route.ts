@@ -20,24 +20,38 @@ export async function GET(request: NextRequest) {
       try {
         const sheetTasks = await getSpreadsheetTasks("DATABASE_REPORT", true);
         if (sheetTasks.length > 0) {
+          const PIC_MAPPING: Record<string, string> = {
+            ADI: "Muhammad Adi Saputra",
+            ALBILA: "Albilla Rizqi",
+            ERIC: "Eric Fahri Emawan",
+            RIFAN: "Rifan",
+            RIKZA: "Muhammad Rikza Musthofa",
+            SONI: "Sonny Yudha Bhirawa",
+          };
+
           const now = new Date().toISOString();
-          const insertBatch = sheetTasks.map((sheetTask) => ({
-            sql: `INSERT INTO laporan_pekerjaan (task, project, division, pic, priority, start_date, end_date, work_days, note, status, source, created_at)
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'sintak', ?)`,
-            args: [
-              sheetTask.task || sheetTask.project || "",
-              sheetTask.project || "",
-              sheetTask.division || "",
-              sheetTask.pic || "",
-              sheetTask.priority || "Low",
-              sheetTask.startDate || "",
-              sheetTask.endDate || "",
-              sheetTask.workDays || "",
-              sheetTask.note || "",
-              sheetTask.status || "BELUM DIKERJAKAN",
-              now,
-            ],
-          }));
+          const insertBatch = sheetTasks.map((sheetTask) => {
+            const rawPic = (sheetTask.pic || "").trim();
+            const mappedPic = PIC_MAPPING[rawPic.toUpperCase()] || rawPic;
+
+            return {
+              sql: `INSERT INTO laporan_pekerjaan (task, project, division, bagian, pic, priority, start_date, end_date, work_days, note, status, source, created_at)
+                    VALUES (?, ?, ?, 'SETTING', ?, ?, ?, ?, ?, ?, ?, 'sintak', ?)`,
+              args: [
+                sheetTask.task || sheetTask.project || "",
+                sheetTask.project || "",
+                sheetTask.division || "",
+                mappedPic,
+                sheetTask.priority || "Low",
+                sheetTask.startDate || "",
+                sheetTask.endDate || "",
+                sheetTask.workDays || "",
+                sheetTask.note || "",
+                sheetTask.status || "BELUM DIKERJAKAN",
+                now,
+              ],
+            };
+          });
           await db.batch(insertBatch, "write");
         }
       } catch (err) {

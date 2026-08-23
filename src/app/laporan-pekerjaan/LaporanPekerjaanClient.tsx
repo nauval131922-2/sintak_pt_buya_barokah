@@ -1046,7 +1046,6 @@ export default function LaporanPekerjaanClient() {
       aksi: 120,
       task: 240,
       project: 180,
-      division: 120,
       bagian: 120,
       pic: 110,
       priority: 95,
@@ -1789,13 +1788,13 @@ export default function LaporanPekerjaanClient() {
 
                   <div className="grid grid-cols-2 gap-2 text-[11px] bg-white p-2.5 rounded-lg border border-slate-200/60">
                     <div className="min-w-0">
-                      <span className="text-slate-400 block text-[10px]">Bagian / Divisi</span>
+                      <span className="text-slate-400 block text-[10px]">Bagian</span>
                       <span
                         className={`font-semibold text-slate-700 block ${
                           isExpanded ? "break-words" : "truncate"
                         }`}
                       >
-                        {(t as any).bagian ? `${(t as any).bagian} (${t.division || "-"})` : t.division || "-"}
+                        {(t as any).bagian || "-"}
                       </span>
                     </div>
                     <div className="min-w-0">
@@ -1891,7 +1890,6 @@ export default function LaporanPekerjaanClient() {
               "--col-aksi": `${colWidths.aksi || 120}px`,
               "--col-task": `${colWidths.task}px`,
               "--col-project": `${colWidths.project}px`,
-              "--col-division": `${colWidths.division}px`,
               "--col-bagian": `${colWidths.bagian}px`,
               "--col-pic": `${colWidths.pic}px`,
               "--col-priority": `${colWidths.priority}px`,
@@ -1923,7 +1921,6 @@ export default function LaporanPekerjaanClient() {
                 </th>
                 {renderSortableHeader("task", "Task / Aktivitas")}
                 {renderSortableHeader("project", "Project Order")}
-                {renderSortableHeader("division", "Divisi")}
                 {renderSortableHeader("bagian", "Bagian")}
                 {renderSortableHeader("pic", "PIC")}
                 {renderSortableHeader("priority", "Priority")}
@@ -1938,7 +1935,7 @@ export default function LaporanPekerjaanClient() {
               {loading ? (
                 <tr>
                   <td
-                    colSpan={12}
+                    colSpan={11}
                     className="px-4 py-16 text-center text-slate-400"
                   >
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-600" />
@@ -1948,7 +1945,7 @@ export default function LaporanPekerjaanClient() {
               ) : paginatedTasks.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={12}
+                    colSpan={11}
                     className="px-4 py-16 text-center text-slate-400"
                   >
                     Tidak ada data pekerjaan yang ditemukan.
@@ -2020,16 +2017,6 @@ export default function LaporanPekerjaanClient() {
                       className="px-3 py-2.5 text-slate-600 truncate"
                     >
                       {t.project}
-                    </td>
-                    <td
-                      title={t.division}
-                      style={{
-                        width: "var(--col-division)",
-                        maxWidth: "var(--col-division)",
-                      }}
-                      className="px-3 py-2.5 text-slate-600 truncate"
-                    >
-                      {t.division}
                     </td>
                     <td
                       title={(t as any).bagian || "-"}
