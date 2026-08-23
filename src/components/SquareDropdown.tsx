@@ -145,9 +145,9 @@ export default function SquareDropdown({
                 Tidak ditemukan
               </p>
             ) : (
-              filtered.map((opt) => (
+              filtered.map((opt, idx) => (
                 <button
-                  key={opt.value}
+                  key={`${opt.value}-${idx}`}
                   type="button"
                   onClick={() => {
                     onChange(opt.value);

@@ -3190,9 +3190,14 @@ function InlineEditRow({
   }, [pekerjaanList, form.task]);
 
   const picOptions = useMemo(() => {
-    return employeeOptions
-      .filter((e) => e.name)
-      .map((e) => ({ value: e.name, label: e.name }));
+    const uniqueNames = Array.from(
+      new Set(
+        employeeOptions
+          .map((e) => (typeof e === "string" ? e : e?.name || e?.label || ""))
+          .filter(Boolean)
+      )
+    ).sort((a, b) => a.localeCompare(b, "id"));
+    return uniqueNames.map((name) => ({ value: name, label: name }));
   }, [employeeOptions]);
 
   return (
@@ -3406,9 +3411,14 @@ function InlineAddRow({
   }, [pekerjaanList, form.task]);
 
   const picOptions = useMemo(() => {
-    return employeeOptions
-      .filter((e) => e.name)
-      .map((e) => ({ value: e.name, label: e.name }));
+    const uniqueNames = Array.from(
+      new Set(
+        employeeOptions
+          .map((e) => (typeof e === "string" ? e : e?.name || e?.label || ""))
+          .filter(Boolean)
+      )
+    ).sort((a, b) => a.localeCompare(b, "id"));
+    return uniqueNames.map((name) => ({ value: name, label: name }));
   }, [employeeOptions]);
 
   return (
