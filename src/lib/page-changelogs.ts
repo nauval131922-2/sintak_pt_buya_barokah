@@ -46,6 +46,23 @@ function entry(
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   // ─── Pricelist Kalender ───
+  'pricelist-2026-08-22': entry({
+    pageKey: 'pricelist',
+    title: 'Pricelist Kalender & Simulator',
+    permissionKeys: ['pricelist_kalkulasi'],
+    sortDate: '2026-08-22',
+    date: '22 Agu 2026',
+    version: '2026-08-22-1',
+    items: [
+      'Penambahan tab Master Parameter untuk mengelola seluruh acuan tarif kertas, mesin cetak (Oliver & SM), ongkos finishing, ukuran plano, dan konstanta grafika secara dinamis',
+      'Penambahan tab Simulator & Kalkulator Kalender Spiral untuk simulasi biaya produksi instan per pesanan dengan rincian 11 komponen HPP, target margin (+%), dan diskon nego (-%)',
+      'Sinkronisasi instan reaktif: perubahan di Master Parameter langsung mengalkulasi ulang seluruh 216 kombinasi matriks pricelist dan simulator tanpa reload halaman',
+      'Penyelarasan formula 11 komponen biaya dengan 72 file master Excel percetakan (Folder Source/*.xlsm) dengan tingkat akurasi 100%',
+      'Penyempurnaan input angka menggunakan ThousandInput dengan dukungan format mata uang Indonesia, persentase (%), dan penanganan angka 0 (nullish coalescing)',
+      'Penyimpanan otomatis preferensi tab aktif (activeTab) dan mode tampilan (viewMode) di localStorage saat halaman dimuat ulang',
+      'Penambahan modal panduan interaktif lengkap dengan pemetaan 4 kelompok parameter dan rincian formula pembentuk Total HPP (KALENDER!DA7)',
+    ],
+  }),
   'pricelist-2026-08-16': entry({
     pageKey: 'pricelist',
     title: 'Pricelist Kalender',
