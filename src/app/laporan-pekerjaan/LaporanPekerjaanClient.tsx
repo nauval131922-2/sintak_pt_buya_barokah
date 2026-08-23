@@ -122,6 +122,34 @@ const fmtTglOrder = (s?: string): string => {
   });
 };
 
+// Progress & penanda pekerjaan terakhir (SELESAI terakhir)/selanjutnya per order,
+// urutan task berdasarkan tanggal mulai.
+const summarizeOrderTasks = (tasks: SpreadsheetTask[]) => {
+  const sorted = [...tasks].sort(
+    (a, b) => parseDateToSort(a.startDate || "") - parseDateToSort(b.startDate || "")
+  );
+  const total = sorted.length;
+  const selesaiCount = sorted.filter(
+    (t) => (t.status || "").toUpperCase() === "SELESAI"
+  ).length;
+
+  let lastIdx = -1;
+  for (let i = total - 1; i >= 0; i--) {
+    if ((sorted[i].status || "").toUpperCase() === "SELESAI") {
+      lastIdx = i;
+      break;
+    }
+  }
+
+  return {
+    progressPct: total > 0 ? Math.round((selesaiCount / total) * 100) : 0,
+    // ponytail: lastIdx -1 (belum ada yg selesai) → selanjutnya = task pertama
+    pekerjaanTerakhir: lastIdx >= 0 ? sorted[lastIdx].task || "" : "",
+    pekerjaanSelanjutnya:
+      lastIdx + 1 < total ? sorted[lastIdx + 1].task || "" : "",
+  };
+};
+
 const fmtNumber = (n: number) =>
   Number(n).toLocaleString("id-ID", { maximumFractionDigits: 0 });
 
@@ -962,7 +990,10 @@ export default function LaporanPekerjaanClient() {
       }
     });
 
-    return Array.from(map.values());
+    return Array.from(map.values()).map((g) => ({
+      ...g,
+      ...summarizeOrderTasks(g.tasks),
+    }));
   }, [filteredTasks]);
 
   // Global Sorted Unique Orders
@@ -1109,6 +1140,9 @@ export default function LaporanPekerjaanClient() {
       aksi: 110,
       tglOrder: 150,
       project: 550,
+      progress: 140,
+      terakhir: 220,
+      selanjutnya: 220,
     }),
     []
   );
@@ -1841,6 +1875,38 @@ export default function LaporanPekerjaanClient() {
                     </div>
                   </div>
 
+                  <div>
+                    <div className="flex items-center justify-between text-[10px] mb-1">
+                      <span className="text-slate-400 font-semibold">Progress</span>
+                      <span className="font-bold text-emerald-700">{group.progressPct}%</span>
+                    </div>
+                    <div className="h-2 bg-slate-200/70 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all ${
+                          group.progressPct >= 100 ? "bg-emerald-600" : "bg-emerald-500"
+                        }`}
+                        style={{ width: `${group.progressPct}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {(group.pekerjaanTerakhir || group.pekerjaanSelanjutnya) && (
+                    <div className="bg-white p-2.5 rounded-lg border border-slate-200/60 space-y-1.5 text-[11px]">
+                      <div className="flex gap-2">
+                        <span className="text-slate-400 shrink-0 w-20">Terakhir</span>
+                        <span className="font-semibold text-slate-700 min-w-0 break-words">
+                          {group.pekerjaanTerakhir || "-"}
+                        </span>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="text-slate-400 shrink-0 w-20">Selanjutnya</span>
+                        <span className="font-semibold text-slate-700 min-w-0 break-words">
+                          {group.pekerjaanSelanjutnya || "-"}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-end pt-1">
                     <button
                       type="button"
@@ -1871,6 +1937,9 @@ export default function LaporanPekerjaanClient() {
               "--col-aksi": `${colWidths.aksi || 110}px`,
               "--col-tglOrder": `${colWidths.tglOrder || 150}px`,
               "--col-project": `${colWidths.project || 550}px`,
+              "--col-progress": `${colWidths.progress || 140}px`,
+              "--col-terakhir": `${colWidths.terakhir || 220}px`,
+              "--col-selanjutnya": `${colWidths.selanjutnya || 220}px`,
             } as React.CSSProperties
           }
         >
@@ -1894,6 +1963,51 @@ export default function LaporanPekerjaanClient() {
                 </th>
                 {renderSortableHeader("tglOrder" as any, "Tanggal Order")}
                 {renderSortableHeader("project", "Project Order")}
+                <th
+                  style={{
+                    width: `var(--col-progress, ${colWidths.progress || 140}px)`,
+                    minWidth: `var(--col-progress, ${colWidths.progress || 140}px)`,
+                  }}
+                  className="relative px-3 py-2.5 bg-slate-50 sticky top-0 z-10 border-b border-slate-200 select-none group"
+                >
+                  <span className="truncate">Progress</span>
+                  <div
+                    onMouseDown={(resizeEvt) => handleResizeStart("progress", resizeEvt)}
+                    onClick={(resizeEvt) => resizeEvt.stopPropagation()}
+                    className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-emerald-500/50 active:bg-emerald-600 z-20 group-hover:bg-slate-300/80 transition-colors"
+                    title="Geser untuk mengatur lebar kolom"
+                  />
+                </th>
+                <th
+                  style={{
+                    width: `var(--col-terakhir, ${colWidths.terakhir || 220}px)`,
+                    minWidth: `var(--col-terakhir, ${colWidths.terakhir || 220}px)`,
+                  }}
+                  className="relative px-3 py-2.5 bg-slate-50 sticky top-0 z-10 border-b border-slate-200 select-none group"
+                >
+                  <span className="truncate">Pekerjaan Terakhir</span>
+                  <div
+                    onMouseDown={(resizeEvt) => handleResizeStart("terakhir", resizeEvt)}
+                    onClick={(resizeEvt) => resizeEvt.stopPropagation()}
+                    className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-emerald-500/50 active:bg-emerald-600 z-20 group-hover:bg-slate-300/80 transition-colors"
+                    title="Geser untuk mengatur lebar kolom"
+                  />
+                </th>
+                <th
+                  style={{
+                    width: `var(--col-selanjutnya, ${colWidths.selanjutnya || 220}px)`,
+                    minWidth: `var(--col-selanjutnya, ${colWidths.selanjutnya || 220}px)`,
+                  }}
+                  className="relative px-3 py-2.5 bg-slate-50 sticky top-0 z-10 border-b border-slate-200 select-none group"
+                >
+                  <span className="truncate">Pekerjaan Selanjutnya</span>
+                  <div
+                    onMouseDown={(resizeEvt) => handleResizeStart("selanjutnya", resizeEvt)}
+                    onClick={(resizeEvt) => resizeEvt.stopPropagation()}
+                    className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-emerald-500/50 active:bg-emerald-600 z-20 group-hover:bg-slate-300/80 transition-colors"
+                    title="Geser untuk mengatur lebar kolom"
+                  />
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -1978,6 +2092,48 @@ export default function LaporanPekerjaanClient() {
                             {group.tasks.length} task
                           </span>
                         </div>
+                      </td>
+                      <td
+                        title={`${group.progressPct}% selesai`}
+                        style={{
+                          width: "var(--col-progress)",
+                          maxWidth: "var(--col-progress)",
+                        }}
+                        className="px-3 py-2.5"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden min-w-[36px]">
+                            <div
+                              className={`h-full rounded-full transition-all ${
+                                group.progressPct >= 100 ? "bg-emerald-600" : "bg-emerald-500"
+                              }`}
+                              style={{ width: `${group.progressPct}%` }}
+                            />
+                          </div>
+                          <span className="shrink-0 text-[11px] font-bold text-slate-600 w-9 text-right">
+                            {group.progressPct}%
+                          </span>
+                        </div>
+                      </td>
+                      <td
+                        title={group.pekerjaanTerakhir}
+                        style={{
+                          width: "var(--col-terakhir)",
+                          maxWidth: "var(--col-terakhir)",
+                        }}
+                        className="px-3 py-2.5 truncate text-slate-600"
+                      >
+                        {group.pekerjaanTerakhir || "-"}
+                      </td>
+                      <td
+                        title={group.pekerjaanSelanjutnya}
+                        style={{
+                          width: "var(--col-selanjutnya)",
+                          maxWidth: "var(--col-selanjutnya)",
+                        }}
+                        className="px-3 py-2.5 truncate text-slate-600"
+                      >
+                        {group.pekerjaanSelanjutnya || "-"}
                       </td>
                     </tr>
                   );
