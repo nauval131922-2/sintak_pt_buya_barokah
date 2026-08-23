@@ -2843,7 +2843,10 @@ function InlineAddRow({
   });
 
   const [pekerjaanList, setPekerjaanList] = useState<string[]>([]);
-  const [saving, setSaving] = useState(false);
+  const rowRef = useRef<HTMLTableRowElement>(null);
+  const formRef = useRef(form);
+  formRef.current = form;
+  const isSavingRef = useRef(false);
 
   useEffect(() => {
     if (form.bagian) {
@@ -2853,15 +2856,42 @@ function InlineAddRow({
     }
   }, [form.bagian]);
 
-  const handleSave = async () => {
-    if (saving) return;
-    setSaving(true);
-    try {
-      await onSave(form);
-    } finally {
-      setSaving(false);
+  const saveCurrentForm = useCallback(async () => {
+    if (isSavingRef.current) return;
+    const current = formRef.current;
+    
+    // Jika task belum diisi, langsung batalkan mode tambah tanpa panggil API
+    if (!current.task.trim()) {
+      onCancel();
+      return;
     }
-  };
+
+    isSavingRef.current = true;
+    try {
+      await onSave(current);
+    } finally {
+      isSavingRef.current = false;
+    }
+  }, [onSave, onCancel]);
+
+  // Auto-save saat klik di luar baris tambah pekerjaan
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (rowRef.current && rowRef.current.contains(target)) return;
+
+      // Jangan trigger jika klik terjadi di dalam portal panel (dropdown/datepicker di luar DOM row)
+      const isPortalPopup =
+        (target as Element)?.closest?.('[class*="z-[10000]"]') ||
+        (target as Element)?.closest?.('[data-date-picker-trigger]');
+      if (isPortalPopup) return;
+
+      saveCurrentForm();
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [saveCurrentForm]);
 
   const workDaysDisplay = useMemo(() => {
     if (!form.startDate || !form.endDate) return "-";
@@ -2891,7 +2921,7 @@ function InlineAddRow({
   }, [employeeOptions]);
 
   return (
-    <tr className="bg-emerald-50/90 border-y-2 border-emerald-300">
+    <tr ref={rowRef} className="bg-emerald-50/90 border-y-2 border-emerald-300">
       <td className="px-2.5 py-2.5 text-center font-bold text-emerald-700 text-xs">
         +
       </td>
@@ -3036,21 +3066,12 @@ function InlineAddRow({
       </td>
       {/* 9. Aksi */}
       <td className="px-2.5 py-2 text-center whitespace-nowrap">
-        <div className="flex items-center justify-center gap-1.5 min-w-[95px]">
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="p-1.5 text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-lg shadow-sm transition-all cursor-pointer shrink-0"
-            title="Simpan Pekerjaan Baru"
-          >
-            <Save size={14} />
-          </button>
+        <div className="flex items-center justify-center">
           <button
             type="button"
             onClick={onCancel}
-            className="p-1.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all cursor-pointer shrink-0 border border-slate-200"
-            title="Batal"
+            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer"
+            title="Batal Tambah Pekerjaan"
           >
             <X size={14} />
           </button>
