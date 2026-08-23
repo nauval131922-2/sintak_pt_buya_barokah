@@ -382,80 +382,8 @@ export default function LaporanPekerjaanClient() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [loadTime, setLoadTime] = useState<number | null>(null);
 
-  // Tab & Form state
-  const [activeTab, setActiveTab] = useState<"list" | "form">("list");
-  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
-  const [editingTask, setEditingTask] = useState<any>(null);
-  const [formData, setFormData] = useState({
-    task: "",
-    bagian: "",
-    orderProduksi: "",
-    jenisPekerjaan: "",
-    pic: "",
-    priority: "Low",
-    startDate: new Date() as Date | null,
-    endDate: null as Date | null,
-    workDays: "1",
-    note: "",
-    status: "",
-  });
-
-  const FORM_DRAFT_KEY = "laporan_pekerjaan_form_draft";
-
-  // Reset form to blank state & clear saved draft
-  const resetFormData = useCallback(() => {
-    setFormData({
-      task: "",
-      bagian: "",
-      orderProduksi: "",
-      jenisPekerjaan: "",
-      pic: "",
-      priority: "Low",
-      startDate: new Date(),
-      endDate: null,
-      workDays: "1",
-      note: "",
-      status: "",
-    });
-    setModalMode("create");
-    setEditingTask(null);
-    if (typeof window !== "undefined") {
-      sessionStorage.removeItem(FORM_DRAFT_KEY);
-    }
-  }, []);
-
-  // Restore form draft on mount / refresh
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      const saved = sessionStorage.getItem(FORM_DRAFT_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.formData) {
-          if (parsed.formData.startDate) parsed.formData.startDate = new Date(parsed.formData.startDate);
-          if (parsed.formData.endDate) parsed.formData.endDate = new Date(parsed.formData.endDate);
-          setFormData(parsed.formData);
-        }
-        if (parsed.modalMode) setModalMode(parsed.modalMode);
-        if (parsed.editingTask) setEditingTask(parsed.editingTask);
-      }
-    } catch (e) {}
-  }, []);
-
-  // Auto-save form draft to sessionStorage when typed
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      sessionStorage.setItem(
-        FORM_DRAFT_KEY,
-        JSON.stringify({
-          formData,
-          modalMode,
-          editingTask,
-        })
-      );
-    } catch (e) {}
-  }, [formData, modalMode, editingTask]);
+  // Modal Tambah Order Baru state
+  const [isCreateOrderOpen, setIsCreateOrderOpen] = useState(false);
 
   // Dropdown options state
   const [sopdOptions, setSopdOptions] = useState<any[]>([]);
@@ -688,110 +616,6 @@ export default function LaporanPekerjaanClient() {
     fetchEmployeeOptions();
   }, [fetchData]);
 
-  // CRUD Handlers
-  const openCreateModal = () => {
-    // Hanya reset jika modalMode bukan "create" (misalnya dari "edit")
-    if (modalMode !== "create") {
-      resetFormData();
-      setModalMode("create");
-      setEditingTask(null);
-    }
-    
-    // Fetch dropdown options asynchronously without blocking tab transition
-    fetchSopdOptions();
-    fetchEmployeeOptions();
-    
-    setActiveTab("form");
-  };
-
-  const openEditModal = async (task: any) => {
-    sessionStorage.removeItem(FORM_DRAFT_KEY);
-    setModalMode("edit");
-    setEditingTask(task);
-    
-    // Parse dates (bisa format '3-Jan-26', '03/01/2026', '2026-01-03')
-    const parseFlexibleDate = (dateStr?: string) => {
-      if (!dateStr || !dateStr.trim()) return null;
-      const str = dateStr.trim();
-
-      // Format spreadsheet: '3-Jan-26', '12-Feb-2026'
-      const monthNames: Record<string, number> = {
-        jan: 0, feb: 1, mar: 2, apr: 3, may: 4, mei: 4, jun: 5,
-        jul: 6, aug: 7, agu: 7, sep: 8, oct: 9, okt: 9, nov: 10, dec: 11, des: 11
-      };
-
-      if (str.includes('-')) {
-        const parts = str.split('-');
-        if (parts.length === 3) {
-          const day = parseInt(parts[0], 10);
-          const monthKey = parts[1].toLowerCase().substring(0, 3);
-          let year = parseInt(parts[2], 10);
-          
-          if (!isNaN(day) && monthNames[monthKey] !== undefined && !isNaN(year)) {
-            if (year < 100) year += 2000;
-            return new Date(year, monthNames[monthKey], day);
-          }
-          // Format ISO: '2026-01-03'
-          const isoMonth = parseInt(parts[1], 10) - 1;
-          if (!isNaN(day) && !isNaN(isoMonth) && !isNaN(year)) {
-            return new Date(year, isoMonth, day);
-          }
-        }
-      }
-
-      // Format slash: '03/01/2026'
-      if (str.includes('/')) {
-        const parts = str.split('/');
-        if (parts.length === 3) {
-          const day = parseInt(parts[0], 10);
-          const month = parseInt(parts[1], 10) - 1;
-          let year = parseInt(parts[2], 10);
-          if (year < 100) year += 2000;
-          if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
-            return new Date(year, month, day);
-          }
-        }
-      }
-
-      const d = new Date(str);
-      return isNaN(d.getTime()) ? null : d;
-    };
-
-    const startDateObj = parseFlexibleDate(task.startDate);
-    const endDateObj = parseFlexibleDate(task.endDate);
-
-    const selectedBagian = (task as any).bagian || "";
-    
-    // Deteksi jenisPekerjaan jika nama task diawali dengan nama pekerjaan di master
-    let detectedJenisPekerjaan = "";
-    if (task.task && task.project && task.task.includes(task.project)) {
-      detectedJenisPekerjaan = task.task.replace(task.project, "").trim();
-    }
-    
-    setFormData({
-      task: task.task || "",
-      bagian: selectedBagian,
-      orderProduksi: task.project || "",
-      jenisPekerjaan: detectedJenisPekerjaan,
-      pic: task.pic || "",
-      priority: task.priority || "Low",
-      startDate: startDateObj,
-      endDate: endDateObj,
-      workDays: task.workDays || "",
-      note: task.note || "",
-      status: task.status || "",
-    });
-    
-    // Fetch dropdown options asynchronously without blocking tab transition
-    fetchSopdOptions();
-    fetchEmployeeOptions();
-    if (selectedBagian) {
-      fetchPekerjaanOptions(selectedBagian);
-    }
-    
-    setActiveTab("form");
-  };
-
   const fetchSopdOptions = async () => {
     try {
       const res = await fetch('/api/sopd/options?all=true');
@@ -839,102 +663,74 @@ export default function LaporanPekerjaanClient() {
     }
   };
 
-  const closeModal = () => {
-    setActiveTab("list");
-  };
+  // Handler Tambah Order Baru (dengan task pertamanya)
+  const handleCreateOrder = async (payload: any) => {
+    const startDateStr = formatDateForApi(payload.startDate);
+    const endDateStr = formatDateForApi(payload.endDate);
 
-  const calcWorkDays = useCallback((start?: Date | null, end?: Date | null): string => {
-    if (!start || !end) return "";
-    const s = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-    const e = new Date(end.getFullYear(), end.getMonth(), end.getDate());
-    const diffTime = e.getTime() - s.getTime();
-    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
-    return diffDays > 0 ? String(diffDays) : "";
-  }, []);
-
-  // Auto trigger workDays recalculation whenever startDate or endDate changes
-  useEffect(() => {
-    if (formData.startDate && formData.endDate) {
-      const calculated = calcWorkDays(formData.startDate, formData.endDate);
-      if (calculated !== formData.workDays) {
-        setFormData((prev) => ({ ...prev, workDays: calculated }));
-      }
-    }
-  }, [formData.startDate, formData.endDate, calcWorkDays]);
-
-  const handleSave = async () => {
-    if (!confirm(modalMode === "create" ? "Yakin ingin menyimpan data pekerjaan baru ini?" : "Yakin ingin menyimpan perubahan data pekerjaan ini?")) {
-      return;
+    let workDays = "";
+    if (payload.startDate && payload.endDate) {
+      const s = payload.startDate instanceof Date ? payload.startDate : new Date(payload.startDate);
+      const e = payload.endDate instanceof Date ? payload.endDate : new Date(payload.endDate);
+      const diffDays = Math.round((e.getTime() - s.getTime()) / 86400000) + 1;
+      if (diffDays > 0) workDays = String(diffDays);
     }
 
-    const generatedTask = formData.jenisPekerjaan
-      ? (formData.orderProduksi ? `${formData.jenisPekerjaan} ${formData.orderProduksi}` : formData.jenisPekerjaan)
-      : (formData.task || (formData.orderProduksi ? `Pekerjaan ${formData.orderProduksi}` : "Pekerjaan Baru"));
-
-    if (!generatedTask.trim()) {
-      alert("Pilih Jenis Pekerjaan atau Order Produksi terlebih dahulu");
-      return;
-    }
+    const proj = payload.project.trim();
+    const taskName = payload.task.trim();
+    const fullTaskName = proj && !taskName.includes(proj)
+      ? `${taskName} ${proj}`
+      : taskName;
 
     try {
-      const url = modalMode === "create" ? "/api/laporan-pekerjaan" : "/api/laporan-pekerjaan";
-      const method = modalMode === "create" ? "POST" : "PUT";
-      
-      // Format dates to dd/mm/yyyy
-      const startDateStr = formData.startDate 
-        ? `${String(formData.startDate.getDate()).padStart(2, '0')}/${String(formData.startDate.getMonth() + 1).padStart(2, '0')}/${formData.startDate.getFullYear()}`
-        : "";
-      const endDateStr = formData.endDate 
-        ? `${String(formData.endDate.getDate()).padStart(2, '0')}/${String(formData.endDate.getMonth() + 1).padStart(2, '0')}/${formData.endDate.getFullYear()}`
-        : "";
-      
-      const payload = {
-        task: generatedTask,
-        project: formData.orderProduksi,
-        division: modalMode === "edit" ? (editingTask?.division || "") : "",
-        bagian: formData.bagian,
-        pic: formData.pic,
-        priority: formData.priority,
-        startDate: startDateStr,
-        endDate: endDateStr,
-        workDays: formData.workDays,
-        note: formData.note,
-        status: formData.status,
-      };
-      
-      const body = modalMode === "edit" ? { ...payload, id: editingTask.id } : payload;
-
-      const res = await fetch(url, {
-        method,
+      const res = await fetch("/api/laporan-pekerjaan", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          task: fullTaskName,
+          project: proj,
+          division: "",
+          bagian: payload.bagian || "SETTING",
+          pic: payload.pic,
+          priority: payload.priority || "Low",
+          startDate: startDateStr,
+          endDate: endDateStr,
+          workDays: workDays,
+          note: payload.note,
+          status: payload.status || "BELUM DIKERJAKAN",
+        }),
       });
 
       const json = await res.json();
       if (json.success) {
-        toast.success(modalMode === "create" ? "Data pekerjaan berhasil ditambahkan!" : "Data pekerjaan berhasil diperbarui!");
-        await fetchData();
-        resetFormData();
-        closeModal();
+        toast.success("Order baru berhasil ditambahkan!");
+        if (json.id) {
+          const createdTask: SpreadsheetTask = {
+            id: json.id,
+            task: fullTaskName,
+            project: proj,
+            division: "",
+            bagian: payload.bagian || "SETTING",
+            pic: payload.pic,
+            priority: payload.priority || "Low",
+            startDate: startDateStr,
+            endDate: endDateStr,
+            workDays: workDays,
+            note: payload.note,
+            status: payload.status || "BELUM DIKERJAKAN",
+            source: "sintak",
+            tglOrder: "",
+          };
+          setTasks((prev) => [createdTask, ...prev]);
+          // Buka langsung modal detail order baru tersebut
+          setSelectedProjectGroup({
+            project: proj,
+            tglOrder: "",
+            tasks: [createdTask],
+          });
+        }
       } else {
-        toast.error(json.error || "Gagal menyimpan data");
-      }
-    } catch (err: any) {
-      toast.error(err.message || "Terjadi kesalahan");
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    if (!confirm("Yakin ingin menghapus data pekerjaan ini?")) return;
-
-    try {
-      const res = await fetch(`/api/laporan-pekerjaan?id=${id}`, { method: "DELETE" });
-      const json = await res.json();
-      if (json.success) {
-        toast.success("Data pekerjaan berhasil dihapus!");
-        await fetchData();
-      } else {
-        toast.error(json.error || "Gagal menghapus data");
+        toast.error(json.error || "Gagal menambahkan order baru");
       }
     } catch (err: any) {
       toast.error(err.message || "Terjadi kesalahan");
@@ -1597,62 +1393,12 @@ export default function LaporanPekerjaanClient() {
     <div
       ref={clientContainerRef}
       className={`text-slate-800 ${
-        activeTab === "form"
-          ? "portrait:max-sm:h-full portrait:max-sm:flex portrait:max-sm:flex-col portrait:max-sm:min-h-0 portrait:max-sm:overflow-hidden md:flex md:flex-col md:flex-1 md:min-h-0 md:h-full md:overflow-hidden"
-          : isAnalyticsOpen
+        isAnalyticsOpen
           ? "flex flex-col gap-4 w-full pb-44 sm:pb-40 md:pb-24"
           : "space-y-3 pb-44 sm:max-md:pb-36 sm:pb-40 md:space-y-0 md:flex-1 md:min-h-0 md:flex md:flex-col md:gap-3 md:h-full md:overflow-hidden md:pb-0"
       }`}
     >
-      {/* TABS Navigation (Gaya JHP) */}
-      <div className="portrait:max-sm:sticky portrait:max-sm:-top-2 portrait:max-sm:z-40 portrait:max-sm:bg-[#f8fafc] portrait:max-sm:-mx-4 portrait:max-sm:px-4 portrait:max-sm:pt-2 static mx-0 px-0 pt-0 flex gap-2 sm:gap-6 border-b border-gray-100 shrink-0">
-        <button
-          type="button"
-          onClick={() => setActiveTab("list")}
-          className={`flex items-center justify-center gap-1.5 pb-3 px-2 text-[13px] font-bold border-b-2 transition-all flex-1 sm:flex-initial cursor-pointer ${
-            activeTab === "list"
-              ? "border-emerald-600 text-emerald-700"
-              : "border-transparent text-gray-500 hover:text-gray-700"
-          }`}
-        >
-          <ClipboardList size={14} />
-          Daftar Pekerjaan
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            if (activeTab !== "form") {
-              if (modalMode !== "edit") {
-                openCreateModal();
-              } else {
-                setActiveTab("form");
-              }
-            }
-          }}
-          className={`flex items-center justify-center gap-1.5 pb-3 px-2 text-[13px] font-bold border-b-2 transition-all flex-1 sm:flex-initial cursor-pointer ${
-            activeTab === "form"
-              ? "border-emerald-600 text-emerald-700"
-              : "border-transparent text-gray-500 hover:text-gray-700"
-          }`}
-        >
-          {modalMode === "edit" && activeTab === "form" ? (
-            <>
-              <Edit2 size={14} />
-              Edit Pekerjaan
-            </>
-          ) : (
-            <>
-              <PlusSquare size={14} />
-              Tambah Pekerjaan
-            </>
-          )}
-        </button>
-      </div>
-
-      {/* TAB 1: LIST DATA PEKERJAAN */}
-      {activeTab === "list" && (
-        <>
-          {/* Accordion: Statistik & Grafik Analisis */}
+      {/* Accordion: Statistik & Grafik Analisis */}
       <div className="shrink-0 bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden transition-all">
         <button
           type="button"
@@ -2060,6 +1806,22 @@ export default function LaporanPekerjaanClient() {
                 className="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
               />
             </div>
+
+            {/* Tombol Tambah Order Baru */}
+            <button
+              type="button"
+              onClick={() => {
+                fetchSopdOptions();
+                fetchEmployeeOptions();
+                setIsCreateOrderOpen(true);
+              }}
+              className="px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all flex items-center gap-1.5 shadow-sm cursor-pointer shrink-0"
+              title="Tambah Order Baru"
+            >
+              <Plus size={14} />
+              <span className="hidden sm:inline">Tambah Order</span>
+              <span className="sm:hidden">Order Baru</span>
+            </button>
           </div>
 
           <div className="flex items-center space-x-2 w-full md:w-auto min-w-0">
@@ -2402,8 +2164,6 @@ export default function LaporanPekerjaanClient() {
         totalPages={totalPages}
         onPageChange={setCurrentPage}
       />
-      </>
-      )}
 
       {/* Floating Scroll Navigation (Ke Atas & Ke Bawah - Fade total saat idle) */}
       {(showTopBtn || showBottomBtn) && (
@@ -2458,245 +2218,14 @@ export default function LaporanPekerjaanClient() {
         </Portal>
       )}
 
-      {/* TAB 2: FORM TAMBAH / EDIT PEKERJAAN (STYLE JHP FORM) */}
-      <div className={activeTab === "form" ? "portrait:max-sm:flex-1 portrait:max-sm:min-h-0 portrait:max-sm:flex portrait:max-sm:flex-col portrait:max-sm:h-full portrait:max-sm:overflow-hidden max-sm:landscape:block max-sm:landscape:pb-40 sm:max-md:pb-36 md:flex md:flex-col md:flex-1 md:min-h-0 md:h-full md:overflow-hidden" : "hidden"}>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSave();
-          }}
-          className="bg-white border border-gray-100 rounded-2xl shadow-sm animate-in slide-in-from-top-4 fade-in duration-300 portrait:max-sm:flex-1 portrait:max-sm:min-h-0 portrait:max-sm:flex portrait:max-sm:flex-col portrait:max-sm:overflow-hidden max-sm:landscape:block sm:max-md:block md:flex md:flex-col md:flex-1 md:min-h-0 md:h-full md:overflow-hidden"
-        >
-          {/* BODY SCROLLABLE: Isian Form JHP Style */}
-          <div className="portrait:max-sm:flex-1 portrait:max-sm:min-h-0 portrait:max-sm:overflow-y-auto flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 custom-scrollbar space-y-6">
-            
-            {/* Section 1: Information Order & Pekerjaan */}
-            <div>
-              {/* Row 1: Bagian, Order Produksi, Jenis Pekerjaan */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-gray-600">
-                    Bagian <span className="text-rose-400">*</span>
-                  </label>
-                  <SearchableDropdown
-                    id="modal-bagian"
-                    value={formData.bagian}
-                    items={BAGIAN_LIST}
-                    onChange={(val) => {
-                      setFormData({ ...formData, bagian: val, jenisPekerjaan: "" });
-                      if (val) fetchPekerjaanOptions(val);
-                      else setPekerjaanOptions([]);
-                    }}
-                    placeholder="-- Pilih Bagian --"
-                    allLabel="-- Pilih Bagian --"
-                    triggerWidth="w-full"
-                    panelWidth="w-full"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-gray-600">
-                    Order Produksi
-                  </label>
-                  <SearchableDropdown
-                    id="modal-order"
-                    value={formData.orderProduksi}
-                    items={orderProduksiItems}
-                    itemLabels={orderProduksiItemLabels}
-                    onChange={(val) => setFormData({ ...formData, orderProduksi: val })}
-                    placeholder="-- Pilih Order --"
-                    allLabel="-- Pilih Order --"
-                    searchPlaceholder="Cari nomor order atau nama order (misal: OP.001)..."
-                    triggerWidth="w-full"
-                    panelWidth="w-full"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-gray-600">
-                    Jenis Pekerjaan <span className="text-rose-400">*</span>
-                  </label>
-                  <SearchableDropdown
-                    id="modal-pekerjaan"
-                    value={formData.jenisPekerjaan}
-                    items={pekerjaanOptions.filter(p => p.name).map(p => p.name)}
-                    onChange={(val) => setFormData({ ...formData, jenisPekerjaan: val })}
-                    placeholder={formData.bagian ? "-- Pilih Jenis Pekerjaan --" : "-- Pilih Bagian dulu --"}
-                    allLabel={formData.bagian ? "-- Pilih Jenis Pekerjaan --" : "-- Pilih Bagian dulu --"}
-                    triggerWidth="w-full"
-                    panelWidth="w-full"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Header / Section Title 2: Penugasan & Waktu */}
-            <div>
-              <div className="flex items-center gap-2.5 mb-5">
-                <span className="text-[13px] font-bold text-gray-700">Penugasan &amp; Jadwal</span>
-                <div className="flex-1 h-px bg-gray-100"></div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-gray-600">
-                    PIC (Karyawan)
-                  </label>
-                  <SearchableDropdown
-                    id="modal-pic"
-                    value={formData.pic}
-                    items={employeeOptions.filter(e => e.name).map(e => e.name)}
-                    itemLabels={employeeOptions.reduce((acc, e) => {
-                      if (e.name) {
-                        acc[e.name] = e.position ? `${e.name} — ${e.position}` : e.name;
-                      }
-                      return acc;
-                    }, {} as Record<string, string>)}
-                    onChange={(val) => setFormData({ ...formData, pic: val })}
-                    placeholder="-- Pilih PIC --"
-                    allLabel="-- Pilih PIC --"
-                    searchPlaceholder="Cari nama karyawan / jabatan..."
-                    triggerWidth="w-full"
-                    panelWidth="w-full"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-gray-600">
-                    Priority
-                  </label>
-                  <SearchableDropdown
-                    id="modal-priority"
-                    value={formData.priority}
-                    items={["Low", "Medium", "High"]}
-                    onChange={(val) => setFormData({ ...formData, priority: val || "Low" })}
-                    placeholder="-- Pilih Priority --"
-                    allLabel="-- Pilih Priority --"
-                    triggerWidth="w-full"
-                    panelWidth="w-full"
-                  />
-                </div>
-              </div>
-
-              {/* Start Date, End Date, Work Days */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-gray-600">
-                    Start Date
-                  </label>
-                  <DatePicker
-                    name="startDate"
-                    value={formData.startDate}
-                    onChange={(date) => {
-                      const wDays = calcWorkDays(date, formData.endDate);
-                      setFormData({ ...formData, startDate: date, workDays: wDays });
-                    }}
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-gray-600">
-                    End Date
-                  </label>
-                  <DatePicker
-                    name="endDate"
-                    value={formData.endDate}
-                    onChange={(date) => {
-                      const wDays = calcWorkDays(formData.startDate, date);
-                      setFormData({ ...formData, endDate: date, workDays: wDays });
-                    }}
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-gray-600">
-                    Work Days <span className="text-[11px] font-normal text-gray-400">(otomatis)</span>
-                  </label>
-                  <input
-                    type="text"
-                    readOnly
-                    value={formData.workDays ? `${formData.workDays} Hari` : ""}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-[13px] font-medium text-emerald-800 outline-none cursor-not-allowed h-10"
-                    placeholder="Auto hitung"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Header / Section Title 3: Status & Note */}
-            <div>
-              <div className="flex items-center gap-2.5 mb-5">
-                <span className="text-[13px] font-bold text-gray-700">Status &amp; Catatan</span>
-                <div className="flex-1 h-px bg-gray-100"></div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-1.5 md:col-span-1">
-                  <label className="text-[12px] font-bold text-gray-600">
-                    Status Pekerjaan
-                  </label>
-                  <SearchableDropdown
-                    id="modal-status"
-                    value={formData.status}
-                    items={["BELUM DIKERJAKAN", "IN PROGRESS", "PENDING", "CANCEL", "SELESAI"]}
-                    onChange={(val) => setFormData({ ...formData, status: val || "" })}
-                    placeholder="-- Pilih Status --"
-                    allLabel="-- Pilih Status --"
-                    triggerWidth="w-full"
-                    panelWidth="w-full"
-                  />
-                </div>
-
-                <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-[12px] font-bold text-gray-600">
-                    Note / Catatan
-                  </label>
-                  <textarea
-                    value={formData.note}
-                    onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-                    rows={3}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-[13px] font-medium focus:bg-white focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none transition-all min-h-[70px] resize-y placeholder:text-gray-300"
-                    placeholder="Catatan tambahan..."
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* FOOTER FIXED: Action buttons (Persis JHP style & fixed layout) */}
-          <div className="shrink-0 p-3 sm:p-4 pb-8 sm:pb-4 border-t border-gray-100 bg-white/95 backdrop-blur-md z-10 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 rounded-b-2xl">
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={resetFormData}
-                className="w-full sm:w-auto px-4 py-2.5 text-[13px] font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-200 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shrink-0 whitespace-nowrap"
-                title="Reset / Kosongkan Isian Form"
-              >
-                <RotateCcw size={15} />
-                Reset Form
-              </button>
-            </div>
-            <div className="flex gap-2 sm:gap-3">
-              <button
-                type="button"
-                onClick={closeModal}
-                className="flex-1 sm:flex-initial px-5 py-2.5 text-[13px] font-bold text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all text-center cursor-pointer shrink-0 whitespace-nowrap"
-              >
-                Batal
-              </button>
-              <button
-                type="submit"
-                className="flex-1 sm:flex-initial px-5 py-2.5 text-[13px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0 whitespace-nowrap"
-              >
-                <Save size={16} className="shrink-0" />
-                <span className="shrink-0 whitespace-nowrap">
-                  {modalMode === "create" ? "Simpan Data Baru" : "Simpan Perubahan"}
-                </span>
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
+      {/* Modal Tambah Order Baru */}
+      <CreateOrderModal
+        isOpen={isCreateOrderOpen}
+        onClose={() => setIsCreateOrderOpen(false)}
+        sopdOptions={sopdOptions}
+        employeeOptions={employeeOptions}
+        onSubmit={handleCreateOrder}
+      />
 
       {/* Conflict Resolution Modal */}
       {showConflictModal && currentConflict && (
@@ -3637,5 +3166,306 @@ function InlineAddRow({
         </div>
       </td>
     </tr>
+  );
+}
+
+// ----------------------------------------------------------------------
+// Modal Tambah Order Baru (Ringkas & Cepat)
+// ----------------------------------------------------------------------
+
+function CreateOrderModal({
+  isOpen,
+  onClose,
+  sopdOptions,
+  employeeOptions,
+  onSubmit,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  sopdOptions: any[];
+  employeeOptions: any[];
+  onSubmit: (payload: any) => Promise<void>;
+}) {
+  const [orderName, setOrderName] = useState("");
+  const [bagian, setBagian] = useState("SETTING");
+  const [task, setTask] = useState("");
+  const [pic, setPic] = useState("");
+  const [priority, setPriority] = useState("Low");
+  const [startDate, setStartDate] = useState<Date | null>(new Date());
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [status, setStatus] = useState("BELUM DIKERJAKAN");
+  const [note, setNote] = useState("");
+  const [pekerjaanList, setPekerjaanList] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (bagian) {
+      fetchPekerjaanForCategory(bagian).then((list) => {
+        setPekerjaanList(list);
+        if (list.length > 0) {
+          setTask(list[0]);
+        } else {
+          setTask("");
+        }
+      });
+    } else {
+      setPekerjaanList([]);
+      setTask("");
+    }
+  }, [bagian]);
+
+  if (!isOpen) return null;
+
+  const orderSuggestions = Array.from(
+    new Set([
+      ...sopdOptions.map((s) => String(s.nama_order || s.nama_prd || "").trim()).filter(Boolean),
+      ...sopdOptions.map((s) => String(s.no_sopd || s.faktur || s.no_order || "").trim()).filter(Boolean),
+    ])
+  );
+
+  const picOptions = Array.from(
+    new Set(
+      employeeOptions
+        .map((e) => (typeof e === "string" ? e : e?.name || e?.label || ""))
+        .filter(Boolean)
+    )
+  ).sort((a, b) => a.localeCompare(b, "id"));
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!orderName.trim()) {
+      toast.error("Nama / Nomor Order Produksi wajib diisi");
+      return;
+    }
+    if (!task.trim()) {
+      toast.error("Nama Task / Pekerjaan wajib diisi");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await onSubmit({
+        project: orderName.trim(),
+        bagian,
+        task: task.trim(),
+        pic,
+        priority,
+        startDate,
+        endDate,
+        status,
+        note,
+      });
+      onClose();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Portal>
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/80 shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                <Plus size={18} />
+              </div>
+              <div>
+                <h3 className="text-sm sm:text-base font-bold text-slate-800">
+                  Tambah Order Produksi Baru
+                </h3>
+                <p className="text-[11px] text-slate-400">
+                  Masukkan nomor order dan task pertamanya
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-all cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          {/* Form Body */}
+          <form onSubmit={handleSubmit} className="flex-1 min-h-0 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+            {/* Order Produksi */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Order Produksi (Nomor / Nama Order) <span className="text-rose-500">*</span>
+              </label>
+              <input
+                list="create-order-suggestions"
+                type="text"
+                placeholder="Ketik atau pilih nomor order (misal: OP.001 - Buku A)..."
+                value={orderName}
+                onChange={(e) => setOrderName(e.target.value)}
+                className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none font-semibold text-slate-800 transition-all"
+                autoFocus
+                required
+              />
+              <datalist id="create-order-suggestions">
+                {orderSuggestions.slice(0, 100).map((name, idx) => (
+                  <option key={idx} value={name} />
+                ))}
+              </datalist>
+            </div>
+
+            {/* Bagian & Task Pertama */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  Bagian <span className="text-rose-500">*</span>
+                </label>
+                <SquareDropdown
+                  options={BAGIAN_LIST.map((b) => ({ value: b, label: b }))}
+                  value={bagian}
+                  onChange={setBagian}
+                  searchPlaceholder="Cari Bagian..."
+                  widthClass="w-full"
+                  usePortal={true}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  Task / Pekerjaan Pertama <span className="text-rose-500">*</span>
+                </label>
+                <SquareDropdown
+                  options={
+                    pekerjaanList.length > 0
+                      ? pekerjaanList.map((p) => ({ value: p, label: p }))
+                      : [{ value: "", label: "-- Pilih Bagian dulu --" }]
+                  }
+                  value={task}
+                  onChange={setTask}
+                  searchPlaceholder="Cari Task / Pekerjaan..."
+                  widthClass="w-full"
+                  usePortal={true}
+                />
+              </div>
+            </div>
+
+            {/* PIC & Priority */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  PIC (Karyawan)
+                </label>
+                <SquareDropdown
+                  options={picOptions.map((p) => ({ value: p, label: p }))}
+                  value={pic}
+                  onChange={setPic}
+                  searchPlaceholder="Cari PIC / Karyawan..."
+                  widthClass="w-full"
+                  usePortal={true}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  Priority
+                </label>
+                <SquareDropdown
+                  options={[
+                    { value: "Low", label: "Low" },
+                    { value: "Medium", label: "Medium" },
+                    { value: "High", label: "High" },
+                  ]}
+                  value={priority}
+                  onChange={setPriority}
+                  searchPlaceholder="Priority..."
+                  widthClass="w-full"
+                  usePortal={true}
+                />
+              </div>
+            </div>
+
+            {/* Tanggal & Status */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  Tanggal Mulai ~ Selesai
+                </label>
+                <div className="flex items-center gap-1.5">
+                  <div className="flex-1">
+                    <DatePicker
+                      name="order_create_start"
+                      value={startDate}
+                      onChange={setStartDate}
+                      usePortal={true}
+                    />
+                  </div>
+                  <span className="text-slate-400 text-xs font-semibold">~</span>
+                  <div className="flex-1">
+                    <DatePicker
+                      name="order_create_end"
+                      value={endDate}
+                      onChange={setEndDate}
+                      usePortal={true}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  Status Pekerjaan
+                </label>
+                <SquareDropdown
+                  options={[
+                    { value: "BELUM DIKERJAKAN", label: "BELUM DIKERJAKAN" },
+                    { value: "IN PROGRESS", label: "IN PROGRESS" },
+                    { value: "PENDING", label: "PENDING" },
+                    { value: "CANCEL", label: "CANCEL" },
+                    { value: "SELESAI", label: "SELESAI" },
+                  ]}
+                  value={status}
+                  onChange={setStatus}
+                  searchPlaceholder="Status..."
+                  widthClass="w-full"
+                  usePortal={true}
+                />
+              </div>
+            </div>
+
+            {/* Catatan (Note) */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Catatan (Note)
+              </label>
+              <textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Catatan opsional..."
+                rows={2}
+                className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all resize-y"
+              />
+            </div>
+
+            {/* Footer Form */}
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+              >
+                <Save size={14} />
+                <span>{saving ? "Menyimpan..." : "Simpan & Buka Order"}</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </Portal>
   );
 }
