@@ -46,6 +46,21 @@ function entry(
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   // ─── Pricelist Kalender ───
+  'pricelist-2026-08-23': entry({
+    pageKey: 'pricelist',
+    title: 'Pricelist Kalender & Simulator',
+    permissionKeys: ['pricelist_kalkulasi'],
+    sortDate: '2026-08-23',
+    date: '23 Agu 2026',
+    version: '2026-08-23-1',
+    items: [
+      'Dukungan penuh finishing jilid Klem Seng (Jepit Kaleng) pada tab Master Parameter, Simulator, dan Pricelist Matriks',
+      'Penambahan parameter tarif jilid Klem Seng per ukuran (32x48, 38x54, 46x64, 48x64) di Master Parameter',
+      'Toggle pilihan finishing Spiral vs Klem Seng pada bar filter pricelist dengan rekalkulasi instan 216 kombinasi',
+      'Penyelarasan formula finishing Klem Seng dengan 72 file master Excel Klem Agustus (Folder 30 Source/*.xlsm)',
+      'Pembaruan dokumentasi dan panduan interaktif manual modal untuk mendukung kalkulasi Spiral & Klem',
+    ],
+  }),
   'pricelist-2026-08-22': entry({
     pageKey: 'pricelist',
     title: 'Pricelist Kalender & Simulator',
