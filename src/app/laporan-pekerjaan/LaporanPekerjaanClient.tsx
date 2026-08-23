@@ -2450,29 +2450,29 @@ function TaskDetailModal({
             <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
               <table className="w-full text-left text-xs border-collapse table-fixed min-w-[1150px]">
                 <colgroup>
-                  <col className="w-10" />
-                  <col className="w-32" />
-                  <col className="w-40" />
-                  <col className="w-56" />
-                  <col className="w-28" />
-                  <col className="w-52" />
-                  <col className="w-20" />
-                  <col className="w-40" />
-                  <col className="w-auto" />
-                  <col className="w-20" />
+                  <col style={{ width: '45px' }} />
+                  <col style={{ width: '130px' }} />
+                  <col style={{ width: '150px' }} />
+                  <col style={{ width: '220px' }} />
+                  <col style={{ width: '100px' }} />
+                  <col style={{ width: '210px' }} />
+                  <col style={{ width: '75px' }} />
+                  <col style={{ width: '150px' }} />
+                  <col style={{ minWidth: '180px' }} />
+                  <col style={{ width: '60px' }} />
                 </colgroup>
                 <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
                   <tr>
-                    <th className="px-2.5 py-2.5 text-center w-10">No</th>
-                    <th className="px-2.5 py-2.5 w-32">Bagian</th>
-                    <th className="px-2.5 py-2.5 w-40">PIC</th>
-                    <th className="px-2.5 py-2.5 w-56">Task / Aktivitas</th>
-                    <th className="px-2.5 py-2.5 w-28">Priority</th>
-                    <th className="px-2.5 py-2.5 w-52">Start ~ End</th>
-                    <th className="px-2.5 py-2.5 text-center w-20">Work Days</th>
-                    <th className="px-2.5 py-2.5 w-40">Status</th>
+                    <th className="px-2.5 py-2.5 text-center">No</th>
+                    <th className="px-2.5 py-2.5">Bagian</th>
+                    <th className="px-2.5 py-2.5">PIC</th>
+                    <th className="px-2.5 py-2.5">Task / Aktivitas</th>
+                    <th className="px-2.5 py-2.5">Priority</th>
+                    <th className="px-2.5 py-2.5">Start ~ End</th>
+                    <th className="px-2.5 py-2.5 text-center">Work Days</th>
+                    <th className="px-2.5 py-2.5">Status</th>
                     <th className="px-2.5 py-2.5">Note</th>
-                    <th className="px-2.5 py-2.5 text-center w-20">Aksi</th>
+                    <th className="px-2.5 py-2.5 text-center">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
