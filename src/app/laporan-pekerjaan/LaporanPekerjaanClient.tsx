@@ -88,6 +88,21 @@ const STATUS_LEGEND = [
 
 const dateSortCache = new Map<string, number>();
 
+const MONTH_MAP: Record<string, number> = {
+  jan: 0, januari: 0,
+  feb: 1, februari: 1,
+  mar: 2, maret: 2,
+  apr: 3, april: 3,
+  mei: 4, may: 4,
+  jun: 5, juni: 5,
+  jul: 6, juli: 6,
+  ags: 7, aug: 7, agustus: 7, august: 7,
+  sep: 8, september: 8,
+  okt: 9, oct: 9, oktober: 9, october: 9,
+  nov: 10, november: 10,
+  des: 11, dec: 11, desember: 11, december: 11,
+};
+
 function parseDateToSort(str: string): number {
   if (!str || !str.trim()) return 0;
   const cached = dateSortCache.get(str);
@@ -96,25 +111,48 @@ function parseDateToSort(str: string): number {
   const s = str.trim();
   let result = 0;
 
-  // Check DD/MM/YYYY or D/M/YYYY or DD-MM-YYYY
-  const ddmmyyyy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
-  if (ddmmyyyy) {
-    const day = parseInt(ddmmyyyy[1], 10);
-    const month = parseInt(ddmmyyyy[2], 10) - 1;
-    const year = parseInt(ddmmyyyy[3], 10);
-    result = new Date(year, month, day).getTime();
-  } else {
-    // Check YYYY-MM-DD
+  // 1. Format text-month: "3-Jan-26", "18-Jan-2026", "5-Ags-26", "23-Aug-26"
+  const textMonthMatch = s.match(/^(\d{1,2})[\s\-\/]([a-zA-Z]+)[\s\-\/](\d{2,4})$/);
+  if (textMonthMatch) {
+    const day = parseInt(textMonthMatch[1], 10);
+    const mStr = textMonthMatch[2].toLowerCase();
+    const month = MONTH_MAP[mStr];
+    let year = parseInt(textMonthMatch[3], 10);
+    if (year < 100) year += 2000;
+    if (month !== undefined && !isNaN(day) && !isNaN(year)) {
+      result = new Date(year, month, day, 12, 0, 0).getTime();
+    }
+  }
+
+  // 2. Format numerik DD/MM/YYYY atau DD-MM-YYYY (contoh: "03/01/2026", "23-08-2026")
+  if (!result) {
+    const ddmmyyyy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+    if (ddmmyyyy) {
+      const day = parseInt(ddmmyyyy[1], 10);
+      const month = parseInt(ddmmyyyy[2], 10) - 1;
+      let year = parseInt(ddmmyyyy[3], 10);
+      if (year < 100) year += 2000;
+      if (month >= 0 && month <= 11 && day >= 1 && day <= 31) {
+        result = new Date(year, month, day, 12, 0, 0).getTime();
+      }
+    }
+  }
+
+  // 3. Format YYYY-MM-DD
+  if (!result) {
     const yyyymmdd = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
     if (yyyymmdd) {
       const year = parseInt(yyyymmdd[1], 10);
       const month = parseInt(yyyymmdd[2], 10) - 1;
       const day = parseInt(yyyymmdd[3], 10);
-      result = new Date(year, month, day).getTime();
-    } else {
-      const parsed = Date.parse(s);
-      result = isNaN(parsed) ? 0 : parsed;
+      result = new Date(year, month, day, 12, 0, 0).getTime();
     }
+  }
+
+  // 4. Fallback Date.parse
+  if (!result) {
+    const parsed = Date.parse(s);
+    result = isNaN(parsed) ? 0 : parsed;
   }
 
   dateSortCache.set(str, result);
