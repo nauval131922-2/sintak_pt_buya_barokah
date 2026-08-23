@@ -469,19 +469,11 @@ const renderPieLabel = ({
   );
 };
 
-const formatPicShortName = (fullName: string) => {
-  if (!fullName || fullName.toUpperCase() === "TANPA PIC") return "Tanpa PIC";
-  const upper = fullName.toUpperCase();
-  if (upper.includes("ADI")) return "Adi";
-  if (upper.includes("ALBILLA") || upper.includes("ALBILA")) return "Albilla";
-  if (upper.includes("ERIC")) return "Eric";
-  if (upper.includes("RIFAN") || upper.includes("RIF'AN")) return "Rifan";
-  if (upper.includes("RIKZA")) return "Rikza";
-  if (upper.includes("SONI") || upper.includes("SONNY")) return "Sonny";
-
-  const firstWord = fullName.trim().split(" ")[0];
-  if (firstWord.length > 8) return `${firstWord.slice(0, 7)}…`;
-  return firstWord;
+const truncatePicName = (name: string, maxLen = 13) => {
+  if (!name) return "";
+  const trimmed = name.trim();
+  if (trimmed.length <= maxLen) return trimmed;
+  return `${trimmed.slice(0, maxLen - 1)}…`;
 };
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -1245,7 +1237,7 @@ export default function LaporanPekerjaanClient() {
       const picKey = rawPic.toUpperCase();
       if (!map[picKey]) {
         map[picKey] = {
-          name: formatPicShortName(rawPic),
+          name: truncatePicName(rawPic, 13),
           fullName: rawPic,
           BelumDikerjakan: 0,
           Selesai: 0,
