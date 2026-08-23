@@ -3144,7 +3144,7 @@ function InlineAddRow({
           ref={(el) => {
             if (el) {
               el.style.height = "auto";
-              el.style.height = `${Math.max(30, e.target.scrollHeight)}px`;
+              el.style.height = `${Math.max(30, el.scrollHeight)}px`;
             }
           }}
           className="w-full min-h-[30px] px-2 py-1 text-[11px] border border-emerald-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 custom-scrollbar resize-y break-words leading-tight"
