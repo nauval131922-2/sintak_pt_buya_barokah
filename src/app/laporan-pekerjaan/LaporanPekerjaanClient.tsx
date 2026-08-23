@@ -238,15 +238,14 @@ const formatDateForApi = (val?: Date | string | null): string => {
 };
 
 // Progress & penanda pekerjaan terakhir (SELESAI terakhir)/selanjutnya per order,
-// urutan task berdasarkan tanggal mulai.
+// urutan task berdasarkan tanggal mulai (yang tanpa start_date ditaruh di paling bawah).
 const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
-  const sorted = [...tasks].sort(
-    (a, b) =>
-      parseDateToSort(a.startDate || "") -
-        parseDateToSort(b.startDate || "") ||
-      // ponytail: tanggal sama/kosong → ikuti urutan asli data (id asc)
-      a.id - b.id
-  );
+  const sorted = [...tasks].sort((a, b) => {
+    const timeA = parseDateToSort(a.startDate || "") || Number.MAX_SAFE_INTEGER;
+    const timeB = parseDateToSort(b.startDate || "") || Number.MAX_SAFE_INTEGER;
+    if (timeA !== timeB) return timeA - timeB;
+    return a.id - b.id;
+  });
   const total = sorted.length;
   const selesaiCount = sorted.filter(
     (t) => (t.status || "").toUpperCase() === "SELESAI"
@@ -2393,12 +2392,12 @@ function TaskDetailModal({
   const [isAddingTask, setIsAddingTask] = useState<boolean>(false);
 
   const sortedTasks = useMemo(() => {
-    return [...selectedProjectGroup.tasks].sort(
-      (a, b) =>
-        parseDateToSort(a.startDate || "") -
-          parseDateToSort(b.startDate || "") ||
-        a.id - b.id
-    );
+    return [...selectedProjectGroup.tasks].sort((a, b) => {
+      const timeA = parseDateToSort(a.startDate || "") || Number.MAX_SAFE_INTEGER;
+      const timeB = parseDateToSort(b.startDate || "") || Number.MAX_SAFE_INTEGER;
+      if (timeA !== timeB) return timeA - timeB;
+      return a.id - b.id;
+    });
   }, [selectedProjectGroup.tasks]);
 
   return (
