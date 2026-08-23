@@ -74,6 +74,13 @@ export default function PricelistClient() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedJenis, setSelectedJenis] = useState<string>('ALL');
   const [selectedBahan, setSelectedBahan] = useState<string>('ALL');
+  const [selectedFinishing, setSelectedFinishing] = useState<'Spiral' | 'Klem'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sintak_pricelist_finishing');
+      if (saved === 'Spiral' || saved === 'Klem') return saved;
+    }
+    return 'Spiral';
+  });
   const [viewMode, setViewMode] = useState<'matrix' | 'table'>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -104,6 +111,14 @@ export default function PricelistClient() {
       console.error('Failed to save view mode to localStorage:', e);
     }
   }, [viewMode]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('sintak_pricelist_finishing', selectedFinishing);
+    } catch (e) {
+      console.error('Failed to save finishing mode to localStorage:', e);
+    }
+  }, [selectedFinishing]);
 
   // Simpan master parameter ke localStorage setiap kali ada perubahan (debounced 400ms agar tidak lag saat mengetik)
   useEffect(() => {
@@ -138,10 +153,10 @@ export default function PricelistClient() {
     fetchData();
   }, [fetchData]);
 
-  // Data terhitung secara reaktif: selalu sinkron dengan Master Parameter yang sedang aktif
+  // Data terhitung secara reaktif: selalu sinkron dengan Master Parameter yang sedang aktif & pilihan finishing (Spiral / Klem)
   const activeItems = useMemo(() => {
-    return recalculatePricelistFromParams(customParams, items);
-  }, [customParams, items]);
+    return recalculatePricelistFromParams(customParams, items, selectedFinishing);
+  }, [customParams, items, selectedFinishing]);
 
   // Options for SquareDropdown
   const jenisOptions = useMemo(() => {
@@ -363,6 +378,34 @@ export default function PricelistClient() {
                 widthClass="w-44"
               />
 
+              {/* Finishing Jilid Switcher (Spiral vs Klem) */}
+              <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setSelectedFinishing('Spiral')}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                    selectedFinishing === 'Spiral'
+                      ? 'bg-white text-emerald-800 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                  title="Jilid Spiral Kawat"
+                >
+                  <span>Spiral</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedFinishing('Klem')}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                    selectedFinishing === 'Klem'
+                      ? 'bg-amber-600 text-white shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                  title="Jilid Klem Seng (Jepit Kaleng)"
+                >
+                  <span>Klem</span>
+                </button>
+              </div>
+
               {/* View Mode Switcher */}
               <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs shrink-0 ml-1">
                 <button
@@ -420,9 +463,14 @@ export default function PricelistClient() {
               ) : (
                 Object.entries(groupedData).map(([jenis, bahanGroups]) => (
                   <div key={jenis} className="flex flex-col gap-3">
-                    <div className="flex items-center gap-2 border-b border-gray-200 pb-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
-                      <h3 className="text-sm font-bold text-gray-800 tracking-tight">{jenis}</h3>
+                    <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                        <h3 className="text-sm font-bold text-gray-800 tracking-tight">{jenis}</h3>
+                      </div>
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                        Finishing: {selectedFinishing === 'Klem' ? 'Klem Seng' : 'Spiral Gantung'}
+                      </span>
                     </div>
 
                     {Object.entries(bahanGroups).map(([bahan, oplahMap]) => (

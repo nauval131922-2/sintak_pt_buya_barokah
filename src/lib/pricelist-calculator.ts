@@ -12,6 +12,7 @@ export interface PricelistItem {
   proses: string;
   bahan: string;
   ukuran: string;
+  finishing_jilid?: 'Spiral' | 'Klem';
   hpp: number;
   harga: number;
   harga_nego: number;
@@ -35,7 +36,8 @@ const SIZES = ['32 x 48', '38 x 54', '46 x 64', '48 x 64'];
  */
 export function recalculatePricelistFromParams(
   customParams: SimulatorMasterParams,
-  baseItems: PricelistItem[]
+  baseItems: PricelistItem[],
+  finishingJilid: 'Spiral' | 'Klem' = 'Spiral'
 ): PricelistItem[] {
   // Pre-calculate konstanta dan harga plano untuk 3 bahan & 4 ukuran agar O(1) di loop
   const p = customParams;
@@ -43,12 +45,39 @@ export function recalculatePricelistFromParams(
   const rimConst = p.konstantaBeratRim || 20000;
   const lbrPerRim = p.lembarPerRim || 500;
 
-  // Cache perhitungan plano & colator per ukuran
-  const sizeMeta: Record<string, { planoL: number; planoP: number; potong: number; colator: number }> = {
-    '32 x 48': { planoL: 65, planoP: 100, potong: p.potong32x48 ?? 4, colator: p.colator32x48 ?? 40 },
-    '38 x 54': { planoL: 79, planoP: 109, potong: p.potong38x54 ?? 4, colator: p.colator38x54 ?? 55 },
-    '46 x 64': { planoL: 65, planoP: 100, potong: p.potong46x64 ?? 2, colator: p.colator46x64 ?? 70 },
-    '48 x 64': { planoL: 65, planoP: 100, potong: p.potong48x64 ?? 2, colator: p.colator48x64 ?? 75 },
+  // Cache perhitungan plano, colator, & klem per ukuran
+  const sizeMeta: Record<
+    string,
+    { planoL: number; planoP: number; potong: number; colator: number; klem: number }
+  > = {
+    '32 x 48': {
+      planoL: 65,
+      planoP: 100,
+      potong: p.potong32x48 ?? 4,
+      colator: p.colator32x48 ?? 40,
+      klem: p.klem32x48 ?? 350,
+    },
+    '38 x 54': {
+      planoL: 79,
+      planoP: 109,
+      potong: p.potong38x54 ?? 4,
+      colator: p.colator38x54 ?? 55,
+      klem: p.klem38x54 ?? 350,
+    },
+    '46 x 64': {
+      planoL: 65,
+      planoP: 100,
+      potong: p.potong46x64 ?? 2,
+      colator: p.colator46x64 ?? 70,
+      klem: p.klem46x64 ?? 480,
+    },
+    '48 x 64': {
+      planoL: 65,
+      planoP: 100,
+      potong: p.potong48x64 ?? 2,
+      colator: p.colator48x64 ?? 75,
+      klem: p.klem48x64 ?? 490,
+    },
   };
 
   const matMeta: Record<string, { gsm: number; tarif: number }> = {
@@ -103,8 +132,14 @@ export function recalculatePricelistFromParams(
       p.tarifPotongDasar * lembar +
       p.tarifPotongDasar * (lembar / (ukuran === '32 x 48' ? 4 : 2));
     const biayaColator = lembar * s.colator * (oplah + insheet / 2);
+
+    // Jilid: Spiral vs Klem
+    const isKlem = finishingJilid === 'Klem';
     const lebarCm = parseFloat(ukuran.split('x')[0]) || 32;
-    const biayaSpiral = Math.max(p.tarifSpiralMin, lebarCm * p.tarifSpiralLubang * (oplah + 5));
+    const biayaSpiral = isKlem ? 0 : Math.max(p.tarifSpiralMin, lebarCm * p.tarifSpiralLubang * (oplah + 5));
+    const biayaKlem = isKlem ? (oplah + 5) * s.klem : 0;
+    const biayaJilid = isKlem ? biayaKlem : biayaSpiral;
+
     const biayaLakban = Math.max(p.tarifLakbanRoll, (oplah / 50 / (p.kapasitasLakbanRoll || 133.33)) * p.tarifLakbanRoll);
 
     const totalBiayaProduksi =
@@ -116,7 +151,7 @@ export function recalculatePricelistFromParams(
       biayaRoyalty +
       biayaPotong +
       biayaColator +
-      biayaSpiral +
+      biayaJilid +
       biayaLakban +
       biayaTransport;
 
@@ -144,6 +179,7 @@ export function recalculatePricelistFromParams(
       const calc = calcRow(item.jenis_kalender, item.bahan, item.ukuran, item.oplah, item.proses);
       return {
         ...item,
+        finishing_jilid: finishingJilid,
         ...calc,
       };
     });
@@ -164,6 +200,7 @@ export function recalculatePricelistFromParams(
             proses,
             bahan,
             ukuran,
+            finishing_jilid: finishingJilid,
             ...calc,
           });
         }

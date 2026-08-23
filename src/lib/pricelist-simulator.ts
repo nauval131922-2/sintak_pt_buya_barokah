@@ -31,6 +31,11 @@ export interface SimulatorMasterParams {
   tarifLakbanRoll: number;
   tarifSpiralLubang: number;
   tarifSpiralMin: number;
+  // Tarif Klem Seng per pcs per ukuran
+  klem32x48: number; // 350
+  klem38x54: number; // 350
+  klem46x64: number; // 480
+  klem48x64: number; // 490
   colator32x48: number; // 40
   colator38x54: number; // 55
   colator46x64: number; // 70
@@ -77,6 +82,10 @@ export const DEFAULT_MASTER_PARAMS: SimulatorMasterParams = {
   tarifLakbanRoll: 9600,
   tarifSpiralLubang: 150,
   tarifSpiralMin: 250000,
+  klem32x48: 350,
+  klem38x54: 350,
+  klem46x64: 480,
+  klem48x64: 490,
   colator32x48: 40,
   colator38x54: 55,
   colator46x64: 70,
@@ -96,6 +105,7 @@ export interface SimulatorInput {
   modelKalender: string; // 'Eko Wulan (12 Lbr)' | 'Dwi Wulan (6 Lbr)' | 'Tri Wulan (4 Lbr)'
   bahan: string; // 'HVS 70' | 'Art Paper 120' | 'Art Paper 150'
   ukuran: string; // '32 x 48' | '38 x 54' | '46 x 64' | '48 x 64'
+  finishingJilid?: 'Spiral' | 'Klem'; // default: 'Spiral'
   oplah: number;
   pilihanMesin: 'Otomatis' | 'Oliver' | 'SM';
   marginPct: number; // e.g. 0.30
@@ -114,6 +124,7 @@ export interface SimulatorOutput {
     lembar: number;
     lebarCm: number;
     tinggiCm: number;
+    finishingJilid: 'Spiral' | 'Klem';
     mesinDigunakan: 'Oliver' | 'SM';
     tarifPerKg: number;
     gsm: number;
@@ -126,6 +137,7 @@ export interface SimulatorOutput {
     tarifDrekOver: number;
     biayaTransport: number;
     ongkosColatorPerLbr: number;
+    tarifKlemUnit: number;
   };
   breakdown: SimulatorBreakdownItem[];
   summary: {
@@ -146,6 +158,7 @@ export function calculatePricelistSimulator(input: SimulatorInput): SimulatorOut
     modelKalender,
     bahan,
     ukuran,
+    finishingJilid = 'Spiral',
     oplah,
     pilihanMesin,
     marginPct,
@@ -215,6 +228,11 @@ export function calculatePricelistSimulator(input: SimulatorInput): SimulatorOut
   else if (ukuran === '46 x 64') ongkosColatorPerLbr = params.colator46x64;
   else if (ukuran === '48 x 64') ongkosColatorPerLbr = params.colator48x64;
 
+  let tarifKlemUnit = params.klem32x48;
+  if (ukuran === '38 x 54') tarifKlemUnit = params.klem38x54;
+  else if (ukuran === '46 x 64') tarifKlemUnit = params.klem46x64;
+  else if (ukuran === '48 x 64') tarifKlemUnit = params.klem48x64;
+
   // 2. Kalkulasi Rincian Biaya
   const safeOplah = Math.max(1, oplah);
 
@@ -249,8 +267,11 @@ export function calculatePricelistSimulator(input: SimulatorInput): SimulatorOut
   // 8. Susun / Colator
   const biayaColator = lembar * ongkosColatorPerLbr * (safeOplah + insheet / 2);
 
-  // 9. Spiral Kawat
-  const biayaSpiral = Math.max(params.tarifSpiralMin, lebarCm * params.tarifSpiralLubang * (safeOplah + 5));
+  // 9. Jilid (Spiral Kawat vs Klem Seng)
+  const isKlem = finishingJilid === 'Klem';
+  const biayaSpiral = isKlem ? 0 : Math.max(params.tarifSpiralMin, lebarCm * params.tarifSpiralLubang * (safeOplah + 5));
+  const biayaKlem = isKlem ? (safeOplah + 5) * tarifKlemUnit : 0;
+  const biayaJilid = isKlem ? biayaKlem : biayaSpiral;
 
   // 10. Lakban & Packing
   const lakbanKapasitas = params.kapasitasLakbanRoll || 133.33;
@@ -271,7 +292,7 @@ export function calculatePricelistSimulator(input: SimulatorInput): SimulatorOut
     biayaRoyalty +
     biayaPotong +
     biayaColator +
-    biayaSpiral +
+    biayaJilid +
     biayaLakban +
     biayaKirim;
 
@@ -287,7 +308,7 @@ export function calculatePricelistSimulator(input: SimulatorInput): SimulatorOut
     {
       name: '1. Biaya Bahan Kertas (Isi)',
       amount: biayaKertas,
-      formula: `[(L*P*GSM / 20.000 kg) * (Tarif/kg + 5% PPN) / 500 lbr] * [(Oplah+Insheet)*Lbr / Potong]`,
+      formula: `[(L*P*GSM / 20.000 kg) * (Tarif/kg + PPN) / 500 lbr] * [(Oplah+Insheet)*Lbr / Potong]`,
     },
     {
       name: '2. Biaya Plat Cetak (CTP)',
@@ -325,9 +346,11 @@ export function calculatePricelistSimulator(input: SimulatorInput): SimulatorOut
       formula: `(${lembar} Lbr * Rp ${ongkosColatorPerLbr.toLocaleString('id-ID')}) * (${safeOplah.toLocaleString('id-ID')} + ${insheet / 2})`,
     },
     {
-      name: '9. Spiral Kawat (Jilid)',
-      amount: biayaSpiral,
-      formula: `MAX(Min Rp ${params.tarifSpiralMin.toLocaleString('id-ID')}, (${lebarCm} cm * Rp ${params.tarifSpiralLubang}) * (${safeOplah.toLocaleString('id-ID')} + 5))`,
+      name: isKlem ? '9. Finishing Klem Seng (Jepit)' : '9. Spiral Kawat (Jilid)',
+      amount: biayaJilid,
+      formula: isKlem
+        ? `(${safeOplah.toLocaleString('id-ID')} + 5 pcs) * Rp ${tarifKlemUnit.toLocaleString('id-ID')}/pcs`
+        : `MAX(Min Rp ${params.tarifSpiralMin.toLocaleString('id-ID')}, (${lebarCm} cm * Rp ${params.tarifSpiralLubang}) * (${safeOplah.toLocaleString('id-ID')} + 5))`,
     },
     {
       name: '10. Lakban & Packing',
@@ -346,6 +369,7 @@ export function calculatePricelistSimulator(input: SimulatorInput): SimulatorOut
       lembar,
       lebarCm,
       tinggiCm,
+      finishingJilid,
       mesinDigunakan: mesin,
       tarifPerKg,
       gsm,
@@ -358,6 +382,7 @@ export function calculatePricelistSimulator(input: SimulatorInput): SimulatorOut
       tarifDrekOver,
       biayaTransport,
       ongkosColatorPerLbr,
+      tarifKlemUnit,
     },
     breakdown,
     summary: {

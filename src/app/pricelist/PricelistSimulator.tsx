@@ -83,6 +83,14 @@ export default function PricelistSimulator({
     return '32 x 48';
   });
 
+  const [finishingJilid, setFinishingJilid] = useState<'Spiral' | 'Klem'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sintak_sim_finishing');
+      if (saved === 'Spiral' || saved === 'Klem') return saved;
+    }
+    return 'Spiral';
+  });
+
   const [oplah, setOplah] = useState<number>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('sintak_sim_oplah');
@@ -122,6 +130,7 @@ export default function PricelistSimulator({
         localStorage.setItem('sintak_sim_model', modelKalender);
         localStorage.setItem('sintak_sim_bahan', bahan);
         localStorage.setItem('sintak_sim_ukuran', ukuran);
+        localStorage.setItem('sintak_sim_finishing', finishingJilid);
         localStorage.setItem('sintak_sim_oplah', String(oplah));
         localStorage.setItem('sintak_sim_mesin', pilihanMesin);
         localStorage.setItem('sintak_sim_margin', String(marginPct));
@@ -131,7 +140,7 @@ export default function PricelistSimulator({
       }
     }, 400);
     return () => clearTimeout(timer);
-  }, [modelKalender, bahan, ukuran, oplah, pilihanMesin, marginPct, negoDiskonPct]);
+  }, [modelKalender, bahan, ukuran, finishingJilid, oplah, pilihanMesin, marginPct, negoDiskonPct]);
 
   // Quick preset oplah buttons
   const presetOplahs = [300, 500, 1000, 1500, 2000, 3000, 5000, 10000];
@@ -141,13 +150,14 @@ export default function PricelistSimulator({
       modelKalender,
       bahan,
       ukuran,
+      finishingJilid,
       oplah: Math.max(1, oplah || 1),
       pilihanMesin,
       marginPct: marginPct / 100,
       negoDiskonPct: negoDiskonPct / 100,
       customParams,
     });
-  }, [modelKalender, bahan, ukuran, oplah, pilihanMesin, marginPct, negoDiskonPct, customParams]);
+  }, [modelKalender, bahan, ukuran, finishingJilid, oplah, pilihanMesin, marginPct, negoDiskonPct, customParams]);
 
   const formatRp = (val: number) => {
     return Math.round(val).toLocaleString('id-ID');
@@ -167,7 +177,7 @@ export default function PricelistSimulator({
               <Calculator className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-sm sm:text-base font-bold text-emerald-950 tracking-tight">Simulator & Kalkulator Kalender Spiral 2027</h2>
+              <h2 className="text-sm sm:text-base font-bold text-emerald-950 tracking-tight">Simulator & Kalkulator Kalender Spiral & Klem 2027</h2>
               <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
                 Hitung simulasi HPP, Harga Jual, Nego, Omset, dan Estimasi Profit secara akurat & transparan untuk kuantitas oplah kustom.
               </p>
@@ -272,10 +282,45 @@ export default function PricelistSimulator({
               </div>
             </div>
 
+            {/* Pilihan Finishing Jilid: Spiral vs Klem */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">4. Finishing Jilid</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setFinishingJilid('Spiral')}
+                  className={`py-2 px-2.5 rounded-lg border text-left flex flex-col justify-between transition-all cursor-pointer ${
+                    finishingJilid === 'Spiral'
+                      ? 'border-emerald-600 bg-emerald-50/70 text-emerald-950 font-bold ring-1 ring-emerald-500'
+                      : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  <span className="text-xs">Spiral Kawat Gantung</span>
+                  <span className="text-[10px] text-slate-500 mt-0.5">
+                    Rp {customParams.tarifSpiralLubang}/cm (Min Rp {formatRp(customParams.tarifSpiralMin)})
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFinishingJilid('Klem')}
+                  className={`py-2 px-2.5 rounded-lg border text-left flex flex-col justify-between transition-all cursor-pointer ${
+                    finishingJilid === 'Klem'
+                      ? 'border-amber-600 bg-amber-50/70 text-amber-950 font-bold ring-1 ring-amber-500'
+                      : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  <span className="text-xs">Klem Seng (Jepit Kaleng)</span>
+                  <span className="text-[10px] text-slate-500 mt-0.5">
+                    Rp {formatRp(result.calculatedParams.tarifKlemUnit)} / pcs
+                  </span>
+                </button>
+              </div>
+            </div>
+
             {/* Kuantitas / Oplah Custom */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold text-slate-700">4. Kuantitas / Oplah (Pcs)</label>
+                <label className="text-xs font-bold text-slate-700">5. Kuantitas / Oplah (Pcs)</label>
                 <span className="text-[11px] font-mono font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                   {oplah.toLocaleString('id-ID')} Pcs
                 </span>
@@ -311,7 +356,7 @@ export default function PricelistSimulator({
 
             {/* Pilihan Mesin Cetak */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">5. Pilihan Mesin Cetak</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">6. Pilihan Mesin Cetak</label>
               <div className="grid grid-cols-3 gap-2">
                 {MESIN_OPTIONS.map((opt) => (
                   <button
@@ -394,6 +439,12 @@ export default function PricelistSimulator({
               <div className="bg-white p-2 rounded border border-slate-200">
                 <span className="text-slate-500 block">Biaya Plat/Unit</span>
                 <span className="font-bold text-slate-900">Rp {formatRp(result.calculatedParams.biayaPlatUnit)}</span>
+              </div>
+              <div className="bg-white p-2 rounded border border-slate-200">
+                <span className="text-slate-500 block">Jilid Digunakan</span>
+                <span className="font-bold text-slate-900">
+                  {result.calculatedParams.finishingJilid === 'Klem' ? 'Klem Seng' : 'Spiral Gantung'}
+                </span>
               </div>
               <div className="bg-white p-2 rounded border border-slate-200">
                 <span className="text-slate-500 block">Ongkos Dasar Mesin</span>
@@ -768,13 +819,14 @@ export default function PricelistSimulator({
                         </td>
                       </tr>
                       <tr>
-                        <td className="py-2 px-3 font-semibold text-slate-900">9. Spiral Kawat (Jilid)</td>
+                        <td className="py-2 px-3 font-semibold text-slate-900">9. Jilid (Spiral / Klem)</td>
                         <td className="py-2 px-3">
-                          Sheet <span className="font-mono text-emerald-700">Dashboard!D39</span> (Rp 150/lubang)<br />
-                          Sheet <span className="font-mono text-slate-600">KALENDER!CX6:CX13</span> (Min Rp 250.000)
+                          <strong>Spiral</strong>: <span className="font-mono text-emerald-700">KALENDER!CX6</span> (Rp 150/cm, min Rp 250rb)<br />
+                          <strong>Klem</strong>: <span className="font-mono text-emerald-700">KALENDER!CY6</span> (32x48: Rp 350, 38x54: Rp 350, 46x64: Rp 480, 48x64: Rp 490)
                         </td>
                         <td className="py-2 px-3 font-mono text-[10.5px] text-slate-600">
-                          MAX(Min Rp 250.000, (Lebar cm * Tarif) * (Oplah + 5))
+                          • Spiral: MAX(Min 250rb, Lebar * Tarif * (Oplah + 5))<br />
+                          • Klem: (Oplah + 5 pcs) * Tarif Satuan Klem
                         </td>
                       </tr>
                       <tr>

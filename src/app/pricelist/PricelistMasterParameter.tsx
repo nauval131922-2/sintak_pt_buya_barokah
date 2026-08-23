@@ -300,71 +300,120 @@ export default function PricelistMasterParameter({
             </div>
             <span className="text-[11px] text-slate-500 font-medium">Baku Grafika</span>
           </div>
-          <div className="p-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-              <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Spiral (cm x Rp)</label>
-              <ThousandInput
-                prefix="Rp"
-                value={customParams.tarifSpiralLubang}
-                onValueChange={(val) => handleChange('tarifSpiralLubang', val)}
-                className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
-              />
-              <span className="block text-[9.5px] text-slate-500 mt-1">Per lubang spiral</span>
+          <div className="p-4 flex flex-col gap-4">
+            {/* Sub: Spiral & Jasa Umum */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Spiral (cm x Rp)</label>
+                <ThousandInput
+                  prefix="Rp"
+                  value={customParams.tarifSpiralLubang}
+                  onValueChange={(val) => handleChange('tarifSpiralLubang', val)}
+                  className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                />
+                <span className="block text-[9.5px] text-slate-500 mt-1">Per cm lebar kalender</span>
+              </div>
+
+              <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Spiral Min Order</label>
+                <ThousandInput
+                  prefix="Rp"
+                  value={customParams.tarifSpiralMin}
+                  onValueChange={(val) => handleChange('tarifSpiralMin', val)}
+                  className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                />
+                <span className="block text-[9.5px] text-slate-500 mt-1">Batas minimum order</span>
+              </div>
+
+              <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Desain Kalender</label>
+                <ThousandInput
+                  prefix="Rp"
+                  value={customParams.tarifDesain}
+                  onValueChange={(val) => handleChange('tarifDesain', val)}
+                  className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                />
+                <span className="block text-[9.5px] text-slate-500 mt-1">Per lembar kalender</span>
+              </div>
+
+              <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Almanak Desain</label>
+                <ThousandInput
+                  prefix="Rp"
+                  value={customParams.tarifAlmanakDesain}
+                  onValueChange={(val) => handleChange('tarifAlmanakDesain', val)}
+                  className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                />
+                <span className="block text-[9.5px] text-slate-500 mt-1">Biaya setting almanak</span>
+              </div>
+
+              <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Royalty Kalender</label>
+                <ThousandInput
+                  prefix="Rp"
+                  value={customParams.tarifRoyalty}
+                  onValueChange={(val) => handleChange('tarifRoyalty', val)}
+                  className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                />
+                <span className="block text-[9.5px] text-slate-500 mt-1">Per pcs kalender</span>
+              </div>
+
+              <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Potong Dasar</label>
+                <ThousandInput
+                  prefix="Rp"
+                  value={customParams.tarifPotongDasar}
+                  onValueChange={(val) => handleChange('tarifPotongDasar', val)}
+                  className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                />
+                <span className="block text-[9.5px] text-slate-500 mt-1">Per lembar potong</span>
+              </div>
             </div>
 
-            <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-              <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Spiral Min Order</label>
-              <ThousandInput
-                prefix="Rp"
-                value={customParams.tarifSpiralMin}
-                onValueChange={(val) => handleChange('tarifSpiralMin', val)}
-                className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
-              />
-              <span className="block text-[9.5px] text-slate-500 mt-1">Batas minimum</span>
-            </div>
-
-            <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-              <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Desain Kalender</label>
-              <ThousandInput
-                prefix="Rp"
-                value={customParams.tarifDesain}
-                onValueChange={(val) => handleChange('tarifDesain', val)}
-                className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
-              />
-              <span className="block text-[9.5px] text-slate-500 mt-1">Per lembar kalender</span>
-            </div>
-
-            <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-              <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Almanak Desain</label>
-              <ThousandInput
-                prefix="Rp"
-                value={customParams.tarifAlmanakDesain}
-                onValueChange={(val) => handleChange('tarifAlmanakDesain', val)}
-                className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
-              />
-              <span className="block text-[9.5px] text-slate-500 mt-1">Biaya setting almanak</span>
-            </div>
-
-            <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-              <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Royalty Kalender</label>
-              <ThousandInput
-                prefix="Rp"
-                value={customParams.tarifRoyalty}
-                onValueChange={(val) => handleChange('tarifRoyalty', val)}
-                className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
-              />
-              <span className="block text-[9.5px] text-slate-500 mt-1">Per pcs kalender</span>
-            </div>
-
-            <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-              <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Potong Dasar</label>
-              <ThousandInput
-                prefix="Rp"
-                value={customParams.tarifPotongDasar}
-                onValueChange={(val) => handleChange('tarifPotongDasar', val)}
-                className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
-              />
-              <span className="block text-[9.5px] text-slate-500 mt-1">Per lembar potong</span>
+            {/* Sub: Tarif Klem Seng per Ukuran */}
+            <div className="p-3 bg-amber-50/60 rounded-lg border border-amber-200/80">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-bold text-amber-950 text-xs">Tarif Jilid Klem Seng (Jepit Kaleng / Pcs)</span>
+                <span className="text-[10px] text-amber-800">Rumus: (Oplah + 5) * Tarif</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="bg-white p-2 rounded border border-amber-200">
+                  <label className="block text-[10px] font-bold text-slate-700 mb-0.5">32 x 48 cm</label>
+                  <ThousandInput
+                    prefix="Rp"
+                    value={customParams.klem32x48}
+                    onValueChange={(val) => handleChange('klem32x48', val)}
+                    className="w-full pr-1 py-0.5 text-xs font-mono font-bold bg-white border-0 text-right"
+                  />
+                </div>
+                <div className="bg-white p-2 rounded border border-amber-200">
+                  <label className="block text-[10px] font-bold text-slate-700 mb-0.5">38 x 54 cm</label>
+                  <ThousandInput
+                    prefix="Rp"
+                    value={customParams.klem38x54}
+                    onValueChange={(val) => handleChange('klem38x54', val)}
+                    className="w-full pr-1 py-0.5 text-xs font-mono font-bold bg-white border-0 text-right"
+                  />
+                </div>
+                <div className="bg-white p-2 rounded border border-amber-200">
+                  <label className="block text-[10px] font-bold text-slate-700 mb-0.5">46 x 64 cm</label>
+                  <ThousandInput
+                    prefix="Rp"
+                    value={customParams.klem46x64}
+                    onValueChange={(val) => handleChange('klem46x64', val)}
+                    className="w-full pr-1 py-0.5 text-xs font-mono font-bold bg-white border-0 text-right"
+                  />
+                </div>
+                <div className="bg-white p-2 rounded border border-amber-200">
+                  <label className="block text-[10px] font-bold text-slate-700 mb-0.5">48 x 64 cm</label>
+                  <ThousandInput
+                    prefix="Rp"
+                    value={customParams.klem48x64}
+                    onValueChange={(val) => handleChange('klem48x64', val)}
+                    className="w-full pr-1 py-0.5 text-xs font-mono font-bold bg-white border-0 text-right"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -567,8 +616,8 @@ export default function PricelistMasterParameter({
                       <li>• <strong>Royalty Kalender</strong>: <span className="font-mono text-amber-700">Dashboard!D41</span> (Rp 150 per pcs / eksemplar).</li>
                       <li>• <strong>Ongkos Potong Dasar</strong>: <span className="font-mono text-amber-700">KALENDER!CT6</span> (Rp 2.000 per lembar potong).</li>
                       <li>• <strong>Susun / Colator</strong>: <span className="font-mono text-amber-700">KALENDER!CW6</span> (32x48: Rp 40, 38x54: Rp 55, 46x64: Rp 70, 48x64: Rp 75).</li>
-                      <li>• <strong>Spiral Per Lubang & Min</strong>: <span className="font-mono text-amber-700">Dashboard!D39 & KALENDER!CX6</span> (Rp 150/cm lubang, min Rp 250rb).</li>
-                      <li>• <strong>Lakban & Packing</strong>: <span className="font-mono text-amber-700">Dashboard!D40</span> (Rp 9.600 per roll lakban).</li>
+                      <li>• <strong>Spiral Kawat & Min</strong>: <span className="font-mono text-amber-700">KALENDER!CX6</span> (Rp 150/cm lubang, min Rp 250rb).</li>
+                      <li>• <strong>Klem Seng (Jepit Kaleng)</strong>: <span className="font-mono text-amber-700">KALENDER!CY6</span> (32x48: Rp 350, 38x54: Rp 350, 46x64: Rp 480, 48x64: Rp 490). Rumus: <code className="text-[10px] bg-white px-1 py-0.5 rounded border">(Oplah+5)*Tarif</code>.</li>
                     </ul>
                   </div>
 
