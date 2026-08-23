@@ -2985,21 +2985,21 @@ function TaskDetailModal({
           </div>
 
           {/* Body: Tabel List Task dari Order tersebut */}
-          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto p-4 sm:p-6 custom-scrollbar space-y-4">
-            <div className="border border-slate-200 rounded-xl overflow-visible shadow-sm">
+          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 custom-scrollbar space-y-4">
+            <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
               <table className="w-full text-left text-xs border-collapse">
                 <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
                   <tr>
-                    <th className="px-3 py-2.5 text-center w-12">No</th>
-                    <th className="px-3 py-2.5 w-32">Bagian</th>
-                    <th className="px-3 py-2.5 w-36">PIC</th>
-                    <th className="px-3 py-2.5 min-w-[170px]">Task / Aktivitas</th>
-                    <th className="px-3 py-2.5 w-24">Priority</th>
-                    <th className="px-3 py-2.5 w-44">Start ~ End</th>
-                    <th className="px-3 py-2.5 text-center w-24">Work Days</th>
-                    <th className="px-3 py-2.5 w-36">Status</th>
-                    <th className="px-3 py-2.5 min-w-[150px]">Note</th>
-                    <th className="px-3 py-2.5 text-center w-20">Aksi</th>
+                    <th className="px-2.5 py-2.5 text-center w-10">No</th>
+                    <th className="px-2.5 py-2.5 w-[13%]">Bagian</th>
+                    <th className="px-2.5 py-2.5 w-[14%]">PIC</th>
+                    <th className="px-2.5 py-2.5 w-[20%]">Task / Aktivitas</th>
+                    <th className="px-2.5 py-2.5 w-[9%]">Priority</th>
+                    <th className="px-2.5 py-2.5 w-[18%]">Start ~ End</th>
+                    <th className="px-2.5 py-2.5 text-center w-[7%]">Work Days</th>
+                    <th className="px-2.5 py-2.5 w-[12%]">Status</th>
+                    <th className="px-2.5 py-2.5 w-[15%]">Note</th>
+                    <th className="px-2.5 py-2.5 text-center w-16">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
@@ -3025,37 +3025,37 @@ function TaskDetailModal({
                         onDoubleClick={() => setEditingTaskId(task.id || null)}
                         className="hover:bg-slate-50/80 transition-colors group cursor-default"
                       >
-                        <td className="px-3 py-2.5 text-center font-medium text-slate-400">
+                        <td className="px-2.5 py-2.5 text-center font-medium text-slate-400">
                           {idx + 1}
                         </td>
-                        <td className="px-3 py-2.5 text-slate-700 font-medium">
+                        <td className="px-2.5 py-2.5 text-slate-700 font-medium truncate">
                           {(task as any).bagian || "-"}
                         </td>
-                        <td className="px-3 py-2.5 font-bold text-emerald-700">
+                        <td className="px-2.5 py-2.5 font-bold text-emerald-700 truncate">
                           {task.pic || "-"}
                         </td>
                         <td
-                          className="px-3 py-2.5 font-semibold text-slate-800"
+                          className="px-2.5 py-2.5 font-semibold text-slate-800 break-words"
                           title={cleanTaskName(task.task, selectedProjectGroup.project) || task.task}
                         >
                           {cleanTaskName(task.task, selectedProjectGroup.project) || task.task}
                         </td>
-                        <td className="px-3 py-2.5 text-slate-600">
+                        <td className="px-2.5 py-2.5 text-slate-600">
                           {task.priority || "-"}
                         </td>
-                        <td className="px-3 py-2.5 whitespace-nowrap text-slate-500">
+                        <td className="px-2.5 py-2.5 whitespace-nowrap text-slate-500 text-[11px]">
                           {task.startDate || "-"} ~ {task.endDate || "-"}
                         </td>
-                        <td className="px-3 py-2.5 text-center font-medium text-slate-600">
+                        <td className="px-2.5 py-2.5 text-center font-medium text-slate-600 text-[11px]">
                           {task.workDays ? `${task.workDays} hari` : "-"}
                         </td>
-                        <td className="px-3 py-2.5 whitespace-nowrap">
+                        <td className="px-2.5 py-2.5 whitespace-nowrap">
                           {getStatusBadge(task.status)}
                         </td>
-                        <td className="px-3 py-2.5 text-slate-600 min-w-[150px] max-w-[260px] break-words whitespace-pre-wrap leading-relaxed">
+                        <td className="px-2.5 py-2.5 text-slate-600 break-words whitespace-pre-wrap leading-relaxed">
                           {task.note || "-"}
                         </td>
-                        <td className="px-3 py-2.5 text-center">
+                        <td className="px-2.5 py-2.5 text-center">
                           <div className="flex items-center justify-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
                             <button
                               type="button"
@@ -3214,7 +3214,8 @@ function InlineEditRow({
             setForm((p) => ({ ...p, bagian: val, task: "" }));
           }}
           searchPlaceholder="Cari Bagian..."
-          widthClass="w-full min-w-[130px]"
+          widthClass="w-full"
+          usePortal={true}
         />
       </td>
       {/* 2. PIC */}
@@ -3224,7 +3225,8 @@ function InlineEditRow({
           value={form.pic}
           onChange={(val) => setForm((p) => ({ ...p, pic: val }))}
           searchPlaceholder="Cari PIC..."
-          widthClass="w-full min-w-[150px]"
+          widthClass="w-full"
+          usePortal={true}
         />
       </td>
       {/* 3. Task / Aktivitas */}
@@ -3238,7 +3240,8 @@ function InlineEditRow({
           value={form.task}
           onChange={(val) => setForm((p) => ({ ...p, task: val }))}
           searchPlaceholder="Cari Task / Pekerjaan..."
-          widthClass="w-full min-w-[170px]"
+          widthClass="w-full"
+          usePortal={true}
         />
       </td>
       {/* 4. Priority */}
@@ -3252,13 +3255,14 @@ function InlineEditRow({
           value={form.priority}
           onChange={(val) => setForm((p) => ({ ...p, priority: val }))}
           searchPlaceholder="Priority..."
-          widthClass="w-full min-w-[105px]"
+          widthClass="w-full"
+          usePortal={true}
         />
       </td>
       {/* 5. Start ~ End */}
       <td className="px-2 py-2">
-        <div className="flex items-center gap-1 min-w-[210px]">
-          <div className="flex-1 min-w-[95px]">
+        <div className="flex items-center gap-1 w-full">
+          <div className="flex-1 min-w-0">
             <DatePicker
               name="start_date"
               value={form.startDate}
@@ -3266,8 +3270,8 @@ function InlineEditRow({
               usePortal={true}
             />
           </div>
-          <span className="text-slate-400 text-xs font-semibold">~</span>
-          <div className="flex-1 min-w-[95px]">
+          <span className="text-slate-400 text-xs font-semibold shrink-0">~</span>
+          <div className="flex-1 min-w-0">
             <DatePicker
               name="end_date"
               value={form.endDate}
@@ -3296,7 +3300,8 @@ function InlineEditRow({
           value={form.status}
           onChange={(val) => setForm((p) => ({ ...p, status: val }))}
           searchPlaceholder="Status..."
-          widthClass="w-full min-w-[150px]"
+          widthClass="w-full"
+          usePortal={true}
         />
       </td>
       {/* 8. Note */}
@@ -3316,7 +3321,7 @@ function InlineEditRow({
               el.style.height = `${el.scrollHeight}px`;
             }
           }}
-          className="w-full min-w-[150px] px-2 py-1.5 text-xs border border-sky-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-sky-500 custom-scrollbar resize-none break-words leading-relaxed"
+          className="w-full px-2 py-1.5 text-xs border border-sky-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-sky-500 custom-scrollbar resize-none break-words leading-relaxed"
         />
       </td>
       {/* 9. Aksi */}
@@ -3435,7 +3440,8 @@ function InlineAddRow({
             setForm((p) => ({ ...p, bagian: val, task: "" }));
           }}
           searchPlaceholder="Cari Bagian..."
-          widthClass="w-full min-w-[130px]"
+          widthClass="w-full"
+          usePortal={true}
         />
       </td>
       {/* 2. PIC */}
@@ -3445,7 +3451,8 @@ function InlineAddRow({
           value={form.pic}
           onChange={(val) => setForm((p) => ({ ...p, pic: val }))}
           searchPlaceholder="Cari PIC..."
-          widthClass="w-full min-w-[150px]"
+          widthClass="w-full"
+          usePortal={true}
         />
       </td>
       {/* 3. Task / Aktivitas */}
@@ -3459,7 +3466,8 @@ function InlineAddRow({
           value={form.task}
           onChange={(val) => setForm((p) => ({ ...p, task: val }))}
           searchPlaceholder="Cari Task / Pekerjaan..."
-          widthClass="w-full min-w-[170px]"
+          widthClass="w-full"
+          usePortal={true}
         />
       </td>
       {/* 4. Priority */}
@@ -3473,13 +3481,14 @@ function InlineAddRow({
           value={form.priority}
           onChange={(val) => setForm((p) => ({ ...p, priority: val }))}
           searchPlaceholder="Priority..."
-          widthClass="w-full min-w-[105px]"
+          widthClass="w-full"
+          usePortal={true}
         />
       </td>
       {/* 5. Start ~ End */}
       <td className="px-2 py-2">
-        <div className="flex items-center gap-1 min-w-[210px]">
-          <div className="flex-1 min-w-[95px]">
+        <div className="flex items-center gap-1 w-full">
+          <div className="flex-1 min-w-0">
             <DatePicker
               name="new_start_date"
               value={form.startDate}
@@ -3487,8 +3496,8 @@ function InlineAddRow({
               usePortal={true}
             />
           </div>
-          <span className="text-slate-400 text-xs font-semibold">~</span>
-          <div className="flex-1 min-w-[95px]">
+          <span className="text-slate-400 text-xs font-semibold shrink-0">~</span>
+          <div className="flex-1 min-w-0">
             <DatePicker
               name="new_end_date"
               value={form.endDate}
@@ -3517,7 +3526,8 @@ function InlineAddRow({
           value={form.status}
           onChange={(val) => setForm((p) => ({ ...p, status: val }))}
           searchPlaceholder="Status..."
-          widthClass="w-full min-w-[150px]"
+          widthClass="w-full"
+          usePortal={true}
         />
       </td>
       {/* 8. Note */}
@@ -3537,7 +3547,7 @@ function InlineAddRow({
               el.style.height = `${el.scrollHeight}px`;
             }
           }}
-          className="w-full min-w-[150px] px-2 py-1.5 text-xs border border-emerald-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 custom-scrollbar resize-none break-words leading-relaxed"
+          className="w-full px-2 py-1.5 text-xs border border-emerald-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 custom-scrollbar resize-none break-words leading-relaxed"
         />
       </td>
       {/* 9. Aksi */}

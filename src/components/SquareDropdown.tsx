@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { ChevronDown, Search } from 'lucide-react';
+import Portal, { getZoomScale } from './Portal';
 
 export interface SquareDropdownOption {
   value: string;
@@ -16,6 +17,7 @@ export interface SquareDropdownProps {
   searchPlaceholder?: string;
   widthClass?: string;
   alignRight?: boolean;
+  usePortal?: boolean;
 }
 
 export default function SquareDropdown({
@@ -25,10 +27,12 @@ export default function SquareDropdown({
   searchPlaceholder = 'Cari...',
   widthClass = 'w-48',
   alignRight: propAlignRight,
+  usePortal = false,
 }: SquareDropdownProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [alignRight, setAlignRight] = useState(false);
+  const [portalStyle, setPortalStyle] = useState<React.CSSProperties>({});
   const triggerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -42,34 +46,44 @@ export default function SquareDropdown({
       )
     : options;
 
-  // Auto deteksi orientasi: selalu rata kiri (merentang ke kanan) jika ruang kanan cukup
+  // Auto deteksi orientasi / koordinat fixed saat usePortal
   const updateAlignment = useCallback(() => {
     if (!triggerRef.current) return;
-    if (propAlignRight !== undefined) {
-      setAlignRight(propAlignRight);
-      return;
-    }
     const rect = triggerRef.current.getBoundingClientRect();
-    const popupWidth = 190;
+    const scale = getZoomScale();
+    const popupWidth = Math.max(rect.width, 200);
     const spaceRight = window.innerWidth - rect.left;
     const leftWhenAlignRight = rect.right - popupWidth;
     const minLeftAllowed = window.innerWidth >= 1024 ? 260 : 12;
 
-    // Jika ruang di sebelah kanan masih cukup luas (>= 200px), WAJIB rata kiri (left-0)
-    if (spaceRight >= popupWidth + 10) {
-      setAlignRight(false);
-      return;
+    let isRight = false;
+    if (propAlignRight !== undefined) {
+      isRight = propAlignRight;
+    } else if (spaceRight < popupWidth + 10) {
+      isRight = leftWhenAlignRight >= minLeftAllowed;
     }
+    setAlignRight(isRight);
 
-    // Jika ruang kanan mepet, beralih ke rata kanan (right-0) HANYA jika sisi kiri tidak menabrak sidebar
-    setAlignRight(leftWhenAlignRight >= minLeftAllowed);
-  }, [propAlignRight]);
+    if (usePortal) {
+      setPortalStyle({
+        position: 'fixed',
+        top: (rect.bottom + 4) / scale,
+        left: isRight ? Math.max(10, rect.right - popupWidth) / scale : rect.left / scale,
+        width: popupWidth / scale,
+        zIndex: 10000,
+      });
+    }
+  }, [propAlignRight, usePortal]);
 
   useEffect(() => {
     if (!open) return;
     updateAlignment();
     window.addEventListener('resize', updateAlignment);
-    return () => window.removeEventListener('resize', updateAlignment);
+    window.addEventListener('scroll', updateAlignment, true);
+    return () => {
+      window.removeEventListener('resize', updateAlignment);
+      window.removeEventListener('scroll', updateAlignment, true);
+    };
   }, [open, updateAlignment]);
 
   useEffect(() => {
@@ -97,6 +111,64 @@ export default function SquareDropdown({
 
   const isActive = value !== 'ALL' && value !== '';
 
+  const dropdownPanel = open && (
+    <div
+      ref={panelRef}
+      style={usePortal ? portalStyle : undefined}
+      className={`${
+        usePortal
+          ? 'fixed'
+          : `absolute top-full mt-1.5 ${alignRight ? 'right-0' : 'left-0'} w-full`
+      } min-w-[190px] bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden z-[10000] animate-in fade-in slide-in-from-top-1 duration-150`}
+    >
+      <div className="p-2 border-b border-slate-100 bg-slate-50/50">
+        <div className="flex items-center gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-slate-200">
+          <Search size={12} className="text-slate-400 shrink-0" />
+          <input
+            ref={searchRef}
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={searchPlaceholder}
+            className="flex-1 text-[11px] font-medium bg-transparent outline-none text-slate-700 placeholder:text-slate-400 min-w-0"
+          />
+        </div>
+      </div>
+
+      <div className="max-h-52 overflow-y-auto custom-scrollbar divide-y divide-slate-50">
+        {filtered.length === 0 ? (
+          <p className="px-3 py-3 text-[11px] text-slate-400 font-medium text-center">
+            Tidak ditemukan
+          </p>
+        ) : (
+          filtered.map((opt, idx) => (
+            <button
+              key={`${opt.value}-${idx}`}
+              type="button"
+              onClick={() => {
+                onChange(opt.value);
+                setOpen(false);
+                setSearch('');
+              }}
+              className={`w-full flex items-center justify-between px-3 py-2 text-[11px] font-semibold transition-colors ${
+                value === opt.value
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : 'text-slate-700 hover:bg-slate-50'
+              }`}
+            >
+              <span className="truncate">{opt.label}</span>
+              {opt.count !== undefined && (
+                <span className="text-[10px] text-slate-400 font-mono ml-2 shrink-0">
+                  {opt.count}
+                </span>
+              )}
+            </button>
+          ))
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div ref={triggerRef} className="relative flex-1 min-w-0 md:flex-none md:inline-block">
       <button
@@ -120,58 +192,7 @@ export default function SquareDropdown({
         />
       </button>
 
-      {open && (
-        <div
-          ref={panelRef}
-          className={`absolute top-full mt-1.5 ${alignRight ? 'right-0' : 'left-0'} w-full min-w-[190px] bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-[9999] animate-in fade-in slide-in-from-top-1 duration-150`}
-        >
-          <div className="p-2 border-b border-slate-100 bg-slate-50/50">
-            <div className="flex items-center gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-slate-200">
-              <Search size={12} className="text-slate-400 shrink-0" />
-              <input
-                ref={searchRef}
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder={searchPlaceholder}
-                className="flex-1 text-[11px] font-medium bg-transparent outline-none text-slate-700 placeholder:text-slate-400 min-w-0"
-              />
-            </div>
-          </div>
-
-          <div className="max-h-52 overflow-y-auto custom-scrollbar divide-y divide-slate-50">
-            {filtered.length === 0 ? (
-              <p className="px-3 py-3 text-[11px] text-slate-400 font-medium text-center">
-                Tidak ditemukan
-              </p>
-            ) : (
-              filtered.map((opt, idx) => (
-                <button
-                  key={`${opt.value}-${idx}`}
-                  type="button"
-                  onClick={() => {
-                    onChange(opt.value);
-                    setOpen(false);
-                    setSearch('');
-                  }}
-                  className={`w-full flex items-center justify-between px-3 py-2 text-[11px] font-semibold transition-colors ${
-                    value === opt.value
-                      ? 'bg-emerald-50 text-emerald-700'
-                      : 'text-slate-700 hover:bg-slate-50'
-                  }`}
-                >
-                  <span className="truncate">{opt.label}</span>
-                  {opt.count !== undefined && (
-                    <span className="text-[10px] text-slate-400 font-mono ml-2 shrink-0">
-                      {opt.count}
-                    </span>
-                  )}
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-      )}
+      {usePortal ? <Portal>{dropdownPanel}</Portal> : dropdownPanel}
     </div>
   );
 }
