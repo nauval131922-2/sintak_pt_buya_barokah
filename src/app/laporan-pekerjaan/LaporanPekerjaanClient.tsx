@@ -486,11 +486,13 @@ export default function LaporanPekerjaanClient() {
   const isResizingRef = useRef<boolean>(false);
   // ponytail: lock 600ms anti loncat 2 halaman sekaligus saat wheel beruntun
   const lastAutoPageRef = useRef<number>(0);
+  const pageNavDirRef = useRef<"top" | "bottom">("top");
 
-  // Scroll to top of table & reset row selection on page change
+  // Scroll ke atas (next) / bawah (prev) & reset row selection on page change
   useEffect(() => {
-    if (tableContainerRef.current) {
-      tableContainerRef.current.scrollTop = 0;
+    const el = tableContainerRef.current;
+    if (el) {
+      el.scrollTop = pageNavDirRef.current === "bottom" ? el.scrollHeight : 0;
     }
     setSelectedRowIndex(null);
   }, [currentPage]);
@@ -522,6 +524,7 @@ export default function LaporanPekerjaanClient() {
     const now = Date.now();
     if (now - lastAutoPageRef.current < 600) return;
     lastAutoPageRef.current = now;
+    pageNavDirRef.current = goNext ? "top" : "bottom";
     setCurrentPage((p) =>
       goNext ? Math.min(p + 1, totalPages) : Math.max(p - 1, 1)
     );
@@ -1995,7 +1998,10 @@ export default function LaporanPekerjaanClient() {
         loadTime={loadTime}
         page={currentPage}
         totalPages={totalPages}
-        onPageChange={setCurrentPage}
+        onPageChange={(p) => {
+          pageNavDirRef.current = "top";
+          setCurrentPage(p);
+        }}
       />
       </>
       )}
