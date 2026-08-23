@@ -318,42 +318,42 @@ const getStatusBadge = (status?: string) => {
   const s = (status || "").toUpperCase();
   if (s === "BELUM DIKERJAKAN") {
     return (
-      <span className="inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-slate-100 text-slate-700 border border-slate-300 whitespace-nowrap">
-        <Clock className="w-3 h-3 text-slate-500 shrink-0" /> <span>BELUM DIKERJAKAN</span>
+      <span className="inline-flex items-center justify-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-300 max-w-full truncate" title="BELUM DIKERJAKAN">
+        <Clock className="w-3 h-3 text-slate-500 shrink-0" /> <span className="truncate">BELUM DIKERJAKAN</span>
       </span>
     );
   }
   if (s === "SELESAI") {
     return (
-      <span className="inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 whitespace-nowrap">
-        <CheckCircle2 className="w-3 h-3 shrink-0" /> <span>SELESAI</span>
+      <span className="inline-flex items-center justify-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 max-w-full truncate" title="SELESAI">
+        <CheckCircle2 className="w-3 h-3 shrink-0" /> <span className="truncate">SELESAI</span>
       </span>
     );
   }
   if (s === "IN PROGRESS") {
     return (
-      <span className="inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-sky-50 text-sky-700 border border-sky-200/80 whitespace-nowrap">
-        <Clock className="w-3 h-3 shrink-0" /> <span>IN PROGRESS</span>
+      <span className="inline-flex items-center justify-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-sky-50 text-sky-700 border border-sky-200/80 max-w-full truncate" title="IN PROGRESS">
+        <Clock className="w-3 h-3 shrink-0" /> <span className="truncate">IN PROGRESS</span>
       </span>
     );
   }
   if (s === "PENDING") {
     return (
-      <span className="inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/80 whitespace-nowrap">
-        <AlertTriangle className="w-3 h-3 shrink-0" /> <span>PENDING</span>
+      <span className="inline-flex items-center justify-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/80 max-w-full truncate" title="PENDING">
+        <AlertTriangle className="w-3 h-3 shrink-0" /> <span className="truncate">PENDING</span>
       </span>
     );
   }
   if (s === "CANCEL") {
     return (
-      <span className="inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-rose-50 text-rose-700 border border-rose-200/80 whitespace-nowrap">
-        <XCircle className="w-3 h-3 shrink-0" /> <span>CANCEL</span>
+      <span className="inline-flex items-center justify-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200/80 max-w-full truncate" title="CANCEL">
+        <XCircle className="w-3 h-3 shrink-0" /> <span className="truncate">CANCEL</span>
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-md text-[10.5px] font-medium bg-slate-100 text-slate-700 border border-slate-200 whitespace-nowrap">
-      {status || "-"}
+    <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200 max-w-full truncate" title={status || "-"}>
+      <span className="truncate">{status || "-"}</span>
     </span>
   );
 };
@@ -2522,13 +2522,13 @@ function TaskDetailModal({
                         <td className="px-1.5 py-2 text-slate-600 break-words leading-tight">
                           {task.priority || "-"}
                         </td>
-                        <td className="px-1.5 py-2 text-center whitespace-nowrap text-slate-500 text-[10.5px]">
+                        <td className="px-1.5 py-2 text-center text-slate-500 text-[10px] break-words leading-tight">
                           {task.startDate ? formatDateDisplay(task.startDate) : "-"} ~ {task.endDate ? formatDateDisplay(task.endDate) : "-"}
                         </td>
                         <td className="px-1.5 py-2 text-center font-medium text-slate-600 text-[11px] whitespace-nowrap">
                           {task.workDays ? `${task.workDays} hari` : "-"}
                         </td>
-                        <td className="px-1.5 py-2 text-center whitespace-nowrap">
+                        <td className="px-1.5 py-2 text-center overflow-hidden">
                           {getStatusBadge(task.status)}
                         </td>
                         <td className="px-1.5 py-2 text-slate-600 break-words whitespace-pre-wrap leading-tight text-[11px]">
