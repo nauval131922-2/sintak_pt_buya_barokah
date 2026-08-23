@@ -469,11 +469,14 @@ const renderPieLabel = ({
   );
 };
 
-const truncatePicName = (name: string, maxLen = 13) => {
+const truncatePicName = (name: string, maxLen = 8) => {
   if (!name) return "";
-  const trimmed = name.trim();
-  if (trimmed.length <= maxLen) return trimmed;
-  return `${trimmed.slice(0, maxLen - 1)}…`;
+  let s = name.trim();
+  if (s.toLowerCase().startsWith("muhammad ")) {
+    s = "M. " + s.slice(9);
+  }
+  if (s.length <= maxLen) return s;
+  return `${s.slice(0, maxLen - 1)}…`;
 };
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -1237,7 +1240,7 @@ export default function LaporanPekerjaanClient() {
       const picKey = rawPic.toUpperCase();
       if (!map[picKey]) {
         map[picKey] = {
-          name: truncatePicName(rawPic, 13),
+          name: truncatePicName(rawPic, 8),
           fullName: rawPic,
           BelumDikerjakan: 0,
           Selesai: 0,
