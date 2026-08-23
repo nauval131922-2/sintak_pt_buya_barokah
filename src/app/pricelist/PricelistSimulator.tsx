@@ -19,6 +19,7 @@ import {
 import {
   calculatePricelistSimulator,
   DEFAULT_MASTER_PARAMS,
+  DEFAULT_MASTER_PARAMS_KLEM,
   SimulatorMasterParams,
 } from '@/lib/pricelist-simulator';
 import ThousandInput from '@/components/ThousandInput';
@@ -51,12 +52,16 @@ const MESIN_OPTIONS = [
 interface PricelistSimulatorProps {
   customParams: SimulatorMasterParams;
   setCustomParams: React.Dispatch<React.SetStateAction<SimulatorMasterParams>>;
+  finishingJilid: 'Spiral' | 'Klem';
+  onChangeFinishingJilid: (mode: 'Spiral' | 'Klem') => void;
   onOpenMasterParam?: () => void;
 }
 
 export default function PricelistSimulator({
   customParams,
   setCustomParams,
+  finishingJilid,
+  onChangeFinishingJilid,
   onOpenMasterParam,
 }: PricelistSimulatorProps) {
   const [showSimulatorManual, setShowSimulatorManual] = useState(false);
@@ -81,14 +86,6 @@ export default function PricelistSimulator({
       return localStorage.getItem('sintak_sim_ukuran') || '32 x 48';
     }
     return '32 x 48';
-  });
-
-  const [finishingJilid, setFinishingJilid] = useState<'Spiral' | 'Klem'>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('sintak_sim_finishing');
-      if (saved === 'Spiral' || saved === 'Klem') return saved;
-    }
-    return 'Spiral';
   });
 
   const [oplah, setOplah] = useState<number>(() => {
@@ -130,7 +127,6 @@ export default function PricelistSimulator({
         localStorage.setItem('sintak_sim_model', modelKalender);
         localStorage.setItem('sintak_sim_bahan', bahan);
         localStorage.setItem('sintak_sim_ukuran', ukuran);
-        localStorage.setItem('sintak_sim_finishing', finishingJilid);
         localStorage.setItem('sintak_sim_oplah', String(oplah));
         localStorage.setItem('sintak_sim_mesin', pilihanMesin);
         localStorage.setItem('sintak_sim_margin', String(marginPct));
@@ -140,7 +136,7 @@ export default function PricelistSimulator({
       }
     }, 400);
     return () => clearTimeout(timer);
-  }, [modelKalender, bahan, ukuran, finishingJilid, oplah, pilihanMesin, marginPct, negoDiskonPct]);
+  }, [modelKalender, bahan, ukuran, oplah, pilihanMesin, marginPct, negoDiskonPct]);
 
   // Quick preset oplah buttons
   const presetOplahs = [300, 500, 1000, 1500, 2000, 3000, 5000, 10000];
@@ -164,7 +160,7 @@ export default function PricelistSimulator({
   };
 
   const handleResetParams = () => {
-    setCustomParams(DEFAULT_MASTER_PARAMS);
+    setCustomParams(finishingJilid === 'Klem' ? DEFAULT_MASTER_PARAMS_KLEM : DEFAULT_MASTER_PARAMS);
   };
 
   return (
@@ -288,7 +284,7 @@ export default function PricelistSimulator({
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => setFinishingJilid('Spiral')}
+                  onClick={() => onChangeFinishingJilid('Spiral')}
                   className={`py-2 px-2.5 rounded-lg border text-left flex flex-col justify-between transition-all cursor-pointer ${
                     finishingJilid === 'Spiral'
                       ? 'border-emerald-600 bg-emerald-50/70 text-emerald-950 font-bold ring-1 ring-emerald-500'
@@ -302,7 +298,7 @@ export default function PricelistSimulator({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFinishingJilid('Klem')}
+                  onClick={() => onChangeFinishingJilid('Klem')}
                   className={`py-2 px-2.5 rounded-lg border text-left flex flex-col justify-between transition-all cursor-pointer ${
                     finishingJilid === 'Klem'
                       ? 'border-amber-600 bg-amber-50/70 text-amber-950 font-bold ring-1 ring-amber-500'

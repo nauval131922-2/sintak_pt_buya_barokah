@@ -18,7 +18,7 @@ import PricelistExcelUpload from './PricelistExcelUpload';
 import PricelistSimulator from './PricelistSimulator';
 import PricelistMasterParameter from './PricelistMasterParameter';
 import SquareDropdown from '@/components/SquareDropdown';
-import { DEFAULT_MASTER_PARAMS, SimulatorMasterParams } from '@/lib/pricelist-simulator';
+import { DEFAULT_MASTER_PARAMS, DEFAULT_MASTER_PARAMS_KLEM, SimulatorMasterParams } from '@/lib/pricelist-simulator';
 import { recalculatePricelistFromParams } from '@/lib/pricelist-calculator';
 
 interface PricelistItem {
@@ -58,22 +58,6 @@ export default function PricelistClient() {
     return 'parameter';
   });
 
-  const [customParams, setCustomParams] = useState<SimulatorMasterParams>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('sintak_pricelist_master_params');
-        if (saved) {
-          return { ...DEFAULT_MASTER_PARAMS, ...JSON.parse(saved) };
-        }
-      } catch (e) {
-        console.error('Failed to parse saved master params:', e);
-      }
-    }
-    return DEFAULT_MASTER_PARAMS;
-  });
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedJenis, setSelectedJenis] = useState<string>('ALL');
-  const [selectedBahan, setSelectedBahan] = useState<string>('ALL');
   const [selectedFinishing, setSelectedFinishing] = useState<'Spiral' | 'Klem'>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('sintak_pricelist_finishing');
@@ -81,6 +65,60 @@ export default function PricelistClient() {
     }
     return 'Spiral';
   });
+
+  // Profil parameter terpisah per mode finishing (Spiral & Klem punya tarif acuan berbeda)
+  const [paramsSpiral, setParamsSpiral] = useState<SimulatorMasterParams>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('sintak_pricelist_master_params_spiral');
+        if (saved) {
+          return { ...DEFAULT_MASTER_PARAMS, ...JSON.parse(saved) };
+        }
+        // Migrasi profil lama (sebelum ada 2 profil) ke profil Spiral
+        const legacy = localStorage.getItem('sintak_pricelist_master_params');
+        if (legacy) {
+          return { ...DEFAULT_MASTER_PARAMS, ...JSON.parse(legacy) };
+        }
+      } catch (e) {
+        console.error('Failed to parse saved master params:', e);
+      }
+    }
+    return DEFAULT_MASTER_PARAMS;
+  });
+
+  const [paramsKlem, setParamsKlem] = useState<SimulatorMasterParams>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('sintak_pricelist_master_params_klem');
+        if (saved) {
+          return { ...DEFAULT_MASTER_PARAMS_KLEM, ...JSON.parse(saved) };
+        }
+      } catch (e) {
+        console.error('Failed to parse saved klem params:', e);
+      }
+    }
+    return DEFAULT_MASTER_PARAMS_KLEM;
+  });
+
+  const isKlemActive = selectedFinishing === 'Klem';
+  const customParams = isKlemActive ? paramsKlem : paramsSpiral;
+
+  const setCustomParams: React.Dispatch<React.SetStateAction<SimulatorMasterParams>> = (
+    valueOrUpdater
+  ) => {
+    const target = isKlemActive ? setParamsKlem : setParamsSpiral;
+    if (typeof valueOrUpdater === 'function') {
+      target((prev) =>
+        (valueOrUpdater as (prev: SimulatorMasterParams) => SimulatorMasterParams)(prev)
+      );
+    } else {
+      target(valueOrUpdater);
+    }
+  };
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedJenis, setSelectedJenis] = useState<string>('ALL');
+  const [selectedBahan, setSelectedBahan] = useState<string>('ALL');
   const [viewMode, setViewMode] = useState<'matrix' | 'table'>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -120,17 +158,18 @@ export default function PricelistClient() {
     }
   }, [selectedFinishing]);
 
-  // Simpan master parameter ke localStorage setiap kali ada perubahan (debounced 400ms agar tidak lag saat mengetik)
+  // Simpan master parameter ke localStorage per profil (debounced 400ms agar tidak lag saat mengetik)
   useEffect(() => {
     const timer = setTimeout(() => {
       try {
-        localStorage.setItem('sintak_pricelist_master_params', JSON.stringify(customParams));
+        localStorage.setItem('sintak_pricelist_master_params_spiral', JSON.stringify(paramsSpiral));
+        localStorage.setItem('sintak_pricelist_master_params_klem', JSON.stringify(paramsKlem));
       } catch (e) {
         console.error('Failed to save master params to localStorage:', e);
       }
     }, 400);
     return () => clearTimeout(timer);
-  }, [customParams]);
+  }, [paramsSpiral, paramsKlem]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -299,6 +338,7 @@ export default function PricelistClient() {
           <PricelistMasterParameter
             customParams={customParams}
             setCustomParams={setCustomParams}
+            activeFinishing={selectedFinishing}
           />
         </div>
       ) : activeTab === 'simulator' ? (
@@ -306,6 +346,8 @@ export default function PricelistClient() {
           <PricelistSimulator
             customParams={customParams}
             setCustomParams={setCustomParams}
+            finishingJilid={selectedFinishing}
+            onChangeFinishingJilid={setSelectedFinishing}
             onOpenMasterParam={() => setActiveTab('parameter')}
           />
         </div>

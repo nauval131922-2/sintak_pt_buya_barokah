@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import {
   DEFAULT_MASTER_PARAMS,
+  DEFAULT_MASTER_PARAMS_KLEM,
   SimulatorMasterParams,
 } from '@/lib/pricelist-simulator';
 import ThousandInput from '@/components/ThousandInput';
@@ -27,11 +28,13 @@ import { toast } from '@/lib/toast';
 interface MasterParameterProps {
   customParams: SimulatorMasterParams;
   setCustomParams: React.Dispatch<React.SetStateAction<SimulatorMasterParams>>;
+  activeFinishing?: 'Spiral' | 'Klem';
 }
 
 export default function PricelistMasterParameter({
   customParams,
   setCustomParams,
+  activeFinishing = 'Spiral',
 }: MasterParameterProps) {
   const [showManualModal, setShowManualModal] = useState(false);
 
@@ -40,7 +43,7 @@ export default function PricelistMasterParameter({
   };
 
   const handleReset = () => {
-    setCustomParams(DEFAULT_MASTER_PARAMS);
+    setCustomParams(activeFinishing === 'Klem' ? DEFAULT_MASTER_PARAMS_KLEM : DEFAULT_MASTER_PARAMS);
     toast.success('Tarif berhasil dikembalikan ke standar master.');
   };
 

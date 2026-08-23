@@ -101,6 +101,15 @@ export const DEFAULT_MASTER_PARAMS: SimulatorMasterParams = {
   kapasitasLakbanRoll: 133.33,
 };
 
+export const DEFAULT_MASTER_PARAMS_KLEM: SimulatorMasterParams = {
+  ...DEFAULT_MASTER_PARAMS,
+  // Profil acuan file master Klem Agustus 2027 (Folder 30 Source/*.xlsm)
+  tarifHvs70: 16995, // ponytail: 16.500 x 1.03 — PPN HVS dibake ke tarif karena SINTAK pakai PPN global; upgrade: PPN per-bahan jika perlu
+  ppnMarginKertas: 1.0,
+  oliverInsheet: 150,
+  oliverTransport: 150000,
+};
+
 export interface SimulatorInput {
   modelKalender: string; // 'Eko Wulan (12 Lbr)' | 'Dwi Wulan (6 Lbr)' | 'Tri Wulan (4 Lbr)'
   bahan: string; // 'HVS 70' | 'Art Paper 120' | 'Art Paper 150'
