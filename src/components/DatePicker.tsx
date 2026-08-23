@@ -68,6 +68,7 @@ export default function DatePicker({ name, required, label, onChange, value, cus
     selectionMode === 'month' ? 'months' : 'days'
   );
   const [alignRight, setAlignRight] = useState(false);
+  const [portalStyle, setPortalStyle] = useState<React.CSSProperties>({});
 
   // REF: kayak "ID" ke elemen HTML asli (bisa akses DOM langsung)
   const ref = useRef<HTMLDivElement>(null);       // ref ke popup kalender
@@ -77,39 +78,40 @@ export default function DatePicker({ name, required, label, onChange, value, cus
   const updateAlignment = useCallback(() => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
+    const scale = getZoomScale();
     const popupWidth = 280;
 
-    // ponytail: cari parent container (modal/overflow-hidden), kalau ada pakai edge modal, kalau ngga pakai window
-    let container = triggerRef.current.parentElement;
-    while (container && container !== document.body) {
-      const overflow = getComputedStyle(container).overflow;
-      if (overflow === 'hidden' || overflow === 'auto' || overflow === 'scroll') break;
-      container = container.parentElement;
+    let isRight = false;
+    if (popupAlign) {
+      isRight = popupAlign === 'right';
+    } else {
+      const spaceRight = window.innerWidth - rect.left;
+      isRight = spaceRight < popupWidth + 10;
     }
+    setAlignRight(isRight);
 
-    const rightEdge = container && container !== document.body
-      ? container.getBoundingClientRect().right
-      : window.innerWidth;
-
-    const spaceRight = rightEdge - rect.left;
-    const leftWhenAlignRight = rect.right - popupWidth;
-    const minLeftAllowed = window.innerWidth >= 1024 ? 260 : 12;
-
-    // Jika ruang di sebelah kanan masih cukup luas (>= 290px), WAJIB rata kiri (left-0 / merentang ke kanan)
-    if (spaceRight >= 290) {
-      setAlignRight(false);
-      return;
+    if (usePortal) {
+      setPortalStyle({
+        position: 'fixed',
+        top: (rect.bottom + 4) / scale,
+        left: isRight
+          ? Math.max(10, rect.right - popupWidth) / scale
+          : Math.max(10, rect.left) / scale,
+        width: `${popupWidth / scale}px`,
+        zIndex: 10000,
+      });
     }
-
-    // Jika ruang kanan mepet (< 290px), beralih ke rata kanan (right-0) HANYA jika sisi kiri tidak menabrak sidebar
-    setAlignRight(leftWhenAlignRight >= minLeftAllowed);
-  }, []);
+  }, [popupAlign, usePortal]);
 
   useEffect(() => {
     if (!open) return;
     updateAlignment();
     window.addEventListener('resize', updateAlignment);
-    return () => window.removeEventListener('resize', updateAlignment);
+    window.addEventListener('scroll', updateAlignment, true);
+    return () => {
+      window.removeEventListener('resize', updateAlignment);
+      window.removeEventListener('scroll', updateAlignment, true);
+    };
   }, [open, updateAlignment]);
 
   // ---- EFFECT 1: klik di luar popup -> tutup ----
@@ -327,6 +329,53 @@ export default function DatePicker({ name, required, label, onChange, value, cus
   };
 
   // ---- MAIN RETURN: JSX utama ----
+  const calendarPopup = open && (
+    <div
+      ref={ref}
+      style={usePortal ? portalStyle : undefined}
+      className={`${
+        usePortal
+          ? 'fixed'
+          : `absolute top-full mt-1.5 ${alignRight ? 'right-0' : 'left-0'}`
+      } bg-white border border-gray-100 rounded-xl shadow-2xl p-4 w-[280px] z-[10000] animate-in fade-in zoom-in-95 duration-200`}
+    >
+      {/* HEADER: navigasi bulan/tahun */}
+      <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-50">
+        <button type="button" onClick={prevView} className="w-9 h-9 rounded-lg bg-gray-50 text-gray-500 hover:bg-emerald-50 hover:text-emerald-600 transition-all flex items-center justify-center font-bold">
+          ‹
+        </button>
+        {/* Tombol tengah: klik buat ganti mode (days -> months -> years) */}
+        <button 
+          type="button" 
+          onClick={() => {
+            if (viewMode === 'days') setViewMode('months');
+            else if (viewMode === 'months') setViewMode('years');
+          }}
+          className="text-[13px] font-bold text-gray-800 hover:text-emerald-600 transition-all px-2"
+          disabled={viewMode === 'years'}
+        >
+          {viewMonth !== undefined && viewYear !== undefined && (
+            <>
+              {viewMode === 'days' && `${MONTHS_ID[viewMonth]} ${viewYear}`}
+              {viewMode === 'months' && `${viewYear}`}
+              {viewMode === 'years' && `${startDecade}-${startDecade + 9}`}
+            </>
+          )}
+        </button>
+        <button type="button" onClick={nextView} className="w-9 h-9 rounded-lg bg-gray-50 text-gray-500 hover:bg-emerald-50 hover:text-emerald-600 transition-all flex items-center justify-center font-bold">
+          ›
+        </button>
+      </div>
+
+      {/* BODY: tampilkan grid sesuai mode */}
+      <div className="px-1">
+        {viewMode === 'days' && renderDays()}
+        {viewMode === 'months' && renderMonths()}
+        {viewMode === 'years' && renderYears()}
+      </div>
+    </div>
+  );
+
   return (
     <div className={`relative ${open ? 'z-[50]' : ''}`}>
       {/* LABEL */}
@@ -349,48 +398,8 @@ export default function DatePicker({ name, required, label, onChange, value, cus
         )}
       </div>
 
-      {/* POPUP KALENDER (hanya muncul kalau open=true) */}
-      {open && (
-        <div
-          ref={ref}
-          className={`absolute top-full mt-1.5 ${alignRight ? 'right-0' : 'left-0'} bg-white border border-gray-100 rounded-xl shadow-2xl p-4 w-[280px] z-[99999] animate-in fade-in zoom-in-95 duration-200`}
-        >
-          {/* HEADER: navigasi bulan/tahun */}
-          <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-50">
-            <button type="button" onClick={prevView} className="w-9 h-9 rounded-lg bg-gray-50 text-gray-500 hover:bg-emerald-50 hover:text-emerald-600 transition-all flex items-center justify-center font-bold">
-              ‹
-            </button>
-            {/* Tombol tengah: klik buat ganti mode (days -> months -> years) */}
-            <button 
-              type="button" 
-              onClick={() => {
-                if (viewMode === 'days') setViewMode('months');
-                else if (viewMode === 'months') setViewMode('years');
-              }}
-              className="text-[13px] font-bold text-gray-800 hover:text-emerald-600 transition-all px-2"
-              disabled={viewMode === 'years'}
-            >
-              {viewMonth !== undefined && viewYear !== undefined && (
-                <>
-                  {viewMode === 'days' && `${MONTHS_ID[viewMonth]} ${viewYear}`}
-                  {viewMode === 'months' && `${viewYear}`}
-                  {viewMode === 'years' && `${startDecade}-${startDecade + 9}`}
-                </>
-              )}
-            </button>
-            <button type="button" onClick={nextView} className="w-9 h-9 rounded-lg bg-gray-50 text-gray-500 hover:bg-emerald-50 hover:text-emerald-600 transition-all flex items-center justify-center font-bold">
-              ›
-            </button>
-          </div>
-
-          {/* BODY: tampilkan grid sesuai mode */}
-          <div className="px-1">
-            {viewMode === 'days' && renderDays()}
-            {viewMode === 'months' && renderMonths()}
-            {viewMode === 'years' && renderYears()}
-          </div>
-        </div>
-      )}
+      {/* POPUP KALENDER */}
+      {usePortal ? <Portal>{calendarPopup}</Portal> : calendarPopup}
     </div>
   );
 }

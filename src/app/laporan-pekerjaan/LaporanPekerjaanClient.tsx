@@ -2942,7 +2942,7 @@ function TaskDetailModal({
   return (
     <Portal>
       <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-        <div className="w-full max-w-7xl bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[92vh] overflow-hidden">
+        <div className="w-full max-w-[96vw] 2xl:max-w-7xl bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[92vh] overflow-hidden">
           {/* Header Modal */}
           <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100 bg-slate-50/80 shrink-0 gap-3">
             <div className="min-w-0 flex-1 pr-2">
@@ -2990,15 +2990,15 @@ function TaskDetailModal({
               <table className="w-full text-left text-xs border-collapse">
                 <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
                   <tr>
-                    <th className="px-2.5 py-2.5 text-center w-10">No</th>
-                    <th className="px-2.5 py-2.5 w-[13%]">Bagian</th>
-                    <th className="px-2.5 py-2.5 w-[14%]">PIC</th>
-                    <th className="px-2.5 py-2.5 w-[20%]">Task / Aktivitas</th>
-                    <th className="px-2.5 py-2.5 w-[9%]">Priority</th>
-                    <th className="px-2.5 py-2.5 w-[18%]">Start ~ End</th>
-                    <th className="px-2.5 py-2.5 text-center w-[7%]">Work Days</th>
-                    <th className="px-2.5 py-2.5 w-[12%]">Status</th>
-                    <th className="px-2.5 py-2.5 w-[15%]">Note</th>
+                    <th className="px-2.5 py-2.5 text-center w-8">No</th>
+                    <th className="px-2.5 py-2.5 w-28">Bagian</th>
+                    <th className="px-2.5 py-2.5 w-32">PIC</th>
+                    <th className="px-2.5 py-2.5 w-[18%]">Task / Aktivitas</th>
+                    <th className="px-2.5 py-2.5 w-24">Priority</th>
+                    <th className="px-2.5 py-2.5 w-44">Start ~ End</th>
+                    <th className="px-2.5 py-2.5 text-center w-20">Work Days</th>
+                    <th className="px-2.5 py-2.5 w-36">Status</th>
+                    <th className="px-2.5 py-2.5">Note</th>
                     <th className="px-2.5 py-2.5 text-center w-16">Aksi</th>
                   </tr>
                 </thead>
