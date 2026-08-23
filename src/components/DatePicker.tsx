@@ -61,8 +61,8 @@ export default function DatePicker({ name, required, label, onChange, value, cus
   const today = new Date();
 
   // STATE: data yang bisa berubah & render ulang otomatis kalau diubah
-  const [viewYear, setViewYear] = useState(today.getFullYear()); // tahun yang lagi dilihat
-  const [viewMonth, setViewMonth] = useState(today.getMonth());  // bulan yang lagi dilihat (0-11)
+  const [viewYear, setViewYear] = useState(() => value ? value.getFullYear() : today.getFullYear()); // tahun yang lagi dilihat
+  const [viewMonth, setViewMonth] = useState(() => value ? value.getMonth() : today.getMonth());  // bulan yang lagi dilihat (0-11)
   const [open, setOpen] = useState(false);           // popup terbuka/tidak
   const [viewMode, setViewMode] = useState<'days' | 'months' | 'years'>( // mode tampilan
     selectionMode === 'month' ? 'months' : 'days'
@@ -165,6 +165,10 @@ export default function DatePicker({ name, required, label, onChange, value, cus
 
   // Buka/tutup popup
   const toggleOpen = () => {
+    if (!open && value) {
+      setViewYear(value.getFullYear());
+      setViewMonth(value.getMonth());
+    }
     setOpen(!open);
   };
 
