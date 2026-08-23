@@ -469,6 +469,21 @@ const renderPieLabel = ({
   );
 };
 
+const formatPicShortName = (fullName: string) => {
+  if (!fullName || fullName.toUpperCase() === "TANPA PIC") return "Tanpa PIC";
+  const upper = fullName.toUpperCase();
+  if (upper.includes("ADI")) return "Adi";
+  if (upper.includes("ALBILLA") || upper.includes("ALBILA")) return "Albilla";
+  if (upper.includes("ERIC")) return "Eric";
+  if (upper.includes("RIFAN") || upper.includes("RIF'AN")) return "Rifan";
+  if (upper.includes("RIKZA")) return "Rikza";
+  if (upper.includes("SONI") || upper.includes("SONNY")) return "Sonny";
+
+  const firstWord = fullName.trim().split(" ")[0];
+  if (firstWord.length > 8) return `${firstWord.slice(0, 7)}…`;
+  return firstWord;
+};
+
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload || !payload.length) return null;
 
@@ -492,7 +507,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     <div className="bg-white border border-slate-200 rounded-lg p-2.5 shadow-md text-xs min-w-[120px]">
       {label && (
         <p className="font-bold text-slate-800 border-b border-slate-100 pb-1 mb-1.5">
-          {label}
+          {payload[0]?.payload?.fullName || label}
         </p>
       )}
       <div className="space-y-1">
@@ -1223,20 +1238,30 @@ export default function LaporanPekerjaanClient() {
     if (!isAnalyticsOpen) return [];
     const map: Record<
       string,
-      { name: string; BelumDikerjakan: number; Selesai: number; InProgress: number; Pending: number; Cancel: number; Total: number }
+      { name: string; fullName: string; BelumDikerjakan: number; Selesai: number; InProgress: number; Pending: number; Cancel: number; Total: number }
     > = {};
     filteredTasks.forEach((t) => {
-      const pic = t.pic ? t.pic.toUpperCase() : "TANPA PIC";
-      if (!map[pic]) {
-        map[pic] = { name: pic, BelumDikerjakan: 0, Selesai: 0, InProgress: 0, Pending: 0, Cancel: 0, Total: 0 };
+      const rawPic = t.pic ? t.pic.trim() : "Tanpa PIC";
+      const picKey = rawPic.toUpperCase();
+      if (!map[picKey]) {
+        map[picKey] = {
+          name: formatPicShortName(rawPic),
+          fullName: rawPic,
+          BelumDikerjakan: 0,
+          Selesai: 0,
+          InProgress: 0,
+          Pending: 0,
+          Cancel: 0,
+          Total: 0,
+        };
       }
-      map[pic].Total++;
+      map[picKey].Total++;
       const s = (t.status || "").trim().toUpperCase();
-      if (s === "BELUM DIKERJAKAN") map[pic].BelumDikerjakan++;
-      else if (s === "SELESAI") map[pic].Selesai++;
-      else if (s === "IN PROGRESS") map[pic].InProgress++;
-      else if (s === "PENDING") map[pic].Pending++;
-      else if (s === "CANCEL") map[pic].Cancel++;
+      if (s === "BELUM DIKERJAKAN") map[picKey].BelumDikerjakan++;
+      else if (s === "SELESAI") map[picKey].Selesai++;
+      else if (s === "IN PROGRESS") map[picKey].InProgress++;
+      else if (s === "PENDING") map[picKey].Pending++;
+      else if (s === "CANCEL") map[picKey].Cancel++;
     });
     return Object.values(map).sort((a, b) => b.Total - a.Total);
   }, [filteredTasks, isAnalyticsOpen]);
@@ -1688,7 +1713,8 @@ export default function LaporanPekerjaanClient() {
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                         <XAxis
                           dataKey="name"
-                          tick={{ fontSize: 11, fill: "#64748b" }}
+                          interval={0}
+                          tick={{ fontSize: 10, fill: "#475569", fontWeight: 600 }}
                           axisLine={{ stroke: "#cbd5e1" }}
                           tickLine={false}
                         />
