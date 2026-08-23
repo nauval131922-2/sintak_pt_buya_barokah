@@ -212,29 +212,35 @@ const toDisplayDate = (str?: string): string => {
   return str;
 };
 
+const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+
 const parseDateToDateObj = (str?: string): Date | null => {
   if (!str || !str.trim()) return null;
   const time = parseDateToSort(str);
   return time ? new Date(time) : null;
 };
 
-const formatDateForApi = (val?: Date | string | null): string => {
+const formatDateDisplay = (val?: Date | string | null): string => {
   if (!val) return "";
   if (val instanceof Date) {
-    const day = String(val.getDate()).padStart(2, "0");
-    const month = String(val.getMonth() + 1).padStart(2, "0");
-    const year = val.getFullYear();
-    return `${day}/${month}/${year}`;
+    const day = val.getDate();
+    const month = MONTHS_SHORT[val.getMonth()];
+    const year = String(val.getFullYear()).slice(-2);
+    return `${day}-${month}-${year}`;
   }
   const time = parseDateToSort(val);
   if (time) {
     const d = new Date(time);
-    const day = String(d.getDate()).padStart(2, "0");
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const year = d.getFullYear();
-    return `${day}/${month}/${year}`;
+    const day = d.getDate();
+    const month = MONTHS_SHORT[d.getMonth()];
+    const year = String(d.getFullYear()).slice(-2);
+    return `${day}-${month}-${year}`;
   }
-  return toDisplayDate(val);
+  return String(val);
+};
+
+const formatDateForApi = (val?: Date | string | null): string => {
+  return formatDateDisplay(val);
 };
 
 // Progress & penanda pekerjaan terakhir (SELESAI terakhir)/selanjutnya per order,
@@ -2446,9 +2452,9 @@ function TaskDetailModal({
           </div>
 
           {/* Body: Tabel List Task dari Order tersebut */}
-          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto p-4 sm:p-6 custom-scrollbar space-y-4">
-            <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-              <table className="w-full text-left text-xs border-collapse table-fixed min-w-[1150px]">
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 custom-scrollbar space-y-4">
+            <div className="border border-slate-200 rounded-xl overflow-x-auto shadow-sm custom-scrollbar">
+              <table className="w-full text-left text-xs border-collapse table-fixed min-w-[1200px]">
                 <colgroup>
                   <col style={{ width: '45px' }} />
                   <col style={{ width: '130px' }} />
@@ -2458,7 +2464,7 @@ function TaskDetailModal({
                   <col style={{ width: '210px' }} />
                   <col style={{ width: '75px' }} />
                   <col style={{ width: '150px' }} />
-                  <col style={{ minWidth: '180px' }} />
+                  <col style={{ width: '260px' }} />
                   <col style={{ width: '60px' }} />
                 </colgroup>
                 <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
@@ -2517,7 +2523,7 @@ function TaskDetailModal({
                           {task.priority || "-"}
                         </td>
                         <td className="px-2.5 py-2.5 whitespace-nowrap text-slate-500 text-[11px]">
-                          {task.startDate || "-"} ~ {task.endDate || "-"}
+                          {task.startDate ? formatDateDisplay(task.startDate) : "-"} ~ {task.endDate ? formatDateDisplay(task.endDate) : "-"}
                         </td>
                         <td className="px-2.5 py-2.5 text-center font-medium text-slate-600 text-[11px]">
                           {task.workDays ? `${task.workDays} hari` : "-"}
@@ -2806,7 +2812,7 @@ function InlineEditRow({
                   onClick={toggle}
                   className="w-full h-8 bg-white border border-slate-200 hover:border-emerald-500 rounded-lg px-2 text-[11px] font-medium flex items-center justify-between shadow-xs transition-colors"
                 >
-                  <span className="truncate">{form.startDate ? formatDateForApi(form.startDate) : 'Pilih...'}</span>
+                  <span className="truncate">{form.startDate ? formatDateDisplay(form.startDate) : 'Pilih...'}</span>
                   <Calendar size={12} className="text-slate-400 shrink-0 ml-0.5" />
                 </button>
               )}
@@ -2825,7 +2831,7 @@ function InlineEditRow({
                   onClick={toggle}
                   className="w-full h-8 bg-white border border-slate-200 hover:border-emerald-500 rounded-lg px-2 text-[11px] font-medium flex items-center justify-between shadow-xs transition-colors"
                 >
-                  <span className="truncate">{form.endDate ? formatDateForApi(form.endDate) : 'Pilih...'}</span>
+                  <span className="truncate">{form.endDate ? formatDateDisplay(form.endDate) : 'Pilih...'}</span>
                   <Calendar size={12} className="text-slate-400 shrink-0 ml-0.5" />
                 </button>
               )}
@@ -3070,7 +3076,7 @@ function InlineAddRow({
                   className="w-full h-8 bg-white border border-slate-200 hover:border-emerald-500 rounded-lg px-2 text-[11px] font-medium flex items-center justify-between shadow-xs transition-colors"
                 >
                   <span className={`truncate ${!form.startDate ? 'text-slate-400 font-normal' : ''}`}>
-                    {form.startDate ? formatDateForApi(form.startDate) : 'Pilih...'}
+                    {form.startDate ? formatDateDisplay(form.startDate) : 'Pilih...'}
                   </span>
                   <Calendar size={12} className="text-slate-400 shrink-0 ml-0.5" />
                 </button>
@@ -3091,7 +3097,7 @@ function InlineAddRow({
                   className="w-full h-8 bg-white border border-slate-200 hover:border-emerald-500 rounded-lg px-2 text-[11px] font-medium flex items-center justify-between shadow-xs transition-colors"
                 >
                   <span className={`truncate ${!form.endDate ? 'text-slate-400 font-normal' : ''}`}>
-                    {form.endDate ? formatDateForApi(form.endDate) : 'Pilih...'}
+                    {form.endDate ? formatDateDisplay(form.endDate) : 'Pilih...'}
                   </span>
                   <Calendar size={12} className="text-slate-400 shrink-0 ml-0.5" />
                 </button>
