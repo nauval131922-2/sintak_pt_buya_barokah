@@ -2452,8 +2452,8 @@ function TaskDetailModal({
           </div>
 
           {/* Body: Tabel List Task dari Order tersebut */}
-          <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 custom-scrollbar space-y-4">
-            <div className="border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+          <div className="flex-1 min-h-0 flex flex-col p-4 sm:p-6 overflow-hidden">
+            <div className="flex-1 min-h-0 border border-slate-200 rounded-xl shadow-sm overflow-y-auto custom-scrollbar relative bg-white">
               <table className="w-full text-left text-xs border-collapse table-fixed">
                 <colgroup>
                   <col style={{ width: '3%' }} />
@@ -2467,18 +2467,18 @@ function TaskDetailModal({
                   <col style={{ width: '12%' }} />
                   <col style={{ width: '4%' }} />
                 </colgroup>
-                <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
-                  <tr>
-                    <th className="px-1.5 py-2.5 text-center">No</th>
-                    <th className="px-1.5 py-2.5">Bagian</th>
-                    <th className="px-1.5 py-2.5">PIC</th>
-                    <th className="px-1.5 py-2.5">Task / Aktivitas</th>
-                    <th className="px-1.5 py-2.5">Priority</th>
-                    <th className="px-1.5 py-2.5">Start ~ End</th>
-                    <th className="px-1.5 py-2.5 text-center">Work Days</th>
-                    <th className="px-1.5 py-2.5">Status</th>
-                    <th className="px-1.5 py-2.5">Note</th>
-                    <th className="px-1.5 py-2.5 text-center">Aksi</th>
+                <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200 sticky top-0 z-20 shadow-xs">
+                  <tr className="bg-slate-50">
+                    <th className="px-1.5 py-2.5 text-center bg-slate-50">No</th>
+                    <th className="px-1.5 py-2.5 bg-slate-50">Bagian</th>
+                    <th className="px-1.5 py-2.5 bg-slate-50">PIC</th>
+                    <th className="px-1.5 py-2.5 bg-slate-50">Task / Aktivitas</th>
+                    <th className="px-1.5 py-2.5 bg-slate-50">Priority</th>
+                    <th className="px-1.5 py-2.5 bg-slate-50">Start ~ End</th>
+                    <th className="px-1.5 py-2.5 text-center bg-slate-50">Work Days</th>
+                    <th className="px-1.5 py-2.5 bg-slate-50">Status</th>
+                    <th className="px-1.5 py-2.5 bg-slate-50">Note</th>
+                    <th className="px-1.5 py-2.5 text-center bg-slate-50">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
