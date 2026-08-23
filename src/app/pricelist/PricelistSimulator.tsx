@@ -648,7 +648,7 @@ export default function PricelistSimulator({
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
                   Langkah Menggunakan Simulator
                 </h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
                     <span className="font-bold text-emerald-800 text-xs">1. Pilih Spesifikasi</span>
                     <p className="text-[11px] text-slate-600">
@@ -656,13 +656,19 @@ export default function PricelistSimulator({
                     </p>
                   </div>
                   <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
-                    <span className="font-bold text-emerald-800 text-xs">2. Input Oplah & Mesin</span>
+                    <span className="font-bold text-emerald-800 text-xs">2. Tentukan Finishing Jilid</span>
                     <p className="text-[11px] text-slate-600">
-                      Ketik jumlah kuantitas <strong>Oplah (Pcs)</strong>. Gunakan pilihan mesin <strong>Otomatis</strong> (rekomendasi sistem) atau tentukan secara manual (<strong>Oliver</strong> vs <strong>Speedmaster SM</strong>).
+                      Pilih antara <strong>Spiral Kawat Gantung</strong> (per cm lubang) atau <strong>Klem Seng</strong> (jepit kaleng per pcs).
                     </p>
                   </div>
                   <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
-                    <span className="font-bold text-emerald-800 text-xs">3. Atur Margin & Nego</span>
+                    <span className="font-bold text-emerald-800 text-xs">3. Input Oplah & Mesin</span>
+                    <p className="text-[11px] text-slate-600">
+                      Ketik kuantitas <strong>Oplah (Pcs)</strong>. Pilihan mesin <strong>Otomatis</strong> akan memilihkan Oliver (&lt;3.000) atau SM (&ge;3.000).
+                    </p>
+                  </div>
+                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                    <span className="font-bold text-emerald-800 text-xs">4. Atur Margin & Nego</span>
                     <p className="text-[11px] text-slate-600">
                       Sesuaikan persentase target <strong>Margin Profit (+%)</strong> (default 30%) dan batas <strong>Diskon Nego (-%)</strong> (default 4%).
                     </p>

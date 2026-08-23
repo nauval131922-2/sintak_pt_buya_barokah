@@ -383,22 +383,22 @@ export default function PricelistClient() {
                 <button
                   type="button"
                   onClick={() => setSelectedFinishing('Spiral')}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                  className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
                     selectedFinishing === 'Spiral'
-                      ? 'bg-white text-emerald-800 shadow-xs'
-                      : 'text-slate-500 hover:text-slate-800'
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
-                  title="Jilid Spiral Kawat"
+                  title="Jilid Spiral Kawat Gantung"
                 >
                   <span>Spiral</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setSelectedFinishing('Klem')}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                  className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
                     selectedFinishing === 'Klem'
                       ? 'bg-amber-600 text-white shadow-xs'
-                      : 'text-slate-500 hover:text-slate-800'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                   title="Jilid Klem Seng (Jepit Kaleng)"
                 >
