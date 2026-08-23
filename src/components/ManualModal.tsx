@@ -324,24 +324,25 @@ export default function ManualModal() {
     '/pricelist': {
       title: 'Pricelist Kalender',
       icon: FileSpreadsheet,
-      description: 'Master data tarif, simulator estimasi biaya, kalkulasi HPP, margin keuntungan, dan pricelist matrix kalender dinding spiral 2027.',
+      description: 'Master data tarif, simulator estimasi biaya, kalkulasi HPP, margin keuntungan, dan pricelist matrix kalender dinding spiral & klem 2027.',
       steps: [
         '**Struktur 3 Tab Fitur Utama**:',
-        '  • **1. Master Parameter**: Mengatur tarif acuan bahan kertas, standar mesin cetak offset (Oliver & SM), ongkos finishing (spiral, potong, colator, dll.), serta konstanta grafika. Nilai disimpan otomatis di browser.',
+        '  • **1. Master Parameter**: Mengatur tarif acuan bahan kertas, standar mesin cetak offset (Oliver & SM), ongkos finishing (spiral, klem seng, potong, colator, dll.), serta konstanta grafika. Nilai disimpan otomatis di browser.',
         '  • **2. Simulator**: Menghitung simulasi biaya riil produksi dan rincian 11 komponen biaya untuk satu pesanan kustom lengkap dengan estimasi profit & diskon nego.',
         '  • **3. Pricelist Matrix**: Menampilkan 216 kombinasi harga dan HPP yang langsung bereaksi dan terhitung ulang seketika saat Master Parameter diubah.',
         '**Fitur Simulator Kalender**:',
-        '  • Pilih **Model Kalender** (12/6/4 Lbr), **Bahan Kertas**, dan **Ukuran**.',
+        '  • Pilih **Model Kalender** (12/6/4 Lbr), **Bahan Kertas**, **Ukuran**, dan **Finishing Jilid** (Spiral Kawat / Klem Seng).',
         '  • Masukkan jumlah **Oplah** dan pilih **Mesin Cetak** (Otomatis / Oliver / Speedmaster SM).',
         '  • Sesuaikan target **Margin Profit (+%)** dan batas **Diskon Nego (-%)**.',
         '  • Periksa tabel **Rincian 11 Komponen Biaya** untuk melihat porsi subtotal biaya produksi.',
         '**Fitur Matriks & Tabel Pricelist**:',
+        '  • Gunakan toggle **Spiral / Klem** untuk beralih antara perhitungan jilid spiral kawat dan jilid klem seng (jepit kaleng) — seluruh matriks harga terhitung ulang seketika.',
         '  • Gunakan filter **Jenis Kalender** dan **Bahan** untuk menyaring tabel.',
         '  • Gunakan **Kotak Pencarian** untuk mencari berdasarkan ukuran, oplah, atau proses mesin.',
         '  • Alihkan antara **Mode Matriks** (layout Excel) dan **Mode Tabel Rinci**.',
         '  • Tombol **Pilih & Upload Excel** dapat digunakan jika ingin memperbarui master template dasar file.'
       ],
-      tips: 'Setiap perubahan tarif di tab Master Parameter langsung mengalkulasi ulang seluruh angka pada tab Simulator dan Pricelist secara instan tanpa perlu reload halaman.'
+      tips: 'Setiap perubahan tarif di tab Master Parameter atau pergantian mode finishing Spiral/Klem langsung mengalkulasi ulang seluruh angka pada tab Simulator dan Pricelist secara instan tanpa perlu reload halaman.'
     },
     '/hasil-produksi': {
       title: 'Hasil Produksi',
