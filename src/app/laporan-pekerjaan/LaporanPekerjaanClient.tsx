@@ -498,7 +498,13 @@ export default function LaporanPekerjaanClient() {
   // Pagination & Sorting
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize] = useState<number>(50);
-  const [sortField, setSortField] = useState<keyof SpreadsheetTask | null>(null);
+  type SortField =
+    | "tglOrder"
+    | "project"
+    | "progress"
+    | "terakhir"
+    | "selanjutnya";
+  const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   // Mobile card expand state & Table row selection state
@@ -532,7 +538,7 @@ export default function LaporanPekerjaanClient() {
     setSelectedRowIndex(null);
   }, [currentPage]);
 
-  const handleSort = (field: keyof SpreadsheetTask) => {
+  const handleSort = (field: SortField) => {
     if (isResizingRef.current) return;
     if (sortField === field) {
       if (sortOrder === "asc") {
@@ -1022,10 +1028,29 @@ export default function LaporanPekerjaanClient() {
           return sortOrder === "asc" ? timeA - timeB : timeB - timeA;
         }
       }
-      const valA = (a.project || "").toLowerCase();
-      const valB = (b.project || "").toLowerCase();
-      const comp = valA.localeCompare(valB, "id", { numeric: true });
-      return sortOrder === "asc" ? comp : -comp;
+      let comp = 0;
+      if (sortField === "progress") {
+        comp = a.progressPct - b.progressPct;
+      } else if (sortField === "terakhir") {
+        comp = (a.pekerjaanTerakhir || "").localeCompare(
+          b.pekerjaanTerakhir || "",
+          "id",
+          { numeric: true }
+        );
+      } else if (sortField === "selanjutnya") {
+        comp = (a.pekerjaanSelanjutnya || "").localeCompare(
+          b.pekerjaanSelanjutnya || "",
+          "id",
+          { numeric: true }
+        );
+      } else {
+        comp = (a.project || "").localeCompare(b.project || "", "id", {
+          numeric: true,
+        });
+      }
+      if (comp !== 0) return sortOrder === "asc" ? comp : -comp;
+      // Tie-breaker: urutan dasar tgl order terlama
+      return tglOrderSortTime(a.tglOrder) - tglOrderSortTime(b.tglOrder);
     });
   }, [groupedOrders, sortField, sortOrder]);
 
@@ -1144,8 +1169,8 @@ export default function LaporanPekerjaanClient() {
   // Resizable columns state with localStorage persistence
   const DEFAULT_COL_WIDTHS = useMemo(
     () => ({
-      aksi: 110,
-      tglOrder: 150,
+      aksi: 130,
+      tglOrder: 165,
       project: 550,
       progress: 140,
       terakhir: 220,
@@ -1179,12 +1204,14 @@ export default function LaporanPekerjaanClient() {
   }, [colWidths, isAnalyticsOpen]);
 
   // Load saved column widths from localStorage on mount
+  // (aksi & tglOrder tidak resizable → selalu pakai default)
   useEffect(() => {
     try {
       const saved = localStorage.getItem("laporan_pekerjaan_col_widths");
       if (saved) {
         const parsed = JSON.parse(saved);
-        setColWidths((prev) => ({ ...prev, ...parsed }));
+        const { aksi: _a, tglOrder: _t, ...rest } = parsed;
+        setColWidths((prev) => ({ ...prev, ...rest }));
       }
     } catch {
       // Ignore localStorage errors
@@ -1243,7 +1270,7 @@ export default function LaporanPekerjaanClient() {
   };
 
   const renderSortableHeader = (
-    field: keyof SpreadsheetTask,
+    field: SortField,
     label: string,
     alignCenter = false,
     enableResize = true
@@ -1983,61 +2010,16 @@ export default function LaporanPekerjaanClient() {
             <thead className="sticky top-0 z-20 bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 shadow-sm">
               <tr>
                 <th
-                  style={{
-                    width: `var(--col-aksi, ${colWidths.aksi || 110}px)`,
-                    minWidth: `var(--col-aksi, ${colWidths.aksi || 110}px)`,
-                  }}
+                  style={{ width: "130px", minWidth: "130px" }}
                   className="relative px-3 py-2.5 text-center bg-slate-50 sticky top-0 z-10 border-b border-slate-200 select-none group"
                 >
                   <span className="truncate">Aksi</span>
                 </th>
-                {renderSortableHeader("tglOrder" as any, "Tanggal Order", false, false)}
+                {renderSortableHeader("tglOrder", "Tanggal Order", false, false)}
                 {renderSortableHeader("project", "Project Order")}
-                <th
-                  style={{
-                    width: `var(--col-progress, ${colWidths.progress || 140}px)`,
-                    minWidth: `var(--col-progress, ${colWidths.progress || 140}px)`,
-                  }}
-                  className="relative px-3 py-2.5 bg-slate-50 sticky top-0 z-10 border-b border-slate-200 select-none group"
-                >
-                  <span className="truncate">Progress</span>
-                  <div
-                    onMouseDown={(resizeEvt) => handleResizeStart("progress", resizeEvt)}
-                    onClick={(resizeEvt) => resizeEvt.stopPropagation()}
-                    className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-emerald-500/50 active:bg-emerald-600 z-20 group-hover:bg-slate-300/80 transition-colors"
-                    title="Geser untuk mengatur lebar kolom"
-                  />
-                </th>
-                <th
-                  style={{
-                    width: `var(--col-terakhir, ${colWidths.terakhir || 220}px)`,
-                    minWidth: `var(--col-terakhir, ${colWidths.terakhir || 220}px)`,
-                  }}
-                  className="relative px-3 py-2.5 bg-slate-50 sticky top-0 z-10 border-b border-slate-200 select-none group"
-                >
-                  <span className="truncate">Pekerjaan Terakhir</span>
-                  <div
-                    onMouseDown={(resizeEvt) => handleResizeStart("terakhir", resizeEvt)}
-                    onClick={(resizeEvt) => resizeEvt.stopPropagation()}
-                    className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-emerald-500/50 active:bg-emerald-600 z-20 group-hover:bg-slate-300/80 transition-colors"
-                    title="Geser untuk mengatur lebar kolom"
-                  />
-                </th>
-                <th
-                  style={{
-                    width: `var(--col-selanjutnya, ${colWidths.selanjutnya || 220}px)`,
-                    minWidth: `var(--col-selanjutnya, ${colWidths.selanjutnya || 220}px)`,
-                  }}
-                  className="relative px-3 py-2.5 bg-slate-50 sticky top-0 z-10 border-b border-slate-200 select-none group"
-                >
-                  <span className="truncate">Pekerjaan Selanjutnya</span>
-                  <div
-                    onMouseDown={(resizeEvt) => handleResizeStart("selanjutnya", resizeEvt)}
-                    onClick={(resizeEvt) => resizeEvt.stopPropagation()}
-                    className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-emerald-500/50 active:bg-emerald-600 z-20 group-hover:bg-slate-300/80 transition-colors"
-                    title="Geser untuk mengatur lebar kolom"
-                  />
-                </th>
+                {renderSortableHeader("progress", "Progress")}
+                {renderSortableHeader("terakhir", "Pekerjaan Terakhir")}
+                {renderSortableHeader("selanjutnya", "Pekerjaan Selanjutnya")}
                 {/* Spacer: menyerap sisa lebar tabel agar resize tidak menggeser kolom lain */}
                 <th className="px-0" aria-hidden />
               </tr>
