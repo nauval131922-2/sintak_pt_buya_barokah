@@ -2974,7 +2974,7 @@ function TaskDetailModal({
                     <th className="px-2.5 py-2.5 text-center w-20">Work Days</th>
                     <th className="px-2.5 py-2.5 w-40">Status</th>
                     <th className="px-2.5 py-2.5 min-w-[200px]">Note</th>
-                    <th className="px-2.5 py-2.5 text-center w-28">Aksi</th>
+                    <th className="px-2.5 py-2.5 text-center w-20">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
@@ -3126,8 +3126,12 @@ function InlineEditRow({
     note: task.note || "",
   }));
 
+  const rowRef = useRef<HTMLTableRowElement>(null);
+  const formRef = useRef(form);
+  formRef.current = form;
+  const isSavingRef = useRef(false);
+
   const [pekerjaanList, setPekerjaanList] = useState<string[]>([]);
-  const [saving, setSaving] = useState(false);
 
   // Load master pekerjaan on mount & when bagian changes
   useEffect(() => {
@@ -3138,15 +3142,33 @@ function InlineEditRow({
     }
   }, [form.bagian]);
 
-  const handleSave = async () => {
-    if (saving) return;
-    setSaving(true);
+  const saveCurrentForm = useCallback(async () => {
+    if (isSavingRef.current) return;
+    isSavingRef.current = true;
     try {
-      await onSave(form);
+      await onSave(formRef.current);
     } finally {
-      setSaving(false);
+      isSavingRef.current = false;
     }
-  };
+  }, [onSave]);
+
+  // Auto-save saat klik di luar baris yang sedang diedit
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (rowRef.current && rowRef.current.contains(target)) return;
+
+      // Jangan tutup jika klik terjadi di dalam portal panel (dropdown/datepicker di luar DOM row)
+      const isPortalPopup = (target as Element)?.closest?.('[class*="z-[10000]"]') ||
+        (target as Element)?.closest?.('[data-date-picker-trigger]');
+      if (isPortalPopup) return;
+
+      saveCurrentForm();
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [saveCurrentForm]);
 
   const workDaysDisplay = useMemo(() => {
     if (!form.startDate || !form.endDate) return "-";
@@ -3176,7 +3198,7 @@ function InlineEditRow({
   }, [employeeOptions]);
 
   return (
-    <tr className="bg-sky-50/90 border-y-2 border-sky-300">
+    <tr ref={rowRef} className="bg-sky-50/90 border-y-2 border-sky-300">
       <td className="px-2.5 py-2.5 text-center font-bold text-sky-700 text-xs">
         {idx + 1}
       </td>
@@ -3321,28 +3343,11 @@ function InlineEditRow({
       </td>
       {/* 9. Aksi */}
       <td className="px-2.5 py-2 text-center whitespace-nowrap">
-        <div className="flex items-center justify-center gap-1.5 min-w-[95px]">
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="p-1.5 text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-lg shadow-sm transition-all cursor-pointer shrink-0"
-            title="Simpan Perubahan"
-          >
-            <Save size={14} />
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="p-1.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all cursor-pointer shrink-0 border border-slate-200"
-            title="Batal"
-          >
-            <X size={14} />
-          </button>
+        <div className="flex items-center justify-center">
           <button
             type="button"
             onClick={onDelete}
-            className="p-1.5 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-all cursor-pointer shrink-0 border border-rose-200"
+            className="p-1.5 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-all cursor-pointer border border-rose-200"
             title="Hapus Pekerjaan Ini"
           >
             <Trash2 size={14} />
