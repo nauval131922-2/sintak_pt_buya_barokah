@@ -368,11 +368,12 @@ const getOrderStatusAccent = (group: { tasks: SpreadsheetTask[]; progressPct: nu
   if (tasks.length === 0) {
     return {
       status: "BELUM DIKERJAKAN",
-      borderAccent: "border-l-[4px] border-l-slate-400",
+      rowBg: "bg-slate-50/70",
+      borderAccent: "border-l-[4.5px] border-l-slate-400",
       barColor: "bg-slate-400",
-      rowHover: "hover:bg-slate-50/70",
-      selectedBg: "bg-slate-100/80 shadow-[inset_4px_0_0_0_#64748b]",
-      badge: { bg: "bg-slate-100 text-slate-700 border-slate-300", label: "0% Belum Dikerjakan" },
+      rowHover: "hover:bg-slate-100/80",
+      selectedBg: "bg-slate-200/90 shadow-[inset_5px_0_0_0_#475569]",
+      badge: { bg: "bg-slate-200/90 text-slate-700 border-slate-300", label: "0% Belum Dikerjakan" },
     };
   }
 
@@ -380,11 +381,12 @@ const getOrderStatusAccent = (group: { tasks: SpreadsheetTask[]; progressPct: nu
   if (allCancel) {
     return {
       status: "CANCEL",
-      borderAccent: "border-l-[4px] border-l-rose-500",
+      rowBg: "bg-rose-50/80",
+      borderAccent: "border-l-[4.5px] border-l-rose-500",
       barColor: "bg-rose-500",
-      rowHover: "hover:bg-rose-50/40",
-      selectedBg: "bg-rose-100/70 shadow-[inset_4px_0_0_0_#f43f5e]",
-      badge: { bg: "bg-rose-50 text-rose-700 border-rose-200", label: "Dibatalkan" },
+      rowHover: "hover:bg-rose-100/70",
+      selectedBg: "bg-rose-200/90 shadow-[inset_5px_0_0_0_#e11d48]",
+      badge: { bg: "bg-rose-100 text-rose-800 border-rose-300", label: "Dibatalkan" },
     };
   }
 
@@ -392,11 +394,12 @@ const getOrderStatusAccent = (group: { tasks: SpreadsheetTask[]; progressPct: nu
   if (isSelesai) {
     return {
       status: "SELESAI",
-      borderAccent: "border-l-[4px] border-l-emerald-500",
-      barColor: "bg-emerald-500",
-      rowHover: "hover:bg-emerald-50/40",
-      selectedBg: "bg-emerald-100/70 shadow-[inset_4px_0_0_0_#10b981]",
-      badge: { bg: "bg-emerald-50 text-emerald-700 border-emerald-200", label: "100% Selesai" },
+      rowBg: "bg-emerald-50/80",
+      borderAccent: "border-l-[4.5px] border-l-emerald-600",
+      barColor: "bg-emerald-600",
+      rowHover: "hover:bg-emerald-100/70",
+      selectedBg: "bg-emerald-200/90 shadow-[inset_5px_0_0_0_#059669]",
+      badge: { bg: "bg-emerald-100 text-emerald-800 border-emerald-300", label: "100% Selesai" },
     };
   }
 
@@ -404,11 +407,12 @@ const getOrderStatusAccent = (group: { tasks: SpreadsheetTask[]; progressPct: nu
   if (hasPending) {
     return {
       status: "PENDING",
-      borderAccent: "border-l-[4px] border-l-amber-500",
+      rowBg: "bg-amber-50/80",
+      borderAccent: "border-l-[4.5px] border-l-amber-500",
       barColor: "bg-amber-500",
-      rowHover: "hover:bg-amber-50/40",
-      selectedBg: "bg-amber-100/70 shadow-[inset_4px_0_0_0_#f59e0b]",
-      badge: { bg: "bg-amber-50 text-amber-700 border-amber-200", label: "Pending" },
+      rowHover: "hover:bg-amber-100/70",
+      selectedBg: "bg-amber-200/90 shadow-[inset_5px_0_0_0_#d97706]",
+      badge: { bg: "bg-amber-100 text-amber-800 border-amber-300", label: "Pending" },
     };
   }
 
@@ -416,21 +420,23 @@ const getOrderStatusAccent = (group: { tasks: SpreadsheetTask[]; progressPct: nu
   if (hasInProgress || group.progressPct > 0) {
     return {
       status: "IN PROGRESS",
-      borderAccent: "border-l-[4px] border-l-sky-500",
+      rowBg: "bg-sky-50/80",
+      borderAccent: "border-l-[4.5px] border-l-sky-500",
       barColor: "bg-sky-500",
-      rowHover: "hover:bg-sky-50/40",
-      selectedBg: "bg-sky-100/70 shadow-[inset_4px_0_0_0_#0ea5e9]",
-      badge: { bg: "bg-sky-50 text-sky-700 border-sky-200", label: `${group.progressPct}% In Progress` },
+      rowHover: "hover:bg-sky-100/70",
+      selectedBg: "bg-sky-200/90 shadow-[inset_5px_0_0_0_#0284c7]",
+      badge: { bg: "bg-sky-100 text-sky-800 border-sky-300", label: `${group.progressPct}% In Progress` },
     };
   }
 
   return {
     status: "BELUM DIKERJAKAN",
-    borderAccent: "border-l-[4px] border-l-slate-400",
+    rowBg: "bg-slate-50/70",
+    borderAccent: "border-l-[4.5px] border-l-slate-400",
     barColor: "bg-slate-400",
-    rowHover: "hover:bg-slate-50/70",
-    selectedBg: "bg-slate-100/80 shadow-[inset_4px_0_0_0_#64748b]",
-    badge: { bg: "bg-slate-100 text-slate-700 border-slate-300", label: "Belum Dikerjakan" },
+    rowHover: "hover:bg-slate-100/80",
+    selectedBg: "bg-slate-200/90 shadow-[inset_5px_0_0_0_#475569]",
+    badge: { bg: "bg-slate-200/90 text-slate-700 border-slate-300", label: "Belum Dikerjakan" },
   };
 };
 
@@ -1933,7 +1939,7 @@ export default function LaporanPekerjaanClient() {
               return (
                 <div
                   key={idx}
-                  className={`bg-slate-50/80 p-3.5 rounded-xl border border-slate-200/80 ${accent.borderAccent} hover:border-slate-300 transition-all select-none space-y-2.5`}
+                  className={`${accent.rowBg} p-3.5 rounded-xl border border-slate-200/80 ${accent.borderAccent} hover:border-slate-300 transition-all select-none space-y-2.5`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <h4 className="text-xs font-bold text-slate-800 leading-snug min-w-0 flex-1 break-words">
@@ -2075,7 +2081,7 @@ export default function LaporanPekerjaanClient() {
                       className={`cursor-pointer transition-all ${accent.borderAccent} ${
                         isSelected
                           ? `${accent.selectedBg} font-semibold`
-                          : accent.rowHover
+                          : `${accent.rowBg} ${accent.rowHover}`
                       }`}
                     >
                       <td
