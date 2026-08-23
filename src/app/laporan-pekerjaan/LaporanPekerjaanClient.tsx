@@ -515,7 +515,7 @@ export default function LaporanPekerjaanClient() {
       clearTimeout(t1);
       clearTimeout(t2);
     };
-  }, [isAnalyticsOpen, loading, tasks.length, activeTab]);
+  }, [isAnalyticsOpen, loading, tasks.length]);
 
   const scrollToTop = () => {
     const el = document.getElementById("main-content-scroll");
