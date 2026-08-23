@@ -34,6 +34,7 @@ export default function SquareDropdown({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [alignRight, setAlignRight] = useState(false);
+  const [openUpward, setOpenUpward] = useState(false);
   const [portalStyle, setPortalStyle] = useState<React.CSSProperties>({});
   const triggerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -66,10 +67,20 @@ export default function SquareDropdown({
     }
     setAlignRight(isRight);
 
+    const popupHeight = 240;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const isUpward = spaceBelow < popupHeight + 10 && spaceAbove > spaceBelow;
+    setOpenUpward(isUpward);
+
     if (usePortal) {
+      const topPos = isUpward
+        ? Math.max(10, rect.top - popupHeight - 4)
+        : rect.bottom + 4;
+
       setPortalStyle({
         position: 'fixed',
-        top: (rect.bottom + 4) / scale,
+        top: topPos / scale,
         left: isRight ? Math.max(10, rect.right - popupWidth) / scale : rect.left / scale,
         width: `${popupWidth}px`,
         zIndex: 10000,
@@ -120,7 +131,7 @@ export default function SquareDropdown({
       className={`${
         usePortal
           ? 'fixed'
-          : `absolute top-full mt-1.5 ${alignRight ? 'right-0' : 'left-0'} w-full`
+          : `absolute ${openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'} ${alignRight ? 'right-0' : 'left-0'} w-full`
       } min-w-[190px] bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden z-[10000] animate-in fade-in slide-in-from-top-1 duration-150`}
     >
       <div className="p-2 border-b border-slate-100 bg-slate-50/50">

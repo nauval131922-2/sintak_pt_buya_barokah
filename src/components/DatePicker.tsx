@@ -68,6 +68,7 @@ export default function DatePicker({ name, required, label, onChange, value, cus
     selectionMode === 'month' ? 'months' : 'days'
   );
   const [alignRight, setAlignRight] = useState(false);
+  const [openUpward, setOpenUpward] = useState(false);
   const [portalStyle, setPortalStyle] = useState<React.CSSProperties>({});
 
   // REF: kayak "ID" ke elemen HTML asli (bisa akses DOM langsung)
@@ -106,10 +107,20 @@ export default function DatePicker({ name, required, label, onChange, value, cus
     }
     setAlignRight(isRight);
 
+    const popupHeight = 330;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const isUpward = spaceBelow < popupHeight + 10 && spaceAbove > spaceBelow;
+    setOpenUpward(isUpward);
+
     if (usePortal) {
+      const topPos = isUpward
+        ? Math.max(10, rect.top - popupHeight - 4)
+        : rect.bottom + 4;
+
       setPortalStyle({
         position: 'fixed',
-        top: (rect.bottom + 4) / scale,
+        top: topPos / scale,
         left: isRight
           ? Math.max(10, rect.right - popupWidth) / scale
           : Math.max(10, rect.left) / scale,
@@ -355,7 +366,7 @@ export default function DatePicker({ name, required, label, onChange, value, cus
       className={`${
         usePortal
           ? 'fixed'
-          : `absolute top-full mt-1.5 ${alignRight ? 'right-0' : 'left-0'}`
+          : `absolute ${openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'} ${alignRight ? 'right-0' : 'left-0'}`
       } bg-white border border-gray-100 rounded-xl shadow-2xl p-4 w-[280px] z-[10000] animate-in fade-in zoom-in-95 duration-200`}
     >
       {/* HEADER: navigasi bulan/tahun */}
