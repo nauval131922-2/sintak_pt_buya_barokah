@@ -2693,7 +2693,6 @@ export default function LaporanPekerjaanClient() {
                         <th className="px-3 py-2.5 text-center">Work Days</th>
                         <th className="px-3 py-2.5">Status</th>
                         <th className="px-3 py-2.5">Note</th>
-                        <th className="px-3 py-2.5 text-center w-20">Aksi</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
@@ -2732,39 +2731,6 @@ export default function LaporanPekerjaanClient() {
                           </td>
                           <td className="px-3 py-2.5 text-slate-500 max-w-[180px] truncate" title={task.note}>
                             {task.note || "-"}
-                          </td>
-                          <td className="px-3 py-2.5 text-center">
-                            <div className="flex items-center justify-center gap-1">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setSelectedProjectGroup(null);
-                                  openEditModal(task);
-                                }}
-                                className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-                                title="Edit Aktivitas Ini"
-                              >
-                                <Edit2 size={13} />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={async () => {
-                                  if (task.id) {
-                                    await handleDelete(task.id);
-                                    setSelectedProjectGroup((prev) => {
-                                      if (!prev) return null;
-                                      const remaining = prev.tasks.filter((t) => t.id !== task.id);
-                                      if (remaining.length === 0) return null;
-                                      return { ...prev, tasks: remaining };
-                                    });
-                                  }
-                                }}
-                                className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                                title="Hapus Aktivitas Ini"
-                              >
-                                <Trash2 size={13} />
-                              </button>
-                            </div>
                           </td>
                         </tr>
                       ))}
