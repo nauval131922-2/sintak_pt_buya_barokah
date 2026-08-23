@@ -318,41 +318,41 @@ const getStatusBadge = (status?: string) => {
   const s = (status || "").toUpperCase();
   if (s === "BELUM DIKERJAKAN") {
     return (
-      <span className="inline-flex items-center justify-center gap-1 px-1.5 py-0.5 rounded-md text-[10.5px] font-semibold bg-slate-100 text-slate-700 border border-slate-300 leading-tight text-center">
-        <Clock className="w-3 h-3 text-slate-500 shrink-0" /> <span className="leading-tight">BELUM DIKERJAKAN</span>
+      <span className="inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-slate-100 text-slate-700 border border-slate-300 whitespace-nowrap">
+        <Clock className="w-3 h-3 text-slate-500 shrink-0" /> <span>BELUM DIKERJAKAN</span>
       </span>
     );
   }
   if (s === "SELESAI") {
     return (
-      <span className="inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 leading-tight text-center">
+      <span className="inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 whitespace-nowrap">
         <CheckCircle2 className="w-3 h-3 shrink-0" /> <span>SELESAI</span>
       </span>
     );
   }
   if (s === "IN PROGRESS") {
     return (
-      <span className="inline-flex items-center justify-center gap-1 px-1.5 py-0.5 rounded-md text-[10.5px] font-semibold bg-sky-50 text-sky-700 border border-sky-200/80 leading-tight text-center">
+      <span className="inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-sky-50 text-sky-700 border border-sky-200/80 whitespace-nowrap">
         <Clock className="w-3 h-3 shrink-0" /> <span>IN PROGRESS</span>
       </span>
     );
   }
   if (s === "PENDING") {
     return (
-      <span className="inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/80 leading-tight text-center">
+      <span className="inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/80 whitespace-nowrap">
         <AlertTriangle className="w-3 h-3 shrink-0" /> <span>PENDING</span>
       </span>
     );
   }
   if (s === "CANCEL") {
     return (
-      <span className="inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-rose-50 text-rose-700 border border-rose-200/80 leading-tight text-center">
+      <span className="inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-rose-50 text-rose-700 border border-rose-200/80 whitespace-nowrap">
         <XCircle className="w-3 h-3 shrink-0" /> <span>CANCEL</span>
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-md text-[10.5px] font-medium bg-slate-100 text-slate-700 border border-slate-200 leading-tight text-center">
+    <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-md text-[10.5px] font-medium bg-slate-100 text-slate-700 border border-slate-200 whitespace-nowrap">
       {status || "-"}
     </span>
   );
@@ -2459,12 +2459,12 @@ function TaskDetailModal({
                   <col style={{ width: '3%' }} />
                   <col style={{ width: '11%' }} />
                   <col style={{ width: '13%' }} />
-                  <col style={{ width: '17%' }} />
-                  <col style={{ width: '8%' }} />
-                  <col style={{ width: '17%' }} />
-                  <col style={{ width: '6%' }} />
-                  <col style={{ width: '11%' }} />
-                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '18%' }} />
+                  <col style={{ width: '7%' }} />
+                  <col style={{ width: '13%' }} />
+                  <col style={{ width: '5%' }} />
+                  <col style={{ width: '14%' }} />
+                  <col style={{ width: '12%' }} />
                   <col style={{ width: '4%' }} />
                 </colgroup>
                 <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
@@ -2522,13 +2522,13 @@ function TaskDetailModal({
                         <td className="px-1.5 py-2 text-slate-600 break-words leading-tight">
                           {task.priority || "-"}
                         </td>
-                        <td className="px-1.5 py-2 text-slate-500 text-[10.5px] break-words leading-tight">
+                        <td className="px-1.5 py-2 text-center whitespace-nowrap text-slate-500 text-[10.5px]">
                           {task.startDate ? formatDateDisplay(task.startDate) : "-"} ~ {task.endDate ? formatDateDisplay(task.endDate) : "-"}
                         </td>
-                        <td className="px-1.5 py-2 text-center font-medium text-slate-600 text-[11px]">
+                        <td className="px-1.5 py-2 text-center font-medium text-slate-600 text-[11px] whitespace-nowrap">
                           {task.workDays ? `${task.workDays} hari` : "-"}
                         </td>
-                        <td className="px-1.5 py-2 text-center">
+                        <td className="px-1.5 py-2 text-center whitespace-nowrap">
                           {getStatusBadge(task.status)}
                         </td>
                         <td className="px-1.5 py-2 text-slate-600 break-words whitespace-pre-wrap leading-tight text-[11px]">
