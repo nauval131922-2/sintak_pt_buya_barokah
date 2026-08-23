@@ -2582,16 +2582,16 @@ function TaskDetailModal({
                 </colgroup>
                 <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200 sticky top-0 z-20 shadow-xs">
                   <tr className="bg-slate-50">
-                    <th className="px-1.5 py-2.5 text-center bg-slate-50">No</th>
-                    <th className="px-1.5 py-2.5 bg-slate-50">Bagian</th>
-                    <th className="px-1.5 py-2.5 bg-slate-50">PIC</th>
-                    <th className="px-1.5 py-2.5 bg-slate-50">Task / Aktivitas</th>
-                    <th className="px-1.5 py-2.5 bg-slate-50">Priority</th>
-                    <th className="px-1.5 py-2.5 bg-slate-50">Start ~ End</th>
-                    <th className="px-1.5 py-2.5 text-center bg-slate-50">Work Days</th>
-                    <th className="px-1.5 py-2.5 bg-slate-50">Status</th>
-                    <th className="px-1.5 py-2.5 bg-slate-50">Note</th>
-                    <th className="px-1.5 py-2.5 text-center bg-slate-50">Aksi</th>
+                    <th className="px-1.5 py-2.5 text-center bg-slate-50 truncate" title="No">No</th>
+                    <th className="px-1.5 py-2.5 bg-slate-50 truncate" title="Bagian">Bagian</th>
+                    <th className="px-1.5 py-2.5 bg-slate-50 truncate" title="PIC">PIC</th>
+                    <th className="px-1.5 py-2.5 bg-slate-50 truncate" title="Task / Aktivitas">Task / Aktivitas</th>
+                    <th className="px-1.5 py-2.5 bg-slate-50 truncate" title="Priority">Priority</th>
+                    <th className="px-1.5 py-2.5 bg-slate-50 truncate" title="Start ~ End">Start ~ End</th>
+                    <th className="px-1.5 py-2.5 text-center bg-slate-50 truncate" title="Work Days">Work Days</th>
+                    <th className="px-1.5 py-2.5 bg-slate-50 truncate" title="Status">Status</th>
+                    <th className="px-1.5 py-2.5 bg-slate-50 truncate" title="Note">Note</th>
+                    <th className="px-1.5 py-2.5 text-center bg-slate-50 truncate" title="Aksi">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
