@@ -2832,13 +2832,13 @@ function InlineAddRow({
   onCancel: () => void;
 }) {
   const [form, setForm] = useState({
-    bagian: "SETTING",
+    bagian: "",
     pic: "",
     task: "",
-    priority: "Low",
-    startDate: new Date() as Date | null,
+    priority: "",
+    startDate: null as Date | null,
     endDate: null as Date | null,
-    status: "BELUM DIKERJAKAN",
+    status: "",
     note: "",
   });
 
@@ -2933,6 +2933,7 @@ function InlineAddRow({
           onChange={(val) => {
             setForm((p) => ({ ...p, bagian: val, task: "" }));
           }}
+          placeholder="Pilih Bagian..."
           searchPlaceholder="Cari Bagian..."
           widthClass="w-full"
           usePortal={true}
@@ -2944,6 +2945,7 @@ function InlineAddRow({
           options={picOptions}
           value={form.pic}
           onChange={(val) => setForm((p) => ({ ...p, pic: val }))}
+          placeholder="Pilih PIC..."
           searchPlaceholder="Cari PIC..."
           widthClass="w-full"
           usePortal={true}
@@ -2959,6 +2961,7 @@ function InlineAddRow({
           }
           value={form.task}
           onChange={(val) => setForm((p) => ({ ...p, task: val }))}
+          placeholder={form.bagian ? "Pilih Task..." : "-- Pilih Bagian dulu --"}
           searchPlaceholder="Cari Task / Pekerjaan..."
           widthClass="w-full"
           usePortal={true}
@@ -2974,6 +2977,7 @@ function InlineAddRow({
           ]}
           value={form.priority}
           onChange={(val) => setForm((p) => ({ ...p, priority: val }))}
+          placeholder="Priority..."
           searchPlaceholder="Priority..."
           widthClass="w-full"
           usePortal={true}
@@ -2994,7 +2998,9 @@ function InlineAddRow({
                   onClick={toggle}
                   className="w-full h-8 bg-white border border-slate-200 hover:border-emerald-500 rounded-lg px-2 text-[11px] font-medium flex items-center justify-between shadow-xs transition-colors"
                 >
-                  <span className="truncate">{form.startDate ? formatDateForApi(form.startDate) : 'Pilih...'}</span>
+                  <span className={`truncate ${!form.startDate ? 'text-slate-400 font-normal' : ''}`}>
+                    {form.startDate ? formatDateForApi(form.startDate) : 'Pilih...'}
+                  </span>
                   <Calendar size={12} className="text-slate-400 shrink-0 ml-0.5" />
                 </button>
               )}
@@ -3013,7 +3019,9 @@ function InlineAddRow({
                   onClick={toggle}
                   className="w-full h-8 bg-white border border-slate-200 hover:border-emerald-500 rounded-lg px-2 text-[11px] font-medium flex items-center justify-between shadow-xs transition-colors"
                 >
-                  <span className="truncate">{form.endDate ? formatDateForApi(form.endDate) : 'Pilih...'}</span>
+                  <span className={`truncate ${!form.endDate ? 'text-slate-400 font-normal' : ''}`}>
+                    {form.endDate ? formatDateForApi(form.endDate) : 'Pilih...'}
+                  </span>
                   <Calendar size={12} className="text-slate-400 shrink-0 ml-0.5" />
                 </button>
               )}
@@ -3039,6 +3047,7 @@ function InlineAddRow({
           ]}
           value={form.status}
           onChange={(val) => setForm((p) => ({ ...p, status: val }))}
+          placeholder="Status..."
           searchPlaceholder="Status..."
           widthClass="w-full"
           usePortal={true}

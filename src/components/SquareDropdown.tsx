@@ -14,6 +14,7 @@ export interface SquareDropdownProps {
   options: SquareDropdownOption[];
   value: string;
   onChange: (value: string) => void;
+  placeholder?: string;
   searchPlaceholder?: string;
   widthClass?: string;
   alignRight?: boolean;
@@ -24,6 +25,7 @@ export default function SquareDropdown({
   options,
   value,
   onChange,
+  placeholder,
   searchPlaceholder = 'Cari...',
   widthClass = 'w-48',
   alignRight: propAlignRight,
@@ -38,7 +40,7 @@ export default function SquareDropdown({
   const searchRef = useRef<HTMLInputElement>(null);
 
   const selected = options.find((o) => o.value === value);
-  const displayLabel = selected?.label ?? options[0]?.label ?? '—';
+  const displayLabel = selected ? selected.label : (placeholder || (value ? value : 'Pilih...'));
 
   const filtered = search.trim()
     ? options.filter((o) =>
@@ -109,7 +111,7 @@ export default function SquareDropdown({
     }
   }, [open]);
 
-  const isActive = value !== 'ALL' && value !== '';
+  const isActive = Boolean(selected && value !== 'ALL' && value !== '');
 
   const dropdownPanel = open && (
     <div
@@ -182,7 +184,7 @@ export default function SquareDropdown({
       >
         <span className="truncate min-w-0 flex-1 text-left flex items-center gap-1.5">
           {isActive && <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" />}
-          <span className="truncate">{displayLabel}</span>
+          <span className={`truncate ${!selected ? 'text-slate-400 font-normal' : ''}`}>{displayLabel}</span>
         </span>
         <ChevronDown
           size={14}
