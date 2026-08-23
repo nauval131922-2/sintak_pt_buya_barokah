@@ -2395,6 +2395,7 @@ function TaskDetailModal({
   onDeleteTask: (taskId: number) => Promise<void>;
 }) {
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
+  const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
   const [isAddingTask, setIsAddingTask] = useState<boolean>(false);
 
   const sortedTasks = useMemo(() => {
@@ -2501,8 +2502,13 @@ function TaskDetailModal({
                     ) : (
                       <tr
                         key={task.id || idx}
+                        onClick={() => setSelectedTaskId((prev) => (prev === task.id ? null : task.id || null))}
                         onDoubleClick={() => setEditingTaskId(task.id || null)}
-                        className="hover:bg-slate-50/80 transition-colors group cursor-default"
+                        className={`transition-all group cursor-pointer ${
+                          selectedTaskId === task.id
+                            ? "bg-emerald-100/70 shadow-[inset_3px_0_0_0_#059669] font-semibold text-slate-900"
+                            : "hover:bg-slate-50/80"
+                        }`}
                       >
                         <td className="px-1.5 py-2 text-center font-medium text-slate-400">
                           {idx + 1}
