@@ -111,6 +111,17 @@ function parseDateToSort(str: string): number {
   return isNaN(parsed) ? 0 : parsed;
 }
 
+const fmtTglOrder = (s?: string): string => {
+  if (!s || !s.trim()) return "-";
+  const time = parseDateToSort(s);
+  if (!time) return s;
+  return new Date(time).toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
 const fmtNumber = (n: number) =>
   Number(n).toLocaleString("id-ID", { maximumFractionDigits: 0 });
 
@@ -452,7 +463,7 @@ export default function LaporanPekerjaanClient() {
   // Pagination & Sorting
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize] = useState<number>(50);
-  const [sortField, setSortField] = useState<keyof SpreadsheetTask | null>(null);
+  const [sortField, setSortField] = useState<keyof SpreadsheetTask | null>("tglOrder");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   // Mobile card expand state & Table row selection state
@@ -1789,7 +1800,7 @@ export default function LaporanPekerjaanClient() {
                     <div>
                       <span className="text-slate-400 block text-[10px]">Tanggal Order</span>
                       <span className="font-semibold text-slate-700">
-                        {group.tglOrder || "-"}
+                        {fmtTglOrder(group.tglOrder)}
                       </span>
                     </div>
                     <div>
@@ -1918,7 +1929,7 @@ export default function LaporanPekerjaanClient() {
                         }}
                         className="px-3 py-2.5 whitespace-nowrap text-slate-600 truncate font-medium"
                       >
-                        {group.tglOrder || "-"}
+                        {fmtTglOrder(group.tglOrder)}
                       </td>
                       <td
                         title={group.project}
@@ -2432,7 +2443,7 @@ export default function LaporanPekerjaanClient() {
                 <div className="min-w-0 flex-1 pr-3">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-100 text-emerald-800 border border-emerald-200">
-                      {selectedProjectGroup.tglOrder ? `Tgl: ${selectedProjectGroup.tglOrder}` : "Tgl: -"}
+                      {selectedProjectGroup.tglOrder ? `Tgl: ${fmtTglOrder(selectedProjectGroup.tglOrder)}` : "Tgl: -"}
                     </span>
                     <span className="text-xs text-slate-500 font-medium">
                       {selectedProjectGroup.tasks.length} Aktivitas Pekerjaan
