@@ -208,9 +208,13 @@ const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
   return {
     progressPct: total > 0 ? Math.round((selesaiCount / total) * 100) : 0,
     // ponytail: lastIdx -1 (belum ada yg selesai) → selanjutnya = task pertama
-    pekerjaanTerakhir: lastIdx >= 0 ? cleanTaskName(sorted[lastIdx].task || "", project) : "",
+    pekerjaanTerakhir: lastIdx >= 0 ? cleanTaskName(sorted[lastIdx].task || "", project) : "-",
     pekerjaanSelanjutnya:
-      nextIdx < total ? cleanTaskName(sorted[nextIdx].task || "", project) : "",
+      total === 0
+        ? "-"
+        : nextIdx < total
+        ? cleanTaskName(sorted[nextIdx].task || "", project)
+        : "Semua Selesai",
   };
 };
 
@@ -382,13 +386,8 @@ export default function LaporanPekerjaanClient() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [loadTime, setLoadTime] = useState<number | null>(null);
 
-  // Modal Tambah Order Baru state
-  const [isCreateOrderOpen, setIsCreateOrderOpen] = useState(false);
-
   // Dropdown options state
-  const [sopdOptions, setSopdOptions] = useState<any[]>([]);
   const [employeeOptions, setEmployeeOptions] = useState<any[]>([]);
-  const [pekerjaanOptions, setPekerjaanOptions] = useState<any[]>([]);
 
   // Conflict state
   const [conflicts, setConflicts] = useState<any[]>([]);
@@ -616,18 +615,6 @@ export default function LaporanPekerjaanClient() {
     fetchEmployeeOptions();
   }, [fetchData]);
 
-  const fetchSopdOptions = async () => {
-    try {
-      const res = await fetch('/api/sopd/options?all=true');
-      if (res.ok) {
-        const json = await res.json();
-        setSopdOptions(json.data || []);
-      }
-    } catch (err) {
-      console.error('Gagal fetch SOPd:', err);
-    }
-  };
-
   const fetchEmployeeOptions = async () => {
     try {
       const res = await fetch('/api/employees?all=true');
@@ -637,103 +624,6 @@ export default function LaporanPekerjaanClient() {
       }
     } catch (err) {
       console.error('Gagal fetch employees:', err);
-    }
-  };
-
-  const fetchPekerjaanOptions = async (bagian: string) => {
-    if (!bagian) {
-      setPekerjaanOptions([]);
-      return;
-    }
-    
-    const category = BAGIAN_CATEGORY_MAP[bagian];
-    if (!category) {
-      setPekerjaanOptions([]);
-      return;
-    }
-    
-    try {
-      const res = await fetch(`/api/master-pekerjaan-jurnal-produksi?category=${encodeURIComponent(category)}&all=true`);
-      const json = await res.json();
-      if (json.success) {
-        setPekerjaanOptions(json.data || []);
-      }
-    } catch (err) {
-      console.error('Gagal fetch pekerjaan:', err);
-    }
-  };
-
-  // Handler Tambah Order Baru (dengan task pertamanya)
-  const handleCreateOrder = async (payload: any) => {
-    const startDateStr = formatDateForApi(payload.startDate);
-    const endDateStr = formatDateForApi(payload.endDate);
-
-    let workDays = "";
-    if (payload.startDate && payload.endDate) {
-      const s = payload.startDate instanceof Date ? payload.startDate : new Date(payload.startDate);
-      const e = payload.endDate instanceof Date ? payload.endDate : new Date(payload.endDate);
-      const diffDays = Math.round((e.getTime() - s.getTime()) / 86400000) + 1;
-      if (diffDays > 0) workDays = String(diffDays);
-    }
-
-    const proj = payload.project.trim();
-    const taskName = payload.task.trim();
-    const fullTaskName = proj && !taskName.includes(proj)
-      ? `${taskName} ${proj}`
-      : taskName;
-
-    try {
-      const res = await fetch("/api/laporan-pekerjaan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          task: fullTaskName,
-          project: proj,
-          division: "",
-          bagian: payload.bagian || "SETTING",
-          pic: payload.pic,
-          priority: payload.priority || "Low",
-          startDate: startDateStr,
-          endDate: endDateStr,
-          workDays: workDays,
-          note: payload.note,
-          status: payload.status || "BELUM DIKERJAKAN",
-        }),
-      });
-
-      const json = await res.json();
-      if (json.success) {
-        toast.success("Order baru berhasil ditambahkan!");
-        if (json.id) {
-          const createdTask: SpreadsheetTask = {
-            id: json.id,
-            task: fullTaskName,
-            project: proj,
-            division: "",
-            bagian: payload.bagian || "SETTING",
-            pic: payload.pic,
-            priority: payload.priority || "Low",
-            startDate: startDateStr,
-            endDate: endDateStr,
-            workDays: workDays,
-            note: payload.note,
-            status: payload.status || "BELUM DIKERJAKAN",
-            source: "sintak",
-            tglOrder: "",
-          };
-          setTasks((prev) => [createdTask, ...prev]);
-          // Buka langsung modal detail order baru tersebut
-          setSelectedProjectGroup({
-            project: proj,
-            tglOrder: "",
-            tasks: [createdTask],
-          });
-        }
-      } else {
-        toast.error(json.error || "Gagal menambahkan order baru");
-      }
-    } catch (err: any) {
-      toast.error(err.message || "Terjadi kesalahan");
     }
   };
 
@@ -883,13 +773,18 @@ export default function LaporanPekerjaanClient() {
             note: data.note,
             status: data.status || "BELUM DIKERJAKAN",
             source: "sintak",
+            tglOrder: selectedProjectGroup?.tglOrder || "",
           };
-          setTasks((prev) => [createdTask, ...prev]);
+          setTasks((prev) => {
+            const remaining = prev.filter((t) => !(t.project === proj && !t.task));
+            return [createdTask, ...remaining];
+          });
           setSelectedProjectGroup((prev) => {
             if (!prev) return null;
+            const validTasks = prev.tasks.filter((t) => !!t.task);
             return {
               ...prev,
-              tasks: [...prev.tasks, createdTask],
+              tasks: [...validTasks, createdTask],
             };
           });
         }
@@ -904,8 +799,35 @@ export default function LaporanPekerjaanClient() {
   const handleDeleteInlineTask = async (taskId: number) => {
     if (!confirm("Yakin ingin menghapus aktivitas pekerjaan ini?")) return;
 
+    const proj = selectedProjectGroup?.project || "";
     // Optimistic delete
-    setTasks((prev) => prev.filter((t) => t.id !== taskId));
+    setTasks((prev) => {
+      const remaining = prev.filter((t) => t.id !== taskId);
+      const stillHasProjectTasks = remaining.some((t) => t.project === proj && !!t.task);
+      if (!stillHasProjectTasks && proj) {
+        return [
+          {
+            id: -Date.now(),
+            task: "",
+            project: proj,
+            division: "",
+            bagian: "",
+            pic: "",
+            priority: "Low",
+            startDate: "",
+            endDate: "",
+            workDays: "",
+            note: "",
+            status: "BELUM DIKERJAKAN",
+            source: "sopd",
+            tglOrder: selectedProjectGroup?.tglOrder || "",
+          },
+          ...remaining,
+        ];
+      }
+      return remaining;
+    });
+
     setSelectedProjectGroup((prev) => {
       if (!prev) return null;
       const remaining = prev.tasks.filter((t) => t.id !== taskId);
@@ -950,31 +872,6 @@ export default function LaporanPekerjaanClient() {
     });
     return `${dateStr}, ${timeStr} WIB`;
   }, [lastUpdated]);
-
-  // Cache Order Produksi dropdown items to prevent re-computation on render
-  const orderProduksiItems = useMemo(() => {
-    return Array.from(new Set([
-      ...sopdOptions.map(s => String(s.nama_order || s.nama_prd || '').trim()).filter(Boolean),
-      ...sopdOptions.map(s => String(s.no_sopd || s.faktur || s.no_order || '').trim()).filter(Boolean),
-      ...tasks.map(t => String(t.project || '').trim()).filter(Boolean)
-    ]));
-  }, [sopdOptions, tasks]);
-
-  const orderProduksiItemLabels = useMemo(() => {
-    return sopdOptions.reduce((acc, s) => {
-      const code = String(s.no_sopd || s.faktur || s.no_order || '').trim();
-      const name = String(s.nama_order || s.nama_prd || '').trim();
-      if (code && name) {
-        acc[code] = `${code} — ${name}`;
-        acc[name] = `${name} (${code})`;
-      } else if (code) {
-        acc[code] = code;
-      } else if (name) {
-        acc[name] = name;
-      }
-      return acc;
-    }, {} as Record<string, string>);
-  }, [sopdOptions]);
 
   // Saling-terkait filter options (Bagian, PIC, Status)
   const bagianOptions = useMemo<FilterOption[]>(() => {
@@ -1061,14 +958,16 @@ export default function LaporanPekerjaanClient() {
         map.set(proj, {
           project: proj,
           tglOrder: t.tglOrder || "",
-          tasks: [t],
+          tasks: t.task ? [t] : [],
         });
       } else {
         const group = map.get(proj)!;
         if (!group.tglOrder && t.tglOrder) {
           group.tglOrder = t.tglOrder;
         }
-        group.tasks.push(t);
+        if (t.task) {
+          group.tasks.push(t);
+        }
       }
     });
 
@@ -1133,6 +1032,7 @@ export default function LaporanPekerjaanClient() {
   // Tasks filtered by PIC and search term (for stat card counts)
   const tasksForCounts = useMemo(() => {
     return tasks.filter((t) => {
+      if (!t.task) return false;
       if (
         selectedPic !== "ALL" &&
         t.pic.toUpperCase() !== selectedPic.toUpperCase()
@@ -1806,22 +1706,6 @@ export default function LaporanPekerjaanClient() {
                 className="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
               />
             </div>
-
-            {/* Tombol Tambah Order Baru */}
-            <button
-              type="button"
-              onClick={() => {
-                fetchSopdOptions();
-                fetchEmployeeOptions();
-                setIsCreateOrderOpen(true);
-              }}
-              className="px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all flex items-center gap-1.5 shadow-sm cursor-pointer shrink-0"
-              title="Tambah Order Baru"
-            >
-              <Plus size={14} />
-              <span className="hidden sm:inline">Tambah Order</span>
-              <span className="sm:hidden">Order Baru</span>
-            </button>
           </div>
 
           <div className="flex items-center space-x-2 w-full md:w-auto min-w-0">
@@ -2218,15 +2102,6 @@ export default function LaporanPekerjaanClient() {
         </Portal>
       )}
 
-      {/* Modal Tambah Order Baru */}
-      <CreateOrderModal
-        isOpen={isCreateOrderOpen}
-        onClose={() => setIsCreateOrderOpen(false)}
-        sopdOptions={sopdOptions}
-        employeeOptions={employeeOptions}
-        onSubmit={handleCreateOrder}
-      />
-
       {/* Conflict Resolution Modal */}
       {showConflictModal && currentConflict && (
         <Portal>
@@ -2609,6 +2484,21 @@ function TaskDetailModal({
                         </td>
                       </tr>
                     )
+                  )}
+
+                  {/* Empty state jika belum ada aktivitas pekerjaan */}
+                  {sortedTasks.length === 0 && !isAddingTask && (
+                    <tr>
+                      <td colSpan={10} className="px-6 py-12 text-center text-slate-400">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <AlertCircle className="w-8 h-8 text-slate-300" />
+                          <p className="font-semibold text-slate-600 text-sm">Belum ada aktivitas pekerjaan untuk order ini</p>
+                          <p className="text-xs text-slate-400 max-w-md">
+                            Klik tombol <b className="text-emerald-600 font-bold">+ Tambah Pekerjaan</b> di pojok kanan atas untuk mulai membuat aktivitas pekerjaan pertama.
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
                   )}
 
                   {/* Baris Tambah Pekerjaan Baru di Bawah */}
@@ -3166,306 +3056,5 @@ function InlineAddRow({
         </div>
       </td>
     </tr>
-  );
-}
-
-// ----------------------------------------------------------------------
-// Modal Tambah Order Baru (Ringkas & Cepat)
-// ----------------------------------------------------------------------
-
-function CreateOrderModal({
-  isOpen,
-  onClose,
-  sopdOptions,
-  employeeOptions,
-  onSubmit,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  sopdOptions: any[];
-  employeeOptions: any[];
-  onSubmit: (payload: any) => Promise<void>;
-}) {
-  const [orderName, setOrderName] = useState("");
-  const [bagian, setBagian] = useState("SETTING");
-  const [task, setTask] = useState("");
-  const [pic, setPic] = useState("");
-  const [priority, setPriority] = useState("Low");
-  const [startDate, setStartDate] = useState<Date | null>(new Date());
-  const [endDate, setEndDate] = useState<Date | null>(null);
-  const [status, setStatus] = useState("BELUM DIKERJAKAN");
-  const [note, setNote] = useState("");
-  const [pekerjaanList, setPekerjaanList] = useState<string[]>([]);
-  const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    if (bagian) {
-      fetchPekerjaanForCategory(bagian).then((list) => {
-        setPekerjaanList(list);
-        if (list.length > 0) {
-          setTask(list[0]);
-        } else {
-          setTask("");
-        }
-      });
-    } else {
-      setPekerjaanList([]);
-      setTask("");
-    }
-  }, [bagian]);
-
-  if (!isOpen) return null;
-
-  const orderSuggestions = Array.from(
-    new Set([
-      ...sopdOptions.map((s) => String(s.nama_order || s.nama_prd || "").trim()).filter(Boolean),
-      ...sopdOptions.map((s) => String(s.no_sopd || s.faktur || s.no_order || "").trim()).filter(Boolean),
-    ])
-  );
-
-  const picOptions = Array.from(
-    new Set(
-      employeeOptions
-        .map((e) => (typeof e === "string" ? e : e?.name || e?.label || ""))
-        .filter(Boolean)
-    )
-  ).sort((a, b) => a.localeCompare(b, "id"));
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!orderName.trim()) {
-      toast.error("Nama / Nomor Order Produksi wajib diisi");
-      return;
-    }
-    if (!task.trim()) {
-      toast.error("Nama Task / Pekerjaan wajib diisi");
-      return;
-    }
-
-    setSaving(true);
-    try {
-      await onSubmit({
-        project: orderName.trim(),
-        bagian,
-        task: task.trim(),
-        pic,
-        priority,
-        startDate,
-        endDate,
-        status,
-        note,
-      });
-      onClose();
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <Portal>
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-        <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] overflow-hidden">
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/80 shrink-0">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
-                <Plus size={18} />
-              </div>
-              <div>
-                <h3 className="text-sm sm:text-base font-bold text-slate-800">
-                  Tambah Order Produksi Baru
-                </h3>
-                <p className="text-[11px] text-slate-400">
-                  Masukkan nomor order dan task pertamanya
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-all cursor-pointer"
-            >
-              <X size={18} />
-            </button>
-          </div>
-
-          {/* Form Body */}
-          <form onSubmit={handleSubmit} className="flex-1 min-h-0 overflow-y-auto p-6 space-y-4 custom-scrollbar">
-            {/* Order Produksi */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Order Produksi (Nomor / Nama Order) <span className="text-rose-500">*</span>
-              </label>
-              <input
-                list="create-order-suggestions"
-                type="text"
-                placeholder="Ketik atau pilih nomor order (misal: OP.001 - Buku A)..."
-                value={orderName}
-                onChange={(e) => setOrderName(e.target.value)}
-                className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none font-semibold text-slate-800 transition-all"
-                autoFocus
-                required
-              />
-              <datalist id="create-order-suggestions">
-                {orderSuggestions.slice(0, 100).map((name, idx) => (
-                  <option key={idx} value={name} />
-                ))}
-              </datalist>
-            </div>
-
-            {/* Bagian & Task Pertama */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Bagian <span className="text-rose-500">*</span>
-                </label>
-                <SquareDropdown
-                  options={BAGIAN_LIST.map((b) => ({ value: b, label: b }))}
-                  value={bagian}
-                  onChange={setBagian}
-                  searchPlaceholder="Cari Bagian..."
-                  widthClass="w-full"
-                  usePortal={true}
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Task / Pekerjaan Pertama <span className="text-rose-500">*</span>
-                </label>
-                <SquareDropdown
-                  options={
-                    pekerjaanList.length > 0
-                      ? pekerjaanList.map((p) => ({ value: p, label: p }))
-                      : [{ value: "", label: "-- Pilih Bagian dulu --" }]
-                  }
-                  value={task}
-                  onChange={setTask}
-                  searchPlaceholder="Cari Task / Pekerjaan..."
-                  widthClass="w-full"
-                  usePortal={true}
-                />
-              </div>
-            </div>
-
-            {/* PIC & Priority */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  PIC (Karyawan)
-                </label>
-                <SquareDropdown
-                  options={picOptions.map((p) => ({ value: p, label: p }))}
-                  value={pic}
-                  onChange={setPic}
-                  searchPlaceholder="Cari PIC / Karyawan..."
-                  widthClass="w-full"
-                  usePortal={true}
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Priority
-                </label>
-                <SquareDropdown
-                  options={[
-                    { value: "Low", label: "Low" },
-                    { value: "Medium", label: "Medium" },
-                    { value: "High", label: "High" },
-                  ]}
-                  value={priority}
-                  onChange={setPriority}
-                  searchPlaceholder="Priority..."
-                  widthClass="w-full"
-                  usePortal={true}
-                />
-              </div>
-            </div>
-
-            {/* Tanggal & Status */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Tanggal Mulai ~ Selesai
-                </label>
-                <div className="flex items-center gap-1.5">
-                  <div className="flex-1">
-                    <DatePicker
-                      name="order_create_start"
-                      value={startDate}
-                      onChange={setStartDate}
-                      usePortal={true}
-                    />
-                  </div>
-                  <span className="text-slate-400 text-xs font-semibold">~</span>
-                  <div className="flex-1">
-                    <DatePicker
-                      name="order_create_end"
-                      value={endDate}
-                      onChange={setEndDate}
-                      usePortal={true}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Status Pekerjaan
-                </label>
-                <SquareDropdown
-                  options={[
-                    { value: "BELUM DIKERJAKAN", label: "BELUM DIKERJAKAN" },
-                    { value: "IN PROGRESS", label: "IN PROGRESS" },
-                    { value: "PENDING", label: "PENDING" },
-                    { value: "CANCEL", label: "CANCEL" },
-                    { value: "SELESAI", label: "SELESAI" },
-                  ]}
-                  value={status}
-                  onChange={setStatus}
-                  searchPlaceholder="Status..."
-                  widthClass="w-full"
-                  usePortal={true}
-                />
-              </div>
-            </div>
-
-            {/* Catatan (Note) */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Catatan (Note)
-              </label>
-              <textarea
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Catatan opsional..."
-                rows={2}
-                className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all resize-y"
-              />
-            </div>
-
-            {/* Footer Form */}
-            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all cursor-pointer"
-              >
-                Batal
-              </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
-              >
-                <Save size={14} />
-                <span>{saving ? "Menyimpan..." : "Simpan & Buka Order"}</span>
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </Portal>
   );
 }

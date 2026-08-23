@@ -106,6 +106,66 @@ export async function GET(request: NextRequest) {
       updated_at: row.updated_at,
     }));
 
+    // Inklusi order SOPd yang belum ada di laporan_pekerjaan (jika tidak sedang difilter PIC spesifik)
+    const shouldIncludeSopd = !pic && (!status || status === "all" || status === "belum dikerjakan");
+    if (shouldIncludeSopd) {
+      try {
+        let sopdSql = `
+          SELECT
+            -s.id as id,
+            '' as task,
+            s.nama_order as project,
+            '' as division,
+            '' as bagian,
+            '' as pic,
+            'Low' as priority,
+            '' as start_date,
+            '' as end_date,
+            '' as work_days,
+            '' as note,
+            'BELUM DIKERJAKAN' as status,
+            'sopd' as source,
+            NULL as updated_at,
+            s.tgl as tgl_order
+          FROM sopd s
+          WHERE s.nama_order IS NOT NULL AND s.nama_order != ''
+            AND (substr(s.tgl, 7, 4) >= '2026' OR s.tgl LIKE '%2026%')
+            AND NOT EXISTS (
+              SELECT 1 FROM laporan_pekerjaan lp WHERE lp.project = s.nama_order
+            )
+        `;
+        const sopdArgs: any[] = [];
+        if (search) {
+          sopdSql += " AND LOWER(s.nama_order) LIKE ?";
+          sopdArgs.push(`%${search}%`);
+        }
+        sopdSql += " GROUP BY s.nama_order ORDER BY s.id DESC";
+
+        const sopdRes = await db.execute({ sql: sopdSql, args: sopdArgs });
+        const sopdTasks = sopdRes.rows.map((row: any) => ({
+          id: Number(row.id),
+          task: "",
+          project: String(row.project || ""),
+          division: "",
+          bagian: "",
+          pic: "",
+          priority: "Low",
+          startDate: "",
+          endDate: "",
+          workDays: "",
+          note: "",
+          status: "BELUM DIKERJAKAN",
+          source: "sopd",
+          tglOrder: String(row.tgl_order || ""),
+          updated_at: null,
+        }));
+
+        tasks.push(...sopdTasks);
+      } catch (e) {
+        console.error("Gagal menyertakan order SOPD baru:", e);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       total: tasks.length,
