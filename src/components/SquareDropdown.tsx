@@ -67,24 +67,26 @@ export default function SquareDropdown({
     }
     setAlignRight(isRight);
 
-    const popupHeight = 240;
     const spaceBelow = window.innerHeight - rect.bottom;
     const spaceAbove = rect.top;
-    const isUpward = spaceBelow < popupHeight + 10 && spaceAbove > spaceBelow;
+    const isUpward = spaceBelow < 220 && spaceAbove > spaceBelow;
     setOpenUpward(isUpward);
 
     if (usePortal) {
-      const topPos = isUpward
-        ? Math.max(10, rect.top - popupHeight - 4)
-        : rect.bottom + 4;
-
-      setPortalStyle({
+      const style: React.CSSProperties = {
         position: 'fixed',
-        top: topPos / scale,
         left: isRight ? Math.max(10, rect.right - popupWidth) / scale : rect.left / scale,
         width: `${popupWidth}px`,
         zIndex: 10000,
-      });
+      };
+
+      if (isUpward) {
+        style.bottom = Math.max(10, window.innerHeight - rect.top + 4) / scale;
+      } else {
+        style.top = (rect.bottom + 4) / scale;
+      }
+
+      setPortalStyle(style);
     }
   }, [propAlignRight, usePortal]);
 

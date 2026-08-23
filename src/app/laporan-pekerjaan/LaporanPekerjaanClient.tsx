@@ -2507,28 +2507,28 @@ function TaskDetailModal({
                         <td className="px-1.5 py-2 text-center font-medium text-slate-400">
                           {idx + 1}
                         </td>
-                        <td className="px-1.5 py-2 text-slate-700 font-medium truncate">
+                        <td className="px-1.5 py-2 text-slate-700 font-medium break-words leading-tight">
                           {(task as any).bagian || "-"}
                         </td>
-                        <td className="px-1.5 py-2 font-bold text-emerald-700 truncate">
+                        <td className="px-1.5 py-2 font-bold text-emerald-700 break-words leading-tight">
                           {task.pic || "-"}
                         </td>
                         <td
-                          className="px-1.5 py-2 font-semibold text-slate-800 break-words"
+                          className="px-1.5 py-2 font-semibold text-slate-800 break-words leading-snug"
                           title={cleanTaskName(task.task, selectedProjectGroup.project) || task.task}
                         >
                           {cleanTaskName(task.task, selectedProjectGroup.project) || task.task}
                         </td>
-                        <td className="px-1.5 py-2 text-slate-600 truncate">
+                        <td className="px-1.5 py-2 text-slate-600 break-words leading-tight">
                           {task.priority || "-"}
                         </td>
-                        <td className="px-1.5 py-2 whitespace-nowrap text-slate-500 text-[11px]">
+                        <td className="px-1.5 py-2 text-slate-500 text-[10.5px] break-words leading-tight">
                           {task.startDate ? formatDateDisplay(task.startDate) : "-"} ~ {task.endDate ? formatDateDisplay(task.endDate) : "-"}
                         </td>
                         <td className="px-1.5 py-2 text-center font-medium text-slate-600 text-[11px]">
                           {task.workDays ? `${task.workDays} hari` : "-"}
                         </td>
-                        <td className="px-1.5 py-2 whitespace-nowrap">
+                        <td className="px-1.5 py-2 text-center">
                           {getStatusBadge(task.status)}
                         </td>
                         <td className="px-1.5 py-2 text-slate-600 break-words whitespace-pre-wrap leading-tight text-[11px]">
