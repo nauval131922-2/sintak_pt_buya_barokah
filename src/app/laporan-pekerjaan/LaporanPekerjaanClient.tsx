@@ -469,9 +469,10 @@ const renderPieLabel = ({
   );
 };
 
-const truncatePicName = (name: string, maxLen = 8) => {
+const truncatePicName = (name: string, maxLen = 20) => {
   if (!name) return "";
   let s = name.trim();
+  if (s.length <= maxLen) return s;
   if (s.toLowerCase().startsWith("muhammad ")) {
     s = "M. " + s.slice(9);
   }
@@ -1240,7 +1241,7 @@ export default function LaporanPekerjaanClient() {
       const picKey = rawPic.toUpperCase();
       if (!map[picKey]) {
         map[picKey] = {
-          name: truncatePicName(rawPic, 8),
+          name: rawPic,
           fullName: rawPic,
           BelumDikerjakan: 0,
           Selesai: 0,
@@ -1258,7 +1259,17 @@ export default function LaporanPekerjaanClient() {
       else if (s === "PENDING") map[picKey].Pending++;
       else if (s === "CANCEL") map[picKey].Cancel++;
     });
-    return Object.values(map).sort((a, b) => b.Total - a.Total);
+
+    const entries = Object.values(map).sort((a, b) => b.Total - a.Total);
+    const totalPicCount = entries.length;
+
+    // Auto-truncate adaptif: jika PIC sedikit tampil penuh, jika PIC ramai auto-truncate proporsional
+    const maxLen = totalPicCount <= 3 ? 24 : totalPicCount <= 5 ? 16 : totalPicCount <= 7 ? 12 : 9;
+
+    return entries.map((item) => ({
+      ...item,
+      name: truncatePicName(item.fullName, maxLen),
+    }));
   }, [filteredTasks, isAnalyticsOpen]);
 
   // Chart Data 2: Pie Chart Status (Lazy: hanya dihitung saat accordion terbuka)
