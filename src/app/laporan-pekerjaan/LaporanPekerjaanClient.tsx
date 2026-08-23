@@ -933,7 +933,7 @@ export default function LaporanPekerjaanClient() {
     }
   };
 
-  // Modal Detail: Handlers untuk Inline Edit & Tambah Pekerjaan
+  // Modal Detail: Handlers untuk Inline Edit & Tambah Pekerjaan (Optimistic Update tanpa re-fetch lambat)
   const handleSaveInlineEdit = async (taskId: number, data: any) => {
     if (!data.task.trim()) {
       toast.error("Nama pekerjaan wajib diisi");
@@ -958,6 +958,33 @@ export default function LaporanPekerjaanClient() {
       ? `${fullTaskName} ${proj}`
       : fullTaskName;
 
+    // Optimistic update langsung di memori
+    const updatedTaskData = {
+      task: savedTaskName,
+      bagian: data.bagian,
+      pic: data.pic,
+      priority: data.priority || "Low",
+      startDate: startDateStr,
+      endDate: endDateStr,
+      workDays: workDays,
+      note: data.note,
+      status: data.status || "BELUM DIKERJAKAN",
+    };
+
+    setTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, ...updatedTaskData } : t))
+    );
+
+    setSelectedProjectGroup((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        tasks: prev.tasks.map((t) =>
+          t.id === taskId ? { ...t, ...updatedTaskData } : t
+        ),
+      };
+    });
+
     try {
       const res = await fetch("/api/laporan-pekerjaan", {
         method: "PUT",
@@ -981,34 +1008,13 @@ export default function LaporanPekerjaanClient() {
       const json = await res.json();
       if (json.success) {
         toast.success("Pekerjaan berhasil diperbarui!");
-        await fetchData();
-        setSelectedProjectGroup((prev) => {
-          if (!prev) return null;
-          return {
-            ...prev,
-            tasks: prev.tasks.map((t) =>
-              t.id === taskId
-                ? {
-                    ...t,
-                    task: savedTaskName,
-                    bagian: data.bagian,
-                    pic: data.pic,
-                    priority: data.priority,
-                    startDate: startDateStr,
-                    endDate: endDateStr,
-                    workDays: workDays,
-                    status: data.status,
-                    note: data.note,
-                  }
-                : t
-            ),
-          };
-        });
       } else {
         toast.error(json.error || "Gagal menyimpan perubahan");
+        fetchData();
       }
     } catch (err: any) {
       toast.error(err.message || "Terjadi kesalahan");
+      fetchData();
     }
   };
 
@@ -1058,7 +1064,6 @@ export default function LaporanPekerjaanClient() {
       const json = await res.json();
       if (json.success) {
         toast.success("Pekerjaan berhasil ditambahkan ke order!");
-        await fetchData();
         if (json.id) {
           const createdTask: SpreadsheetTask = {
             id: json.id,
@@ -1075,6 +1080,7 @@ export default function LaporanPekerjaanClient() {
             status: data.status || "BELUM DIKERJAKAN",
             source: "sintak",
           };
+          setTasks((prev) => [createdTask, ...prev]);
           setSelectedProjectGroup((prev) => {
             if (!prev) return null;
             return {
@@ -1093,22 +1099,27 @@ export default function LaporanPekerjaanClient() {
 
   const handleDeleteInlineTask = async (taskId: number) => {
     if (!confirm("Yakin ingin menghapus aktivitas pekerjaan ini?")) return;
+
+    // Optimistic delete
+    setTasks((prev) => prev.filter((t) => t.id !== taskId));
+    setSelectedProjectGroup((prev) => {
+      if (!prev) return null;
+      const remaining = prev.tasks.filter((t) => t.id !== taskId);
+      return { ...prev, tasks: remaining };
+    });
+
     try {
       const res = await fetch(`/api/laporan-pekerjaan?id=${taskId}`, { method: "DELETE" });
       const json = await res.json();
       if (json.success) {
         toast.success("Pekerjaan berhasil dihapus");
-        await fetchData();
-        setSelectedProjectGroup((prev) => {
-          if (!prev) return null;
-          const remaining = prev.tasks.filter((t) => t.id !== taskId);
-          return { ...prev, tasks: remaining };
-        });
       } else {
         toast.error(json.error || "Gagal menghapus data");
+        fetchData();
       }
     } catch (err: any) {
       toast.error(err.message || "Terjadi kesalahan");
+      fetchData();
     }
   };
 
