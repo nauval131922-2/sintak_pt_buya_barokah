@@ -1156,6 +1156,28 @@ export default function LaporanPekerjaanClient() {
 
   const [colWidths, setColWidths] = useState<Record<string, number>>(DEFAULT_COL_WIDTHS);
 
+  // Lebar tabel = jumlah lebar kolom (min. selebar container) supaya resize
+  // satu kolom tidak mendistribusikan ulang lebar kolom lain.
+  const applyTableWidth = (
+    widths: Record<string, number>,
+    container: HTMLDivElement | null
+  ) => {
+    if (!container) return;
+    const table = container.querySelector("table");
+    if (!table) return;
+    const sum = Object.values(widths).reduce((a, b) => a + b, 0);
+    table.style.width = `${Math.max(sum, container.clientWidth)}px`;
+  };
+
+  // Sync lebar tabel saat colWidths / layout berubah atau window di-resize
+  useEffect(() => {
+    applyTableWidth(colWidths, tableContainerRef.current);
+    const onWinResize = () =>
+      applyTableWidth(colWidths, tableContainerRef.current);
+    window.addEventListener("resize", onWinResize);
+    return () => window.removeEventListener("resize", onWinResize);
+  }, [colWidths, isAnalyticsOpen]);
+
   // Load saved column widths from localStorage on mount
   useEffect(() => {
     try {
@@ -1188,6 +1210,10 @@ export default function LaporanPekerjaanClient() {
         tableContainerRef.current.style.setProperty(
           `--col-${field}`,
           `${finalWidth}px`
+        );
+        applyTableWidth(
+          { ...colWidths, [field]: finalWidth },
+          tableContainerRef.current
         );
       }
     };
@@ -1950,10 +1976,7 @@ export default function LaporanPekerjaanClient() {
             } as React.CSSProperties
           }
         >
-          <table
-            className="text-left text-xs border-collapse table-fixed"
-            style={{ width: "max-content", minWidth: "100%" }}
-          >
+          <table className="text-left text-xs border-collapse table-fixed">
             <thead className="sticky top-0 z-20 bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 shadow-sm">
               <tr>
                 <th
