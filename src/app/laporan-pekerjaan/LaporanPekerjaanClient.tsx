@@ -363,6 +363,77 @@ const getStatusBadge = (status?: string) => {
   );
 };
 
+const getOrderStatusAccent = (group: { tasks: SpreadsheetTask[]; progressPct: number }) => {
+  const tasks = group.tasks;
+  if (tasks.length === 0) {
+    return {
+      status: "BELUM DIKERJAKAN",
+      borderAccent: "border-l-[4px] border-l-slate-400",
+      barColor: "bg-slate-400",
+      rowHover: "hover:bg-slate-50/70",
+      selectedBg: "bg-slate-100/80 shadow-[inset_4px_0_0_0_#64748b]",
+      badge: { bg: "bg-slate-100 text-slate-700 border-slate-300", label: "0% Belum Dikerjakan" },
+    };
+  }
+
+  const allCancel = tasks.every((t) => (t.status || "").toUpperCase() === "CANCEL");
+  if (allCancel) {
+    return {
+      status: "CANCEL",
+      borderAccent: "border-l-[4px] border-l-rose-500",
+      barColor: "bg-rose-500",
+      rowHover: "hover:bg-rose-50/40",
+      selectedBg: "bg-rose-100/70 shadow-[inset_4px_0_0_0_#f43f5e]",
+      badge: { bg: "bg-rose-50 text-rose-700 border-rose-200", label: "Dibatalkan" },
+    };
+  }
+
+  const isSelesai = group.progressPct >= 100;
+  if (isSelesai) {
+    return {
+      status: "SELESAI",
+      borderAccent: "border-l-[4px] border-l-emerald-500",
+      barColor: "bg-emerald-500",
+      rowHover: "hover:bg-emerald-50/40",
+      selectedBg: "bg-emerald-100/70 shadow-[inset_4px_0_0_0_#10b981]",
+      badge: { bg: "bg-emerald-50 text-emerald-700 border-emerald-200", label: "100% Selesai" },
+    };
+  }
+
+  const hasPending = tasks.some((t) => (t.status || "").toUpperCase() === "PENDING");
+  if (hasPending) {
+    return {
+      status: "PENDING",
+      borderAccent: "border-l-[4px] border-l-amber-500",
+      barColor: "bg-amber-500",
+      rowHover: "hover:bg-amber-50/40",
+      selectedBg: "bg-amber-100/70 shadow-[inset_4px_0_0_0_#f59e0b]",
+      badge: { bg: "bg-amber-50 text-amber-700 border-amber-200", label: "Pending" },
+    };
+  }
+
+  const hasInProgress = tasks.some((t) => (t.status || "").toUpperCase() === "IN PROGRESS");
+  if (hasInProgress || group.progressPct > 0) {
+    return {
+      status: "IN PROGRESS",
+      borderAccent: "border-l-[4px] border-l-sky-500",
+      barColor: "bg-sky-500",
+      rowHover: "hover:bg-sky-50/40",
+      selectedBg: "bg-sky-100/70 shadow-[inset_4px_0_0_0_#0ea5e9]",
+      badge: { bg: "bg-sky-50 text-sky-700 border-sky-200", label: `${group.progressPct}% In Progress` },
+    };
+  }
+
+  return {
+    status: "BELUM DIKERJAKAN",
+    borderAccent: "border-l-[4px] border-l-slate-400",
+    barColor: "bg-slate-400",
+    rowHover: "hover:bg-slate-50/70",
+    selectedBg: "bg-slate-100/80 shadow-[inset_4px_0_0_0_#64748b]",
+    badge: { bg: "bg-slate-100 text-slate-700 border-slate-300", label: "Belum Dikerjakan" },
+  };
+};
+
 const renderPieLabel = ({
   cx,
   cy,
@@ -1857,17 +1928,18 @@ export default function LaporanPekerjaanClient() {
             paginatedOrders.map((group, idx) => {
               const totalTask = group.tasks.length;
               const selesaiTask = group.tasks.filter((t) => (t.status || "").toUpperCase() === "SELESAI").length;
+              const accent = getOrderStatusAccent(group);
 
               return (
                 <div
                   key={idx}
-                  className="bg-slate-50/80 p-3.5 rounded-xl border border-slate-200/80 hover:border-slate-300 hover:bg-slate-100/50 transition-all select-none space-y-2.5"
+                  className={`bg-slate-50/80 p-3.5 rounded-xl border border-slate-200/80 ${accent.borderAccent} hover:border-slate-300 transition-all select-none space-y-2.5`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <h4 className="text-xs font-bold text-slate-800 leading-snug min-w-0 flex-1 break-words">
                       {group.project}
                     </h4>
-                    <span className="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    <span className={`shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-md border ${accent.badge.bg}`}>
                       {selesaiTask}/{totalTask} Selesai
                     </span>
                   </div>
@@ -1890,13 +1962,11 @@ export default function LaporanPekerjaanClient() {
                   <div>
                     <div className="flex items-center justify-between text-[10px] mb-1">
                       <span className="text-slate-400 font-semibold">Progress</span>
-                      <span className="font-bold text-emerald-700">{group.progressPct}%</span>
+                      <span className="font-bold text-slate-700">{group.progressPct}%</span>
                     </div>
                     <div className="h-2 bg-slate-200/70 rounded-full overflow-hidden">
                       <div
-                        className={`h-full rounded-full transition-all ${
-                          group.progressPct >= 100 ? "bg-emerald-600" : "bg-emerald-500"
-                        }`}
+                        className={`h-full rounded-full transition-all ${accent.barColor}`}
                         style={{ width: `${group.progressPct}%` }}
                       />
                     </div>
@@ -1995,16 +2065,17 @@ export default function LaporanPekerjaanClient() {
               ) : (
                 paginatedOrders.map((group, idx) => {
                   const isSelected = selectedRowIndex === idx;
+                  const accent = getOrderStatusAccent(group);
                   return (
                     <tr
                       key={idx}
                       onClick={() =>
                         setSelectedRowIndex((prev) => (prev === idx ? null : idx))
                       }
-                      className={`cursor-pointer transition-all ${
+                      className={`cursor-pointer transition-all ${accent.borderAccent} ${
                         isSelected
-                          ? "bg-emerald-100/70 shadow-[inset_4px_0_0_0_#059669] font-semibold"
-                          : "hover:bg-emerald-50/50"
+                          ? `${accent.selectedBg} font-semibold`
+                          : accent.rowHover
                       }`}
                     >
                       <td
@@ -2045,12 +2116,12 @@ export default function LaporanPekerjaanClient() {
                           maxWidth: "var(--col-project)",
                         }}
                         className={`px-3 py-2.5 truncate ${
-                          isSelected ? "text-emerald-950 font-bold" : "font-semibold text-slate-800"
+                          isSelected ? "text-slate-950 font-bold" : "font-semibold text-slate-800"
                         }`}
                       >
                         <div className="flex items-center gap-2">
                           <span className="truncate">{group.project}</span>
-                          <span className="shrink-0 text-[10.5px] font-normal px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                          <span className={`shrink-0 text-[10.5px] font-normal px-2 py-0.5 rounded-full border ${accent.badge.bg}`}>
                             {group.tasks.length} task
                           </span>
                         </div>
@@ -2066,9 +2137,7 @@ export default function LaporanPekerjaanClient() {
                         <div className="flex items-center gap-2">
                           <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden min-w-[36px]">
                             <div
-                              className={`h-full rounded-full transition-all ${
-                                group.progressPct >= 100 ? "bg-emerald-600" : "bg-emerald-500"
-                              }`}
+                              className={`h-full rounded-full transition-all ${accent.barColor}`}
                               style={{ width: `${group.progressPct}%` }}
                             />
                           </div>
