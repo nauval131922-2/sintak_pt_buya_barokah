@@ -1498,7 +1498,6 @@ export default function TrackingClient() {
                       name="endDate"
                       value={endDate}
                       onChange={(d) => setEndDate(d)}
-                      popupAlign="right"
                     />
                   </div>
                   <button

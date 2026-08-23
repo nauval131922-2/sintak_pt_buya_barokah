@@ -1716,7 +1716,6 @@ export default function JurnalClient({
                       name="endDate"
                       value={endDate}
                       onChange={(d) => { setEndDate(d); setPage(1); }}
-                      popupAlign="right"
                     />
                   </div>
                 </div>
@@ -1833,7 +1832,6 @@ export default function JurnalClient({
                   name="endDate"
                   value={endDate}
                   onChange={(d) => { setEndDate(d); setPage(1); }}
-                  popupAlign="right"
                 />
               </div>
 

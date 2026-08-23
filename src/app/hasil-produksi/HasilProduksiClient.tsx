@@ -1039,7 +1039,7 @@ export default function HasilProduksiClient() {
               <div className="flex items-center gap-1">
                 <div className="flex-1"><DatePicker name="startDate" value={startDate} onChange={(d) => setStartDate(d)} /></div>
                 <div className="w-2 h-px bg-gray-200 shrink-0"></div>
-                <div className="flex-1"><DatePicker name="endDate" value={endDate} onChange={(d) => setEndDate(d)} popupAlign="right" /></div>
+                <div className="flex-1"><DatePicker name="endDate" value={endDate} onChange={(d) => setEndDate(d)} /></div>
               </div>
             </div>
 

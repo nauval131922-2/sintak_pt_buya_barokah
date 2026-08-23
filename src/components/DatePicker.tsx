@@ -74,18 +74,34 @@ export default function DatePicker({ name, required, label, onChange, value, cus
   const ref = useRef<HTMLDivElement>(null);       // ref ke popup kalender
   const triggerRef = useRef<HTMLDivElement>(null); // ref ke tombol trigger
 
-  // Deteksi otomatis orientasi horizontal (selalu rata kiri / merentang ke kanan jika ruang kanan masih ada, hanya rata kanan jika mepet tepi kanan layar)
+  // Deteksi otomatis orientasi horizontal (selalu rata kiri / merentang ke kanan jika ruang kanan masih ada, hanya rata kanan jika mepet tepi kanan layar / modal)
   const updateAlignment = useCallback(() => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
     const scale = getZoomScale();
     const popupWidth = 280;
 
+    // Deteksi container pembatas (modal / scroll container / overflow-hidden) jika tidak pakai portal
+    let rightEdge = window.innerWidth;
+    if (!usePortal) {
+      let container = triggerRef.current.parentElement;
+      while (container && container !== document.body) {
+        const style = getComputedStyle(container);
+        const overflow = (style.overflow || '') + (style.overflowX || '') + (style.overflowY || '');
+        if (overflow.includes('hidden') || overflow.includes('auto') || overflow.includes('scroll')) {
+          const containerRect = container.getBoundingClientRect();
+          rightEdge = Math.min(rightEdge, containerRect.right);
+          break;
+        }
+        container = container.parentElement;
+      }
+    }
+
     let isRight = false;
     if (popupAlign) {
       isRight = popupAlign === 'right';
     } else {
-      const spaceRight = window.innerWidth - rect.left;
+      const spaceRight = rightEdge - rect.left;
       isRight = spaceRight < popupWidth + 10;
     }
     setAlignRight(isRight);

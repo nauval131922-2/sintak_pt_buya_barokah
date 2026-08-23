@@ -322,7 +322,7 @@ export default function RekapSalesOrderClient() {
           <div className="flex items-center gap-2 flex-1">
             <DatePicker name="startDate" value={startDate} onChange={setStartDate} />
             <div className="w-2 h-px bg-gray-300 shrink-0"></div>
-            <DatePicker name="endDate" value={endDate} onChange={setEndDate} popupAlign="right" />
+            <DatePicker name="endDate" value={endDate} onChange={setEndDate} />
           </div>
           <button
             onClick={handleFetch}
