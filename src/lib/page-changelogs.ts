@@ -383,6 +383,18 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
       'Container grafik dibuat stabil tanpa shift layout saat dimuat',
     ],
   }),
+  'log-aktivitas-2026-08-24': entry({
+    pageKey: 'log-aktivitas',
+    title: 'Log Aktivitas',
+    sortDate: '2026-08-24',
+    date: '24 Agu 2026',
+    version: '2026-08-24-1',
+    permissionKeys: ['activity_log_view', 'activity_log'],
+    items: [
+      'Penyempurnaan audit trail: pelengkapan pencatatan log otomatis pada modul Pencatatan Kesalahan (Infractions), manajemen Role (Tambah, Ubah, Hapus), dan Master Pekerjaan Jurnal Produksi',
+      'Penyertaan metadata aktor (recorded_by) dan payload diff data saat aksi perubahan dieksekusi',
+    ],
+  }),
   'log-aktivitas-2026-08-10': entry({
     pageKey: 'log-aktivitas',
     title: 'Log Aktivitas',
@@ -396,6 +408,18 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Records ───
+  'records-2026-08-24': entry({
+    pageKey: 'records',
+    title: 'Catatan / Records',
+    sortDate: '2026-08-24',
+    date: '24 Agu 2026',
+    version: '2026-08-24-1',
+    permissionKeys: ['catat_kesalahan'],
+    items: [
+      'Pencatatan audit log otomatis pada seluruh siklus hidup catatan kesalahan (Tambah data baru, Edit data, dan Hapus data)',
+      'Penyelarasan nomor sequence faktur dan snapshot data karyawan saat pencatatan kesalahan',
+    ],
+  }),
   'records-2026-07-26': entry({
     pageKey: 'records',
     title: 'Catatan / Records',
@@ -707,6 +731,20 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     permissionKeys: [...SUPER_ADMIN_ONLY],
     items: [...UI_POLISH],
   }),
+  'roles-2026-08-24': entry({
+    pageKey: 'roles',
+    title: 'Hak Akses (Roles)',
+    permissionKeys: [...SUPER_ADMIN_ONLY],
+    sortDate: '2026-08-24',
+    date: '24 Agu 2026',
+    version: '2026-08-24-1',
+    items: [
+      'Modal konfigurasi khusus Laporan Pekerjaan per Role: pembatasan Bagian, PIC, Hak Aksi, dan Kolom Modal Detail',
+      'Mode dinamis kunci PIC ke akun login (@me), filter PIC dinamis berbasis role user (@role:NamaRole), dan opsi tugas "Tanpa PIC" (@unassigned)',
+      'Pemisahan hak aksi menjadi 3 settingan mandiri: Tambah Pekerjaan Baru (can_add), Ubah/Edit Pekerjaan (can_edit), dan Hapus Pekerjaan (can_delete)',
+      'Pembersihan opsi aksi dari tab kolom modal detail dan penyesuaian otomatis visibilitas kolom aksi',
+    ],
+  }),
   'roles-2026-08-07': entry({
     pageKey: 'roles',
     title: 'Hak Akses (Roles)',
@@ -821,6 +859,20 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     permissionKeys: ['sync'],
     items: [...UI_POLISH],
   }),
+  'users-2026-08-24': entry({
+    pageKey: 'users',
+    title: 'Kelola User',
+    permissionKeys: [...SUPER_ADMIN_ONLY],
+    sortDate: '2026-08-24',
+    date: '24 Agu 2026',
+    version: '2026-08-24-1',
+    items: [
+      'Fitur penautan akun user ke master data karyawan (kolom employee_id) sebagai sumber tunggal nama akun',
+      'Penghapusan field manual "Nama Lengkap" pada form user modal; nama dan username otomatis terisi saat karyawan dipilih',
+      'Pembaruan SearchableDropdown dengan lebar panel presisi 1:1 dan orientasi auto-flip ke atas saat posisi form mepet ke bawah layar',
+      'Auto-migration schema SQLite penambahan kolom employee_id pada tabel users',
+    ],
+  }),
   'users-2026-08-09': entry({
     pageKey: 'users',
     title: 'Kelola User',
@@ -867,6 +919,21 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Laporan Pekerjaan ───
+  'laporan-pekerjaan-2026-08-24': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-08-24',
+    date: '24 Agu 2026',
+    version: '2026-08-24-1',
+    items: [
+      'Penerapan batasan hak akses role pada Laporan Pekerjaan (filter otomatis Bagian & PIC, serta pembatasan hak aksi)',
+      'Otomatis menyembunyikan dropdown filter Bagian / PIC jika role user hanya memiliki akses ke tepat 1 opsi',
+      'Pencegahan tugas tanpa PIC/tanpa Bagian lolos saat role user dalam mode terkunci (kecuali opsi @unassigned diaktifkan)',
+      'Pengaturan independen hak aksi (Tambah Pekerjaan, Edit Pekerjaan, Hapus Pekerjaan) pada modal detail order',
+      'Optimasi performa tinggi: O(1) Set filter lookup dan batch single-query resolusi @role untuk kecepatan render maksimal',
+    ],
+  }),
   'laporan-pekerjaan-2026-08-16': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan',
