@@ -26,6 +26,23 @@ export function parseJsonArray(val: any): string[] {
   return [];
 }
 
+let tableChecked = false;
+async function ensureTable() {
+  if (tableChecked) return;
+  try {
+    await db.execute(`CREATE TABLE IF NOT EXISTS role_laporan_pekerjaan_config (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      role TEXT UNIQUE NOT NULL,
+      allowed_bagian TEXT DEFAULT '[]',
+      allowed_pic TEXT DEFAULT '[]',
+      visible_columns TEXT DEFAULT '[]',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );`);
+    tableChecked = true;
+  } catch (_) {}
+}
+
 /**
  * Ambil konfigurasi Laporan Pekerjaan untuk satu role.
  */
@@ -39,6 +56,8 @@ export async function getRoleLaporanPekerjaanConfig(role: string): Promise<RoleL
       visible_columns: allColumns,
     };
   }
+
+  await ensureTable();
 
   try {
     const res = await db.execute({
@@ -93,6 +112,8 @@ export async function getAllRoleLaporanPekerjaanConfigs(): Promise<Record<string
       visible_columns: allColumns,
     },
   };
+
+  await ensureTable();
 
   try {
     const { rows } = await db.execute('SELECT role, allowed_bagian, allowed_pic, visible_columns FROM role_laporan_pekerjaan_config');

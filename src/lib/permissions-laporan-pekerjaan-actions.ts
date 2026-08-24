@@ -3,6 +3,23 @@
 import db from '@/lib/db';
 import { getSession } from '@/lib/session';
 
+let tableChecked = false;
+async function ensureTable() {
+  if (tableChecked) return;
+  try {
+    await db.execute(`CREATE TABLE IF NOT EXISTS role_laporan_pekerjaan_config (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      role TEXT UNIQUE NOT NULL,
+      allowed_bagian TEXT DEFAULT '[]',
+      allowed_pic TEXT DEFAULT '[]',
+      visible_columns TEXT DEFAULT '[]',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );`);
+    tableChecked = true;
+  } catch (_) {}
+}
+
 /**
  * Simpan konfigurasi Laporan Pekerjaan untuk satu role (Super Admin only).
  */
@@ -23,6 +40,8 @@ export async function saveRoleLaporanPekerjaanConfig(
     if (role === 'Super Admin') {
       return { success: false, message: 'Konfigurasi Super Admin tidak dapat dibatasi.' };
     }
+
+    await ensureTable();
 
     const allowedBagianJson = JSON.stringify(config.allowed_bagian || []);
     const allowedPicJson = JSON.stringify(config.allowed_pic || []);
