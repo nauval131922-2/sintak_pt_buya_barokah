@@ -169,6 +169,13 @@ function DataTableInner<TData extends { id: number | string }>({
   const parentRef = React.useRef<HTMLDivElement>(null);
   const { rows } = table.getRowModel();
 
+  // Reset scroll ke paling atas saat data berganti (misal ganti halaman / filter)
+  React.useEffect(() => {
+    if (parentRef.current) {
+      parentRef.current.scrollTop = 0;
+    }
+  }, [data]);
+
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => parentRef.current,
