@@ -187,6 +187,22 @@ export async function POST(req: NextRequest) {
 
     await db.batch(batchOps, 'write');
 
+    logActivity(
+      'INSERT',
+      'infractions',
+      `Pencatatan kesalahan baru: ${faktur} (${emp.name || 'Karyawan'} - ${orderName || orderFaktur})`,
+      {
+        faktur,
+        employee_name: emp.name,
+        employee_id: employeeId,
+        order_faktur: orderFaktur,
+        order_name: orderName,
+        severity,
+        total,
+      },
+      session.username
+    ).catch(() => {});
+
     return NextResponse.json({ success: true, faktur });
   } catch (err: any) {
     console.error('Add infraction error:', err);

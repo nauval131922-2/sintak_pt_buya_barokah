@@ -72,6 +72,15 @@ export async function addRole(
       args: [roleName.trim(), description.trim()],
     });
 
+    const { logActivity } = await import('@/lib/activity');
+    logActivity(
+      'INSERT',
+      'app_roles',
+      `Role baru dibuat: ${roleName.trim()}`,
+      { role_name: roleName.trim(), description: description.trim() },
+      session.username
+    ).catch(() => {});
+
     return { success: true };
   } catch (error: any) {
     return { success: false, message: error.message };
@@ -129,6 +138,15 @@ export async function updateRole(
       'write'
     );
 
+    const { logActivity } = await import('@/lib/activity');
+    logActivity(
+      'UPDATE',
+      'app_roles',
+      `Role ${oldRoleName} diperbarui${oldRoleName !== newRoleName ? ` menjadi ${newRoleName}` : ''}`,
+      { old_role_name: oldRoleName, new_role_name: newRoleName, description },
+      session.username
+    ).catch(() => {});
+
     return { success: true };
   } catch (error: any) {
     return { success: false, message: error.message };
@@ -185,6 +203,15 @@ export async function deleteRole(
       ],
       'write'
     );
+
+    const { logActivity } = await import('@/lib/activity');
+    logActivity(
+      'DELETE',
+      'app_roles',
+      `Role dihapus: ${roleName.trim()}`,
+      { role_name: roleName.trim() },
+      session.username
+    ).catch(() => {});
 
     return { success: true };
   } catch (error: any) {

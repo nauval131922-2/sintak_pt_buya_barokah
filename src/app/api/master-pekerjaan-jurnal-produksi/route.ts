@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getSession } from '@/lib/session';
+import { logActivity } from '@/lib/activity';
 import * as XLSX from 'xlsx';
 import path from 'path';
 import fs from 'fs';
@@ -104,9 +105,18 @@ export async function POST(request: NextRequest) {
         args: [category, name],
       });
 
+      const newId = Number(result.lastInsertRowid);
+      logActivity(
+        'INSERT',
+        'master_pekerjaan_jurnal_produksi',
+        `Pekerjaan baru ditambahkan: [${category}] ${name}`,
+        { id: newId, category, name },
+        session?.username
+      ).catch(() => {});
+
       return NextResponse.json({
         success: true,
-        id: Number(result.lastInsertRowid),
+        id: newId,
         category,
         name,
       });
@@ -343,6 +353,14 @@ export async function PUT(request: NextRequest) {
       args: [category, name, id],
     });
 
+    logActivity(
+      'UPDATE',
+      'master_pekerjaan_jurnal_produksi',
+      `Pekerjaan diperbarui: [${category}] ${name}`,
+      { id, category, name },
+      session?.username
+    ).catch(() => {});
+
     return NextResponse.json({ success: true, id, category, name });
   } catch (error: unknown) {
     if (isUniqueError(error)) {
@@ -392,6 +410,14 @@ export async function DELETE(request: NextRequest) {
         args: chunk,
       });
     }
+
+    logActivity(
+      'DELETE',
+      'master_pekerjaan_jurnal_produksi',
+      `Hapus ${ids.length} master pekerjaan jurnal produksi`,
+      { ids, deleted_count: ids.length },
+      session?.username
+    ).catch(() => {});
 
     return NextResponse.json({ success: true, deleted: ids.length });
   } catch (error: unknown) {

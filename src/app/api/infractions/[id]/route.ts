@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getSession } from '@/lib/session';
+import { logActivity } from '@/lib/activity';
 
 function getTimeString() {
   const now = new Date();
@@ -107,6 +108,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       }
     );
 
+    logActivity(
+      'UPDATE',
+      'infractions',
+      `Pembaruan catatan kesalahan: ${bodyFaktur || `ID ${id}`} (${employeeName})`,
+      { id: Number(id), faktur: bodyFaktur, employee_name: employeeName, order_faktur, total: cleanTotal },
+      session?.username
+    ).catch(() => {});
+
     return NextResponse.json({ success: true });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
@@ -125,19 +134,24 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     });
     const existing = existingRes.rows[0] as any;
 
-    if (existing) {
-      const rawData = JSON.stringify({
-        employee_id: existing.employee_no || 'Unknown',
-        employee_name: existing.employee_name,
-        description: existing.description,
-        faktur: existing.faktur,
-        date: existing.date,
-        order_name: existing.order_name
-      });
+    await db.execute({ sql: 'DELETE FROM infractions WHERE id = ?', args: [id] });
 
-      await db.execute({ sql: 'DELETE FROM infractions WHERE id = ?', args: [id] });
-    } else {
-      await db.execute({ sql: 'DELETE FROM infractions WHERE id = ?', args: [id] });
+    if (existing) {
+      logActivity(
+        'DELETE',
+        'infractions',
+        `Hapus catatan kesalahan: ${existing.faktur || `ID ${id}`} (${existing.employee_name || 'Karyawan'})`,
+        {
+          id: Number(id),
+          employee_id: existing.employee_no || 'Unknown',
+          employee_name: existing.employee_name,
+          description: existing.description,
+          faktur: existing.faktur,
+          date: existing.date,
+          order_name: existing.order_name
+        },
+        session?.username
+      ).catch(() => {});
     }
 
     return NextResponse.json({ success: true });
