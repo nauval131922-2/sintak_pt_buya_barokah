@@ -186,12 +186,27 @@ function DataTableInner<TData extends { id: number | string }>({
   const headers = table.getFlatHeaders();
   const totalWidth = table.getTotalSize();
 
+  // Pre-calculate sticky left offsets once per table render
+  const stickyOffsets = React.useMemo(() => {
+    let left = 6;
+    const map: Record<string, number> = {};
+    for (const header of headers) {
+      const meta = header.column.columnDef.meta as any;
+      if (meta?.sticky) {
+        map[header.id] = left;
+        const w = columnSizing[header.id] || (header.column.columnDef as any).size || 150;
+        left += w;
+      }
+    }
+    return map;
+  }, [headers, columnSizing]);
+
   if (!isMounted) return <div className={`bg-white border border-gray-100 shadow-sm rounded-[12px] overflow-hidden flex flex-col min-h-0 relative ${height} animate-pulse`} />;
 
   return (
     <ScrollContext.Provider value={parentRef}>
       <div className={`bg-white border border-gray-100 shadow-sm rounded-[12px] overflow-hidden flex flex-col min-h-0 relative ${height} ${className} ${isResizingColumn ? 'is-resizing' : ''} ${isDragging ? 'is-dragging' : ''}`}>
-        <style dangerouslySetInnerHTML={{ __html: `.is-resizing * { user-select: none !important; transition: none !important; cursor: col-resize !important; } .is-dragging * { user-select: none !important; cursor: grabbing !important; }` }} />
+        <style dangerouslySetInnerHTML={{ __html: `.is-resizing { user-select: none !important; cursor: col-resize !important; } .is-resizing * { cursor: col-resize !important; } .is-dragging * { user-select: none !important; cursor: grabbing !important; }` }} />
         <div
           ref={parentRef}
           className={`overflow-auto custom-scrollbar flex-1 min-h-0 relative bg-white ${isDragging ? 'cursor-grabbing select-none' : ''}`} 
@@ -277,9 +292,10 @@ function DataTableInner<TData extends { id: number | string }>({
                         {header.column.getCanResize() && (
                           <div
                             onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); header.getResizeHandler()(e); }}
-                            className={`absolute -right-[4px] top-0 bottom-0 w-[8px] z-50 cursor-col-resize group/resizer transition-opacity ${header.column.getIsResizing() ? 'opacity-100' : 'opacity-0 hover:opacity-100'}`}
+                            onTouchStart={(e) => { e.stopPropagation(); header.getResizeHandler()(e); }}
+                            className={`absolute -right-[4px] top-0 bottom-0 w-[10px] z-50 cursor-col-resize group/resizer transition-opacity ${header.column.getIsResizing() ? 'opacity-100' : 'opacity-0 hover:opacity-100'}`}
                           >
-                            <div className={`mx-auto h-full w-[4px] transition-colors ${header.column.getIsResizing() ? 'bg-blue-400' : 'bg-transparent group-hover/resizer:bg-blue-200'}`} />
+                            <div className={`mx-auto h-full w-[3px] rounded-full transition-colors ${header.column.getIsResizing() ? 'bg-emerald-500' : 'bg-transparent group-hover/resizer:bg-slate-400'}`} />
                           </div>
                         )}
                       </th>);
@@ -325,6 +341,7 @@ function DataTableInner<TData extends { id: number | string }>({
                     disableHover={disableHover}
                     rowCursor={rowCursor}
                     extraClassName={getRowClassName ? getRowClassName(row.original) : ''}
+                    stickyOffsets={stickyOffsets}
                   />
                 );
               })}
@@ -359,18 +376,18 @@ function DataTableInner<TData extends { id: number | string }>({
   );
 }
 
-const TableRow = ({ row, isSelected, isOdd, onRowClick, onRowDoubleClick, rowHeight, disableHover, rowCursor, extraClassName }: any) => {
-  // Compute sticky left offsets once per row render
-  let stickyLeft = 6;
-  const stickyOffsets: Record<string, number> = {};
-  for (const cell of row.getVisibleCells()) {
-    const meta = cell.column.columnDef.meta as any;
-    if (meta?.sticky) {
-      stickyOffsets[cell.id] = stickyLeft;
-      stickyLeft += cell.column.getSize();
-    }
-  }
-
+const TableRow = React.memo(({
+  row,
+  isSelected,
+  isOdd,
+  onRowClick,
+  onRowDoubleClick,
+  rowHeight,
+  disableHover,
+  rowCursor,
+  extraClassName,
+  stickyOffsets,
+}: any) => {
   // stickyBg must be SOLID (no transparency) so it covers scrolled cells beneath
   const stickyBg = isSelected
     ? '#dbeafe'  // blue-100 solid
@@ -417,7 +434,7 @@ const TableRow = ({ row, isSelected, isOdd, onRowClick, onRowDoubleClick, rowHei
             style={{
               ...(meta?.valign === 'top' ? { verticalAlign: 'top' } : {}),
               ...(isSticky ? {
-                left: stickyOffsets[cell.id],
+                left: stickyOffsets?.[cell.column.id] ?? 6,
                 backgroundColor: stickyBg,
                 boxShadow: 'inset -1px 0 0 #e5e7eb'  // subtle right border for last sticky col
               } : {})
@@ -430,7 +447,18 @@ const TableRow = ({ row, isSelected, isOdd, onRowClick, onRowDoubleClick, rowHei
         );
       })}</tr>
   );
-};
+}, (prev, next) => {
+  return (
+    prev.row.original === next.row.original &&
+    prev.isSelected === next.isSelected &&
+    prev.isOdd === next.isOdd &&
+    prev.rowHeight === next.rowHeight &&
+    prev.extraClassName === next.extraClassName &&
+    prev.disableHover === next.disableHover &&
+    prev.rowCursor === next.rowCursor &&
+    prev.stickyOffsets === next.stickyOffsets
+  );
+});
 
 TableRow.displayName = 'TableRow';
 
