@@ -1044,7 +1044,7 @@ export default function LaporanPekerjaanClient({
   const isBagianAllowedByRole = useCallback(
     (bagian: string) => {
       if (!roleConfig?.allowed_bagian || roleConfig.allowed_bagian.length === 0) return true;
-      if (!bagian) return true;
+      if (!bagian) return false;
       return roleConfig.allowed_bagian.map((b) => b.toUpperCase()).includes(bagian.toUpperCase());
     },
     [roleConfig]
@@ -1053,7 +1053,7 @@ export default function LaporanPekerjaanClient({
   const isPicAllowedByRole = useCallback(
     (pic: string) => {
       if (!roleConfig?.allowed_pic || roleConfig.allowed_pic.length === 0) return true;
-      if (!pic) return true;
+      if (!pic) return false;
       return roleConfig.allowed_pic.map((p) => p.toLowerCase()).includes(pic.toLowerCase());
     },
     [roleConfig]
@@ -2602,13 +2602,13 @@ function TaskDetailModal({
   const sortedTasks = useMemo(() => {
     return [...selectedProjectGroup.tasks]
       .filter((t) => {
-        if (roleConfig?.allowed_bagian && roleConfig.allowed_bagian.length > 0 && t.bagian) {
-          if (!roleConfig.allowed_bagian.map((b) => b.toUpperCase()).includes(t.bagian.toUpperCase())) {
+        if (roleConfig?.allowed_bagian && roleConfig.allowed_bagian.length > 0) {
+          if (!t.bagian || !roleConfig.allowed_bagian.map((b) => b.toUpperCase()).includes(t.bagian.toUpperCase())) {
             return false;
           }
         }
-        if (roleConfig?.allowed_pic && roleConfig.allowed_pic.length > 0 && t.pic) {
-          if (!roleConfig.allowed_pic.map((p) => p.toLowerCase()).includes(t.pic.toLowerCase())) {
+        if (roleConfig?.allowed_pic && roleConfig.allowed_pic.length > 0) {
+          if (!t.pic || !roleConfig.allowed_pic.map((p) => p.toLowerCase()).includes(t.pic.toLowerCase())) {
             return false;
           }
         }
@@ -3196,8 +3196,8 @@ function InlineAddRow({
   roleConfig?: RoleLaporanPekerjaanConfig;
 }) {
   const [form, setForm] = useState({
-    bagian: "",
-    pic: "",
+    bagian: roleConfig?.allowed_bagian && roleConfig.allowed_bagian.length === 1 ? roleConfig.allowed_bagian[0] : "",
+    pic: roleConfig?.allowed_pic && roleConfig.allowed_pic.length === 1 ? roleConfig.allowed_pic[0] : "",
     task: "",
     priority: "",
     startDate: null as Date | null,
