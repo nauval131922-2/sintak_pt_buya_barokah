@@ -44,61 +44,50 @@ export default function PricelistClient() {
   const [fileName, setFileName] = useState<string | null>(null);
 
   // Filters state
-  const [activeTab, setActiveTab] = useState<'parameter' | 'simulator' | 'matrix'>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const savedTab = localStorage.getItem('sintak_pricelist_active_tab');
-        if (savedTab === 'parameter' || savedTab === 'simulator' || savedTab === 'matrix') {
-          return savedTab;
-        }
-      } catch (e) {
-        console.error('Failed to parse saved active tab:', e);
-      }
-    }
-    return 'parameter';
-  });
-
-  const [selectedFinishing, setSelectedFinishing] = useState<'Spiral' | 'Klem'>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('sintak_pricelist_finishing');
-      if (saved === 'Spiral' || saved === 'Klem') return saved;
-    }
-    return 'Spiral';
-  });
+  const [activeTab, setActiveTab] = useState<'parameter' | 'simulator' | 'matrix'>('parameter');
+  const [selectedFinishing, setSelectedFinishing] = useState<'Spiral' | 'Klem'>('Spiral');
 
   // Profil parameter terpisah per mode finishing (Spiral & Klem punya tarif acuan berbeda)
-  const [paramsSpiral, setParamsSpiral] = useState<SimulatorMasterParams>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('sintak_pricelist_master_params_spiral');
-        if (saved) {
-          return { ...DEFAULT_MASTER_PARAMS, ...JSON.parse(saved) };
-        }
-        // Migrasi profil lama (sebelum ada 2 profil) ke profil Spiral
-        const legacy = localStorage.getItem('sintak_pricelist_master_params');
-        if (legacy) {
-          return { ...DEFAULT_MASTER_PARAMS, ...JSON.parse(legacy) };
-        }
-      } catch (e) {
-        console.error('Failed to parse saved master params:', e);
-      }
-    }
-    return DEFAULT_MASTER_PARAMS;
-  });
+  const [paramsSpiral, setParamsSpiral] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS);
+  const [paramsKlem, setParamsKlem] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS_KLEM);
 
-  const [paramsKlem, setParamsKlem] = useState<SimulatorMasterParams>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('sintak_pricelist_master_params_klem');
-        if (saved) {
-          return { ...DEFAULT_MASTER_PARAMS_KLEM, ...JSON.parse(saved) };
-        }
-      } catch (e) {
-        console.error('Failed to parse saved klem params:', e);
+  // Load preferences from localStorage after mount (client-only) to prevent hydration mismatch
+  useEffect(() => {
+    try {
+      const savedTab = localStorage.getItem('sintak_pricelist_active_tab');
+      if (savedTab === 'parameter' || savedTab === 'simulator' || savedTab === 'matrix') {
+        setActiveTab(savedTab);
       }
+
+      const savedFinishing = localStorage.getItem('sintak_pricelist_finishing');
+      if (savedFinishing === 'Spiral' || savedFinishing === 'Klem') {
+        setSelectedFinishing(savedFinishing);
+      }
+
+      const savedSpiral = localStorage.getItem('sintak_pricelist_master_params_spiral')
+        ?? localStorage.getItem('sintak_pricelist_master_params');
+      if (savedSpiral) {
+        setParamsSpiral({ ...DEFAULT_MASTER_PARAMS, ...JSON.parse(savedSpiral) });
+      }
+
+      const savedKlem = localStorage.getItem('sintak_pricelist_master_params_klem');
+      if (savedKlem) {
+        setParamsKlem({ ...DEFAULT_MASTER_PARAMS_KLEM, ...JSON.parse(savedKlem) });
+      }
+
+      const savedView = localStorage.getItem('sintak_pricelist_view_mode');
+      if (savedView === 'matrix' || savedView === 'table') {
+        setViewMode(savedView);
+      }
+    } catch (e) {
+      console.error('Failed to load localStorage preferences:', e);
     }
-    return DEFAULT_MASTER_PARAMS_KLEM;
-  });
+  }, []);
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedJenis, setSelectedJenis] = useState<string>('ALL');
+  const [selectedBahan, setSelectedBahan] = useState<string>('ALL');
+  const [viewMode, setViewMode] = useState<'matrix' | 'table'>('matrix');
 
   const isKlemActive = selectedFinishing === 'Klem';
   const customParams = isKlemActive ? paramsKlem : paramsSpiral;
@@ -115,23 +104,6 @@ export default function PricelistClient() {
       target(valueOrUpdater);
     }
   };
-
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedJenis, setSelectedJenis] = useState<string>('ALL');
-  const [selectedBahan, setSelectedBahan] = useState<string>('ALL');
-  const [viewMode, setViewMode] = useState<'matrix' | 'table'>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const savedView = localStorage.getItem('sintak_pricelist_view_mode');
-        if (savedView === 'matrix' || savedView === 'table') {
-          return savedView;
-        }
-      } catch (e) {
-        console.error('Failed to parse saved view mode:', e);
-      }
-    }
-    return 'matrix';
-  });
 
   // Simpan posisi tab aktif dan view mode ke localStorage
   useEffect(() => {

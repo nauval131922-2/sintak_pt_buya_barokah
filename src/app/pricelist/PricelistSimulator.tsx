@@ -66,59 +66,44 @@ export default function PricelistSimulator({
 }: PricelistSimulatorProps) {
   const [showSimulatorManual, setShowSimulatorManual] = useState(false);
 
-  // Input states with persistent localStorage support
-  const [modelKalender, setModelKalender] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('sintak_sim_model') || 'Eko Wulan (12 Lbr)';
-    }
-    return 'Eko Wulan (12 Lbr)';
-  });
+  // Input states with persistent localStorage support (loaded in useEffect to prevent hydration mismatch)
+  const [modelKalender, setModelKalender] = useState<string>('Eko Wulan (12 Lbr)');
+  const [bahan, setBahan] = useState<string>('Art Paper 150');
+  const [ukuran, setUkuran] = useState<string>('32 x 48');
+  const [oplah, setOplah] = useState<number>(1500);
+  const [pilihanMesin, setPilihanMesin] = useState<'Otomatis' | 'Oliver' | 'SM'>('Otomatis');
+  const [marginPct, setMarginPct] = useState<number>(30);
+  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(4);
 
-  const [bahan, setBahan] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('sintak_sim_bahan') || 'Art Paper 150';
-    }
-    return 'Art Paper 150';
-  });
+  // Load preferences from localStorage after mount (client-only)
+  React.useEffect(() => {
+    try {
+      const savedModel = localStorage.getItem('sintak_sim_model');
+      if (savedModel) setModelKalender(savedModel);
 
-  const [ukuran, setUkuran] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('sintak_sim_ukuran') || '32 x 48';
-    }
-    return '32 x 48';
-  });
+      const savedBahan = localStorage.getItem('sintak_sim_bahan');
+      if (savedBahan) setBahan(savedBahan);
 
-  const [oplah, setOplah] = useState<number>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('sintak_sim_oplah');
-      if (saved) return Number(saved) || 1500;
-    }
-    return 1500;
-  });
+      const savedUkuran = localStorage.getItem('sintak_sim_ukuran');
+      if (savedUkuran) setUkuran(savedUkuran);
 
-  const [pilihanMesin, setPilihanMesin] = useState<'Otomatis' | 'Oliver' | 'SM'>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('sintak_sim_mesin');
-      if (saved === 'Oliver' || saved === 'SM' || saved === 'Otomatis') return saved;
-    }
-    return 'Otomatis';
-  });
+      const savedOplah = localStorage.getItem('sintak_sim_oplah');
+      if (savedOplah) setOplah(Number(savedOplah) || 1500);
 
-  const [marginPct, setMarginPct] = useState<number>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('sintak_sim_margin');
-      if (saved) return Number(saved) || 30;
-    }
-    return 30;
-  });
+      const savedMesin = localStorage.getItem('sintak_sim_mesin');
+      if (savedMesin === 'Oliver' || savedMesin === 'SM' || savedMesin === 'Otomatis') {
+        setPilihanMesin(savedMesin);
+      }
 
-  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('sintak_sim_nego');
-      if (saved) return Number(saved) || 4;
+      const savedMargin = localStorage.getItem('sintak_sim_margin');
+      if (savedMargin) setMarginPct(Number(savedMargin) || 30);
+
+      const savedNego = localStorage.getItem('sintak_sim_nego');
+      if (savedNego) setNegoDiskonPct(Number(savedNego) || 4);
+    } catch (e) {
+      console.error('Failed to load simulator preferences:', e);
     }
-    return 4;
-  });
+  }, []);
 
   // Sync states to localStorage (debounced 400ms agar input responsif dan tidak lag)
   React.useEffect(() => {
