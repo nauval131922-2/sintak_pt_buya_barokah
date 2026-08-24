@@ -332,7 +332,14 @@ export default function RolesContent({
       lpConfig.visible_columns.length > 0 &&
       lpConfig.visible_columns.length < LAPORAN_PEKERJAAN_COLUMNS.length
     );
-    const hasCustomLp = hasCustomBagian || hasCustomPic || hasCustomCols;
+    const hasCustomActions = lpConfig?.can_add === false || lpConfig?.can_edit === false || lpConfig?.can_delete === false;
+    const hasCustomLp = hasCustomBagian || hasCustomPic || hasCustomCols || hasCustomActions;
+
+    const actionSummary = [
+      lpConfig?.can_add !== false ? 'Tambah' : null,
+      lpConfig?.can_edit !== false ? 'Edit' : null,
+      lpConfig?.can_delete !== false ? 'Hapus' : null,
+    ].filter(Boolean).join(', ');
 
     return (
       <div
@@ -355,12 +362,12 @@ export default function RolesContent({
               }`}
               title={
                 hasCustomLp
-                  ? `Filter Aktif: ${hasCustomBagian ? `${lpConfig.allowed_bagian.length} Bagian` : 'Semua Bagian'}, ${isLockedToMe ? 'Kunci PIC Akun Login (@me)' : hasCustomPic ? `${lpConfig.allowed_pic.length} PIC` : 'Semua PIC'}, ${lpConfig.visible_columns?.length || 10} Kolom`
-                  : 'Akses penuh ke semua Bagian, PIC, dan Kolom'
+                  ? `Filter Aktif: ${hasCustomBagian ? `${lpConfig.allowed_bagian.length} Bagian` : 'Semua Bagian'}, ${isLockedToMe ? 'Kunci PIC Akun Login (@me)' : hasCustomPic ? `${lpConfig.allowed_pic.length} PIC` : 'Semua PIC'}, Aksi: [${actionSummary || 'Tanpa Aksi'}], ${lpConfig.visible_columns?.length || 10} Kolom`
+                  : 'Akses penuh ke semua Bagian, PIC, Aksi, dan Kolom'
               }
             >
               <SlidersHorizontal size={10} className={hasCustomLp ? 'text-blue-600' : 'text-slate-400'} />
-              {isLockedToMe ? 'Kunci PIC @me' : hasCustomLp ? 'Custom Filter & Kolom' : 'Semua Bagian & PIC'}
+              {isLockedToMe ? 'Kunci PIC @me' : hasCustomLp ? 'Custom Hak & Kolom' : 'Semua Bagian & PIC'}
             </span>
           )}
         </div>
@@ -716,6 +723,9 @@ export default function RolesContent({
               allowed_bagian: [],
               allowed_pic: [],
               visible_columns: LAPORAN_PEKERJAAN_COLUMNS.map((c) => c.key),
+              can_add: true,
+              can_edit: true,
+              can_delete: true,
             }
           }
           availablePics={availablePics}
@@ -732,6 +742,9 @@ export default function RolesContent({
                   allowed_bagian: newConfig.allowed_bagian,
                   allowed_pic: newConfig.allowed_pic,
                   visible_columns: newConfig.visible_columns,
+                  can_add: newConfig.can_add,
+                  can_edit: newConfig.can_edit,
+                  can_delete: newConfig.can_delete,
                 },
               }));
               showResult('success', `Pengaturan Laporan Pekerjaan untuk ${configModalRole} disimpan.`);
@@ -809,6 +822,9 @@ interface LaporanPekerjaanRoleModalProps {
     allowed_bagian: string[];
     allowed_pic: string[];
     visible_columns: string[];
+    can_add?: boolean;
+    can_edit?: boolean;
+    can_delete?: boolean;
   }) => Promise<void>;
 }
 
@@ -819,9 +835,12 @@ function LaporanPekerjaanRoleModal({
   onClose,
   onSave,
 }: LaporanPekerjaanRoleModalProps) {
-  const [activeTab, setActiveTab] = useState<'bagian' | 'pic' | 'kolom'>('bagian');
+  const [activeTab, setActiveTab] = useState<'bagian' | 'pic' | 'aksi' | 'kolom'>('bagian');
   const [allowedBagian, setAllowedBagian] = useState<string[]>(() => [...(initialConfig.allowed_bagian || [])]);
   const [allowedPic, setAllowedPic] = useState<string[]>(() => [...(initialConfig.allowed_pic || [])]);
+  const [canAdd, setCanAdd] = useState<boolean>(initialConfig.can_add !== false);
+  const [canEdit, setCanEdit] = useState<boolean>(initialConfig.can_edit !== false);
+  const [canDelete, setCanDelete] = useState<boolean>(initialConfig.can_delete !== false);
   const [visibleColumns, setVisibleColumns] = useState<string[]>(() =>
     initialConfig.visible_columns && initialConfig.visible_columns.length > 0
       ? [...initialConfig.visible_columns]
@@ -886,6 +905,9 @@ function LaporanPekerjaanRoleModal({
         allowed_bagian: allowedBagian,
         allowed_pic: allowedPic,
         visible_columns: visibleColumns.length === 0 ? LAPORAN_PEKERJAAN_COLUMNS.map((c) => c.key) : visibleColumns,
+        can_add: canAdd,
+        can_edit: canEdit,
+        can_delete: canDelete,
       });
     } finally {
       setSaving(false);
@@ -946,6 +968,18 @@ function LaporanPekerjaanRoleModal({
           >
             <Users size={14} />
             <span>PIC ({allowedPic.length === 0 ? 'Semua' : allowedPic.length})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('aksi')}
+            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
+              activeTab === 'aksi'
+                ? 'border-emerald-600 text-emerald-700 bg-white rounded-t-lg shadow-xs'
+                : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100/50 rounded-t-lg'
+            }`}
+          >
+            <ShieldCheck size={14} />
+            <span>Hak Aksi ({[canAdd, canEdit, canDelete].filter(Boolean).length}/3)</span>
           </button>
           <button
             type="button"
@@ -1185,7 +1219,152 @@ function LaporanPekerjaanRoleModal({
             </div>
           )}
 
-          {/* TAB 3: KOLOM MODAL DETAIL */}
+          {/* TAB 3: HAK AKSI (TAMBAH, EDIT, HAPUS) */}
+          {activeTab === 'aksi' && (
+            <div className="space-y-4">
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="text-xs text-slate-600">
+                  <span className="font-semibold text-slate-800">Izin Aksi Pekerjaan: </span>
+                  <span className="text-emerald-700 font-bold">
+                    {[canAdd && 'Tambah', canEdit && 'Edit', canDelete && 'Hapus'].filter(Boolean).join(', ') || 'Semua Aksi Dinonaktifkan'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Atur hak akses operasional (tambah baris baru, edit data, dan hapus data) secara spesifik untuk role ini.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                {/* 1. Tambah Pekerjaan */}
+                <div
+                  onClick={() => setCanAdd((prev) => !prev)}
+                  className={`flex items-start justify-between p-3.5 rounded-xl border cursor-pointer select-none transition-all ${
+                    canAdd
+                      ? 'border-emerald-500 bg-emerald-50/60 shadow-xs'
+                      : 'border-slate-200 bg-white hover:bg-slate-50 opacity-60'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+                        canAdd ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-400'
+                      }`}
+                    >
+                      <Plus size={16} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-bold text-slate-800">Tambah Pekerjaan Baru</p>
+                        <span
+                          className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
+                            canAdd ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'
+                          }`}
+                        >
+                          {canAdd ? 'DIIZINKAN' : 'DINONAKTIFKAN'}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        Menampilkan tombol <b className="text-emerald-700">+ Tambah Pekerjaan</b> di pojok kanan atas modal detail order untuk membuat aktivitas baru.
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    className={`w-5 h-5 rounded-md flex items-center justify-center border shrink-0 transition-colors ${
+                      canAdd ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-slate-300'
+                    }`}
+                  >
+                    {canAdd && <CheckCircle2 size={13} className="text-white" />}
+                  </div>
+                </div>
+
+                {/* 2. Edit Pekerjaan */}
+                <div
+                  onClick={() => setCanEdit((prev) => !prev)}
+                  className={`flex items-start justify-between p-3.5 rounded-xl border cursor-pointer select-none transition-all ${
+                    canEdit
+                      ? 'border-blue-500 bg-blue-50/60 shadow-xs'
+                      : 'border-slate-200 bg-white hover:bg-slate-50 opacity-60'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+                        canEdit ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'
+                      }`}
+                    >
+                      <Pencil size={15} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-bold text-slate-800">Ubah / Edit Pekerjaan</p>
+                        <span
+                          className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
+                            canEdit ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-400'
+                          }`}
+                        >
+                          {canEdit ? 'DIIZINKAN' : 'DINONAKTIFKAN'}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        Mengizinkan user mengklik icon pensil / double click pada baris pekerjaan untuk mengubah bagian, PIC, task, tanggal, status, atau catatan.
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    className={`w-5 h-5 rounded-md flex items-center justify-center border shrink-0 transition-colors ${
+                      canEdit ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-300'
+                    }`}
+                  >
+                    {canEdit && <CheckCircle2 size={13} className="text-white" />}
+                  </div>
+                </div>
+
+                {/* 3. Hapus Pekerjaan */}
+                <div
+                  onClick={() => setCanDelete((prev) => !prev)}
+                  className={`flex items-start justify-between p-3.5 rounded-xl border cursor-pointer select-none transition-all ${
+                    canDelete
+                      ? 'border-rose-500 bg-rose-50/60 shadow-xs'
+                      : 'border-slate-200 bg-white hover:bg-slate-50 opacity-60'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+                        canDelete ? 'bg-rose-600 text-white' : 'bg-slate-100 text-slate-400'
+                      }`}
+                    >
+                      <Trash2 size={15} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-bold text-slate-800">Hapus Pekerjaan</p>
+                        <span
+                          className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
+                            canDelete ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-400'
+                          }`}
+                        >
+                          {canDelete ? 'DIIZINKAN' : 'DINONAKTIFKAN'}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        Mengizinkan user menghapus baris pekerjaan yang sudah ada dari daftar modal order.
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    className={`w-5 h-5 rounded-md flex items-center justify-center border shrink-0 transition-colors ${
+                      canDelete ? 'bg-rose-600 border-rose-600 text-white' : 'bg-white border-slate-300'
+                    }`}
+                  >
+                    {canDelete && <CheckCircle2 size={13} className="text-white" />}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: KOLOM MODAL DETAIL */}
           {activeTab === 'kolom' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200">

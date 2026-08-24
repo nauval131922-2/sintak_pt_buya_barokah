@@ -208,6 +208,9 @@ export async function initSchema(db: any) {
       allowed_bagian TEXT DEFAULT '[]',
       allowed_pic TEXT DEFAULT '[]',
       visible_columns TEXT DEFAULT '[]',
+      can_add INTEGER DEFAULT 1,
+      can_edit INTEGER DEFAULT 1,
+      can_delete INTEGER DEFAULT 1,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`,

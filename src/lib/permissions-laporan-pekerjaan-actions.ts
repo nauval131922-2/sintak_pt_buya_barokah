@@ -13,9 +13,21 @@ async function ensureTable() {
       allowed_bagian TEXT DEFAULT '[]',
       allowed_pic TEXT DEFAULT '[]',
       visible_columns TEXT DEFAULT '[]',
+      can_add INTEGER DEFAULT 1,
+      can_edit INTEGER DEFAULT 1,
+      can_delete INTEGER DEFAULT 1,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`);
+    try {
+      await db.execute(`ALTER TABLE role_laporan_pekerjaan_config ADD COLUMN can_add INTEGER DEFAULT 1`);
+    } catch (_) {}
+    try {
+      await db.execute(`ALTER TABLE role_laporan_pekerjaan_config ADD COLUMN can_edit INTEGER DEFAULT 1`);
+    } catch (_) {}
+    try {
+      await db.execute(`ALTER TABLE role_laporan_pekerjaan_config ADD COLUMN can_delete INTEGER DEFAULT 1`);
+    } catch (_) {}
     tableChecked = true;
   } catch (_) {}
 }
@@ -29,6 +41,9 @@ export async function saveRoleLaporanPekerjaanConfig(
     allowed_bagian: string[];
     allowed_pic: string[];
     visible_columns: string[];
+    can_add?: boolean;
+    can_edit?: boolean;
+    can_delete?: boolean;
   }
 ): Promise<{ success: boolean; message?: string }> {
   try {
@@ -46,16 +61,22 @@ export async function saveRoleLaporanPekerjaanConfig(
     const allowedBagianJson = JSON.stringify(config.allowed_bagian || []);
     const allowedPicJson = JSON.stringify(config.allowed_pic || []);
     const visibleColsJson = JSON.stringify(config.visible_columns || []);
+    const canAddVal = config.can_add === false ? 0 : 1;
+    const canEditVal = config.can_edit === false ? 0 : 1;
+    const canDeleteVal = config.can_delete === false ? 0 : 1;
 
     await db.execute({
-      sql: `INSERT INTO role_laporan_pekerjaan_config (role, allowed_bagian, allowed_pic, visible_columns, updated_at)
-            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+      sql: `INSERT INTO role_laporan_pekerjaan_config (role, allowed_bagian, allowed_pic, visible_columns, can_add, can_edit, can_delete, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
             ON CONFLICT(role) DO UPDATE SET
               allowed_bagian = excluded.allowed_bagian,
               allowed_pic = excluded.allowed_pic,
               visible_columns = excluded.visible_columns,
+              can_add = excluded.can_add,
+              can_edit = excluded.can_edit,
+              can_delete = excluded.can_delete,
               updated_at = CURRENT_TIMESTAMP;`,
-      args: [role, allowedBagianJson, allowedPicJson, visibleColsJson],
+      args: [role, allowedBagianJson, allowedPicJson, visibleColsJson, canAddVal, canEditVal, canDeleteVal],
     });
 
     const { logActivity } = await import('@/lib/activity');

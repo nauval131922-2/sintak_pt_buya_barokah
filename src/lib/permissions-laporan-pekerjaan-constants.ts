@@ -31,4 +31,7 @@ export interface RoleLaporanPekerjaanConfig {
   allowed_bagian: string[];   // [] berarti SEMUA Bagian diizinkan
   allowed_pic: string[];      // [] berarti SEMUA PIC diizinkan
   visible_columns: string[];  // [] berarti SEMUA Kolom ditampilkan
+  can_add?: boolean;          // Default true (Izin Tambah Pekerjaan Baru)
+  can_edit?: boolean;         // Default true (Izin Edit / Ubah Pekerjaan)
+  can_delete?: boolean;       // Default true (Izin Hapus Pekerjaan)
 }

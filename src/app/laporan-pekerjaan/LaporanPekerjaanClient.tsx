@@ -2577,6 +2577,11 @@ function TaskDetailModal({
     aksi: 4,
   };
 
+  const canAdd = roleConfig?.can_add !== false;
+  const canEdit = roleConfig?.can_edit !== false;
+  const canDelete = roleConfig?.can_delete !== false;
+  const hasRowAction = canEdit || canDelete;
+
   const visibleColKeys = useMemo(() => {
     if (!roleConfig?.visible_columns || roleConfig.visible_columns.length === 0) {
       return LAPORAN_PEKERJAAN_COLUMNS.map((c) => c.key);
@@ -2585,8 +2590,13 @@ function TaskDetailModal({
   }, [roleConfig]);
 
   const isColVisible = useCallback(
-    (key: string) => visibleColKeys.includes(key as any),
-    [visibleColKeys]
+    (key: string) => {
+      if (key === 'aksi') {
+        return visibleColKeys.includes('aksi') && hasRowAction;
+      }
+      return visibleColKeys.includes(key as any);
+    },
+    [visibleColKeys, hasRowAction]
   );
 
   const activeColumns = useMemo(() => {
@@ -2643,7 +2653,7 @@ function TaskDetailModal({
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              {isColVisible('aksi') && (
+              {canAdd && (
                 <button
                   type="button"
                   onClick={() => {
@@ -2719,7 +2729,7 @@ function TaskDetailModal({
                         key={task.id || idx}
                         onClick={() => setSelectedTaskId((prev) => (prev === task.id ? null : task.id || null))}
                         onDoubleClick={() => {
-                          if (isColVisible('aksi')) {
+                          if (canEdit) {
                             setEditingTaskId(task.id || null);
                           }
                         }}
@@ -2780,28 +2790,32 @@ function TaskDetailModal({
                         {isColVisible('aksi') && (
                           <td className="px-1.5 py-2 text-center">
                             <div className="flex items-center justify-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEditingTaskId(task.id || null);
-                                }}
-                                className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors cursor-pointer"
-                                title="Edit Pekerjaan Inline"
-                              >
-                                <Edit2 size={13} />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onDeleteTask(task.id!);
-                                }}
-                                className="p-1 text-rose-600 hover:bg-rose-50 rounded transition-colors cursor-pointer"
-                                title="Hapus Pekerjaan"
-                              >
-                                <Trash2 size={13} />
-                              </button>
+                              {canEdit && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEditingTaskId(task.id || null);
+                                  }}
+                                  className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors cursor-pointer"
+                                  title="Edit Pekerjaan Inline"
+                                >
+                                  <Edit2 size={13} />
+                                </button>
+                              )}
+                              {canDelete && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDeleteTask(task.id!);
+                                  }}
+                                  className="p-1 text-rose-600 hover:bg-rose-50 rounded transition-colors cursor-pointer"
+                                  title="Hapus Pekerjaan"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              )}
                             </div>
                           </td>
                         )}
@@ -2816,7 +2830,7 @@ function TaskDetailModal({
                         <div className="flex flex-col items-center justify-center gap-2">
                           <AlertCircle className="w-8 h-8 text-slate-300" />
                           <p className="font-semibold text-slate-600 text-sm">Belum ada aktivitas pekerjaan untuk order ini</p>
-                          {isColVisible('aksi') && (
+                          {canAdd && (
                             <p className="text-xs text-slate-400 max-w-md">
                               Klik tombol <b className="text-emerald-600 font-bold">+ Tambah Pekerjaan</b> di pojok kanan atas untuk mulai membuat aktivitas pekerjaan pertama.
                             </p>
@@ -2827,7 +2841,7 @@ function TaskDetailModal({
                   )}
 
                   {/* Baris Tambah Pekerjaan Baru di Bawah */}
-                  {isAddingTask && isColVisible('aksi') && (
+                  {isAddingTask && canAdd && (
                     <InlineAddRow
                       employeeOptions={employeeOptions}
                       onSave={async (data) => {
@@ -3166,16 +3180,18 @@ function InlineEditRow({
       {/* 9. Aksi */}
       {isColVisible('aksi') && (
         <td className="px-1 py-1.5 text-center whitespace-nowrap">
-          <div className="flex items-center justify-center">
-            <button
-              type="button"
-              onClick={onDelete}
-              className="p-1 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-all cursor-pointer border border-rose-200"
-              title="Hapus Pekerjaan Ini"
-            >
-              <Trash2 size={13} />
-            </button>
-          </div>
+          {roleConfig?.can_delete !== false && (
+            <div className="flex items-center justify-center">
+              <button
+                type="button"
+                onClick={onDelete}
+                className="p-1 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-all cursor-pointer border border-rose-200"
+                title="Hapus Pekerjaan Ini"
+              >
+                <Trash2 size={13} />
+              </button>
+            </div>
+          )}
         </td>
       )}
     </tr>
