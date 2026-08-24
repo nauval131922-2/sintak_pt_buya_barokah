@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
-import { buildFtsQuery } from "@/lib/fts";
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const search = searchParams.get("search");
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "50");
-    const offset = (page - 1) * limit;
+    const search = searchParams.get("search")?.trim();
     const all = searchParams.get("all") === "true";
-
-    const activeFilter = all ? "" : "AND e.is_active = 1";
+    const hasLimit = searchParams.has("limit");
+    const hasPage = searchParams.has("page");
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "50", 10);
+    const offset = Math.max(0, (page - 1) * limit);
 
     const sortByParam = searchParams.get("sortBy") || "id";
     const sortDirParam = searchParams.get("sortDir") || "asc";
@@ -20,53 +19,29 @@ export async function GET(request: NextRequest) {
     const sortBy = allowedSortColumns.includes(sortByParam) ? sortByParam : "id";
     const sortDir = sortDirParam.toLowerCase() === "desc" ? "DESC" : "ASC";
 
-    let sqlData = "";
-    let sqlTotal = "";
-    let argsData: unknown[] = [];
-    let argsTotal: unknown[] = [];
+    let whereClause = "WHERE 1=1";
+    const whereArgs: unknown[] = [];
+
+    if (!all) {
+      whereClause += " AND e.is_active = 1";
+    }
 
     if (search) {
-      const queryValue = buildFtsQuery(search);
-      // ponytail: JOIN FTS + LIMIT — no unbounded id IN (...)
-      try {
-        if (queryValue) {
-          sqlData = `SELECT e.* FROM employees e
-            JOIN employees_fts fts ON e.id = fts.rowid
-            WHERE employees_fts MATCH ? ${activeFilter}
-            ORDER BY e.${sortBy} ${sortDir}
-            LIMIT ? OFFSET ?`;
-          sqlTotal = `SELECT COUNT(*) as count FROM employees e
-            JOIN employees_fts fts ON e.id = fts.rowid
-            WHERE employees_fts MATCH ? ${activeFilter}`;
-          argsData = [queryValue, limit, offset];
-          argsTotal = [queryValue];
-        }
-
-        if (!sqlData) {
-          const qPattern = `%${search}%`;
-          sqlData = `SELECT * FROM employees e WHERE 1=1 ${activeFilter} AND (e.name LIKE ? OR e.position LIKE ? OR e.employee_no LIKE ? OR e.department LIKE ?) ORDER BY e.${sortBy} ${sortDir} LIMIT ? OFFSET ?`;
-          sqlTotal = `SELECT COUNT(*) as count FROM employees e WHERE 1=1 ${activeFilter} AND (e.name LIKE ? OR e.position LIKE ? OR e.employee_no LIKE ? OR e.department LIKE ?)`;
-          argsData = [qPattern, qPattern, qPattern, qPattern, limit, offset];
-          argsTotal = [qPattern, qPattern, qPattern, qPattern];
-        }
-      } catch {
-        const qPattern = `%${search}%`;
-        sqlData = `SELECT * FROM employees e WHERE 1=1 ${activeFilter} AND (e.name LIKE ? OR e.position LIKE ? OR e.employee_no LIKE ? OR e.department LIKE ?) ORDER BY e.${sortBy} ${sortDir} LIMIT ? OFFSET ?`;
-        sqlTotal = `SELECT COUNT(*) as count FROM employees e WHERE 1=1 ${activeFilter} AND (e.name LIKE ? OR e.position LIKE ? OR e.employee_no LIKE ? OR e.department LIKE ?)`;
-        argsData = [qPattern, qPattern, qPattern, qPattern, limit, offset];
-        argsTotal = [qPattern, qPattern, qPattern, qPattern];
-      }
-    } else {
-      if (all) {
-        sqlData = `SELECT * FROM employees e ORDER BY e.${sortBy} ${sortDir}`;
-        argsData = [];
-      } else {
-        sqlData = `SELECT * FROM employees e WHERE 1=1 ${activeFilter} ORDER BY e.${sortBy} ${sortDir} LIMIT ? OFFSET ?`;
-        argsData = [limit, offset];
-      }
-      sqlTotal = `SELECT COUNT(*) as count FROM employees e WHERE 1=1 ${activeFilter}`;
-      argsTotal = [];
+      whereClause += " AND (e.name LIKE ? OR e.position LIKE ? OR e.employee_no LIKE ? OR e.department LIKE ?)";
+      const pattern = `%${search}%`;
+      whereArgs.push(pattern, pattern, pattern, pattern);
     }
+
+    let sqlData = `SELECT e.* FROM employees e ${whereClause} ORDER BY e.${sortBy} ${sortDir}`;
+    const argsData = [...whereArgs];
+
+    if (hasPage || hasLimit) {
+      sqlData += " LIMIT ? OFFSET ?";
+      argsData.push(limit, offset);
+    }
+
+    const sqlTotal = `SELECT COUNT(*) as count FROM employees e ${whereClause}`;
+    const argsTotal = [...whereArgs];
 
     const batchResults = await db.batch([
       { sql: sqlData, args: argsData },

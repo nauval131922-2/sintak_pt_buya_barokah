@@ -177,7 +177,7 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
     {
       accessorKey: "no",
       header: "No.",
-      cell: (info: CellContext<Employee, unknown>) => info.row.index + 1,
+      cell: (info: CellContext<Employee, unknown>) => (page - 1) * PAGE_SIZE + info.row.index + 1,
       size: 60,
       meta: { align: "center" },
       enableSorting: false
