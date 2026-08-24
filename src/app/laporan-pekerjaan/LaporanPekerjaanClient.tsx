@@ -1040,23 +1040,33 @@ export default function LaporanPekerjaanClient({
     return `${dateStr}, ${timeStr} WIB`;
   }, [lastUpdated]);
 
-  // Scope helper dari Role Permissions
+  // Scope helper dari Role Permissions (O(1) Set lookup tanpa array allocation di tiap iterasi)
+  const allowedBagianSet = useMemo(() => {
+    if (!roleConfig?.allowed_bagian || roleConfig.allowed_bagian.length === 0) return null;
+    return new Set(roleConfig.allowed_bagian.map((b) => b.toUpperCase()));
+  }, [roleConfig?.allowed_bagian]);
+
+  const allowedPicSet = useMemo(() => {
+    if (!roleConfig?.allowed_pic || roleConfig.allowed_pic.length === 0) return null;
+    return new Set(roleConfig.allowed_pic.map((p) => p.toLowerCase()));
+  }, [roleConfig?.allowed_pic]);
+
   const isBagianAllowedByRole = useCallback(
     (bagian: string) => {
-      if (!roleConfig?.allowed_bagian || roleConfig.allowed_bagian.length === 0) return true;
+      if (!allowedBagianSet) return true;
       if (!bagian) return false;
-      return roleConfig.allowed_bagian.map((b) => b.toUpperCase()).includes(bagian.toUpperCase());
+      return allowedBagianSet.has(bagian.toUpperCase());
     },
-    [roleConfig]
+    [allowedBagianSet]
   );
 
   const isPicAllowedByRole = useCallback(
     (pic: string) => {
-      if (!roleConfig?.allowed_pic || roleConfig.allowed_pic.length === 0) return true;
+      if (!allowedPicSet) return true;
       if (!pic) return false;
-      return roleConfig.allowed_pic.map((p) => p.toLowerCase()).includes(pic.toLowerCase());
+      return allowedPicSet.has(pic.toLowerCase());
     },
-    [roleConfig]
+    [allowedPicSet]
   );
 
   // Sembunyikan filter jika role terkunci hanya pada 1 Bagian atau 1 PIC

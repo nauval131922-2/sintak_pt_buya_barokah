@@ -231,21 +231,21 @@ export async function getUserMergedLaporanPekerjaanConfig(
 
     if (rolePicks.size > 0) {
       try {
-        for (const rName of Array.from(rolePicks)) {
-          const { rows } = await db.execute({
-            sql: `SELECT DISTINCT COALESCE(e.name, u.name) as name
-                  FROM users u
-                  LEFT JOIN employees e ON e.id = u.employee_id
-                  LEFT JOIN user_roles ur ON ur.user_id = u.id
-                  WHERE (ur.role_name = ? OR u.role = ?)
-                    AND COALESCE(e.name, u.name) IS NOT NULL
-                    AND COALESCE(e.name, u.name) != ''`,
-            args: [rName, rName],
-          });
-          rows.forEach((r: any) => {
-            if (r.name) picSet.add(String(r.name).trim());
-          });
-        }
+        const rList = Array.from(rolePicks);
+        const placeholders = rList.map(() => '?').join(',');
+        const { rows } = await db.execute({
+          sql: `SELECT DISTINCT COALESCE(e.name, u.name) as name
+                FROM users u
+                LEFT JOIN employees e ON e.id = u.employee_id
+                LEFT JOIN user_roles ur ON ur.user_id = u.id
+                WHERE (ur.role_name IN (${placeholders}) OR u.role IN (${placeholders}))
+                  AND COALESCE(e.name, u.name) IS NOT NULL
+                  AND COALESCE(e.name, u.name) != ''`,
+          args: [...rList, ...rList],
+        });
+        rows.forEach((r: any) => {
+          if (r.name) picSet.add(String(r.name).trim());
+        });
       } catch (err) {
         console.error('[PERMISSIONS] Gagal resolve @role allowed_pic:', err);
       }
