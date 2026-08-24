@@ -1052,7 +1052,7 @@ export default function LaporanPekerjaanClient({
   }, [roleConfig?.allowed_pic]);
 
   const isBagianAllowedByRole = useCallback(
-    (bagian: string) => {
+    (bagian?: string | null) => {
       if (!allowedBagianSet) return true;
       if (!bagian) return false;
       return allowedBagianSet.has(bagian.toUpperCase());
@@ -1061,7 +1061,7 @@ export default function LaporanPekerjaanClient({
   );
 
   const isPicAllowedByRole = useCallback(
-    (pic: string) => {
+    (pic?: string | null) => {
       if (!allowedPicSet) return true;
       if (!pic || pic.trim() === "") {
         return (
