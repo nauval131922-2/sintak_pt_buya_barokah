@@ -254,7 +254,7 @@ const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
     const timeA = parseDateToSort(a.startDate || "") || Number.MAX_SAFE_INTEGER;
     const timeB = parseDateToSort(b.startDate || "") || Number.MAX_SAFE_INTEGER;
     if (timeA !== timeB) return timeA - timeB;
-    return a.id - b.id;
+    return (a.id || 0) - (b.id || 0);
   });
 
   const activeTasks = sorted.filter(
