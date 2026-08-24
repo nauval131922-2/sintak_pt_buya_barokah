@@ -61,11 +61,11 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
 
   // Items & labels untuk SearchableDropdown tautkan karyawan
   const employeeItems = useMemo(() => {
-    return ['', ...employees.map(emp => String(emp.id))];
+    return employees.map(emp => String(emp.id));
   }, [employees]);
 
   const employeeItemLabels = useMemo(() => {
-    const map: Record<string, string> = { '': '-- Akun Khusus (Non-Karyawan) --' };
+    const map: Record<string, string> = {};
     employees.forEach(emp => {
       map[String(emp.id)] = `${emp.name}${emp.position ? ` (${emp.position})` : ''}${emp.employee_no ? ` • ID: ${emp.employee_no}` : ''}`;
     });
@@ -75,24 +75,31 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
   // Role dropdown state
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [roleSearchQuery, setRoleSearchQuery] = useState('');
-  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [dropdownPos, setDropdownPos] = useState<{
+    top: number;
+    bottom: number;
+    left: number;
+    width: number;
+    openUpward: boolean;
+  } | null>(null);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dropdownPanelRef = useRef<HTMLDivElement>(null);
-  const nameInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    setTimeout(() => nameInputRef.current?.focus(), 100);
-  }, []);
 
   const openDropdown = useCallback(() => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       const scale = getZoomScale();
+      const panelHeight = 280;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const openUpward = spaceBelow < panelHeight && rect.top > panelHeight;
+
       setDropdownPos({
         top: (rect.bottom + 6) / scale,
+        bottom: (window.innerHeight - rect.top + 6) / scale,
         left: rect.left / scale,
         width: rect.width / scale,
+        openUpward,
       });
     }
     setIsRoleDropdownOpen(true);
@@ -243,14 +250,14 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
             {/* Pilih Karyawan */}
             <div>
               <label className="block text-[12px] font-bold text-gray-600 mb-2">
-                Pilih Karyawan <span className="text-gray-400 font-normal">(Data Master Karyawan)</span>
+                Pilih Karyawan <span className="text-rose-400">*</span>
               </label>
               <SearchableDropdown
                 id="user-employee-link"
                 value={selectedEmployeeId ? String(selectedEmployeeId) : ''}
                 items={employeeItems}
                 itemLabels={employeeItemLabels}
-                allLabel="-- Akun Khusus (Non-Karyawan) --"
+                allLabel="-- Pilih Karyawan --"
                 placeholder="Pilih Karyawan..."
                 searchPlaceholder="Cari nama karyawan / jabatan..."
                 triggerWidth="w-full"
@@ -269,7 +276,10 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
                       }
                     }
                   } else {
-                    if (!isEditing) setName('');
+                    if (!isEditing) {
+                      setName('');
+                      setUsername('');
+                    }
                   }
                 }}
               />
@@ -278,7 +288,7 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
                   <div className="flex items-center gap-2 truncate">
                     <User size={14} className="shrink-0 text-emerald-600" />
                     <span className="truncate">
-                      Nama: <b>{employees.find(e => e.id === selectedEmployeeId)?.name}</b>
+                      Nama Akun: <b>{employees.find(e => e.id === selectedEmployeeId)?.name}</b>
                     </span>
                   </div>
                   {employees.find(e => e.id === selectedEmployeeId)?.position && (
@@ -289,27 +299,6 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
                 </div>
               )}
             </div>
-
-            {/* Nama Lengkap (Hanya tampil jika akun non-karyawan / custom) */}
-            {!selectedEmployeeId && (
-              <div className="animate-in fade-in duration-200">
-                <label className="block text-[12px] font-bold text-gray-600 mb-2">
-                  Nama Lengkap <span className="text-rose-400">*</span>
-                </label>
-                <div className="relative">
-                  <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                  <input
-                    ref={nameInputRef}
-                    type="text"
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    className="w-full pl-8 pr-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all placeholder:text-gray-300"
-                    placeholder="Contoh: Administrator Utama"
-                    required
-                  />
-                </div>
-              </div>
-            )}
 
             {/* Username */}
             <div>
@@ -477,8 +466,12 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
         <Portal>
           <div
             ref={dropdownPanelRef}
-            className="fixed z-[200] bg-white border border-gray-100 rounded-xl shadow-lg animate-in fade-in slide-in-from-top-1 duration-150 overflow-hidden"
-            style={{ top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width }}
+            className={`fixed z-[200] bg-white border border-gray-100 rounded-xl shadow-xl animate-in fade-in ${dropdownPos.openUpward ? 'slide-in-from-bottom-1' : 'slide-in-from-top-1'} duration-150 overflow-hidden`}
+            style={{
+              ...(dropdownPos.openUpward ? { bottom: `${dropdownPos.bottom}px` } : { top: `${dropdownPos.top}px` }),
+              left: `${dropdownPos.left}px`,
+              width: `${dropdownPos.width}px`
+            }}
           >
             {/* Search */}
             <div className="p-2 border-b border-gray-50">

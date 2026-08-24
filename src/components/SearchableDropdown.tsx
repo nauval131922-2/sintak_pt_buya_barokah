@@ -64,6 +64,8 @@ export default function SearchableDropdown({
   const [query, setQuery] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
+  const [openUpward, setOpenUpward] = useState(false);
+  const [bottomCoord, setBottomCoord] = useState(0);
   const [alignRight, setAlignRight] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -75,23 +77,26 @@ export default function SearchableDropdown({
     if (containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
       const scale = getZoomScale();
+      const panelEstimatedHeight = 280;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const shouldFlipUp = spaceBelow < panelEstimatedHeight && rect.top > panelEstimatedHeight;
+
+      setOpenUpward(shouldFlipUp);
+      setBottomCoord((window.innerHeight - rect.top + 4) / scale);
       setCoords({
-        top: (rect.bottom + window.scrollY) / scale,
-        left: (rect.left + window.scrollX) / scale,
-        width: rect.width,
+        top: (rect.bottom + 4) / scale,
+        left: rect.left / scale,
+        width: rect.width / scale,
       });
 
-      // ponytail: Selalu rata kiri (merentang ke kanan) jika ruang kanan cukup. Hanya rata kanan jika ruang kanan mepet.
+      // Selalu rata kiri jika ruang kanan cukup. Hanya rata kanan jika ruang kanan mepet.
       const spaceRight = window.innerWidth - rect.left;
-      const panelWidthEstimated = 280;
-      const leftWhenAlignRight = rect.right - panelWidthEstimated;
+      const leftWhenAlignRight = rect.right - rect.width;
       const minLeftAllowed = window.innerWidth >= 1024 ? 260 : 12;
 
-      // Jika ruang di sebelah kanan masih cukup luas (>= 280px), WAJIB rata kiri (left-0)
-      if (spaceRight >= panelWidthEstimated) {
+      if (spaceRight >= rect.width) {
         setAlignRight(false);
       } else {
-        // Jika ruang kanan mepet, beralih ke rata kanan (right-0) HANYA jika sisi kiri tidak menabrak sidebar
         setAlignRight(leftWhenAlignRight >= minLeftAllowed);
       }
     }
@@ -220,12 +225,11 @@ export default function SearchableDropdown({
       role="listbox"
       aria-label={label}
       style={usePortal ? {
-        position: 'absolute',
-        top: `${coords.top + 4}px`,
+        position: 'fixed',
+        ...(openUpward ? { bottom: `${bottomCoord}px` } : { top: `${coords.top}px` }),
         left: `${coords.left}px`,
-        width: `${Math.max(coords.width, 240)}px`,
-        minWidth: `${coords.width}px`,
-        zIndex: 9999
+        width: `${coords.width}px`,
+        zIndex: 10000
       } : undefined}
       className={`${usePortal ? '' : `absolute ${alignRight ? 'right-0' : 'left-0'} top-full mt-2 min-w-full ${panelWidth || 'w-full'}`} bg-white border border-gray-100 rounded-xl shadow-xl shadow-emerald-900/10 py-3 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col max-h-[300px]`}
     >
