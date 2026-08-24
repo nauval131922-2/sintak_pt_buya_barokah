@@ -1059,6 +1059,10 @@ export default function LaporanPekerjaanClient({
     [roleConfig]
   );
 
+  // Sembunyikan filter jika role terkunci hanya pada 1 Bagian atau 1 PIC
+  const showBagianFilter = !roleConfig?.allowed_bagian || roleConfig.allowed_bagian.length !== 1;
+  const showPicFilter = !roleConfig?.allowed_pic || roleConfig.allowed_pic.length !== 1;
+
   // Saling-terkait filter options (Bagian, PIC, Status)
   const bagianOptions = useMemo<FilterOption[]>(() => {
     const set = new Set<string>();
@@ -1951,21 +1955,25 @@ export default function LaporanPekerjaanClient({
               </button>
             )}
 
-            <SquareDropdown
-              options={bagianOptions}
-              value={selectedBagianFilter}
-              onChange={setSelectedBagianFilter}
-              searchPlaceholder="Cari Bagian..."
-              widthClass="w-44"
-            />
+            {showBagianFilter && (
+              <SquareDropdown
+                options={bagianOptions}
+                value={selectedBagianFilter}
+                onChange={setSelectedBagianFilter}
+                searchPlaceholder="Cari Bagian..."
+                widthClass="w-44"
+              />
+            )}
 
-            <SquareDropdown
-              options={picOptions}
-              value={selectedPic}
-              onChange={setSelectedPic}
-              searchPlaceholder="Cari PIC..."
-              widthClass="w-44"
-            />
+            {showPicFilter && (
+              <SquareDropdown
+                options={picOptions}
+                value={selectedPic}
+                onChange={setSelectedPic}
+                searchPlaceholder="Cari PIC..."
+                widthClass="w-44"
+              />
+            )}
 
             <SquareDropdown
               options={statusOptions}
