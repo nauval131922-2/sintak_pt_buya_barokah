@@ -6,7 +6,7 @@ import {
   User, ShieldCheck, UserCog, Lock, Eye, EyeOff, Check, ChevronDown,
 } from 'lucide-react';
 import Portal, { getZoomScale } from '@/components/Portal';
-import SquareDropdown from '@/components/SquareDropdown';
+import SearchableDropdown from '@/components/SearchableDropdown';
 import { createUser, updateUser } from '@/lib/users';
 
 interface UserData {
@@ -59,15 +59,17 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
       .catch(() => {});
   }, []);
 
-  // Options untuk dropdown tautkan karyawan
-  const employeeDropdownOptions = useMemo(() => {
-    return [
-      { value: '', label: '-- Tanpa Tautan Karyawan --' },
-      ...employees.map(emp => ({
-        value: String(emp.id),
-        label: `${emp.name}${emp.position ? ` (${emp.position})` : ''}${emp.employee_no ? ` • ID: ${emp.employee_no}` : ''}`
-      }))
-    ];
+  // Items & labels untuk SearchableDropdown tautkan karyawan
+  const employeeItems = useMemo(() => {
+    return ['', ...employees.map(emp => String(emp.id))];
+  }, [employees]);
+
+  const employeeItemLabels = useMemo(() => {
+    const map: Record<string, string> = { '': '-- Tanpa Tautan Karyawan --' };
+    employees.forEach(emp => {
+      map[String(emp.id)] = `${emp.name}${emp.position ? ` (${emp.position})` : ''}${emp.employee_no ? ` • ID: ${emp.employee_no}` : ''}`;
+    });
+    return map;
   }, [employees]);
 
   // Role dropdown state
@@ -243,9 +245,18 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
               <label className="block text-[12px] font-bold text-gray-600 mb-2">
                 Tautkan Data Karyawan <span className="text-gray-400 font-normal">(Opsional)</span>
               </label>
-              <SquareDropdown
-                options={employeeDropdownOptions}
+              <SearchableDropdown
+                id="user-employee-link"
                 value={selectedEmployeeId ? String(selectedEmployeeId) : ''}
+                items={employeeItems}
+                itemLabels={employeeItemLabels}
+                allLabel="-- Tanpa Tautan Karyawan --"
+                placeholder="Pilih Data Karyawan..."
+                searchPlaceholder="Cari nama karyawan / jabatan..."
+                triggerWidth="w-full"
+                panelWidth="w-full"
+                usePortal={true}
+                icon={<User size={14} className={selectedEmployeeId ? 'text-emerald-600' : 'text-gray-400'} />}
                 onChange={(val) => {
                   const numVal = val ? Number(val) : null;
                   setSelectedEmployeeId(numVal);
@@ -259,15 +270,11 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
                     }
                   }
                 }}
-                placeholder="Pilih Data Karyawan..."
-                searchPlaceholder="Cari nama karyawan / jabatan..."
-                widthClass="w-full"
-                usePortal={true}
               />
               {selectedEmployeeId && (
-                <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-100 font-medium">
-                  <User size={12} />
-                  <span>
+                <div className="mt-2 flex items-center gap-1.5 text-[11.5px] text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 font-medium">
+                  <User size={13} className="shrink-0" />
+                  <span className="truncate">
                     Tertaut: <b>{employees.find(e => e.id === selectedEmployeeId)?.name}</b>
                     {employees.find(e => e.id === selectedEmployeeId)?.position && ` — ${employees.find(e => e.id === selectedEmployeeId)?.position}`}
                   </span>
