@@ -1075,6 +1075,21 @@ export default function LaporanPekerjaanClient({
     [allowedPicSet]
   );
 
+  // Helper pencocokan task dengan pilihan filter PIC
+  const isPicMatchingSelection = useCallback((taskPic: string | undefined | null, selected: string) => {
+    if (selected === "ALL") return true;
+    const isSelectedUnassigned =
+      selected.toUpperCase() === "TANPA PIC" ||
+      selected === "__UNASSIGNED__" ||
+      selected === "@unassigned";
+    const isTaskUnassigned = !taskPic || taskPic.trim() === "" || taskPic.toUpperCase() === "TANPA PIC";
+    if (isSelectedUnassigned) {
+      return isTaskUnassigned;
+    }
+    if (isTaskUnassigned) return false;
+    return taskPic.toUpperCase() === selected.toUpperCase();
+  }, []);
+
   // Sembunyikan filter jika role terkunci hanya pada 1 Bagian atau 1 PIC
   const showBagianFilter = !roleConfig?.allowed_bagian || roleConfig.allowed_bagian.length !== 1;
   const showPicFilter = !roleConfig?.allowed_pic || roleConfig.allowed_pic.length !== 1;
@@ -1084,7 +1099,7 @@ export default function LaporanPekerjaanClient({
     const set = new Set<string>();
     tasks.forEach((t) => {
       if (!isBagianAllowedByRole(t.bagian) || !isPicAllowedByRole(t.pic)) return;
-      if (selectedPic !== "ALL" && t.pic.toUpperCase() !== selectedPic.toUpperCase()) return;
+      if (!isPicMatchingSelection(t.pic, selectedPic)) return;
       if (selectedStatus !== "ALL" && t.status.toUpperCase() !== selectedStatus.toUpperCase()) return;
       if (t.bagian) set.add(t.bagian);
     });
@@ -1096,24 +1111,44 @@ export default function LaporanPekerjaanClient({
       { value: "ALL", label: "Semua Bagian" },
       ...sorted.map((b) => ({ value: b, label: b })),
     ];
-  }, [tasks, selectedPic, selectedStatus, isBagianAllowedByRole, isPicAllowedByRole, roleConfig]);
+  }, [tasks, selectedPic, selectedStatus, isBagianAllowedByRole, isPicAllowedByRole, roleConfig, isPicMatchingSelection]);
 
   const picOptions = useMemo<FilterOption[]>(() => {
     const set = new Set<string>();
+    let hasUnassignedTask = false;
+
     tasks.forEach((t) => {
       if (!isBagianAllowedByRole(t.bagian) || !isPicAllowedByRole(t.pic)) return;
       if (selectedBagianFilter !== "ALL" && (t.bagian || "").toUpperCase() !== selectedBagianFilter.toUpperCase()) return;
       if (selectedStatus !== "ALL" && t.status.toUpperCase() !== selectedStatus.toUpperCase()) return;
-      if (t.pic) set.add(t.pic);
+      if (!t.pic || t.pic.trim() === "" || t.pic.toUpperCase() === "TANPA PIC") {
+        hasUnassignedTask = true;
+      } else {
+        set.add(t.pic.trim());
+      }
     });
+
     if (roleConfig?.allowed_pic && roleConfig.allowed_pic.length > 0) {
-      roleConfig.allowed_pic.forEach((p) => set.add(p));
+      roleConfig.allowed_pic.forEach((p) => {
+        if (p === "@unassigned" || p.toLowerCase() === "tanpa pic" || p === "") {
+          hasUnassignedTask = true;
+        } else if (!p.startsWith("@")) {
+          set.add(p);
+        }
+      });
     }
-    const sorted = Array.from(set).sort();
-    return [
+
+    const sorted = Array.from(set).sort((a, b) => a.localeCompare(b, "id"));
+    const options: FilterOption[] = [
       { value: "ALL", label: "Semua PIC" },
       ...sorted.map((p) => ({ value: p, label: p })),
     ];
+
+    if (hasUnassignedTask) {
+      options.push({ value: "Tanpa PIC", label: "Tanpa PIC" });
+    }
+
+    return options;
   }, [tasks, selectedBagianFilter, selectedStatus, isBagianAllowedByRole, isPicAllowedByRole, roleConfig]);
 
   const statusOptions = useMemo<FilterOption[]>(() => {
@@ -1121,7 +1156,7 @@ export default function LaporanPekerjaanClient({
     tasks.forEach((t) => {
       if (!isBagianAllowedByRole(t.bagian) || !isPicAllowedByRole(t.pic)) return;
       if (selectedBagianFilter !== "ALL" && (t.bagian || "").toUpperCase() !== selectedBagianFilter.toUpperCase()) return;
-      if (selectedPic !== "ALL" && t.pic.toUpperCase() !== selectedPic.toUpperCase()) return;
+      if (!isPicMatchingSelection(t.pic, selectedPic)) return;
       if (t.status) set.add(t.status.toUpperCase());
     });
     const allStatuses = ["BELUM DIKERJAKAN", "IN PROGRESS", "PENDING", "CANCEL", "SELESAI"];
@@ -1130,7 +1165,7 @@ export default function LaporanPekerjaanClient({
       { value: "ALL", label: "Semua Status" },
       ...available.map((s) => ({ value: s, label: s })),
     ];
-  }, [tasks, selectedBagianFilter, selectedPic, isBagianAllowedByRole, isPicAllowedByRole]);
+  }, [tasks, selectedBagianFilter, selectedPic, isBagianAllowedByRole, isPicAllowedByRole, isPicMatchingSelection]);
 
   // Filtered tasks
   const filteredTasks = useMemo(() => {
@@ -1139,10 +1174,7 @@ export default function LaporanPekerjaanClient({
       if (!isBagianAllowedByRole(t.bagian)) return false;
       if (!isPicAllowedByRole(t.pic)) return false;
 
-      if (
-        selectedPic !== "ALL" &&
-        t.pic.toUpperCase() !== selectedPic.toUpperCase()
-      ) {
+      if (!isPicMatchingSelection(t.pic, selectedPic)) {
         return false;
       }
       if (
@@ -1165,7 +1197,7 @@ export default function LaporanPekerjaanClient({
       }
       return true;
     });
-  }, [tasks, selectedPic, selectedBagianFilter, selectedStatus, deferredSearchTerm, isBagianAllowedByRole, isPicAllowedByRole]);
+  }, [tasks, selectedPic, selectedBagianFilter, selectedStatus, deferredSearchTerm, isBagianAllowedByRole, isPicAllowedByRole, isPicMatchingSelection]);
 
   // Group filtered tasks by unique project order
   const groupedOrders = useMemo(() => {
@@ -1254,10 +1286,7 @@ export default function LaporanPekerjaanClient({
       if (!t.task) return false;
       if (!isBagianAllowedByRole(t.bagian)) return false;
       if (!isPicAllowedByRole(t.pic)) return false;
-      if (
-        selectedPic !== "ALL" &&
-        t.pic.toUpperCase() !== selectedPic.toUpperCase()
-      ) {
+      if (!isPicMatchingSelection(t.pic, selectedPic)) {
         return false;
       }
       if (deferredSearchTerm) {
@@ -1268,7 +1297,7 @@ export default function LaporanPekerjaanClient({
       }
       return true;
     });
-  }, [tasks, selectedPic, deferredSearchTerm, isBagianAllowedByRole, isPicAllowedByRole]);
+  }, [tasks, selectedPic, deferredSearchTerm, isBagianAllowedByRole, isPicAllowedByRole, isPicMatchingSelection]);
 
   // Counts based on tasksForCounts
   const counts = useMemo(() => {
@@ -3034,7 +3063,9 @@ function InlineEditRow({
       )
     ).filter((name) => {
       if (!roleConfig?.allowed_pic || roleConfig.allowed_pic.length === 0) return true;
-      return roleConfig.allowed_pic.map((p) => p.toLowerCase()).includes(name.toLowerCase());
+      const explicitNames = roleConfig.allowed_pic.filter(p => !p.startsWith('@') && p.toLowerCase() !== 'tanpa pic');
+      if (explicitNames.length === 0) return true;
+      return explicitNames.map((p) => p.toLowerCase()).includes(name.toLowerCase());
     }).sort((a, b) => a.localeCompare(b, "id"));
     return uniqueNames.map((name) => ({ value: name, label: name }));
   }, [employeeOptions, roleConfig]);
@@ -3329,7 +3360,9 @@ function InlineAddRow({
       )
     ).filter((name) => {
       if (!roleConfig?.allowed_pic || roleConfig.allowed_pic.length === 0) return true;
-      return roleConfig.allowed_pic.map((p) => p.toLowerCase()).includes(name.toLowerCase());
+      const explicitNames = roleConfig.allowed_pic.filter(p => !p.startsWith('@') && p.toLowerCase() !== 'tanpa pic');
+      if (explicitNames.length === 0) return true;
+      return explicitNames.map((p) => p.toLowerCase()).includes(name.toLowerCase());
     }).sort((a, b) => a.localeCompare(b, "id"));
     return uniqueNames.map((name) => ({ value: name, label: name }));
   }, [employeeOptions, roleConfig]);
