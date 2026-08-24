@@ -264,10 +264,18 @@ export async function getUserMergedLaporanPekerjaanConfig(
     }
   });
 
+  // Action permissions: jika setidaknya satu role mengizinkan create/edit/delete, bernilai true
+  const can_add = allConfigs.length > 0 && allConfigs.some(c => c.can_add !== false);
+  const can_edit = allConfigs.length > 0 && allConfigs.some(c => c.can_edit !== false);
+  const can_delete = allConfigs.length > 0 && allConfigs.some(c => c.can_delete !== false);
+
   return {
     role: roles.join(', '),
     allowed_bagian,
     allowed_pic,
     visible_columns: Array.from(colSet),
+    can_add,
+    can_edit,
+    can_delete,
   };
 }
