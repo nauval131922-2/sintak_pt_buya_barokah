@@ -19,15 +19,17 @@ async function ensureTable() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`);
-    try {
-      await db.execute(`ALTER TABLE role_laporan_pekerjaan_config ADD COLUMN can_add INTEGER DEFAULT 1`);
-    } catch (_) {}
-    try {
-      await db.execute(`ALTER TABLE role_laporan_pekerjaan_config ADD COLUMN can_edit INTEGER DEFAULT 1`);
-    } catch (_) {}
-    try {
-      await db.execute(`ALTER TABLE role_laporan_pekerjaan_config ADD COLUMN can_delete INTEGER DEFAULT 1`);
-    } catch (_) {}
+    const check = await db.execute("PRAGMA table_info(role_laporan_pekerjaan_config)");
+    const cols = (check.rows as any[]).map((r) => r.name);
+    if (!cols.includes('can_add')) {
+      await db.execute("ALTER TABLE role_laporan_pekerjaan_config ADD COLUMN can_add INTEGER DEFAULT 1;");
+    }
+    if (!cols.includes('can_edit')) {
+      await db.execute("ALTER TABLE role_laporan_pekerjaan_config ADD COLUMN can_edit INTEGER DEFAULT 1;");
+    }
+    if (!cols.includes('can_delete')) {
+      await db.execute("ALTER TABLE role_laporan_pekerjaan_config ADD COLUMN can_delete INTEGER DEFAULT 1;");
+    }
     tableChecked = true;
   } catch (_) {}
 }

@@ -36,9 +36,23 @@ async function ensureTable() {
       allowed_bagian TEXT DEFAULT '[]',
       allowed_pic TEXT DEFAULT '[]',
       visible_columns TEXT DEFAULT '[]',
+      can_add INTEGER DEFAULT 1,
+      can_edit INTEGER DEFAULT 1,
+      can_delete INTEGER DEFAULT 1,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`);
+    const check = await db.execute("PRAGMA table_info(role_laporan_pekerjaan_config)");
+    const cols = (check.rows as any[]).map((r) => r.name);
+    if (!cols.includes('can_add')) {
+      await db.execute("ALTER TABLE role_laporan_pekerjaan_config ADD COLUMN can_add INTEGER DEFAULT 1;");
+    }
+    if (!cols.includes('can_edit')) {
+      await db.execute("ALTER TABLE role_laporan_pekerjaan_config ADD COLUMN can_edit INTEGER DEFAULT 1;");
+    }
+    if (!cols.includes('can_delete')) {
+      await db.execute("ALTER TABLE role_laporan_pekerjaan_config ADD COLUMN can_delete INTEGER DEFAULT 1;");
+    }
     tableChecked = true;
   } catch (_) {}
 }
@@ -54,6 +68,9 @@ export async function getRoleLaporanPekerjaanConfig(role: string): Promise<RoleL
       allowed_bagian: [],
       allowed_pic: [],
       visible_columns: allColumns,
+      can_add: true,
+      can_edit: true,
+      can_delete: true,
     };
   }
 
@@ -61,7 +78,7 @@ export async function getRoleLaporanPekerjaanConfig(role: string): Promise<RoleL
 
   try {
     const res = await db.execute({
-      sql: 'SELECT role, allowed_bagian, allowed_pic, visible_columns FROM role_laporan_pekerjaan_config WHERE role = ?',
+      sql: 'SELECT role, allowed_bagian, allowed_pic, visible_columns, can_add, can_edit, can_delete FROM role_laporan_pekerjaan_config WHERE role = ?',
       args: [role],
     });
 
@@ -71,6 +88,9 @@ export async function getRoleLaporanPekerjaanConfig(role: string): Promise<RoleL
         allowed_bagian: [],
         allowed_pic: [],
         visible_columns: allColumns,
+        can_add: true,
+        can_edit: true,
+        can_delete: true,
       };
     }
 
@@ -81,12 +101,18 @@ export async function getRoleLaporanPekerjaanConfig(role: string): Promise<RoleL
     if (visible_columns.length === 0) {
       visible_columns = allColumns;
     }
+    const can_add = row.can_add !== undefined && row.can_add !== null ? Number(row.can_add) === 1 : true;
+    const can_edit = row.can_edit !== undefined && row.can_edit !== null ? Number(row.can_edit) === 1 : true;
+    const can_delete = row.can_delete !== undefined && row.can_delete !== null ? Number(row.can_delete) === 1 : true;
 
     return {
       role,
       allowed_bagian,
       allowed_pic,
       visible_columns,
+      can_add,
+      can_edit,
+      can_delete,
     };
   } catch (error) {
     console.error(`[PERMISSIONS] Failed to get config for role ${role}:`, error);
@@ -95,6 +121,9 @@ export async function getRoleLaporanPekerjaanConfig(role: string): Promise<RoleL
       allowed_bagian: [],
       allowed_pic: [],
       visible_columns: allColumns,
+      can_add: true,
+      can_edit: true,
+      can_delete: true,
     };
   }
 }
@@ -110,13 +139,16 @@ export async function getAllRoleLaporanPekerjaanConfigs(): Promise<Record<string
       allowed_bagian: [],
       allowed_pic: [],
       visible_columns: allColumns,
+      can_add: true,
+      can_edit: true,
+      can_delete: true,
     },
   };
 
   await ensureTable();
 
   try {
-    const { rows } = await db.execute('SELECT role, allowed_bagian, allowed_pic, visible_columns FROM role_laporan_pekerjaan_config');
+    const { rows } = await db.execute('SELECT role, allowed_bagian, allowed_pic, visible_columns, can_add, can_edit, can_delete FROM role_laporan_pekerjaan_config');
     for (const row of rows) {
       const roleName = String(row.role);
       const allowed_bagian = parseJsonArray(row.allowed_bagian);
@@ -125,11 +157,18 @@ export async function getAllRoleLaporanPekerjaanConfigs(): Promise<Record<string
       if (visible_columns.length === 0) {
         visible_columns = allColumns;
       }
+      const can_add = row.can_add !== undefined && row.can_add !== null ? Number(row.can_add) === 1 : true;
+      const can_edit = row.can_edit !== undefined && row.can_edit !== null ? Number(row.can_edit) === 1 : true;
+      const can_delete = row.can_delete !== undefined && row.can_delete !== null ? Number(row.can_delete) === 1 : true;
+
       result[roleName] = {
         role: roleName,
         allowed_bagian,
         allowed_pic,
         visible_columns,
+        can_add,
+        can_edit,
+        can_delete,
       };
     }
   } catch (error) {
