@@ -36,6 +36,24 @@ const NameCell = ({ name, highlight = '' }: { name: string; highlight?: string }
   </div>
 );
 
+const PositionCell = ({ position, highlight = '' }: { position: string; highlight?: string }) => (
+  <div className="flex items-center justify-between group w-full pr-4">
+    <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100 block w-fit truncate tracking-tight">
+      {highlightText(position || "-", highlight)}
+    </span>
+    {position && <CopyButton text={position} />}
+  </div>
+);
+
+const EmployeeNoCell = ({ employeeNo, highlight = '' }: { employeeNo: string | null; highlight?: string }) => (
+  <div className="flex items-center justify-between group w-full pr-4">
+    <span className="font-mono font-bold text-gray-400">
+      {employeeNo ? highlightText(employeeNo, highlight) : "---"}
+    </span>
+    {employeeNo && <CopyButton text={employeeNo} />}
+  </div>
+);
+
 export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -45,7 +63,7 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
   // State
   const [isMounted, setIsMounted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<Employee[] | null>(null);
+  const [rawEmployees, setRawEmployees] = useState<Employee[] | null>(null);
   const [error, setError] = useState("");
   const [loadTime, setLoadTime] = useState<number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -55,7 +73,6 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
   const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || "");
   const [highlightQuery, setHighlightQuery] = useState(() => searchParams.get('highlight') || searchParams.get('search') || "");
   const [page, setPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
 
   // Sorting State
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -89,7 +106,10 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
   }, [searchParams]);
 
   useEffect(() => {
-    const timer = setTimeout(() => { setDebouncedQuery(searchQuery); if (searchQuery !== urlSearchRef.current) setHighlightQuery(searchQuery); }, 350);
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+      if (searchQuery !== urlSearchRef.current) setHighlightQuery(searchQuery);
+    }, 200);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
@@ -109,28 +129,20 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
     };
   }, [router]);
 
-  // Fetch Data
+  // Fetch Full Data once (or on manual reload)
   useEffect(() => {
     let active = true;
     async function loadData() {
       setLoading(true);
       const startTime = performance.now();
       try {
-        let sortBy = "";
-        let sortDir = "";
-        if (sorting.length > 0) {
-          sortBy = sorting[0].id;
-          sortDir = sorting[0].desc ? "desc" : "asc";
-        }
-        const sortParams = sortBy ? `&sortBy=${sortBy}&sortDir=${sortDir}` : "";
-        const res = await fetch(`/api/employees?all=true&page=${page}&limit=${PAGE_SIZE}&search=${encodeURIComponent(debouncedQuery)}${sortParams}&_t=${Date.now()}`);
+        const res = await fetch(`/api/employees?all=true&_t=${Date.now()}`);
         if (!active) return;
         if (res.ok) {
           const json = await res.json();
           if (json.success) {
             setLoadTime(Math.round(performance.now() - startTime));
-            setTotalCount(json.total || 0);
-            setData(json.data || []);
+            setRawEmployees(json.data || []);
           }
         }
       } catch (e: unknown) {
@@ -141,7 +153,47 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
     }
     loadData();
     return () => { active = false; };
-  }, [page, debouncedQuery, refreshKey, sorting]);
+  }, [refreshKey]);
+
+  // Filtered employees in-memory (0ms instant search)
+  const filteredEmployees = useMemo(() => {
+    if (!rawEmployees) return [];
+    if (!debouncedQuery.trim()) return rawEmployees;
+    const q = debouncedQuery.toLowerCase();
+    return rawEmployees.filter((e) =>
+      (e.name || '').toLowerCase().includes(q) ||
+      (e.position || '').toLowerCase().includes(q) ||
+      (e.employee_no || '').toLowerCase().includes(q) ||
+      (e.department || '').toLowerCase().includes(q)
+    );
+  }, [rawEmployees, debouncedQuery]);
+
+  // Sorted employees in-memory (0ms instant sorting)
+  const sortedEmployees = useMemo(() => {
+    if (!sorting.length) return filteredEmployees;
+    const sortCol = sorting[0].id as keyof Employee;
+    const isDesc = sorting[0].desc;
+
+    return [...filteredEmployees].sort((a, b) => {
+      const valA = a[sortCol] ?? '';
+      const valB = b[sortCol] ?? '';
+      if (typeof valA === 'number' && typeof valB === 'number') {
+        return isDesc ? valB - valA : valA - valB;
+      }
+      return isDesc
+        ? String(valB).localeCompare(String(valA), 'id', { numeric: true })
+        : String(valA).localeCompare(String(valB), 'id', { numeric: true });
+    });
+  }, [filteredEmployees, sorting]);
+
+  // Pagination calculation (0ms instant page changes)
+  const totalCount = sortedEmployees.length;
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE) || 1;
+
+  const paginatedData = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return sortedEmployees.slice(start, start + PAGE_SIZE);
+  }, [sortedEmployees, page]);
 
   const [toggleLoading, setToggleLoading] = useState<Set<number>>(new Set());
 
@@ -152,6 +204,10 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
 
   const handleToggleActive = useCallback(async (employee: Employee) => {
     setToggleLoading(prev => new Set(prev).add(employee.id));
+    // Optimistic local update
+    setRawEmployees(prev =>
+      prev?.map(e => (e.id === employee.id ? { ...e, is_active: employee.is_active ? 0 : 1 } : e)) || null
+    );
     try {
       const res = await fetch(`/api/employees/${employee.id}`, {
         method: 'PATCH',
@@ -159,12 +215,19 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
         body: JSON.stringify({ is_active: !employee.is_active })
       });
       if (res.ok) {
-        setData(prev => prev?.map(e =>
-          e.id === employee.id ? { ...e, is_active: employee.is_active ? 0 : 1 } : e
-        ) || null);
         notifyDataUpdated();
+      } else {
+        // Revert on error
+        setRawEmployees(prev =>
+          prev?.map(e => (e.id === employee.id ? { ...e, is_active: employee.is_active } : e)) || null
+        );
       }
-    } catch {} finally {
+    } catch {
+      // Revert on error
+      setRawEmployees(prev =>
+        prev?.map(e => (e.id === employee.id ? { ...e, is_active: employee.is_active } : e)) || null
+      );
+    } finally {
       setToggleLoading(prev => {
         const next = new Set(prev);
         next.delete(employee.id);
@@ -192,22 +255,14 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
         accessorKey: "position", 
         header: "Jabatan",
         size: 220,
-        cell: (info: CellContext<Employee, string>) => (
-            <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100 block w-fit truncate tracking-tight">
-              {info.getValue()}
-            </span>
-        )
+        cell: (info: CellContext<Employee, string>) => <PositionCell position={info.getValue()} highlight={highlightQuery} />
     },
     { 
         accessorKey: "employee_no", 
         header: "ID Karyawan",
         size: 150,
         meta: { align: "right" },
-        cell: (info: CellContext<Employee, string | null>) => (
-            <span className="font-mono font-bold text-gray-400">
-                {info.getValue() || "---"}
-            </span>
-        )
+        cell: (info: CellContext<Employee, string | null>) => <EmployeeNoCell employeeNo={info.getValue()} highlight={highlightQuery} />
     },
     {
         accessorKey: "is_active",
@@ -239,7 +294,7 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
             );
         }
     }
-  ], [handleToggleActive, toggleLoading, highlightQuery]);
+  ], [handleToggleActive, toggleLoading, highlightQuery, page]);
 
   // Handlers
   const handleResize = useCallback((widths: Record<string, number>) => {
@@ -255,8 +310,6 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
         return next;
     });
   }, []);
-
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   const handlePageChange = useCallback((newPage: number) => {
     setPage(newPage);
@@ -285,7 +338,7 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
              </h3>
              <ImportInfo info={importInfo} />
           </div>
-          {loading && (data?.length || 0) > 0 && (
+          {loading && (rawEmployees?.length || 0) > 0 && (
               <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
                 <Loader2 size={12} className="animate-spin" />
                 <span>Memproses Data...</span>
@@ -319,23 +372,24 @@ export default function EmployeeTable({ importInfo }: EmployeeTableProps) {
            </div>
          ) : (
            <DataTable
-             data={data || []}
+             data={paginatedData}
              columns={columns}
              columnWidths={columnWidths}
              onColumnWidthChange={handleResize}
-             isLoading={loading || data === null}
+             isLoading={loading && rawEmployees === null}
              selectedIds={selectedIds}
              onRowClick={handleSelection}
              rowHeight="h-11"
              sorting={sorting}
              onSortingChange={handleSortingChange}
+             manualSorting={true}
            />
          )}
       </div>
 
       <TableFooter
         totalCount={totalCount}
-        currentCount={data?.length || 0}
+        currentCount={paginatedData.length}
         label="karyawan"
         selectedCount={selectedIds.size}
         onClearSelection={() => setSelectedIds(new Set())}
