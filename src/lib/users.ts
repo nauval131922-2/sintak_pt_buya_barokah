@@ -58,9 +58,23 @@ async function setUserRoles(userId: number, roles: string[]): Promise<void> {
   });
 }
 
+let userColumnsChecked = false;
+async function ensureUserColumns() {
+  if (userColumnsChecked) return;
+  try {
+    const check = await db.execute("PRAGMA table_info(users)");
+    const cols = (check.rows as any[]).map(r => r.name);
+    if (!cols.includes('employee_id')) {
+      await db.execute("ALTER TABLE users ADD COLUMN employee_id INTEGER DEFAULT NULL;");
+    }
+    userColumnsChecked = true;
+  } catch (_) {}
+}
+
 export async function getUsers() {
   try {
     await requireSuperAdmin();
+    await ensureUserColumns();
 
     const result = await db.execute(
       `SELECT u.id, u.username, u.name, u.role, u.photo, u.is_active, u.employee_id, u.created_at,
@@ -107,6 +121,7 @@ export async function createUser(data: {
 }) {
   try {
     const session = await requireSuperAdmin();
+    await ensureUserColumns();
 
     if (!data.name || !data.username || !data.password || !data.roles?.length) {
       return { success: false, message: 'Data tidak lengkap.' };
@@ -166,6 +181,7 @@ export async function updateUser(
 ) {
   try {
     const session = await requireSuperAdmin();
+    await ensureUserColumns();
 
     if (!data.name || !data.username || !data.roles?.length) {
       return { success: false, message: 'Data tidak lengkap.' };

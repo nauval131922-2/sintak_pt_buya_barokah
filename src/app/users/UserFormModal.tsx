@@ -6,6 +6,7 @@ import {
   User, ShieldCheck, UserCog, Lock, Eye, EyeOff, Check, ChevronDown,
 } from 'lucide-react';
 import Portal, { getZoomScale } from '@/components/Portal';
+import SquareDropdown from '@/components/SquareDropdown';
 import { createUser, updateUser } from '@/lib/users';
 
 interface UserData {
@@ -57,6 +58,17 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
       })
       .catch(() => {});
   }, []);
+
+  // Options untuk dropdown tautkan karyawan
+  const employeeDropdownOptions = useMemo(() => {
+    return [
+      { value: '', label: '-- Tanpa Tautan Karyawan --' },
+      ...employees.map(emp => ({
+        value: String(emp.id),
+        label: `${emp.name}${emp.position ? ` (${emp.position})` : ''}${emp.employee_no ? ` • ID: ${emp.employee_no}` : ''}`
+      }))
+    ];
+  }, [employees]);
 
   // Role dropdown state
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
@@ -231,13 +243,14 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
               <label className="block text-[12px] font-bold text-gray-600 mb-2">
                 Tautkan Data Karyawan <span className="text-gray-400 font-normal">(Opsional)</span>
               </label>
-              <select
-                value={selectedEmployeeId || ''}
-                onChange={e => {
-                  const val = e.target.value ? Number(e.target.value) : null;
-                  setSelectedEmployeeId(val);
-                  if (val) {
-                    const emp = employees.find(item => item.id === val);
+              <SquareDropdown
+                options={employeeDropdownOptions}
+                value={selectedEmployeeId ? String(selectedEmployeeId) : ''}
+                onChange={(val) => {
+                  const numVal = val ? Number(val) : null;
+                  setSelectedEmployeeId(numVal);
+                  if (numVal) {
+                    const emp = employees.find(item => item.id === numVal);
                     if (emp) {
                       setName(emp.name);
                       if (!isEditing && !username) {
@@ -246,15 +259,11 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
                     }
                   }
                 }}
-                className="w-full px-3 py-2 text-[12.5px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all text-slate-700"
-              >
-                <option value="">-- Tanpa Tautan Karyawan --</option>
-                {employees.map(emp => (
-                  <option key={emp.id} value={emp.id}>
-                    {emp.name} {emp.position ? `(${emp.position})` : ''} {emp.employee_no ? `• ID: ${emp.employee_no}` : ''}
-                  </option>
-                ))}
-              </select>
+                placeholder="Pilih Data Karyawan..."
+                searchPlaceholder="Cari nama karyawan / jabatan..."
+                widthClass="w-full"
+                usePortal={true}
+              />
               {selectedEmployeeId && (
                 <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-100 font-medium">
                   <User size={12} />
