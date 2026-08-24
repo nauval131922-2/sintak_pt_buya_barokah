@@ -5,7 +5,10 @@ export interface SimulatorMasterParams {
   tarifHvs70: number;
   tarifAp120: number;
   tarifAp150: number;
-  ppnMarginKertas: number; // 1.05
+  ppnMarginKertas: number; // legacy global PPN
+  ppnHvs70: number; // 1.03
+  ppnAp120: number; // 1.00
+  ppnAp150: number; // 1.00
 
   // 2. Mesin Oliver
   oliverMinOngkos: number; // 90000
@@ -57,6 +60,9 @@ export const DEFAULT_MASTER_PARAMS: SimulatorMasterParams = {
   tarifAp120: 17400,
   tarifAp150: 17400,
   ppnMarginKertas: 1.05,
+  ppnHvs70: 1.05, // Default Spiral: global 5%
+  ppnAp120: 1.05,
+  ppnAp150: 1.05,
 
   // 2. Mesin Oliver
   oliverMinOngkos: 90000,
@@ -104,7 +110,10 @@ export const DEFAULT_MASTER_PARAMS: SimulatorMasterParams = {
 export const DEFAULT_MASTER_PARAMS_KLEM: SimulatorMasterParams = {
   ...DEFAULT_MASTER_PARAMS,
   // Profil acuan file master Klem Agustus 2027 (Folder 30 Source/*.xlsm)
-  tarifHvs70: 16995, // ponytail: 16.500 x 1.03 — PPN HVS dibake ke tarif karena SINTAK pakai PPN global; upgrade: PPN per-bahan jika perlu
+  tarifHvs70: 16500, // Sekarang memakai tarif dasar murni murni seperti di Excel (PPN diisi di parameter baru)
+  ppnHvs70: 1.03, // PPN HVS 3%
+  ppnAp120: 1.00, // PPN AP 0%
+  ppnAp150: 1.00, // PPN AP 0%
   ppnMarginKertas: 1.0,
   oliverInsheet: 150,
   oliverTransport: 150000,
@@ -195,15 +204,19 @@ export function calculatePricelistSimulator(input: SimulatorInput): SimulatorOut
 
   let tarifPerKg = params.tarifAp150;
   let gsm = 150;
+  let ppnMultiplier = params.ppnAp150 ?? 1.0;
   if (bahan.includes('HVS') || bahan.includes('70')) {
     tarifPerKg = params.tarifHvs70;
     gsm = 70;
+    ppnMultiplier = params.ppnHvs70 ?? 1.0;
   } else if (bahan.includes('120')) {
     tarifPerKg = params.tarifAp120;
     gsm = 120;
+    ppnMultiplier = params.ppnAp120 ?? 1.0;
   } else if (bahan.includes('150')) {
     tarifPerKg = params.tarifAp150;
     gsm = 150;
+    ppnMultiplier = params.ppnAp150 ?? 1.0;
   }
 
   let planoLebar = 65;
@@ -247,7 +260,7 @@ export function calculatePricelistSimulator(input: SimulatorInput): SimulatorOut
 
   // 1. Biaya Bahan Kertas
   const beratRimKg = (planoLebar * planoPanjang * gsm) / (params.konstantaBeratRim || 20000);
-  const hargaPerPlano = (beratRimKg * (tarifPerKg * (params.ppnMarginKertas ?? 1.05))) / (params.lembarPerRim || 500);
+  const hargaPerPlano = (beratRimKg * (tarifPerKg * ppnMultiplier)) / (params.lembarPerRim || 500);
   const totalPlanoDibutuhkan = ((safeOplah + insheet) * lembar) / (planoPotong || 1);
   const biayaKertas = hargaPerPlano * totalPlanoDibutuhkan;
 

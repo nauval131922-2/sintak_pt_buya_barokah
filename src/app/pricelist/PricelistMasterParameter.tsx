@@ -29,12 +29,14 @@ interface MasterParameterProps {
   customParams: SimulatorMasterParams;
   setCustomParams: React.Dispatch<React.SetStateAction<SimulatorMasterParams>>;
   activeFinishing?: 'Spiral' | 'Klem';
+  onChangeFinishing?: (mode: 'Spiral' | 'Klem') => void;
 }
 
 export default function PricelistMasterParameter({
   customParams,
   setCustomParams,
   activeFinishing = 'Spiral',
+  onChangeFinishing,
 }: MasterParameterProps) {
   const [showManualModal, setShowManualModal] = useState(false);
 
@@ -64,14 +66,44 @@ export default function PricelistMasterParameter({
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
+          {/* Toggle Profil Jilid */}
+          {onChangeFinishing && (
+            <div className="flex items-center bg-emerald-100/50 p-0.5 rounded-lg border border-emerald-300 text-xs shadow-2xs">
+              <button
+                type="button"
+                onClick={() => onChangeFinishing('Spiral')}
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                  activeFinishing === 'Spiral'
+                    ? 'bg-emerald-700 text-white shadow-xs'
+                    : 'text-emerald-800 hover:text-emerald-950'
+                }`}
+                title="Profil Tarif Jilid Spiral"
+              >
+                Spiral
+              </button>
+              <button
+                type="button"
+                onClick={() => onChangeFinishing('Klem')}
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                  activeFinishing === 'Klem'
+                    ? 'bg-amber-600 text-white shadow-xs'
+                    : 'text-emerald-800 hover:text-emerald-950'
+                }`}
+                title="Profil Tarif Jilid Klem Seng"
+              >
+                Klem
+              </button>
+            </div>
+          )}
+
           <button
             type="button"
             onClick={() => setShowManualModal(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all cursor-pointer shadow-2xs"
           >
             <BookOpen size={13} />
-            <span>Manual Pengguna & Pemetaan Excel</span>
+            <span>Manual Pengguna</span>
           </button>
           <button
             type="button"
@@ -91,62 +123,78 @@ export default function PricelistMasterParameter({
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                1. Harga Bahan Kertas (Per Kg)
+                1. Harga Bahan Kertas (Per Kg) & PPN
               </h3>
             </div>
-            <span className="text-[11px] text-slate-500 font-medium">Satuan: Rp / kg</span>
+            <span className="text-[11px] text-slate-500 font-medium">Satuan: Rp / kg & PPN (%)</span>
           </div>
-          <div className="p-4 flex flex-col gap-3">
+          <div className="p-4 flex flex-col gap-4">
+            {/* Input grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">HVS 70 gsm</label>
-                <ThousandInput
-                  prefix="Rp"
-                  value={customParams.tarifHvs70}
-                  onValueChange={(val) => handleChange('tarifHvs70', val)}
-                  className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
-                />
-                <span className="block text-[10px] text-slate-500 mt-1">Ekonomis</span>
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 flex flex-col gap-2">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">HVS 70 gsm</label>
+                  <ThousandInput
+                    prefix="Rp"
+                    value={customParams.tarifHvs70}
+                    onValueChange={(val) => handleChange('tarifHvs70', val)}
+                    className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-600 mb-0.5">PPN / Margin Kertas</label>
+                  <ThousandInput
+                    suffix="%"
+                    value={Math.round(((customParams.ppnHvs70 ?? 1.05) - 1) * 100 * 100) / 100}
+                    onValueChange={(val) => handleChange('ppnHvs70', 1 + (val || 0) / 100)}
+                    className="w-full pr-6 py-0.5 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                  />
+                </div>
+                <span className="block text-[9px] text-slate-500">Ekonomis</span>
               </div>
 
-              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">Art Paper 120</label>
-                <ThousandInput
-                  prefix="Rp"
-                  value={customParams.tarifAp120}
-                  onValueChange={(val) => handleChange('tarifAp120', val)}
-                  className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
-                />
-                <span className="block text-[10px] text-slate-500 mt-1">Standar Kilap</span>
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 flex flex-col gap-2">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Art Paper 120</label>
+                  <ThousandInput
+                    prefix="Rp"
+                    value={customParams.tarifAp120}
+                    onValueChange={(val) => handleChange('tarifAp120', val)}
+                    className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-600 mb-0.5">PPN / Margin Kertas</label>
+                  <ThousandInput
+                    suffix="%"
+                    value={Math.round(((customParams.ppnAp120 ?? 1.05) - 1) * 100 * 100) / 100}
+                    onValueChange={(val) => handleChange('ppnAp120', 1 + (val || 0) / 100)}
+                    className="w-full pr-6 py-0.5 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                  />
+                </div>
+                <span className="block text-[9px] text-slate-500">Standar Kilap</span>
               </div>
 
-              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">Art Paper 150</label>
-                <ThousandInput
-                  prefix="Rp"
-                  value={customParams.tarifAp150}
-                  onValueChange={(val) => handleChange('tarifAp150', val)}
-                  className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
-                />
-                <span className="block text-[10px] text-slate-500 mt-1">Tebal & Premium</span>
-              </div>
-            </div>
-
-            {/* Setting Faktor PPN / Margin Kertas */}
-            <div className="bg-emerald-50/60 p-3 rounded-lg border border-emerald-200/70 flex items-center justify-between gap-3 text-xs text-emerald-950">
-              <div>
-                <span className="font-bold block text-xs">PPN / Margin Toko Kertas:</span>
-                <span className="text-[10.5px] text-emerald-800">
-                  Persentase tambahan margin/PPN pada harga distributor kertas
-                </span>
-              </div>
-              <div className="w-24 shrink-0">
-                <ThousandInput
-                  suffix="%"
-                  value={Math.round((customParams.ppnMarginKertas - 1) * 100 * 100) / 100}
-                  onValueChange={(val) => handleChange('ppnMarginKertas', 1 + (val || 0) / 100)}
-                  className="w-full pr-6 py-1 text-xs font-mono font-bold bg-white border border-emerald-300 rounded-md text-right focus:ring-1 focus:ring-emerald-500 focus:outline-none"
-                />
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 flex flex-col gap-2">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Art Paper 150</label>
+                  <ThousandInput
+                    prefix="Rp"
+                    value={customParams.tarifAp150}
+                    onValueChange={(val) => handleChange('tarifAp150', val)}
+                    className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-600 mb-0.5">PPN / Margin Kertas</label>
+                  <ThousandInput
+                    suffix="%"
+                    value={Math.round(((customParams.ppnAp150 ?? 1.05) - 1) * 100 * 100) / 100}
+                    onValueChange={(val) => handleChange('ppnAp150', 1 + (val || 0) / 100)}
+                    className="w-full pr-6 py-0.5 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                  />
+                </div>
+                <span className="block text-[9px] text-slate-500">Tebal & Premium</span>
               </div>
             </div>
           </div>
@@ -585,9 +633,9 @@ export default function PricelistMasterParameter({
                       <span>1. Harga Bahan Kertas (Per Kg)</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Harga Dasar / Kg</strong>: <span className="font-mono text-emerald-700">Dashboard!D27</span> (HVS 70: Rp 15.700, AP 120/150: Rp 17.400).</li>
-                      <li>• <strong>PPN / Margin Kertas</strong>: <span className="font-mono text-emerald-700">Dashboard!E27</span> (Nilai: 0.05 = 5%).</li>
-                      <li>• <strong>Harga per Ream Plano</strong>: <span className="font-mono text-slate-600">KALENDER!BE29</span> = <code className="text-[10px] bg-white px-1 py-0.5 rounded border">[(L*P*GSM)/20.000] * (Tarif * 1.05)</code>.</li>
+                      <li>• <strong>Harga Dasar / Kg</strong>: <span className="font-mono text-emerald-700">Dashboard!D27</span> (HVS 70: Rp 16.500, AP 120/150: Rp 17.400).</li>
+                      <li>• <strong>PPN / Margin Kertas</strong>: <span className="font-mono text-emerald-700">Dashboard!E27</span> (Spiral: 5%, Klem: HVS 3%, AP 0%).</li>
+                      <li>• <strong>Harga per Ream Plano</strong>: <span className="font-mono text-slate-600">KALENDER!BE29</span> = <code className="text-[10px] bg-white px-1 py-0.5 rounded border">[(L*P*GSM)/20.000] * (Tarif * PPN) / 500</code>.</li>
                     </ul>
                   </div>
 

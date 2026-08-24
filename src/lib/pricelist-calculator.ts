@@ -80,10 +80,10 @@ export function recalculatePricelistFromParams(
     },
   };
 
-  const matMeta: Record<string, { gsm: number; tarif: number }> = {
-    'HVS 70': { gsm: 70, tarif: p.tarifHvs70 ?? 15700 },
-    'ART PAPER 120': { gsm: 120, tarif: p.tarifAp120 ?? 17400 },
-    'ART PAPER 150': { gsm: 150, tarif: p.tarifAp150 ?? 17400 },
+  const matMeta: Record<string, { gsm: number; tarif: number; ppn: number }> = {
+    'HVS 70': { gsm: 70, tarif: p.tarifHvs70 ?? 15700, ppn: p.ppnHvs70 ?? 1.05 },
+    'ART PAPER 120': { gsm: 120, tarif: p.tarifAp120 ?? 17400, ppn: p.ppnAp120 ?? 1.05 },
+    'ART PAPER 150': { gsm: 150, tarif: p.tarifAp150 ?? 17400, ppn: p.ppnAp150 ?? 1.05 },
   };
 
   const calcRow = (
@@ -112,7 +112,7 @@ export function recalculatePricelistFromParams(
 
     // 1. Kertas
     const beratRimKg = (s.planoL * s.planoP * m.gsm) / rimConst;
-    const hargaPerPlano = (beratRimKg * (m.tarif * ppn)) / lbrPerRim;
+    const hargaPerPlano = (beratRimKg * (m.tarif * m.ppn)) / lbrPerRim;
     const totalPlano = ((oplah + insheet) * lembar) / s.potong;
     const biayaKertas = hargaPerPlano * totalPlano;
 

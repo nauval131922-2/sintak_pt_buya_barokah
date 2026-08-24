@@ -339,6 +339,7 @@ export default function PricelistClient() {
             customParams={customParams}
             setCustomParams={setCustomParams}
             activeFinishing={selectedFinishing}
+            onChangeFinishing={setSelectedFinishing}
           />
         </div>
       ) : activeTab === 'simulator' ? (

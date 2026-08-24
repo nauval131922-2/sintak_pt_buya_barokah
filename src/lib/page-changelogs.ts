@@ -46,6 +46,19 @@ function entry(
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   // ─── Pricelist Kalender ───
+  'pricelist-2026-08-24': entry({
+    pageKey: 'pricelist',
+    title: 'Pricelist Kalender & Simulator',
+    permissionKeys: ['pricelist_kalkulasi'],
+    sortDate: '2026-08-24',
+    date: '24 Agu 2026',
+    version: '2026-08-24-1',
+    items: [
+      'Penambahan parameter input PPN / Margin Kertas secara independen per jenis kertas (HVS 70, AP 120, AP 150) pada Master Parameter',
+      'Penambahan toggle pensaklaran profil Spiral/Klem secara langsung di header tab Master Parameter',
+      'Penyempurnaan kalkulasi HPP bahan kertas pada simulator dan matriks dengan membaca PPN spesifik kertas secara dinamis',
+    ],
+  }),
   'pricelist-2026-08-23': entry({
     pageKey: 'pricelist',
     title: 'Pricelist Kalender & Simulator',
