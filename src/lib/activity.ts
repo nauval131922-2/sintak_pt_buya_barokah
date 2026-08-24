@@ -2,7 +2,7 @@ import db from '@/lib/db';
 import { getSession } from '@/lib/session';
 
 export async function logActivity(
-  action_type: 'VIEW' | 'CREATE' | 'UPDATE' | 'DELETE' | 'SCRAPE' | 'IMPORT' | 'EXPORT' | 'LOGIN' | 'LOGOUT',
+  action_type: 'VIEW' | 'CREATE' | 'INSERT' | 'UPDATE' | 'DELETE' | 'SCRAPE' | 'IMPORT' | 'EXPORT' | 'LOGIN' | 'LOGOUT',
   table_name: string,
   message: string,
   raw_data?: any,

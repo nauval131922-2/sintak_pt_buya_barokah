@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
 
       const newId = Number(result.lastInsertRowid);
       logActivity(
-        'INSERT',
+        'CREATE',
         'master_pekerjaan_jurnal_produksi',
         `Pekerjaan baru ditambahkan: [${category}] ${name}`,
         { id: newId, category, name },

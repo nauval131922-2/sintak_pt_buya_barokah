@@ -188,7 +188,7 @@ export async function POST(req: NextRequest) {
     await db.batch(batchOps, 'write');
 
     logActivity(
-      'INSERT',
+      'CREATE',
       'infractions',
       `Pencatatan kesalahan baru: ${faktur} (${emp.name || 'Karyawan'} - ${orderName || orderFaktur})`,
       {

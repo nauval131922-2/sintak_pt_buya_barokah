@@ -74,7 +74,7 @@ export async function addRole(
 
     const { logActivity } = await import('@/lib/activity');
     logActivity(
-      'INSERT',
+      'CREATE',
       'app_roles',
       `Role baru dibuat: ${roleName.trim()}`,
       { role_name: roleName.trim(), description: description.trim() },
