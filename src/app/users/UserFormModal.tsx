@@ -65,7 +65,7 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
   }, [employees]);
 
   const employeeItemLabels = useMemo(() => {
-    const map: Record<string, string> = { '': '-- Tanpa Tautan Karyawan --' };
+    const map: Record<string, string> = { '': '-- Akun Khusus (Non-Karyawan) --' };
     employees.forEach(emp => {
       map[String(emp.id)] = `${emp.name}${emp.position ? ` (${emp.position})` : ''}${emp.employee_no ? ` • ID: ${emp.employee_no}` : ''}`;
     });
@@ -240,18 +240,18 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
               </div>
             )}
 
-            {/* Tautkan Karyawan */}
+            {/* Pilih Karyawan */}
             <div>
               <label className="block text-[12px] font-bold text-gray-600 mb-2">
-                Tautkan Data Karyawan <span className="text-gray-400 font-normal">(Opsional)</span>
+                Pilih Karyawan <span className="text-gray-400 font-normal">(Data Master Karyawan)</span>
               </label>
               <SearchableDropdown
                 id="user-employee-link"
                 value={selectedEmployeeId ? String(selectedEmployeeId) : ''}
                 items={employeeItems}
                 itemLabels={employeeItemLabels}
-                allLabel="-- Tanpa Tautan Karyawan --"
-                placeholder="Pilih Data Karyawan..."
+                allLabel="-- Akun Khusus (Non-Karyawan) --"
+                placeholder="Pilih Karyawan..."
                 searchPlaceholder="Cari nama karyawan / jabatan..."
                 triggerWidth="w-full"
                 panelWidth="w-full"
@@ -264,42 +264,52 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
                     const emp = employees.find(item => item.id === numVal);
                     if (emp) {
                       setName(emp.name);
-                      if (!isEditing && !username) {
+                      if (!isEditing || !username) {
                         setUsername(emp.name.toLowerCase().replace(/[^a-z0-9]/g, ''));
                       }
                     }
+                  } else {
+                    if (!isEditing) setName('');
                   }
                 }}
               />
               {selectedEmployeeId && (
-                <div className="mt-2 flex items-center gap-1.5 text-[11.5px] text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 font-medium">
-                  <User size={13} className="shrink-0" />
-                  <span className="truncate">
-                    Tertaut: <b>{employees.find(e => e.id === selectedEmployeeId)?.name}</b>
-                    {employees.find(e => e.id === selectedEmployeeId)?.position && ` — ${employees.find(e => e.id === selectedEmployeeId)?.position}`}
-                  </span>
+                <div className="mt-2 flex items-center justify-between text-[11.5px] text-emerald-700 bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-100 font-medium">
+                  <div className="flex items-center gap-2 truncate">
+                    <User size={14} className="shrink-0 text-emerald-600" />
+                    <span className="truncate">
+                      Nama: <b>{employees.find(e => e.id === selectedEmployeeId)?.name}</b>
+                    </span>
+                  </div>
+                  {employees.find(e => e.id === selectedEmployeeId)?.position && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100/80 text-emerald-800 shrink-0">
+                      {employees.find(e => e.id === selectedEmployeeId)?.position}
+                    </span>
+                  )}
                 </div>
               )}
             </div>
 
-            {/* Nama Lengkap */}
-            <div>
-              <label className="block text-[12px] font-bold text-gray-600 mb-2">
-                Nama Lengkap <span className="text-rose-400">*</span>
-              </label>
-              <div className="relative">
-                <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                <input
-                  ref={nameInputRef}
-                  type="text"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all placeholder:text-gray-300"
-                  placeholder="Contoh: Budi Santoso"
-                  required
-                />
+            {/* Nama Lengkap (Hanya tampil jika akun non-karyawan / custom) */}
+            {!selectedEmployeeId && (
+              <div className="animate-in fade-in duration-200">
+                <label className="block text-[12px] font-bold text-gray-600 mb-2">
+                  Nama Lengkap <span className="text-rose-400">*</span>
+                </label>
+                <div className="relative">
+                  <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  <input
+                    ref={nameInputRef}
+                    type="text"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    className="w-full pl-8 pr-3 py-2.5 text-[13px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all placeholder:text-gray-300"
+                    placeholder="Contoh: Administrator Utama"
+                    required
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Username */}
             <div>

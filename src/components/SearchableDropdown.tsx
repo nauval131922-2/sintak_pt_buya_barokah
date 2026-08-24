@@ -113,8 +113,9 @@ export default function SearchableDropdown({
     return itemLabels?.[item] ?? String(item);
   };
 
-  // All items including the "all" entry
-  const allItems = ['', ...items.map(i => String(i))];
+  // All items including the "all" entry (filter out empty strings to prevent duplicate '__all__')
+  const cleanedItems = items.filter(i => String(i) !== '');
+  const allItems = ['', ...cleanedItems.map(i => String(i))];
   const filtered = allItems
     .filter((i) => labelFor(i).toLowerCase().includes(query.toLowerCase()))
     .slice(0, maxDisplay);
@@ -222,7 +223,8 @@ export default function SearchableDropdown({
         position: 'absolute',
         top: `${coords.top + 4}px`,
         left: `${coords.left}px`,
-        width: `${coords.width}px`,
+        width: `${Math.max(coords.width, 240)}px`,
+        minWidth: `${coords.width}px`,
         zIndex: 9999
       } : undefined}
       className={`${usePortal ? '' : `absolute ${alignRight ? 'right-0' : 'left-0'} top-full mt-2 min-w-full ${panelWidth || 'w-full'}`} bg-white border border-gray-100 rounded-xl shadow-xl shadow-emerald-900/10 py-3 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col max-h-[300px]`}
@@ -257,7 +259,7 @@ export default function SearchableDropdown({
         ) : (
           filtered.map((item, idx) => (
             <button
-              key={item === '' ? '__all__' : `${item}-${idx}`}
+              key={item === '' ? `__all__-${id}` : `${item}-${idx}`}
               type="button"
               role="option"
               aria-selected={value === item}
