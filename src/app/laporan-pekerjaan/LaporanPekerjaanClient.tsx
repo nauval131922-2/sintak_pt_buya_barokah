@@ -1063,7 +1063,13 @@ export default function LaporanPekerjaanClient({
   const isPicAllowedByRole = useCallback(
     (pic: string) => {
       if (!allowedPicSet) return true;
-      if (!pic) return false;
+      if (!pic || pic.trim() === "") {
+        return (
+          allowedPicSet.has("@unassigned") ||
+          allowedPicSet.has("tanpa pic") ||
+          allowedPicSet.has("")
+        );
+      }
       return allowedPicSet.has(pic.toLowerCase());
     },
     [allowedPicSet]
@@ -2631,7 +2637,12 @@ function TaskDetailModal({
           }
         }
         if (roleConfig?.allowed_pic && roleConfig.allowed_pic.length > 0) {
-          if (!t.pic || !roleConfig.allowed_pic.map((p) => p.toLowerCase()).includes(t.pic.toLowerCase())) {
+          const hasUnassignedAllowed = roleConfig.allowed_pic.some(
+            (p) => p === "@unassigned" || p.toLowerCase() === "tanpa pic" || p === ""
+          );
+          if (!t.pic || t.pic.trim() === "") {
+            if (!hasUnassignedAllowed) return false;
+          } else if (!roleConfig.allowed_pic.map((p) => p.toLowerCase()).includes(t.pic.toLowerCase())) {
             return false;
           }
         }
