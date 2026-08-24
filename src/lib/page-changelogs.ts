@@ -55,6 +55,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     version: '2026-08-23-1',
     items: [
       'Dukungan penuh finishing jilid Klem Seng (Jepit Kaleng) pada tab Master Parameter, Simulator, dan Pricelist Matriks',
+      'Pemisahan profil penyimpanan Master Parameter secara dinamis antara mode Spiral dan Klem (localStorage terpisah agar tidak saling menimpa)',
       'Penambahan parameter tarif jilid Klem Seng per ukuran (32x48, 38x54, 46x64, 48x64) di Master Parameter',
       'Toggle pilihan finishing Spiral vs Klem Seng pada bar filter pricelist dengan rekalkulasi instan 216 kombinasi',
       'Penyelarasan formula finishing Klem Seng dengan 72 file master Excel Klem Agustus (Folder 30 Source/*.xlsm)',
@@ -930,6 +931,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
       'Penerapan batasan hak akses role pada Laporan Pekerjaan (filter otomatis Bagian & PIC, serta pembatasan hak aksi)',
       'Otomatis menyembunyikan dropdown filter Bagian / PIC jika role user hanya memiliki akses ke tepat 1 opsi',
       'Pencegahan tugas tanpa PIC/tanpa Bagian lolos saat role user dalam mode terkunci (kecuali opsi @unassigned diaktifkan)',
+      'Dukungan filter "Tanpa PIC" pada dropdown filter PIC dan penyelarasan pencocokan task tanpa PIC (empty/null)',
       'Pengaturan independen hak aksi (Tambah Pekerjaan, Edit Pekerjaan, Hapus Pekerjaan) pada modal detail order',
       'Optimasi performa tinggi: O(1) Set filter lookup dan batch single-query resolusi @role untuk kecepatan render maksimal',
     ],
