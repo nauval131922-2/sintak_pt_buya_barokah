@@ -1331,10 +1331,8 @@ function LaporanPekerjaanRoleModal({
                   <p className="text-[11px] text-slate-400 italic">
                     * Catatan: Jika tidak ada PIC yang dipilih secara khusus (semua abu-abu/reset), role ini dapat melihat semua PIC.
                   </p>
-                </>
+                </div>
               )}
-            </div>
-          )}
 
           {/* TAB 3: HAK AKSI (TAMBAH, EDIT, HAPUS) */}
           {activeTab === 'aksi' && (
