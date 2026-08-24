@@ -200,6 +200,15 @@ export async function initSchema(db: any) {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(role, module_key)
     );`,
+    `CREATE TABLE IF NOT EXISTS role_laporan_pekerjaan_config (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      role TEXT UNIQUE NOT NULL,
+      allowed_bagian TEXT DEFAULT '[]',
+      allowed_pic TEXT DEFAULT '[]',
+      visible_columns TEXT DEFAULT '[]',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );`,
     `CREATE TABLE IF NOT EXISTS user_roles (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
@@ -880,6 +889,7 @@ export async function initSchema(db: any) {
     "CREATE UNIQUE INDEX IF NOT EXISTS idx_bom_unique ON bill_of_materials(faktur);",
     "CREATE UNIQUE INDEX IF NOT EXISTS idx_pr_unique ON purchase_requests(faktur);",
     "CREATE UNIQUE INDEX IF NOT EXISTS idx_role_permissions_unique ON role_permissions(role, module_key);",
+    "CREATE UNIQUE INDEX IF NOT EXISTS idx_role_laporan_pekerjaan_config_role ON role_laporan_pekerjaan_config(role);",
     "ALTER TABLE sales_orders ADD COLUMN satuan TEXT;",
     "ALTER TABLE barang_jadi ADD COLUMN faktur_so TEXT;",
     "ALTER TABLE barang_jadi ADD COLUMN kd_cabang TEXT;",
@@ -1677,7 +1687,7 @@ async function initDynamicTriggers(db: any) {
       'pelunasan_piutang', 'pengiriman', 'spph_out', 'sph_in', 'sph_out', 'rek_akuntansi',
       'hpp_kalkulasi', 'pricelist_items', 'stok_master_barang', 'usr_log', 'produksi_selesai', 'user_roles',
       'master_pekerjaan', 'push_subscriptions', 'telegram_users', 'role_permissions', 'app_roles',
-      'laporan_pekerjaan'
+      'laporan_pekerjaan', 'role_laporan_pekerjaan_config'
     ];
 
     // Drop triggers for all excluded tables (cleanup from previous runs)

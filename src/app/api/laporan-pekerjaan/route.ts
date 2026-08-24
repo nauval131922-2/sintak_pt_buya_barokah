@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const pic = searchParams.get("pic")?.toLowerCase();
+    const bagian = searchParams.get("bagian")?.toLowerCase();
     const status = searchParams.get("status")?.toLowerCase();
     const search = searchParams.get("search")?.toLowerCase();
 
@@ -75,6 +76,10 @@ export async function GET(request: NextRequest) {
     if (pic) {
       sql += " AND LOWER(lp.pic) = ?";
       args.push(pic);
+    }
+    if (bagian) {
+      sql += " AND LOWER(lp.bagian) = ?";
+      args.push(bagian);
     }
     if (status) {
       sql += " AND LOWER(lp.status) = ?";

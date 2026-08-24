@@ -52,6 +52,10 @@ import SquareDropdown from "@/components/SquareDropdown";
 import DatePicker from "@/components/DatePicker";
 import { toast } from "@/lib/toast";
 import { type SpreadsheetTask } from "@/lib/google-sheets";
+import {
+  LAPORAN_PEKERJAAN_COLUMNS,
+  type RoleLaporanPekerjaanConfig,
+} from "@/lib/permissions-laporan-pekerjaan";
 
 const BAGIAN_LIST = ['SETTING', 'QUALITY CONTROL', 'CETAK', 'FINISHING', 'GUDANG', 'TEKNISI', 'MESIN'];
 
@@ -537,7 +541,11 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-export default function LaporanPekerjaanClient() {
+export default function LaporanPekerjaanClient({
+  roleConfig,
+}: {
+  roleConfig?: RoleLaporanPekerjaanConfig;
+} = {}) {
   const [tasks, setTasks] = useState<SpreadsheetTask[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -1032,38 +1040,66 @@ export default function LaporanPekerjaanClient() {
     return `${dateStr}, ${timeStr} WIB`;
   }, [lastUpdated]);
 
+  // Scope helper dari Role Permissions
+  const isBagianAllowedByRole = useCallback(
+    (bagian: string) => {
+      if (!roleConfig?.allowed_bagian || roleConfig.allowed_bagian.length === 0) return true;
+      if (!bagian) return true;
+      return roleConfig.allowed_bagian.map((b) => b.toUpperCase()).includes(bagian.toUpperCase());
+    },
+    [roleConfig]
+  );
+
+  const isPicAllowedByRole = useCallback(
+    (pic: string) => {
+      if (!roleConfig?.allowed_pic || roleConfig.allowed_pic.length === 0) return true;
+      if (!pic) return true;
+      return roleConfig.allowed_pic.map((p) => p.toLowerCase()).includes(pic.toLowerCase());
+    },
+    [roleConfig]
+  );
+
   // Saling-terkait filter options (Bagian, PIC, Status)
   const bagianOptions = useMemo<FilterOption[]>(() => {
     const set = new Set<string>();
     tasks.forEach((t) => {
+      if (!isBagianAllowedByRole(t.bagian) || !isPicAllowedByRole(t.pic)) return;
       if (selectedPic !== "ALL" && t.pic.toUpperCase() !== selectedPic.toUpperCase()) return;
       if (selectedStatus !== "ALL" && t.status.toUpperCase() !== selectedStatus.toUpperCase()) return;
       if (t.bagian) set.add(t.bagian);
     });
+    if (roleConfig?.allowed_bagian && roleConfig.allowed_bagian.length > 0) {
+      roleConfig.allowed_bagian.forEach((b) => set.add(b));
+    }
     const sorted = Array.from(set).sort();
     return [
       { value: "ALL", label: "Semua Bagian" },
       ...sorted.map((b) => ({ value: b, label: b })),
     ];
-  }, [tasks, selectedPic, selectedStatus]);
+  }, [tasks, selectedPic, selectedStatus, isBagianAllowedByRole, isPicAllowedByRole, roleConfig]);
 
   const picOptions = useMemo<FilterOption[]>(() => {
     const set = new Set<string>();
     tasks.forEach((t) => {
+      if (!isBagianAllowedByRole(t.bagian) || !isPicAllowedByRole(t.pic)) return;
       if (selectedBagianFilter !== "ALL" && (t.bagian || "").toUpperCase() !== selectedBagianFilter.toUpperCase()) return;
       if (selectedStatus !== "ALL" && t.status.toUpperCase() !== selectedStatus.toUpperCase()) return;
       if (t.pic) set.add(t.pic);
     });
+    if (roleConfig?.allowed_pic && roleConfig.allowed_pic.length > 0) {
+      roleConfig.allowed_pic.forEach((p) => set.add(p));
+    }
     const sorted = Array.from(set).sort();
     return [
       { value: "ALL", label: "Semua PIC" },
       ...sorted.map((p) => ({ value: p, label: p })),
     ];
-  }, [tasks, selectedBagianFilter, selectedStatus]);
+  }, [tasks, selectedBagianFilter, selectedStatus, isBagianAllowedByRole, isPicAllowedByRole, roleConfig]);
 
   const statusOptions = useMemo<FilterOption[]>(() => {
     const set = new Set<string>();
     tasks.forEach((t) => {
+      if (!isBagianAllowedByRole(t.bagian) || !isPicAllowedByRole(t.pic)) return;
       if (selectedBagianFilter !== "ALL" && (t.bagian || "").toUpperCase() !== selectedBagianFilter.toUpperCase()) return;
       if (selectedPic !== "ALL" && t.pic.toUpperCase() !== selectedPic.toUpperCase()) return;
       if (t.status) set.add(t.status.toUpperCase());
@@ -1074,11 +1110,15 @@ export default function LaporanPekerjaanClient() {
       { value: "ALL", label: "Semua Status" },
       ...available.map((s) => ({ value: s, label: s })),
     ];
-  }, [tasks, selectedBagianFilter, selectedPic]);
+  }, [tasks, selectedBagianFilter, selectedPic, isBagianAllowedByRole, isPicAllowedByRole]);
 
   // Filtered tasks
   const filteredTasks = useMemo(() => {
     return tasks.filter((t) => {
+      // Role scope restrictions
+      if (!isBagianAllowedByRole(t.bagian)) return false;
+      if (!isPicAllowedByRole(t.pic)) return false;
+
       if (
         selectedPic !== "ALL" &&
         t.pic.toUpperCase() !== selectedPic.toUpperCase()
@@ -1105,7 +1145,7 @@ export default function LaporanPekerjaanClient() {
       }
       return true;
     });
-  }, [tasks, selectedPic, selectedBagianFilter, selectedStatus, deferredSearchTerm]);
+  }, [tasks, selectedPic, selectedBagianFilter, selectedStatus, deferredSearchTerm, isBagianAllowedByRole, isPicAllowedByRole]);
 
   // Group filtered tasks by unique project order
   const groupedOrders = useMemo(() => {
@@ -1192,6 +1232,8 @@ export default function LaporanPekerjaanClient() {
   const tasksForCounts = useMemo(() => {
     return tasks.filter((t) => {
       if (!t.task) return false;
+      if (!isBagianAllowedByRole(t.bagian)) return false;
+      if (!isPicAllowedByRole(t.pic)) return false;
       if (
         selectedPic !== "ALL" &&
         t.pic.toUpperCase() !== selectedPic.toUpperCase()
@@ -1206,7 +1248,7 @@ export default function LaporanPekerjaanClient() {
       }
       return true;
     });
-  }, [tasks, selectedPic, deferredSearchTerm]);
+  }, [tasks, selectedPic, deferredSearchTerm, isBagianAllowedByRole, isPicAllowedByRole]);
 
   // Counts based on tasksForCounts
   const counts = useMemo(() => {
@@ -2457,6 +2499,7 @@ export default function LaporanPekerjaanClient() {
           onSaveTask={handleSaveInlineEdit}
           onCreateTask={handleCreateInlineTask}
           onDeleteTask={handleDeleteInlineTask}
+          roleConfig={roleConfig}
         />
       )}
     </div>
@@ -2494,6 +2537,7 @@ function TaskDetailModal({
   onSaveTask,
   onCreateTask,
   onDeleteTask,
+  roleConfig,
 }: {
   selectedProjectGroup: {
     project: string;
@@ -2505,19 +2549,70 @@ function TaskDetailModal({
   onSaveTask: (taskId: number, data: any) => Promise<void>;
   onCreateTask: (data: any) => Promise<void>;
   onDeleteTask: (taskId: number) => Promise<void>;
+  roleConfig?: RoleLaporanPekerjaanConfig;
 }) {
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
   const [isAddingTask, setIsAddingTask] = useState<boolean>(false);
 
+  // Column visibility & weights
+  const COLUMN_WEIGHTS: Record<string, number> = {
+    no: 3,
+    bagian: 11,
+    pic: 13,
+    task: 18,
+    priority: 7,
+    start_end: 13,
+    work_days: 5,
+    status: 14,
+    note: 12,
+    aksi: 4,
+  };
+
+  const visibleColKeys = useMemo(() => {
+    if (!roleConfig?.visible_columns || roleConfig.visible_columns.length === 0) {
+      return LAPORAN_PEKERJAAN_COLUMNS.map((c) => c.key);
+    }
+    return roleConfig.visible_columns;
+  }, [roleConfig]);
+
+  const isColVisible = useCallback(
+    (key: string) => visibleColKeys.includes(key as any),
+    [visibleColKeys]
+  );
+
+  const activeColumns = useMemo(() => {
+    const list = LAPORAN_PEKERJAAN_COLUMNS.filter((c) => isColVisible(c.key));
+    const totalWeight = list.reduce((sum, c) => sum + (COLUMN_WEIGHTS[c.key] || 10), 0);
+    return list.map((c) => ({
+      ...c,
+      widthPercent: `${(((COLUMN_WEIGHTS[c.key] || 10) / totalWeight) * 100).toFixed(2)}%`,
+    }));
+  }, [isColVisible]);
+
+  // Filter tasks in modal by role allowed Bagian and PIC
   const sortedTasks = useMemo(() => {
-    return [...selectedProjectGroup.tasks].sort((a, b) => {
-      const timeA = parseDateToSort(a.startDate || "") || Number.MAX_SAFE_INTEGER;
-      const timeB = parseDateToSort(b.startDate || "") || Number.MAX_SAFE_INTEGER;
-      if (timeA !== timeB) return timeA - timeB;
-      return a.id - b.id;
-    });
-  }, [selectedProjectGroup.tasks]);
+    return [...selectedProjectGroup.tasks]
+      .filter((t) => {
+        if (roleConfig?.allowed_bagian && roleConfig.allowed_bagian.length > 0 && t.bagian) {
+          if (!roleConfig.allowed_bagian.map((b) => b.toUpperCase()).includes(t.bagian.toUpperCase())) {
+            return false;
+          }
+        }
+        if (roleConfig?.allowed_pic && roleConfig.allowed_pic.length > 0 && t.pic) {
+          if (!roleConfig.allowed_pic.map((p) => p.toLowerCase()).includes(t.pic.toLowerCase())) {
+            return false;
+          }
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        const timeA = parseDateToSort(a.startDate || "") || Number.MAX_SAFE_INTEGER;
+        const timeB = parseDateToSort(b.startDate || "") || Number.MAX_SAFE_INTEGER;
+        if (timeA !== timeB) return timeA - timeB;
+        return a.id - b.id;
+      });
+  }, [selectedProjectGroup.tasks, roleConfig]);
 
   return (
     <Portal>
@@ -2531,7 +2626,7 @@ function TaskDetailModal({
                   {selectedProjectGroup.tglOrder ? `Tgl: ${fmtTglOrder(selectedProjectGroup.tglOrder)}` : "Tgl: -"}
                 </span>
                 <span className="text-xs text-slate-500 font-medium">
-                  {selectedProjectGroup.tasks.length} Aktivitas Pekerjaan
+                  {sortedTasks.length} Aktivitas Pekerjaan
                 </span>
               </div>
               <h3 className="text-sm sm:text-base font-bold text-slate-800 truncate" title={selectedProjectGroup.project}>
@@ -2540,19 +2635,21 @@ function TaskDetailModal({
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsAddingTask(true);
-                  setEditingTaskId(null);
-                }}
-                className="px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
-                title="Tambah Pekerjaan ke Order ini"
-              >
-                <Plus size={14} />
-                <span className="hidden sm:inline">Tambah Pekerjaan</span>
-                <span className="sm:hidden">Tambah</span>
-              </button>
+              {isColVisible('aksi') && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAddingTask(true);
+                    setEditingTaskId(null);
+                  }}
+                  className="px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
+                  title="Tambah Pekerjaan ke Order ini"
+                >
+                  <Plus size={14} />
+                  <span className="hidden sm:inline">Tambah Pekerjaan</span>
+                  <span className="sm:hidden">Tambah</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={onClose}
@@ -2569,29 +2666,25 @@ function TaskDetailModal({
             <div className="flex-1 min-h-0 border border-slate-200 rounded-xl shadow-sm overflow-y-auto custom-scrollbar relative bg-white">
               <table className="w-full text-left text-xs border-collapse table-fixed">
                 <colgroup>
-                  <col style={{ width: '3%' }} />
-                  <col style={{ width: '11%' }} />
-                  <col style={{ width: '13%' }} />
-                  <col style={{ width: '18%' }} />
-                  <col style={{ width: '7%' }} />
-                  <col style={{ width: '13%' }} />
-                  <col style={{ width: '5%' }} />
-                  <col style={{ width: '14%' }} />
-                  <col style={{ width: '12%' }} />
-                  <col style={{ width: '4%' }} />
+                  {activeColumns.map((col) => (
+                    <col key={col.key} style={{ width: col.widthPercent }} />
+                  ))}
                 </colgroup>
                 <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200 sticky top-0 z-20 shadow-xs">
                   <tr className="bg-slate-50">
-                    <th className="px-1.5 py-2.5 text-center bg-slate-50 truncate" title="No">No</th>
-                    <th className="px-1.5 py-2.5 bg-slate-50 truncate" title="Bagian">Bagian</th>
-                    <th className="px-1.5 py-2.5 bg-slate-50 truncate" title="PIC">PIC</th>
-                    <th className="px-1.5 py-2.5 bg-slate-50 truncate" title="Task / Aktivitas">Task / Aktivitas</th>
-                    <th className="px-1.5 py-2.5 bg-slate-50 truncate" title="Priority">Priority</th>
-                    <th className="px-1.5 py-2.5 bg-slate-50 truncate" title="Start ~ End">Start ~ End</th>
-                    <th className="px-1.5 py-2.5 text-center bg-slate-50 truncate" title="Work Days">Work Days</th>
-                    <th className="px-1.5 py-2.5 bg-slate-50 truncate" title="Status">Status</th>
-                    <th className="px-1.5 py-2.5 bg-slate-50 truncate" title="Note">Note</th>
-                    <th className="px-1.5 py-2.5 text-center bg-slate-50 truncate" title="Aksi">Aksi</th>
+                    {activeColumns.map((col) => (
+                      <th
+                        key={col.key}
+                        className={`px-1.5 py-2.5 bg-slate-50 truncate ${
+                          col.key === 'no' || col.key === 'work_days' || col.key === 'aksi'
+                            ? 'text-center'
+                            : ''
+                        }`}
+                        title={col.label}
+                      >
+                        {col.label}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
@@ -2610,74 +2703,100 @@ function TaskDetailModal({
                         }}
                         onCancel={() => setEditingTaskId(null)}
                         onDelete={() => onDeleteTask(task.id!)}
+                        isColVisible={isColVisible}
+                        roleConfig={roleConfig}
                       />
                     ) : (
                       <tr
                         key={task.id || idx}
                         onClick={() => setSelectedTaskId((prev) => (prev === task.id ? null : task.id || null))}
-                        onDoubleClick={() => setEditingTaskId(task.id || null)}
+                        onDoubleClick={() => {
+                          if (isColVisible('aksi')) {
+                            setEditingTaskId(task.id || null);
+                          }
+                        }}
                         className={`transition-all group cursor-pointer ${
                           selectedTaskId === task.id
                             ? "bg-emerald-100/70 shadow-[inset_3px_0_0_0_#059669] font-semibold text-slate-900"
                             : "hover:bg-slate-50/80"
                         }`}
                       >
-                        <td className="px-1.5 py-2 text-center font-medium text-slate-400">
-                          {idx + 1}
-                        </td>
-                        <td className="px-1.5 py-2 text-slate-700 font-medium break-words leading-tight">
-                          {(task as any).bagian || "-"}
-                        </td>
-                        <td className="px-1.5 py-2 font-bold text-emerald-700 break-words leading-tight">
-                          {task.pic || "-"}
-                        </td>
-                        <td
-                          className="px-1.5 py-2 font-semibold text-slate-800 break-words leading-snug"
-                          title={cleanTaskName(task.task, selectedProjectGroup.project) || task.task}
-                        >
-                          {cleanTaskName(task.task, selectedProjectGroup.project) || task.task}
-                        </td>
-                        <td className="px-1.5 py-2 text-slate-600 break-words leading-tight">
-                          {task.priority || "-"}
-                        </td>
-                        <td className="px-1.5 py-2 text-center text-slate-500 text-[10px] break-words leading-tight">
-                          {task.startDate ? formatDateDisplay(task.startDate) : "-"} ~ {task.endDate ? formatDateDisplay(task.endDate) : "-"}
-                        </td>
-                        <td className="px-1.5 py-2 text-center font-medium text-slate-600 text-[11px] whitespace-nowrap">
-                          {task.workDays ? `${task.workDays} hari` : "-"}
-                        </td>
-                        <td className="px-1.5 py-2 text-center overflow-hidden">
-                          {getStatusBadge(task.status)}
-                        </td>
-                        <td className="px-1.5 py-2 text-slate-600 break-words whitespace-pre-wrap leading-tight text-[11px]">
-                          {task.note || "-"}
-                        </td>
-                        <td className="px-1.5 py-2 text-center">
-                          <div className="flex items-center justify-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingTaskId(task.id || null);
-                              }}
-                              className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors cursor-pointer"
-                              title="Edit Pekerjaan Inline"
-                            >
-                              <Edit2 size={13} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onDeleteTask(task.id!);
-                              }}
-                              className="p-1 text-rose-600 hover:bg-rose-50 rounded transition-colors cursor-pointer"
-                              title="Hapus Pekerjaan"
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          </div>
-                        </td>
+                        {isColVisible('no') && (
+                          <td className="px-1.5 py-2 text-center font-medium text-slate-400">
+                            {idx + 1}
+                          </td>
+                        )}
+                        {isColVisible('bagian') && (
+                          <td className="px-1.5 py-2 text-slate-700 font-medium break-words leading-tight">
+                            {(task as any).bagian || "-"}
+                          </td>
+                        )}
+                        {isColVisible('pic') && (
+                          <td className="px-1.5 py-2 font-bold text-emerald-700 break-words leading-tight">
+                            {task.pic || "-"}
+                          </td>
+                        )}
+                        {isColVisible('task') && (
+                          <td
+                            className="px-1.5 py-2 font-semibold text-slate-800 break-words leading-snug"
+                            title={cleanTaskName(task.task, selectedProjectGroup.project) || task.task}
+                          >
+                            {cleanTaskName(task.task, selectedProjectGroup.project) || task.task}
+                          </td>
+                        )}
+                        {isColVisible('priority') && (
+                          <td className="px-1.5 py-2 text-slate-600 break-words leading-tight">
+                            {task.priority || "-"}
+                          </td>
+                        )}
+                        {isColVisible('start_end') && (
+                          <td className="px-1.5 py-2 text-center text-slate-500 text-[10px] break-words leading-tight">
+                            {task.startDate ? formatDateDisplay(task.startDate) : "-"} ~ {task.endDate ? formatDateDisplay(task.endDate) : "-"}
+                          </td>
+                        )}
+                        {isColVisible('work_days') && (
+                          <td className="px-1.5 py-2 text-center font-medium text-slate-600 text-[11px] whitespace-nowrap">
+                            {task.workDays ? `${task.workDays} hari` : "-"}
+                          </td>
+                        )}
+                        {isColVisible('status') && (
+                          <td className="px-1.5 py-2 text-center overflow-hidden">
+                            {getStatusBadge(task.status)}
+                          </td>
+                        )}
+                        {isColVisible('note') && (
+                          <td className="px-1.5 py-2 text-slate-600 break-words whitespace-pre-wrap leading-tight text-[11px]">
+                            {task.note || "-"}
+                          </td>
+                        )}
+                        {isColVisible('aksi') && (
+                          <td className="px-1.5 py-2 text-center">
+                            <div className="flex items-center justify-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingTaskId(task.id || null);
+                                }}
+                                className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors cursor-pointer"
+                                title="Edit Pekerjaan Inline"
+                              >
+                                <Edit2 size={13} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onDeleteTask(task.id!);
+                                }}
+                                className="p-1 text-rose-600 hover:bg-rose-50 rounded transition-colors cursor-pointer"
+                                title="Hapus Pekerjaan"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </td>
+                        )}
                       </tr>
                     )
                   )}
@@ -2685,20 +2804,22 @@ function TaskDetailModal({
                   {/* Empty state jika belum ada aktivitas pekerjaan */}
                   {sortedTasks.length === 0 && !isAddingTask && (
                     <tr>
-                      <td colSpan={10} className="px-6 py-12 text-center text-slate-400">
+                      <td colSpan={activeColumns.length} className="px-6 py-12 text-center text-slate-400">
                         <div className="flex flex-col items-center justify-center gap-2">
                           <AlertCircle className="w-8 h-8 text-slate-300" />
                           <p className="font-semibold text-slate-600 text-sm">Belum ada aktivitas pekerjaan untuk order ini</p>
-                          <p className="text-xs text-slate-400 max-w-md">
-                            Klik tombol <b className="text-emerald-600 font-bold">+ Tambah Pekerjaan</b> di pojok kanan atas untuk mulai membuat aktivitas pekerjaan pertama.
-                          </p>
+                          {isColVisible('aksi') && (
+                            <p className="text-xs text-slate-400 max-w-md">
+                              Klik tombol <b className="text-emerald-600 font-bold">+ Tambah Pekerjaan</b> di pojok kanan atas untuk mulai membuat aktivitas pekerjaan pertama.
+                            </p>
+                          )}
                         </div>
                       </td>
                     </tr>
                   )}
 
                   {/* Baris Tambah Pekerjaan Baru di Bawah */}
-                  {isAddingTask && (
+                  {isAddingTask && isColVisible('aksi') && (
                     <InlineAddRow
                       employeeOptions={employeeOptions}
                       onSave={async (data) => {
@@ -2706,6 +2827,8 @@ function TaskDetailModal({
                         setIsAddingTask(false);
                       }}
                       onCancel={() => setIsAddingTask(false)}
+                      isColVisible={isColVisible}
+                      roleConfig={roleConfig}
                     />
                   )}
                 </tbody>
@@ -2716,7 +2839,7 @@ function TaskDetailModal({
           {/* Footer Modal */}
           <div className="flex items-center justify-between px-5 sm:px-6 py-3 border-t border-slate-100 bg-slate-50/80 shrink-0">
             <span className="text-xs text-slate-500">
-              Total: <b className="text-slate-800">{selectedProjectGroup.tasks.length}</b> task aktivitas
+              Total: <b className="text-slate-800">{sortedTasks.length}</b> task aktivitas
             </span>
             <button
               type="button"
@@ -2740,6 +2863,8 @@ function InlineEditRow({
   onSave,
   onCancel,
   onDelete,
+  isColVisible,
+  roleConfig,
 }: {
   idx: number;
   task: SpreadsheetTask;
@@ -2748,6 +2873,8 @@ function InlineEditRow({
   onSave: (data: any) => Promise<void>;
   onCancel: () => void;
   onDelete: () => void;
+  isColVisible: (key: string) => boolean;
+  roleConfig?: RoleLaporanPekerjaanConfig;
 }) {
   const initialBagian = (task as any).bagian || "SETTING";
   const initialTask = cleanTaskName(task.task, project) || task.task;
@@ -2845,6 +2972,13 @@ function InlineEditRow({
     return list.map((p) => ({ value: p, label: p }));
   }, [pekerjaanList, form.task]);
 
+  const availableBagianList = useMemo(() => {
+    if (roleConfig?.allowed_bagian && roleConfig.allowed_bagian.length > 0) {
+      return roleConfig.allowed_bagian;
+    }
+    return BAGIAN_LIST;
+  }, [roleConfig]);
+
   const picOptions = useMemo(() => {
     const uniqueNames = Array.from(
       new Set(
@@ -2852,167 +2986,190 @@ function InlineEditRow({
           .map((e) => (typeof e === "string" ? e : e?.name || e?.label || ""))
           .filter(Boolean)
       )
-    ).sort((a, b) => a.localeCompare(b, "id"));
+    ).filter((name) => {
+      if (!roleConfig?.allowed_pic || roleConfig.allowed_pic.length === 0) return true;
+      return roleConfig.allowed_pic.map((p) => p.toLowerCase()).includes(name.toLowerCase());
+    }).sort((a, b) => a.localeCompare(b, "id"));
     return uniqueNames.map((name) => ({ value: name, label: name }));
-  }, [employeeOptions]);
+  }, [employeeOptions, roleConfig]);
 
   return (
     <tr ref={rowRef} className="bg-sky-50/90 border-y-2 border-sky-300">
-      <td className="px-1 py-1.5 text-center font-bold text-sky-700 text-xs">
-        {idx + 1}
-      </td>
+      {isColVisible('no') && (
+        <td className="px-1 py-1.5 text-center font-bold text-sky-700 text-xs">
+          {idx + 1}
+        </td>
+      )}
       {/* 1. Bagian */}
-      <td className="px-1 py-1.5">
-        <SquareDropdown
-          options={BAGIAN_LIST.map((b) => ({ value: b, label: b }))}
-          value={form.bagian}
-          onChange={(val) => {
-            setForm((p) => ({ ...p, bagian: val, task: "" }));
-          }}
-          searchPlaceholder="Cari Bagian..."
-          widthClass="w-full"
-          usePortal={true}
-        />
-      </td>
+      {isColVisible('bagian') && (
+        <td className="px-1 py-1.5">
+          <SquareDropdown
+            options={availableBagianList.map((b) => ({ value: b, label: b }))}
+            value={form.bagian}
+            onChange={(val) => {
+              setForm((p) => ({ ...p, bagian: val, task: "" }));
+            }}
+            searchPlaceholder="Cari Bagian..."
+            widthClass="w-full"
+            usePortal={true}
+          />
+        </td>
+      )}
       {/* 2. PIC */}
-      <td className="px-1 py-1.5">
-        <SquareDropdown
-          options={picOptions}
-          value={form.pic}
-          onChange={(val) => setForm((p) => ({ ...p, pic: val }))}
-          searchPlaceholder="Cari PIC..."
-          widthClass="w-full"
-          usePortal={true}
-        />
-      </td>
+      {isColVisible('pic') && (
+        <td className="px-1 py-1.5">
+          <SquareDropdown
+            options={picOptions}
+            value={form.pic}
+            onChange={(val) => setForm((p) => ({ ...p, pic: val }))}
+            searchPlaceholder="Cari PIC..."
+            widthClass="w-full"
+            usePortal={true}
+          />
+        </td>
+      )}
       {/* 3. Task / Aktivitas */}
-      <td className="px-1 py-1.5">
-        <SquareDropdown
-          options={
-            taskOptions.length > 0
-              ? taskOptions
-              : [{ value: "", label: "-- Pilih Bagian dulu --" }]
-          }
-          value={form.task}
-          onChange={(val) => setForm((p) => ({ ...p, task: val }))}
-          searchPlaceholder="Cari Task / Pekerjaan..."
-          widthClass="w-full"
-          usePortal={true}
-        />
-      </td>
-      {/* 4. Priority */}
-      <td className="px-1 py-1.5">
-        <SquareDropdown
-          options={[
-            { value: "Low", label: "Low" },
-            { value: "Medium", label: "Medium" },
-            { value: "High", label: "High" },
-          ]}
-          value={form.priority}
-          onChange={(val) => setForm((p) => ({ ...p, priority: val }))}
-          searchPlaceholder="Priority..."
-          widthClass="w-full"
-          usePortal={true}
-        />
-      </td>
-      {/* 5. Start ~ End */}
-      <td className="px-1 py-1.5">
-        <div className="flex items-center gap-0.5 w-full">
-          <div className="flex-1 min-w-0">
-            <DatePicker
-              name="start_date"
-              value={form.startDate}
-              onChange={(d) => setForm((p) => ({ ...p, startDate: d }))}
-              usePortal={true}
-              customTrigger={(toggle) => (
-                <button
-                  type="button"
-                  onClick={toggle}
-                  className="w-full h-7 bg-white border border-slate-200 hover:border-emerald-500 rounded-md px-1 text-[10px] font-medium flex items-center justify-between shadow-2xs transition-colors"
-                >
-                  <span className="truncate">{form.startDate ? formatDateDisplay(form.startDate) : 'Pilih'}</span>
-                  <Calendar size={11} className="text-slate-400 shrink-0" />
-                </button>
-              )}
-            />
-          </div>
-          <span className="text-slate-300 text-[10px] font-bold shrink-0">~</span>
-          <div className="flex-1 min-w-0">
-            <DatePicker
-              name="end_date"
-              value={form.endDate}
-              onChange={(d) => setForm((p) => ({ ...p, endDate: d }))}
-              usePortal={true}
-              customTrigger={(toggle) => (
-                <button
-                  type="button"
-                  onClick={toggle}
-                  className="w-full h-7 bg-white border border-slate-200 hover:border-emerald-500 rounded-md px-1 text-[10px] font-medium flex items-center justify-between shadow-2xs transition-colors"
-                >
-                  <span className="truncate">{form.endDate ? formatDateDisplay(form.endDate) : 'Pilih'}</span>
-                  <Calendar size={11} className="text-slate-400 shrink-0" />
-                </button>
-              )}
-            />
-          </div>
-        </div>
-      </td>
-      {/* 6. Work Days */}
-      <td className="px-1 py-1.5 text-center whitespace-nowrap">
-        <span className="text-[11px] font-bold text-sky-700">
-          {workDaysDisplay}
-        </span>
-      </td>
-      {/* 7. Status */}
-      <td className="px-1 py-1.5">
-        <SquareDropdown
-          options={[
-            { value: "BELUM DIKERJAKAN", label: "BELUM DIKERJAKAN" },
-            { value: "IN PROGRESS", label: "IN PROGRESS" },
-            { value: "PENDING", label: "PENDING" },
-            { value: "CANCEL", label: "CANCEL" },
-            { value: "SELESAI", label: "SELESAI" },
-          ]}
-          value={form.status}
-          onChange={(val) => setForm((p) => ({ ...p, status: val }))}
-          searchPlaceholder="Status..."
-          widthClass="w-full"
-          usePortal={true}
-        />
-      </td>
-      {/* 8. Note */}
-      <td className="px-1 py-1.5">
-        <textarea
-          value={form.note}
-          rows={1}
-          placeholder="Catatan..."
-          onChange={(e) => {
-            setForm((p) => ({ ...p, note: e.target.value }));
-            e.target.style.height = "auto";
-            e.target.style.height = `${Math.max(30, e.target.scrollHeight)}px`;
-          }}
-          ref={(el) => {
-            if (el) {
-              el.style.height = "auto";
-              el.style.height = `${Math.max(30, el.scrollHeight)}px`;
+      {isColVisible('task') && (
+        <td className="px-1 py-1.5">
+          <SquareDropdown
+            options={
+              taskOptions.length > 0
+                ? taskOptions
+                : [{ value: "", label: "-- Pilih Bagian dulu --" }]
             }
-          }}
-          className="w-full min-h-[30px] px-2 py-1 text-[11px] border border-sky-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-sky-500 custom-scrollbar resize-y break-words leading-tight"
-        />
-      </td>
+            value={form.task}
+            onChange={(val) => setForm((p) => ({ ...p, task: val }))}
+            searchPlaceholder="Cari Task / Pekerjaan..."
+            widthClass="w-full"
+            usePortal={true}
+          />
+        </td>
+      )}
+      {/* 4. Priority */}
+      {isColVisible('priority') && (
+        <td className="px-1 py-1.5">
+          <SquareDropdown
+            options={[
+              { value: "Low", label: "Low" },
+              { value: "Medium", label: "Medium" },
+              { value: "High", label: "High" },
+            ]}
+            value={form.priority}
+            onChange={(val) => setForm((p) => ({ ...p, priority: val }))}
+            searchPlaceholder="Priority..."
+            widthClass="w-full"
+            usePortal={true}
+          />
+        </td>
+      )}
+      {/* 5. Start ~ End */}
+      {isColVisible('start_end') && (
+        <td className="px-1 py-1.5">
+          <div className="flex items-center gap-0.5 w-full">
+            <div className="flex-1 min-w-0">
+              <DatePicker
+                name="start_date"
+                value={form.startDate}
+                onChange={(d) => setForm((p) => ({ ...p, startDate: d }))}
+                usePortal={true}
+                customTrigger={(toggle) => (
+                  <button
+                    type="button"
+                    onClick={toggle}
+                    className="w-full h-7 bg-white border border-slate-200 hover:border-emerald-500 rounded-md px-1 text-[10px] font-medium flex items-center justify-between shadow-2xs transition-colors"
+                  >
+                    <span className="truncate">{form.startDate ? formatDateDisplay(form.startDate) : 'Pilih'}</span>
+                    <Calendar size={11} className="text-slate-400 shrink-0" />
+                  </button>
+                )}
+              />
+            </div>
+            <span className="text-slate-300 text-[10px] font-bold shrink-0">~</span>
+            <div className="flex-1 min-w-0">
+              <DatePicker
+                name="end_date"
+                value={form.endDate}
+                onChange={(d) => setForm((p) => ({ ...p, endDate: d }))}
+                usePortal={true}
+                customTrigger={(toggle) => (
+                  <button
+                    type="button"
+                    onClick={toggle}
+                    className="w-full h-7 bg-white border border-slate-200 hover:border-emerald-500 rounded-md px-1 text-[10px] font-medium flex items-center justify-between shadow-2xs transition-colors"
+                  >
+                    <span className="truncate">{form.endDate ? formatDateDisplay(form.endDate) : 'Pilih'}</span>
+                    <Calendar size={11} className="text-slate-400 shrink-0" />
+                  </button>
+                )}
+              />
+            </div>
+          </div>
+        </td>
+      )}
+      {/* 6. Work Days */}
+      {isColVisible('work_days') && (
+        <td className="px-1 py-1.5 text-center whitespace-nowrap">
+          <span className="text-[11px] font-bold text-sky-700">
+            {workDaysDisplay}
+          </span>
+        </td>
+      )}
+      {/* 7. Status */}
+      {isColVisible('status') && (
+        <td className="px-1 py-1.5">
+          <SquareDropdown
+            options={[
+              { value: "BELUM DIKERJAKAN", label: "BELUM DIKERJAKAN" },
+              { value: "IN PROGRESS", label: "IN PROGRESS" },
+              { value: "PENDING", label: "PENDING" },
+              { value: "CANCEL", label: "CANCEL" },
+              { value: "SELESAI", label: "SELESAI" },
+            ]}
+            value={form.status}
+            onChange={(val) => setForm((p) => ({ ...p, status: val }))}
+            searchPlaceholder="Status..."
+            widthClass="w-full"
+            usePortal={true}
+          />
+        </td>
+      )}
+      {/* 8. Note */}
+      {isColVisible('note') && (
+        <td className="px-1 py-1.5">
+          <textarea
+            value={form.note}
+            rows={1}
+            placeholder="Catatan..."
+            onChange={(e) => {
+              setForm((p) => ({ ...p, note: e.target.value }));
+              e.target.style.height = "auto";
+              e.target.style.height = `${Math.max(30, e.target.scrollHeight)}px`;
+            }}
+            ref={(el) => {
+              if (el) {
+                el.style.height = "auto";
+                el.style.height = `${Math.max(30, el.scrollHeight)}px`;
+              }
+            }}
+            className="w-full min-h-[30px] px-2 py-1 text-[11px] border border-sky-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-sky-500 custom-scrollbar resize-y break-words leading-tight"
+          />
+        </td>
+      )}
       {/* 9. Aksi */}
-      <td className="px-1 py-1.5 text-center whitespace-nowrap">
-        <div className="flex items-center justify-center">
-          <button
-            type="button"
-            onClick={onDelete}
-            className="p-1 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-all cursor-pointer border border-rose-200"
-            title="Hapus Pekerjaan Ini"
-          >
-            <Trash2 size={13} />
-          </button>
-        </div>
-      </td>
+      {isColVisible('aksi') && (
+        <td className="px-1 py-1.5 text-center whitespace-nowrap">
+          <div className="flex items-center justify-center">
+            <button
+              type="button"
+              onClick={onDelete}
+              className="p-1 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-all cursor-pointer border border-rose-200"
+              title="Hapus Pekerjaan Ini"
+            >
+              <Trash2 size={13} />
+            </button>
+          </div>
+        </td>
+      )}
     </tr>
   );
 }
@@ -3021,10 +3178,14 @@ function InlineAddRow({
   employeeOptions,
   onSave,
   onCancel,
+  isColVisible,
+  roleConfig,
 }: {
   employeeOptions: any[];
   onSave: (data: any) => Promise<void>;
   onCancel: () => void;
+  isColVisible: (key: string) => boolean;
+  roleConfig?: RoleLaporanPekerjaanConfig;
 }) {
   const [form, setForm] = useState({
     bagian: "",
@@ -3104,6 +3265,13 @@ function InlineAddRow({
     return list.map((p) => ({ value: p, label: p }));
   }, [pekerjaanList, form.task]);
 
+  const availableBagianList = useMemo(() => {
+    if (roleConfig?.allowed_bagian && roleConfig.allowed_bagian.length > 0) {
+      return roleConfig.allowed_bagian;
+    }
+    return BAGIAN_LIST;
+  }, [roleConfig]);
+
   const picOptions = useMemo(() => {
     const uniqueNames = Array.from(
       new Set(
@@ -3111,176 +3279,199 @@ function InlineAddRow({
           .map((e) => (typeof e === "string" ? e : e?.name || e?.label || ""))
           .filter(Boolean)
       )
-    ).sort((a, b) => a.localeCompare(b, "id"));
+    ).filter((name) => {
+      if (!roleConfig?.allowed_pic || roleConfig.allowed_pic.length === 0) return true;
+      return roleConfig.allowed_pic.map((p) => p.toLowerCase()).includes(name.toLowerCase());
+    }).sort((a, b) => a.localeCompare(b, "id"));
     return uniqueNames.map((name) => ({ value: name, label: name }));
-  }, [employeeOptions]);
+  }, [employeeOptions, roleConfig]);
 
   return (
     <tr ref={rowRef} className="bg-emerald-50/90 border-y-2 border-emerald-300">
-      <td className="px-1 py-1.5 text-center font-bold text-emerald-700 text-xs">
-        +
-      </td>
+      {isColVisible('no') && (
+        <td className="px-1 py-1.5 text-center font-bold text-emerald-700 text-xs">
+          +
+        </td>
+      )}
       {/* 1. Bagian */}
-      <td className="px-1 py-1.5">
-        <SquareDropdown
-          options={BAGIAN_LIST.map((b) => ({ value: b, label: b }))}
-          value={form.bagian}
-          onChange={(val) => {
-            setForm((p) => ({ ...p, bagian: val, task: "" }));
-          }}
-          placeholder="Pilih Bagian..."
-          searchPlaceholder="Cari Bagian..."
-          widthClass="w-full"
-          usePortal={true}
-        />
-      </td>
+      {isColVisible('bagian') && (
+        <td className="px-1 py-1.5">
+          <SquareDropdown
+            options={availableBagianList.map((b) => ({ value: b, label: b }))}
+            value={form.bagian}
+            onChange={(val) => {
+              setForm((p) => ({ ...p, bagian: val, task: "" }));
+            }}
+            placeholder="Pilih Bagian..."
+            searchPlaceholder="Cari Bagian..."
+            widthClass="w-full"
+            usePortal={true}
+          />
+        </td>
+      )}
       {/* 2. PIC */}
-      <td className="px-1 py-1.5">
-        <SquareDropdown
-          options={picOptions}
-          value={form.pic}
-          onChange={(val) => setForm((p) => ({ ...p, pic: val }))}
-          placeholder="Pilih PIC..."
-          searchPlaceholder="Cari PIC..."
-          widthClass="w-full"
-          usePortal={true}
-        />
-      </td>
+      {isColVisible('pic') && (
+        <td className="px-1 py-1.5">
+          <SquareDropdown
+            options={picOptions}
+            value={form.pic}
+            onChange={(val) => setForm((p) => ({ ...p, pic: val }))}
+            placeholder="Pilih PIC..."
+            searchPlaceholder="Cari PIC..."
+            widthClass="w-full"
+            usePortal={true}
+          />
+        </td>
+      )}
       {/* 3. Task / Aktivitas */}
-      <td className="px-1 py-1.5">
-        <SquareDropdown
-          options={
-            taskOptions.length > 0
-              ? taskOptions
-              : [{ value: "", label: "-- Pilih Bagian dulu --" }]
-          }
-          value={form.task}
-          onChange={(val) => setForm((p) => ({ ...p, task: val }))}
-          placeholder={form.bagian ? "Pilih Task..." : "-- Pilih Bagian dulu --"}
-          searchPlaceholder="Cari Task / Pekerjaan..."
-          widthClass="w-full"
-          usePortal={true}
-        />
-      </td>
-      {/* 4. Priority */}
-      <td className="px-1 py-1.5">
-        <SquareDropdown
-          options={[
-            { value: "Low", label: "Low" },
-            { value: "Medium", label: "Medium" },
-            { value: "High", label: "High" },
-          ]}
-          value={form.priority}
-          onChange={(val) => setForm((p) => ({ ...p, priority: val }))}
-          placeholder="Priority..."
-          searchPlaceholder="Priority..."
-          widthClass="w-full"
-          usePortal={true}
-        />
-      </td>
-      {/* 5. Start ~ End */}
-      <td className="px-1 py-1.5">
-        <div className="flex items-center gap-0.5 w-full">
-          <div className="flex-1 min-w-0">
-            <DatePicker
-              name="new_start_date"
-              value={form.startDate}
-              onChange={(d) => setForm((p) => ({ ...p, startDate: d }))}
-              usePortal={true}
-              customTrigger={(toggle) => (
-                <button
-                  type="button"
-                  onClick={toggle}
-                  className="w-full h-7 bg-white border border-slate-200 hover:border-emerald-500 rounded-md px-1 text-[10px] font-medium flex items-center justify-between shadow-2xs transition-colors"
-                >
-                  <span className={`truncate ${!form.startDate ? 'text-slate-400 font-normal' : ''}`}>
-                    {form.startDate ? formatDateDisplay(form.startDate) : 'Pilih'}
-                  </span>
-                  <Calendar size={11} className="text-slate-400 shrink-0" />
-                </button>
-              )}
-            />
-          </div>
-          <span className="text-slate-300 text-[10px] font-bold shrink-0">~</span>
-          <div className="flex-1 min-w-0">
-            <DatePicker
-              name="new_end_date"
-              value={form.endDate}
-              onChange={(d) => setForm((p) => ({ ...p, endDate: d }))}
-              usePortal={true}
-              customTrigger={(toggle) => (
-                <button
-                  type="button"
-                  onClick={toggle}
-                  className="w-full h-7 bg-white border border-slate-200 hover:border-emerald-500 rounded-lg px-1 text-[10px] font-medium flex items-center justify-between shadow-2xs transition-colors"
-                >
-                  <span className={`truncate ${!form.endDate ? 'text-slate-400 font-normal' : ''}`}>
-                    {form.endDate ? formatDateDisplay(form.endDate) : 'Pilih'}
-                  </span>
-                  <Calendar size={11} className="text-slate-400 shrink-0" />
-                </button>
-              )}
-            />
-          </div>
-        </div>
-      </td>
-      {/* 6. Work Days */}
-      <td className="px-1 py-1.5 text-center whitespace-nowrap">
-        <span className="text-[11px] font-bold text-emerald-700">
-          {workDaysDisplay}
-        </span>
-      </td>
-      {/* 7. Status */}
-      <td className="px-1 py-1.5">
-        <SquareDropdown
-          options={[
-            { value: "BELUM DIKERJAKAN", label: "BELUM DIKERJAKAN" },
-            { value: "IN PROGRESS", label: "IN PROGRESS" },
-            { value: "PENDING", label: "PENDING" },
-            { value: "CANCEL", label: "CANCEL" },
-            { value: "SELESAI", label: "SELESAI" },
-          ]}
-          value={form.status}
-          onChange={(val) => setForm((p) => ({ ...p, status: val }))}
-          placeholder="Status..."
-          searchPlaceholder="Status..."
-          widthClass="w-full"
-          usePortal={true}
-        />
-      </td>
-      {/* 8. Note */}
-      <td className="px-1 py-1.5">
-        <textarea
-          value={form.note}
-          rows={1}
-          placeholder="Catatan..."
-          onChange={(e) => {
-            setForm((p) => ({ ...p, note: e.target.value }));
-            e.target.style.height = "auto";
-            e.target.style.height = `${Math.max(30, e.target.scrollHeight)}px`;
-          }}
-          ref={(el) => {
-            if (el) {
-              el.style.height = "auto";
-              el.style.height = `${Math.max(30, el.scrollHeight)}px`;
+      {isColVisible('task') && (
+        <td className="px-1 py-1.5">
+          <SquareDropdown
+            options={
+              taskOptions.length > 0
+                ? taskOptions
+                : [{ value: "", label: "-- Pilih Bagian dulu --" }]
             }
-          }}
-          className="w-full min-h-[30px] px-2 py-1 text-[11px] border border-emerald-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 custom-scrollbar resize-y break-words leading-tight"
-        />
-      </td>
+            value={form.task}
+            onChange={(val) => setForm((p) => ({ ...p, task: val }))}
+            placeholder={form.bagian ? "Pilih Task..." : "-- Pilih Bagian dulu --"}
+            searchPlaceholder="Cari Task / Pekerjaan..."
+            widthClass="w-full"
+            usePortal={true}
+          />
+        </td>
+      )}
+      {/* 4. Priority */}
+      {isColVisible('priority') && (
+        <td className="px-1 py-1.5">
+          <SquareDropdown
+            options={[
+              { value: "Low", label: "Low" },
+              { value: "Medium", label: "Medium" },
+              { value: "High", label: "High" },
+            ]}
+            value={form.priority}
+            onChange={(val) => setForm((p) => ({ ...p, priority: val }))}
+            placeholder="Priority..."
+            searchPlaceholder="Priority..."
+            widthClass="w-full"
+            usePortal={true}
+          />
+        </td>
+      )}
+      {/* 5. Start ~ End */}
+      {isColVisible('start_end') && (
+        <td className="px-1 py-1.5">
+          <div className="flex items-center gap-0.5 w-full">
+            <div className="flex-1 min-w-0">
+              <DatePicker
+                name="new_start_date"
+                value={form.startDate}
+                onChange={(d) => setForm((p) => ({ ...p, startDate: d }))}
+                usePortal={true}
+                customTrigger={(toggle) => (
+                  <button
+                    type="button"
+                    onClick={toggle}
+                    className="w-full h-7 bg-white border border-slate-200 hover:border-emerald-500 rounded-md px-1 text-[10px] font-medium flex items-center justify-between shadow-2xs transition-colors"
+                  >
+                    <span className={`truncate ${!form.startDate ? 'text-slate-400 font-normal' : ''}`}>
+                      {form.startDate ? formatDateDisplay(form.startDate) : 'Pilih'}
+                    </span>
+                    <Calendar size={11} className="text-slate-400 shrink-0" />
+                  </button>
+                )}
+              />
+            </div>
+            <span className="text-slate-300 text-[10px] font-bold shrink-0">~</span>
+            <div className="flex-1 min-w-0">
+              <DatePicker
+                name="new_end_date"
+                value={form.endDate}
+                onChange={(d) => setForm((p) => ({ ...p, endDate: d }))}
+                usePortal={true}
+                customTrigger={(toggle) => (
+                  <button
+                    type="button"
+                    onClick={toggle}
+                    className="w-full h-7 bg-white border border-slate-200 hover:border-emerald-500 rounded-lg px-1 text-[10px] font-medium flex items-center justify-between shadow-2xs transition-colors"
+                  >
+                    <span className={`truncate ${!form.endDate ? 'text-slate-400 font-normal' : ''}`}>
+                      {form.endDate ? formatDateDisplay(form.endDate) : 'Pilih'}
+                    </span>
+                    <Calendar size={11} className="text-slate-400 shrink-0" />
+                  </button>
+                )}
+              />
+            </div>
+          </div>
+        </td>
+      )}
+      {/* 6. Work Days */}
+      {isColVisible('work_days') && (
+        <td className="px-1 py-1.5 text-center whitespace-nowrap">
+          <span className="text-[11px] font-bold text-emerald-700">
+            {workDaysDisplay}
+          </span>
+        </td>
+      )}
+      {/* 7. Status */}
+      {isColVisible('status') && (
+        <td className="px-1 py-1.5">
+          <SquareDropdown
+            options={[
+              { value: "BELUM DIKERJAKAN", label: "BELUM DIKERJAKAN" },
+              { value: "IN PROGRESS", label: "IN PROGRESS" },
+              { value: "PENDING", label: "PENDING" },
+              { value: "CANCEL", label: "CANCEL" },
+              { value: "SELESAI", label: "SELESAI" },
+            ]}
+            value={form.status}
+            onChange={(val) => setForm((p) => ({ ...p, status: val }))}
+            placeholder="Status..."
+            searchPlaceholder="Status..."
+            widthClass="w-full"
+            usePortal={true}
+          />
+        </td>
+      )}
+      {/* 8. Note */}
+      {isColVisible('note') && (
+        <td className="px-1 py-1.5">
+          <textarea
+            value={form.note}
+            rows={1}
+            placeholder="Catatan..."
+            onChange={(e) => {
+              setForm((p) => ({ ...p, note: e.target.value }));
+              e.target.style.height = "auto";
+              e.target.style.height = `${Math.max(30, e.target.scrollHeight)}px`;
+            }}
+            ref={(el) => {
+              if (el) {
+                el.style.height = "auto";
+                el.style.height = `${Math.max(30, el.scrollHeight)}px`;
+              }
+            }}
+            className="w-full min-h-[30px] px-2 py-1 text-[11px] border border-emerald-400 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 custom-scrollbar resize-y break-words leading-tight"
+          />
+        </td>
+      )}
       {/* 9. Aksi */}
-      <td className="px-1 py-1.5 text-center whitespace-nowrap">
-        <div className="flex items-center justify-center">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer"
-            title="Batal Tambah Pekerjaan"
-          >
-            <X size={13} />
-          </button>
-        </div>
-      </td>
+      {isColVisible('aksi') && (
+        <td className="px-1 py-1.5 text-center whitespace-nowrap">
+          <div className="flex items-center justify-center">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer"
+              title="Batal Tambah Pekerjaan"
+            >
+              <X size={13} />
+            </button>
+          </div>
+        </td>
+      )}
     </tr>
   );
 }

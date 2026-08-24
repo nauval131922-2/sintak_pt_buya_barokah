@@ -5,11 +5,17 @@ import { useRouter } from 'next/navigation';
 import {
   ShieldCheck, CheckCircle2, XCircle,
   Loader2, ChevronRight, UserCog, Plus, Pencil, Save, Trash2,
-  AlertCircle, X
+  AlertCircle, X, SlidersHorizontal, Layers, Users, Columns, Search, CheckSquare, Square
 } from 'lucide-react';
 import { saveRolePermissions, addRole, updateRole, deleteRole } from '@/lib/permissions-actions';
 import { MODULE_REGISTRY } from '@/lib/permissions-constants';
 import type { PermissionMap } from '@/lib/permissions-constants';
+import {
+  LAPORAN_PEKERJAAN_COLUMNS,
+  LAPORAN_PEKERJAAN_BAGIAN_LIST,
+  type RoleLaporanPekerjaanConfig,
+  saveRoleLaporanPekerjaanConfig
+} from '@/lib/permissions-laporan-pekerjaan';
 import PageHeader from '@/components/PageHeader';
 
 export interface CustomRole {
@@ -23,6 +29,8 @@ export interface CustomRole {
 interface RolesContentProps {
   allPermissions: Record<string, PermissionMap>;
   customRoles: CustomRole[];
+  allLaporanConfigs?: Record<string, RoleLaporanPekerjaanConfig>;
+  availablePics?: string[];
 }
 
 const GROUP_COLORS: Record<string, { text: string; bg: string; dot: string }> = {
@@ -41,22 +49,32 @@ const GROUP_COLORS: Record<string, { text: string; bg: string; dot: string }> = 
   'Sistem - Settings':                { text: 'text-violet-700',  bg: 'bg-violet-50',  dot: 'bg-violet-500' },
 };
 
-export default function RolesContent({ allPermissions, customRoles }: RolesContentProps) {
+export default function RolesContent({
+  allPermissions,
+  customRoles,
+  allLaporanConfigs = {},
+  availablePics = [],
+}: RolesContentProps) {
   const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [permissions, setPermissions] = useState<Record<string, PermissionMap>>(() =>
     JSON.parse(JSON.stringify(allPermissions))
   );
+  const [laporanConfigs, setLaporanConfigs] = useState<Record<string, RoleLaporanPekerjaanConfig>>(() =>
+    JSON.parse(JSON.stringify(allLaporanConfigs))
+  );
+  const [configModalRole, setConfigModalRole] = useState<string | null>(null);
 
   useEffect(() => {
     setPermissions(JSON.parse(JSON.stringify(allPermissions)));
+    setLaporanConfigs(JSON.parse(JSON.stringify(allLaporanConfigs)));
     setSelectedRole(prev => {
       if (!prev) return '';
       if (prev === 'Super Admin') return prev;
       if (!customRoles.some(r => r.name === prev)) return '';
       return prev;
     });
-  }, [allPermissions, customRoles]);
+  }, [allPermissions, customRoles, allLaporanConfigs]);
 
   const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
@@ -303,6 +321,18 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
 
   const renderLeaf = (item: any, depth: number) => {
     const isEnabled = permissions[selectedRole]?.[item.key] ?? false;
+    const isLaporanPekerjaan = item.key === 'produksi_laporan_pekerjaan';
+    const lpConfig = laporanConfigs[selectedRole];
+
+    const hasCustomBagian = !!(lpConfig?.allowed_bagian && lpConfig.allowed_bagian.length > 0);
+    const hasCustomPic = !!(lpConfig?.allowed_pic && lpConfig.allowed_pic.length > 0);
+    const hasCustomCols = !!(
+      lpConfig?.visible_columns &&
+      lpConfig.visible_columns.length > 0 &&
+      lpConfig.visible_columns.length < LAPORAN_PEKERJAAN_COLUMNS.length
+    );
+    const hasCustomLp = hasCustomBagian || hasCustomPic || hasCustomCols;
+
     return (
       <div
         key={item.key}
@@ -310,13 +340,44 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
         className="group/row flex items-center justify-between py-2.5 pr-5 cursor-pointer hover:bg-emerald-50/40 transition-colors border-t border-gray-50"
         style={{ paddingLeft: `${20 + depth * 20}px` }}
       >
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
           <span className={`w-1 h-1 rounded-full shrink-0 ${isEnabled ? 'bg-emerald-400' : 'bg-gray-200'}`} />
           <span className={`text-[12.5px] truncate transition-colors ${isEnabled ? 'text-gray-700 font-semibold' : 'text-gray-400 font-medium'}`}>
             {item.label}
           </span>
+          {isLaporanPekerjaan && isEnabled && (
+            <span
+              className={`text-[10.5px] px-2 py-0.5 rounded-md font-medium border flex items-center gap-1 shrink-0 ${
+                hasCustomLp
+                  ? 'bg-blue-50 text-blue-700 border-blue-200'
+                  : 'bg-slate-50 text-slate-500 border-slate-200'
+              }`}
+              title={
+                hasCustomLp
+                  ? `Filter Aktif: ${hasCustomBagian ? `${lpConfig.allowed_bagian.length} Bagian` : 'Semua Bagian'}, ${hasCustomPic ? `${lpConfig.allowed_pic.length} PIC` : 'Semua PIC'}, ${lpConfig.visible_columns?.length || 10} Kolom`
+                  : 'Akses penuh ke semua Bagian, PIC, dan Kolom'
+              }
+            >
+              <SlidersHorizontal size={10} className={hasCustomLp ? 'text-blue-600' : 'text-slate-400'} />
+              {hasCustomLp ? 'Custom Filter & Kolom' : 'Semua Bagian & PIC'}
+            </span>
+          )}
         </div>
-        <div className="flex items-center gap-2.5 shrink-0 ml-3">
+        <div className="flex items-center gap-2 shrink-0 ml-2">
+          {isLaporanPekerjaan && isEnabled && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setConfigModalRole(selectedRole);
+              }}
+              className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200 rounded-lg transition-colors shadow-xs"
+              title="Atur Bagian, PIC, dan Kolom yang boleh diakses role ini"
+            >
+              <SlidersHorizontal size={12} />
+              <span>Setting Filter & Kolom</span>
+            </button>
+          )}
           <span className={`text-[11px] font-bold w-8 text-right transition-colors ${isEnabled ? 'text-emerald-600' : 'text-gray-300'}`}>
             {isEnabled ? 'ON' : 'OFF'}
           </span>
@@ -644,6 +705,44 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
         </div>
       </div>
 
+      {/* ── LAPORAN PEKERJAAN ROLE CONFIG MODAL ───────────────────────── */}
+      {configModalRole && (
+        <LaporanPekerjaanRoleModal
+          role={configModalRole}
+          initialConfig={
+            laporanConfigs[configModalRole] || {
+              role: configModalRole,
+              allowed_bagian: [],
+              allowed_pic: [],
+              visible_columns: LAPORAN_PEKERJAAN_COLUMNS.map((c) => c.key),
+            }
+          }
+          availablePics={availablePics}
+          onClose={() => setConfigModalRole(null)}
+          onSave={async (newConfig) => {
+            setSaving(true);
+            const res = await saveRoleLaporanPekerjaanConfig(configModalRole, newConfig);
+            setSaving(false);
+            if (res.success) {
+              setLaporanConfigs((prev) => ({
+                ...prev,
+                [configModalRole]: {
+                  role: configModalRole,
+                  allowed_bagian: newConfig.allowed_bagian,
+                  allowed_pic: newConfig.allowed_pic,
+                  visible_columns: newConfig.visible_columns,
+                },
+              }));
+              showResult('success', `Pengaturan Laporan Pekerjaan untuk ${configModalRole} disimpan.`);
+              setConfigModalRole(null);
+              router.refresh();
+            } else {
+              showResult('error', res.message || 'Gagal menyimpan konfigurasi.');
+            }
+          }}
+        />
+      )}
+
       {/* ── DELETE CONFIRM DIALOG ─────────────────────────────────────── */}
       {deleteConfirm && (
         <div
@@ -692,6 +791,441 @@ export default function RolesContent({ allPermissions, customRoles }: RolesConte
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// Modal Konfigurasi Laporan Pekerjaan untuk Role Tertentu
+// ----------------------------------------------------------------------
+
+interface LaporanPekerjaanRoleModalProps {
+  role: string;
+  initialConfig: RoleLaporanPekerjaanConfig;
+  availablePics: string[];
+  onClose: () => void;
+  onSave: (config: {
+    allowed_bagian: string[];
+    allowed_pic: string[];
+    visible_columns: string[];
+  }) => Promise<void>;
+}
+
+function LaporanPekerjaanRoleModal({
+  role,
+  initialConfig,
+  availablePics,
+  onClose,
+  onSave,
+}: LaporanPekerjaanRoleModalProps) {
+  const [activeTab, setActiveTab] = useState<'bagian' | 'pic' | 'kolom'>('bagian');
+  const [allowedBagian, setAllowedBagian] = useState<string[]>(() => [...(initialConfig.allowed_bagian || [])]);
+  const [allowedPic, setAllowedPic] = useState<string[]>(() => [...(initialConfig.allowed_pic || [])]);
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(() =>
+    initialConfig.visible_columns && initialConfig.visible_columns.length > 0
+      ? [...initialConfig.visible_columns]
+      : LAPORAN_PEKERJAAN_COLUMNS.map((c) => c.key)
+  );
+
+  const [picSearch, setPicSearch] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  // Filter PIC berdasarkan search input
+  const filteredPics = useMemo(() => {
+    if (!picSearch.trim()) return availablePics;
+    const query = picSearch.toLowerCase();
+    return availablePics.filter((p) => p.toLowerCase().includes(query));
+  }, [availablePics, picSearch]);
+
+  // Bagian handlers
+  const toggleBagian = (b: string) => {
+    setAllowedBagian((prev) =>
+      prev.includes(b) ? prev.filter((item) => item !== b) : [...prev, b]
+    );
+  };
+
+  const selectAllBagian = () => {
+    setAllowedBagian([...LAPORAN_PEKERJAAN_BAGIAN_LIST]);
+  };
+
+  const resetAllBagian = () => {
+    setAllowedBagian([]); // [] = Semua Bagian diizinkan
+  };
+
+  // PIC handlers
+  const togglePic = (p: string) => {
+    setAllowedPic((prev) =>
+      prev.includes(p) ? prev.filter((item) => item !== p) : [...prev, p]
+    );
+  };
+
+  const selectAllPics = () => {
+    setAllowedPic([...availablePics]);
+  };
+
+  const resetAllPics = () => {
+    setAllowedPic([]); // [] = Semua PIC diizinkan
+  };
+
+  // Column handlers
+  const toggleColumn = (key: string) => {
+    setVisibleColumns((prev) =>
+      prev.includes(key) ? prev.filter((c) => c !== key) : [...prev, key]
+    );
+  };
+
+  const selectAllColumns = () => {
+    setVisibleColumns(LAPORAN_PEKERJAAN_COLUMNS.map((c) => c.key));
+  };
+
+  const handleSubmit = async () => {
+    setSaving(true);
+    try {
+      await onSave({
+        allowed_bagian: allowedBagian,
+        allowed_pic: allowedPic,
+        visible_columns: visibleColumns.length === 0 ? LAPORAN_PEKERJAAN_COLUMNS.map((c) => c.key) : visibleColumns,
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[400] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[90vh]">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/80 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-xs">
+              <SlidersHorizontal size={18} />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                Setting Hak Akses Laporan Pekerjaan
+                <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[11px] font-bold">
+                  {role}
+                </span>
+              </h3>
+              <p className="text-[11.5px] text-slate-500">
+                Atur pembatasan Bagian, PIC, dan Kolom modal detail untuk role ini.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="flex border-b border-slate-200 bg-slate-50/50 px-5 pt-2 gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => setActiveTab('bagian')}
+            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
+              activeTab === 'bagian'
+                ? 'border-emerald-600 text-emerald-700 bg-white rounded-t-lg shadow-xs'
+                : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100/50 rounded-t-lg'
+            }`}
+          >
+            <Layers size={14} />
+            <span>Bagian ({allowedBagian.length === 0 ? 'Semua' : allowedBagian.length})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('pic')}
+            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
+              activeTab === 'pic'
+                ? 'border-emerald-600 text-emerald-700 bg-white rounded-t-lg shadow-xs'
+                : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100/50 rounded-t-lg'
+            }`}
+          >
+            <Users size={14} />
+            <span>PIC ({allowedPic.length === 0 ? 'Semua' : allowedPic.length})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('kolom')}
+            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
+              activeTab === 'kolom'
+                ? 'border-emerald-600 text-emerald-700 bg-white rounded-t-lg shadow-xs'
+                : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100/50 rounded-t-lg'
+            }`}
+          >
+            <Columns size={14} />
+            <span>Kolom Modal ({visibleColumns.length})</span>
+          </button>
+        </div>
+
+        {/* Tab Body */}
+        <div className="flex-1 overflow-y-auto p-5 custom-scrollbar min-h-0 bg-white">
+          {/* TAB 1: BAGIAN */}
+          {activeTab === 'bagian' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="text-xs text-slate-600">
+                  <span className="font-semibold text-slate-800">Status Izin Bagian: </span>
+                  {allowedBagian.length === 0 ? (
+                    <span className="text-emerald-700 font-bold">Akses SEMUA Bagian</span>
+                  ) : (
+                    <span className="text-blue-700 font-bold">Dibatasi ({allowedBagian.length} Bagian terpilih)</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={selectAllBagian}
+                    className="px-2.5 py-1 text-[11px] font-bold text-emerald-700 hover:bg-emerald-100/80 bg-emerald-50 border border-emerald-200 rounded-lg transition-colors"
+                  >
+                    Pilih Semua
+                  </button>
+                  <button
+                    type="button"
+                    onClick={resetAllBagian}
+                    className="px-2.5 py-1 text-[11px] font-bold text-slate-600 hover:bg-slate-200 bg-slate-100 border border-slate-200 rounded-lg transition-colors"
+                  >
+                    Reset (Semua)
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                {LAPORAN_PEKERJAAN_BAGIAN_LIST.map((bagian) => {
+                  const isChecked = allowedBagian.length === 0 || allowedBagian.includes(bagian);
+                  const isExplicitChecked = allowedBagian.includes(bagian);
+
+                  return (
+                    <div
+                      key={bagian}
+                      onClick={() => toggleBagian(bagian)}
+                      className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer select-none transition-all ${
+                        isExplicitChecked
+                          ? 'border-emerald-500 bg-emerald-50/70 text-emerald-900 shadow-xs'
+                          : allowedBagian.length === 0
+                          ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/70 text-slate-700'
+                          : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-400 opacity-60'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className={`w-4 h-4 rounded flex items-center justify-center border transition-colors ${
+                            isExplicitChecked
+                              ? 'bg-emerald-600 border-emerald-600 text-white'
+                              : allowedBagian.length === 0
+                              ? 'bg-slate-300 border-slate-400 text-white'
+                              : 'bg-white border-slate-300'
+                          }`}
+                        >
+                          {(isExplicitChecked || allowedBagian.length === 0) && (
+                            <CheckCircle2 size={12} className="text-white" />
+                          )}
+                        </div>
+                        <span className="text-xs font-bold">{bagian}</span>
+                      </div>
+                      {isExplicitChecked && (
+                        <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
+                          Aktif
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-slate-400 italic">
+                * Catatan: Jika tidak ada Bagian yang dicentang secara khusus (semua abu-abu/reset), role ini dapat melihat dan memilih semua Bagian.
+              </p>
+            </div>
+          )}
+
+          {/* TAB 2: PIC */}
+          {activeTab === 'pic' && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="text-xs text-slate-600">
+                  <span className="font-semibold text-slate-800">Status Izin PIC: </span>
+                  {allowedPic.length === 0 ? (
+                    <span className="text-emerald-700 font-bold">Akses SEMUA PIC Karyawan</span>
+                  ) : (
+                    <span className="text-blue-700 font-bold">Dibatasi ({allowedPic.length} PIC terpilih)</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={selectAllPics}
+                    className="px-2.5 py-1 text-[11px] font-bold text-emerald-700 hover:bg-emerald-100/80 bg-emerald-50 border border-emerald-200 rounded-lg transition-colors"
+                  >
+                    Pilih Semua
+                  </button>
+                  <button
+                    type="button"
+                    onClick={resetAllPics}
+                    className="px-2.5 py-1 text-[11px] font-bold text-slate-600 hover:bg-slate-200 bg-slate-100 border border-slate-200 rounded-lg transition-colors"
+                  >
+                    Reset (Semua)
+                  </button>
+                </div>
+              </div>
+
+              {/* Search bar PIC */}
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Cari nama PIC / Karyawan..."
+                  value={picSearch}
+                  onChange={(e) => setPicSearch(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs font-semibold text-slate-800 placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:border-emerald-500 focus:bg-white transition-colors"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[360px] overflow-y-auto custom-scrollbar p-0.5">
+                {filteredPics.map((pic) => {
+                  const isChecked = allowedPic.includes(pic);
+
+                  return (
+                    <div
+                      key={pic}
+                      onClick={() => togglePic(pic)}
+                      className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer select-none transition-all ${
+                        isChecked
+                          ? 'border-emerald-500 bg-emerald-50/70 text-emerald-900 shadow-xs'
+                          : allowedPic.length === 0
+                          ? 'border-slate-200 bg-slate-50/40 hover:bg-slate-100/70 text-slate-700'
+                          : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-400 opacity-60'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div
+                          className={`w-4 h-4 rounded flex items-center justify-center border shrink-0 transition-colors ${
+                            isChecked
+                              ? 'bg-emerald-600 border-emerald-600 text-white'
+                              : allowedPic.length === 0
+                              ? 'bg-slate-300 border-slate-400 text-white'
+                              : 'bg-white border-slate-300'
+                          }`}
+                        >
+                          {(isChecked || allowedPic.length === 0) && (
+                            <CheckCircle2 size={12} className="text-white" />
+                          )}
+                        </div>
+                        <span className="text-xs font-semibold truncate">{pic}</span>
+                      </div>
+                      {isChecked && (
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded shrink-0">
+                          Aktif
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+                {filteredPics.length === 0 && (
+                  <p className="col-span-2 text-center text-xs text-slate-400 py-6 italic">
+                    PIC &quot;{picSearch}&quot; tidak ditemukan.
+                  </p>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-400 italic">
+                * Catatan: Jika tidak ada PIC yang dipilih secara khusus (semua abu-abu/reset), role ini dapat melihat semua PIC.
+              </p>
+            </div>
+          )}
+
+          {/* TAB 3: KOLOM MODAL DETAIL */}
+          {activeTab === 'kolom' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="text-xs text-slate-600">
+                  <span className="font-semibold text-slate-800">Kolom Tampil: </span>
+                  <span className="text-emerald-700 font-bold">{visibleColumns.length} dari 10 Kolom</span>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={selectAllColumns}
+                    className="px-2.5 py-1 text-[11px] font-bold text-emerald-700 hover:bg-emerald-100/80 bg-emerald-50 border border-emerald-200 rounded-lg transition-colors"
+                  >
+                    Tampilkan Semua
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {LAPORAN_PEKERJAAN_COLUMNS.map((col) => {
+                  const isChecked = visibleColumns.includes(col.key);
+
+                  return (
+                    <div
+                      key={col.key}
+                      onClick={() => toggleColumn(col.key)}
+                      className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer select-none transition-all ${
+                        isChecked
+                          ? 'border-emerald-500 bg-emerald-50/70 text-emerald-900 shadow-xs'
+                          : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-400 opacity-60'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className={`w-4 h-4 rounded flex items-center justify-center border transition-colors ${
+                            isChecked
+                              ? 'bg-emerald-600 border-emerald-600 text-white'
+                              : 'bg-white border-slate-300'
+                          }`}
+                        >
+                          {isChecked && <CheckCircle2 size={12} className="text-white" />}
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold">{col.label}</p>
+                          <p className="text-[10.5px] text-slate-500">
+                            {col.key === 'aksi'
+                              ? 'Tombol edit, hapus, & tambah pekerjaan'
+                              : col.key === 'start_end'
+                              ? 'Tanggal mulai & target selesai'
+                              : `Kolom data ${col.label.toLowerCase()}`}
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                          isChecked ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'
+                        }`}
+                      >
+                        {isChecked ? 'TAMPIL' : 'SEMBUNYI'}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-slate-400 italic">
+                * Catatan: Kolom yang tidak dicentang akan disembunyikan secara otomatis dari popup Modal List Pekerjaan untuk role ini.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between px-5 py-3.5 border-t border-slate-100 bg-slate-50/80 shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 transition-all cursor-pointer"
+          >
+            Batal
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={saving}
+            className="flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-xl shadow-xs transition-all cursor-pointer"
+          >
+            {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+            <span>Simpan Konfigurasi</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

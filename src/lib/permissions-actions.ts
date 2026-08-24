@@ -167,6 +167,11 @@ export async function deleteRole(
           sql: 'DELETE FROM role_permissions WHERE role = ?',
           args: [roleName.trim()],
         },
+        // Hapus konfigurasi laporan pekerjaan role
+        {
+          sql: 'DELETE FROM role_laporan_pekerjaan_config WHERE role = ?',
+          args: [roleName.trim()],
+        },
         // Hapus dari junction table user_roles
         {
           sql: 'DELETE FROM user_roles WHERE role_name = ?',
