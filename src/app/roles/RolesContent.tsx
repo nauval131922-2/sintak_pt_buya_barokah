@@ -326,6 +326,8 @@ export default function RolesContent({
 
     const hasCustomBagian = !!(lpConfig?.allowed_bagian && lpConfig.allowed_bagian.length > 0);
     const isLockedToMe = !!(lpConfig?.allowed_pic && lpConfig.allowed_pic.includes('@me'));
+    const rolePics = (lpConfig?.allowed_pic || []).filter(p => p.startsWith('@role:')).map(p => p.slice(6));
+    const customPicNames = (lpConfig?.allowed_pic || []).filter(p => !p.startsWith('@'));
     const hasCustomPic = !!(lpConfig?.allowed_pic && lpConfig.allowed_pic.length > 0);
     const hasCustomCols = !!(
       lpConfig?.visible_columns &&
@@ -340,6 +342,17 @@ export default function RolesContent({
       lpConfig?.can_edit !== false ? 'Edit' : null,
       lpConfig?.can_delete !== false ? 'Hapus' : null,
     ].filter(Boolean).join(', ');
+
+    let picSummary = 'Semua PIC';
+    if (isLockedToMe) {
+      picSummary = 'Kunci PIC @me';
+    } else if (rolePics.length > 0 && customPicNames.length === 0) {
+      picSummary = `Role PIC: ${rolePics.join(', ')}`;
+    } else if (rolePics.length > 0 && customPicNames.length > 0) {
+      picSummary = `Role PIC (${rolePics.length}) + ${customPicNames.length} Nama`;
+    } else if (customPicNames.length > 0) {
+      picSummary = `${customPicNames.length} PIC`;
+    }
 
     return (
       <div
@@ -362,12 +375,12 @@ export default function RolesContent({
               }`}
               title={
                 hasCustomLp
-                  ? `Filter Aktif: ${hasCustomBagian ? `${lpConfig.allowed_bagian.length} Bagian` : 'Semua Bagian'}, ${isLockedToMe ? 'Kunci PIC Akun Login (@me)' : hasCustomPic ? `${lpConfig.allowed_pic.length} PIC` : 'Semua PIC'}, Aksi: [${actionSummary || 'Tanpa Aksi'}], ${lpConfig.visible_columns?.length || 10} Kolom`
+                  ? `Filter Aktif: ${hasCustomBagian ? `${lpConfig.allowed_bagian.length} Bagian` : 'Semua Bagian'}, PIC: ${picSummary}, Aksi: [${actionSummary || 'Tanpa Aksi'}], ${lpConfig.visible_columns?.length || 9} Kolom`
                   : 'Akses penuh ke semua Bagian, PIC, Aksi, dan Kolom'
               }
             >
               <SlidersHorizontal size={10} className={hasCustomLp ? 'text-blue-600' : 'text-slate-400'} />
-              {isLockedToMe ? 'Kunci PIC @me' : hasCustomLp ? 'Custom Hak & Kolom' : 'Semua Bagian & PIC'}
+              {isLockedToMe ? 'Kunci PIC @me' : hasCustomLp ? `Hak: ${picSummary}` : 'Semua Bagian & PIC'}
             </span>
           )}
         </div>
@@ -729,6 +742,7 @@ export default function RolesContent({
             }
           }
           availablePics={availablePics}
+          availableRoles={customRoles}
           onClose={() => setConfigModalRole(null)}
           onSave={async (newConfig) => {
             setSaving(true);
@@ -817,6 +831,7 @@ interface LaporanPekerjaanRoleModalProps {
   role: string;
   initialConfig: RoleLaporanPekerjaanConfig;
   availablePics: string[];
+  availableRoles?: CustomRole[];
   onClose: () => void;
   onSave: (config: {
     allowed_bagian: string[];
@@ -832,6 +847,7 @@ function LaporanPekerjaanRoleModal({
   role,
   initialConfig,
   availablePics,
+  availableRoles = [],
   onClose,
   onSave,
 }: LaporanPekerjaanRoleModalProps) {
@@ -1126,13 +1142,64 @@ function LaporanPekerjaanRoleModal({
 
               {!allowedPic.includes('@me') && (
                 <>
+                  {/* Pilihan Berdasarkan Role User */}
+                  {availableRoles.length > 0 && (
+                    <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-200">
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <UserCog size={13} className="text-indigo-600" />
+                        <span className="text-xs font-bold text-slate-800">Kunci Berdasarkan Role User:</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mb-2.5">
+                        Pilih role di bawah untuk mengizinkan semua akun/karyawan yang memiliki role tersebut secara dinamis.
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {availableRoles.map((r) => {
+                          const roleKey = `@role:${r.name}`;
+                          const isRoleChecked = allowedPic.includes(roleKey);
+
+                          return (
+                            <button
+                              key={r.name}
+                              type="button"
+                              onClick={() => {
+                                setAllowedPic((prev) =>
+                                  prev.includes(roleKey)
+                                    ? prev.filter((item) => item !== roleKey)
+                                    : [...prev, roleKey]
+                                );
+                              }}
+                              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer select-none ${
+                                isRoleChecked
+                                  ? 'border-indigo-500 bg-indigo-50 text-indigo-900 shadow-xs ring-1 ring-indigo-400/30'
+                                  : 'border-slate-200 bg-white hover:bg-slate-100 text-slate-600'
+                              }`}
+                            >
+                              <div
+                                className={`w-3.5 h-3.5 rounded flex items-center justify-center border transition-colors ${
+                                  isRoleChecked
+                                    ? 'bg-indigo-600 border-indigo-600 text-white'
+                                    : 'bg-white border-slate-300'
+                                }`}
+                              >
+                                {isRoleChecked && <CheckCircle2 size={10} className="text-white" />}
+                              </div>
+                              <span>Role: {r.name}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
                     <div className="text-xs text-slate-600">
                       <span className="font-semibold text-slate-800">Status Izin PIC: </span>
                       {allowedPic.length === 0 ? (
                         <span className="text-emerald-700 font-bold">Akses SEMUA PIC Karyawan</span>
                       ) : (
-                        <span className="text-blue-700 font-bold">Dibatasi ({allowedPic.length} PIC terpilih)</span>
+                        <span className="text-blue-700 font-bold">
+                          Dibatasi ({allowedPic.filter(p => p.startsWith('@role:')).length > 0 ? `${allowedPic.filter(p => p.startsWith('@role:')).length} Role, ` : ''}{allowedPic.filter(p => !p.startsWith('@')).length} PIC Nama)
+                        </span>
                       )}
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
@@ -1141,7 +1208,7 @@ function LaporanPekerjaanRoleModal({
                         onClick={selectAllPics}
                         className="px-2.5 py-1 text-[11px] font-bold text-emerald-700 hover:bg-emerald-100/80 bg-emerald-50 border border-emerald-200 rounded-lg transition-colors"
                       >
-                        Pilih Semua
+                        Pilih Semua Nama
                       </button>
                       <button
                         type="button"
@@ -1158,14 +1225,14 @@ function LaporanPekerjaanRoleModal({
                     <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                       type="text"
-                      placeholder="Cari nama PIC / Karyawan..."
+                      placeholder="Cari nama PIC / Karyawan spesifik..."
                       value={picSearch}
                       onChange={(e) => setPicSearch(e.target.value)}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs font-semibold text-slate-800 placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:border-emerald-500 focus:bg-white transition-colors"
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[360px] overflow-y-auto custom-scrollbar p-0.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[300px] overflow-y-auto custom-scrollbar p-0.5">
                     {filteredPics.map((pic) => {
                       const isChecked = allowedPic.includes(pic);
 
@@ -1370,7 +1437,7 @@ function LaporanPekerjaanRoleModal({
               <div className="flex items-center justify-between gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
                 <div className="text-xs text-slate-600">
                   <span className="font-semibold text-slate-800">Kolom Tampil: </span>
-                  <span className="text-emerald-700 font-bold">{visibleColumns.length} dari 10 Kolom</span>
+                  <span className="text-emerald-700 font-bold">{visibleColumns.length} dari {LAPORAN_PEKERJAAN_COLUMNS.length} Kolom Data</span>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
@@ -1410,10 +1477,10 @@ function LaporanPekerjaanRoleModal({
                         <div>
                           <p className="text-xs font-bold">{col.label}</p>
                           <p className="text-[10.5px] text-slate-500">
-                            {col.key === 'aksi'
-                              ? 'Tombol edit, hapus, & tambah pekerjaan'
-                              : col.key === 'start_end'
+                            {col.key === 'start_end'
                               ? 'Tanggal mulai & target selesai'
+                              : col.key === 'work_days'
+                              ? 'Durasi hari kerja'
                               : `Kolom data ${col.label.toLowerCase()}`}
                           </p>
                         </div>

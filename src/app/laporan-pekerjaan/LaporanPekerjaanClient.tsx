@@ -2592,7 +2592,7 @@ function TaskDetailModal({
   const isColVisible = useCallback(
     (key: string) => {
       if (key === 'aksi') {
-        return visibleColKeys.includes('aksi') && hasRowAction;
+        return hasRowAction;
       }
       return visibleColKeys.includes(key as any);
     },
@@ -2600,13 +2600,16 @@ function TaskDetailModal({
   );
 
   const activeColumns = useMemo(() => {
-    const list = LAPORAN_PEKERJAAN_COLUMNS.filter((c) => isColVisible(c.key));
+    const list: Array<{ key: string; label: string }> = LAPORAN_PEKERJAAN_COLUMNS.filter((c) => isColVisible(c.key));
+    if (hasRowAction) {
+      list.push({ key: 'aksi', label: 'Aksi' });
+    }
     const totalWeight = list.reduce((sum, c) => sum + (COLUMN_WEIGHTS[c.key] || 10), 0);
     return list.map((c) => ({
       ...c,
       widthPercent: `${(((COLUMN_WEIGHTS[c.key] || 10) / totalWeight) * 100).toFixed(2)}%`,
     }));
-  }, [isColVisible]);
+  }, [isColVisible, hasRowAction]);
 
   // Filter tasks in modal by role allowed Bagian and PIC
   const sortedTasks = useMemo(() => {

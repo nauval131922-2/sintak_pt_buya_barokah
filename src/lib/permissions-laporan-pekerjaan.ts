@@ -169,21 +169,49 @@ export async function getUserMergedLaporanPekerjaanConfig(
   }
 
   // Jika salah satu role memiliki akses ALL pic (array kosong), user mendapatkan akses ALL pic.
-  // Selain itu, union dari allowed_pic masing-masing role (resolving '@me' ke nama user yang login).
+  // Selain itu, union dari allowed_pic masing-masing role (resolving '@me' dan '@role:NamaRole').
   let allowed_pic: string[] = [];
   const hasUnrestrictedPic = allConfigs.some(c => !c.allowed_pic || c.allowed_pic.length === 0);
   if (!hasUnrestrictedPic) {
     const picSet = new Set<string>();
     const userName = currentUser?.employeeName || currentUser?.name;
+    const rolePicks = new Set<string>();
+
     allConfigs.forEach(c => {
       c.allowed_pic?.forEach(p => {
         if (p === '@me') {
           if (userName) picSet.add(userName);
+        } else if (p.startsWith('@role:')) {
+          const rName = p.slice(6).trim();
+          if (rName) rolePicks.add(rName);
         } else {
           picSet.add(p);
         }
       });
     });
+
+    if (rolePicks.size > 0) {
+      try {
+        for (const rName of Array.from(rolePicks)) {
+          const { rows } = await db.execute({
+            sql: `SELECT DISTINCT COALESCE(e.name, u.name) as name
+                  FROM users u
+                  LEFT JOIN employees e ON e.id = u.employee_id
+                  LEFT JOIN user_roles ur ON ur.user_id = u.id
+                  WHERE (ur.role_name = ? OR u.role = ?)
+                    AND COALESCE(e.name, u.name) IS NOT NULL
+                    AND COALESCE(e.name, u.name) != ''`,
+            args: [rName, rName],
+          });
+          rows.forEach((r: any) => {
+            if (r.name) picSet.add(String(r.name).trim());
+          });
+        }
+      } catch (err) {
+        console.error('[PERMISSIONS] Gagal resolve @role allowed_pic:', err);
+      }
+    }
+
     allowed_pic = Array.from(picSet);
   }
 

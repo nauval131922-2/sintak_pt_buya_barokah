@@ -11,7 +11,6 @@ export const LAPORAN_PEKERJAAN_COLUMNS = [
   { key: 'work_days', label: 'Work Days' },
   { key: 'status', label: 'Status' },
   { key: 'note', label: 'Note' },
-  { key: 'aksi', label: 'Aksi' },
 ] as const;
 
 export type LaporanPekerjaanColumnKey = typeof LAPORAN_PEKERJAAN_COLUMNS[number]['key'];
