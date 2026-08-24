@@ -55,7 +55,7 @@ import { type SpreadsheetTask } from "@/lib/google-sheets";
 import {
   LAPORAN_PEKERJAAN_COLUMNS,
   type RoleLaporanPekerjaanConfig,
-} from "@/lib/permissions-laporan-pekerjaan";
+} from "@/lib/permissions-laporan-pekerjaan-constants";
 
 const BAGIAN_LIST = ['SETTING', 'QUALITY CONTROL', 'CETAK', 'FINISHING', 'GUDANG', 'TEKNISI', 'MESIN'];
 

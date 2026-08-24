@@ -14,8 +14,8 @@ import {
   LAPORAN_PEKERJAAN_COLUMNS,
   LAPORAN_PEKERJAAN_BAGIAN_LIST,
   type RoleLaporanPekerjaanConfig,
-  saveRoleLaporanPekerjaanConfig
-} from '@/lib/permissions-laporan-pekerjaan';
+} from '@/lib/permissions-laporan-pekerjaan-constants';
+import { saveRoleLaporanPekerjaanConfig } from '@/lib/permissions-laporan-pekerjaan-actions';
 import PageHeader from '@/components/PageHeader';
 
 export interface CustomRole {

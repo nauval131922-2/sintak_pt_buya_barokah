@@ -1,0 +1,34 @@
+// permissions-laporan-pekerjaan-constants.ts
+// Shared constants & types - safe to import from both client and server components.
+
+export const LAPORAN_PEKERJAAN_COLUMNS = [
+  { key: 'no', label: 'No' },
+  { key: 'bagian', label: 'Bagian' },
+  { key: 'pic', label: 'PIC' },
+  { key: 'task', label: 'Task / Aktivitas' },
+  { key: 'priority', label: 'Priority' },
+  { key: 'start_end', label: 'Start ~ End' },
+  { key: 'work_days', label: 'Work Days' },
+  { key: 'status', label: 'Status' },
+  { key: 'note', label: 'Note' },
+  { key: 'aksi', label: 'Aksi' },
+] as const;
+
+export type LaporanPekerjaanColumnKey = typeof LAPORAN_PEKERJAAN_COLUMNS[number]['key'];
+
+export const LAPORAN_PEKERJAAN_BAGIAN_LIST = [
+  'SETTING',
+  'QUALITY CONTROL',
+  'CETAK',
+  'FINISHING',
+  'GUDANG',
+  'TEKNISI',
+  'MESIN',
+] as const;
+
+export interface RoleLaporanPekerjaanConfig {
+  role: string;
+  allowed_bagian: string[];   // [] berarti SEMUA Bagian diizinkan
+  allowed_pic: string[];      // [] berarti SEMUA PIC diizinkan
+  visible_columns: string[];  // [] berarti SEMUA Kolom ditampilkan
+}
