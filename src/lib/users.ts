@@ -63,7 +63,11 @@ export async function getUsers() {
     await requireSuperAdmin();
 
     const result = await db.execute(
-      'SELECT id, username, name, role, photo, is_active, created_at FROM users ORDER BY name ASC'
+      `SELECT u.id, u.username, u.name, u.role, u.photo, u.is_active, u.employee_id, u.created_at,
+              e.name as employee_name, e.position as employee_position, e.employee_no
+       FROM users u
+       LEFT JOIN employees e ON e.id = u.employee_id
+       ORDER BY u.name ASC`
     );
 
     // Ambil roles dari junction table untuk setiap user
@@ -80,6 +84,9 @@ export async function getUsers() {
           role: String(row.role),
           photo: row.photo ? String(row.photo) : null,
           is_active: row.hasOwnProperty('is_active') && row.is_active !== null ? Number(row.is_active) : 1,
+          employee_id: row.employee_id ? Number(row.employee_id) : null,
+          employee_name: row.employee_name ? String(row.employee_name) : null,
+          employee_position: row.employee_position ? String(row.employee_position) : null,
           created_at: row.created_at ? String(row.created_at) : null,
         };
       })
@@ -96,6 +103,7 @@ export async function createUser(data: {
   username: string;
   roles: string[];
   password?: string;
+  employee_id?: number | null;
 }) {
   try {
     const session = await requireSuperAdmin();
@@ -122,8 +130,8 @@ export async function createUser(data: {
       : (uniqueRoles[0] || 'Admin');
 
     const result = await db.execute({
-      sql: 'INSERT INTO users (name, username, password, role) VALUES (?, ?, ?, ?)',
-      args: [data.name, data.username, hash, primaryRole],
+      sql: 'INSERT INTO users (name, username, password, role, employee_id) VALUES (?, ?, ?, ?, ?)',
+      args: [data.name, data.username, hash, primaryRole, data.employee_id || null],
     });
 
     const newUserId = Number(result.lastInsertRowid);
@@ -147,7 +155,14 @@ export async function createUser(data: {
 
 export async function updateUser(
   id: number,
-  data: { name: string; username: string; roles: string[]; password?: string; is_active?: number }
+  data: {
+    name: string;
+    username: string;
+    roles: string[];
+    password?: string;
+    is_active?: number;
+    employee_id?: number | null;
+  }
 ) {
   try {
     const session = await requireSuperAdmin();
@@ -180,16 +195,16 @@ export async function updateUser(
       const hash = await bcrypt.hash(data.password, salt);
       await db.execute(
         {
-          sql: 'UPDATE users SET name = ?, username = ?, role = ?, password = ?, is_active = ? WHERE id = ?',
-          args: [data.name, data.username, primaryRole, hash, data.is_active ?? 1, id],
+          sql: 'UPDATE users SET name = ?, username = ?, role = ?, password = ?, is_active = ?, employee_id = ? WHERE id = ?',
+          args: [data.name, data.username, primaryRole, hash, data.is_active ?? 1, data.employee_id || null, id],
         },
         'Kelola User'
       );
     } else {
       await db.execute(
         {
-          sql: 'UPDATE users SET name = ?, username = ?, role = ?, is_active = ? WHERE id = ?',
-          args: [data.name, data.username, primaryRole, data.is_active ?? 1, id],
+          sql: 'UPDATE users SET name = ?, username = ?, role = ?, is_active = ?, employee_id = ? WHERE id = ?',
+          args: [data.name, data.username, primaryRole, data.is_active ?? 1, data.employee_id || null, id],
         },
         'Kelola User'
       );

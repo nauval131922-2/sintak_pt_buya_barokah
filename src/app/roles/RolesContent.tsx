@@ -325,6 +325,7 @@ export default function RolesContent({
     const lpConfig = laporanConfigs[selectedRole];
 
     const hasCustomBagian = !!(lpConfig?.allowed_bagian && lpConfig.allowed_bagian.length > 0);
+    const isLockedToMe = !!(lpConfig?.allowed_pic && lpConfig.allowed_pic.includes('@me'));
     const hasCustomPic = !!(lpConfig?.allowed_pic && lpConfig.allowed_pic.length > 0);
     const hasCustomCols = !!(
       lpConfig?.visible_columns &&
@@ -354,12 +355,12 @@ export default function RolesContent({
               }`}
               title={
                 hasCustomLp
-                  ? `Filter Aktif: ${hasCustomBagian ? `${lpConfig.allowed_bagian.length} Bagian` : 'Semua Bagian'}, ${hasCustomPic ? `${lpConfig.allowed_pic.length} PIC` : 'Semua PIC'}, ${lpConfig.visible_columns?.length || 10} Kolom`
+                  ? `Filter Aktif: ${hasCustomBagian ? `${lpConfig.allowed_bagian.length} Bagian` : 'Semua Bagian'}, ${isLockedToMe ? 'Kunci PIC Akun Login (@me)' : hasCustomPic ? `${lpConfig.allowed_pic.length} PIC` : 'Semua PIC'}, ${lpConfig.visible_columns?.length || 10} Kolom`
                   : 'Akses penuh ke semua Bagian, PIC, dan Kolom'
               }
             >
               <SlidersHorizontal size={10} className={hasCustomLp ? 'text-blue-600' : 'text-slate-400'} />
-              {hasCustomLp ? 'Custom Filter & Kolom' : 'Semua Bagian & PIC'}
+              {isLockedToMe ? 'Kunci PIC @me' : hasCustomLp ? 'Custom Filter & Kolom' : 'Semua Bagian & PIC'}
             </span>
           )}
         </div>
@@ -1043,94 +1044,144 @@ function LaporanPekerjaanRoleModal({
           {/* TAB 2: PIC */}
           {activeTab === 'pic' && (
             <div className="space-y-3">
-              <div className="flex items-center justify-between gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
-                <div className="text-xs text-slate-600">
-                  <span className="font-semibold text-slate-800">Status Izin PIC: </span>
-                  {allowedPic.length === 0 ? (
-                    <span className="text-emerald-700 font-bold">Akses SEMUA PIC Karyawan</span>
-                  ) : (
-                    <span className="text-blue-700 font-bold">Dibatasi ({allowedPic.length} PIC terpilih)</span>
-                  )}
-                </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <button
-                    type="button"
-                    onClick={selectAllPics}
-                    className="px-2.5 py-1 text-[11px] font-bold text-emerald-700 hover:bg-emerald-100/80 bg-emerald-50 border border-emerald-200 rounded-lg transition-colors"
+              {/* Opsi Kunci Otomatis ke PIC Akun Login (@me) */}
+              <div
+                onClick={() => {
+                  if (allowedPic.includes('@me')) {
+                    setAllowedPic([]);
+                  } else {
+                    setAllowedPic(['@me']);
+                  }
+                }}
+                className={`p-3.5 rounded-xl border cursor-pointer select-none transition-all flex items-start justify-between gap-3 ${
+                  allowedPic.includes('@me')
+                    ? 'border-emerald-500 bg-emerald-50/90 text-emerald-950 shadow-xs ring-1 ring-emerald-500/20'
+                    : 'border-slate-200 bg-slate-50/60 hover:bg-slate-100/60 text-slate-700'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div
+                    className={`w-5 h-5 rounded-md flex items-center justify-center border shrink-0 mt-0.5 transition-colors ${
+                      allowedPic.includes('@me')
+                        ? 'bg-emerald-600 border-emerald-600 text-white'
+                        : 'bg-white border-slate-300'
+                    }`}
                   >
-                    Pilih Semua
-                  </button>
-                  <button
-                    type="button"
-                    onClick={resetAllPics}
-                    className="px-2.5 py-1 text-[11px] font-bold text-slate-600 hover:bg-slate-200 bg-slate-100 border border-slate-200 rounded-lg transition-colors"
-                  >
-                    Reset (Semua)
-                  </button>
+                    {allowedPic.includes('@me') && <CheckCircle2 size={13} className="text-white" />}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-800">Kunci Otomatis ke PIC Akun Login (@me)</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold border border-emerald-200">
+                        Otomatis Per User
+                      </span>
+                    </div>
+                    <p className="text-[11.5px] text-slate-500 mt-0.5 leading-snug">
+                      Setiap pengguna dengan role ini otomatis <b>hanya bisa melihat pekerjaan miliknya sendiri</b> (sesuai nama akun / data karyawan yang tertaut). Anda tidak perlu membuat role terpisah untuk tiap karyawan.
+                    </p>
+                  </div>
                 </div>
+                <span
+                  className={`text-[10.5px] font-bold px-2 py-0.5 rounded shrink-0 ${
+                    allowedPic.includes('@me') ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-200 text-slate-500'
+                  }`}
+                >
+                  {allowedPic.includes('@me') ? 'AKTIF' : 'NONAKTIF'}
+                </span>
               </div>
 
-              {/* Search bar PIC */}
-              <div className="relative">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Cari nama PIC / Karyawan..."
-                  value={picSearch}
-                  onChange={(e) => setPicSearch(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs font-semibold text-slate-800 placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:border-emerald-500 focus:bg-white transition-colors"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[360px] overflow-y-auto custom-scrollbar p-0.5">
-                {filteredPics.map((pic) => {
-                  const isChecked = allowedPic.includes(pic);
-
-                  return (
-                    <div
-                      key={pic}
-                      onClick={() => togglePic(pic)}
-                      className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer select-none transition-all ${
-                        isChecked
-                          ? 'border-emerald-500 bg-emerald-50/70 text-emerald-900 shadow-xs'
-                          : allowedPic.length === 0
-                          ? 'border-slate-200 bg-slate-50/40 hover:bg-slate-100/70 text-slate-700'
-                          : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-400 opacity-60'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div
-                          className={`w-4 h-4 rounded flex items-center justify-center border shrink-0 transition-colors ${
-                            isChecked
-                              ? 'bg-emerald-600 border-emerald-600 text-white'
-                              : allowedPic.length === 0
-                              ? 'bg-slate-300 border-slate-400 text-white'
-                              : 'bg-white border-slate-300'
-                          }`}
-                        >
-                          {(isChecked || allowedPic.length === 0) && (
-                            <CheckCircle2 size={12} className="text-white" />
-                          )}
-                        </div>
-                        <span className="text-xs font-semibold truncate">{pic}</span>
-                      </div>
-                      {isChecked && (
-                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded shrink-0">
-                          Aktif
-                        </span>
+              {!allowedPic.includes('@me') && (
+                <>
+                  <div className="flex items-center justify-between gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <div className="text-xs text-slate-600">
+                      <span className="font-semibold text-slate-800">Status Izin PIC: </span>
+                      {allowedPic.length === 0 ? (
+                        <span className="text-emerald-700 font-bold">Akses SEMUA PIC Karyawan</span>
+                      ) : (
+                        <span className="text-blue-700 font-bold">Dibatasi ({allowedPic.length} PIC terpilih)</span>
                       )}
                     </div>
-                  );
-                })}
-                {filteredPics.length === 0 && (
-                  <p className="col-span-2 text-center text-xs text-slate-400 py-6 italic">
-                    PIC &quot;{picSearch}&quot; tidak ditemukan.
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={selectAllPics}
+                        className="px-2.5 py-1 text-[11px] font-bold text-emerald-700 hover:bg-emerald-100/80 bg-emerald-50 border border-emerald-200 rounded-lg transition-colors"
+                      >
+                        Pilih Semua
+                      </button>
+                      <button
+                        type="button"
+                        onClick={resetAllPics}
+                        className="px-2.5 py-1 text-[11px] font-bold text-slate-600 hover:bg-slate-200 bg-slate-100 border border-slate-200 rounded-lg transition-colors"
+                      >
+                        Reset (Semua)
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Search bar PIC */}
+                  <div className="relative">
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Cari nama PIC / Karyawan..."
+                      value={picSearch}
+                      onChange={(e) => setPicSearch(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs font-semibold text-slate-800 placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:border-emerald-500 focus:bg-white transition-colors"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[360px] overflow-y-auto custom-scrollbar p-0.5">
+                    {filteredPics.map((pic) => {
+                      const isChecked = allowedPic.includes(pic);
+
+                      return (
+                        <div
+                          key={pic}
+                          onClick={() => togglePic(pic)}
+                          className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer select-none transition-all ${
+                            isChecked
+                              ? 'border-emerald-500 bg-emerald-50/70 text-emerald-900 shadow-xs'
+                              : allowedPic.length === 0
+                              ? 'border-slate-200 bg-slate-50/40 hover:bg-slate-100/70 text-slate-700'
+                              : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-400 opacity-60'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div
+                              className={`w-4 h-4 rounded flex items-center justify-center border shrink-0 transition-colors ${
+                                isChecked
+                                  ? 'bg-emerald-600 border-emerald-600 text-white'
+                                  : allowedPic.length === 0
+                                  ? 'bg-slate-300 border-slate-400 text-white'
+                                  : 'bg-white border-slate-300'
+                              }`}
+                            >
+                              {(isChecked || allowedPic.length === 0) && (
+                                <CheckCircle2 size={12} className="text-white" />
+                              )}
+                            </div>
+                            <span className="text-xs font-semibold truncate">{pic}</span>
+                          </div>
+                          {isChecked && (
+                            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded shrink-0">
+                              Aktif
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {filteredPics.length === 0 && (
+                      <p className="col-span-2 text-center text-xs text-slate-400 py-6 italic">
+                        PIC &quot;{picSearch}&quot; tidak ditemukan.
+                      </p>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-400 italic">
+                    * Catatan: Jika tidak ada PIC yang dipilih secara khusus (semua abu-abu/reset), role ini dapat melihat semua PIC.
                   </p>
-                )}
-              </div>
-              <p className="text-[11px] text-slate-400 italic">
-                * Catatan: Jika tidak ada PIC yang dipilih secara khusus (semua abu-abu/reset), role ini dapat melihat semua PIC.
-              </p>
+                </>
+              )}
             </div>
           )}
 

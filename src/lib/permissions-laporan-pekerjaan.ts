@@ -142,7 +142,10 @@ export async function getAllRoleLaporanPekerjaanConfigs(): Promise<Record<string
 /**
  * Gabungkan (merge) konfigurasi Laporan Pekerjaan dari array roles milik user aktif.
  */
-export async function getUserMergedLaporanPekerjaanConfig(roles: string[]): Promise<RoleLaporanPekerjaanConfig> {
+export async function getUserMergedLaporanPekerjaanConfig(
+  roles: string[],
+  currentUser?: { name?: string; username?: string; employeeName?: string }
+): Promise<RoleLaporanPekerjaanConfig> {
   const allColumns = LAPORAN_PEKERJAAN_COLUMNS.map(c => c.key);
   if (!roles || roles.length === 0 || roles.includes('Super Admin')) {
     return {
@@ -166,12 +169,21 @@ export async function getUserMergedLaporanPekerjaanConfig(roles: string[]): Prom
   }
 
   // Jika salah satu role memiliki akses ALL pic (array kosong), user mendapatkan akses ALL pic.
-  // Selain itu, union dari allowed_pic masing-masing role.
+  // Selain itu, union dari allowed_pic masing-masing role (resolving '@me' ke nama user yang login).
   let allowed_pic: string[] = [];
   const hasUnrestrictedPic = allConfigs.some(c => !c.allowed_pic || c.allowed_pic.length === 0);
   if (!hasUnrestrictedPic) {
     const picSet = new Set<string>();
-    allConfigs.forEach(c => c.allowed_pic?.forEach(p => picSet.add(p)));
+    const userName = currentUser?.employeeName || currentUser?.name;
+    allConfigs.forEach(c => {
+      c.allowed_pic?.forEach(p => {
+        if (p === '@me') {
+          if (userName) picSet.add(userName);
+        } else {
+          picSet.add(p);
+        }
+      });
+    });
     allowed_pic = Array.from(picSet);
   }
 

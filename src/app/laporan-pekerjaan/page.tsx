@@ -14,7 +14,29 @@ export default async function LaporanPekerjaanPage() {
 
   const session = await getSession();
   const userRoles = session?.roles || (session?.role ? [session.role] : []);
-  const roleConfig = await getUserMergedLaporanPekerjaanConfig(userRoles);
+
+  let linkedEmployeeName: string | undefined;
+  if (session?.userId) {
+    try {
+      const db = (await import("@/lib/db")).default;
+      const res = await db.execute({
+        sql: `SELECT COALESCE(e.name, u.name) as emp_name
+              FROM users u
+              LEFT JOIN employees e ON e.id = u.employee_id
+              WHERE u.id = ?`,
+        args: [session.userId],
+      });
+      if (res.rows.length > 0 && res.rows[0].emp_name) {
+        linkedEmployeeName = String(res.rows[0].emp_name);
+      }
+    } catch (_) {}
+  }
+
+  const roleConfig = await getUserMergedLaporanPekerjaanConfig(userRoles, {
+    name: session?.name,
+    username: session?.username,
+    employeeName: linkedEmployeeName,
+  });
 
   return (
     <div className="flex-1 min-h-0 flex flex-col">

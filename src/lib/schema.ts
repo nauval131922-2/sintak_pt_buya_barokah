@@ -65,6 +65,7 @@ export async function initSchema(db: any) {
       { table: 'sopd_harga', column: 'pending_produksi', type: 'INTEGER DEFAULT 0' },
       { table: 'sopd_harga', column: 'alasan_pending', type: 'TEXT' },
       { table: 'users', column: 'is_active', type: 'INTEGER DEFAULT 1' },
+      { table: 'users', column: 'employee_id', type: 'INTEGER DEFAULT NULL' },
       { table: 'laporan_pekerjaan', column: 'bagian', type: 'TEXT DEFAULT \'\'' },
     ];
 
@@ -97,6 +98,7 @@ export async function initSchema(db: any) {
       photo TEXT,
       role TEXT DEFAULT 'Admin',
       is_active INTEGER DEFAULT 1,
+      employee_id INTEGER DEFAULT NULL,
       recorded_by TEXT DEFAULT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`,

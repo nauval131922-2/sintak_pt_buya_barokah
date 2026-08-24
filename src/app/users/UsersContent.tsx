@@ -24,6 +24,9 @@ interface User {
   role: string;
   photo?: string | null;
   is_active: number;
+  employee_id?: number | null;
+  employee_name?: string | null;
+  employee_position?: string | null;
   created_at?: string | null;
 }
 
@@ -202,7 +205,14 @@ export default function UsersContent({
             </div>
             <div className="flex flex-col min-w-0 leading-tight">
               <span className="text-[13px] font-bold text-gray-800 truncate mb-1 tracking-tight">{user.name}</span>
-              <span className="text-[11px] text-gray-400 font-semibold truncate">@{user.username}</span>
+              <div className="flex items-center gap-2 truncate">
+                <span className="text-[11px] text-gray-400 font-semibold truncate">@{user.username}</span>
+                {user.employee_position && (
+                  <span className="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 font-medium truncate">
+                    {user.employee_position}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         );

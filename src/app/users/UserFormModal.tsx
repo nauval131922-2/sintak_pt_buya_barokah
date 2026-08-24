@@ -15,6 +15,7 @@ interface UserData {
   roles: string[];
   role: string;
   is_active?: number;
+  employee_id?: number | null;
 }
 
 interface UserFormModalProps {
@@ -26,6 +27,9 @@ interface UserFormModalProps {
 
 export default function UserFormModal({ user, customRoles = [], currentUserId, onClose }: UserFormModalProps) {
   const isEditing = !!user;
+
+  const [employees, setEmployees] = useState<Array<{ id: number; name: string; position: string; employee_no: string | null }>>([]);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(user?.employee_id || null);
 
   const [name, setName] = useState(user?.name || '');
   const [username, setUsername] = useState(user?.username || '');
@@ -41,6 +45,18 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Fetch employees list for linkage
+  useEffect(() => {
+    fetch('/api/employees?all=true')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && Array.isArray(data.data)) {
+          setEmployees(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Role dropdown state
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
@@ -145,9 +161,16 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
           roles: selectedRoles,
           password: password || undefined,
           is_active: isActive,
+          employee_id: selectedEmployeeId,
         });
       } else {
-        res = await createUser({ name, username, roles: selectedRoles, password });
+        res = await createUser({
+          name,
+          username,
+          roles: selectedRoles,
+          password,
+          employee_id: selectedEmployeeId,
+        });
       }
 
       if (res.success) {
@@ -202,6 +225,46 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
                 <p className="text-[12px] font-semibold text-rose-700">{error}</p>
               </div>
             )}
+
+            {/* Tautkan Karyawan */}
+            <div>
+              <label className="block text-[12px] font-bold text-gray-600 mb-2">
+                Tautkan Data Karyawan <span className="text-gray-400 font-normal">(Opsional)</span>
+              </label>
+              <select
+                value={selectedEmployeeId || ''}
+                onChange={e => {
+                  const val = e.target.value ? Number(e.target.value) : null;
+                  setSelectedEmployeeId(val);
+                  if (val) {
+                    const emp = employees.find(item => item.id === val);
+                    if (emp) {
+                      setName(emp.name);
+                      if (!isEditing && !username) {
+                        setUsername(emp.name.toLowerCase().replace(/[^a-z0-9]/g, ''));
+                      }
+                    }
+                  }
+                }}
+                className="w-full px-3 py-2 text-[12.5px] font-medium bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-emerald-400 focus:outline-none transition-all text-slate-700"
+              >
+                <option value="">-- Tanpa Tautan Karyawan --</option>
+                {employees.map(emp => (
+                  <option key={emp.id} value={emp.id}>
+                    {emp.name} {emp.position ? `(${emp.position})` : ''} {emp.employee_no ? `• ID: ${emp.employee_no}` : ''}
+                  </option>
+                ))}
+              </select>
+              {selectedEmployeeId && (
+                <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-100 font-medium">
+                  <User size={12} />
+                  <span>
+                    Tertaut: <b>{employees.find(e => e.id === selectedEmployeeId)?.name}</b>
+                    {employees.find(e => e.id === selectedEmployeeId)?.position && ` — ${employees.find(e => e.id === selectedEmployeeId)?.position}`}
+                  </span>
+                </div>
+              )}
+            </div>
 
             {/* Nama Lengkap */}
             <div>
