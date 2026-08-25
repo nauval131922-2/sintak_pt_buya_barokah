@@ -1959,7 +1959,7 @@ export default function LaporanPekerjaanClient({
               type="button"
               onClick={() => fetchData(true)}
               disabled={loading}
-              className="h-8 px-3 text-xs font-bold text-slate-600 hover:text-emerald-700 bg-slate-50 hover:bg-emerald-50 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
+              className="h-8 px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
               title="Reload Data Laporan Pekerjaan"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-emerald-600" : ""}`} />
@@ -2788,7 +2788,7 @@ function TaskDetailModal({
                         }}
                         className={`transition-all group cursor-pointer ${
                           selectedTaskId === task.id
-                            ? "bg-emerald-100/70 shadow-[inset_3px_0_0_0_#059669] font-semibold text-slate-900"
+                            ? "bg-emerald-100/70 shadow-[inset_3px_0_0_0_#059669] font-semibold text-emerald-950"
                             : "hover:bg-slate-50/80"
                         }`}
                       >
