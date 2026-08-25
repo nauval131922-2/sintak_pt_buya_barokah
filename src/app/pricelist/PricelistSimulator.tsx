@@ -570,7 +570,7 @@ export default function PricelistSimulator({
                   })}
                 </tbody>
                 <tfoot>
-                  <tr className="bg-emerald-50/60 border-t-2 border-emerald-200 font-bold text-slate-900">
+                  <tr className="bg-emerald-50/60 border-t-2 border-emerald-200 font-bold text-emerald-950">
                     <td colSpan={2} className="py-2.5 px-3 uppercase text-emerald-950 font-black text-[11px]">
                       TOTAL BIAYA PRODUKSI
                     </td>
