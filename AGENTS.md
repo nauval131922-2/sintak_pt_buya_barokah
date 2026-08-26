@@ -7,11 +7,18 @@ Project ERP/internal web Next.js 16 App Router (TypeScript, Tailwind v4, SQLite/
 | Perintah | Catatan |
 |----------|---------|
 | `npm run dev` | Dev server dengan `--turbo` |
-| `npm run build` | **Otomatis** jalankan `init-db` via `prebuild` — build gagal jika DB gagal init |
+| `npm run build` | **Otomatis** jalankan `init-db` via `prebuild` — build gagal jika DB gagal init (Jangan jalankan build tanpa perintah) |
 | `npm run lint` | ESLint (config di `eslint.config.mjs`) |
 | `npm run init-db` | Init/maintain schema via `scripts/init-db.ts` (pakai `tsx`) |
 | `npm run init-db:dev` | Sama, tapi `DB_PATH=database_dev.sqlite` |
 | `npm run migrate:sales2025` | Migrasi spesifik — jangan jalankan tanpa alasan |
+
+## Aturan Umum Agent (Wajib Patuh)
+
+- **Tidak perlu melakukan build**: Cukup gunakan `npx tsc` untuk pengecekan tipe statis jika diperlukan.
+- **Update Changelog jika perlu**: Pastikan tanggal update changelog sesuai dengan tanggal pengubahan dilakukan, dan jangan pernah menghapus changelog lama.
+- **Lakukan commit local setelah melakukan perubahan**.
+- **JANGAN jalankan `npx tsc` (kecuali hanya untuk cek internal lokal), jangan update changelog, dan jangan push sampai diinstruksikan oleh user.**
 
 ## Arsitektur & Kebiasaan
 
@@ -69,10 +76,11 @@ Kriteria sederhana: **apakah user di halaman itu merasakan bedanya?** Jika ya �
 
 ## Hal yang Tidak Boleh Dilakukan Tanpa Persetujuan
 
-- Commit, branch, push, reset git.
+- Commit, branch, push, reset git secara remote/ke origin tanpa izin. Untuk local commit, lakukan commit local setelah melakukan perubahan, namun jangan push sampai disuruh.
 - Hapus/ubah database `*.sqlite`/`*.db`, file `.env`, atau data hasil scraping/import.
 - Operasi destruktif (`git reset`, `rm`, migrasi besar, cleanup DB).
 - Perbaiki bug di luar scope task.
+- Jangan jalankan `npx tsc`, build, update changelog, atau push sampai diperintahkan (kecuali jika hanya ingin mengecek dengan `npx tsc` secara lokal jika perlu, tapi jangan build secara penuh). Pengecekan tipe cukup dengan `npx tsc` tanpa build.
 
 ## Bacaan Konteks Awal
 
