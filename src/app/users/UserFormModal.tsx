@@ -120,13 +120,6 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
     });
   }, []);
 
-  // Update posisi saat state selectedRoles berubah (badge bertambah/berkurang bisa menggeser posisi trigger)
-  useEffect(() => {
-    if (isRoleDropdownOpen) {
-      updateDropdownPos();
-    }
-  }, [selectedRoles, isRoleDropdownOpen, updateDropdownPos]);
-
   const filteredRoles = useMemo(
     () => customRoles.filter(r => r.toLowerCase().includes(roleSearchQuery.toLowerCase())),
     [customRoles, roleSearchQuery]
