@@ -1051,8 +1051,8 @@ export default function TrackingClient() {
 
             {/* Part 2: Date Range + Reset */}
             <div className="lg:w-auto lg:min-w-[340px] flex flex-col shrink-0 border-t lg:border-t-0 lg:border-l border-gray-100 pt-4 lg:pt-0 lg:pl-8 justify-center">
-              <div className="flex flex-col mb-2">
-                <span className="block text-[11px] font-bold text-gray-500 mb-2">
+              <div className="flex flex-col">
+                <span className="block font-semibold text-gray-500 ml-1 tracking-tight select-none text-[13px] mb-2">
                   Rentang Tanggal
                 </span>
                 <div className="flex items-center gap-2">
