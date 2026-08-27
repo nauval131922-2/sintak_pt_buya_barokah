@@ -194,13 +194,18 @@ export default function PricelistSimulator({
   };
 
   const handleLoadSimulation = (item: SavedSimulationItem) => {
+    // 1. Ubah mode finishing terlebih dahulu agar setCustomParams mengarah ke profil yang tepat (Spiral vs Klem)
+    onChangeFinishingJilid(item.finishingJilid);
+
+    // 2. Pulihkan Master Parameters snapshot
     if (item.customParams) {
       setCustomParams(item.customParams);
     }
+
+    // 3. Pulihkan spesifikasi form simulator
     setModelKalender(item.modelKalender);
     setBahan(item.bahan);
     setUkuran(item.ukuran);
-    onChangeFinishingJilid(item.finishingJilid);
     setOplah(item.oplah);
     setPilihanMesin(item.pilihanMesin);
     setMarginPct(item.marginPct);
