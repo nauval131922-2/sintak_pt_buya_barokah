@@ -299,7 +299,7 @@ export default function PricelistClient() {
   return (
     <div className="flex flex-col gap-4 flex-1 min-h-0">
       {/* TABS Navigation & Product Category Selector - Bersandingan Sebaris */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between border-b border-gray-100 shrink-0 pb-2 gap-3 mt-1">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between border-b border-gray-100 shrink-0 pb-2 gap-3 mt-1 relative z-50">
         <div className="flex gap-2 sm:gap-6 px-2 flex-wrap sm:flex-nowrap">
           <button
             type="button"
