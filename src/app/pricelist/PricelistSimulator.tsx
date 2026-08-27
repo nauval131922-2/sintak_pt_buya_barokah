@@ -171,6 +171,18 @@ export default function PricelistSimulator({
   const [internalActiveId, setInternalActiveId] = useState<string | null>(null);
   const [internalActiveTitle, setInternalActiveTitle] = useState<string | null>(null);
 
+  // Backup form input simulator sebelum riwayat dimuat
+  const [backupFormInput, setBackupFormInput] = useState<{
+    modelKalender: string;
+    bahan: string;
+    ukuran: string;
+    oplah: number;
+    pilihanMesin: 'Otomatis' | 'Oliver' | 'SM';
+    marginPct: number;
+    negoDiskonPct: number;
+    finishingJilid: 'Spiral' | 'Klem';
+  } | null>(null);
+
   const activeSimulationId = propActiveSimId !== undefined ? propActiveSimId : internalActiveId;
   const activeSimulationTitle = propActiveSimTitle !== undefined ? propActiveSimTitle : internalActiveTitle;
 
@@ -232,12 +244,24 @@ export default function PricelistSimulator({
   };
 
   const handleLoadSimulation = (item: SavedSimulationItem) => {
-    // 0. Backup parameter aktif sebelum ditimpa oleh riwayat jika belum ada backup
+    // 0. Backup parameter aktif & input form sebelum ditimpa oleh riwayat jika belum ada backup
     if (setBackupParamsSpiral && paramsSpiral && !backupParamsSpiral) {
       setBackupParamsSpiral({ ...paramsSpiral });
     }
     if (setBackupParamsKlem && paramsKlem && !backupParamsKlem) {
       setBackupParamsKlem({ ...paramsKlem });
+    }
+    if (!backupFormInput) {
+      setBackupFormInput({
+        modelKalender,
+        bahan,
+        ukuran,
+        oplah,
+        pilihanMesin,
+        marginPct,
+        negoDiskonPct,
+        finishingJilid,
+      });
     }
 
     // 1. Ubah mode finishing
@@ -271,7 +295,7 @@ export default function PricelistSimulator({
   };
 
   const handleExitLoadedMode = () => {
-    // Kembalikan Master Parameter ke backup sebelum memuat riwayat
+    // 1. Kembalikan Master Parameter ke backup sebelum memuat riwayat
     if (backupParamsSpiral && setParamsForFinishing) {
       setParamsForFinishing('Spiral', backupParamsSpiral);
     }
@@ -281,10 +305,23 @@ export default function PricelistSimulator({
     if (setBackupParamsSpiral) setBackupParamsSpiral(null);
     if (setBackupParamsKlem) setBackupParamsKlem(null);
 
+    // 2. Kembalikan input form simulator ke kondisi sebelum memuat riwayat
+    if (backupFormInput) {
+      setModelKalender(backupFormInput.modelKalender);
+      setBahan(backupFormInput.bahan);
+      setUkuran(backupFormInput.ukuran);
+      setOplah(backupFormInput.oplah);
+      setPilihanMesin(backupFormInput.pilihanMesin);
+      setMarginPct(backupFormInput.marginPct);
+      setNegoDiskonPct(backupFormInput.negoDiskonPct);
+      onChangeFinishingJilid(backupFormInput.finishingJilid);
+      setBackupFormInput(null);
+    }
+
     setActiveSimulationId(null);
     setActiveSimulationTitle(null);
     setSimulationTitle('');
-    toast.info('Keluar dari mode riwayat simulasi & tarif master dipulihkan.');
+    toast.info('Keluar dari mode riwayat simulasi & data dikembalikan ke sesi aktif sebelumnya.');
   };
 
   const handleUpdateSavedSimulation = () => {
