@@ -231,11 +231,11 @@ export default function SearchableDropdown({
           ? { right: `${Math.max(12, window.innerWidth - (coords.left + coords.width))}px`, left: 'auto' }
           : { left: `${coords.left}px` }),
         minWidth: `${coords.width}px`,
-        maxWidth: 'max(90vw, 600px)',
+        maxWidth: 'calc(100vw - 32px)',
         width: 'max-content',
         zIndex: 10000
       } : undefined}
-      className={`${usePortal ? '' : `absolute ${alignRight ? 'right-0' : 'left-0'} top-full mt-2 min-w-full ${panelWidth || 'w-max max-w-[90vw]'}`} bg-white border border-gray-100 rounded-xl shadow-xl shadow-emerald-900/10 py-3 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col max-h-[300px]`}
+      className={`${usePortal ? '' : `absolute ${alignRight ? 'right-0' : 'left-0'} top-full mt-2 min-w-full ${panelWidth || 'w-max max-w-[calc(100vw-32px)]'}`} bg-white border border-gray-100 rounded-xl shadow-xl shadow-emerald-900/10 py-3 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col max-h-[300px]`}
     >
       {/* Search */}
       <div className="px-3 pb-3 shrink-0 border-b border-gray-50 mb-1">

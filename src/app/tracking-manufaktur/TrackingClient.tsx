@@ -892,7 +892,6 @@ export default function TrackingClient() {
               placeholder="Cari BOM atau Produk..."
               searchPlaceholder="Cari nomor BOM atau nama produk..."
               triggerWidth="w-full"
-              panelWidth="w-full sm:w-[420px]"
               usePortal={true}
               icon={<Package size={14} className={selectedFaktur && trackingPath === "bom" ? "text-emerald-600" : "text-gray-400"} />}
               onSearchQueryChange={(query) => setQ(query)}
@@ -927,7 +926,6 @@ export default function TrackingClient() {
                   placeholder="Cari Supplier..."
                   searchPlaceholder="Ketik nama supplier..."
                   triggerWidth="w-full"
-                  panelWidth="w-full sm:w-[350px]"
                   usePortal={true}
                   icon={<Truck size={14} className={selectedSupplier ? "text-emerald-600" : "text-gray-400"} />}
                   onSearchQueryChange={(query) => setQSupplier(query)}
@@ -962,7 +960,6 @@ export default function TrackingClient() {
                   placeholder={selectedSupplier ? `PO dari ${selectedSupplier}...` : "Cari Nomor PO..."}
                   searchPlaceholder={selectedSupplier ? `Cari PO dari ${selectedSupplier}...` : "Cari nomor PO..."}
                   triggerWidth="w-full"
-                  panelWidth="w-full sm:w-[400px]"
                   usePortal={true}
                   icon={<Hash size={14} className={selectedPO ? "text-emerald-600" : "text-gray-400"} />}
                   onSearchQueryChange={(query) => setQPO(query)}
@@ -1021,7 +1018,6 @@ export default function TrackingClient() {
                   placeholder={selectedSupplier ? `Cari barang dari ${selectedSupplier}...` : "Cari Faktur PB atau Barang..."}
                   searchPlaceholder={selectedSupplier ? `Cari barang dari ${selectedSupplier}...` : "Cari faktur atau nama barang..."}
                   triggerWidth="w-full"
-                  panelWidth="w-full sm:w-[480px]"
                   usePortal={true}
                   icon={<ShoppingCart size={14} className={selectedFaktur && trackingPath === "rekap" ? "text-emerald-600" : "text-gray-400"} />}
                   onSearchQueryChange={(query) => setQRekap(query)}
