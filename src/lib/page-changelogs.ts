@@ -45,6 +45,48 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
+  // ─── Tracking Manufaktur ───
+  'tracking-manufaktur-2026-08-28': entry({
+    pageKey: 'tracking_manufaktur',
+    title: 'Tracking Manufaktur',
+    permissionKeys: ['tracking_manufaktur'],
+    sortDate: '2026-08-28',
+    date: '28 Agu 2026',
+    version: '2026-08-28-1',
+    items: [
+      'Migrasi seluruh selector manual (Pilih BOM, Supplier, Nomor PO, dan Faktur PB/Barang) ke komponen standar SearchableDropdown',
+      'Pembaruan SearchableDropdown dengan auto-width menyesuaikan panjang teks item tanpa terpotong batas layar (smart auto-align)',
+      'Penyelarasan visual label Rentang Tanggal agar seragam dengan SearchableDropdown',
+      'Pembersihan header redundant Visualisasi Alur Manufaktur untuk tampilan yang lebih ringkas dan fokus',
+    ],
+  }),
+
+  // ─── Sync All Data ───
+  'sync-2026-08-28': entry({
+    pageKey: 'sync',
+    title: 'Sinkronisasi All Data',
+    permissionKeys: ['sync'],
+    sortDate: '2026-08-28',
+    date: '28 Agu 2026',
+    version: '2026-08-28-1',
+    items: [
+      'Penyelarasan z-index control bar (relative z-30) agar popup DatePicker tidak tertutup oleh card modul di bawahnya',
+    ],
+  }),
+
+  // ─── Kelola User ───
+  'users-2026-08-28': entry({
+    pageKey: 'users',
+    title: 'Kelola User',
+    permissionKeys: [...SUPER_ADMIN_ONLY],
+    sortDate: '2026-08-28',
+    date: '28 Agu 2026',
+    version: '2026-08-28-1',
+    items: [
+      'Pembaruan modal tambah/edit akun: dukungan unselect role tunggal dan tombol hapus langsung pada badge peran akses',
+    ],
+  }),
+
   // ─── Pricelist Kalender ───
   'pricelist-2026-08-27': entry({
     pageKey: 'pricelist',
