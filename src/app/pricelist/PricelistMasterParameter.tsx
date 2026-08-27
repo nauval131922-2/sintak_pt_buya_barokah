@@ -52,6 +52,12 @@ export default function PricelistMasterParameter({
     return customParams[key] !== standardParams[key];
   };
 
+  const handleResetField = (key: keyof SimulatorMasterParams, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setCustomParams((prev) => ({ ...prev, [key]: standardParams[key] }));
+    toast.info(`Field dikembalikan ke standar master (${standardParams[key]}).`);
+  };
+
   const isModified = React.useMemo(() => {
     return JSON.stringify(customParams) !== JSON.stringify(standardParams);
   }, [customParams, standardParams]);
@@ -165,7 +171,14 @@ export default function PricelistMasterParameter({
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-[11px] font-bold text-slate-700">HVS 70 gsm</label>
                     {isFieldModified('tarifHvs70') && (
-                      <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('tarifHvs70', e)}
+                        title="Reset field ini ke standar master"
+                        className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      >
+                        <RotateCcw size={9} /> Reset
+                      </button>
                     )}
                   </div>
                   <ThousandInput
@@ -179,7 +192,14 @@ export default function PricelistMasterParameter({
                   <div className="flex items-center justify-between mb-0.5">
                     <label className="block text-[10px] font-bold text-slate-600">PPN / Margin Kertas</label>
                     {isFieldModified('ppnHvs70') && (
-                      <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('ppnHvs70', e)}
+                        title="Reset field ini ke standar master"
+                        className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      >
+                        <RotateCcw size={9} /> Reset
+                      </button>
                     )}
                   </div>
                   <ThousandInput
@@ -201,7 +221,14 @@ export default function PricelistMasterParameter({
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-[11px] font-bold text-slate-700">Art Paper 120</label>
                     {isFieldModified('tarifAp120') && (
-                      <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('tarifAp120', e)}
+                        title="Reset field ini ke standar master"
+                        className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      >
+                        <RotateCcw size={9} /> Reset
+                      </button>
                     )}
                   </div>
                   <ThousandInput
@@ -215,7 +242,14 @@ export default function PricelistMasterParameter({
                   <div className="flex items-center justify-between mb-0.5">
                     <label className="block text-[10px] font-bold text-slate-600">PPN / Margin Kertas</label>
                     {isFieldModified('ppnAp120') && (
-                      <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('ppnAp120', e)}
+                        title="Reset field ini ke standar master"
+                        className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      >
+                        <RotateCcw size={9} /> Reset
+                      </button>
                     )}
                   </div>
                   <ThousandInput
@@ -237,7 +271,14 @@ export default function PricelistMasterParameter({
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-[11px] font-bold text-slate-700">Art Paper 150</label>
                     {isFieldModified('tarifAp150') && (
-                      <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('tarifAp150', e)}
+                        title="Reset field ini ke standar master"
+                        className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      >
+                        <RotateCcw size={9} /> Reset
+                      </button>
                     )}
                   </div>
                   <ThousandInput
@@ -251,7 +292,14 @@ export default function PricelistMasterParameter({
                   <div className="flex items-center justify-between mb-0.5">
                     <label className="block text-[10px] font-bold text-slate-600">PPN / Margin Kertas</label>
                     {isFieldModified('ppnAp150') && (
-                      <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('ppnAp150', e)}
+                        title="Reset field ini ke standar master"
+                        className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      >
+                        <RotateCcw size={9} /> Reset
+                      </button>
                     )}
                   </div>
                   <ThousandInput
@@ -291,139 +339,283 @@ export default function PricelistMasterParameter({
                 <tr>
                   <td className="py-2 px-2.5 text-slate-700">Ongkos Min Order (4 plat)</td>
                   <td className={`py-1.5 px-2 ${isFieldModified('oliverMinOngkos') ? 'bg-amber-50/70' : ''}`}>
-                    <ThousandInput
-                      prefix="Rp"
-                      value={customParams.oliverMinOngkos}
-                      onValueChange={(val) => handleChange('oliverMinOngkos', val)}
-                      className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                        isFieldModified('oliverMinOngkos') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                      }`}
-                    />
+                    <div className="flex items-center gap-1">
+                      <ThousandInput
+                        prefix="Rp"
+                        value={customParams.oliverMinOngkos}
+                        onValueChange={(val) => handleChange('oliverMinOngkos', val)}
+                        className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                          isFieldModified('oliverMinOngkos') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                        }`}
+                      />
+                      {isFieldModified('oliverMinOngkos') && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleResetField('oliverMinOngkos', e)}
+                          title="Reset Oliver Min Ongkos"
+                          className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                        >
+                          <RotateCcw size={10} />
+                        </button>
+                      )}
+                    </div>
                   </td>
                   <td className={`py-1.5 px-2 ${isFieldModified('smMinOngkos') ? 'bg-amber-50/70' : ''}`}>
-                    <ThousandInput
-                      prefix="Rp"
-                      value={customParams.smMinOngkos}
-                      onValueChange={(val) => handleChange('smMinOngkos', val)}
-                      className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                        isFieldModified('smMinOngkos') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                      }`}
-                    />
+                    <div className="flex items-center gap-1">
+                      <ThousandInput
+                        prefix="Rp"
+                        value={customParams.smMinOngkos}
+                        onValueChange={(val) => handleChange('smMinOngkos', val)}
+                        className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                          isFieldModified('smMinOngkos') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                        }`}
+                      />
+                      {isFieldModified('smMinOngkos') && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleResetField('smMinOngkos', e)}
+                          title="Reset SM Min Ongkos"
+                          className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                        >
+                          <RotateCcw size={10} />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
                 <tr>
                   <td className="py-2 px-2.5 text-slate-700">Insheet Plat Cetak</td>
                   <td className={`py-1.5 px-2 ${isFieldModified('oliverInsheet') ? 'bg-amber-50/70' : ''}`}>
-                    <ThousandInput
-                      suffix="lbr"
-                      value={customParams.oliverInsheet}
-                      onValueChange={(val) => handleChange('oliverInsheet', val)}
-                      className={`w-full pr-7 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                        isFieldModified('oliverInsheet') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                      }`}
-                    />
+                    <div className="flex items-center gap-1">
+                      <ThousandInput
+                        suffix="lbr"
+                        value={customParams.oliverInsheet}
+                        onValueChange={(val) => handleChange('oliverInsheet', val)}
+                        className={`w-full pr-7 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                          isFieldModified('oliverInsheet') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                        }`}
+                      />
+                      {isFieldModified('oliverInsheet') && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleResetField('oliverInsheet', e)}
+                          title="Reset Oliver Insheet"
+                          className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                        >
+                          <RotateCcw size={10} />
+                        </button>
+                      )}
+                    </div>
                   </td>
                   <td className={`py-1.5 px-2 ${isFieldModified('smInsheet') ? 'bg-amber-50/70' : ''}`}>
-                    <ThousandInput
-                      suffix="lbr"
-                      value={customParams.smInsheet}
-                      onValueChange={(val) => handleChange('smInsheet', val)}
-                      className={`w-full pr-7 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                        isFieldModified('smInsheet') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                      }`}
-                    />
+                    <div className="flex items-center gap-1">
+                      <ThousandInput
+                        suffix="lbr"
+                        value={customParams.smInsheet}
+                        onValueChange={(val) => handleChange('smInsheet', val)}
+                        className={`w-full pr-7 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                          isFieldModified('smInsheet') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                        }`}
+                      />
+                      {isFieldModified('smInsheet') && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleResetField('smInsheet', e)}
+                          title="Reset SM Insheet"
+                          className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                        >
+                          <RotateCcw size={10} />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
                 <tr>
                   <td className="py-2 px-2.5 text-slate-700">Biaya Plat CTP / Unit</td>
                   <td className={`py-1.5 px-2 ${isFieldModified('oliverPlatUnit') ? 'bg-amber-50/70' : ''}`}>
-                    <ThousandInput
-                      prefix="Rp"
-                      value={customParams.oliverPlatUnit}
-                      onValueChange={(val) => handleChange('oliverPlatUnit', val)}
-                      className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                        isFieldModified('oliverPlatUnit') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                      }`}
-                    />
+                    <div className="flex items-center gap-1">
+                      <ThousandInput
+                        prefix="Rp"
+                        value={customParams.oliverPlatUnit}
+                        onValueChange={(val) => handleChange('oliverPlatUnit', val)}
+                        className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                          isFieldModified('oliverPlatUnit') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                        }`}
+                      />
+                      {isFieldModified('oliverPlatUnit') && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleResetField('oliverPlatUnit', e)}
+                          title="Reset Oliver Plat Unit"
+                          className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                        >
+                          <RotateCcw size={10} />
+                        </button>
+                      )}
+                    </div>
                   </td>
                   <td className={`py-1.5 px-2 ${isFieldModified('smPlatUnit') ? 'bg-amber-50/70' : ''}`}>
-                    <ThousandInput
-                      prefix="Rp"
-                      value={customParams.smPlatUnit}
-                      onValueChange={(val) => handleChange('smPlatUnit', val)}
-                      className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                        isFieldModified('smPlatUnit') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                      }`}
-                    />
+                    <div className="flex items-center gap-1">
+                      <ThousandInput
+                        prefix="Rp"
+                        value={customParams.smPlatUnit}
+                        onValueChange={(val) => handleChange('smPlatUnit', val)}
+                        className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                          isFieldModified('smPlatUnit') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                        }`}
+                      />
+                      {isFieldModified('smPlatUnit') && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleResetField('smPlatUnit', e)}
+                          title="Reset SM Plat Unit"
+                          className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                        >
+                          <RotateCcw size={10} />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
                 <tr>
                   <td className="py-2 px-2.5 text-slate-700">Batas Min Drek (Kapasitas Min)</td>
                   <td className={`py-1.5 px-2 ${isFieldModified('oliverBatasDrek') ? 'bg-amber-50/70' : ''}`}>
-                    <ThousandInput
-                      suffix="drek"
-                      value={customParams.oliverBatasDrek}
-                      onValueChange={(val) => handleChange('oliverBatasDrek', val)}
-                      className={`w-full py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                        isFieldModified('oliverBatasDrek') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                      }`}
-                    />
+                    <div className="flex items-center gap-1">
+                      <ThousandInput
+                        suffix="drek"
+                        value={customParams.oliverBatasDrek}
+                        onValueChange={(val) => handleChange('oliverBatasDrek', val)}
+                        className={`w-full py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                          isFieldModified('oliverBatasDrek') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                        }`}
+                      />
+                      {isFieldModified('oliverBatasDrek') && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleResetField('oliverBatasDrek', e)}
+                          title="Reset Oliver Batas Drek"
+                          className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                        >
+                          <RotateCcw size={10} />
+                        </button>
+                      )}
+                    </div>
                   </td>
                   <td className={`py-1.5 px-2 ${isFieldModified('smBatasDrek') ? 'bg-amber-50/70' : ''}`}>
-                    <ThousandInput
-                      suffix="drek"
-                      value={customParams.smBatasDrek}
-                      onValueChange={(val) => handleChange('smBatasDrek', val)}
-                      className={`w-full py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                        isFieldModified('smBatasDrek') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                      }`}
-                    />
+                    <div className="flex items-center gap-1">
+                      <ThousandInput
+                        suffix="drek"
+                        value={customParams.smBatasDrek}
+                        onValueChange={(val) => handleChange('smBatasDrek', val)}
+                        className={`w-full py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                          isFieldModified('smBatasDrek') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                        }`}
+                      />
+                      {isFieldModified('smBatasDrek') && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleResetField('smBatasDrek', e)}
+                          title="Reset SM Batas Drek"
+                          className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                        >
+                          <RotateCcw size={10} />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
                 <tr>
                   <td className="py-2 px-2.5 text-slate-700">Drek Over / Drek</td>
                   <td className={`py-1.5 px-2 ${isFieldModified('oliverDrekOver') ? 'bg-amber-50/70' : ''}`}>
-                    <ThousandInput
-                      prefix="Rp"
-                      value={customParams.oliverDrekOver}
-                      onValueChange={(val) => handleChange('oliverDrekOver', val)}
-                      className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                        isFieldModified('oliverDrekOver') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                      }`}
-                    />
+                    <div className="flex items-center gap-1">
+                      <ThousandInput
+                        prefix="Rp"
+                        value={customParams.oliverDrekOver}
+                        onValueChange={(val) => handleChange('oliverDrekOver', val)}
+                        className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                          isFieldModified('oliverDrekOver') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                        }`}
+                      />
+                      {isFieldModified('oliverDrekOver') && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleResetField('oliverDrekOver', e)}
+                          title="Reset Oliver Drek Over"
+                          className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                        >
+                          <RotateCcw size={10} />
+                        </button>
+                      )}
+                    </div>
                   </td>
                   <td className={`py-1.5 px-2 ${isFieldModified('smDrekOver') ? 'bg-amber-50/70' : ''}`}>
-                    <ThousandInput
-                      prefix="Rp"
-                      value={customParams.smDrekOver}
-                      onValueChange={(val) => handleChange('smDrekOver', val)}
-                      className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                        isFieldModified('smDrekOver') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                      }`}
-                    />
+                    <div className="flex items-center gap-1">
+                      <ThousandInput
+                        prefix="Rp"
+                        value={customParams.smDrekOver}
+                        onValueChange={(val) => handleChange('smDrekOver', val)}
+                        className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                          isFieldModified('smDrekOver') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                        }`}
+                      />
+                      {isFieldModified('smDrekOver') && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleResetField('smDrekOver', e)}
+                          title="Reset SM Drek Over"
+                          className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                        >
+                          <RotateCcw size={10} />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
                 <tr>
                   <td className="py-2 px-2.5 text-slate-700">Biaya Transportasi Mesin</td>
                   <td className={`py-1.5 px-2 ${isFieldModified('oliverTransport') ? 'bg-amber-50/70' : ''}`}>
-                    <ThousandInput
-                      prefix="Rp"
-                      value={customParams.oliverTransport}
-                      onValueChange={(val) => handleChange('oliverTransport', val)}
-                      className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                        isFieldModified('oliverTransport') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                      }`}
-                    />
+                    <div className="flex items-center gap-1">
+                      <ThousandInput
+                        prefix="Rp"
+                        value={customParams.oliverTransport}
+                        onValueChange={(val) => handleChange('oliverTransport', val)}
+                        className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                          isFieldModified('oliverTransport') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                        }`}
+                      />
+                      {isFieldModified('oliverTransport') && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleResetField('oliverTransport', e)}
+                          title="Reset Oliver Transport"
+                          className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                        >
+                          <RotateCcw size={10} />
+                        </button>
+                      )}
+                    </div>
                   </td>
                   <td className={`py-1.5 px-2 ${isFieldModified('smTransport') ? 'bg-amber-50/70' : ''}`}>
-                    <ThousandInput
-                      prefix="Rp"
-                      value={customParams.smTransport}
-                      onValueChange={(val) => handleChange('smTransport', val)}
-                      className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                        isFieldModified('smTransport') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                      }`}
-                    />
+                    <div className="flex items-center gap-1">
+                      <ThousandInput
+                        prefix="Rp"
+                        value={customParams.smTransport}
+                        onValueChange={(val) => handleChange('smTransport', val)}
+                        className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                          isFieldModified('smTransport') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                        }`}
+                      />
+                      {isFieldModified('smTransport') && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleResetField('smTransport', e)}
+                          title="Reset SM Transport"
+                          className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                        >
+                          <RotateCcw size={10} />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -453,7 +645,14 @@ export default function PricelistMasterParameter({
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-[10.5px] font-bold text-slate-700">Spiral (cm x Rp)</label>
                   {isFieldModified('tarifSpiralLubang') && (
-                    <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                    <button
+                      type="button"
+                      onClick={(e) => handleResetField('tarifSpiralLubang', e)}
+                      title="Reset field ini ke standar master"
+                      className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                    >
+                      <RotateCcw size={9} /> Reset
+                    </button>
                   )}
                 </div>
                 <ThousandInput
@@ -473,7 +672,14 @@ export default function PricelistMasterParameter({
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-[10.5px] font-bold text-slate-700">Spiral Min Order</label>
                   {isFieldModified('tarifSpiralMin') && (
-                    <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                    <button
+                      type="button"
+                      onClick={(e) => handleResetField('tarifSpiralMin', e)}
+                      title="Reset field ini ke standar master"
+                      className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                    >
+                      <RotateCcw size={9} /> Reset
+                    </button>
                   )}
                 </div>
                 <ThousandInput
@@ -493,7 +699,14 @@ export default function PricelistMasterParameter({
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-[10.5px] font-bold text-slate-700">Desain Kalender</label>
                   {isFieldModified('tarifDesain') && (
-                    <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                    <button
+                      type="button"
+                      onClick={(e) => handleResetField('tarifDesain', e)}
+                      title="Reset field ini ke standar master"
+                      className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                    >
+                      <RotateCcw size={9} /> Reset
+                    </button>
                   )}
                 </div>
                 <ThousandInput
@@ -513,7 +726,14 @@ export default function PricelistMasterParameter({
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-[10.5px] font-bold text-slate-700">Almanak Desain</label>
                   {isFieldModified('tarifAlmanakDesain') && (
-                    <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                    <button
+                      type="button"
+                      onClick={(e) => handleResetField('tarifAlmanakDesain', e)}
+                      title="Reset field ini ke standar master"
+                      className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                    >
+                      <RotateCcw size={9} /> Reset
+                    </button>
                   )}
                 </div>
                 <ThousandInput
@@ -533,7 +753,14 @@ export default function PricelistMasterParameter({
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-[10.5px] font-bold text-slate-700">Royalty Kalender</label>
                   {isFieldModified('tarifRoyalty') && (
-                    <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                    <button
+                      type="button"
+                      onClick={(e) => handleResetField('tarifRoyalty', e)}
+                      title="Reset field ini ke standar master"
+                      className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                    >
+                      <RotateCcw size={9} /> Reset
+                    </button>
                   )}
                 </div>
                 <ThousandInput
@@ -553,7 +780,14 @@ export default function PricelistMasterParameter({
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-[10.5px] font-bold text-slate-700">Potong Dasar</label>
                   {isFieldModified('tarifPotongDasar') && (
-                    <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                    <button
+                      type="button"
+                      onClick={(e) => handleResetField('tarifPotongDasar', e)}
+                      title="Reset field ini ke standar master"
+                      className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                    >
+                      <RotateCcw size={9} /> Reset
+                    </button>
                   )}
                 </div>
                 <ThousandInput
@@ -579,7 +813,14 @@ export default function PricelistMasterParameter({
                   <div className="flex items-center justify-between mb-0.5">
                     <label className="block text-[10px] font-bold text-slate-700">32 x 48 cm</label>
                     {isFieldModified('klem32x48') && (
-                      <span className="text-[8.5px] font-bold text-amber-800 bg-amber-200 px-1 py-0.2 rounded">Ubah</span>
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('klem32x48', e)}
+                        title="Reset field ini ke standar master"
+                        className="text-[8.5px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1 py-0.2 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      >
+                        <RotateCcw size={8} /> Reset
+                      </button>
                     )}
                   </div>
                   <ThousandInput
@@ -595,7 +836,14 @@ export default function PricelistMasterParameter({
                   <div className="flex items-center justify-between mb-0.5">
                     <label className="block text-[10px] font-bold text-slate-700">38 x 54 cm</label>
                     {isFieldModified('klem38x54') && (
-                      <span className="text-[8.5px] font-bold text-amber-800 bg-amber-200 px-1 py-0.2 rounded">Ubah</span>
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('klem38x54', e)}
+                        title="Reset field ini ke standar master"
+                        className="text-[8.5px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1 py-0.2 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      >
+                        <RotateCcw size={8} /> Reset
+                      </button>
                     )}
                   </div>
                   <ThousandInput
@@ -611,7 +859,14 @@ export default function PricelistMasterParameter({
                   <div className="flex items-center justify-between mb-0.5">
                     <label className="block text-[10px] font-bold text-slate-700">46 x 64 cm</label>
                     {isFieldModified('klem46x64') && (
-                      <span className="text-[8.5px] font-bold text-amber-800 bg-amber-200 px-1 py-0.2 rounded">Ubah</span>
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('klem46x64', e)}
+                        title="Reset field ini ke standar master"
+                        className="text-[8.5px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1 py-0.2 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      >
+                        <RotateCcw size={8} /> Reset
+                      </button>
                     )}
                   </div>
                   <ThousandInput
@@ -627,7 +882,14 @@ export default function PricelistMasterParameter({
                   <div className="flex items-center justify-between mb-0.5">
                     <label className="block text-[10px] font-bold text-slate-700">48 x 64 cm</label>
                     {isFieldModified('klem48x64') && (
-                      <span className="text-[8.5px] font-bold text-amber-800 bg-amber-200 px-1 py-0.2 rounded">Ubah</span>
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('klem48x64', e)}
+                        title="Reset field ini ke standar master"
+                        className="text-[8.5px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1 py-0.2 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      >
+                        <RotateCcw size={8} /> Reset
+                      </button>
                     )}
                   </div>
                   <ThousandInput
@@ -662,7 +924,14 @@ export default function PricelistMasterParameter({
                   <div className="flex items-center gap-1">
                     <span className="font-bold text-slate-800 block text-xs">Ukuran 32 x 48 cm</span>
                     {isFieldModified('potong32x48') && (
-                      <span className="text-[8.5px] font-bold text-amber-800 bg-amber-200 px-1 rounded">Ubah</span>
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('potong32x48', e)}
+                        title="Reset field ini"
+                        className="text-[8.5px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      >
+                        <RotateCcw size={8} /> Reset
+                      </button>
                     )}
                   </div>
                   <span className="text-[10px] text-slate-500">Plano 65 x 100</span>
@@ -684,7 +953,14 @@ export default function PricelistMasterParameter({
                   <div className="flex items-center gap-1">
                     <span className="font-bold text-slate-800 block text-xs">Ukuran 38 x 54 cm</span>
                     {isFieldModified('potong38x54') && (
-                      <span className="text-[8.5px] font-bold text-amber-800 bg-amber-200 px-1 rounded">Ubah</span>
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('potong38x54', e)}
+                        title="Reset field ini"
+                        className="text-[8.5px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      >
+                        <RotateCcw size={8} /> Reset
+                      </button>
                     )}
                   </div>
                   <span className="text-[10px] text-slate-500">Plano 79 x 109</span>
@@ -706,7 +982,14 @@ export default function PricelistMasterParameter({
                   <div className="flex items-center gap-1">
                     <span className="font-bold text-slate-800 block text-xs">Ukuran 46 x 64 cm</span>
                     {isFieldModified('potong46x64') && (
-                      <span className="text-[8.5px] font-bold text-amber-800 bg-amber-200 px-1 rounded">Ubah</span>
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('potong46x64', e)}
+                        title="Reset field ini"
+                        className="text-[8.5px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      >
+                        <RotateCcw size={8} /> Reset
+                      </button>
                     )}
                   </div>
                   <span className="text-[10px] text-slate-500">Plano 65 x 100</span>
@@ -728,7 +1011,14 @@ export default function PricelistMasterParameter({
                   <div className="flex items-center gap-1">
                     <span className="font-bold text-slate-800 block text-xs">Ukuran 48 x 64 cm</span>
                     {isFieldModified('potong48x64') && (
-                      <span className="text-[8.5px] font-bold text-amber-800 bg-amber-200 px-1 rounded">Ubah</span>
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('potong48x64', e)}
+                        title="Reset field ini"
+                        className="text-[8.5px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      >
+                        <RotateCcw size={8} /> Reset
+                      </button>
                     )}
                   </div>
                   <span className="text-[10px] text-slate-500">Plano 65 x 100</span>
@@ -752,7 +1042,14 @@ export default function PricelistMasterParameter({
                 <div className="flex items-center gap-1">
                   <span className="font-bold">Konstanta Berat 1 Rim Kertas Plano:</span>
                   {isFieldModified('konstantaBeratRim') && (
-                    <span className="text-[8.5px] font-bold text-amber-800 bg-amber-200 px-1 rounded">Ubah</span>
+                    <button
+                      type="button"
+                      onClick={(e) => handleResetField('konstantaBeratRim', e)}
+                      title="Reset field ini"
+                      className="text-[8.5px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                    >
+                      <RotateCcw size={8} /> Reset
+                    </button>
                   )}
                 </div>
                 <div className="w-28">
@@ -769,7 +1066,14 @@ export default function PricelistMasterParameter({
                 <div className="flex items-center gap-1">
                   <span className="font-bold">Standar Isi 1 Rim (Lembar):</span>
                   {isFieldModified('lembarPerRim') && (
-                    <span className="text-[8.5px] font-bold text-amber-800 bg-amber-200 px-1 rounded">Ubah</span>
+                    <button
+                      type="button"
+                      onClick={(e) => handleResetField('lembarPerRim', e)}
+                      title="Reset field ini"
+                      className="text-[8.5px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                    >
+                      <RotateCcw size={8} /> Reset
+                    </button>
                   )}
                 </div>
                 <div className="w-28">
@@ -788,7 +1092,14 @@ export default function PricelistMasterParameter({
                   <div className="flex items-center gap-1">
                     <span className="font-bold block">Kapasitas Lakban per Roll:</span>
                     {isFieldModified('kapasitasLakbanRoll') && (
-                      <span className="text-[8.5px] font-bold text-amber-800 bg-amber-200 px-1 rounded">Ubah</span>
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('kapasitasLakbanRoll', e)}
+                        title="Reset field ini"
+                        className="text-[8.5px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      >
+                        <RotateCcw size={8} /> Reset
+                      </button>
                     )}
                   </div>
                   <span className="text-[10px] text-violet-800">8.000 cm / 60 cm keliling ikat</span>
