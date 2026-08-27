@@ -15,7 +15,7 @@ import {
   Check,
   Share2,
   Sparkles,
-  Layers,
+  Sliders,
 } from 'lucide-react';
 import {
   calculateYasinSimulator,
@@ -153,10 +153,11 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Kolom Kiri: Form Input */}
         <div className="lg:col-span-5 space-y-5">
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600" /> Spesifikasi Yasin
-            </h4>
+          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <Sliders size={15} className="text-emerald-700" />
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Input Spesifikasi Order</h3>
+            </div>
 
             {/* Pilihan Softcover vs Hardcover */}
             <div>
