@@ -328,59 +328,59 @@ export function calculatePricelistSimulator(input: SimulatorInput): SimulatorOut
 
   const breakdown: SimulatorBreakdownItem[] = [
     {
-      name: '1. Biaya Bahan Kertas (Isi)',
+      name: 'Biaya Bahan Kertas (Isi)',
       amount: biayaKertas,
       formula: `[(L*P*GSM / 20.000 kg) * (Tarif/kg + PPN) / 500 lbr] * [(Oplah+Insheet)*Lbr / Potong]`,
     },
     {
-      name: '2. Biaya Plat Cetak (CTP)',
+      name: 'Biaya Plat Cetak (CTP)',
       amount: biayaPlat,
       formula: `Jumlah Plat (${jmlPlat} Plat) * Tarif Satuan (Rp ${biayaPlatUnit.toLocaleString('id-ID')})`,
     },
     {
-      name: '3. Ongkos Mesin Cetak (Isi)',
+      name: 'Ongkos Mesin Cetak (Isi)',
       amount: ongkosCetakMesin,
       formula: `(Jml Plat * Min Order) + (Drek Over * Tarif Over * Jml Plat)`,
     },
     {
-      name: '4. Desain Kalender',
+      name: 'Desain Kalender',
       amount: biayaDesain,
       formula: `Tarif Desain (Rp ${params.tarifDesain.toLocaleString('id-ID')}) * ${lembar} Lembar`,
     },
     {
-      name: '5. Plat & Cetak Almanak',
+      name: 'Plat & Cetak Almanak',
       amount: biayaAlmanak,
       formula: `Desain Almanak + Plat Almanak + Cetak Almanak (+ Over drek jika ada)`,
     },
     {
-      name: '6. Royalty Kalender',
+      name: 'Royalty Kalender',
       amount: biayaRoyalty,
       formula: `Tarif Royalty (Rp ${params.tarifRoyalty.toLocaleString('id-ID')}) * ${safeOplah.toLocaleString('id-ID')} Pcs`,
     },
     {
-      name: '7. Finishing Potong Dasar',
+      name: 'Finishing Potong Dasar',
       amount: biayaPotong,
       formula: `(Tarif Potong * Lembar) + (Tarif Potong * (Lembar / Plano Potong))`,
     },
     {
-      name: '8. Susun / Colator',
+      name: 'Susun / Colator',
       amount: biayaColator,
       formula: `(${lembar} Lbr * Rp ${ongkosColatorPerLbr.toLocaleString('id-ID')}) * (${safeOplah.toLocaleString('id-ID')} + ${insheet / 2})`,
     },
     {
-      name: isKlem ? '9. Finishing Klem Seng (Jepit)' : '9. Spiral Kawat (Jilid)',
+      name: isKlem ? 'Finishing Klem Seng (Jepit)' : 'Spiral Kawat (Jilid)',
       amount: biayaJilid,
       formula: isKlem
         ? `(${safeOplah.toLocaleString('id-ID')} + 5 pcs) * Rp ${tarifKlemUnit.toLocaleString('id-ID')}/pcs`
         : `MAX(Min Rp ${params.tarifSpiralMin.toLocaleString('id-ID')}, (${lebarCm} cm * Rp ${params.tarifSpiralLubang}) * (${safeOplah.toLocaleString('id-ID')} + 5))`,
     },
     {
-      name: '10. Lakban & Packing',
+      name: 'Lakban & Packing',
       amount: biayaLakban,
       formula: `MAX(Min 1 Roll Rp ${params.tarifLakbanRoll.toLocaleString('id-ID')}, ((${safeOplah.toLocaleString('id-ID')} / 50 pack) / 133.3) * Rp ${params.tarifLakbanRoll.toLocaleString('id-ID')})`,
     },
     {
-      name: '11. Biaya Transportasi',
+      name: 'Biaya Transportasi',
       amount: biayaKirim,
       formula: `Biaya Transportasi Mesin ${mesin} (Rp ${biayaTransport.toLocaleString('id-ID')})`,
     },
