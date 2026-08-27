@@ -26,6 +26,7 @@ import {
   Hash,
 } from "lucide-react";
 import DatePicker from "@/components/DatePicker";
+import SearchableDropdown from "@/components/SearchableDropdown";
 import SearchAndReload from "@/components/SearchAndReload";
 import { persistDateStore, hydrateDateStore } from '@/lib/scraper-period';
 import { formatMdtDate, parseIndoDate, parseLooseNumber, toTitleCase } from './tracking-utils';
@@ -86,8 +87,6 @@ export default function TrackingClient() {
     laporanPenjualan: any[];
     id?: string;
   } | null>(null);
-  const [suggestionPage, setSuggestionPage] = useState(1);
-  const [hasMoreSuggestions, setHasMoreSuggestions] = useState(true);
   const [loadTime, setLoadTime] = useState<number | null>(null);
   const [trackingPath, setTrackingPath] = useState<"bom" | "rekap" | null>(
     null,
@@ -97,10 +96,6 @@ export default function TrackingClient() {
   const [qRekap, setQRekap] = useState("");
   const [rekapSuggestions, setRekapSuggestions] = useState<any[]>([]);
   const [loadingRekapSuggestions, setLoadingRekapSuggestions] = useState(false);
-  const [rekapPage, setRekapPage] = useState(1);
-  const [hasMoreRekapSuggestions, setHasMoreRekapSuggestions] = useState(true);
-  const [openRekap, setOpenRekap] = useState(false);
-  const rekapSuggestionRef = useRef<HTMLDivElement>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
 
@@ -113,16 +108,12 @@ export default function TrackingClient() {
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [loadingSuppliers, setLoadingSuppliers] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState<string | null>(null);
-  const [openSupplier, setOpenSupplier] = useState(false);
-  const supplierSuggestionRef = useRef<HTMLDivElement>(null);
 
   // State for PO Number filter
   const [qPO, setQPO] = useState("");
   const [poList, setPoList] = useState<any[]>([]);
   const [loadingPO, setLoadingPO] = useState(false);
   const [selectedPO, setSelectedPO] = useState<string | null>(null);
-  const [openPO, setOpenPO] = useState(false);
-  const poSuggestionRef = useRef<HTMLDivElement>(null);
 
   const [trackingMeta, setTrackingMeta] = useState<{
     isStartingFromRekap: boolean;
@@ -138,9 +129,6 @@ export default function TrackingClient() {
 
     return () => clearTimeout(handler);
   }, [filterText]);
-
-  const suggestionRef = useRef<HTMLDivElement>(null);
-  const [open, setOpen] = useState(false);
 
   // Column Widths for Resizing - Persisted in localStorage
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(
@@ -535,48 +523,41 @@ export default function TrackingClient() {
   // Search logic for dropdown
   useEffect(() => {
     let active = true;
-    const fetchNames = async (query: string, pageNum: number) => {
-      if (pageNum === 1) setLoadingSuggestions(true);
+    const fetchNames = async (query: string) => {
+      setLoadingSuggestions(true);
       try {
         const res = await fetch(
-          `/api/tracking/names?q=${encodeURIComponent(query)}&page=${pageNum}&pageSize=20`,
+          `/api/tracking/names?q=${encodeURIComponent(query)}&page=1&pageSize=50`,
         );
         const json = await res.json();
         if (json.success && active) {
-          if (pageNum === 1) {
-            setSuggestions(json.data);
-          } else {
-            setSuggestions((prev) => [...prev, ...json.data]);
-          }
-          setHasMoreSuggestions(json.data.length === 20);
+          setSuggestions(json.data || []);
         }
       } catch (e) {
       } finally {
-        if (active && pageNum === 1) setLoadingSuggestions(false);
+        if (active) setLoadingSuggestions(false);
       }
     };
 
-    if (open) {
-      if (q.trim().length === 0) {
-        fetchNames("", 1);
-      } else if (q.trim().length >= 2) {
-        const handler = setTimeout(() => fetchNames(q, 1), 300);
-        return () => {
-          active = false;
-          clearTimeout(handler);
-        };
-      }
+    if (q.trim().length === 0) {
+      fetchNames("");
+    } else {
+      const handler = setTimeout(() => fetchNames(q), 300);
+      return () => {
+        active = false;
+        clearTimeout(handler);
+      };
     }
     return () => {
       active = false;
     };
-  }, [q, open]);
+  }, [q]);
 
   // Search logic for Rekap dropdown
   useEffect(() => {
     let active = true;
-    const fetchRekapNames = async (query: string, pageNum: number) => {
-      if (pageNum === 1) setLoadingRekapSuggestions(true);
+    const fetchRekapNames = async (query: string) => {
+      setLoadingRekapSuggestions(true);
       try {
         const fmtDate = (d: Date | null) => {
           if (!d) return "";
@@ -588,8 +569,8 @@ export default function TrackingClient() {
 
         const params = new URLSearchParams({
           q: query,
-          page: pageNum.toString(),
-          pageSize: "20",
+          page: "1",
+          pageSize: "50",
           supplier: selectedSupplier || "",
           po: selectedPO || "",
         });
@@ -603,34 +584,27 @@ export default function TrackingClient() {
         );
         const json = await res.json();
         if (json.success && active) {
-          if (pageNum === 1) {
-            setRekapSuggestions(json.data);
-          } else {
-            setRekapSuggestions((prev) => [...prev, ...json.data]);
-          }
-          setHasMoreRekapSuggestions(json.data.length === 20);
+          setRekapSuggestions(json.data || []);
         }
       } catch (e) {
       } finally {
-        if (active && pageNum === 1) setLoadingRekapSuggestions(false);
+        if (active) setLoadingRekapSuggestions(false);
       }
     };
 
-    if (openRekap) {
-      if (qRekap.trim().length === 0) {
-        fetchRekapNames("", 1);
-      } else if (qRekap.trim().length >= 2) {
-        const handler = setTimeout(() => fetchRekapNames(qRekap, 1), 300);
-        return () => {
-          active = false;
-          clearTimeout(handler);
-        };
-      }
+    if (qRekap.trim().length === 0) {
+      fetchRekapNames("");
+    } else {
+      const handler = setTimeout(() => fetchRekapNames(qRekap), 300);
+      return () => {
+        active = false;
+        clearTimeout(handler);
+      };
     }
     return () => {
       active = false;
     };
-  }, [qRekap, openRekap, selectedSupplier, selectedPO, startDate, endDate]);
+  }, [qRekap, selectedSupplier, selectedPO, startDate, endDate]);
 
   // Search logic for PO Number dropdown
   useEffect(() => {
@@ -658,7 +632,7 @@ export default function TrackingClient() {
         );
         const json = await res.json();
         if (json.success && active) {
-          setPoList(json.data);
+          setPoList(json.data || []);
         }
       } catch (e) {
       } finally {
@@ -666,21 +640,19 @@ export default function TrackingClient() {
       }
     };
 
-    if (openPO) {
-      if (qPO.trim().length === 0) {
-        fetchPONumbers("");
-      } else {
-        const handler = setTimeout(() => fetchPONumbers(qPO), 300);
-        return () => {
-          active = false;
-          clearTimeout(handler);
-        };
-      }
+    if (qPO.trim().length === 0) {
+      fetchPONumbers("");
+    } else {
+      const handler = setTimeout(() => fetchPONumbers(qPO), 300);
+      return () => {
+        active = false;
+        clearTimeout(handler);
+      };
     }
     return () => {
       active = false;
     };
-  }, [qPO, openPO, selectedSupplier, startDate, endDate]);
+  }, [qPO, selectedSupplier, startDate, endDate]);
 
   // Search logic for Supplier dropdown
   useEffect(() => {
@@ -693,7 +665,7 @@ export default function TrackingClient() {
         );
         const json = await res.json();
         if (json.success && active) {
-          setSuppliers(json.data);
+          setSuppliers(json.data || []);
         }
       } catch (e) {
       } finally {
@@ -701,53 +673,68 @@ export default function TrackingClient() {
       }
     };
 
-    if (openSupplier) {
-      if (qSupplier.trim().length === 0) {
-        fetchSuppliers("");
-      } else {
-        const handler = setTimeout(() => fetchSuppliers(qSupplier), 300);
-        return () => {
-          active = false;
-          clearTimeout(handler);
-        };
-      }
+    if (qSupplier.trim().length === 0) {
+      fetchSuppliers("");
+    } else {
+      const handler = setTimeout(() => fetchSuppliers(qSupplier), 300);
+      return () => {
+        active = false;
+        clearTimeout(handler);
+      };
     }
     return () => {
       active = false;
     };
-  }, [qSupplier, openSupplier]);
+  }, [qSupplier]);
 
-  // Click outside listener
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        suggestionRef.current &&
-        !suggestionRef.current.contains(event.target as Node)
-      ) {
-        setOpen(false);
-      }
-      if (
-        rekapSuggestionRef.current &&
-        !rekapSuggestionRef.current.contains(event.target as Node)
-      ) {
-        setOpenRekap(false);
-      }
-      if (
-        supplierSuggestionRef.current &&
-        !supplierSuggestionRef.current.contains(event.target as Node)
-      ) {
-        setOpenSupplier(false);
-      }
-      if (
-        poSuggestionRef.current &&
-        !poSuggestionRef.current.contains(event.target as Node)
-      ) {
-        setOpenPO(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  // Items & Labels for SearchableDropdowns
+  const bomItems = useMemo(() => {
+    return suggestions.map((s) => s.faktur);
+  }, [suggestions]);
+
+  const bomItemLabels = useMemo(() => {
+    const map: Record<string, string> = {};
+    suggestions.forEach((s) => {
+      map[s.faktur] = `${s.faktur} — ${s.nama_prd || ''}`;
+    });
+    return map;
+  }, [suggestions]);
+
+  const supplierItems = useMemo(() => {
+    return suppliers.map((s) => s.supplier);
+  }, [suppliers]);
+
+  const supplierItemLabels = useMemo(() => {
+    const map: Record<string, string> = {};
+    suppliers.forEach((s) => {
+      map[s.supplier] = s.supplier;
+    });
+    return map;
+  }, [suppliers]);
+
+  const poItems = useMemo(() => {
+    return poList.map((s) => s.faktur);
+  }, [poList]);
+
+  const poItemLabels = useMemo(() => {
+    const map: Record<string, string> = {};
+    poList.forEach((s) => {
+      map[s.faktur] = `${s.faktur} (${s.tgl || ''}) ${s.ket_pr ? `— ${s.ket_pr}` : ''}`;
+    });
+    return map;
+  }, [poList]);
+
+  const rekapItems = useMemo(() => {
+    return rekapSuggestions.map((s) => s.faktur);
+  }, [rekapSuggestions]);
+
+  const rekapItemLabels = useMemo(() => {
+    const map: Record<string, string> = {};
+    rekapSuggestions.forEach((s) => {
+      map[s.faktur] = `${s.faktur} (${s.tgl || ''}) — ${s.nm_barang || s.kd_barang || ''}`;
+    });
+    return map;
+  }, [rekapSuggestions]);
 
   // Memoized filtered data based on text and dates
   const filteredData = useMemo(() => {
@@ -804,7 +791,6 @@ export default function TrackingClient() {
     setSelectedFaktur(selected.faktur);
     setSelectedNama(selected.nama_prd);
     setTrackingData(null);
-    setOpen(false);
     setSelectedSupplier(null);
     setSelectedPO(null);
     setTrackingPath("bom");
@@ -890,17 +876,6 @@ export default function TrackingClient() {
     }
   }, [selectedSupplier, selectedFakturSupplier, trackingPath]);
 
-  const handleListScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    if (
-      scrollHeight - scrollTop <= clientHeight + 50 &&
-      !loadingSuggestions &&
-      hasMoreSuggestions
-    ) {
-      setSuggestionPage((prev) => prev + 1);
-    }
-  };
-
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-6 animate-in fade-in duration-700 overflow-hidden">
       {/* SELECTORS SECTION - Single Card */}
@@ -908,110 +883,29 @@ export default function TrackingClient() {
         <div className="flex flex-col xl:flex-row gap-3 min-w-0 items-center">
           {/* BOM Selector */}
           <div className="flex flex-col relative z-10 w-full xl:w-auto xl:min-w-[280px]">
-            <div className="flex items-center justify-between mb-2 whitespace-nowrap">
-              <span className="text-[11px] font-bold text-gray-500">
-                Pilih BOM (Bill of Material)
-              </span>
-            </div>
-            <div className="relative" ref={suggestionRef}>
-              <div
-                className={`w-full h-10 px-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${open ? "border-emerald-200 bg-emerald-50/30 ring-2 ring-emerald-500/10" : "border-gray-100 bg-gray-50/50 hover:border-emerald-200 hover:bg-white"}`}
-                onClick={() => {
-                  setOpen(!open);
-                  setQ("");
-                }}
-              >
-                <div className="flex items-center gap-3 min-w-0 flex-1 overflow-hidden">
-                  <div
-                    className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${loadingData && trackingData?.bom ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-600"}`}
-                  >
-                    {loadingData && trackingData?.bom ? (
-                      <RefreshCw size={14} className="animate-spin" />
-                    ) : (
-                      <Package size={14} />
-                    )}
-                  </div>
-                  <div className="flex items-center min-w-0 flex-1 overflow-hidden leading-tight">
-                    <span
-                      title={
-                        selectedFaktur && trackingPath === "bom"
-                          ? `[${selectedFaktur}] ${selectedNama}`
-                          : ""
-                      }
-                      className={`truncate text-[12px] ${selectedFaktur && trackingPath === "bom" ? "text-gray-800 font-bold" : "text-gray-400 font-normal"}`}
-                    >
-                      {selectedFaktur && trackingPath === "bom"
-                        ? `[${selectedFaktur}] ${selectedNama}`
-                        : "Cari BOM atau Produk"}
-                    </span>
-                  </div>
-                </div>
-                <ChevronDown
-                  size={18}
-                  className={`text-gray-300 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
-                />
-              </div>
-
-              {open && (
-                <div className="absolute top-[calc(100%+12px)] left-0 min-w-[500px] w-max bg-white border border-gray-100 rounded-xl shadow-md z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                  <div className="p-4 border-b border-gray-50 bg-gray-50/50">
-                    <div className="relative">
-                      <Search
-                        size={18}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                      />
-                      <input
-                        autoFocus
-                        type="text"
-                        placeholder="Cari nomor BOM atau nama produk..."
-                        className="w-full pl-12 pr-4 h-12 text-[13px] border border-gray-100 rounded-lg focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-200 bg-white font-bold placeholder:text-gray-300"
-                        value={q}
-                        onChange={(e) => setQ(e.target.value)}
-                      />
-                      {loadingSuggestions && (
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                          <Loader2
-                            size={18}
-                            className="animate-spin text-emerald-600"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div
-                    className="max-h-[350px] overflow-y-auto custom-scrollbar p-2"
-                    onScroll={handleListScroll}
-                  >
-                    {suggestions.length > 0 ? (
-                      suggestions.map((s: any, idx: number) => (
-                        <button
-                          key={`${s.faktur}-${idx}`}
-                          onClick={() => handleSelect(s)}
-                          className={`w-full px-5 py-4 text-left rounded-lg transition-all flex items-center justify-between group/item mb-1 last:mb-0 ${selectedFaktur === s.faktur && trackingData?.bom ? "bg-emerald-600 text-white shadow-sm shadow-emerald-200" : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"}`}
-                        >
-                          <div className="flex flex-col min-w-0">
-                            <span className="text-[12px] font-bold">
-                              {s.faktur}
-                            </span>
-                            <span
-                              className={`text-[11px] font-bold ${selectedFaktur === s.faktur && trackingData?.bom ? "text-white/70" : "text-gray-400"}`}
-                            >
-                              {s.nama_prd}
-                            </span>
-                          </div>
-                        </button>
-                      ))
-                    ) : (
-                      <div className="p-12 text-center flex flex-col items-center gap-3">
-                        <p className="text-[12px] font-bold text-gray-300">
-                          Data Tidak Ditemukan
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
+            <SearchableDropdown
+              id="tracking-bom-select"
+              label="Pilih BOM (Bill of Material)"
+              value={selectedFaktur && trackingPath === "bom" ? selectedFaktur : ""}
+              items={bomItems}
+              itemLabels={bomItemLabels}
+              placeholder="Cari BOM atau Produk..."
+              searchPlaceholder="Cari nomor BOM atau nama produk..."
+              triggerWidth="w-full"
+              panelWidth="w-full sm:w-[420px]"
+              usePortal={true}
+              icon={<Package size={14} className={selectedFaktur && trackingPath === "bom" ? "text-emerald-600" : "text-gray-400"} />}
+              onSearchQueryChange={(query) => setQ(query)}
+              onChange={(val) => {
+                if (val) {
+                  const s = suggestions.find((item) => item.faktur === val);
+                  if (s) handleSelect(s);
+                  else handleSelect({ faktur: val, nama_prd: "" });
+                } else {
+                  resetTracking();
+                }
+              }}
+            />
           </div>
 
           {/* Divider */}
@@ -1022,459 +916,140 @@ export default function TrackingClient() {
             {/* Left: Searchable Selects (Supplier, PO & Barang) */}
             <div className="flex-[1.5] flex flex-col lg:flex-row gap-3 min-w-0 w-full items-center">
               {/* Supplier Selector */}
-              <div
-                className={`flex flex-col min-w-0 transition-all duration-300 flex-1`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-bold text-gray-500">
-                    Pilih Supplier (Opsional)
-                  </span>
-                  {selectedSupplier && (
-                    <button
-                      onClick={() => {
-                        setSelectedSupplier(null);
-                        setSelectedPO(null);
-                        localStorage.removeItem("tracking_selected_supplier");
-                        localStorage.removeItem("tracking_selected_po");
-                        if (selectedFaktur) {
-                          fetchTrackingData(selectedFaktur);
-                        } else {
-                          resetTracking();
-                        }
-                      }}
-                      className="text-[11px] font-bold text-rose-500 hover:text-rose-600 flex items-center gap-1"
-                    >
-                      <X size={12} /> Hapus
-                    </button>
-                  )}
-                </div>
-                <div className="relative" ref={supplierSuggestionRef}>
-                  <div
-                    onClick={() => {
-                      setOpenSupplier(!openSupplier);
-                      setQSupplier("");
-                    }}
-                    className={`h-10 px-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${openSupplier ? "border-emerald-200 bg-emerald-50/30 ring-2 ring-emerald-500/10" : "border-gray-100 bg-gray-50/50 hover:border-emerald-200 hover:bg-white"}`}
-                  >
-                    <div className="flex items-center gap-3 min-w-0 flex-1 overflow-hidden">
-                      <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                        <Truck size={14} />
-                      </div>
-                      <div className="flex items-center min-w-0 flex-1 overflow-hidden leading-tight">
-                        <span
-                          title={selectedSupplier || ""}
-                          className={`truncate text-[12px] ${selectedSupplier ? "text-gray-800 font-bold" : "text-gray-400 font-normal"}`}
-                        >
-                          {selectedSupplier || "Cari Supplier..."}
-                        </span>
-                      </div>
-                    </div>
-                    <ChevronDown
-                      size={18}
-                      className={`text-gray-300 transition-transform duration-300 ${openSupplier ? "rotate-180" : ""}`}
-                    />
-                  </div>
-
-                  {openSupplier && (
-                    <div className="absolute top-full left-0 min-w-[500px] w-max mt-2 bg-white border-2 border-gray-100 rounded-2xl shadow-2xl z-[60] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                      <div className="p-3 border-b border-gray-50 bg-gray-50/30">
-                        <div className="relative">
-                          <Search
-                            size={18}
-                            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                          />
-                          <input
-                            autoFocus
-                            type="text"
-                            placeholder="Ketik nama supplier..."
-                            className="w-full pl-12 pr-4 h-12 text-[13px] border border-gray-100 rounded-lg focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-200 bg-white font-bold placeholder:text-gray-300"
-                            value={qSupplier}
-                            onChange={(e) => setQSupplier(e.target.value)}
-                          />
-                          {loadingSuppliers && (
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                              <Loader2
-                                size={18}
-                                className="animate-spin text-emerald-600"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="max-h-[300px] overflow-y-auto custom-scrollbar p-2">
-                        {suppliers.length > 0 ? (
-                          suppliers.map((s: any, idx: number) => (
-                            <button
-                              key={`${s.supplier}-${idx}`}
-                              onClick={() => {
-                                setOpenSupplier(false);
-                                setQSupplier("");
-                                setSelectedSupplier(s.supplier);
-                                setSelectedPO(null);
-                                resetTracking();
-                                localStorage.setItem(
-                                  "tracking_selected_supplier",
-                                  s.supplier,
-                                );
-                                localStorage.removeItem("tracking_selected_po");
-                              }}
-                              className={`w-full px-5 py-4 text-left rounded-lg transition-all flex items-center justify-between group/item mb-1 last:mb-0 ${selectedSupplier === s.supplier ? "bg-emerald-600 text-white shadow-sm shadow-emerald-200" : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"}`}
-                            >
-                              <div className="flex flex-col min-w-0">
-                                <span className="text-[12px] font-bold">
-                                  {s.supplier}
-                                </span>
-                              </div>
-                            </button>
-                          ))
-                        ) : (
-                          <div className="py-12 text-center">
-                            <div className="w-12 h-12 rounded-full bg-gray-50 text-gray-300 flex items-center justify-center mx-auto mb-3">
-                              <Search size={24} />
-                            </div>
-                            <p className="text-[13px] font-bold text-gray-400">
-                              Supplier tidak ditemukan
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
+              <div className="flex flex-col min-w-0 transition-all duration-300 flex-1 w-full">
+                <SearchableDropdown
+                  id="tracking-supplier-select"
+                  label="Pilih Supplier (Opsional)"
+                  value={selectedSupplier || ""}
+                  items={supplierItems}
+                  itemLabels={supplierItemLabels}
+                  allLabel="-- Semua Supplier --"
+                  placeholder="Cari Supplier..."
+                  searchPlaceholder="Ketik nama supplier..."
+                  triggerWidth="w-full"
+                  panelWidth="w-full sm:w-[350px]"
+                  usePortal={true}
+                  icon={<Truck size={14} className={selectedSupplier ? "text-emerald-600" : "text-gray-400"} />}
+                  onSearchQueryChange={(query) => setQSupplier(query)}
+                  onChange={(val) => {
+                    const newSupplier = val || null;
+                    setSelectedSupplier(newSupplier);
+                    setSelectedPO(null);
+                    if (newSupplier) {
+                      localStorage.setItem("tracking_selected_supplier", newSupplier);
+                    } else {
+                      localStorage.removeItem("tracking_selected_supplier");
+                    }
+                    localStorage.removeItem("tracking_selected_po");
+                    if (selectedFaktur) {
+                      fetchTrackingData(selectedFaktur);
+                    } else {
+                      resetTracking();
+                    }
+                  }}
+                />
               </div>
 
               {/* PO Number Selector */}
-              <div
-                className={`flex flex-col min-w-0 transition-all duration-300 flex-1`}
-              >
-                <div className="flex items-center justify-between mb-2 pl-1">
-                  <span className="text-[11px] font-bold text-gray-500">
-                    Pilih Nomor PO (Opsional)
-                  </span>
-                  {selectedPO && (
-                    <button
-                      onClick={() => {
-                        setSelectedPO(null);
-                        localStorage.removeItem("tracking_selected_po");
-                        if (selectedFaktur) {
-                          // Keep the PB/BOM selection and just re-fetch
-                          fetchTrackingData(selectedFaktur);
-                        } else {
-                          resetTracking();
-                        }
-                      }}
-                      className="text-[11px] font-bold text-red-500 hover:text-red-600 flex items-center gap-1"
-                    >
-                      <X size={12} /> Hapus
-                    </button>
-                  )}
-                </div>
-                <div className="relative" ref={poSuggestionRef}>
-                  <div
-                    onClick={() => {
-                      setOpenPO(!openPO);
-                      setQPO("");
-                    }}
-                    className={`h-10 px-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${openPO ? "border-emerald-200 bg-emerald-50/30 ring-2 ring-emerald-500/10" : "border-gray-100 bg-gray-50/50 hover:border-emerald-200 hover:bg-white"}`}
-                  >
-                      <div className="flex items-center gap-3 min-w-0 flex-1 overflow-hidden">
-                        <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                          <Hash size={14} />
-                        </div>
-                        <div className="flex items-center min-w-0 flex-1 overflow-hidden leading-tight">
-                          <span
-                            title={selectedPO || ""}
-                            className={`truncate text-[12px] ${selectedPO ? "text-gray-800 font-bold" : "text-gray-400 font-normal"}`}
-                        >
-                          {selectedPO ||
-                            (selectedSupplier
-                              ? `PO dari ${selectedSupplier}...`
-                              : "Cari Nomor PO...")}
-                        </span>
-                      </div>
-                    </div>
-                    <ChevronDown
-                      size={20}
-                      className={`text-gray-300 transition-transform duration-300 ${openPO ? "rotate-180" : ""}`}
-                    />
-                  </div>
+              <div className="flex flex-col min-w-0 transition-all duration-300 flex-1 w-full">
+                <SearchableDropdown
+                  id="tracking-po-select"
+                  label="Pilih Nomor PO (Opsional)"
+                  value={selectedPO || ""}
+                  items={poItems}
+                  itemLabels={poItemLabels}
+                  allLabel="-- Semua Nomor PO --"
+                  placeholder={selectedSupplier ? `PO dari ${selectedSupplier}...` : "Cari Nomor PO..."}
+                  searchPlaceholder={selectedSupplier ? `Cari PO dari ${selectedSupplier}...` : "Cari nomor PO..."}
+                  triggerWidth="w-full"
+                  panelWidth="w-full sm:w-[400px]"
+                  usePortal={true}
+                  icon={<Hash size={14} className={selectedPO ? "text-emerald-600" : "text-gray-400"} />}
+                  onSearchQueryChange={(query) => setQPO(query)}
+                  onChange={(val) => {
+                    const newPO = val || null;
+                    setSelectedPO(newPO);
+                    if (newPO) {
+                      let shouldFetchPB = false;
+                      if (trackingPath === "bom") {
+                        setSelectedFaktur(null);
+                        setSelectedNama("");
+                      } else if (selectedFaktur) {
+                        shouldFetchPB = true;
+                      }
 
-                  {openPO && (
-                    <div className="absolute top-full left-0 min-w-[500px] w-max mt-2 bg-white border-2 border-gray-100 rounded-2xl shadow-2xl z-[60] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                      <div className="p-3 border-b border-gray-50 bg-gray-50/30">
-                        <div className="relative">
-                          <Search
-                            size={18}
-                            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                          />
-                          <input
-                            autoFocus
-                            type="text"
-                            placeholder={
-                              selectedSupplier
-                                ? `Cari PO dari ${selectedSupplier}...`
-                                : "Cari nomor PO..."
-                            }
-                            className="w-full pl-12 pr-4 h-12 text-[13px] border border-gray-100 rounded-lg focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-200 bg-white font-bold placeholder:text-gray-300"
-                            value={qPO}
-                            onChange={(e) => setQPO(e.target.value)}
-                          />
-                          {loadingPO && (
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                              <Loader2
-                                size={18}
-                                className="animate-spin text-emerald-600"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="max-h-[300px] overflow-y-auto custom-scrollbar p-2">
-                        {poList.length > 0 ? (
-                          poList.map((s: any, idx: number) => (
-                            <button
-                              key={`${s.faktur}-${idx}`}
-                              onClick={() => {
-                                setOpenPO(false);
-                                setQPO("");
-                                setSelectedPO(s.faktur);
+                      setTrackingData(null);
+                      setTrackingPath("rekap");
 
-                                // Only clear BOM selection, keep PB selection if related
-                                let shouldFetchPB = false;
-                                if (trackingPath === "bom") {
-                                  setSelectedFaktur(null);
-                                  setSelectedNama("");
-                                } else if (selectedFaktur) {
-                                  // If a PB is already selected, we prioritize its tracking data
-                                  shouldFetchPB = true;
-                                }
+                      if (!shouldFetchPB) {
+                        setTrackingMeta({
+                          isStartingFromRekap: false,
+                          isStartingFromPO: true,
+                          isBomPath: false,
+                        });
+                      }
 
-                                setTrackingData(null);
-                                setTrackingPath("rekap");
+                      localStorage.setItem("tracking_selected_po", newPO);
+                      localStorage.setItem("tracking_selected_path", "rekap");
 
-                                // If we are keeping a PB, the meta should reflect that PB is the start
-                                if (!shouldFetchPB) {
-                                  setTrackingMeta({
-                                    isStartingFromRekap: false,
-                                    isStartingFromPO: true,
-                                    isBomPath: false,
-                                  });
-                                }
-
-                                localStorage.setItem(
-                                  "tracking_selected_po",
-                                  s.faktur,
-                                );
-                                localStorage.setItem(
-                                  "tracking_selected_path",
-                                  "rekap",
-                                );
-
-                                if (shouldFetchPB && selectedFaktur) {
-                                  fetchTrackingData(selectedFaktur);
-                                } else {
-                                  fetchTrackingData(s.faktur);
-                                }
-                              }}
-                              className={`w-full px-5 py-4 text-left rounded-lg transition-all flex items-center justify-between group/item mb-1 last:mb-0 ${selectedPO === s.faktur ? "bg-emerald-600 text-white shadow-sm shadow-emerald-200" : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"}`}
-                            >
-                              <div className="flex flex-col min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[12px] font-bold">
-                                    {s.faktur}
-                                  </span>
-                                  <span
-                                    className={`text-[11px] px-1.5 py-0.5 rounded font-bold ${selectedPO === s.faktur ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"}`}
-                                  >
-                                    {s.tgl}
-                                  </span>
-                                </div>
-                                <span
-                                  className={`text-[11px] font-bold ${selectedPO === s.faktur ? "text-white/70" : "text-gray-400"}`}
-                                >
-                                  {s.ket_pr || "-"}
-                                </span>
-                              </div>
-                            </button>
-                          ))
-                        ) : (
-                          <div className="py-12 text-center">
-                            <div className="w-12 h-12 rounded-full bg-gray-50 text-gray-300 flex items-center justify-center mx-auto mb-3">
-                              <Search size={24} />
-                            </div>
-                            <p className="text-[13px] font-bold text-gray-400">
-                              PO tidak ditemukan
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                      if (shouldFetchPB && selectedFaktur) {
+                        fetchTrackingData(selectedFaktur);
+                      } else {
+                        fetchTrackingData(newPO);
+                      }
+                    } else {
+                      localStorage.removeItem("tracking_selected_po");
+                      if (selectedFaktur) {
+                        fetchTrackingData(selectedFaktur);
+                      } else {
+                        resetTracking();
+                      }
+                    }
+                  }}
+                />
               </div>
 
               {/* Item Selector */}
-              <div
-                className={`flex flex-col min-w-0 transition-all duration-300 flex-1`}
-              >
-                <div className="flex items-center justify-between mb-2 pl-1">
-                  <span className="text-[13px] font-semibold text-gray-500 whitespace-nowrap">
-                    Pilih Faktur/Barang
-                  </span>
-                  {selectedFaktur && trackingPath === "rekap" && (
-                    <button
-                      onClick={() => {
-                        if (selectedPO) {
-                          setSelectedFaktur(null);
-                          setSelectedNama("");
-                          fetchTrackingData(selectedPO);
-                          localStorage.removeItem("tracking_selected_faktur");
-                        } else {
-                          resetTracking();
-                        }
-                      }}
-                      className="text-[11px] font-bold text-red-500 hover:text-red-600 flex items-center gap-1"
-                    >
-                      <X size={12} /> Hapus
-                    </button>
-                  )}
-                </div>
-                <div className="relative" ref={rekapSuggestionRef}>
-                  <div
-                    className={`h-10 px-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${openRekap ? "border-emerald-200 bg-emerald-50/30 ring-2 ring-emerald-500/10" : "border-gray-100 bg-gray-50/50 hover:border-emerald-200 hover:bg-white"}`}
-                    onClick={() => {
-                      setOpenRekap(!openRekap);
-                      setQRekap("");
-                    }}
-                  >
-                      <div className="flex items-center gap-3 min-w-0 flex-1 overflow-hidden">
-                        <div
-                          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${loadingData && trackingPath === "rekap" ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-600"}`}
-                        >
-                          {loadingData && trackingPath === "rekap" ? (
-                            <RefreshCw size={14} className="animate-spin" />
-                          ) : (
-                            <ShoppingCart size={14} />
-                          )}
-                        </div>
-                        <div className="flex items-center min-w-0 flex-1 overflow-hidden leading-tight">
-                          <span
-                            title={
-                              selectedFaktur && trackingPath === "rekap"
-                                ? `[${selectedFaktur}] ${selectedNama}`
-                                : ""
-                            }
-                            className={`truncate text-[12px] ${selectedFaktur && trackingPath === "rekap" ? "text-gray-800 font-bold" : "text-gray-400 font-normal"}`}
-                        >
-                          {selectedFaktur && trackingPath === "rekap"
-                            ? `[${selectedFaktur}] ${selectedNama}`
-                            : "Cari Faktur PB atau Barang"}
-                        </span>
-                      </div>
-                    </div>
-                    <ChevronDown
-                      size={20}
-                      className={`text-gray-300 transition-transform duration-300 ${openRekap ? "rotate-180" : ""}`}
-                    />
-                  </div>
-
-                  {openRekap && (
-                    <div className="absolute top-full right-0 min-w-[600px] w-max mt-2 bg-white border-2 border-gray-100 rounded-2xl shadow-2xl z-[60] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                      <div className="p-3 border-b border-gray-50 bg-gray-50/30">
-                        <div className="relative">
-                          <Search
-                            size={18}
-                            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                          />
-                          <input
-                            autoFocus
-                            type="text"
-                            placeholder={
-                              selectedSupplier
-                                ? `Cari barang dari ${selectedSupplier}...`
-                                : selectedSupplier
-                                  ? `Cari barang dari ${selectedSupplier}...`
-                                  : "Cari faktur atau nama barang..."
-                            }
-                            className="w-full pl-12 pr-4 h-12 text-[13px] border border-gray-100 rounded-lg focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-200 bg-white font-bold placeholder:text-gray-300"
-                            value={qRekap}
-                            onChange={(e) => setQRekap(e.target.value)}
-                          />
-                          {loadingRekapSuggestions && (
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                              <Loader2
-                                size={18}
-                                className="animate-spin text-emerald-600"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="max-h-[350px] overflow-y-auto custom-scrollbar p-2">
-                        {rekapSuggestions.length > 0 ? (
-                          rekapSuggestions.map((s: any, idx: number) => (
-                            <button
-                              key={`${s.faktur}-${s.kd_barang}-${idx}`}
-                              onClick={() => {
-                                setOpenRekap(false);
-                                setQRekap("");
-                                setSelectedFaktur(s.faktur);
-                                setSelectedNama(
-                                  s.nm_barang || s.kd_barang || "",
-                                );
-                                setSelectedFakturSupplier(
-                                  s.kd_supplier || null,
-                                );
-                                setSelectedFakturPO(s.faktur_po || null);
-                                setTrackingPath("rekap");
-                                localStorage.setItem(
-                                  "tracking_selected_faktur",
-                                  s.faktur,
-                                );
-                                localStorage.setItem(
-                                  "tracking_selected_nama",
-                                  s.nm_barang || s.kd_barang || "",
-                                );
-                                localStorage.setItem(
-                                  "tracking_selected_faktur_supplier",
-                                  s.kd_supplier || "",
-                                );
-                                localStorage.setItem(
-                                  "tracking_selected_path",
-                                  "rekap",
-                                );
-                                fetchTrackingData(s.faktur);
-                              }}
-                              className={`w-full px-5 py-4 text-left rounded-lg transition-all flex items-center justify-between group/item mb-1 last:mb-0 ${selectedFaktur === s.faktur && trackingPath === "rekap" ? "bg-emerald-600 text-white shadow-sm shadow-emerald-200" : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"}`}
-                            >
-                              <div className="flex flex-col min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[12px] font-bold">
-                                    {s.faktur}
-                                  </span>
-                                  <span className="text-[11px] px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded font-bold">
-                                    {s.tgl}
-                                  </span>
-                                </div>
-                                <span
-                                  className={`text-[11px] font-bold ${selectedFaktur === s.faktur && trackingPath === "rekap" ? "text-white/70" : "text-gray-400"}`}
-                                >
-                                  {s.nm_barang || s.kd_barang}
-                                </span>
-                              </div>
-                            </button>
-                          ))
-                        ) : (
-                          <div className="p-12 text-center flex flex-col items-center gap-3">
-                            <p className="text-[12px] font-bold text-gray-300">
-                              Data Tidak Ditemukan
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
+              <div className="flex flex-col min-w-0 transition-all duration-300 flex-1 w-full">
+                <SearchableDropdown
+                  id="tracking-rekap-select"
+                  label="Pilih Faktur/Barang"
+                  value={selectedFaktur && trackingPath === "rekap" ? selectedFaktur : ""}
+                  items={rekapItems}
+                  itemLabels={rekapItemLabels}
+                  allLabel="-- Semua Faktur PB --"
+                  placeholder={selectedSupplier ? `Cari barang dari ${selectedSupplier}...` : "Cari Faktur PB atau Barang..."}
+                  searchPlaceholder={selectedSupplier ? `Cari barang dari ${selectedSupplier}...` : "Cari faktur atau nama barang..."}
+                  triggerWidth="w-full"
+                  panelWidth="w-full sm:w-[480px]"
+                  usePortal={true}
+                  icon={<ShoppingCart size={14} className={selectedFaktur && trackingPath === "rekap" ? "text-emerald-600" : "text-gray-400"} />}
+                  onSearchQueryChange={(query) => setQRekap(query)}
+                  onChange={(val) => {
+                    if (val) {
+                      const s = rekapSuggestions.find((item) => item.faktur === val);
+                      setSelectedFaktur(val);
+                      setSelectedNama(s?.nm_barang || s?.kd_barang || "");
+                      setSelectedFakturSupplier(s?.kd_supplier || null);
+                      setSelectedFakturPO(s?.faktur_po || null);
+                      setTrackingPath("rekap");
+                      localStorage.setItem("tracking_selected_faktur", val);
+                      localStorage.setItem("tracking_selected_nama", s?.nm_barang || s?.kd_barang || "");
+                      localStorage.setItem("tracking_selected_faktur_supplier", s?.kd_supplier || "");
+                      localStorage.setItem("tracking_selected_path", "rekap");
+                      fetchTrackingData(val);
+                    } else {
+                      if (selectedPO) {
+                        setSelectedFaktur(null);
+                        setSelectedNama("");
+                        fetchTrackingData(selectedPO);
+                        localStorage.removeItem("tracking_selected_faktur");
+                      } else {
+                        resetTracking();
+                      }
+                    }
+                  }}
+                />
               </div>
             </div>
 
