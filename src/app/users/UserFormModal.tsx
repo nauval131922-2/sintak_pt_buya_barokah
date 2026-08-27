@@ -112,8 +112,6 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
   const toggleRole = useCallback((roleName: string) => {
     setSelectedRoles(prev => {
       if (prev.includes(roleName)) {
-        // Jangan hapus jika ini satu-satunya role
-        if (prev.length === 1) return prev;
         return prev.filter(r => r !== roleName);
       }
       return [...prev, roleName];
@@ -402,16 +400,14 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
                     >
                       {r === 'Super Admin' && <ShieldCheck size={10} />}
                       {r}
-                      {selectedRoles.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => toggleRole(r)}
-                          className="ml-0.5 text-emerald-500 hover:text-rose-500 transition-colors"
-                          aria-label={`Hapus role ${r}`}
-                        >
-                          <X size={10} />
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => toggleRole(r)}
+                        className="ml-0.5 text-emerald-500 hover:text-rose-500 transition-colors"
+                        aria-label={`Hapus role ${r}`}
+                      >
+                        <X size={10} />
+                      </button>
                     </span>
                   ))}
                 </div>
