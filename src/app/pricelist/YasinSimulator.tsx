@@ -190,8 +190,9 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
                 </label>
                 <ThousandInput
                   value={oplah}
-                  onChange={setOplah}
-                  className="w-full text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg p-2"
+                  allowDecimals={false}
+                  onValueChange={(val) => setOplah(Math.max(1, val))}
+                  className="w-full px-3 py-2 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
                   placeholder="Jumlah buku"
                 />
               </div>
@@ -203,7 +204,7 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
                 <select
                   value={ukuran}
                   onChange={(e) => setUkuran(e.target.value as any)}
-                  className="w-full text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full px-3 py-2 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
                 >
                   {UKURAN_OPTIONS.map((u) => (
                     <option key={u.value} value={u.value}>
@@ -240,13 +241,13 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
             {/* Sisipan Foto & Sisipan Teks */}
             <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
                   Sisipan Foto FC (Lbr)
                 </label>
                 <select
                   value={lembarSisipanFoto}
                   onChange={(e) => setLembarSisipanFoto(Number(e.target.value))}
-                  className="w-full text-xs bg-white border border-slate-300 rounded-md p-1.5 font-medium"
+                  className="w-full px-2 py-1.5 text-xs font-semibold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none text-slate-800"
                 >
                   {[0, 1, 2, 3, 4, 6, 8].map((n) => (
                     <option key={n} value={n}>
@@ -257,13 +258,13 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
                   Sisipan Silsilah/Doa (Lbr)
                 </label>
                 <select
                   value={lembarSisipanKeluarga}
                   onChange={(e) => setLembarSisipanKeluarga(Number(e.target.value))}
-                  className="w-full text-xs bg-white border border-slate-300 rounded-md p-1.5 font-medium"
+                  className="w-full px-2 py-1.5 text-xs font-semibold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none text-slate-800"
                 >
                   {[0, 1, 2, 3, 4, 6].map((n) => (
                     <option key={n} value={n}>
@@ -322,34 +323,35 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
             </div>
 
             {/* Margin & Nego */}
-            <div className="pt-3 border-t border-slate-200 grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-                  Margin Profit (%)
-                </label>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Target Margin (%)</label>
                 <div className="relative">
                   <input
                     type="number"
+                    min={0}
+                    max={100}
+                    step={1}
                     value={marginPct}
-                    onChange={(e) => setMarginPct(Number(e.target.value))}
-                    className="w-full text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg p-2 pr-7"
+                    onChange={(e) => setMarginPct(Number(e.target.value) || 0)}
+                    className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
                   />
-                  <Percent className="w-3 h-3 text-slate-400 absolute right-2.5 top-3" />
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
                 </div>
               </div>
-
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-                  Diskon Nego (%)
-                </label>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Diskon Nego (%)</label>
                 <div className="relative">
                   <input
                     type="number"
+                    min={0}
+                    max={100}
+                    step={1}
                     value={negoDiskonPct}
-                    onChange={(e) => setNegoDiskonPct(Number(e.target.value))}
-                    className="w-full text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg p-2 pr-7"
+                    onChange={(e) => setNegoDiskonPct(Number(e.target.value) || 0)}
+                    className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
                   />
-                  <Percent className="w-3 h-3 text-slate-400 absolute right-2.5 top-3" />
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
                 </div>
               </div>
             </div>
