@@ -209,10 +209,6 @@ export default function TrackingClient() {
     setDebouncedFilterText("");
     setError("");
     setLoadTime(null);
-    setOpen(false);
-    setOpenRekap(false);
-    setOpenPO(false);
-    setOpenSupplier(false);
     try {
       localStorage.removeItem("tracking_dates");
       localStorage.removeItem("tracking_selected_faktur");
