@@ -54,7 +54,7 @@ export default function SquareDropdown({
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
     const scale = getZoomScale();
-    const popupWidth = Math.max(rect.width, 200);
+    const popupWidth = rect.width;
     const spaceRight = window.innerWidth - rect.left;
     const leftWhenAlignRight = rect.right - popupWidth;
     const minLeftAllowed = window.innerWidth >= 1024 ? 260 : 12;
