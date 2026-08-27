@@ -15,14 +15,18 @@ import {
   Database,
   BookOpen,
   Calendar,
+  Bookmark,
 } from 'lucide-react';
 import PricelistExcelUpload from './PricelistExcelUpload';
-import PricelistSimulator from './PricelistSimulator';
+import PricelistSimulator, { SavedSimulationItem } from './PricelistSimulator';
 import PricelistMasterParameter from './PricelistMasterParameter';
 import ManasikMasterParameter from './ManasikMasterParameter';
 import YasinMasterParameter from './YasinMasterParameter';
+import ManasikSimulator, { SavedManasikSimulationItem } from './ManasikSimulator';
+import YasinSimulator, { SavedYasinSimulationItem } from './YasinSimulator';
 import ManasikMatrixView from './ManasikMatrixView';
 import YasinMatrixView from './YasinMatrixView';
+import SavedCalculationsList, { UnifiedCalculationItem } from './SavedCalculationsList';
 import SquareDropdown from '@/components/SquareDropdown';
 import { DEFAULT_MASTER_PARAMS, DEFAULT_MASTER_PARAMS_KLEM, SimulatorMasterParams } from '@/lib/pricelist-simulator';
 import { DEFAULT_MANASIK_PARAMS, ManasikMasterParams } from '@/lib/manasik-calculator';
@@ -52,7 +56,7 @@ export default function PricelistClient() {
   const [fileName, setFileName] = useState<string | null>(null);
 
   // Filters state
-  const [activeTab, setActiveTab] = useState<'parameter' | 'simulator' | 'matrix'>('parameter');
+  const [activeTab, setActiveTab] = useState<'parameter' | 'simulator' | 'matrix' | 'saved'>('parameter');
   const [selectedFinishing, setSelectedFinishing] = useState<'Spiral' | 'Klem'>('Spiral');
 
   // Parameter Buku Manasik & Yasin
@@ -72,8 +76,8 @@ export default function PricelistClient() {
   useEffect(() => {
     try {
       const savedTab = localStorage.getItem('sintak_pricelist_active_tab');
-      if (savedTab === 'parameter' || savedTab === 'simulator' || savedTab === 'matrix') {
-        setActiveTab(savedTab);
+      if (savedTab === 'parameter' || savedTab === 'simulator' || savedTab === 'matrix' || savedTab === 'saved') {
+        setActiveTab(savedTab as any);
       }
 
       const savedFinishing = localStorage.getItem('sintak_pricelist_finishing');
@@ -143,6 +147,13 @@ export default function PricelistClient() {
     } else {
       setParamsSpiral(params);
     }
+  };
+
+  const handleLoadSimulationFromList = (item: UnifiedCalculationItem) => {
+    setSelectedProductCategory(item.category);
+    setActiveSimulationId(item.id);
+    setActiveSimulationTitle(item.title);
+    setActiveTab('simulator');
   };
 
   // Simpan posisi tab aktif dan view mode ke localStorage
@@ -338,6 +349,19 @@ export default function PricelistClient() {
           >
             <FileSpreadsheet size={14} />
             <span>Matriks Pricelist</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('saved')}
+            className={`flex items-center justify-center gap-1.5 pb-2 px-2 text-[13px] font-bold border-b-2 transition-all cursor-pointer ${
+              activeTab === 'saved'
+                ? 'border-emerald-600 text-emerald-700'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Bookmark size={14} />
+            <span>Daftar Kalkulasi</span>
           </button>
         </div>
 
@@ -743,6 +767,14 @@ export default function PricelistClient() {
           )}
             </>
           )}
+        </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto pr-1">
+          <SavedCalculationsList
+            selectedCategory={selectedProductCategory}
+            onLoadSimulation={handleLoadSimulationFromList}
+            activeSimulationId={activeSimulationId}
+          />
         </div>
       )}
     </div>
