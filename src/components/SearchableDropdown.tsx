@@ -89,11 +89,11 @@ export default function SearchableDropdown({
       const spaceRight = window.innerWidth - rect.left;
       const spaceLeft = rect.right;
       
-      // Jika berada di sisi kanan layar (misal sisa kanan kurang dari 450px dan kiri lebih luas), buka ke arah kiri
-      if (spaceRight < 450 && spaceLeft > spaceRight) {
-        isRight = true;
-      } else {
-        isRight = false;
+      // Jika berada di sisi kanan tengah/melebihi 50% lebar layar, buka ke arah kiri (rata kanan)
+      if (rect.left > window.innerWidth / 2 || spaceRight < 500) {
+        if (spaceLeft >= 320) {
+          isRight = true;
+        }
       }
       setAlignRight(isRight);
 
@@ -238,8 +238,8 @@ export default function SearchableDropdown({
         position: 'fixed',
         ...(openUpward ? { bottom: `${bottomCoord}px` } : { top: `${coords.top}px` }),
         ...(alignRight
-          ? { right: `${Math.max(12, (window.innerWidth - (coords.left + coords.width) * getZoomScale()) / getZoomScale())}px`, left: 'auto' }
-          : { left: `${Math.max(12, coords.left)}px`, right: 'auto' }),
+          ? { left: `${Math.max(12, coords.left + coords.width)}px`, transform: 'translateX(-100%)' }
+          : { left: `${Math.max(12, coords.left)}px` }),
         minWidth: `${coords.width}px`,
         maxWidth: 'calc(100vw - 32px)',
         zIndex: 10000
