@@ -522,33 +522,33 @@ export default function PricelistClient() {
                           </span>
                         </div>
 
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto max-h-[500px]">
                           <table className="w-full text-xs text-left border-collapse">
-                            <thead>
-                              <tr className="bg-gray-50/80 border-b border-gray-200 text-gray-600 font-semibold">
-                                <th className="py-2.5 px-3 border-r border-gray-200 text-center w-16" rowSpan={2}>
+                            <thead className="sticky top-0 z-10 bg-white shadow-xs">
+                              <tr className="bg-gray-100 border-b border-gray-200 text-gray-700 font-bold">
+                                <th className="py-2.5 px-3 border-r border-gray-200 text-center w-16 bg-gray-100" rowSpan={2}>
                                   Oplah
                                 </th>
-                                <th className="py-2.5 px-3 border-r border-gray-200 text-center w-20" rowSpan={2}>
+                                <th className="py-2.5 px-3 border-r border-gray-200 text-center w-20 bg-gray-100" rowSpan={2}>
                                   Mesin
                                 </th>
                                 {allSizes.map((size) => (
                                   <th
                                     key={size}
                                     colSpan={4}
-                                    className="py-1.5 px-2 text-center border-r border-gray-200 font-bold text-gray-800 bg-gray-100/70"
+                                    className="py-1.5 px-2 text-center border-r border-gray-200 font-bold text-gray-900 bg-gray-200/80"
                                   >
                                     {size}
                                   </th>
                                 ))}
                               </tr>
-                              <tr className="bg-gray-50 border-b border-gray-200 text-[11px] text-gray-500">
+                              <tr className="bg-gray-50 border-b border-gray-200 text-[11px] text-gray-600">
                                 {allSizes.map((size) => (
                                   <React.Fragment key={size}>
-                                    <th className="py-1.5 px-2 text-right font-medium">HPP</th>
-                                    <th className="py-1.5 px-2 text-right font-semibold text-emerald-700 bg-emerald-50/20">Harga</th>
-                                    <th className="py-1.5 px-2 text-right font-semibold text-blue-700 bg-blue-50/20">Nego</th>
-                                    <th className="py-1.5 px-2 text-right font-medium border-r border-gray-200">%</th>
+                                    <th className="py-1.5 px-2 text-right font-semibold bg-gray-50">HPP</th>
+                                    <th className="py-1.5 px-2 text-right font-bold text-emerald-800 bg-emerald-100/50">Harga</th>
+                                    <th className="py-1.5 px-2 text-right font-bold text-blue-800 bg-blue-100/50">Nego</th>
+                                    <th className="py-1.5 px-2 text-right font-semibold border-r border-gray-200 bg-gray-50">%</th>
                                   </React.Fragment>
                                 ))}
                               </tr>

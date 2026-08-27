@@ -402,6 +402,10 @@ export default function PricelistSimulator({
     });
   }, [modelKalender, bahan, ukuran, finishingJilid, oplah, pilihanMesin, marginPct, negoDiskonPct, customParams]);
 
+  const formatRp = (val: number) => {
+    return Math.round(val || 0).toLocaleString('id-ID');
+  };
+
   const [copied, setCopied] = useState(false);
 
   const handleCopyPenawaran = () => {
