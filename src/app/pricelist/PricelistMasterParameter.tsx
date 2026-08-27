@@ -44,6 +44,11 @@ export default function PricelistMasterParameter({
     setCustomParams((prev) => ({ ...prev, [key]: Math.max(0, val) }));
   };
 
+  const isModified = React.useMemo(() => {
+    const standard = activeFinishing === 'Klem' ? DEFAULT_MASTER_PARAMS_KLEM : DEFAULT_MASTER_PARAMS;
+    return JSON.stringify(customParams) !== JSON.stringify(standard);
+  }, [customParams, activeFinishing]);
+
   const handleReset = () => {
     setCustomParams(activeFinishing === 'Klem' ? DEFAULT_MASTER_PARAMS_KLEM : DEFAULT_MASTER_PARAMS);
     toast.success('Tarif berhasil dikembalikan ke standar master.');
@@ -59,7 +64,15 @@ export default function PricelistMasterParameter({
               <Database className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-sm sm:text-base font-bold text-emerald-950 tracking-tight">Master Parameter Tarif Percetakan</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm sm:text-base font-bold text-emerald-950 tracking-tight">Master Parameter Tarif Percetakan</h2>
+                {isModified && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
+                    Dimodifikasi
+                  </span>
+                )}
+              </div>
               <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
                 Tabel acuan tarif dasar bahan kertas, mesin cetak offset, ongkos finishing, ukuran plano, dan konstanta kalender.
               </p>
@@ -108,7 +121,12 @@ export default function PricelistMasterParameter({
           <button
             type="button"
             onClick={handleReset}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all cursor-pointer shadow-2xs"
+            disabled={!isModified}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs ${
+              isModified
+                ? 'bg-amber-600 hover:bg-amber-700 text-white cursor-pointer ring-2 ring-amber-400/40'
+                : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-70'
+            }`}
           >
             <RotateCcw size={13} />
             <span>Reset Standar Master</span>
