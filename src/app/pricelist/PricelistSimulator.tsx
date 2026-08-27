@@ -70,6 +70,7 @@ const MESIN_OPTIONS = [
 interface PricelistSimulatorProps {
   customParams: SimulatorMasterParams;
   setCustomParams: React.Dispatch<React.SetStateAction<SimulatorMasterParams>>;
+  setParamsForFinishing?: (mode: 'Spiral' | 'Klem', params: SimulatorMasterParams) => void;
   finishingJilid: 'Spiral' | 'Klem';
   onChangeFinishingJilid: (mode: 'Spiral' | 'Klem') => void;
   onOpenMasterParam?: () => void;
@@ -78,6 +79,7 @@ interface PricelistSimulatorProps {
 export default function PricelistSimulator({
   customParams,
   setCustomParams,
+  setParamsForFinishing,
   finishingJilid,
   onChangeFinishingJilid,
   onOpenMasterParam,
@@ -194,12 +196,16 @@ export default function PricelistSimulator({
   };
 
   const handleLoadSimulation = (item: SavedSimulationItem) => {
-    // 1. Ubah mode finishing terlebih dahulu agar setCustomParams mengarah ke profil yang tepat (Spiral vs Klem)
+    // 1. Ubah mode finishing
     onChangeFinishingJilid(item.finishingJilid);
 
-    // 2. Pulihkan Master Parameters snapshot
+    // 2. Pulihkan Master Parameters snapshot langsung ke profil yang bersangkutan
     if (item.customParams) {
-      setCustomParams(item.customParams);
+      if (setParamsForFinishing) {
+        setParamsForFinishing(item.finishingJilid, item.customParams);
+      } else {
+        setCustomParams(item.customParams);
+      }
     }
 
     // 3. Pulihkan spesifikasi form simulator

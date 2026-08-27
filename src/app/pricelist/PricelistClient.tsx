@@ -95,13 +95,21 @@ export default function PricelistClient() {
   const setCustomParams: React.Dispatch<React.SetStateAction<SimulatorMasterParams>> = (
     valueOrUpdater
   ) => {
-    const target = isKlemActive ? setParamsKlem : setParamsSpiral;
+    const target = selectedFinishing === 'Klem' ? setParamsKlem : setParamsSpiral;
     if (typeof valueOrUpdater === 'function') {
       target((prev) =>
         (valueOrUpdater as (prev: SimulatorMasterParams) => SimulatorMasterParams)(prev)
       );
     } else {
       target(valueOrUpdater);
+    }
+  };
+
+  const setParamsForFinishing = (mode: 'Spiral' | 'Klem', params: SimulatorMasterParams) => {
+    if (mode === 'Klem') {
+      setParamsKlem(params);
+    } else {
+      setParamsSpiral(params);
     }
   };
 
@@ -319,6 +327,7 @@ export default function PricelistClient() {
           <PricelistSimulator
             customParams={customParams}
             setCustomParams={setCustomParams}
+            setParamsForFinishing={setParamsForFinishing}
             finishingJilid={selectedFinishing}
             onChangeFinishingJilid={setSelectedFinishing}
             onOpenMasterParam={() => setActiveTab('parameter')}
