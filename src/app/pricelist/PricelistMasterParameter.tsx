@@ -44,10 +44,17 @@ export default function PricelistMasterParameter({
     setCustomParams((prev) => ({ ...prev, [key]: Math.max(0, val) }));
   };
 
+  const standardParams = React.useMemo(() => {
+    return activeFinishing === 'Klem' ? DEFAULT_MASTER_PARAMS_KLEM : DEFAULT_MASTER_PARAMS;
+  }, [activeFinishing]);
+
+  const isFieldModified = (key: keyof SimulatorMasterParams) => {
+    return customParams[key] !== standardParams[key];
+  };
+
   const isModified = React.useMemo(() => {
-    const standard = activeFinishing === 'Klem' ? DEFAULT_MASTER_PARAMS_KLEM : DEFAULT_MASTER_PARAMS;
-    return JSON.stringify(customParams) !== JSON.stringify(standard);
-  }, [customParams, activeFinishing]);
+    return JSON.stringify(customParams) !== JSON.stringify(standardParams);
+  }, [customParams, standardParams]);
 
   const handleReset = () => {
     setCustomParams(activeFinishing === 'Klem' ? DEFAULT_MASTER_PARAMS_KLEM : DEFAULT_MASTER_PARAMS);
@@ -149,9 +156,18 @@ export default function PricelistMasterParameter({
           <div className="p-4 flex flex-col gap-4">
             {/* Input grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 flex flex-col gap-2">
+              <div className={`p-3 rounded-lg border flex flex-col gap-2 transition-all ${
+                isFieldModified('tarifHvs70') || isFieldModified('ppnHvs70')
+                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+                  : 'bg-slate-50 border-slate-200'
+              }`}>
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">HVS 70 gsm</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[11px] font-bold text-slate-700">HVS 70 gsm</label>
+                    {isFieldModified('tarifHvs70') && (
+                      <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                    )}
+                  </div>
                   <ThousandInput
                     prefix="Rp"
                     value={customParams.tarifHvs70}
@@ -160,7 +176,12 @@ export default function PricelistMasterParameter({
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-600 mb-0.5">PPN / Margin Kertas</label>
+                  <div className="flex items-center justify-between mb-0.5">
+                    <label className="block text-[10px] font-bold text-slate-600">PPN / Margin Kertas</label>
+                    {isFieldModified('ppnHvs70') && (
+                      <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                    )}
+                  </div>
                   <ThousandInput
                     suffix="%"
                     value={Math.round(((customParams.ppnHvs70 ?? 1.05) - 1) * 100 * 100) / 100}
@@ -171,9 +192,18 @@ export default function PricelistMasterParameter({
                 <span className="block text-[9px] text-slate-500">Ekonomis</span>
               </div>
 
-              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 flex flex-col gap-2">
+              <div className={`p-3 rounded-lg border flex flex-col gap-2 transition-all ${
+                isFieldModified('tarifAp120') || isFieldModified('ppnAp120')
+                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+                  : 'bg-slate-50 border-slate-200'
+              }`}>
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Art Paper 120</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[11px] font-bold text-slate-700">Art Paper 120</label>
+                    {isFieldModified('tarifAp120') && (
+                      <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                    )}
+                  </div>
                   <ThousandInput
                     prefix="Rp"
                     value={customParams.tarifAp120}
@@ -182,7 +212,12 @@ export default function PricelistMasterParameter({
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-600 mb-0.5">PPN / Margin Kertas</label>
+                  <div className="flex items-center justify-between mb-0.5">
+                    <label className="block text-[10px] font-bold text-slate-600">PPN / Margin Kertas</label>
+                    {isFieldModified('ppnAp120') && (
+                      <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                    )}
+                  </div>
                   <ThousandInput
                     suffix="%"
                     value={Math.round(((customParams.ppnAp120 ?? 1.05) - 1) * 100 * 100) / 100}
@@ -193,9 +228,18 @@ export default function PricelistMasterParameter({
                 <span className="block text-[9px] text-slate-500">Standar Kilap</span>
               </div>
 
-              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 flex flex-col gap-2">
+              <div className={`p-3 rounded-lg border flex flex-col gap-2 transition-all ${
+                isFieldModified('tarifAp150') || isFieldModified('ppnAp150')
+                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+                  : 'bg-slate-50 border-slate-200'
+              }`}>
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Art Paper 150</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[11px] font-bold text-slate-700">Art Paper 150</label>
+                    {isFieldModified('tarifAp150') && (
+                      <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                    )}
+                  </div>
                   <ThousandInput
                     prefix="Rp"
                     value={customParams.tarifAp150}
@@ -204,7 +248,12 @@ export default function PricelistMasterParameter({
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-600 mb-0.5">PPN / Margin Kertas</label>
+                  <div className="flex items-center justify-between mb-0.5">
+                    <label className="block text-[10px] font-bold text-slate-600">PPN / Margin Kertas</label>
+                    {isFieldModified('ppnAp150') && (
+                      <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                    )}
+                  </div>
                   <ThousandInput
                     suffix="%"
                     value={Math.round(((customParams.ppnAp150 ?? 1.05) - 1) * 100 * 100) / 100}
@@ -241,115 +290,139 @@ export default function PricelistMasterParameter({
               <tbody className="divide-y divide-slate-100 text-[11.5px]">
                 <tr>
                   <td className="py-2 px-2.5 text-slate-700">Ongkos Min Order (4 plat)</td>
-                  <td className="py-1.5 px-2">
+                  <td className={`py-1.5 px-2 ${isFieldModified('oliverMinOngkos') ? 'bg-amber-50/70' : ''}`}>
                     <ThousandInput
                       prefix="Rp"
                       value={customParams.oliverMinOngkos}
                       onValueChange={(val) => handleChange('oliverMinOngkos', val)}
-                      className="w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                      className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                        isFieldModified('oliverMinOngkos') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                      }`}
                     />
                   </td>
-                  <td className="py-1.5 px-2">
+                  <td className={`py-1.5 px-2 ${isFieldModified('smMinOngkos') ? 'bg-amber-50/70' : ''}`}>
                     <ThousandInput
                       prefix="Rp"
                       value={customParams.smMinOngkos}
                       onValueChange={(val) => handleChange('smMinOngkos', val)}
-                      className="w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                      className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                        isFieldModified('smMinOngkos') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                      }`}
                     />
                   </td>
                 </tr>
                 <tr>
                   <td className="py-2 px-2.5 text-slate-700">Insheet Plat Cetak</td>
-                  <td className="py-1.5 px-2">
+                  <td className={`py-1.5 px-2 ${isFieldModified('oliverInsheet') ? 'bg-amber-50/70' : ''}`}>
                     <ThousandInput
                       suffix="lbr"
                       value={customParams.oliverInsheet}
                       onValueChange={(val) => handleChange('oliverInsheet', val)}
-                      className="w-full pr-7 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                      className={`w-full pr-7 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                        isFieldModified('oliverInsheet') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                      }`}
                     />
                   </td>
-                  <td className="py-1.5 px-2">
+                  <td className={`py-1.5 px-2 ${isFieldModified('smInsheet') ? 'bg-amber-50/70' : ''}`}>
                     <ThousandInput
                       suffix="lbr"
                       value={customParams.smInsheet}
                       onValueChange={(val) => handleChange('smInsheet', val)}
-                      className="w-full pr-7 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                      className={`w-full pr-7 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                        isFieldModified('smInsheet') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                      }`}
                     />
                   </td>
                 </tr>
                 <tr>
                   <td className="py-2 px-2.5 text-slate-700">Biaya Plat CTP / Unit</td>
-                  <td className="py-1.5 px-2">
+                  <td className={`py-1.5 px-2 ${isFieldModified('oliverPlatUnit') ? 'bg-amber-50/70' : ''}`}>
                     <ThousandInput
                       prefix="Rp"
                       value={customParams.oliverPlatUnit}
                       onValueChange={(val) => handleChange('oliverPlatUnit', val)}
-                      className="w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                      className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                        isFieldModified('oliverPlatUnit') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                      }`}
                     />
                   </td>
-                  <td className="py-1.5 px-2">
+                  <td className={`py-1.5 px-2 ${isFieldModified('smPlatUnit') ? 'bg-amber-50/70' : ''}`}>
                     <ThousandInput
                       prefix="Rp"
                       value={customParams.smPlatUnit}
                       onValueChange={(val) => handleChange('smPlatUnit', val)}
-                      className="w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                      className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                        isFieldModified('smPlatUnit') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                      }`}
                     />
                   </td>
                 </tr>
                 <tr>
                   <td className="py-2 px-2.5 text-slate-700">Batas Min Drek (Kapasitas Min)</td>
-                  <td className="py-1.5 px-2">
+                  <td className={`py-1.5 px-2 ${isFieldModified('oliverBatasDrek') ? 'bg-amber-50/70' : ''}`}>
                     <ThousandInput
                       suffix="drek"
                       value={customParams.oliverBatasDrek}
                       onValueChange={(val) => handleChange('oliverBatasDrek', val)}
-                      className="w-full py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                      className={`w-full py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                        isFieldModified('oliverBatasDrek') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                      }`}
                     />
                   </td>
-                  <td className="py-1.5 px-2">
+                  <td className={`py-1.5 px-2 ${isFieldModified('smBatasDrek') ? 'bg-amber-50/70' : ''}`}>
                     <ThousandInput
                       suffix="drek"
                       value={customParams.smBatasDrek}
                       onValueChange={(val) => handleChange('smBatasDrek', val)}
-                      className="w-full py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                      className={`w-full py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                        isFieldModified('smBatasDrek') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                      }`}
                     />
                   </td>
                 </tr>
                 <tr>
                   <td className="py-2 px-2.5 text-slate-700">Drek Over / Drek</td>
-                  <td className="py-1.5 px-2">
+                  <td className={`py-1.5 px-2 ${isFieldModified('oliverDrekOver') ? 'bg-amber-50/70' : ''}`}>
                     <ThousandInput
                       prefix="Rp"
                       value={customParams.oliverDrekOver}
                       onValueChange={(val) => handleChange('oliverDrekOver', val)}
-                      className="w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                      className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                        isFieldModified('oliverDrekOver') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                      }`}
                     />
                   </td>
-                  <td className="py-1.5 px-2">
+                  <td className={`py-1.5 px-2 ${isFieldModified('smDrekOver') ? 'bg-amber-50/70' : ''}`}>
                     <ThousandInput
                       prefix="Rp"
                       value={customParams.smDrekOver}
                       onValueChange={(val) => handleChange('smDrekOver', val)}
-                      className="w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                      className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                        isFieldModified('smDrekOver') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                      }`}
                     />
                   </td>
                 </tr>
                 <tr>
                   <td className="py-2 px-2.5 text-slate-700">Biaya Transportasi Mesin</td>
-                  <td className="py-1.5 px-2">
+                  <td className={`py-1.5 px-2 ${isFieldModified('oliverTransport') ? 'bg-amber-50/70' : ''}`}>
                     <ThousandInput
                       prefix="Rp"
                       value={customParams.oliverTransport}
                       onValueChange={(val) => handleChange('oliverTransport', val)}
-                      className="w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                      className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                        isFieldModified('oliverTransport') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                      }`}
                     />
                   </td>
-                  <td className="py-1.5 px-2">
+                  <td className={`py-1.5 px-2 ${isFieldModified('smTransport') ? 'bg-amber-50/70' : ''}`}>
                     <ThousandInput
                       prefix="Rp"
                       value={customParams.smTransport}
                       onValueChange={(val) => handleChange('smTransport', val)}
-                      className="w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                      className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                        isFieldModified('smTransport') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                      }`}
                     />
                   </td>
                 </tr>
@@ -372,8 +445,17 @@ export default function PricelistMasterParameter({
           <div className="p-4 flex flex-col gap-4">
             {/* Sub: Spiral & Jasa Umum */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Spiral (cm x Rp)</label>
+              <div className={`p-2.5 rounded-lg border transition-all ${
+                isFieldModified('tarifSpiralLubang')
+                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+                  : 'bg-slate-50 border-slate-200'
+              }`}>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[10.5px] font-bold text-slate-700">Spiral (cm x Rp)</label>
+                  {isFieldModified('tarifSpiralLubang') && (
+                    <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                  )}
+                </div>
                 <ThousandInput
                   prefix="Rp"
                   value={customParams.tarifSpiralLubang}
@@ -383,8 +465,17 @@ export default function PricelistMasterParameter({
                 <span className="block text-[9.5px] text-slate-500 mt-1">Per cm lebar kalender</span>
               </div>
 
-              <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Spiral Min Order</label>
+              <div className={`p-2.5 rounded-lg border transition-all ${
+                isFieldModified('tarifSpiralMin')
+                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+                  : 'bg-slate-50 border-slate-200'
+              }`}>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[10.5px] font-bold text-slate-700">Spiral Min Order</label>
+                  {isFieldModified('tarifSpiralMin') && (
+                    <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                  )}
+                </div>
                 <ThousandInput
                   prefix="Rp"
                   value={customParams.tarifSpiralMin}
@@ -394,8 +485,17 @@ export default function PricelistMasterParameter({
                 <span className="block text-[9.5px] text-slate-500 mt-1">Batas minimum order</span>
               </div>
 
-              <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Desain Kalender</label>
+              <div className={`p-2.5 rounded-lg border transition-all ${
+                isFieldModified('tarifDesain')
+                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+                  : 'bg-slate-50 border-slate-200'
+              }`}>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[10.5px] font-bold text-slate-700">Desain Kalender</label>
+                  {isFieldModified('tarifDesain') && (
+                    <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                  )}
+                </div>
                 <ThousandInput
                   prefix="Rp"
                   value={customParams.tarifDesain}
@@ -405,8 +505,17 @@ export default function PricelistMasterParameter({
                 <span className="block text-[9.5px] text-slate-500 mt-1">Per lembar kalender</span>
               </div>
 
-              <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Almanak Desain</label>
+              <div className={`p-2.5 rounded-lg border transition-all ${
+                isFieldModified('tarifAlmanakDesain')
+                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+                  : 'bg-slate-50 border-slate-200'
+              }`}>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[10.5px] font-bold text-slate-700">Almanak Desain</label>
+                  {isFieldModified('tarifAlmanakDesain') && (
+                    <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                  )}
+                </div>
                 <ThousandInput
                   prefix="Rp"
                   value={customParams.tarifAlmanakDesain}
@@ -416,8 +525,17 @@ export default function PricelistMasterParameter({
                 <span className="block text-[9.5px] text-slate-500 mt-1">Biaya setting almanak</span>
               </div>
 
-              <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Royalty Kalender</label>
+              <div className={`p-2.5 rounded-lg border transition-all ${
+                isFieldModified('tarifRoyalty')
+                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+                  : 'bg-slate-50 border-slate-200'
+              }`}>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[10.5px] font-bold text-slate-700">Royalty Kalender</label>
+                  {isFieldModified('tarifRoyalty') && (
+                    <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                  )}
+                </div>
                 <ThousandInput
                   prefix="Rp"
                   value={customParams.tarifRoyalty}
@@ -427,8 +545,17 @@ export default function PricelistMasterParameter({
                 <span className="block text-[9.5px] text-slate-500 mt-1">Per pcs kalender</span>
               </div>
 
-              <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                <label className="block text-[10.5px] font-bold text-slate-700 mb-1">Potong Dasar</label>
+              <div className={`p-2.5 rounded-lg border transition-all ${
+                isFieldModified('tarifPotongDasar')
+                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+                  : 'bg-slate-50 border-slate-200'
+              }`}>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[10.5px] font-bold text-slate-700">Potong Dasar</label>
+                  {isFieldModified('tarifPotongDasar') && (
+                    <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Ubah</span>
+                  )}
+                </div>
                 <ThousandInput
                   prefix="Rp"
                   value={customParams.tarifPotongDasar}
@@ -446,8 +573,15 @@ export default function PricelistMasterParameter({
                 <span className="text-[10px] text-amber-800">Rumus: (Oplah + 5) * Tarif</span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <div className="bg-white p-2 rounded border border-amber-200">
-                  <label className="block text-[10px] font-bold text-slate-700 mb-0.5">32 x 48 cm</label>
+                <div className={`p-2 rounded border transition-all ${
+                  isFieldModified('klem32x48') ? 'bg-amber-100/60 border-amber-400 ring-1 ring-amber-400/40' : 'bg-white border-amber-200'
+                }`}>
+                  <div className="flex items-center justify-between mb-0.5">
+                    <label className="block text-[10px] font-bold text-slate-700">32 x 48 cm</label>
+                    {isFieldModified('klem32x48') && (
+                      <span className="text-[8.5px] font-bold text-amber-800 bg-amber-200 px-1 py-0.2 rounded">Ubah</span>
+                    )}
+                  </div>
                   <ThousandInput
                     prefix="Rp"
                     value={customParams.klem32x48}
@@ -455,8 +589,15 @@ export default function PricelistMasterParameter({
                     className="w-full pr-1 py-0.5 text-xs font-mono font-bold bg-white border-0 text-right"
                   />
                 </div>
-                <div className="bg-white p-2 rounded border border-amber-200">
-                  <label className="block text-[10px] font-bold text-slate-700 mb-0.5">38 x 54 cm</label>
+                <div className={`p-2 rounded border transition-all ${
+                  isFieldModified('klem38x54') ? 'bg-amber-100/60 border-amber-400 ring-1 ring-amber-400/40' : 'bg-white border-amber-200'
+                }`}>
+                  <div className="flex items-center justify-between mb-0.5">
+                    <label className="block text-[10px] font-bold text-slate-700">38 x 54 cm</label>
+                    {isFieldModified('klem38x54') && (
+                      <span className="text-[8.5px] font-bold text-amber-800 bg-amber-200 px-1 py-0.2 rounded">Ubah</span>
+                    )}
+                  </div>
                   <ThousandInput
                     prefix="Rp"
                     value={customParams.klem38x54}
@@ -464,8 +605,15 @@ export default function PricelistMasterParameter({
                     className="w-full pr-1 py-0.5 text-xs font-mono font-bold bg-white border-0 text-right"
                   />
                 </div>
-                <div className="bg-white p-2 rounded border border-amber-200">
-                  <label className="block text-[10px] font-bold text-slate-700 mb-0.5">46 x 64 cm</label>
+                <div className={`p-2 rounded border transition-all ${
+                  isFieldModified('klem46x64') ? 'bg-amber-100/60 border-amber-400 ring-1 ring-amber-400/40' : 'bg-white border-amber-200'
+                }`}>
+                  <div className="flex items-center justify-between mb-0.5">
+                    <label className="block text-[10px] font-bold text-slate-700">46 x 64 cm</label>
+                    {isFieldModified('klem46x64') && (
+                      <span className="text-[8.5px] font-bold text-amber-800 bg-amber-200 px-1 py-0.2 rounded">Ubah</span>
+                    )}
+                  </div>
                   <ThousandInput
                     prefix="Rp"
                     value={customParams.klem46x64}
@@ -473,8 +621,15 @@ export default function PricelistMasterParameter({
                     className="w-full pr-1 py-0.5 text-xs font-mono font-bold bg-white border-0 text-right"
                   />
                 </div>
-                <div className="bg-white p-2 rounded border border-amber-200">
-                  <label className="block text-[10px] font-bold text-slate-700 mb-0.5">48 x 64 cm</label>
+                <div className={`p-2 rounded border transition-all ${
+                  isFieldModified('klem48x64') ? 'bg-amber-100/60 border-amber-400 ring-1 ring-amber-400/40' : 'bg-white border-amber-200'
+                }`}>
+                  <div className="flex items-center justify-between mb-0.5">
+                    <label className="block text-[10px] font-bold text-slate-700">48 x 64 cm</label>
+                    {isFieldModified('klem48x64') && (
+                      <span className="text-[8.5px] font-bold text-amber-800 bg-amber-200 px-1 py-0.2 rounded">Ubah</span>
+                    )}
+                  </div>
                   <ThousandInput
                     prefix="Rp"
                     value={customParams.klem48x64}
@@ -500,9 +655,16 @@ export default function PricelistMasterParameter({
           </div>
           <div className="p-4 flex flex-col gap-3">
             <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="p-2.5 bg-slate-50 rounded border border-slate-200 flex items-center justify-between">
+              <div className={`p-2.5 rounded border flex items-center justify-between transition-all ${
+                isFieldModified('potong32x48') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50 border-slate-200'
+              }`}>
                 <div>
-                  <span className="font-bold text-slate-800 block text-xs">Ukuran 32 x 48 cm</span>
+                  <div className="flex items-center gap-1">
+                    <span className="font-bold text-slate-800 block text-xs">Ukuran 32 x 48 cm</span>
+                    {isFieldModified('potong32x48') && (
+                      <span className="text-[8.5px] font-bold text-amber-800 bg-amber-200 px-1 rounded">Ubah</span>
+                    )}
+                  </div>
                   <span className="text-[10px] text-slate-500">Plano 65 x 100</span>
                 </div>
                 <div className="w-20">
@@ -515,9 +677,16 @@ export default function PricelistMasterParameter({
                 </div>
               </div>
 
-              <div className="p-2.5 bg-slate-50 rounded border border-slate-200 flex items-center justify-between">
+              <div className={`p-2.5 rounded border flex items-center justify-between transition-all ${
+                isFieldModified('potong38x54') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50 border-slate-200'
+              }`}>
                 <div>
-                  <span className="font-bold text-slate-800 block text-xs">Ukuran 38 x 54 cm</span>
+                  <div className="flex items-center gap-1">
+                    <span className="font-bold text-slate-800 block text-xs">Ukuran 38 x 54 cm</span>
+                    {isFieldModified('potong38x54') && (
+                      <span className="text-[8.5px] font-bold text-amber-800 bg-amber-200 px-1 rounded">Ubah</span>
+                    )}
+                  </div>
                   <span className="text-[10px] text-slate-500">Plano 79 x 109</span>
                 </div>
                 <div className="w-20">
@@ -530,9 +699,16 @@ export default function PricelistMasterParameter({
                 </div>
               </div>
 
-              <div className="p-2.5 bg-slate-50 rounded border border-slate-200 flex items-center justify-between">
+              <div className={`p-2.5 rounded border flex items-center justify-between transition-all ${
+                isFieldModified('potong46x64') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50 border-slate-200'
+              }`}>
                 <div>
-                  <span className="font-bold text-slate-800 block text-xs">Ukuran 46 x 64 cm</span>
+                  <div className="flex items-center gap-1">
+                    <span className="font-bold text-slate-800 block text-xs">Ukuran 46 x 64 cm</span>
+                    {isFieldModified('potong46x64') && (
+                      <span className="text-[8.5px] font-bold text-amber-800 bg-amber-200 px-1 rounded">Ubah</span>
+                    )}
+                  </div>
                   <span className="text-[10px] text-slate-500">Plano 65 x 100</span>
                 </div>
                 <div className="w-20">
@@ -545,9 +721,16 @@ export default function PricelistMasterParameter({
                 </div>
               </div>
 
-              <div className="p-2.5 bg-slate-50 rounded border border-slate-200 flex items-center justify-between">
+              <div className={`p-2.5 rounded border flex items-center justify-between transition-all ${
+                isFieldModified('potong48x64') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50 border-slate-200'
+              }`}>
                 <div>
-                  <span className="font-bold text-slate-800 block text-xs">Ukuran 48 x 64 cm</span>
+                  <div className="flex items-center gap-1">
+                    <span className="font-bold text-slate-800 block text-xs">Ukuran 48 x 64 cm</span>
+                    {isFieldModified('potong48x64') && (
+                      <span className="text-[8.5px] font-bold text-amber-800 bg-amber-200 px-1 rounded">Ubah</span>
+                    )}
+                  </div>
                   <span className="text-[10px] text-slate-500">Plano 65 x 100</span>
                 </div>
                 <div className="w-20">
@@ -563,8 +746,15 @@ export default function PricelistMasterParameter({
 
             {/* Konstanta Grafika */}
             <div className="p-3 bg-violet-50/60 rounded-lg border border-violet-100 flex flex-col gap-2.5 text-xs text-violet-950">
-              <div className="flex items-center justify-between gap-2 border-b border-violet-200/50 pb-2">
-                <span className="font-bold">Konstanta Berat 1 Rim Kertas Plano:</span>
+              <div className={`flex items-center justify-between gap-2 border-b border-violet-200/50 pb-2 p-1 rounded ${
+                isFieldModified('konstantaBeratRim') ? 'bg-amber-50 border-amber-200' : ''
+              }`}>
+                <div className="flex items-center gap-1">
+                  <span className="font-bold">Konstanta Berat 1 Rim Kertas Plano:</span>
+                  {isFieldModified('konstantaBeratRim') && (
+                    <span className="text-[8.5px] font-bold text-amber-800 bg-amber-200 px-1 rounded">Ubah</span>
+                  )}
+                </div>
                 <div className="w-28">
                   <ThousandInput
                     value={customParams.konstantaBeratRim}
@@ -573,8 +763,15 @@ export default function PricelistMasterParameter({
                   />
                 </div>
               </div>
-              <div className="flex items-center justify-between gap-2 border-b border-violet-200/50 pb-2">
-                <span className="font-bold">Standar Isi 1 Rim (Lembar):</span>
+              <div className={`flex items-center justify-between gap-2 border-b border-violet-200/50 pb-2 p-1 rounded ${
+                isFieldModified('lembarPerRim') ? 'bg-amber-50 border-amber-200' : ''
+              }`}>
+                <div className="flex items-center gap-1">
+                  <span className="font-bold">Standar Isi 1 Rim (Lembar):</span>
+                  {isFieldModified('lembarPerRim') && (
+                    <span className="text-[8.5px] font-bold text-amber-800 bg-amber-200 px-1 rounded">Ubah</span>
+                  )}
+                </div>
                 <div className="w-28">
                   <ThousandInput
                     suffix="lbr"
@@ -584,9 +781,16 @@ export default function PricelistMasterParameter({
                   />
                 </div>
               </div>
-              <div className="flex items-center justify-between gap-2">
+              <div className={`flex items-center justify-between gap-2 p-1 rounded ${
+                isFieldModified('kapasitasLakbanRoll') ? 'bg-amber-50 border-amber-200' : ''
+              }`}>
                 <div>
-                  <span className="font-bold block">Kapasitas Lakban per Roll:</span>
+                  <div className="flex items-center gap-1">
+                    <span className="font-bold block">Kapasitas Lakban per Roll:</span>
+                    {isFieldModified('kapasitasLakbanRoll') && (
+                      <span className="text-[8.5px] font-bold text-amber-800 bg-amber-200 px-1 rounded">Ubah</span>
+                    )}
+                  </div>
                   <span className="text-[10px] text-violet-800">8.000 cm / 60 cm keliling ikat</span>
                 </div>
                 <div className="w-28">
