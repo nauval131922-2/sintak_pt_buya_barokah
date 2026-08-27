@@ -13,6 +13,7 @@ import {
   Layers,
   Calculator,
   Database,
+  BookOpen,
 } from 'lucide-react';
 import PricelistExcelUpload from './PricelistExcelUpload';
 import PricelistSimulator from './PricelistSimulator';
