@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Calculator,
   Layers,
@@ -15,14 +15,37 @@ import {
   FileText,
   RotateCcw,
   X,
+  Bookmark,
+  BookmarkCheck,
+  Trash2,
+  Clock,
+  ChevronRight,
 } from 'lucide-react';
 import {
   calculatePricelistSimulator,
   DEFAULT_MASTER_PARAMS,
   DEFAULT_MASTER_PARAMS_KLEM,
   SimulatorMasterParams,
+  SimulatorOutput,
 } from '@/lib/pricelist-simulator';
 import ThousandInput from '@/components/ThousandInput';
+import { toast } from '@/lib/toast';
+
+export interface SavedSimulationItem {
+  id: string;
+  savedAt: string;
+  title: string;
+  modelKalender: string;
+  bahan: string;
+  ukuran: string;
+  finishingJilid: 'Spiral' | 'Klem';
+  oplah: number;
+  pilihanMesin: 'Otomatis' | 'Oliver' | 'SM';
+  marginPct: number;
+  negoDiskonPct: number;
+  summary: SimulatorOutput['summary'];
+  mesinDigunakan: string;
+}
 
 const MODEL_OPTIONS = [
   { value: 'Eko Wulan (12 Lbr)', label: 'Eko Wulan (12 Lbr)', desc: '12 Lembar / Kalender' },
@@ -117,8 +140,90 @@ export default function PricelistSimulator({
     return () => clearTimeout(timer);
   }, [modelKalender, bahan, ukuran, oplah, pilihanMesin, marginPct, negoDiskonPct]);
 
-  // Quick preset oplah buttons
-  const presetOplahs = [300, 500, 1000, 1500, 2000, 3000, 5000, 10000];
+  const [savedSimulations, setSavedSimulations] = useState<SavedSimulationItem[]>([]);
+  const [simulationTitle, setSimulationTitle] = useState('');
+  const [showSavedListModal, setShowSavedListModal] = useState(false);
+
+  // Load saved simulations from localStorage
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('sintak_saved_simulations');
+      if (raw) {
+        setSavedSimulations(JSON.parse(raw));
+      }
+    } catch (e) {
+      console.error('Failed to load saved simulations:', e);
+    }
+  }, []);
+
+  const handleSaveSimulation = () => {
+    const defaultTitle = `${modelKalender.split(' ')[0]} - ${ukuran} cm (${oplah.toLocaleString('id-ID')} pcs - ${finishingJilid})`;
+    const titleToUse = simulationTitle.trim() || defaultTitle;
+
+    const newItem: SavedSimulationItem = {
+      id: 'sim_' + Date.now(),
+      savedAt: new Date().toISOString(),
+      title: titleToUse,
+      modelKalender,
+      bahan,
+      ukuran,
+      finishingJilid,
+      oplah,
+      pilihanMesin,
+      marginPct,
+      negoDiskonPct,
+      summary: result.summary,
+      mesinDigunakan: result.calculatedParams.mesinDigunakan,
+    };
+
+    const updated = [newItem, ...savedSimulations].slice(0, 50); // Maks 50 riwayat simulasi tersimpan
+    setSavedSimulations(updated);
+    try {
+      localStorage.setItem('sintak_saved_simulations', JSON.stringify(updated));
+      toast.success(`Simulasi "${titleToUse}" berhasil disimpan!`);
+      setSimulationTitle('');
+    } catch (e) {
+      console.error('Failed to save simulation to localStorage:', e);
+      toast.error('Gagal menyimpan hasil simulasi.');
+    }
+  };
+
+  const handleLoadSimulation = (item: SavedSimulationItem) => {
+    setModelKalender(item.modelKalender);
+    setBahan(item.bahan);
+    setUkuran(item.ukuran);
+    onChangeFinishingJilid(item.finishingJilid);
+    setOplah(item.oplah);
+    setPilihanMesin(item.pilihanMesin);
+    setMarginPct(item.marginPct);
+    setNegoDiskonPct(item.negoDiskonPct);
+    setShowSavedListModal(false);
+    toast.info(`Memuat simulasi: ${item.title}`);
+  };
+
+  const handleDeleteSaved = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = savedSimulations.filter((s) => s.id !== id);
+    setSavedSimulations(updated);
+    try {
+      localStorage.setItem('sintak_saved_simulations', JSON.stringify(updated));
+      toast.success('Simulasi tersimpan berhasil dihapus.');
+    } catch (err) {
+      console.error('Failed to update localStorage:', err);
+    }
+  };
+
+  const handleClearAllSaved = () => {
+    if (confirm('Hapus semua riwayat simulasi yang tersimpan?')) {
+      setSavedSimulations([]);
+      try {
+        localStorage.removeItem('sintak_saved_simulations');
+        toast.success('Semua simulasi tersimpan telah dihapus.');
+      } catch (err) {
+        console.error('Failed to clear saved simulations:', err);
+      }
+    }
+  };
 
   const result = useMemo(() => {
     return calculatePricelistSimulator({
@@ -162,11 +267,24 @@ export default function PricelistSimulator({
         <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
+            onClick={() => setShowSavedListModal(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer relative"
+          >
+            <Bookmark size={14} />
+            <span>Riwayat Disimpan</span>
+            {savedSimulations.length > 0 && (
+              <span className="ml-1 px-1.5 py-0.2 bg-emerald-700 text-white rounded-full text-[10px] font-bold">
+                {savedSimulations.length}
+              </span>
+            )}
+          </button>
+          <button
+            type="button"
             onClick={() => setShowSimulatorManual(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer"
           >
             <Info size={14} />
-            <span>Panduan Simulator</span>
+            <span>Panduan</span>
           </button>
           {onOpenMasterParam && (
             <button
@@ -175,7 +293,7 @@ export default function PricelistSimulator({
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer"
             >
               <Settings2 size={14} />
-              <span>Lihat Master Parameter</span>
+              <span>Master Parameter</span>
             </button>
           )}
         </div>
@@ -530,6 +648,30 @@ export default function PricelistSimulator({
             </div>
           </div>
 
+          {/* Fitur Simpan Hasil Simulasi */}
+          <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                placeholder={`Beri nama/catatan (misal: Pesanan Yayasan Al-Ihsan ${oplah.toLocaleString('id-ID')} pcs)...`}
+                value={simulationTitle}
+                onChange={(e) => setSimulationTitle(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSaveSimulation();
+                }}
+                className="w-full px-3 py-2 text-xs font-semibold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleSaveSimulation}
+              className="flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg transition-all shadow-xs cursor-pointer shrink-0"
+            >
+              <BookmarkCheck size={15} />
+              <span>Simpan Hasil Simulasi</span>
+            </button>
+          </div>
+
           {/* Rincian 11 Komponen Biaya Produksi */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col flex-1">
             <div className="px-4 py-3 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
@@ -859,6 +1001,156 @@ export default function PricelistSimulator({
                 className="px-4 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition-all cursor-pointer shadow-xs"
               >
                 Tutup Panduan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Daftar Simulasi Tersimpan */}
+      {showSavedListModal && (
+        <div
+          onClick={() => setShowSavedListModal(false)}
+          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-3xl max-h-[85vh] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden cursor-default"
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-emerald-900 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-800/80 rounded-xl border border-emerald-700 text-emerald-200">
+                  <Bookmark className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold tracking-tight">Daftar Riwayat Simulasi Tersimpan</h3>
+                  <p className="text-xs text-emerald-200/90 mt-0.5">
+                    Klik pada simulasi yang diinginkan untuk memuat kembali parameter ke simulator
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSavedListModal(false)}
+                className="p-1.5 rounded-lg text-emerald-200 hover:text-white hover:bg-emerald-800/60 transition-all cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 overflow-y-auto flex-1 space-y-3">
+              {savedSimulations.length === 0 ? (
+                <div className="py-12 text-center text-slate-400 space-y-2">
+                  <Bookmark className="w-10 h-10 mx-auto text-slate-300 stroke-[1.5]" />
+                  <p className="text-xs font-semibold text-slate-600">Belum ada riwayat simulasi yang disimpan.</p>
+                  <p className="text-[11px] text-slate-400">
+                    Gunakan tombol &quot;Simpan Hasil Simulasi&quot; di bagian bawah simulator untuk menyimpan skenario hitungan.
+                  </p>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden">
+                  {savedSimulations.map((sim) => {
+                    const dateFormatted = new Date(sim.savedAt).toLocaleString('id-ID', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    });
+
+                    return (
+                      <div
+                        key={sim.id}
+                        onClick={() => handleLoadSimulation(sim)}
+                        className="p-3.5 hover:bg-emerald-50/40 transition-colors flex items-center justify-between gap-3 cursor-pointer group"
+                      >
+                        <div className="flex-1 min-w-0 space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-slate-800 group-hover:text-emerald-900 truncate">
+                              {sim.title}
+                            </span>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                              sim.finishingJilid === 'Klem'
+                                ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                                : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                            }`}>
+                              {sim.finishingJilid}
+                            </span>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500">
+                            <span>{sim.modelKalender}</span>
+                            <span>•</span>
+                            <span>{sim.bahan}</span>
+                            <span>•</span>
+                            <span>{sim.ukuran} cm</span>
+                            <span>•</span>
+                            <span className="font-semibold text-slate-700 font-mono">
+                              {sim.oplah.toLocaleString('id-ID')} pcs
+                            </span>
+                            <span>•</span>
+                            <span className="flex items-center gap-1 text-[10.5px] text-slate-400">
+                              <Clock size={11} />
+                              {dateFormatted}
+                            </span>
+                          </div>
+
+                          {/* Detail Ringkas Finansial */}
+                          <div className="flex items-center gap-3 pt-1 text-[11px] font-mono">
+                            <span className="text-slate-600">
+                              HPP: <strong className="text-slate-800 font-bold">Rp {formatRp(sim.summary.hppPerPcs)}</strong>
+                            </span>
+                            <span className="text-emerald-700">
+                              Jual: <strong className="font-bold">Rp {formatRp(sim.summary.hargaJualPerPcs)}</strong>
+                            </span>
+                            <span className="text-blue-700">
+                              Nego: <strong className="font-bold">Rp {formatRp(sim.summary.hargaNegoPerPcs)}</strong>
+                            </span>
+                            <span className="text-emerald-800">
+                              Profit: <strong className="font-bold">Rp {formatRp(sim.summary.estimasiProfit)}</strong>
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            type="button"
+                            title="Hapus simulasi ini"
+                            onClick={(e) => handleDeleteSaved(sim.id, e)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                          <ChevronRight size={16} className="text-slate-300 group-hover:text-emerald-700 transition-colors" />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+              {savedSimulations.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={handleClearAllSaved}
+                  className="text-xs font-semibold text-rose-600 hover:text-rose-800 transition-colors cursor-pointer"
+                >
+                  Hapus Semua Riwayat
+                </button>
+              ) : (
+                <div></div>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowSavedListModal(false)}
+                className="px-4 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition-all cursor-pointer shadow-xs"
+              >
+                Tutup
               </button>
             </div>
           </div>
