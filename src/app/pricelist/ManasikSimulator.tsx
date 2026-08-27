@@ -411,35 +411,54 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
           </div>
 
           {/* Breakdown Komponen Biaya */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center justify-between">
-              <span>Rincian Komponen Biaya (HPP)</span>
-              <span className="text-[11px] font-medium text-emerald-600">
-                {result.breakdown.length} Elemen Produksi
+          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col flex-1">
+            <div className="px-4 py-3 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText size={15} className="text-emerald-700" />
+                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                  Rincian Estimasi Komponen Biaya
+                </h4>
+              </div>
+              <span className="text-[11px] font-bold text-slate-500">
+                Oplah: {oplah.toLocaleString('id-ID')} Eks
               </span>
-            </h4>
+            </div>
 
-            <div className="divide-y divide-slate-100">
-              {result.breakdown.map((item, idx) => (
-                <div key={idx} className="py-2.5 flex items-center justify-between text-xs gap-3">
-                  <div className="min-w-0">
-                    <div className="font-semibold text-slate-800 truncate">
-                      {item.nama}
-                    </div>
-                    <div className="text-[11px] text-slate-500 truncate">
-                      {item.keterangan}
-                    </div>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <div className="font-bold text-slate-900">
-                      Rp {item.nominal.toLocaleString('id-ID')}
-                    </div>
-                    <div className="text-[10px] text-slate-400">
-                      {item.pct.toFixed(1)}%
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-x-auto flex-1">
+              <table className="w-full text-xs text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-100/60 border-b border-slate-200 text-slate-600 font-semibold text-[11px]">
+                    <th className="py-2 px-3 w-10 text-center">No</th>
+                    <th className="py-2 px-3">Komponen Biaya</th>
+                    <th className="py-2 px-3 hidden sm:table-cell text-slate-400">Formula / Deskripsi</th>
+                    <th className="py-2 px-3 text-right">Subtotal (Rp)</th>
+                    <th className="py-2 px-3 text-right w-16">% Porsi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {result.breakdown.map((item, idx) => {
+                    return (
+                      <tr key={idx} className="hover:bg-slate-50/60 transition-colors">
+                        <td className="py-2 px-3 text-center text-slate-400 font-mono text-[11px]">
+                          {idx + 1}
+                        </td>
+                        <td className="py-2 px-3 font-semibold text-slate-700">
+                          {item.nama}
+                        </td>
+                        <td className="py-2 px-3 hidden sm:table-cell text-slate-500 text-[11px]">
+                          {item.keterangan}
+                        </td>
+                        <td className="py-2 px-3 text-right font-mono font-bold text-slate-900">
+                          {item.nominal.toLocaleString('id-ID')}
+                        </td>
+                        <td className="py-2 px-3 text-right font-mono text-slate-400 text-[11px]">
+                          {item.pct.toFixed(1)}%
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

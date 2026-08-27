@@ -326,14 +326,14 @@ export default function PricelistClient() {
       {activeTab === 'parameter' ? (
         <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-4">
           {/* Selector Kategori Produk Master Parameter */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-zinc-800 rounded-xl w-fit border border-slate-200 dark:border-zinc-700">
+          <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl w-fit border border-slate-200">
             <button
               type="button"
               onClick={() => setSelectedProductCategory('Kalender')}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 selectedProductCategory === 'Kalender'
-                  ? 'bg-white dark:bg-zinc-900 text-emerald-800 dark:text-emerald-400 shadow-xs border border-slate-200/80 dark:border-zinc-700'
-                  : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 hover:bg-slate-200/50'
+                  ? 'bg-white text-emerald-800 shadow-xs border border-slate-200/80'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
               }`}
             >
               <span>Kalender 2027</span>
@@ -344,8 +344,8 @@ export default function PricelistClient() {
               onClick={() => setSelectedProductCategory('Buku Manasik')}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 selectedProductCategory === 'Buku Manasik'
-                  ? 'bg-white dark:bg-zinc-900 text-emerald-800 dark:text-emerald-400 shadow-xs border border-slate-200/80 dark:border-zinc-700'
-                  : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 hover:bg-slate-200/50'
+                  ? 'bg-white text-emerald-800 shadow-xs border border-slate-200/80'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
               }`}
             >
               <span>Buku Manasik Haji</span>
@@ -356,8 +356,8 @@ export default function PricelistClient() {
               onClick={() => setSelectedProductCategory('Buku Yasin')}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 selectedProductCategory === 'Buku Yasin'
-                  ? 'bg-white dark:bg-zinc-900 text-emerald-800 dark:text-emerald-400 shadow-xs border border-slate-200/80 dark:border-zinc-700'
-                  : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 hover:bg-slate-200/50'
+                  ? 'bg-white text-emerald-800 shadow-xs border border-slate-200/80'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
               }`}
             >
               <span>Buku Surat Yasin</span>
@@ -410,14 +410,14 @@ export default function PricelistClient() {
       ) : (
         <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-4">
           {/* Selector Kategori Produk Pricelist Matriks */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-zinc-800 rounded-xl w-fit border border-slate-200 dark:border-zinc-700">
+          <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl w-fit border border-slate-200">
             <button
               type="button"
               onClick={() => setSelectedProductCategory('Kalender')}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 selectedProductCategory === 'Kalender'
-                  ? 'bg-white dark:bg-zinc-900 text-emerald-800 dark:text-emerald-400 shadow-xs border border-slate-200/80 dark:border-zinc-700'
-                  : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 hover:bg-slate-200/50'
+                  ? 'bg-white text-emerald-800 shadow-xs border border-slate-200/80'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
               }`}
             >
               <span>Kalender 2027</span>
@@ -428,8 +428,8 @@ export default function PricelistClient() {
               onClick={() => setSelectedProductCategory('Buku Manasik')}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 selectedProductCategory === 'Buku Manasik'
-                  ? 'bg-white dark:bg-zinc-900 text-emerald-800 dark:text-emerald-400 shadow-xs border border-slate-200/80 dark:border-zinc-700'
-                  : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 hover:bg-slate-200/50'
+                  ? 'bg-white text-emerald-800 shadow-xs border border-slate-200/80'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
               }`}
             >
               <span>Buku Manasik Haji</span>
@@ -440,8 +440,8 @@ export default function PricelistClient() {
               onClick={() => setSelectedProductCategory('Buku Yasin')}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 selectedProductCategory === 'Buku Yasin'
-                  ? 'bg-white dark:bg-zinc-900 text-emerald-800 dark:text-emerald-400 shadow-xs border border-slate-200/80 dark:border-zinc-700'
-                  : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 hover:bg-slate-200/50'
+                  ? 'bg-white text-emerald-800 shadow-xs border border-slate-200/80'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
               }`}
             >
               <span>Buku Surat Yasin</span>
