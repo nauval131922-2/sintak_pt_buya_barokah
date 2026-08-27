@@ -153,14 +153,14 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Kolom Kiri: Form Input */}
         <div className="lg:col-span-5 space-y-5">
-          <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-500" /> Spesifikasi Yasin
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600" /> Spesifikasi Yasin
             </h4>
 
             {/* Pilihan Softcover vs Hardcover */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Tipe Cover Buku
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -169,10 +169,10 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
                     key={t}
                     type="button"
                     onClick={() => setTipeCover(t)}
-                    className={`p-2.5 text-center rounded-lg border font-bold text-xs transition ${
+                    className={`p-2.5 text-center rounded-lg border font-bold text-xs transition cursor-pointer ${
                       tipeCover === t
-                        ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-200'
-                        : 'border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-400 hover:border-gray-300'
+                        ? 'border-emerald-600 bg-emerald-50 text-emerald-900'
+                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
                     }`}
                   >
                     {t === 'Hardcover' ? '📘 Hard Cover (Mewah)' : '📄 Soft Cover (Standar)'}
@@ -184,25 +184,25 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
             {/* Oplah & Ukuran */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Kuantitas (Oplah)
                 </label>
                 <ThousandInput
                   value={oplah}
                   onChange={setOplah}
-                  className="w-full text-xs font-bold bg-gray-50 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded-lg p-2"
+                  className="w-full text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg p-2"
                   placeholder="Jumlah buku"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Ukuran Buku
                 </label>
                 <select
                   value={ukuran}
                   onChange={(e) => setUkuran(e.target.value as any)}
-                  className="w-full text-xs font-semibold bg-gray-50 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded-lg p-2"
+                  className="w-full text-xs font-semibold bg-slate-50 border border-slate-300 rounded-lg p-2"
                 >
                   {UKURAN_OPTIONS.map((u) => (
                     <option key={u.value} value={u.value}>
@@ -215,7 +215,7 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
 
             {/* Halaman Isi */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Jumlah Halaman Kitab Yasin
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -224,10 +224,10 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
                     key={opt.value}
                     type="button"
                     onClick={() => setJumlahHalamanIsi(opt.value as any)}
-                    className={`p-2 text-center rounded-lg border text-xs transition ${
+                    className={`p-2 text-center rounded-lg border text-xs transition cursor-pointer ${
                       jumlahHalamanIsi === opt.value
-                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-900 dark:text-indigo-200 font-bold'
-                        : 'border-gray-200 dark:border-zinc-700 hover:border-gray-300'
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-900 font-bold'
+                        : 'border-slate-200 bg-white hover:border-slate-300'
                     }`}
                   >
                     {opt.value} Hal
@@ -237,15 +237,15 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
             </div>
 
             {/* Sisipan Foto & Sisipan Teks */}
-            <div className="grid grid-cols-2 gap-3 p-3 bg-gray-50 dark:bg-zinc-800/60 rounded-lg border border-gray-200 dark:border-zinc-700/60">
+            <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
               <div>
-                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                   Sisipan Foto FC (Lbr)
                 </label>
                 <select
                   value={lembarSisipanFoto}
                   onChange={(e) => setLembarSisipanFoto(Number(e.target.value))}
-                  className="w-full text-xs bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded-md p-1.5 font-medium"
+                  className="w-full text-xs bg-white border border-slate-300 rounded-md p-1.5 font-medium"
                 >
                   {[0, 1, 2, 3, 4, 6, 8].map((n) => (
                     <option key={n} value={n}>
@@ -256,13 +256,13 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                   Sisipan Silsilah/Doa (Lbr)
                 </label>
                 <select
                   value={lembarSisipanKeluarga}
                   onChange={(e) => setLembarSisipanKeluarga(Number(e.target.value))}
-                  className="w-full text-xs bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded-md p-1.5 font-medium"
+                  className="w-full text-xs bg-white border border-slate-300 rounded-md p-1.5 font-medium"
                 >
                   {[0, 1, 2, 3, 4, 6].map((n) => (
                     <option key={n} value={n}>
@@ -274,56 +274,56 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
             </div>
 
             {/* Aksesoris & Fitur Tambahan */}
-            <div className="space-y-2 pt-2 border-t border-gray-100 dark:border-zinc-800">
+            <div className="space-y-2 pt-2 border-t border-slate-200">
               <div className="flex items-center justify-between text-xs">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={laminasiCover === 'Doff'}
                     onChange={(e) => setLaminasiCover(e.target.checked ? 'Doff' : 'Glossy')}
-                    className="rounded text-indigo-600 focus:ring-indigo-500"
+                    className="rounded text-emerald-600 focus:ring-emerald-500"
                   />
-                  <span>Laminasi Doff (Default: Glossy)</span>
+                  <span className="text-slate-700">Laminasi Doff (Default: Glossy)</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={opsiPlastikOpp}
                     onChange={(e) => setOpsiPlastikOpp(e.target.checked)}
-                    className="rounded text-indigo-600 focus:ring-indigo-500"
+                    className="rounded text-emerald-600 focus:ring-emerald-500"
                   />
-                  <span>Plastik Satuan</span>
+                  <span className="text-slate-700">Plastik Satuan</span>
                 </label>
               </div>
 
               {tipeCover === 'Hardcover' && (
-                <div className="flex items-center justify-between text-xs pt-2 border-t border-dashed border-gray-200 dark:border-zinc-700">
+                <div className="flex items-center justify-between text-xs pt-2 border-t border-dashed border-slate-200">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={opsiSikuEmas}
                       onChange={(e) => setOpsiSikuEmas(e.target.checked)}
-                      className="rounded text-indigo-600 focus:ring-indigo-500"
+                      className="rounded text-emerald-600 focus:ring-emerald-500"
                     />
-                    <span>Siku Sudut Emas (4 Sudut)</span>
+                    <span className="text-slate-700">Siku Sudut Emas (4 Sudut)</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={opsiPitaRumbai}
                       onChange={(e) => setOpsiPitaRumbai(e.target.checked)}
-                      className="rounded text-indigo-600 focus:ring-indigo-500"
+                      className="rounded text-emerald-600 focus:ring-emerald-500"
                     />
-                    <span>Pita Rumbai</span>
+                    <span className="text-slate-700">Pita Rumbai</span>
                   </label>
                 </div>
               )}
             </div>
 
             {/* Margin & Nego */}
-            <div className="pt-3 border-t border-gray-100 dark:border-zinc-800 grid grid-cols-2 gap-3">
+            <div className="pt-3 border-t border-slate-200 grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
                   Margin Profit (%)
                 </label>
                 <div className="relative">
@@ -331,14 +331,14 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
                     type="number"
                     value={marginPct}
                     onChange={(e) => setMarginPct(Number(e.target.value))}
-                    className="w-full text-xs font-bold bg-gray-50 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded-lg p-2 pr-7"
+                    className="w-full text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg p-2 pr-7"
                   />
-                  <Percent className="w-3 h-3 text-gray-400 absolute right-2.5 top-3" />
+                  <Percent className="w-3 h-3 text-slate-400 absolute right-2.5 top-3" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
                   Diskon Nego (%)
                 </label>
                 <div className="relative">
@@ -346,9 +346,9 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
                     type="number"
                     value={negoDiskonPct}
                     onChange={(e) => setNegoDiskonPct(Number(e.target.value))}
-                    className="w-full text-xs font-bold bg-gray-50 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded-lg p-2 pr-7"
+                    className="w-full text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg p-2 pr-7"
                   />
-                  <Percent className="w-3 h-3 text-gray-400 absolute right-2.5 top-3" />
+                  <Percent className="w-3 h-3 text-slate-400 absolute right-2.5 top-3" />
                 </div>
               </div>
             </div>
@@ -435,30 +435,30 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
           </div>
 
           {/* Breakdown Komponen Biaya */}
-          <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center justify-between">
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-3">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center justify-between">
               <span>Rincian Biaya Produksi (HPP)</span>
-              <span className="text-[11px] font-medium text-indigo-600 dark:text-indigo-400">
+              <span className="text-[11px] font-medium text-emerald-600">
                 {result.breakdown.length} Elemen
               </span>
             </h4>
 
-            <div className="divide-y divide-gray-100 dark:divide-zinc-800">
+            <div className="divide-y divide-slate-100">
               {result.breakdown.map((item, idx) => (
                 <div key={idx} className="py-2.5 flex items-center justify-between text-xs gap-3">
                   <div className="min-w-0">
-                    <div className="font-semibold text-gray-900 dark:text-gray-100 truncate">
+                    <div className="font-semibold text-slate-800 truncate">
                       {item.nama}
                     </div>
-                    <div className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
+                    <div className="text-[11px] text-slate-500 truncate">
                       {item.keterangan}
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <div className="font-bold text-gray-900 dark:text-gray-100">
+                    <div className="font-bold text-slate-900">
                       Rp {item.nominal.toLocaleString('id-ID')}
                     </div>
-                    <div className="text-[10px] text-gray-400">
+                    <div className="text-[10px] text-slate-400">
                       {item.pct.toFixed(1)}%
                     </div>
                   </div>

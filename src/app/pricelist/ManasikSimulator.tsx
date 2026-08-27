@@ -161,27 +161,27 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Kolom Kiri: Form Input Spesifikasi */}
         <div className="lg:col-span-5 space-y-5">
-          <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-500" /> Spesifikasi Pesanan
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600" /> Spesifikasi Pesanan
             </h4>
 
             {/* Oplah */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Kuantitas Order (Oplah)
               </label>
               <ThousandInput
                 value={oplah}
                 onChange={setOplah}
-                className="w-full text-sm font-bold bg-gray-50 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded-lg p-2.5"
+                className="w-full text-sm font-bold bg-slate-50 border border-slate-300 rounded-lg p-2.5"
                 placeholder="Jumlah pesanan (eks)"
               />
             </div>
 
             {/* Jumlah Halaman */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Varian Isi Buku Manasik
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -190,14 +190,14 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                     key={opt.value}
                     type="button"
                     onClick={() => setJumlahHalaman(opt.value as any)}
-                    className={`p-2.5 text-left rounded-lg border transition ${
+                    className={`p-2.5 text-left rounded-lg border transition cursor-pointer ${
                       jumlahHalaman === opt.value
-                        ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200 font-medium'
-                        : 'border-gray-200 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-600'
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-900 font-medium'
+                        : 'border-slate-200 bg-white hover:border-slate-300'
                     }`}
                   >
                     <div className="text-xs font-semibold">{opt.label}</div>
-                    <div className="text-[10px] text-gray-500 dark:text-gray-400">{opt.desc}</div>
+                    <div className="text-[10px] text-slate-500">{opt.desc}</div>
                   </button>
                 ))}
               </div>
@@ -205,7 +205,7 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
 
             {/* Tipe Jilid & Finishing */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Model Jilid & Binding
               </label>
               <div className="grid grid-cols-1 gap-2">
@@ -214,17 +214,17 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                     key={opt.value}
                     type="button"
                     onClick={() => setTipeJilid(opt.value as any)}
-                    className={`p-2 text-left rounded-lg border transition flex items-center justify-between ${
+                    className={`p-2 text-left rounded-lg border transition cursor-pointer flex items-center justify-between ${
                       tipeJilid === opt.value
-                        ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200 font-medium'
-                        : 'border-gray-200 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-600'
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-900 font-medium'
+                        : 'border-slate-200 bg-white hover:border-slate-300'
                     }`}
                   >
                     <div>
                       <div className="text-xs font-semibold">{opt.label}</div>
-                      <div className="text-[10px] text-gray-500 dark:text-gray-400">{opt.desc}</div>
+                      <div className="text-[10px] text-slate-500">{opt.desc}</div>
                     </div>
-                    {tipeJilid === opt.value && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+                    {tipeJilid === opt.value && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
                   </button>
                 ))}
               </div>
@@ -232,7 +232,7 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
 
             {/* Laminasi Cover */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Laminasi Cover
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -241,10 +241,10 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                     key={opt.value}
                     type="button"
                     onClick={() => setLaminasiCover(opt.value as any)}
-                    className={`p-2 text-left rounded-lg border text-xs transition ${
+                    className={`p-2 text-left rounded-lg border text-xs transition cursor-pointer ${
                       laminasiCover === opt.value
-                        ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200 font-semibold'
-                        : 'border-gray-200 dark:border-zinc-700 hover:border-gray-300'
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-900 font-semibold'
+                        : 'border-slate-200 bg-white hover:border-slate-300'
                     }`}
                   >
                     {opt.label}
@@ -255,13 +255,13 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
 
             {/* Cetak Cover */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Metode Produksi Cover
               </label>
               <select
                 value={metodeCetakCover}
                 onChange={(e) => setMetodeCetakCover(e.target.value as any)}
-                className="w-full text-xs bg-gray-50 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded-lg p-2.5 font-medium"
+                className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium"
               >
                 {METODE_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -272,7 +272,7 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
             </div>
 
             {/* Checkbox Kemasan */}
-            <div className="pt-2 border-t border-gray-100 dark:border-zinc-800 flex items-center justify-between text-xs">
+            <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-xs">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
@@ -280,7 +280,7 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                   onChange={(e) => setOpsiPlastikOpp(e.target.checked)}
                   className="rounded text-emerald-600 focus:ring-emerald-500"
                 />
-                <span>Plastik OPP Satuan</span>
+                <span className="text-slate-700">Plastik OPP Satuan</span>
               </label>
 
               <label className="flex items-center gap-2 cursor-pointer">
@@ -290,14 +290,14 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                   onChange={(e) => setOpsiKardus(e.target.checked)}
                   className="rounded text-emerald-600 focus:ring-emerald-500"
                 />
-                <span>Box Kardus Master</span>
+                <span className="text-slate-700">Box Kardus Master</span>
               </label>
             </div>
 
             {/* Margin & Nego */}
-            <div className="pt-3 border-t border-gray-100 dark:border-zinc-800 grid grid-cols-2 gap-3">
+            <div className="pt-3 border-t border-slate-200 grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
                   Margin Profit (%)
                 </label>
                 <div className="relative">
@@ -305,14 +305,14 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                     type="number"
                     value={marginPct}
                     onChange={(e) => setMarginPct(Number(e.target.value))}
-                    className="w-full text-xs font-bold bg-gray-50 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded-lg p-2 pr-7"
+                    className="w-full text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg p-2 pr-7"
                   />
-                  <Percent className="w-3 h-3 text-gray-400 absolute right-2.5 top-3" />
+                  <Percent className="w-3 h-3 text-slate-400 absolute right-2.5 top-3" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
                   Diskon Nego (%)
                 </label>
                 <div className="relative">
@@ -320,9 +320,9 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                     type="number"
                     value={negoDiskonPct}
                     onChange={(e) => setNegoDiskonPct(Number(e.target.value))}
-                    className="w-full text-xs font-bold bg-gray-50 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded-lg p-2 pr-7"
+                    className="w-full text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg p-2 pr-7"
                   />
-                  <Percent className="w-3 h-3 text-gray-400 absolute right-2.5 top-3" />
+                  <Percent className="w-3 h-3 text-slate-400 absolute right-2.5 top-3" />
                 </div>
               </div>
             </div>
@@ -411,30 +411,30 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
           </div>
 
           {/* Breakdown Komponen Biaya */}
-          <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center justify-between">
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-3">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center justify-between">
               <span>Rincian Komponen Biaya (HPP)</span>
-              <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+              <span className="text-[11px] font-medium text-emerald-600">
                 {result.breakdown.length} Elemen Produksi
               </span>
             </h4>
 
-            <div className="divide-y divide-gray-100 dark:divide-zinc-800">
+            <div className="divide-y divide-slate-100">
               {result.breakdown.map((item, idx) => (
                 <div key={idx} className="py-2.5 flex items-center justify-between text-xs gap-3">
                   <div className="min-w-0">
-                    <div className="font-semibold text-gray-900 dark:text-gray-100 truncate">
+                    <div className="font-semibold text-slate-800 truncate">
                       {item.nama}
                     </div>
-                    <div className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
+                    <div className="text-[11px] text-slate-500 truncate">
                       {item.keterangan}
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <div className="font-bold text-gray-900 dark:text-gray-100">
+                    <div className="font-bold text-slate-900">
                       Rp {item.nominal.toLocaleString('id-ID')}
                     </div>
-                    <div className="text-[10px] text-gray-400">
+                    <div className="text-[10px] text-slate-400">
                       {item.pct.toFixed(1)}%
                     </div>
                   </div>
