@@ -161,7 +161,7 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
 
             {/* Pilihan Softcover vs Hardcover */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
                 Tipe Cover Buku
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -170,10 +170,10 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
                     key={t}
                     type="button"
                     onClick={() => setTipeCover(t)}
-                    className={`p-2.5 text-center rounded-lg border font-bold text-xs transition cursor-pointer ${
+                    className={`py-2 px-2.5 rounded-lg border text-center font-bold text-xs transition cursor-pointer ${
                       tipeCover === t
-                        ? 'border-emerald-600 bg-emerald-50 text-emerald-900'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                        ? 'border-emerald-600 bg-emerald-50/70 text-emerald-950 ring-1 ring-emerald-500'
+                        : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 text-slate-700'
                     }`}
                   >
                     {t === 'Hardcover' ? '📘 Hard Cover (Mewah)' : '📄 Soft Cover (Standar)'}
@@ -185,7 +185,7 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
             {/* Oplah & Ukuran */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
                   Kuantitas (Oplah)
                 </label>
                 <ThousandInput
@@ -197,13 +197,13 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
                   Ukuran Buku
                 </label>
                 <select
                   value={ukuran}
                   onChange={(e) => setUkuran(e.target.value as any)}
-                  className="w-full text-xs font-semibold bg-slate-50 border border-slate-300 rounded-lg p-2"
+                  className="w-full text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-1 focus:ring-emerald-500 focus:outline-none"
                 >
                   {UKURAN_OPTIONS.map((u) => (
                     <option key={u.value} value={u.value}>
@@ -216,7 +216,7 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
 
             {/* Halaman Isi */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
                 Jumlah Halaman Kitab Yasin
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -227,8 +227,8 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
                     onClick={() => setJumlahHalamanIsi(opt.value as any)}
                     className={`p-2 text-center rounded-lg border text-xs transition cursor-pointer ${
                       jumlahHalamanIsi === opt.value
-                        ? 'border-emerald-500 bg-emerald-50 text-emerald-900 font-bold'
-                        : 'border-slate-200 bg-white hover:border-slate-300'
+                        ? 'border-emerald-500 bg-emerald-50/70 text-emerald-950 font-bold ring-1 ring-emerald-500'
+                        : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 text-slate-700'
                     }`}
                   >
                     {opt.value} Hal

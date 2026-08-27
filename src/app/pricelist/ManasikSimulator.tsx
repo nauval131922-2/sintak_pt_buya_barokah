@@ -170,7 +170,7 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
 
             {/* Oplah */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
                 Kuantitas Order (Oplah)
               </label>
               <ThousandInput
@@ -183,7 +183,7 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
 
             {/* Jumlah Halaman */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
                 Varian Isi Buku Manasik
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -192,14 +192,14 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                     key={opt.value}
                     type="button"
                     onClick={() => setJumlahHalaman(opt.value as any)}
-                    className={`p-2.5 text-left rounded-lg border transition cursor-pointer ${
+                    className={`p-2 px-2.5 rounded-lg border text-left flex flex-col justify-between transition-all cursor-pointer ${
                       jumlahHalaman === opt.value
-                        ? 'border-emerald-500 bg-emerald-50 text-emerald-900 font-medium'
-                        : 'border-slate-200 bg-white hover:border-slate-300'
+                        ? 'border-emerald-600 bg-emerald-50/70 text-emerald-950 font-bold ring-1 ring-emerald-500'
+                        : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 text-slate-700'
                     }`}
                   >
-                    <div className="text-xs font-semibold">{opt.label}</div>
-                    <div className="text-[10px] text-slate-500">{opt.desc}</div>
+                    <span className="text-xs">{opt.label}</span>
+                    <span className="text-[10px] text-slate-500 mt-0.5">{opt.desc}</span>
                   </button>
                 ))}
               </div>
@@ -207,7 +207,7 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
 
             {/* Tipe Jilid & Finishing */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
                 Model Jilid & Binding
               </label>
               <div className="grid grid-cols-1 gap-2">
@@ -216,17 +216,14 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                     key={opt.value}
                     type="button"
                     onClick={() => setTipeJilid(opt.value as any)}
-                    className={`p-2 text-left rounded-lg border transition cursor-pointer flex items-center justify-between ${
+                    className={`p-2 px-2.5 rounded-lg border text-left flex flex-col justify-between transition-all cursor-pointer ${
                       tipeJilid === opt.value
-                        ? 'border-emerald-500 bg-emerald-50 text-emerald-900 font-medium'
-                        : 'border-slate-200 bg-white hover:border-slate-300'
+                        ? 'border-emerald-600 bg-emerald-50/70 text-emerald-950 font-bold ring-1 ring-emerald-500'
+                        : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 text-slate-700'
                     }`}
                   >
-                    <div>
-                      <div className="text-xs font-semibold">{opt.label}</div>
-                      <div className="text-[10px] text-slate-500">{opt.desc}</div>
-                    </div>
-                    {tipeJilid === opt.value && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                    <span className="text-xs">{opt.label}</span>
+                    <span className="text-[10px] text-slate-500 mt-0.5">{opt.desc}</span>
                   </button>
                 ))}
               </div>
@@ -234,7 +231,7 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
 
             {/* Laminasi Cover */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
                 Laminasi Cover
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -243,13 +240,13 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                     key={opt.value}
                     type="button"
                     onClick={() => setLaminasiCover(opt.value as any)}
-                    className={`p-2 text-left rounded-lg border text-xs transition cursor-pointer ${
+                    className={`py-2 px-2 rounded-lg border text-center transition-all cursor-pointer ${
                       laminasiCover === opt.value
-                        ? 'border-emerald-500 bg-emerald-50 text-emerald-900 font-semibold'
-                        : 'border-slate-200 bg-white hover:border-slate-300'
+                        ? 'border-emerald-600 bg-emerald-50/70 text-emerald-950 font-bold ring-1 ring-emerald-500'
+                        : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 text-slate-700'
                     }`}
                   >
-                    {opt.label}
+                    <span className="text-xs block">{opt.label}</span>
                   </button>
                 ))}
               </div>
@@ -257,7 +254,7 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
 
             {/* Cetak Cover */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
                 Metode Produksi Cover
               </label>
               <select
