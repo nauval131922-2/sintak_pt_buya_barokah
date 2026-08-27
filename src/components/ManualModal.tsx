@@ -322,27 +322,29 @@ export default function ManualModal() {
       ]
     },
     '/pricelist': {
-      title: 'Pricelist Kalender',
+      title: 'Pricelist & Simulator Produk',
       icon: FileSpreadsheet,
-      description: 'Master data tarif, simulator estimasi biaya, kalkulasi HPP, margin keuntungan, dan pricelist matrix kalender dinding spiral & klem 2027.',
+      description: 'Master data tarif dasar, simulator HPP & harga penawaran kustom, kalkulasi profit, dan matriks harga cetak terintegrasi untuk berbagai kategori produk (Kalender, Buku Manasik, Buku Yasin, Nota 1 Warna).',
       steps: [
-        '**Struktur 3 Tab Fitur Utama**:',
-        '  • **1. Master Parameter**: Mengatur tarif acuan bahan kertas, standar mesin cetak offset (Oliver & SM), ongkos finishing (spiral, klem seng, potong, colator, dll.), serta konstanta grafika. Nilai disimpan otomatis di browser.',
-        '  • **2. Simulator**: Menghitung simulasi biaya riil produksi dan rincian 11 komponen biaya untuk satu pesanan kustom lengkap dengan estimasi profit & diskon nego.',
-        '  • **3. Pricelist Matrix**: Menampilkan 216 kombinasi harga dan HPP yang langsung bereaksi dan terhitung ulang seketika saat Master Parameter diubah.',
-        '**Fitur Simulator Kalender**:',
-        '  • Pilih **Model Kalender** (12/6/4 Lbr), **Bahan Kertas**, **Ukuran**, dan **Finishing Jilid** (Spiral Kawat / Klem Seng).',
-        '  • Masukkan jumlah **Oplah** dan pilih **Mesin Cetak** (Otomatis / Oliver / Speedmaster SM).',
-        '  • Sesuaikan target **Margin Profit (+%)** dan batas **Diskon Nego (-%)**.',
-        '  • Periksa tabel **Rincian 11 Komponen Biaya** untuk melihat porsi subtotal biaya produksi.',
-        '**Fitur Matriks & Tabel Pricelist**:',
-        '  • Gunakan toggle **Spiral / Klem** untuk beralih antara perhitungan jilid spiral kawat dan jilid klem seng (jepit kaleng) — seluruh matriks harga terhitung ulang seketika.',
-        '  • Gunakan filter **Jenis Kalender** dan **Bahan** untuk menyaring tabel.',
-        '  • Gunakan **Kotak Pencarian** untuk mencari berdasarkan ukuran, oplah, atau proses mesin.',
-        '  • Alihkan antara **Mode Matriks** (layout Excel) dan **Mode Tabel Rinci**.',
-        '  • Tombol **Pilih & Upload Excel** dapat digunakan jika ingin memperbarui master template dasar file.'
+        '**Pemilihan Kategori Produk**:',
+        '  • Gunakan dropdown **Jenis Produk** di sebelah kanan sub-menu untuk berpindah kategori: **Kalender 2027**, **Buku Manasik Haji**, **Buku Surat Yasin**, atau **Nota 1 Warna**.',
+        '  • Seluruh tab (**Daftar Kalkulasi**, **Master Parameter**, **Simulator**, dan **Pricelist Matriks**) akan otomatis menyesuaikan diri dengan kategori produk yang sedang aktif.',
+        '**A. Master Parameter (Tarif Acuan)**:',
+        '  • Mengatur tarif acuan bahan kertas, cover, ongkos cetak mesin offset/digital/Ryobi, ongkos finishing, susun, porporasi, nomorator, staples, dll.',
+        '  • Parameter disimpan secara lokal dan terenkripsi pada browser Anda secara dinamis.',
+        '  • Klik tombol **Reset Standar Master** untuk mengembalikan semua kolom input ke setelan pabrik/default file Excel acuan.',
+        '  • Klik tombol **Manual Pengguna & Pemetaan Excel** di dalam tab Master Parameter untuk melihat letak sheet & cell acuan rumus dari file Excel asli (Juli/Agustus 2026).',
+        '**B. Simulator (Kalkulator Estimasi Biaya)**:',
+        '  • Masukkan parameter spesifikasi produk (oplah, jumlah halaman, warna cetak, jenis cover/jilid, porporasi, nomorator, dll.).',
+        '  • Atur target **Margin Profit (+%)** dan batas **Diskon Nego (-%)**.',
+        '  • Gunakan panel **Rincian Estimasi Komponen Biaya** di bagian bawah untuk menganalisis breakdown biaya HPP.',
+        '  • Tombol **Salin Penawaran**: Menyalin teks penawaran yang sudah berformat rapi untuk langsung dikirim ke WhatsApp klien.',
+        '  • Tombol **Simpan Simulasi**: Menyimpan kalkulasi ini ke penyimpanan lokal browser Anda.',
+        '**C. Pricelist Matriks (Tabel Harga Cepat)**:',
+        '  • Menampilkan matriks kombinasi harga jual, harga nego, HPP, dan margin profit berdasarkan oplah (tier kuantitas) dan spesifikasi standar produk.',
+        '  • Switcher **Matriks / Tabel Rinci**: Gunakan toggle ini di kanan atas tabel untuk berpindah ke flat table guna pencarian & filter instan.'
       ],
-      tips: 'Setiap perubahan tarif di tab Master Parameter atau pergantian mode finishing Spiral/Klem langsung mengalkulasi ulang seluruh angka pada tab Simulator dan Pricelist secara instan tanpa perlu reload halaman.'
+      tips: 'Setiap kali Anda memodifikasi nilai di tab Master Parameter, seluruh kalkulasi pada tab Simulator dan tabel Pricelist Matriks akan langsung terhitung ulang seketika secara dinamis tanpa perlu reload.'
     },
     '/hasil-produksi': {
       title: 'Hasil Produksi',

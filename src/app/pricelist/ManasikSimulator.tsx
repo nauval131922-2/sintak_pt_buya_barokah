@@ -22,13 +22,15 @@ import {
   Trash2,
   Search,
   X,
+  Settings2,
+  Calculator,
 } from 'lucide-react';
 import {
   calculateManasikSimulator,
   DEFAULT_MANASIK_PARAMS,
   ManasikMasterParams,
   ManasikSimulatorInput,
-  ManasikSimulatorResult,
+  ManasikSimulatorOutput as ManasikSimulatorResult,
 } from '@/lib/manasik-calculator';
 import ThousandInput from '@/components/ThousandInput';
 import { toast } from '@/lib/toast';
@@ -80,10 +82,13 @@ const LAMINASI_OPTIONS = [
 interface ManasikSimulatorProps {
   customParams?: ManasikMasterParams;
   setCustomParams?: React.Dispatch<React.SetStateAction<ManasikMasterParams>>;
+  onOpenMasterParam?: () => void;
 }
 
 export default function ManasikSimulator({
   customParams = DEFAULT_MANASIK_PARAMS,
+  setCustomParams,
+  onOpenMasterParam,
 }: ManasikSimulatorProps) {
   const [oplah, setOplah] = useState<number>(500);
   const [jumlahHalaman, setJumlahHalaman] = useState<96 | 128 | 192 | 208>(192);
@@ -109,6 +114,7 @@ export default function ManasikSimulator({
   const [activeSimulationTitle, setActiveSimulationTitle] = useState<string | null>(null);
   const [showSavedListModal, setShowSavedListModal] = useState(false);
   const [savedSearchTerm, setSavedSearchTerm] = useState('');
+  const [showSimulatorManual, setShowSimulatorManual] = useState(false);
 
   useEffect(() => {
     try {
@@ -312,11 +318,34 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
           <button
             type="button"
             onClick={handleCopyQuote}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 rounded-lg shadow-2xs transition cursor-pointer"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer ${
+              copiedQuote
+                ? 'bg-emerald-700 text-white'
+                : 'bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300'
+            }`}
+            title="Salin ringkasan spesifikasi & penawaran harga ke WhatsApp / Clipboard"
           >
-            {copiedQuote ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-            {copiedQuote ? 'Tersalin' : 'Salin Penawaran WA'}
+            {copiedQuote ? <Check size={14} /> : <Share2 size={14} />}
+            <span>{copiedQuote ? 'Tersalin!' : 'Salin Penawaran'}</span>
           </button>
+          <button
+            type="button"
+            onClick={() => setShowSimulatorManual(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer"
+          >
+            <Info size={14} />
+            <span>Panduan</span>
+          </button>
+          {onOpenMasterParam && (
+            <button
+              type="button"
+              onClick={onOpenMasterParam}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer"
+            >
+              <Settings2 size={14} />
+              <span>Master Parameter</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -868,6 +897,110 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                 className="px-4 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition-all cursor-pointer shadow-xs"
               >
                 Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Modal Panduan Penggunaan Simulator */}
+      {showSimulatorManual && (
+        <div
+          onClick={() => setShowSimulatorManual(false)}
+          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden cursor-default"
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-emerald-900 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-800/80 rounded-xl border border-emerald-700 text-emerald-200">
+                  <Calculator className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold tracking-tight">Panduan Simulator Buku Manasik Haji / Umroh</h3>
+                  <p className="text-xs text-emerald-200/90 mt-0.5">
+                    Alur perhitungan berbasis blok isi siap pakai, variasi cover, laminasi, dan jilid cocard / bending
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSimulatorManual(false)}
+                className="p-1.5 rounded-lg text-emerald-200 hover:text-white hover:bg-emerald-800/60 transition-all cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-700 leading-relaxed">
+              {/* Alur Kerja Simulator */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                  Langkah Menggunakan Simulator Buku Manasik
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                    <span className="font-bold text-emerald-800 text-xs">1. Pilih Halaman Isi</span>
+                    <p className="text-[11px] text-slate-600">
+                      Pilih varian isi: <strong>96, 128, 192 (Populer), atau 208 Hal</strong>. Harga blok isi kosongan dihitung otomatis dari Master Parameter.
+                    </p>
+                  </div>
+                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                    <span className="font-bold text-emerald-800 text-xs">2. Tentukan Tipe Jilid</span>
+                    <p className="text-[11px] text-slate-600">
+                      Pilih <strong>Tali Cocard + Mata Ayam</strong>, <strong>Softcover Bending (Lem Panas)</strong>, atau <strong>Spiral Kawat</strong>.
+                    </p>
+                  </div>
+                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                    <span className="font-bold text-emerald-800 text-xs">3. Metode Cover & Laminasi</span>
+                    <p className="text-[11px] text-slate-600">
+                      Pilihan <strong>Otomatis</strong> akan memilih Digital Print A3+ (&lt;300 eks) atau Cetak Offset Oliver (&ge;300 eks) + Laminasi Doff/Glossy.
+                    </p>
+                  </div>
+                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                    <span className="font-bold text-emerald-800 text-xs">4. Target Margin & Nego</span>
+                    <p className="text-[11px] text-slate-600">
+                      Sesuaikan margin keuntungan (+30%) serta diskon negosiasi. Klik <strong>Salin Penawaran</strong> untuk teks WA instan.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Rincian Komponen Biaya Produksi Manasik */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5">
+                <h5 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-emerald-700" />
+                  Struktur Biaya Produksi Buku Manasik
+                </h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
+                  <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
+                    <span className="font-bold text-emerald-900 block">Blok Isi Kosongan + Cover Custom:</span>
+                    <p className="text-slate-600 leading-snug">
+                      Blok isi dipasok siap pakai. Cover dicetak Art Carton 230 gsm full color sesuai branding travel/kbih pemesan, lalu dilaminasi untuk perlindungan maksimal.
+                    </p>
+                  </div>
+                  <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">
+                    <span className="font-bold text-blue-900 block">Perakitan & Finishing:</span>
+                    <p className="text-slate-600 leading-snug">
+                      Termasuk ongkos jilid (bending/spiral/tali cocard), potong sisir 3 sisi, kemasan plastik OPP per buku, dan box kardus master pengiriman.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowSimulatorManual(false)}
+                className="px-4 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition-all cursor-pointer shadow-xs"
+              >
+                Tutup Panduan
               </button>
             </div>
           </div>

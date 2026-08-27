@@ -1,0 +1,260 @@
+// ponytail: kalkulator dan master parameter brosur 2026 (04. Pricelist Brosur 2026)
+// Referensi: Pricelist BROSUR 2026.xlsm sheet HARGA JULI 2026 + Source/*.xlsm sheet BUKU
+
+export interface BrosurMasterParams {
+  // A. Bahan Kertas Art Paper
+  tarifArtPaperKg: number;    // Master!D12 default 16.900
+  upKertasPct: number;        // Master!E12 default 5%
+
+  // B. Cetak Print Inter (digital inkjet A3+)
+  tarifPrintInter1Muka: number; // Rp 1.800 per lembar A3+
+  tarifPrintInter2Muka: number; // Rp 3.300 per lembar A3+
+
+  // C. Cetak Oliver (offset)
+  tarifPlatOliver: number;    // BUKU!Z6 default Rp 45.000 per plat
+  jumlahPlatOliver: number;   // BUKU!Z2 default 4 plat (4 warna)
+  minOrderOliver: number;     // BUKU!AB6 default Rp 90.000 per plat/min
+  tarifDrekOliver: number;    // BUKU!AC6 default Rp 40 per drek/warna
+
+  // D. Finishing per order
+  tarifSisirMin: number;      // BUKU!AM6 default Rp 10.000 (min ≤500)
+  tarifSisirPer1000: number;  // Rp 10.000 per 1000 pcs
+  tarifKardus: number;        // BUKU!AW6 default Rp 8.500 per box
+  tarifLakbanRoll: number;    // Master!D21 default Rp 8.000
+
+  // E. Laminasi per lembar A3+ (Rp per lembar) – opsional
+  tarifLaminasiGlossy: number;  // Rp 0.35 per cm² → dikonversi ke per lbr di simulator
+  tarifLaminasiDoff: number;    // Rp 0.4 per cm²
+  tarifUvVarnish: number;       // Rp 0.12 per cm²
+
+  // F. Desain & lain-lain
+  tarifDesainBrosur: number;  // Master!D17 default Rp 20.000
+
+  // G. Margin & nego default
+  marginDefaultPct: number;   // default 30%
+  negoDefaultPct: number;     // default 4%
+}
+
+export const DEFAULT_BROSUR_PARAMS: BrosurMasterParams = {
+  tarifArtPaperKg: 16900,
+  upKertasPct: 5,
+
+  tarifPrintInter1Muka: 1800,
+  tarifPrintInter2Muka: 3300,
+
+  tarifPlatOliver: 45000,
+  jumlahPlatOliver: 4,
+  minOrderOliver: 90000,
+  tarifDrekOliver: 40,
+
+  tarifSisirMin: 10000,
+  tarifSisirPer1000: 10000,
+  tarifKardus: 8500,
+  tarifLakbanRoll: 8000,
+
+  tarifLaminasiGlossy: 0.35,
+  tarifLaminasiDoff: 0.40,
+  tarifUvVarnish: 0.12,
+
+  tarifDesainBrosur: 20000,
+
+  marginDefaultPct: 30,
+  negoDefaultPct: 4,
+};
+
+export type BrosurUkuranType =
+  | '10,5 x 21'
+  | '14,5 x 21'
+  | '21 x 29,7'
+  | '21,5 x 33'
+  | '29,7 x 42';
+
+export type BrosurMukaType = '1 Muka' | '2 Muka';
+export type BrosurMesinType = 'Print Inter' | 'Oliver';
+export type BrosurLaminasiType = 'Tanpa Laminasi' | 'Glossy' | 'Doff' | 'UV Varnish';
+
+// Konfigurasi fisik per ukuran (lebar x tinggi cm, insheet, plano yg bisa dipotong)
+const UKURAN_CONFIG: Record<BrosurUkuranType, {
+  w: number; h: number;
+  insheetPrint: number;   // berapa brosur per lembar A3+ (79x109 / 65x90)
+  insheetOliver: number;  // berapa brosur per plano 65x90 cetak Oliver
+  planoL: number;         // panjang plano Oliver (cm)
+  planoP: number;         // lebar plano Oliver (cm)
+}> = {
+  '10,5 x 21':  { w: 10.5, h: 21,   insheetPrint: 5,  insheetOliver: 100, planoL: 65, planoP: 90 },
+  '14,5 x 21':  { w: 14.5, h: 21,   insheetPrint: 5,  insheetOliver: 150, planoL: 65, planoP: 90 },
+  '21 x 29,7':  { w: 21,   h: 29.7, insheetPrint: 5,  insheetOliver: 150, planoL: 65, planoP: 90 },
+  '21,5 x 33':  { w: 21.5, h: 33,   insheetPrint: 5,  insheetOliver: 150, planoL: 79, planoP: 109 },
+  '29,7 x 42':  { w: 29.7, h: 42,   insheetPrint: 5,  insheetOliver: 150, planoL: 65, planoP: 90 },
+};
+
+// Gramatur Art Paper 120 gsm, berat per plano (79x109): 120 × (0.79 × 1.09) / 1000 = 0.103284 kg
+// berat per plano (65x90): 120 × (0.65 × 0.90) / 1000 = 0.0702 kg
+function beratPlanoKg(planoL: number, planoP: number, gramatur = 120): number {
+  return gramatur * (planoL / 100) * (planoP / 100) / 1000;
+}
+
+// Harga per plano (harga kertas dgn up)
+function hargaPlanoRupiah(p: BrosurMasterParams, planoL: number, planoP: number): number {
+  const berat = beratPlanoKg(planoL, planoP);
+  return berat * p.tarifArtPaperKg * (1 + p.upKertasPct / 100);
+}
+
+export interface BrosurBreakdownItem {
+  nama: string;
+  nominal: number;
+  pct: number;
+  keterangan: string;
+}
+
+export interface BrosurSimulatorResult {
+  input: BrosurSimulatorInput;
+  breakdown: BrosurBreakdownItem[];
+  totalHpp: number;
+  hppPerPcs: number;
+  hargaJualPerPcs: number;
+  hargaNegoPerPcs: number;
+  totalHargaJual: number;
+  totalHargaNego: number;
+  profitPerPcs: number;
+  profitNegoPerPcs: number;
+  profitTotal: number;
+  profitNegoTotal: number;
+  marginPct: number;
+  marginNegoPct: number;
+}
+
+export interface BrosurSimulatorInput {
+  oplah: number;
+  ukuran: BrosurUkuranType;
+  muka: BrosurMukaType;
+  mesin: BrosurMesinType;
+  laminasi: BrosurLaminasiType;
+  opsiSisir: boolean;
+  opsiPacking: boolean;
+  marginPct: number;
+  negoDiskonPct: number;
+}
+
+export function calculateBrosurSimulator(
+  input: BrosurSimulatorInput,
+  p: BrosurMasterParams
+): BrosurSimulatorResult {
+  const { oplah, ukuran, muka, mesin, laminasi, opsiSisir, marginPct, negoDiskonPct } = input;
+  const cfg = UKURAN_CONFIG[ukuran];
+  const is2Muka = muka === '2 Muka';
+  const isOliver = mesin === 'Oliver';
+  const breakdown: BrosurBreakdownItem[] = [];
+  let totalHpp = 0;
+
+  const add = (nama: string, nominal: number, keterangan = '') => {
+    if (nominal === 0) return;
+    const pct = 0; // computed setelah totalHpp diketahui
+    breakdown.push({ nama, nominal: Math.round(nominal), pct, keterangan });
+    totalHpp += nominal;
+  };
+
+  // 1. Biaya Kertas
+  if (isOliver) {
+    // Oliver: hitung kebutuhan plano
+    const planoPerOrder = Math.ceil(oplah / cfg.insheetOliver);
+    const hargaPlano = hargaPlanoRupiah(p, cfg.planoL, cfg.planoP);
+    const biayaKertas = planoPerOrder * hargaPlano;
+    add('Kertas Art Paper 120gsm', biayaKertas,
+      `${planoPerOrder} plano × Rp ${Math.round(hargaPlano).toLocaleString('id-ID')} (${cfg.planoL}×${cfg.planoP}cm, +${p.upKertasPct}%)`);
+  } else {
+    // Print Inter: hitung kebutuhan lembar A3+
+    const lbrPerOrder = Math.ceil(oplah / cfg.insheetPrint) * (is2Muka ? 1 : 1);
+    const tarifPrint = is2Muka ? p.tarifPrintInter2Muka : p.tarifPrintInter1Muka;
+    // Untuk print inter, biaya kertas sudah termasuk dalam harga print
+    // Tapi di excel biaya kertas via laminasi area dihitung terpisah
+    // Kita sederhanakan: biaya kertas = lbr × tarif_print (include bahan)
+    const biayaPrint = lbrPerOrder * tarifPrint;
+    add('Biaya Cetak Print Inter', biayaPrint,
+      `${lbrPerOrder} lbr A3+ × Rp ${tarifPrint.toLocaleString('id-ID')}/${is2Muka ? '2 muka' : '1 muka'}`);
+  }
+
+  // 2. Biaya Cetak Oliver (hanya jika mesin = Oliver)
+  if (isOliver) {
+    const jmlPlat = p.jumlahPlatOliver * (is2Muka ? 2 : 1);
+    const biayaPlat = jmlPlat * p.tarifPlatOliver;
+    add('Plate CTP Oliver', biayaPlat, `${jmlPlat} plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`);
+
+    // Ongkos cetak: min 90.000/plat atau per-drek × warna
+    const drekCetak = oplah + 5; // +5 waste
+    const ongkosCetakPerPlat = Math.max(p.minOrderOliver, Math.ceil(drekCetak / 1000) * p.tarifDrekOliver * 4);
+    const ongkosCetak = ongkosCetakPerPlat * jmlPlat;
+    add('Ongkos Cetak Oliver', ongkosCetak,
+      `${jmlPlat} plat × Rp ${ongkosCetakPerPlat.toLocaleString('id-ID')}`);
+  }
+
+  // 3. Desain
+  if (p.tarifDesainBrosur > 0) {
+    add('Desain', p.tarifDesainBrosur, 'Biaya desain artwork');
+  }
+
+  // 4. Laminasi (opsional)
+  if (laminasi !== 'Tanpa Laminasi') {
+    const areaCm2 = cfg.w * cfg.h * oplah;
+    let tarifPerCm2 = 0;
+    if (laminasi === 'Glossy') tarifPerCm2 = p.tarifLaminasiGlossy;
+    else if (laminasi === 'Doff') tarifPerCm2 = p.tarifLaminasiDoff;
+    else if (laminasi === 'UV Varnish') tarifPerCm2 = p.tarifUvVarnish;
+    const biayaLaminasi = areaCm2 * tarifPerCm2 * (is2Muka ? 2 : 1);
+    add(`Laminasi ${laminasi}`, biayaLaminasi,
+      `${oplah} pcs × ${cfg.w}×${cfg.h}cm × Rp ${tarifPerCm2}/cm²`);
+  }
+
+  // 5. Sisir (potong)
+  if (opsiSisir) {
+    const biayaSisir = oplah <= 500
+      ? p.tarifSisirMin
+      : Math.ceil(oplah / 1000) * p.tarifSisirPer1000;
+    add('Sisir / Potong', biayaSisir, `${oplah} pcs`);
+  }
+
+  // 6. Kardus & Packing
+  {
+    const biayaKardus = p.tarifKardus;
+    add('Kardus & Lakban', biayaKardus, '1 box packing');
+  }
+
+  // Recompute pct
+  breakdown.forEach(b => { b.pct = totalHpp > 0 ? b.nominal / totalHpp : 0; });
+
+  const hppPerPcs = totalHpp / oplah;
+  const hargaJualPerPcs = Math.ceil(hppPerPcs * (1 + marginPct / 100));
+  const hargaNegoPerPcs = Math.ceil(hargaJualPerPcs * (1 - negoDiskonPct / 100));
+  const totalHargaJual = hargaJualPerPcs * oplah;
+  const totalHargaNego = hargaNegoPerPcs * oplah;
+  const profitPerPcs = hargaJualPerPcs - hppPerPcs;
+  const profitNegoPerPcs = hargaNegoPerPcs - hppPerPcs;
+  const profitTotal = profitPerPcs * oplah;
+  const profitNegoTotal = profitNegoPerPcs * oplah;
+  const marginPctActual = hargaJualPerPcs > 0 ? profitPerPcs / hargaJualPerPcs : 0;
+  const marginNegoPct = hargaNegoPerPcs > 0 ? profitNegoPerPcs / hargaNegoPerPcs : 0;
+
+  return {
+    input,
+    breakdown,
+    totalHpp,
+    hppPerPcs,
+    hargaJualPerPcs,
+    hargaNegoPerPcs,
+    totalHargaJual,
+    totalHargaNego,
+    profitPerPcs,
+    profitNegoPerPcs,
+    profitTotal,
+    profitNegoTotal,
+    marginPct: marginPctActual,
+    marginNegoPct,
+  };
+}
+
+export type SavedBrosurSimulationItem = {
+  id: string;
+  title: string;
+  savedAt: string;
+  data: BrosurSimulatorResult;
+};

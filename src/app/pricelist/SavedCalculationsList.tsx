@@ -27,10 +27,12 @@ import { YasinMasterParams } from '@/lib/yasin-calculator';
 import { SavedSimulationItem } from './PricelistSimulator';
 import { SavedManasikSimulationItem } from './ManasikSimulator';
 import { SavedYasinSimulationItem } from './YasinSimulator';
+import { SavedNotaSimulationItem } from './NotaSimulator';
+import { SavedBrosurSimulationItem } from './BrosurSimulator';
 
 export type UnifiedCalculationItem = {
   id: string;
-  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin';
+  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026';
   savedAt: string;
   title: string;
   oplah: number;
@@ -42,11 +44,16 @@ export type UnifiedCalculationItem = {
   marginPct: number;
   negoDiskonPct: number;
   // Raw item reference for restoring
-  rawData: SavedSimulationItem | SavedManasikSimulationItem | SavedYasinSimulationItem;
+  rawData:
+    | SavedSimulationItem
+    | SavedManasikSimulationItem
+    | SavedYasinSimulationItem
+    | SavedNotaSimulationItem
+    | SavedBrosurSimulationItem;
 };
 
 interface SavedCalculationsListProps {
-  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin';
+  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026';
   onLoadSimulation: (item: UnifiedCalculationItem) => void;
   activeSimulationId?: string | null;
 }
@@ -57,7 +64,29 @@ export default function SavedCalculationsList({
   activeSimulationId,
 }: SavedCalculationsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin'>(selectedCategory || 'ALL');
+  const getInitialCategory = (): 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sintak_pricelist_selected_category');
+      if (
+        saved === 'Kalender' ||
+        saved === 'Buku Manasik' ||
+        saved === 'Buku Yasin' ||
+        saved === 'Nota 1 Warna' ||
+        saved === 'Brosur 2026'
+      ) {
+        return saved as any;
+      }
+    }
+    return 'ALL';
+  };
+
+  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026'>(getInitialCategory());
+  useEffect(() => {
+    if (selectedCategory) {
+      setFilterCategory(selectedCategory);
+    }
+  }, [selectedCategory]);
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitleInput, setEditTitleInput] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -66,6 +95,8 @@ export default function SavedCalculationsList({
   const [kalenderList, setKalenderList] = useState<SavedSimulationItem[]>([]);
   const [manasikList, setManasikList] = useState<SavedManasikSimulationItem[]>([]);
   const [yasinList, setYasinList] = useState<SavedYasinSimulationItem[]>([]);
+  const [notaList, setNotaList] = useState<SavedNotaSimulationItem[]>([]);
+  const [brosurList, setBrosurList] = useState<SavedBrosurSimulationItem[]>([]);
 
   // Load from localStorage
   const refreshData = () => {
@@ -81,6 +112,14 @@ export default function SavedCalculationsList({
       const rawY = localStorage.getItem('sintak_saved_yasin_simulations');
       if (rawY) setYasinList(JSON.parse(rawY));
       else setYasinList([]);
+
+      const rawN = localStorage.getItem('sintak_saved_nota_simulations');
+      if (rawN) setNotaList(JSON.parse(rawN));
+      else setNotaList([]);
+
+      const rawB = localStorage.getItem('sintak_saved_brosur_simulations');
+      if (rawB) setBrosurList(JSON.parse(rawB));
+      else setBrosurList([]);
     } catch (e) {
       console.error('Failed to load saved calculations:', e);
     }
@@ -167,9 +206,56 @@ export default function SavedCalculationsList({
       });
     });
 
+    // 4. Nota 1 Warna
+    notaList.forEach((n) => {
+      items.push({
+        id: n.id,
+        category: 'Nota 1 Warna',
+        savedAt: n.savedAt,
+        title: n.title,
+        oplah: n.oplahRim,
+        specSummary: `Nota ${n.rangkap} Rangkap • ${n.ukuran.split(' ')[0]} • ${n.oplahRim} Rim`,
+        detailSpecs: [
+          `Kertas: ${n.rangkap === 1 ? 'HVS 70 gr' : `NCR 55 gr (${n.rangkap} Ply)`}`,
+          `Warna: ${n.jumlahWarna} Warna (Ryobi)`,
+          `Finishing: ${n.opsiPorporasi ? 'Porporasi' : ''}${n.opsiNomorator ? ', Nomorator' : ''}`,
+        ],
+        hppUnit: n.summary.hppPerRim,
+        hargaJualUnit: n.summary.hargaJualPerRim,
+        totalOmset: n.summary.totalHargaJual,
+        marginPct: n.marginPct,
+        negoDiskonPct: n.negoDiskonPct,
+        rawData: n,
+      });
+    });
+
+    // 5. Brosur 2026
+    brosurList.forEach((b) => {
+      const inp = b.data.input;
+      items.push({
+        id: b.id,
+        category: 'Brosur 2026',
+        savedAt: b.savedAt,
+        title: b.title,
+        oplah: inp.oplah,
+        specSummary: `Brosur ${inp.muka} • ${inp.ukuran} cm • ${inp.mesin}`,
+        detailSpecs: [
+          `Laminasi: ${inp.laminasi}`,
+          `Finishing: ${inp.opsiSisir ? 'Sisir' : '-'}${inp.opsiPacking ? ', Packing' : ''}`,
+          `Margin: ${inp.marginPct}%`,
+        ],
+        hppUnit: b.data.hppPerPcs,
+        hargaJualUnit: b.data.hargaJualPerPcs,
+        totalOmset: b.data.totalHargaJual,
+        marginPct: inp.marginPct,
+        negoDiskonPct: inp.negoDiskonPct,
+        rawData: b,
+      });
+    });
+
     // Urutkan dari yang terbaru disimpan
     return items.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
-  }, [kalenderList, manasikList, yasinList]);
+  }, [kalenderList, manasikList, yasinList, notaList, brosurList]);
 
   // Filtered List
   const filteredList = useMemo(() => {
@@ -208,6 +294,14 @@ export default function SavedCalculationsList({
         const updated = yasinList.filter((y) => y.id !== item.id);
         setYasinList(updated);
         localStorage.setItem('sintak_saved_yasin_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Nota 1 Warna') {
+        const updated = notaList.filter((n) => n.id !== item.id);
+        setNotaList(updated);
+        localStorage.setItem('sintak_saved_nota_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Brosur 2026') {
+        const updated = brosurList.filter((b) => b.id !== item.id);
+        setBrosurList(updated);
+        localStorage.setItem('sintak_saved_brosur_simulations', JSON.stringify(updated));
       }
       toast.success('Kalkulasi berhasil dihapus.');
     } catch (err) {
@@ -234,6 +328,14 @@ export default function SavedCalculationsList({
         const updated = yasinList.map((y) => (y.id === item.id ? { ...y, title: newTitle } : y));
         setYasinList(updated);
         localStorage.setItem('sintak_saved_yasin_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Nota 1 Warna') {
+        const updated = notaList.map((n) => (n.id === item.id ? { ...n, title: newTitle } : n));
+        setNotaList(updated);
+        localStorage.setItem('sintak_saved_nota_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Brosur 2026') {
+        const updated = brosurList.map((b) => (b.id === item.id ? { ...b, title: newTitle } : b));
+        setBrosurList(updated);
+        localStorage.setItem('sintak_saved_brosur_simulations', JSON.stringify(updated));
       }
       setEditingId(null);
       toast.success('Nama kalkulasi berhasil diperbarui.');
@@ -256,6 +358,13 @@ export default function SavedCalculationsList({
     } else if (item.category === 'Buku Yasin') {
       const y = item.rawData as SavedYasinSimulationItem;
       text = `*PENAWARAN BUKU SURAT YASIN & TAHLIL*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Yasin ${y.tipeCover} (${y.jumlahHalamanIsi} Halaman)\n• *Ukuran*: ${y.ukuran} cm\n• *Kuantitas*: ${y.oplah.toLocaleString('id-ID')} buku\n• *Sisipan*: ${y.lembarSisipanFoto} Lembar Foto / ${y.lembarSisipanKeluarga} Lembar Doa\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Buku*: *Rp ${y.summary.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${y.summary.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
+    } else if (item.category === 'Nota 1 Warna') {
+      const n = item.rawData as SavedNotaSimulationItem;
+      text = `*PENAWARAN CETAK NOTA / KWITANSI / SURAT JALAN*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Spesifikasi*: Nota ${n.rangkap} Rangkap (${n.rangkap === 1 ? 'HVS 70 gr' : `Kertas NCR 55 gr ${n.rangkap} Ply`})\n• *Ukuran*: ${n.ukuran}\n• *Warna Cetak*: ${n.jumlahWarna} Warna (Mesin Ryobi)\n• *Kuantitas*: *${n.oplahRim} Rim Folio*\n• *Finishing*: Cover Samson, Alas Board, Susun, Staples & Lem Ngetruk${n.opsiPorporasi ? ', Porporasi' : ''}${n.opsiNomorator ? ', Nomorator Seri' : ''}\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Rim*: *Rp ${n.summary.hargaJualPerRim.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${n.summary.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Kualitas cetak tajam & tembusan NCR pekat._`;
+    } else if (item.category === 'Brosur 2026') {
+      const b = item.rawData as SavedBrosurSimulationItem;
+      const inp = b.data.input;
+      text = `*PENAWARAN BROSUR 2026*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Brosur ${inp.muka}\n• *Ukuran*: ${inp.ukuran} cm\n• *Bahan*: Art Paper 120 gsm\n• *Laminasi*: ${inp.laminasi}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Mesin Cetak*: ${inp.mesin}\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${b.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${b.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     }
 
     navigator.clipboard.writeText(text);
@@ -356,6 +465,28 @@ export default function SavedCalculationsList({
             }`}
           >
             📗 Yasin ({yasinList.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilterCategory('Nota 1 Warna')}
+            className={`px-3 py-1 rounded-md font-semibold transition cursor-pointer text-xs ${
+              filterCategory === 'Nota 1 Warna'
+                ? 'bg-white text-emerald-800 shadow-xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            📋 Nota ({notaList.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilterCategory('Brosur 2026')}
+            className={`px-3 py-1 rounded-md font-semibold transition cursor-pointer text-xs ${
+              filterCategory === 'Brosur 2026'
+                ? 'bg-white text-emerald-800 shadow-xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            🗞️ Brosur ({brosurList.length})
           </button>
         </div>
       </div>

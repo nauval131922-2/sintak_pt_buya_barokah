@@ -22,13 +22,15 @@ import {
   Trash2,
   Search,
   X,
+  Settings2,
+  Calculator,
 } from 'lucide-react';
 import {
   calculateYasinSimulator,
   DEFAULT_YASIN_PARAMS,
   YasinMasterParams,
   YasinSimulatorInput,
-  YasinSimulatorResult,
+  YasinSimulatorOutput as YasinSimulatorResult,
 } from '@/lib/yasin-calculator';
 import ThousandInput from '@/components/ThousandInput';
 import { toast } from '@/lib/toast';
@@ -70,10 +72,13 @@ const UKURAN_OPTIONS = [
 interface YasinSimulatorProps {
   customParams?: YasinMasterParams;
   setCustomParams?: React.Dispatch<React.SetStateAction<YasinMasterParams>>;
+  onOpenMasterParam?: () => void;
 }
 
 export default function YasinSimulator({
   customParams = DEFAULT_YASIN_PARAMS,
+  setCustomParams,
+  onOpenMasterParam,
 }: YasinSimulatorProps) {
   const [oplah, setOplah] = useState<number>(100);
   const [tipeCover, setTipeCover] = useState<'Softcover' | 'Hardcover'>('Hardcover');
@@ -96,6 +101,7 @@ export default function YasinSimulator({
   const [activeSimulationTitle, setActiveSimulationTitle] = useState<string | null>(null);
   const [showSavedListModal, setShowSavedListModal] = useState(false);
   const [savedSearchTerm, setSavedSearchTerm] = useState('');
+  const [showSimulatorManual, setShowSimulatorManual] = useState(false);
 
   useEffect(() => {
     try {
@@ -316,11 +322,34 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
           <button
             type="button"
             onClick={handleCopyQuote}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 rounded-lg shadow-2xs transition cursor-pointer"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer ${
+              copiedQuote
+                ? 'bg-emerald-700 text-white'
+                : 'bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300'
+            }`}
+            title="Salin ringkasan spesifikasi & penawaran harga ke WhatsApp / Clipboard"
           >
-            {copiedQuote ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-            {copiedQuote ? 'Tersalin' : 'Salin Penawaran WA'}
+            {copiedQuote ? <Check size={14} /> : <Share2 size={14} />}
+            <span>{copiedQuote ? 'Tersalin!' : 'Salin Penawaran'}</span>
           </button>
+          <button
+            type="button"
+            onClick={() => setShowSimulatorManual(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer"
+          >
+            <Info size={14} />
+            <span>Panduan</span>
+          </button>
+          {onOpenMasterParam && (
+            <button
+              type="button"
+              onClick={onOpenMasterParam}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer"
+            >
+              <Settings2 size={14} />
+              <span>Master Parameter</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -910,6 +939,110 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
                 className="px-4 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition-all cursor-pointer shadow-xs"
               >
                 Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Modal Panduan Penggunaan Simulator */}
+      {showSimulatorManual && (
+        <div
+          onClick={() => setShowSimulatorManual(false)}
+          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden cursor-default"
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-emerald-900 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-800/80 rounded-xl border border-emerald-700 text-emerald-200">
+                  <Calculator className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold tracking-tight">Panduan Simulator Buku Surat Yasin & Tahlil</h3>
+                  <p className="text-xs text-emerald-200/90 mt-0.5">
+                    Alur perhitungan berbasis blok isi Yasin ready, cover soft/hardcover, sisipan foto/doa, dan aksesoris mewah
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSimulatorManual(false)}
+                className="p-1.5 rounded-lg text-emerald-200 hover:text-white hover:bg-emerald-800/60 transition-all cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-700 leading-relaxed">
+              {/* Alur Kerja Simulator */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                  Langkah Menggunakan Simulator Buku Yasin
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                    <span className="font-bold text-emerald-800 text-xs">1. Tipe Cover & Isi</span>
+                    <p className="text-[11px] text-slate-600">
+                      Pilih <strong>Softcover (AC 230)</strong> atau <strong>Hardcover Board Mewah</strong>, lalu pilih tebal isi (64 - 192 Halaman).
+                    </p>
+                  </div>
+                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                    <span className="font-bold text-emerald-800 text-xs">2. Sisipan Foto & Doa</span>
+                    <p className="text-[11px] text-slate-600">
+                      Tentukan jumlah lembar <strong>Foto FC Almarhum</strong> (misal 2 lbr) dan <strong>Teks Doa / Silsilah Keluarga</strong> (misal 2 lbr).
+                    </p>
+                  </div>
+                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                    <span className="font-bold text-emerald-800 text-xs">3. Aksesoris Mewah</span>
+                    <p className="text-[11px] text-slate-600">
+                      Centang opsi <strong>Pita Pembatas Rumbai</strong>, <strong>Siku Sudut Emas</strong>, serta plastik segel OPP satuan.
+                    </p>
+                  </div>
+                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                    <span className="font-bold text-emerald-800 text-xs">4. Target Margin & Nego</span>
+                    <p className="text-[11px] text-slate-600">
+                      Tentukan margin keuntungan (+30%) & diskon. Klik <strong>Salin Penawaran</strong> untuk teks WA instan.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Rincian Komponen Biaya Produksi Yasin */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5">
+                <h5 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-emerald-700" />
+                  Struktur Biaya Produksi Buku Surat Yasin
+                </h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
+                  <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
+                    <span className="font-bold text-emerald-900 block">Struktur Hardcover & Gembos Emas:</span>
+                    <p className="text-slate-600 leading-snug">
+                      Memakai Greyboard 30, kertas Art Paper 150 cetak custom + laminasi, lembar skiblat pembungkus, dan finishing foil emas (hotprint kaligrafi/nama almarhum).
+                    </p>
+                  </div>
+                  <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">
+                    <span className="font-bold text-blue-900 block">Perakitan & Finishing:</span>
+                    <p className="text-slate-600 leading-snug">
+                      Termasuk penyusunan lembar sisipan foto/doa, staples kawat tengah, casing-in pasang cover, potong sisir 3 sisi, pita rumbai, siku sudut emas, dan plastik OPP.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowSimulatorManual(false)}
+                className="px-4 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition-all cursor-pointer shadow-xs"
+              >
+                Tutup Panduan
               </button>
             </div>
           </div>

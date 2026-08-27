@@ -2,11 +2,11 @@
 
 import React, { useMemo, useState } from 'react';
 import {
-  FileSpreadsheet,
   BookOpen,
   Search,
-  Filter,
   X,
+  LayoutGrid,
+  TableProperties,
 } from 'lucide-react';
 import {
   calculateYasinSimulator,
@@ -18,7 +18,9 @@ interface YasinMatrixViewProps {
   customParams?: YasinMasterParams;
 }
 
-const OPLAH_TIERS = [20, 30, 50, 70, 100, 125, 150, 175, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000];
+const OPLAH_TIERS = [
+  20, 30, 50, 70, 100, 125, 150, 175, 200, 225, 250, 300, 400, 500, 600, 700, 800, 900, 1000
+];
 
 const YASIN_VARIANTS: Array<{ hal: 64 | 96 | 112 | 128 | 144 | 192; title: string }> = [
   { hal: 64, title: 'Yasin 64 Halaman' },
@@ -32,6 +34,7 @@ export default function YasinMatrixView({
 }: YasinMatrixViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCoverFilter, setSelectedCoverFilter] = useState<'ALL' | 'Softcover' | 'Hardcover'>('ALL');
+  const [viewMode, setViewMode] = useState<'matrix' | 'table'>('matrix');
 
   const matrixData = useMemo(() => {
     return YASIN_VARIANTS.map(({ hal, title }) => {
@@ -95,6 +98,74 @@ export default function YasinMatrixView({
       };
     });
   }, [customParams, searchTerm]);
+
+  // Flat table rows for table view
+  const flatTableRows = useMemo(() => {
+    const list: Array<{
+      hal: number;
+      title: string;
+      oplah: number;
+      tipeCover: string;
+      hpp: number;
+      hargaJual: number;
+      omset: number;
+      profitTot: number;
+    }> = [];
+
+    YASIN_VARIANTS.forEach(({ hal, title }) => {
+      OPLAH_TIERS.forEach((oplah) => {
+        const coverOptions: Array<{ type: 'Softcover' | 'Hardcover'; label: string; filterKey: 'Softcover' | 'Hardcover'; pitaSiku: boolean }> = [
+          { type: 'Softcover', label: 'Soft Cover (AC 230)', filterKey: 'Softcover', pitaSiku: false },
+          { type: 'Hardcover', label: 'Hard Cover Mewah', filterKey: 'Hardcover', pitaSiku: true },
+        ];
+
+        coverOptions.forEach(({ type, label, filterKey, pitaSiku }) => {
+          if (selectedCoverFilter !== 'ALL' && selectedCoverFilter !== filterKey) return;
+
+          const res = calculateYasinSimulator(
+            {
+              oplah,
+              tipeCover: type,
+              ukuran: '11.7 x 15',
+              jumlahHalamanIsi: hal,
+              lembarSisipanFoto: 2,
+              lembarSisipanKeluarga: 2,
+              laminasiCover: 'Glossy',
+              opsiPitaRumbai: pitaSiku,
+              opsiSikuEmas: pitaSiku,
+              opsiPlastikOpp: true,
+              marginPct: 30,
+              negoDiskonPct: 0,
+            },
+            customParams
+          );
+
+          const q = searchTerm.toLowerCase().trim();
+          if (q) {
+            const match =
+              title.toLowerCase().includes(q) ||
+              label.toLowerCase().includes(q) ||
+              oplah.toString().includes(q) ||
+              res.summary.hargaJualPerPcs.toString().includes(q);
+            if (!match) return;
+          }
+
+          list.push({
+            hal,
+            title,
+            oplah,
+            tipeCover: label,
+            hpp: res.summary.hppPerPcs,
+            hargaJual: res.summary.hargaJualPerPcs,
+            omset: res.summary.totalHargaJual,
+            profitTot: res.summary.totalProfit,
+          });
+        });
+      });
+    });
+
+    return list;
+  }, [customParams, searchTerm, selectedCoverFilter]);
 
   return (
     <div className="space-y-4">
@@ -162,9 +233,40 @@ export default function YasinMatrixView({
             Hard Cover
           </button>
         </div>
+
+        {/* View Mode Switcher */}
+        <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs shrink-0">
+          <button
+            type="button"
+            onClick={() => setViewMode('matrix')}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+              viewMode === 'matrix'
+                ? 'bg-white text-emerald-800 shadow-xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+            title="Tampilan Matriks"
+          >
+            <LayoutGrid size={13} />
+            <span className="hidden sm:inline">Matriks</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('table')}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+              viewMode === 'table'
+                ? 'bg-white text-emerald-800 shadow-xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+            title="Tampilan Tabel Rinci"
+          >
+            <TableProperties size={13} />
+            <span className="hidden sm:inline">Tabel</span>
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      {viewMode === 'matrix' ? (
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {matrixData.map((section) => {
           if (section.rows.length === 0) return null;
           return (
@@ -225,7 +327,67 @@ export default function YasinMatrixView({
             </div>
           );
         })}
-      </div>
+        </div>
+      ) : (
+        /* Detailed Flat Table View */
+        <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col">
+          <div className="overflow-x-auto max-h-[600px]">
+            <table className="w-full text-xs text-left border-collapse">
+              <thead className="sticky top-0 z-10 bg-slate-100 border-b border-slate-200 text-slate-700 font-bold">
+                <tr>
+                  <th className="py-2.5 px-3">Halaman</th>
+                  <th className="py-2.5 px-3">Tipe Cover</th>
+                  <th className="py-2.5 px-3 text-center">Oplah</th>
+                  <th className="py-2.5 px-3 text-right">HPP / Eks</th>
+                  <th className="py-2.5 px-3 text-right text-emerald-700">Harga Jual / Eks</th>
+                  <th className="py-2.5 px-3 text-right text-emerald-800">Total Omset</th>
+                  <th className="py-2.5 px-3 text-right text-blue-700">Total Profit</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
+                {flatTableRows.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="p-8 text-center text-slate-400 font-sans">
+                      Tidak ada data yang sesuai dengan pencarian atau filter.
+                    </td>
+                  </tr>
+                ) : (
+                  flatTableRows.map((row, idx) => (
+                    <tr key={idx} className="hover:bg-amber-50/20">
+                      <td className="py-2 px-3 font-semibold text-slate-800 font-sans">{row.title}</td>
+                      <td className="py-2 px-3 font-medium text-slate-700 font-sans">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10.5px] font-bold ${
+                            row.tipeCover.includes('Hard')
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-slate-100 text-slate-700'
+                          }`}
+                        >
+                          {row.tipeCover}
+                        </span>
+                      </td>
+                      <td className="py-2 px-3 text-center font-bold text-slate-900">{row.oplah.toLocaleString('id-ID')} pcs</td>
+                      <td className="py-2 px-3 text-right text-slate-500">Rp {row.hpp.toLocaleString('id-ID')}</td>
+                      <td className="py-2 px-3 text-right font-bold text-emerald-700 bg-emerald-50/30">
+                        Rp {row.hargaJual.toLocaleString('id-ID')}
+                      </td>
+                      <td className="py-2 px-3 text-right font-bold text-emerald-800">
+                        Rp {row.omset.toLocaleString('id-ID')}
+                      </td>
+                      <td className="py-2 px-3 text-right font-bold text-blue-700">
+                        Rp {row.profitTot.toLocaleString('id-ID')}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="px-4 py-2 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 font-medium">
+            Menampilkan {flatTableRows.length} kombinasi tarif Buku Surat Yasin
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -26,11 +26,20 @@ import ManasikSimulator, { SavedManasikSimulationItem } from './ManasikSimulator
 import YasinSimulator, { SavedYasinSimulationItem } from './YasinSimulator';
 import ManasikMatrixView from './ManasikMatrixView';
 import YasinMatrixView from './YasinMatrixView';
+import NotaMasterParameter from './NotaMasterParameter';
+import NotaSimulator, { SavedNotaSimulationItem } from './NotaSimulator';
+import NotaMatrixView from './NotaMatrixView';
+import BrosurMasterParameter from './BrosurMasterParameter';
+import BrosurSimulator, { SavedBrosurSimulationItem } from './BrosurSimulator';
+import BrosurMatrixView from './BrosurMatrixView';
 import SavedCalculationsList, { UnifiedCalculationItem } from './SavedCalculationsList';
+import PageHeader from '@/components/PageHeader';
 import SquareDropdown from '@/components/SquareDropdown';
 import { DEFAULT_MASTER_PARAMS, DEFAULT_MASTER_PARAMS_KLEM, SimulatorMasterParams } from '@/lib/pricelist-simulator';
 import { DEFAULT_MANASIK_PARAMS, ManasikMasterParams } from '@/lib/manasik-calculator';
 import { DEFAULT_YASIN_PARAMS, YasinMasterParams } from '@/lib/yasin-calculator';
+import { DEFAULT_NOTA_PARAMS, NotaMasterParams } from '@/lib/nota-calculator';
+import { DEFAULT_BROSUR_PARAMS, BrosurMasterParams } from '@/lib/brosur-calculator';
 import { recalculatePricelistFromParams } from '@/lib/pricelist-calculator';
 
 interface PricelistItem {
@@ -59,10 +68,12 @@ export default function PricelistClient() {
   const [activeTab, setActiveTab] = useState<'parameter' | 'simulator' | 'matrix' | 'saved'>('parameter');
   const [selectedFinishing, setSelectedFinishing] = useState<'Spiral' | 'Klem'>('Spiral');
 
-  // Parameter Buku Manasik & Yasin
+  // Parameter Buku Manasik, Yasin & Nota
   const [paramsManasik, setParamsManasik] = useState<ManasikMasterParams>(DEFAULT_MANASIK_PARAMS);
   const [paramsYasin, setParamsYasin] = useState<YasinMasterParams>(DEFAULT_YASIN_PARAMS);
-  const [selectedProductCategory, setSelectedProductCategory] = useState<'Kalender' | 'Buku Manasik' | 'Buku Yasin'>('Kalender');
+  const [paramsNota, setParamsNota] = useState<NotaMasterParams>(DEFAULT_NOTA_PARAMS);
+  const [paramsBrosur, setParamsBrosur] = useState<BrosurMasterParams>(DEFAULT_BROSUR_PARAMS);
+  const [selectedProductCategory, setSelectedProductCategory] = useState<'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026'>('Kalender');
   const [paramsSpiral, setParamsSpiral] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS);
   const [paramsKlem, setParamsKlem] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS_KLEM);
 
@@ -102,7 +113,13 @@ export default function PricelistClient() {
       }
 
       const savedCategory = localStorage.getItem('sintak_pricelist_selected_category');
-      if (savedCategory === 'Kalender' || savedCategory === 'Buku Manasik' || savedCategory === 'Buku Yasin') {
+      if (
+        savedCategory === 'Kalender' ||
+        savedCategory === 'Buku Manasik' ||
+        savedCategory === 'Buku Yasin' ||
+        savedCategory === 'Nota 1 Warna' ||
+        savedCategory === 'Brosur 2026'
+      ) {
         setSelectedProductCategory(savedCategory);
       }
     } catch (e) {
@@ -111,7 +128,9 @@ export default function PricelistClient() {
   }, []);
 
   // Sync selectedProductCategory across tabs
-  const handleProductCategoryChange = (category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin') => {
+  const handleProductCategoryChange = (
+    category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026'
+  ) => {
     setSelectedProductCategory(category);
     try {
       localStorage.setItem('sintak_pricelist_selected_category', category);
@@ -150,7 +169,7 @@ export default function PricelistClient() {
   };
 
   const handleLoadSimulationFromList = (item: UnifiedCalculationItem) => {
-    setSelectedProductCategory(item.category);
+    setSelectedProductCategory(item.category as any);
     setActiveSimulationId(item.id);
     setActiveSimulationTitle(item.title);
     setActiveTab('simulator');
@@ -307,8 +326,28 @@ export default function PricelistClient() {
 
   const isFiltered = selectedJenis !== 'ALL' || selectedBahan !== 'ALL' || searchTerm !== '';
 
+  const dynamicHeaderDesc = useMemo(() => {
+    switch (selectedProductCategory) {
+      case 'Buku Manasik':
+        return 'Master data tarif, simulator estimasi biaya, kalkulasi HPP, dan matriks harga Buku Manasik Haji / Umroh.';
+      case 'Buku Yasin':
+        return 'Master data tarif, simulator estimasi biaya, kalkulasi HPP, dan matriks harga Buku Surat Yasin & Tahlil.';
+      case 'Nota 1 Warna':
+        return 'Master data tarif, simulator estimasi biaya, kalkulasi HPP, dan matriks harga Nota 1 Warna (HVS & NCR).';
+      case 'Brosur 2026':
+        return 'Master data tarif, simulator estimasi biaya, kalkulasi HPP, dan matriks harga Brosur Art Paper 120gsm 1/2 Muka (Print Inter & Oliver).';
+      case 'Kalender':
+      default:
+        return 'Master data tarif dan kalkulasi harga kalender dinding spiral & klem 2027.';
+    }
+  }, [selectedProductCategory]);
+
   return (
     <div className="flex flex-col gap-4 flex-1 min-h-0">
+      <PageHeader
+        title="Pricelist"
+        description={dynamicHeaderDesc}
+      />
       {/* TABS Navigation & Product Category Selector - Bersandingan Sebaris */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between border-b border-gray-100 shrink-0 pb-2 gap-3 mt-1 relative z-50">
         <div className="flex gap-2 sm:gap-6 px-2 flex-wrap sm:flex-nowrap">
@@ -374,6 +413,8 @@ export default function PricelistClient() {
                 { value: 'Kalender', label: '🗓️ Kalender 2027' },
                 { value: 'Buku Manasik', label: '📖 Buku Manasik Haji' },
                 { value: 'Buku Yasin', label: '📗 Buku Surat Yasin' },
+                { value: 'Nota 1 Warna', label: '📋 Nota 1 Warna' },
+                { value: 'Brosur 2026', label: '🗞️ Brosur 2026' },
               ]}
               value={selectedProductCategory}
               onChange={(val) => handleProductCategoryChange(val as any)}
@@ -398,6 +439,16 @@ export default function PricelistClient() {
               customParams={paramsYasin}
               setCustomParams={setParamsYasin}
             />
+          ) : selectedProductCategory === 'Nota 1 Warna' ? (
+            <NotaMasterParameter
+              customParams={paramsNota}
+              setCustomParams={setParamsNota}
+            />
+          ) : selectedProductCategory === 'Brosur 2026' ? (
+            <BrosurMasterParameter
+              customParams={paramsBrosur}
+              setCustomParams={setParamsBrosur}
+            />
           ) : (
             <PricelistMasterParameter
               customParams={customParams}
@@ -416,11 +467,25 @@ export default function PricelistClient() {
             <ManasikSimulator
               customParams={paramsManasik}
               setCustomParams={setParamsManasik}
+              onOpenMasterParam={() => setActiveTab('parameter')}
             />
           ) : selectedProductCategory === 'Buku Yasin' ? (
             <YasinSimulator
               customParams={paramsYasin}
               setCustomParams={setParamsYasin}
+              onOpenMasterParam={() => setActiveTab('parameter')}
+            />
+          ) : selectedProductCategory === 'Nota 1 Warna' ? (
+            <NotaSimulator
+              customParams={paramsNota}
+              setCustomParams={setParamsNota}
+              onOpenMasterParam={() => setActiveTab('parameter')}
+            />
+          ) : selectedProductCategory === 'Brosur 2026' ? (
+            <BrosurSimulator
+              customParams={paramsBrosur}
+              setCustomParams={setParamsBrosur}
+              onOpenMasterParam={() => setActiveTab('parameter')}
             />
           ) : (
             <PricelistSimulator
@@ -449,6 +514,10 @@ export default function PricelistClient() {
             <ManasikMatrixView customParams={paramsManasik} />
           ) : selectedProductCategory === 'Buku Yasin' ? (
             <YasinMatrixView customParams={paramsYasin} />
+          ) : selectedProductCategory === 'Nota 1 Warna' ? (
+            <NotaMatrixView customParams={paramsNota} />
+          ) : selectedProductCategory === 'Brosur 2026' ? (
+            <BrosurMatrixView customParams={paramsBrosur} />
           ) : (
             <>
           {/* Upload card */}

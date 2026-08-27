@@ -2,12 +2,11 @@
 
 import React, { useMemo, useState } from 'react';
 import {
-  FileSpreadsheet,
   BookOpen,
-  Info,
   Search,
-  Filter,
   X,
+  LayoutGrid,
+  TableProperties,
 } from 'lucide-react';
 import {
   calculateManasikSimulator,
@@ -19,7 +18,9 @@ interface ManasikMatrixViewProps {
   customParams?: ManasikMasterParams;
 }
 
-const OPLAH_TIERS = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000];
+const OPLAH_TIERS = [
+  50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000, 1500, 2000, 2500, 3000
+];
 
 const HALAMAN_LIST: Array<{ hal: 96 | 128 | 192 | 208; title: string }> = [
   { hal: 96, title: 'Buku Manasik 96 Hal' },
@@ -33,6 +34,7 @@ export default function ManasikMatrixView({
 }: ManasikMatrixViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedJilidFilter, setSelectedJilidFilter] = useState<'ALL' | 'Softcover' | 'Cocard' | 'Spiral'>('ALL');
+  const [viewMode, setViewMode] = useState<'matrix' | 'table'>('matrix');
 
   // Generate Matrix data dinamis sesuai formula master parameter
   const matrixData = useMemo(() => {
@@ -112,6 +114,74 @@ export default function ManasikMatrixView({
     });
   }, [customParams, searchTerm]);
 
+  // Flat table rows for table view
+  const flatTableRows = useMemo(() => {
+    const list: Array<{
+      hal: number;
+      title: string;
+      oplah: number;
+      tipeJilid: string;
+      metode: string;
+      hpp: number;
+      hargaJual: number;
+      omset: number;
+      profitTot: number;
+    }> = [];
+
+    HALAMAN_LIST.forEach(({ hal, title }) => {
+      OPLAH_TIERS.forEach((oplah) => {
+        const jilidOptions: Array<{ type: 'Softcover (Bending/Lem Panas)' | 'Tali Cocard' | 'Spiral Kawat'; label: string; filterKey: 'Softcover' | 'Cocard' | 'Spiral' }> = [
+          { type: 'Softcover (Bending/Lem Panas)', label: 'Softcover Bending', filterKey: 'Softcover' },
+          { type: 'Tali Cocard', label: 'Tali Cocard', filterKey: 'Cocard' },
+          { type: 'Spiral Kawat', label: 'Spiral Kawat', filterKey: 'Spiral' },
+        ];
+
+        jilidOptions.forEach(({ type, label, filterKey }) => {
+          if (selectedJilidFilter !== 'ALL' && selectedJilidFilter !== filterKey) return;
+
+          const res = calculateManasikSimulator(
+            {
+              oplah,
+              jumlahHalaman: hal,
+              tipeJilid: type,
+              metodeCetakCover: 'Otomatis',
+              laminasiCover: 'Glossy',
+              opsiPlastikOpp: true,
+              opsiKardus: true,
+              marginPct: 30,
+              negoDiskonPct: 0,
+            },
+            customParams
+          );
+
+          const q = searchTerm.toLowerCase().trim();
+          if (q) {
+            const match =
+              title.toLowerCase().includes(q) ||
+              label.toLowerCase().includes(q) ||
+              oplah.toString().includes(q) ||
+              res.summary.hargaJualPerPcs.toString().includes(q);
+            if (!match) return;
+          }
+
+          list.push({
+            hal,
+            title,
+            oplah,
+            tipeJilid: label,
+            metode: oplah >= 300 ? 'Cetak Oliver' : 'Print Digital',
+            hpp: res.summary.hppPerPcs,
+            hargaJual: res.summary.hargaJualPerPcs,
+            omset: res.summary.totalHargaJual,
+            profitTot: res.summary.totalProfit,
+          });
+        });
+      });
+    });
+
+    return list;
+  }, [customParams, searchTerm, selectedJilidFilter]);
+
   return (
     <div className="space-y-4">
       {/* Header Info */}
@@ -187,9 +257,40 @@ export default function ManasikMatrixView({
             Spiral
           </button>
         </div>
+
+        {/* View Mode Switcher */}
+        <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs shrink-0">
+          <button
+            type="button"
+            onClick={() => setViewMode('matrix')}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+              viewMode === 'matrix'
+                ? 'bg-white text-emerald-800 shadow-xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+            title="Tampilan Matriks"
+          >
+            <LayoutGrid size={13} />
+            <span className="hidden sm:inline">Matriks</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('table')}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+              viewMode === 'table'
+                ? 'bg-white text-emerald-800 shadow-xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+            title="Tampilan Tabel Rinci"
+          >
+            <TableProperties size={13} />
+            <span className="hidden sm:inline">Tabel</span>
+          </button>
+        </div>
       </div>
 
-      <div className="space-y-6">
+      {viewMode === 'matrix' ? (
+        <div className="space-y-6">
         {matrixData.map((section) => {
           if (section.rows.length === 0) return null;
           return (
@@ -268,7 +369,71 @@ export default function ManasikMatrixView({
             </div>
           );
         })}
-      </div>
+        </div>
+      ) : (
+        /* Detailed Flat Table View */
+        <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col">
+          <div className="overflow-x-auto max-h-[600px]">
+            <table className="w-full text-xs text-left border-collapse">
+              <thead className="sticky top-0 z-10 bg-slate-100 border-b border-slate-200 text-slate-700 font-bold">
+                <tr>
+                  <th className="py-2.5 px-3">Halaman</th>
+                  <th className="py-2.5 px-3">Tipe Jilid</th>
+                  <th className="py-2.5 px-3 text-center">Oplah</th>
+                  <th className="py-2.5 px-3 text-center">Metode Cover</th>
+                  <th className="py-2.5 px-3 text-right">HPP / Eks</th>
+                  <th className="py-2.5 px-3 text-right text-emerald-700">Harga Jual / Eks</th>
+                  <th className="py-2.5 px-3 text-right text-emerald-800">Total Omset</th>
+                  <th className="py-2.5 px-3 text-right text-blue-700">Total Profit</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
+                {flatTableRows.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="p-8 text-center text-slate-400 font-sans">
+                      Tidak ada data yang sesuai dengan pencarian atau filter.
+                    </td>
+                  </tr>
+                ) : (
+                  flatTableRows.map((row, idx) => (
+                    <tr key={idx} className="hover:bg-amber-50/20">
+                      <td className="py-2 px-3 font-semibold text-slate-800 font-sans">{row.title}</td>
+                      <td className="py-2 px-3 font-medium text-slate-700 font-sans">
+                        <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10.5px]">
+                          {row.tipeJilid}
+                        </span>
+                      </td>
+                      <td className="py-2 px-3 text-center font-bold text-slate-900">{row.oplah.toLocaleString('id-ID')}</td>
+                      <td className="py-2 px-3 text-center font-sans">
+                        <span
+                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                            row.metode.includes('Oliver') ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
+                          }`}
+                        >
+                          {row.metode}
+                        </span>
+                      </td>
+                      <td className="py-2 px-3 text-right text-slate-500">Rp {row.hpp.toLocaleString('id-ID')}</td>
+                      <td className="py-2 px-3 text-right font-bold text-emerald-700 bg-emerald-50/30">
+                        Rp {row.hargaJual.toLocaleString('id-ID')}
+                      </td>
+                      <td className="py-2 px-3 text-right font-bold text-emerald-800">
+                        Rp {row.omset.toLocaleString('id-ID')}
+                      </td>
+                      <td className="py-2 px-3 text-right font-bold text-blue-700">
+                        Rp {row.profitTot.toLocaleString('id-ID')}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="px-4 py-2 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 font-medium">
+            Menampilkan {flatTableRows.length} kombinasi tarif Buku Manasik
+          </div>
+        </div>
+      )}
     </div>
   );
 }

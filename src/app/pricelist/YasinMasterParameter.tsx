@@ -1,11 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Database,
   BookOpen,
   RotateCcw,
   Sparkles,
+  X,
+  Sliders,
+  Layers,
 } from 'lucide-react';
 import {
   DEFAULT_YASIN_PARAMS,
@@ -23,6 +26,7 @@ export default function YasinMasterParameter({
   customParams,
   setCustomParams,
 }: YasinMasterParameterProps) {
+  const [showManualModal, setShowManualModal] = useState(false);
   const handleChange = (key: keyof YasinMasterParams, val: number) => {
     setCustomParams((prev) => ({ ...prev, [key]: Math.max(0, val) }));
   };
@@ -70,19 +74,29 @@ export default function YasinMasterParameter({
             </p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={handleResetAll}
-          disabled={!isModified}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs shrink-0 ${
-            isModified
-              ? 'bg-amber-600 hover:bg-amber-700 text-white cursor-pointer ring-2 ring-amber-400/40'
-              : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-70'
-          }`}
-        >
-          <RotateCcw size={13} />
-          <span>Reset Standar Master</span>
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => setShowManualModal(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all cursor-pointer shadow-2xs"
+          >
+            <BookOpen size={13} />
+            <span>Manual Pengguna</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleResetAll}
+            disabled={!isModified}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs shrink-0 ${
+              isModified
+                ? 'bg-amber-600 hover:bg-amber-700 text-white cursor-pointer ring-2 ring-amber-400/40'
+                : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-70'
+            }`}
+          >
+            <RotateCcw size={13} />
+            <span>Reset Standar Master</span>
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -300,6 +314,120 @@ export default function YasinMasterParameter({
           </div>
         </div>
       </div>
+      {/* Modal Manual Pengguna Master Parameter */}
+      {showManualModal && (
+        <div
+          onClick={() => setShowManualModal(false)}
+          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden cursor-default"
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-emerald-900 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-800/80 rounded-xl border border-emerald-700 text-emerald-200">
+                  <Database className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold tracking-tight">Manual Pengguna & Pemetaan Sumber Excel</h3>
+                  <p className="text-xs text-emerald-200/90 mt-0.5">
+                    Dokumentasi referensi letak sheet, cell, dan formula dari master kalkulasi Buku Surat Yasin
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowManualModal(false)}
+                className="p-1.5 rounded-lg text-emerald-200 hover:text-white hover:bg-emerald-800/60 transition-all cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-700 leading-relaxed">
+              {/* Bagian 1: Pemetaan 4 Kelompok Master Parameter */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                  Pemetaan 4 Bagian Master Parameter ke File Excel (Folder 02. Pricelist Yasin/*.xlsx)
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                  {/* Poin 1 */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center gap-2 font-bold text-slate-900">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                      <span>1. Blok Isi Kitab Yasin (Ready)</span>
+                    </div>
+                    <ul className="space-y-1.5 text-[11px] text-slate-600">
+                      <li>• <strong>Database Harga Isi</strong>: <span className="font-mono text-emerald-700">Data_Yasin!A1:P104</span> & <span className="font-mono text-emerald-700">Master!D36</span>.</li>
+                      <li>• <strong>Harga Netto</strong>: 64 Hal: Rp 1.650, 96 Hal: Rp 2.250, 112 Hal: Rp 2.470, 128 Hal: Rp 2.600, 144 Hal: Rp 3.200, 192 Hal: Rp 3.800.</li>
+                      <li>• <strong>Kode Master</strong>: <span className="font-mono text-slate-600">Master!D34</span> = <code className="text-[10px] bg-white px-1 py-0.5 rounded border">Bo-[96-2250]-11,5[0#2250]Tgg</code>.</li>
+                    </ul>
+                  </div>
+
+                  {/* Poin 2 */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center gap-2 font-bold text-slate-900">
+                      <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                      <span>2. Cetak Cover & Sisipan (Print Inter A3+)</span>
+                    </div>
+                    <ul className="space-y-1.5 text-[11px] text-slate-600">
+                      <li>• <strong>Print Cover AC 230 / AP 150</strong>: <span className="font-mono text-blue-700">Master!D15</span> (Softcover: Rp 2.500, Hardcover: Rp 2.000 / lbr A3+).</li>
+                      <li>• <strong>Print Sisipan Foto (4 Warna)</strong>: <span className="font-mono text-blue-700">Master!D23</span> (Rp 1.750 / lbr A3+ AP 120).</li>
+                      <li>• <strong>Print Sisipan Doa Keluarga</strong>: <span className="font-mono text-blue-700">Master!D31</span> (Rp 3.300 / 1.500 / lbr A3+).</li>
+                      <li>• <strong>Desain Setting Cover</strong>: <span className="font-mono text-blue-700">Master!D14</span> (Rp 25.000).</li>
+                    </ul>
+                  </div>
+
+                  {/* Poin 3 */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center gap-2 font-bold text-slate-900">
+                      <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                      <span>3. Perakitan Jilid & Skiblat Hardcover</span>
+                    </div>
+                    <ul className="space-y-1.5 text-[11px] text-slate-600">
+                      <li>• <strong>Skiblat Sambung Dalam</strong>: <span className="font-mono text-amber-700">BUKU!AT6</span> (Rp 350 / buku).</li>
+                      <li>• <strong>Susun Sisipan Lembar</strong>: <span className="font-mono text-amber-700">BUKU!AU6</span> (Rp 100 / lbr).</li>
+                      <li>• <strong>Steples Tengah</strong>: <span className="font-mono text-amber-700">BUKU!AV6</span> (Rp 50 / buku).</li>
+                      <li>• <strong>Potong Sisir 3 Sisi</strong>: <span className="font-mono text-amber-700">BUKU!AW6</span> (Rp 150 / buku).</li>
+                      <li>• <strong>Casing-In Hardcover</strong>: <span className="font-mono text-amber-700">BUKU!AZ6</span> (Rp 751,62 / buku).</li>
+                    </ul>
+                  </div>
+
+                  {/* Poin 4 */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center gap-2 font-bold text-slate-900">
+                      <span className="w-2 h-2 rounded-full bg-violet-500"></span>
+                      <span>4. Aksesoris Mewah, Gembos Emas & OPP</span>
+                    </div>
+                    <ul className="space-y-1.5 text-[11px] text-slate-600">
+                      <li>• <strong>Pita Pembatas Rumbai</strong>: <span className="font-mono text-violet-700">BUKU!AY6</span> (Rp 470 / buku).</li>
+                      <li>• <strong>Siku Sudut Emas (4 Pcs)</strong>: <span className="font-mono text-violet-700">Master Parameter</span> (Rp 400 / set).</li>
+                      <li>• <strong>Gembos Klise Foil Emas</strong>: <span className="font-mono text-violet-700">Master!D40</span> (Rp 195.000 / pack = Rp 4.875 / 12 pcs).</li>
+                      <li>• <strong>Plastik OPP /Pack</strong>: <span className="font-mono text-violet-700">Master!D42</span> (Rp 9.000 / pack).</li>
+                      <li>• <strong>Target Margin Standar</strong>: <span className="font-mono text-violet-700">Master!E43</span> (30%).</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowManualModal(false)}
+                className="px-4 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition-all cursor-pointer shadow-xs"
+              >
+                Tutup Panduan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
