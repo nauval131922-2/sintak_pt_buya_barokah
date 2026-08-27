@@ -65,7 +65,7 @@ export default function PricelistClient() {
   const [fileName, setFileName] = useState<string | null>(null);
 
   // Filters state
-  const [activeTab, setActiveTab] = useState<'parameter' | 'simulator' | 'matrix' | 'saved'>('parameter');
+  const [activeTab, setActiveTab] = useState<'parameter' | 'simulator' | 'matrix' | 'saved'>('saved');
   const [selectedFinishing, setSelectedFinishing] = useState<'Spiral' | 'Klem'>('Spiral');
 
   // Parameter Buku Manasik, Yasin & Nota
