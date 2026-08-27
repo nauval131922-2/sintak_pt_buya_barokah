@@ -105,6 +105,18 @@ export default function SearchableDropdown({
     }
   }, []);
 
+  const labelFor = (item: string) => {
+    if (item === '') return allLabel;
+    return itemLabels?.[item] ?? String(item);
+  };
+
+  // All items including the "all" entry (filter out empty strings to prevent duplicate '__all__')
+  const cleanedItems = items.filter(i => String(i) !== '');
+  const allItems = ['', ...cleanedItems.map(i => String(i))];
+  const filtered = allItems
+    .filter((i) => labelFor(i).toLowerCase().includes(query.toLowerCase()))
+    .slice(0, maxDisplay);
+
   useLayoutEffect(() => {
     if (open) {
       updateCoords();
@@ -121,18 +133,6 @@ export default function SearchableDropdown({
       window.removeEventListener('resize', updateCoords);
     };
   }, [open, updateCoords]);
-
-  const labelFor = (item: string) => {
-    if (item === '') return allLabel;
-    return itemLabels?.[item] ?? String(item);
-  };
-
-  // All items including the "all" entry (filter out empty strings to prevent duplicate '__all__')
-  const cleanedItems = items.filter(i => String(i) !== '');
-  const allItems = ['', ...cleanedItems.map(i => String(i))];
-  const filtered = allItems
-    .filter((i) => labelFor(i).toLowerCase().includes(query.toLowerCase()))
-    .slice(0, maxDisplay);
 
   // If selected value is outside the sliced list, still show a sensible label
   const displayLabel = value === ''
