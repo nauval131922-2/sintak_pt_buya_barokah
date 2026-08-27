@@ -14,6 +14,7 @@ import {
   Calculator,
   Database,
   BookOpen,
+  Calendar,
 } from 'lucide-react';
 import PricelistExcelUpload from './PricelistExcelUpload';
 import PricelistSimulator from './PricelistSimulator';
@@ -352,7 +353,7 @@ export default function PricelistClient() {
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
               }`}
             >
-              <Layers size={14} className="text-emerald-700" />
+              <Calendar size={14} className="text-emerald-700" />
               <span>Kalender 2027</span>
             </button>
 
@@ -439,7 +440,7 @@ export default function PricelistClient() {
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
               }`}
             >
-              <Layers size={14} className="text-emerald-700" />
+              <Calendar size={14} className="text-emerald-700" />
               <span>Kalender 2027</span>
             </button>
 
