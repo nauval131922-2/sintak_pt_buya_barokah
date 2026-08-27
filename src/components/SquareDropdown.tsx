@@ -75,15 +75,15 @@ export default function SquareDropdown({
     if (usePortal) {
       const style: React.CSSProperties = {
         position: 'fixed',
-        left: isRight ? `${rect.right - popupWidth}px` : `${rect.left}px`,
-        width: `${popupWidth}px`,
+        left: isRight ? (rect.right - popupWidth) / scale : rect.left / scale,
+        width: `${popupWidth / scale}px`,
         zIndex: 10000,
       };
 
       if (isUpward) {
-        style.bottom = `${window.innerHeight - rect.top + 4}px`;
+        style.bottom = (window.innerHeight - rect.top + 4) / scale;
       } else {
-        style.top = `${rect.bottom + 4}px`;
+        style.top = (rect.bottom + 4) / scale;
       }
 
       setPortalStyle(style);
