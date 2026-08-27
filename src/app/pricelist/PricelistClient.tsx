@@ -341,46 +341,24 @@ export default function PricelistClient() {
           </button>
         </div>
 
-        {/* Global Product Category Selector - Nempel Kanan */}
-        <div className="flex items-center gap-1 p-0.5 bg-slate-100 rounded-lg border border-slate-200 w-fit shrink-0 mx-2 self-start lg:self-auto">
-          <button
-            type="button"
-            onClick={() => handleProductCategoryChange('Kalender')}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-bold transition cursor-pointer ${
-              selectedProductCategory === 'Kalender'
-                ? 'bg-white text-emerald-800 shadow-2xs border border-slate-200/50'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/30'
-            }`}
+        {/* Global Product Category Selector - Dropdown untuk skalabilitas */}
+        <div className="flex items-center gap-2 mx-2 self-start lg:self-auto shrink-0">
+          <span className="text-xs font-semibold text-slate-500 hidden sm:inline">Jenis Produk:</span>
+          <select
+            value={selectedProductCategory}
+            onChange={(e) => handleProductCategoryChange(e.target.value as any)}
+            className="text-xs font-bold bg-white text-slate-800 border border-slate-300 rounded-lg py-1.5 px-3 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 shadow-2xs transition cursor-pointer pr-8 relative appearance-none"
+            style={{
+              backgroundImage: `url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")`,
+              backgroundPosition: 'right 0.5rem center',
+              backgroundSize: '1.25rem',
+              backgroundRepeat: 'no-repeat',
+            }}
           >
-            <Calendar size={12} className="text-emerald-700" />
-            <span>Kalender 2027</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleProductCategoryChange('Buku Manasik')}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-bold transition cursor-pointer ${
-              selectedProductCategory === 'Buku Manasik'
-                ? 'bg-white text-emerald-800 shadow-2xs border border-slate-200/50'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/30'
-            }`}
-          >
-            <BookOpen size={12} className="text-emerald-600" />
-            <span>Buku Manasik</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleProductCategoryChange('Buku Yasin')}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-bold transition cursor-pointer ${
-              selectedProductCategory === 'Buku Yasin'
-                ? 'bg-white text-emerald-800 shadow-2xs border border-slate-200/50'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/30'
-            }`}
-          >
-            <BookOpen size={12} className="text-emerald-600" />
-            <span>Buku Surat Yasin</span>
-          </button>
+            <option value="Kalender">🗓️ Kalender 2027</option>
+            <option value="Buku Manasik">📖 Buku Manasik Haji</option>
+            <option value="Buku Yasin">📗 Buku Surat Yasin</option>
+          </select>
         </div>
       </div>
 
