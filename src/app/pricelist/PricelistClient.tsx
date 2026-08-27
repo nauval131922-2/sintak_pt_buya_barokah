@@ -341,24 +341,21 @@ export default function PricelistClient() {
           </button>
         </div>
 
-        {/* Global Product Category Selector - Dropdown untuk skalabilitas */}
-        <div className="flex items-center gap-2 mx-2 self-start lg:self-auto shrink-0">
+        {/* Global Product Category Selector - Dropdown Searchable */}
+        <div className="flex items-center gap-2 mx-2 self-start lg:self-auto shrink-0 z-50">
           <span className="text-xs font-semibold text-slate-500 hidden sm:inline">Jenis Produk:</span>
-          <select
+          <SquareDropdown
+            options={[
+              { value: 'Kalender', label: '🗓️ Kalender 2027' },
+              { value: 'Buku Manasik', label: '📖 Buku Manasik Haji' },
+              { value: 'Buku Yasin', label: '📗 Buku Surat Yasin' },
+            ]}
             value={selectedProductCategory}
-            onChange={(e) => handleProductCategoryChange(e.target.value as any)}
-            className="text-xs font-bold bg-white text-slate-800 border border-slate-300 rounded-lg py-1.5 px-3 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 shadow-2xs transition cursor-pointer pr-8 relative appearance-none"
-            style={{
-              backgroundImage: `url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")`,
-              backgroundPosition: 'right 0.5rem center',
-              backgroundSize: '1.25rem',
-              backgroundRepeat: 'no-repeat',
-            }}
-          >
-            <option value="Kalender">🗓️ Kalender 2027</option>
-            <option value="Buku Manasik">📖 Buku Manasik Haji</option>
-            <option value="Buku Yasin">📗 Buku Surat Yasin</option>
-          </select>
+            onChange={(val) => handleProductCategoryChange(val as any)}
+            searchPlaceholder="Cari jenis produk..."
+            widthClass="w-52"
+            alignRight
+          />
         </div>
       </div>
 
