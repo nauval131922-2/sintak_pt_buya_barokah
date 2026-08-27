@@ -348,7 +348,7 @@ export default function PricelistClient() {
             }`}
           >
             <FileSpreadsheet size={14} />
-            <span>Matriks Pricelist</span>
+            <span>Pricelist</span>
           </button>
 
           <button

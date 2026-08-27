@@ -57,7 +57,7 @@ export default function SavedCalculationsList({
   activeSimulationId,
 }: SavedCalculationsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin'>('ALL');
+  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin'>(selectedCategory || 'ALL');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitleInput, setEditTitleInput] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -88,7 +88,11 @@ export default function SavedCalculationsList({
 
   useEffect(() => {
     refreshData();
-  }, []);
+    // Sinkronisasi jika kategori yang dipilih di header berubah
+    if (selectedCategory) {
+      setFilterCategory(selectedCategory);
+    }
+  }, [selectedCategory]);
 
   // Map into unified list
   const unifiedList = useMemo<UnifiedCalculationItem[]>(() => {
