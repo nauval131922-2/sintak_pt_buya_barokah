@@ -296,6 +296,4 @@ export default function ManasikMasterParameter({
       </div>
     </div>
   );
-    </div>
-  );
 }
