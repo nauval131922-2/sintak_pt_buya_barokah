@@ -99,15 +99,15 @@ export default function YasinMatrixView({
   return (
     <div className="space-y-4">
       {/* Header Info */}
-      <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex items-center justify-between shadow-2xs">
-        <div className="flex items-center gap-3">
+      <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-2.5">
           <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
             <BookOpen className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-bold text-sm sm:text-base text-emerald-950 flex items-center gap-2">
+            <h2 className="text-sm sm:text-base font-bold text-emerald-950 tracking-tight">
               Pricelist Matriks Buku Surat Yasin & Tahlil
-            </h3>
+            </h2>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
               Tabel perbandingan harga jual Softcover vs Hardcover (+ 2 lbr Foto FC & 2 lbr Doa Keluarga, Plastik OPP).
             </p>
