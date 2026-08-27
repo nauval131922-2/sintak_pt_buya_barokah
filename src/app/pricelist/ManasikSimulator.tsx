@@ -266,11 +266,6 @@ export default function ManasikSimulator({
     );
   }, [savedSimulations, savedSearchTerm]);
 
-  const result = useMemo(
-    () => calculateManasikSimulator(inputConfig, customParams),
-    [inputConfig, customParams]
-  );
-
   const handleCopyQuote = () => {
     const text = `*PENAWARAN BUKU PANDUAN MANASIK HAJI / UMROH*
 *PT Buya Barokah*
