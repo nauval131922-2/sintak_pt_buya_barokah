@@ -105,23 +105,24 @@ export default function SearchableDropdown({
     }
   }, []);
 
-  const labelFor = (item: string) => {
+  const labelFor = useCallback((item: string) => {
     if (item === '') return allLabel;
     return itemLabels?.[item] ?? String(item);
-  };
+  }, [allLabel, itemLabels]);
 
   // All items including the "all" entry (filter out empty strings to prevent duplicate '__all__')
-  const cleanedItems = items.filter(i => String(i) !== '');
-  const allItems = ['', ...cleanedItems.map(i => String(i))];
-  const filtered = allItems
-    .filter((i) => labelFor(i).toLowerCase().includes(query.toLowerCase()))
-    .slice(0, maxDisplay);
+  const filtered = useMemo(() => {
+    const cleanedItems = items.filter(i => String(i) !== '');
+    const allItems = ['', ...cleanedItems.map(i => String(i))];
+    return allItems
+      .filter((i) => labelFor(i).toLowerCase().includes(query.toLowerCase()))
+      .slice(0, maxDisplay);
+  }, [items, query, labelFor, maxDisplay]);
 
-  useLayoutEffect(() => {
-    if (open) {
-      updateCoords();
-    }
-  }, [open, filtered, updateCoords]);
+  useEffect(() => {
+    if (!open) return;
+    updateCoords();
+  }, [open, updateCoords]);
 
   useEffect(() => {
     if (!open) return;
