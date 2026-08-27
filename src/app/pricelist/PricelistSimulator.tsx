@@ -30,12 +30,6 @@ const MODEL_OPTIONS = [
   { value: 'Tri Wulan (4 Lbr)', label: 'Tri Wulan (4 Lbr)', desc: '4 Lembar / Kalender' },
 ];
 
-const BAHAN_OPTIONS = [
-  { value: 'HVS 70', label: 'HVS 70 gsm', desc: 'Ekonomis (Rp 15.700/kg)' },
-  { value: 'Art Paper 120', label: 'Art Paper 120 gsm', desc: 'Standar Kilap (Rp 17.400/kg)' },
-  { value: 'Art Paper 150', label: 'Art Paper 150 gsm', desc: 'Tebal & Premium (Rp 17.400/kg)' },
-];
-
 const UKURAN_OPTIONS = [
   { value: '32 x 48', label: '32 x 48 cm', desc: 'Plano 65x100 (Bagi 4)' },
   { value: '38 x 54', label: '38 x 54 cm', desc: 'Plano 79x109 (Bagi 4)' },
@@ -223,7 +217,23 @@ export default function PricelistSimulator({
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">2. Bahan Kertas</label>
               <div className="grid grid-cols-3 gap-2">
-                {BAHAN_OPTIONS.map((opt) => (
+                {[
+                  {
+                    value: 'HVS 70',
+                    label: 'HVS 70 gsm',
+                    desc: `Ekonomis (Rp ${formatRp(customParams.tarifHvs70)}/kg)`,
+                  },
+                  {
+                    value: 'Art Paper 120',
+                    label: 'Art Paper 120 gsm',
+                    desc: `Standar Kilap (Rp ${formatRp(customParams.tarifAp120)}/kg)`,
+                  },
+                  {
+                    value: 'Art Paper 150',
+                    label: 'Art Paper 150 gsm',
+                    desc: `Tebal & Premium (Rp ${formatRp(customParams.tarifAp150)}/kg)`,
+                  },
+                ].map((opt) => (
                   <button
                     key={opt.value}
                     type="button"
