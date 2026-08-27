@@ -54,6 +54,8 @@ export default function PricelistClient() {
   // Active loaded simulation state (persisted across tabs)
   const [activeSimulationId, setActiveSimulationId] = useState<string | null>(null);
   const [activeSimulationTitle, setActiveSimulationTitle] = useState<string | null>(null);
+  const [backupParamsSpiral, setBackupParamsSpiral] = useState<SimulatorMasterParams | null>(null);
+  const [backupParamsKlem, setBackupParamsKlem] = useState<SimulatorMasterParams | null>(null);
 
   // Load preferences from localStorage after mount (client-only) to prevent hydration mismatch
   useEffect(() => {
@@ -339,6 +341,12 @@ export default function PricelistClient() {
             setActiveSimulationId={setActiveSimulationId}
             activeSimulationTitle={activeSimulationTitle}
             setActiveSimulationTitle={setActiveSimulationTitle}
+            paramsSpiral={paramsSpiral}
+            paramsKlem={paramsKlem}
+            backupParamsSpiral={backupParamsSpiral}
+            setBackupParamsSpiral={setBackupParamsSpiral}
+            backupParamsKlem={backupParamsKlem}
+            setBackupParamsKlem={setBackupParamsKlem}
           />
         </div>
       ) : (

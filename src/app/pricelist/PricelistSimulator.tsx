@@ -78,6 +78,12 @@ interface PricelistSimulatorProps {
   setActiveSimulationId?: (id: string | null) => void;
   activeSimulationTitle?: string | null;
   setActiveSimulationTitle?: (title: string | null) => void;
+  paramsSpiral?: SimulatorMasterParams;
+  paramsKlem?: SimulatorMasterParams;
+  backupParamsSpiral?: SimulatorMasterParams | null;
+  setBackupParamsSpiral?: (params: SimulatorMasterParams | null) => void;
+  backupParamsKlem?: SimulatorMasterParams | null;
+  setBackupParamsKlem?: (params: SimulatorMasterParams | null) => void;
 }
 
 export default function PricelistSimulator({
@@ -91,6 +97,12 @@ export default function PricelistSimulator({
   setActiveSimulationId: propSetActiveSimId,
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
+  paramsSpiral,
+  paramsKlem,
+  backupParamsSpiral,
+  setBackupParamsSpiral,
+  backupParamsKlem,
+  setBackupParamsKlem,
 }: PricelistSimulatorProps) {
   const [showSimulatorManual, setShowSimulatorManual] = useState(false);
 
@@ -220,6 +232,14 @@ export default function PricelistSimulator({
   };
 
   const handleLoadSimulation = (item: SavedSimulationItem) => {
+    // 0. Backup parameter aktif sebelum ditimpa oleh riwayat jika belum ada backup
+    if (setBackupParamsSpiral && paramsSpiral && !backupParamsSpiral) {
+      setBackupParamsSpiral({ ...paramsSpiral });
+    }
+    if (setBackupParamsKlem && paramsKlem && !backupParamsKlem) {
+      setBackupParamsKlem({ ...paramsKlem });
+    }
+
     // 1. Ubah mode finishing
     onChangeFinishingJilid(item.finishingJilid);
 
@@ -251,10 +271,20 @@ export default function PricelistSimulator({
   };
 
   const handleExitLoadedMode = () => {
+    // Kembalikan Master Parameter ke backup sebelum memuat riwayat
+    if (backupParamsSpiral && setParamsForFinishing) {
+      setParamsForFinishing('Spiral', backupParamsSpiral);
+    }
+    if (backupParamsKlem && setParamsForFinishing) {
+      setParamsForFinishing('Klem', backupParamsKlem);
+    }
+    if (setBackupParamsSpiral) setBackupParamsSpiral(null);
+    if (setBackupParamsKlem) setBackupParamsKlem(null);
+
     setActiveSimulationId(null);
     setActiveSimulationTitle(null);
     setSimulationTitle('');
-    toast.info('Keluar dari mode riwayat simulasi.');
+    toast.info('Keluar dari mode riwayat simulasi & tarif master dipulihkan.');
   };
 
   const handleUpdateSavedSimulation = () => {
