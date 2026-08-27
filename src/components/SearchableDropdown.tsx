@@ -89,9 +89,9 @@ export default function SearchableDropdown({
         width: rect.width / scale,
       });
 
-      // Selalu rata kiri jika ruang kanan cukup. Hanya rata kanan jika ruang kanan mepet.
+      // Rata kanan jika ruang kanan mepet
       const spaceRight = window.innerWidth - rect.left;
-      const leftWhenAlignRight = rect.right - rect.width;
+      const leftWhenAlignRight = rect.right - (rect.width);
       const minLeftAllowed = window.innerWidth >= 1024 ? 260 : 12;
 
       if (spaceRight >= rect.width) {
@@ -227,11 +227,15 @@ export default function SearchableDropdown({
       style={usePortal ? {
         position: 'fixed',
         ...(openUpward ? { bottom: `${bottomCoord}px` } : { top: `${coords.top}px` }),
-        left: `${coords.left}px`,
-        width: `${coords.width}px`,
+        ...(alignRight
+          ? { right: `${Math.max(12, window.innerWidth - (coords.left + coords.width))}px`, left: 'auto' }
+          : { left: `${coords.left}px` }),
+        minWidth: `${coords.width}px`,
+        maxWidth: 'max(90vw, 600px)',
+        width: 'max-content',
         zIndex: 10000
       } : undefined}
-      className={`${usePortal ? '' : `absolute ${alignRight ? 'right-0' : 'left-0'} top-full mt-2 min-w-full ${panelWidth || 'w-full'}`} bg-white border border-gray-100 rounded-xl shadow-xl shadow-emerald-900/10 py-3 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col max-h-[300px]`}
+      className={`${usePortal ? '' : `absolute ${alignRight ? 'right-0' : 'left-0'} top-full mt-2 min-w-full ${panelWidth || 'w-max max-w-[90vw]'}`} bg-white border border-gray-100 rounded-xl shadow-xl shadow-emerald-900/10 py-3 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col max-h-[300px]`}
     >
       {/* Search */}
       <div className="px-3 pb-3 shrink-0 border-b border-gray-50 mb-1">
@@ -270,7 +274,7 @@ export default function SearchableDropdown({
               data-item
               onClick={() => select(item)}
               className={`
-                w-full text-left px-4 ${compact ? 'py-2.5 text-[11px]' : 'py-3 text-[12px]'} font-bold rounded-lg transition-all mb-0.5
+                w-full text-left px-4 ${compact ? 'py-2.5 text-[11px]' : 'py-3 text-[12px]'} font-bold rounded-lg transition-all mb-0.5 whitespace-nowrap
                 ${value === item
                   ? 'bg-emerald-50 text-emerald-700'
                   : idx === focusedIndex
