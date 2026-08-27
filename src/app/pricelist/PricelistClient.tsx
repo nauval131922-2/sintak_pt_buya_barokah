@@ -443,7 +443,7 @@ export default function PricelistClient() {
             />
           )}
         </div>
-      ) : (
+      ) : activeTab === 'matrix' ? (
         <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-4">
           {selectedProductCategory === 'Buku Manasik' ? (
             <ManasikMatrixView customParams={paramsManasik} />
