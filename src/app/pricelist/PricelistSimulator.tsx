@@ -43,6 +43,7 @@ export interface SavedSimulationItem {
   pilihanMesin: 'Otomatis' | 'Oliver' | 'SM';
   marginPct: number;
   negoDiskonPct: number;
+  customParams?: SimulatorMasterParams;
   summary: SimulatorOutput['summary'];
   mesinDigunakan: string;
 }
@@ -175,6 +176,7 @@ export default function PricelistSimulator({
       pilihanMesin,
       marginPct,
       negoDiskonPct,
+      customParams: { ...customParams },
       summary: result.summary,
       mesinDigunakan: result.calculatedParams.mesinDigunakan,
     };
@@ -192,6 +194,9 @@ export default function PricelistSimulator({
   };
 
   const handleLoadSimulation = (item: SavedSimulationItem) => {
+    if (item.customParams) {
+      setCustomParams(item.customParams);
+    }
     setModelKalender(item.modelKalender);
     setBahan(item.bahan);
     setUkuran(item.ukuran);
