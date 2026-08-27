@@ -2,18 +2,17 @@
 
 import { useState, useEffect, useMemo, useTransition, useCallback } from 'react';
 import {
-  Users, ShieldCheck, UserCog, Plus, Search,
+  ShieldCheck, UserCog, Plus, Search,
   Edit2, Trash2,
-  AlertCircle, Loader2,
+  Filter, X,
   RefreshCw
 } from 'lucide-react';
-import SearchableDropdown from '@/components/SearchableDropdown';
+import SquareDropdown, { type SquareDropdownOption } from '@/components/SquareDropdown';
 import { getUsers, deleteUser, updateUser } from '@/lib/users';
 import UserFormModal from './UserFormModal';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { DataTable } from '@/components/ui/DataTable';
 import TableFooter from '@/components/TableFooter';
-import SearchAndReload from '@/components/SearchAndReload';
 import { toast } from '@/lib/toast';
 
 interface User {
@@ -43,8 +42,8 @@ export default function UsersContent({
   const [loading, setLoading] = useState(true);
   const [searchImmediate, setSearchImmediate] = useState('');
   const [searchDebounced, setSearchDebounced] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
-  const [isPending, startTransition] = useTransition();
+
+  const [, startTransition] = useTransition();
   const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -103,12 +102,8 @@ export default function UsersContent({
   }, [loadUsers]);
 
   useEffect(() => {
-    setIsSearching(true);
     const timer = setTimeout(() => {
-      startTransition(() => {
-        setSearchDebounced(searchImmediate);
-        setIsSearching(false);
-      });
+      startTransition(() => setSearchDebounced(searchImmediate));
     }, 400);
     return () => clearTimeout(timer);
   }, [searchImmediate]);
@@ -313,59 +308,76 @@ export default function UsersContent({
 
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-3 animate-in fade-in duration-500 overflow-hidden">
-      {/* Filter and action bar */}
-      <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
-        <div className="flex items-center gap-2 flex-1">
-          <SearchableDropdown
-            id="users-role"
-            value={roleFilter}
-            items={customRoles}
-            allLabel="Semua Jabatan"
-            placeholder="Filter Jabatan"
-            searchPlaceholder="Cari role..."
-            triggerWidth="w-full sm:w-[180px]"
-            panelWidth="w-[220px]"
-            icon={<Users size={14} className={roleFilter ? 'text-emerald-600' : 'text-gray-400'} />}
-            onChange={val => startTransition(() => setRoleFilter(val))}
-            compact={true}
-          />
-          <SearchableDropdown
-            id="users-status"
-            value={statusFilter}
-            items={['Aktif', 'Nonaktif']}
-            allLabel="Semua Status"
-            placeholder="Filter Status"
-            searchPlaceholder="Cari status..."
-            triggerWidth="w-full sm:w-[140px]"
-            panelWidth="w-[160px]"
-            icon={<UserCog size={14} className={statusFilter ? 'text-emerald-600' : 'text-gray-400'} />}
-            onChange={val => startTransition(() => setStatusFilter(val))}
-            compact={true}
-          />
+      {/* Filter & Search Bar */}
+      <div className="shrink-0 bg-white p-3 rounded-xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-center gap-3">
+        <div className="flex items-center gap-2 flex-1 w-full">
+          <button
+            type="button"
+            onClick={loadUsers}
+            disabled={loading}
+            className="h-8 px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
+            title="Reload Data Users"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-600' : ''}`} />
+            <span className="hidden sm:inline">Reload</span>
+          </button>
+          <div className="relative flex-1 w-full">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Cari user berdasarkan nama, username, atau role..."
+              value={searchImmediate}
+              onChange={(e) => setSearchImmediate(e.target.value)}
+              className="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
+            />
+          </div>
         </div>
 
-        {/* Divider */}
-        <div className="hidden sm:block w-px h-8 bg-gray-200/60"></div>
+        <div className="flex items-center space-x-2 w-full md:w-auto min-w-0">
+          <div className="flex items-center text-xs text-slate-500 font-medium shrink-0">
+            <Filter className="w-3.5 h-3.5 mr-1 text-slate-400" /> Filter:
+          </div>
 
-        {/* Add button */}
-        <button
-          onClick={handleCreate}
-          className="flex items-center justify-center gap-2 px-6 h-10 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-xl transition-colors shadow-sm shrink-0"
-        >
-          <Plus size={15} />
-          <span>Tambah Akun Baru</span>
-        </button>
-      </div>
+          {(roleFilter !== '' || statusFilter !== '' || searchImmediate !== '') && (
+            <button
+              type="button"
+              onClick={() => {
+                setRoleFilter('');
+                setStatusFilter('');
+                setSearchImmediate('');
+              }}
+              className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0"
+              title="Reset Semua Filter"
+            >
+              <X size={12} /> Reset
+            </button>
+          )}
 
-      {/* Search bar */}
-      <div className="shrink-0">
-        <SearchAndReload
-          searchQuery={searchImmediate}
-          setSearchQuery={setSearchImmediate}
-          onReload={loadUsers}
-          loading={loading}
-          placeholder="Cari user berdasarkan nama, username, atau role..."
-        />
+          <SquareDropdown
+            options={[{ value: '', label: 'Semua Jabatan' }, ...customRoles.map(r => ({ value: r, label: r }))]}
+            value={roleFilter}
+            onChange={val => startTransition(() => setRoleFilter(val))}
+            searchPlaceholder="Cari Jabatan..."
+            widthClass="w-44"
+          />
+
+          <SquareDropdown
+            options={[{ value: '', label: 'Semua Status' }, { value: 'Aktif', label: 'Aktif' }, { value: 'Nonaktif', label: 'Nonaktif' }]}
+            value={statusFilter}
+            onChange={val => startTransition(() => setStatusFilter(val))}
+            searchPlaceholder="Cari Status..."
+            widthClass="w-36"
+          />
+
+          <button
+            onClick={handleCreate}
+            className="flex items-center justify-center gap-1.5 px-4 h-8 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg transition-colors shadow-sm shrink-0"
+          >
+            <Plus size={14} />
+            <span className="hidden sm:inline">Tambah Akun</span>
+            <span className="sm:hidden">Tambah</span>
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
