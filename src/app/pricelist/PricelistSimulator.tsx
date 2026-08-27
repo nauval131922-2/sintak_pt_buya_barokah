@@ -148,6 +148,8 @@ export default function PricelistSimulator({
 
   const [savedSimulations, setSavedSimulations] = useState<SavedSimulationItem[]>([]);
   const [simulationTitle, setSimulationTitle] = useState('');
+  const [activeSimulationId, setActiveSimulationId] = useState<string | null>(null);
+  const [activeSimulationTitle, setActiveSimulationTitle] = useState<string | null>(null);
   const [showSavedListModal, setShowSavedListModal] = useState(false);
 
   // Load saved simulations from localStorage
@@ -216,8 +218,58 @@ export default function PricelistSimulator({
     setPilihanMesin(item.pilihanMesin);
     setMarginPct(item.marginPct);
     setNegoDiskonPct(item.negoDiskonPct);
+
+    // 4. Set state tracking simulasi aktif
+    setActiveSimulationId(item.id);
+    setActiveSimulationTitle(item.title);
+    setSimulationTitle(item.title);
+
     setShowSavedListModal(false);
     toast.info(`Memuat simulasi: ${item.title}`);
+  };
+
+  const handleExitLoadedMode = () => {
+    setActiveSimulationId(null);
+    setActiveSimulationTitle(null);
+    setSimulationTitle('');
+    toast.info('Keluar dari mode riwayat simulasi.');
+  };
+
+  const handleUpdateSavedSimulation = () => {
+    if (!activeSimulationId) return;
+
+    const titleToUse = simulationTitle.trim() || activeSimulationTitle || 'Simulasi Kalender';
+    const updated = savedSimulations.map((sim) => {
+      if (sim.id === activeSimulationId) {
+        return {
+          ...sim,
+          title: titleToUse,
+          modelKalender,
+          bahan,
+          ukuran,
+          finishingJilid,
+          oplah,
+          pilihanMesin,
+          marginPct,
+          negoDiskonPct,
+          customParams: { ...customParams },
+          summary: result.summary,
+          mesinDigunakan: result.calculatedParams.mesinDigunakan,
+          savedAt: new Date().toISOString(),
+        };
+      }
+      return sim;
+    });
+
+    setSavedSimulations(updated);
+    setActiveSimulationTitle(titleToUse);
+    try {
+      localStorage.setItem('sintak_saved_simulations', JSON.stringify(updated));
+      toast.success(`Perubahan pada "${titleToUse}" berhasil diperbarui!`);
+    } catch (e) {
+      console.error('Failed to update saved simulation:', e);
+      toast.error('Gagal memperbarui simulasi tersimpan.');
+    }
   };
 
   const handleDeleteSaved = (id: string, e: React.MouseEvent) => {
@@ -317,6 +369,48 @@ export default function PricelistSimulator({
           )}
         </div>
       </div>
+
+      {/* Banner Status Mode Edit / Riwayat Dimuat */}
+      {activeSimulationId && (
+        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 bg-amber-200 text-amber-900 rounded-lg">
+              <Bookmark className="w-4 h-4 fill-amber-700" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-black uppercase tracking-wider text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded">
+                  Mode Riwayat Aktif
+                </span>
+                <h4 className="text-xs font-bold text-amber-950">
+                  {activeSimulationTitle}
+                </h4>
+              </div>
+              <p className="text-[11px] text-amber-800/90 mt-0.5">
+                Anda sedang melihat atau mengedit data dari riwayat simulasi yang dimuat.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={handleUpdateSavedSimulation}
+              className="px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
+            >
+              <BookmarkCheck size={14} />
+              <span>Simpan Perubahan</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleExitLoadedMode}
+              className="px-3 py-1.5 bg-white hover:bg-amber-100/50 text-amber-900 border border-amber-300 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center gap-1"
+            >
+              <X size={14} />
+              <span>Keluar</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main Grid: Form Inputs (Left) & Results Summary (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
@@ -743,19 +837,44 @@ export default function PricelistSimulator({
                 value={simulationTitle}
                 onChange={(e) => setSimulationTitle(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleSaveSimulation();
+                  if (e.key === 'Enter') {
+                    if (activeSimulationId) handleUpdateSavedSimulation();
+                    else handleSaveSimulation();
+                  }
                 }}
                 className="w-full px-3 py-2 text-xs font-semibold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
               />
             </div>
-            <button
-              type="button"
-              onClick={handleSaveSimulation}
-              className="flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg transition-all shadow-xs cursor-pointer shrink-0"
-            >
-              <BookmarkCheck size={15} />
-              <span>Simpan Hasil Simulasi</span>
-            </button>
+            {activeSimulationId ? (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleUpdateSavedSimulation}
+                  className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg transition-all shadow-xs cursor-pointer shrink-0"
+                >
+                  <BookmarkCheck size={15} />
+                  <span>Update Riwayat Ini</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveSimulation}
+                  className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg transition-all shadow-xs cursor-pointer shrink-0"
+                  title="Simpan sebagai riwayat baru tanpa menimpa yang lama"
+                >
+                  <Bookmark size={14} />
+                  <span>Simpan Baru</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSaveSimulation}
+                className="flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg transition-all shadow-xs cursor-pointer shrink-0"
+              >
+                <BookmarkCheck size={15} />
+                <span>Simpan Hasil Simulasi</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
