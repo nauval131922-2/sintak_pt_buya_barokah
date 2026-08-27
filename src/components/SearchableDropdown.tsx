@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
 import { ChevronDown, Search } from 'lucide-react';
 import Portal, { getZoomScale } from './Portal';
 
@@ -83,24 +83,33 @@ export default function SearchableDropdown({
 
       setOpenUpward(shouldFlipUp);
       setBottomCoord((window.innerHeight - rect.top + 4) / scale);
+
+      // Hitung posisi horizontal
+      let isRight = false;
+      const spaceRight = window.innerWidth - rect.left;
+      const spaceLeft = rect.right;
+      
+      // Jika berada di sisi kanan layar (misal sisa kanan kurang dari 450px dan kiri lebih luas), buka ke arah kiri
+      if (spaceRight < 450 && spaceLeft > spaceRight) {
+        isRight = true;
+      } else {
+        isRight = false;
+      }
+      setAlignRight(isRight);
+
       setCoords({
         top: (rect.bottom + 4) / scale,
         left: rect.left / scale,
         width: rect.width / scale,
       });
-
-      // Rata kanan jika ruang kanan lebih sempit dari ruang kiri
-      const spaceRight = window.innerWidth - rect.left;
-      const spaceLeft = rect.right;
-      const panelActualWidth = panelRef.current ? panelRef.current.offsetWidth : 360;
-
-      if (spaceRight < panelActualWidth && spaceLeft > spaceRight) {
-        setAlignRight(true);
-      } else {
-        setAlignRight(false);
-      }
     }
   }, []);
+
+  useLayoutEffect(() => {
+    if (open) {
+      updateCoords();
+    }
+  }, [open, filtered, updateCoords]);
 
   useEffect(() => {
     if (!open) return;
@@ -228,8 +237,8 @@ export default function SearchableDropdown({
         position: 'fixed',
         ...(openUpward ? { bottom: `${bottomCoord}px` } : { top: `${coords.top}px` }),
         ...(alignRight
-          ? { right: `${Math.max(12, window.innerWidth - (coords.left + coords.width))}px` }
-          : { left: `${Math.max(12, coords.left)}px` }),
+          ? { right: `${Math.max(12, (window.innerWidth - (coords.left + coords.width) * getZoomScale()) / getZoomScale())}px`, left: 'auto' }
+          : { left: `${Math.max(12, coords.left)}px`, right: 'auto' }),
         minWidth: `${coords.width}px`,
         maxWidth: 'calc(100vw - 32px)',
         zIndex: 10000
