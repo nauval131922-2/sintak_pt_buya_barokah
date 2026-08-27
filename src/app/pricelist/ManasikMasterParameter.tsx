@@ -78,40 +78,48 @@ export default function ManasikMasterParameter({
               <div className="flex justify-between items-center mb-1">
                 <label className="font-medium text-slate-700">Isi 96 Halaman (Rp/eks)</label>
                 {isFieldModified('hargaIsiKosongan96') && (
-                  <button onClick={() => handleResetField('hargaIsiKosongan96')} className="text-[10px] text-amber-600 font-bold">↺ Reset</button>
+                  <button onClick={() => handleResetField('hargaIsiKosongan96')} className="text-[10px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
+                    <RotateCcw size={9} /> Reset
+                  </button>
                 )}
               </div>
-              <ThousandInput value={customParams.hargaIsiKosongan96} onChange={(v) => handleChange('hargaIsiKosongan96', v)} className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-xs font-bold" />
+              <ThousandInput prefix="Rp" value={customParams.hargaIsiKosongan96} onValueChange={(v) => handleChange('hargaIsiKosongan96', v || 0)} className="w-full bg-white border border-slate-200 rounded-lg p-2 font-mono text-xs font-bold focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
             </div>
 
             <div>
               <div className="flex justify-between items-center mb-1">
                 <label className="font-medium text-slate-700">Isi 128 Halaman (Rp/eks)</label>
                 {isFieldModified('hargaIsiKosongan128') && (
-                  <button onClick={() => handleResetField('hargaIsiKosongan128')} className="text-[10px] text-amber-600 font-bold">↺ Reset</button>
+                  <button onClick={() => handleResetField('hargaIsiKosongan128')} className="text-[10px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
+                    <RotateCcw size={9} /> Reset
+                  </button>
                 )}
               </div>
-              <ThousandInput value={customParams.hargaIsiKosongan128} onChange={(v) => handleChange('hargaIsiKosongan128', v)} className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-xs font-bold" />
+              <ThousandInput prefix="Rp" value={customParams.hargaIsiKosongan128} onValueChange={(v) => handleChange('hargaIsiKosongan128', v || 0)} className="w-full bg-white border border-slate-200 rounded-lg p-2 font-mono text-xs font-bold focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
             </div>
 
             <div>
               <div className="flex justify-between items-center mb-1">
                 <label className="font-medium text-slate-700">Isi 192 Halaman (Rp/eks)</label>
                 {isFieldModified('hargaIsiKosongan192') && (
-                  <button onClick={() => handleResetField('hargaIsiKosongan192')} className="text-[10px] text-amber-600 font-bold">↺ Reset</button>
+                  <button onClick={() => handleResetField('hargaIsiKosongan192')} className="text-[10px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
+                    <RotateCcw size={9} /> Reset
+                  </button>
                 )}
               </div>
-              <ThousandInput value={customParams.hargaIsiKosongan192} onChange={(v) => handleChange('hargaIsiKosongan192', v)} className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-xs font-bold" />
+              <ThousandInput prefix="Rp" value={customParams.hargaIsiKosongan192} onValueChange={(v) => handleChange('hargaIsiKosongan192', v || 0)} className="w-full bg-white border border-slate-200 rounded-lg p-2 font-mono text-xs font-bold focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
             </div>
 
             <div>
               <div className="flex justify-between items-center mb-1">
                 <label className="font-medium text-slate-700">Isi 208 Halaman (Rp/eks)</label>
                 {isFieldModified('hargaIsiKosongan208') && (
-                  <button onClick={() => handleResetField('hargaIsiKosongan208')} className="text-[10px] text-amber-600 font-bold">↺ Reset</button>
+                  <button onClick={() => handleResetField('hargaIsiKosongan208')} className="text-[10px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
+                    <RotateCcw size={9} /> Reset
+                  </button>
                 )}
               </div>
-              <ThousandInput value={customParams.hargaIsiKosongan208} onChange={(v) => handleChange('hargaIsiKosongan208', v)} className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-xs font-bold" />
+              <ThousandInput prefix="Rp" value={customParams.hargaIsiKosongan208} onValueChange={(v) => handleChange('hargaIsiKosongan208', v || 0)} className="w-full bg-white border border-slate-200 rounded-lg p-2 font-mono text-xs font-bold focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
             </div>
           </div>
         </div>
@@ -126,30 +134,36 @@ export default function ManasikMasterParameter({
               <div className="flex justify-between items-center mb-1">
                 <label className="font-medium text-slate-700">Kertas AC 230 (Rp/Kg)</label>
                 {isFieldModified('tarifAc230Kg') && (
-                  <button onClick={() => handleResetField('tarifAc230Kg')} className="text-[10px] text-amber-600 font-bold">↺ Reset</button>
+                  <button onClick={() => handleResetField('tarifAc230Kg')} className="text-[10px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
+                    <RotateCcw size={9} /> Reset
+                  </button>
                 )}
               </div>
-              <ThousandInput value={customParams.tarifAc230Kg} onChange={(v) => handleChange('tarifAc230Kg', v)} className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-xs font-bold" />
+              <ThousandInput prefix="Rp" value={customParams.tarifAc230Kg} onValueChange={(v) => handleChange('tarifAc230Kg', v || 0)} className="w-full bg-white border border-slate-200 rounded-lg p-2 font-mono text-xs font-bold focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
             </div>
 
             <div>
               <div className="flex justify-between items-center mb-1">
                 <label className="font-medium text-slate-700">Print Cover POD A3+ (Rp/lbr)</label>
                 {isFieldModified('tarifPrintCoverA3') && (
-                  <button onClick={() => handleResetField('tarifPrintCoverA3')} className="text-[10px] text-amber-600 font-bold">↺ Reset</button>
+                  <button onClick={() => handleResetField('tarifPrintCoverA3')} className="text-[10px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
+                    <RotateCcw size={9} /> Reset
+                  </button>
                 )}
               </div>
-              <ThousandInput value={customParams.tarifPrintCoverA3} onChange={(v) => handleChange('tarifPrintCoverA3', v)} className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-xs font-bold" />
+              <ThousandInput prefix="Rp" value={customParams.tarifPrintCoverA3} onValueChange={(v) => handleChange('tarifPrintCoverA3', v || 0)} className="w-full bg-white border border-slate-200 rounded-lg p-2 font-mono text-xs font-bold focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
             </div>
 
             <div>
               <div className="flex justify-between items-center mb-1">
                 <label className="font-medium text-slate-700">Jasa Desain Cover (Rp)</label>
                 {isFieldModified('tarifDesainCover') && (
-                  <button onClick={() => handleResetField('tarifDesainCover')} className="text-[10px] text-amber-600 font-bold">↺ Reset</button>
+                  <button onClick={() => handleResetField('tarifDesainCover')} className="text-[10px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
+                    <RotateCcw size={9} /> Reset
+                  </button>
                 )}
               </div>
-              <ThousandInput value={customParams.tarifDesainCover} onChange={(v) => handleChange('tarifDesainCover', v)} className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-xs font-bold" />
+              <ThousandInput prefix="Rp" value={customParams.tarifDesainCover} onValueChange={(v) => handleChange('tarifDesainCover', v || 0)} className="w-full bg-white border border-slate-200 rounded-lg p-2 font-mono text-xs font-bold focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
             </div>
           </div>
         </div>
@@ -164,33 +178,39 @@ export default function ManasikMasterParameter({
               <div className="flex justify-between items-center mb-1">
                 <label className="font-medium text-slate-700">Tali Kur Leher (Rp/pcs)</label>
                 {isFieldModified('tarifTaliKurPerPcs') && (
-                  <button onClick={() => handleResetField('tarifTaliKurPerPcs')} className="text-[10px] text-amber-600 font-bold">↺ Reset</button>
+                  <button onClick={() => handleResetField('tarifTaliKurPerPcs')} className="text-[10px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
+                    <RotateCcw size={9} /> Reset
+                  </button>
                 )}
               </div>
-              <ThousandInput value={customParams.tarifTaliKurPerPcs} onChange={(v) => handleChange('tarifTaliKurPerPcs', v)} className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-xs font-bold" />
+              <ThousandInput prefix="Rp" value={customParams.tarifTaliKurPerPcs} onValueChange={(v) => handleChange('tarifTaliKurPerPcs', v || 0)} className="w-full bg-white border border-slate-200 rounded-lg p-2 font-mono text-xs font-bold focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
             </div>
 
             <div>
               <div className="flex justify-between items-center mb-1">
                 <label className="font-medium text-slate-700">Lubang Bor + Pasang Tali (Rp/pcs)</label>
                 {isFieldModified('tarifLubangBor') && (
-                  <button onClick={() => handleResetField('tarifLubangBor')} className="text-[10px] text-amber-600 font-bold">↺ Reset</button>
+                  <button onClick={() => handleResetField('tarifLubangBor')} className="text-[10px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
+                    <RotateCcw size={9} /> Reset
+                  </button>
                 )}
               </div>
-              <ThousandInput value={customParams.tarifLubangBor + customParams.tarifPasangTali} onChange={(v) => {
-                handleChange('tarifLubangBor', Math.round(v * 0.67));
-                handleChange('tarifPasangTali', Math.round(v * 0.33));
-              }} className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-xs font-bold" />
+              <ThousandInput prefix="Rp" value={customParams.tarifLubangBor + customParams.tarifPasangTali} onValueChange={(v) => {
+                handleChange('tarifLubangBor', Math.round((v || 0) * 0.67));
+                handleChange('tarifPasangTali', Math.round((v || 0) * 0.33));
+              }} className="w-full bg-white border border-slate-200 rounded-lg p-2 font-mono text-xs font-bold focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
             </div>
 
             <div>
               <div className="flex justify-between items-center mb-1">
                 <label className="font-medium text-slate-700">Plastik OPP Satuan (Rp/pack 100)</label>
                 {isFieldModified('tarifPlastikOppPack') && (
-                  <button onClick={() => handleResetField('tarifPlastikOppPack')} className="text-[10px] text-amber-600 font-bold">↺ Reset</button>
+                  <button onClick={() => handleResetField('tarifPlastikOppPack')} className="text-[10px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
+                    <RotateCcw size={9} /> Reset
+                  </button>
                 )}
               </div>
-              <ThousandInput value={customParams.tarifPlastikOppPack} onChange={(v) => handleChange('tarifPlastikOppPack', v)} className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-xs font-bold" />
+              <ThousandInput prefix="Rp" value={customParams.tarifPlastikOppPack} onValueChange={(v) => handleChange('tarifPlastikOppPack', v || 0)} className="w-full bg-white border border-slate-200 rounded-lg p-2 font-mono text-xs font-bold focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
             </div>
           </div>
         </div>
