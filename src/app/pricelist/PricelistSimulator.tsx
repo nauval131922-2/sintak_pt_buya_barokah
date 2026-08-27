@@ -656,30 +656,6 @@ export default function PricelistSimulator({
             </div>
           </div>
 
-          {/* Fitur Simpan Hasil Simulasi */}
-          <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-            <div className="flex-1 relative">
-              <input
-                type="text"
-                placeholder={`Beri nama/catatan (misal: Pesanan Yayasan Al-Ihsan ${oplah.toLocaleString('id-ID')} pcs)...`}
-                value={simulationTitle}
-                onChange={(e) => setSimulationTitle(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleSaveSimulation();
-                }}
-                className="w-full px-3 py-2 text-xs font-semibold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={handleSaveSimulation}
-              className="flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg transition-all shadow-xs cursor-pointer shrink-0"
-            >
-              <BookmarkCheck size={15} />
-              <span>Simpan Hasil Simulasi</span>
-            </button>
-          </div>
-
           {/* Rincian 11 Komponen Biaya Produksi */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col flex-1">
             <div className="px-4 py-3 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
@@ -745,6 +721,30 @@ export default function PricelistSimulator({
                 </tfoot>
               </table>
             </div>
+          </div>
+
+          {/* Fitur Simpan Hasil Simulasi */}
+          <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                placeholder={`Beri nama/catatan (misal: Pesanan Yayasan Al-Ihsan ${oplah.toLocaleString('id-ID')} pcs)...`}
+                value={simulationTitle}
+                onChange={(e) => setSimulationTitle(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSaveSimulation();
+                }}
+                className="w-full px-3 py-2 text-xs font-semibold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleSaveSimulation}
+              className="flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg transition-all shadow-xs cursor-pointer shrink-0"
+            >
+              <BookmarkCheck size={15} />
+              <span>Simpan Hasil Simulasi</span>
+            </button>
           </div>
         </div>
       </div>
