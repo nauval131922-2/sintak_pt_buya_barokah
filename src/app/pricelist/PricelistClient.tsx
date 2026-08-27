@@ -351,6 +351,7 @@ export default function PricelistClient() {
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
               }`}
             >
+              <Layers size={14} className="text-emerald-700" />
               <span>Kalender 2027</span>
             </button>
 
@@ -363,6 +364,7 @@ export default function PricelistClient() {
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
               }`}
             >
+              <BookOpen size={14} className="text-emerald-600" />
               <span>Buku Manasik Haji</span>
             </button>
 
@@ -375,6 +377,7 @@ export default function PricelistClient() {
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
               }`}
             >
+              <BookOpen size={14} className="text-emerald-600" />
               <span>Buku Surat Yasin</span>
             </button>
           </div>
@@ -435,6 +438,7 @@ export default function PricelistClient() {
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
               }`}
             >
+              <Layers size={14} className="text-emerald-700" />
               <span>Kalender 2027</span>
             </button>
 
@@ -447,6 +451,7 @@ export default function PricelistClient() {
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
               }`}
             >
+              <BookOpen size={14} className="text-emerald-600" />
               <span>Buku Manasik Haji</span>
             </button>
 
@@ -459,6 +464,7 @@ export default function PricelistClient() {
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
               }`}
             >
+              <BookOpen size={14} className="text-emerald-600" />
               <span>Buku Surat Yasin</span>
             </button>
           </div>
