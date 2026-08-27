@@ -145,7 +145,7 @@ export default function SquareDropdown({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={searchPlaceholder}
-            className="flex-1 text-[11px] font-medium bg-transparent outline-none text-slate-700 placeholder:text-slate-400 min-w-0"
+            className="flex-1 text-xs font-semibold bg-transparent outline-none text-slate-700 placeholder:text-slate-400 min-w-0"
           />
         </div>
       </div>
@@ -165,7 +165,7 @@ export default function SquareDropdown({
                 setOpen(false);
                 setSearch('');
               }}
-              className={`w-full flex items-center justify-between px-3 py-2 text-[11px] font-semibold transition-colors ${
+              className={`w-full flex items-center justify-between px-3 py-2 text-xs font-semibold transition-colors ${
                 value === opt.value
                   ? 'bg-emerald-50 text-emerald-700'
                   : 'text-slate-700 hover:bg-slate-50'
@@ -189,10 +189,10 @@ export default function SquareDropdown({
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className={`w-full flex items-center justify-between gap-1 px-2 py-1 text-[11px] font-medium rounded-lg focus:outline-none transition-all min-w-0 ${
+        className={`w-full flex items-center justify-between gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg focus:outline-none transition-all min-w-0 ${
           isActive
             ? 'bg-emerald-50 border-2 border-emerald-600 text-emerald-800 font-bold shadow-xs shadow-emerald-100'
-            : 'bg-slate-50 border border-slate-200 text-slate-700 hover:bg-white hover:border-slate-300'
+            : 'bg-slate-50 border border-slate-200 text-slate-700 hover:bg-white hover:border-slate-300 font-semibold'
         }`}
       >
         <span className="truncate min-w-0 flex-1 text-left flex items-center gap-1">

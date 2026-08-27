@@ -342,20 +342,22 @@ export default function PricelistClient() {
         </div>
 
         {/* Global Product Category Selector - Dropdown Searchable */}
-        <div className="flex items-center gap-2 mx-2 self-start lg:self-auto shrink-0 z-50">
+        <div className="flex items-center gap-2 mx-2 self-start lg:self-auto shrink-0 z-50 text-xs sm:text-sm">
           <span className="text-xs font-semibold text-slate-500 hidden sm:inline">Jenis Produk:</span>
-          <SquareDropdown
-            options={[
-              { value: 'Kalender', label: '🗓️ Kalender 2027' },
-              { value: 'Buku Manasik', label: '📖 Buku Manasik Haji' },
-              { value: 'Buku Yasin', label: '📗 Buku Surat Yasin' },
-            ]}
-            value={selectedProductCategory}
-            onChange={(val) => handleProductCategoryChange(val as any)}
-            searchPlaceholder="Cari jenis produk..."
-            widthClass="w-52"
-            alignRight
-          />
+          <div className="text-xs sm:text-sm font-semibold">
+            <SquareDropdown
+              options={[
+                { value: 'Kalender', label: '🗓️ Kalender 2027' },
+                { value: 'Buku Manasik', label: '📖 Buku Manasik Haji' },
+                { value: 'Buku Yasin', label: '📗 Buku Surat Yasin' },
+              ]}
+              value={selectedProductCategory}
+              onChange={(val) => handleProductCategoryChange(val as any)}
+              searchPlaceholder="Cari jenis produk..."
+              widthClass="w-56"
+              alignRight
+            />
+          </div>
         </div>
       </div>
 
