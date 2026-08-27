@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import DatePicker from '@/components/DatePicker';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import DateRangeCard from '@/components/DateRangeCard';
 
 import { formatLastUpdate } from '@/lib/date-utils';
 import { formatScrapedPeriodDate, getDefaultScraperDateRange, persistScraperPeriod, hydrateScraperPeriod } from '@/lib/scraper-period';
@@ -336,7 +335,7 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
   return (
     <div className="w-full flex-1 min-h-0 overflow-hidden flex flex-col gap-3 animate-in fade-in duration-500">
       {/* Control Bar */}
-      <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg shadow-gray-900/5 p-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+      <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg shadow-gray-900/5 p-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 relative z-30">
         <div className="flex items-center gap-2 flex-1">
           <DatePicker name="startDate" value={startDate} onChange={setStartDate} />
           <div className="w-2 h-px bg-gray-300 shrink-0"></div>
