@@ -47,7 +47,6 @@ import {
 } from "recharts";
 import TableFooter from "@/components/TableFooter";
 import Portal, { getZoomScale } from "@/components/Portal";
-import SearchableDropdown from "@/components/SearchableDropdown";
 import SquareDropdown from "@/components/SquareDropdown";
 import DatePicker from "@/components/DatePicker";
 import { toast } from "@/lib/toast";
