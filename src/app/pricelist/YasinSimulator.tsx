@@ -315,19 +315,6 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
         <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
-            onClick={() => setShowSavedListModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer"
-          >
-            <Bookmark size={13} />
-            <span>Riwayat Disimpan</span>
-            {savedSimulations.length > 0 && (
-              <span className="ml-1 px-1.5 py-0.2 bg-emerald-700 text-white rounded-full text-[10px] font-bold">
-                {savedSimulations.length}
-              </span>
-            )}
-          </button>
-          <button
-            type="button"
             onClick={handleCopyQuote}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 rounded-lg shadow-2xs transition cursor-pointer"
           >
