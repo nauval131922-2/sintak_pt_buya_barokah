@@ -457,6 +457,16 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                       </tr>
                     );
                   })}
+                  {/* Total Row */}
+                  <tr className="bg-slate-50 font-bold border-t border-slate-200">
+                    <td className="py-2.5 px-3 text-center text-slate-400 font-mono text-[11px]">-</td>
+                    <td className="py-2.5 px-3 text-slate-800 text-xs">Total Biaya Produksi (HPP)</td>
+                    <td className="py-2.5 px-3 hidden sm:table-cell text-slate-400 text-[11px]">Akumulasi seluruh biaya produksi</td>
+                    <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-xs">
+                      Rp {result.summary.totalHpp.toLocaleString('id-ID')}
+                    </td>
+                    <td className="py-2.5 px-3 text-right font-mono text-slate-600 text-[11px]">100.0%</td>
+                  </tr>
                 </tbody>
               </table>
             </div>

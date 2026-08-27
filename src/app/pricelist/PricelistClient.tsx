@@ -94,10 +94,25 @@ export default function PricelistClient() {
       if (savedView === 'matrix' || savedView === 'table') {
         setViewMode(savedView);
       }
+
+      const savedCategory = localStorage.getItem('sintak_pricelist_selected_category');
+      if (savedCategory === 'Kalender' || savedCategory === 'Buku Manasik' || savedCategory === 'Buku Yasin') {
+        setSelectedProductCategory(savedCategory);
+      }
     } catch (e) {
       console.error('Failed to load localStorage preferences:', e);
     }
   }, []);
+
+  // Sync selectedProductCategory across tabs
+  const handleProductCategoryChange = (category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin') => {
+    setSelectedProductCategory(category);
+    try {
+      localStorage.setItem('sintak_pricelist_selected_category', category);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedJenis, setSelectedJenis] = useState<string>('ALL');
@@ -329,7 +344,7 @@ export default function PricelistClient() {
           <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl w-fit border border-slate-200">
             <button
               type="button"
-              onClick={() => setSelectedProductCategory('Kalender')}
+              onClick={() => handleProductCategoryChange('Kalender')}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 selectedProductCategory === 'Kalender'
                   ? 'bg-white text-emerald-800 shadow-xs border border-slate-200/80'
@@ -341,7 +356,7 @@ export default function PricelistClient() {
 
             <button
               type="button"
-              onClick={() => setSelectedProductCategory('Buku Manasik')}
+              onClick={() => handleProductCategoryChange('Buku Manasik')}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 selectedProductCategory === 'Buku Manasik'
                   ? 'bg-white text-emerald-800 shadow-xs border border-slate-200/80'
@@ -353,7 +368,7 @@ export default function PricelistClient() {
 
             <button
               type="button"
-              onClick={() => setSelectedProductCategory('Buku Yasin')}
+              onClick={() => handleProductCategoryChange('Buku Yasin')}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 selectedProductCategory === 'Buku Yasin'
                   ? 'bg-white text-emerald-800 shadow-xs border border-slate-200/80'
@@ -413,7 +428,7 @@ export default function PricelistClient() {
           <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl w-fit border border-slate-200">
             <button
               type="button"
-              onClick={() => setSelectedProductCategory('Kalender')}
+              onClick={() => handleProductCategoryChange('Kalender')}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 selectedProductCategory === 'Kalender'
                   ? 'bg-white text-emerald-800 shadow-xs border border-slate-200/80'
@@ -425,7 +440,7 @@ export default function PricelistClient() {
 
             <button
               type="button"
-              onClick={() => setSelectedProductCategory('Buku Manasik')}
+              onClick={() => handleProductCategoryChange('Buku Manasik')}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 selectedProductCategory === 'Buku Manasik'
                   ? 'bg-white text-emerald-800 shadow-xs border border-slate-200/80'
@@ -437,7 +452,7 @@ export default function PricelistClient() {
 
             <button
               type="button"
-              onClick={() => setSelectedProductCategory('Buku Yasin')}
+              onClick={() => handleProductCategoryChange('Buku Yasin')}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 selectedProductCategory === 'Buku Yasin'
                   ? 'bg-white text-emerald-800 shadow-xs border border-slate-200/80'
