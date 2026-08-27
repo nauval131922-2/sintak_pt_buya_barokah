@@ -86,7 +86,7 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dropdownPanelRef = useRef<HTMLDivElement>(null);
 
-  const openDropdown = useCallback(() => {
+  const updateDropdownPos = useCallback(() => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       const scale = getZoomScale();
@@ -102,8 +102,23 @@ export default function UserFormModal({ user, customRoles = [], currentUserId, o
         openUpward,
       });
     }
-    setIsRoleDropdownOpen(true);
   }, []);
+
+  const openDropdown = useCallback(() => {
+    updateDropdownPos();
+    setIsRoleDropdownOpen(true);
+  }, [updateDropdownPos]);
+
+  useEffect(() => {
+    if (!isRoleDropdownOpen) return;
+    updateDropdownPos();
+    window.addEventListener('scroll', updateDropdownPos, true);
+    window.addEventListener('resize', updateDropdownPos);
+    return () => {
+      window.removeEventListener('scroll', updateDropdownPos, true);
+      window.removeEventListener('resize', updateDropdownPos);
+    };
+  }, [isRoleDropdownOpen, updateDropdownPos]);
 
   const closeDropdown = useCallback(() => {
     setIsRoleDropdownOpen(false);
