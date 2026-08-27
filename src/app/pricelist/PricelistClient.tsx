@@ -314,6 +314,19 @@ export default function PricelistClient() {
         <div className="flex gap-2 sm:gap-6 px-2 flex-wrap sm:flex-nowrap">
           <button
             type="button"
+            onClick={() => setActiveTab('saved')}
+            className={`flex items-center justify-center gap-1.5 pb-2 px-2 text-[13px] font-bold border-b-2 transition-all cursor-pointer ${
+              activeTab === 'saved'
+                ? 'border-emerald-600 text-emerald-700'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Bookmark size={14} />
+            <span>Daftar Kalkulasi</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab('parameter')}
             className={`flex items-center justify-center gap-1.5 pb-2 px-2 text-[13px] font-bold border-b-2 transition-all cursor-pointer ${
               activeTab === 'parameter'
@@ -349,19 +362,6 @@ export default function PricelistClient() {
           >
             <FileSpreadsheet size={14} />
             <span>Pricelist</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('saved')}
-            className={`flex items-center justify-center gap-1.5 pb-2 px-2 text-[13px] font-bold border-b-2 transition-all cursor-pointer ${
-              activeTab === 'saved'
-                ? 'border-emerald-600 text-emerald-700'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <Bookmark size={14} />
-            <span>Daftar Kalkulasi</span>
           </button>
         </div>
 

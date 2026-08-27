@@ -534,8 +534,8 @@ export default function SavedCalculationsList({
                       onClick={() => onLoadSimulation(item)}
                       className="flex items-center gap-1 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold transition shadow-xs cursor-pointer"
                     >
-                      <Play size={12} className="fill-white" />
-                      <span>Muat Simulator</span>
+                      <Edit2 size={12} />
+                      <span>Edit</span>
                     </button>
                   </div>
                 </div>
