@@ -1105,70 +1105,8 @@ export default function TrackingClient() {
 
       {/* RESULTS SECTION */}
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
-        {/* Header */}
-        <div className="flex flex-col gap-4 shrink-0 px-1">
-          <div className="flex items-center justify-between gap-4 min-h-[32px]">
-            <h3 className="text-[14px] font-bold text-gray-800 flex items-center gap-3 leading-none overflow-hidden pr-4">
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm shrink-0">
-                <Clock size={16} />
-              </div>
-              <span className="shrink-0">Visualisasi Alur Manufaktur</span>
-              {(selectedSupplier || selectedPO || selectedFaktur) && (
-                <div className="flex items-center gap-3 ml-2 pl-4 border-l border-gray-100 text-[11px] text-gray-400 font-medium min-w-0 overflow-hidden">
-                  {trackingPath === "bom" ? (
-                    <>
-                      <span className="shrink-0">BOM:</span>
-                      <span
-                        title={
-                          selectedFaktur
-                            ? `[${selectedFaktur}] ${selectedNama}`
-                            : ""
-                        }
-                        className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-100 truncate max-w-[400px] font-bold"
-                      >
-                        [{selectedFaktur}] {selectedNama}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="shrink-0">Supplier:</span>
-                      <span className="bg-gray-50 text-gray-700 px-2 py-0.5 rounded border border-gray-100 shrink-0 font-bold">
-                        {selectedSupplier || "-"}
-                      </span>
-                      <span className="shrink-0 ml-1">PO:</span>
-                      <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-100 shrink-0 font-bold">
-                        {selectedPO || "-"}
-                      </span>
-                      <span className="shrink-0 ml-1 text-gray-300">|</span>
-                      <span className="shrink-0">Barang:</span>
-                      <span
-                        title={
-                          selectedFaktur
-                            ? `[${selectedFaktur}] ${selectedNama}`
-                            : ""
-                        }
-                        className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-100 truncate max-w-[400px] font-bold"
-                      >
-                        {selectedFaktur
-                          ? `[${selectedFaktur}] ${selectedNama}`
-                          : "-"}
-                      </span>
-                      <span className="shrink-0 ml-1 text-gray-300">|</span>
-                      <span className="shrink-0">
-                        Periode: {formatPeriod()}
-                      </span>
-                    </>
-                  )}
-                </div>
-              )}
-            </h3>
-            {isAutoRefreshing && (
-              <div className="flex items-center gap-3 text-[11px] font-bold text-emerald-600 animate-pulse bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm leading-none">
-                <Loader2 size={12} className="animate-spin" />
-                <span>Memproses Data...</span>
-              </div>
-            )}
-          </div>
+        {/* Search and reload bar */}
+        <div className="shrink-0">
           <SearchAndReload
             searchQuery={filterText}
             setSearchQuery={setFilterText}
