@@ -74,6 +74,10 @@ interface PricelistSimulatorProps {
   finishingJilid: 'Spiral' | 'Klem';
   onChangeFinishingJilid: (mode: 'Spiral' | 'Klem') => void;
   onOpenMasterParam?: () => void;
+  activeSimulationId?: string | null;
+  setActiveSimulationId?: (id: string | null) => void;
+  activeSimulationTitle?: string | null;
+  setActiveSimulationTitle?: (title: string | null) => void;
 }
 
 export default function PricelistSimulator({
@@ -83,6 +87,10 @@ export default function PricelistSimulator({
   finishingJilid,
   onChangeFinishingJilid,
   onOpenMasterParam,
+  activeSimulationId: propActiveSimId,
+  setActiveSimulationId: propSetActiveSimId,
+  activeSimulationTitle: propActiveSimTitle,
+  setActiveSimulationTitle: propSetActiveSimTitle,
 }: PricelistSimulatorProps) {
   const [showSimulatorManual, setShowSimulatorManual] = useState(false);
 
@@ -148,8 +156,22 @@ export default function PricelistSimulator({
 
   const [savedSimulations, setSavedSimulations] = useState<SavedSimulationItem[]>([]);
   const [simulationTitle, setSimulationTitle] = useState('');
-  const [activeSimulationId, setActiveSimulationId] = useState<string | null>(null);
-  const [activeSimulationTitle, setActiveSimulationTitle] = useState<string | null>(null);
+  const [internalActiveId, setInternalActiveId] = useState<string | null>(null);
+  const [internalActiveTitle, setInternalActiveTitle] = useState<string | null>(null);
+
+  const activeSimulationId = propActiveSimId !== undefined ? propActiveSimId : internalActiveId;
+  const activeSimulationTitle = propActiveSimTitle !== undefined ? propActiveSimTitle : internalActiveTitle;
+
+  const setActiveSimulationId = (id: string | null) => {
+    if (propSetActiveSimId) propSetActiveSimId(id);
+    else setInternalActiveId(id);
+  };
+
+  const setActiveSimulationTitle = (title: string | null) => {
+    if (propSetActiveSimTitle) propSetActiveSimTitle(title);
+    else setInternalActiveTitle(title);
+  };
+
   const [showSavedListModal, setShowSavedListModal] = useState(false);
 
   // Load saved simulations from localStorage

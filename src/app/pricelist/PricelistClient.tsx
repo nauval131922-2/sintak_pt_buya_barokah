@@ -51,6 +51,10 @@ export default function PricelistClient() {
   const [paramsSpiral, setParamsSpiral] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS);
   const [paramsKlem, setParamsKlem] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS_KLEM);
 
+  // Active loaded simulation state (persisted across tabs)
+  const [activeSimulationId, setActiveSimulationId] = useState<string | null>(null);
+  const [activeSimulationTitle, setActiveSimulationTitle] = useState<string | null>(null);
+
   // Load preferences from localStorage after mount (client-only) to prevent hydration mismatch
   useEffect(() => {
     try {
@@ -331,6 +335,10 @@ export default function PricelistClient() {
             finishingJilid={selectedFinishing}
             onChangeFinishingJilid={setSelectedFinishing}
             onOpenMasterParam={() => setActiveTab('parameter')}
+            activeSimulationId={activeSimulationId}
+            setActiveSimulationId={setActiveSimulationId}
+            activeSimulationTitle={activeSimulationTitle}
+            setActiveSimulationTitle={setActiveSimulationTitle}
           />
         </div>
       ) : (
