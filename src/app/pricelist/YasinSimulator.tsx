@@ -124,26 +124,26 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
   return (
     <div className="space-y-6">
       {/* Header Info */}
-      <div className="p-4 bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60 rounded-xl flex items-center justify-between">
+      <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex items-center justify-between shadow-2xs">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-indigo-600 text-white rounded-lg shadow-sm">
+          <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
             <BookOpen className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-              Simulator Buku Surat Yasin & Tahlil
-              <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-medium">
+            <h3 className="font-bold text-sm sm:text-base text-emerald-950 flex items-center gap-2">
+              Simulator & Kalkulator Buku Surat Yasin & Tahlil
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
                 Katalog 02
               </span>
             </h3>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+            <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
               Kalkulasi HPP Softcover & Hardcover lengkap dengan sisipan foto almarhum, doa keluarga, dan foil gembos emas.
             </p>
           </div>
         </div>
         <button
           onClick={handleCopyQuote}
-          className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-white dark:bg-zinc-800 text-indigo-700 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700 rounded-lg hover:bg-indigo-50 shadow-sm transition"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 rounded-lg shadow-2xs transition cursor-pointer"
         >
           {copiedQuote ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
           {copiedQuote ? 'Tersalin' : 'Salin Penawaran WA'}
@@ -357,53 +357,80 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
 
         {/* Kolom Kanan: Rincian Kalkulasi & Breakdown */}
         <div className="lg:col-span-7 space-y-5">
-          {/* Card Hasil Ringkasan */}
-          <div className="bg-gradient-to-br from-indigo-700 via-indigo-800 to-slate-900 text-white rounded-xl p-6 shadow-md">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          {/* Card Hasil Ringkasan - Soft Style Presisi */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {/* HPP Modal Card */}
+            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-slate-500 mb-1">
+                <span className="text-[11px] font-semibold">HPP Modal</span>
+                <DollarSign size={13} className="text-slate-400" />
+              </div>
               <div>
-                <div className="text-indigo-200 text-xs font-medium">HPP Satuan</div>
-                <div className="text-2xl font-bold mt-1">
+                <span className="text-base sm:text-lg font-black text-slate-800 font-mono">
                   Rp {result.summary.hppPerPcs.toLocaleString('id-ID')}
-                </div>
-                <div className="text-xs text-indigo-300 mt-0.5">
-                  Total: Rp {result.summary.totalHpp.toLocaleString('id-ID')}
-                </div>
-              </div>
-
-              <div>
-                <div className="text-indigo-200 text-xs font-medium">Harga Jual Satuan</div>
-                <div className="text-2xl font-bold mt-1">
-                  Rp {result.summary.hargaJualPerPcs.toLocaleString('id-ID')}
-                </div>
-                <div className="text-xs text-indigo-300 mt-0.5">
-                  Margin: {marginPct}% (+Rp {result.summary.marginNominalPerPcs.toLocaleString('id-ID')})
-                </div>
-              </div>
-
-              <div className="col-span-2 sm:col-span-1 border-t sm:border-t-0 sm:border-l border-indigo-500/40 pt-3 sm:pt-0 sm:pl-4">
-                <div className="text-indigo-200 text-xs font-medium">Total Nilai Order</div>
-                <div className="text-2xl font-black mt-1 text-yellow-300">
-                  Rp {(negoDiskonPct > 0 ? result.summary.totalHargaNego : result.summary.totalHargaJual).toLocaleString('id-ID')}
-                </div>
-                <div className="text-xs text-indigo-300 mt-0.5">
-                  Profit: Rp {(negoDiskonPct > 0 ? result.summary.totalProfitNego : result.summary.totalProfit).toLocaleString('id-ID')}
-                </div>
+                </span>
+                <span className="block text-[10px] text-slate-400 mt-0.5">Biaya modal per unit</span>
               </div>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-indigo-500/40 flex flex-wrap items-center justify-between text-xs text-indigo-200 gap-2">
-              <div>
-                <span className="opacity-80">Format: </span>
-                <span className="font-semibold">{tipeCover} ({ukuran} cm)</span>
+            {/* Harga Jual Card */}
+            <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-emerald-800 mb-1">
+                <span className="text-[11px] font-bold">Harga Jual (+{marginPct}%)</span>
+                <TrendingUp size={13} className="text-emerald-600" />
               </div>
               <div>
-                <span className="opacity-80">Punggung: </span>
-                <span className="font-semibold">{result.tebalPunggungCm} cm</span>
+                <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
+                  Rp {result.summary.hargaJualPerPcs.toLocaleString('id-ID')}
+                </span>
+                <span className="block text-[10px] text-emerald-700/80 mt-0.5">Rekomendasi harga</span>
+              </div>
+            </div>
+
+            {/* Harga Nego Card */}
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-xl border border-blue-200 p-3.5 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-blue-800 mb-1">
+                <span className="text-[11px] font-bold">Harga Nego (-{negoDiskonPct}%)</span>
+                <Percent size={13} className="text-blue-600" />
               </div>
               <div>
-                <span className="opacity-80">Kebutuhan Cover: </span>
-                <span className="font-semibold">{result.kebutuhanA3Cover} Lbr A3+</span>
+                <span className="text-base sm:text-lg font-black text-blue-800 font-mono">
+                  Rp {result.summary.hargaNegoPerPcs.toLocaleString('id-ID')}
+                </span>
+                <span className="block text-[10px] text-blue-700/80 mt-0.5">Batas aman diskon</span>
               </div>
+            </div>
+
+            {/* Estimasi Profit Card */}
+            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-slate-500 mb-1">
+                <span className="text-[11px] font-semibold">Total Profit</span>
+                <TrendingUp size={13} className="text-emerald-500" />
+              </div>
+              <div>
+                <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">
+                  Rp {(negoDiskonPct > 0 ? result.summary.totalProfitNego : result.summary.totalProfit).toLocaleString('id-ID')}
+                </span>
+                <span className="block text-[10px] text-slate-500 mt-0.5">
+                  Omset: Rp {(negoDiskonPct > 0 ? result.summary.totalHargaNego : result.summary.totalHargaJual).toLocaleString('id-ID')}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Info Teknis Bar */}
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-wrap items-center justify-between text-xs text-slate-600 gap-2">
+            <div>
+              <span className="text-slate-400">Format: </span>
+              <span className="font-semibold text-slate-800">{tipeCover} ({ukuran} cm)</span>
+            </div>
+            <div>
+              <span className="text-slate-400">Punggung: </span>
+              <span className="font-semibold text-slate-800">{result.tebalPunggungCm} cm</span>
+            </div>
+            <div>
+              <span className="text-slate-400">Kebutuhan Cover: </span>
+              <span className="font-semibold text-slate-800">{result.kebutuhanA3Cover} Lbr A3+</span>
             </div>
           </div>
 

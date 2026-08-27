@@ -17,8 +17,12 @@ import {
 import PricelistExcelUpload from './PricelistExcelUpload';
 import PricelistSimulator from './PricelistSimulator';
 import PricelistMasterParameter from './PricelistMasterParameter';
+import ManasikMasterParameter from './ManasikMasterParameter';
+import YasinMasterParameter from './YasinMasterParameter';
 import SquareDropdown from '@/components/SquareDropdown';
 import { DEFAULT_MASTER_PARAMS, DEFAULT_MASTER_PARAMS_KLEM, SimulatorMasterParams } from '@/lib/pricelist-simulator';
+import { DEFAULT_MANASIK_PARAMS, ManasikMasterParams } from '@/lib/manasik-calculator';
+import { DEFAULT_YASIN_PARAMS, YasinMasterParams } from '@/lib/yasin-calculator';
 import { recalculatePricelistFromParams } from '@/lib/pricelist-calculator';
 
 interface PricelistItem {
@@ -47,7 +51,10 @@ export default function PricelistClient() {
   const [activeTab, setActiveTab] = useState<'parameter' | 'simulator' | 'matrix'>('parameter');
   const [selectedFinishing, setSelectedFinishing] = useState<'Spiral' | 'Klem'>('Spiral');
 
-  // Profil parameter terpisah per mode finishing (Spiral & Klem punya tarif acuan berbeda)
+  // Parameter Buku Manasik & Yasin
+  const [paramsManasik, setParamsManasik] = useState<ManasikMasterParams>(DEFAULT_MANASIK_PARAMS);
+  const [paramsYasin, setParamsYasin] = useState<YasinMasterParams>(DEFAULT_YASIN_PARAMS);
+  const [selectedProductCategory, setSelectedProductCategory] = useState<'Kalender' | 'Buku Manasik' | 'Buku Yasin'>('Kalender');
   const [paramsSpiral, setParamsSpiral] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS);
   const [paramsKlem, setParamsKlem] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS_KLEM);
 
@@ -320,16 +327,67 @@ export default function PricelistClient() {
       </div>
 
       {activeTab === 'parameter' ? (
-        <div className="flex-1 overflow-y-auto pr-1">
-          <PricelistMasterParameter
-            customParams={customParams}
-            setCustomParams={setCustomParams}
-            activeFinishing={selectedFinishing}
-            onChangeFinishing={setSelectedFinishing}
-            activeSimulationId={activeSimulationId}
-            activeSimulationTitle={activeSimulationTitle}
-            onBackToSimulator={() => setActiveTab('simulator')}
-          />
+        <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-4">
+          {/* Selector Kategori Produk Master Parameter */}
+          <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-zinc-800 rounded-xl w-fit border border-slate-200 dark:border-zinc-700">
+            <button
+              type="button"
+              onClick={() => setSelectedProductCategory('Kalender')}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                selectedProductCategory === 'Kalender'
+                  ? 'bg-white dark:bg-zinc-900 text-emerald-800 dark:text-emerald-400 shadow-xs border border-slate-200/80 dark:border-zinc-700'
+                  : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 hover:bg-slate-200/50'
+              }`}
+            >
+              <span>Kalender 2027</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSelectedProductCategory('Buku Manasik')}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                selectedProductCategory === 'Buku Manasik'
+                  ? 'bg-white dark:bg-zinc-900 text-emerald-800 dark:text-emerald-400 shadow-xs border border-slate-200/80 dark:border-zinc-700'
+                  : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 hover:bg-slate-200/50'
+              }`}
+            >
+              <span>Buku Manasik Haji</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSelectedProductCategory('Buku Yasin')}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                selectedProductCategory === 'Buku Yasin'
+                  ? 'bg-white dark:bg-zinc-900 text-emerald-800 dark:text-emerald-400 shadow-xs border border-slate-200/80 dark:border-zinc-700'
+                  : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 hover:bg-slate-200/50'
+              }`}
+            >
+              <span>Buku Surat Yasin</span>
+            </button>
+          </div>
+
+          {selectedProductCategory === 'Buku Manasik' ? (
+            <ManasikMasterParameter
+              customParams={paramsManasik}
+              setCustomParams={setParamsManasik}
+            />
+          ) : selectedProductCategory === 'Buku Yasin' ? (
+            <YasinMasterParameter
+              customParams={paramsYasin}
+              setCustomParams={setParamsYasin}
+            />
+          ) : (
+            <PricelistMasterParameter
+              customParams={customParams}
+              setCustomParams={setCustomParams}
+              activeFinishing={selectedFinishing}
+              onChangeFinishing={setSelectedFinishing}
+              activeSimulationId={activeSimulationId}
+              activeSimulationTitle={activeSimulationTitle}
+              onBackToSimulator={() => setActiveTab('simulator')}
+            />
+          )}
         </div>
       ) : activeTab === 'simulator' ? (
         <div className="flex-1 overflow-y-auto pr-1">
