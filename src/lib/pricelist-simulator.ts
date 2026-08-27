@@ -148,6 +148,8 @@ export interface SimulatorOutput {
     gsm: number;
     planoUkuran: string;
     planoPotong: number;
+    totalPlanoDibutuhkan: number;
+    kebutuhanRimPlano: number;
     areaCetak: number;
     insheet: number;
     biayaPlatUnit: number;
@@ -397,6 +399,8 @@ export function calculatePricelistSimulator(input: SimulatorInput): SimulatorOut
       gsm,
       planoUkuran: `${planoLebar} x ${planoPanjang}`,
       planoPotong,
+      totalPlanoDibutuhkan,
+      kebutuhanRimPlano: totalPlanoDibutuhkan / (params.lembarPerRim || 500),
       areaCetak,
       insheet,
       biayaPlatUnit,
