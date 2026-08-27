@@ -46,13 +46,13 @@ function entry(
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   // ─── Pricelist Kalender ───
-  'pricelist-2026-08-28': entry({
+  'pricelist-2026-08-27': entry({
     pageKey: 'pricelist',
     title: 'Pricelist & Simulator Multi-Produk',
     permissionKeys: ['pricelist_kalkulasi'],
-    sortDate: '2026-08-28',
-    date: '28 Agu 2026',
-    version: '2026-08-28-1',
+    sortDate: '2026-08-27',
+    date: '27 Agu 2026',
+    version: '2026-08-27-1',
     items: [
       'Penambahan modul Brosur 2026 (📋 Brosur Art Paper 120gsm) — 5 ukuran (10,5×21 s.d 29,7×42), 2 muka (1/2 Muka), 2 mesin (Print Inter & Oliver), tier oplah 100–3000 pcs',
       'Simulator Brosur: form input lengkap (ukuran, muka, mesin, laminasi, sisir, packing), 4 kartu finansial (HPP, Harga Jual, Nego, Total), tabel breakdown komponen HPP, tombol salin penawaran WA',
