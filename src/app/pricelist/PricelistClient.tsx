@@ -388,24 +388,36 @@ export default function PricelistClient() {
         </div>
       ) : activeTab === 'simulator' ? (
         <div className="flex-1 overflow-y-auto pr-1">
-          <PricelistSimulator
-            customParams={customParams}
-            setCustomParams={setCustomParams}
-            setParamsForFinishing={setParamsForFinishing}
-            finishingJilid={selectedFinishing}
-            onChangeFinishingJilid={setSelectedFinishing}
-            onOpenMasterParam={() => setActiveTab('parameter')}
-            activeSimulationId={activeSimulationId}
-            setActiveSimulationId={setActiveSimulationId}
-            activeSimulationTitle={activeSimulationTitle}
-            setActiveSimulationTitle={setActiveSimulationTitle}
-            paramsSpiral={paramsSpiral}
-            paramsKlem={paramsKlem}
-            backupParamsSpiral={backupParamsSpiral}
-            setBackupParamsSpiral={setBackupParamsSpiral}
-            backupParamsKlem={backupParamsKlem}
-            setBackupParamsKlem={setBackupParamsKlem}
-          />
+          {selectedProductCategory === 'Buku Manasik' ? (
+            <ManasikSimulator
+              customParams={paramsManasik}
+              setCustomParams={setParamsManasik}
+            />
+          ) : selectedProductCategory === 'Buku Yasin' ? (
+            <YasinSimulator
+              customParams={paramsYasin}
+              setCustomParams={setParamsYasin}
+            />
+          ) : (
+            <PricelistSimulator
+              customParams={customParams}
+              setCustomParams={setCustomParams}
+              setParamsForFinishing={setParamsForFinishing}
+              finishingJilid={selectedFinishing}
+              onChangeFinishingJilid={setSelectedFinishing}
+              onOpenMasterParam={() => setActiveTab('parameter')}
+              activeSimulationId={activeSimulationId}
+              setActiveSimulationId={setActiveSimulationId}
+              activeSimulationTitle={activeSimulationTitle}
+              setActiveSimulationTitle={setActiveSimulationTitle}
+              paramsSpiral={paramsSpiral}
+              paramsKlem={paramsKlem}
+              backupParamsSpiral={backupParamsSpiral}
+              setBackupParamsSpiral={setBackupParamsSpiral}
+              backupParamsKlem={backupParamsKlem}
+              setBackupParamsKlem={setBackupParamsKlem}
+            />
+          )}
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-4">
