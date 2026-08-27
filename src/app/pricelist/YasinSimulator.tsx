@@ -466,32 +466,36 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
                         <td className="py-2 px-3 text-center text-slate-400 font-mono text-[11px]">
                           {idx + 1}
                         </td>
-                        <td className="py-2 px-3 font-semibold text-slate-700">
+                        <td className="py-2 px-3 font-semibold text-slate-800">
                           {item.nama}
                         </td>
                         <td className="py-2 px-3 hidden sm:table-cell text-slate-500 text-[11px]">
                           {item.keterangan}
                         </td>
-                        <td className="py-2 px-3 text-right font-mono font-bold text-slate-900">
-                          {item.nominal.toLocaleString('id-ID')}
+                        <td className="py-2 px-3 text-right font-mono font-bold text-slate-800">
+                          Rp {item.nominal.toLocaleString('id-ID')}
                         </td>
-                        <td className="py-2 px-3 text-right font-mono text-slate-400 text-[11px]">
+                        <td className="py-2 px-3 text-right font-mono text-slate-500 text-[11px]">
                           {item.pct.toFixed(1)}%
                         </td>
                       </tr>
                     );
                   })}
-                  {/* Total Row */}
-                  <tr className="bg-slate-50 font-bold border-t border-slate-200">
-                    <td className="py-2.5 px-3 text-center text-slate-400 font-mono text-[11px]">-</td>
-                    <td className="py-2.5 px-3 text-slate-800 text-xs">Total Biaya Produksi (HPP)</td>
-                    <td className="py-2.5 px-3 hidden sm:table-cell text-slate-400 text-[11px]">Akumulasi seluruh biaya produksi</td>
-                    <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-xs">
+                </tbody>
+                <tfoot>
+                  <tr className="bg-emerald-50/60 border-t-2 border-emerald-200 font-bold text-emerald-950">
+                    <td colSpan={2} className="py-2.5 px-3 uppercase text-emerald-950 font-black text-[11px]">
+                      TOTAL BIAYA PRODUKSI
+                    </td>
+                    <td className="hidden sm:table-cell"></td>
+                    <td className="py-2.5 px-3 text-right font-mono text-emerald-900 font-black text-sm">
                       Rp {result.summary.totalHpp.toLocaleString('id-ID')}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-slate-600 text-[11px]">100.0%</td>
+                    <td className="py-2.5 px-3 text-right font-mono text-[11px] text-emerald-800">
+                      100%
+                    </td>
                   </tr>
-                </tbody>
+                </tfoot>
               </table>
             </div>
           </div>
