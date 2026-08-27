@@ -140,6 +140,9 @@ export default function PricelistSimulator({
     return () => clearTimeout(timer);
   }, [modelKalender, bahan, ukuran, oplah, pilihanMesin, marginPct, negoDiskonPct]);
 
+  // Quick preset oplah buttons
+  const presetOplahs = [300, 500, 1000, 1500, 2000, 3000, 5000, 10000];
+
   const [savedSimulations, setSavedSimulations] = useState<SavedSimulationItem[]>([]);
   const [simulationTitle, setSimulationTitle] = useState('');
   const [showSavedListModal, setShowSavedListModal] = useState(false);
