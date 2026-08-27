@@ -77,40 +77,6 @@ export default function PricelistMasterParameter({
 
   return (
     <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
-      {/* Banner Informasi Mode Edit Simulasi Aktif */}
-      {activeSimulationId && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200">
-          <div className="flex items-center gap-2.5">
-            <div className="p-1.5 bg-amber-200 text-amber-900 rounded-lg shrink-0">
-              <Bookmark className="w-4 h-4 fill-amber-700" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-black uppercase tracking-wider text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded">
-                  Edit Parameter Riwayat Simulasi
-                </span>
-                <h4 className="text-xs font-bold text-amber-950">
-                  {activeSimulationTitle}
-                </h4>
-              </div>
-              <p className="text-[11px] text-amber-800/90 mt-0.5">
-                Perubahan tarif di sini akan langsung mempengaruhi kalkulasi riwayat simulasi yang sedang dimuat.
-              </p>
-            </div>
-          </div>
-          {onBackToSimulator && (
-            <button
-              type="button"
-              onClick={onBackToSimulator}
-              className="px-3.5 py-1.5 bg-amber-700 hover:bg-amber-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5 shrink-0"
-            >
-              <span>Kembali ke Simulator</span>
-              <ArrowRight size={14} />
-            </button>
-          )}
-        </div>
-      )}
-
       {/* Header Info - Soft Emerald/Slate Style */}
       <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -188,6 +154,40 @@ export default function PricelistMasterParameter({
           </button>
         </div>
       </div>
+
+      {/* Banner Informasi Mode Edit Simulasi Aktif */}
+      {activeSimulationId && (
+        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 bg-amber-200 text-amber-900 rounded-lg shrink-0">
+              <Bookmark className="w-4 h-4 fill-amber-700" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-black uppercase tracking-wider text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded">
+                  Edit Parameter Riwayat Simulasi
+                </span>
+                <h4 className="text-xs font-bold text-amber-950">
+                  {activeSimulationTitle}
+                </h4>
+              </div>
+              <p className="text-[11px] text-amber-800/90 mt-0.5">
+                Perubahan tarif di sini akan langsung mempengaruhi kalkulasi riwayat simulasi yang sedang dimuat.
+              </p>
+            </div>
+          </div>
+          {onBackToSimulator && (
+            <button
+              type="button"
+              onClick={onBackToSimulator}
+              className="px-3.5 py-1.5 bg-amber-700 hover:bg-amber-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5 shrink-0"
+            >
+              <span>Kembali ke Simulator</span>
+              <ArrowRight size={14} />
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Section 1: Harga Bahan Kertas */}
