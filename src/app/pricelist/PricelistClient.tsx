@@ -298,92 +298,94 @@ export default function PricelistClient() {
 
   return (
     <div className="flex flex-col gap-4 flex-1 min-h-0">
-      {/* TABS Navigation - Presisi seperti JHP */}
-      <div className="flex gap-2 sm:gap-6 border-b border-gray-100 shrink-0 px-2 mt-1">
-        <button
-          type="button"
-          onClick={() => setActiveTab('parameter')}
-          className={`flex items-center justify-center gap-1.5 pb-3 px-2 text-[13px] font-bold border-b-2 transition-all flex-1 sm:flex-initial cursor-pointer ${
-            activeTab === 'parameter'
-              ? 'border-emerald-600 text-emerald-700'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <Database size={14} />
-          <span>Master Parameter</span>
-        </button>
+      {/* TABS Navigation & Product Category Selector - Bersandingan Sebaris */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between border-b border-gray-100 shrink-0 pb-2 gap-3 mt-1">
+        <div className="flex gap-2 sm:gap-6 px-2 flex-wrap sm:flex-nowrap">
+          <button
+            type="button"
+            onClick={() => setActiveTab('parameter')}
+            className={`flex items-center justify-center gap-1.5 pb-2 px-2 text-[13px] font-bold border-b-2 transition-all cursor-pointer ${
+              activeTab === 'parameter'
+                ? 'border-emerald-600 text-emerald-700'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Database size={14} />
+            <span>Master Parameter</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('simulator')}
-          className={`flex items-center justify-center gap-1.5 pb-3 px-2 text-[13px] font-bold border-b-2 transition-all flex-1 sm:flex-initial cursor-pointer ${
-            activeTab === 'simulator'
-              ? 'border-emerald-600 text-emerald-700'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <Calculator size={14} />
-          <span>Simulator</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('simulator')}
+            className={`flex items-center justify-center gap-1.5 pb-2 px-2 text-[13px] font-bold border-b-2 transition-all cursor-pointer ${
+              activeTab === 'simulator'
+                ? 'border-emerald-600 text-emerald-700'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Calculator size={14} />
+            <span>Simulator</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('matrix')}
-          className={`flex items-center justify-center gap-1.5 pb-3 px-2 text-[13px] font-bold border-b-2 transition-all flex-1 sm:flex-initial cursor-pointer ${
-            activeTab === 'matrix'
-              ? 'border-emerald-600 text-emerald-700'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <FileSpreadsheet size={14} />
-          <span>Matriks Pricelist</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('matrix')}
+            className={`flex items-center justify-center gap-1.5 pb-2 px-2 text-[13px] font-bold border-b-2 transition-all cursor-pointer ${
+              activeTab === 'matrix'
+                ? 'border-emerald-600 text-emerald-700'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <FileSpreadsheet size={14} />
+            <span>Matriks Pricelist</span>
+          </button>
+        </div>
+
+        {/* Global Product Category Selector - Nempel Kanan */}
+        <div className="flex items-center gap-1 p-0.5 bg-slate-100 rounded-lg border border-slate-200 w-fit shrink-0 mx-2 self-start lg:self-auto">
+          <button
+            type="button"
+            onClick={() => handleProductCategoryChange('Kalender')}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-bold transition cursor-pointer ${
+              selectedProductCategory === 'Kalender'
+                ? 'bg-white text-emerald-800 shadow-2xs border border-slate-200/50'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/30'
+            }`}
+          >
+            <Calendar size={12} className="text-emerald-700" />
+            <span>Kalender 2027</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleProductCategoryChange('Buku Manasik')}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-bold transition cursor-pointer ${
+              selectedProductCategory === 'Buku Manasik'
+                ? 'bg-white text-emerald-800 shadow-2xs border border-slate-200/50'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/30'
+            }`}
+          >
+            <BookOpen size={12} className="text-emerald-600" />
+            <span>Buku Manasik</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleProductCategoryChange('Buku Yasin')}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-bold transition cursor-pointer ${
+              selectedProductCategory === 'Buku Yasin'
+                ? 'bg-white text-emerald-800 shadow-2xs border border-slate-200/50'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/30'
+            }`}
+          >
+            <BookOpen size={12} className="text-emerald-600" />
+            <span>Buku Surat Yasin</span>
+          </button>
+        </div>
       </div>
 
       {activeTab === 'parameter' ? (
         <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-4">
-          {/* Selector Kategori Produk Master Parameter */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl w-fit border border-slate-200">
-            <button
-              type="button"
-              onClick={() => handleProductCategoryChange('Kalender')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-                selectedProductCategory === 'Kalender'
-                  ? 'bg-white text-emerald-800 shadow-xs border border-slate-200/80'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
-              }`}
-            >
-              <Calendar size={14} className="text-emerald-700" />
-              <span>Kalender 2027</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleProductCategoryChange('Buku Manasik')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-                selectedProductCategory === 'Buku Manasik'
-                  ? 'bg-white text-emerald-800 shadow-xs border border-slate-200/80'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
-              }`}
-            >
-              <BookOpen size={14} className="text-emerald-600" />
-              <span>Buku Manasik Haji</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleProductCategoryChange('Buku Yasin')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-                selectedProductCategory === 'Buku Yasin'
-                  ? 'bg-white text-emerald-800 shadow-xs border border-slate-200/80'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
-              }`}
-            >
-              <BookOpen size={14} className="text-emerald-600" />
-              <span>Buku Surat Yasin</span>
-            </button>
-          </div>
-
           {selectedProductCategory === 'Buku Manasik' ? (
             <ManasikMasterParameter
               customParams={paramsManasik}
@@ -429,48 +431,6 @@ export default function PricelistClient() {
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-4">
-          {/* Selector Kategori Produk Pricelist Matriks */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl w-fit border border-slate-200">
-            <button
-              type="button"
-              onClick={() => handleProductCategoryChange('Kalender')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-                selectedProductCategory === 'Kalender'
-                  ? 'bg-white text-emerald-800 shadow-xs border border-slate-200/80'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
-              }`}
-            >
-              <Calendar size={14} className="text-emerald-700" />
-              <span>Kalender 2027</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleProductCategoryChange('Buku Manasik')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-                selectedProductCategory === 'Buku Manasik'
-                  ? 'bg-white text-emerald-800 shadow-xs border border-slate-200/80'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
-              }`}
-            >
-              <BookOpen size={14} className="text-emerald-600" />
-              <span>Buku Manasik Haji</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleProductCategoryChange('Buku Yasin')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-                selectedProductCategory === 'Buku Yasin'
-                  ? 'bg-white text-emerald-800 shadow-xs border border-slate-200/80'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
-              }`}
-            >
-              <BookOpen size={14} className="text-emerald-600" />
-              <span>Buku Surat Yasin</span>
-            </button>
-          </div>
-
           {selectedProductCategory === 'Buku Manasik' ? (
             <ManasikMatrixView customParams={paramsManasik} />
           ) : selectedProductCategory === 'Buku Yasin' ? (
