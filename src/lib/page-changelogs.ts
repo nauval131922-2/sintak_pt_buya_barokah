@@ -83,6 +83,9 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     date: '28 Agu 2026',
     version: '2026-08-28-1',
     items: [
+      'Penyatuan bar filter dan pencarian menjadi satu bar terpadu mengikuti standar antarmuka Laporan Pekerjaan',
+      'Penggantian komponen filter role dan status menggunakan SquareDropdown yang lebih ringkas dan konsisten',
+      'Penambahan tombol reset filter cepat saat pencarian atau filter sedang aktif',
       'Pembaruan modal tambah/edit akun: dukungan unselect role tunggal dan tombol hapus langsung pada badge peran akses',
     ],
   }),
@@ -932,19 +935,6 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     title: 'Sinkronisasi Data',
     permissionKeys: ['sync'],
     items: [...UI_POLISH],
-  }),
-  'users-2026-08-28': entry({
-    pageKey: 'users',
-    title: 'Kelola User',
-    permissionKeys: [...SUPER_ADMIN_ONLY],
-    sortDate: '2026-08-28',
-    date: '28 Agu 2026',
-    version: '2026-08-28-1',
-    items: [
-      'Penyatuan bar filter dan pencarian menjadi satu bar terpadu mengikuti standar antarmuka Laporan Pekerjaan',
-      'Penggantian komponen filter role dan status menggunakan SquareDropdown yang lebih ringkas dan konsisten',
-      'Penambahan tombol reset filter cepat saat pencarian atau filter sedang aktif',
-    ],
   }),
   'users-2026-08-24': entry({
     pageKey: 'users',
