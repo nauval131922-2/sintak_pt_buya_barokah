@@ -20,6 +20,23 @@ interface NotaMasterParameterProps {
   setCustomParams: React.Dispatch<React.SetStateAction<NotaMasterParams>>;
 }
 
+const NOTA_VISIBLE_KEYS: (keyof NotaMasterParams)[] = [
+  'tarifNcrTopRim',
+  'tarifNcrMiddleRim',
+  'tarifNcrBottomRim',
+  'tarifPlatRyobi',
+  'minOngkosCetakRyobi',
+  'tarifDrekOverRyobi',
+  'tarifDesainNota',
+  'tarifKertasSamson',
+  'tarifKertasBoard',
+  'tarifSusunKomplit',
+  'tarifStaplesNota',
+  'tarifLemNgetruk',
+  'tarifPorporasiPerRim',
+  'tarifNomoratorPerRim',
+];
+
 export default function NotaMasterParameter({
   customParams,
   setCustomParams,
@@ -40,11 +57,17 @@ export default function NotaMasterParameter({
   };
 
   const isModified = React.useMemo(() => {
-    return JSON.stringify(customParams) !== JSON.stringify(DEFAULT_NOTA_PARAMS);
+    return NOTA_VISIBLE_KEYS.some((key) => customParams[key] !== DEFAULT_NOTA_PARAMS[key]);
   }, [customParams]);
 
   const handleResetAll = () => {
-    setCustomParams(DEFAULT_NOTA_PARAMS);
+    setCustomParams((prev) => {
+      const resetObj = { ...prev };
+      NOTA_VISIBLE_KEYS.forEach((k) => {
+        (resetObj as any)[k] = DEFAULT_NOTA_PARAMS[k];
+      });
+      return resetObj;
+    });
     toast.success('Semua parameter Nota dikembalikan ke standar master.');
   };
 

@@ -22,6 +22,21 @@ interface YasinMasterParameterProps {
   setCustomParams: React.Dispatch<React.SetStateAction<YasinMasterParams>>;
 }
 
+const YASIN_VISIBLE_KEYS: (keyof YasinMasterParams)[] = [
+  'hargaIsiYasin64',
+  'hargaIsiYasin96',
+  'hargaIsiYasin128',
+  'hargaIsiYasin192',
+  'tarifPrintSisipanFotoA3',
+  'tarifPrintSisipanTeksA3',
+  'tarifDesainCover',
+  'tarifBoardHardcover',
+  'tarifCasingInHardcover',
+  'tarifSikuSudutEmas',
+  'tarifPitaRumbaiPapercraft',
+  'tarifEmbossFoilGembos',
+];
+
 export default function YasinMasterParameter({
   customParams,
   setCustomParams,
@@ -41,11 +56,17 @@ export default function YasinMasterParameter({
   };
 
   const isModified = React.useMemo(() => {
-    return JSON.stringify(customParams) !== JSON.stringify(DEFAULT_YASIN_PARAMS);
+    return YASIN_VISIBLE_KEYS.some((key) => customParams[key] !== DEFAULT_YASIN_PARAMS[key]);
   }, [customParams]);
 
   const handleResetAll = () => {
-    setCustomParams(DEFAULT_YASIN_PARAMS);
+    setCustomParams((prev) => {
+      const resetObj = { ...prev };
+      YASIN_VISIBLE_KEYS.forEach((k) => {
+        (resetObj as any)[k] = DEFAULT_YASIN_PARAMS[k];
+      });
+      return resetObj;
+    });
     toast.success('Semua parameter Buku Surat Yasin dikembalikan ke standar master.');
   };
 

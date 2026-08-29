@@ -37,6 +37,37 @@ interface MasterParameterProps {
   onBackToSimulator?: () => void;
 }
 
+const KALENDER_VISIBLE_KEYS: (keyof SimulatorMasterParams)[] = [
+  'smMinOngkos',
+  'smInsheet',
+  'smPlatUnit',
+  'smDrekOver',
+  'smTransport',
+  'smBatasDrek',
+  'tarifDesain',
+  'tarifAlmanakDesain',
+  'tarifRoyalty',
+  'tarifPotongDasar',
+  'tarifLakbanRoll',
+  'tarifSpiralLubang',
+  'tarifSpiralMin',
+  'klem32x48',
+  'klem38x54',
+  'klem46x64',
+  'klem48x64',
+  'colator32x48',
+  'colator38x54',
+  'colator46x64',
+  'colator48x64',
+  'potong32x48',
+  'potong38x54',
+  'potong46x64',
+  'potong48x64',
+  'konstantaBeratRim',
+  'lembarPerRim',
+  'kapasitasLakbanRoll',
+];
+
 export default function PricelistMasterParameter({
   customParams,
   setCustomParams,
@@ -67,12 +98,19 @@ export default function PricelistMasterParameter({
   };
 
   const isModified = React.useMemo(() => {
-    return JSON.stringify(customParams) !== JSON.stringify(standardParams);
+    return KALENDER_VISIBLE_KEYS.some((key) => customParams[key] !== standardParams[key]);
   }, [customParams, standardParams]);
 
   const handleReset = () => {
-    setCustomParams(activeFinishing === 'Klem' ? DEFAULT_MASTER_PARAMS_KLEM : DEFAULT_MASTER_PARAMS);
-    toast.success('Tarif berhasil dikembalikan ke standar master.');
+    setCustomParams((prev) => {
+      const resetObj = { ...prev };
+      const ref = activeFinishing === 'Klem' ? DEFAULT_MASTER_PARAMS_KLEM : DEFAULT_MASTER_PARAMS;
+      KALENDER_VISIBLE_KEYS.forEach((k) => {
+        (resetObj as any)[k] = ref[k];
+      });
+      return resetObj;
+    });
+    toast.success('Tarif parameter kalender berhasil dikembalikan ke standar master.');
   };
 
   return (

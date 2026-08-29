@@ -22,6 +22,20 @@ interface ManasikMasterParameterProps {
   setCustomParams: React.Dispatch<React.SetStateAction<ManasikMasterParams>>;
 }
 
+const MANASIK_VISIBLE_KEYS: (keyof ManasikMasterParams)[] = [
+  'hargaIsiKosongan96',
+  'hargaIsiKosongan128',
+  'hargaIsiKosongan192',
+  'hargaIsiKosongan208',
+  'tarifDesainCover',
+  'insheetCover',
+  'tarifBendingPerCm2',
+  'tarifTaliKurPerPcs',
+  'tarifSpiralManasik',
+  'tarifLubangBor',
+  'tarifPasangTali',
+];
+
 export default function ManasikMasterParameter({
   customParams,
   setCustomParams,
@@ -41,11 +55,17 @@ export default function ManasikMasterParameter({
   };
 
   const isModified = React.useMemo(() => {
-    return JSON.stringify(customParams) !== JSON.stringify(DEFAULT_MANASIK_PARAMS);
+    return MANASIK_VISIBLE_KEYS.some((key) => customParams[key] !== DEFAULT_MANASIK_PARAMS[key]);
   }, [customParams]);
 
   const handleResetAll = () => {
-    setCustomParams(DEFAULT_MANASIK_PARAMS);
+    setCustomParams((prev) => {
+      const resetObj = { ...prev };
+      MANASIK_VISIBLE_KEYS.forEach((k) => {
+        (resetObj as any)[k] = DEFAULT_MANASIK_PARAMS[k];
+      });
+      return resetObj;
+    });
     toast.success('Semua parameter Buku Manasik dikembalikan ke standar master.');
   };
 

@@ -19,6 +19,15 @@ interface BrosurMasterParameterProps {
   setCustomParams: React.Dispatch<React.SetStateAction<BrosurMasterParams>>;
 }
 
+const BROSUR_VISIBLE_KEYS: (keyof BrosurMasterParams)[] = [
+  'tarifSisirMin',
+  'tarifSisirPer1000',
+  'tarifDesainBrosur',
+  'jumlahPlatOliver',
+  'marginDefaultPct',
+  'negoDefaultPct',
+];
+
 export default function BrosurMasterParameter({
   customParams,
   setCustomParams,
@@ -38,12 +47,18 @@ export default function BrosurMasterParameter({
   };
 
   const isModified = React.useMemo(
-    () => JSON.stringify(customParams) !== JSON.stringify(DEFAULT_BROSUR_PARAMS),
+    () => BROSUR_VISIBLE_KEYS.some((key) => customParams[key] !== DEFAULT_BROSUR_PARAMS[key]),
     [customParams]
   );
 
   const handleResetAll = () => {
-    setCustomParams(DEFAULT_BROSUR_PARAMS);
+    setCustomParams((prev) => {
+      const resetObj = { ...prev };
+      BROSUR_VISIBLE_KEYS.forEach((k) => {
+        (resetObj as any)[k] = DEFAULT_BROSUR_PARAMS[k];
+      });
+      return resetObj;
+    });
     toast.success('Semua parameter Brosur 2026 dikembalikan ke standar master.');
   };
 
