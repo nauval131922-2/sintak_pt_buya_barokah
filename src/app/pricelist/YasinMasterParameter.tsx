@@ -178,34 +178,18 @@ export default function YasinMasterParameter({
           </div>
         </div>
 
-        {/* Card 2: Print Cover & Sisipan */}
+        {/* Card 2: Print Sisipan & Desain */}
         <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col">
           <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                2. Cetak Cover & Sisipan
+                2. Sisipan &amp; Desain Yasin
               </h3>
             </div>
             <span className="text-[11px] text-slate-500 font-medium">Digital POD</span>
           </div>
           <div className="p-4 flex flex-col gap-3">
-            <div className={`p-2.5 rounded-lg border transition-all ${
-              isFieldModified('tarifPrintCoverA3')
-                ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                : 'bg-slate-50 border-slate-200'
-            }`}>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-[11px] font-bold text-slate-700">Print Cover A3+ (Rp/lbr)</label>
-                {isFieldModified('tarifPrintCoverA3') && (
-                  <button onClick={() => handleResetField('tarifPrintCoverA3')} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
-                    <RotateCcw size={9} /> Reset
-                  </button>
-                )}
-              </div>
-              <ThousandInput prefix="Rp" value={customParams.tarifPrintCoverA3} onValueChange={(v) => handleChange('tarifPrintCoverA3', v || 0)} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
-            </div>
-
             <div className={`p-2.5 rounded-lg border transition-all ${
               isFieldModified('tarifPrintSisipanFotoA3')
                 ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
@@ -223,12 +207,28 @@ export default function YasinMasterParameter({
             </div>
 
             <div className={`p-2.5 rounded-lg border transition-all ${
+              isFieldModified('tarifPrintSisipanTeksA3')
+                ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+                : 'bg-slate-50 border-slate-200'
+            }`}>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-[11px] font-bold text-slate-700">Print Sisipan Teks A3+ (Rp/lbr)</label>
+                {isFieldModified('tarifPrintSisipanTeksA3') && (
+                  <button onClick={() => handleResetField('tarifPrintSisipanTeksA3')} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
+                    <RotateCcw size={9} /> Reset
+                  </button>
+                )}
+              </div>
+              <ThousandInput prefix="Rp" value={customParams.tarifPrintSisipanTeksA3} onValueChange={(v) => handleChange('tarifPrintSisipanTeksA3', v || 0)} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
+            </div>
+
+            <div className={`p-2.5 rounded-lg border transition-all ${
               isFieldModified('tarifDesainCover')
                 ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
                 : 'bg-slate-50 border-slate-200'
             }`}>
               <div className="flex justify-between items-center mb-1">
-                <label className="block text-[11px] font-bold text-slate-700">Jasa Desain Foto & Cover (Rp)</label>
+                <label className="block text-[11px] font-bold text-slate-700">Jasa Desain Foto &amp; Cover (Rp)</label>
                 {isFieldModified('tarifDesainCover') && (
                   <button onClick={() => handleResetField('tarifDesainCover')} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
                     <RotateCcw size={9} /> Reset

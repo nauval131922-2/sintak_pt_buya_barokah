@@ -99,55 +99,18 @@ export default function NotaMasterParameter({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {/* Card 1: Harga Kertas HVS 70 & NCR */}
+        {/* Card 1: Harga Kertas NCR Khusus Nota */}
         <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col">
           <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                1. Bahan Kertas HVS & NCR
+                1. Bahan Kertas NCR Nota
               </h3>
             </div>
             <span className="text-[11px] text-slate-500 font-medium">Bahan Baku</span>
           </div>
           <div className="p-4 flex flex-col gap-3">
-            <div className={`p-2.5 rounded-lg border transition-all ${
-              isFieldModified('tarifHvs70Kg')
-                ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                : 'bg-slate-50 border-slate-200'
-            }`}>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-[11px] font-bold text-slate-700">HVS 70 gsm (Rp/Kg)</label>
-                {isFieldModified('tarifHvs70Kg') && (
-                  <button onClick={() => handleResetField('tarifHvs70Kg')} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
-                    <RotateCcw size={9} /> Reset
-                  </button>
-                )}
-              </div>
-              <ThousandInput prefix="Rp" value={customParams.tarifHvs70Kg} onValueChange={(v) => handleChange('tarifHvs70Kg', v || 0)} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
-            </div>
-
-            <div className={`p-2.5 rounded-lg border transition-all ${
-              isFieldModified('upHvsPct')
-                ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                : 'bg-slate-50 border-slate-200'
-            }`}>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-[11px] font-bold text-slate-700">Persentase Up HVS (%)</label>
-                {isFieldModified('upHvsPct') && (
-                  <button onClick={() => handleResetField('upHvsPct')} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
-                    <RotateCcw size={9} /> Reset
-                  </button>
-                )}
-              </div>
-              <input
-                type="number"
-                value={customParams.upHvsPct}
-                onChange={(e) => handleChange('upHvsPct', Number(e.target.value) || 0)}
-                className="w-full px-2.5 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
-              />
-            </div>
-
             <div className={`p-2.5 rounded-lg border transition-all ${
               isFieldModified('tarifNcrTopRim')
                 ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'

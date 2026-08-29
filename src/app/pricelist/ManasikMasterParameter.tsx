@@ -178,50 +178,18 @@ export default function ManasikMasterParameter({
           </div>
         </div>
 
-        {/* Card 2: Cover & Cetak */}
+        {/* Card 2: Cover & Desain */}
         <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col">
           <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                2. Bahan & Cetak Cover
+                2. Jasa Desain &amp; Insheet Cover
               </h3>
             </div>
-            <span className="text-[11px] text-slate-500 font-medium">Bahan & Digital</span>
+            <span className="text-[11px] text-slate-500 font-medium">Spesifik Produk</span>
           </div>
           <div className="p-4 flex flex-col gap-3">
-            <div className={`p-2.5 rounded-lg border transition-all ${
-              isFieldModified('tarifAc230Kg')
-                ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                : 'bg-slate-50 border-slate-200'
-            }`}>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-[11px] font-bold text-slate-700">Kertas AC 230 (Rp/Kg)</label>
-                {isFieldModified('tarifAc230Kg') && (
-                  <button onClick={() => handleResetField('tarifAc230Kg')} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
-                    <RotateCcw size={9} /> Reset
-                  </button>
-                )}
-              </div>
-              <ThousandInput prefix="Rp" value={customParams.tarifAc230Kg} onValueChange={(v) => handleChange('tarifAc230Kg', v || 0)} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
-            </div>
-
-            <div className={`p-2.5 rounded-lg border transition-all ${
-              isFieldModified('tarifPrintCoverA3')
-                ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                : 'bg-slate-50 border-slate-200'
-            }`}>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-[11px] font-bold text-slate-700">Print Cover POD A3+ (Rp/lbr)</label>
-                {isFieldModified('tarifPrintCoverA3') && (
-                  <button onClick={() => handleResetField('tarifPrintCoverA3')} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
-                    <RotateCcw size={9} /> Reset
-                  </button>
-                )}
-              </div>
-              <ThousandInput prefix="Rp" value={customParams.tarifPrintCoverA3} onValueChange={(v) => handleChange('tarifPrintCoverA3', v || 0)} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
-            </div>
-
             <div className={`p-2.5 rounded-lg border transition-all ${
               isFieldModified('tarifDesainCover')
                 ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
@@ -237,21 +205,58 @@ export default function ManasikMasterParameter({
               </div>
               <ThousandInput prefix="Rp" value={customParams.tarifDesainCover} onValueChange={(v) => handleChange('tarifDesainCover', v || 0)} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
             </div>
+
+            <div className={`p-2.5 rounded-lg border transition-all ${
+              isFieldModified('insheetCover')
+                ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+                : 'bg-slate-50 border-slate-200'
+            }`}>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-[11px] font-bold text-slate-700">Insheet / Waste Cover (lbr)</label>
+                {isFieldModified('insheetCover') && (
+                  <button onClick={() => handleResetField('insheetCover')} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
+                    <RotateCcw size={9} /> Reset
+                  </button>
+                )}
+              </div>
+              <input
+                type="number"
+                value={customParams.insheetCover}
+                onChange={(e) => handleChange('insheetCover', Number(e.target.value) || 0)}
+                className="w-full px-2.5 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Card 3: Finishing & Kemasan */}
+        {/* Card 3: Finishing & Jilid Khusus */}
         <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col">
           <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                3. Jilid, Tali & Kemasan
+                3. Jilid, Tali &amp; Kemasan
               </h3>
             </div>
             <span className="text-[11px] text-slate-500 font-medium">Finishing</span>
           </div>
           <div className="p-4 flex flex-col gap-3">
+            <div className={`p-2.5 rounded-lg border transition-all ${
+              isFieldModified('tarifBendingPerCm2')
+                ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+                : 'bg-slate-50 border-slate-200'
+            }`}>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-[11px] font-bold text-slate-700">Lem Panas / Bending (Rp/eks)</label>
+                {isFieldModified('tarifBendingPerCm2') && (
+                  <button onClick={() => handleResetField('tarifBendingPerCm2')} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
+                    <RotateCcw size={9} /> Reset
+                  </button>
+                )}
+              </div>
+              <ThousandInput prefix="Rp" value={customParams.tarifBendingPerCm2} onValueChange={(v) => handleChange('tarifBendingPerCm2', v || 0)} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
+            </div>
+
             <div className={`p-2.5 rounded-lg border transition-all ${
               isFieldModified('tarifTaliKurPerPcs')
                 ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
@@ -266,6 +271,22 @@ export default function ManasikMasterParameter({
                 )}
               </div>
               <ThousandInput prefix="Rp" value={customParams.tarifTaliKurPerPcs} onValueChange={(v) => handleChange('tarifTaliKurPerPcs', v || 0)} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
+            </div>
+
+            <div className={`p-2.5 rounded-lg border transition-all ${
+              isFieldModified('tarifSpiralManasik')
+                ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+                : 'bg-slate-50 border-slate-200'
+            }`}>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-[11px] font-bold text-slate-700">Spiral Kawat Manasik (Rp/pcs)</label>
+                {isFieldModified('tarifSpiralManasik') && (
+                  <button onClick={() => handleResetField('tarifSpiralManasik')} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
+                    <RotateCcw size={9} /> Reset
+                  </button>
+                )}
+              </div>
+              <ThousandInput prefix="Rp" value={customParams.tarifSpiralManasik} onValueChange={(v) => handleChange('tarifSpiralManasik', v || 0)} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
             </div>
 
             <div className={`p-2.5 rounded-lg border transition-all ${
@@ -288,22 +309,6 @@ export default function ManasikMasterParameter({
                 handleChange('tarifLubangBor', Math.round((v || 0) * 0.67));
                 handleChange('tarifPasangTali', Math.round((v || 0) * 0.33));
               }} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
-            </div>
-
-            <div className={`p-2.5 rounded-lg border transition-all ${
-              isFieldModified('tarifPlastikOppPack')
-                ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                : 'bg-slate-50 border-slate-200'
-            }`}>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-[11px] font-bold text-slate-700">Plastik OPP Satuan (Rp/pack 100)</label>
-                {isFieldModified('tarifPlastikOppPack') && (
-                  <button onClick={() => handleResetField('tarifPlastikOppPack')} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
-                    <RotateCcw size={9} /> Reset
-                  </button>
-                )}
-              </div>
-              <ThousandInput prefix="Rp" value={customParams.tarifPlastikOppPack} onValueChange={(v) => handleChange('tarifPlastikOppPack', v || 0)} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
             </div>
           </div>
         </div>

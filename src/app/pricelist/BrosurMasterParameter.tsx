@@ -139,65 +139,38 @@ export default function BrosurMasterParameter({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {/* Card 1: Bahan Kertas Art Paper */}
-        <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col">
-          <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                1. Bahan Kertas Art Paper
-              </h3>
-            </div>
-            <span className="text-[11px] text-slate-500 font-medium">Bahan Baku</span>
-          </div>
-          <div className="p-4 flex flex-col gap-3">
-            {fieldRow('tarifArtPaperKg', 'Art Paper 120gsm (Rp/Kg)')}
-            {fieldRow('upKertasPct', 'Persentase Up Kertas (%)', false)}
-          </div>
-        </div>
-
-        {/* Card 2: Cetak Print Inter & Oliver */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* Card 1: Pengaturan Mesin & Finishing Spesifik */}
         <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col">
           <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                2. Mesin Cetak
+                1. Finishing & Desain Brosur
               </h3>
             </div>
-            <span className="text-[11px] text-slate-500 font-medium">Print Inter &amp; Oliver</span>
+            <span className="text-[11px] text-slate-500 font-medium">Spesifik Produk</span>
           </div>
-          <div className="p-4 flex flex-col gap-3">
-            {fieldRow('tarifPrintInter1Muka', 'Print Inter 1 Muka (Rp/lbr A3+)')}
-            {fieldRow('tarifPrintInter2Muka', 'Print Inter 2 Muka (Rp/lbr A3+)')}
-            {fieldRow('tarifPlatOliver', 'Plat CTP Oliver (Rp/plat)')}
+          <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {fieldRow('tarifSisirMin', 'Sisir/Potong Min (Rp)')}
+            {fieldRow('tarifSisirPer1000', 'Sisir per 1000 pcs (Rp)')}
+            {fieldRow('tarifDesainBrosur', 'Biaya Desain Brosur (Rp)')}
             {fieldRow('jumlahPlatOliver', 'Jumlah Plat Oliver (pcs)', false)}
-            {fieldRow('minOrderOliver', 'Min Order Oliver (Rp/plat)')}
-            {fieldRow('tarifDrekOliver', 'Tarif Drek Oliver (Rp/drek)', false)}
           </div>
         </div>
 
-        {/* Card 3: Finishing, Laminasi & Margin */}
+        {/* Card 2: Margin & Nego Default */}
         <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col">
           <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                3. Finishing, Laminasi &amp; Margin
+                2. Margin & Nego Standar
               </h3>
             </div>
-            <span className="text-[11px] text-slate-500 font-medium">Akhir</span>
+            <span className="text-[11px] text-slate-500 font-medium">Keuangan</span>
           </div>
-          <div className="p-4 flex flex-col gap-3">
-            {fieldRow('tarifSisirMin', 'Sisir/Potong Min (Rp)')}
-            {fieldRow('tarifSisirPer1000', 'Sisir per 1000 pcs (Rp)')}
-            {fieldRow('tarifKardus', 'Kardus Packing (Rp/box)')}
-            {fieldRow('tarifLakbanRoll', 'Lakban (Rp/roll)')}
-            {fieldRow('tarifLaminasiGlossy', 'Laminasi Glossy (Rp/cm²)', false, true)}
-            {fieldRow('tarifLaminasiDoff', 'Laminasi Doff (Rp/cm²)', false, true)}
-            {fieldRow('tarifUvVarnish', 'UV Varnish (Rp/cm²)', false, true)}
-            {fieldRow('tarifDesainBrosur', 'Biaya Desain Brosur (Rp)')}
+          <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
             {fieldRow('marginDefaultPct', 'Margin Default (%)', false)}
             {fieldRow('negoDefaultPct', 'Nego Default (%)', false)}
           </div>
