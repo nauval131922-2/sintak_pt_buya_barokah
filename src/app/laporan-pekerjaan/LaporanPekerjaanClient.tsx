@@ -1950,9 +1950,9 @@ export default function LaporanPekerjaanClient({
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="portrait:max-sm:sticky portrait:max-sm:top-7 portrait:max-sm:z-30 portrait:max-sm:bg-[#f8fafc] portrait:max-sm:-mx-4 portrait:max-sm:px-4 portrait:max-sm:pt-1 portrait:max-sm:pb-2 portrait:max-sm:mb-1 portrait:max-sm:shadow-md portrait:max-sm:border-b portrait:max-sm:border-slate-200/80 static p-0 mx-0 mb-0 shadow-none border-none bg-transparent">
-        <div className="shrink-0 bg-white p-3 rounded-xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-center gap-3">
-          <div className="flex items-center gap-2 flex-1 w-full">
+      <div>
+        <div className="shrink-0 bg-white p-3 rounded-xl border border-slate-200/80 shadow-sm flex items-center gap-2 sm:gap-3 overflow-x-auto custom-scrollbar">
+          <div className="flex items-center gap-2 shrink-0 min-w-[260px] sm:min-w-[320px] md:flex-1 md:w-auto">
             {/* Tombol Reload Data di Samping Kiri Search Bar */}
             <button
               type="button"
@@ -1966,7 +1966,7 @@ export default function LaporanPekerjaanClient({
             </button>
 
             {/* Input Search */}
-            <div className="relative flex-1 w-full">
+            <div className="relative flex-1">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
@@ -1978,7 +1978,7 @@ export default function LaporanPekerjaanClient({
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto min-w-0">
+          <div className="flex items-center gap-2 shrink-0">
             <div className="flex items-center text-xs text-slate-500 font-medium shrink-0">
               <Filter className="w-3.5 h-3.5 mr-1 text-slate-400" /> Filter:
             </div>
@@ -2005,7 +2005,7 @@ export default function LaporanPekerjaanClient({
                 value={selectedBagianFilter}
                 onChange={setSelectedBagianFilter}
                 searchPlaceholder="Cari Bagian..."
-                widthClass="w-full sm:w-44"
+                widthClass="w-36 sm:w-44"
               />
             )}
 
@@ -2015,7 +2015,7 @@ export default function LaporanPekerjaanClient({
                 value={selectedPic}
                 onChange={setSelectedPic}
                 searchPlaceholder="Cari PIC..."
-                widthClass="w-full sm:w-44"
+                widthClass="w-36 sm:w-44"
               />
             )}
 
@@ -2024,7 +2024,7 @@ export default function LaporanPekerjaanClient({
               value={selectedStatus}
               onChange={setSelectedStatus}
               searchPlaceholder="Cari Status..."
-              widthClass="w-full sm:w-44"
+              widthClass="w-36 sm:w-44"
             />
           </div>
         </div>
