@@ -1951,8 +1951,8 @@ export default function LaporanPekerjaanClient({
 
       {/* Filter & Search Bar */}
       <div>
-        <div className="shrink-0 bg-white p-3 rounded-xl border border-slate-200/80 shadow-sm flex items-center gap-2 sm:gap-3 overflow-x-auto custom-scrollbar">
-          <div className="flex items-center gap-2 shrink-0 min-w-[260px] sm:min-w-[320px] md:flex-1 md:w-auto">
+        <div className="shrink-0 bg-white p-3 rounded-xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 flex-1">
             {/* Tombol Reload Data di Samping Kiri Search Bar */}
             <button
               type="button"
@@ -1978,7 +1978,7 @@ export default function LaporanPekerjaanClient({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
             <div className="flex items-center text-xs text-slate-500 font-medium shrink-0">
               <Filter className="w-3.5 h-3.5 mr-1 text-slate-400" /> Filter:
             </div>
@@ -2005,8 +2005,7 @@ export default function LaporanPekerjaanClient({
                 value={selectedBagianFilter}
                 onChange={setSelectedBagianFilter}
                 searchPlaceholder="Cari Bagian..."
-                widthClass="w-36 sm:w-44"
-                usePortal={true}
+                widthClass="flex-1 sm:w-44"
               />
             )}
 
@@ -2016,8 +2015,7 @@ export default function LaporanPekerjaanClient({
                 value={selectedPic}
                 onChange={setSelectedPic}
                 searchPlaceholder="Cari PIC..."
-                widthClass="w-36 sm:w-44"
-                usePortal={true}
+                widthClass="flex-1 sm:w-44"
               />
             )}
 
@@ -2026,8 +2024,7 @@ export default function LaporanPekerjaanClient({
               value={selectedStatus}
               onChange={setSelectedStatus}
               searchPlaceholder="Cari Status..."
-              widthClass="w-36 sm:w-44"
-              usePortal={true}
+              widthClass="flex-1 sm:w-44"
             />
           </div>
         </div>
