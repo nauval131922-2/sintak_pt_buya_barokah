@@ -1008,6 +1008,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
       'Optimalisasi scroll natural dokumen pada viewport HP Landscape untuk mendukung auto-hide address bar browser bawaan',
       'Perbaikan responsif modal detail tugas (TaskDetailModal) dan modal resolusi konflik spreadsheet dengan penambahan scroll horizontal tabel serta layout tombol fleksibel',
       'Penyempurnaan tombol navigasi melayang (Up & Down) untuk mendukung sinkronisasi scroll vertikal tabel dan viewport landscape secara bersamaan',
+      'Optimasi performa backend & frontend: penambahan index database B-Tree, subquery point-lookup tgl order, single-pass task summary, dan in-memory cache master pekerjaan',
     ],
   }),
   'laporan-pekerjaan-2026-08-24': entry({
