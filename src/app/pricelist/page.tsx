@@ -15,8 +15,8 @@ export default async function PricelistPage() {
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-6 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-700">
       <PageHeader
-        title="Pricelist"
-        description="Master data tarif dan kalkulasi harga berbagai produk PT Buya Barokah."
+        title="Pricelist & Simulator"
+        description="Simulator HPP, kalkulasi tarif, matriks harga, dan riwayat penawaran multi-produk percetakan."
       />
 
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden">

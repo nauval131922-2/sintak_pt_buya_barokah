@@ -396,55 +396,126 @@ export default function PricelistMasterParameter({
           </div>
         </div>
       </div>
-                    <div className="flex items-center gap-1">
-                      <ThousandInput
-                        suffix="lbr"
-                        value={customParams.oliverInsheet}
-                        onValueChange={(val) => handleChange('oliverInsheet', val)}
-                        className={`w-full pr-7 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                          isFieldModified('oliverInsheet') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                        }`}
-                      />
-                      {isFieldModified('oliverInsheet') && (
-                        <button
-                          type="button"
-                          onClick={(e) => handleResetField('oliverInsheet', e)}
-                          title="Reset Oliver Insheet"
-                          className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
-                        >
-                          <RotateCcw size={10} />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                  <td className={`py-1.5 px-2 ${isFieldModified('smInsheet') ? 'bg-amber-50/70' : ''}`}>
-                    <div className="flex items-center gap-1">
-                      <ThousandInput
-                        suffix="lbr"
-                        value={customParams.smInsheet}
-                        onValueChange={(val) => handleChange('smInsheet', val)}
-                        className={`w-full pr-7 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                          isFieldModified('smInsheet') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                        }`}
-                      />
-                      {isFieldModified('smInsheet') && (
-                        <button
-                          type="button"
-                          onClick={(e) => handleResetField('smInsheet', e)}
-                          title="Reset SM Insheet"
-                          className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
-                        >
-                          <RotateCcw size={10} />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="py-2 px-2.5 text-slate-700">Biaya Plat CTP / Unit</td>
-                  <td className={`py-1.5 px-2 ${isFieldModified('oliverPlatUnit') ? 'bg-amber-50/70' : ''}`}>
-                    <div className="flex items-center gap-1">
-                      <ThousandInput
+      {/* Section: Tarif Mesin & Insheet Oliver vs SM (tabel perbandingan) */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col">
+        <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+              3. Standar Mesin Cetak & Tarif
+            </h3>
+          </div>
+          <span className="text-[11px] text-slate-500 font-medium">Oliver vs Speedmaster</span>
+        </div>
+        <div className="p-4 overflow-x-auto">
+          <table className="w-full text-xs text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-100/70 border-b border-slate-200 text-slate-600 font-semibold text-[11px]">
+                <th className="py-2 px-2.5">Parameter Mesin</th>
+                <th className="py-2 px-2.5 text-center bg-blue-50/40 text-blue-900 w-36">Mesin Oliver</th>
+                <th className="py-2 px-2.5 text-center bg-purple-50/40 text-purple-900 w-36">Mesin SM</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-[11.5px]">
+              <tr>
+                <td className="py-2 px-2.5 text-slate-700">Ongkos Min Order (4 plat)</td>
+                <td className={`py-1.5 px-2 ${isFieldModified('oliverMinOngkos') ? 'bg-amber-50/70' : ''}`}>
+                  <div className="flex items-center gap-1">
+                    <ThousandInput
+                      prefix="Rp"
+                      value={customParams.oliverMinOngkos}
+                      onValueChange={(val) => handleChange('oliverMinOngkos', val)}
+                      className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                        isFieldModified('oliverMinOngkos') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                      }`}
+                    />
+                    {isFieldModified('oliverMinOngkos') && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('oliverMinOngkos', e)}
+                        title="Reset Oliver Min Ongkos"
+                        className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                      >
+                        <RotateCcw size={10} />
+                      </button>
+                    )}
+                  </div>
+                </td>
+                <td className={`py-1.5 px-2 ${isFieldModified('smMinOngkos') ? 'bg-amber-50/70' : ''}`}>
+                  <div className="flex items-center gap-1">
+                    <ThousandInput
+                      prefix="Rp"
+                      value={customParams.smMinOngkos}
+                      onValueChange={(val) => handleChange('smMinOngkos', val)}
+                      className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                        isFieldModified('smMinOngkos') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                      }`}
+                    />
+                    {isFieldModified('smMinOngkos') && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('smMinOngkos', e)}
+                        title="Reset SM Min Ongkos"
+                        className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                      >
+                        <RotateCcw size={10} />
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td className="py-2 px-2.5 text-slate-700">Insheet Plat Cetak</td>
+                <td className={`py-1.5 px-2 ${isFieldModified('oliverInsheet') ? 'bg-amber-50/70' : ''}`}>
+                  <div className="flex items-center gap-1">
+                    <ThousandInput
+                      suffix="lbr"
+                      value={customParams.oliverInsheet}
+                      onValueChange={(val) => handleChange('oliverInsheet', val)}
+                      className={`w-full pr-7 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                        isFieldModified('oliverInsheet') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                      }`}
+                    />
+                    {isFieldModified('oliverInsheet') && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('oliverInsheet', e)}
+                        title="Reset Oliver Insheet"
+                        className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                      >
+                        <RotateCcw size={10} />
+                      </button>
+                    )}
+                  </div>
+                </td>
+                <td className={`py-1.5 px-2 ${isFieldModified('smInsheet') ? 'bg-amber-50/70' : ''}`}>
+                  <div className="flex items-center gap-1">
+                    <ThousandInput
+                      suffix="lbr"
+                      value={customParams.smInsheet}
+                      onValueChange={(val) => handleChange('smInsheet', val)}
+                      className={`w-full pr-7 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
+                        isFieldModified('smInsheet') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
+                      }`}
+                    />
+                    {isFieldModified('smInsheet') && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('smInsheet', e)}
+                        title="Reset SM Insheet"
+                        className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                      >
+                        <RotateCcw size={10} />
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td className="py-2 px-2.5 text-slate-700">Biaya Plat CTP / Unit</td>
+                <td className={`py-1.5 px-2 ${isFieldModified('oliverPlatUnit') ? 'bg-amber-50/70' : ''}`}>
+                  <div className="flex items-center gap-1">
+                    <ThousandInput
                         prefix="Rp"
                         value={customParams.oliverPlatUnit}
                         onValueChange={(val) => handleChange('oliverPlatUnit', val)}
@@ -462,9 +533,9 @@ export default function PricelistMasterParameter({
                           <RotateCcw size={10} />
                         </button>
                       )}
-                    </div>
-                  </td>
-                  <td className={`py-1.5 px-2 ${isFieldModified('smPlatUnit') ? 'bg-amber-50/70' : ''}`}>
+                  </div>
+                </td>
+                <td className={`py-1.5 px-2 ${isFieldModified('smPlatUnit') ? 'bg-amber-50/70' : ''}`}>
                     <div className="flex items-center gap-1">
                       <ThousandInput
                         prefix="Rp"

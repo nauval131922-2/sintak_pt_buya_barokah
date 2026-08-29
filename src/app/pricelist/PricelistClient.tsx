@@ -33,7 +33,6 @@ import BrosurMasterParameter from './BrosurMasterParameter';
 import BrosurSimulator, { SavedBrosurSimulationItem } from './BrosurSimulator';
 import BrosurMatrixView from './BrosurMatrixView';
 import SavedCalculationsList, { UnifiedCalculationItem } from './SavedCalculationsList';
-import PageHeader from '@/components/PageHeader';
 import SquareDropdown from '@/components/SquareDropdown';
 import GlobalMasterParameter from './GlobalMasterParameter';
 import {
@@ -361,28 +360,8 @@ export default function PricelistClient() {
 
   const isFiltered = selectedJenis !== 'ALL' || selectedBahan !== 'ALL' || searchTerm !== '';
 
-  const dynamicHeaderDesc = useMemo(() => {
-    switch (selectedProductCategory) {
-      case 'Buku Manasik':
-        return 'Master data tarif, simulator estimasi biaya, kalkulasi HPP, dan matriks harga Buku Manasik Haji / Umroh.';
-      case 'Buku Yasin':
-        return 'Master data tarif, simulator estimasi biaya, kalkulasi HPP, dan matriks harga Buku Surat Yasin & Tahlil.';
-      case 'Nota 1 Warna':
-        return 'Master data tarif, simulator estimasi biaya, kalkulasi HPP, dan matriks harga Nota 1 Warna (HVS & NCR).';
-      case 'Brosur 2026':
-        return 'Master data tarif, simulator estimasi biaya, kalkulasi HPP, dan matriks harga Brosur Art Paper 120gsm 1/2 Muka (Print Inter & Oliver).';
-      case 'Kalender':
-      default:
-        return 'Master data tarif dan kalkulasi harga kalender dinding spiral & klem 2027.';
-    }
-  }, [selectedProductCategory]);
-
   return (
     <div className="flex flex-col gap-4 flex-1 min-h-0">
-      <PageHeader
-        title="Pricelist"
-        description={dynamicHeaderDesc}
-      />
       {/* TABS Navigation & Product Category Selector - Bersandingan Sebaris */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between border-b border-gray-100 shrink-0 pb-2 gap-3 mt-1 relative z-50">
         <div className="flex gap-2 sm:gap-6 px-2 flex-wrap sm:flex-nowrap">
