@@ -16,6 +16,8 @@ import {
 
 interface ManasikMatrixViewProps {
   customParams?: ManasikMasterParams;
+  viewMode?: 'matrix' | 'table';
+  setViewMode?: (mode: 'matrix' | 'table') => void;
 }
 
 const OPLAH_TIERS = [
@@ -31,10 +33,15 @@ const HALAMAN_LIST: Array<{ hal: 96 | 128 | 192 | 208; title: string }> = [
 
 export default function ManasikMatrixView({
   customParams = DEFAULT_MANASIK_PARAMS,
+  viewMode: propViewMode,
+  setViewMode: propSetViewMode,
 }: ManasikMatrixViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedJilidFilter, setSelectedJilidFilter] = useState<'ALL' | 'Softcover' | 'Cocard' | 'Spiral'>('ALL');
-  const [viewMode, setViewMode] = useState<'matrix' | 'table'>('matrix');
+  const [localViewMode, setLocalViewMode] = useState<'matrix' | 'table'>('matrix');
+
+  const viewMode = propViewMode ?? localViewMode;
+  const setViewMode = propSetViewMode ?? setLocalViewMode;
 
   // Generate Matrix data dinamis sesuai formula master parameter
   const matrixData = useMemo(() => {

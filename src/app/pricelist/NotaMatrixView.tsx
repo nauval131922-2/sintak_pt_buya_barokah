@@ -18,6 +18,8 @@ import {
 
 interface NotaMatrixViewProps {
   customParams?: NotaMasterParams;
+  viewMode?: 'matrix' | 'table';
+  setViewMode?: (mode: 'matrix' | 'table') => void;
 }
 
 const OPLAH_TIERS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30, 40, 50];
@@ -30,11 +32,16 @@ const RANGKAP_LIST: Array<{ rangkap: NotaRangkapType; title: string; subtitle: s
 
 export default function NotaMatrixView({
   customParams = DEFAULT_NOTA_PARAMS,
+  viewMode: propViewMode,
+  setViewMode: propSetViewMode,
 }: NotaMatrixViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRangkapFilter, setSelectedRangkapFilter] = useState<'ALL' | '1' | '2' | '3'>('ALL');
   const [selectedUkuran, setSelectedUkuran] = useState<NotaUkuranType>('1/4 Folio (10.7 x 16.5)');
-  const [viewMode, setViewMode] = useState<'matrix' | 'table'>('matrix');
+  const [localViewMode, setLocalViewMode] = useState<'matrix' | 'table'>('matrix');
+
+  const viewMode = propViewMode ?? localViewMode;
+  const setViewMode = propSetViewMode ?? setLocalViewMode;
 
   // Matrix data per rangkap
   const matrixData = useMemo(() => {

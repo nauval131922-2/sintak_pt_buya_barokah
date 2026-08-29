@@ -16,6 +16,8 @@ import {
 
 interface YasinMatrixViewProps {
   customParams?: YasinMasterParams;
+  viewMode?: 'matrix' | 'table';
+  setViewMode?: (mode: 'matrix' | 'table') => void;
 }
 
 const OPLAH_TIERS = [
@@ -31,10 +33,15 @@ const YASIN_VARIANTS: Array<{ hal: 64 | 96 | 112 | 128 | 144 | 192; title: strin
 
 export default function YasinMatrixView({
   customParams = DEFAULT_YASIN_PARAMS,
+  viewMode: propViewMode,
+  setViewMode: propSetViewMode,
 }: YasinMatrixViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCoverFilter, setSelectedCoverFilter] = useState<'ALL' | 'Softcover' | 'Hardcover'>('ALL');
-  const [viewMode, setViewMode] = useState<'matrix' | 'table'>('matrix');
+  const [localViewMode, setLocalViewMode] = useState<'matrix' | 'table'>('matrix');
+
+  const viewMode = propViewMode ?? localViewMode;
+  const setViewMode = propSetViewMode ?? setLocalViewMode;
 
   const matrixData = useMemo(() => {
     return YASIN_VARIANTS.map(({ hal, title }) => {

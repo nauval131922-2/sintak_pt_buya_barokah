@@ -511,13 +511,29 @@ export default function PricelistClient() {
       ) : activeTab === 'matrix' ? (
         <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-4">
           {selectedProductCategory === 'Buku Manasik' ? (
-            <ManasikMatrixView customParams={paramsManasik} />
+            <ManasikMatrixView
+              customParams={paramsManasik}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+            />
           ) : selectedProductCategory === 'Buku Yasin' ? (
-            <YasinMatrixView customParams={paramsYasin} />
+            <YasinMatrixView
+              customParams={paramsYasin}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+            />
           ) : selectedProductCategory === 'Nota 1 Warna' ? (
-            <NotaMatrixView customParams={paramsNota} />
+            <NotaMatrixView
+              customParams={paramsNota}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+            />
           ) : selectedProductCategory === 'Brosur 2026' ? (
-            <BrosurMatrixView customParams={paramsBrosur} />
+            <BrosurMatrixView
+              customParams={paramsBrosur}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+            />
           ) : (
             <>
           {/* Upload card */}

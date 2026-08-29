@@ -19,6 +19,8 @@ import {
 
 interface BrosurMatrixViewProps {
   customParams?: BrosurMasterParams;
+  viewMode?: 'matrix' | 'table';
+  setViewMode?: (mode: 'matrix' | 'table') => void;
 }
 
 const OPLAH_TIERS = [100, 150, 200, 300, 400, 500, 1000, 1500, 2000, 2500, 3000];
@@ -34,10 +36,15 @@ const VARIANTS: SubVariant[] = [
 
 export default function BrosurMatrixView({
   customParams = DEFAULT_BROSUR_PARAMS,
+  viewMode: propViewMode,
+  setViewMode: propSetViewMode,
 }: BrosurMatrixViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUkuranFilter, setSelectedUkuranFilter] = useState<BrosurUkuranType | 'ALL'>('ALL');
-  const [viewMode, setViewMode] = useState<'matrix' | 'table'>('matrix');
+  const [localViewMode, setLocalViewMode] = useState<'matrix' | 'table'>('matrix');
+
+  const viewMode = propViewMode ?? localViewMode;
+  const setViewMode = propSetViewMode ?? setLocalViewMode;
 
   const calc = (oplah: number, ukuran: BrosurUkuranType, muka: BrosurMukaType, mesin: BrosurMesinType) =>
     calculateBrosurSimulator(
