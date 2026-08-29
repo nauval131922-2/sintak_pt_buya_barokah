@@ -32,6 +32,8 @@ import {
   Eye,
   Calendar,
   AlertCircle,
+  Maximize,
+  Minimize,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -573,6 +575,25 @@ export default function LaporanPekerjaanClient({
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const deferredSearchTerm = useDeferredValue(searchTerm);
+
+  // Fullscreen state
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.().catch(() => {});
+    } else {
+      document.exitFullscreen?.().catch(() => {});
+    }
+  };
 
   // Persistent Mobile Header Card state (default collapsed on mobile)
   const [isHeaderOpenMobile, setIsHeaderOpenMobile] = useState<boolean>(false);
@@ -1951,7 +1972,7 @@ export default function LaporanPekerjaanClient({
 
       {/* Filter & Search Bar */}
       <div>
-        <div className="shrink-0 bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-stretch md:items-center gap-2 sm:gap-3">
+        <div className="shrink-0 bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200/80 shadow-sm flex flex-col landscape:flex-row md:flex-row items-stretch landscape:items-center md:items-center gap-2 sm:gap-3">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {/* Tombol Reload Data di Samping Kiri Search Bar */}
             <button
@@ -1963,6 +1984,17 @@ export default function LaporanPekerjaanClient({
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-emerald-600" : ""}`} />
               <span className="hidden sm:inline">Reload</span>
+            </button>
+
+            {/* Tombol Fullscreen Khusus HP Landscape */}
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              className="hidden landscape:max-md:flex h-8 px-2 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all items-center gap-1 shrink-0 cursor-pointer shadow-sm"
+              title={isFullscreen ? "Keluar Layar Penuh" : "Mode Layar Penuh (Sembunyikan Address Bar)"}
+            >
+              {isFullscreen ? <Minimize size={13} /> : <Maximize size={13} />}
+              <span className="text-[11px]">{isFullscreen ? "Exit" : "Full"}</span>
             </button>
 
             {/* Input Search */}
