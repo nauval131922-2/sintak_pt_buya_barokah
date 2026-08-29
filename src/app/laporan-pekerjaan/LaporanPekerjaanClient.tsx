@@ -2164,10 +2164,10 @@ export default function LaporanPekerjaanClient({
         {/* Tampilan Tabel khusus HP Landscape, Tablet, & Desktop */}
         <div
           ref={tableContainerRef}
-          className={`hidden landscape:block md:block overflow-x-auto overflow-y-auto landscape:max-md:overflow-y-visible custom-scrollbar transition-all duration-200 ${
+          className={`hidden landscape:block md:block overflow-x-auto overflow-y-auto custom-scrollbar transition-all duration-200 ${
             isAnalyticsOpen
               ? "max-h-[300px] sm:max-h-[480px] shrink-0"
-              : "flex-1 min-h-[220px] md:max-h-none landscape:max-md:max-h-none max-h-[calc(100vh-130px)]"
+              : "flex-1 min-h-[220px] md:max-h-none max-h-[280px] landscape:max-md:max-h-[260px]"
           }`}
           style={
             {
