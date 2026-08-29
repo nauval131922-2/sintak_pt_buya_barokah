@@ -83,12 +83,20 @@ interface ManasikSimulatorProps {
   customParams?: ManasikMasterParams;
   setCustomParams?: React.Dispatch<React.SetStateAction<ManasikMasterParams>>;
   onOpenMasterParam?: () => void;
+  activeSimulationId?: string | null;
+  setActiveSimulationId?: (id: string | null) => void;
+  activeSimulationTitle?: string | null;
+  setActiveSimulationTitle?: (title: string | null) => void;
 }
 
 export default function ManasikSimulator({
   customParams = DEFAULT_MANASIK_PARAMS,
   setCustomParams,
   onOpenMasterParam,
+  activeSimulationId: propActiveSimId,
+  setActiveSimulationId: propSetActiveSimId,
+  activeSimulationTitle: propActiveSimTitle,
+  setActiveSimulationTitle: propSetActiveSimTitle,
 }: ManasikSimulatorProps) {
   const [oplah, setOplah] = useState<number>(500);
   const [jumlahHalaman, setJumlahHalaman] = useState<96 | 128 | 192 | 208>(192);
@@ -110,20 +118,54 @@ export default function ManasikSimulator({
   // Fitur Simpan Simulasi Manasik
   const [savedSimulations, setSavedSimulations] = useState<SavedManasikSimulationItem[]>([]);
   const [simulationTitle, setSimulationTitle] = useState('');
-  const [activeSimulationId, setActiveSimulationId] = useState<string | null>(null);
-  const [activeSimulationTitle, setActiveSimulationTitle] = useState<string | null>(null);
+  const [internalActiveId, setInternalActiveId] = useState<string | null>(null);
+  const [internalActiveTitle, setInternalActiveTitle] = useState<string | null>(null);
   const [showSavedListModal, setShowSavedListModal] = useState(false);
   const [savedSearchTerm, setSavedSearchTerm] = useState('');
   const [showSimulatorManual, setShowSimulatorManual] = useState(false);
 
+  const activeSimulationId = propActiveSimId !== undefined ? propActiveSimId : internalActiveId;
+  const setActiveSimulationId = (id: string | null) => {
+    if (propSetActiveSimId) propSetActiveSimId(id);
+    else setInternalActiveId(id);
+  };
+
+  const activeSimulationTitle = propActiveSimTitle !== undefined ? propActiveSimTitle : internalActiveTitle;
+  const setActiveSimulationTitle = (title: string | null) => {
+    if (propSetActiveSimTitle) propSetActiveSimTitle(title);
+    else setInternalActiveTitle(title);
+  };
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem('sintak_saved_manasik_simulations');
-      if (raw) setSavedSimulations(JSON.parse(raw));
+      if (raw) {
+        const list: SavedManasikSimulationItem[] = JSON.parse(raw);
+        setSavedSimulations(list);
+
+        if (activeSimulationId) {
+          const item = list.find((s) => s.id === activeSimulationId);
+          if (item) {
+            setOplah(item.oplah);
+            setJumlahHalaman(item.jumlahHalaman);
+            setTipeJilid(item.tipeJilid);
+            setMetodeCetakCover(item.metodeCetakCover);
+            setLaminasiCover(item.laminasiCover);
+            setOpsiPlastikOpp(item.opsiPlastikOpp);
+            setOpsiKardus(item.opsiKardus);
+            setMarginPct(item.marginPct);
+            setNegoDiskonPct(item.negoDiskonPct);
+            setSimulationTitle(item.title);
+            if (setCustomParams && item.customParams) {
+              setCustomParams(item.customParams);
+            }
+          }
+        }
+      }
     } catch (e) {
       console.error('Failed to load saved manasik simulations:', e);
     }
-  }, []);
+  }, [activeSimulationId]);
 
   const inputConfig: ManasikSimulatorInput = useMemo(
     () => ({

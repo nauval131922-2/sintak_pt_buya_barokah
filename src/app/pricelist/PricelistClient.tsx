@@ -181,7 +181,7 @@ export default function PricelistClient() {
   };
 
   const handleLoadSimulationFromList = (item: UnifiedCalculationItem) => {
-    setSelectedProductCategory(item.category as any);
+    handleProductCategoryChange(item.category as any);
     setActiveSimulationId(item.id);
     setActiveSimulationTitle(item.title);
     setActiveTab('simulator');
@@ -489,24 +489,40 @@ export default function PricelistClient() {
               customParams={paramsManasik}
               setCustomParams={setParamsManasik}
               onOpenMasterParam={() => setActiveTab('parameter')}
+              activeSimulationId={activeSimulationId}
+              setActiveSimulationId={setActiveSimulationId}
+              activeSimulationTitle={activeSimulationTitle}
+              setActiveSimulationTitle={setActiveSimulationTitle}
             />
           ) : selectedProductCategory === 'Buku Yasin' ? (
             <YasinSimulator
               customParams={paramsYasin}
               setCustomParams={setParamsYasin}
               onOpenMasterParam={() => setActiveTab('parameter')}
+              activeSimulationId={activeSimulationId}
+              setActiveSimulationId={setActiveSimulationId}
+              activeSimulationTitle={activeSimulationTitle}
+              setActiveSimulationTitle={setActiveSimulationTitle}
             />
           ) : selectedProductCategory === 'Nota 1 Warna' ? (
             <NotaSimulator
               customParams={paramsNota}
               setCustomParams={setParamsNota}
               onOpenMasterParam={() => setActiveTab('parameter')}
+              activeSimulationId={activeSimulationId}
+              setActiveSimulationId={setActiveSimulationId}
+              activeSimulationTitle={activeSimulationTitle}
+              setActiveSimulationTitle={setActiveSimulationTitle}
             />
           ) : selectedProductCategory === 'Brosur 2026' ? (
             <BrosurSimulator
               customParams={paramsBrosur}
               setCustomParams={setParamsBrosur}
               onOpenMasterParam={() => setActiveTab('parameter')}
+              activeSimulationId={activeSimulationId}
+              setActiveSimulationId={setActiveSimulationId}
+              activeSimulationTitle={activeSimulationTitle}
+              setActiveSimulationTitle={setActiveSimulationTitle}
             />
           ) : (
             <PricelistSimulator

@@ -73,12 +73,20 @@ interface YasinSimulatorProps {
   customParams?: YasinMasterParams;
   setCustomParams?: React.Dispatch<React.SetStateAction<YasinMasterParams>>;
   onOpenMasterParam?: () => void;
+  activeSimulationId?: string | null;
+  setActiveSimulationId?: (id: string | null) => void;
+  activeSimulationTitle?: string | null;
+  setActiveSimulationTitle?: (title: string | null) => void;
 }
 
 export default function YasinSimulator({
   customParams = DEFAULT_YASIN_PARAMS,
   setCustomParams,
   onOpenMasterParam,
+  activeSimulationId: propActiveSimId,
+  setActiveSimulationId: propSetActiveSimId,
+  activeSimulationTitle: propActiveSimTitle,
+  setActiveSimulationTitle: propSetActiveSimTitle,
 }: YasinSimulatorProps) {
   const [oplah, setOplah] = useState<number>(100);
   const [tipeCover, setTipeCover] = useState<'Softcover' | 'Hardcover'>('Hardcover');
@@ -97,20 +105,57 @@ export default function YasinSimulator({
   // Fitur Simpan Simulasi Yasin
   const [savedSimulations, setSavedSimulations] = useState<SavedYasinSimulationItem[]>([]);
   const [simulationTitle, setSimulationTitle] = useState('');
-  const [activeSimulationId, setActiveSimulationId] = useState<string | null>(null);
-  const [activeSimulationTitle, setActiveSimulationTitle] = useState<string | null>(null);
+  const [internalActiveId, setInternalActiveId] = useState<string | null>(null);
+  const [internalActiveTitle, setInternalActiveTitle] = useState<string | null>(null);
   const [showSavedListModal, setShowSavedListModal] = useState(false);
   const [savedSearchTerm, setSavedSearchTerm] = useState('');
   const [showSimulatorManual, setShowSimulatorManual] = useState(false);
 
+  const activeSimulationId = propActiveSimId !== undefined ? propActiveSimId : internalActiveId;
+  const setActiveSimulationId = (id: string | null) => {
+    if (propSetActiveSimId) propSetActiveSimId(id);
+    else setInternalActiveId(id);
+  };
+
+  const activeSimulationTitle = propActiveSimTitle !== undefined ? propActiveSimTitle : internalActiveTitle;
+  const setActiveSimulationTitle = (title: string | null) => {
+    if (propSetActiveSimTitle) propSetActiveSimTitle(title);
+    else setInternalActiveTitle(title);
+  };
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem('sintak_saved_yasin_simulations');
-      if (raw) setSavedSimulations(JSON.parse(raw));
+      if (raw) {
+        const list: SavedYasinSimulationItem[] = JSON.parse(raw);
+        setSavedSimulations(list);
+
+        if (activeSimulationId) {
+          const item = list.find((s) => s.id === activeSimulationId);
+          if (item) {
+            setOplah(item.oplah);
+            setTipeCover(item.tipeCover);
+            setUkuran(item.ukuran);
+            setJumlahHalamanIsi(item.jumlahHalamanIsi);
+            setLembarSisipanFoto(item.lembarSisipanFoto);
+            setLembarSisipanKeluarga(item.lembarSisipanKeluarga);
+            setLaminasiCover(item.laminasiCover);
+            setOpsiPitaRumbai(item.opsiPitaRumbai);
+            setOpsiSikuEmas(item.opsiSikuEmas);
+            setOpsiPlastikOpp(item.opsiPlastikOpp);
+            setMarginPct(item.marginPct);
+            setNegoDiskonPct(item.negoDiskonPct);
+            setSimulationTitle(item.title);
+            if (setCustomParams && item.customParams) {
+              setCustomParams(item.customParams);
+            }
+          }
+        }
+      }
     } catch (e) {
       console.error('Failed to load saved yasin simulations:', e);
     }
-  }, []);
+  }, [activeSimulationId]);
 
   const inputConfig: YasinSimulatorInput = useMemo(
     () => ({

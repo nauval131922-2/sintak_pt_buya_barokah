@@ -66,11 +66,20 @@ interface NotaSimulatorProps {
   customParams?: NotaMasterParams;
   setCustomParams?: React.Dispatch<React.SetStateAction<NotaMasterParams>>;
   onOpenMasterParam?: () => void;
+  activeSimulationId?: string | null;
+  setActiveSimulationId?: (id: string | null) => void;
+  activeSimulationTitle?: string | null;
+  setActiveSimulationTitle?: (title: string | null) => void;
 }
 
 export default function NotaSimulator({
   customParams = DEFAULT_NOTA_PARAMS,
+  setCustomParams,
   onOpenMasterParam,
+  activeSimulationId: propActiveSimId,
+  setActiveSimulationId: propSetActiveSimId,
+  activeSimulationTitle: propActiveSimTitle,
+  setActiveSimulationTitle: propSetActiveSimTitle,
 }: NotaSimulatorProps) {
   const [oplahRim, setOplahRim] = useState<number>(1);
   const [rangkap, setRangkap] = useState<NotaRangkapType>(1);
@@ -85,18 +94,51 @@ export default function NotaSimulator({
   // Fitur Simpan Simulasi Nota
   const [savedSimulations, setSavedSimulations] = useState<SavedNotaSimulationItem[]>([]);
   const [simulationTitle, setSimulationTitle] = useState('');
-  const [activeSimulationId, setActiveSimulationId] = useState<string | null>(null);
-  const [activeSimulationTitle, setActiveSimulationTitle] = useState<string | null>(null);
+  const [internalActiveId, setInternalActiveId] = useState<string | null>(null);
+  const [internalActiveTitle, setInternalActiveTitle] = useState<string | null>(null);
   const [showSimulatorManual, setShowSimulatorManual] = useState(false);
+
+  const activeSimulationId = propActiveSimId !== undefined ? propActiveSimId : internalActiveId;
+  const setActiveSimulationId = (id: string | null) => {
+    if (propSetActiveSimId) propSetActiveSimId(id);
+    else setInternalActiveId(id);
+  };
+
+  const activeSimulationTitle = propActiveSimTitle !== undefined ? propActiveSimTitle : internalActiveTitle;
+  const setActiveSimulationTitle = (title: string | null) => {
+    if (propSetActiveSimTitle) propSetActiveSimTitle(title);
+    else setInternalActiveTitle(title);
+  };
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem('sintak_saved_nota_simulations');
-      if (raw) setSavedSimulations(JSON.parse(raw));
+      if (raw) {
+        const list: SavedNotaSimulationItem[] = JSON.parse(raw);
+        setSavedSimulations(list);
+
+        if (activeSimulationId) {
+          const item = list.find((s) => s.id === activeSimulationId);
+          if (item) {
+            setOplahRim(item.oplahRim);
+            setRangkap(item.rangkap);
+            setUkuran(item.ukuran);
+            setJumlahWarna(item.jumlahWarna);
+            setOpsiPorporasi(item.opsiPorporasi);
+            setOpsiNomorator(item.opsiNomorator);
+            setMarginPct(item.marginPct);
+            setNegoDiskonPct(item.negoDiskonPct);
+            setSimulationTitle(item.title);
+            if (setCustomParams && item.customParams) {
+              setCustomParams(item.customParams);
+            }
+          }
+        }
+      }
     } catch (e) {
       console.error('Failed to load saved nota simulations:', e);
     }
-  }, []);
+  }, [activeSimulationId]);
 
   const inputConfig: NotaSimulatorInput = useMemo(
     () => ({

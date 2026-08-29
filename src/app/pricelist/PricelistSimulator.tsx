@@ -272,12 +272,38 @@ export default function PricelistSimulator({
     try {
       const raw = localStorage.getItem('sintak_saved_simulations');
       if (raw) {
-        setSavedSimulations(JSON.parse(raw));
+        const list: SavedSimulationItem[] = JSON.parse(raw);
+        setSavedSimulations(list);
+
+        // Jika activeSimulationId ada, sinkronkan input form dari data item tersebut
+        if (activeSimulationId) {
+          const item = list.find((s) => s.id === activeSimulationId);
+          if (item) {
+            setModelKalender(item.modelKalender);
+            setBahan(item.bahan);
+            setUkuran(item.ukuran);
+            setOplah(item.oplah);
+            setPilihanMesin(item.pilihanMesin);
+            setMarginPct(item.marginPct);
+            setNegoDiskonPct(item.negoDiskonPct);
+            setSimulationTitle(item.title);
+            if (onChangeFinishingJilid && item.finishingJilid) {
+              onChangeFinishingJilid(item.finishingJilid);
+            }
+            if (item.customParams) {
+              if (setParamsForFinishing) {
+                setParamsForFinishing(item.finishingJilid, item.customParams);
+              } else {
+                setCustomParams(item.customParams);
+              }
+            }
+          }
+        }
       }
     } catch (e) {
       console.error('Failed to load saved simulations:', e);
     }
-  }, []);
+  }, [activeSimulationId]);
 
   const handleSaveSimulation = () => {
     const defaultTitle = `${modelKalender.split(' ')[0]} - ${ukuran} cm (${oplah.toLocaleString('id-ID')} pcs - ${finishingJilid})`;

@@ -54,11 +54,20 @@ interface BrosurSimulatorProps {
   customParams?: BrosurMasterParams;
   setCustomParams?: React.Dispatch<React.SetStateAction<BrosurMasterParams>>;
   onOpenMasterParam?: () => void;
+  activeSimulationId?: string | null;
+  setActiveSimulationId?: (id: string | null) => void;
+  activeSimulationTitle?: string | null;
+  setActiveSimulationTitle?: (title: string | null) => void;
 }
 
 export default function BrosurSimulator({
   customParams = DEFAULT_BROSUR_PARAMS,
+  setCustomParams,
   onOpenMasterParam,
+  activeSimulationId: propActiveSimId,
+  setActiveSimulationId: propSetActiveSimId,
+  activeSimulationTitle: propActiveSimTitle,
+  setActiveSimulationTitle: propSetActiveSimTitle,
 }: BrosurSimulatorProps) {
   const [oplah, setOplah] = useState<number>(500);
   const [ukuran, setUkuran] = useState<BrosurUkuranType>('21 x 29,7');
@@ -73,18 +82,50 @@ export default function BrosurSimulator({
 
   const [savedSimulations, setSavedSimulations] = useState<SavedBrosurSimulationItem[]>([]);
   const [simulationTitle, setSimulationTitle] = useState('');
-  const [activeSimulationId, setActiveSimulationId] = useState<string | null>(null);
-  const [activeSimulationTitle, setActiveSimulationTitle] = useState<string | null>(null);
+  const [internalActiveId, setInternalActiveId] = useState<string | null>(null);
+  const [internalActiveTitle, setInternalActiveTitle] = useState<string | null>(null);
   const [showSimulatorManual, setShowSimulatorManual] = useState(false);
+
+  const activeSimulationId = propActiveSimId !== undefined ? propActiveSimId : internalActiveId;
+  const setActiveSimulationId = (id: string | null) => {
+    if (propSetActiveSimId) propSetActiveSimId(id);
+    else setInternalActiveId(id);
+  };
+
+  const activeSimulationTitle = propActiveSimTitle !== undefined ? propActiveSimTitle : internalActiveTitle;
+  const setActiveSimulationTitle = (title: string | null) => {
+    if (propSetActiveSimTitle) propSetActiveSimTitle(title);
+    else setInternalActiveTitle(title);
+  };
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem('sintak_saved_brosur_simulations');
-      if (raw) setSavedSimulations(JSON.parse(raw));
+      if (raw) {
+        const list: SavedBrosurSimulationItem[] = JSON.parse(raw);
+        setSavedSimulations(list);
+
+        if (activeSimulationId) {
+          const item = list.find((s) => s.id === activeSimulationId);
+          if (item) {
+            const input = item.data.input;
+            setOplah(input.oplah);
+            setUkuran(input.ukuran);
+            setMuka(input.muka);
+            setMesin(input.mesin);
+            setLaminasi(input.laminasi);
+            setOpsiSisir(input.opsiSisir);
+            setOpsiPacking(input.opsiPacking);
+            setMarginPct(input.marginPct);
+            setNegoDiskonPct(input.negoDiskonPct);
+            setSimulationTitle(item.title);
+          }
+        }
+      }
     } catch (e) {
       console.error('Failed to load saved brosur simulations:', e);
     }
-  }, []);
+  }, [activeSimulationId]);
 
   const result = useMemo(
     () =>
