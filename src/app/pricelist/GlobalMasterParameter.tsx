@@ -78,15 +78,15 @@ export default function GlobalMasterParameter({
           : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
       }`}
     >
-      <div className="flex items-center justify-between gap-1 mb-1">
-        <label className="text-[11px] font-semibold text-slate-700 truncate" title={label}>
+      <div className="flex items-center justify-between gap-1 mb-1.5">
+        <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
           {label}
         </label>
         {isFieldModified(key) && (
           <button
             type="button"
             onClick={() => handleResetField(key)}
-            className="text-[9px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1 py-0.5 rounded cursor-pointer shrink-0"
+            className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
             title="Reset ke default"
           >
             <RotateCcw className="w-2.5 h-2.5" /> Def
@@ -97,14 +97,14 @@ export default function GlobalMasterParameter({
         <ThousandInput
           value={globalParams[key]}
           onValueChange={(val) => handleChange(key, val)}
-          className="w-full bg-white border border-slate-200 rounded-md px-2 py-1 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500"
+          className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
           prefix={isRupiah ? 'Rp' : undefined}
           suffix={!isRupiah && !isDecimal ? undefined : isDecimal ? undefined : '%'}
           allowDecimals={isDecimal}
         />
       </div>
-      <p className="text-[9.5px] text-slate-400 font-medium mt-1 truncate" title={affectedProducts}>
-        Terkait: {affectedProducts}
+      <p className="text-[10px] text-slate-500 font-medium mt-1.5 truncate" title={affectedProducts}>
+        Terkait: <span className="text-slate-600 font-semibold">{affectedProducts}</span>
       </p>
     </div>
   );
@@ -160,14 +160,14 @@ export default function GlobalMasterParameter({
       )}
 
       {/* Grid Kategori Parameter */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {/* 1. Mesin Cetak Offset Oliver */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Printer className="w-4 h-4 text-emerald-700" />
             <h3 className="text-xs font-bold text-slate-800">1. Mesin Offset (Oliver 58/52)</h3>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('oliverPlatUnit', 'Tarif Plat CTP / Unit', 'Kalender, Manasik, Brosur')}
             {fieldRow('oliverMinOngkos', 'Min. Cetak (≤1000 Drek)', 'Kalender, Manasik, Brosur')}
             {fieldRow('oliverDrekOver', 'Tarif Drek Over / Drek', 'Kalender, Manasik, Brosur')}
@@ -181,7 +181,7 @@ export default function GlobalMasterParameter({
             <FileText className="w-4 h-4 text-blue-600" />
             <h3 className="text-xs font-bold text-slate-800">2. Bahan Kertas Dasar (/Kg)</h3>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('tarifHvs70', 'HVS 70 gsm / Kg', 'Kalender, Nota')}
             {fieldRow('tarifAp120', 'Art Paper 120 / Kg', 'Kalender, Brosur')}
             {fieldRow('tarifAp150', 'Art Paper 150 / Kg', 'Kalender')}
@@ -197,7 +197,7 @@ export default function GlobalMasterParameter({
             <Printer className="w-4 h-4 text-purple-600" />
             <h3 className="text-xs font-bold text-slate-800">3. Print Digital POD A3+</h3>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('tarifPrintA3', 'Print Cover POD A3+', 'Manasik, Yasin')}
             {fieldRow('tarifPrintInter1Muka', 'Print Inter 1 Muka', 'Brosur 2026')}
             {fieldRow('tarifPrintInter2Muka', 'Print Inter 2 Muka', 'Brosur 2026')}
@@ -210,7 +210,7 @@ export default function GlobalMasterParameter({
             <Layers className="w-4 h-4 text-amber-600" />
             <h3 className="text-xs font-bold text-slate-800">4. Jasa Laminasi (/cm²)</h3>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('tarifLaminasiGlossyCm2', 'Laminasi Glossy / cm²', 'Manasik, Yasin, Brosur', true, true)}
             {fieldRow('tarifLaminasiDoffCm2', 'Laminasi Doff / cm²', 'Manasik, Yasin, Brosur', true, true)}
             {fieldRow('tarifUvVarnishCm2', 'UV Varnish / cm²', 'Manasik, Brosur', true, true)}
@@ -224,7 +224,7 @@ export default function GlobalMasterParameter({
             <Box className="w-4 h-4 text-rose-600" />
             <h3 className="text-xs font-bold text-slate-800">5. Packing & Finishing Umum</h3>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('tarifKardusBox', 'Kardus Box / Pcs', 'Manasik, Brosur')}
             {fieldRow('tarifLakbanRoll', 'Lakban Roll / Pcs', 'Kalender, Brosur')}
             {fieldRow('tarifPlastikOppPcs', 'Plastik OPP / Pcs', 'Manasik, Yasin')}

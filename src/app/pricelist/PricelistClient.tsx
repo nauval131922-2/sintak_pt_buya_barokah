@@ -907,30 +907,36 @@ export default function PricelistClient() {
 
       {/* Modal Master Parameter Global */}
       {showGlobalParamModal && (
-        <div className="fixed inset-0 z-[300] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+        <div
+          onClick={() => setShowGlobalParamModal(false)}
+          className="fixed inset-0 z-[300] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-6xl max-h-[92vh] flex flex-col overflow-hidden cursor-default"
+          >
             {/* Header Modal */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/80">
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-emerald-100 text-emerald-800 rounded-xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/90 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-emerald-100 text-emerald-800 rounded-xl border border-emerald-200">
                   <Database className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-800">Master Parameter Global (Shared Rates)</h3>
+                  <h3 className="text-base font-bold text-slate-800">Master Parameter Global (Shared Rates)</h3>
                   <p className="text-xs text-slate-500">Kalkulasi dan sinkronisasi tarif dasar lintas semua jenis produk</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowGlobalParamModal(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-xl transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="p-5 overflow-y-auto flex-1 custom-scrollbar">
+            <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
               <GlobalMasterParameter
                 globalParams={paramsGlobal}
                 setGlobalParams={setParamsGlobal}
@@ -941,7 +947,18 @@ export default function PricelistClient() {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-5 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-2">
+            <div className="px-6 py-3.5 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowGlobalParamModal(false)}
+                className="px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
               <button
                 type="button"
                 onClick={() => setShowGlobalParamModal(false)}
