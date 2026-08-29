@@ -21,6 +21,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
+import SquareDropdown from '@/components/SquareDropdown';
 import { SimulatorMasterParams } from '@/lib/pricelist-simulator';
 import { ManasikMasterParams } from '@/lib/manasik-calculator';
 import { YasinMasterParams } from '@/lib/yasin-calculator';
@@ -420,74 +421,27 @@ export default function SavedCalculationsList({
           )}
         </div>
 
-        {/* Filter Kategori Produk Pill Switcher */}
-        <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200 shrink-0 w-full sm:w-auto overflow-x-auto">
-          <button
-            type="button"
-            onClick={() => setFilterCategory('ALL')}
-            className={`px-3 py-1 rounded-md font-semibold transition cursor-pointer text-xs ${
-              filterCategory === 'ALL'
-                ? 'bg-white text-emerald-800 shadow-xs'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            Semua ({unifiedList.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setFilterCategory('Kalender')}
-            className={`px-3 py-1 rounded-md font-semibold transition cursor-pointer text-xs ${
-              filterCategory === 'Kalender'
-                ? 'bg-white text-emerald-800 shadow-xs'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            🗓️ Kalender ({kalenderList.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setFilterCategory('Buku Manasik')}
-            className={`px-3 py-1 rounded-md font-semibold transition cursor-pointer text-xs ${
-              filterCategory === 'Buku Manasik'
-                ? 'bg-white text-emerald-800 shadow-xs'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            📖 Manasik ({manasikList.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setFilterCategory('Buku Yasin')}
-            className={`px-3 py-1 rounded-md font-semibold transition cursor-pointer text-xs ${
-              filterCategory === 'Buku Yasin'
-                ? 'bg-white text-emerald-800 shadow-xs'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            📗 Yasin ({yasinList.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setFilterCategory('Nota 1 Warna')}
-            className={`px-3 py-1 rounded-md font-semibold transition cursor-pointer text-xs ${
-              filterCategory === 'Nota 1 Warna'
-                ? 'bg-white text-emerald-800 shadow-xs'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            📋 Nota ({notaList.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setFilterCategory('Brosur 2026')}
-            className={`px-3 py-1 rounded-md font-semibold transition cursor-pointer text-xs ${
-              filterCategory === 'Brosur 2026'
-                ? 'bg-white text-emerald-800 shadow-xs'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            🗞️ Brosur ({brosurList.length})
-          </button>
+        {/* Filter Kategori Produk - SquareDropdown Searchable */}
+        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+          <span className="text-slate-500 font-semibold text-xs hidden md:inline">Kategori:</span>
+          <div className="w-full sm:w-56 text-xs">
+            <SquareDropdown
+              options={[
+                { value: 'ALL', label: 'Semua Kategori', count: unifiedList.length },
+                { value: 'Kalender', label: '🗓️ Kalender', count: kalenderList.length },
+                { value: 'Buku Manasik', label: '📖 Buku Manasik', count: manasikList.length },
+                { value: 'Buku Yasin', label: '📗 Buku Yasin', count: yasinList.length },
+                { value: 'Nota 1 Warna', label: '📋 Nota 1 Warna', count: notaList.length },
+                { value: 'Brosur 2026', label: '🗞️ Brosur 2026', count: brosurList.length },
+              ]}
+              value={filterCategory}
+              onChange={(val) => setFilterCategory(val as any)}
+              searchPlaceholder="Cari kategori produk..."
+              widthClass="w-full sm:w-56"
+              alignRight
+              usePortal
+            />
+          </div>
         </div>
       </div>
 
