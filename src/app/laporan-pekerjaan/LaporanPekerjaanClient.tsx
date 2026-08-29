@@ -1978,7 +1978,7 @@ export default function LaporanPekerjaanClient({
             </div>
           </div>
 
-          <div className="flex items-center space-x-2 w-full md:w-auto min-w-0">
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto min-w-0">
             <div className="flex items-center text-xs text-slate-500 font-medium shrink-0">
               <Filter className="w-3.5 h-3.5 mr-1 text-slate-400" /> Filter:
             </div>
@@ -2005,7 +2005,7 @@ export default function LaporanPekerjaanClient({
                 value={selectedBagianFilter}
                 onChange={setSelectedBagianFilter}
                 searchPlaceholder="Cari Bagian..."
-                widthClass="w-44"
+                widthClass="w-full sm:w-44"
               />
             )}
 
@@ -2015,7 +2015,7 @@ export default function LaporanPekerjaanClient({
                 value={selectedPic}
                 onChange={setSelectedPic}
                 searchPlaceholder="Cari PIC..."
-                widthClass="w-44"
+                widthClass="w-full sm:w-44"
               />
             )}
 
@@ -2024,7 +2024,7 @@ export default function LaporanPekerjaanClient({
               value={selectedStatus}
               onChange={setSelectedStatus}
               searchPlaceholder="Cari Status..."
-              widthClass="w-44"
+              widthClass="w-full sm:w-44"
             />
           </div>
         </div>
@@ -2408,7 +2408,7 @@ export default function LaporanPekerjaanClient({
 
               {/* Body */}
               <div className="px-6 py-5 flex flex-col gap-4 overflow-y-auto">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Versi Manual (SINTAK) */}
                   <div className="border-2 border-emerald-200 rounded-xl p-4 bg-emerald-50/50">
                     <div className="flex items-center justify-between mb-3">
@@ -2454,7 +2454,7 @@ export default function LaporanPekerjaanClient({
               </div>
 
               {/* Footer */}
-              <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50 shrink-0 rounded-b-2xl">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/50 shrink-0 rounded-b-2xl">
                 <button
                   type="button"
                   onClick={() => {
@@ -2467,11 +2467,11 @@ export default function LaporanPekerjaanClient({
                       setConflicts([]);
                     }
                   }}
-                  className="px-5 py-2.5 text-[13px] font-bold text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 rounded-xl border border-gray-200 transition-all"
+                  className="px-5 py-2.5 text-[13px] font-bold text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 rounded-xl border border-gray-200 transition-all text-center"
                 >
                   Skip
                 </button>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
                   <button
                     type="button"
                     onClick={async () => {
@@ -2485,7 +2485,7 @@ export default function LaporanPekerjaanClient({
                         await fetchData();
                       }
                     }}
-                    className="px-6 py-2.5 text-[13px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition-all flex items-center gap-2"
+                    className="px-6 py-2.5 text-[13px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
                   >
                     <Check size={15} />
                     Pakai Versi SINTAK
@@ -2530,7 +2530,7 @@ export default function LaporanPekerjaanClient({
                         alert(err.message || 'Terjadi kesalahan');
                       }
                     }}
-                    className="px-6 py-2.5 text-[13px] font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition-all flex items-center gap-2"
+                    className="px-6 py-2.5 text-[13px] font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
                   >
                     <FileSpreadsheet size={15} />
                     Pakai Versi Spreadsheet
@@ -2732,9 +2732,9 @@ function TaskDetailModal({
           </div>
 
           {/* Body: Tabel List Task dari Order tersebut */}
-          <div className="flex-1 min-h-0 flex flex-col p-4 sm:p-6 overflow-hidden">
-            <div className="flex-1 min-h-0 border border-slate-200 rounded-xl shadow-sm overflow-y-auto custom-scrollbar relative bg-white">
-              <table className="w-full text-left text-xs border-collapse table-fixed">
+          <div className="flex-1 min-h-0 flex flex-col p-3 sm:p-6 overflow-hidden">
+            <div className="flex-1 min-h-0 border border-slate-200 rounded-xl shadow-sm overflow-x-auto overflow-y-auto custom-scrollbar relative bg-white">
+              <table className="w-full min-w-[700px] sm:min-w-full text-left text-xs border-collapse table-fixed">
                 <colgroup>
                   {activeColumns.map((col) => (
                     <col key={col.key} style={{ width: col.widthPercent }} />
