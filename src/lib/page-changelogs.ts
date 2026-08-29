@@ -996,6 +996,19 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Laporan Pekerjaan ───
+  'laporan-pekerjaan-2026-08-29': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-08-29',
+    date: '29 Agu 2026',
+    version: '2026-08-29-1',
+    items: [
+      'Penyelarasan tata letak Filter & Search bar menjadi 1 baris terpadu pada mode HP Landscape dengan lebar dropdown adaptif agar kotak pencarian tetap lapang',
+      'Optimalisasi scroll natural dokumen pada viewport HP Landscape untuk mendukung auto-hide address bar browser bawaan',
+      'Perbaikan responsif modal detail tugas (TaskDetailModal) dan modal resolusi konflik spreadsheet dengan penambahan scroll horizontal tabel serta layout tombol fleksibel',
+    ],
+  }),
   'laporan-pekerjaan-2026-08-24': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan',
