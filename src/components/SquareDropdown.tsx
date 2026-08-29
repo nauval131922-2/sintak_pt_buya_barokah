@@ -54,16 +54,16 @@ export default function SquareDropdown({
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
     const scale = getZoomScale();
-    const popupWidth = rect.width;
+    const popupWidth = Math.max(rect.width, 190);
     const spaceRight = window.innerWidth - rect.left;
     const leftWhenAlignRight = rect.right - popupWidth;
-    const minLeftAllowed = window.innerWidth >= 1024 ? 260 : 12;
+    const padding = 12;
 
     let isRight = false;
     if (propAlignRight !== undefined) {
       isRight = propAlignRight;
-    } else if (spaceRight < popupWidth + 10) {
-      isRight = leftWhenAlignRight >= minLeftAllowed;
+    } else if (spaceRight < popupWidth + padding) {
+      isRight = leftWhenAlignRight >= padding;
     }
     setAlignRight(isRight);
 
@@ -73,15 +73,20 @@ export default function SquareDropdown({
     setOpenUpward(isUpward);
 
     if (usePortal) {
+      let targetLeft = isRight ? (rect.right - popupWidth) : rect.left;
+      const minLeft = padding;
+      const maxLeft = Math.max(padding, window.innerWidth - popupWidth - padding);
+      const clampedLeft = Math.max(minLeft, Math.min(targetLeft, maxLeft));
+
       const style: React.CSSProperties = {
         position: 'fixed',
-        left: isRight ? (rect.right - popupWidth) / scale : rect.left / scale,
+        left: clampedLeft / scale,
         width: `${popupWidth / scale}px`,
         zIndex: 10000,
       };
 
       if (isUpward) {
-        style.bottom = (window.innerHeight - rect.top + 4) / scale;
+        style.bottom = Math.max(10, window.innerHeight - rect.top + 4) / scale;
       } else {
         style.top = (rect.bottom + 4) / scale;
       }
@@ -133,8 +138,8 @@ export default function SquareDropdown({
       className={`${
         usePortal
           ? 'fixed'
-          : `absolute ${openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'} ${alignRight ? 'right-0' : 'left-0'} w-full`
-      } min-w-[190px] bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden z-[10000] animate-in fade-in slide-in-from-top-1 duration-150`}
+          : `absolute ${openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'} ${alignRight ? 'right-0' : 'left-0'} w-full min-w-[190px]`
+      } bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden z-[10000] animate-in fade-in slide-in-from-top-1 duration-150`}
     >
       <div className="p-2 border-b border-slate-100 bg-slate-50/50">
         <div className="flex items-center gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-slate-200">
