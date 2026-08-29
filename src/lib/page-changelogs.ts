@@ -1007,6 +1007,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
       'Penyelarasan tata letak Filter & Search bar menjadi 1 baris terpadu pada mode HP Landscape dengan lebar dropdown adaptif agar kotak pencarian tetap lapang',
       'Optimalisasi scroll natural dokumen pada viewport HP Landscape untuk mendukung auto-hide address bar browser bawaan',
       'Perbaikan responsif modal detail tugas (TaskDetailModal) dan modal resolusi konflik spreadsheet dengan penambahan scroll horizontal tabel serta layout tombol fleksibel',
+      'Penyempurnaan tombol navigasi melayang (Up & Down) untuk mendukung sinkronisasi scroll vertikal tabel dan viewport landscape secara bersamaan',
     ],
   }),
   'laporan-pekerjaan-2026-08-24': entry({
