@@ -1951,14 +1951,14 @@ export default function LaporanPekerjaanClient({
 
       {/* Filter & Search Bar */}
       <div>
-        <div className="shrink-0 bg-white p-3 rounded-xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-          <div className="flex items-center gap-2 flex-1">
+        <div className="shrink-0 bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-stretch md:items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             {/* Tombol Reload Data di Samping Kiri Search Bar */}
             <button
               type="button"
               onClick={() => fetchData(true)}
               disabled={loading}
-              className="h-8 px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
+              className="h-8 px-2.5 sm:px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
               title="Reload Data Laporan Pekerjaan"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-emerald-600" : ""}`} />
@@ -1966,7 +1966,7 @@ export default function LaporanPekerjaanClient({
             </button>
 
             {/* Input Search */}
-            <div className="relative flex-1">
+            <div className="relative flex-1 min-w-0">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
@@ -1978,7 +1978,7 @@ export default function LaporanPekerjaanClient({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <div className="flex items-center text-xs text-slate-500 font-medium shrink-0">
               <Filter className="w-3.5 h-3.5 mr-1 text-slate-400" /> Filter:
             </div>
@@ -2005,7 +2005,7 @@ export default function LaporanPekerjaanClient({
                 value={selectedBagianFilter}
                 onChange={setSelectedBagianFilter}
                 searchPlaceholder="Cari Bagian..."
-                widthClass="flex-1 sm:w-44"
+                widthClass="w-28 sm:w-36 lg:w-44"
               />
             )}
 
@@ -2015,7 +2015,7 @@ export default function LaporanPekerjaanClient({
                 value={selectedPic}
                 onChange={setSelectedPic}
                 searchPlaceholder="Cari PIC..."
-                widthClass="flex-1 sm:w-44"
+                widthClass="w-28 sm:w-36 lg:w-44"
               />
             )}
 
@@ -2024,7 +2024,7 @@ export default function LaporanPekerjaanClient({
               value={selectedStatus}
               onChange={setSelectedStatus}
               searchPlaceholder="Cari Status..."
-              widthClass="flex-1 sm:w-44"
+              widthClass="w-28 sm:w-36 lg:w-44"
             />
           </div>
         </div>
@@ -2140,10 +2140,10 @@ export default function LaporanPekerjaanClient({
         {/* Tampilan Tabel khusus HP Landscape, Tablet, & Desktop */}
         <div
           ref={tableContainerRef}
-          className={`hidden landscape:block md:block overflow-x-auto overflow-y-auto landscape:max-md:overflow-y-visible custom-scrollbar transition-all duration-200 ${
+          className={`hidden landscape:block md:block overflow-x-auto overflow-y-auto custom-scrollbar transition-all duration-200 ${
             isAnalyticsOpen
               ? "max-h-[300px] sm:max-h-[480px] shrink-0"
-              : "flex-1 min-h-[220px] md:max-h-none landscape:max-md:max-h-none max-h-[calc(100vh-130px)]"
+              : "flex-1 min-h-[220px] md:max-h-none max-h-[calc(100vh-130px)]"
           }`}
           style={
             {
