@@ -65,26 +65,7 @@ export default function SavedCalculationsList({
   activeSimulationId,
 }: SavedCalculationsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  
-  // Ambil initial filter tersimpan di localStorage khusus untuk tab daftar kalkulasi
-  const getSavedFilter = (): 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('sintak_pricelist_saved_list_filter');
-      if (
-        saved === 'ALL' ||
-        saved === 'Kalender' ||
-        saved === 'Buku Manasik' ||
-        saved === 'Buku Yasin' ||
-        saved === 'Nota 1 Warna' ||
-        saved === 'Brosur 2026'
-      ) {
-        return saved as any;
-      }
-    }
-    return 'ALL';
-  };
-
-  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026'>(getSavedFilter);
+  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026'>('ALL');
   
   const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026') => {
     setFilterCategory(val);
@@ -109,6 +90,18 @@ export default function SavedCalculationsList({
   // Load from localStorage
   const refreshData = () => {
     try {
+      const savedFilter = localStorage.getItem('sintak_pricelist_saved_list_filter');
+      if (
+        savedFilter === 'ALL' ||
+        savedFilter === 'Kalender' ||
+        savedFilter === 'Buku Manasik' ||
+        savedFilter === 'Buku Yasin' ||
+        savedFilter === 'Nota 1 Warna' ||
+        savedFilter === 'Brosur 2026'
+      ) {
+        setFilterCategory(savedFilter as any);
+      }
+
       const rawK = localStorage.getItem('sintak_saved_simulations');
       if (rawK) setKalenderList(JSON.parse(rawK));
       else setKalenderList([]);
