@@ -959,17 +959,6 @@ export default function PricelistClient() {
           </div>
         </div>
       )}
-              <button
-                type="button"
-                onClick={() => setShowGlobalParamModal(false)}
-                className="px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
-              >
-                Tutup
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

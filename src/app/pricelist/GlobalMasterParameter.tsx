@@ -99,7 +99,7 @@ export default function GlobalMasterParameter({
           onValueChange={(val) => handleChange(key, val)}
           className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
           prefix={isRupiah ? 'Rp' : undefined}
-          suffix={!isRupiah && !isDecimal ? undefined : isDecimal ? undefined : '%'}
+          suffix={isRupiah ? undefined : '%'}
           allowDecimals={isDecimal}
         />
       </div>
