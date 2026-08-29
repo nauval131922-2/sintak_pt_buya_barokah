@@ -98,11 +98,23 @@ export default function SquareDropdown({
   useEffect(() => {
     if (!open) return;
     updateAlignment();
-    window.addEventListener('resize', updateAlignment);
-    window.addEventListener('scroll', updateAlignment, true);
+
+    let ticking = false;
+    const handleScrollOrResize = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          updateAlignment();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('resize', handleScrollOrResize, { passive: true });
+    window.addEventListener('scroll', handleScrollOrResize, { capture: true, passive: true });
     return () => {
-      window.removeEventListener('resize', updateAlignment);
-      window.removeEventListener('scroll', updateAlignment, true);
+      window.removeEventListener('resize', handleScrollOrResize);
+      window.removeEventListener('scroll', handleScrollOrResize, true);
     };
   }, [open, updateAlignment]);
 
