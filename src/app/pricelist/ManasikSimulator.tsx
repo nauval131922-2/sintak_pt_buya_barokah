@@ -24,6 +24,7 @@ import {
   X,
   Settings2,
   Calculator,
+  RefreshCw,
 } from 'lucide-react';
 import {
   calculateManasikSimulator,

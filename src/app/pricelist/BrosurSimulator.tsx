@@ -18,6 +18,7 @@ import {
   Calculator,
   Info,
   Layers,
+  RefreshCw,
 } from 'lucide-react';
 import {
   calculateBrosurSimulator,

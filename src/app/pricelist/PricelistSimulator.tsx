@@ -27,6 +27,7 @@ import {
   Filter,
   Calendar as CalendarIcon,
   BookOpen,
+  RefreshCw,
 } from 'lucide-react';
 import {
   calculatePricelistSimulator,
