@@ -67,7 +67,7 @@ export default function DatePicker({ name, required, label, onChange, value, cus
   const [viewMode, setViewMode] = useState<'days' | 'months' | 'years'>( // mode tampilan
     selectionMode === 'month' ? 'months' : 'days'
   );
-  const [alignRight, setAlignRight] = useState(false);
+  const [alignOffset, setAlignOffset] = useState<number>(0);
   const [openUpward, setOpenUpward] = useState(false);
   const [portalStyle, setPortalStyle] = useState<React.CSSProperties>({});
 
@@ -75,49 +75,32 @@ export default function DatePicker({ name, required, label, onChange, value, cus
   const ref = useRef<HTMLDivElement>(null);       // ref ke popup kalender
   const triggerRef = useRef<HTMLDivElement>(null); // ref ke tombol trigger
 
-  // Deteksi otomatis orientasi horizontal (selalu rata kiri / merentang ke kanan jika ruang kanan masih ada, hanya rata kanan jika mepet tepi kanan layar / modal)
+  // Deteksi otomatis orientasi horizontal & clamping agar kalender tidak pernah kepotong kiri/kanan
   const updateAlignment = useCallback(() => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
     const scale = getZoomScale();
     const popupWidth = 280;
-
-    // Deteksi container pembatas (modal / scroll container / overflow-hidden) jika tidak pakai portal
-    let rightEdge = window.innerWidth;
-    if (!usePortal) {
-      let container = triggerRef.current.parentElement;
-      while (container && container !== document.body) {
-        const style = getComputedStyle(container);
-        const overflow = (style.overflow || '') + (style.overflowX || '') + (style.overflowY || '');
-        if (overflow.includes('hidden') || overflow.includes('auto') || overflow.includes('scroll')) {
-          const containerRect = container.getBoundingClientRect();
-          rightEdge = Math.min(rightEdge, containerRect.right);
-          break;
-        }
-        container = container.parentElement;
-      }
-    }
-
-    let isRight = false;
-    if (popupAlign) {
-      isRight = popupAlign === 'right';
-    } else {
-      const spaceRight = rightEdge - rect.left;
-      isRight = spaceRight < popupWidth + 10;
-    }
-    setAlignRight(isRight);
-
-    const spaceBelow = window.innerHeight - rect.bottom;
-    const spaceAbove = rect.top;
-    const isUpward = spaceBelow < 320 && spaceAbove > spaceBelow;
-    setOpenUpward(isUpward);
+    const padding = 12;
 
     if (usePortal) {
+      // Portal: gunakan viewport clamping langsung
+      const minLeft = padding;
+      const maxLeft = Math.max(padding, window.innerWidth - popupWidth - padding);
+      let targetLeft = rect.left;
+      if (popupAlign === 'right') {
+        targetLeft = rect.right - popupWidth;
+      }
+      const clampedLeft = Math.max(minLeft, Math.min(targetLeft, maxLeft));
+
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      const isUpward = spaceBelow < 320 && spaceAbove > spaceBelow;
+      setOpenUpward(isUpward);
+
       const style: React.CSSProperties = {
         position: 'fixed',
-        left: isRight
-          ? Math.max(10, rect.right - popupWidth) / scale
-          : Math.max(10, rect.left) / scale,
+        left: clampedLeft / scale,
         zIndex: 10000,
       };
 
@@ -128,6 +111,46 @@ export default function DatePicker({ name, required, label, onChange, value, cus
       }
 
       setPortalStyle(style);
+    } else {
+      // Non-portal (relative positioning): hitung shift offset (px) agar tetap dalam viewport/container
+      let leftEdge = 0;
+      let rightEdge = window.innerWidth;
+
+      let container = triggerRef.current.parentElement;
+      while (container && container !== document.body) {
+        const style = getComputedStyle(container);
+        const overflow = (style.overflow || '') + (style.overflowX || '') + (style.overflowY || '');
+        if (overflow.includes('hidden') || overflow.includes('auto') || overflow.includes('scroll')) {
+          const containerRect = container.getBoundingClientRect();
+          leftEdge = Math.max(leftEdge, containerRect.left);
+          rightEdge = Math.min(rightEdge, containerRect.right);
+          break;
+        }
+        container = container.parentElement;
+      }
+
+      const availableLeft = Math.max(padding, leftEdge + padding);
+      const availableRight = Math.min(window.innerWidth - padding, rightEdge - padding);
+
+      let idealPopupLeft = rect.left;
+      if (popupAlign === 'right') {
+        idealPopupLeft = rect.right - popupWidth;
+      }
+
+      let shift = 0;
+      if (idealPopupLeft + popupWidth > availableRight) {
+        shift = availableRight - (idealPopupLeft + popupWidth);
+      }
+      if (idealPopupLeft + shift < availableLeft) {
+        shift = availableLeft - idealPopupLeft;
+      }
+
+      setAlignOffset(popupAlign === 'right' ? shift + (rect.width - popupWidth) : shift);
+
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      const isUpward = spaceBelow < 320 && spaceAbove > spaceBelow;
+      setOpenUpward(isUpward);
     }
   }, [popupAlign, usePortal]);
 
@@ -364,12 +387,19 @@ export default function DatePicker({ name, required, label, onChange, value, cus
   const calendarPopup = open && (
     <div
       ref={ref}
-      style={usePortal ? portalStyle : undefined}
+      style={
+        usePortal
+          ? portalStyle
+          : {
+              left: 0,
+              transform: alignOffset ? `translateX(${alignOffset}px)` : undefined,
+            }
+      }
       className={`${
         usePortal
           ? 'fixed'
-          : `absolute ${openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'} ${alignRight ? 'right-0' : 'left-0'}`
-      } bg-white border border-gray-100 rounded-xl shadow-2xl p-4 w-[280px] z-[10000] animate-in fade-in zoom-in-95 duration-200`}
+          : `absolute ${openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'}`
+      } bg-white border border-gray-100 rounded-xl shadow-2xl p-4 w-[280px] max-w-[calc(100vw-24px)] z-[10000] animate-in fade-in zoom-in-95 duration-200`}
     >
       {/* HEADER: navigasi bulan/tahun */}
       <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-50">
