@@ -96,12 +96,11 @@ export default function GlobalMasterParameter({
       <div className="flex items-center gap-1.5">
         <ThousandInput
           value={globalParams[key]}
-          onChange={(val) => handleChange(key, val)}
+          onValueChange={(val) => handleChange(key, val)}
           className="w-full bg-white border border-slate-200 rounded-md px-2 py-1 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500"
           prefix={isRupiah ? 'Rp' : undefined}
           suffix={!isRupiah && !isDecimal ? undefined : isDecimal ? undefined : '%'}
-          allowDecimal={isDecimal}
-          decimals={isDecimal ? 2 : 0}
+          allowDecimals={isDecimal}
         />
       </div>
       <p className="text-[9.5px] text-slate-400 font-medium mt-1 truncate" title={affectedProducts}>
