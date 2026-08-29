@@ -2006,6 +2006,7 @@ export default function LaporanPekerjaanClient({
                 onChange={setSelectedBagianFilter}
                 searchPlaceholder="Cari Bagian..."
                 widthClass="w-36 sm:w-44"
+                usePortal={true}
               />
             )}
 
@@ -2016,6 +2017,7 @@ export default function LaporanPekerjaanClient({
                 onChange={setSelectedPic}
                 searchPlaceholder="Cari PIC..."
                 widthClass="w-36 sm:w-44"
+                usePortal={true}
               />
             )}
 
@@ -2025,6 +2027,7 @@ export default function LaporanPekerjaanClient({
               onChange={setSelectedStatus}
               searchPlaceholder="Cari Status..."
               widthClass="w-36 sm:w-44"
+              usePortal={true}
             />
           </div>
         </div>
