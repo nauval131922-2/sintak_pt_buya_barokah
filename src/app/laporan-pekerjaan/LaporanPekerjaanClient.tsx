@@ -247,7 +247,7 @@ const formatDateForApi = (val?: Date | string | null): string => {
 };
 
 // Progress & penanda pekerjaan terakhir (SELESAI terakhir)/selanjutnya per order,
-// urutan task berdasarkan tanggal mulai (yang tanpa start_date ditaruh di paling bawah).
+// ponytail: single-pass loop untuk hitung summary tasks (active, selesai, last, next) tanpa multi-filter loop
 const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
   const sorted = [...tasks].sort((a, b) => {
     const timeA = parseDateToSort(a.startDate || "") || Number.MAX_SAFE_INTEGER;
@@ -256,32 +256,29 @@ const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
     return (a.id || 0) - (b.id || 0);
   });
 
-  const activeTasks = sorted.filter(
-    (t) => (t.status || "").toUpperCase() !== "CANCEL"
-  );
-  const selesaiCount = activeTasks.filter(
-    (t) => (t.status || "").toUpperCase() === "SELESAI"
-  ).length;
-
-  // Cari pekerjaan yang terakhir selesai
+  let activeCount = 0;
+  let selesaiCount = 0;
   let lastSelesaiTask: SpreadsheetTask | undefined;
-  for (let i = sorted.length - 1; i >= 0; i--) {
-    if ((sorted[i].status || "").toUpperCase() === "SELESAI") {
-      lastSelesaiTask = sorted[i];
-      break;
+  let nextTask: SpreadsheetTask | undefined;
+
+  for (let i = 0; i < sorted.length; i++) {
+    const t = sorted[i];
+    const s = (t.status || "").toUpperCase();
+    if (s !== "CANCEL") {
+      activeCount++;
+      if (s === "SELESAI") {
+        selesaiCount++;
+        lastSelesaiTask = t;
+      } else if (!nextTask) {
+        nextTask = t;
+      }
     }
   }
 
-  // Cari pekerjaan selanjutnya: task urutan teratas yang belum selesai dan bukan CANCEL
-  const nextTask = sorted.find((t) => {
-    const s = (t.status || "").toUpperCase();
-    return s !== "SELESAI" && s !== "CANCEL";
-  });
-
   return {
     progressPct:
-      activeTasks.length > 0
-        ? Math.round((selesaiCount / activeTasks.length) * 100)
+      activeCount > 0
+        ? Math.round((selesaiCount / activeCount) * 100)
         : 0,
     pekerjaanTerakhir: lastSelesaiTask
       ? cleanTaskName(lastSelesaiTask.task || "", project)
@@ -2588,17 +2585,25 @@ export default function LaporanPekerjaanClient({
 // seluruh halaman (grafik, tabel utama ribuan data, dll).
 // ----------------------------------------------------------------------
 
+const pekerjaanCategoryCache = new Map<string, string[]>();
+
 const fetchPekerjaanForCategory = async (bagian: string): Promise<string[]> => {
   if (!bagian) return [];
   const category = BAGIAN_CATEGORY_MAP[bagian];
   if (!category) return [];
+
+  const cached = pekerjaanCategoryCache.get(category);
+  if (cached !== undefined) return cached;
+
   try {
     const res = await fetch(
       `/api/master-pekerjaan-jurnal-produksi?category=${encodeURIComponent(category)}&all=true`
     );
     const json = await res.json();
     if (json.success && Array.isArray(json.data)) {
-      return json.data.filter((p: any) => p.name).map((p: any) => p.name);
+      const list = json.data.filter((p: any) => p.name).map((p: any) => p.name);
+      pekerjaanCategoryCache.set(category, list);
+      return list;
     }
   } catch (err) {
     console.error("Gagal fetch pekerjaan:", err);
