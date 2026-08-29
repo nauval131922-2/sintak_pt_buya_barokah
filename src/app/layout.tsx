@@ -57,8 +57,8 @@ export default async function RootLayout({
   const permissions = userRoles.length > 0 ? await getMergedPermissions(userRoles) : {};
 
   return (
-    <html lang="id" className="overflow-hidden">
-      <body className={`${outfit.className} overflow-hidden h-[100dvh] w-screen`}>
+    <html lang="id" className="overflow-hidden landscape:max-md:overflow-y-auto landscape:max-md:h-auto">
+      <body className={`${outfit.className} overflow-hidden h-[100dvh] w-screen landscape:max-md:overflow-y-auto landscape:max-md:h-auto`}>
         <MainContentWrapper user={user} permissions={permissions}>
           {children}
         </MainContentWrapper>

@@ -32,8 +32,6 @@ import {
   Eye,
   Calendar,
   AlertCircle,
-  Maximize,
-  Minimize,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -575,25 +573,6 @@ export default function LaporanPekerjaanClient({
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const deferredSearchTerm = useDeferredValue(searchTerm);
-
-  // Fullscreen state
-  const [isFullscreen, setIsFullscreen] = useState(false);
-
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(Boolean(document.fullscreenElement));
-    };
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
-  }, []);
-
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen?.().catch(() => {});
-    } else {
-      document.exitFullscreen?.().catch(() => {});
-    }
-  };
 
   // Persistent Mobile Header Card state (default collapsed on mobile)
   const [isHeaderOpenMobile, setIsHeaderOpenMobile] = useState<boolean>(false);
@@ -1986,17 +1965,6 @@ export default function LaporanPekerjaanClient({
               <span className="hidden sm:inline">Reload</span>
             </button>
 
-            {/* Tombol Fullscreen Khusus HP Landscape */}
-            <button
-              type="button"
-              onClick={toggleFullscreen}
-              className="hidden landscape:max-md:flex h-8 px-2 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all items-center gap-1 shrink-0 cursor-pointer shadow-sm"
-              title={isFullscreen ? "Keluar Layar Penuh" : "Mode Layar Penuh (Sembunyikan Address Bar)"}
-            >
-              {isFullscreen ? <Minimize size={13} /> : <Maximize size={13} />}
-              <span className="text-[11px]">{isFullscreen ? "Exit" : "Full"}</span>
-            </button>
-
             {/* Input Search */}
             <div className="relative flex-1 min-w-0">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -2172,10 +2140,10 @@ export default function LaporanPekerjaanClient({
         {/* Tampilan Tabel khusus HP Landscape, Tablet, & Desktop */}
         <div
           ref={tableContainerRef}
-          className={`hidden landscape:block md:block overflow-x-auto overflow-y-auto custom-scrollbar transition-all duration-200 ${
+          className={`hidden landscape:block md:block overflow-x-auto overflow-y-auto landscape:max-md:overflow-y-visible custom-scrollbar transition-all duration-200 ${
             isAnalyticsOpen
               ? "max-h-[300px] sm:max-h-[480px] shrink-0"
-              : "flex-1 min-h-[220px] md:max-h-none max-h-[calc(100vh-130px)]"
+              : "flex-1 min-h-[220px] md:max-h-none landscape:max-md:max-h-none max-h-[calc(100vh-130px)]"
           }`}
           style={
             {
