@@ -704,6 +704,7 @@ export default function PricelistMasterParameter({
           </div>
         </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Section 3: Ongkos Finishing & Jasa */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col">
           <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
