@@ -99,8 +99,6 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     date: '27 Agu 2026',
     version: '2026-08-27-1',
     items: [
-      'Penambahan fitur Master Parameter Global (Shared Rates) untuk mengelola tarif mesin offset Oliver, harga kertas dasar per kg, digital print POD A3+, laminasi, dan finishing umum secara terpusat',
-      'Tombol "Terapkan ke Semua Produk" di Master Global langsung menyinkronkan seluruh parameter di modul Kalender, Manasik, Yasin, Nota, dan Brosur sekaligus',
       'Penambahan modul Brosur 2026 (📋 Brosur Art Paper 120gsm) — 5 ukuran (10,5×21 s.d 29,7×42), 2 muka (1/2 Muka), 2 mesin (Print Inter & Oliver), tier oplah 100–3000 pcs',
       'Simulator Brosur: form input lengkap (ukuran, muka, mesin, laminasi, sisir, packing), 4 kartu finansial (HPP, Harga Jual, Nego, Total), tabel breakdown komponen HPP, tombol salin penawaran WA',
       'Pricelist Matriks Brosur: grid 5 ukuran × 11 tier oplah dengan 4 sub-baris (Print 1M, Print 2M, Oliver 1M, Oliver 2M) per sel + Flat Table rinci',
