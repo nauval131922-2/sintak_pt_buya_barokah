@@ -118,8 +118,9 @@ export interface YasinSimulatorOutput {
 
 export function calculateYasinSimulator(
   input: YasinSimulatorInput,
-  params: YasinMasterParams = DEFAULT_YASIN_PARAMS
+  rawParams: YasinMasterParams = DEFAULT_YASIN_PARAMS
 ): YasinSimulatorOutput {
+  const params: YasinMasterParams = { ...DEFAULT_YASIN_PARAMS, ...(rawParams || {}) };
   const {
     oplah,
     tipeCover,
@@ -151,18 +152,18 @@ export function calculateYasinSimulator(
   // 2. Biaya Cover POD A3+
   // Softcover muat 3 cover / A3+, Hardcover muat 2 cover (bentangan lebar + lipatan board)
   const a3MuatCover = isHardcover ? 2 : 3;
-  const kebutuhanA3Cover = Math.ceil(validOplah / a3MuatCover) + params.insheetCover;
-  const hargaPrintCoverUnit = isHardcover ? 2000 : params.tarifPrintCoverA3;
-  const biayaPrintCover = (kebutuhanA3Cover * hargaPrintCoverUnit) + params.tarifDesainCover;
+  const kebutuhanA3Cover = Math.ceil(validOplah / a3MuatCover) + (params.insheetCover ?? 5);
+  const hargaPrintCoverUnit = isHardcover ? 2000 : (params.tarifPrintCoverA3 ?? 2500);
+  const biayaPrintCover = (kebutuhanA3Cover * hargaPrintCoverUnit) + (params.tarifDesainCover ?? 25000);
 
   // 3. Biaya Blok Isi Yasin
-  let hargaIsiPerPcs = params.hargaIsiYasin96;
-  if (jumlahHalamanIsi === 64) hargaIsiPerPcs = params.hargaIsiYasin64;
-  else if (jumlahHalamanIsi === 96) hargaIsiPerPcs = params.hargaIsiYasin96;
-  else if (jumlahHalamanIsi === 112) hargaIsiPerPcs = params.hargaIsiYasin112;
-  else if (jumlahHalamanIsi === 128) hargaIsiPerPcs = params.hargaIsiYasin128;
-  else if (jumlahHalamanIsi === 144) hargaIsiPerPcs = params.hargaIsiYasin144;
-  else if (jumlahHalamanIsi === 192) hargaIsiPerPcs = params.hargaIsiYasin192;
+  let hargaIsiPerPcs = params.hargaIsiYasin96 ?? DEFAULT_YASIN_PARAMS.hargaIsiYasin96;
+  if (jumlahHalamanIsi === 64) hargaIsiPerPcs = params.hargaIsiYasin64 ?? DEFAULT_YASIN_PARAMS.hargaIsiYasin64;
+  else if (jumlahHalamanIsi === 96) hargaIsiPerPcs = params.hargaIsiYasin96 ?? DEFAULT_YASIN_PARAMS.hargaIsiYasin96;
+  else if (jumlahHalamanIsi === 112) hargaIsiPerPcs = params.hargaIsiYasin112 ?? DEFAULT_YASIN_PARAMS.hargaIsiYasin112;
+  else if (jumlahHalamanIsi === 128) hargaIsiPerPcs = params.hargaIsiYasin128 ?? DEFAULT_YASIN_PARAMS.hargaIsiYasin128;
+  else if (jumlahHalamanIsi === 144) hargaIsiPerPcs = params.hargaIsiYasin144 ?? DEFAULT_YASIN_PARAMS.hargaIsiYasin144;
+  else if (jumlahHalamanIsi === 192) hargaIsiPerPcs = params.hargaIsiYasin192 ?? DEFAULT_YASIN_PARAMS.hargaIsiYasin192;
 
   const biayaIsi = hargaIsiPerPcs * validOplah;
 

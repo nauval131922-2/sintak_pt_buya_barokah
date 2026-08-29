@@ -138,8 +138,9 @@ export interface BrosurSimulatorInput {
 
 export function calculateBrosurSimulator(
   input: BrosurSimulatorInput,
-  p: BrosurMasterParams
+  rawParams: BrosurMasterParams = DEFAULT_BROSUR_PARAMS
 ): BrosurSimulatorResult {
+  const p: BrosurMasterParams = { ...DEFAULT_BROSUR_PARAMS, ...(rawParams || {}) };
   const { oplah, ukuran, muka, mesin, laminasi, opsiSisir, marginPct, negoDiskonPct } = input;
   const cfg = UKURAN_CONFIG[ukuran];
   const is2Muka = muka === '2 Muka';

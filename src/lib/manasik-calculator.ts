@@ -122,8 +122,9 @@ export interface ManasikSimulatorOutput {
 
 export function calculateManasikSimulator(
   input: ManasikSimulatorInput,
-  params: ManasikMasterParams = DEFAULT_MANASIK_PARAMS
+  rawParams: ManasikMasterParams = DEFAULT_MANASIK_PARAMS
 ): ManasikSimulatorOutput {
+  const params: ManasikMasterParams = { ...DEFAULT_MANASIK_PARAMS, ...(rawParams || {}) };
   const {
     oplah,
     jumlahHalaman,

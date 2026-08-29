@@ -120,8 +120,9 @@ export function getNotaUkuranDivider(ukuran: NotaUkuranType): number {
 
 export function calculateNotaSimulator(
   input: NotaSimulatorInput,
-  params: NotaMasterParams = DEFAULT_NOTA_PARAMS
+  rawParams: NotaMasterParams = DEFAULT_NOTA_PARAMS
 ): NotaSimulatorResult {
+  const params: NotaMasterParams = { ...DEFAULT_NOTA_PARAMS, ...(rawParams || {}) };
   const validOplahRim = Math.max(1, input.oplahRim);
   const rangkap = input.rangkap;
   const divider = getNotaUkuranDivider(input.ukuran);
