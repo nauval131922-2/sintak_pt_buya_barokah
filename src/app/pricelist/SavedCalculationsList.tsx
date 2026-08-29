@@ -434,8 +434,6 @@ export default function SavedCalculationsList({
               onChange={(val) => handleFilterChange(val as any)}
               searchPlaceholder="Cari kategori produk..."
               widthClass="w-full sm:w-56"
-              alignRight
-              usePortal
             />
           </div>
         </div>

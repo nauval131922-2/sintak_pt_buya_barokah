@@ -420,8 +420,6 @@ export default function PricelistClient() {
               onChange={(val) => handleProductCategoryChange(val as any)}
               searchPlaceholder="Cari jenis produk..."
               widthClass="w-56"
-              alignRight
-              usePortal
             />
           </div>
         </div>
