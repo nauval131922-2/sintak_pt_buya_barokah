@@ -35,6 +35,12 @@ import BrosurMatrixView from './BrosurMatrixView';
 import SavedCalculationsList, { UnifiedCalculationItem } from './SavedCalculationsList';
 import PageHeader from '@/components/PageHeader';
 import SquareDropdown from '@/components/SquareDropdown';
+import GlobalMasterParameter from './GlobalMasterParameter';
+import {
+  GlobalMasterParams,
+  DEFAULT_GLOBAL_PARAMS,
+  applyGlobalParamsToAll,
+} from '@/lib/global-master-params';
 import { DEFAULT_MASTER_PARAMS, DEFAULT_MASTER_PARAMS_KLEM, SimulatorMasterParams } from '@/lib/pricelist-simulator';
 import { DEFAULT_MANASIK_PARAMS, ManasikMasterParams } from '@/lib/manasik-calculator';
 import { DEFAULT_YASIN_PARAMS, YasinMasterParams } from '@/lib/yasin-calculator';
@@ -68,7 +74,9 @@ export default function PricelistClient() {
   const [activeTab, setActiveTab] = useState<'parameter' | 'simulator' | 'matrix' | 'saved'>('saved');
   const [selectedFinishing, setSelectedFinishing] = useState<'Spiral' | 'Klem'>('Spiral');
 
-  // Parameter Buku Manasik, Yasin & Nota
+  // Parameter Buku Manasik, Yasin, Nota, Brosur & Global
+  const [paramsGlobal, setParamsGlobal] = useState<GlobalMasterParams>(DEFAULT_GLOBAL_PARAMS);
+  const [showGlobalParamModal, setShowGlobalParamModal] = useState(false);
   const [paramsManasik, setParamsManasik] = useState<ManasikMasterParams>(DEFAULT_MANASIK_PARAMS);
   const [paramsYasin, setParamsYasin] = useState<YasinMasterParams>(DEFAULT_YASIN_PARAMS);
   const [paramsNota, setParamsNota] = useState<NotaMasterParams>(DEFAULT_NOTA_PARAMS);
@@ -121,6 +129,11 @@ export default function PricelistClient() {
         savedCategory === 'Brosur 2026'
       ) {
         setSelectedProductCategory(savedCategory);
+      }
+
+      const savedGlobal = localStorage.getItem('sintak_pricelist_master_params_global');
+      if (savedGlobal) {
+        setParamsGlobal({ ...DEFAULT_GLOBAL_PARAMS, ...JSON.parse(savedGlobal) });
       }
     } catch (e) {
       console.error('Failed to load localStorage preferences:', e);
@@ -206,12 +219,34 @@ export default function PricelistClient() {
       try {
         localStorage.setItem('sintak_pricelist_master_params_spiral', JSON.stringify(paramsSpiral));
         localStorage.setItem('sintak_pricelist_master_params_klem', JSON.stringify(paramsKlem));
+        localStorage.setItem('sintak_pricelist_master_params_global', JSON.stringify(paramsGlobal));
       } catch (e) {
         console.error('Failed to save master params to localStorage:', e);
       }
     }, 400);
     return () => clearTimeout(timer);
-  }, [paramsSpiral, paramsKlem]);
+  }, [paramsSpiral, paramsKlem, paramsGlobal]);
+
+  // Fungsi sebarkan parameter global ke seluruh produk
+  const handleApplyGlobalParams = (targetGlobal?: GlobalMasterParams) => {
+    const g = targetGlobal || paramsGlobal;
+    const { nextSpiral, nextKlem, nextManasik, nextYasin, nextNota, nextBrosur } = applyGlobalParamsToAll(
+      g,
+      paramsSpiral,
+      paramsKlem,
+      paramsManasik,
+      paramsYasin,
+      paramsNota,
+      paramsBrosur
+    );
+
+    setParamsSpiral(nextSpiral);
+    setParamsKlem(nextKlem);
+    setParamsManasik(nextManasik);
+    setParamsYasin(nextYasin);
+    setParamsNota(nextNota);
+    setParamsBrosur(nextBrosur);
+  };
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -406,6 +441,15 @@ export default function PricelistClient() {
 
         {/* Global Product Category Selector - Dropdown Searchable */}
         <div className="flex items-center gap-2 mx-2 self-start lg:self-auto shrink-0 text-xs sm:text-sm">
+          <button
+            type="button"
+            onClick={() => setShowGlobalParamModal(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg text-xs font-bold transition-all shadow-2xs hover:shadow-xs cursor-pointer"
+            title="Kelola Master Parameter Global (Shared Rates antar produk)"
+          >
+            <Database size={13} className="text-emerald-700" />
+            <span>Master Global</span>
+          </button>
           <span className="text-xs font-semibold text-slate-500 hidden sm:inline">Jenis Produk:</span>
           <div className="text-xs sm:text-sm font-semibold">
             <SquareDropdown
@@ -858,6 +902,55 @@ export default function PricelistClient() {
             onLoadSimulation={handleLoadSimulationFromList}
             activeSimulationId={activeSimulationId}
           />
+        </div>
+      )}
+
+      {/* Modal Master Parameter Global */}
+      {showGlobalParamModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+            {/* Header Modal */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/80">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-emerald-100 text-emerald-800 rounded-xl">
+                  <Database className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-800">Master Parameter Global (Shared Rates)</h3>
+                  <p className="text-xs text-slate-500">Kalkulasi dan sinkronisasi tarif dasar lintas semua jenis produk</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowGlobalParamModal(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 overflow-y-auto flex-1 custom-scrollbar">
+              <GlobalMasterParameter
+                globalParams={paramsGlobal}
+                setGlobalParams={setParamsGlobal}
+                onApplyToAllProducts={(applied) => {
+                  handleApplyGlobalParams(applied);
+                }}
+              />
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-5 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowGlobalParamModal(false)}
+                className="px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
