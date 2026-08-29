@@ -65,29 +65,7 @@ export default function SavedCalculationsList({
   activeSimulationId,
 }: SavedCalculationsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const getInitialCategory = (): 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('sintak_pricelist_selected_category');
-      if (
-        saved === 'Kalender' ||
-        saved === 'Buku Manasik' ||
-        saved === 'Buku Yasin' ||
-        saved === 'Nota 1 Warna' ||
-        saved === 'Brosur 2026'
-      ) {
-        return saved as any;
-      }
-    }
-    return 'ALL';
-  };
-
-  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026'>(getInitialCategory());
-  useEffect(() => {
-    if (selectedCategory) {
-      setFilterCategory(selectedCategory);
-    }
-  }, [selectedCategory]);
-
+  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026'>('ALL');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitleInput, setEditTitleInput] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -128,11 +106,7 @@ export default function SavedCalculationsList({
 
   useEffect(() => {
     refreshData();
-    // Sinkronisasi jika kategori yang dipilih di header berubah
-    if (selectedCategory) {
-      setFilterCategory(selectedCategory);
-    }
-  }, [selectedCategory]);
+  }, []);
 
   // Map into unified list
   const unifiedList = useMemo<UnifiedCalculationItem[]>(() => {
