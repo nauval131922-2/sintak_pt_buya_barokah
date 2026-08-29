@@ -5,6 +5,9 @@ import { getSpreadsheetTasks } from "@/lib/google-sheets";
 
 export const dynamic = "force-dynamic";
 
+// ponytail: in-memory flag untuk skip `SELECT COUNT(*)` berulang setelah DB terbukti sudah terisi
+let isInitialSeedChecked = false;
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -14,50 +17,53 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("search")?.toLowerCase();
 
     // Auto-seed dari Google Spreadsheet 1x saja jika database masih kosong
-    const countRes = await db.execute("SELECT COUNT(*) as cnt FROM laporan_pekerjaan");
-    const totalCount = Number(countRes.rows[0]?.cnt || 0);
+    if (!isInitialSeedChecked) {
+      const countRes = await db.execute("SELECT COUNT(*) as cnt FROM laporan_pekerjaan");
+      const totalCount = Number(countRes.rows[0]?.cnt || 0);
 
-    if (totalCount === 0) {
-      try {
-        const sheetTasks = await getSpreadsheetTasks("DATABASE_REPORT", true);
-        if (sheetTasks.length > 0) {
-          const PIC_MAPPING: Record<string, string> = {
-            ADI: "Muhammad Adi Saputra",
-            ALBILA: "Albilla Rizqi",
-            ERIC: "Eric Fahri Emawan",
-            RIFAN: "Rifan",
-            RIKZA: "Muhammad Rikza Musthofa",
-            SONI: "Sonny Yudha Bhirawa",
-          };
-
-          const now = new Date().toISOString();
-          const insertBatch = sheetTasks.map((sheetTask) => {
-            const rawPic = (sheetTask.pic || "").trim();
-            const mappedPic = PIC_MAPPING[rawPic.toUpperCase()] || rawPic;
-
-            return {
-              sql: `INSERT INTO laporan_pekerjaan (task, project, division, bagian, pic, priority, start_date, end_date, work_days, note, status, source, created_at)
-                    VALUES (?, ?, ?, 'SETTING', ?, ?, ?, ?, ?, ?, ?, 'sintak', ?)`,
-              args: [
-                sheetTask.task || sheetTask.project || "",
-                sheetTask.project || "",
-                sheetTask.division || "",
-                mappedPic,
-                sheetTask.priority || "Low",
-                sheetTask.startDate || "",
-                sheetTask.endDate || "",
-                sheetTask.workDays || "",
-                sheetTask.note || "",
-                sheetTask.status || "BELUM DIKERJAKAN",
-                now,
-              ],
+      if (totalCount === 0) {
+        try {
+          const sheetTasks = await getSpreadsheetTasks("DATABASE_REPORT", true);
+          if (sheetTasks.length > 0) {
+            const PIC_MAPPING: Record<string, string> = {
+              ADI: "Muhammad Adi Saputra",
+              ALBILA: "Albilla Rizqi",
+              ERIC: "Eric Fahri Emawan",
+              RIFAN: "Rifan",
+              RIKZA: "Muhammad Rikza Musthofa",
+              SONI: "Sonny Yudha Bhirawa",
             };
-          });
-          await db.batch(insertBatch, "write");
+
+            const now = new Date().toISOString();
+            const insertBatch = sheetTasks.map((sheetTask) => {
+              const rawPic = (sheetTask.pic || "").trim();
+              const mappedPic = PIC_MAPPING[rawPic.toUpperCase()] || rawPic;
+
+              return {
+                sql: `INSERT INTO laporan_pekerjaan (task, project, division, bagian, pic, priority, start_date, end_date, work_days, note, status, source, created_at)
+                      VALUES (?, ?, ?, 'SETTING', ?, ?, ?, ?, ?, ?, ?, 'sintak', ?)`,
+                args: [
+                  sheetTask.task || sheetTask.project || "",
+                  sheetTask.project || "",
+                  sheetTask.division || "",
+                  mappedPic,
+                  sheetTask.priority || "Low",
+                  sheetTask.startDate || "",
+                  sheetTask.endDate || "",
+                  sheetTask.workDays || "",
+                  sheetTask.note || "",
+                  sheetTask.status || "BELUM DIKERJAKAN",
+                  now,
+                ],
+              };
+            });
+            await db.batch(insertBatch, "write");
+          }
+        } catch (err) {
+          console.error("Gagal initial seed dari Google Sheet:", err);
         }
-      } catch (err) {
-        console.error("Gagal initial seed dari Google Sheet:", err);
       }
+      isInitialSeedChecked = true;
     }
 
     // Query data murni dari database lokal Sintak dengan join tgl_order dari sopd / orders
