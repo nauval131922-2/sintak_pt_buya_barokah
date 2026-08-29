@@ -64,8 +64,10 @@ export async function GET(request: NextRequest) {
     let sql = `
       SELECT lp.*,
              COALESCE(
-               (SELECT s.tgl FROM sopd s WHERE s.nama_order = lp.project OR s.no_sopd = lp.project LIMIT 1),
-               (SELECT o.tgl FROM orders o WHERE o.nama_prd = lp.project OR o.faktur = lp.project LIMIT 1),
+               (SELECT s.tgl FROM sopd s WHERE s.nama_order = lp.project LIMIT 1),
+               (SELECT s.tgl FROM sopd s WHERE s.no_sopd = lp.project LIMIT 1),
+               (SELECT o.tgl FROM orders o WHERE o.nama_prd = lp.project LIMIT 1),
+               (SELECT o.tgl FROM orders o WHERE o.faktur = lp.project LIMIT 1),
                ''
              ) as tgl_order
       FROM laporan_pekerjaan lp
