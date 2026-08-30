@@ -1024,6 +1024,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
       'Penyelarasan tata letak status badge rata kiri pada kolom tabel di modal detail tugas',
       'Perbaikan kalkulasi posisi portal SquareDropdown dan DatePicker saat level zoom browser berubah',
       'Penyempurnaan tombol navigasi melayang (Up & Down) yang kini murni mengendalikan scroll halaman (viewport) tanpa mengganggu scroll internal tabel',
+      'Pembaruan kalkulasi posisi DatePicker dengan smart viewport clamping horizontal agar kalender presisi di tengah/tidak terpotong pada batas layar sempit',
     ],
   }),
   'laporan-pekerjaan-2026-08-29': entry({
