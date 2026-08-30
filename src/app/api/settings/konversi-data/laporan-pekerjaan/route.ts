@@ -43,6 +43,13 @@ export async function POST(request: NextRequest) {
       const rawPic = (sheetTask.pic || "").trim();
       const mappedPic = PIC_MAPPING[rawPic.toUpperCase()] || rawPic;
 
+      let status = (sheetTask.status || "").trim();
+      if (status.toUpperCase() === "PENDING") {
+        status = "IN PROGRESS";
+      } else if (!status) {
+        status = "BELUM DIKERJAKAN";
+      }
+
       return {
         sql: `INSERT INTO laporan_pekerjaan (task, project, division, bagian, pic, priority, start_date, end_date, work_days, note, status, source, created_at)
               VALUES (?, ?, ?, 'SETTING', ?, ?, ?, ?, ?, ?, ?, 'sintak', ?)`,
@@ -56,7 +63,7 @@ export async function POST(request: NextRequest) {
           sheetTask.endDate || "",
           sheetTask.workDays || "",
           sheetTask.note || "",
-          sheetTask.status || "BELUM DIKERJAKAN",
+          status,
           now,
         ],
       };
