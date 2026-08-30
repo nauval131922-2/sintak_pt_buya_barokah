@@ -551,8 +551,18 @@ export default function LaporanPekerjaanClient({
   } | null>(null);
 
   // Filters & Analytics state
-  const [selectedPic, setSelectedPic] = useState<string>("ALL");
-  const [selectedBagianFilter, setSelectedBagianFilter] = useState<string>("ALL");
+  const [selectedPic, setSelectedPic] = useState<string>(() => {
+    if (roleConfig?.allowed_pic && roleConfig.allowed_pic.length === 1) {
+      return roleConfig.allowed_pic[0];
+    }
+    return "ALL";
+  });
+  const [selectedBagianFilter, setSelectedBagianFilter] = useState<string>(() => {
+    if (roleConfig?.allowed_bagian && roleConfig.allowed_bagian.length === 1) {
+      return roleConfig.allowed_bagian[0];
+    }
+    return "ALL";
+  });
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const deferredSearchTerm = useDeferredValue(searchTerm);
@@ -1071,8 +1081,10 @@ export default function LaporanPekerjaanClient({
 
   const isPicAllowedByRole = useCallback(
     (pic?: string | null, source?: string | null) => {
-      // Order baru dari SOPD yang belum memiliki subtask/PIC boleh dilihat agar bisa dikerjakan/di-assign
-      if (source === 'sopd') return true;
+      // Order baru dari SOPD tanpa subtask hanya diizinkan untuk role yang bisa tambah pekerjaan (can_add)
+      if (source === 'sopd') {
+        return roleConfig?.can_add !== false;
+      }
       if (!allowedPicSet) return true;
       if (!pic || pic.trim() === "") {
         return (
@@ -1082,7 +1094,7 @@ export default function LaporanPekerjaanClient({
       }
       return allowedPicSet.has(pic.toLowerCase());
     },
-    [allowedPicSet]
+    [allowedPicSet, roleConfig?.can_add]
   );
 
   // Helper pencocokan task dengan pilihan filter PIC
