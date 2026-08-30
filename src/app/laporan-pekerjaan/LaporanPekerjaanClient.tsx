@@ -2873,7 +2873,7 @@ function TaskDetailModal({
                           </td>
                         )}
                         {isColVisible('status') && (
-                          <td className="px-1.5 py-2 text-center overflow-hidden">
+                          <td className="px-1.5 py-2 text-left overflow-hidden">
                             {getStatusBadge(task.status)}
                           </td>
                         )}
