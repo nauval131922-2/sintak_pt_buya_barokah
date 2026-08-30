@@ -1059,7 +1059,9 @@ export default function LaporanPekerjaanClient({
   }, [roleConfig?.allowed_pic]);
 
   const isBagianAllowedByRole = useCallback(
-    (bagian?: string | null) => {
+    (bagian?: string | null, source?: string | null) => {
+      // Order baru dari SOPD yang belum memiliki subtask/bagian boleh dilihat agar bisa ditambah pekerjaan
+      if (source === 'sopd' || (!bagian && !source)) return true;
       if (!allowedBagianSet) return true;
       if (!bagian) return false;
       return allowedBagianSet.has(bagian.toUpperCase());
@@ -1068,7 +1070,9 @@ export default function LaporanPekerjaanClient({
   );
 
   const isPicAllowedByRole = useCallback(
-    (pic?: string | null) => {
+    (pic?: string | null, source?: string | null) => {
+      // Order baru dari SOPD yang belum memiliki subtask/PIC boleh dilihat agar bisa dikerjakan/di-assign
+      if (source === 'sopd') return true;
       if (!allowedPicSet) return true;
       if (!pic || pic.trim() === "") {
         return (
@@ -1105,7 +1109,7 @@ export default function LaporanPekerjaanClient({
   const bagianOptions = useMemo<FilterOption[]>(() => {
     const set = new Set<string>();
     tasks.forEach((t) => {
-      if (!isBagianAllowedByRole(t.bagian) || !isPicAllowedByRole(t.pic)) return;
+      if (!isBagianAllowedByRole(t.bagian, t.source) || !isPicAllowedByRole(t.pic, t.source)) return;
       if (!isPicMatchingSelection(t.pic, selectedPic)) return;
       if (selectedStatus !== "ALL" && t.status.toUpperCase() !== selectedStatus.toUpperCase()) return;
       if (t.bagian) set.add(t.bagian);
@@ -1125,7 +1129,7 @@ export default function LaporanPekerjaanClient({
     let hasUnassignedTask = false;
 
     tasks.forEach((t) => {
-      if (!isBagianAllowedByRole(t.bagian) || !isPicAllowedByRole(t.pic)) return;
+      if (!isBagianAllowedByRole(t.bagian, t.source) || !isPicAllowedByRole(t.pic, t.source)) return;
       if (selectedBagianFilter !== "ALL" && (t.bagian || "").toUpperCase() !== selectedBagianFilter.toUpperCase()) return;
       if (selectedStatus !== "ALL" && t.status.toUpperCase() !== selectedStatus.toUpperCase()) return;
       if (!t.pic || t.pic.trim() === "" || t.pic.toUpperCase() === "TANPA PIC") {
@@ -1161,7 +1165,7 @@ export default function LaporanPekerjaanClient({
   const statusOptions = useMemo<FilterOption[]>(() => {
     const set = new Set<string>();
     tasks.forEach((t) => {
-      if (!isBagianAllowedByRole(t.bagian) || !isPicAllowedByRole(t.pic)) return;
+      if (!isBagianAllowedByRole(t.bagian, t.source) || !isPicAllowedByRole(t.pic, t.source)) return;
       if (selectedBagianFilter !== "ALL" && (t.bagian || "").toUpperCase() !== selectedBagianFilter.toUpperCase()) return;
       if (!isPicMatchingSelection(t.pic, selectedPic)) return;
       if (t.status) set.add(t.status.toUpperCase());
@@ -1178,8 +1182,8 @@ export default function LaporanPekerjaanClient({
   const filteredTasks = useMemo(() => {
     return tasks.filter((t) => {
       // Role scope restrictions
-      if (!isBagianAllowedByRole(t.bagian)) return false;
-      if (!isPicAllowedByRole(t.pic)) return false;
+      if (!isBagianAllowedByRole(t.bagian, t.source)) return false;
+      if (!isPicAllowedByRole(t.pic, t.source)) return false;
 
       if (!isPicMatchingSelection(t.pic, selectedPic)) {
         return false;
@@ -1301,8 +1305,8 @@ export default function LaporanPekerjaanClient({
   const tasksForCounts = useMemo(() => {
     return tasks.filter((t) => {
       if (!t.task) return false;
-      if (!isBagianAllowedByRole(t.bagian)) return false;
-      if (!isPicAllowedByRole(t.pic)) return false;
+      if (!isBagianAllowedByRole(t.bagian, t.source)) return false;
+      if (!isPicAllowedByRole(t.pic, t.source)) return false;
       if (!isPicMatchingSelection(t.pic, selectedPic)) {
         return false;
       }
