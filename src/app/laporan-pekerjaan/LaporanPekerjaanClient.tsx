@@ -298,13 +298,8 @@ const compareTglOrderDesc = (tglA?: string, tglB?: string) => {
   return timeB - timeA; // Terbaru ke terlama
 };
 
-const compareTglOrderAsc = (tglA?: string, tglB?: string) => {
-  const timeA = parseDateToSort(tglA || "") || 0;
-  const timeB = parseDateToSort(tglB || "") || 0;
-  if (!timeA && !timeB) return 0;
-  if (!timeA) return 1; // A kosong -> taruh belakang
-  if (!timeB) return -1; // B kosong -> taruh belakang
-  return timeA - timeB; // Terlama ke terbaru
+const compareProjectNaturalDesc = (projA?: string, projB?: string) => {
+  return (projB || "").localeCompare(projA || "", "id", { numeric: true, sensitivity: "base" });
 };
 
 const fmtNumber = (n: number) =>
@@ -1241,21 +1236,25 @@ export default function LaporanPekerjaanClient({
   }, [filteredTasks]);
 
   // Global Sorted Unique Orders
-  // ponytail: tanpa sort pun default urut tgl order terbaru dulu, tgl kosong di paling akhir
+  // ponytail: tanpa sort pun default urut tgl order terbaru dulu, lalu nomor project order terbesar (terbaru) dulu
   const sortedGroupedOrders = useMemo(() => {
     if (!sortField) {
       return [...groupedOrders].sort((a, b) => {
         const tglComp = compareTglOrderDesc(a.tglOrder, b.tglOrder);
         if (tglComp !== 0) return tglComp;
-        return (a.project || "").localeCompare(b.project || "", "id", { numeric: true });
+        return compareProjectNaturalDesc(a.project, b.project);
       });
     }
     return [...groupedOrders].sort((a, b) => {
       if (sortField === "tglOrder") {
-        const tglComp = sortOrder === "asc"
-          ? compareTglOrderAsc(a.tglOrder, b.tglOrder)
-          : compareTglOrderDesc(a.tglOrder, b.tglOrder);
-        if (tglComp !== 0) return tglComp;
+        const timeA = parseDateToSort(a.tglOrder || "") || 0;
+        const timeB = parseDateToSort(b.tglOrder || "") || 0;
+        if (!timeA && !timeB) return compareProjectNaturalDesc(a.project, b.project);
+        if (!timeA) return 1;
+        if (!timeB) return -1;
+        const diff = sortOrder === "asc" ? timeA - timeB : timeB - timeA;
+        if (diff !== 0) return diff;
+        return compareProjectNaturalDesc(a.project, b.project);
       }
       let comp = 0;
       if (sortField === "progress") {
@@ -1284,8 +1283,10 @@ export default function LaporanPekerjaanClient({
         });
       }
       if (comp !== 0) return sortOrder === "asc" ? comp : -comp;
-      // Tie-breaker: urutan dasar tgl order terbaru, tgl kosong di paling akhir
-      return compareTglOrderDesc(a.tglOrder, b.tglOrder);
+      // Tie-breaker: urutan dasar tgl order terbaru & nomor project terbesar
+      const tglComp = compareTglOrderDesc(a.tglOrder, b.tglOrder);
+      if (tglComp !== 0) return tglComp;
+      return compareProjectNaturalDesc(a.project, b.project);
     });
   }, [groupedOrders, sortField, sortOrder]);
 
