@@ -1077,8 +1077,7 @@ export default function LaporanPekerjaanClient({
       if (!pic || pic.trim() === "") {
         return (
           allowedPicSet.has("@unassigned") ||
-          allowedPicSet.has("tanpa pic") ||
-          allowedPicSet.has("")
+          allowedPicSet.has("tanpa pic")
         );
       }
       return allowedPicSet.has(pic.toLowerCase());
@@ -1141,7 +1140,7 @@ export default function LaporanPekerjaanClient({
 
     if (roleConfig?.allowed_pic && roleConfig.allowed_pic.length > 0) {
       roleConfig.allowed_pic.forEach((p) => {
-        if (p === "@unassigned" || p.toLowerCase() === "tanpa pic" || p === "") {
+        if (p === "@unassigned" || p.toLowerCase() === "tanpa pic") {
           hasUnassignedTask = true;
         } else if (!p.startsWith("@")) {
           set.add(p);
@@ -2681,7 +2680,7 @@ function TaskDetailModal({
         }
         if (roleConfig?.allowed_pic && roleConfig.allowed_pic.length > 0) {
           const hasUnassignedAllowed = roleConfig.allowed_pic.some(
-            (p) => p === "@unassigned" || p.toLowerCase() === "tanpa pic" || p === ""
+            (p) => p === "@unassigned" || p.toLowerCase() === "tanpa pic"
           );
           if (!t.pic || t.pic.trim() === "") {
             if (!hasUnassignedAllowed) return false;
