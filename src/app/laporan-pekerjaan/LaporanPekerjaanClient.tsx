@@ -551,18 +551,8 @@ export default function LaporanPekerjaanClient({
   } | null>(null);
 
   // Filters & Analytics state
-  const [selectedPic, setSelectedPic] = useState<string>(() => {
-    if (roleConfig?.allowed_pic && roleConfig.allowed_pic.length === 1) {
-      return roleConfig.allowed_pic[0];
-    }
-    return "ALL";
-  });
-  const [selectedBagianFilter, setSelectedBagianFilter] = useState<string>(() => {
-    if (roleConfig?.allowed_bagian && roleConfig.allowed_bagian.length === 1) {
-      return roleConfig.allowed_bagian[0];
-    }
-    return "ALL";
-  });
+  const [selectedPic, setSelectedPic] = useState<string>("ALL");
+  const [selectedBagianFilter, setSelectedBagianFilter] = useState<string>("ALL");
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const deferredSearchTerm = useDeferredValue(searchTerm);
