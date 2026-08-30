@@ -90,7 +90,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     ],
   }),
 
-  // ─── Pricelist Kalender ───
+  // ─── Pricelist Multi-Produk ───
   'pricelist-2026-08-27': entry({
     pageKey: 'pricelist',
     title: 'Pricelist & Simulator Multi-Produk',
@@ -99,14 +99,16 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     date: '27 Agu 2026',
     version: '2026-08-27-1',
     items: [
+      'Fitur Master Parameter Global (Shared Rates): modal pengaturan terpusat untuk tarif mesin offset Oliver, harga kertas dasar per kg, digital print POD A3+, laminasi, dan packing umum lintas seluruh lini produk',
+      'Penyederhanaan Master Parameter Produk: pembersihan field bersama menuju Single Source of Truth sehingga tiap master produk hanya mengelola komponen biaya spesifiknya',
+      'Restorasi Snapshot & Tombol "Hitung Tarif Master": memuat riwayat kalkulasi dengan parameter asli saat disimpan sekaligus menyediakan opsi hitung ulang dengan tarif Master Global terkini',
+      'Sinkronisasi Reaktif Alur Edit: tombol Edit di Daftar Kalkulasi otomatis berpindah ke kategori produk yang sesuai dan langsung mengisi seluruh spesifikasi form input simulator',
+      'Penyempurnaan Akurasi Badge "Dimodifikasi": deteksi modifikasi parameter kini hanya mengevaluasi field-field aktif yang ditampilkan pada form produk terkait',
+      'Generalisasi Header & Panduan: judul halaman "Pricelist & Simulator" dan panduan pengguna (?) digeneralkan agar siap menampung penambahan jenis produk baru berikutnya',
       'Penambahan modul Brosur 2026 (📋 Brosur Art Paper 120gsm) — 5 ukuran (10,5×21 s.d 29,7×42), 2 muka (1/2 Muka), 2 mesin (Print Inter & Oliver), tier oplah 100–3000 pcs',
       'Simulator Brosur: form input lengkap (ukuran, muka, mesin, laminasi, sisir, packing), 4 kartu finansial (HPP, Harga Jual, Nego, Total), tabel breakdown komponen HPP, tombol salin penawaran WA',
       'Pricelist Matriks Brosur: grid 5 ukuran × 11 tier oplah dengan 4 sub-baris (Print 1M, Print 2M, Oliver 1M, Oliver 2M) per sel + Flat Table rinci',
-      'Master Parameter Brosur: 4 card (kertas Art Paper, cetak Print Inter/Oliver, finishing laminasi/sisir/packing, margin) + modal pemetaan cell Excel referensi',
       'Riwayat simulasi Brosur tersimpan di browser (localStorage sintak_saved_brosur_simulations) + filter "🗞️ Brosur" di tab Daftar Kalkulasi',
-      'Subtitel header halaman sekarang dinamis mengikuti kategori produk aktif (Kalender / Manasik / Yasin / Nota / Brosur)',
-      'Master Parameter Kalender direname dari "Tarif Percetakan" menjadi "Tarif Kalender" agar konsisten dengan produk lain',
-      'Panduan tanda tanya (?) di header diperbarui menjadi panduan umum multi-produk (5 kategori)',
     ],
   }),
   'pricelist-2026-08-24': entry({
