@@ -996,6 +996,22 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Laporan Pekerjaan ───
+  'laporan-pekerjaan-2026-08-30': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-08-30',
+    date: '30 Agu 2026',
+    version: '2026-08-30-1',
+    items: [
+      'Penyempurnaan hak akses role: order baru SOPD tanpa subtask kini hanya muncul untuk role yang memiliki izin tambah pekerjaan (can_add)',
+      'Perbaikan inisialisasi default filter agar tombol Reset tidak muncul otomatis saat halaman pertama kali dibuka',
+      'Penambahan kolom Note yang dapat di-sort setelah Pekerjaan Selanjutnya pada tabel order utama',
+      'Pembaruan default sorting urutan order: tanggal order terbaru dan nomor project terbesar otomatis di atas (natural sort desc), tanggal kosong di posisi paling bawah',
+      'Penyelarasan tata letak status badge rata kiri pada kolom tabel di modal detail tugas',
+      'Perbaikan kalkulasi posisi portal SquareDropdown dan DatePicker saat level zoom browser berubah',
+    ],
+  }),
   'laporan-pekerjaan-2026-08-29': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan',
