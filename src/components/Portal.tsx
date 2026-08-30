@@ -9,9 +9,9 @@ interface PortalProps {
 
 export function getZoomScale(): number {
   if (typeof window === 'undefined') return 1;
-  const w = window.innerWidth;
-  if (w >= 1920) return 1;
-  if (w >= 768) return 0.82;
+  // Cek apakah media query CSS [zoom:1] aktif
+  if (window.matchMedia('(min-width: 1920px)').matches) return 1;
+  if (window.matchMedia('(min-width: 768px)').matches) return 0.82;
   return 0.90;
 }
 
