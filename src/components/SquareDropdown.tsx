@@ -53,7 +53,7 @@ export default function SquareDropdown({
   const updateAlignment = useCallback(() => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
-    const scale = getZoomScale();
+    const scale = getZoomScale(triggerRef.current);
     const popupWidth = Math.max(rect.width, 190);
     const spaceRight = window.innerWidth - rect.left;
     const leftWhenAlignRight = rect.right - popupWidth;

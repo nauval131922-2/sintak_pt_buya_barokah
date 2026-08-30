@@ -79,7 +79,7 @@ export default function DatePicker({ name, required, label, onChange, value, cus
   const updateAlignment = useCallback(() => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
-    const scale = getZoomScale();
+    const scale = getZoomScale(triggerRef.current);
     const popupWidth = 280;
     const padding = 12;
 

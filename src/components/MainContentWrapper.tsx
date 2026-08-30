@@ -170,7 +170,7 @@ function MainContentInner({
   }
 
   return (
-    <div className="flex [zoom:0.90] w-[111.11vw] h-[111.11vh] md:[zoom:0.82] md:w-[121.95vw] md:h-[121.95vh] overflow-hidden landscape:max-md:h-auto landscape:max-md:overflow-visible bg-[var(--bg-deep)] min-[1920px]:[zoom:1] min-[1920px]:w-screen min-[1920px]:h-screen">
+    <div data-portal-root className="flex [zoom:0.90] w-[111.11vw] h-[111.11vh] md:[zoom:0.82] md:w-[121.95vw] md:h-[121.95vh] overflow-hidden landscape:max-md:h-auto landscape:max-md:overflow-visible bg-[var(--bg-deep)] min-[1920px]:[zoom:1] min-[1920px]:w-screen min-[1920px]:h-screen">
       <Sidebar user={user} permissions={permissions} />
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden landscape:max-md:h-auto landscape:max-md:overflow-visible">
         {/* Header Fixed untuk halaman selain Laporan Pekerjaan (atau untuk Desktop) */}
