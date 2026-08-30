@@ -247,7 +247,7 @@ const formatDateForApi = (val?: Date | string | null): string => {
 };
 
 // Progress & penanda pekerjaan terakhir (SELESAI terakhir)/selanjutnya per order,
-// ponytail: single-pass loop untuk hitung summary tasks (active, selesai, last, next) tanpa multi-filter loop
+// ponytail: single-pass loop untuk hitung summary tasks (active, selesai, last, next, note) tanpa multi-filter loop
 const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
   const sorted = [...tasks].sort((a, b) => {
     const timeA = parseDateToSort(a.startDate || "") || Number.MAX_SAFE_INTEGER;
@@ -286,6 +286,7 @@ const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
     pekerjaanSelanjutnya: nextTask
       ? cleanTaskName(nextTask.task || "", project)
       : "-",
+    note: nextTask?.note || lastSelesaiTask?.note || "-",
   };
 };
 
@@ -737,7 +738,8 @@ export default function LaporanPekerjaanClient({
     | "project"
     | "progress"
     | "terakhir"
-    | "selanjutnya";
+    | "selanjutnya"
+    | "note";
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
@@ -1296,6 +1298,12 @@ export default function LaporanPekerjaanClient({
           "id",
           { numeric: true }
         );
+      } else if (sortField === "note") {
+        comp = (a.note || "").localeCompare(
+          b.note || "",
+          "id",
+          { numeric: true }
+        );
       } else {
         comp = (a.project || "").localeCompare(b.project || "", "id", {
           numeric: true,
@@ -1447,10 +1455,11 @@ export default function LaporanPekerjaanClient({
     () => ({
       aksi: 130,
       tglOrder: 165,
-      project: 550,
+      project: 450,
       progress: 140,
-      terakhir: 220,
-      selanjutnya: 220,
+      terakhir: 200,
+      selanjutnya: 200,
+      note: 200,
     }),
     []
   );
@@ -2139,7 +2148,7 @@ export default function LaporanPekerjaanClient({
                     </div>
                   </div>
 
-                  {(group.pekerjaanTerakhir || group.pekerjaanSelanjutnya) && (
+                  {(group.pekerjaanTerakhir || group.pekerjaanSelanjutnya || (group.note && group.note !== "-")) && (
                     <div className="bg-white p-2.5 rounded-lg border border-slate-200/60 space-y-1.5 text-[11px]">
                       <div className="flex gap-2">
                         <span className="text-slate-400 shrink-0 w-20">Terakhir</span>
@@ -2153,6 +2162,14 @@ export default function LaporanPekerjaanClient({
                           {group.pekerjaanSelanjutnya || "-"}
                         </span>
                       </div>
+                      {group.note && group.note !== "-" && (
+                        <div className="flex gap-2">
+                          <span className="text-slate-400 shrink-0 w-20">Note</span>
+                          <span className="font-normal text-slate-600 min-w-0 break-words whitespace-pre-wrap">
+                            {group.note}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -2184,10 +2201,11 @@ export default function LaporanPekerjaanClient({
             {
               "--col-aksi": `${colWidths.aksi || 110}px`,
               "--col-tglOrder": `${colWidths.tglOrder || 150}px`,
-              "--col-project": `${colWidths.project || 550}px`,
+              "--col-project": `${colWidths.project || 450}px`,
               "--col-progress": `${colWidths.progress || 140}px`,
-              "--col-terakhir": `${colWidths.terakhir || 220}px`,
-              "--col-selanjutnya": `${colWidths.selanjutnya || 220}px`,
+              "--col-terakhir": `${colWidths.terakhir || 200}px`,
+              "--col-selanjutnya": `${colWidths.selanjutnya || 200}px`,
+              "--col-note": `${colWidths.note || 200}px`,
             } as React.CSSProperties
           }
         >
@@ -2205,6 +2223,7 @@ export default function LaporanPekerjaanClient({
                 {renderSortableHeader("progress", "Progress")}
                 {renderSortableHeader("terakhir", "Pekerjaan Terakhir")}
                 {renderSortableHeader("selanjutnya", "Pekerjaan Selanjutnya")}
+                {renderSortableHeader("note", "Note")}
                 {/* Spacer: menyerap sisa lebar tabel agar resize tidak menggeser kolom lain */}
                 <th className="px-0" aria-hidden />
               </tr>
@@ -2213,7 +2232,7 @@ export default function LaporanPekerjaanClient({
               {loading ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-4 py-16 text-center text-slate-400"
                   >
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-600" />
@@ -2223,7 +2242,7 @@ export default function LaporanPekerjaanClient({
               ) : paginatedOrders.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-4 py-16 text-center text-slate-400"
                   >
                     Tidak ada data order pekerjaan yang ditemukan.
@@ -2332,6 +2351,16 @@ export default function LaporanPekerjaanClient({
                         className="px-3 py-2.5 truncate text-slate-600"
                       >
                         {group.pekerjaanSelanjutnya || "-"}
+                      </td>
+                      <td
+                        title={group.note}
+                        style={{
+                          width: "var(--col-note)",
+                          maxWidth: "var(--col-note)",
+                        }}
+                        className="px-3 py-2.5 truncate text-slate-600 text-[11px]"
+                      >
+                        {group.note || "-"}
                       </td>
                       <td className="px-0" aria-hidden />
                     </tr>
