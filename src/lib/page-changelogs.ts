@@ -1023,6 +1023,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
       'Pembaruan default sorting urutan order: tanggal order terbaru dan nomor project terbesar otomatis di atas (natural sort desc), tanggal kosong di posisi paling bawah',
       'Penyelarasan tata letak status badge rata kiri pada kolom tabel di modal detail tugas',
       'Perbaikan kalkulasi posisi portal SquareDropdown dan DatePicker saat level zoom browser berubah',
+      'Penyempurnaan tombol navigasi melayang (Up & Down) yang kini murni mengendalikan scroll halaman (viewport) tanpa mengganggu scroll internal tabel',
     ],
   }),
   'laporan-pekerjaan-2026-08-29': entry({
