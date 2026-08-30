@@ -1249,13 +1249,13 @@ export default function LaporanPekerjaanClient({
   }, [filteredTasks]);
 
   // Global Sorted Unique Orders
-  // ponytail: tanpa sort pun tetap urut tgl order terlama dulu (fallback urutan dasar)
+  // ponytail: tanpa sort pun default urut tgl order terbaru dulu
   const sortedGroupedOrders = useMemo(() => {
     if (!sortField) {
       return [...groupedOrders].sort((a, b) => {
         const timeA = tglOrderSortTime(a.tglOrder);
         const timeB = tglOrderSortTime(b.tglOrder);
-        if (timeA !== timeB) return timeA - timeB;
+        if (timeA !== timeB) return timeB - timeA;
         return (a.project || "").localeCompare(b.project || "", "id", { numeric: true });
       });
     }
@@ -1288,8 +1288,8 @@ export default function LaporanPekerjaanClient({
         });
       }
       if (comp !== 0) return sortOrder === "asc" ? comp : -comp;
-      // Tie-breaker: urutan dasar tgl order terlama
-      return tglOrderSortTime(a.tglOrder) - tglOrderSortTime(b.tglOrder);
+      // Tie-breaker: urutan dasar tgl order terbaru
+      return tglOrderSortTime(b.tglOrder) - tglOrderSortTime(a.tglOrder);
     });
   }, [groupedOrders, sortField, sortOrder]);
 
