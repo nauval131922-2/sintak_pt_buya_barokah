@@ -91,13 +91,13 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Pricelist Multi-Produk ───
-  'pricelist-2026-08-27': entry({
+  'pricelist-2026-08-29': entry({
     pageKey: 'pricelist',
-    title: 'Pricelist & Simulator Multi-Produk',
+    title: 'Pricelist & Simulator Multi-Produk (Master Global & Sinkronisasi)',
     permissionKeys: ['pricelist_kalkulasi'],
-    sortDate: '2026-08-27',
-    date: '27 Agu 2026',
-    version: '2026-08-27-1',
+    sortDate: '2026-08-29',
+    date: '29 Agu 2026',
+    version: '2026-08-29-1',
     items: [
       'Fitur Master Parameter Global (Shared Rates): modal pengaturan terpusat untuk tarif mesin offset Oliver, harga kertas dasar per kg, digital print POD A3+, laminasi, dan packing umum lintas seluruh lini produk',
       'Penyederhanaan Master Parameter Produk: pembersihan field bersama menuju Single Source of Truth sehingga tiap master produk hanya mengelola komponen biaya spesifiknya',
@@ -105,6 +105,16 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
       'Sinkronisasi Reaktif Alur Edit: tombol Edit di Daftar Kalkulasi otomatis berpindah ke kategori produk yang sesuai dan langsung mengisi seluruh spesifikasi form input simulator',
       'Penyempurnaan Akurasi Badge "Dimodifikasi": deteksi modifikasi parameter kini hanya mengevaluasi field-field aktif yang ditampilkan pada form produk terkait',
       'Generalisasi Header & Panduan: judul halaman "Pricelist & Simulator" dan panduan pengguna (?) digeneralkan agar siap menampung penambahan jenis produk baru berikutnya',
+    ],
+  }),
+  'pricelist-2026-08-27': entry({
+    pageKey: 'pricelist',
+    title: 'Pricelist & Simulator Brosur 2026',
+    permissionKeys: ['pricelist_kalkulasi'],
+    sortDate: '2026-08-27',
+    date: '27 Agu 2026',
+    version: '2026-08-27-1',
+    items: [
       'Penambahan modul Brosur 2026 (📋 Brosur Art Paper 120gsm) — 5 ukuran (10,5×21 s.d 29,7×42), 2 muka (1/2 Muka), 2 mesin (Print Inter & Oliver), tier oplah 100–3000 pcs',
       'Simulator Brosur: form input lengkap (ukuran, muka, mesin, laminasi, sisir, packing), 4 kartu finansial (HPP, Harga Jual, Nego, Total), tabel breakdown komponen HPP, tombol salin penawaran WA',
       'Pricelist Matriks Brosur: grid 5 ukuran × 11 tier oplah dengan 4 sub-baris (Print 1M, Print 2M, Oliver 1M, Oliver 2M) per sel + Flat Table rinci',
