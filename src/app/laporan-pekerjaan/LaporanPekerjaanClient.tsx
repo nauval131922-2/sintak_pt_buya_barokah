@@ -76,7 +76,6 @@ export interface FilterOption {
 const STATUS_COLORS: Record<string, string> = {
   "BELUM DIKERJAKAN": "#64748b", // slate-500
   "IN PROGRESS": "#0284c7", // sky-600
-  PENDING: "#f59e0b", // amber-500
   CANCEL: "#f43f5e", // rose-500
   SELESAI: "#10b981", // emerald-500
 };
@@ -84,7 +83,6 @@ const STATUS_COLORS: Record<string, string> = {
 const STATUS_LEGEND = [
   { name: "BELUM DIKERJAKAN", color: "#64748b" },
   { name: "IN PROGRESS", color: "#0ea5e9" },
-  { name: "PENDING", color: "#f59e0b" },
   { name: "CANCEL", color: "#f43f5e" },
   { name: "SELESAI", color: "#10b981" },
 ];
@@ -352,17 +350,10 @@ const getStatusBadge = (status?: string) => {
       </span>
     );
   }
-  if (s === "IN PROGRESS") {
+  if (s === "IN PROGRESS" || s === "PENDING") {
     return (
       <span className="inline-flex items-center justify-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-sky-50 text-sky-700 border border-sky-200/80 max-w-full truncate" title="IN PROGRESS">
         <Clock className="w-3 h-3 shrink-0" /> <span className="truncate">IN PROGRESS</span>
-      </span>
-    );
-  }
-  if (s === "PENDING") {
-    return (
-      <span className="inline-flex items-center justify-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/80 max-w-full truncate" title="PENDING">
-        <AlertTriangle className="w-3 h-3 shrink-0" /> <span className="truncate">PENDING</span>
       </span>
     );
   }
@@ -373,11 +364,7 @@ const getStatusBadge = (status?: string) => {
       </span>
     );
   }
-  return (
-    <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200 max-w-full truncate" title={status || "-"}>
-      <span className="truncate">{status || "-"}</span>
-    </span>
-  );
+  return <span className="text-slate-400 text-xs">-</span>;
 };
 
 const getOrderStatusAccent = (group: { tasks: SpreadsheetTask[]; progressPct: number }) => {
@@ -417,19 +404,6 @@ const getOrderStatusAccent = (group: { tasks: SpreadsheetTask[]; progressPct: nu
       rowHover: "hover:bg-emerald-100/70",
       selectedBg: "bg-emerald-200/90 shadow-[inset_5px_0_0_0_#059669]",
       badge: { bg: "bg-emerald-100 text-emerald-800 border-emerald-300", label: "100% Selesai" },
-    };
-  }
-
-  const hasPending = tasks.some((t) => (t.status || "").toUpperCase() === "PENDING");
-  if (hasPending) {
-    return {
-      status: "PENDING",
-      rowBg: "bg-amber-50/80",
-      borderAccent: "border-l-[4.5px] border-l-amber-500",
-      barColor: "bg-amber-500",
-      rowHover: "hover:bg-amber-100/70",
-      selectedBg: "bg-amber-200/90 shadow-[inset_5px_0_0_0_#d97706]",
-      badge: { bg: "bg-amber-100 text-amber-800 border-amber-300", label: "Pending" },
     };
   }
 
@@ -1197,7 +1171,7 @@ export default function LaporanPekerjaanClient({
       if (!isPicMatchingSelection(t.pic, selectedPic)) return;
       if (t.status) set.add(t.status.toUpperCase());
     });
-    const allStatuses = ["BELUM DIKERJAKAN", "IN PROGRESS", "PENDING", "CANCEL", "SELESAI"];
+    const allStatuses = ["BELUM DIKERJAKAN", "IN PROGRESS", "CANCEL", "SELESAI"];
     const available = allStatuses.filter((s) => set.has(s));
     return [
       { value: "ALL", label: "Semua Status" },
@@ -1347,19 +1321,17 @@ export default function LaporanPekerjaanClient({
     let belumDikerjakan = 0;
     let selesai = 0;
     let inProgress = 0;
-    let pending = 0;
     let cancel = 0;
 
     tasksForCounts.forEach((t) => {
       const s = (t.status || "").trim().toUpperCase();
       if (s === "BELUM DIKERJAKAN") belumDikerjakan++;
       else if (s === "SELESAI") selesai++;
-      else if (s === "IN PROGRESS") inProgress++;
-      else if (s === "PENDING") pending++;
+      else if (s === "IN PROGRESS" || s === "PENDING") inProgress++;
       else if (s === "CANCEL") cancel++;
     });
 
-    return { total, belumDikerjakan, selesai, inProgress, pending, cancel };
+    return { total, belumDikerjakan, selesai, inProgress, cancel };
   }, [tasksForCounts]);
 
   // Chart Data 1: Breakdown Pekerjaan per Status per PIC (Lazy: hanya dihitung saat accordion terbuka)
@@ -1367,7 +1339,7 @@ export default function LaporanPekerjaanClient({
     if (!isAnalyticsOpen) return [];
     const map: Record<
       string,
-      { name: string; fullName: string; BelumDikerjakan: number; Selesai: number; InProgress: number; Pending: number; Cancel: number; Total: number }
+      { name: string; fullName: string; BelumDikerjakan: number; Selesai: number; InProgress: number; Cancel: number; Total: number }
     > = {};
     filteredTasks.forEach((t) => {
       const rawPic = t.pic ? t.pic.trim() : "Tanpa PIC";
@@ -1379,7 +1351,6 @@ export default function LaporanPekerjaanClient({
           BelumDikerjakan: 0,
           Selesai: 0,
           InProgress: 0,
-          Pending: 0,
           Cancel: 0,
           Total: 0,
         };
@@ -1388,8 +1359,7 @@ export default function LaporanPekerjaanClient({
       const s = (t.status || "").trim().toUpperCase();
       if (s === "BELUM DIKERJAKAN") map[picKey].BelumDikerjakan++;
       else if (s === "SELESAI") map[picKey].Selesai++;
-      else if (s === "IN PROGRESS") map[picKey].InProgress++;
-      else if (s === "PENDING") map[picKey].Pending++;
+      else if (s === "IN PROGRESS" || s === "PENDING") map[picKey].InProgress++;
       else if (s === "CANCEL") map[picKey].Cancel++;
     });
 
@@ -1411,12 +1381,12 @@ export default function LaporanPekerjaanClient({
     const map: Record<string, number> = {
       "BELUM DIKERJAKAN": 0,
       "IN PROGRESS": 0,
-      PENDING: 0,
       CANCEL: 0,
       SELESAI: 0,
     };
     filteredTasks.forEach((t) => {
-      const s = (t.status || "").trim().toUpperCase();
+      let s = (t.status || "").trim().toUpperCase();
+      if (s === "PENDING") s = "IN PROGRESS";
       if (map[s] !== undefined) map[s]++;
     });
 
@@ -1642,7 +1612,7 @@ export default function LaporanPekerjaanClient({
         {isAnalyticsOpen && (
           <div className="p-4 border-t border-slate-100 space-y-4 animate-in fade-in slide-in-from-top-1 duration-200">
             {/* Cards Statistik (Klik untuk Filter Status) */}
-            <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
               {/* Total Task */}
               <div
                 onClick={() => handleCardStatusClick("ALL")}
@@ -1715,32 +1685,6 @@ export default function LaporanPekerjaanClient({
                   </span>
                   {selectedStatus === "IN PROGRESS" && (
                     <span className="text-[9px] font-bold uppercase tracking-wider text-sky-700 bg-sky-200/80 px-1.5 py-0.5 rounded">
-                      Aktif
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Pending */}
-              <div
-                onClick={() => handleCardStatusClick("PENDING")}
-                className={`p-3 rounded-xl border transition-all cursor-pointer select-none hover:shadow-md ${
-                  selectedStatus === "PENDING"
-                    ? "bg-amber-100/80 border-amber-500 ring-2 ring-amber-500/50 shadow-sm"
-                    : "bg-gradient-to-br from-white to-amber-50/30 border-amber-200/80 hover:border-amber-400 shadow-sm"
-                }`}
-                title="Klik untuk filter status PENDING"
-              >
-                <div className="flex items-center justify-between text-amber-600 mb-0.5">
-                  <span className="text-[11px] font-semibold">Pending</span>
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
-                </div>
-                <div className="flex items-baseline justify-between">
-                  <span className="text-xl font-black text-amber-700">
-                    {counts.pending.toLocaleString("id-ID")}
-                  </span>
-                  {selectedStatus === "PENDING" && (
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-amber-700 bg-amber-200/80 px-1.5 py-0.5 rounded">
                       Aktif
                     </span>
                   )}
@@ -1876,12 +1820,6 @@ export default function LaporanPekerjaanClient({
                           fill="url(#gradInProgress)"
                           radius={[6, 6, 0, 0]}
                           name="IN PROGRESS"
-                        />
-                        <Bar
-                          dataKey="Pending"
-                          fill="url(#gradPending)"
-                          radius={[6, 6, 0, 0]}
-                          name="PENDING"
                         />
                         <Bar
                           dataKey="Cancel"
@@ -3269,7 +3207,6 @@ function InlineEditRow({
             options={[
               { value: "BELUM DIKERJAKAN", label: "BELUM DIKERJAKAN" },
               { value: "IN PROGRESS", label: "IN PROGRESS" },
-              { value: "PENDING", label: "PENDING" },
               { value: "CANCEL", label: "CANCEL" },
               { value: "SELESAI", label: "SELESAI" },
             ]}
@@ -3574,7 +3511,6 @@ function InlineAddRow({
             options={[
               { value: "BELUM DIKERJAKAN", label: "BELUM DIKERJAKAN" },
               { value: "IN PROGRESS", label: "IN PROGRESS" },
-              { value: "PENDING", label: "PENDING" },
               { value: "CANCEL", label: "CANCEL" },
               { value: "SELESAI", label: "SELESAI" },
             ]}
