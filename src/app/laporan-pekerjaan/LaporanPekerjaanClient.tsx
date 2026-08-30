@@ -619,23 +619,17 @@ export default function LaporanPekerjaanClient({
   useEffect(() => {
     const checkScrollPosition = () => {
       const el = document.getElementById("main-content-scroll");
-      const tbl = tableContainerRef.current;
       
       const docScrollTop = window.scrollY || document.documentElement.scrollTop || (el ? el.scrollTop : 0);
       const docScrollHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight, el ? el.scrollHeight : 0);
       const docClientHeight = window.innerHeight || (el ? el.clientHeight : 0);
 
-      const tblScrollTop = tbl ? tbl.scrollTop : 0;
-      const tblScrollHeight = tbl ? tbl.scrollHeight : 0;
-      const tblClientHeight = tbl ? tbl.clientHeight : 0;
-
       const isMobile = typeof window !== "undefined" && (window.innerWidth < 768 || window.innerHeight < 550);
       const isDocScrollable = isMobile || isAnalyticsOpen || docScrollHeight > docClientHeight + 60;
-      const isTblScrollable = tbl && tblScrollHeight > tblClientHeight + 40;
 
-      if (isDocScrollable || isTblScrollable) {
-        const canScrollUp = docScrollTop > 40 || tblScrollTop > 40;
-        const canScrollDown = (docScrollTop + docClientHeight < docScrollHeight - 40) || (tbl && tblScrollTop + tblClientHeight < tblScrollHeight - 40);
+      if (isDocScrollable) {
+        const canScrollUp = docScrollTop > 40;
+        const canScrollDown = docScrollTop + docClientHeight < docScrollHeight - 40;
         setShowTopBtn(Boolean(canScrollUp));
         setShowBottomBtn(Boolean(canScrollDown));
       } else {
@@ -654,10 +648,8 @@ export default function LaporanPekerjaanClient({
     };
 
     const scrollEl = document.getElementById("main-content-scroll");
-    const tblEl = tableContainerRef.current;
 
     scrollEl?.addEventListener("scroll", handleUserScroll, { passive: true });
-    tblEl?.addEventListener("scroll", handleUserScroll, { passive: true });
     window.addEventListener("scroll", handleUserScroll, { passive: true });
     window.addEventListener("resize", checkScrollPosition, { passive: true });
     
@@ -668,7 +660,6 @@ export default function LaporanPekerjaanClient({
 
     return () => {
       scrollEl?.removeEventListener("scroll", handleUserScroll);
-      tblEl?.removeEventListener("scroll", handleUserScroll);
       window.removeEventListener("scroll", handleUserScroll);
       window.removeEventListener("resize", checkScrollPosition);
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
@@ -680,9 +671,6 @@ export default function LaporanPekerjaanClient({
   const scrollToTop = () => {
     const el = document.getElementById("main-content-scroll");
     if (el && el.scrollTop > 0) el.scrollTo({ top: 0, behavior: "smooth" });
-    if (tableContainerRef.current && tableContainerRef.current.scrollTop > 0) {
-      tableContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
-    }
     if (typeof window !== "undefined") {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -691,9 +679,6 @@ export default function LaporanPekerjaanClient({
   const scrollToBottom = () => {
     const el = document.getElementById("main-content-scroll");
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
-    if (tableContainerRef.current) {
-      tableContainerRef.current.scrollTo({ top: tableContainerRef.current.scrollHeight, behavior: "smooth" });
-    }
     if (typeof window !== "undefined") {
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
     }
