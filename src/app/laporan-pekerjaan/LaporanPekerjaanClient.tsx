@@ -2437,7 +2437,8 @@ export default function LaporanPekerjaanClient({
               filterStartDate !== null ||
               filterEndDate !== null ||
               filterStartTime !== "" ||
-              filterEndTime !== "") && (
+              filterEndTime !== "" ||
+              tableFontSize !== 12) && (
               <button
                 type="button"
                 onClick={() => {
@@ -2449,9 +2450,10 @@ export default function LaporanPekerjaanClient({
                   setFilterEndDate(null);
                   setFilterStartTime("");
                   setFilterEndTime("");
+                  changeTableFontSize(12);
                 }}
-                className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0"
-                title="Reset Semua Filter"
+                className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0 cursor-pointer"
+                title="Reset Semua Filter & Ukuran Font"
               >
                 <X size={12} /> Reset
               </button>
@@ -3118,6 +3120,7 @@ export default function LaporanPekerjaanClient({
             // Ambil seluruh task lengkap dari database tasks untuk project ini agar semua status tetap muncul di modal
             tasks: tasks.filter((t) => (t.project || "Tanpa Project Order") === selectedProjectGroup.project && !!t.task),
           }}
+          fontSize={tableFontSize}
           onClose={() => setSelectedProjectGroup(null)}
           employeeOptions={employeeOptions}
           onSaveTask={handleSaveInlineEdit}
@@ -3164,6 +3167,7 @@ const fetchPekerjaanForCategory = async (bagian: string): Promise<string[]> => {
 
 function TaskDetailModal({
   selectedProjectGroup,
+  fontSize,
   onClose,
   employeeOptions,
   onSaveTask,
@@ -3176,6 +3180,7 @@ function TaskDetailModal({
     tglOrder: string;
     tasks: SpreadsheetTask[];
   };
+  fontSize?: number;
   onClose: () => void;
   employeeOptions: any[];
   onSaveTask: (taskId: number, data: any) => Promise<void>;
@@ -3313,7 +3318,10 @@ function TaskDetailModal({
           {/* Body: Tabel List Task dari Order tersebut */}
           <div className="flex-1 min-h-0 flex flex-col p-3 sm:p-6 overflow-hidden">
             <div className="flex-1 min-h-0 border border-slate-200 rounded-xl shadow-sm overflow-x-auto overflow-y-auto custom-scrollbar relative bg-white">
-              <table className="w-full text-left text-xs border-collapse">
+              <table
+                className="w-full text-left border-collapse"
+                style={{ fontSize: fontSize ? `${fontSize}px` : undefined }}
+              >
                 <colgroup>
                   {activeColumns.map((col) => (
                     <col key={col.key} style={{ minWidth: col.minWidth, width: col.minWidth }} />
