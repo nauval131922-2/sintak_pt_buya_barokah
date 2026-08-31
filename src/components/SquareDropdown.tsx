@@ -99,15 +99,8 @@ export default function SquareDropdown({
     if (!open) return;
     updateAlignment();
 
-    let ticking = false;
     const handleScrollOrResize = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          updateAlignment();
-          ticking = false;
-        });
-        ticking = true;
-      }
+      updateAlignment();
     };
 
     window.addEventListener('resize', handleScrollOrResize, { passive: true });
