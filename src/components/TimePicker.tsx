@@ -15,7 +15,7 @@ interface TimePickerProps {
 }
 
 const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
-const MINUTES = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, '0'));
+const MINUTES = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 
 export default function TimePicker({
   name,
@@ -127,7 +127,7 @@ export default function TimePicker({
   const handleSetNow = () => {
     const now = new Date();
     const h = String(now.getHours()).padStart(2, '0');
-    const m = String(Math.floor(now.getMinutes() / 5) * 5).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
     onChange?.(`${h}:${m}`);
     setOpen(false);
   };
