@@ -702,18 +702,18 @@ export default function LaporanPekerjaanClient({
 
   useEffect(() => {
     const checkScrollPosition = () => {
-      const el = document.getElementById("main-content-scroll");
+      const el = clientContainerRef.current || document.getElementById("main-content-scroll");
+      if (!el) return;
       
-      const docScrollTop = window.scrollY || document.documentElement.scrollTop || (el ? el.scrollTop : 0);
-      const docScrollHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight, el ? el.scrollHeight : 0);
-      const docClientHeight = window.innerHeight || (el ? el.clientHeight : 0);
+      const docScrollTop = el.scrollTop;
+      const docScrollHeight = el.scrollHeight;
+      const docClientHeight = el.clientHeight;
 
-      const isMobile = typeof window !== "undefined" && (window.innerWidth < 768 || window.innerHeight < 550);
-      const isDocScrollable = isMobile || isAnalyticsOpen || docScrollHeight > docClientHeight + 60;
+      const isDocScrollable = isAnalyticsOpen || docScrollHeight > docClientHeight + 40;
 
       if (isDocScrollable) {
-        const canScrollUp = docScrollTop > 40;
-        const canScrollDown = docScrollTop + docClientHeight < docScrollHeight - 40;
+        const canScrollUp = docScrollTop > 30;
+        const canScrollDown = docScrollTop + docClientHeight < docScrollHeight - 30;
         setShowTopBtn(Boolean(canScrollUp));
         setShowBottomBtn(Boolean(canScrollDown));
       } else {
@@ -731,9 +731,11 @@ export default function LaporanPekerjaanClient({
       }, 1500);
     };
 
-    const scrollEl = document.getElementById("main-content-scroll");
+    const scrollEl = clientContainerRef.current;
+    const mainEl = document.getElementById("main-content-scroll");
 
     scrollEl?.addEventListener("scroll", handleUserScroll, { passive: true });
+    mainEl?.addEventListener("scroll", handleUserScroll, { passive: true });
     window.addEventListener("scroll", handleUserScroll, { passive: true });
     window.addEventListener("resize", checkScrollPosition, { passive: true });
     
@@ -744,6 +746,7 @@ export default function LaporanPekerjaanClient({
 
     return () => {
       scrollEl?.removeEventListener("scroll", handleUserScroll);
+      mainEl?.removeEventListener("scroll", handleUserScroll);
       window.removeEventListener("scroll", handleUserScroll);
       window.removeEventListener("resize", checkScrollPosition);
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
@@ -753,14 +756,20 @@ export default function LaporanPekerjaanClient({
   }, [isAnalyticsOpen, loading, tasks.length]);
 
   const scrollToTop = () => {
+    if (clientContainerRef.current) {
+      clientContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
     const el = document.getElementById("main-content-scroll");
-    if (el && el.scrollTop > 0) el.scrollTo({ top: 0, behavior: "smooth" });
+    if (el) el.scrollTo({ top: 0, behavior: "smooth" });
     if (typeof window !== "undefined") {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
   const scrollToBottom = () => {
+    if (clientContainerRef.current) {
+      clientContainerRef.current.scrollTo({ top: clientContainerRef.current.scrollHeight, behavior: "smooth" });
+    }
     const el = document.getElementById("main-content-scroll");
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
     if (typeof window !== "undefined") {
