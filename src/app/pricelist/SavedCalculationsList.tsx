@@ -31,10 +31,11 @@ import { SavedYasinSimulationItem } from './YasinSimulator';
 import { SavedNotaSimulationItem } from './NotaSimulator';
 import { SavedBrosurSimulationItem } from './BrosurSimulator';
 import { SavedLabelKhqSimulationItem } from './LabelKhqSimulator';
+import { SavedBukuTulisSimulationItem } from './BukuTulisSimulator';
 
 export type UnifiedCalculationItem = {
   id: string;
-  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ';
+  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis';
   savedAt: string;
   title: string;
   oplah: number;
@@ -52,11 +53,12 @@ export type UnifiedCalculationItem = {
     | SavedYasinSimulationItem
     | SavedNotaSimulationItem
     | SavedBrosurSimulationItem
-    | SavedLabelKhqSimulationItem;
+    | SavedLabelKhqSimulationItem
+    | SavedBukuTulisSimulationItem;
 };
 
 interface SavedCalculationsListProps {
-  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ';
+  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis';
   onLoadSimulation: (item: UnifiedCalculationItem) => void;
   activeSimulationId?: string | null;
 }
@@ -67,9 +69,9 @@ export default function SavedCalculationsList({
   activeSimulationId,
 }: SavedCalculationsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026'>('ALL');
+  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis'>('ALL');
   
-  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026') => {
+  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis') => {
     setFilterCategory(val);
     try {
       localStorage.setItem('sintak_pricelist_saved_list_filter', val);
@@ -89,6 +91,7 @@ export default function SavedCalculationsList({
   const [notaList, setNotaList] = useState<SavedNotaSimulationItem[]>([]);
   const [brosurList, setBrosurList] = useState<SavedBrosurSimulationItem[]>([]);
   const [labelKhqList, setLabelKhqList] = useState<SavedLabelKhqSimulationItem[]>([]);
+  const [bukuTulisList, setBukuTulisList] = useState<SavedBukuTulisSimulationItem[]>([]);
 
   // Load from localStorage
   const refreshData = () => {
@@ -100,7 +103,9 @@ export default function SavedCalculationsList({
         savedFilter === 'Buku Manasik' ||
         savedFilter === 'Buku Yasin' ||
         savedFilter === 'Nota 1 Warna' ||
-        savedFilter === 'Brosur 2026'
+        savedFilter === 'Brosur 2026' ||
+        savedFilter === 'Label KHQ' ||
+        savedFilter === 'Buku Tulis'
       ) {
         setFilterCategory(savedFilter as any);
       }
@@ -128,6 +133,10 @@ export default function SavedCalculationsList({
       const rawL = localStorage.getItem('sintak_saved_label_khq_simulations');
       if (rawL) setLabelKhqList(JSON.parse(rawL));
       else setLabelKhqList([]);
+
+      const rawBT = localStorage.getItem('sintak_saved_buku_tulis_simulations');
+      if (rawBT) setBukuTulisList(JSON.parse(rawBT));
+      else setBukuTulisList([]);
     } catch (e) {
       console.error('Failed to load saved calculations:', e);
     }
@@ -282,9 +291,33 @@ export default function SavedCalculationsList({
       });
     });
 
+    // 7. Buku Tulis
+    bukuTulisList.forEach((bt) => {
+      const inp = bt.data.input;
+      items.push({
+        id: bt.id,
+        category: 'Buku Tulis',
+        savedAt: bt.savedAt,
+        title: bt.title,
+        oplah: inp.oplah,
+        specSummary: `Buku Tulis ${inp.ukuran} 72 Hal • ${inp.oplah.toLocaleString('id-ID')} pcs`,
+        detailSpecs: [
+          `Cover: ${inp.opsiLaminasi ? 'Laminasi Glossy' : 'Tanpa Laminasi'}`,
+          `Finishing: ${inp.opsiSisir ? 'Sisir + Packing' : 'Standar'}`,
+          `Margin: ${inp.marginPct}%`,
+        ],
+        hppUnit: bt.data.hppPerPcs,
+        hargaJualUnit: bt.data.hargaJualPerPcs,
+        totalOmset: bt.data.totalHargaJual,
+        marginPct: inp.marginPct,
+        negoDiskonPct: inp.negoDiskonPct,
+        rawData: bt,
+      });
+    });
+
     // Urutkan dari yang terbaru disimpan
     return items.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
-  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList]);
+  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList, bukuTulisList]);
 
   // Filtered List
   const filteredList = useMemo(() => {
@@ -335,6 +368,10 @@ export default function SavedCalculationsList({
         const updated = labelKhqList.filter((l) => l.id !== item.id);
         setLabelKhqList(updated);
         localStorage.setItem('sintak_saved_label_khq_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Buku Tulis') {
+        const updated = bukuTulisList.filter((bt) => bt.id !== item.id);
+        setBukuTulisList(updated);
+        localStorage.setItem('sintak_saved_buku_tulis_simulations', JSON.stringify(updated));
       }
       toast.success('Kalkulasi berhasil dihapus.');
     } catch (err) {
@@ -373,6 +410,10 @@ export default function SavedCalculationsList({
         const updated = labelKhqList.map((l) => (l.id === item.id ? { ...l, title: newTitle } : l));
         setLabelKhqList(updated);
         localStorage.setItem('sintak_saved_label_khq_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Buku Tulis') {
+        const updated = bukuTulisList.map((bt) => (bt.id === item.id ? { ...bt, title: newTitle } : bt));
+        setBukuTulisList(updated);
+        localStorage.setItem('sintak_saved_buku_tulis_simulations', JSON.stringify(updated));
       }
       setEditingId(null);
       toast.success('Nama kalkulasi berhasil diperbarui.');
@@ -406,6 +447,10 @@ export default function SavedCalculationsList({
       const l = item.rawData as SavedLabelKhqSimulationItem;
       const inp = l.data.input;
       text = `*PENAWARAN LABEL BOTOL KHQ*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: ${inp.varian}\n• *Jumlah*: ${l.data.jumlahKardus} Dus (${l.data.jumlahLbr.toLocaleString('id-ID')} Lembar Label)\n• *Finishing*: ${inp.opsiLaminasi !== false ? 'Laminasi Glossy' : 'Tanpa Laminasi'}, ${inp.opsiRajang !== false ? 'Rajang Potong' : 'Tanpa Potong'}\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Lembar*: *Rp ${l.data.hargaJualPerLbr.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${l.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga dapat disesuaikan dengan fluktuasi bahan baku._`;
+    } else if (item.category === 'Buku Tulis') {
+      const bt = item.rawData as SavedBukuTulisSimulationItem;
+      const inp = bt.data.input;
+      text = `*PENAWARAN BUKU TULIS 72 HAL*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Tulis ${inp.ukuran} 72 Hal Soft Cover (15,5×21 & 16×21 cm)\n• *Ukuran*: ${inp.ukuran} cm (tertutup)\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Finishing*: ${inp.opsiLaminasi ? 'Laminasi Glossy' : 'Tanpa Laminasi'}, ${inp.opsiSisir ? 'Sisir + Packing' : 'Standar'}\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${bt.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${bt.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN. Cover AC 230 gsm 4W, isi HVS 70 gsm 1W bolak-balik._`;
     }
 
     navigator.clipboard.writeText(text);
@@ -474,6 +519,7 @@ export default function SavedCalculationsList({
                 { value: 'Nota 1 Warna', label: '📋 Nota 1 Warna', count: notaList.length },
                 { value: 'Brosur 2026', label: '🗞️ Brosur 2026', count: brosurList.length },
                 { value: 'Label KHQ', label: '🏷️ Label KHQ', count: labelKhqList.length },
+                { value: 'Buku Tulis', label: '📓 Buku Tulis', count: bukuTulisList.length },
               ]}
               value={filterCategory}
               onChange={(val) => handleFilterChange(val as any)}
@@ -546,6 +592,8 @@ export default function SavedCalculationsList({
                           ? 'bg-rose-100 text-rose-900 border border-rose-200'
                           : item.category === 'Label KHQ'
                           ? 'bg-teal-100 text-teal-900 border border-teal-200'
+                          : item.category === 'Buku Tulis'
+                          ? 'bg-cyan-100 text-cyan-900 border border-cyan-200'
                           : 'bg-blue-100 text-blue-900 border border-blue-200'
                       }`}
                     >
