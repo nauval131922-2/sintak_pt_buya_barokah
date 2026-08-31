@@ -2778,7 +2778,12 @@ export default function LaporanPekerjaanClient({
       {/* Modal Detail Task Order (Isolated Component untuk performa 60 FPS tanpa lag render) */}
       {selectedProjectGroup && (
         <TaskDetailModal
-          selectedProjectGroup={selectedProjectGroup}
+          selectedProjectGroup={{
+            project: selectedProjectGroup.project,
+            tglOrder: selectedProjectGroup.tglOrder || "",
+            // Ambil seluruh task lengkap dari database tasks untuk project ini agar semua status tetap muncul di modal
+            tasks: tasks.filter((t) => (t.project || "Tanpa Project Order") === selectedProjectGroup.project && !!t.task),
+          }}
           onClose={() => setSelectedProjectGroup(null)}
           employeeOptions={employeeOptions}
           onSaveTask={handleSaveInlineEdit}
