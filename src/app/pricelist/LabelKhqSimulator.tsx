@@ -391,7 +391,7 @@ export default function LabelKhqSimulator({
               </div>
             </div>
 
-            {/* Judul + Aksi Simpan di kiri (ringkas) */}
+            {/* Judul + Salin WA — simpan utama ada di kanan bawah (full-width) */}
             <div className="pt-2 border-t border-slate-100 space-y-2">
               <input
                 type="text"
@@ -400,29 +400,15 @@ export default function LabelKhqSimulator({
                 placeholder={defaultTitle()}
                 className="w-full px-3 py-1.5 text-xs font-medium text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
               />
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={activeSimulationId ? handleUpdateSavedSimulation : handleSaveSimulation}
-                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5 ${
-                    activeSimulationId
-                      ? 'bg-amber-600 hover:bg-amber-700 text-white'
-                      : 'bg-emerald-700 hover:bg-emerald-800 text-white'
-                  }`}
-                >
-                  {activeSimulationId ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
-                  <span>{activeSimulationId ? 'Update Riwayat' : 'Simpan Kalkulasi'}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCopyQuote}
-                  className="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center gap-1 shrink-0"
-                  title="Salin penawaran WhatsApp"
-                >
-                  {copiedQuote ? <Check size={14} className="text-emerald-600" /> : <Share2 size={14} />}
-                  <span>Salin WA</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={handleCopyQuote}
+                className="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1.5"
+                title="Salin penawaran WhatsApp"
+              >
+                {copiedQuote ? <Check size={14} className="text-emerald-600" /> : <Share2 size={14} />}
+                <span>Salin Penawaran WA</span>
+              </button>
             </div>
           </div>
         </div>
