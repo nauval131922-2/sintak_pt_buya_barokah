@@ -443,16 +443,7 @@ export default function LabelKhqSimulator({
               </div>
             </div>
 
-            {/* Judul kalkulasi (aksi Simpan utama ada full-width di kanan bawah) */}
-            <div className="pt-2 border-t border-slate-100">
-              <input
-                type="text"
-                value={simulationTitle}
-                onChange={(e) => setSimulationTitle(e.target.value)}
-                placeholder={defaultTitle()}
-                className="w-full px-3 py-1.5 text-xs font-medium text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
-              />
-            </div>
+
           </div>
         </div>
 
