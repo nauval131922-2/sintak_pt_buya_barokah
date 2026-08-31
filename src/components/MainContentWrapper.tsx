@@ -173,16 +173,16 @@ function MainContentInner({
     <div data-portal-root className="flex [zoom:0.90] w-[111.11vw] h-[111.11vh] md:[zoom:0.82] md:w-[121.95vw] md:h-[121.95vh] overflow-hidden landscape:max-md:h-auto landscape:max-md:overflow-visible bg-[var(--bg-deep)] min-[1920px]:[zoom:1] min-[1920px]:w-screen min-[1920px]:h-screen">
       <Sidebar user={user} permissions={permissions} />
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden landscape:max-md:h-auto landscape:max-md:overflow-visible">
-        {/* Header Fixed untuk halaman selain Laporan Pekerjaan (atau untuk Desktop) */}
-        <div className={isLaporanPekerjaanPage ? 'hidden md:block' : 'block'}>
+        {/* Header Fixed untuk halaman selain Laporan Pekerjaan (atau untuk Desktop & Tablet sm ke atas) */}
+        <div className={isLaporanPekerjaanPage ? 'hidden sm:block' : 'block'}>
           {renderHeaderNode()}
         </div>
         
         {/* Main Content - internal scroll area */}
-        <div id="main-content-scroll" className="flex-1 min-h-0 flex flex-col min-w-0 overflow-y-auto landscape:max-md:overflow-y-visible landscape:max-md:h-auto custom-scrollbar bg-[var(--bg-deep)] px-4 xl:px-8 pt-2 xl:pt-3 pb-16 xl:pb-6">
+        <div id="main-content-scroll" className={`flex-1 min-h-0 flex flex-col min-w-0 ${isLaporanPekerjaanPage ? 'overflow-y-visible sm:overflow-y-hidden' : 'overflow-y-auto'} landscape:max-md:overflow-y-visible landscape:max-md:h-auto custom-scrollbar bg-[var(--bg-deep)] px-4 xl:px-8 pt-2 xl:pt-3 pb-16 xl:pb-6`}>
           {/* Header Mobile KHUSUS halaman Laporan Pekerjaan di dalam scroll area */}
           {isLaporanPekerjaanPage && (
-            <div className="block md:hidden -mx-4 -mt-2 mb-2">
+            <div className="block sm:hidden -mx-4 -mt-2 mb-2">
               {renderHeaderNode()}
             </div>
           )}
