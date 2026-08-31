@@ -5,6 +5,7 @@ import { ManasikMasterParams, DEFAULT_MANASIK_PARAMS } from './manasik-calculato
 import { YasinMasterParams, DEFAULT_YASIN_PARAMS } from './yasin-calculator';
 import { NotaMasterParams, DEFAULT_NOTA_PARAMS } from './nota-calculator';
 import { BrosurMasterParams, DEFAULT_BROSUR_PARAMS } from './brosur-calculator';
+import { LabelKhqMasterParams, DEFAULT_LABEL_KHQ_PARAMS } from './label-khq-calculator';
 
 export interface GlobalMasterParams {
   // 1. Mesin Cetak Offset Oliver (58 / 52)
@@ -79,7 +80,8 @@ export function applyGlobalParamsToAll(
   currManasik: ManasikMasterParams,
   currYasin: YasinMasterParams,
   currNota: NotaMasterParams,
-  currBrosur: BrosurMasterParams
+  currBrosur: BrosurMasterParams,
+  currLabelKhq: LabelKhqMasterParams
 ) {
   const nextSpiral: SimulatorMasterParams = {
     ...currSpiral,
@@ -165,6 +167,13 @@ export function applyGlobalParamsToAll(
     tarifUvVarnish: g.tarifUvVarnishCm2,
   };
 
+  const nextLabelKhq: LabelKhqMasterParams = {
+    ...currLabelKhq,
+    tarifPrintA3: g.tarifPrintA3,
+    tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
+    minLaminasi: g.minLaminasi,
+  };
+
   return {
     nextSpiral,
     nextKlem,
@@ -172,5 +181,6 @@ export function applyGlobalParamsToAll(
     nextYasin,
     nextNota,
     nextBrosur,
+    nextLabelKhq,
   };
 }

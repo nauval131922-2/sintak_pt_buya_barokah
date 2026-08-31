@@ -30,10 +30,11 @@ import { SavedManasikSimulationItem } from './ManasikSimulator';
 import { SavedYasinSimulationItem } from './YasinSimulator';
 import { SavedNotaSimulationItem } from './NotaSimulator';
 import { SavedBrosurSimulationItem } from './BrosurSimulator';
+import { SavedLabelKhqSimulationItem } from './LabelKhqSimulator';
 
 export type UnifiedCalculationItem = {
   id: string;
-  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026';
+  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ';
   savedAt: string;
   title: string;
   oplah: number;
@@ -50,11 +51,12 @@ export type UnifiedCalculationItem = {
     | SavedManasikSimulationItem
     | SavedYasinSimulationItem
     | SavedNotaSimulationItem
-    | SavedBrosurSimulationItem;
+    | SavedBrosurSimulationItem
+    | SavedLabelKhqSimulationItem;
 };
 
 interface SavedCalculationsListProps {
-  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026';
+  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ';
   onLoadSimulation: (item: UnifiedCalculationItem) => void;
   activeSimulationId?: string | null;
 }
@@ -86,6 +88,7 @@ export default function SavedCalculationsList({
   const [yasinList, setYasinList] = useState<SavedYasinSimulationItem[]>([]);
   const [notaList, setNotaList] = useState<SavedNotaSimulationItem[]>([]);
   const [brosurList, setBrosurList] = useState<SavedBrosurSimulationItem[]>([]);
+  const [labelKhqList, setLabelKhqList] = useState<SavedLabelKhqSimulationItem[]>([]);
 
   // Load from localStorage
   const refreshData = () => {
@@ -121,6 +124,10 @@ export default function SavedCalculationsList({
       const rawB = localStorage.getItem('sintak_saved_brosur_simulations');
       if (rawB) setBrosurList(JSON.parse(rawB));
       else setBrosurList([]);
+
+      const rawL = localStorage.getItem('sintak_saved_label_khq_simulations');
+      if (rawL) setLabelKhqList(JSON.parse(rawL));
+      else setLabelKhqList([]);
     } catch (e) {
       console.error('Failed to load saved calculations:', e);
     }
@@ -237,6 +244,7 @@ export default function SavedCalculationsList({
         oplah: inp.oplah,
         specSummary: `Brosur ${inp.muka} • ${inp.ukuran} cm • ${inp.mesin}`,
         detailSpecs: [
+          `Bahan: ${inp.gramatur || 'Art Paper 120 gsm'}`,
           `Laminasi: ${inp.laminasi}`,
           `Finishing: ${inp.opsiSisir ? 'Sisir' : '-'}${inp.opsiPacking ? ', Packing' : ''}`,
           `Margin: ${inp.marginPct}%`,
@@ -250,9 +258,33 @@ export default function SavedCalculationsList({
       });
     });
 
+    // 6. Label KHQ
+    labelKhqList.forEach((l) => {
+      const inp = l.data.input;
+      items.push({
+        id: l.id,
+        category: 'Label KHQ',
+        savedAt: l.savedAt,
+        title: l.title,
+        oplah: l.data.jumlahLbr,
+        specSummary: `Label ${inp.varian} • ${l.data.jumlahKardus} Dus (${l.data.jumlahLbr.toLocaleString('id-ID')} Lbr)`,
+        detailSpecs: [
+          `Print: ${l.data.kebutuhanLbrA3} Lbr A3+`,
+          `Finishing: ${inp.opsiLaminasi !== false ? 'Laminasi Glossy' : 'Tanpa Laminasi'}, ${inp.opsiRajang !== false ? 'Rajang Potong' : 'Tanpa Potong'}`,
+          `Margin: ${inp.marginPct}%`,
+        ],
+        hppUnit: l.data.hppPerLbr,
+        hargaJualUnit: l.data.hargaJualPerLbr,
+        totalOmset: l.data.totalHargaJual,
+        marginPct: inp.marginPct,
+        negoDiskonPct: inp.negoDiskonPct,
+        rawData: l,
+      });
+    });
+
     // Urutkan dari yang terbaru disimpan
     return items.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
-  }, [kalenderList, manasikList, yasinList, notaList, brosurList]);
+  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList]);
 
   // Filtered List
   const filteredList = useMemo(() => {
@@ -299,6 +331,10 @@ export default function SavedCalculationsList({
         const updated = brosurList.filter((b) => b.id !== item.id);
         setBrosurList(updated);
         localStorage.setItem('sintak_saved_brosur_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Label KHQ') {
+        const updated = labelKhqList.filter((l) => l.id !== item.id);
+        setLabelKhqList(updated);
+        localStorage.setItem('sintak_saved_label_khq_simulations', JSON.stringify(updated));
       }
       toast.success('Kalkulasi berhasil dihapus.');
     } catch (err) {
@@ -333,6 +369,10 @@ export default function SavedCalculationsList({
         const updated = brosurList.map((b) => (b.id === item.id ? { ...b, title: newTitle } : b));
         setBrosurList(updated);
         localStorage.setItem('sintak_saved_brosur_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Label KHQ') {
+        const updated = labelKhqList.map((l) => (l.id === item.id ? { ...l, title: newTitle } : l));
+        setLabelKhqList(updated);
+        localStorage.setItem('sintak_saved_label_khq_simulations', JSON.stringify(updated));
       }
       setEditingId(null);
       toast.success('Nama kalkulasi berhasil diperbarui.');
@@ -361,7 +401,11 @@ export default function SavedCalculationsList({
     } else if (item.category === 'Brosur 2026') {
       const b = item.rawData as SavedBrosurSimulationItem;
       const inp = b.data.input;
-      text = `*PENAWARAN BROSUR 2026*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Brosur ${inp.muka}\n• *Ukuran*: ${inp.ukuran} cm\n• *Bahan*: Art Paper 120 gsm\n• *Laminasi*: ${inp.laminasi}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Mesin Cetak*: ${inp.mesin}\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${b.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${b.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
+      text = `*PENAWARAN BROSUR 2026*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Brosur ${inp.muka}\n• *Ukuran*: ${inp.ukuran} cm\n• *Bahan*: ${inp.gramatur || 'Art Paper 120 gsm'}\n• *Laminasi*: ${inp.laminasi}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Mesin Cetak*: ${inp.mesin}\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${b.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${b.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
+    } else if (item.category === 'Label KHQ') {
+      const l = item.rawData as SavedLabelKhqSimulationItem;
+      const inp = l.data.input;
+      text = `*PENAWARAN LABEL BOTOL KHQ*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: ${inp.varian}\n• *Jumlah*: ${l.data.jumlahKardus} Dus (${l.data.jumlahLbr.toLocaleString('id-ID')} Lembar Label)\n• *Finishing*: ${inp.opsiLaminasi !== false ? 'Laminasi Glossy' : 'Tanpa Laminasi'}, ${inp.opsiRajang !== false ? 'Rajang Potong' : 'Tanpa Potong'}\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Lembar*: *Rp ${l.data.hargaJualPerLbr.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${l.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga dapat disesuaikan dengan fluktuasi bahan baku._`;
     }
 
     navigator.clipboard.writeText(text);
@@ -429,6 +473,7 @@ export default function SavedCalculationsList({
                 { value: 'Buku Yasin', label: '📗 Buku Yasin', count: yasinList.length },
                 { value: 'Nota 1 Warna', label: '📋 Nota 1 Warna', count: notaList.length },
                 { value: 'Brosur 2026', label: '🗞️ Brosur 2026', count: brosurList.length },
+                { value: 'Label KHQ', label: '🏷️ Label KHQ', count: labelKhqList.length },
               ]}
               value={filterCategory}
               onChange={(val) => handleFilterChange(val as any)}
@@ -493,6 +538,14 @@ export default function SavedCalculationsList({
                           ? 'bg-amber-100 text-amber-900 border border-amber-200'
                           : item.category === 'Buku Manasik'
                           ? 'bg-emerald-100 text-emerald-900 border border-emerald-200'
+                          : item.category === 'Buku Yasin'
+                          ? 'bg-indigo-100 text-indigo-900 border border-indigo-200'
+                          : item.category === 'Nota 1 Warna'
+                          ? 'bg-purple-100 text-purple-900 border border-purple-200'
+                          : item.category === 'Brosur 2026'
+                          ? 'bg-rose-100 text-rose-900 border border-rose-200'
+                          : item.category === 'Label KHQ'
+                          ? 'bg-teal-100 text-teal-900 border border-teal-200'
                           : 'bg-blue-100 text-blue-900 border border-blue-200'
                       }`}
                     >
