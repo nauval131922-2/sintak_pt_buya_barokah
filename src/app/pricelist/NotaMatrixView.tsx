@@ -301,7 +301,7 @@ export default function NotaMatrixView({
                 <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">{selectedUkuran}</span>
               </div>
 
-              <div ref={gridRef} className="grid gap-4" style={{ gridTemplateColumns: `repeat(${matrixData.filter((s) => (selectedRangkapFilter === 'ALL' || selectedRangkapFilter === s.rangkap.toString()) && s.rows.length > 0).length===1 ? 1 : autoCols}, minmax(0, 1fr))` }}>
+              <div ref={gridRef} className="grid gap-4" style={{ gridTemplateColumns: `repeat(${matrixData.filter((s) => (selectedRangkapFilter === 'ALL' || selectedRangkapFilter === s.rangkap.toString()) && s.rows.length > 0).length===1 ? 1 : Math.min(matrixData.filter((s) => (selectedRangkapFilter === 'ALL' || selectedRangkapFilter === s.rangkap.toString()) && s.rows.length > 0).length, autoCols)}, minmax(0, 1fr))` }}>
                 {matrixData.map((section) => {
                 if (selectedRangkapFilter !== 'ALL' && selectedRangkapFilter !== section.rangkap.toString()) return null;
                 if (section.rows.length === 0) return null;

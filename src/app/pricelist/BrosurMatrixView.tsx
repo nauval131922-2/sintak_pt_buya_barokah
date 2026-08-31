@@ -234,7 +234,7 @@ export default function BrosurMatrixView({
               <div
                 ref={gridRef}
                 className="grid gap-4"
-                style={{ gridTemplateColumns: `repeat(${ukuranCols.length === 1 ? 1 : autoCols}, minmax(0, 1fr))` }}
+                style={{ gridTemplateColumns: `repeat(${ukuranCols.length === 1 ? 1 : Math.min(ukuranCols.length, autoCols)}, minmax(0, 1fr))` }}
               >
                 {ukuranCols.map((ukuran) => (
                 <div key={ukuran} className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">

@@ -293,7 +293,7 @@ export default function YasinMatrixView({
                 </span>
               </div>
 
-              <div ref={gridRef} className="grid gap-4" style={{ gridTemplateColumns: `repeat(${matrixData.filter((s) => s.rows.length > 0).length===1 ? 1 : autoCols}, minmax(0, 1fr))` }}>
+              <div ref={gridRef} className="grid gap-4" style={{ gridTemplateColumns: `repeat(${matrixData.filter((s) => s.rows.length > 0).length===1 ? 1 : Math.min(matrixData.filter((s) => s.rows.length > 0).length, autoCols)}, minmax(0, 1fr))` }}>
                 {matrixData.map((section) => {
                 if (section.rows.length === 0) return null;
                 return (
