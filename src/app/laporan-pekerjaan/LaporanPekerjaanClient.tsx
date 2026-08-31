@@ -556,76 +556,63 @@ export default function LaporanPekerjaanClient({
   const [selectedBagianFilter, setSelectedBagianFilter] = useState<string>("ALL");
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
 
-  // Helper initial date: default hari ini, restore session storage jika hari masih sama (termasuk status dikosongkan)
+  // Filters & Analytics state (Inisialisasi konsisten dengan server untuk cegah hydration mismatch)
+  const [selectedPic, setSelectedPic] = useState<string>("ALL");
+  const [selectedBagianFilter, setSelectedBagianFilter] = useState<string>("ALL");
+  const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [filterStartDate, setFilterStartDate] = useState<Date | null>(() => {
     const today = new Date();
-    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-    if (typeof window !== "undefined") {
-      try {
-        const savedDateDay = localStorage.getItem("laporan_pekerjaan_filter_saved_day");
-        const savedStart = localStorage.getItem("laporan_pekerjaan_filter_start_date");
-        if (savedDateDay === todayKey) {
-          if (savedStart === "EMPTY") return null;
-          if (savedStart) {
-            const parsed = new Date(savedStart);
-            if (!isNaN(parsed.getTime())) return parsed;
-          }
-        }
-      } catch {}
-    }
     return new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
   });
-
   const [filterEndDate, setFilterEndDate] = useState<Date | null>(() => {
     const today = new Date();
-    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-    if (typeof window !== "undefined") {
-      try {
-        const savedDateDay = localStorage.getItem("laporan_pekerjaan_filter_saved_day");
-        const savedEnd = localStorage.getItem("laporan_pekerjaan_filter_end_date");
-        if (savedDateDay === todayKey) {
-          if (savedEnd === "EMPTY") return null;
-          if (savedEnd) {
-            const parsed = new Date(savedEnd);
-            if (!isNaN(parsed.getTime())) return parsed;
-          }
-        }
-      } catch {}
-    }
     return new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
   });
+  const [filterStartTime, setFilterStartTime] = useState<string>("");
+  const [filterEndTime, setFilterEndTime] = useState<string>("");
+  const [isFilterHydrated, setIsFilterHydrated] = useState<boolean>(false);
 
-  const [filterStartTime, setFilterStartTime] = useState<string>(() => {
-    const today = new Date();
-    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-    if (typeof window !== "undefined") {
-      try {
-        const savedDateDay = localStorage.getItem("laporan_pekerjaan_filter_saved_day");
-        const savedTime = localStorage.getItem("laporan_pekerjaan_filter_start_time");
-        if (savedDateDay === todayKey && savedTime) return savedTime;
-      } catch {}
-    }
-    return "";
-  });
+  // Restore filter tanggal & jam dari localStorage setelah client mounted
+  useEffect(() => {
+    try {
+      const today = new Date();
+      const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+      const savedDateDay = localStorage.getItem("laporan_pekerjaan_filter_saved_day");
+      
+      if (savedDateDay === todayKey) {
+        const savedStart = localStorage.getItem("laporan_pekerjaan_filter_start_date");
+        const savedEnd = localStorage.getItem("laporan_pekerjaan_filter_end_date");
+        const savedStartTime = localStorage.getItem("laporan_pekerjaan_filter_start_time");
+        const savedEndTime = localStorage.getItem("laporan_pekerjaan_filter_end_time");
 
-  const [filterEndTime, setFilterEndTime] = useState<string>(() => {
-    const today = new Date();
-    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-    if (typeof window !== "undefined") {
-      try {
-        const savedDateDay = localStorage.getItem("laporan_pekerjaan_filter_saved_day");
-        const savedTime = localStorage.getItem("laporan_pekerjaan_filter_end_time");
-        if (savedDateDay === todayKey && savedTime) return savedTime;
-      } catch {}
+        if (savedStart === "EMPTY") {
+          setFilterStartDate(null);
+        } else if (savedStart) {
+          const parsed = new Date(savedStart);
+          if (!isNaN(parsed.getTime())) setFilterStartDate(parsed);
+        }
+
+        if (savedEnd === "EMPTY") {
+          setFilterEndDate(null);
+        } else if (savedEnd) {
+          const parsed = new Date(savedEnd);
+          if (!isNaN(parsed.getTime())) setFilterEndDate(parsed);
+        }
+
+        if (savedStartTime) setFilterStartTime(savedStartTime);
+        if (savedEndTime) setFilterEndTime(savedEndTime);
+      }
+    } catch {} finally {
+      setIsFilterHydrated(true);
     }
-    return "";
-  });
+  }, []);
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const deferredSearchTerm = useDeferredValue(searchTerm);
 
   // Sync filter date/time ke localStorage dengan penanda tanggal hari ini
   useEffect(() => {
+    if (!isFilterHydrated) return;
     try {
       const today = new Date();
       const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
@@ -651,7 +638,7 @@ export default function LaporanPekerjaanClient({
         localStorage.removeItem("laporan_pekerjaan_filter_end_time");
       }
     } catch {}
-  }, [filterStartDate, filterEndDate, filterStartTime, filterEndTime]);
+  }, [filterStartDate, filterEndDate, filterStartTime, filterEndTime, isFilterHydrated]);
 
   // Modal Tambah Order Manual state
   const [showAddOrderModal, setShowAddOrderModal] = useState<boolean>(false);
