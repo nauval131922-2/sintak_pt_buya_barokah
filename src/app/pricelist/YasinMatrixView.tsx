@@ -291,7 +291,7 @@ export default function YasinMatrixView({
                 </span>
               </div>
 
-              <div className={`grid gap-4 ${matrixData.filter((s) => s.rows.length > 0).length === 1 ? 'grid-cols-1' : 'grid-cols-[repeat(auto-fit,minmax(380px,1fr))]'}`}>
+              <div className={`grid gap-4 ${matrixData.filter((s) => s.rows.length > 0).length === 1 ? 'grid-cols-1' : 'grid-cols-[repeat(auto-fit,minmax(360px,1fr))]'}`}>
                 {matrixData.map((section) => {
                 if (section.rows.length === 0) return null;
                 return (
