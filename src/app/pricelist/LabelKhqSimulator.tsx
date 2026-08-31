@@ -443,8 +443,8 @@ export default function LabelKhqSimulator({
               </div>
             </div>
 
-            {/* Judul + Salin WA — simpan utama ada di kanan bawah (full-width) */}
-            <div className="pt-2 border-t border-slate-100 space-y-2">
+            {/* Judul kalkulasi (aksi Simpan utama ada full-width di kanan bawah) */}
+            <div className="pt-2 border-t border-slate-100">
               <input
                 type="text"
                 value={simulationTitle}
@@ -452,15 +452,6 @@ export default function LabelKhqSimulator({
                 placeholder={defaultTitle()}
                 className="w-full px-3 py-1.5 text-xs font-medium text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
               />
-              <button
-                type="button"
-                onClick={handleCopyQuote}
-                className="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-1.5"
-                title="Salin penawaran WhatsApp"
-              >
-                {copiedQuote ? <Check size={14} className="text-emerald-600" /> : <Share2 size={14} />}
-                <span>Salin Penawaran WA</span>
-              </button>
             </div>
           </div>
         </div>
