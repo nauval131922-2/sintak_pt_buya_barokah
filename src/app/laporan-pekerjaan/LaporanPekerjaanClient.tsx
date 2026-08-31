@@ -1088,6 +1088,35 @@ export default function LaporanPekerjaanClient({
     }
   };
 
+  const handleDeleteOrder = async (projectName: string) => {
+    if (!projectName) return;
+    if (!confirm(`Yakin ingin menghapus order "${projectName}" beserta seluruh aktivitas pekerjaannya?`)) {
+      return;
+    }
+
+    // Optimistic delete order
+    setTasks((prev) => prev.filter((t) => (t.project || "") !== projectName));
+    if (selectedProjectGroup?.project === projectName) {
+      setSelectedProjectGroup(null);
+    }
+
+    try {
+      const res = await fetch(`/api/laporan-pekerjaan?project=${encodeURIComponent(projectName)}`, {
+        method: "DELETE",
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.success(`Order "${projectName}" berhasil dihapus`);
+      } else {
+        toast.error(json.error || "Gagal menghapus order");
+        fetchData();
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Terjadi kesalahan");
+      fetchData();
+    }
+  };
+
   // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
@@ -2199,7 +2228,7 @@ export default function LaporanPekerjaanClient({
                     </div>
                   )}
 
-                  <div className="flex items-center justify-end pt-1">
+                  <div className="flex items-center justify-end gap-1.5 pt-1">
                     <button
                       type="button"
                       onClick={() => setSelectedProjectGroup(group)}
@@ -2208,6 +2237,19 @@ export default function LaporanPekerjaanClient({
                       <Eye size={13} />
                       Detail
                     </button>
+                    {roleConfig?.can_delete !== false && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteOrder(group.project);
+                        }}
+                        className="p-1.5 text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg border border-rose-200 transition-colors flex items-center justify-center cursor-pointer shadow-sm"
+                        title="Hapus Order & Semua Pekerjaannya"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -2297,18 +2339,31 @@ export default function LaporanPekerjaanClient({
                         }}
                         className="px-2 py-2.5 text-center truncate"
                       >
-                        <div className="flex items-center justify-center">
+                        <div className="flex items-center justify-center gap-1.5">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               setSelectedProjectGroup(group);
                             }}
-                            className="px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
+                            className="px-2.5 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 transition-colors flex items-center gap-1 shadow-sm cursor-pointer"
                             title="Lihat Detail Task Order"
                           >
                             <Eye size={13} />
                             Detail
                           </button>
+                          {roleConfig?.can_delete !== false && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteOrder(group.project);
+                              }}
+                              className="p-1.5 text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg border border-rose-200 transition-colors flex items-center justify-center cursor-pointer shadow-sm"
+                              title="Hapus Order & Semua Pekerjaannya"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          )}
                         </div>
                       </td>
                       <td

@@ -378,12 +378,39 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
+    const project = searchParams.get("project");
 
-    if (!id) {
+    if (!id && !project) {
       return NextResponse.json(
-        { success: false, error: "ID pekerjaan wajib diisi" },
+        { success: false, error: "ID pekerjaan atau Nama Project wajib diisi" },
         { status: 400 }
       );
+    }
+
+    if (project) {
+      // Hapus seluruh pekerjaan/order yang ber-project tersebut dari tabel laporan_pekerjaan
+      const countRes = await db.execute({
+        sql: "SELECT COUNT(*) as cnt FROM laporan_pekerjaan WHERE project = ?",
+        args: [project],
+      });
+      const totalCount = Number(countRes.rows[0]?.cnt || 0);
+
+      await db.execute({
+        sql: "DELETE FROM laporan_pekerjaan WHERE project = ?",
+        args: [project],
+      });
+
+      logActivity(
+        "DELETE",
+        "laporan_pekerjaan",
+        `Menghapus seluruh order & aktivitas project: "${project}" (${totalCount} baris)`,
+        { project, totalDeleted: totalCount }
+      ).catch(() => {});
+
+      return NextResponse.json({
+        success: true,
+        message: `Order "${project}" beserta seluruh aktivitasnya berhasil dihapus`,
+      });
     }
 
     // Ambil data lengkap sebelum dihapus untuk snapshot log aktivitas
