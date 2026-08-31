@@ -193,7 +193,59 @@ export default function LabelKhqSimulator({
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
+            <FileSpreadsheet className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="font-bold text-sm sm:text-base text-emerald-950 flex items-center gap-2">
+              Simulator &amp; Kalkulator Label KHQ
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
+                Katalog 05
+              </span>
+            </h3>
+            <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
+              Hitung HPP, harga penawaran, dan estimasi profit label botol KHQ 220 ml / 330 ml / 600 ml.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={handleCopyQuote}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer ${
+              copiedQuote
+                ? 'bg-emerald-700 text-white'
+                : 'bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300'
+            }`}
+          >
+            {copiedQuote ? <Check size={14} /> : <Share2 size={14} />}
+            <span>{copiedQuote ? 'Tersalin!' : 'Salin Penawaran'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowSimulatorManual(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer"
+          >
+            <Info size={14} />
+            <span>Panduan</span>
+          </button>
+          {onOpenMasterParam && (
+            <button
+              type="button"
+              onClick={onOpenMasterParam}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer"
+            >
+              <Settings2 size={14} />
+              <span>Master Parameter</span>
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Active Edit Alert Bar */}
       {activeSimulationId && (
         <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-900 shadow-2xs">
