@@ -551,11 +551,6 @@ export default function LaporanPekerjaanClient({
     tasks: SpreadsheetTask[];
   } | null>(null);
 
-  // Filters & Analytics state
-  const [selectedPic, setSelectedPic] = useState<string>("ALL");
-  const [selectedBagianFilter, setSelectedBagianFilter] = useState<string>("ALL");
-  const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
-
   // Filters & Analytics state (Inisialisasi konsisten dengan server untuk cegah hydration mismatch)
   const [selectedPic, setSelectedPic] = useState<string>("ALL");
   const [selectedBagianFilter, setSelectedBagianFilter] = useState<string>("ALL");
