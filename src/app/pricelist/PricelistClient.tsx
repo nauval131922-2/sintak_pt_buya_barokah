@@ -45,6 +45,9 @@ import StopmapMatrixView from './StopmapMatrixView';
 import SyahadahMasterParameter from './SyahadahMasterParameter';
 import SyahadahSimulator, { SavedSyahadahSimulationItem } from './SyahadahSimulator';
 import SyahadahMatrixView from './SyahadahMatrixView';
+import RaportKalebMasterParameter from './RaportKalebMasterParameter';
+import RaportKalebSimulator, { SavedRaportKalebSimulationItem } from './RaportKalebSimulator';
+import RaportKalebMatrixView from './RaportKalebMatrixView';
 import SavedCalculationsList, { UnifiedCalculationItem } from './SavedCalculationsList';
 import SquareDropdown from '@/components/SquareDropdown';
 import GlobalMasterParameter from './GlobalMasterParameter';
@@ -62,6 +65,7 @@ import { DEFAULT_LABEL_KHQ_PARAMS, LabelKhqMasterParams } from '@/lib/label-khq-
 import { DEFAULT_BUKU_TULIS_PARAMS, BukuTulisMasterParams } from '@/lib/buku-tulis-calculator';
 import { DEFAULT_STOPMAP_PARAMS, StopmapMasterParams } from '@/lib/stopmap-calculator';
 import { DEFAULT_SYAHADAH_PARAMS, SyahadahMasterParams } from '@/lib/syahadah-calculator';
+import { DEFAULT_RAPORT_KALEB_PARAMS, RaportKalebMasterParams } from '@/lib/raport-kaleb-calculator';
 import { recalculatePricelistFromParams } from '@/lib/pricelist-calculator';
 
 interface PricelistItem {
@@ -101,7 +105,8 @@ export default function PricelistClient() {
   const [paramsBukuTulis, setParamsBukuTulis] = useState<BukuTulisMasterParams>(DEFAULT_BUKU_TULIS_PARAMS);
   const [paramsStopmap, setParamsStopmap] = useState<StopmapMasterParams>(DEFAULT_STOPMAP_PARAMS);
   const [paramsSyahadah, setParamsSyahadah] = useState<SyahadahMasterParams>(DEFAULT_SYAHADAH_PARAMS);
-  const [selectedProductCategory, setSelectedProductCategory] = useState<'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah'>('Kalender');
+  const [paramsRaportKaleb, setParamsRaportKaleb] = useState<RaportKalebMasterParams>(DEFAULT_RAPORT_KALEB_PARAMS);
+  const [selectedProductCategory, setSelectedProductCategory] = useState<'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb'>('Kalender');
   const [paramsSpiral, setParamsSpiral] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS);
   const [paramsKlem, setParamsKlem] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS_KLEM);
 
@@ -150,9 +155,10 @@ export default function PricelistClient() {
         savedCategory === 'Label KHQ' ||
         savedCategory === 'Buku Tulis' ||
         savedCategory === 'Stopmap' ||
-        savedCategory === 'Syahadah'
+        savedCategory === 'Syahadah' ||
+        savedCategory === 'Raport Kaleb'
       ) {
-        setSelectedProductCategory(savedCategory);
+        setSelectedProductCategory(savedCategory as any);
       }
 
       const savedLabelKhq = localStorage.getItem('sintak_pricelist_master_params_label_khq');
@@ -175,6 +181,11 @@ export default function PricelistClient() {
         setParamsSyahadah({ ...DEFAULT_SYAHADAH_PARAMS, ...JSON.parse(savedSyahadah) });
       }
 
+      const savedRaportKaleb = localStorage.getItem('sintak_pricelist_master_params_raport_kaleb');
+      if (savedRaportKaleb) {
+        setParamsRaportKaleb({ ...DEFAULT_RAPORT_KALEB_PARAMS, ...JSON.parse(savedRaportKaleb) });
+      }
+
       const savedGlobal = localStorage.getItem('sintak_pricelist_master_params_global');
       if (savedGlobal) {
         setParamsGlobal({ ...DEFAULT_GLOBAL_PARAMS, ...JSON.parse(savedGlobal) });
@@ -186,7 +197,7 @@ export default function PricelistClient() {
 
   // Sync selectedProductCategory across tabs
   const handleProductCategoryChange = (
-    category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah'
+    category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb'
   ) => {
     setSelectedProductCategory(category);
     try {
@@ -268,17 +279,18 @@ export default function PricelistClient() {
         localStorage.setItem('sintak_pricelist_master_params_buku_tulis', JSON.stringify(paramsBukuTulis));
         localStorage.setItem('sintak_pricelist_master_params_stopmap', JSON.stringify(paramsStopmap));
         localStorage.setItem('sintak_pricelist_master_params_syahadah', JSON.stringify(paramsSyahadah));
+        localStorage.setItem('sintak_pricelist_master_params_raport_kaleb', JSON.stringify(paramsRaportKaleb));
       } catch (e) {
         console.error('Failed to save master params to localStorage:', e);
       }
     }, 400);
     return () => clearTimeout(timer);
-  }, [paramsSpiral, paramsKlem, paramsGlobal, paramsLabelKhq, paramsBukuTulis, paramsStopmap, paramsSyahadah]);
+  }, [paramsSpiral, paramsKlem, paramsGlobal, paramsLabelKhq, paramsBukuTulis, paramsStopmap, paramsSyahadah, paramsRaportKaleb]);
 
   // Fungsi sebarkan parameter global ke seluruh produk
   const handleApplyGlobalParams = (targetGlobal?: GlobalMasterParams) => {
     const g = targetGlobal || paramsGlobal;
-    const { nextSpiral, nextKlem, nextManasik, nextYasin, nextNota, nextBrosur, nextLabelKhq, nextBukuTulis, nextStopmap, nextSyahadah } = applyGlobalParamsToAll(
+    const { nextSpiral, nextKlem, nextManasik, nextYasin, nextNota, nextBrosur, nextLabelKhq, nextBukuTulis, nextStopmap, nextSyahadah, nextRaportKaleb } = applyGlobalParamsToAll(
       g,
       paramsSpiral,
       paramsKlem,
@@ -289,7 +301,8 @@ export default function PricelistClient() {
       paramsLabelKhq,
       paramsBukuTulis,
       paramsStopmap,
-      paramsSyahadah
+      paramsSyahadah,
+      paramsRaportKaleb
     );
 
     setParamsSpiral(nextSpiral);
@@ -302,6 +315,7 @@ export default function PricelistClient() {
     setParamsBukuTulis(nextBukuTulis);
     setParamsStopmap(nextStopmap);
     setParamsSyahadah(nextSyahadah);
+    setParamsRaportKaleb(nextRaportKaleb);
   };
 
   const fetchData = useCallback(async () => {
@@ -513,6 +527,7 @@ export default function PricelistClient() {
               { value: 'Buku Tulis', label: '📓 Buku Tulis' },
               { value: 'Stopmap', label: '📁 Stopmap' },
               { value: 'Syahadah', label: '🕌 Syahadah' },
+              { value: 'Raport Kaleb', label: '📒 Raport Kaleb' },
             ]}
             value={selectedProductCategory}
             onChange={(val) => handleProductCategoryChange(val as any)}
@@ -563,6 +578,11 @@ export default function PricelistClient() {
             <SyahadahMasterParameter
               customParams={paramsSyahadah}
               setCustomParams={setParamsSyahadah}
+            />
+          ) : selectedProductCategory === 'Raport Kaleb' ? (
+            <RaportKalebMasterParameter
+              customParams={paramsRaportKaleb}
+              setCustomParams={setParamsRaportKaleb}
             />
           ) : (
             <PricelistMasterParameter
@@ -658,6 +678,16 @@ export default function PricelistClient() {
               activeSimulationTitle={activeSimulationTitle}
               setActiveSimulationTitle={setActiveSimulationTitle}
             />
+          ) : selectedProductCategory === 'Raport Kaleb' ? (
+            <RaportKalebSimulator
+              customParams={paramsRaportKaleb}
+              setCustomParams={setParamsRaportKaleb}
+              onOpenMasterParam={() => setActiveTab('parameter')}
+              activeSimulationId={activeSimulationId}
+              setActiveSimulationId={setActiveSimulationId}
+              activeSimulationTitle={activeSimulationTitle}
+              setActiveSimulationTitle={setActiveSimulationTitle}
+            />
           ) : (
             <PricelistSimulator
               customParams={customParams}
@@ -726,6 +756,12 @@ export default function PricelistClient() {
           ) : selectedProductCategory === 'Syahadah' ? (
             <SyahadahMatrixView
               customParams={paramsSyahadah}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+            />
+          ) : selectedProductCategory === 'Raport Kaleb' ? (
+            <RaportKalebMatrixView
+              customParams={paramsRaportKaleb}
               viewMode={viewMode}
               setViewMode={setViewMode}
             />

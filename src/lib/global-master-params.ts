@@ -9,6 +9,7 @@ import { LabelKhqMasterParams, DEFAULT_LABEL_KHQ_PARAMS } from './label-khq-calc
 import { BukuTulisMasterParams, DEFAULT_BUKU_TULIS_PARAMS } from './buku-tulis-calculator';
 import { StopmapMasterParams, DEFAULT_STOPMAP_PARAMS } from './stopmap-calculator';
 import { SyahadahMasterParams, DEFAULT_SYAHADAH_PARAMS } from './syahadah-calculator';
+import { RaportKalebMasterParams, DEFAULT_RAPORT_KALEB_PARAMS } from './raport-kaleb-calculator';
 
 export interface GlobalMasterParams {
   // 1. Mesin Cetak Offset Oliver (58 / 52)
@@ -87,7 +88,8 @@ export function applyGlobalParamsToAll(
   currLabelKhq: LabelKhqMasterParams,
   currBukuTulis: BukuTulisMasterParams = DEFAULT_BUKU_TULIS_PARAMS,
   currStopmap: StopmapMasterParams = DEFAULT_STOPMAP_PARAMS,
-  currSyahadah: SyahadahMasterParams = DEFAULT_SYAHADAH_PARAMS
+  currSyahadah: SyahadahMasterParams = DEFAULT_SYAHADAH_PARAMS,
+  currRaportKaleb: RaportKalebMasterParams = DEFAULT_RAPORT_KALEB_PARAMS
 ) {
   const nextSpiral: SimulatorMasterParams = {
     ...currSpiral,
@@ -222,6 +224,17 @@ export function applyGlobalParamsToAll(
     tarifLakbanRoll: g.tarifLakbanRoll,
   };
 
+  const nextRaportKaleb: RaportKalebMasterParams = {
+    ...currRaportKaleb,
+    tarifKertasKalebKg: g.tarifAc230Kg,
+    upKertasPct: g.upKertasPct,
+    tarifPrintA3: g.tarifPrintA3,
+    tarifFoilPerPcs: 450,
+    tarifSisir: g.tarifSisirPcs,
+    tarifKardus: g.tarifKardusBox,
+    tarifLakbanRoll: g.tarifLakbanRoll,
+  };
+
   return {
     nextSpiral,
     nextKlem,
@@ -233,5 +246,6 @@ export function applyGlobalParamsToAll(
     nextBukuTulis,
     nextStopmap,
     nextSyahadah,
+    nextRaportKaleb,
   };
 }

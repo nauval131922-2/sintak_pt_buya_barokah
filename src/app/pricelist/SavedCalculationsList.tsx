@@ -34,10 +34,11 @@ import { SavedLabelKhqSimulationItem } from './LabelKhqSimulator';
 import { SavedBukuTulisSimulationItem } from './BukuTulisSimulator';
 import { SavedStopmapSimulationItem } from './StopmapSimulator';
 import { SavedSyahadahSimulationItem } from './SyahadahSimulator';
+import { SavedRaportKalebSimulationItem } from './RaportKalebSimulator';
 
 export type UnifiedCalculationItem = {
   id: string;
-  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah';
+  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb';
   savedAt: string;
   title: string;
   oplah: number;
@@ -58,11 +59,12 @@ export type UnifiedCalculationItem = {
     | SavedLabelKhqSimulationItem
     | SavedBukuTulisSimulationItem
     | SavedStopmapSimulationItem
-    | SavedSyahadahSimulationItem;
+    | SavedSyahadahSimulationItem
+    | SavedRaportKalebSimulationItem;
 };
 
 interface SavedCalculationsListProps {
-  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah';
+  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb';
   onLoadSimulation: (item: UnifiedCalculationItem) => void;
   activeSimulationId?: string | null;
 }
@@ -73,9 +75,9 @@ export default function SavedCalculationsList({
   activeSimulationId,
 }: SavedCalculationsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah'>('ALL');
+  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb'>('ALL');
   
-  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah') => {
+  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb') => {
     setFilterCategory(val);
     try {
       localStorage.setItem('sintak_pricelist_saved_list_filter', val);
@@ -98,6 +100,7 @@ export default function SavedCalculationsList({
   const [bukuTulisList, setBukuTulisList] = useState<SavedBukuTulisSimulationItem[]>([]);
   const [stopmapList, setStopmapList] = useState<SavedStopmapSimulationItem[]>([]);
   const [syahadahList, setSyahadahList] = useState<SavedSyahadahSimulationItem[]>([]);
+  const [raportKalebList, setRaportKalebList] = useState<SavedRaportKalebSimulationItem[]>([]);
 
   // Load from localStorage
   const refreshData = () => {
@@ -113,7 +116,8 @@ export default function SavedCalculationsList({
         savedFilter === 'Label KHQ' ||
         savedFilter === 'Buku Tulis' ||
         savedFilter === 'Stopmap' ||
-        savedFilter === 'Syahadah'
+        savedFilter === 'Syahadah' ||
+        savedFilter === 'Raport Kaleb'
       ) {
         setFilterCategory(savedFilter as any);
       }
@@ -153,6 +157,10 @@ export default function SavedCalculationsList({
       const rawSy = localStorage.getItem('sintak_saved_syahadah_simulations');
       if (rawSy) setSyahadahList(JSON.parse(rawSy));
       else setSyahadahList([]);
+
+      const rawRK = localStorage.getItem('sintak_saved_raport_kaleb_simulations');
+      if (rawRK) setRaportKalebList(JSON.parse(rawRK));
+      else setRaportKalebList([]);
     } catch (e) {
       console.error('Failed to load saved calculations:', e);
     }
@@ -379,9 +387,34 @@ export default function SavedCalculationsList({
       });
     });
 
+    // 10. Raport Kaleb
+    raportKalebList.forEach((rk) => {
+      const inp = rk.data.input;
+      const extra = inp.tambahanIsiLbr ? ` +${inp.tambahanIsiLbr} lbr` : '';
+      items.push({
+        id: rk.id,
+        category: 'Raport Kaleb',
+        savedAt: rk.savedAt,
+        title: rk.title,
+        oplah: inp.oplah,
+        specSummary: `Raport Kaleb ${inp.varian}${extra} • ${inp.oplah.toLocaleString('id-ID')} pcs`,
+        detailSpecs: [
+          `Isi: ${inp.varian}${extra ? ` +${inp.tambahanIsiLbr} lbr custom` : ''} · Foil Emas`,
+          `Finishing: Sisir + Packing Kardus`,
+          `Margin: ${inp.marginPct}%`,
+        ],
+        hppUnit: rk.data.hppPerPcs,
+        hargaJualUnit: rk.data.hargaJualPerPcs,
+        totalOmset: rk.data.totalHargaJual,
+        marginPct: inp.marginPct,
+        negoDiskonPct: inp.negoDiskonPct,
+        rawData: rk,
+      });
+    });
+
     // Urutkan dari yang terbaru disimpan
     return items.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
-  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList, bukuTulisList, stopmapList, syahadahList]);
+  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList, bukuTulisList, stopmapList, syahadahList, raportKalebList]);
 
   // Filtered List
   const filteredList = useMemo(() => {
@@ -444,6 +477,10 @@ export default function SavedCalculationsList({
         const updated = syahadahList.filter((sy) => sy.id !== item.id);
         setSyahadahList(updated);
         localStorage.setItem('sintak_saved_syahadah_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Raport Kaleb') {
+        const updated = raportKalebList.filter((rk) => rk.id !== item.id);
+        setRaportKalebList(updated);
+        localStorage.setItem('sintak_saved_raport_kaleb_simulations', JSON.stringify(updated));
       }
       toast.success('Kalkulasi berhasil dihapus.');
     } catch (err) {
@@ -494,6 +531,10 @@ export default function SavedCalculationsList({
         const updated = syahadahList.map((sy) => (sy.id === item.id ? { ...sy, title: newTitle } : sy));
         setSyahadahList(updated);
         localStorage.setItem('sintak_saved_syahadah_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Raport Kaleb') {
+        const updated = raportKalebList.map((rk) => (rk.id === item.id ? { ...rk, title: newTitle } : rk));
+        setRaportKalebList(updated);
+        localStorage.setItem('sintak_saved_raport_kaleb_simulations', JSON.stringify(updated));
       }
       setEditingId(null);
       toast.success('Nama kalkulasi berhasil diperbarui.');
@@ -539,6 +580,11 @@ export default function SavedCalculationsList({
       const sy = item.rawData as SavedSyahadahSimulationItem;
       const inp = sy.data.input;
       text = `*PENAWARAN SYAHADAH*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Syahadah ${inp.varian} 21,5×33 cm\n• *Bahan*: Linen/Hammer Crem Tebal 260 gsm\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Foil*: ${inp.opsiFoil ? 'Ya (+Rp 450/pcs, min 100k + master foil)' : 'Tanpa Foil'}\n• *Finishing*: Sisir + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${sy.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${sy.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
+    } else if (item.category === 'Raport Kaleb') {
+      const rk = item.rawData as SavedRaportKalebSimulationItem;
+      const inp = rk.data.input;
+      const extra = inp.tambahanIsiLbr ? ` +${inp.tambahanIsiLbr} lbr` : '';
+      text = `*PENAWARAN RAPORT KALEB*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Raport Kaleb ${inp.varian}${extra} 24×34 cm\n• *Bahan*: Kaleb Foil Emas\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Isi*: ${inp.varian}${extra ? ` +${inp.tambahanIsiLbr} lbr custom` : ''} (+Rp ${((rk.paramsSnapshot?.tarifIsiPerLbr) || 1200).toLocaleString('id-ID')}/lbr)\n• *Finishing*: Sisir + Packing Kardus + Foil Emas\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${rk.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${rk.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     }
 
     navigator.clipboard.writeText(text);
@@ -610,6 +656,7 @@ export default function SavedCalculationsList({
                 { value: 'Buku Tulis', label: '📓 Buku Tulis', count: bukuTulisList.length },
                 { value: 'Stopmap', label: '📁 Stopmap', count: stopmapList.length },
                 { value: 'Syahadah', label: '🕌 Syahadah', count: syahadahList.length },
+                { value: 'Raport Kaleb', label: '📒 Raport Kaleb', count: raportKalebList.length },
               ]}
               value={filterCategory}
               onChange={(val) => handleFilterChange(val as any)}
@@ -688,6 +735,8 @@ export default function SavedCalculationsList({
                           ? 'bg-orange-100 text-orange-900 border border-orange-200'
                           : item.category === 'Syahadah'
                           ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                          : item.category === 'Raport Kaleb'
+                          ? 'bg-yellow-100 text-yellow-900 border border-yellow-300'
                           : 'bg-blue-100 text-blue-900 border border-blue-200'
                       }`}
                     >
