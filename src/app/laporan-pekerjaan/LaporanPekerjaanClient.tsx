@@ -2993,7 +2993,10 @@ function TaskDetailModal({
                         }`}
                         title={col.label}
                       >
-                        {col.label}
+                        <span>{col.label}</span>
+                        {col.key === 'task' && (
+                          <span className="text-rose-500 ml-0.5" title="Wajib diisi agar data tersimpan">*</span>
+                        )}
                       </th>
                     ))}
                   </tr>
