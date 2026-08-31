@@ -2018,24 +2018,6 @@ export default function LaporanPekerjaanClient({
               <span className="hidden sm:inline">Reload</span>
             </button>
 
-            {/* Tombol Tambah Order Baru Manual */}
-            {roleConfig?.can_add !== false && (
-              <button
-                type="button"
-                onClick={() => {
-                  setNewOrderProject("");
-                  setNewOrderTgl(new Date());
-                  setShowAddOrderModal(true);
-                }}
-                className="h-8 px-2.5 sm:px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm"
-                title="Input Order Produksi Manual"
-              >
-                <Plus size={14} />
-                <span className="hidden sm:inline">Tambah Order</span>
-                <span className="sm:hidden">Order</span>
-              </button>
-            )}
-
             {/* Input Search */}
             <div className="relative flex-1 min-w-0">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -2097,6 +2079,24 @@ export default function LaporanPekerjaanClient({
               searchPlaceholder="Cari Status..."
               widthClass="w-28 sm:w-36 lg:w-44"
             />
+
+            {/* Tombol Tambah Order Baru Manual di Paling Kanan */}
+            {roleConfig?.can_add !== false && (
+              <button
+                type="button"
+                onClick={() => {
+                  setNewOrderProject("");
+                  setNewOrderTgl(new Date());
+                  setShowAddOrderModal(true);
+                }}
+                className="h-8 px-2.5 sm:px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm ml-1"
+                title="Input Order Produksi Manual"
+              >
+                <Plus size={14} />
+                <span className="hidden sm:inline">Tambah Order</span>
+                <span className="sm:hidden">Order</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -2665,7 +2665,7 @@ export default function LaporanPekerjaanClient({
                   <input
                     type="text"
                     required
-                    placeholder="Contoh: OP.001 Buku Panduan, Box Kemasan, dll"
+                    placeholder="Masukkan nama order atau project..."
                     value={newOrderProject}
                     onChange={(e) => setNewOrderProject(e.target.value)}
                     autoFocus
@@ -2683,6 +2683,7 @@ export default function LaporanPekerjaanClient({
                       value={newOrderTgl}
                       onChange={(d) => setNewOrderTgl(d)}
                       popupAlign="left"
+                      usePortal={true}
                     />
                   </div>
                 </div>
