@@ -16,6 +16,7 @@ import {
   BookOpen,
   Calendar,
   Bookmark,
+  Globe,
 } from 'lucide-react';
 import PricelistExcelUpload from './PricelistExcelUpload';
 import PricelistSimulator, { SavedSimulationItem } from './PricelistSimulator';
