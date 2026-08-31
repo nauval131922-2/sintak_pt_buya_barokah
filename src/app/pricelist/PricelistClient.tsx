@@ -378,14 +378,20 @@ export default function PricelistClient() {
             <span>Daftar Kalkulasi</span>
           </button>
 
-          <div className="flex items-center gap-1.5 pb-2">
+          <div
+            className={`flex items-center gap-1.5 pb-2 px-2 border-b-2 transition-all ${
+              activeTab === 'parameter'
+                ? 'border-emerald-600'
+                : 'border-transparent'
+            }`}
+          >
             <button
               type="button"
               onClick={() => setActiveTab('parameter')}
-              className={`flex items-center justify-center gap-1.5 px-2 text-[13px] font-bold border-b-2 transition-all cursor-pointer ${
+              className={`flex items-center justify-center gap-1.5 text-[13px] font-bold cursor-pointer ${
                 activeTab === 'parameter'
-                  ? 'border-emerald-600 text-emerald-700'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'text-emerald-700'
+                  : 'text-gray-500 hover:text-gray-700'
               }`}
             >
               <Database size={14} />
@@ -393,12 +399,15 @@ export default function PricelistClient() {
             </button>
             <button
               type="button"
-              onClick={() => setShowGlobalParamModal(true)}
-              className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-md text-[11px] font-bold transition-all shadow-2xs hover:shadow-xs cursor-pointer shrink-0"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowGlobalParamModal(true);
+              }}
+              className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-100/70 hover:bg-emerald-200 text-emerald-800 border border-emerald-300 rounded text-[10px] font-bold transition-all shadow-2xs cursor-pointer shrink-0"
               title="Kelola Master Parameter Global (Shared Rates antar produk)"
             >
-              <Database size={11} className="text-emerald-700" />
-              <span>Master Global</span>
+              <Globe size={10} className="text-emerald-700" />
+              <span>Global</span>
             </button>
           </div>
 
