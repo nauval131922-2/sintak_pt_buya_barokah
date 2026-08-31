@@ -1009,14 +1009,13 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Laporan Pekerjaan ───
-  'laporan-pekerjaan-2026-08-30-2': entry({
+  'laporan-pekerjaan-2026-08-31': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan',
     permissionKeys: ['produksi_laporan_pekerjaan'],
-    sortDate: '2026-08-30',
-    date: '30 Agu 2026',
-    version: '2026-08-30-2',
-    versionLabel: 'v2',
+    sortDate: '2026-08-31',
+    date: '31 Agu 2026',
+    version: '2026-08-31-1',
     items: [
       'Penambahan filter rentang tanggal (Dari - Sampai) dan rentang jam (HH:mm) pada task pekerjaan dengan penyimpanan preferensi harian otomatis',
       'Fitur kustomisasi ukuran font tabel presisi ala Excel (Input angka bebas 6px–48px, dropdown preset, serta tombol step - / +) yang terintegrasi dengan tombol reset dan modal detail task',
@@ -1033,7 +1032,6 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     sortDate: '2026-08-30',
     date: '30 Agu 2026',
     version: '2026-08-30-1',
-    versionLabel: 'v1',
     items: [
       'Penyempurnaan hak akses role: order baru SOPD tanpa subtask kini hanya muncul untuk role yang memiliki izin tambah pekerjaan (can_add)',
       'Perbaikan inisialisasi default filter agar tombol Reset tidak muncul otomatis saat halaman pertama kali dibuka',
