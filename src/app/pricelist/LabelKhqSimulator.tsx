@@ -19,6 +19,7 @@ import {
   Info,
   RefreshCw,
   Wine,
+  Layers,
 } from 'lucide-react';
 import {
   LabelKhqMasterParams,
@@ -193,7 +194,7 @@ export default function LabelKhqSimulator({
 
   return (
     <div className="space-y-5">
-      {/* Active Edit Alert Bar — konsisten dengan Brosur/Manasik/Yasin/Nota */}
+      {/* Active Edit Alert Bar */}
       {activeSimulationId && (
         <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-900 shadow-2xs">
           <div className="flex items-start gap-2.5">
@@ -249,102 +250,18 @@ export default function LabelKhqSimulator({
         </div>
       )}
 
-      {/* 4 Financial Cards Ringkasan */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: HPP Total */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">Total HPP</span>
-            <div className="p-1.5 bg-slate-100 rounded-lg text-slate-600">
-              <Calculator size={16} />
-            </div>
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
-            Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
-          </div>
-          <div className="mt-1 flex items-center justify-between text-[11px] text-slate-500 font-medium">
-            <span>HPP / Lbr:</span>
-            <span className="font-mono font-bold text-slate-700">
-              Rp {result.hppPerLbr.toFixed(2)}
-            </span>
-          </div>
-        </div>
-
-        {/* Card 2: Harga Jual / Lbr */}
-        <div className="bg-white rounded-2xl border border-emerald-200/80 p-4 shadow-xs hover:shadow-md transition-shadow bg-gradient-to-br from-emerald-50/40 to-transparent">
-          <div className="flex items-center justify-between text-emerald-800 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">Harga Jual / Lbr</span>
-            <div className="p-1.5 bg-emerald-100 rounded-lg text-emerald-700">
-              <DollarSign size={16} />
-            </div>
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-emerald-900 tracking-tight">
-            Rp {result.hargaJualPerLbr.toLocaleString('id-ID')}
-          </div>
-          <div className="mt-1 flex items-center justify-between text-[11px] text-emerald-700/80 font-medium">
-            <span>Total Omset:</span>
-            <span className="font-mono font-bold text-emerald-900">
-              Rp {result.totalHargaJual.toLocaleString('id-ID')}
-            </span>
-          </div>
-        </div>
-
-        {/* Card 3: Harga Nego / Lbr */}
-        <div className="bg-white rounded-2xl border border-blue-200/80 p-4 shadow-xs hover:shadow-md transition-shadow bg-gradient-to-br from-blue-50/40 to-transparent">
-          <div className="flex items-center justify-between text-blue-800 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">Harga Nego / Lbr</span>
-            <div className="p-1.5 bg-blue-100 rounded-lg text-blue-700">
-              <Percent size={16} />
-            </div>
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-blue-900 tracking-tight">
-            Rp {result.hargaNegoPerLbr.toLocaleString('id-ID')}
-          </div>
-          <div className="mt-1 flex items-center justify-between text-[11px] text-blue-700/80 font-medium">
-            <span>Diskon: {negoDiskonPct}% · Total Nego:</span>
-            <span className="font-mono font-bold text-blue-900">
-              Rp {result.totalHargaNego.toLocaleString('id-ID')}
-            </span>
-          </div>
-        </div>
-
-        {/* Card 4: Profit Bersih */}
-        <div className="bg-white rounded-2xl border border-amber-200/80 p-4 shadow-xs hover:shadow-md transition-shadow bg-gradient-to-br from-amber-50/40 to-transparent">
-          <div className="flex items-center justify-between text-amber-800 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">Profit Bersih</span>
-            <div className="p-1.5 bg-amber-100 rounded-lg text-amber-700">
-              <TrendingUp size={16} />
-            </div>
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-amber-900 tracking-tight">
-            Rp {result.profitTotal.toLocaleString('id-ID')}
-          </div>
-          <div className="mt-1 flex items-center justify-between text-[11px] text-amber-700/80 font-medium">
-            <span>Margin Aktual:</span>
-            <span className="font-mono font-bold text-amber-900">
-              {Math.round(result.marginPct * 100)}% (Rp {Math.round(result.profitPerLbr).toLocaleString('id-ID')}/lbr)
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Grid: Form Input & Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Kolom Kiri: Form Input Spesifikasi */}
+        {/* Kolom Kiri: Form Input */}
         <div className="lg:col-span-5 space-y-5">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
               <Sliders size={15} className="text-emerald-700" />
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                Input Spesifikasi Label KHQ
-              </h3>
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Input Spesifikasi Label KHQ</h3>
             </div>
 
-            {/* Pilihan Varian Ukuran Botol */}
+            {/* Varian Botol */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Varian Botol Label KHQ
-              </label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Varian Botol Label KHQ</label>
               <div className="grid grid-cols-3 gap-2">
                 {VARIAN_LIST.map((v) => (
                   <button
@@ -362,16 +279,12 @@ export default function LabelKhqSimulator({
                   </button>
                 ))}
               </div>
-              <p className="text-[11px] text-slate-500 mt-1.5 italic">
-                {LABEL_KHQ_CONFIG[varian].description}
-              </p>
+              <p className="text-[11px] text-slate-500 mt-1.5 italic">{LABEL_KHQ_CONFIG[varian].description}</p>
             </div>
 
-            {/* Input Qty Kardus / Lembar */}
+            {/* Kuantitas Order */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Kuantitas Order (Kardus)
-              </label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Kuantitas Order (Kardus)</label>
               <div className="flex items-center gap-2">
                 <select
                   value={jumlahKardus}
@@ -388,7 +301,7 @@ export default function LabelKhqSimulator({
                   ))}
                 </select>
               </div>
-              <div className="mt-2 flex items-center gap-2">
+              <div className="mt-1.5 grid grid-cols-2 gap-2">
                 <input
                   type="number"
                   min={1}
@@ -397,7 +310,7 @@ export default function LabelKhqSimulator({
                     setJumlahKardus(Math.max(1, Number(e.target.value) || 1));
                     setJumlahLbrCustom(0);
                   }}
-                  className="w-1/2 px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none"
+                  className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
                   placeholder="Kardus..."
                 />
                 <input
@@ -407,32 +320,28 @@ export default function LabelKhqSimulator({
                   onChange={(e) => {
                     const lbr = Number(e.target.value) || 0;
                     setJumlahLbrCustom(lbr);
-                    if (lbr > 0) {
-                      setJumlahKardus(Math.ceil(lbr / LABEL_KHQ_CONFIG[varian].lbrPerKardus));
-                    }
+                    if (lbr > 0) setJumlahKardus(Math.ceil(lbr / LABEL_KHQ_CONFIG[varian].lbrPerKardus));
                   }}
-                  className="w-1/2 px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none"
+                  className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
                   placeholder="Atau custom lbr..."
                 />
               </div>
             </div>
 
-            {/* Opsi Finishing */}
+            {/* Finishing */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Finishing &amp; Proses
-              </label>
-              <div className="space-y-2">
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Finishing</label>
+              <div className="grid grid-cols-2 gap-2">
                 <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:bg-slate-50 cursor-pointer text-xs">
                   <input
                     type="checkbox"
                     checked={opsiLaminasi}
                     onChange={(e) => setOpsiLaminasi(e.target.checked)}
-                    className="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer"
+                    className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                   />
-                  <div className="flex-1">
-                    <span className="font-bold text-slate-800">Laminasi Glossy</span>
-                    <p className="text-[10.5px] text-slate-500">Lapisan kilap tahan air &amp; gesekan botol</p>
+                  <div>
+                    <span className="font-semibold text-slate-800 block text-[11px]">Laminasi Glossy</span>
+                    <span className="text-[10px] text-slate-400">Kilap tahan air</span>
                   </div>
                 </label>
                 <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:bg-slate-50 cursor-pointer text-xs">
@@ -440,62 +349,68 @@ export default function LabelKhqSimulator({
                     type="checkbox"
                     checked={opsiRajang}
                     onChange={(e) => setOpsiRajang(e.target.checked)}
-                    className="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer"
+                    className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                   />
-                  <div className="flex-1">
-                    <span className="font-bold text-slate-800">Rajang / Potong Lembaran</span>
-                    <p className="text-[10.5px] text-slate-500">Potong satuan siap tempel di botol KHQ</p>
+                  <div>
+                    <span className="font-semibold text-slate-800 block text-[11px]">Rajang / Potong</span>
+                    <span className="text-[10px] text-slate-400">Siap tempel botol</span>
                   </div>
                 </label>
               </div>
             </div>
 
-            {/* Margin & Diskon Nego */}
+            {/* Margin & Nego */}
             <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Margin Profit (%)
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={marginPct}
-                  onChange={(e) => setMarginPct(Number(e.target.value) || 0)}
-                  className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none"
-                />
+                <label className="block text-xs font-bold text-slate-700 mb-1">Margin Profit (%)</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={marginPct}
+                    onChange={(e) => setMarginPct(Number(e.target.value) || 0)}
+                    className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+                  />
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
+                </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Diskon Nego (%)
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  max={50}
-                  value={negoDiskonPct}
-                  onChange={(e) => setNegoDiskonPct(Number(e.target.value) || 0)}
-                  className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none"
-                />
+                <label className="block text-xs font-bold text-slate-700 mb-1">Batas Nego (%)</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={negoDiskonPct}
+                    onChange={(e) => setNegoDiskonPct(Number(e.target.value) || 0)}
+                    className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+                  />
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
+                </div>
               </div>
             </div>
 
-            {/* Simpan Kalkulasi */}
+            {/* Judul + Aksi Simpan di kiri (ringkas) */}
             <div className="pt-2 border-t border-slate-100 space-y-2">
               <input
                 type="text"
                 value={simulationTitle}
                 onChange={(e) => setSimulationTitle(e.target.value)}
                 placeholder={defaultTitle()}
-                className="w-full px-3 py-1.5 text-xs font-medium text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none"
+                className="w-full px-3 py-1.5 text-xs font-medium text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
               />
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={activeSimulationId ? handleUpdateSavedSimulation : handleSaveSimulation}
-                  className="flex-1 py-2 px-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
+                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5 ${
+                    activeSimulationId
+                      ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                      : 'bg-emerald-700 hover:bg-emerald-800 text-white'
+                  }`}
                 >
-                  <Bookmark size={14} />
+                  {activeSimulationId ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
                   <span>{activeSimulationId ? 'Update Riwayat' : 'Simpan Kalkulasi'}</span>
                 </button>
                 <button
@@ -512,77 +427,224 @@ export default function LabelKhqSimulator({
           </div>
         </div>
 
-        {/* Kolom Kanan: Breakdown HPP & Ringkasan Teknis */}
+        {/* Kolom Kanan: Hasil */}
         <div className="lg:col-span-7 space-y-5">
-          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <div className="flex items-center gap-2">
-                <FileText size={15} className="text-emerald-700" />
-                <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Rincian Komponen Biaya HPP
-                </h3>
+          {/* 4 Kartu Finansial — style identik Brosur */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-slate-500 mb-1">
+                <span className="text-[11px] font-semibold">HPP / lbr</span>
+                <DollarSign size={13} className="text-slate-400" />
               </div>
-              <span className="text-[11px] font-mono text-slate-500 font-medium">
-                {result.kebutuhanLbrA3} Lembar A3+
-              </span>
+              <div>
+                <span className="text-base sm:text-lg font-black text-slate-800 font-mono">
+                  Rp {result.hppPerLbr.toFixed(2)}
+                </span>
+                <span className="block text-[10px] text-slate-400 mt-0.5">
+                  Total HPP: Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
+                </span>
+              </div>
             </div>
 
-            {/* Tabel Breakdown */}
+            <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-emerald-800 mb-1">
+                <span className="text-[11px] font-bold">Harga Jual (+{marginPct}%)</span>
+                <TrendingUp size={13} className="text-emerald-600" />
+              </div>
+              <div>
+                <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
+                  Rp {result.hargaJualPerLbr.toLocaleString('id-ID')}
+                </span>
+                <span className="block text-[10px] text-emerald-700/80 mt-0.5">/ lbr</span>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-xl border border-blue-200 p-3.5 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-blue-800 mb-1">
+                <span className="text-[11px] font-bold">Harga Nego (-{negoDiskonPct}%)</span>
+                <Percent size={13} className="text-blue-600" />
+              </div>
+              <div>
+                <span className="text-base sm:text-lg font-black text-blue-800 font-mono">
+                  Rp {result.hargaNegoPerLbr.toLocaleString('id-ID')}
+                </span>
+                <span className="block text-[10px] text-blue-700/80 mt-0.5">/ lbr</span>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-slate-500 mb-1">
+                <span className="text-[11px] font-semibold">Total Harga Jual</span>
+                <TrendingUp size={13} className="text-emerald-500" />
+              </div>
+              <div>
+                <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">
+                  Rp {result.totalHargaJual.toLocaleString('id-ID')}
+                </span>
+                <span className="block text-[10px] text-slate-500 mt-0.5">
+                  Profit: Rp {Math.round(result.profitTotal).toLocaleString('id-ID')}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Breakdown */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="px-4 py-3 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText size={15} className="text-emerald-700" />
+                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Rincian Estimasi Komponen Biaya Label KHQ</h4>
+              </div>
+              <span className="text-[11px] font-bold text-slate-500">
+                {result.jumlahKardus} Dus / {result.jumlahLbr.toLocaleString('id-ID')} lbr · {result.kebutuhanLbrA3} lbr A3+
+              </span>
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full text-xs text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-200 text-slate-500 font-bold">
-                    <th className="pb-2 px-2">Komponen Biaya</th>
-                    <th className="pb-2 px-2">Keterangan / Volume</th>
-                    <th className="pb-2 px-2 text-right">Subtotal</th>
-                    <th className="pb-2 px-2 text-right">Porsi</th>
+                  <tr className="bg-slate-100/60 border-b border-slate-200 text-slate-600 font-semibold text-[11px]">
+                    <th className="py-2 px-3 w-10 text-center">No</th>
+                    <th className="py-2 px-3">Komponen Biaya</th>
+                    <th className="py-2 px-3">Keterangan Teknis</th>
+                    <th className="py-2 px-3 text-right">Biaya (Rp)</th>
+                    <th className="py-2 px-3 text-right w-16">Porsi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 font-medium">
+                <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
                   {result.breakdown.map((item, idx) => (
                     <tr key={idx} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="py-2.5 px-2 font-bold text-slate-800">{item.nama}</td>
-                      <td className="py-2.5 px-2 text-slate-500 text-[11px]">{item.keterangan}</td>
-                      <td className="py-2.5 px-2 text-right font-mono font-bold text-slate-800">
-                        Rp {item.nominal.toLocaleString('id-ID')}
-                      </td>
-                      <td className="py-2.5 px-2 text-right font-mono text-slate-500 text-[11px]">
-                        {(item.pct * 100).toFixed(1)}%
-                      </td>
+                      <td className="py-2 px-3 text-center text-slate-400">{idx + 1}</td>
+                      <td className="py-2 px-3 font-medium text-slate-800 font-sans">{item.nama}</td>
+                      <td className="py-2 px-3 text-slate-500 text-[10.5px] font-sans">{item.keterangan}</td>
+                      <td className="py-2 px-3 text-right font-bold text-slate-800">Rp {item.nominal.toLocaleString('id-ID')}</td>
+                      <td className="py-2 px-3 text-right text-slate-500">{(item.pct * 100).toFixed(1)}%</td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr className="border-t-2 border-slate-300 font-bold text-slate-900 bg-slate-50/50">
-                    <td className="py-2.5 px-2" colSpan={2}>
-                      Total HPP ({result.jumlahKardus} Kardus / {result.jumlahLbr.toLocaleString('id-ID')} Lembar)
+                  <tr className="bg-slate-50/90 font-bold border-t border-slate-200 text-xs">
+                    <td colSpan={3} className="py-2.5 px-3 text-slate-800 font-sans">
+                      Total HPP Biaya Produksi ({result.jumlahKardus} Dus / {result.jumlahLbr.toLocaleString('id-ID')} lbr)
                     </td>
-                    <td className="py-2.5 px-2 text-right font-mono text-emerald-800 text-sm">
+                    <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-sm">
                       Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
                     </td>
-                    <td className="py-2.5 px-2 text-right font-mono text-slate-600 text-xs">
-                      100%
-                    </td>
+                    <td className="py-2.5 px-3 text-right font-mono text-slate-600">100%</td>
                   </tr>
                 </tfoot>
               </table>
             </div>
+          </div>
 
-            {/* Note & Informasi Teknis */}
-            <div className="bg-emerald-50/60 border border-emerald-200/60 rounded-xl p-3 text-[11.5px] text-emerald-900 space-y-1">
-              <div className="flex items-center gap-1.5 font-bold">
-                <Info size={14} className="text-emerald-700 shrink-0" />
-                <span>Informasi Spesifikasi &amp; Kemasan</span>
-              </div>
-              <ul className="list-disc list-inside space-y-0.5 text-emerald-800/90 pl-1 text-[11px]">
-                <li>Standar 1 Dus/Kardus = 24 lembar label botol.</li>
-                <li>Layout lembar cetak A3+ memuat {LABEL_KHQ_CONFIG[varian].pcsPerLbrA3} pcs label per lembar.</li>
-                <li>Biaya cetak menggunakan printer digital POD A3+ dengan bahan kertas Art Paper 120 gsm.</li>
-              </ul>
-            </div>
+          {/* Aksi Simpan alternatif di kanan (konsisten Brosur: full-width di bawah breakdown) */}
+          <div className="pt-1">
+            {activeSimulationId ? (
+              <button
+                type="button"
+                onClick={handleUpdateSavedSimulation}
+                className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <BookmarkCheck size={16} />
+                <span>Simpan Perubahan ke Daftar Kalkulasi</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSaveSimulation}
+                className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Bookmark size={16} />
+                <span>Simpan Kalkulasi Ini ke Daftar Kalkulasi</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Modal Panduan */}
+      {showSimulatorManual && (
+        <div
+          onClick={() => setShowSimulatorManual(false)}
+          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden cursor-default"
+          >
+            <div className="px-6 py-4 bg-emerald-900 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-800/80 rounded-xl border border-emerald-700 text-emerald-200">
+                  <Calculator className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold tracking-tight">Panduan Simulator Label KHQ</h3>
+                  <p className="text-xs text-emerald-200/90 mt-0.5">Alur perhitungan berbasis kardus (24 lbr/dus), POD A3+, laminasi &amp; rajang</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSimulatorManual(false)}
+                className="p-1.5 rounded-lg text-emerald-200 hover:text-white hover:bg-emerald-800/60 transition-all cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-700 leading-relaxed">
+              <div className="space-y-3">
+                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                  Langkah Menggunakan Simulator Label KHQ
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                  {[
+                    ['1. Varian & Jumlah', 'Pilih varian botol 220/330/600 ml dan tentukan jumlah kardus (1 dus = 24 lbr).'],
+                    ['2. Finishing', 'Aktifkan Laminasi Glossy & Rajang/Potong sesuai kebutuhan label.'],
+                    ['3. Margin & Nego', 'Atur margin profit & batas nego, harga otomatis terhitung.'],
+                    ['4. Salin & Simpan', 'Salin format WA atau simpan ke Daftar Kalkulasi untuk muat ulang.'],
+                  ].map(([title, desc]) => (
+                    <div key={title} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                      <span className="font-bold text-emerald-800 text-xs">{title}</span>
+                      <p className="text-[11px] text-slate-600">{desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5">
+                <h5 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-emerald-700" />
+                  Struktur Biaya Produksi Label KHQ
+                </h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
+                  <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
+                    <span className="font-bold text-emerald-900 block">Cetak &amp; Bahan:</span>
+                    <p className="text-slate-600 leading-snug">
+                      Print POD A3+ Rp 2.000/lbr + insheet 7 lbr. Kapasitas: 220ml 19 pcs/A3+, 330ml 20 pcs/A3+, 600ml 17 pcs/A3+.
+                    </p>
+                  </div>
+                  <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">
+                    <span className="font-bold text-blue-900 block">Finishing &amp; Packing:</span>
+                    <p className="text-slate-600 leading-snug">
+                      Rajang Rp 50/lembar + Laminasi glossy 0,35/cm² (min 50k) per lbr A3+ + Desain Rp 30.000/order.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowSimulatorManual(false)}
+                className="px-4 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition-all cursor-pointer shadow-xs"
+              >
+                Tutup Panduan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
