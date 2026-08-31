@@ -11,6 +11,7 @@ export interface FontSizeControlProps {
   max?: number;
   steps?: number[];
   className?: string;
+  usePortal?: boolean;
 }
 
 const DEFAULT_STEPS = [9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24];
@@ -22,9 +23,11 @@ export default function FontSizeControl({
   max = 24,
   steps = DEFAULT_STEPS,
   className = '',
+  usePortal = false,
 }: FontSizeControlProps) {
   const [open, setOpen] = useState(false);
   const [inputText, setInputText] = useState(String(value));
+  const [openUpward, setOpenUpward] = useState(false);
   const [portalStyle, setPortalStyle] = useState<React.CSSProperties>({});
   const triggerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -38,37 +41,38 @@ export default function FontSizeControl({
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
     const scale = getZoomScale(triggerRef.current);
-    const popupWidth = 64;
+    const popupWidth = 60;
     const popupHeight = 160;
     const padding = 8;
 
-    let left = rect.left;
-    if (left + popupWidth * scale > window.innerWidth - padding) {
-      left = window.innerWidth - padding - popupWidth * scale;
-    }
-    if (left < padding) left = padding;
-
     const spaceBelow = window.innerHeight - rect.bottom;
-    const openUpward = spaceBelow < popupHeight * scale && rect.top > spaceBelow;
+    const spaceAbove = rect.top;
+    const isUpward = spaceBelow < popupHeight && spaceAbove > spaceBelow;
+    setOpenUpward(isUpward);
 
-    let top: number;
-    if (openUpward) {
-      top = rect.top - popupHeight * scale - 4;
-    } else {
-      top = rect.bottom + 4;
+    if (usePortal) {
+      let targetLeft = rect.left;
+      const minLeft = padding;
+      const maxLeft = Math.max(padding, window.innerWidth - popupWidth - padding);
+      const clampedLeft = Math.max(minLeft, Math.min(targetLeft, maxLeft));
+
+      const style: React.CSSProperties = {
+        position: 'fixed',
+        left: clampedLeft / scale,
+        width: `${popupWidth / scale}px`,
+        maxHeight: `${popupHeight / scale}px`,
+        zIndex: 10000,
+      };
+
+      if (isUpward) {
+        style.bottom = Math.max(10, window.innerHeight - rect.top + 4) / scale;
+      } else {
+        style.top = (rect.bottom + 4) / scale;
+      }
+
+      setPortalStyle(style);
     }
-
-    setPortalStyle({
-      position: 'fixed',
-      top: `${top}px`,
-      left: `${left}px`,
-      width: `${popupWidth}px`,
-      maxHeight: `${popupHeight}px`,
-      zIndex: 99999,
-      transform: scale !== 1 ? `scale(${scale})` : undefined,
-      transformOrigin: openUpward ? 'bottom left' : 'top left',
-    });
-  }, []);
+  }, [usePortal]);
 
   useEffect(() => {
     if (!open) return;
@@ -90,8 +94,8 @@ export default function FontSizeControl({
     };
 
     window.addEventListener('mousedown', handleOutside, true);
-    window.addEventListener('scroll', handleScrollOrResize, true);
-    window.addEventListener('resize', handleScrollOrResize);
+    window.addEventListener('scroll', handleScrollOrResize, { capture: true, passive: true });
+    window.addEventListener('resize', handleScrollOrResize, { passive: true });
 
     return () => {
       window.removeEventListener('mousedown', handleOutside, true);
@@ -191,13 +195,44 @@ export default function FontSizeControl({
         </button>
       </div>
 
-      {/* Dropdown Menu Menggunakan Portal agar tidak terpotong kontainer */}
+      {/* Dropdown Menu (Relative Absolute atau Portal) */}
       {open && (
-        <Portal>
+        usePortal ? (
+          <Portal>
+            <div
+              ref={dropdownRef}
+              style={portalStyle}
+              className="bg-white border border-slate-200 rounded-lg shadow-lg py-1 overflow-y-auto custom-scrollbar animate-in fade-in zoom-in-95 duration-100 select-none text-[11px] font-medium text-slate-700"
+            >
+              {steps.map((sz) => {
+                const isSelected = sz === value;
+                return (
+                  <button
+                    key={sz}
+                    type="button"
+                    onClick={() => {
+                      onChange(sz);
+                      setOpen(false);
+                    }}
+                    className={`w-full px-2.5 py-1 text-center font-bold flex items-center justify-between transition-colors cursor-pointer ${
+                      isSelected
+                        ? 'bg-emerald-50 text-emerald-700 font-extrabold'
+                        : 'hover:bg-slate-50 text-slate-700 hover:text-emerald-600'
+                    }`}
+                  >
+                    <span>{sz}px</span>
+                    {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" />}
+                  </button>
+                );
+              })}
+            </div>
+          </Portal>
+        ) : (
           <div
             ref={dropdownRef}
-            style={portalStyle}
-            className="bg-white border border-slate-200 rounded-lg shadow-lg py-1 overflow-y-auto custom-scrollbar animate-in fade-in zoom-in-95 duration-100 select-none text-[11px] font-medium text-slate-700"
+            className={`absolute left-0 w-16 max-h-40 bg-white border border-slate-200 rounded-lg shadow-lg py-1 overflow-y-auto custom-scrollbar z-50 animate-in fade-in zoom-in-95 duration-100 select-none text-[11px] font-medium text-slate-700 ${
+              openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+            }`}
           >
             {steps.map((sz) => {
               const isSelected = sz === value;
@@ -209,7 +244,7 @@ export default function FontSizeControl({
                     onChange(sz);
                     setOpen(false);
                   }}
-                  className={`w-full px-2.5 py-1 text-center font-bold flex items-center justify-between transition-colors cursor-pointer ${
+                  className={`w-full px-2 py-1 text-center font-bold flex items-center justify-between transition-colors cursor-pointer ${
                     isSelected
                       ? 'bg-emerald-50 text-emerald-700 font-extrabold'
                       : 'hover:bg-slate-50 text-slate-700 hover:text-emerald-600'
@@ -221,7 +256,7 @@ export default function FontSizeControl({
               );
             })}
           </div>
-        </Portal>
+        )
       )}
 
       {/* Tombol Step Up */}
