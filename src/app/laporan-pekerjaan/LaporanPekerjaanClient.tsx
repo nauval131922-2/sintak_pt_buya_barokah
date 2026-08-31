@@ -49,6 +49,7 @@ import TableFooter from "@/components/TableFooter";
 import Portal, { getZoomScale } from "@/components/Portal";
 import SquareDropdown from "@/components/SquareDropdown";
 import DatePicker from "@/components/DatePicker";
+import TimePicker from "@/components/TimePicker";
 import { toast } from "@/lib/toast";
 import { type SpreadsheetTask } from "@/lib/google-sheets";
 import {
@@ -3451,22 +3452,22 @@ function InlineEditRow({
             {/* Input Jam Start & End */}
             <div className="flex items-center gap-0.5 w-full">
               <div className="flex-1 min-w-0">
-                <input
-                  type="time"
+                <TimePicker
+                  name="start_time"
                   value={form.startTime}
-                  onChange={(e) => setForm((p) => ({ ...p, startTime: e.target.value }))}
-                  className="w-full h-6 bg-white border border-slate-200 rounded px-1 text-[10px] text-slate-700 focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
-                  title="Jam Mulai"
+                  onChange={(val) => setForm((p) => ({ ...p, startTime: val }))}
+                  placeholder="Jam mulai"
+                  usePortal={true}
                 />
               </div>
               <span className="text-slate-300 text-[10px] font-bold shrink-0">~</span>
               <div className="flex-1 min-w-0">
-                <input
-                  type="time"
+                <TimePicker
+                  name="end_time"
                   value={form.endTime}
-                  onChange={(e) => setForm((p) => ({ ...p, endTime: e.target.value }))}
-                  className="w-full h-6 bg-white border border-slate-200 rounded px-1 text-[10px] text-slate-700 focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
-                  title="Jam Selesai"
+                  onChange={(val) => setForm((p) => ({ ...p, endTime: val }))}
+                  placeholder="Jam selesai"
+                  usePortal={true}
                 />
               </div>
             </div>
@@ -3781,22 +3782,22 @@ function InlineAddRow({
             {/* Input Jam Start & End */}
             <div className="flex items-center gap-0.5 w-full">
               <div className="flex-1 min-w-0">
-                <input
-                  type="time"
+                <TimePicker
+                  name="new_start_time"
                   value={form.startTime}
-                  onChange={(e) => setForm((p) => ({ ...p, startTime: e.target.value }))}
-                  className="w-full h-6 bg-white border border-slate-200 rounded px-1 text-[10px] text-slate-700 focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
-                  title="Jam Mulai"
+                  onChange={(val) => setForm((p) => ({ ...p, startTime: val }))}
+                  placeholder="Jam mulai"
+                  usePortal={true}
                 />
               </div>
               <span className="text-slate-300 text-[10px] font-bold shrink-0">~</span>
               <div className="flex-1 min-w-0">
-                <input
-                  type="time"
+                <TimePicker
+                  name="new_end_time"
                   value={form.endTime}
-                  onChange={(e) => setForm((p) => ({ ...p, endTime: e.target.value }))}
-                  className="w-full h-6 bg-white border border-slate-200 rounded px-1 text-[10px] text-slate-700 focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
-                  title="Jam Selesai"
+                  onChange={(val) => setForm((p) => ({ ...p, endTime: val }))}
+                  placeholder="Jam selesai"
+                  usePortal={true}
                 />
               </div>
             </div>
