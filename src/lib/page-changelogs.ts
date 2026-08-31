@@ -93,7 +93,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   // ─── Pricelist Multi-Produk ───
   'pricelist-2026-08-29': entry({
     pageKey: 'pricelist',
-    title: 'Pricelist & Simulator Multi-Produk (Master Global & Brosur Gramatur)',
+    title: 'Pricelist & Simulator Multi-Produk (Master Global & Sinkronisasi)',
     permissionKeys: ['pricelist_kalkulasi'],
     sortDate: '2026-08-29',
     date: '29 Agu 2026',
@@ -101,7 +101,6 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     items: [
       'Fitur Master Parameter Global (Shared Rates): modal pengaturan terpusat untuk tarif mesin offset Oliver, harga kertas dasar per kg, digital print POD A3+, laminasi, dan packing umum lintas seluruh lini produk',
       'Penyederhanaan Master Parameter Produk: pembersihan field bersama menuju Single Source of Truth sehingga tiap master produk hanya mengelola komponen biaya spesifiknya',
-      'Dukungan Multi-Gramatur Brosur: integrasi pilihan bahan Art Paper 120 gsm dan Art Paper 150 gsm pada modul Brosur 2026 (Simulator, Matriks, Flat Table, dan Quote WA)',
       'Restorasi Snapshot & Tombol "Hitung Tarif Master": memuat riwayat kalkulasi dengan parameter asli saat disimpan sekaligus menyediakan opsi hitung ulang dengan tarif Master Global terkini',
       'Sinkronisasi Reaktif Alur Edit: tombol Edit di Daftar Kalkulasi otomatis berpindah ke kategori produk yang sesuai dan langsung mengisi seluruh spesifikasi form input simulator',
       'Penyempurnaan Akurasi Badge "Dimodifikasi": deteksi modifikasi parameter kini hanya mengevaluasi field-field aktif yang ditampilkan pada form produk terkait',
