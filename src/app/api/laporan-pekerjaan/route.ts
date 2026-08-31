@@ -112,6 +112,8 @@ export async function GET(request: NextRequest) {
       priority: String(row.priority || ""),
       startDate: String(row.start_date || ""),
       endDate: String(row.end_date || ""),
+      startTime: String(row.start_time || ""),
+      endTime: String(row.end_time || ""),
       workDays: String(row.work_days || ""),
       note: String(row.note || ""),
       status: String(row.status || "BELUM DIKERJAKAN"),
@@ -196,7 +198,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { task, project, division, bagian, pic, priority, startDate, endDate, workDays, note, status, tglOrder } = body;
+    const { task, project, division, bagian, pic, priority, startDate, endDate, startTime, endTime, workDays, note, status, tglOrder } = body;
 
     // Jika membuat Order Manual (tanpa task), buat placeholder record order
     const isOrderOnly = body.isOrderOnly || (!task && project?.trim());
@@ -218,8 +220,8 @@ export async function POST(request: NextRequest) {
     }
 
     const res = await db.execute({
-      sql: `INSERT INTO laporan_pekerjaan (task, project, division, bagian, pic, priority, start_date, end_date, work_days, note, status, source, tgl_order)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'sintak', ?)`,
+      sql: `INSERT INTO laporan_pekerjaan (task, project, division, bagian, pic, priority, start_date, end_date, start_time, end_time, work_days, note, status, source, tgl_order)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'sintak', ?)`,
       args: [
         finalTask,
         finalProject,
@@ -229,6 +231,8 @@ export async function POST(request: NextRequest) {
         priority?.trim() || "Low",
         startDate?.trim() || "",
         endDate?.trim() || "",
+        startTime?.trim() || "",
+        endTime?.trim() || "",
         workDays?.trim() || "",
         note?.trim() || "",
         status?.trim() || "BELUM DIKERJAKAN",
@@ -247,6 +251,8 @@ export async function POST(request: NextRequest) {
       priority: priority?.trim() || "Low",
       start_date: startDate?.trim() || "",
       end_date: endDate?.trim() || "",
+      start_time: startTime?.trim() || "",
+      end_time: endTime?.trim() || "",
       work_days: workDays?.trim() || "",
       note: note?.trim() || "",
       status: status?.trim() || "BELUM DIKERJAKAN",
@@ -280,7 +286,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, task, project, division, bagian, pic, priority, startDate, endDate, workDays, note, status } = body;
+    const { id, task, project, division, bagian, pic, priority, startDate, endDate, startTime, endTime, workDays, note, status } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -312,6 +318,8 @@ export async function PUT(request: NextRequest) {
       priority: oldData.priority || "",
       start_date: oldData.start_date || "",
       end_date: oldData.end_date || "",
+      start_time: oldData.start_time || "",
+      end_time: oldData.end_time || "",
       work_days: oldData.work_days || "",
       note: oldData.note || "",
       status: oldData.status || "",
@@ -326,6 +334,8 @@ export async function PUT(request: NextRequest) {
       priority: priority?.trim() || "Low",
       start_date: startDate?.trim() || "",
       end_date: endDate?.trim() || "",
+      start_time: startTime?.trim() || "",
+      end_time: endTime?.trim() || "",
       work_days: workDays?.trim() || "",
       note: note?.trim() || "",
       status: status?.trim() || "BELUM DIKERJAKAN",
@@ -335,7 +345,7 @@ export async function PUT(request: NextRequest) {
     await db.execute({
       sql: `UPDATE laporan_pekerjaan SET 
               task = ?, project = ?, division = ?, bagian = ?, pic = ?, priority = ?, 
-              start_date = ?, end_date = ?, work_days = ?, note = ?, status = ?,
+              start_date = ?, end_date = ?, start_time = ?, end_time = ?, work_days = ?, note = ?, status = ?,
               source = 'sintak',
               updated_at = CURRENT_TIMESTAMP
             WHERE id = ?`,
@@ -348,6 +358,8 @@ export async function PUT(request: NextRequest) {
         afterData.priority,
         afterData.start_date,
         afterData.end_date,
+        afterData.start_time,
+        afterData.end_time,
         afterData.work_days,
         afterData.note,
         afterData.status,

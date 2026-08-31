@@ -825,6 +825,8 @@ export default function LaporanPekerjaanClient({
       priority: data.priority || "Low",
       startDate: startDateStr,
       endDate: endDateStr,
+      startTime: data.startTime || "",
+      endTime: data.endTime || "",
       workDays: workDays,
       note: data.note,
       status: data.status || "BELUM DIKERJAKAN",
@@ -858,6 +860,8 @@ export default function LaporanPekerjaanClient({
           priority: data.priority || "Low",
           startDate: startDateStr,
           endDate: endDateStr,
+          startTime: data.startTime || "",
+          endTime: data.endTime || "",
           workDays: workDays,
           note: data.note,
           status: data.status || "BELUM DIKERJAKAN",
@@ -914,6 +918,8 @@ export default function LaporanPekerjaanClient({
           priority: data.priority || "Low",
           startDate: startDateStr,
           endDate: endDateStr,
+          startTime: data.startTime || "",
+          endTime: data.endTime || "",
           workDays: workDays,
           note: data.note,
           status: data.status || "BELUM DIKERJAKAN",
@@ -934,6 +940,8 @@ export default function LaporanPekerjaanClient({
             priority: data.priority || "Low",
             startDate: startDateStr,
             endDate: endDateStr,
+            startTime: data.startTime || "",
+            endTime: data.endTime || "",
             workDays: workDays,
             note: data.note,
             status: data.status || "BELUM DIKERJAKAN",
@@ -3070,7 +3078,13 @@ function TaskDetailModal({
                         )}
                         {isColVisible('start_end') && (
                           <td className="px-1.5 py-2 text-center text-slate-500 text-[10px] break-words leading-tight">
-                            {task.startDate ? formatDateDisplay(task.startDate) : "-"} ~ {task.endDate ? formatDateDisplay(task.endDate) : "-"}
+                            <div>
+                              <span>{task.startDate ? formatDateDisplay(task.startDate) : "-"}</span>
+                              {task.startTime && <span className="text-emerald-700 font-semibold ml-1">({task.startTime})</span>}
+                              <span className="mx-1">~</span>
+                              <span>{task.endDate ? formatDateDisplay(task.endDate) : "-"}</span>
+                              {task.endTime && <span className="text-emerald-700 font-semibold ml-1">({task.endTime})</span>}
+                            </div>
                           </td>
                         )}
                         {isColVisible('work_days') && (
@@ -3212,6 +3226,8 @@ function InlineEditRow({
     priority: task.priority || "Low",
     startDate: initialStartDateObj,
     endDate: initialEndDateObj,
+    startTime: task.startTime || "",
+    endTime: task.endTime || "",
     status: task.status || "BELUM DIKERJAKAN",
     note: task.note || "",
   }));
@@ -3244,6 +3260,8 @@ function InlineEditRow({
       current.priority !== (task.priority || "Low") ||
       formatDateForApi(current.startDate) !== formatDateForApi(initialStartDateObj) ||
       formatDateForApi(current.endDate) !== formatDateForApi(initialEndDateObj) ||
+      (current.startTime || "") !== (task.startTime || "") ||
+      (current.endTime || "") !== (task.endTime || "") ||
       current.status !== (task.status || "BELUM DIKERJAKAN") ||
       current.note.trim() !== (task.note || "").trim();
 
@@ -3390,43 +3408,67 @@ function InlineEditRow({
       {/* 5. Start ~ End */}
       {isColVisible('start_end') && (
         <td className="px-1 py-1.5">
-          <div className="flex items-center gap-0.5 w-full">
-            <div className="flex-1 min-w-0">
-              <DatePicker
-                name="start_date"
-                value={form.startDate}
-                onChange={(d) => setForm((p) => ({ ...p, startDate: d }))}
-                usePortal={true}
-                customTrigger={(toggle) => (
-                  <button
-                    type="button"
-                    onClick={toggle}
-                    className="w-full h-7 bg-white border border-slate-200 hover:border-emerald-500 rounded-md px-1 text-[10px] font-medium flex items-center justify-between shadow-2xs transition-colors"
-                  >
-                    <span className="truncate">{form.startDate ? formatDateDisplay(form.startDate) : 'Pilih'}</span>
-                    <Calendar size={11} className="text-slate-400 shrink-0" />
-                  </button>
-                )}
-              />
+          <div className="flex flex-col gap-1 w-full">
+            <div className="flex items-center gap-0.5 w-full">
+              <div className="flex-1 min-w-0">
+                <DatePicker
+                  name="start_date"
+                  value={form.startDate}
+                  onChange={(d) => setForm((p) => ({ ...p, startDate: d }))}
+                  usePortal={true}
+                  customTrigger={(toggle) => (
+                    <button
+                      type="button"
+                      onClick={toggle}
+                      className="w-full h-7 bg-white border border-slate-200 hover:border-emerald-500 rounded-md px-1 text-[10px] font-medium flex items-center justify-between shadow-2xs transition-colors"
+                    >
+                      <span className="truncate">{form.startDate ? formatDateDisplay(form.startDate) : 'Pilih Tgl'}</span>
+                      <Calendar size={11} className="text-slate-400 shrink-0" />
+                    </button>
+                  )}
+                />
+              </div>
+              <span className="text-slate-300 text-[10px] font-bold shrink-0">~</span>
+              <div className="flex-1 min-w-0">
+                <DatePicker
+                  name="end_date"
+                  value={form.endDate}
+                  onChange={(d) => setForm((p) => ({ ...p, endDate: d }))}
+                  usePortal={true}
+                  customTrigger={(toggle) => (
+                    <button
+                      type="button"
+                      onClick={toggle}
+                      className="w-full h-7 bg-white border border-slate-200 hover:border-emerald-500 rounded-md px-1 text-[10px] font-medium flex items-center justify-between shadow-2xs transition-colors"
+                    >
+                      <span className="truncate">{form.endDate ? formatDateDisplay(form.endDate) : 'Pilih Tgl'}</span>
+                      <Calendar size={11} className="text-slate-400 shrink-0" />
+                    </button>
+                  )}
+                />
+              </div>
             </div>
-            <span className="text-slate-300 text-[10px] font-bold shrink-0">~</span>
-            <div className="flex-1 min-w-0">
-              <DatePicker
-                name="end_date"
-                value={form.endDate}
-                onChange={(d) => setForm((p) => ({ ...p, endDate: d }))}
-                usePortal={true}
-                customTrigger={(toggle) => (
-                  <button
-                    type="button"
-                    onClick={toggle}
-                    className="w-full h-7 bg-white border border-slate-200 hover:border-emerald-500 rounded-md px-1 text-[10px] font-medium flex items-center justify-between shadow-2xs transition-colors"
-                  >
-                    <span className="truncate">{form.endDate ? formatDateDisplay(form.endDate) : 'Pilih'}</span>
-                    <Calendar size={11} className="text-slate-400 shrink-0" />
-                  </button>
-                )}
-              />
+            {/* Input Jam Start & End */}
+            <div className="flex items-center gap-0.5 w-full">
+              <div className="flex-1 min-w-0">
+                <input
+                  type="time"
+                  value={form.startTime}
+                  onChange={(e) => setForm((p) => ({ ...p, startTime: e.target.value }))}
+                  className="w-full h-6 bg-white border border-slate-200 rounded px-1 text-[10px] text-slate-700 focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                  title="Jam Mulai"
+                />
+              </div>
+              <span className="text-slate-300 text-[10px] font-bold shrink-0">~</span>
+              <div className="flex-1 min-w-0">
+                <input
+                  type="time"
+                  value={form.endTime}
+                  onChange={(e) => setForm((p) => ({ ...p, endTime: e.target.value }))}
+                  className="w-full h-6 bg-white border border-slate-200 rounded px-1 text-[10px] text-slate-700 focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                  title="Jam Selesai"
+                />
+              </div>
             </div>
           </div>
         </td>
@@ -3520,6 +3562,8 @@ function InlineAddRow({
     priority: "",
     startDate: null as Date | null,
     endDate: null as Date | null,
+    startTime: "",
+    endTime: "",
     status: "",
     note: "",
   });
@@ -3690,47 +3734,71 @@ function InlineAddRow({
       {/* 5. Start ~ End */}
       {isColVisible('start_end') && (
         <td className="px-1 py-1.5">
-          <div className="flex items-center gap-0.5 w-full">
-            <div className="flex-1 min-w-0">
-              <DatePicker
-                name="new_start_date"
-                value={form.startDate}
-                onChange={(d) => setForm((p) => ({ ...p, startDate: d }))}
-                usePortal={true}
-                customTrigger={(toggle) => (
-                  <button
-                    type="button"
-                    onClick={toggle}
-                    className="w-full h-7 bg-white border border-slate-200 hover:border-emerald-500 rounded-md px-1 text-[10px] font-medium flex items-center justify-between shadow-2xs transition-colors"
-                  >
-                    <span className={`truncate ${!form.startDate ? 'text-slate-400 font-normal' : ''}`}>
-                      {form.startDate ? formatDateDisplay(form.startDate) : 'Pilih'}
-                    </span>
-                    <Calendar size={11} className="text-slate-400 shrink-0" />
-                  </button>
-                )}
-              />
+          <div className="flex flex-col gap-1 w-full">
+            <div className="flex items-center gap-0.5 w-full">
+              <div className="flex-1 min-w-0">
+                <DatePicker
+                  name="new_start_date"
+                  value={form.startDate}
+                  onChange={(d) => setForm((p) => ({ ...p, startDate: d }))}
+                  usePortal={true}
+                  customTrigger={(toggle) => (
+                    <button
+                      type="button"
+                      onClick={toggle}
+                      className="w-full h-7 bg-white border border-slate-200 hover:border-emerald-500 rounded-md px-1 text-[10px] font-medium flex items-center justify-between shadow-2xs transition-colors"
+                    >
+                      <span className={`truncate ${!form.startDate ? 'text-slate-400 font-normal' : ''}`}>
+                        {form.startDate ? formatDateDisplay(form.startDate) : 'Pilih Tgl'}
+                      </span>
+                      <Calendar size={11} className="text-slate-400 shrink-0" />
+                    </button>
+                  )}
+                />
+              </div>
+              <span className="text-slate-300 text-[10px] font-bold shrink-0">~</span>
+              <div className="flex-1 min-w-0">
+                <DatePicker
+                  name="new_end_date"
+                  value={form.endDate}
+                  onChange={(d) => setForm((p) => ({ ...p, endDate: d }))}
+                  usePortal={true}
+                  customTrigger={(toggle) => (
+                    <button
+                      type="button"
+                      onClick={toggle}
+                      className="w-full h-7 bg-white border border-slate-200 hover:border-emerald-500 rounded-lg px-1 text-[10px] font-medium flex items-center justify-between shadow-2xs transition-colors"
+                    >
+                      <span className={`truncate ${!form.endDate ? 'text-slate-400 font-normal' : ''}`}>
+                        {form.endDate ? formatDateDisplay(form.endDate) : 'Pilih Tgl'}
+                      </span>
+                      <Calendar size={11} className="text-slate-400 shrink-0" />
+                    </button>
+                  )}
+                />
+              </div>
             </div>
-            <span className="text-slate-300 text-[10px] font-bold shrink-0">~</span>
-            <div className="flex-1 min-w-0">
-              <DatePicker
-                name="new_end_date"
-                value={form.endDate}
-                onChange={(d) => setForm((p) => ({ ...p, endDate: d }))}
-                usePortal={true}
-                customTrigger={(toggle) => (
-                  <button
-                    type="button"
-                    onClick={toggle}
-                    className="w-full h-7 bg-white border border-slate-200 hover:border-emerald-500 rounded-lg px-1 text-[10px] font-medium flex items-center justify-between shadow-2xs transition-colors"
-                  >
-                    <span className={`truncate ${!form.endDate ? 'text-slate-400 font-normal' : ''}`}>
-                      {form.endDate ? formatDateDisplay(form.endDate) : 'Pilih'}
-                    </span>
-                    <Calendar size={11} className="text-slate-400 shrink-0" />
-                  </button>
-                )}
-              />
+            {/* Input Jam Start & End */}
+            <div className="flex items-center gap-0.5 w-full">
+              <div className="flex-1 min-w-0">
+                <input
+                  type="time"
+                  value={form.startTime}
+                  onChange={(e) => setForm((p) => ({ ...p, startTime: e.target.value }))}
+                  className="w-full h-6 bg-white border border-slate-200 rounded px-1 text-[10px] text-slate-700 focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                  title="Jam Mulai"
+                />
+              </div>
+              <span className="text-slate-300 text-[10px] font-bold shrink-0">~</span>
+              <div className="flex-1 min-w-0">
+                <input
+                  type="time"
+                  value={form.endTime}
+                  onChange={(e) => setForm((p) => ({ ...p, endTime: e.target.value }))}
+                  className="w-full h-6 bg-white border border-slate-200 rounded px-1 text-[10px] text-slate-700 focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                  title="Jam Selesai"
+                />
+              </div>
             </div>
           </div>
         </td>

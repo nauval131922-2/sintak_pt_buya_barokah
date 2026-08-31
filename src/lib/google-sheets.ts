@@ -8,6 +8,8 @@ export interface SpreadsheetTask {
   priority: string;
   startDate: string;
   endDate: string;
+  startTime?: string;
+  endTime?: string;
   status: string;
   workDays?: string;
   note?: string;

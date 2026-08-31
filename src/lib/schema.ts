@@ -68,6 +68,8 @@ export async function initSchema(db: any) {
       { table: 'users', column: 'employee_id', type: 'INTEGER DEFAULT NULL' },
       { table: 'laporan_pekerjaan', column: 'bagian', type: 'TEXT DEFAULT \'\'' },
       { table: 'laporan_pekerjaan', column: 'tgl_order', type: 'TEXT DEFAULT \'\'' },
+      { table: 'laporan_pekerjaan', column: 'start_time', type: 'TEXT DEFAULT \'\'' },
+      { table: 'laporan_pekerjaan', column: 'end_time', type: 'TEXT DEFAULT \'\'' },
     ];
 
     for (const col of columns) {
@@ -371,6 +373,8 @@ export async function initSchema(db: any) {
       priority TEXT DEFAULT 'Low',
       start_date TEXT DEFAULT '',
       end_date TEXT DEFAULT '',
+      start_time TEXT DEFAULT '',
+      end_time TEXT DEFAULT '',
       work_days TEXT DEFAULT '',
       note TEXT DEFAULT '',
       status TEXT DEFAULT 'BELUM DIKERJAKAN',
