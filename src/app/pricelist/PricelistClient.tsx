@@ -377,101 +377,102 @@ export default function PricelistClient() {
 
   return (
     <div className="flex flex-col gap-4 flex-1 min-h-0">
-      {/* TABS Navigation & Product Category Selector - Bersandingan Sebaris */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between border-b border-gray-100 shrink-0 pb-2 gap-3 mt-1 relative z-50">
-        <div className="flex gap-2 sm:gap-6 px-2 flex-wrap sm:flex-nowrap">
-          <button
-            type="button"
-            onClick={() => setActiveTab('saved')}
-            className={`flex items-center justify-center gap-1.5 pb-2 px-2 text-[13px] font-bold border-b-2 transition-all cursor-pointer ${
-              activeTab === 'saved'
-                ? 'border-emerald-600 text-emerald-700'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <Bookmark size={14} />
-            <span>Daftar Kalkulasi</span>
-          </button>
-
-          <div
-            className={`flex items-center gap-1.5 pb-2 px-2 border-b-2 transition-all ${
-              activeTab === 'parameter'
-                ? 'border-emerald-600'
-                : 'border-transparent'
-            }`}
-          >
+      {/* TABS Navigation + Product Category Selector — 1 baris, tab bisa scroll horizontal */}
+      <div className="flex items-center border-b border-gray-100 shrink-0 mt-1 relative z-50 gap-2">
+        {/* Tab List — scrollable horizontal jika overflow */}
+        <div className="flex-1 overflow-x-auto">
+          <div className="flex items-center gap-1 sm:gap-4 px-1 min-w-max">
             <button
               type="button"
-              onClick={() => setActiveTab('parameter')}
-              className={`flex items-center justify-center gap-1.5 text-[13px] font-bold cursor-pointer ${
-                activeTab === 'parameter'
-                  ? 'text-emerald-700'
-                  : 'text-gray-500 hover:text-gray-700'
+              onClick={() => setActiveTab('saved')}
+              className={`flex items-center justify-center gap-1.5 pb-2 px-2 text-[13px] font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === 'saved'
+                  ? 'border-emerald-600 text-emerald-700'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
-              <Database size={14} />
-              <span>Master Parameter</span>
+              <Bookmark size={14} />
+              <span>Daftar Kalkulasi</span>
             </button>
+
+            <div
+              className={`flex items-center gap-1.5 pb-2 px-2 border-b-2 transition-all ${
+                activeTab === 'parameter'
+                  ? 'border-emerald-600'
+                  : 'border-transparent'
+              }`}
+            >
+              <button
+                type="button"
+                onClick={() => setActiveTab('parameter')}
+                className={`flex items-center justify-center gap-1.5 text-[13px] font-bold cursor-pointer whitespace-nowrap ${
+                  activeTab === 'parameter'
+                    ? 'text-emerald-700'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <Database size={14} />
+                <span>Master Parameter</span>
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowGlobalParamModal(true);
+                }}
+                className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-100/70 hover:bg-emerald-200 text-emerald-800 border border-emerald-300 rounded text-[10px] font-bold transition-all shadow-2xs cursor-pointer shrink-0"
+                title="Kelola Master Parameter Global (Shared Rates antar produk)"
+              >
+                <Globe size={10} className="text-emerald-700" />
+                <span>Global</span>
+              </button>
+            </div>
+
             <button
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowGlobalParamModal(true);
-              }}
-              className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-100/70 hover:bg-emerald-200 text-emerald-800 border border-emerald-300 rounded text-[10px] font-bold transition-all shadow-2xs cursor-pointer shrink-0"
-              title="Kelola Master Parameter Global (Shared Rates antar produk)"
+              onClick={() => setActiveTab('simulator')}
+              className={`flex items-center justify-center gap-1.5 pb-2 px-2 text-[13px] font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === 'simulator'
+                  ? 'border-emerald-600 text-emerald-700'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
             >
-              <Globe size={10} className="text-emerald-700" />
-              <span>Global</span>
+              <Calculator size={14} />
+              <span>Simulator</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('matrix')}
+              className={`flex items-center justify-center gap-1.5 pb-2 px-2 text-[13px] font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === 'matrix'
+                  ? 'border-emerald-600 text-emerald-700'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <FileSpreadsheet size={14} />
+              <span>Pricelist</span>
             </button>
           </div>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('simulator')}
-            className={`flex items-center justify-center gap-1.5 pb-2 px-2 text-[13px] font-bold border-b-2 transition-all cursor-pointer ${
-              activeTab === 'simulator'
-                ? 'border-emerald-600 text-emerald-700'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <Calculator size={14} />
-            <span>Simulator</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('matrix')}
-            className={`flex items-center justify-center gap-1.5 pb-2 px-2 text-[13px] font-bold border-b-2 transition-all cursor-pointer ${
-              activeTab === 'matrix'
-                ? 'border-emerald-600 text-emerald-700'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <FileSpreadsheet size={14} />
-            <span>Pricelist</span>
-          </button>
         </div>
 
-        {/* Global Product Category Selector - Dropdown Searchable */}
-        <div className="flex items-center gap-2 mx-2 self-start lg:self-auto shrink-0 text-xs sm:text-sm">
-          <span className="text-xs font-semibold text-slate-500 hidden sm:inline">Jenis Produk:</span>
-          <div className="text-xs sm:text-sm font-semibold">
-            <SquareDropdown
-              options={[
-                { value: 'Kalender', label: '🗓️ Kalender 2027' },
-                { value: 'Buku Manasik', label: '📖 Buku Manasik Haji' },
-                { value: 'Buku Yasin', label: '📗 Buku Surat Yasin' },
-                { value: 'Nota 1 Warna', label: '📋 Nota 1 Warna' },
-                { value: 'Brosur 2026', label: '🗞️ Brosur 2026' },
-                { value: 'Label KHQ', label: '🏷️ Label KHQ' },
-              ]}
-              value={selectedProductCategory}
-              onChange={(val) => handleProductCategoryChange(val as any)}
-              searchPlaceholder="Cari jenis produk..."
-              widthClass="w-56"
-            />
-          </div>
+        {/* Filter Jenis Produk — nempel kanan, tidak ikut scroll */}
+        <div className="flex items-center gap-1.5 pl-2 border-l border-slate-100 shrink-0 pb-2">
+          <span className="text-[11px] font-semibold text-slate-400 hidden sm:inline whitespace-nowrap">Produk:</span>
+          <SquareDropdown
+            options={[
+              { value: 'Kalender', label: '🗓️ Kalender 2027' },
+              { value: 'Buku Manasik', label: '📖 Buku Manasik Haji' },
+              { value: 'Buku Yasin', label: '📗 Buku Surat Yasin' },
+              { value: 'Nota 1 Warna', label: '📋 Nota 1 Warna' },
+              { value: 'Brosur 2026', label: '🗞️ Brosur 2026' },
+              { value: 'Label KHQ', label: '🏷️ Label KHQ' },
+            ]}
+            value={selectedProductCategory}
+            onChange={(val) => handleProductCategoryChange(val as any)}
+            searchPlaceholder="Cari jenis produk..."
+            widthClass="w-44"
+          />
         </div>
       </div>
 

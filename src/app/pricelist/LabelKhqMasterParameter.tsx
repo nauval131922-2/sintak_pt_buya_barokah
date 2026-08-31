@@ -17,7 +17,7 @@ import {
   LabelKhqMasterParams,
   DEFAULT_LABEL_KHQ_PARAMS,
 } from '@/lib/label-khq-calculator';
-import { ThousandInput } from './ThousandInput';
+import ThousandInput from '@/components/ThousandInput';
 import { toast } from '@/lib/toast';
 
 interface LabelKhqMasterParameterProps {
