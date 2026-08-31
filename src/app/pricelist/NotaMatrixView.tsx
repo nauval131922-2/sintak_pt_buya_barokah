@@ -299,7 +299,8 @@ export default function NotaMatrixView({
                 <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">{selectedUkuran}</span>
               </div>
 
-              {matrixData.map((section) => {
+              <div className={`grid gap-4 ${matrixData.filter((s) => (selectedRangkapFilter === 'ALL' || selectedRangkapFilter === s.rangkap.toString()) && s.rows.length > 0).length === 1 ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
+                {matrixData.map((section) => {
                 if (selectedRangkapFilter !== 'ALL' && selectedRangkapFilter !== section.rangkap.toString()) return null;
                 if (section.rows.length === 0) return null;
                 return (
@@ -352,6 +353,7 @@ export default function NotaMatrixView({
                   </div>
                 );
               })}
+              </div>
             </div>
           )}
         </div>

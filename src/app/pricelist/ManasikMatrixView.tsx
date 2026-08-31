@@ -315,7 +315,8 @@ export default function ManasikMatrixView({
                 </span>
               </div>
 
-              {matrixData.map((section) => {
+              <div className={`grid gap-4 ${matrixData.filter((s) => s.rows.length > 0).length === 1 ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
+                {matrixData.map((section) => {
                 if (section.rows.length === 0) return null;
                 return (
                   <div key={section.hal} className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
@@ -419,6 +420,7 @@ export default function ManasikMatrixView({
                   </div>
                 );
               })}
+              </div>
             </div>
           )}
         </div>

@@ -230,7 +230,8 @@ export default function LabelKhqMatrixView({
                 </span>
               </div>
 
-              {activeVarians.map((varian) => (
+              <div className={`grid gap-4 ${activeVarians.length === 1 ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
+                {activeVarians.map((varian) => (
                 <div key={varian} className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
                   <div className="bg-amber-50/70 px-4 py-2 border-b border-amber-100 flex items-center justify-between">
                     <span className="text-[11px] font-bold text-amber-900 tracking-wider uppercase flex items-center gap-1.5">
@@ -285,6 +286,7 @@ export default function LabelKhqMatrixView({
                   </div>
                 </div>
               ))}
+              </div>
             </div>
           )}
         </div>

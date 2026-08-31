@@ -228,7 +228,8 @@ export default function BrosurMatrixView({
                 </span>
               </div>
 
-              {ukuranCols.map((ukuran) => (
+              <div className={`grid gap-4 ${ukuranCols.length === 1 ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
+                {ukuranCols.map((ukuran) => (
                 <div key={ukuran} className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
                   <div className="bg-amber-50/70 px-4 py-2 border-b border-amber-100 flex items-center justify-between">
                     <span className="text-[11px] font-bold text-amber-900 tracking-wider uppercase flex items-center gap-1.5">
@@ -291,6 +292,7 @@ export default function BrosurMatrixView({
                   </div>
                 </div>
               ))}
+              </div>
             </div>
           )}
         </div>
