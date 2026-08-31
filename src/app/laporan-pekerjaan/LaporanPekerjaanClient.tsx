@@ -670,12 +670,26 @@ export default function LaporanPekerjaanClient({
     }
   }, []);
 
-  const changeTableFontSize = (size: number) => {
-    const clamped = Math.max(9, Math.min(24, size));
-    setTableFontSize(clamped);
-    try {
-      localStorage.setItem("laporan_pekerjaan_table_font_size", String(clamped));
-    } catch {}
+  const FONT_SIZE_STEPS = [9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24];
+
+  const handleStepFontSize = (delta: 1 | -1) => {
+    // Cari index ukuran terdekat atau sama
+    const currentIndex = FONT_SIZE_STEPS.indexOf(tableFontSize);
+    if (currentIndex !== -1) {
+      const nextIndex = currentIndex + delta;
+      if (nextIndex >= 0 && nextIndex < FONT_SIZE_STEPS.length) {
+        changeTableFontSize(FONT_SIZE_STEPS[nextIndex]);
+      }
+    } else {
+      // Jika angka kustom di antara list
+      if (delta === 1) {
+        const next = FONT_SIZE_STEPS.find((s) => s > tableFontSize);
+        if (next) changeTableFontSize(next);
+      } else {
+        const prev = [...FONT_SIZE_STEPS].reverse().find((s) => s < tableFontSize);
+        if (prev) changeTableFontSize(prev);
+      }
+    }
   };
 
   const toggleHeaderMobile = () => {
@@ -2429,10 +2443,10 @@ export default function LaporanPekerjaanClient({
               </span>
               <button
                 type="button"
-                onClick={() => changeTableFontSize(tableFontSize - 1)}
-                disabled={tableFontSize <= 9}
+                onClick={() => handleStepFontSize(-1)}
+                disabled={tableFontSize <= FONT_SIZE_STEPS[0]}
                 className="w-5 h-5 flex items-center justify-center text-xs font-bold text-slate-600 hover:text-emerald-700 bg-white hover:bg-slate-100 rounded border border-slate-200 transition-colors shadow-xs disabled:opacity-30 disabled:cursor-not-allowed"
-                title="Perkecil Ukuran Font (A-)"
+                title="Perkecil Ukuran Font"
               >
                 -
               </button>
@@ -2442,7 +2456,7 @@ export default function LaporanPekerjaanClient({
                 className="h-5 px-1 bg-white border border-slate-200 rounded text-[11px] font-bold text-slate-700 hover:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer shadow-xs"
                 title="Pilih Ukuran Font (px)"
               >
-                {[9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24].map((sz) => (
+                {FONT_SIZE_STEPS.map((sz) => (
                   <option key={sz} value={sz}>
                     {sz}px
                   </option>
@@ -2450,10 +2464,10 @@ export default function LaporanPekerjaanClient({
               </select>
               <button
                 type="button"
-                onClick={() => changeTableFontSize(tableFontSize + 1)}
-                disabled={tableFontSize >= 24}
+                onClick={() => handleStepFontSize(1)}
+                disabled={tableFontSize >= FONT_SIZE_STEPS[FONT_SIZE_STEPS.length - 1]}
                 className="w-5 h-5 flex items-center justify-center text-xs font-bold text-slate-600 hover:text-emerald-700 bg-white hover:bg-slate-100 rounded border border-slate-200 transition-colors shadow-xs disabled:opacity-30 disabled:cursor-not-allowed"
-                title="Perbesar Ukuran Font (A+)"
+                title="Perbesar Ukuran Font"
               >
                 +
               </button>
