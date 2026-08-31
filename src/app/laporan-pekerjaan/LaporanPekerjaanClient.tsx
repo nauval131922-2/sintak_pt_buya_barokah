@@ -2384,7 +2384,7 @@ export default function LaporanPekerjaanClient({
                 value={selectedBagianFilter}
                 onChange={setSelectedBagianFilter}
                 searchPlaceholder="Cari Bagian..."
-                widthClass="w-24 sm:w-28 md:w-32 lg:w-36 shrink-0"
+                widthClass="flex-1 min-w-[110px] sm:w-28 md:w-32 lg:w-36"
               />
             )}
 
@@ -2394,7 +2394,7 @@ export default function LaporanPekerjaanClient({
                 value={selectedPic}
                 onChange={setSelectedPic}
                 searchPlaceholder="Cari PIC..."
-                widthClass="w-24 sm:w-28 md:w-32 lg:w-36 shrink-0"
+                widthClass="flex-1 min-w-[110px] sm:w-28 md:w-32 lg:w-36"
               />
             )}
 
@@ -2403,7 +2403,7 @@ export default function LaporanPekerjaanClient({
               value={selectedStatus}
               onChange={setSelectedStatus}
               searchPlaceholder="Cari Status..."
-              widthClass="w-24 sm:w-28 md:w-32 lg:w-36 shrink-0"
+              widthClass="flex-1 min-w-[110px] sm:w-28 md:w-32 lg:w-36"
             />
 
             {(selectedBagianFilter !== "ALL" ||
