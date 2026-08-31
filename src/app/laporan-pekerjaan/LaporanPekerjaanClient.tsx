@@ -2255,7 +2255,7 @@ export default function LaporanPekerjaanClient({
       {/* Filter & Search Bar */}
       <div>
         <div className="shrink-0 bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200/80 shadow-sm flex flex-col gap-2.5">
-          {/* Baris 1: Search & Reload */}
+          {/* Baris 1: Search, Reload & Tombol Tambah Order */}
           <div className="flex items-center gap-2 w-full">
             {/* Tombol Reload Data */}
             <button
@@ -2280,9 +2280,26 @@ export default function LaporanPekerjaanClient({
                 className="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
               />
             </div>
+
+            {/* Tombol Tambah Order Baru Manual di Baris 1 Kanan */}
+            {roleConfig?.can_add !== false && (
+              <button
+                type="button"
+                onClick={() => {
+                  setNewOrderProject("");
+                  setNewOrderTgl(new Date());
+                  setShowAddOrderModal(true);
+                }}
+                className="h-8 px-2.5 sm:px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm"
+                title="Input Order Produksi Manual"
+              >
+                <Plus size={14} />
+                <span className="hidden sm:inline">Tambah Order</span>
+              </button>
+            )}
           </div>
 
-          {/* Baris 2: Controls Filter (Tanggal, Jam, Dropdown, Reset, Tambah Order) */}
+          {/* Baris 2: Controls Filter (Tanggal, Jam, Dropdown, Reset) */}
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-2 border-t border-slate-100/80">
             <div className="flex items-center text-xs text-slate-500 font-medium shrink-0">
               <Filter className="w-3.5 h-3.5 mr-1 text-slate-400" /> Filter:
@@ -2414,27 +2431,10 @@ export default function LaporanPekerjaanClient({
                   setFilterStartTime("");
                   setFilterEndTime("");
                 }}
-                className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0"
+                className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0 ml-auto md:ml-0"
                 title="Reset Semua Filter"
               >
                 <X size={12} /> Reset
-              </button>
-            )}
-
-            {/* Tombol Tambah Order Baru Manual di Baris 2 Paling Kanan */}
-            {roleConfig?.can_add !== false && (
-              <button
-                type="button"
-                onClick={() => {
-                  setNewOrderProject("");
-                  setNewOrderTgl(new Date());
-                  setShowAddOrderModal(true);
-                }}
-                className="h-7 px-2.5 sm:px-3 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm ml-auto"
-                title="Input Order Produksi Manual"
-              >
-                <Plus size={13} />
-                <span className="hidden sm:inline">Tambah Order</span>
               </button>
             )}
           </div>
