@@ -1899,7 +1899,7 @@ export default function LaporanPekerjaanClient({
       className={`text-slate-800 ${
         isAnalyticsOpen
           ? "flex flex-col gap-4 w-full pb-44 sm:pb-40 md:pb-24"
-          : "space-y-3 pb-44 sm:max-md:pb-36 sm:pb-40 md:space-y-0 md:flex-1 md:min-h-0 md:flex md:flex-col md:gap-3 md:h-full md:overflow-hidden md:pb-0"
+          : "space-y-3 pb-44 sm:space-y-0 sm:flex-1 sm:min-h-0 sm:flex sm:flex-col sm:gap-3 sm:h-full sm:overflow-hidden sm:pb-0"
       }`}
     >
       {/* Accordion: Statistik & Grafik Analisis */}
@@ -2453,11 +2453,11 @@ export default function LaporanPekerjaanClient({
         className={`bg-white rounded-xl border border-slate-200/80 shadow-sm relative ${
           isAnalyticsOpen
             ? "shrink-0"
-            : "md:flex-1 md:min-h-0 md:flex md:flex-col md:overflow-hidden"
+            : "flex-1 min-h-0 flex flex-col overflow-hidden"
         }`}
       >
         {/* Tampilan Card khusus HP Portrait (Sembunyi di Landscape & Desktop) */}
-        <div className="block landscape:hidden md:hidden divide-y divide-slate-100 p-3 space-y-3">
+        <div className="block landscape:hidden sm:hidden divide-y divide-slate-100 p-3 space-y-3">
           {loading ? (
             <div className="py-12 text-center text-slate-400 text-xs">
               <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-600" />
@@ -2572,10 +2572,10 @@ export default function LaporanPekerjaanClient({
         {/* Tampilan Tabel khusus HP Landscape, Tablet, & Desktop */}
         <div
           ref={tableContainerRef}
-          className={`hidden landscape:block md:block overflow-x-auto overflow-y-auto custom-scrollbar transition-all duration-200 ${
+          className={`hidden landscape:block sm:block overflow-x-auto overflow-y-auto custom-scrollbar transition-all duration-200 ${
             isAnalyticsOpen
               ? "max-h-[300px] sm:max-h-[480px] shrink-0"
-              : "flex-1 min-h-[220px] md:max-h-none max-h-[280px] landscape:max-md:max-h-[260px]"
+              : "flex-1 min-h-0"
           }`}
           style={
             {
