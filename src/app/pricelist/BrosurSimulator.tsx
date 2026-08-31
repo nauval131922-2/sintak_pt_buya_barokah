@@ -25,6 +25,7 @@ import {
   DEFAULT_BROSUR_PARAMS,
   BrosurMasterParams,
   BrosurUkuranType,
+  BrosurGramaturType,
   BrosurMukaType,
   BrosurMesinType,
   BrosurLaminasiType,
@@ -71,6 +72,7 @@ export default function BrosurSimulator({
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: BrosurSimulatorProps) {
   const [oplah, setOplah] = useState<number>(500);
+  const [gramatur, setGramatur] = useState<BrosurGramaturType>('Art Paper 120 gsm');
   const [ukuran, setUkuran] = useState<BrosurUkuranType>('21 x 29,7');
   const [muka, setMuka] = useState<BrosurMukaType>('2 Muka');
   const [mesin, setMesin] = useState<BrosurMesinType>('Print Inter');
@@ -111,6 +113,7 @@ export default function BrosurSimulator({
           if (item) {
             const input = item.data.input;
             setOplah(input.oplah);
+            if (input.gramatur) setGramatur(input.gramatur);
             setUkuran(input.ukuran);
             setMuka(input.muka);
             setMesin(input.mesin);
@@ -131,14 +134,14 @@ export default function BrosurSimulator({
   const result = useMemo(
     () =>
       calculateBrosurSimulator(
-        { oplah, ukuran, muka, mesin, laminasi, opsiSisir, opsiPacking, marginPct, negoDiskonPct },
+        { oplah, gramatur, ukuran, muka, mesin, laminasi, opsiSisir, opsiPacking, marginPct, negoDiskonPct },
         customParams
       ),
-    [oplah, ukuran, muka, mesin, laminasi, opsiSisir, opsiPacking, marginPct, negoDiskonPct, customParams]
+    [oplah, gramatur, ukuran, muka, mesin, laminasi, opsiSisir, opsiPacking, marginPct, negoDiskonPct, customParams]
   );
 
   const defaultTitle = () =>
-    `Brosur ${muka} ${ukuran} (${oplah} pcs - ${mesin})`;
+    `Brosur ${muka} ${ukuran} - ${gramatur} (${oplah} pcs - ${mesin})`;
 
   const handleSaveSimulation = () => {
     const title = simulationTitle.trim() || defaultTitle();
@@ -185,7 +188,7 @@ export default function BrosurSimulator({
       `━━━━━━━━━━━━━━━━━━━━\n` +
       `• *Produk*: Brosur ${muka}\n` +
       `• *Ukuran*: ${ukuran} cm\n` +
-      `• *Bahan*: Art Paper 120 gsm\n` +
+      `• *Bahan*: ${gramatur}\n` +
       `• *Laminasi*: ${laminasi}\n` +
       `• *Kuantitas*: ${oplah} pcs\n` +
       `• *Mesin Cetak*: ${mesin}\n` +
@@ -346,6 +349,29 @@ export default function BrosurSimulator({
                 className="mt-1.5 w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
                 placeholder="Atau ketik oplah lain..."
               />
+            </div>
+
+            {/* Gramatur / Bahan Kertas */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Bahan Kertas / Gramatur
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {(['Art Paper 120 gsm', 'Art Paper 150 gsm'] as BrosurGramaturType[]).map((g) => (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => setGramatur(g)}
+                    className={`py-1.5 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
+                      gramatur === g
+                        ? 'border-emerald-600 bg-emerald-600 text-white'
+                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    {g}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Ukuran */}

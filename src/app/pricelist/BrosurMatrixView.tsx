@@ -13,6 +13,7 @@ import {
   DEFAULT_BROSUR_PARAMS,
   BrosurMasterParams,
   BrosurUkuranType,
+  BrosurGramaturType,
   BrosurMukaType,
   BrosurMesinType,
 } from '@/lib/brosur-calculator';
@@ -40,6 +41,7 @@ export default function BrosurMatrixView({
   setViewMode: propSetViewMode,
 }: BrosurMatrixViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedGramaturFilter, setSelectedGramaturFilter] = useState<BrosurGramaturType>('Art Paper 120 gsm');
   const [selectedUkuranFilter, setSelectedUkuranFilter] = useState<BrosurUkuranType | 'ALL'>('ALL');
   const [localViewMode, setLocalViewMode] = useState<'matrix' | 'table'>('matrix');
 
@@ -48,7 +50,7 @@ export default function BrosurMatrixView({
 
   const calc = (oplah: number, ukuran: BrosurUkuranType, muka: BrosurMukaType, mesin: BrosurMesinType) =>
     calculateBrosurSimulator(
-      { oplah, ukuran, muka, mesin, laminasi: 'Tanpa Laminasi', opsiSisir: false, opsiPacking: true, marginPct: 30, negoDiskonPct: 4 },
+      { oplah, gramatur: selectedGramaturFilter, ukuran, muka, mesin, laminasi: 'Tanpa Laminasi', opsiSisir: false, opsiPacking: true, marginPct: 30, negoDiskonPct: 4 },
       customParams
     );
 
@@ -69,12 +71,12 @@ export default function BrosurMatrixView({
         })),
       };
     }).filter(Boolean) as { oplah: number; cols: { ukuran: BrosurUkuranType; variants: { label: string; hpp: number; jual: number; nego: number }[] }[] }[];
-  }, [customParams, searchTerm, selectedUkuranFilter]);
+  }, [customParams, searchTerm, selectedUkuranFilter, selectedGramaturFilter]);
 
   // Flat table
   const flatTableRows = useMemo(() => {
     const list: {
-      oplah: number; ukuran: BrosurUkuranType; muka: BrosurMukaType; mesin: BrosurMesinType;
+      oplah: number; gramatur: BrosurGramaturType; ukuran: BrosurUkuranType; muka: BrosurMukaType; mesin: BrosurMesinType;
       hpp: number; jual: number; nego: number; totalJual: number; margin: number;
     }[] = [];
 
@@ -87,6 +89,7 @@ export default function BrosurMatrixView({
           if (q) {
             const match =
               oplah.toString().includes(q) ||
+              selectedGramaturFilter.toLowerCase().includes(q) ||
               ukuran.toLowerCase().includes(q) ||
               muka.toLowerCase().includes(q) ||
               mesin.toLowerCase().includes(q);
@@ -94,7 +97,7 @@ export default function BrosurMatrixView({
           }
           const r = calc(oplah, ukuran, muka, mesin);
           list.push({
-            oplah, ukuran, muka, mesin,
+            oplah, gramatur: selectedGramaturFilter, ukuran, muka, mesin,
             hpp: r.hppPerPcs,
             jual: r.hargaJualPerPcs,
             nego: r.hargaNegoPerPcs,
@@ -106,7 +109,7 @@ export default function BrosurMatrixView({
     });
 
     return list;
-  }, [customParams, searchTerm, selectedUkuranFilter]);
+  }, [customParams, searchTerm, selectedUkuranFilter, selectedGramaturFilter]);
 
   const ukuranCols = selectedUkuranFilter === 'ALL' ? UKURAN_LIST : [selectedUkuranFilter];
 
@@ -120,10 +123,10 @@ export default function BrosurMatrixView({
           </div>
           <div>
             <h2 className="text-sm sm:text-base font-bold text-emerald-950 tracking-tight">
-              Pricelist Matriks Brosur 2026
+              Pricelist Matriks Brosur 2026 ({selectedGramaturFilter})
             </h2>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Tabel perbandingan HPP &amp; harga jual brosur Art Paper 120gsm per oplah &amp; ukuran (+30% margin, tanpa laminasi, packing ON).
+              Tabel perbandingan HPP &amp; harga jual brosur {selectedGramaturFilter} per oplah &amp; ukuran (+30% margin, tanpa laminasi, packing ON).
             </p>
           </div>
         </div>
@@ -148,6 +151,19 @@ export default function BrosurMatrixView({
               <X className="w-3.5 h-3.5" />
             </button>
           )}
+        </div>
+
+        {/* Filter Gramatur */}
+        <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
+          <span className="text-slate-500 font-semibold hidden sm:inline">Gramatur:</span>
+          <select
+            value={selectedGramaturFilter}
+            onChange={(e) => setSelectedGramaturFilter(e.target.value as BrosurGramaturType)}
+            className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-bold focus:bg-white focus:outline-none cursor-pointer"
+          >
+            <option value="Art Paper 120 gsm">Art Paper 120 gsm</option>
+            <option value="Art Paper 150 gsm">Art Paper 150 gsm</option>
+          </select>
         </div>
 
         {/* Filter Ukuran */}
@@ -273,6 +289,7 @@ export default function BrosurMatrixView({
               <thead className="sticky top-0 z-10 bg-slate-100 border-b border-slate-200 text-slate-700 font-bold">
                 <tr>
                   <th className="py-2.5 px-3">Oplah</th>
+                  <th className="py-2.5 px-3">Bahan</th>
                   <th className="py-2.5 px-3">Ukuran</th>
                   <th className="py-2.5 px-3">Muka</th>
                   <th className="py-2.5 px-3">Mesin</th>
@@ -286,30 +303,29 @@ export default function BrosurMatrixView({
               <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
                 {flatTableRows.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="p-8 text-center text-slate-400 font-sans">
+                    <td colSpan={10} className="p-8 text-center text-slate-400 font-sans">
                       Tidak ada data yang sesuai dengan pencarian atau filter.
                     </td>
                   </tr>
                 ) : (
                   flatTableRows.map((row, idx) => (
-                    <tr key={idx} className="hover:bg-amber-50/20">
-                      <td className="py-2 px-3 font-bold text-slate-900">{row.oplah.toLocaleString('id-ID')} pcs</td>
-                      <td className="py-2 px-3 font-sans text-slate-700">{row.ukuran} cm</td>
-                      <td className="py-2 px-3 font-sans text-slate-700">{row.muka}</td>
-                      <td className="py-2 px-3 font-sans text-slate-700">{row.mesin}</td>
-                      <td className="py-2 px-3 text-right text-slate-500">Rp {Math.round(row.hpp).toLocaleString('id-ID')}</td>
-                      <td className="py-2 px-3 text-right font-bold text-emerald-700 bg-emerald-50/30">
-                        Rp {row.jual.toLocaleString('id-ID')}
+                    <tr key={idx} className="hover:bg-emerald-50/40 transition-colors">
+                      <td className="py-2 px-3 font-bold text-slate-800 font-sans">{row.oplah.toLocaleString('id-ID')}</td>
+                      <td className="py-2 px-3 text-slate-600 font-sans text-[10px]">{row.gramatur}</td>
+                      <td className="py-2 px-3 text-slate-700 font-sans">{row.ukuran}</td>
+                      <td className="py-2 px-3 text-slate-700 font-sans">{row.muka}</td>
+                      <td className="py-2 px-3 font-sans">
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                          row.mesin === 'Oliver' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                        }`}>
+                          {row.mesin}
+                        </span>
                       </td>
-                      <td className="py-2 px-3 text-right font-bold text-blue-700">
-                        Rp {row.nego.toLocaleString('id-ID')}
-                      </td>
-                      <td className="py-2 px-3 text-right font-bold text-emerald-800">
-                        Rp {row.totalJual.toLocaleString('id-ID')}
-                      </td>
-                      <td className="py-2 px-3 text-right text-slate-600">
-                        {(row.margin * 100).toFixed(1)}%
-                      </td>
+                      <td className="py-2 px-3 text-right text-slate-600">Rp {Math.round(row.hpp).toLocaleString('id-ID')}</td>
+                      <td className="py-2 px-3 text-right font-bold text-emerald-700">Rp {row.jual.toLocaleString('id-ID')}</td>
+                      <td className="py-2 px-3 text-right font-bold text-blue-600">Rp {row.nego.toLocaleString('id-ID')}</td>
+                      <td className="py-2 px-3 text-right font-bold text-slate-800">Rp {row.totalJual.toLocaleString('id-ID')}</td>
+                      <td className="py-2 px-3 text-right text-slate-500 font-sans">{Math.round(row.margin * 100)}%</td>
                     </tr>
                   ))
                 )}

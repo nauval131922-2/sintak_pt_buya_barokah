@@ -62,6 +62,8 @@ export const DEFAULT_BROSUR_PARAMS: BrosurMasterParams = {
   negoDefaultPct: 4,
 };
 
+export type BrosurGramaturType = 'Art Paper 120 gsm' | 'Art Paper 150 gsm';
+
 export type BrosurUkuranType =
   | '10,5 x 21'
   | '14,5 x 21'
@@ -88,15 +90,14 @@ const UKURAN_CONFIG: Record<BrosurUkuranType, {
   '29,7 x 42':  { w: 29.7, h: 42,   insheetPrint: 5,  insheetOliver: 150, planoL: 65, planoP: 90 },
 };
 
-// Gramatur Art Paper 120 gsm, berat per plano (79x109): 120 × (0.79 × 1.09) / 1000 = 0.103284 kg
-// berat per plano (65x90): 120 × (0.65 × 0.90) / 1000 = 0.0702 kg
+// Gramatur Art Paper: berat per plano = gramatur × (planoL/100 × planoP/100) / 1000 kg
 function beratPlanoKg(planoL: number, planoP: number, gramatur = 120): number {
   return gramatur * (planoL / 100) * (planoP / 100) / 1000;
 }
 
 // Harga per plano (harga kertas dgn up)
-function hargaPlanoRupiah(p: BrosurMasterParams, planoL: number, planoP: number): number {
-  const berat = beratPlanoKg(planoL, planoP);
+function hargaPlanoRupiah(p: BrosurMasterParams, planoL: number, planoP: number, gramatur = 120): number {
+  const berat = beratPlanoKg(planoL, planoP, gramatur);
   return berat * p.tarifArtPaperKg * (1 + p.upKertasPct / 100);
 }
 
@@ -126,6 +127,7 @@ export interface BrosurSimulatorResult {
 
 export interface BrosurSimulatorInput {
   oplah: number;
+  gramatur?: BrosurGramaturType;
   ukuran: BrosurUkuranType;
   muka: BrosurMukaType;
   mesin: BrosurMesinType;
@@ -141,10 +143,11 @@ export function calculateBrosurSimulator(
   rawParams: BrosurMasterParams = DEFAULT_BROSUR_PARAMS
 ): BrosurSimulatorResult {
   const p: BrosurMasterParams = { ...DEFAULT_BROSUR_PARAMS, ...(rawParams || {}) };
-  const { oplah, ukuran, muka, mesin, laminasi, opsiSisir, marginPct, negoDiskonPct } = input;
+  const { oplah, gramatur = 'Art Paper 120 gsm', ukuran, muka, mesin, laminasi, opsiSisir, marginPct, negoDiskonPct } = input;
   const cfg = UKURAN_CONFIG[ukuran];
   const is2Muka = muka === '2 Muka';
   const isOliver = mesin === 'Oliver';
+  const gramaturNum = gramatur === 'Art Paper 150 gsm' ? 150 : 120;
   const breakdown: BrosurBreakdownItem[] = [];
   let totalHpp = 0;
 
@@ -159,17 +162,14 @@ export function calculateBrosurSimulator(
   if (isOliver) {
     // Oliver: hitung kebutuhan plano
     const planoPerOrder = Math.ceil(oplah / cfg.insheetOliver);
-    const hargaPlano = hargaPlanoRupiah(p, cfg.planoL, cfg.planoP);
+    const hargaPlano = hargaPlanoRupiah(p, cfg.planoL, cfg.planoP, gramaturNum);
     const biayaKertas = planoPerOrder * hargaPlano;
-    add('Kertas Art Paper 120gsm', biayaKertas,
+    add(`Kertas ${gramatur}`, biayaKertas,
       `${planoPerOrder} plano × Rp ${Math.round(hargaPlano).toLocaleString('id-ID')} (${cfg.planoL}×${cfg.planoP}cm, +${p.upKertasPct}%)`);
   } else {
     // Print Inter: hitung kebutuhan lembar A3+
     const lbrPerOrder = Math.ceil(oplah / cfg.insheetPrint) * (is2Muka ? 1 : 1);
     const tarifPrint = is2Muka ? p.tarifPrintInter2Muka : p.tarifPrintInter1Muka;
-    // Untuk print inter, biaya kertas sudah termasuk dalam harga print
-    // Tapi di excel biaya kertas via laminasi area dihitung terpisah
-    // Kita sederhanakan: biaya kertas = lbr × tarif_print (include bahan)
     const biayaPrint = lbrPerOrder * tarifPrint;
     add('Biaya Cetak Print Inter', biayaPrint,
       `${lbrPerOrder} lbr A3+ × Rp ${tarifPrint.toLocaleString('id-ID')}/${is2Muka ? '2 muka' : '1 muka'}`);
