@@ -5,7 +5,7 @@ import {
   Database,
   RotateCcw,
   Sparkles,
-  HelpCircle,
+  BookOpen,
   X,
   FileSpreadsheet,
   Layers,
@@ -165,21 +165,24 @@ export default function LabelKhqMasterParameter({
           <button
             type="button"
             onClick={() => setShowManualModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all cursor-pointer shadow-2xs"
           >
-            <HelpCircle size={14} />
-            <span>Panduan Excel</span>
+            <BookOpen size={13} />
+            <span>Manual Pengguna</span>
           </button>
-          {isModified && (
-            <button
-              type="button"
-              onClick={handleResetAll}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer"
-            >
-              <RotateCcw size={13} />
-              <span>Reset Semua</span>
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={handleResetAll}
+            disabled={!isModified}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs shrink-0 ${
+              isModified
+                ? 'bg-amber-600 hover:bg-amber-700 text-white cursor-pointer ring-2 ring-amber-400/40'
+                : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-70'
+            }`}
+          >
+            <RotateCcw size={13} />
+            <span>Reset Standar Master</span>
+          </button>
         </div>
       </div>
 
