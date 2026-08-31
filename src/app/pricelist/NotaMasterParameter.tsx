@@ -7,6 +7,9 @@ import {
   BookOpen,
   X,
   Layers,
+  Printer,
+  FileText,
+  Box,
 } from 'lucide-react';
 import {
   DEFAULT_NOTA_PARAMS,
@@ -71,6 +74,47 @@ export default function NotaMasterParameter({
     toast.success('Semua parameter Nota dikembalikan ke standar master.');
   };
 
+  const fieldRow = (
+    key: keyof NotaMasterParams,
+    label: string,
+    isRupiah = true,
+    isDecimal = false
+  ) => (
+    <div
+      className={`p-2.5 rounded-lg border transition-all ${
+        isFieldModified(key)
+          ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+          : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
+      }`}
+    >
+      <div className="flex items-center justify-between gap-1 mb-1.5">
+        <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
+          {label}
+        </label>
+        {isFieldModified(key) && (
+          <button
+            type="button"
+            onClick={() => handleResetField(key)}
+            className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+            title="Reset ke default"
+          >
+            <RotateCcw className="w-2.5 h-2.5" /> Def
+          </button>
+        )}
+      </div>
+      <div className="flex items-center gap-1.5">
+        <ThousandInput
+          value={customParams[key] as number}
+          onValueChange={(v) => handleChange(key, v || 0)}
+          className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+          prefix={isRupiah ? 'Rp' : undefined}
+          suffix={isRupiah ? undefined : '%'}
+          allowDecimals={isDecimal}
+        />
+      </div>
+    </div>
+  );
+
   return (
     <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
       {/* Header Info */}
@@ -121,250 +165,121 @@ export default function NotaMasterParameter({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {/* Card 1: Harga Kertas NCR Khusus Nota */}
-        <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col">
-          <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                1. Bahan Kertas NCR Nota
-              </h3>
-            </div>
-            <span className="text-[11px] text-slate-500 font-medium">Bahan Baku</span>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Card 1: Bahan Kertas NCR Nota */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <FileText className="w-4 h-4 text-emerald-700" />
+            <h3 className="text-xs font-bold text-slate-800">1. Bahan Kertas NCR Nota</h3>
           </div>
-          <div className="p-4 flex flex-col gap-3">
-            <div className={`p-2.5 rounded-lg border transition-all ${
-              isFieldModified('tarifNcrTopRim')
-                ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                : 'bg-slate-50 border-slate-200'
-            }`}>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-[11px] font-bold text-slate-700">NCR Top (Rp/Rim Folio)</label>
-                {isFieldModified('tarifNcrTopRim') && (
-                  <button onClick={() => handleResetField('tarifNcrTopRim')} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
-                    <RotateCcw size={9} /> Reset
-                  </button>
-                )}
-              </div>
-              <ThousandInput prefix="Rp" value={customParams.tarifNcrTopRim} onValueChange={(v) => handleChange('tarifNcrTopRim', v || 0)} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
-            </div>
-
-            <div className={`p-2.5 rounded-lg border transition-all ${
-              isFieldModified('tarifNcrMiddleRim')
-                ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                : 'bg-slate-50 border-slate-200'
-            }`}>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-[11px] font-bold text-slate-700">NCR Middle (Rp/Rim Folio)</label>
-                {isFieldModified('tarifNcrMiddleRim') && (
-                  <button onClick={() => handleResetField('tarifNcrMiddleRim')} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
-                    <RotateCcw size={9} /> Reset
-                  </button>
-                )}
-              </div>
-              <ThousandInput prefix="Rp" value={customParams.tarifNcrMiddleRim} onValueChange={(v) => handleChange('tarifNcrMiddleRim', v || 0)} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
-            </div>
-
-            <div className={`p-2.5 rounded-lg border transition-all ${
-              isFieldModified('tarifNcrBottomRim')
-                ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                : 'bg-slate-50 border-slate-200'
-            }`}>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-[11px] font-bold text-slate-700">NCR Bottom (Rp/Rim Folio)</label>
-                {isFieldModified('tarifNcrBottomRim') && (
-                  <button onClick={() => handleResetField('tarifNcrBottomRim')} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
-                    <RotateCcw size={9} /> Reset
-                  </button>
-                )}
-              </div>
-              <ThousandInput prefix="Rp" value={customParams.tarifNcrBottomRim} onValueChange={(v) => handleChange('tarifNcrBottomRim', v || 0)} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {fieldRow('tarifNcrTopRim', 'NCR Top (Rp/Rim Folio)')}
+            {fieldRow('tarifNcrMiddleRim', 'NCR Middle (Rp/Rim Folio)')}
+            {fieldRow('tarifNcrBottomRim', 'NCR Bottom (Rp/Rim Folio)')}
           </div>
         </div>
 
         {/* Card 2: Mesin Cetak Toko / Ryobi */}
-        <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col">
-          <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                2. Mesin Cetak Toko / Ryobi
-              </h3>
-            </div>
-            <span className="text-[11px] text-slate-500 font-medium">Plat & Cetak</span>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Printer className="w-4 h-4 text-blue-600" />
+            <h3 className="text-xs font-bold text-slate-800">2. Mesin Cetak Toko / Ryobi</h3>
           </div>
-          <div className="p-4 flex flex-col gap-3">
-            <div className={`p-2.5 rounded-lg border transition-all ${
-              isFieldModified('tarifPlatRyobi')
-                ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                : 'bg-slate-50 border-slate-200'
-            }`}>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-[11px] font-bold text-slate-700">Plat CTP Ryobi (Rp/plat)</label>
-                {isFieldModified('tarifPlatRyobi') && (
-                  <button onClick={() => handleResetField('tarifPlatRyobi')} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
-                    <RotateCcw size={9} /> Reset
-                  </button>
-                )}
-              </div>
-              <ThousandInput prefix="Rp" value={customParams.tarifPlatRyobi} onValueChange={(v) => handleChange('tarifPlatRyobi', v || 0)} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
-            </div>
-
-            <div className={`p-2.5 rounded-lg border transition-all ${
-              isFieldModified('minOngkosCetakRyobi')
-                ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                : 'bg-slate-50 border-slate-200'
-            }`}>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-[11px] font-bold text-slate-700">Ongkos Min Cetak Ryobi (Rp/500 drek)</label>
-                {isFieldModified('minOngkosCetakRyobi') && (
-                  <button onClick={() => handleResetField('minOngkosCetakRyobi')} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
-                    <RotateCcw size={9} /> Reset
-                  </button>
-                )}
-              </div>
-              <ThousandInput prefix="Rp" value={customParams.minOngkosCetakRyobi} onValueChange={(v) => handleChange('minOngkosCetakRyobi', v || 0)} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
-            </div>
-
-            <div className={`p-2.5 rounded-lg border transition-all ${
-              isFieldModified('tarifDrekOverRyobi')
-                ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                : 'bg-slate-50 border-slate-200'
-            }`}>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-[11px] font-bold text-slate-700">Ongkos Drek Over (Rp/drek)</label>
-                {isFieldModified('tarifDrekOverRyobi') && (
-                  <button onClick={() => handleResetField('tarifDrekOverRyobi')} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
-                    <RotateCcw size={9} /> Reset
-                  </button>
-                )}
-              </div>
-              <ThousandInput prefix="Rp" value={customParams.tarifDrekOverRyobi} onValueChange={(v) => handleChange('tarifDrekOverRyobi', v || 0)} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
-            </div>
-
-            <div className={`p-2.5 rounded-lg border transition-all ${
-              isFieldModified('tarifDesainNota')
-                ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                : 'bg-slate-50 border-slate-200'
-            }`}>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-[11px] font-bold text-slate-700">Biaya Desain Setting (Rp)</label>
-                {isFieldModified('tarifDesainNota') && (
-                  <button onClick={() => handleResetField('tarifDesainNota')} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
-                    <RotateCcw size={9} /> Reset
-                  </button>
-                )}
-              </div>
-              <ThousandInput prefix="Rp" value={customParams.tarifDesainNota} onValueChange={(v) => handleChange('tarifDesainNota', v || 0)} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {fieldRow('tarifPlatRyobi', 'Plat CTP Ryobi (Rp/plat)')}
+            {fieldRow('minOngkosCetakRyobi', 'Ongkos Min Cetak Ryobi (Rp/500 drek)')}
+            {fieldRow('tarifDrekOverRyobi', 'Ongkos Drek Over (Rp/drek)')}
+            {fieldRow('tarifDesainNota', 'Biaya Desain Setting (Rp)')}
           </div>
         </div>
 
-        {/* Card 3: Finishing & Jilid per Rim Rangkap */}
-        <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col">
-          <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                3. Ongkos Jilid & Finishing
-              </h3>
-            </div>
-            <span className="text-[11px] text-slate-500 font-medium">Rp / Rim Ply</span>
+        {/* Card 3: Ongkos Jilid & Finishing */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Layers className="w-4 h-4 text-amber-600" />
+            <h3 className="text-xs font-bold text-slate-800">3. Ongkos Jilid & Finishing</h3>
           </div>
-          <div className="p-4 flex flex-col gap-3">
-            <div className={`p-2.5 rounded-lg border transition-all ${
-              isFieldModified('tarifKertasSamson') || isFieldModified('tarifKertasBoard')
-                ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                : 'bg-slate-50 border-slate-200'
-            }`}>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-[11px] font-bold text-slate-700">Cover Samson & Board (Rp/Rim)</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div
+              className={`p-2.5 rounded-lg border transition-all ${
+                isFieldModified('tarifKertasSamson') || isFieldModified('tarifKertasBoard')
+                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
+              }`}
+            >
+              <div className="flex items-center justify-between gap-1 mb-1.5">
+                <label className="text-xs font-semibold text-slate-700 truncate" title="Cover Samson & Board (Rp/Rim)">
+                  Cover Samson & Board (Rp/Rim)
+                </label>
                 {(isFieldModified('tarifKertasSamson') || isFieldModified('tarifKertasBoard')) && (
-                  <button onClick={() => {
-                    handleResetField('tarifKertasSamson');
-                    handleResetField('tarifKertasBoard');
-                  }} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
-                    <RotateCcw size={9} /> Reset
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleResetField('tarifKertasSamson');
+                      handleResetField('tarifKertasBoard');
+                    }}
+                    className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+                    title="Reset ke default"
+                  >
+                    <RotateCcw className="w-2.5 h-2.5" /> Def
                   </button>
                 )}
               </div>
-              <ThousandInput prefix="Rp" value={customParams.tarifKertasSamson + customParams.tarifKertasBoard} onValueChange={(v) => {
-                handleChange('tarifKertasSamson', Math.round((v || 0) * 0.56));
-                handleChange('tarifKertasBoard', Math.round((v || 0) * 0.44));
-              }} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
-            </div>
-
-            <div className={`p-2.5 rounded-lg border transition-all ${
-              isFieldModified('tarifSusunKomplit')
-                ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                : 'bg-slate-50 border-slate-200'
-            }`}>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-[11px] font-bold text-slate-700">Susun Komplit (Rp/Rim)</label>
-                {isFieldModified('tarifSusunKomplit') && (
-                  <button onClick={() => handleResetField('tarifSusunKomplit')} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
-                    <RotateCcw size={9} /> Reset
-                  </button>
-                )}
+              <div className="flex items-center gap-1.5">
+                <ThousandInput
+                  value={customParams.tarifKertasSamson + customParams.tarifKertasBoard}
+                  onValueChange={(v) => {
+                    handleChange('tarifKertasSamson', Math.round((v || 0) * 0.56));
+                    handleChange('tarifKertasBoard', Math.round((v || 0) * 0.44));
+                  }}
+                  className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                  prefix="Rp"
+                />
               </div>
-              <ThousandInput prefix="Rp" value={customParams.tarifSusunKomplit} onValueChange={(v) => handleChange('tarifSusunKomplit', v || 0)} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
             </div>
 
-            <div className={`p-2.5 rounded-lg border transition-all ${
-              isFieldModified('tarifStaplesNota') || isFieldModified('tarifLemNgetruk')
-                ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                : 'bg-slate-50 border-slate-200'
-            }`}>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-[11px] font-bold text-slate-700">Staples & Lem Ngetruk (Rp/Rim)</label>
+            {fieldRow('tarifSusunKomplit', 'Susun Komplit (Rp/Rim)')}
+
+            <div
+              className={`p-2.5 rounded-lg border transition-all ${
+                isFieldModified('tarifStaplesNota') || isFieldModified('tarifLemNgetruk')
+                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
+              }`}
+            >
+              <div className="flex items-center justify-between gap-1 mb-1.5">
+                <label className="text-xs font-semibold text-slate-700 truncate" title="Staples & Lem Ngetruk (Rp/Rim)">
+                  Staples & Lem Ngetruk (Rp/Rim)
+                </label>
                 {(isFieldModified('tarifStaplesNota') || isFieldModified('tarifLemNgetruk')) && (
-                  <button onClick={() => {
-                    handleResetField('tarifStaplesNota');
-                    handleResetField('tarifLemNgetruk');
-                  }} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
-                    <RotateCcw size={9} /> Reset
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleResetField('tarifStaplesNota');
+                      handleResetField('tarifLemNgetruk');
+                    }}
+                    className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+                    title="Reset ke default"
+                  >
+                    <RotateCcw className="w-2.5 h-2.5" /> Def
                   </button>
                 )}
               </div>
-              <ThousandInput prefix="Rp" value={customParams.tarifStaplesNota + customParams.tarifLemNgetruk} onValueChange={(v) => {
-                handleChange('tarifStaplesNota', Math.round((v || 0) * 0.6));
-                handleChange('tarifLemNgetruk', Math.round((v || 0) * 0.4));
-              }} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
+              <div className="flex items-center gap-1.5">
+                <ThousandInput
+                  value={customParams.tarifStaplesNota + customParams.tarifLemNgetruk}
+                  onValueChange={(v) => {
+                    handleChange('tarifStaplesNota', Math.round((v || 0) * 0.6));
+                    handleChange('tarifLemNgetruk', Math.round((v || 0) * 0.4));
+                  }}
+                  className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                  prefix="Rp"
+                />
+              </div>
             </div>
 
-            <div className={`p-2.5 rounded-lg border transition-all ${
-              isFieldModified('tarifPorporasiPerRim')
-                ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                : 'bg-slate-50 border-slate-200'
-            }`}>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-[11px] font-bold text-slate-700">Porporasi Sobekan (Rp/Rim)</label>
-                {isFieldModified('tarifPorporasiPerRim') && (
-                  <button onClick={() => handleResetField('tarifPorporasiPerRim')} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
-                    <RotateCcw size={9} /> Reset
-                  </button>
-                )}
-              </div>
-              <ThousandInput prefix="Rp" value={customParams.tarifPorporasiPerRim} onValueChange={(v) => handleChange('tarifPorporasiPerRim', v || 0)} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
-            </div>
-
-            <div className={`p-2.5 rounded-lg border transition-all ${
-              isFieldModified('tarifNomoratorPerRim')
-                ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                : 'bg-slate-50 border-slate-200'
-            }`}>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-[11px] font-bold text-slate-700">Nomorator Seri (Rp/Rim)</label>
-                {isFieldModified('tarifNomoratorPerRim') && (
-                  <button onClick={() => handleResetField('tarifNomoratorPerRim')} className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer">
-                    <RotateCcw size={9} /> Reset
-                  </button>
-                )}
-              </div>
-              <ThousandInput prefix="Rp" value={customParams.tarifNomoratorPerRim} onValueChange={(v) => handleChange('tarifNomoratorPerRim', v || 0)} className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
-            </div>
+            {fieldRow('tarifPorporasiPerRim', 'Porporasi Sobekan (Rp/Rim)')}
+            {fieldRow('tarifNomoratorPerRim', 'Nomorator Seri (Rp/Rim)')}
           </div>
         </div>
       </div>

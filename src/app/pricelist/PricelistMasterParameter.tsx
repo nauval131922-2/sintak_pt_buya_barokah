@@ -18,6 +18,9 @@ import {
   BookOpen,
   Bookmark,
   ArrowRight,
+  Printer,
+  FileText,
+  Box,
 } from 'lucide-react';
 import {
   DEFAULT_MASTER_PARAMS,
@@ -123,7 +126,7 @@ export default function PricelistMasterParameter({
               <Database className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <h2 className="text-sm sm:text-base font-bold text-emerald-950 tracking-tight">Master Parameter Tarif Kalender</h2>
                 {isModified && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
@@ -138,7 +141,7 @@ export default function PricelistMasterParameter({
             </div>
           </div>
         </div>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2.5 shrink-0">
           {/* Toggle Profil Jilid */}
           {onChangeFinishing && (
             <div className="flex items-center bg-emerald-100/50 p-0.5 rounded-lg border border-emerald-300 text-xs shadow-2xs">
@@ -195,13 +198,13 @@ export default function PricelistMasterParameter({
 
       {/* Banner Informasi Mode Edit Simulasi Aktif */}
       {activeSimulationId && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200">
+        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 animate-in fade-in duration-200">
           <div className="flex items-center gap-2.5">
             <div className="p-1.5 bg-amber-200 text-amber-900 rounded-lg shrink-0">
               <Bookmark className="w-4 h-4 fill-amber-700" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <span className="text-[11px] font-black uppercase tracking-wider text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded">
                   Edit Parameter Riwayat Simulasi
                 </span>
@@ -227,36 +230,30 @@ export default function PricelistMasterParameter({
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Section 1: Mesin Cetak Heidelberg Speedmaster (SM 52) Khusus Kalender Oplah Besar */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col">
-          <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-purple-600"></span>
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                1. Mesin Heidelberg SM 52 (Oplah Besar)
-              </h3>
-            </div>
-            <span className="text-[11px] text-slate-500 font-medium">Khusus Kalender</span>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Printer className="w-4 h-4 text-emerald-700" />
+            <h3 className="text-xs font-bold text-slate-800">1. Mesin Heidelberg SM 52 (Oplah Besar)</h3>
           </div>
-          <div className="p-4 flex flex-col gap-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className={`p-3 rounded-lg border flex flex-col justify-between transition-all ${
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className={`p-2.5 rounded-lg border transition-all ${
                 isFieldModified('smMinOngkos')
                   ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                  : 'bg-slate-50 border-slate-200'
+                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
               }`}>
                 <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-[11px] font-bold text-slate-700">Min. Ongkos Cetak</label>
+                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <label className="text-xs font-semibold text-slate-700 truncate" title="Min. Ongkos Cetak">Min. Ongkos Cetak</label>
                     {isFieldModified('smMinOngkos') && (
                       <button
                         type="button"
                         onClick={(e) => handleResetField('smMinOngkos', e)}
-                        title="Reset field ini ke standar master"
-                        className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                       >
-                        <RotateCcw size={9} /> Reset
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
                       </button>
                     )}
                   </div>
@@ -264,28 +261,27 @@ export default function PricelistMasterParameter({
                     prefix="Rp"
                     value={customParams.smMinOngkos}
                     onValueChange={(val) => handleChange('smMinOngkos', val)}
-                    className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                   />
                 </div>
-                <span className="block text-[9px] text-slate-500 mt-1">Hingga 3.000 Drek</span>
               </div>
 
-              <div className={`p-3 rounded-lg border flex flex-col justify-between transition-all ${
+              <div className={`p-2.5 rounded-lg border transition-all ${
                 isFieldModified('smPlatUnit')
                   ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                  : 'bg-slate-50 border-slate-200'
+                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
               }`}>
                 <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-[11px] font-bold text-slate-700">Plat CTP SM</label>
+                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <label className="text-xs font-semibold text-slate-700 truncate" title="Plat CTP SM">Plat CTP SM</label>
                     {isFieldModified('smPlatUnit') && (
                       <button
                         type="button"
                         onClick={(e) => handleResetField('smPlatUnit', e)}
-                        title="Reset field ini ke standar master"
-                        className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                       >
-                        <RotateCcw size={9} /> Reset
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
                       </button>
                     )}
                   </div>
@@ -293,28 +289,27 @@ export default function PricelistMasterParameter({
                     prefix="Rp"
                     value={customParams.smPlatUnit}
                     onValueChange={(val) => handleChange('smPlatUnit', val)}
-                    className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                   />
                 </div>
-                <span className="block text-[9px] text-slate-500 mt-1">Per Unit Plat CTP</span>
               </div>
 
-              <div className={`p-3 rounded-lg border flex flex-col justify-between transition-all ${
+              <div className={`p-2.5 rounded-lg border transition-all ${
                 isFieldModified('smDrekOver')
                   ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                  : 'bg-slate-50 border-slate-200'
+                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
               }`}>
                 <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-[11px] font-bold text-slate-700">Tarif Drek Over</label>
+                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <label className="text-xs font-semibold text-slate-700 truncate" title="Tarif Drek Over">Tarif Drek Over</label>
                     {isFieldModified('smDrekOver') && (
                       <button
                         type="button"
                         onClick={(e) => handleResetField('smDrekOver', e)}
-                        title="Reset field ini ke standar master"
-                        className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                       >
-                        <RotateCcw size={9} /> Reset
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
                       </button>
                     )}
                   </div>
@@ -322,44 +317,36 @@ export default function PricelistMasterParameter({
                     prefix="Rp"
                     value={customParams.smDrekOver}
                     onValueChange={(val) => handleChange('smDrekOver', val)}
-                    className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                   />
                 </div>
-                <span className="block text-[9px] text-slate-500 mt-1">Di atas 3.000 drek</span>
               </div>
-            </div>
           </div>
         </div>
 
         {/* Section 2: Jasa Desain & Almanak Kalender */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col">
-          <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                2. Jasa Desain, Almanak & Royalty
-              </h3>
-            </div>
-            <span className="text-[11px] text-slate-500 font-medium">Per Order Kalender</span>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <FileText className="w-4 h-4 text-blue-600" />
+            <h3 className="text-xs font-bold text-slate-800">2. Jasa Desain, Almanak & Royalty</h3>
           </div>
-          <div className="p-4 flex flex-col gap-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className={`p-3 rounded-lg border flex flex-col justify-between transition-all ${
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className={`p-2.5 rounded-lg border transition-all ${
                 isFieldModified('tarifDesain')
                   ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                  : 'bg-slate-50 border-slate-200'
+                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
               }`}>
                 <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-[11px] font-bold text-slate-700">Jasa Desain</label>
+                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <label className="text-xs font-semibold text-slate-700 truncate" title="Jasa Desain">Jasa Desain</label>
                     {isFieldModified('tarifDesain') && (
                       <button
                         type="button"
                         onClick={(e) => handleResetField('tarifDesain', e)}
-                        title="Reset field ini ke standar master"
-                        className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                       >
-                        <RotateCcw size={9} /> Reset
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
                       </button>
                     )}
                   </div>
@@ -367,28 +354,27 @@ export default function PricelistMasterParameter({
                     prefix="Rp"
                     value={customParams.tarifDesain}
                     onValueChange={(val) => handleChange('tarifDesain', val)}
-                    className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                   />
                 </div>
-                <span className="block text-[9px] text-slate-500 mt-1">Per Order</span>
               </div>
 
-              <div className={`p-3 rounded-lg border flex flex-col justify-between transition-all ${
+              <div className={`p-2.5 rounded-lg border transition-all ${
                 isFieldModified('tarifAlmanakDesain')
                   ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                  : 'bg-slate-50 border-slate-200'
+                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
               }`}>
                 <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-[11px] font-bold text-slate-700">Desain Almanak</label>
+                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <label className="text-xs font-semibold text-slate-700 truncate" title="Desain Almanak">Desain Almanak</label>
                     {isFieldModified('tarifAlmanakDesain') && (
                       <button
                         type="button"
                         onClick={(e) => handleResetField('tarifAlmanakDesain', e)}
-                        title="Reset field ini ke standar master"
-                        className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                       >
-                        <RotateCcw size={9} /> Reset
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
                       </button>
                     )}
                   </div>
@@ -396,28 +382,27 @@ export default function PricelistMasterParameter({
                     prefix="Rp"
                     value={customParams.tarifAlmanakDesain}
                     onValueChange={(val) => handleChange('tarifAlmanakDesain', val)}
-                    className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                   />
                 </div>
-                <span className="block text-[9px] text-slate-500 mt-1">Per Order</span>
               </div>
 
-              <div className={`p-3 rounded-lg border flex flex-col justify-between transition-all ${
+              <div className={`p-2.5 rounded-lg border transition-all ${
                 isFieldModified('tarifRoyalty')
                   ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                  : 'bg-slate-50 border-slate-200'
+                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
               }`}>
                 <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-[11px] font-bold text-slate-700">Royalti Almanak</label>
+                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <label className="text-xs font-semibold text-slate-700 truncate" title="Royalti Almanak">Royalti Almanak</label>
                     {isFieldModified('tarifRoyalty') && (
                       <button
                         type="button"
                         onClick={(e) => handleResetField('tarifRoyalty', e)}
-                        title="Reset field ini ke standar master"
-                        className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                       >
-                        <RotateCcw size={9} /> Reset
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
                       </button>
                     )}
                   </div>
@@ -425,25 +410,18 @@ export default function PricelistMasterParameter({
                     prefix="Rp"
                     value={customParams.tarifRoyalty}
                     onValueChange={(val) => handleChange('tarifRoyalty', val)}
-                    className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                   />
                 </div>
-                <span className="block text-[9px] text-slate-500 mt-1">Per Eksemplar</span>
               </div>
-            </div>
           </div>
         </div>
       </div>
       {/* Section: Tarif Mesin & Insheet Oliver vs SM (tabel perbandingan) */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col">
-        <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              3. Standar Mesin Cetak & Tarif
-            </h3>
-          </div>
-          <span className="text-[11px] text-slate-500 font-medium">Oliver vs Speedmaster</span>
+      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+        <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+          <Printer className="w-4 h-4 text-purple-600" />
+            <h3 className="text-xs font-bold text-slate-800">3. Standar Mesin Cetak & Tarif</h3>
         </div>
         <div className="p-4 overflow-x-auto">
           <table className="w-full text-xs text-left border-collapse">
@@ -463,18 +441,16 @@ export default function PricelistMasterParameter({
                       prefix="Rp"
                       value={customParams.oliverMinOngkos}
                       onValueChange={(val) => handleChange('oliverMinOngkos', val)}
-                      className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                        isFieldModified('oliverMinOngkos') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                      }`}
+                      className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                     />
                     {isFieldModified('oliverMinOngkos') && (
                       <button
                         type="button"
                         onClick={(e) => handleResetField('oliverMinOngkos', e)}
-                        title="Reset Oliver Min Ongkos"
-                        className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                       >
-                        <RotateCcw size={10} />
+                        <RotateCcw className="w-2.5 h-2.5" />
                       </button>
                     )}
                   </div>
@@ -485,18 +461,16 @@ export default function PricelistMasterParameter({
                       prefix="Rp"
                       value={customParams.smMinOngkos}
                       onValueChange={(val) => handleChange('smMinOngkos', val)}
-                      className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                        isFieldModified('smMinOngkos') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                      }`}
+                      className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                     />
                     {isFieldModified('smMinOngkos') && (
                       <button
                         type="button"
                         onClick={(e) => handleResetField('smMinOngkos', e)}
-                        title="Reset SM Min Ongkos"
-                        className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                       >
-                        <RotateCcw size={10} />
+                        <RotateCcw className="w-2.5 h-2.5" />
                       </button>
                     )}
                   </div>
@@ -510,18 +484,16 @@ export default function PricelistMasterParameter({
                       suffix="lbr"
                       value={customParams.oliverInsheet}
                       onValueChange={(val) => handleChange('oliverInsheet', val)}
-                      className={`w-full pr-7 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                        isFieldModified('oliverInsheet') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                      }`}
+                      className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                     />
                     {isFieldModified('oliverInsheet') && (
                       <button
                         type="button"
                         onClick={(e) => handleResetField('oliverInsheet', e)}
-                        title="Reset Oliver Insheet"
-                        className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                       >
-                        <RotateCcw size={10} />
+                        <RotateCcw className="w-2.5 h-2.5" />
                       </button>
                     )}
                   </div>
@@ -532,18 +504,16 @@ export default function PricelistMasterParameter({
                       suffix="lbr"
                       value={customParams.smInsheet}
                       onValueChange={(val) => handleChange('smInsheet', val)}
-                      className={`w-full pr-7 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                        isFieldModified('smInsheet') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                      }`}
+                      className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                     />
                     {isFieldModified('smInsheet') && (
                       <button
                         type="button"
                         onClick={(e) => handleResetField('smInsheet', e)}
-                        title="Reset SM Insheet"
-                        className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                       >
-                        <RotateCcw size={10} />
+                        <RotateCcw className="w-2.5 h-2.5" />
                       </button>
                     )}
                   </div>
@@ -557,18 +527,16 @@ export default function PricelistMasterParameter({
                         prefix="Rp"
                         value={customParams.oliverPlatUnit}
                         onValueChange={(val) => handleChange('oliverPlatUnit', val)}
-                        className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                          isFieldModified('oliverPlatUnit') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                        }`}
+                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                       />
                       {isFieldModified('oliverPlatUnit') && (
                         <button
                           type="button"
                           onClick={(e) => handleResetField('oliverPlatUnit', e)}
-                          title="Reset Oliver Plat Unit"
-                          className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                          title="Reset ke default"
+                          className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                         >
-                          <RotateCcw size={10} />
+                          <RotateCcw className="w-2.5 h-2.5" />
                         </button>
                       )}
                   </div>
@@ -579,18 +547,16 @@ export default function PricelistMasterParameter({
                         prefix="Rp"
                         value={customParams.smPlatUnit}
                         onValueChange={(val) => handleChange('smPlatUnit', val)}
-                        className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                          isFieldModified('smPlatUnit') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                        }`}
+                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                       />
                       {isFieldModified('smPlatUnit') && (
                         <button
                           type="button"
                           onClick={(e) => handleResetField('smPlatUnit', e)}
-                          title="Reset SM Plat Unit"
-                          className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                          title="Reset ke default"
+                          className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                         >
-                          <RotateCcw size={10} />
+                          <RotateCcw className="w-2.5 h-2.5" />
                         </button>
                       )}
                     </div>
@@ -604,18 +570,16 @@ export default function PricelistMasterParameter({
                         suffix="drek"
                         value={customParams.oliverBatasDrek}
                         onValueChange={(val) => handleChange('oliverBatasDrek', val)}
-                        className={`w-full py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                          isFieldModified('oliverBatasDrek') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                        }`}
+                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                       />
                       {isFieldModified('oliverBatasDrek') && (
                         <button
                           type="button"
                           onClick={(e) => handleResetField('oliverBatasDrek', e)}
-                          title="Reset Oliver Batas Drek"
-                          className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                          title="Reset ke default"
+                          className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                         >
-                          <RotateCcw size={10} />
+                          <RotateCcw className="w-2.5 h-2.5" />
                         </button>
                       )}
                     </div>
@@ -626,18 +590,16 @@ export default function PricelistMasterParameter({
                         suffix="drek"
                         value={customParams.smBatasDrek}
                         onValueChange={(val) => handleChange('smBatasDrek', val)}
-                        className={`w-full py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                          isFieldModified('smBatasDrek') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                        }`}
+                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                       />
                       {isFieldModified('smBatasDrek') && (
                         <button
                           type="button"
                           onClick={(e) => handleResetField('smBatasDrek', e)}
-                          title="Reset SM Batas Drek"
-                          className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                          title="Reset ke default"
+                          className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                         >
-                          <RotateCcw size={10} />
+                          <RotateCcw className="w-2.5 h-2.5" />
                         </button>
                       )}
                     </div>
@@ -651,18 +613,16 @@ export default function PricelistMasterParameter({
                         prefix="Rp"
                         value={customParams.oliverDrekOver}
                         onValueChange={(val) => handleChange('oliverDrekOver', val)}
-                        className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                          isFieldModified('oliverDrekOver') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                        }`}
+                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                       />
                       {isFieldModified('oliverDrekOver') && (
                         <button
                           type="button"
                           onClick={(e) => handleResetField('oliverDrekOver', e)}
-                          title="Reset Oliver Drek Over"
-                          className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                          title="Reset ke default"
+                          className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                         >
-                          <RotateCcw size={10} />
+                          <RotateCcw className="w-2.5 h-2.5" />
                         </button>
                       )}
                     </div>
@@ -673,18 +633,16 @@ export default function PricelistMasterParameter({
                         prefix="Rp"
                         value={customParams.smDrekOver}
                         onValueChange={(val) => handleChange('smDrekOver', val)}
-                        className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                          isFieldModified('smDrekOver') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                        }`}
+                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                       />
                       {isFieldModified('smDrekOver') && (
                         <button
                           type="button"
                           onClick={(e) => handleResetField('smDrekOver', e)}
-                          title="Reset SM Drek Over"
-                          className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                          title="Reset ke default"
+                          className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                         >
-                          <RotateCcw size={10} />
+                          <RotateCcw className="w-2.5 h-2.5" />
                         </button>
                       )}
                     </div>
@@ -698,18 +656,16 @@ export default function PricelistMasterParameter({
                         prefix="Rp"
                         value={customParams.oliverTransport}
                         onValueChange={(val) => handleChange('oliverTransport', val)}
-                        className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                          isFieldModified('oliverTransport') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                        }`}
+                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                       />
                       {isFieldModified('oliverTransport') && (
                         <button
                           type="button"
                           onClick={(e) => handleResetField('oliverTransport', e)}
-                          title="Reset Oliver Transport"
-                          className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                          title="Reset ke default"
+                          className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                         >
-                          <RotateCcw size={10} />
+                          <RotateCcw className="w-2.5 h-2.5" />
                         </button>
                       )}
                     </div>
@@ -720,18 +676,16 @@ export default function PricelistMasterParameter({
                         prefix="Rp"
                         value={customParams.smTransport}
                         onValueChange={(val) => handleChange('smTransport', val)}
-                        className={`w-full pr-1.5 py-1 text-xs font-mono font-bold bg-white border rounded-md text-right ${
-                          isFieldModified('smTransport') ? 'border-amber-300 ring-1 ring-amber-400/40' : 'border-slate-200'
-                        }`}
+                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                       />
                       {isFieldModified('smTransport') && (
                         <button
                           type="button"
                           onClick={(e) => handleResetField('smTransport', e)}
-                          title="Reset SM Transport"
-                          className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-800 shrink-0 cursor-pointer"
+                          title="Reset ke default"
+                          className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                         >
-                          <RotateCcw size={10} />
+                          <RotateCcw className="w-2.5 h-2.5" />
                         </button>
                       )}
                     </div>
@@ -742,36 +696,31 @@ export default function PricelistMasterParameter({
           </div>
         </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Section 3: Ongkos Finishing & Jasa */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col">
-          <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                3. Ongkos Finishing & Jasa Cetak
-              </h3>
-            </div>
-            <span className="text-[11px] text-slate-500 font-medium">Baku Grafika</span>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Layers className="w-4 h-4 text-amber-600" />
+            <h3 className="text-xs font-bold text-slate-800">3. Ongkos Finishing & Jasa Cetak</h3>
           </div>
-          <div className="p-4 flex flex-col gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {/* Sub: Spiral & Jasa Umum */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <div className={`p-2.5 rounded-lg border transition-all ${
                 isFieldModified('tarifSpiralLubang')
                   ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                  : 'bg-slate-50 border-slate-200'
+                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
               }`}>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-[10.5px] font-bold text-slate-700">Spiral (cm x Rp)</label>
+                <div className="flex items-center justify-between gap-1 mb-1.5">
+                  <label className="text-xs font-semibold text-slate-700 truncate" title="Spiral (cm x Rp)">Spiral (cm x Rp)</label>
                   {isFieldModified('tarifSpiralLubang') && (
                     <button
                       type="button"
                       onClick={(e) => handleResetField('tarifSpiralLubang', e)}
-                      title="Reset field ini ke standar master"
-                      className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      title="Reset ke default"
+                      className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                     >
-                      <RotateCcw size={9} /> Reset
+                      <RotateCcw className="w-2.5 h-2.5" /> Def
                     </button>
                   )}
                 </div>
@@ -779,26 +728,25 @@ export default function PricelistMasterParameter({
                   prefix="Rp"
                   value={customParams.tarifSpiralLubang}
                   onValueChange={(val) => handleChange('tarifSpiralLubang', val)}
-                  className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                 />
-                <span className="block text-[9.5px] text-slate-500 mt-1">Per cm lebar kalender</span>
               </div>
 
               <div className={`p-2.5 rounded-lg border transition-all ${
                 isFieldModified('tarifSpiralMin')
                   ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                  : 'bg-slate-50 border-slate-200'
+                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
               }`}>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-[10.5px] font-bold text-slate-700">Spiral Min Order</label>
+                <div className="flex items-center justify-between gap-1 mb-1.5">
+                  <label className="text-xs font-semibold text-slate-700 truncate" title="Spiral Min Order">Spiral Min Order</label>
                   {isFieldModified('tarifSpiralMin') && (
                     <button
                       type="button"
                       onClick={(e) => handleResetField('tarifSpiralMin', e)}
-                      title="Reset field ini ke standar master"
-                      className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      title="Reset ke default"
+                      className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                     >
-                      <RotateCcw size={9} /> Reset
+                      <RotateCcw className="w-2.5 h-2.5" /> Def
                     </button>
                   )}
                 </div>
@@ -806,26 +754,25 @@ export default function PricelistMasterParameter({
                   prefix="Rp"
                   value={customParams.tarifSpiralMin}
                   onValueChange={(val) => handleChange('tarifSpiralMin', val)}
-                  className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                 />
-                <span className="block text-[9.5px] text-slate-500 mt-1">Batas minimum order</span>
               </div>
 
               <div className={`p-2.5 rounded-lg border transition-all ${
                 isFieldModified('tarifDesain')
                   ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                  : 'bg-slate-50 border-slate-200'
+                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
               }`}>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-[10.5px] font-bold text-slate-700">Desain Kalender</label>
+                <div className="flex items-center justify-between gap-1 mb-1.5">
+                  <label className="text-xs font-semibold text-slate-700 truncate" title="Desain Kalender">Desain Kalender</label>
                   {isFieldModified('tarifDesain') && (
                     <button
                       type="button"
                       onClick={(e) => handleResetField('tarifDesain', e)}
-                      title="Reset field ini ke standar master"
-                      className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      title="Reset ke default"
+                      className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                     >
-                      <RotateCcw size={9} /> Reset
+                      <RotateCcw className="w-2.5 h-2.5" /> Def
                     </button>
                   )}
                 </div>
@@ -833,26 +780,25 @@ export default function PricelistMasterParameter({
                   prefix="Rp"
                   value={customParams.tarifDesain}
                   onValueChange={(val) => handleChange('tarifDesain', val)}
-                  className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                 />
-                <span className="block text-[9.5px] text-slate-500 mt-1">Per lembar kalender</span>
               </div>
 
               <div className={`p-2.5 rounded-lg border transition-all ${
                 isFieldModified('tarifAlmanakDesain')
                   ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                  : 'bg-slate-50 border-slate-200'
+                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
               }`}>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-[10.5px] font-bold text-slate-700">Almanak Desain</label>
+                <div className="flex items-center justify-between gap-1 mb-1.5">
+                  <label className="text-xs font-semibold text-slate-700 truncate" title="Almanak Desain">Almanak Desain</label>
                   {isFieldModified('tarifAlmanakDesain') && (
                     <button
                       type="button"
                       onClick={(e) => handleResetField('tarifAlmanakDesain', e)}
-                      title="Reset field ini ke standar master"
-                      className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      title="Reset ke default"
+                      className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                     >
-                      <RotateCcw size={9} /> Reset
+                      <RotateCcw className="w-2.5 h-2.5" /> Def
                     </button>
                   )}
                 </div>
@@ -860,26 +806,25 @@ export default function PricelistMasterParameter({
                   prefix="Rp"
                   value={customParams.tarifAlmanakDesain}
                   onValueChange={(val) => handleChange('tarifAlmanakDesain', val)}
-                  className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                 />
-                <span className="block text-[9.5px] text-slate-500 mt-1">Biaya setting almanak</span>
               </div>
 
               <div className={`p-2.5 rounded-lg border transition-all ${
                 isFieldModified('tarifRoyalty')
                   ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                  : 'bg-slate-50 border-slate-200'
+                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
               }`}>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-[10.5px] font-bold text-slate-700">Royalty Kalender</label>
+                <div className="flex items-center justify-between gap-1 mb-1.5">
+                  <label className="text-xs font-semibold text-slate-700 truncate" title="Royalty Kalender">Royalty Kalender</label>
                   {isFieldModified('tarifRoyalty') && (
                     <button
                       type="button"
                       onClick={(e) => handleResetField('tarifRoyalty', e)}
-                      title="Reset field ini ke standar master"
-                      className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      title="Reset ke default"
+                      className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                     >
-                      <RotateCcw size={9} /> Reset
+                      <RotateCcw className="w-2.5 h-2.5" /> Def
                     </button>
                   )}
                 </div>
@@ -887,26 +832,25 @@ export default function PricelistMasterParameter({
                   prefix="Rp"
                   value={customParams.tarifRoyalty}
                   onValueChange={(val) => handleChange('tarifRoyalty', val)}
-                  className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                 />
-                <span className="block text-[9.5px] text-slate-500 mt-1">Per pcs kalender</span>
               </div>
 
               <div className={`p-2.5 rounded-lg border transition-all ${
                 isFieldModified('tarifPotongDasar')
                   ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                  : 'bg-slate-50 border-slate-200'
+                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
               }`}>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-[10.5px] font-bold text-slate-700">Potong Dasar</label>
+                <div className="flex items-center justify-between gap-1 mb-1.5">
+                  <label className="text-xs font-semibold text-slate-700 truncate" title="Potong Dasar">Potong Dasar</label>
                   {isFieldModified('tarifPotongDasar') && (
                     <button
                       type="button"
                       onClick={(e) => handleResetField('tarifPotongDasar', e)}
-                      title="Reset field ini ke standar master"
-                      className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      title="Reset ke default"
+                      className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                     >
-                      <RotateCcw size={9} /> Reset
+                      <RotateCcw className="w-2.5 h-2.5" /> Def
                     </button>
                   )}
                 </div>
@@ -914,9 +858,8 @@ export default function PricelistMasterParameter({
                   prefix="Rp"
                   value={customParams.tarifPotongDasar}
                   onValueChange={(val) => handleChange('tarifPotongDasar', val)}
-                  className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                 />
-                <span className="block text-[9.5px] text-slate-500 mt-1">Per lembar potong</span>
               </div>
             </div>
 
@@ -926,20 +869,20 @@ export default function PricelistMasterParameter({
                 <span className="font-bold text-amber-950 text-xs">Tarif Jilid Klem Seng (Jepit Kaleng / Pcs)</span>
                 <span className="text-[10px] text-amber-800">Rumus: (Oplah + 5) * Tarif</span>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <div className={`p-2 rounded border transition-all ${
-                  isFieldModified('klem32x48') ? 'bg-amber-100/60 border-amber-400 ring-1 ring-amber-400/40' : 'bg-white border-amber-200'
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className={`p-2.5 rounded-lg border transition-all ${
+                  isFieldModified('klem32x48') ? 'bg-amber-100/60 border-amber-400 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
                 }`}>
-                  <div className="flex items-center justify-between mb-0.5">
-                    <label className="block text-[10px] font-bold text-slate-700">32 x 48 cm</label>
+                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <label className="text-xs font-semibold text-slate-700 truncate" title="32 x 48 cm">32 x 48 cm</label>
                     {isFieldModified('klem32x48') && (
                       <button
                         type="button"
                         onClick={(e) => handleResetField('klem32x48', e)}
-                        title="Reset field ini ke standar master"
-                        className="text-[8.5px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1 py-0.2 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                       >
-                        <RotateCcw size={8} /> Reset
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
                       </button>
                     )}
                   </div>
@@ -947,22 +890,22 @@ export default function PricelistMasterParameter({
                     prefix="Rp"
                     value={customParams.klem32x48}
                     onValueChange={(val) => handleChange('klem32x48', val)}
-                    className="w-full pr-1 py-0.5 text-xs font-mono font-bold bg-white border-0 text-right"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                   />
                 </div>
-                <div className={`p-2 rounded border transition-all ${
-                  isFieldModified('klem38x54') ? 'bg-amber-100/60 border-amber-400 ring-1 ring-amber-400/40' : 'bg-white border-amber-200'
+                <div className={`p-2.5 rounded-lg border transition-all ${
+                  isFieldModified('klem38x54') ? 'bg-amber-100/60 border-amber-400 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
                 }`}>
-                  <div className="flex items-center justify-between mb-0.5">
-                    <label className="block text-[10px] font-bold text-slate-700">38 x 54 cm</label>
+                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <label className="text-xs font-semibold text-slate-700 truncate" title="38 x 54 cm">38 x 54 cm</label>
                     {isFieldModified('klem38x54') && (
                       <button
                         type="button"
                         onClick={(e) => handleResetField('klem38x54', e)}
-                        title="Reset field ini ke standar master"
-                        className="text-[8.5px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1 py-0.2 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                       >
-                        <RotateCcw size={8} /> Reset
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
                       </button>
                     )}
                   </div>
@@ -970,22 +913,22 @@ export default function PricelistMasterParameter({
                     prefix="Rp"
                     value={customParams.klem38x54}
                     onValueChange={(val) => handleChange('klem38x54', val)}
-                    className="w-full pr-1 py-0.5 text-xs font-mono font-bold bg-white border-0 text-right"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                   />
                 </div>
-                <div className={`p-2 rounded border transition-all ${
-                  isFieldModified('klem46x64') ? 'bg-amber-100/60 border-amber-400 ring-1 ring-amber-400/40' : 'bg-white border-amber-200'
+                <div className={`p-2.5 rounded-lg border transition-all ${
+                  isFieldModified('klem46x64') ? 'bg-amber-100/60 border-amber-400 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
                 }`}>
-                  <div className="flex items-center justify-between mb-0.5">
-                    <label className="block text-[10px] font-bold text-slate-700">46 x 64 cm</label>
+                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <label className="text-xs font-semibold text-slate-700 truncate" title="46 x 64 cm">46 x 64 cm</label>
                     {isFieldModified('klem46x64') && (
                       <button
                         type="button"
                         onClick={(e) => handleResetField('klem46x64', e)}
-                        title="Reset field ini ke standar master"
-                        className="text-[8.5px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1 py-0.2 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                       >
-                        <RotateCcw size={8} /> Reset
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
                       </button>
                     )}
                   </div>
@@ -993,22 +936,22 @@ export default function PricelistMasterParameter({
                     prefix="Rp"
                     value={customParams.klem46x64}
                     onValueChange={(val) => handleChange('klem46x64', val)}
-                    className="w-full pr-1 py-0.5 text-xs font-mono font-bold bg-white border-0 text-right"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                   />
                 </div>
-                <div className={`p-2 rounded border transition-all ${
-                  isFieldModified('klem48x64') ? 'bg-amber-100/60 border-amber-400 ring-1 ring-amber-400/40' : 'bg-white border-amber-200'
+                <div className={`p-2.5 rounded-lg border transition-all ${
+                  isFieldModified('klem48x64') ? 'bg-amber-100/60 border-amber-400 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
                 }`}>
-                  <div className="flex items-center justify-between mb-0.5">
-                    <label className="block text-[10px] font-bold text-slate-700">48 x 64 cm</label>
+                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <label className="text-xs font-semibold text-slate-700 truncate" title="48 x 64 cm">48 x 64 cm</label>
                     {isFieldModified('klem48x64') && (
                       <button
                         type="button"
                         onClick={(e) => handleResetField('klem48x64', e)}
-                        title="Reset field ini ke standar master"
-                        className="text-[8.5px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1 py-0.2 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                       >
-                        <RotateCcw size={8} /> Reset
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
                       </button>
                     )}
                   </div>
@@ -1016,7 +959,7 @@ export default function PricelistMasterParameter({
                     prefix="Rp"
                     value={customParams.klem48x64}
                     onValueChange={(val) => handleChange('klem48x64', val)}
-                    className="w-full pr-1 py-0.5 text-xs font-mono font-bold bg-white border-0 text-right"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                   />
                 </div>
               </div>
@@ -1025,20 +968,15 @@ export default function PricelistMasterParameter({
         </div>
 
         {/* Section 4: Standar Plano & Konstanta */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col">
-          <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-violet-600"></span>
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                4. Standar Ukuran Plano & Konstanta
-              </h3>
-            </div>
-            <span className="text-[11px] text-slate-500 font-medium">Baku Hitungan</span>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Box className="w-4 h-4 text-rose-600" />
+            <h3 className="text-xs font-bold text-slate-800">4. Standar Ukuran Plano & Konstanta</h3>
           </div>
-          <div className="p-4 flex flex-col gap-3">
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className={`p-2.5 rounded border flex items-center justify-between transition-all ${
-                isFieldModified('potong32x48') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50 border-slate-200'
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className={`p-2.5 rounded-lg border flex items-center justify-between transition-all ${
+                isFieldModified('potong32x48') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
               }`}>
                 <div>
                   <div className="flex items-center gap-1">
@@ -1047,10 +985,10 @@ export default function PricelistMasterParameter({
                       <button
                         type="button"
                         onClick={(e) => handleResetField('potong32x48', e)}
-                        title="Reset field ini"
-                        className="text-[8.5px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                       >
-                        <RotateCcw size={8} /> Reset
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
                       </button>
                     )}
                   </div>
@@ -1061,13 +999,13 @@ export default function PricelistMasterParameter({
                     suffix="ptg"
                     value={customParams.potong32x48}
                     onValueChange={(val) => handleChange('potong32x48', val)}
-                    className="w-full pr-7 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                   />
                 </div>
               </div>
 
-              <div className={`p-2.5 rounded border flex items-center justify-between transition-all ${
-                isFieldModified('potong38x54') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50 border-slate-200'
+              <div className={`p-2.5 rounded-lg border flex items-center justify-between transition-all ${
+                isFieldModified('potong38x54') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
               }`}>
                 <div>
                   <div className="flex items-center gap-1">
@@ -1076,10 +1014,10 @@ export default function PricelistMasterParameter({
                       <button
                         type="button"
                         onClick={(e) => handleResetField('potong38x54', e)}
-                        title="Reset field ini"
-                        className="text-[8.5px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                       >
-                        <RotateCcw size={8} /> Reset
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
                       </button>
                     )}
                   </div>
@@ -1090,13 +1028,13 @@ export default function PricelistMasterParameter({
                     suffix="ptg"
                     value={customParams.potong38x54}
                     onValueChange={(val) => handleChange('potong38x54', val)}
-                    className="w-full pr-7 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                   />
                 </div>
               </div>
 
-              <div className={`p-2.5 rounded border flex items-center justify-between transition-all ${
-                isFieldModified('potong46x64') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50 border-slate-200'
+              <div className={`p-2.5 rounded-lg border flex items-center justify-between transition-all ${
+                isFieldModified('potong46x64') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
               }`}>
                 <div>
                   <div className="flex items-center gap-1">
@@ -1105,10 +1043,10 @@ export default function PricelistMasterParameter({
                       <button
                         type="button"
                         onClick={(e) => handleResetField('potong46x64', e)}
-                        title="Reset field ini"
-                        className="text-[8.5px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                       >
-                        <RotateCcw size={8} /> Reset
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
                       </button>
                     )}
                   </div>
@@ -1119,13 +1057,13 @@ export default function PricelistMasterParameter({
                     suffix="ptg"
                     value={customParams.potong46x64}
                     onValueChange={(val) => handleChange('potong46x64', val)}
-                    className="w-full pr-7 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                   />
                 </div>
               </div>
 
-              <div className={`p-2.5 rounded border flex items-center justify-between transition-all ${
-                isFieldModified('potong48x64') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50 border-slate-200'
+              <div className={`p-2.5 rounded-lg border flex items-center justify-between transition-all ${
+                isFieldModified('potong48x64') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
               }`}>
                 <div>
                   <div className="flex items-center gap-1">
@@ -1134,10 +1072,10 @@ export default function PricelistMasterParameter({
                       <button
                         type="button"
                         onClick={(e) => handleResetField('potong48x64', e)}
-                        title="Reset field ini"
-                        className="text-[8.5px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                       >
-                        <RotateCcw size={8} /> Reset
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
                       </button>
                     )}
                   </div>
@@ -1148,7 +1086,7 @@ export default function PricelistMasterParameter({
                     suffix="ptg"
                     value={customParams.potong48x64}
                     onValueChange={(val) => handleChange('potong48x64', val)}
-                    className="w-full pr-7 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md text-right"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                   />
                 </div>
               </div>
@@ -1165,10 +1103,10 @@ export default function PricelistMasterParameter({
                     <button
                       type="button"
                       onClick={(e) => handleResetField('konstantaBeratRim', e)}
-                      title="Reset field ini"
-                      className="text-[8.5px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      title="Reset ke default"
+                      className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                     >
-                      <RotateCcw size={8} /> Reset
+                      <RotateCcw className="w-2.5 h-2.5" /> Def
                     </button>
                   )}
                 </div>
@@ -1176,7 +1114,7 @@ export default function PricelistMasterParameter({
                   <ThousandInput
                     value={customParams.konstantaBeratRim}
                     onValueChange={(val) => handleChange('konstantaBeratRim', val)}
-                    className="w-full py-1 px-2 text-xs font-mono font-bold bg-white border border-violet-200 rounded-md text-right"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                   />
                 </div>
               </div>
@@ -1189,10 +1127,10 @@ export default function PricelistMasterParameter({
                     <button
                       type="button"
                       onClick={(e) => handleResetField('lembarPerRim', e)}
-                      title="Reset field ini"
-                      className="text-[8.5px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                      title="Reset ke default"
+                      className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                     >
-                      <RotateCcw size={8} /> Reset
+                      <RotateCcw className="w-2.5 h-2.5" /> Def
                     </button>
                   )}
                 </div>
@@ -1201,7 +1139,7 @@ export default function PricelistMasterParameter({
                     suffix="lbr"
                     value={customParams.lembarPerRim}
                     onValueChange={(val) => handleChange('lembarPerRim', val)}
-                    className="w-full pr-7 py-1 text-xs font-mono font-bold bg-white border border-violet-200 rounded-md text-right"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                   />
                 </div>
               </div>
@@ -1215,10 +1153,10 @@ export default function PricelistMasterParameter({
                       <button
                         type="button"
                         onClick={(e) => handleResetField('kapasitasLakbanRoll', e)}
-                        title="Reset field ini"
-                        className="text-[8.5px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
                       >
-                        <RotateCcw size={8} /> Reset
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
                       </button>
                     )}
                   </div>
@@ -1229,7 +1167,7 @@ export default function PricelistMasterParameter({
                     suffix="ikat"
                     value={customParams.kapasitasLakbanRoll}
                     onValueChange={(val) => handleChange('kapasitasLakbanRoll', val)}
-                    className="w-full pr-8 py-1 text-xs font-mono font-bold bg-white border border-violet-200 rounded-md text-right"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                   />
                 </div>
               </div>
@@ -1250,7 +1188,7 @@ export default function PricelistMasterParameter({
           >
             {/* Modal Header */}
             <div className="px-6 py-4 bg-emerald-900 text-white flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 <div className="p-2 bg-emerald-800/80 rounded-xl border border-emerald-700 text-emerald-200">
                   <FileSpreadsheet className="w-5 h-5" />
                 </div>
@@ -1274,7 +1212,7 @@ export default function PricelistMasterParameter({
             <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-700 leading-relaxed">
               {/* Bagian 1: Pemetaan 4 Kelompok Master Parameter */}
               <div className="space-y-3">
-                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
                   Pemetaan 4 Bagian Master Parameter ke File Excel (Folder Source/*.xlsm)
                 </h4>

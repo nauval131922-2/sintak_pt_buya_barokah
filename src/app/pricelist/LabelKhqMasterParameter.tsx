@@ -6,6 +6,10 @@ import {
   RotateCcw,
   BookOpen,
   X,
+  Printer,
+  Layers,
+  Box,
+  FileText,
 } from 'lucide-react';
 import {
   LabelKhqMasterParams,
@@ -73,36 +77,43 @@ export default function LabelKhqMasterParameter({
       className={`p-2.5 rounded-lg border transition-all ${
         isFieldModified(key)
           ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-          : 'bg-slate-50 border-slate-200'
+          : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
       }`}
     >
-      <div className="flex justify-between items-center mb-1">
-        <label className="block text-[11px] font-bold text-slate-700">{label}</label>
+      <div className="flex items-center justify-between gap-1 mb-1.5">
+        <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
+          {label}
+        </label>
         {isFieldModified(key) && (
           <button
+            type="button"
             onClick={() => handleResetField(key)}
-            className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+            className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+            title="Reset ke default"
           >
-            <RotateCcw size={9} /> Reset
+            <RotateCcw className="w-2.5 h-2.5" /> Def
           </button>
         )}
       </div>
-      {isRupiah && !isDecimal ? (
-        <ThousandInput
-          prefix="Rp"
-          value={customParams[key] as number}
-          onValueChange={(v) => handleChange(key, v || 0)}
-          className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
-        />
-      ) : (
-        <input
-          type="number"
-          step={isDecimal ? 0.01 : 1}
-          value={customParams[key] as number}
-          onChange={(e) => handleChange(key, Number(e.target.value) || 0)}
-          className="w-full px-2.5 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
-        />
-      )}
+      <div className="flex items-center gap-1.5">
+        {isRupiah && !isDecimal ? (
+          <ThousandInput
+            value={customParams[key] as number}
+            onValueChange={(v) => handleChange(key, v || 0)}
+            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+            prefix="Rp"
+            allowDecimals={isDecimal}
+          />
+        ) : (
+          <input
+            type="number"
+            step={isDecimal ? 0.01 : 1}
+            value={customParams[key] as number}
+            onChange={(e) => handleChange(key, Number(e.target.value) || 0)}
+            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+          />
+        )}
+      </div>
     </div>
   );
 
@@ -155,45 +166,29 @@ export default function LabelKhqMasterParameter({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Card 1: Finishing & Desain */}
-        <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col">
-          <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                1. Finishing &amp; Desain Label
-              </h3>
-            </div>
-            <span className="text-[11px] text-slate-500 font-medium">Spesifik Produk</span>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Printer className="w-4 h-4 text-blue-600" />
+            <h3 className="text-xs font-bold text-slate-800">1. Finishing & Desain Label</h3>
           </div>
-          <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('tarifRajangPerPcs', 'Rajang/Potong per lbr (Rp)')}
             {fieldRow('tarifDesain', 'Biaya Desain Label (Rp)')}
           </div>
-          <p className="px-4 pb-3 text-[11px] text-slate-500 italic">
-            *Finishing via Master Global: print A3+ (Rp 2.000/lbr), laminasi glossy 0,35/cm² (min 50k), insheet 7 lbr.
-          </p>
         </div>
 
         {/* Card 2: Margin & Nego Default */}
-        <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col">
-          <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                2. Margin &amp; Nego Standar
-              </h3>
-            </div>
-            <span className="text-[11px] text-slate-500 font-medium">Keuangan</span>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Layers className="w-4 h-4 text-amber-600" />
+            <h3 className="text-xs font-bold text-slate-800">2. Margin & Nego Standar</h3>
           </div>
-          <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('marginDefaultPct', 'Margin Default (%)', false)}
             {fieldRow('negoDefaultPct', 'Nego Default (%)', false)}
           </div>
-          <p className="px-4 pb-3 text-[11px] text-slate-500 italic">
-            *Harga jual = ceil(HPP/lbr × (1+margin%)), nego = ceil(jual × (1−nego%)) kelipatan Rp 10.
-          </p>
         </div>
       </div>
 
