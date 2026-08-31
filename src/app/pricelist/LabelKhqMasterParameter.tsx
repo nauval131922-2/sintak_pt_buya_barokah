@@ -4,14 +4,8 @@ import React, { useState } from 'react';
 import {
   Database,
   RotateCcw,
-  Sparkles,
   BookOpen,
   X,
-  FileSpreadsheet,
-  Layers,
-  Printer,
-  Scissors,
-  DollarSign,
 } from 'lucide-react';
 import {
   LabelKhqMasterParams,
@@ -23,16 +17,10 @@ import { toast } from '@/lib/toast';
 interface LabelKhqMasterParameterProps {
   customParams?: LabelKhqMasterParams;
   setCustomParams?: React.Dispatch<React.SetStateAction<LabelKhqMasterParams>>;
-  onBackToSimulator?: () => void;
 }
 
-// Hanya pantau field-field yang ada di form
-const VISIBLE_KEYS: (keyof LabelKhqMasterParams)[] = [
-  'tarifPrintA3',
-  'insheetWasteLbr',
+const LABEL_KHQ_VISIBLE_KEYS: (keyof LabelKhqMasterParams)[] = [
   'tarifRajangPerPcs',
-  'tarifLaminasiGlossyCm2',
-  'minLaminasi',
   'tarifDesain',
   'marginDefaultPct',
   'negoDefaultPct',
@@ -41,103 +29,85 @@ const VISIBLE_KEYS: (keyof LabelKhqMasterParams)[] = [
 export default function LabelKhqMasterParameter({
   customParams = DEFAULT_LABEL_KHQ_PARAMS,
   setCustomParams,
-  onBackToSimulator,
 }: LabelKhqMasterParameterProps) {
   const [showManualModal, setShowManualModal] = useState(false);
 
   const handleChange = (key: keyof LabelKhqMasterParams, val: number) => {
     if (!setCustomParams) return;
-    setCustomParams((prev) => ({
-      ...prev,
-      [key]: val,
-    }));
+    setCustomParams((prev) => ({ ...prev, [key]: Math.max(0, val) }));
   };
 
-  const isFieldModified = (key: keyof LabelKhqMasterParams) => {
-    return customParams[key] !== DEFAULT_LABEL_KHQ_PARAMS[key];
-  };
+  const isFieldModified = (key: keyof LabelKhqMasterParams) =>
+    customParams[key] !== DEFAULT_LABEL_KHQ_PARAMS[key];
 
   const handleResetField = (key: keyof LabelKhqMasterParams) => {
     if (!setCustomParams) return;
-    setCustomParams((prev) => ({
-      ...prev,
-      [key]: DEFAULT_LABEL_KHQ_PARAMS[key],
-    }));
-    toast.success(`Parameter "${key}" dikembalikan ke standar.`);
+    setCustomParams((prev) => ({ ...prev, [key]: DEFAULT_LABEL_KHQ_PARAMS[key] }));
+    toast.info(`Field dikembalikan ke standar master (${DEFAULT_LABEL_KHQ_PARAMS[key]}).`);
   };
+
+  const isModified = React.useMemo(
+    () => LABEL_KHQ_VISIBLE_KEYS.some((key) => customParams[key] !== DEFAULT_LABEL_KHQ_PARAMS[key]),
+    [customParams]
+  );
 
   const handleResetAll = () => {
     if (!setCustomParams) return;
-    setCustomParams(DEFAULT_LABEL_KHQ_PARAMS);
-    toast.success('Semua parameter Label KHQ berhasil dikembalikan ke standar.');
+    setCustomParams((prev) => {
+      const resetObj = { ...prev };
+      LABEL_KHQ_VISIBLE_KEYS.forEach((k) => {
+        (resetObj as any)[k] = DEFAULT_LABEL_KHQ_PARAMS[k];
+      });
+      return resetObj;
+    });
+    toast.success('Semua parameter Label KHQ dikembalikan ke standar master.');
   };
 
-  const isModified = VISIBLE_KEYS.some((key) => isFieldModified(key));
-
-  const renderField = (
+  const fieldRow = (
     key: keyof LabelKhqMasterParams,
     label: string,
-    unit: string,
-    step = 1,
-    isCurrency = true
-  ) => {
-    const val = customParams[key];
-    const modified = isFieldModified(key);
-
-    return (
-      <div className="flex flex-col gap-1.5 p-3 rounded-xl border border-slate-200/80 bg-slate-50/50 hover:bg-slate-50 transition-colors">
-        <div className="flex items-center justify-between">
-          <label className="text-xs font-bold text-slate-700">{label}</label>
-          {modified && (
-            <button
-              type="button"
-              onClick={() => handleResetField(key)}
-              className="text-[10px] text-amber-700 hover:text-amber-900 font-bold flex items-center gap-0.5 cursor-pointer"
-              title="Reset ke standar"
-            >
-              <RotateCcw size={10} />
-              <span>Reset</span>
-            </button>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          {isCurrency ? (
-            <div className="flex-1">
-              <ThousandInput
-                prefix="Rp"
-                value={val}
-                onValueChange={(v) => handleChange(key, v || 0)}
-                className={`w-full pr-2 py-1 text-xs font-mono font-bold bg-white border rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none ${
-                  modified
-                    ? 'border-amber-300 bg-amber-50/40 text-amber-900 focus:border-amber-500'
-                    : 'border-slate-200 focus:border-emerald-500'
-                }`}
-              />
-            </div>
-          ) : (
-            <div className="flex-1 flex items-center">
-              <input
-                type="number"
-                step={step}
-                value={val}
-                onChange={(e) => handleChange(key, Number(e.target.value))}
-                className={`w-full px-3 py-1.5 text-xs font-bold rounded-lg border focus:outline-none transition-all ${
-                  modified
-                    ? 'border-amber-300 bg-amber-50/40 text-amber-900 focus:border-amber-500'
-                    : 'border-slate-300 bg-white text-slate-900 focus:border-emerald-500'
-                }`}
-              />
-            </div>
-          )}
-          <span className="text-[11px] font-bold text-slate-500 shrink-0">{unit}</span>
-        </div>
+    isRupiah = true,
+    isDecimal = false
+  ) => (
+    <div
+      className={`p-2.5 rounded-lg border transition-all ${
+        isFieldModified(key)
+          ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+          : 'bg-slate-50 border-slate-200'
+      }`}
+    >
+      <div className="flex justify-between items-center mb-1">
+        <label className="block text-[11px] font-bold text-slate-700">{label}</label>
+        {isFieldModified(key) && (
+          <button
+            onClick={() => handleResetField(key)}
+            className="text-[9px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors cursor-pointer"
+          >
+            <RotateCcw size={9} /> Reset
+          </button>
+        )}
       </div>
-    );
-  };
+      {isRupiah && !isDecimal ? (
+        <ThousandInput
+          prefix="Rp"
+          value={customParams[key] as number}
+          onValueChange={(v) => handleChange(key, v || 0)}
+          className="w-full pr-2 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+        />
+      ) : (
+        <input
+          type="number"
+          step={isDecimal ? 0.01 : 1}
+          value={customParams[key] as number}
+          onChange={(e) => handleChange(key, Number(e.target.value) || 0)}
+          className="w-full px-2.5 py-1 text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+        />
+      )}
+    </div>
+  );
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
+    <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
       <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
           <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
@@ -156,11 +126,10 @@ export default function LabelKhqMasterParameter({
               )}
             </div>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Acuan tarif digital print A3+, insheet waste, finishing rajang &amp; laminasi, setup desain, serta margin default label botol KHQ.
+              Tarif acuan finishing rajang &amp; desain, laminasi, packing, dan margin label botol KHQ (print A3+ &amp; bahan via Master Global).
             </p>
           </div>
         </div>
-
         <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
@@ -186,150 +155,144 @@ export default function LabelKhqMasterParameter({
         </div>
       </div>
 
-      {/* Grid Parameter Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {/* Card 1: Print Digital POD A3+ */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-4 flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2.5">
-            <Printer size={16} className="text-emerald-700" />
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              1. Cetak Print Digital POD A3+
-            </h3>
+        {/* Card 1: Finishing & Desain */}
+        <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col">
+          <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                1. Finishing &amp; Desain Label
+              </h3>
+            </div>
+            <span className="text-[11px] text-slate-500 font-medium">Spesifik Produk</span>
           </div>
-          <div className="grid grid-cols-1 gap-3">
-            {renderField('tarifPrintA3', 'Tarif Print A3+ (Bahan Art Paper)', 'Rp / lembar')}
-            {renderField('insheetWasteLbr', 'Insheet Waste per Order', 'lembar', 1, false)}
+          <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {fieldRow('tarifRajangPerPcs', 'Rajang/Potong per lbr (Rp)')}
+            {fieldRow('tarifDesain', 'Biaya Desain Label (Rp)')}
           </div>
-          <p className="text-[11px] text-slate-500 italic mt-1">
-            *Ukuran 220ml (19 label/lbr), 330ml (20 label/lbr), 600ml (17 label/lbr A3+).
+          <p className="px-4 pb-3 text-[11px] text-slate-500 italic">
+            *Finishing via Master Global: print A3+ (Rp 2.000/lbr), laminasi glossy 0,35/cm² (min 50k), insheet 7 lbr.
           </p>
         </div>
 
-        {/* Card 2: Finishing & Potong */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-4 flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2.5">
-            <Scissors size={16} className="text-emerald-700" />
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              2. Finishing Rajang &amp; Laminasi
-            </h3>
+        {/* Card 2: Margin & Nego Default */}
+        <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col">
+          <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                2. Margin &amp; Nego Standar
+              </h3>
+            </div>
+            <span className="text-[11px] text-slate-500 font-medium">Keuangan</span>
           </div>
-          <div className="grid grid-cols-1 gap-3">
-            {renderField('tarifRajangPerPcs', 'Ongkos Rajang / Potong', 'Rp / lbr label')}
-            {renderField('tarifLaminasiGlossyCm2', 'Tarif Laminasi Glossy', 'Rp / cm²', 0.01, false)}
-            {renderField('minLaminasi', 'Minimum Biaya Laminasi', 'Rp / order')}
+          <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {fieldRow('marginDefaultPct', 'Margin Default (%)', false)}
+            {fieldRow('negoDefaultPct', 'Nego Default (%)', false)}
           </div>
-        </div>
-
-        {/* Card 3: Desain Artwork */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-4 flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2.5">
-            <Sparkles size={16} className="text-emerald-700" />
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              3. Desain &amp; Setup Artwork
-            </h3>
-          </div>
-          <div className="grid grid-cols-1 gap-3">
-            {renderField('tarifDesain', 'Tarif Jasa Desain Label KHQ', 'Rp / order')}
-          </div>
-          <p className="text-[11px] text-slate-500 italic mt-1">
-            *Biaya desain dibebankan per batch order cetak label botol KHQ.
-          </p>
-        </div>
-
-        {/* Card 4: Margin & Nego */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-4 flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2.5">
-            <DollarSign size={16} className="text-emerald-700" />
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              4. Margin &amp; Nego Standar
-            </h3>
-          </div>
-          <div className="grid grid-cols-1 gap-3">
-            {renderField('marginDefaultPct', 'Margin Profit Standar', '%', 1, false)}
-            {renderField('negoDefaultPct', 'Diskon Nego Standar', '%', 1, false)}
-          </div>
-          <p className="text-[11px] text-slate-500 italic mt-1">
-            *Harga jual dibulatkan ke atas kelipatan Rp 10 (ROUNDUP,-1).
+          <p className="px-4 pb-3 text-[11px] text-slate-500 italic">
+            *Harga jual = ceil(HPP/lbr × (1+margin%)), nego = ceil(jual × (1−nego%)) kelipatan Rp 10.
           </p>
         </div>
       </div>
 
-      {/* Modal Manual Excel */}
       {showManualModal && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="px-5 py-4 bg-emerald-800 text-white flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <FileSpreadsheet className="w-5 h-5" />
-                <h3 className="text-sm font-bold">Pemetaan Master Parameter Label KHQ ke File Excel</h3>
+        <div
+          onClick={() => setShowManualModal(false)}
+          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden cursor-default"
+          >
+            <div className="px-6 py-4 bg-emerald-900 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-800/80 rounded-xl border border-emerald-700 text-emerald-200">
+                  <Database className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold tracking-tight">Manual Pengguna &amp; Pemetaan Sumber Excel</h3>
+                  <p className="text-xs text-emerald-200/90 mt-0.5">
+                    Dokumentasi referensi letak sheet, cell, dan formula dari master kalkulasi Label KHQ
+                  </p>
+                </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowManualModal(false)}
-                className="p-1 hover:bg-emerald-700 rounded-lg transition-colors cursor-pointer text-white/80 hover:text-white"
+                className="p-1.5 rounded-lg text-emerald-200 hover:text-white hover:bg-emerald-800/60 transition-all cursor-pointer"
               >
-                <X size={18} />
+                <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-5 overflow-y-auto space-y-4 text-xs text-slate-700">
-              <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl">
-                <p className="font-bold text-emerald-900">
-                  Sumber File: Folder <code>05. Pricelist Label KHQ/Pricelist Label KHQ JUNI 2026.xlsm</code>
-                </p>
-                <p className="mt-1 text-emerald-800">
-                  Sub-file kalkulasi: <code>Label KHQ 220 ml 5 - 22 kardus.xlsm</code>, <code>Label KHQ 330 ml...</code>, <code>Label KHQ 600 ml...</code>
-                </p>
-              </div>
 
-              <table className="w-full text-left border-collapse border border-slate-200">
-                <thead>
-                  <tr className="bg-slate-100 text-slate-800">
-                    <th className="p-2 border border-slate-200">Bagian Parameter</th>
-                    <th className="p-2 border border-slate-200">Cell / Sheet Acuan</th>
-                    <th className="p-2 border border-slate-200">Nilai Standar</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 font-mono text-[11px]">
-                  <tr>
-                    <td className="p-2 border border-slate-200 font-sans">Tarif Print A3+</td>
-                    <td className="p-2 border border-slate-200">Master!D18</td>
-                    <td className="p-2 border border-slate-200">Rp 2.000 / lbr</td>
-                  </tr>
-                  <tr>
-                    <td className="p-2 border border-slate-200 font-sans">Insheet Waste Cetak</td>
-                    <td className="p-2 border border-slate-200">Master!D13</td>
-                    <td className="p-2 border border-slate-200">7 lembar</td>
-                  </tr>
-                  <tr>
-                    <td className="p-2 border border-slate-200 font-sans">Ongkos Rajang / Potong</td>
-                    <td className="p-2 border border-slate-200">BUKU!AN6</td>
-                    <td className="p-2 border border-slate-200">Rp 50 / label</td>
-                  </tr>
-                  <tr>
-                    <td className="p-2 border border-slate-200 font-sans">Laminasi Glossy</td>
-                    <td className="p-2 border border-slate-200">BUKU!AP6 &amp; AR7</td>
-                    <td className="p-2 border border-slate-200">Rp 0.35/cm² (min Rp 50k)</td>
-                  </tr>
-                  <tr>
-                    <td className="p-2 border border-slate-200 font-sans">Tarif Desain</td>
-                    <td className="p-2 border border-slate-200">Master!D17</td>
-                    <td className="p-2 border border-slate-200">Rp 30.000</td>
-                  </tr>
-                  <tr>
-                    <td className="p-2 border border-slate-200 font-sans">Margin Profit</td>
-                    <td className="p-2 border border-slate-200">Pricelist Label!F8</td>
-                    <td className="p-2 border border-slate-200">30% (Roundup -1)</td>
-                  </tr>
-                </tbody>
-              </table>
+            <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-700 leading-relaxed">
+              <div className="space-y-3">
+                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                  Pemetaan Master Parameter ke File Excel (Folder 05. Pricelist Label KHQ/*.xlsm)
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center gap-2 font-bold text-slate-900">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                      <span>1. Bahan &amp; Cetak Print A3+ (via Master Global)</span>
+                    </div>
+                    <ul className="space-y-1.5 text-[11px] text-slate-600">
+                      <li>• <strong>Tarif Print A3+</strong>: <span className="font-mono text-emerald-700">Master!D18</span> = Rp 2.000/lbr A3+.</li>
+                      <li>• <strong>Insheet Waste</strong>: <span className="font-mono text-emerald-700">Master!D13</span> = 7 lembar/order.</li>
+                      <li>• Kapasitas: 220ml 19 pcs/A3+, 330ml 20 pcs/A3+, 600ml 17 pcs/A3+.</li>
+                      <li>• Kebutuhan A3+ = <code className="text-[10px] bg-white px-1 py-0.5 rounded border">ceil(lbr / pcsPerA3) + 7</code>.</li>
+                    </ul>
+                  </div>
+
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center gap-2 font-bold text-slate-900">
+                      <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                      <span>2. Finishing, Laminasi &amp; Desain</span>
+                    </div>
+                    <ul className="space-y-1.5 text-[11px] text-slate-600">
+                      <li>• <strong>Rajang/Potong</strong>: <span className="font-mono text-blue-700">BUKU!AN6</span> = Rp 50/lembar label.</li>
+                      <li>• <strong>Laminasi Glossy</strong>: <span className="font-mono text-blue-700">BUKU!AP6</span> = Rp 0,35/cm² (min <span className="font-mono text-blue-700">AQ27</span> Rp 50.000).</li>
+                      <li>• <strong>Desain</strong>: <span className="font-mono text-blue-700">Master!D17</span> = Rp 30.000/order.</li>
+                      <li>• Finishing rajang &amp; laminasi via POD A3+ (33,5×49 cm ≈ 1.641 cm²).</li>
+                    </ul>
+                  </div>
+
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center gap-2 font-bold text-slate-900">
+                      <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                      <span>3. Kemasan (Standar Dus)</span>
+                    </div>
+                    <ul className="space-y-1.5 text-[11px] text-slate-600">
+                      <li>• 1 Dus = 24 lembar label (standar KHQ 220/330/600 ml).</li>
+                      <li>• Tidak ada biaya kardus/lakban tambahan di Label KHQ (inklusif).</li>
+                    </ul>
+                  </div>
+
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center gap-2 font-bold text-slate-900">
+                      <span className="w-2 h-2 rounded-full bg-violet-500"></span>
+                      <span>4. Margin &amp; Nego Default</span>
+                    </div>
+                    <ul className="space-y-1.5 text-[11px] text-slate-600">
+                      <li>• <strong>Margin Standar</strong>: 30% dari HPP (Pricelist Label!F8).</li>
+                      <li>• <strong>Nego</strong>: 4% dari harga jual. Harga dibulatkan ke kelipatan Rp 10 (<code className="text-[10px] bg-white px-1 py-0.5 rounded border">ROUNDUP,-1</code>).</li>
+                      <li>• HPP/lbr = Total HPP / total lembar label.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="px-5 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
+
+            <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
               <button
                 type="button"
                 onClick={() => setShowManualModal(false)}
-                className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-lg text-xs transition-colors cursor-pointer"
+                className="px-4 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition-all cursor-pointer shadow-xs"
               >
-                Tutup
+                Tutup Panduan
               </button>
             </div>
           </div>

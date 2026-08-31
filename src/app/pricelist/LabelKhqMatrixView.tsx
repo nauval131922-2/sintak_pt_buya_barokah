@@ -182,6 +182,32 @@ export default function LabelKhqMatrixView({
             ))}
           </select>
         </div>
+
+        {/* View Mode Switcher */}
+        <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs shrink-0">
+          <button
+            type="button"
+            onClick={() => setViewMode('matrix')}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+              viewMode === 'matrix' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+            }`}
+            title="Tampilan Matriks"
+          >
+            <LayoutGrid size={13} />
+            <span className="hidden sm:inline">Matriks</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('table')}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+              viewMode === 'table' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+            }`}
+            title="Tampilan Tabel Rinci"
+          >
+            <TableProperties size={13} />
+            <span className="hidden sm:inline">Tabel</span>
+          </button>
+        </div>
       </div>
 
       {/* Table Content */}

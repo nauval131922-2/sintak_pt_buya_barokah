@@ -193,17 +193,38 @@ export default function LabelKhqSimulator({
 
   return (
     <div className="space-y-5">
-      {/* Active Edit Alert Bar */}
+      {/* Active Edit Alert Bar — konsisten dengan Brosur/Manasik/Yasin/Nota */}
       {activeSimulationId && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 flex items-center justify-between gap-3 text-xs text-amber-900 shadow-2xs">
-          <div className="flex items-center gap-2">
-            <BookmarkCheck size={16} className="text-amber-700 shrink-0" />
+        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-900 shadow-2xs">
+          <div className="flex items-start gap-2.5">
+            <div className="p-1.5 bg-amber-100 rounded-lg text-amber-700 border border-amber-200 shrink-0">
+              <BookmarkCheck size={14} />
+            </div>
             <div>
-              <span className="font-bold">Mode Edit Riwayat:</span>{' '}
-              <span className="font-medium">{activeSimulationTitle || defaultTitle()}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-black uppercase tracking-wider text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded">
+                  Mode Riwayat Aktif
+                </span>
+                <h4 className="text-xs font-bold text-amber-950">{activeSimulationTitle || defaultTitle()}</h4>
+              </div>
+              <p className="text-[11px] text-amber-800/90 mt-0.5">
+                Anda sedang melihat atau mengedit data dari riwayat simulasi yang dimuat.
+              </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                if (setCustomParams) setCustomParams(DEFAULT_LABEL_KHQ_PARAMS);
+                toast.success('Parameter Label KHQ dikembalikan ke tarif Master Standar!');
+              }}
+              className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
+              title="Hitung ulang simulasi ini menggunakan tarif Master acuan hari ini"
+            >
+              <RefreshCw size={12} />
+              <span>Hitung Tarif Master</span>
+            </button>
             <button
               type="button"
               onClick={handleUpdateSavedSimulation}
