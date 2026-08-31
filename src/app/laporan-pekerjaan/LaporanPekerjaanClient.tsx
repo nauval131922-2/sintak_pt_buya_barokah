@@ -670,6 +670,14 @@ export default function LaporanPekerjaanClient({
     }
   }, []);
 
+  const changeTableFontSize = (size: number) => {
+    const clamped = Math.max(9, Math.min(24, size));
+    setTableFontSize(clamped);
+    try {
+      localStorage.setItem("laporan_pekerjaan_table_font_size", String(clamped));
+    } catch {}
+  };
+
   const FONT_SIZE_STEPS = [9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24];
 
   const handleStepFontSize = (delta: 1 | -1) => {
