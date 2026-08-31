@@ -33,10 +33,11 @@ import { SavedBrosurSimulationItem } from './BrosurSimulator';
 import { SavedLabelKhqSimulationItem } from './LabelKhqSimulator';
 import { SavedBukuTulisSimulationItem } from './BukuTulisSimulator';
 import { SavedStopmapSimulationItem } from './StopmapSimulator';
+import { SavedSyahadahSimulationItem } from './SyahadahSimulator';
 
 export type UnifiedCalculationItem = {
   id: string;
-  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap';
+  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah';
   savedAt: string;
   title: string;
   oplah: number;
@@ -56,11 +57,12 @@ export type UnifiedCalculationItem = {
     | SavedBrosurSimulationItem
     | SavedLabelKhqSimulationItem
     | SavedBukuTulisSimulationItem
-    | SavedStopmapSimulationItem;
+    | SavedStopmapSimulationItem
+    | SavedSyahadahSimulationItem;
 };
 
 interface SavedCalculationsListProps {
-  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap';
+  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah';
   onLoadSimulation: (item: UnifiedCalculationItem) => void;
   activeSimulationId?: string | null;
 }
@@ -71,9 +73,9 @@ export default function SavedCalculationsList({
   activeSimulationId,
 }: SavedCalculationsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap'>('ALL');
+  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah'>('ALL');
   
-  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap') => {
+  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah') => {
     setFilterCategory(val);
     try {
       localStorage.setItem('sintak_pricelist_saved_list_filter', val);
@@ -95,6 +97,7 @@ export default function SavedCalculationsList({
   const [labelKhqList, setLabelKhqList] = useState<SavedLabelKhqSimulationItem[]>([]);
   const [bukuTulisList, setBukuTulisList] = useState<SavedBukuTulisSimulationItem[]>([]);
   const [stopmapList, setStopmapList] = useState<SavedStopmapSimulationItem[]>([]);
+  const [syahadahList, setSyahadahList] = useState<SavedSyahadahSimulationItem[]>([]);
 
   // Load from localStorage
   const refreshData = () => {
@@ -109,7 +112,8 @@ export default function SavedCalculationsList({
         savedFilter === 'Brosur 2026' ||
         savedFilter === 'Label KHQ' ||
         savedFilter === 'Buku Tulis' ||
-        savedFilter === 'Stopmap'
+        savedFilter === 'Stopmap' ||
+        savedFilter === 'Syahadah'
       ) {
         setFilterCategory(savedFilter as any);
       }
@@ -145,6 +149,10 @@ export default function SavedCalculationsList({
       const rawSM = localStorage.getItem('sintak_saved_stopmap_simulations');
       if (rawSM) setStopmapList(JSON.parse(rawSM));
       else setStopmapList([]);
+
+      const rawSy = localStorage.getItem('sintak_saved_syahadah_simulations');
+      if (rawSy) setSyahadahList(JSON.parse(rawSy));
+      else setSyahadahList([]);
     } catch (e) {
       console.error('Failed to load saved calculations:', e);
     }
@@ -347,9 +355,33 @@ export default function SavedCalculationsList({
       });
     });
 
+    // 9. Syahadah
+    syahadahList.forEach((sy) => {
+      const inp = sy.data.input;
+      items.push({
+        id: sy.id,
+        category: 'Syahadah',
+        savedAt: sy.savedAt,
+        title: sy.title,
+        oplah: inp.oplah,
+        specSummary: `Syahadah ${inp.varian}${inp.opsiFoil ? ' +Foil' : ''} • ${inp.oplah.toLocaleString('id-ID')} pcs`,
+        detailSpecs: [
+          `Foil: ${inp.opsiFoil ? 'Ya (+Rp 450/pcs, min 100k)' : 'Tanpa Foil'}`,
+          `Finishing: Sisir + Packing Kardus`,
+          `Margin: ${inp.marginPct}%`,
+        ],
+        hppUnit: sy.data.hppPerPcs,
+        hargaJualUnit: sy.data.hargaJualPerPcs,
+        totalOmset: sy.data.totalHargaJual,
+        marginPct: inp.marginPct,
+        negoDiskonPct: inp.negoDiskonPct,
+        rawData: sy,
+      });
+    });
+
     // Urutkan dari yang terbaru disimpan
     return items.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
-  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList, bukuTulisList, stopmapList]);
+  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList, bukuTulisList, stopmapList, syahadahList]);
 
   // Filtered List
   const filteredList = useMemo(() => {
@@ -408,6 +440,10 @@ export default function SavedCalculationsList({
         const updated = stopmapList.filter((sm) => sm.id !== item.id);
         setStopmapList(updated);
         localStorage.setItem('sintak_saved_stopmap_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Syahadah') {
+        const updated = syahadahList.filter((sy) => sy.id !== item.id);
+        setSyahadahList(updated);
+        localStorage.setItem('sintak_saved_syahadah_simulations', JSON.stringify(updated));
       }
       toast.success('Kalkulasi berhasil dihapus.');
     } catch (err) {
@@ -454,6 +490,10 @@ export default function SavedCalculationsList({
         const updated = stopmapList.map((sm) => (sm.id === item.id ? { ...sm, title: newTitle } : sm));
         setStopmapList(updated);
         localStorage.setItem('sintak_saved_stopmap_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Syahadah') {
+        const updated = syahadahList.map((sy) => (sy.id === item.id ? { ...sy, title: newTitle } : sy));
+        setSyahadahList(updated);
+        localStorage.setItem('sintak_saved_syahadah_simulations', JSON.stringify(updated));
       }
       setEditingId(null);
       toast.success('Nama kalkulasi berhasil diperbarui.');
@@ -495,6 +535,10 @@ export default function SavedCalculationsList({
       const sm = item.rawData as SavedStopmapSimulationItem;
       const inp = sm.data.input;
       text = `*PENAWARAN STOPMAP*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Stopmap ${inp.ukuran}\n• *Laminasi*: ${inp.laminasi}${inp.laminasi === 'Doff' ? ' (+Rp 200/pcs)' : ''}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Bahan*: Art Carton 230 gsm 1 Muka Full Colour\n• *Finishing*: Sisir + Lipat + Kupingan Smile + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${sm.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${sm.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
+    } else if (item.category === 'Syahadah') {
+      const sy = item.rawData as SavedSyahadahSimulationItem;
+      const inp = sy.data.input;
+      text = `*PENAWARAN SYAHADAH*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Syahadah ${inp.varian} 21,5×33 cm\n• *Bahan*: Linen/Hammer Crem Tebal 260 gsm\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Foil*: ${inp.opsiFoil ? 'Ya (+Rp 450/pcs, min 100k + master foil)' : 'Tanpa Foil'}\n• *Finishing*: Sisir + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${sy.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${sy.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     }
 
     navigator.clipboard.writeText(text);
@@ -565,6 +609,7 @@ export default function SavedCalculationsList({
                 { value: 'Label KHQ', label: '🏷️ Label KHQ', count: labelKhqList.length },
                 { value: 'Buku Tulis', label: '📓 Buku Tulis', count: bukuTulisList.length },
                 { value: 'Stopmap', label: '📁 Stopmap', count: stopmapList.length },
+                { value: 'Syahadah', label: '🕌 Syahadah', count: syahadahList.length },
               ]}
               value={filterCategory}
               onChange={(val) => handleFilterChange(val as any)}
@@ -641,6 +686,8 @@ export default function SavedCalculationsList({
                           ? 'bg-cyan-100 text-cyan-900 border border-cyan-200'
                           : item.category === 'Stopmap'
                           ? 'bg-orange-100 text-orange-900 border border-orange-200'
+                          : item.category === 'Syahadah'
+                          ? 'bg-amber-100 text-amber-900 border border-amber-300'
                           : 'bg-blue-100 text-blue-900 border border-blue-200'
                       }`}
                     >
