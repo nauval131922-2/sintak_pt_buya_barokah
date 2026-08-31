@@ -2665,7 +2665,7 @@ export default function LaporanPekerjaanClient({
                   <input
                     type="text"
                     required
-                    placeholder="Masukkan nama order atau project..."
+                    placeholder="Contoh: Buku Panduan, Box Kemasan, dll"
                     value={newOrderProject}
                     onChange={(e) => setNewOrderProject(e.target.value)}
                     autoFocus
