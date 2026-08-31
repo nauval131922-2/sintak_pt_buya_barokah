@@ -2254,9 +2254,10 @@ export default function LaporanPekerjaanClient({
 
       {/* Filter & Search Bar */}
       <div>
-        <div className="shrink-0 bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200/80 shadow-sm flex flex-col xl:flex-row items-stretch xl:items-center gap-2 sm:gap-3">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            {/* Tombol Reload Data di Samping Kiri Search Bar */}
+        <div className="shrink-0 bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200/80 shadow-sm flex flex-col gap-2.5">
+          {/* Baris 1: Search, Reload & Tombol Tambah Order */}
+          <div className="flex items-center gap-2 w-full">
+            {/* Tombol Reload Data */}
             <button
               type="button"
               onClick={() => fetchData(true)}
@@ -2279,39 +2280,30 @@ export default function LaporanPekerjaanClient({
                 className="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
               />
             </div>
-          </div>
 
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 shrink-0">
-            <div className="flex items-center text-xs text-slate-500 font-medium shrink-0">
-              <Filter className="w-3.5 h-3.5 mr-1 text-slate-400" /> Filter:
-            </div>
-
-            {(selectedBagianFilter !== "ALL" ||
-              selectedPic !== "ALL" ||
-              selectedStatus !== "ALL" ||
-              searchTerm !== "" ||
-              filterStartDate !== null ||
-              filterEndDate !== null ||
-              filterStartTime !== "" ||
-              filterEndTime !== "") && (
+            {/* Tombol Tambah Order Baru Manual di Baris 1 Kanan */}
+            {roleConfig?.can_add !== false && (
               <button
                 type="button"
                 onClick={() => {
-                  setSelectedBagianFilter("ALL");
-                  setSelectedPic("ALL");
-                  setSelectedStatus("ALL");
-                  setSearchTerm("");
-                  setFilterStartDate(null);
-                  setFilterEndDate(null);
-                  setFilterStartTime("");
-                  setFilterEndTime("");
+                  setNewOrderProject("");
+                  setNewOrderTgl(new Date());
+                  setShowAddOrderModal(true);
                 }}
-                className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0"
-                title="Reset Semua Filter"
+                className="h-8 px-2.5 sm:px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm"
+                title="Input Order Produksi Manual"
               >
-                <X size={12} /> Reset
+                <Plus size={14} />
+                <span className="hidden sm:inline">Tambah Order</span>
               </button>
             )}
+          </div>
+
+          {/* Baris 2: Controls Filter (Tanggal, Jam, Dropdown, Reset) */}
+          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100/80">
+            <div className="flex items-center text-xs text-slate-500 font-medium shrink-0">
+              <Filter className="w-3.5 h-3.5 mr-1 text-slate-400" /> Filter:
+            </div>
 
             {/* Filter Rentang Tanggal (Task) */}
             <div className="flex items-center gap-1 bg-slate-50 p-0.5 rounded-lg border border-slate-200 shrink-0">
@@ -2322,7 +2314,7 @@ export default function LaporanPekerjaanClient({
                 popupAlign="left"
                 customTrigger={() => (
                   <div
-                    className="h-7 px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer max-w-[105px]"
+                    className="h-7 px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer max-w-[110px]"
                     title={filterStartDate ? `Dari Tgl: ${formatDateDisplay(filterStartDate)}` : "Filter Dari Tgl Task"}
                   >
                     <Calendar size={11} className="text-slate-400 shrink-0" />
@@ -2340,7 +2332,7 @@ export default function LaporanPekerjaanClient({
                 popupAlign="left"
                 customTrigger={() => (
                   <div
-                    className="h-7 px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer max-w-[105px]"
+                    className="h-7 px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer max-w-[110px]"
                     title={filterEndDate ? `Sampai Tgl: ${formatDateDisplay(filterEndDate)}` : "Filter Sampai Tgl Task"}
                   >
                     <Calendar size={11} className="text-slate-400 shrink-0" />
@@ -2397,7 +2389,7 @@ export default function LaporanPekerjaanClient({
                 value={selectedBagianFilter}
                 onChange={setSelectedBagianFilter}
                 searchPlaceholder="Cari Bagian..."
-                widthClass="w-28 sm:w-32 xl:w-40"
+                widthClass="w-28 sm:w-36 lg:w-40"
               />
             )}
 
@@ -2407,7 +2399,7 @@ export default function LaporanPekerjaanClient({
                 value={selectedPic}
                 onChange={setSelectedPic}
                 searchPlaceholder="Cari PIC..."
-                widthClass="w-28 sm:w-32 xl:w-40"
+                widthClass="w-28 sm:w-36 lg:w-40"
               />
             )}
 
@@ -2416,23 +2408,33 @@ export default function LaporanPekerjaanClient({
               value={selectedStatus}
               onChange={setSelectedStatus}
               searchPlaceholder="Cari Status..."
-              widthClass="w-28 sm:w-32 xl:w-40"
+              widthClass="w-28 sm:w-36 lg:w-40"
             />
 
-            {/* Tombol Tambah Order Baru Manual di Paling Kanan */}
-            {roleConfig?.can_add !== false && (
+            {(selectedBagianFilter !== "ALL" ||
+              selectedPic !== "ALL" ||
+              selectedStatus !== "ALL" ||
+              searchTerm !== "" ||
+              filterStartDate !== null ||
+              filterEndDate !== null ||
+              filterStartTime !== "" ||
+              filterEndTime !== "") && (
               <button
                 type="button"
                 onClick={() => {
-                  setNewOrderProject("");
-                  setNewOrderTgl(new Date());
-                  setShowAddOrderModal(true);
+                  setSelectedBagianFilter("ALL");
+                  setSelectedPic("ALL");
+                  setSelectedStatus("ALL");
+                  setSearchTerm("");
+                  setFilterStartDate(null);
+                  setFilterEndDate(null);
+                  setFilterStartTime("");
+                  setFilterEndTime("");
                 }}
-                className="h-8 px-2.5 sm:px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm ml-auto xl:ml-1"
-                title="Input Order Produksi Manual"
+                className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0 ml-auto sm:ml-0"
+                title="Reset Semua Filter"
               >
-                <Plus size={14} />
-                <span className="hidden sm:inline">Tambah Order</span>
+                <X size={12} /> Reset
               </button>
             )}
           </div>
