@@ -32,10 +32,11 @@ import { SavedNotaSimulationItem } from './NotaSimulator';
 import { SavedBrosurSimulationItem } from './BrosurSimulator';
 import { SavedLabelKhqSimulationItem } from './LabelKhqSimulator';
 import { SavedBukuTulisSimulationItem } from './BukuTulisSimulator';
+import { SavedStopmapSimulationItem } from './StopmapSimulator';
 
 export type UnifiedCalculationItem = {
   id: string;
-  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis';
+  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap';
   savedAt: string;
   title: string;
   oplah: number;
@@ -54,11 +55,12 @@ export type UnifiedCalculationItem = {
     | SavedNotaSimulationItem
     | SavedBrosurSimulationItem
     | SavedLabelKhqSimulationItem
-    | SavedBukuTulisSimulationItem;
+    | SavedBukuTulisSimulationItem
+    | SavedStopmapSimulationItem;
 };
 
 interface SavedCalculationsListProps {
-  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis';
+  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap';
   onLoadSimulation: (item: UnifiedCalculationItem) => void;
   activeSimulationId?: string | null;
 }
@@ -69,9 +71,9 @@ export default function SavedCalculationsList({
   activeSimulationId,
 }: SavedCalculationsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis'>('ALL');
+  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap'>('ALL');
   
-  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis') => {
+  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap') => {
     setFilterCategory(val);
     try {
       localStorage.setItem('sintak_pricelist_saved_list_filter', val);
@@ -92,6 +94,7 @@ export default function SavedCalculationsList({
   const [brosurList, setBrosurList] = useState<SavedBrosurSimulationItem[]>([]);
   const [labelKhqList, setLabelKhqList] = useState<SavedLabelKhqSimulationItem[]>([]);
   const [bukuTulisList, setBukuTulisList] = useState<SavedBukuTulisSimulationItem[]>([]);
+  const [stopmapList, setStopmapList] = useState<SavedStopmapSimulationItem[]>([]);
 
   // Load from localStorage
   const refreshData = () => {
@@ -105,7 +108,8 @@ export default function SavedCalculationsList({
         savedFilter === 'Nota 1 Warna' ||
         savedFilter === 'Brosur 2026' ||
         savedFilter === 'Label KHQ' ||
-        savedFilter === 'Buku Tulis'
+        savedFilter === 'Buku Tulis' ||
+        savedFilter === 'Stopmap'
       ) {
         setFilterCategory(savedFilter as any);
       }
@@ -137,6 +141,10 @@ export default function SavedCalculationsList({
       const rawBT = localStorage.getItem('sintak_saved_buku_tulis_simulations');
       if (rawBT) setBukuTulisList(JSON.parse(rawBT));
       else setBukuTulisList([]);
+
+      const rawSM = localStorage.getItem('sintak_saved_stopmap_simulations');
+      if (rawSM) setStopmapList(JSON.parse(rawSM));
+      else setStopmapList([]);
     } catch (e) {
       console.error('Failed to load saved calculations:', e);
     }
@@ -315,9 +323,33 @@ export default function SavedCalculationsList({
       });
     });
 
+    // 8. Stopmap
+    stopmapList.forEach((sm) => {
+      const inp = sm.data.input;
+      items.push({
+        id: sm.id,
+        category: 'Stopmap',
+        savedAt: sm.savedAt,
+        title: sm.title,
+        oplah: inp.oplah,
+        specSummary: `Stopmap ${inp.ukuran} • ${inp.laminasi} • ${inp.oplah.toLocaleString('id-ID')} pcs`,
+        detailSpecs: [
+          `Laminasi: ${inp.laminasi}${inp.laminasi === 'Doff' ? ' (+Rp 200/pcs)' : ''}`,
+          `Finishing: Sisir + Lipat + Kupingan Smile + Packing`,
+          `Margin: ${inp.marginPct}%`,
+        ],
+        hppUnit: sm.data.hppPerPcs,
+        hargaJualUnit: sm.data.hargaJualPerPcs,
+        totalOmset: sm.data.totalHargaJual,
+        marginPct: inp.marginPct,
+        negoDiskonPct: inp.negoDiskonPct,
+        rawData: sm,
+      });
+    });
+
     // Urutkan dari yang terbaru disimpan
     return items.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
-  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList, bukuTulisList]);
+  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList, bukuTulisList, stopmapList]);
 
   // Filtered List
   const filteredList = useMemo(() => {
@@ -372,6 +404,10 @@ export default function SavedCalculationsList({
         const updated = bukuTulisList.filter((bt) => bt.id !== item.id);
         setBukuTulisList(updated);
         localStorage.setItem('sintak_saved_buku_tulis_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Stopmap') {
+        const updated = stopmapList.filter((sm) => sm.id !== item.id);
+        setStopmapList(updated);
+        localStorage.setItem('sintak_saved_stopmap_simulations', JSON.stringify(updated));
       }
       toast.success('Kalkulasi berhasil dihapus.');
     } catch (err) {
@@ -414,6 +450,10 @@ export default function SavedCalculationsList({
         const updated = bukuTulisList.map((bt) => (bt.id === item.id ? { ...bt, title: newTitle } : bt));
         setBukuTulisList(updated);
         localStorage.setItem('sintak_saved_buku_tulis_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Stopmap') {
+        const updated = stopmapList.map((sm) => (sm.id === item.id ? { ...sm, title: newTitle } : sm));
+        setStopmapList(updated);
+        localStorage.setItem('sintak_saved_stopmap_simulations', JSON.stringify(updated));
       }
       setEditingId(null);
       toast.success('Nama kalkulasi berhasil diperbarui.');
@@ -451,6 +491,10 @@ export default function SavedCalculationsList({
       const bt = item.rawData as SavedBukuTulisSimulationItem;
       const inp = bt.data.input;
       text = `*PENAWARAN BUKU TULIS 72 HAL*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Tulis ${inp.ukuran} 72 Hal Soft Cover (15,5×21 & 16×21 cm)\n• *Ukuran*: ${inp.ukuran} cm (tertutup)\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Finishing*: ${inp.opsiLaminasi ? 'Laminasi Glossy' : 'Tanpa Laminasi'}, ${inp.opsiSisir ? 'Sisir + Packing' : 'Standar'}\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${bt.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${bt.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN. Cover AC 230 gsm 4W, isi HVS 70 gsm 1W bolak-balik._`;
+    } else if (item.category === 'Stopmap') {
+      const sm = item.rawData as SavedStopmapSimulationItem;
+      const inp = sm.data.input;
+      text = `*PENAWARAN STOPMAP*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Stopmap ${inp.ukuran}\n• *Laminasi*: ${inp.laminasi}${inp.laminasi === 'Doff' ? ' (+Rp 200/pcs)' : ''}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Bahan*: Art Carton 230 gsm 1 Muka Full Colour\n• *Finishing*: Sisir + Lipat + Kupingan Smile + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${sm.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${sm.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     }
 
     navigator.clipboard.writeText(text);
@@ -520,6 +564,7 @@ export default function SavedCalculationsList({
                 { value: 'Brosur 2026', label: '🗞️ Brosur 2026', count: brosurList.length },
                 { value: 'Label KHQ', label: '🏷️ Label KHQ', count: labelKhqList.length },
                 { value: 'Buku Tulis', label: '📓 Buku Tulis', count: bukuTulisList.length },
+                { value: 'Stopmap', label: '📁 Stopmap', count: stopmapList.length },
               ]}
               value={filterCategory}
               onChange={(val) => handleFilterChange(val as any)}
@@ -594,6 +639,8 @@ export default function SavedCalculationsList({
                           ? 'bg-teal-100 text-teal-900 border border-teal-200'
                           : item.category === 'Buku Tulis'
                           ? 'bg-cyan-100 text-cyan-900 border border-cyan-200'
+                          : item.category === 'Stopmap'
+                          ? 'bg-orange-100 text-orange-900 border border-orange-200'
                           : 'bg-blue-100 text-blue-900 border border-blue-200'
                       }`}
                     >

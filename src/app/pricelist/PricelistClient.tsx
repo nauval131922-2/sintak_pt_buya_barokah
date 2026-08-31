@@ -39,6 +39,9 @@ import LabelKhqMatrixView from './LabelKhqMatrixView';
 import BukuTulisMasterParameter from './BukuTulisMasterParameter';
 import BukuTulisSimulator, { SavedBukuTulisSimulationItem } from './BukuTulisSimulator';
 import BukuTulisMatrixView from './BukuTulisMatrixView';
+import StopmapMasterParameter from './StopmapMasterParameter';
+import StopmapSimulator, { SavedStopmapSimulationItem } from './StopmapSimulator';
+import StopmapMatrixView from './StopmapMatrixView';
 import SavedCalculationsList, { UnifiedCalculationItem } from './SavedCalculationsList';
 import SquareDropdown from '@/components/SquareDropdown';
 import GlobalMasterParameter from './GlobalMasterParameter';
@@ -54,6 +57,7 @@ import { DEFAULT_NOTA_PARAMS, NotaMasterParams } from '@/lib/nota-calculator';
 import { DEFAULT_BROSUR_PARAMS, BrosurMasterParams } from '@/lib/brosur-calculator';
 import { DEFAULT_LABEL_KHQ_PARAMS, LabelKhqMasterParams } from '@/lib/label-khq-calculator';
 import { DEFAULT_BUKU_TULIS_PARAMS, BukuTulisMasterParams } from '@/lib/buku-tulis-calculator';
+import { DEFAULT_STOPMAP_PARAMS, StopmapMasterParams } from '@/lib/stopmap-calculator';
 import { recalculatePricelistFromParams } from '@/lib/pricelist-calculator';
 
 interface PricelistItem {
@@ -91,7 +95,8 @@ export default function PricelistClient() {
   const [paramsBrosur, setParamsBrosur] = useState<BrosurMasterParams>(DEFAULT_BROSUR_PARAMS);
   const [paramsLabelKhq, setParamsLabelKhq] = useState<LabelKhqMasterParams>(DEFAULT_LABEL_KHQ_PARAMS);
   const [paramsBukuTulis, setParamsBukuTulis] = useState<BukuTulisMasterParams>(DEFAULT_BUKU_TULIS_PARAMS);
-  const [selectedProductCategory, setSelectedProductCategory] = useState<'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis'>('Kalender');
+  const [paramsStopmap, setParamsStopmap] = useState<StopmapMasterParams>(DEFAULT_STOPMAP_PARAMS);
+  const [selectedProductCategory, setSelectedProductCategory] = useState<'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap'>('Kalender');
   const [paramsSpiral, setParamsSpiral] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS);
   const [paramsKlem, setParamsKlem] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS_KLEM);
 
@@ -138,7 +143,8 @@ export default function PricelistClient() {
         savedCategory === 'Nota 1 Warna' ||
         savedCategory === 'Brosur 2026' ||
         savedCategory === 'Label KHQ' ||
-        savedCategory === 'Buku Tulis'
+        savedCategory === 'Buku Tulis' ||
+        savedCategory === 'Stopmap'
       ) {
         setSelectedProductCategory(savedCategory);
       }
@@ -153,6 +159,11 @@ export default function PricelistClient() {
         setParamsBukuTulis({ ...DEFAULT_BUKU_TULIS_PARAMS, ...JSON.parse(savedBukuTulis) });
       }
 
+      const savedStopmap = localStorage.getItem('sintak_pricelist_master_params_stopmap');
+      if (savedStopmap) {
+        setParamsStopmap({ ...DEFAULT_STOPMAP_PARAMS, ...JSON.parse(savedStopmap) });
+      }
+
       const savedGlobal = localStorage.getItem('sintak_pricelist_master_params_global');
       if (savedGlobal) {
         setParamsGlobal({ ...DEFAULT_GLOBAL_PARAMS, ...JSON.parse(savedGlobal) });
@@ -164,7 +175,7 @@ export default function PricelistClient() {
 
   // Sync selectedProductCategory across tabs
   const handleProductCategoryChange = (
-    category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis'
+    category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap'
   ) => {
     setSelectedProductCategory(category);
     try {
@@ -244,17 +255,18 @@ export default function PricelistClient() {
         localStorage.setItem('sintak_pricelist_master_params_global', JSON.stringify(paramsGlobal));
         localStorage.setItem('sintak_pricelist_master_params_label_khq', JSON.stringify(paramsLabelKhq));
         localStorage.setItem('sintak_pricelist_master_params_buku_tulis', JSON.stringify(paramsBukuTulis));
+        localStorage.setItem('sintak_pricelist_master_params_stopmap', JSON.stringify(paramsStopmap));
       } catch (e) {
         console.error('Failed to save master params to localStorage:', e);
       }
     }, 400);
     return () => clearTimeout(timer);
-  }, [paramsSpiral, paramsKlem, paramsGlobal, paramsLabelKhq, paramsBukuTulis]);
+  }, [paramsSpiral, paramsKlem, paramsGlobal, paramsLabelKhq, paramsBukuTulis, paramsStopmap]);
 
   // Fungsi sebarkan parameter global ke seluruh produk
   const handleApplyGlobalParams = (targetGlobal?: GlobalMasterParams) => {
     const g = targetGlobal || paramsGlobal;
-    const { nextSpiral, nextKlem, nextManasik, nextYasin, nextNota, nextBrosur, nextLabelKhq, nextBukuTulis } = applyGlobalParamsToAll(
+    const { nextSpiral, nextKlem, nextManasik, nextYasin, nextNota, nextBrosur, nextLabelKhq, nextBukuTulis, nextStopmap } = applyGlobalParamsToAll(
       g,
       paramsSpiral,
       paramsKlem,
@@ -263,7 +275,8 @@ export default function PricelistClient() {
       paramsNota,
       paramsBrosur,
       paramsLabelKhq,
-      paramsBukuTulis
+      paramsBukuTulis,
+      paramsStopmap
     );
 
     setParamsSpiral(nextSpiral);
@@ -274,6 +287,7 @@ export default function PricelistClient() {
     setParamsBrosur(nextBrosur);
     setParamsLabelKhq(nextLabelKhq);
     setParamsBukuTulis(nextBukuTulis);
+    setParamsStopmap(nextStopmap);
   };
 
   const fetchData = useCallback(async () => {
@@ -483,6 +497,7 @@ export default function PricelistClient() {
               { value: 'Brosur 2026', label: '🗞️ Brosur 2026' },
               { value: 'Label KHQ', label: '🏷️ Label KHQ' },
               { value: 'Buku Tulis', label: '📓 Buku Tulis' },
+              { value: 'Stopmap', label: '📁 Stopmap' },
             ]}
             value={selectedProductCategory}
             onChange={(val) => handleProductCategoryChange(val as any)}
@@ -523,6 +538,11 @@ export default function PricelistClient() {
             <BukuTulisMasterParameter
               customParams={paramsBukuTulis}
               setCustomParams={setParamsBukuTulis}
+            />
+          ) : selectedProductCategory === 'Stopmap' ? (
+            <StopmapMasterParameter
+              customParams={paramsStopmap}
+              setCustomParams={setParamsStopmap}
             />
           ) : (
             <PricelistMasterParameter
@@ -598,6 +618,16 @@ export default function PricelistClient() {
               activeSimulationTitle={activeSimulationTitle}
               setActiveSimulationTitle={setActiveSimulationTitle}
             />
+          ) : selectedProductCategory === 'Stopmap' ? (
+            <StopmapSimulator
+              customParams={paramsStopmap}
+              setCustomParams={setParamsStopmap}
+              onOpenMasterParam={() => setActiveTab('parameter')}
+              activeSimulationId={activeSimulationId}
+              setActiveSimulationId={setActiveSimulationId}
+              activeSimulationTitle={activeSimulationTitle}
+              setActiveSimulationTitle={setActiveSimulationTitle}
+            />
           ) : (
             <PricelistSimulator
               customParams={customParams}
@@ -654,6 +684,12 @@ export default function PricelistClient() {
           ) : selectedProductCategory === 'Buku Tulis' ? (
             <BukuTulisMatrixView
               customParams={paramsBukuTulis}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+            />
+          ) : selectedProductCategory === 'Stopmap' ? (
+            <StopmapMatrixView
+              customParams={paramsStopmap}
               viewMode={viewMode}
               setViewMode={setViewMode}
             />
