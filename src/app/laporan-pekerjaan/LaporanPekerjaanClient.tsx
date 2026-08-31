@@ -2862,18 +2862,18 @@ function TaskDetailModal({
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
   const [isAddingTask, setIsAddingTask] = useState<boolean>(false);
 
-  // Column visibility & weights
-  const COLUMN_WEIGHTS: Record<string, number> = {
-    no: 3,
-    bagian: 11,
-    pic: 13,
-    task: 18,
-    priority: 7,
-    start_end: 13,
-    work_days: 5,
-    status: 14,
-    note: 12,
-    aksi: 4,
+  // Column visibility & min width (px) agar form input dan tanggal/jam tidak gepeng di layar sempit/tablet
+  const COLUMN_MIN_WIDTHS: Record<string, number> = {
+    no: 40,
+    bagian: 140,
+    pic: 150,
+    task: 200,
+    priority: 100,
+    start_end: 175,
+    work_days: 75,
+    status: 150,
+    note: 160,
+    aksi: 65,
   };
 
   const canAdd = roleConfig?.can_add !== false;
@@ -2903,10 +2903,9 @@ function TaskDetailModal({
     if (hasRowAction) {
       list.push({ key: 'aksi', label: 'Aksi' });
     }
-    const totalWeight = list.reduce((sum, c) => sum + (COLUMN_WEIGHTS[c.key] || 10), 0);
     return list.map((c) => ({
       ...c,
-      widthPercent: `${(((COLUMN_WEIGHTS[c.key] || 10) / totalWeight) * 100).toFixed(2)}%`,
+      minWidth: `${COLUMN_MIN_WIDTHS[c.key] || 100}px`,
     }));
   }, [isColVisible, hasRowAction]);
 
@@ -2989,10 +2988,10 @@ function TaskDetailModal({
           {/* Body: Tabel List Task dari Order tersebut */}
           <div className="flex-1 min-h-0 flex flex-col p-3 sm:p-6 overflow-hidden">
             <div className="flex-1 min-h-0 border border-slate-200 rounded-xl shadow-sm overflow-x-auto overflow-y-auto custom-scrollbar relative bg-white">
-              <table className="w-full min-w-[700px] sm:min-w-full text-left text-xs border-collapse table-fixed">
+              <table className="w-full text-left text-xs border-collapse">
                 <colgroup>
                   {activeColumns.map((col) => (
-                    <col key={col.key} style={{ width: col.widthPercent }} />
+                    <col key={col.key} style={{ minWidth: col.minWidth, width: col.minWidth }} />
                   ))}
                 </colgroup>
                 <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200 sticky top-0 z-20 shadow-xs">
@@ -3000,7 +2999,8 @@ function TaskDetailModal({
                     {activeColumns.map((col) => (
                       <th
                         key={col.key}
-                        className={`px-1.5 py-2.5 bg-slate-50 truncate ${
+                        style={{ minWidth: col.minWidth, width: col.minWidth }}
+                        className={`px-2 py-2.5 bg-slate-50 truncate ${
                           col.key === 'no' || col.key === 'work_days' || col.key === 'aksi'
                             ? 'text-center'
                             : ''
