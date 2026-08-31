@@ -2615,9 +2615,9 @@ export default function LaporanPekerjaanClient({
             style={{ fontSize: `${tableFontSize}px` }}
           >
             <thead className="sticky top-0 z-20 bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 shadow-sm">
-              <tr>
+              <tr className="bg-slate-50">
                 <th
-                  style={{ width: "130px", minWidth: "130px" }}
+                  style={{ width: "var(--col-aksi, 130px)", minWidth: "var(--col-aksi, 130px)" }}
                   className="relative px-3 py-2.5 text-center bg-slate-50 sticky top-0 z-10 border-b border-slate-200 select-none group"
                 >
                   <span className="truncate">Aksi</span>
@@ -2662,7 +2662,7 @@ export default function LaporanPekerjaanClient({
                       onClick={() =>
                         setSelectedRowIndex((prev) => (prev === idx ? null : idx))
                       }
-                      className={`cursor-pointer transition-all ${accent.borderAccent} ${
+                      className={`cursor-pointer transition-all ${
                         isSelected
                           ? `${accent.selectedBg} font-semibold`
                           : `${accent.rowBg} ${accent.rowHover}`
@@ -2673,7 +2673,7 @@ export default function LaporanPekerjaanClient({
                           width: "var(--col-aksi)",
                           maxWidth: "var(--col-aksi)",
                         }}
-                        className="px-2 py-2.5 text-center truncate"
+                        className={`px-2 py-2.5 text-center truncate ${accent.borderAccent}`}
                       >
                         <div className="flex items-center justify-center gap-1.5">
                           <button
