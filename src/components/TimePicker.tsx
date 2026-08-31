@@ -218,9 +218,9 @@ export default function TimePicker({
   );
 
   return (
-    <div className="relative">
+    <div className={`relative ${open ? 'z-[50]' : ''}`}>
       {name && <input type="hidden" name={name} value={value} />}
-      <div ref={triggerRef} onClick={toggleOpen}>
+      <div ref={triggerRef} data-time-picker-trigger={name} onClick={toggleOpen}>
         {customTrigger ? (
           customTrigger(toggleOpen)
         ) : (

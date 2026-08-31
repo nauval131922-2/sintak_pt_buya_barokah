@@ -2320,10 +2320,8 @@ export default function LaporanPekerjaanClient({
                 value={filterStartDate}
                 onChange={(d) => setFilterStartDate(d)}
                 popupAlign="left"
-                customTrigger={(toggle) => (
-                  <button
-                    type="button"
-                    onClick={toggle}
+                customTrigger={() => (
+                  <div
                     className="h-7 px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer max-w-[105px]"
                     title={filterStartDate ? `Dari Tgl: ${formatDateDisplay(filterStartDate)}` : "Filter Dari Tgl Task"}
                   >
@@ -2331,7 +2329,7 @@ export default function LaporanPekerjaanClient({
                     <span className={`truncate ${!filterStartDate ? "text-slate-400 font-normal" : ""}`}>
                       {filterStartDate ? formatDateDisplay(filterStartDate) : "Dari Tgl"}
                     </span>
-                  </button>
+                  </div>
                 )}
               />
               <span className="text-[10px] text-slate-400 font-bold px-0.5">-</span>
@@ -2340,10 +2338,8 @@ export default function LaporanPekerjaanClient({
                 value={filterEndDate}
                 onChange={(d) => setFilterEndDate(d)}
                 popupAlign="left"
-                customTrigger={(toggle) => (
-                  <button
-                    type="button"
-                    onClick={toggle}
+                customTrigger={() => (
+                  <div
                     className="h-7 px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer max-w-[105px]"
                     title={filterEndDate ? `Sampai Tgl: ${formatDateDisplay(filterEndDate)}` : "Filter Sampai Tgl Task"}
                   >
@@ -2351,7 +2347,7 @@ export default function LaporanPekerjaanClient({
                     <span className={`truncate ${!filterEndDate ? "text-slate-400 font-normal" : ""}`}>
                       {filterEndDate ? formatDateDisplay(filterEndDate) : "Sampai Tgl"}
                     </span>
-                  </button>
+                  </div>
                 )}
               />
             </div>
@@ -2363,10 +2359,8 @@ export default function LaporanPekerjaanClient({
                 value={filterStartTime}
                 onChange={(val) => setFilterStartTime(val)}
                 popupAlign="left"
-                customTrigger={(toggle) => (
-                  <button
-                    type="button"
-                    onClick={toggle}
+                customTrigger={() => (
+                  <div
                     className="h-7 px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer max-w-[85px]"
                     title={filterStartTime ? `Dari Jam: ${filterStartTime}` : "Filter Dari Jam Task"}
                   >
@@ -2374,7 +2368,7 @@ export default function LaporanPekerjaanClient({
                     <span className={`truncate ${!filterStartTime ? "text-slate-400 font-normal" : ""}`}>
                       {filterStartTime || "Dari Jam"}
                     </span>
-                  </button>
+                  </div>
                 )}
               />
               <span className="text-[10px] text-slate-400 font-bold px-0.5">-</span>
@@ -2383,10 +2377,8 @@ export default function LaporanPekerjaanClient({
                 value={filterEndTime}
                 onChange={(val) => setFilterEndTime(val)}
                 popupAlign="left"
-                customTrigger={(toggle) => (
-                  <button
-                    type="button"
-                    onClick={toggle}
+                customTrigger={() => (
+                  <div
                     className="h-7 px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer max-w-[85px]"
                     title={filterEndTime ? `Sampai Jam: ${filterEndTime}` : "Filter Sampai Jam Task"}
                   >
@@ -2394,7 +2386,7 @@ export default function LaporanPekerjaanClient({
                     <span className={`truncate ${!filterEndTime ? "text-slate-400 font-normal" : ""}`}>
                       {filterEndTime || "Sampai Jam"}
                     </span>
-                  </button>
+                  </div>
                 )}
               />
             </div>
