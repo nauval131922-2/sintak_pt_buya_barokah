@@ -66,16 +66,17 @@ export async function GET(request: NextRequest) {
       isInitialSeedChecked = true;
     }
 
-    // Query data murni dari database lokal Sintak dengan join tgl_order dari sopd / orders
+    // Query data murni dari database lokal Sintak dengan join tgl_order dari sopd / orders (fallback ke lp.tgl_order)
     let sql = `
       SELECT lp.*,
              COALESCE(
+               NULLIF(lp.tgl_order, ''),
                (SELECT s.tgl FROM sopd s WHERE s.nama_order = lp.project LIMIT 1),
                (SELECT s.tgl FROM sopd s WHERE s.no_sopd = lp.project LIMIT 1),
                (SELECT o.tgl FROM orders o WHERE o.nama_prd = lp.project LIMIT 1),
                (SELECT o.tgl FROM orders o WHERE o.faktur = lp.project LIMIT 1),
                ''
-             ) as tgl_order
+             ) as calculated_tgl_order
       FROM laporan_pekerjaan lp
       WHERE 1=1
     `;
@@ -115,7 +116,7 @@ export async function GET(request: NextRequest) {
       note: String(row.note || ""),
       status: String(row.status || "BELUM DIKERJAKAN"),
       source: String(row.source || "sintak"),
-      tglOrder: String(row.tgl_order || ""),
+      tglOrder: String(row.calculated_tgl_order || row.tgl_order || ""),
       updated_at: row.updated_at,
     }));
 
@@ -195,9 +196,21 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { task, project, division, bagian, pic, priority, startDate, endDate, workDays, note, status } = body;
+    const { task, project, division, bagian, pic, priority, startDate, endDate, workDays, note, status, tglOrder } = body;
 
-    if (!task || !task.trim()) {
+    // Jika membuat Order Manual (tanpa task), buat placeholder record order
+    const isOrderOnly = body.isOrderOnly || (!task && project?.trim());
+    const finalTask = (task || "").trim();
+    const finalProject = (project || "").trim();
+
+    if (!finalProject && !finalTask) {
+      return NextResponse.json(
+        { success: false, error: "Nama Order atau Task wajib diisi" },
+        { status: 400 }
+      );
+    }
+
+    if (!isOrderOnly && !finalTask) {
       return NextResponse.json(
         { success: false, error: "Task / Nama pekerjaan wajib diisi" },
         { status: 400 }
@@ -205,13 +218,13 @@ export async function POST(request: NextRequest) {
     }
 
     const res = await db.execute({
-      sql: `INSERT INTO laporan_pekerjaan (task, project, division, bagian, pic, priority, start_date, end_date, work_days, note, status, source)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'sintak')`,
+      sql: `INSERT INTO laporan_pekerjaan (task, project, division, bagian, pic, priority, start_date, end_date, work_days, note, status, source, tgl_order)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'sintak', ?)`,
       args: [
-        task.trim(),
-        project?.trim() || "",
+        finalTask,
+        finalProject,
         division?.trim() || "",
-        bagian?.trim() || "",
+        bagian?.trim() || (isOrderOnly ? "" : "SETTING"),
         pic?.trim() || "",
         priority?.trim() || "Low",
         startDate?.trim() || "",
@@ -219,16 +232,17 @@ export async function POST(request: NextRequest) {
         workDays?.trim() || "",
         note?.trim() || "",
         status?.trim() || "BELUM DIKERJAKAN",
+        tglOrder?.trim() || "",
       ],
     });
 
     const insertId = Number(res.lastInsertRowid);
 
     const afterData = {
-      task: task.trim(),
-      project: project?.trim() || "",
+      task: finalTask,
+      project: finalProject,
       division: division?.trim() || "",
-      bagian: bagian?.trim() || "",
+      bagian: bagian?.trim() || (isOrderOnly ? "" : "SETTING"),
       pic: pic?.trim() || "",
       priority: priority?.trim() || "Low",
       start_date: startDate?.trim() || "",
@@ -236,19 +250,24 @@ export async function POST(request: NextRequest) {
       work_days: workDays?.trim() || "",
       note: note?.trim() || "",
       status: status?.trim() || "BELUM DIKERJAKAN",
+      tgl_order: tglOrder?.trim() || "",
     };
+
+    const actionDesc = isOrderOnly
+      ? `Menambahkan Order Baru Manual: "${finalProject}"`
+      : `Menambahkan laporan pekerjaan: "${finalTask}" (Project: ${finalProject || "-"}, PIC: ${pic?.trim() || "-"})`;
 
     logActivity(
       "CREATE",
       "laporan_pekerjaan",
-      `Menambahkan laporan pekerjaan: "${task.trim()}" (Project: ${project?.trim() || "-"}, PIC: ${pic?.trim() || "-"})`,
+      actionDesc,
       { id: insertId, before: null, after: afterData }
     ).catch(() => {});
 
     return NextResponse.json({
       success: true,
       id: insertId,
-      message: "Data pekerjaan berhasil ditambahkan",
+      message: isOrderOnly ? "Order baru berhasil ditambahkan" : "Data pekerjaan berhasil ditambahkan",
     });
   } catch (error: any) {
     return NextResponse.json(

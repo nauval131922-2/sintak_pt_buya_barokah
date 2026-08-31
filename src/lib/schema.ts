@@ -67,6 +67,7 @@ export async function initSchema(db: any) {
       { table: 'users', column: 'is_active', type: 'INTEGER DEFAULT 1' },
       { table: 'users', column: 'employee_id', type: 'INTEGER DEFAULT NULL' },
       { table: 'laporan_pekerjaan', column: 'bagian', type: 'TEXT DEFAULT \'\'' },
+      { table: 'laporan_pekerjaan', column: 'tgl_order', type: 'TEXT DEFAULT \'\'' },
     ];
 
     for (const col of columns) {
@@ -374,6 +375,7 @@ export async function initSchema(db: any) {
       note TEXT DEFAULT '',
       status TEXT DEFAULT 'BELUM DIKERJAKAN',
       source TEXT DEFAULT 'manual',
+      tgl_order TEXT DEFAULT '',
       sheet_sync_at DATETIME DEFAULT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT NULL

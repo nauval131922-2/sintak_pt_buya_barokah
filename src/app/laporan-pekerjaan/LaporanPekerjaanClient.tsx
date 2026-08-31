@@ -557,6 +557,12 @@ export default function LaporanPekerjaanClient({
   const [searchTerm, setSearchTerm] = useState<string>("");
   const deferredSearchTerm = useDeferredValue(searchTerm);
 
+  // Modal Tambah Order Manual state
+  const [showAddOrderModal, setShowAddOrderModal] = useState<boolean>(false);
+  const [newOrderProject, setNewOrderProject] = useState<string>("");
+  const [newOrderTgl, setNewOrderTgl] = useState<Date | null>(new Date());
+  const [isSubmittingOrder, setIsSubmittingOrder] = useState<boolean>(false);
+
   // Persistent Mobile Header Card state (default collapsed on mobile)
   const [isHeaderOpenMobile, setIsHeaderOpenMobile] = useState<boolean>(false);
 
@@ -1005,6 +1011,80 @@ export default function LaporanPekerjaanClient({
     } catch (err: any) {
       toast.error(err.message || "Terjadi kesalahan");
       fetchData();
+    }
+  };
+
+  const handleCreateOrderManual = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const proj = newOrderProject.trim();
+    if (!proj) {
+      toast.error("Nama Order / Project wajib diisi");
+      return;
+    }
+
+    const tglOrderStr = newOrderTgl ? formatDateForApi(newOrderTgl) : "";
+    setIsSubmittingOrder(true);
+
+    try {
+      const res = await fetch("/api/laporan-pekerjaan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          task: "",
+          project: proj,
+          division: "",
+          bagian: "",
+          pic: "",
+          priority: "Low",
+          startDate: "",
+          endDate: "",
+          workDays: "",
+          note: "",
+          status: "BELUM DIKERJAKAN",
+          tglOrder: tglOrderStr,
+          isOrderOnly: true,
+        }),
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        toast.success(`Order "${proj}" berhasil dibuat!`);
+        setShowAddOrderModal(false);
+        setNewOrderProject("");
+        setNewOrderTgl(new Date());
+
+        const placeholderTask: SpreadsheetTask = {
+          id: json.id || -Date.now(),
+          task: "",
+          project: proj,
+          division: "",
+          bagian: "",
+          pic: "",
+          priority: "Low",
+          startDate: "",
+          endDate: "",
+          workDays: "",
+          note: "",
+          status: "BELUM DIKERJAKAN",
+          source: "sintak",
+          tglOrder: tglOrderStr,
+        };
+
+        setTasks((prev) => [placeholderTask, ...prev]);
+
+        // Langsung buka modal detail untuk order tersebut agar user bisa langsung menambah pekerjaan jika diinginkan
+        setSelectedProjectGroup({
+          project: proj,
+          tglOrder: tglOrderStr,
+          tasks: [],
+        });
+      } else {
+        toast.error(json.error || "Gagal menambahkan order manual");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Terjadi kesalahan koneksi");
+    } finally {
+      setIsSubmittingOrder(false);
     }
   };
 
@@ -1938,6 +2018,24 @@ export default function LaporanPekerjaanClient({
               <span className="hidden sm:inline">Reload</span>
             </button>
 
+            {/* Tombol Tambah Order Baru Manual */}
+            {roleConfig?.can_add !== false && (
+              <button
+                type="button"
+                onClick={() => {
+                  setNewOrderProject("");
+                  setNewOrderTgl(new Date());
+                  setShowAddOrderModal(true);
+                }}
+                className="h-8 px-2.5 sm:px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm"
+                title="Input Order Produksi Manual"
+              >
+                <Plus size={14} />
+                <span className="hidden sm:inline">Tambah Order</span>
+                <span className="sm:hidden">Order</span>
+              </button>
+            )}
+
             {/* Input Search */}
             <div className="relative flex-1 min-w-0">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -2530,6 +2628,93 @@ export default function LaporanPekerjaanClient({
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        </Portal>
+      )}
+
+      {/* Modal Tambah Order Manual */}
+      {showAddOrderModal && (
+        <Portal>
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/80 shrink-0">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm">
+                    <Plus size={18} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800">Tambah Order Produksi</h3>
+                    <p className="text-[11px] text-slate-500">Input order manual ke Laporan Pekerjaan</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAddOrderModal(false)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-all cursor-pointer"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateOrderManual} className="p-5 space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    Nama Order / Project <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: OP.001 Buku Panduan, Box Kemasan, dll"
+                    value={newOrderProject}
+                    onChange={(e) => setNewOrderProject(e.target.value)}
+                    autoFocus
+                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    Tanggal Order
+                  </label>
+                  <div className="relative">
+                    <DatePicker
+                      name="new_order_tgl"
+                      value={newOrderTgl}
+                      onChange={(d) => setNewOrderTgl(d)}
+                      popupAlign="left"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddOrderModal(false)}
+                    disabled={isSubmittingOrder}
+                    className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingOrder || !newOrderProject.trim()}
+                    className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                  >
+                    {isSubmittingOrder ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        Menyimpan...
+                      </>
+                    ) : (
+                      <>
+                        <Save size={14} />
+                        Simpan Order
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </Portal>
