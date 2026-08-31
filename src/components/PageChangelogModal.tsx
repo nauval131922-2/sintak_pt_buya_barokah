@@ -118,10 +118,10 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
   };
 
   const handleDontShowAgain = () => {
-    if (!active) return;
+    const rawChangelogs = resolveChangelog();
     try {
-      // Dismiss SEMUA rilis sekaligus
-      active.forEach(changelog => {
+      // Dismiss SEMUA rilis riwayat halaman ini
+      rawChangelogs.forEach(changelog => {
         localStorage.setItem(
           changelogDismissKey(changelog.pageKey, changelog.version),
           '1'
