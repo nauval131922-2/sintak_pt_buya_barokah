@@ -9,6 +9,7 @@ import {
   TableProperties,
   Layers,
 } from 'lucide-react';
+import { useAutoFitColumns } from '@/hooks/useAutoFitColumns';
 import {
   calculateBukuTulisHpp,
   DEFAULT_BUKU_TULIS_PARAMS,
@@ -37,6 +38,7 @@ export default function BukuTulisMatrixView({
 
   const viewMode = propViewMode ?? localViewMode;
   const setViewMode = propSetViewMode ?? setLocalViewMode;
+  const { ref: gridRef, cols: autoCols } = useAutoFitColumns(380);
 
   const calc = (oplah: number, ukuran: BukuTulisUkuranType) =>
     calculateBukuTulisHpp(
@@ -194,7 +196,7 @@ export default function BukuTulisMatrixView({
                 </span>
               </div>
 
-              <div className={`grid gap-4 ${ukuranCols.length === 1 ? 'grid-cols-1' : 'grid-cols-[repeat(auto-fit,minmax(360px,1fr))]'}`}>
+              <div ref={gridRef} className="grid gap-4" style={{ gridTemplateColumns: `repeat(${ukuranCols.length===1 ? 1 : autoCols}, minmax(0, 1fr))` }}>
                 {ukuranCols.map((ukuran) => (
                 <div key={ukuran} className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
                   <div className="bg-amber-50/70 px-4 py-2 border-b border-amber-100 flex items-center justify-between">

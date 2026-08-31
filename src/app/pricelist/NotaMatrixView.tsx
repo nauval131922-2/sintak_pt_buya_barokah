@@ -9,6 +9,7 @@ import {
   TableProperties,
   Layers,
 } from 'lucide-react';
+import { useAutoFitColumns } from '@/hooks/useAutoFitColumns';
 import {
   calculateNotaSimulator,
   DEFAULT_NOTA_PARAMS,
@@ -43,6 +44,7 @@ export default function NotaMatrixView({
 
   const viewMode = propViewMode ?? localViewMode;
   const setViewMode = propSetViewMode ?? setLocalViewMode;
+  const { ref: gridRef, cols: autoCols } = useAutoFitColumns(500);
 
   // Matrix data per rangkap
   const matrixData = useMemo(() => {
@@ -299,7 +301,7 @@ export default function NotaMatrixView({
                 <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">{selectedUkuran}</span>
               </div>
 
-              <div className={`grid gap-4 ${matrixData.filter((s) => (selectedRangkapFilter === 'ALL' || selectedRangkapFilter === s.rangkap.toString()) && s.rows.length > 0).length === 1 ? 'grid-cols-1' : 'grid-cols-[repeat(auto-fit,minmax(360px,1fr))]'}`}>
+              <div ref={gridRef} className="grid gap-4" style={{ gridTemplateColumns: `repeat(${matrixData.filter((s) => (selectedRangkapFilter === 'ALL' || selectedRangkapFilter === s.rangkap.toString()) && s.rows.length > 0).length===1 ? 1 : autoCols}, minmax(0, 1fr))` }}>
                 {matrixData.map((section) => {
                 if (selectedRangkapFilter !== 'ALL' && selectedRangkapFilter !== section.rangkap.toString()) return null;
                 if (section.rows.length === 0) return null;

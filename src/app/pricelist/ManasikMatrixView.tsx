@@ -9,6 +9,7 @@ import {
   TableProperties,
   Layers,
 } from 'lucide-react';
+import { useAutoFitColumns } from '@/hooks/useAutoFitColumns';
 import {
   calculateManasikSimulator,
   DEFAULT_MANASIK_PARAMS,
@@ -43,6 +44,7 @@ export default function ManasikMatrixView({
 
   const viewMode = propViewMode ?? localViewMode;
   const setViewMode = propSetViewMode ?? setLocalViewMode;
+  const { ref: gridRef, cols: autoCols } = useAutoFitColumns(520);
 
   // Generate Matrix data dinamis sesuai formula master parameter
   const matrixData = useMemo(() => {
@@ -315,7 +317,7 @@ export default function ManasikMatrixView({
                 </span>
               </div>
 
-              <div className={`grid gap-4 ${matrixData.filter((s) => s.rows.length > 0).length === 1 ? 'grid-cols-1' : 'grid-cols-[repeat(auto-fit,minmax(360px,1fr))]'}`}>
+              <div ref={gridRef} className="grid gap-4" style={{ gridTemplateColumns: `repeat(${matrixData.filter((s) => s.rows.length > 0).length===1 ? 1 : autoCols}, minmax(0, 1fr))` }}>
                 {matrixData.map((section) => {
                 if (section.rows.length === 0) return null;
                 return (
