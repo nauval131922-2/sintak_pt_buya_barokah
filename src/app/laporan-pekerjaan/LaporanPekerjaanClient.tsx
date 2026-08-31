@@ -2300,7 +2300,7 @@ export default function LaporanPekerjaanClient({
           </div>
 
           {/* Baris 2: Controls Filter (Tanggal, Jam, Dropdown, Reset) */}
-          <div className="flex items-center gap-1.5 sm:gap-2 pt-2 border-t border-slate-100/80 overflow-x-auto custom-scrollbar pb-1">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-2 border-t border-slate-100/80">
             <div className="flex items-center text-xs text-slate-500 font-medium shrink-0">
               <Filter className="w-3.5 h-3.5 mr-1 text-slate-400" /> Filter:
             </div>
@@ -2389,7 +2389,7 @@ export default function LaporanPekerjaanClient({
                 value={selectedBagianFilter}
                 onChange={setSelectedBagianFilter}
                 searchPlaceholder="Cari Bagian..."
-                widthClass="w-28 sm:w-32 lg:w-36 shrink-0"
+                widthClass="w-24 sm:w-28 md:w-32 lg:w-36 shrink-0"
               />
             )}
 
@@ -2399,7 +2399,7 @@ export default function LaporanPekerjaanClient({
                 value={selectedPic}
                 onChange={setSelectedPic}
                 searchPlaceholder="Cari PIC..."
-                widthClass="w-28 sm:w-32 lg:w-36 shrink-0"
+                widthClass="w-24 sm:w-28 md:w-32 lg:w-36 shrink-0"
               />
             )}
 
@@ -2408,7 +2408,7 @@ export default function LaporanPekerjaanClient({
               value={selectedStatus}
               onChange={setSelectedStatus}
               searchPlaceholder="Cari Status..."
-              widthClass="w-28 sm:w-32 lg:w-36 shrink-0"
+              widthClass="w-24 sm:w-28 md:w-32 lg:w-36 shrink-0"
             />
 
             {(selectedBagianFilter !== "ALL" ||
@@ -2431,7 +2431,7 @@ export default function LaporanPekerjaanClient({
                   setFilterStartTime("");
                   setFilterEndTime("");
                 }}
-                className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0"
+                className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0 ml-auto md:ml-0"
                 title="Reset Semua Filter"
               >
                 <X size={12} /> Reset
