@@ -168,6 +168,8 @@ export async function GET(request: NextRequest) {
           priority: "Low",
           startDate: "",
           endDate: "",
+          startTime: "",
+          endTime: "",
           workDays: "",
           note: "",
           status: "BELUM DIKERJAKAN",

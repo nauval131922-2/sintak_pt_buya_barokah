@@ -555,8 +555,97 @@ export default function LaporanPekerjaanClient({
   const [selectedPic, setSelectedPic] = useState<string>("ALL");
   const [selectedBagianFilter, setSelectedBagianFilter] = useState<string>("ALL");
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
+
+  // Helper initial date: default hari ini, restore session storage jika hari masih sama
+  const [filterStartDate, setFilterStartDate] = useState<Date | null>(() => {
+    const today = new Date();
+    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    if (typeof window !== "undefined") {
+      try {
+        const savedDateDay = localStorage.getItem("laporan_pekerjaan_filter_saved_day");
+        const savedStart = localStorage.getItem("laporan_pekerjaan_filter_start_date");
+        if (savedDateDay === todayKey && savedStart) {
+          const parsed = new Date(savedStart);
+          if (!isNaN(parsed.getTime())) return parsed;
+        }
+      } catch {}
+    }
+    return new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+  });
+
+  const [filterEndDate, setFilterEndDate] = useState<Date | null>(() => {
+    const today = new Date();
+    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    if (typeof window !== "undefined") {
+      try {
+        const savedDateDay = localStorage.getItem("laporan_pekerjaan_filter_saved_day");
+        const savedEnd = localStorage.getItem("laporan_pekerjaan_filter_end_date");
+        if (savedDateDay === todayKey && savedEnd) {
+          const parsed = new Date(savedEnd);
+          if (!isNaN(parsed.getTime())) return parsed;
+        }
+      } catch {}
+    }
+    return new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+  });
+
+  const [filterStartTime, setFilterStartTime] = useState<string>(() => {
+    const today = new Date();
+    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    if (typeof window !== "undefined") {
+      try {
+        const savedDateDay = localStorage.getItem("laporan_pekerjaan_filter_saved_day");
+        const savedTime = localStorage.getItem("laporan_pekerjaan_filter_start_time");
+        if (savedDateDay === todayKey && savedTime) return savedTime;
+      } catch {}
+    }
+    return "";
+  });
+
+  const [filterEndTime, setFilterEndTime] = useState<string>(() => {
+    const today = new Date();
+    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    if (typeof window !== "undefined") {
+      try {
+        const savedDateDay = localStorage.getItem("laporan_pekerjaan_filter_saved_day");
+        const savedTime = localStorage.getItem("laporan_pekerjaan_filter_end_time");
+        if (savedDateDay === todayKey && savedTime) return savedTime;
+      } catch {}
+    }
+    return "";
+  });
+
   const [searchTerm, setSearchTerm] = useState<string>("");
   const deferredSearchTerm = useDeferredValue(searchTerm);
+
+  // Sync filter date/time ke localStorage dengan penanda tanggal hari ini
+  useEffect(() => {
+    try {
+      const today = new Date();
+      const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+      localStorage.setItem("laporan_pekerjaan_filter_saved_day", todayKey);
+      if (filterStartDate) {
+        localStorage.setItem("laporan_pekerjaan_filter_start_date", filterStartDate.toISOString());
+      } else {
+        localStorage.removeItem("laporan_pekerjaan_filter_start_date");
+      }
+      if (filterEndDate) {
+        localStorage.setItem("laporan_pekerjaan_filter_end_date", filterEndDate.toISOString());
+      } else {
+        localStorage.removeItem("laporan_pekerjaan_filter_end_date");
+      }
+      if (filterStartTime) {
+        localStorage.setItem("laporan_pekerjaan_filter_start_time", filterStartTime);
+      } else {
+        localStorage.removeItem("laporan_pekerjaan_filter_start_time");
+      }
+      if (filterEndTime) {
+        localStorage.setItem("laporan_pekerjaan_filter_end_time", filterEndTime);
+      } else {
+        localStorage.removeItem("laporan_pekerjaan_filter_end_time");
+      }
+    } catch {}
+  }, [filterStartDate, filterEndDate, filterStartTime, filterEndTime]);
 
   // Modal Tambah Order Manual state
   const [showAddOrderModal, setShowAddOrderModal] = useState<boolean>(false);
@@ -1284,6 +1373,18 @@ export default function LaporanPekerjaanClient({
 
   // Filtered tasks
   const filteredTasks = useMemo(() => {
+    // Siapkan boundary timestamp untuk filter rentang tanggal
+    const startFilterTime = filterStartDate
+      ? new Date(filterStartDate.getFullYear(), filterStartDate.getMonth(), filterStartDate.getDate(), 0, 0, 0).getTime()
+      : null;
+    const endFilterTime = filterEndDate
+      ? new Date(filterEndDate.getFullYear(), filterEndDate.getMonth(), filterEndDate.getDate(), 23, 59, 59, 999).getTime()
+      : null;
+
+    // Siapkan rentang jam (format string HH:mm langsung bisa dibandingkan leksikografis)
+    const hasStartTimeFilter = Boolean(filterStartTime);
+    const hasEndTimeFilter = Boolean(filterEndTime);
+
     return tasks.filter((t) => {
       // Role scope restrictions
       if (!isBagianAllowedByRole(t.bagian, t.source)) return false;
@@ -1304,6 +1405,45 @@ export default function LaporanPekerjaanClient({
       ) {
         return false;
       }
+
+      // Filter Rentang Tanggal (berdasarkan startDate / endDate task)
+      if (startFilterTime !== null || endFilterTime !== null) {
+        const taskStartTime = parseDateToSort(t.startDate || "");
+        const taskEndTime = parseDateToSort(t.endDate || "") || taskStartTime;
+
+        // Jika task tidak memiliki tanggal sama sekali, skip jika filter tanggal aktif
+        if (!taskStartTime && !taskEndTime) return false;
+
+        // Cek overlap: task rentang [taskStartTime, taskEndTime] vs filter rentang [startFilterTime, endFilterTime]
+        const effectiveTaskStart = taskStartTime || taskEndTime;
+        const effectiveTaskEnd = taskEndTime || taskStartTime;
+
+        if (startFilterTime !== null && effectiveTaskEnd < startFilterTime) {
+          return false;
+        }
+        if (endFilterTime !== null && effectiveTaskStart > endFilterTime) {
+          return false;
+        }
+      }
+
+      // Filter Rentang Jam (berdasarkan startTime / endTime task)
+      if (hasStartTimeFilter || hasEndTimeFilter) {
+        const taskStartT = t.startTime || "";
+        const taskEndT = t.endTime || taskStartT;
+
+        if (!taskStartT && !taskEndT) return false;
+
+        const effectiveTaskStartT = taskStartT || taskEndT;
+        const effectiveTaskEndT = taskEndT || taskStartT;
+
+        if (hasStartTimeFilter && effectiveTaskEndT < filterStartTime) {
+          return false;
+        }
+        if (hasEndTimeFilter && effectiveTaskStartT > filterEndTime) {
+          return false;
+        }
+      }
+
       if (deferredSearchTerm) {
         const term = deferredSearchTerm.toLowerCase();
         const matchTask = t.task.toLowerCase().includes(term);
@@ -1312,7 +1452,20 @@ export default function LaporanPekerjaanClient({
       }
       return true;
     });
-  }, [tasks, selectedPic, selectedBagianFilter, selectedStatus, deferredSearchTerm, isBagianAllowedByRole, isPicAllowedByRole, isPicMatchingSelection]);
+  }, [
+    tasks,
+    selectedPic,
+    selectedBagianFilter,
+    selectedStatus,
+    filterStartDate,
+    filterEndDate,
+    filterStartTime,
+    filterEndTime,
+    deferredSearchTerm,
+    isBagianAllowedByRole,
+    isPicAllowedByRole,
+    isPicMatchingSelection,
+  ]);
 
   // Group filtered tasks by unique project order
   const groupedOrders = useMemo(() => {
@@ -1407,6 +1560,17 @@ export default function LaporanPekerjaanClient({
 
   // Tasks filtered by PIC and search term (for stat card counts)
   const tasksForCounts = useMemo(() => {
+    // Siapkan boundary timestamp untuk filter rentang tanggal
+    const startFilterTime = filterStartDate
+      ? new Date(filterStartDate.getFullYear(), filterStartDate.getMonth(), filterStartDate.getDate(), 0, 0, 0).getTime()
+      : null;
+    const endFilterTime = filterEndDate
+      ? new Date(filterEndDate.getFullYear(), filterEndDate.getMonth(), filterEndDate.getDate(), 23, 59, 59, 999).getTime()
+      : null;
+
+    const hasStartTimeFilter = Boolean(filterStartTime);
+    const hasEndTimeFilter = Boolean(filterEndTime);
+
     return tasks.filter((t) => {
       if (!t.task) return false;
       if (!isBagianAllowedByRole(t.bagian, t.source)) return false;
@@ -1414,6 +1578,43 @@ export default function LaporanPekerjaanClient({
       if (!isPicMatchingSelection(t.pic, selectedPic)) {
         return false;
       }
+
+      // Filter Rentang Tanggal
+      if (startFilterTime !== null || endFilterTime !== null) {
+        const taskStartTime = parseDateToSort(t.startDate || "");
+        const taskEndTime = parseDateToSort(t.endDate || "") || taskStartTime;
+
+        if (!taskStartTime && !taskEndTime) return false;
+
+        const effectiveTaskStart = taskStartTime || taskEndTime;
+        const effectiveTaskEnd = taskEndTime || taskStartTime;
+
+        if (startFilterTime !== null && effectiveTaskEnd < startFilterTime) {
+          return false;
+        }
+        if (endFilterTime !== null && effectiveTaskStart > endFilterTime) {
+          return false;
+        }
+      }
+
+      // Filter Rentang Jam
+      if (hasStartTimeFilter || hasEndTimeFilter) {
+        const taskStartT = t.startTime || "";
+        const taskEndT = t.endTime || taskStartT;
+
+        if (!taskStartT && !taskEndT) return false;
+
+        const effectiveTaskStartT = taskStartT || taskEndT;
+        const effectiveTaskEndT = taskEndT || taskStartT;
+
+        if (hasStartTimeFilter && effectiveTaskEndT < filterStartTime) {
+          return false;
+        }
+        if (hasEndTimeFilter && effectiveTaskStartT > filterEndTime) {
+          return false;
+        }
+      }
+
       if (deferredSearchTerm) {
         const term = deferredSearchTerm.toLowerCase();
         const matchTask = t.task.toLowerCase().includes(term);
@@ -1422,7 +1623,18 @@ export default function LaporanPekerjaanClient({
       }
       return true;
     });
-  }, [tasks, selectedPic, deferredSearchTerm, isBagianAllowedByRole, isPicAllowedByRole, isPicMatchingSelection]);
+  }, [
+    tasks,
+    selectedPic,
+    filterStartDate,
+    filterEndDate,
+    filterStartTime,
+    filterEndTime,
+    deferredSearchTerm,
+    isBagianAllowedByRole,
+    isPicAllowedByRole,
+    isPicMatchingSelection,
+  ]);
 
   // Counts based on tasksForCounts
   const counts = useMemo(() => {
@@ -2042,7 +2254,7 @@ export default function LaporanPekerjaanClient({
 
       {/* Filter & Search Bar */}
       <div>
-        <div className="shrink-0 bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200/80 shadow-sm flex flex-col landscape:flex-row md:flex-row items-stretch landscape:items-center md:items-center gap-2 sm:gap-3">
+        <div className="shrink-0 bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200/80 shadow-sm flex flex-col xl:flex-row items-stretch xl:items-center gap-2 sm:gap-3">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {/* Tombol Reload Data di Samping Kiri Search Bar */}
             <button
@@ -2053,7 +2265,7 @@ export default function LaporanPekerjaanClient({
               title="Reload Data Laporan Pekerjaan"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-emerald-600" : ""}`} />
-              <span className="hidden lg:inline">Reload</span>
+              <span className="hidden sm:inline">Reload</span>
             </button>
 
             {/* Input Search */}
@@ -2069,12 +2281,19 @@ export default function LaporanPekerjaanClient({
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 shrink-0">
             <div className="flex items-center text-xs text-slate-500 font-medium shrink-0">
               <Filter className="w-3.5 h-3.5 mr-1 text-slate-400" /> Filter:
             </div>
 
-            {(selectedBagianFilter !== "ALL" || selectedPic !== "ALL" || selectedStatus !== "ALL" || searchTerm !== "") && (
+            {(selectedBagianFilter !== "ALL" ||
+              selectedPic !== "ALL" ||
+              selectedStatus !== "ALL" ||
+              searchTerm !== "" ||
+              filterStartDate !== null ||
+              filterEndDate !== null ||
+              filterStartTime !== "" ||
+              filterEndTime !== "") && (
               <button
                 type="button"
                 onClick={() => {
@@ -2082,6 +2301,10 @@ export default function LaporanPekerjaanClient({
                   setSelectedPic("ALL");
                   setSelectedStatus("ALL");
                   setSearchTerm("");
+                  setFilterStartDate(null);
+                  setFilterEndDate(null);
+                  setFilterStartTime("");
+                  setFilterEndTime("");
                 }}
                 className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0"
                 title="Reset Semua Filter"
@@ -2090,13 +2313,99 @@ export default function LaporanPekerjaanClient({
               </button>
             )}
 
+            {/* Filter Rentang Tanggal (Task) */}
+            <div className="flex items-center gap-1 bg-slate-50 p-0.5 rounded-lg border border-slate-200 shrink-0">
+              <DatePicker
+                name="filterStartDate"
+                value={filterStartDate}
+                onChange={(d) => setFilterStartDate(d)}
+                popupAlign="left"
+                customTrigger={(toggle) => (
+                  <button
+                    type="button"
+                    onClick={toggle}
+                    className="h-7 px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer max-w-[105px]"
+                    title={filterStartDate ? `Dari Tgl: ${formatDateDisplay(filterStartDate)}` : "Filter Dari Tgl Task"}
+                  >
+                    <Calendar size={11} className="text-slate-400 shrink-0" />
+                    <span className={`truncate ${!filterStartDate ? "text-slate-400 font-normal" : ""}`}>
+                      {filterStartDate ? formatDateDisplay(filterStartDate) : "Dari Tgl"}
+                    </span>
+                  </button>
+                )}
+              />
+              <span className="text-[10px] text-slate-400 font-bold px-0.5">-</span>
+              <DatePicker
+                name="filterEndDate"
+                value={filterEndDate}
+                onChange={(d) => setFilterEndDate(d)}
+                popupAlign="left"
+                customTrigger={(toggle) => (
+                  <button
+                    type="button"
+                    onClick={toggle}
+                    className="h-7 px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer max-w-[105px]"
+                    title={filterEndDate ? `Sampai Tgl: ${formatDateDisplay(filterEndDate)}` : "Filter Sampai Tgl Task"}
+                  >
+                    <Calendar size={11} className="text-slate-400 shrink-0" />
+                    <span className={`truncate ${!filterEndDate ? "text-slate-400 font-normal" : ""}`}>
+                      {filterEndDate ? formatDateDisplay(filterEndDate) : "Sampai Tgl"}
+                    </span>
+                  </button>
+                )}
+              />
+            </div>
+
+            {/* Filter Rentang Jam (Task) */}
+            <div className="flex items-center gap-1 bg-slate-50 p-0.5 rounded-lg border border-slate-200 shrink-0">
+              <TimePicker
+                name="filterStartTime"
+                value={filterStartTime}
+                onChange={(val) => setFilterStartTime(val)}
+                popupAlign="left"
+                customTrigger={(toggle) => (
+                  <button
+                    type="button"
+                    onClick={toggle}
+                    className="h-7 px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer max-w-[85px]"
+                    title={filterStartTime ? `Dari Jam: ${filterStartTime}` : "Filter Dari Jam Task"}
+                  >
+                    <Clock size={11} className="text-slate-400 shrink-0" />
+                    <span className={`truncate ${!filterStartTime ? "text-slate-400 font-normal" : ""}`}>
+                      {filterStartTime || "Dari Jam"}
+                    </span>
+                  </button>
+                )}
+              />
+              <span className="text-[10px] text-slate-400 font-bold px-0.5">-</span>
+              <TimePicker
+                name="filterEndTime"
+                value={filterEndTime}
+                onChange={(val) => setFilterEndTime(val)}
+                popupAlign="left"
+                customTrigger={(toggle) => (
+                  <button
+                    type="button"
+                    onClick={toggle}
+                    className="h-7 px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer max-w-[85px]"
+                    title={filterEndTime ? `Sampai Jam: ${filterEndTime}` : "Filter Sampai Jam Task"}
+                  >
+                    <Clock size={11} className="text-slate-400 shrink-0" />
+                    <span className={`truncate ${!filterEndTime ? "text-slate-400 font-normal" : ""}`}>
+                      {filterEndTime || "Sampai Jam"}
+                    </span>
+                  </button>
+                )}
+              />
+            </div>
+
             {showBagianFilter && (
               <SquareDropdown
                 options={bagianOptions}
                 value={selectedBagianFilter}
                 onChange={setSelectedBagianFilter}
                 searchPlaceholder="Cari Bagian..."
-                widthClass="w-28 sm:w-36 lg:w-44"
+                widthClass="w-28 sm:w-32 xl:w-40"
               />
             )}
 
@@ -2106,7 +2415,7 @@ export default function LaporanPekerjaanClient({
                 value={selectedPic}
                 onChange={setSelectedPic}
                 searchPlaceholder="Cari PIC..."
-                widthClass="w-28 sm:w-36 lg:w-44"
+                widthClass="w-28 sm:w-32 xl:w-40"
               />
             )}
 
@@ -2115,7 +2424,7 @@ export default function LaporanPekerjaanClient({
               value={selectedStatus}
               onChange={setSelectedStatus}
               searchPlaceholder="Cari Status..."
-              widthClass="w-28 sm:w-36 lg:w-44"
+              widthClass="w-28 sm:w-32 xl:w-40"
             />
 
             {/* Tombol Tambah Order Baru Manual di Paling Kanan */}
@@ -2127,11 +2436,11 @@ export default function LaporanPekerjaanClient({
                   setNewOrderTgl(new Date());
                   setShowAddOrderModal(true);
                 }}
-                className="h-8 px-2.5 sm:px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm ml-1"
+                className="h-8 px-2.5 sm:px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm ml-auto xl:ml-1"
                 title="Input Order Produksi Manual"
               >
                 <Plus size={14} />
-                <span className="hidden lg:inline">Tambah Order</span>
+                <span className="hidden sm:inline">Tambah Order</span>
               </button>
             )}
           </div>
