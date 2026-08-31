@@ -1899,7 +1899,7 @@ export default function LaporanPekerjaanClient({
       className={`text-slate-800 ${
         isAnalyticsOpen
           ? "flex flex-col gap-4 w-full pb-44 sm:pb-40 md:pb-24"
-          : "space-y-3 pb-44 sm:space-y-0 sm:flex-1 sm:min-h-0 sm:flex sm:flex-col sm:gap-3 sm:h-full sm:overflow-hidden sm:pb-0"
+          : "space-y-3 pb-44 sm:space-y-0 flex-1 min-h-0 flex flex-col sm:gap-3 h-full overflow-hidden pb-0"
       }`}
     >
       {/* Accordion: Statistik & Grafik Analisis */}
