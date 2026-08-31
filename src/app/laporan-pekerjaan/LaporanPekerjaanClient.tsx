@@ -2724,7 +2724,10 @@ export default function LaporanPekerjaanClient({
                       >
                         <div className="flex items-center gap-2">
                           <span className="truncate">{group.project}</span>
-                          <span className={`shrink-0 text-[10.5px] font-normal px-2 py-0.5 rounded-full border ${accent.badge.bg}`}>
+                          <span
+                            className={`shrink-0 font-normal px-2 py-0.5 rounded-full border ${accent.badge.bg}`}
+                            style={{ fontSize: `${Math.max(9, Math.round(tableFontSize * 0.88))}px` }}
+                          >
                             {group.tasks.length} task
                           </span>
                         </div>
@@ -2744,7 +2747,10 @@ export default function LaporanPekerjaanClient({
                               style={{ width: `${group.progressPct}%` }}
                             />
                           </div>
-                          <span className="shrink-0 text-[11px] font-bold text-slate-600 w-9 text-right">
+                          <span
+                            className="shrink-0 font-bold text-slate-600 w-9 text-right"
+                            style={{ fontSize: `${Math.max(9, Math.round(tableFontSize * 0.92))}px` }}
+                          >
                             {group.progressPct}%
                           </span>
                         </div>
@@ -3411,7 +3417,10 @@ function TaskDetailModal({
                           </td>
                         )}
                         {isColVisible('start_end') && (
-                          <td className="px-1.5 py-2 text-center text-slate-500 text-[10px] break-words leading-tight">
+                          <td
+                            className="px-1.5 py-2 text-center text-slate-500 break-words leading-tight"
+                            style={{ fontSize: fontSize ? `${Math.max(9, Math.round(fontSize * 0.85))}px` : undefined }}
+                          >
                             <div>
                               <span>{task.startDate ? formatDateDisplay(task.startDate) : "-"}</span>
                               {task.startTime && <span className="text-emerald-700 font-semibold ml-1">({task.startTime})</span>}
@@ -3422,7 +3431,10 @@ function TaskDetailModal({
                           </td>
                         )}
                         {isColVisible('work_days') && (
-                          <td className="px-1.5 py-2 text-center font-medium text-slate-600 text-[11px] whitespace-nowrap">
+                          <td
+                            className="px-1.5 py-2 text-center font-medium text-slate-600 whitespace-nowrap"
+                            style={{ fontSize: fontSize ? `${Math.max(9, Math.round(fontSize * 0.92))}px` : undefined }}
+                          >
                             {task.workDays ? `${task.workDays} hari` : "-"}
                           </td>
                         )}
@@ -3432,7 +3444,10 @@ function TaskDetailModal({
                           </td>
                         )}
                         {isColVisible('note') && (
-                          <td className="px-1.5 py-2 text-slate-600 break-words whitespace-pre-wrap leading-tight text-[11px]">
+                          <td
+                            className="px-1.5 py-2 text-slate-600 break-words whitespace-pre-wrap leading-tight"
+                            style={{ fontSize: fontSize ? `${Math.max(9, Math.round(fontSize * 0.92))}px` : undefined }}
+                          >
                             {task.note || "-"}
                           </td>
                         )}
