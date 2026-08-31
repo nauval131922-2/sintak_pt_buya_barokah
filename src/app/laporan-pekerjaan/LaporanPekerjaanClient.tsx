@@ -2426,7 +2426,7 @@ export default function LaporanPekerjaanClient({
                   setFilterStartTime("");
                   setFilterEndTime("");
                 }}
-                className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0 ml-auto md:ml-0"
+                className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0"
                 title="Reset Semua Filter"
               >
                 <X size={12} /> Reset
