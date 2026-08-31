@@ -567,6 +567,7 @@ export default function LaporanPekerjaanClient({
   const [filterEndTime, setFilterEndTime] = useState<string>("");
   const [isFilterHydrated, setIsFilterHydrated] = useState<boolean>(false);
   const [tableFontSize, setTableFontSize] = useState<number>(12);
+  const [fontSizeInputText, setFontSizeInputText] = useState<string>("12");
 
   // Restore filter tanggal & jam dari localStorage setelah client mounted
   useEffect(() => {
@@ -663,6 +664,7 @@ export default function LaporanPekerjaanClient({
         const num = parseInt(savedFontSize, 10);
         if (!isNaN(num) && num >= 9 && num <= 24) {
           setTableFontSize(num);
+          setFontSizeInputText(String(num));
         }
       }
     } catch {
@@ -673,9 +675,19 @@ export default function LaporanPekerjaanClient({
   const changeTableFontSize = (size: number) => {
     const clamped = Math.max(9, Math.min(24, size));
     setTableFontSize(clamped);
+    setFontSizeInputText(String(clamped));
     try {
       localStorage.setItem("laporan_pekerjaan_table_font_size", String(clamped));
     } catch {}
+  };
+
+  const handleFontSizeInputBlurOrEnter = () => {
+    const num = parseInt(fontSizeInputText, 10);
+    if (!isNaN(num)) {
+      changeTableFontSize(num);
+    } else {
+      setFontSizeInputText(String(tableFontSize));
+    }
   };
 
   const FONT_SIZE_STEPS = [9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24];
@@ -2444,7 +2456,7 @@ export default function LaporanPekerjaanClient({
               widthClass="flex-1 min-w-[110px] sm:w-28 md:w-32 lg:w-36"
             />
 
-            {/* Pengatur Ukuran Font Tabel Utama (Excel Style: Dropdown / Input Angka + Tombol A- / A+) */}
+            {/* Pengatur Ukuran Font Tabel Utama (Excel Style: Custom Input Angka + Dropdown Preset + Tombol - / +) */}
             <div className="hidden sm:flex items-center gap-1 bg-slate-50 p-1 rounded-lg border border-slate-200 shrink-0" title="Ukuran Font Tabel">
               <span className="text-[11px] font-bold text-slate-500 pl-1 select-none flex items-center gap-0.5">
                 <span className="text-slate-400 font-semibold">Teks:</span>
@@ -2454,28 +2466,53 @@ export default function LaporanPekerjaanClient({
                 onClick={() => handleStepFontSize(-1)}
                 disabled={tableFontSize <= FONT_SIZE_STEPS[0]}
                 className="w-5 h-5 flex items-center justify-center text-xs font-bold text-slate-600 hover:text-emerald-700 bg-white hover:bg-slate-100 rounded border border-slate-200 transition-colors shadow-xs disabled:opacity-30 disabled:cursor-not-allowed"
-                title="Perkecil Ukuran Font"
+                title="Perkecil Ukuran Font (-)"
               >
                 -
               </button>
-              <select
-                value={tableFontSize}
-                onChange={(e) => changeTableFontSize(Number(e.target.value))}
-                className="h-5 px-1 bg-white border border-slate-200 rounded text-[11px] font-bold text-slate-700 hover:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer shadow-xs"
-                title="Pilih Ukuran Font (px)"
-              >
-                {FONT_SIZE_STEPS.map((sz) => (
-                  <option key={sz} value={sz}>
-                    {sz}px
-                  </option>
-                ))}
-              </select>
+              {/* Input Angka Custom & Dropdown Preset Ukuran Font */}
+              <div className="relative flex items-center bg-white border border-slate-200 rounded focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500 shadow-xs">
+                <input
+                  type="text"
+                  value={fontSizeInputText}
+                  onChange={(e) => {
+                    const clean = e.target.value.replace(/\D/g, "");
+                    setFontSizeInputText(clean);
+                  }}
+                  onBlur={handleFontSizeInputBlurOrEnter}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleFontSizeInputBlurOrEnter();
+                      (e.target as HTMLInputElement).blur();
+                    }
+                  }}
+                  className="w-7 h-5 pl-1 pr-0 text-center text-[11px] font-bold text-slate-700 bg-transparent focus:outline-none"
+                  title="Ketik angka ukuran font (9-24px) lalu Enter"
+                />
+                <select
+                  value={FONT_SIZE_STEPS.includes(tableFontSize) ? tableFontSize : ""}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      changeTableFontSize(Number(e.target.value));
+                    }
+                  }}
+                  className="w-3.5 h-5 bg-transparent border-none text-slate-400 hover:text-slate-700 focus:outline-none cursor-pointer text-[10px] pr-1"
+                  title="Pilih Preset Ukuran Font"
+                >
+                  <option value="" disabled hidden></option>
+                  {FONT_SIZE_STEPS.map((sz) => (
+                    <option key={sz} value={sz}>
+                      {sz}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <button
                 type="button"
                 onClick={() => handleStepFontSize(1)}
                 disabled={tableFontSize >= FONT_SIZE_STEPS[FONT_SIZE_STEPS.length - 1]}
                 className="w-5 h-5 flex items-center justify-center text-xs font-bold text-slate-600 hover:text-emerald-700 bg-white hover:bg-slate-100 rounded border border-slate-200 transition-colors shadow-xs disabled:opacity-30 disabled:cursor-not-allowed"
-                title="Perbesar Ukuran Font"
+                title="Perbesar Ukuran Font (+)"
               >
                 +
               </button>
