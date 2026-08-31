@@ -556,7 +556,7 @@ export default function LaporanPekerjaanClient({
   const [selectedBagianFilter, setSelectedBagianFilter] = useState<string>("ALL");
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
 
-  // Helper initial date: default hari ini, restore session storage jika hari masih sama
+  // Helper initial date: default hari ini, restore session storage jika hari masih sama (termasuk status dikosongkan)
   const [filterStartDate, setFilterStartDate] = useState<Date | null>(() => {
     const today = new Date();
     const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
@@ -564,9 +564,12 @@ export default function LaporanPekerjaanClient({
       try {
         const savedDateDay = localStorage.getItem("laporan_pekerjaan_filter_saved_day");
         const savedStart = localStorage.getItem("laporan_pekerjaan_filter_start_date");
-        if (savedDateDay === todayKey && savedStart) {
-          const parsed = new Date(savedStart);
-          if (!isNaN(parsed.getTime())) return parsed;
+        if (savedDateDay === todayKey) {
+          if (savedStart === "EMPTY") return null;
+          if (savedStart) {
+            const parsed = new Date(savedStart);
+            if (!isNaN(parsed.getTime())) return parsed;
+          }
         }
       } catch {}
     }
@@ -580,9 +583,12 @@ export default function LaporanPekerjaanClient({
       try {
         const savedDateDay = localStorage.getItem("laporan_pekerjaan_filter_saved_day");
         const savedEnd = localStorage.getItem("laporan_pekerjaan_filter_end_date");
-        if (savedDateDay === todayKey && savedEnd) {
-          const parsed = new Date(savedEnd);
-          if (!isNaN(parsed.getTime())) return parsed;
+        if (savedDateDay === todayKey) {
+          if (savedEnd === "EMPTY") return null;
+          if (savedEnd) {
+            const parsed = new Date(savedEnd);
+            if (!isNaN(parsed.getTime())) return parsed;
+          }
         }
       } catch {}
     }
@@ -627,12 +633,12 @@ export default function LaporanPekerjaanClient({
       if (filterStartDate) {
         localStorage.setItem("laporan_pekerjaan_filter_start_date", filterStartDate.toISOString());
       } else {
-        localStorage.removeItem("laporan_pekerjaan_filter_start_date");
+        localStorage.setItem("laporan_pekerjaan_filter_start_date", "EMPTY");
       }
       if (filterEndDate) {
         localStorage.setItem("laporan_pekerjaan_filter_end_date", filterEndDate.toISOString());
       } else {
-        localStorage.removeItem("laporan_pekerjaan_filter_end_date");
+        localStorage.setItem("laporan_pekerjaan_filter_end_date", "EMPTY");
       }
       if (filterStartTime) {
         localStorage.setItem("laporan_pekerjaan_filter_start_time", filterStartTime);
