@@ -2015,7 +2015,7 @@ export default function LaporanPekerjaanClient({
               title="Reload Data Laporan Pekerjaan"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-emerald-600" : ""}`} />
-              <span className="hidden sm:inline">Reload</span>
+              <span className="hidden lg:inline">Reload</span>
             </button>
 
             {/* Input Search */}
@@ -2093,8 +2093,7 @@ export default function LaporanPekerjaanClient({
                 title="Input Order Produksi Manual"
               >
                 <Plus size={14} />
-                <span className="hidden sm:inline">Tambah Order</span>
-                <span className="sm:hidden">Order</span>
+                <span className="hidden lg:inline">Tambah Order</span>
               </button>
             )}
           </div>
