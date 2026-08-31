@@ -370,7 +370,7 @@ const getOrderStatusAccent = (group: { tasks: SpreadsheetTask[]; progressPct: nu
     return {
       status: "BELUM DIKERJAKAN",
       rowBg: "bg-slate-50/70",
-      borderAccent: "border-l-[4.5px] border-l-slate-400",
+      borderAccent: "shadow-[inset_4.5px_0_0_0_#94a3b8]",
       barColor: "bg-slate-400",
       rowHover: "hover:bg-slate-100/80",
       selectedBg: "bg-slate-200/90 shadow-[inset_5px_0_0_0_#475569]",
@@ -383,7 +383,7 @@ const getOrderStatusAccent = (group: { tasks: SpreadsheetTask[]; progressPct: nu
     return {
       status: "CANCEL",
       rowBg: "bg-rose-50/80",
-      borderAccent: "border-l-[4.5px] border-l-rose-500",
+      borderAccent: "shadow-[inset_4.5px_0_0_0_#f43f5e]",
       barColor: "bg-rose-500",
       rowHover: "hover:bg-rose-100/70",
       selectedBg: "bg-rose-200/90 shadow-[inset_5px_0_0_0_#e11d48]",
@@ -396,7 +396,7 @@ const getOrderStatusAccent = (group: { tasks: SpreadsheetTask[]; progressPct: nu
     return {
       status: "SELESAI",
       rowBg: "bg-emerald-50/80",
-      borderAccent: "border-l-[4.5px] border-l-emerald-600",
+      borderAccent: "shadow-[inset_4.5px_0_0_0_#059669]",
       barColor: "bg-emerald-600",
       rowHover: "hover:bg-emerald-100/70",
       selectedBg: "bg-emerald-200/90 shadow-[inset_5px_0_0_0_#059669]",
@@ -409,7 +409,7 @@ const getOrderStatusAccent = (group: { tasks: SpreadsheetTask[]; progressPct: nu
     return {
       status: "IN PROGRESS",
       rowBg: "bg-sky-50/80",
-      borderAccent: "border-l-[4.5px] border-l-sky-500",
+      borderAccent: "shadow-[inset_4.5px_0_0_0_#0ea5e9]",
       barColor: "bg-sky-500",
       rowHover: "hover:bg-sky-100/70",
       selectedBg: "bg-sky-200/90 shadow-[inset_5px_0_0_0_#0284c7]",
@@ -420,7 +420,7 @@ const getOrderStatusAccent = (group: { tasks: SpreadsheetTask[]; progressPct: nu
   return {
     status: "BELUM DIKERJAKAN",
     rowBg: "bg-slate-50/70",
-    borderAccent: "border-l-[4.5px] border-l-slate-400",
+    borderAccent: "shadow-[inset_4.5px_0_0_0_#94a3b8]",
     barColor: "bg-slate-400",
     rowHover: "hover:bg-slate-100/80",
     selectedBg: "bg-slate-200/90 shadow-[inset_5px_0_0_0_#475569]",
@@ -2618,7 +2618,7 @@ export default function LaporanPekerjaanClient({
               <tr className="bg-slate-50">
                 <th
                   style={{ width: "var(--col-aksi, 130px)", minWidth: "var(--col-aksi, 130px)" }}
-                  className="relative px-3 py-2.5 text-center bg-slate-50 sticky top-0 z-10 border-b border-l-[4.5px] border-l-slate-200 border-b-slate-200 select-none group"
+                  className="relative px-3 py-2.5 text-center bg-slate-50 sticky top-0 z-10 border-b border-slate-200 select-none group"
                 >
                   <span className="truncate">Aksi</span>
                 </th>
