@@ -7,6 +7,7 @@ import {
   X,
   LayoutGrid,
   TableProperties,
+  Layers,
 } from 'lucide-react';
 import {
   calculateManasikSimulator,
@@ -297,85 +298,129 @@ export default function ManasikMatrixView({
       </div>
 
       {viewMode === 'matrix' ? (
-        <div className="space-y-6">
-        {matrixData.map((section) => {
-          if (section.rows.length === 0) return null;
-          return (
-            <div
-              key={section.hal}
-              className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden"
-            >
-              <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                <h4 className="text-xs font-bold text-slate-800 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
-                  {section.title} (Ukuran 10 x 15.5 cm)
-                </h4>
-                <span className="text-[11px] font-mono text-slate-500">
-                  Bahan Cover AC 230 + Laminasi Glossy
+        <div className="flex flex-col gap-6">
+          {matrixData.every((s) => s.rows.length === 0) ? (
+            <div className="p-8 text-center bg-white rounded-xl border border-slate-200 text-xs text-slate-500">
+              Tidak ada data yang sesuai pencarian.
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                  <h3 className="text-sm font-bold text-gray-800 tracking-tight">Buku Manasik Haji &amp; Umroh</h3>
+                </div>
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                  Cover AC 230 + Laminasi Glossy · 10 x 15.5 cm
                 </span>
               </div>
 
-              <div className="overflow-x-auto max-h-96">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead className="sticky top-0 bg-slate-100/95 backdrop-blur-xs border-b border-slate-200 text-slate-600 uppercase text-[10px] font-bold tracking-wider">
-                    <tr>
-                      <th className="p-2.5 pl-4">Oplah (Eks)</th>
-                      <th className="p-2.5">Metode Cover</th>
-                      {(selectedJilidFilter === 'ALL' || selectedJilidFilter === 'Softcover') && (
-                        <th className="p-2.5 text-right">Softcover Bending</th>
-                      )}
-                      {(selectedJilidFilter === 'ALL' || selectedJilidFilter === 'Cocard') && (
-                        <th className="p-2.5 text-right">Tali Cocard</th>
-                      )}
-                      {(selectedJilidFilter === 'ALL' || selectedJilidFilter === 'Spiral') && (
-                        <th className="p-2.5 text-right pr-4">Spiral Kawat</th>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
-                    {section.rows.map((row) => (
-                      <tr
-                        key={row.oplah}
-                        className="hover:bg-emerald-50/40 transition-colors"
-                      >
-                        <td className="p-2.5 pl-4 font-bold text-slate-800">
-                          {row.oplah.toLocaleString('id-ID')}
-                        </td>
-                        <td className="p-2.5 text-slate-500 font-sans text-xs">
-                          {row.metode}
-                        </td>
-                        {(selectedJilidFilter === 'ALL' || selectedJilidFilter === 'Softcover') && (
-                          <td className="p-2.5 text-right font-bold text-slate-900">
-                            Rp {row.softBendingJual.toLocaleString('id-ID')}
-                            <span className="block text-[9px] text-slate-400 font-normal">
-                              HPP: Rp {row.softBendingHpp.toLocaleString('id-ID')}
-                            </span>
-                          </td>
-                        )}
-                        {(selectedJilidFilter === 'ALL' || selectedJilidFilter === 'Cocard') && (
-                          <td className="p-2.5 text-right font-bold text-emerald-800 bg-emerald-50/30">
-                            Rp {row.taliCocardJual.toLocaleString('id-ID')}
-                            <span className="block text-[9px] text-emerald-700/70 font-normal">
-                              HPP: Rp {row.taliCocardHpp.toLocaleString('id-ID')}
-                            </span>
-                          </td>
-                        )}
-                        {(selectedJilidFilter === 'ALL' || selectedJilidFilter === 'Spiral') && (
-                          <td className="p-2.5 text-right pr-4 font-bold text-slate-900">
-                            Rp {row.spiralJual.toLocaleString('id-ID')}
-                            <span className="block text-[9px] text-slate-400 font-normal">
-                              HPP: Rp {row.spiralHpp.toLocaleString('id-ID')}
-                            </span>
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              {matrixData.map((section) => {
+                if (section.rows.length === 0) return null;
+                return (
+                  <div key={section.hal} className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
+                    <div className="bg-amber-50/70 px-4 py-2 border-b border-amber-100 flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-amber-900 tracking-wider uppercase flex items-center gap-1.5">
+                        <Layers size={13} className="text-amber-600" />
+                        Bahan: {section.title} — 10 x 15.5 cm
+                      </span>
+                    </div>
+                    <div className="overflow-x-auto max-h-[500px]">
+                      <table className="w-full text-xs text-left border-collapse">
+                        <thead className="sticky top-0 z-10 bg-white shadow-xs">
+                          <tr className="bg-gray-100 border-b border-gray-200 text-gray-700 font-bold">
+                            <th className="py-2.5 px-3 border-r border-gray-200 text-center w-20 bg-gray-100" rowSpan={2}>
+                              Oplah
+                            </th>
+                            <th className="py-2.5 px-3 border-r border-gray-200 text-center w-28 bg-gray-100" rowSpan={2}>
+                              Mesin
+                            </th>
+                            {(selectedJilidFilter === 'ALL' || selectedJilidFilter === 'Softcover') && (
+                              <th colSpan={2} className="py-1.5 px-2 text-center border-r border-gray-200 font-bold text-gray-900 bg-gray-200/80">
+                                Softcover Bending
+                              </th>
+                            )}
+                            {(selectedJilidFilter === 'ALL' || selectedJilidFilter === 'Cocard') && (
+                              <th colSpan={2} className="py-1.5 px-2 text-center border-r border-gray-200 font-bold text-gray-900 bg-gray-200/80">
+                                Tali Cocard
+                              </th>
+                            )}
+                            {(selectedJilidFilter === 'ALL' || selectedJilidFilter === 'Spiral') && (
+                              <th colSpan={2} className="py-1.5 px-2 text-center border-r border-gray-200 font-bold text-gray-900 bg-gray-200/80">
+                                Spiral Kawat
+                              </th>
+                            )}
+                          </tr>
+                          <tr className="bg-gray-50 border-b border-gray-200 text-[11px] text-gray-600">
+                            {(selectedJilidFilter === 'ALL' || selectedJilidFilter === 'Softcover') && (
+                              <>
+                                <th className="py-1.5 px-2 text-right font-semibold bg-gray-50">HPP</th>
+                                <th className="py-1.5 px-2 text-right font-bold text-emerald-800 bg-emerald-100/50 border-r border-gray-200">Harga</th>
+                              </>
+                            )}
+                            {(selectedJilidFilter === 'ALL' || selectedJilidFilter === 'Cocard') && (
+                              <>
+                                <th className="py-1.5 px-2 text-right font-semibold bg-gray-50">HPP</th>
+                                <th className="py-1.5 px-2 text-right font-bold text-emerald-800 bg-emerald-100/50 border-r border-gray-200">Harga</th>
+                              </>
+                            )}
+                            {(selectedJilidFilter === 'ALL' || selectedJilidFilter === 'Spiral') && (
+                              <>
+                                <th className="py-1.5 px-2 text-right font-semibold bg-gray-50">HPP</th>
+                                <th className="py-1.5 px-2 text-right font-bold text-emerald-800 bg-emerald-100/50 border-r border-gray-200">Harga</th>
+                              </>
+                            )}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {section.rows.map((row) => (
+                            <tr key={row.oplah} className="hover:bg-amber-50/30 transition-colors">
+                              <td className="py-2 px-3 text-center font-bold text-gray-900 border-r border-gray-200 bg-gray-50/30">
+                                {row.oplah.toLocaleString('id-ID')}
+                              </td>
+                              <td className="py-2 px-3 text-center text-gray-600 border-r border-gray-200 font-medium">
+                                <span
+                                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                    row.metode === 'Cetak Oliver' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
+                                  }`}
+                                >
+                                  {row.metode === 'Cetak Oliver' ? 'Oliver' : 'Digital'}
+                                </span>
+                              </td>
+                              {(selectedJilidFilter === 'ALL' || selectedJilidFilter === 'Softcover') && (
+                                <>
+                                  <td className="py-2 px-2 text-right text-gray-500 font-mono">{row.softBendingHpp.toLocaleString('id-ID')}</td>
+                                  <td className="py-2 px-2 text-right font-bold text-emerald-700 font-mono bg-emerald-50/30 border-r border-gray-200">
+                                    {row.softBendingJual.toLocaleString('id-ID')}
+                                  </td>
+                                </>
+                              )}
+                              {(selectedJilidFilter === 'ALL' || selectedJilidFilter === 'Cocard') && (
+                                <>
+                                  <td className="py-2 px-2 text-right text-gray-500 font-mono">{row.taliCocardHpp.toLocaleString('id-ID')}</td>
+                                  <td className="py-2 px-2 text-right font-bold text-emerald-700 font-mono bg-emerald-50/30 border-r border-gray-200">
+                                    {row.taliCocardJual.toLocaleString('id-ID')}
+                                  </td>
+                                </>
+                              )}
+                              {(selectedJilidFilter === 'ALL' || selectedJilidFilter === 'Spiral') && (
+                                <>
+                                  <td className="py-2 px-2 text-right text-gray-500 font-mono">{row.spiralHpp.toLocaleString('id-ID')}</td>
+                                  <td className="py-2 px-2 text-right font-bold text-emerald-700 font-mono bg-emerald-50/30 border-r border-gray-200">
+                                    {row.spiralJual.toLocaleString('id-ID')}
+                                  </td>
+                                </>
+                              )}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          );
-        })}
+          )}
         </div>
       ) : (
         /* Detailed Flat Table View */

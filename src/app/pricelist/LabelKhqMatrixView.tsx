@@ -7,6 +7,7 @@ import {
   X,
   LayoutGrid,
   TableProperties,
+  Layers,
   Wine,
 } from 'lucide-react';
 import {
@@ -212,63 +213,80 @@ export default function LabelKhqMatrixView({
 
       {/* Table Content */}
       {viewMode === 'matrix' ? (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col">
-          <div className="overflow-x-auto max-h-[600px]">
-            <table className="w-full text-xs text-left border-collapse">
-              <thead className="sticky top-0 z-10 bg-slate-100 border-b border-slate-200 text-slate-700 font-bold">
-                <tr>
-                  <th className="py-2.5 px-3 border-r border-slate-200 text-center w-24">Jumlah Dus</th>
-                  <th className="py-2.5 px-3 border-r border-slate-200 text-center w-24">Jumlah Lbr</th>
-                  {activeVarians.map((v) => (
-                    <th key={v} className="py-2.5 px-3 text-center border-r border-slate-200 last:border-r-0">
-                      <div className="font-bold text-slate-900">{v}</div>
-                      <div className="text-[10px] text-slate-500 font-normal">{LABEL_KHQ_CONFIG[v].w} x {LABEL_KHQ_CONFIG[v].h} cm</div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
-                {matrixData.length === 0 ? (
-                  <tr>
-                    <td colSpan={2 + activeVarians.length} className="p-8 text-center text-slate-400 font-sans">
-                      Tidak ada data yang cocok dengan kriteria pencarian.
-                    </td>
-                  </tr>
-                ) : (
-                  matrixData.map((row) => (
-                    <tr key={row.kardus} className="hover:bg-emerald-50/30 transition-colors">
-                      <td className="py-2 px-3 font-black text-slate-800 text-center border-r border-slate-100 font-sans">
-                        {row.kardus} Dus
-                      </td>
-                      <td className="py-2 px-3 font-bold text-slate-600 text-center border-r border-slate-100 font-mono">
-                        {row.lbr.toLocaleString('id-ID')}
-                      </td>
-                      {row.cols.map((col) => (
-                        <td
-                          key={col.varian}
-                          className="py-2 px-3 text-center border-r border-slate-100 last:border-r-0 align-top"
-                        >
-                          <span className="block font-bold text-emerald-800 font-mono text-[11px]">
-                            Rp {col.jual.toLocaleString('id-ID')} /lbr
-                          </span>
-                          <span className="block text-[9px] text-blue-600 font-mono">
-                            Nego: Rp {col.nego.toLocaleString('id-ID')}
-                          </span>
-                          <span className="block text-[9px] text-slate-400 font-mono">
-                            HPP: Rp {col.hpp.toFixed(1)} · Total: Rp {col.totalJual.toLocaleString('id-ID')}
-                          </span>
-                        </td>
-                      ))}
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-          <div className="px-4 py-2 bg-slate-50 border-t border-slate-200 text-[10px] text-slate-500 font-medium flex flex-wrap gap-4">
-            <span>Harga dalam Rp / lembar label · Baris: Jual / <span className="text-blue-600">Nego</span> / <span className="text-slate-400">HPP</span></span>
-            <span>Standar 1 Dus = 24 lembar · Margin 30% · Laminasi Glossy &amp; Rajang ON</span>
-          </div>
+        <div className="flex flex-col gap-6">
+          {matrixData.length === 0 ? (
+            <div className="p-8 text-center bg-white rounded-xl border border-slate-200 text-xs text-slate-500">
+              Tidak ada data yang cocok dengan kriteria pencarian.
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                  <h3 className="text-sm font-bold text-gray-800 tracking-tight">Label KHQ</h3>
+                </div>
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                  {selectedVarianFilter === 'ALL' ? 'Semua Varian' : selectedVarianFilter}
+                </span>
+              </div>
+
+              {activeVarians.map((varian) => (
+                <div key={varian} className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
+                  <div className="bg-amber-50/70 px-4 py-2 border-b border-amber-100 flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-amber-900 tracking-wider uppercase flex items-center gap-1.5">
+                      <Layers size={13} className="text-amber-600" />
+                      Bahan: {varian} — {LABEL_KHQ_CONFIG[varian].w} x {LABEL_KHQ_CONFIG[varian].h} cm
+                    </span>
+                  </div>
+                  <div className="overflow-x-auto max-h-[500px]">
+                    <table className="w-full text-xs text-left border-collapse">
+                      <thead className="sticky top-0 z-10 bg-white shadow-xs">
+                        <tr className="bg-gray-100 border-b border-gray-200 text-gray-700 font-bold">
+                          <th className="py-2.5 px-3 border-r border-gray-200 text-center w-24 bg-gray-100" rowSpan={2}>
+                            Jumlah Dus
+                          </th>
+                          <th className="py-2.5 px-3 border-r border-gray-200 text-center w-24 bg-gray-100" rowSpan={2}>
+                            Jumlah Lbr
+                          </th>
+                          <th colSpan={3} className="py-1.5 px-2 text-center border-r border-gray-200 font-bold text-gray-900 bg-gray-200/80">
+                            {varian}
+                          </th>
+                        </tr>
+                        <tr className="bg-gray-50 border-b border-gray-200 text-[11px] text-gray-600">
+                          <th className="py-1.5 px-2 text-right font-semibold bg-gray-50">HPP</th>
+                          <th className="py-1.5 px-2 text-right font-bold text-emerald-800 bg-emerald-100/50">Harga</th>
+                          <th className="py-1.5 px-2 text-right font-bold text-blue-800 bg-blue-100/50 border-r border-gray-200">Nego</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {matrixData.map((row) => {
+                          const col = row.cols.find((c) => c.varian === varian);
+                          if (!col) return null;
+                          return (
+                            <tr key={row.kardus} className="hover:bg-amber-50/30 transition-colors">
+                              <td className="py-2 px-3 text-center font-bold text-gray-900 border-r border-gray-200 bg-gray-50/30">
+                                {row.kardus} Dus
+                              </td>
+                              <td className="py-2 px-3 text-center font-bold text-gray-600 border-r border-gray-200 font-mono">
+                                {row.lbr.toLocaleString('id-ID')}
+                              </td>
+                              <td className="py-2 px-2 text-right text-gray-500 font-mono">{col.hpp.toFixed(1)}</td>
+                              <td className="py-2 px-2 text-right font-bold text-emerald-700 font-mono bg-emerald-50/30">
+                                {col.jual.toLocaleString('id-ID')}
+                              </td>
+                              <td className="py-2 px-2 text-right font-bold text-blue-700 font-mono bg-blue-50/30 border-r border-gray-200">
+                                {col.nego.toLocaleString('id-ID')}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col">

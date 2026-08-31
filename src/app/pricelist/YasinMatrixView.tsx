@@ -7,6 +7,7 @@ import {
   X,
   LayoutGrid,
   TableProperties,
+  Layers,
 } from 'lucide-react';
 import {
   calculateYasinSimulator,
@@ -273,67 +274,98 @@ export default function YasinMatrixView({
       </div>
 
       {viewMode === 'matrix' ? (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {matrixData.map((section) => {
-          if (section.rows.length === 0) return null;
-          return (
-            <div
-              key={section.hal}
-              className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden"
-            >
-              <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                <h4 className="text-xs font-bold text-slate-800 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
-                  {section.title} (11.7 x 15 cm)
-                </h4>
+        <div className="flex flex-col gap-6">
+          {matrixData.every((s) => s.rows.length === 0) ? (
+            <div className="p-8 text-center bg-white rounded-xl border border-slate-200 text-xs text-slate-500">
+              Tidak ada data yang sesuai pencarian.
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                  <h3 className="text-sm font-bold text-gray-800 tracking-tight">Buku Surat Yasin &amp; Tahlil</h3>
+                </div>
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                  11.7 x 15 cm · 2 Lbr Foto + 2 Lbr Keluarga
+                </span>
               </div>
 
-              <div className="overflow-x-auto max-h-96">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead className="sticky top-0 bg-slate-100/95 backdrop-blur-xs border-b border-slate-200 text-slate-600 uppercase text-[10px] font-bold tracking-wider">
-                    <tr>
-                      <th className="p-2.5 pl-4">Oplah (Buku)</th>
-                      {(selectedCoverFilter === 'ALL' || selectedCoverFilter === 'Softcover') && (
-                        <th className="p-2.5 text-right">Soft Cover (AC 230)</th>
-                      )}
-                      {(selectedCoverFilter === 'ALL' || selectedCoverFilter === 'Hardcover') && (
-                        <th className="p-2.5 text-right pr-4">Hard Cover (Mewah)</th>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
-                    {section.rows.map((row) => (
-                      <tr
-                        key={row.oplah}
-                        className="hover:bg-emerald-50/40 transition-colors"
-                      >
-                        <td className="p-2.5 pl-4 font-bold text-slate-800">
-                          {row.oplah.toLocaleString('id-ID')} pcs
-                        </td>
-                        {(selectedCoverFilter === 'ALL' || selectedCoverFilter === 'Softcover') && (
-                          <td className="p-2.5 text-right font-bold text-slate-900">
-                            Rp {row.softJual.toLocaleString('id-ID')}
-                            <span className="block text-[9px] text-slate-400 font-normal">
-                              HPP: Rp {row.softHpp.toLocaleString('id-ID')}
-                            </span>
-                          </td>
-                        )}
-                        {(selectedCoverFilter === 'ALL' || selectedCoverFilter === 'Hardcover') && (
-                          <td className="p-2.5 text-right pr-4 font-bold text-emerald-800 bg-emerald-50/30">
-                            Rp {row.hardJual.toLocaleString('id-ID')}
-                            <span className="block text-[9px] text-emerald-700/70 font-normal">
-                              HPP: Rp {row.hardHpp.toLocaleString('id-ID')}
-                            </span>
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              {matrixData.map((section) => {
+                if (section.rows.length === 0) return null;
+                return (
+                  <div key={section.hal} className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
+                    <div className="bg-amber-50/70 px-4 py-2 border-b border-amber-100 flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-amber-900 tracking-wider uppercase flex items-center gap-1.5">
+                        <Layers size={13} className="text-amber-600" />
+                        Bahan: {section.title} — 11.7 x 15 cm
+                      </span>
+                    </div>
+                    <div className="overflow-x-auto max-h-[500px]">
+                      <table className="w-full text-xs text-left border-collapse">
+                        <thead className="sticky top-0 z-10 bg-white shadow-xs">
+                          <tr className="bg-gray-100 border-b border-gray-200 text-gray-700 font-bold">
+                            <th className="py-2.5 px-3 border-r border-gray-200 text-center w-20 bg-gray-100" rowSpan={2}>
+                              Oplah
+                            </th>
+                            {(selectedCoverFilter === 'ALL' || selectedCoverFilter === 'Softcover') && (
+                              <th colSpan={2} className="py-1.5 px-2 text-center border-r border-gray-200 font-bold text-gray-900 bg-gray-200/80">
+                                Soft Cover
+                              </th>
+                            )}
+                            {(selectedCoverFilter === 'ALL' || selectedCoverFilter === 'Hardcover') && (
+                              <th colSpan={2} className="py-1.5 px-2 text-center border-r border-gray-200 font-bold text-gray-900 bg-gray-200/80">
+                                Hard Cover
+                              </th>
+                            )}
+                          </tr>
+                          <tr className="bg-gray-50 border-b border-gray-200 text-[11px] text-gray-600">
+                            {(selectedCoverFilter === 'ALL' || selectedCoverFilter === 'Softcover') && (
+                              <>
+                                <th className="py-1.5 px-2 text-right font-semibold bg-gray-50">HPP</th>
+                                <th className="py-1.5 px-2 text-right font-bold text-emerald-800 bg-emerald-100/50 border-r border-gray-200">Harga</th>
+                              </>
+                            )}
+                            {(selectedCoverFilter === 'ALL' || selectedCoverFilter === 'Hardcover') && (
+                              <>
+                                <th className="py-1.5 px-2 text-right font-semibold bg-gray-50">HPP</th>
+                                <th className="py-1.5 px-2 text-right font-bold text-emerald-800 bg-emerald-100/50 border-r border-gray-200">Harga</th>
+                              </>
+                            )}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {section.rows.map((row) => (
+                            <tr key={row.oplah} className="hover:bg-amber-50/30 transition-colors">
+                              <td className="py-2 px-3 text-center font-bold text-gray-900 border-r border-gray-200 bg-gray-50/30">
+                                {row.oplah.toLocaleString('id-ID')}
+                              </td>
+                              {(selectedCoverFilter === 'ALL' || selectedCoverFilter === 'Softcover') && (
+                                <>
+                                  <td className="py-2 px-2 text-right text-gray-500 font-mono">{row.softHpp.toLocaleString('id-ID')}</td>
+                                  <td className="py-2 px-2 text-right font-bold text-emerald-700 font-mono bg-emerald-50/30 border-r border-gray-200">
+                                    {row.softJual.toLocaleString('id-ID')}
+                                  </td>
+                                </>
+                              )}
+                              {(selectedCoverFilter === 'ALL' || selectedCoverFilter === 'Hardcover') && (
+                                <>
+                                  <td className="py-2 px-2 text-right text-gray-500 font-mono">{row.hardHpp.toLocaleString('id-ID')}</td>
+                                  <td className="py-2 px-2 text-right font-bold text-emerald-700 font-mono bg-emerald-50/30 border-r border-gray-200">
+                                    {row.hardJual.toLocaleString('id-ID')}
+                                  </td>
+                                </>
+                              )}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          );
-        })}
+          )}
         </div>
       ) : (
         /* Detailed Flat Table View */

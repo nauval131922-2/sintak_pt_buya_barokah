@@ -7,6 +7,7 @@ import {
   X,
   LayoutGrid,
   TableProperties,
+  Layers,
 } from 'lucide-react';
 import {
   calculateBukuTulisHpp,
@@ -176,64 +177,74 @@ export default function BukuTulisMatrixView({
       </div>
 
       {viewMode === 'matrix' ? (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-          <div className="overflow-x-auto max-h-[640px]">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead className="sticky top-0 z-10 bg-slate-100 border-b border-slate-200">
-                <tr>
-                  <th className="py-2.5 px-3 text-slate-700 font-bold whitespace-nowrap">
-                    Oplah (pcs)
-                  </th>
-                  {ukuranCols.map((u) => (
-                    <th
-                      key={u}
-                      className="py-2 px-3 text-center text-emerald-800 font-bold border-l border-slate-200 text-[11px]"
-                    >
-                      <div>{u} cm</div>
-                      <div className="text-[10px] font-normal text-slate-500">{BUKU_TULIS_CONFIG[u].w}×{BUKU_TULIS_CONFIG[u].h} cm · {BUKU_TULIS_CONFIG[u].leavesPerA3} lbr/A3</div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {matrixData.length === 0 ? (
-                  <tr>
-                    <td colSpan={1 + ukuranCols.length} className="p-8 text-center text-slate-400 font-sans text-xs">
-                      Tidak ada data yang sesuai pencarian.
-                    </td>
-                  </tr>
-                ) : (
-                  matrixData.map((row) => (
-                    <tr key={row.oplah} className="hover:bg-emerald-50/30 transition-colors">
-                      <td className="py-2 px-3 font-black text-slate-800 whitespace-nowrap font-mono">
-                        {row.oplah.toLocaleString('id-ID')}
-                      </td>
-                      {row.cols.map((col) => (
-                        <td
-                          key={col.ukuran}
-                          className="py-2 px-2 text-center border-l border-slate-100 align-top"
-                        >
-                          <span className="block font-bold text-emerald-800 font-mono text-[11px]">
-                            Rp {col.jual.toLocaleString('id-ID')}
-                          </span>
-                          <span className="block text-[9px] text-blue-600 font-mono">
-                            Nego Rp {col.nego.toLocaleString('id-ID')}
-                          </span>
-                          <span className="block text-[9px] text-slate-400 font-mono">
-                            HPP Rp {Math.round(col.hpp).toLocaleString('id-ID')} · Total Rp {col.totalJual.toLocaleString('id-ID')}
-                          </span>
-                        </td>
-                      ))}
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-          <div className="px-4 py-2 bg-slate-50 border-t border-slate-200 text-[10px] text-slate-500 font-medium flex flex-wrap gap-4">
-            <span>Harga dalam Rp/pcs · Baris: Jual / <span className="text-blue-600">Nego</span> / <span className="text-slate-400">HPP</span></span>
-            <span>72 hal (18 lembar) · Margin 20% · Nego -4% · Laminasi Glossy ON · Sisir ON</span>
-          </div>
+        <div className="flex flex-col gap-6">
+          {matrixData.length === 0 ? (
+            <div className="p-8 text-center bg-white rounded-xl border border-slate-200 text-xs text-slate-500">
+              Tidak ada data yang sesuai pencarian.
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                  <h3 className="text-sm font-bold text-gray-800 tracking-tight">Buku Tulis 72 Hal</h3>
+                </div>
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                  {selectedUkuranFilter === 'ALL' ? 'Semua Ukuran · 72 hal' : `${selectedUkuranFilter} cm · 72 hal`}
+                </span>
+              </div>
+
+              {ukuranCols.map((ukuran) => (
+                <div key={ukuran} className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
+                  <div className="bg-amber-50/70 px-4 py-2 border-b border-amber-100 flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-amber-900 tracking-wider uppercase flex items-center gap-1.5">
+                      <Layers size={13} className="text-amber-600" />
+                      Bahan: {ukuran} cm — {BUKU_TULIS_CONFIG[ukuran].w}×{BUKU_TULIS_CONFIG[ukuran].h} cm · {BUKU_TULIS_CONFIG[ukuran].leavesPerA3} lbr/A3
+                    </span>
+                  </div>
+                  <div className="overflow-x-auto max-h-[500px]">
+                    <table className="w-full text-xs text-left border-collapse">
+                      <thead className="sticky top-0 z-10 bg-white shadow-xs">
+                        <tr className="bg-gray-100 border-b border-gray-200 text-gray-700 font-bold">
+                          <th className="py-2.5 px-3 border-r border-gray-200 text-center w-20 bg-gray-100" rowSpan={2}>
+                            Oplah
+                          </th>
+                          <th colSpan={3} className="py-1.5 px-2 text-center border-r border-gray-200 font-bold text-gray-900 bg-gray-200/80">
+                            {ukuran} cm
+                          </th>
+                        </tr>
+                        <tr className="bg-gray-50 border-b border-gray-200 text-[11px] text-gray-600">
+                          <th className="py-1.5 px-2 text-right font-semibold bg-gray-50">HPP</th>
+                          <th className="py-1.5 px-2 text-right font-bold text-emerald-800 bg-emerald-100/50">Harga</th>
+                          <th className="py-1.5 px-2 text-right font-bold text-blue-800 bg-blue-100/50 border-r border-gray-200">Nego</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {matrixData.map((row) => {
+                          const col = row.cols.find((c) => c.ukuran === ukuran);
+                          if (!col) return null;
+                          return (
+                            <tr key={row.oplah} className="hover:bg-amber-50/30 transition-colors">
+                              <td className="py-2 px-3 text-center font-bold text-gray-900 border-r border-gray-200 bg-gray-50/30">
+                                {row.oplah.toLocaleString('id-ID')}
+                              </td>
+                              <td className="py-2 px-2 text-right text-gray-500 font-mono">{Math.round(col.hpp).toLocaleString('id-ID')}</td>
+                              <td className="py-2 px-2 text-right font-bold text-emerald-700 font-mono bg-emerald-50/30">
+                                {col.jual.toLocaleString('id-ID')}
+                              </td>
+                              <td className="py-2 px-2 text-right font-bold text-blue-700 font-mono bg-blue-50/30 border-r border-gray-200">
+                                {col.nego.toLocaleString('id-ID')}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col">
