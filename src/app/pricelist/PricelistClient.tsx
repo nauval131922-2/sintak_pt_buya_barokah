@@ -470,10 +470,11 @@ export default function PricelistClient() {
           </div>
         </div>
 
-        {/* Filter Jenis Produk — nempel kanan, tidak ikut scroll */}
+        {/* Filter Jenis Produk — nempel kanan, tidak ikut scroll, pakai portal agar tidak tertutup card di bawah */}
         <div className="flex items-center gap-1.5 pl-2 border-l border-slate-100 shrink-0 pb-2">
           <span className="text-[11px] font-semibold text-slate-400 hidden sm:inline whitespace-nowrap">Produk:</span>
           <SquareDropdown
+            usePortal
             options={[
               { value: 'Kalender', label: '🗓️ Kalender 2027' },
               { value: 'Buku Manasik', label: '📖 Buku Manasik Haji' },
