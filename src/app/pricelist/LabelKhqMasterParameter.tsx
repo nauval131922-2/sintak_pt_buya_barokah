@@ -104,12 +104,13 @@ export default function LabelKhqMasterParameter({
           {isCurrency ? (
             <div className="flex-1">
               <ThousandInput
+                prefix="Rp"
                 value={val}
-                onChange={(num) => handleChange(key, num)}
-                className={`w-full px-3 py-1.5 text-xs font-bold rounded-lg border focus:outline-none transition-all ${
+                onValueChange={(v) => handleChange(key, v || 0)}
+                className={`w-full pr-2 py-1 text-xs font-mono font-bold bg-white border rounded-md focus:ring-1 focus:ring-emerald-500 focus:outline-none ${
                   modified
                     ? 'border-amber-300 bg-amber-50/40 text-amber-900 focus:border-amber-500'
-                    : 'border-slate-300 bg-white text-slate-900 focus:border-emerald-500'
+                    : 'border-slate-200 focus:border-emerald-500'
                 }`}
               />
             </div>
