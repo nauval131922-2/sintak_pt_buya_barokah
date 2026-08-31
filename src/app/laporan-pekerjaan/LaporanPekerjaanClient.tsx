@@ -662,7 +662,7 @@ export default function LaporanPekerjaanClient({
       const savedFontSize = localStorage.getItem("laporan_pekerjaan_table_font_size");
       if (savedFontSize) {
         const num = parseInt(savedFontSize, 10);
-        if (!isNaN(num) && num >= 9 && num <= 24) {
+        if (!isNaN(num) && num >= 6 && num <= 48) {
           setTableFontSize(num);
         }
       }
@@ -672,7 +672,7 @@ export default function LaporanPekerjaanClient({
   }, []);
 
   const changeTableFontSize = (size: number) => {
-    const clamped = Math.max(9, Math.min(24, size));
+    const clamped = Math.max(6, Math.min(48, size));
     setTableFontSize(clamped);
     try {
       localStorage.setItem("laporan_pekerjaan_table_font_size", String(clamped));

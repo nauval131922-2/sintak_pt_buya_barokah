@@ -14,16 +14,16 @@ export interface FontSizeControlProps {
   usePortal?: boolean;
 }
 
-const DEFAULT_STEPS = [9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24];
+const DEFAULT_STEPS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 28, 32];
 
 export default function FontSizeControl({
   value,
   onChange,
-  min = 9,
-  max = 24,
+  min = 6,
+  max = 48,
   steps = DEFAULT_STEPS,
   className = '',
-  usePortal = false,
+  usePortal = true,
 }: FontSizeControlProps) {
   const [open, setOpen] = useState(false);
   const [inputText, setInputText] = useState(String(value));
@@ -41,8 +41,8 @@ export default function FontSizeControl({
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
     const scale = getZoomScale(triggerRef.current);
-    const popupWidth = 60;
-    const popupHeight = 160;
+    const popupWidth = 64;
+    const popupHeight = 180;
     const padding = 8;
 
     const spaceBelow = window.innerHeight - rect.bottom;
@@ -61,7 +61,7 @@ export default function FontSizeControl({
         left: clampedLeft / scale,
         width: `${popupWidth / scale}px`,
         maxHeight: `${popupHeight / scale}px`,
-        zIndex: 10000,
+        zIndex: 99999,
       };
 
       if (isUpward) {
