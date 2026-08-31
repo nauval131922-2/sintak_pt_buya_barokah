@@ -91,6 +91,20 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Pricelist Multi-Produk ───
+  'pricelist-2026-08-31': entry({
+    pageKey: 'pricelist',
+    title: 'Pricelist & Simulator Multi-Produk (Label KHQ & Brosur Gramatur)',
+    permissionKeys: ['pricelist_kalkulasi'],
+    sortDate: '2026-08-31',
+    date: '31 Agu 2026',
+    version: '2026-08-31-1',
+    items: [
+      'Modul baru Label KHQ: 3 varian botol (220 ml, 330 ml, 600 ml) dengan simulator, matriks per kardus/lembar, Master Parameter terpisah, dan simpan riwayat ke Daftar Kalkulasi',
+      'Dukungan multi-gramatur Brosur 2026: pilihan bahan Art Paper 120 gsm & 150 gsm terintegrasi di Simulator, Matriks, Flat Table, dan format penawaran WhatsApp',
+      'Navigasi tab diperbarui: daftar tab dapat di-scroll horizontal saat layar sempit dan filter Jenis Produk tetap menempel di kanan dalam satu baris',
+      'Perbaikan impor Master Parameter Label KHQ agar halaman Pricelist dapat dimuat tanpa error build',
+    ],
+  }),
   'pricelist-2026-08-29': entry({
     pageKey: 'pricelist',
     title: 'Pricelist & Simulator Multi-Produk (Master Global & Sinkronisasi)',
