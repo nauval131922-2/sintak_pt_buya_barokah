@@ -233,10 +233,18 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
     }
   }, [pathname, isMounted]);
 
+  // Tutup panel popup profil jika sidebar menciut (auto collapse)
+  useEffect(() => {
+    if (!isExpanded) {
+      setIsProfileOpen(false);
+    }
+  }, [isExpanded]);
+
   // Reset manual toggles — active menus reopen via isActive fallback
   useEffect(() => {
     setIsMobileOpen(false);
     setIsHovered(false);
+    setIsProfileOpen(false);
     setOpenMenuIds(new Set());
   }, [pathname]);
 
