@@ -91,6 +91,20 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Pricelist Multi-Produk ───
+  'pricelist-2026-09-01': entry({
+    pageKey: 'pricelist',
+    title: 'Pricelist & Simulator (Buku Soft Cover, Stabilisasi Matriks & Akses Tab Edit)',
+    permissionKeys: ['pricelist_kalkulasi'],
+    sortDate: '2026-09-01',
+    date: '01 Sep 2026',
+    version: '2026-09-01-1',
+    items: [
+      'Modul Baru Buku Soft Cover (Katalog 17): Kalkulator formula HPP terverifikasi, Master Parameter, Simulator, dan Matriks varian A4 & B5 terintegrasi penuh ke sinkronisasi Global dan Daftar Kalkulasi',
+      'Stabilisasi Layout Matriks Murni CSS: Migrasi seluruh 18 modul matriks dari hook resize observer ke Responsive CSS Grid (grid-cols-1 md:grid-cols-2 xl:grid-cols-3) untuk mencegah tampilan kolaps saat bolak-balik mode Matriks dan Tabel',
+      'Standardisasi 2 Kolom Master Parameter: Penyusunan ulang kartu parameter Kalender, Manasik, Nota, Yasin, dan Buku Soft Cover agar proporsional dan seimbang 2 kolom di layar desktop/laptop',
+      'Indikator & Proteksi Mode Edit: Pill tab Master Parameter dan Simulator kini otomatis diberi aksen oranye dan badge "Edit" saat memuat riwayat kalkulasi, serta otomatis melepas mode edit dan memulihkan parameter saat berpindah ke tab lain atau mengganti produk',
+    ],
+  }),
   'pricelist-2026-08-31': entry({
     pageKey: 'pricelist',
     title: 'Pricelist & Simulator Multi-Produk (Label KHQ & Brosur Gramatur)',

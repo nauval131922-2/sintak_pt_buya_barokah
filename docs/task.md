@@ -19,6 +19,10 @@ _Tidak ada task yang sedang berjalan saat ini._
 
 ## ✅ Selesai (Done)
 
+- [x] **Pricelist Modul 17: Buku Soft Cover** — kalkulator HPP formula terverifikasi, Master Parameter, Simulator, Matriks A4 & B5, Global Sync, dan integrasi Daftar Kalkulasi — 2026-09-01
+- [x] **Stabilisasi Matriks Murni CSS Multi-Modul** — migrasi 18 modul matriks ke responsive CSS grid murni mencegah kolaps saat toggle mode — 2026-09-01
+- [x] **Standardisasi Grid Master Parameter 2 Kolom** — restrukturisasi 2x2 grid pada Kalender, Manasik, Nota, Yasin, dan Buku Soft Cover — 2026-09-01
+- [x] **Indikator & Proteksi Mode Edit Pill Tab** — aksen dan badge oranye pada tab Master Parameter & Simulator saat edit, auto-release saat pindah tab — 2026-09-01
 - [x] **Cek Karyawan Modal JHP** — API batch (belum/sudah), modal 2 tab + search + load more — 2026-06-23
 - [x] **Server-side Sorting Multi-Modul** — Bahan Baku, Barang Jadi, BOM, Jurnal Umum + Reset Sort button — 2026-06-23
 - [x] **SOPD kolom Produk + filter Produksi Selesai** — kolom baru, filter toggle di toolbar — 2026-06-23
