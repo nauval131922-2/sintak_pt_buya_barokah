@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { getSession } from "@/lib/session";
 import { logActivity } from "@/lib/activity";
+
 export const dynamic = "force-dynamic";
 
 // GET: Ambil daftar seluruh kalkulasi tersimpan dari database
@@ -12,7 +13,7 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get("category");
 
     let query = "SELECT * FROM pricelist_saved_calculations WHERE 1=1";
-    const params: any[] = [];
+    const params: unknown[] = [];
 
     if (category && category !== "ALL") {
       query += " AND category = ?";
@@ -24,11 +25,11 @@ export async function GET(request: NextRequest) {
     const result = await db.execute({ sql: query, args: params });
     const rows = result.rows || [];
 
-    const parsedItems = rows.map((r: any) => {
-      let rawItem: any = {};
-      let parsedSnapshot: any = null;
+    const parsedItems = rows.map((r: Record<string, unknown>) => {
+      let rawItem: Record<string, unknown> = {};
+      let parsedSnapshot: unknown = null;
       try {
-        rawItem = typeof r.data === "string" ? JSON.parse(r.data) : (r.data || {});
+        rawItem = typeof r.data === "string" ? JSON.parse(r.data) : ((r.data as Record<string, unknown>) || {});
       } catch {
         rawItem = {};
       }
@@ -41,11 +42,15 @@ export async function GET(request: NextRequest) {
         parsedSnapshot = r.params_snapshot;
       }
 
+      const rawData = rawItem.data as Record<string, unknown> | undefined;
+      const rawInput = rawData?.input as Record<string, unknown> | undefined;
+      const rawSummary = rawItem.summary as Record<string, unknown> | undefined;
+
       return {
         id: r.id,
         category: r.category,
         title: r.title,
-        oplah: r.oplah || rawItem.oplah || rawItem.data?.input?.oplah || 0,
+        oplah: r.oplah || rawItem.oplah || rawInput?.oplah || rawSummary?.oplah || 0,
         savedAt: r.created_at || r.updated_at,
         paramsSnapshot: parsedSnapshot || rawItem.paramsSnapshot || rawItem.customParams,
         ...rawItem,
@@ -62,10 +67,11 @@ export async function GET(request: NextRequest) {
       data: parsedItems,
       count: parsedItems.length,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : "Failed to fetch saved calculations";
     console.error("GET /api/pricelist/saved-calculations error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch saved calculations" },
+      { error: msg },
       { status: 500 }
     );
   }
@@ -123,6 +129,7 @@ export async function POST(request: NextRequest) {
         message: `Synced ${items.length} calculations to database`,
       });
     }
+
     // Handle single item save
     const { id, category, title, oplah, data, paramsSnapshot, savedAt } = body;
     if (!id || !category || !title) {
@@ -177,10 +184,11 @@ export async function POST(request: NextRequest) {
       success: true,
       message: "Calculation saved to database",
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : "Failed to save calculation";
     console.error("POST /api/pricelist/saved-calculations error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to save calculation" },
+      { error: msg },
       { status: 500 }
     );
   }
@@ -201,8 +209,8 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Missing id" }, { status: 400 });
     }
 
-    let updates: string[] = ["updated_at = ?"];
-    let args: any[] = [new Date().toISOString()];
+    const updates: string[] = ["updated_at = ?"];
+    const args: unknown[] = [new Date().toISOString()];
 
     if (title !== undefined) {
       updates.push("title = ?");
@@ -235,17 +243,18 @@ export async function PUT(request: NextRequest) {
       "pricelist_saved_calculations",
       `Update kalkulasi #${id}: ${title || "Data diperbarui"}`,
       body,
-      session?.name || session?.username || "Staff"
+      session.name || session.username || "Staff"
     ).catch(() => {});
 
     return NextResponse.json({
       success: true,
       message: "Calculation updated in database",
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : "Failed to update calculation";
     console.error("PUT /api/pricelist/saved-calculations error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to update calculation" },
+      { error: msg },
       { status: 500 }
     );
   }
@@ -277,17 +286,18 @@ export async function DELETE(request: NextRequest) {
       "pricelist_saved_calculations",
       `Hapus kalkulasi #${id}`,
       { id },
-      session?.name || session?.username || "Staff"
+      session.name || session.username || "Staff"
     ).catch(() => {});
 
     return NextResponse.json({
       success: true,
       message: "Calculation deleted from database",
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : "Failed to delete calculation";
     console.error("DELETE /api/pricelist/saved-calculations error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to delete calculation" },
+      { error: msg },
       { status: 500 }
     );
   }
