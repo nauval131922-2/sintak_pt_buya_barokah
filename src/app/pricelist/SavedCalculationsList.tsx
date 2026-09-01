@@ -312,91 +312,43 @@ export default function SavedCalculationsList({
           });
         });
 
-        // Update list states & localStorage per kategori
-        const updateCategory = (cat: string, lsKey: string, setter: React.Dispatch<React.SetStateAction<any[]>>, localList: any[]) => {
+        // Update list states & localStorage per kategori langsung dari Server DB (Single Source of Truth)
+        const updateCategory = (cat: string, lsKey: string, setter: React.Dispatch<React.SetStateAction<any[]>>) => {
           const fromServer = grouped[cat] || [];
-          // Merge server items with local items (keep local items that are not yet on server)
-          const localUnsynced = localList.filter((l) => !serverIds.has(l.id));
-          const merged = [...fromServer, ...localUnsynced].sort(
-            (a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()
-          );
-          setter(merged);
-          localStorage.setItem(lsKey, JSON.stringify(merged));
+          setter(fromServer);
+          localStorage.setItem(lsKey, JSON.stringify(fromServer));
         };
 
-        updateCategory('Kalender', 'sintak_saved_simulations', setKalenderList, currentKalender);
-        updateCategory('Buku Manasik', 'sintak_saved_manasik_simulations', setManasikList, currentManasik);
-        updateCategory('Buku Yasin', 'sintak_saved_yasin_simulations', setYasinList, currentYasin);
-        updateCategory('Nota 1 Warna', 'sintak_saved_nota_simulations', setNotaList, currentNota);
-        updateCategory('Brosur 2026', 'sintak_saved_brosur_simulations', setBrosurList, currentBrosur);
-        updateCategory('Label KHQ', 'sintak_saved_label_khq_simulations', setLabelKhqList, currentLabelKhq);
-        updateCategory('Buku Tulis', 'sintak_saved_buku_tulis_simulations', setBukuTulisList, currentBukuTulis);
-        updateCategory('Stopmap', 'sintak_saved_stopmap_simulations', setStopmapList, currentStopmap);
-        updateCategory('Syahadah', 'sintak_saved_syahadah_simulations', setSyahadahList, currentSyahadah);
-        updateCategory('Raport Kaleb', 'sintak_saved_raport_kaleb_simulations', setRaportKalebList, currentRaportKaleb);
-        updateCategory('Kop Surat', 'sintak_saved_kop_surat_simulations', setKopSuratList, currentKopSurat);
-        updateCategory('Amplop', 'sintak_saved_amplop_simulations', setAmplopList, currentAmplop);
-        updateCategory('Sertifikat', 'sintak_saved_sertifikat_simulations', setSertifikatList, currentSertifikat);
-        updateCategory('Undangan', 'sintak_saved_undangan_simulations', setUndanganList, currentUndangan);
-        updateCategory('Buku Tabungan NS', 'sintak_saved_buku_tabungan_ns_simulations', setBukuTabunganNsList, currentBukuTabunganNs);
-        updateCategory('Buku Tabungan Security', 'sintak_saved_buku_tabungan_security_simulations', setBukuTabunganSecurityList, currentBukuTabunganSecurity);
-        updateCategory('Kartu Koperasi Promise', 'sintak_saved_kartu_koperasi_promise_simulations', setKartuKoperasiPromiseList, currentKartuKoperasi);
-        updateCategory('Lebel Kartu Obat', 'sintak_saved_lebel_kartu_obat_simulations', setLebelKartuObatList, currentLebelKartuObat);
-        updateCategory('Buku Soft Cover', 'sintak_saved_buku_soft_cover_simulations', setBukuSoftCoverList, currentBukuSoftCover);
-        updateCategory('Buku Soft Cover 14,5×20,25', 'sintak_saved_buku_soft_cover_145x2025_simulations', setBukuSoftCover145x2025List, currentBukuSoftCover145);
-        updateCategory('Buku Hard Cover 10,5×14,8', 'sintak_saved_buku_hard_cover_105x148_simulations', setBukuHardCover105x148List, currentBukuHardCover105);
-        updateCategory('Poster', 'sintak_saved_poster_simulations', setPosterList, currentPoster);
-        updateCategory('Majalah 14,5×20,25', 'sintak_saved_majalah_simulations', setMajalahList, currentMajalah);
-        updateCategory('Stiker', 'sintak_saved_stiker_simulations', setStikerList, currentStiker);
-        updateCategory('Buku Soft Cover 10,5×14,8', 'sintak_saved_buku_soft_cover_105x148_simulations', setBukuSoftCover105x148List, currentBsc105);
-        updateCategory('Buku Hard Cover 14,5×20,25', 'sintak_saved_buku_hard_cover_145x2025_simulations', setBukuHardCover145x2025List, currentBhc145);
-        updateCategory('Buku Hard Cover 21×29,7', 'sintak_saved_buku_hard_cover_21x297_simulations', setBukuHardCover21x297List, currentBhc21);
-        updateCategory('Kalender Kop', 'sintak_saved_kalender_kop_simulations', setKalenderKopList, currentKalenderKop);
-        updateCategory('Packaging', 'sintak_saved_packaging_simulations', setPackagingList, currentPackaging);
-        updateCategory('Paperbag', 'sintak_saved_paperbag_simulations', setPaperbagList, currentPaperbag);
-
-        // Upload any local calculations that don't exist on server yet
-        const allLocal = [
-          ...currentKalender.map((i: any) => ({ ...i, category: 'Kalender' })),
-          ...currentManasik.map((i: any) => ({ ...i, category: 'Buku Manasik' })),
-          ...currentYasin.map((i: any) => ({ ...i, category: 'Buku Yasin' })),
-          ...currentNota.map((i: any) => ({ ...i, category: 'Nota 1 Warna' })),
-          ...currentBrosur.map((i: any) => ({ ...i, category: 'Brosur 2026' })),
-          ...currentLabelKhq.map((i: any) => ({ ...i, category: 'Label KHQ' })),
-          ...currentBukuTulis.map((i: any) => ({ ...i, category: 'Buku Tulis' })),
-          ...currentStopmap.map((i: any) => ({ ...i, category: 'Stopmap' })),
-          ...currentSyahadah.map((i: any) => ({ ...i, category: 'Syahadah' })),
-          ...currentRaportKaleb.map((i: any) => ({ ...i, category: 'Raport Kaleb' })),
-          ...currentKopSurat.map((i: any) => ({ ...i, category: 'Kop Surat' })),
-          ...currentAmplop.map((i: any) => ({ ...i, category: 'Amplop' })),
-          ...currentSertifikat.map((i: any) => ({ ...i, category: 'Sertifikat' })),
-          ...currentUndangan.map((i: any) => ({ ...i, category: 'Undangan' })),
-          ...currentBukuTabunganNs.map((i: any) => ({ ...i, category: 'Buku Tabungan NS' })),
-          ...currentBukuTabunganSecurity.map((i: any) => ({ ...i, category: 'Buku Tabungan Security' })),
-          ...currentKartuKoperasi.map((i: any) => ({ ...i, category: 'Kartu Koperasi Promise' })),
-          ...currentLebelKartuObat.map((i: any) => ({ ...i, category: 'Lebel Kartu Obat' })),
-          ...currentBukuSoftCover.map((i: any) => ({ ...i, category: 'Buku Soft Cover' })),
-          ...currentBukuSoftCover145.map((i: any) => ({ ...i, category: 'Buku Soft Cover 14,5×20,25' })),
-          ...currentBukuHardCover105.map((i: any) => ({ ...i, category: 'Buku Hard Cover 10,5×14,8' })),
-          ...currentPoster.map((i: any) => ({ ...i, category: 'Poster' })),
-          ...currentMajalah.map((i: any) => ({ ...i, category: 'Majalah 14,5×20,25' })),
-          ...currentStiker.map((i: any) => ({ ...i, category: 'Stiker' })),
-          ...currentBsc105.map((i: any) => ({ ...i, category: 'Buku Soft Cover 10,5×14,8' })),
-          ...currentBhc145.map((i: any) => ({ ...i, category: 'Buku Hard Cover 14,5×20,25' })),
-          ...currentBhc21.map((i: any) => ({ ...i, category: 'Buku Hard Cover 21×29,7' })),
-          ...currentKalenderKop.map((i: any) => ({ ...i, category: 'Kalender Kop' })),
-          ...currentPackaging.map((i: any) => ({ ...i, category: 'Packaging' })),
-          ...currentPaperbag.map((i: any) => ({ ...i, category: 'Paperbag' })),
-        ];
-
-        const toUpload = allLocal.filter((l) => !serverIds.has(l.id));
-        if (toUpload.length > 0) {
-          fetch('/api/pricelist/saved-calculations', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ items: toUpload }),
-          }).catch(() => {});
-        }
+        updateCategory('Kalender', 'sintak_saved_simulations', setKalenderList);
+        updateCategory('Buku Manasik', 'sintak_saved_manasik_simulations', setManasikList);
+        updateCategory('Buku Yasin', 'sintak_saved_yasin_simulations', setYasinList);
+        updateCategory('Nota 1 Warna', 'sintak_saved_nota_simulations', setNotaList);
+        updateCategory('Brosur 2026', 'sintak_saved_brosur_simulations', setBrosurList);
+        updateCategory('Label KHQ', 'sintak_saved_label_khq_simulations', setLabelKhqList);
+        updateCategory('Buku Tulis', 'sintak_saved_buku_tulis_simulations', setBukuTulisList);
+        updateCategory('Stopmap', 'sintak_saved_stopmap_simulations', setStopmapList);
+        updateCategory('Syahadah', 'sintak_saved_syahadah_simulations', setSyahadahList);
+        updateCategory('Raport Kaleb', 'sintak_saved_raport_kaleb_simulations', setRaportKalebList);
+        updateCategory('Kop Surat', 'sintak_saved_kop_surat_simulations', setKopSuratList);
+        updateCategory('Amplop', 'sintak_saved_amplop_simulations', setAmplopList);
+        updateCategory('Sertifikat', 'sintak_saved_sertifikat_simulations', setSertifikatList);
+        updateCategory('Undangan', 'sintak_saved_undangan_simulations', setUndanganList);
+        updateCategory('Buku Tabungan NS', 'sintak_saved_buku_tabungan_ns_simulations', setBukuTabunganNsList);
+        updateCategory('Buku Tabungan Security', 'sintak_saved_buku_tabungan_security_simulations', setBukuTabunganSecurityList);
+        updateCategory('Kartu Koperasi Promise', 'sintak_saved_kartu_koperasi_promise_simulations', setKartuKoperasiPromiseList);
+        updateCategory('Lebel Kartu Obat', 'sintak_saved_lebel_kartu_obat_simulations', setLebelKartuObatList);
+        updateCategory('Buku Soft Cover', 'sintak_saved_buku_soft_cover_simulations', setBukuSoftCoverList);
+        updateCategory('Buku Soft Cover 14,5×20,25', 'sintak_saved_buku_soft_cover_145x2025_simulations', setBukuSoftCover145x2025List);
+        updateCategory('Buku Hard Cover 10,5×14,8', 'sintak_saved_buku_hard_cover_105x148_simulations', setBukuHardCover105x148List);
+        updateCategory('Poster', 'sintak_saved_poster_simulations', setPosterList);
+        updateCategory('Majalah 14,5×20,25', 'sintak_saved_majalah_simulations', setMajalahList);
+        updateCategory('Stiker', 'sintak_saved_stiker_simulations', setStikerList);
+        updateCategory('Buku Soft Cover 10,5×14,8', 'sintak_saved_buku_soft_cover_105x148_simulations', setBukuSoftCover105x148List);
+        updateCategory('Buku Hard Cover 14,5×20,25', 'sintak_saved_buku_hard_cover_145x2025_simulations', setBukuHardCover145x2025List);
+        updateCategory('Buku Hard Cover 21×29,7', 'sintak_saved_buku_hard_cover_21x297_simulations', setBukuHardCover21x297List);
+        updateCategory('Kalender Kop', 'sintak_saved_kalender_kop_simulations', setKalenderKopList);
+        updateCategory('Packaging', 'sintak_saved_packaging_simulations', setPackagingList);
+        updateCategory('Paperbag', 'sintak_saved_paperbag_simulations', setPaperbagList);
 
         setLastSyncTime(new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }));
       }
