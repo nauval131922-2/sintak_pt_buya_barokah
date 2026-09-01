@@ -230,8 +230,7 @@ export default function PricelistMasterParameter({
           )}
         </div>
       )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Section: Tarif Mesin & Insheet Oliver vs SM (tabel perbandingan 50% grid) */}
       <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-3.5 shadow-2xs flex flex-col gap-2.5">
         <div className="flex items-center gap-2 border-b border-slate-100 pb-1.5">
