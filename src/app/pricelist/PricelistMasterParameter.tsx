@@ -417,59 +417,59 @@ export default function PricelistMasterParameter({
               </div>
           </div>
         </div>
-      </div>
-      {/* Section: Tarif Mesin & Insheet Oliver vs SM (tabel perbandingan) */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+
+      {/* Section: Tarif Mesin & Insheet Oliver vs SM (tabel perbandingan 50% grid) */}
+      <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-3.5 shadow-2xs flex flex-col gap-2.5">
+        <div className="flex items-center gap-2 border-b border-slate-100 pb-1.5">
           <Printer className="w-4 h-4 text-purple-600" />
-            <h3 className="text-xs font-bold text-slate-800">3. Standar Mesin Cetak & Tarif</h3>
+          <h3 className="text-xs font-bold text-slate-800">3. Standar Mesin Cetak & Tarif</h3>
         </div>
-        <div className="p-4 overflow-x-auto">
+        <div className="overflow-x-auto">
           <table className="w-full text-xs text-left border-collapse">
             <thead>
-              <tr className="bg-slate-100/70 border-b border-slate-200 text-slate-600 font-semibold text-[11px]">
-                <th className="py-2 px-2.5">Parameter Mesin</th>
-                <th className="py-2 px-2.5 text-center bg-blue-50/40 text-blue-900 w-36">Mesin Oliver</th>
-                <th className="py-2 px-2.5 text-center bg-purple-50/40 text-purple-900 w-36">Mesin SM</th>
+              <tr className="bg-slate-100/70 border-b border-slate-200 text-slate-600 font-semibold text-[10.5px]">
+                <th className="py-1.5 px-2">Parameter Mesin</th>
+                <th className="py-1.5 px-2 text-center bg-blue-50/40 text-blue-900 w-28 sm:w-32">Mesin Oliver</th>
+                <th className="py-1.5 px-2 text-center bg-purple-50/40 text-purple-900 w-28 sm:w-32">Mesin SM</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-[11.5px]">
+            <tbody className="divide-y divide-slate-100 text-[11px]">
               <tr>
-                <td className="py-2 px-2.5 text-slate-700">Ongkos Min Order (4 plat)</td>
-                <td className={`py-1.5 px-2 ${isFieldModified('oliverMinOngkos') ? 'bg-amber-50/70' : ''}`}>
+                <td className="py-1 px-1.5 text-slate-700">Ongkos Min Order (4 plat)</td>
+                <td className={`py-1 px-1.5 ${isFieldModified('oliverMinOngkos') ? 'bg-amber-50/70' : ''}`}>
                   <div className="flex items-center gap-1">
                     <ThousandInput
                       prefix="Rp"
                       value={customParams.oliverMinOngkos}
                       onValueChange={(val) => handleChange('oliverMinOngkos', val)}
-                      className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                      className="w-full bg-white border border-slate-200 rounded-lg px-1.5 py-1 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                     />
                     {isFieldModified('oliverMinOngkos') && (
                       <button
                         type="button"
                         onClick={(e) => handleResetField('oliverMinOngkos', e)}
                         title="Reset ke default"
-                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+                        className="text-[9px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1 py-0.5 rounded cursor-pointer shrink-0"
                       >
                         <RotateCcw className="w-2.5 h-2.5" />
                       </button>
                     )}
                   </div>
                 </td>
-                <td className={`py-1.5 px-2 ${isFieldModified('smMinOngkos') ? 'bg-amber-50/70' : ''}`}>
+                <td className={`py-1 px-1.5 ${isFieldModified('smMinOngkos') ? 'bg-amber-50/70' : ''}`}>
                   <div className="flex items-center gap-1">
                     <ThousandInput
                       prefix="Rp"
                       value={customParams.smMinOngkos}
                       onValueChange={(val) => handleChange('smMinOngkos', val)}
-                      className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                      className="w-full bg-white border border-slate-200 rounded-lg px-1.5 py-1 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                     />
                     {isFieldModified('smMinOngkos') && (
                       <button
                         type="button"
                         onClick={(e) => handleResetField('smMinOngkos', e)}
                         title="Reset ke default"
-                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+                        className="text-[9px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1 py-0.5 rounded cursor-pointer shrink-0"
                       >
                         <RotateCcw className="w-2.5 h-2.5" />
                       </button>
@@ -478,41 +478,41 @@ export default function PricelistMasterParameter({
                 </td>
               </tr>
               <tr>
-                <td className="py-2 px-2.5 text-slate-700">Insheet Plat Cetak</td>
-                <td className={`py-1.5 px-2 ${isFieldModified('oliverInsheet') ? 'bg-amber-50/70' : ''}`}>
+                <td className="py-1 px-1.5 text-slate-700">Insheet Plat Cetak</td>
+                <td className={`py-1 px-1.5 ${isFieldModified('oliverInsheet') ? 'bg-amber-50/70' : ''}`}>
                   <div className="flex items-center gap-1">
                     <ThousandInput
                       suffix="lbr"
                       value={customParams.oliverInsheet}
                       onValueChange={(val) => handleChange('oliverInsheet', val)}
-                      className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                      className="w-full bg-white border border-slate-200 rounded-lg px-1.5 py-1 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                     />
                     {isFieldModified('oliverInsheet') && (
                       <button
                         type="button"
                         onClick={(e) => handleResetField('oliverInsheet', e)}
                         title="Reset ke default"
-                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+                        className="text-[9px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1 py-0.5 rounded cursor-pointer shrink-0"
                       >
                         <RotateCcw className="w-2.5 h-2.5" />
                       </button>
                     )}
                   </div>
                 </td>
-                <td className={`py-1.5 px-2 ${isFieldModified('smInsheet') ? 'bg-amber-50/70' : ''}`}>
+                <td className={`py-1 px-1.5 ${isFieldModified('smInsheet') ? 'bg-amber-50/70' : ''}`}>
                   <div className="flex items-center gap-1">
                     <ThousandInput
                       suffix="lbr"
                       value={customParams.smInsheet}
                       onValueChange={(val) => handleChange('smInsheet', val)}
-                      className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                      className="w-full bg-white border border-slate-200 rounded-lg px-1.5 py-1 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                     />
                     {isFieldModified('smInsheet') && (
                       <button
                         type="button"
                         onClick={(e) => handleResetField('smInsheet', e)}
                         title="Reset ke default"
-                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+                        className="text-[9px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1 py-0.5 rounded cursor-pointer shrink-0"
                       >
                         <RotateCcw className="w-2.5 h-2.5" />
                       </button>
@@ -521,183 +521,181 @@ export default function PricelistMasterParameter({
                 </td>
               </tr>
               <tr>
-                <td className="py-2 px-2.5 text-slate-700">Biaya Plat CTP / Unit</td>
-                <td className={`py-1.5 px-2 ${isFieldModified('oliverPlatUnit') ? 'bg-amber-50/70' : ''}`}>
+                <td className="py-1 px-1.5 text-slate-700">Biaya Plat CTP / Unit</td>
+                <td className={`py-1 px-1.5 ${isFieldModified('oliverPlatUnit') ? 'bg-amber-50/70' : ''}`}>
                   <div className="flex items-center gap-1">
                     <ThousandInput
-                        prefix="Rp"
-                        value={customParams.oliverPlatUnit}
-                        onValueChange={(val) => handleChange('oliverPlatUnit', val)}
-                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                      />
-                      {isFieldModified('oliverPlatUnit') && (
-                        <button
-                          type="button"
-                          onClick={(e) => handleResetField('oliverPlatUnit', e)}
-                          title="Reset ke default"
-                          className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                        >
-                          <RotateCcw className="w-2.5 h-2.5" />
-                        </button>
-                      )}
+                      prefix="Rp"
+                      value={customParams.oliverPlatUnit}
+                      onValueChange={(val) => handleChange('oliverPlatUnit', val)}
+                      className="w-full bg-white border border-slate-200 rounded-lg px-1.5 py-1 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                    />
+                    {isFieldModified('oliverPlatUnit') && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('oliverPlatUnit', e)}
+                        title="Reset ke default"
+                        className="text-[9px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1 py-0.5 rounded cursor-pointer shrink-0"
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" />
+                      </button>
+                    )}
                   </div>
                 </td>
-                <td className={`py-1.5 px-2 ${isFieldModified('smPlatUnit') ? 'bg-amber-50/70' : ''}`}>
-                    <div className="flex items-center gap-1">
-                      <ThousandInput
-                        prefix="Rp"
-                        value={customParams.smPlatUnit}
-                        onValueChange={(val) => handleChange('smPlatUnit', val)}
-                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                      />
-                      {isFieldModified('smPlatUnit') && (
-                        <button
-                          type="button"
-                          onClick={(e) => handleResetField('smPlatUnit', e)}
-                          title="Reset ke default"
-                          className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                        >
-                          <RotateCcw className="w-2.5 h-2.5" />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="py-2 px-2.5 text-slate-700">Batas Min Drek (Kapasitas Min)</td>
-                  <td className={`py-1.5 px-2 ${isFieldModified('oliverBatasDrek') ? 'bg-amber-50/70' : ''}`}>
-                    <div className="flex items-center gap-1">
-                      <ThousandInput
-                        suffix="drek"
-                        value={customParams.oliverBatasDrek}
-                        onValueChange={(val) => handleChange('oliverBatasDrek', val)}
-                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                      />
-                      {isFieldModified('oliverBatasDrek') && (
-                        <button
-                          type="button"
-                          onClick={(e) => handleResetField('oliverBatasDrek', e)}
-                          title="Reset ke default"
-                          className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                        >
-                          <RotateCcw className="w-2.5 h-2.5" />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                  <td className={`py-1.5 px-2 ${isFieldModified('smBatasDrek') ? 'bg-amber-50/70' : ''}`}>
-                    <div className="flex items-center gap-1">
-                      <ThousandInput
-                        suffix="drek"
-                        value={customParams.smBatasDrek}
-                        onValueChange={(val) => handleChange('smBatasDrek', val)}
-                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                      />
-                      {isFieldModified('smBatasDrek') && (
-                        <button
-                          type="button"
-                          onClick={(e) => handleResetField('smBatasDrek', e)}
-                          title="Reset ke default"
-                          className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                        >
-                          <RotateCcw className="w-2.5 h-2.5" />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="py-2 px-2.5 text-slate-700">Drek Over / Drek</td>
-                  <td className={`py-1.5 px-2 ${isFieldModified('oliverDrekOver') ? 'bg-amber-50/70' : ''}`}>
-                    <div className="flex items-center gap-1">
-                      <ThousandInput
-                        prefix="Rp"
-                        value={customParams.oliverDrekOver}
-                        onValueChange={(val) => handleChange('oliverDrekOver', val)}
-                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                      />
-                      {isFieldModified('oliverDrekOver') && (
-                        <button
-                          type="button"
-                          onClick={(e) => handleResetField('oliverDrekOver', e)}
-                          title="Reset ke default"
-                          className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                        >
-                          <RotateCcw className="w-2.5 h-2.5" />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                  <td className={`py-1.5 px-2 ${isFieldModified('smDrekOver') ? 'bg-amber-50/70' : ''}`}>
-                    <div className="flex items-center gap-1">
-                      <ThousandInput
-                        prefix="Rp"
-                        value={customParams.smDrekOver}
-                        onValueChange={(val) => handleChange('smDrekOver', val)}
-                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                      />
-                      {isFieldModified('smDrekOver') && (
-                        <button
-                          type="button"
-                          onClick={(e) => handleResetField('smDrekOver', e)}
-                          title="Reset ke default"
-                          className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                        >
-                          <RotateCcw className="w-2.5 h-2.5" />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="py-2 px-2.5 text-slate-700">Biaya Transportasi Mesin</td>
-                  <td className={`py-1.5 px-2 ${isFieldModified('oliverTransport') ? 'bg-amber-50/70' : ''}`}>
-                    <div className="flex items-center gap-1">
-                      <ThousandInput
-                        prefix="Rp"
-                        value={customParams.oliverTransport}
-                        onValueChange={(val) => handleChange('oliverTransport', val)}
-                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                      />
-                      {isFieldModified('oliverTransport') && (
-                        <button
-                          type="button"
-                          onClick={(e) => handleResetField('oliverTransport', e)}
-                          title="Reset ke default"
-                          className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                        >
-                          <RotateCcw className="w-2.5 h-2.5" />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                  <td className={`py-1.5 px-2 ${isFieldModified('smTransport') ? 'bg-amber-50/70' : ''}`}>
-                    <div className="flex items-center gap-1">
-                      <ThousandInput
-                        prefix="Rp"
-                        value={customParams.smTransport}
-                        onValueChange={(val) => handleChange('smTransport', val)}
-                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                      />
-                      {isFieldModified('smTransport') && (
-                        <button
-                          type="button"
-                          onClick={(e) => handleResetField('smTransport', e)}
-                          title="Reset ke default"
-                          className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                        >
-                          <RotateCcw className="w-2.5 h-2.5" />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                <td className={`py-1 px-1.5 ${isFieldModified('smPlatUnit') ? 'bg-amber-50/70' : ''}`}>
+                  <div className="flex items-center gap-1">
+                    <ThousandInput
+                      prefix="Rp"
+                      value={customParams.smPlatUnit}
+                      onValueChange={(val) => handleChange('smPlatUnit', val)}
+                      className="w-full bg-white border border-slate-200 rounded-lg px-1.5 py-1 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                    />
+                    {isFieldModified('smPlatUnit') && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('smPlatUnit', e)}
+                        title="Reset ke default"
+                        className="text-[9px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1 py-0.5 rounded cursor-pointer shrink-0"
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" />
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td className="py-1 px-1.5 text-slate-700">Batas Min Drek (Kapasitas Min)</td>
+                <td className={`py-1 px-1.5 ${isFieldModified('oliverBatasDrek') ? 'bg-amber-50/70' : ''}`}>
+                  <div className="flex items-center gap-1">
+                    <ThousandInput
+                      suffix="drek"
+                      value={customParams.oliverBatasDrek}
+                      onValueChange={(val) => handleChange('oliverBatasDrek', val)}
+                      className="w-full bg-white border border-slate-200 rounded-lg px-1.5 py-1 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                    />
+                    {isFieldModified('oliverBatasDrek') && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('oliverBatasDrek', e)}
+                        title="Reset ke default"
+                        className="text-[9px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1 py-0.5 rounded cursor-pointer shrink-0"
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" />
+                      </button>
+                    )}
+                  </div>
+                </td>
+                <td className={`py-1 px-1.5 ${isFieldModified('smBatasDrek') ? 'bg-amber-50/70' : ''}`}>
+                  <div className="flex items-center gap-1">
+                    <ThousandInput
+                      suffix="drek"
+                      value={customParams.smBatasDrek}
+                      onValueChange={(val) => handleChange('smBatasDrek', val)}
+                      className="w-full bg-white border border-slate-200 rounded-lg px-1.5 py-1 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                    />
+                    {isFieldModified('smBatasDrek') && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('smBatasDrek', e)}
+                        title="Reset ke default"
+                        className="text-[9px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1 py-0.5 rounded cursor-pointer shrink-0"
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" />
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td className="py-1 px-1.5 text-slate-700">Drek Over / Drek</td>
+                <td className={`py-1 px-1.5 ${isFieldModified('oliverDrekOver') ? 'bg-amber-50/70' : ''}`}>
+                  <div className="flex items-center gap-1">
+                    <ThousandInput
+                      prefix="Rp"
+                      value={customParams.oliverDrekOver}
+                      onValueChange={(val) => handleChange('oliverDrekOver', val)}
+                      className="w-full bg-white border border-slate-200 rounded-lg px-1.5 py-1 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                    />
+                    {isFieldModified('oliverDrekOver') && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('oliverDrekOver', e)}
+                        title="Reset ke default"
+                        className="text-[9px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1 py-0.5 rounded cursor-pointer shrink-0"
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" />
+                      </button>
+                    )}
+                  </div>
+                </td>
+                <td className={`py-1 px-1.5 ${isFieldModified('smDrekOver') ? 'bg-amber-50/70' : ''}`}>
+                  <div className="flex items-center gap-1">
+                    <ThousandInput
+                      prefix="Rp"
+                      value={customParams.smDrekOver}
+                      onValueChange={(val) => handleChange('smDrekOver', val)}
+                      className="w-full bg-white border border-slate-200 rounded-lg px-1.5 py-1 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                    />
+                    {isFieldModified('smDrekOver') && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('smDrekOver', e)}
+                        title="Reset ke default"
+                        className="text-[9px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1 py-0.5 rounded cursor-pointer shrink-0"
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" />
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td className="py-1 px-1.5 text-slate-700">Biaya Transportasi Mesin</td>
+                <td className={`py-1 px-1.5 ${isFieldModified('oliverTransport') ? 'bg-amber-50/70' : ''}`}>
+                  <div className="flex items-center gap-1">
+                    <ThousandInput
+                      prefix="Rp"
+                      value={customParams.oliverTransport}
+                      onValueChange={(val) => handleChange('oliverTransport', val)}
+                      className="w-full bg-white border border-slate-200 rounded-lg px-1.5 py-1 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                    />
+                    {isFieldModified('oliverTransport') && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('oliverTransport', e)}
+                        title="Reset ke default"
+                        className="text-[9px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1 py-0.5 rounded cursor-pointer shrink-0"
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" />
+                      </button>
+                    )}
+                  </div>
+                </td>
+                <td className={`py-1 px-1.5 ${isFieldModified('smTransport') ? 'bg-amber-50/70' : ''}`}>
+                  <div className="flex items-center gap-1">
+                    <ThousandInput
+                      prefix="Rp"
+                      value={customParams.smTransport}
+                      onValueChange={(val) => handleChange('smTransport', val)}
+                      className="w-full bg-white border border-slate-200 rounded-lg px-1.5 py-1 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                    />
+                    {isFieldModified('smTransport') && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('smTransport', e)}
+                        title="Reset ke default"
+                        className="text-[9px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1 py-0.5 rounded cursor-pointer shrink-0"
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" />
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      </div>
         {/* Section 3: Ongkos Finishing & Jasa */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
