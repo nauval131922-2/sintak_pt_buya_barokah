@@ -28,6 +28,7 @@ const BUKU_TABUNGAN_SECURITY_VISIBLE_KEYS: (keyof BukuTabunganSecurityMasterPara
   'tarifNumberingPerPcs',
   'tarifSusunLipatPerPcs',
   'tarifJahitPerPcs',
+  'tarifPoundPerPcs',
   'marginDefaultPct',
   'negoDefaultPct',
 ];

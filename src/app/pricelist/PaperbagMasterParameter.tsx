@@ -24,6 +24,37 @@ interface PaperbagMasterParameterProps {
   setCustomParams: React.Dispatch<React.SetStateAction<PaperbagMasterParams>>;
 }
 
+const PAPERBAG_VISIBLE_KEYS: (keyof PaperbagMasterParams)[] = [
+  'biayaDesain',
+  'biayaTransport',
+  'hargaPlanoAC230',
+  'insheetPlanoOliver',
+  'insheetPlanoSM',
+  'kapasitasKardusPcs',
+  'marginDefaultPct',
+  'minBiayaLaminasi',
+  'negoDefaultPct',
+  'oliverDrekOverPerWarna',
+  'oliverMinOngkosPerWarna',
+  'smDrekOverPerWarna',
+  'smMinOngkosPerWarna',
+  'tarifDoubleTapePerPcs',
+  'tarifFinishingLipatPerPcs',
+  'tarifKardusPerPcs',
+  'tarifLakbanPerRoll',
+  'tarifLaminasiDoffPerCm2',
+  'tarifLaminasiGlossyPerCm2',
+  'tarifOngkosPondPerPcs',
+  'tarifPasangTaliPerPcs',
+  'tarifPisauPondMin',
+  'tarifPisauPondPerCm2',
+  'tarifPlatOliverPerWarna',
+  'tarifPlatSMPerWarna',
+  'tarifTaliKurPerPcs',
+  'tarifTenagaTapePerPcs',
+  'tarifUVVarnishPerCm2',
+];
+
 export default function PaperbagMasterParameter({
   customParams,
   setCustomParams,
@@ -43,8 +74,10 @@ export default function PaperbagMasterParameter({
     }
   };
 
-  const isModified =
-    JSON.stringify(customParams) !== JSON.stringify(DEFAULT_PAPERBAG_PARAMS);
+  const isModified = React.useMemo(
+    () => PAPERBAG_VISIBLE_KEYS.some((k) => customParams[k] !== DEFAULT_PAPERBAG_PARAMS[k]),
+    [customParams]
+  );
 
   const fieldRow = (
     field: keyof PaperbagMasterParams,

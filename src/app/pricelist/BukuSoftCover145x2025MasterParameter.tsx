@@ -21,6 +21,36 @@ interface Props {
   setCustomParams: React.Dispatch<React.SetStateAction<BukuSoftCover145x2025MasterParams>>;
 }
 
+const BUKU_SOFT_COVER_145X2025_VISIBLE_KEYS: (keyof BukuSoftCover145x2025MasterParams)[] = [
+  'drekCoverOliver',
+  'drekIsiOliver',
+  'drekIsiRyobi',
+  'jasaFinishingStandar',
+  'marginDefaultPct',
+  'minLaminasi',
+  'minOngkosCoverOliver',
+  'minOngkosIsiOliver',
+  'minOngkosIsiRyobi',
+  'negoDefaultPct',
+  'tarifBendingPerCm',
+  'tarifDesainCover',
+  'tarifDesainIsi',
+  'tarifKardusBox',
+  'tarifKertasAc230Kg',
+  'tarifKertasHvs70Kg',
+  'tarifLakbanRoll',
+  'tarifLaminasiDoffCm2',
+  'tarifLaminasiGlossyCm2',
+  'tarifPlateCoverOliver',
+  'tarifPlateIsiOliver',
+  'tarifPlateIsiRyobi',
+  'tarifPrintCoverA3',
+  'tarifPrintIsiPerLbr',
+  'tarifSisirPerPcs',
+  'tarifStaplesPcs',
+  'tarifUvVarnishCm2',
+];
+
 export default function BukuSoftCover145x2025MasterParameter({
   customParams,
   setCustomParams,
@@ -31,8 +61,9 @@ export default function BukuSoftCover145x2025MasterParameter({
     return customParams[key] !== DEFAULT_BUKU_SOFT_COVER_145X2025_PARAMS[key];
   };
 
-  const isModified = Object.keys(DEFAULT_BUKU_SOFT_COVER_145X2025_PARAMS).some((k) =>
-    isFieldModified(k as keyof BukuSoftCover145x2025MasterParams)
+  const isModified = React.useMemo(
+    () => BUKU_SOFT_COVER_145X2025_VISIBLE_KEYS.some((k) => customParams[k] !== DEFAULT_BUKU_SOFT_COVER_145X2025_PARAMS[k]),
+    [customParams]
   );
 
   const handleResetField = (key: keyof BukuSoftCover145x2025MasterParams) => {
@@ -43,7 +74,14 @@ export default function BukuSoftCover145x2025MasterParameter({
   };
 
   const handleResetAll = () => {
-    setCustomParams(DEFAULT_BUKU_SOFT_COVER_145X2025_PARAMS);
+    setCustomParams((prev) => {
+      const resetObj = { ...prev };
+      BUKU_SOFT_COVER_145X2025_VISIBLE_KEYS.forEach((k) => {
+        (resetObj as any)[k] = DEFAULT_BUKU_SOFT_COVER_145X2025_PARAMS[k];
+      });
+      return resetObj;
+    });
+    toast.success('Semua parameter dikembalikan ke nilai default.');
   };
 
   const handleChange = (

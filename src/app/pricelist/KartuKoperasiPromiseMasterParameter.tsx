@@ -28,6 +28,8 @@ const KARTU_KOPERASI_PROMISE_VISIBLE_KEYS: (keyof KartuKoperasiPromiseMasterPara
   'tarifPlatePerPlat',
   'tarifPoundPerUnit',
   'tarifSisirPer500',
+  'tarifPisauPerCm2',
+  'tarifCetakMinPerPlat',
   'marginDefaultPct',
   'negoDefaultPct',
 ];

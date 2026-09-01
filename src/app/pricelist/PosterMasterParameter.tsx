@@ -22,6 +22,27 @@ interface Props {
   setCustomParams: React.Dispatch<React.SetStateAction<PosterMasterParams>>;
 }
 
+const POSTER_VISIBLE_KEYS: (keyof PosterMasterParams)[] = [
+  'marginDefaultPct',
+  'minLaminasi',
+  'negoDefaultPct',
+  'oliverDrekOver',
+  'oliverMinOngkos',
+  'oliverPlatUnit',
+  'smDrekOver',
+  'smMinOngkos',
+  'smPlatUnit',
+  'tarifArtCarton230Kg',
+  'tarifKardusBox',
+  'tarifLakbanRoll',
+  'tarifLaminasiDoffCm2',
+  'tarifLaminasiGlossyCm2',
+  'tarifPrintA3',
+  'tarifSisirPcs',
+  'tarifUvVarnishCm2',
+  'upKertasPct',
+];
+
 export default function PosterMasterParameter({
   customParams,
   setCustomParams,
@@ -32,8 +53,9 @@ export default function PosterMasterParameter({
     return customParams[key] !== DEFAULT_POSTER_PARAMS[key];
   };
 
-  const isModified = Object.keys(DEFAULT_POSTER_PARAMS).some((k) =>
-    isFieldModified(k as keyof PosterMasterParams)
+  const isModified = React.useMemo(
+    () => POSTER_VISIBLE_KEYS.some((k) => customParams[k] !== DEFAULT_POSTER_PARAMS[k]),
+    [customParams]
   );
 
   const handleResetField = (key: keyof PosterMasterParams) => {
@@ -44,7 +66,14 @@ export default function PosterMasterParameter({
   };
 
   const handleResetAll = () => {
-    setCustomParams(DEFAULT_POSTER_PARAMS);
+    setCustomParams((prev) => {
+      const resetObj = { ...prev };
+      POSTER_VISIBLE_KEYS.forEach((k) => {
+        (resetObj as any)[k] = DEFAULT_POSTER_PARAMS[k];
+      });
+      return resetObj;
+    });
+    toast.success('Semua parameter dikembalikan ke nilai default.');
   };
 
   const handleChange = (

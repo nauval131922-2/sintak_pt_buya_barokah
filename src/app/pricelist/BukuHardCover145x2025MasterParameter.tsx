@@ -22,6 +22,38 @@ interface Props {
   setCustomParams: React.Dispatch<React.SetStateAction<BukuHardCover145x2025MasterParams>>;
 }
 
+const BUKU_HARD_COVER_145X2025_VISIBLE_KEYS: (keyof BukuHardCover145x2025MasterParams)[] = [
+  'drekIsiOliver',
+  'marginDefaultPct',
+  'minLaminasi',
+  'minOngkosIsiOliver',
+  'minOngkosIsiRyobi',
+  'negoDefaultPct',
+  'tarifBoardPerPcs',
+  'tarifCasingIn',
+  'tarifCraftPunggung',
+  'tarifDesainCover',
+  'tarifDesainIsi',
+  'tarifHeadband',
+  'tarifJahitBenang',
+  'tarifJasaHardCover',
+  'tarifKardusBox',
+  'tarifKertasAc230Kg',
+  'tarifKertasAp150Kg',
+  'tarifKertasHvs70Kg',
+  'tarifLaminasiDoffCm2',
+  'tarifLaminasiGlossyCm2',
+  'tarifLemPressSkiblat',
+  'tarifPilung',
+  'tarifPitaPembatas',
+  'tarifPlateIsiOliver',
+  'tarifPlateIsiRyobi',
+  'tarifPrintCoverA3',
+  'tarifPrintIsiPerLbr',
+  'tarifRoundingCover',
+  'tarifSisirPcs',
+];
+
 export default function BukuHardCover145x2025MasterParameter({
   customParams,
   setCustomParams,
@@ -32,8 +64,9 @@ export default function BukuHardCover145x2025MasterParameter({
     return customParams[key] !== DEFAULT_BUKU_HARD_COVER_145X2025_PARAMS[key];
   };
 
-  const isModified = Object.keys(DEFAULT_BUKU_HARD_COVER_145X2025_PARAMS).some((k) =>
-    isFieldModified(k as keyof BukuHardCover145x2025MasterParams)
+  const isModified = React.useMemo(
+    () => BUKU_HARD_COVER_145X2025_VISIBLE_KEYS.some((k) => customParams[k] !== DEFAULT_BUKU_HARD_COVER_145X2025_PARAMS[k]),
+    [customParams]
   );
 
   const handleResetField = (key: keyof BukuHardCover145x2025MasterParams) => {
@@ -44,7 +77,14 @@ export default function BukuHardCover145x2025MasterParameter({
   };
 
   const handleResetAll = () => {
-    setCustomParams(DEFAULT_BUKU_HARD_COVER_145X2025_PARAMS);
+    setCustomParams((prev) => {
+      const resetObj = { ...prev };
+      BUKU_HARD_COVER_145X2025_VISIBLE_KEYS.forEach((k) => {
+        (resetObj as any)[k] = DEFAULT_BUKU_HARD_COVER_145X2025_PARAMS[k];
+      });
+      return resetObj;
+    });
+    toast.success('Semua parameter dikembalikan ke nilai default.');
   };
 
   const handleChange = (

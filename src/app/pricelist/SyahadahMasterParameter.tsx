@@ -25,6 +25,7 @@ const SYAHADAH_VISIBLE_KEYS: (keyof SyahadahMasterParams)[] = [
   'tarifDesign',
   'tarifFoilPerPcs',
   'tarifSisirPerPcs',
+  'tarifKardusBox',
   'marginDefaultPct',
   'negoDefaultPct',
 ];

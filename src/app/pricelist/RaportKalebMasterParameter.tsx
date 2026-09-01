@@ -25,6 +25,7 @@ const RAPORT_KALEB_VISIBLE_KEYS: (keyof RaportKalebMasterParams)[] = [
   'tarifDesign',
   'tarifFoilPerPcs',
   'tarifSisir',
+  'tarifIsiPerLbr',
   'marginDefaultPct',
   'negoDefaultPct',
 ];

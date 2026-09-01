@@ -21,6 +21,19 @@ interface Props {
   setCustomParams: React.Dispatch<React.SetStateAction<KalenderKopMasterParams>>;
 }
 
+const KALENDER_KOP_VISIBLE_KEYS: (keyof KalenderKopMasterParams)[] = [
+  'marginDefaultPct',
+  'negoDefaultPct',
+  'tarifBlankoKalender6Lbr',
+  'tarifCetakKop1Warna',
+  'tarifCetakKop2Warna',
+  'tarifCetakKop3Warna',
+  'tarifCetakKop4Warna',
+  'tarifDesainKop',
+  'tarifKlemSeng',
+  'tarifPackingKardus',
+];
+
 export default function KalenderKopMasterParameter({
   customParams,
   setCustomParams,
@@ -31,8 +44,9 @@ export default function KalenderKopMasterParameter({
     return customParams[key] !== DEFAULT_KALENDER_KOP_PARAMS[key];
   };
 
-  const isModified = Object.keys(DEFAULT_KALENDER_KOP_PARAMS).some((k) =>
-    isFieldModified(k as keyof KalenderKopMasterParams)
+  const isModified = React.useMemo(
+    () => KALENDER_KOP_VISIBLE_KEYS.some((k) => customParams[k] !== DEFAULT_KALENDER_KOP_PARAMS[k]),
+    [customParams]
   );
 
   const handleResetField = (key: keyof KalenderKopMasterParams) => {
@@ -43,7 +57,14 @@ export default function KalenderKopMasterParameter({
   };
 
   const handleResetAll = () => {
-    setCustomParams(DEFAULT_KALENDER_KOP_PARAMS);
+    setCustomParams((prev) => {
+      const resetObj = { ...prev };
+      KALENDER_KOP_VISIBLE_KEYS.forEach((k) => {
+        (resetObj as any)[k] = DEFAULT_KALENDER_KOP_PARAMS[k];
+      });
+      return resetObj;
+    });
+    toast.success('Semua parameter dikembalikan ke nilai default.');
   };
 
   const handleChange = (

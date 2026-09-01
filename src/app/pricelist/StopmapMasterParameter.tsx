@@ -25,6 +25,7 @@ const STOPMAP_VISIBLE_KEYS: (keyof StopmapMasterParams)[] = [
   'tarifDesign',
   'tarifLaminasiDoffAdd',
   'tarifSisirPerPcs',
+  'tarifLipatPerPcs',
   'marginDefaultPct',
   'negoDefaultPct',
 ];

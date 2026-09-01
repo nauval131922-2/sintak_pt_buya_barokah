@@ -27,6 +27,7 @@ const BUKU_TULIS_VISIBLE_KEYS: (keyof BukuTulisMasterParams)[] = [
   'tarifDesignCover',
   'tarifDesignIsiPerHlm',
   'tarifSisirPerPcs',
+  'tarifPackingKardus',
   'marginDefaultPct',
   'negoDefaultPct',
 ];

@@ -9,6 +9,36 @@ interface PackagingMasterParameterProps {
   setCustomParams: React.Dispatch<React.SetStateAction<PackagingMasterParams>>;
 }
 
+const PACKAGING_VISIBLE_KEYS: (keyof PackagingMasterParams)[] = [
+  'biayaDesain',
+  'biayaTransport',
+  'hargaPlanoAC230_15x15',
+  'hargaPlanoAC230_Standard',
+  'hargaPlanoDuplex350',
+  'hargaPlanoIvory230_15x15',
+  'hargaPlanoIvory230_Standard',
+  'insheetPlanoOliver',
+  'insheetPlanoSM',
+  'kapasitasKardusPcs',
+  'marginDefaultPct',
+  'minBiayaLaminasi',
+  'minBiayaPond',
+  'negoDefaultPct',
+  'oliverDrekOverPerWarna',
+  'oliverMinOngkosPerWarna',
+  'smDrekOverPerWarna',
+  'smMinOngkosPerWarna',
+  'tarifKardusPerPcs',
+  'tarifLakbanPerRoll',
+  'tarifLaminasiDoffPerCm2',
+  'tarifLaminasiGlossyPerCm2',
+  'tarifOngkosPondPerPcs',
+  'tarifPisauPondPerCm2',
+  'tarifPlatOliverPerWarna',
+  'tarifPlatSMPerWarna',
+  'tarifUVVarnishPerCm2',
+];
+
 export default function PackagingMasterParameter({
   customParams,
   setCustomParams,
@@ -28,7 +58,10 @@ export default function PackagingMasterParameter({
     }
   };
 
-  const isModified = JSON.stringify(customParams) !== JSON.stringify(DEFAULT_PACKAGING_PARAMS);
+  const isModified = React.useMemo(
+    () => PACKAGING_VISIBLE_KEYS.some((k) => customParams[k] !== DEFAULT_PACKAGING_PARAMS[k]),
+    [customParams]
+  );
 
   const fieldRow = (
     field: keyof PackagingMasterParams,

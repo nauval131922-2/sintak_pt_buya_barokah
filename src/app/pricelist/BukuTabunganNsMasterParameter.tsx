@@ -25,6 +25,7 @@ const BUKU_TABUNGAN_NS_VISIBLE_KEYS: (keyof BukuTabunganNsMasterParams)[] = [
   'tarifDesignCover',
   'tarifSusunLipatPerPcs',
   'tarifJahitPerPcs',
+  'tarifPoundPerPcs',
   'marginDefaultPct',
   'negoDefaultPct',
 ];

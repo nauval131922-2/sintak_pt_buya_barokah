@@ -22,6 +22,33 @@ interface Props {
   setCustomParams: React.Dispatch<React.SetStateAction<MajalahMasterParams>>;
 }
 
+const MAJALAH_VISIBLE_KEYS: (keyof MajalahMasterParams)[] = [
+  'drekCoverOliver',
+  'drekIsiOliver',
+  'jasaFinishingStandar',
+  'marginDefaultPct',
+  'minLaminasi',
+  'minOngkosCoverOliver',
+  'minOngkosIsiOliver',
+  'negoDefaultPct',
+  'tarifBendingPerCm',
+  'tarifDesainCover',
+  'tarifDesainIsi',
+  'tarifKardusBox',
+  'tarifKertasAc230Kg',
+  'tarifKertasAp120Kg',
+  'tarifLakbanRoll',
+  'tarifLaminasiDoffCm2',
+  'tarifLaminasiGlossyCm2',
+  'tarifPlateCoverOliver',
+  'tarifPlateIsiOliver',
+  'tarifPrintCoverA3',
+  'tarifPrintIsiA3',
+  'tarifSisirPcs',
+  'tarifStaplesPcs',
+  'tarifUvVarnishCm2',
+];
+
 export default function MajalahMasterParameter({
   customParams,
   setCustomParams,
@@ -32,8 +59,9 @@ export default function MajalahMasterParameter({
     return customParams[key] !== DEFAULT_MAJALAH_PARAMS[key];
   };
 
-  const isModified = Object.keys(DEFAULT_MAJALAH_PARAMS).some((k) =>
-    isFieldModified(k as keyof MajalahMasterParams)
+  const isModified = React.useMemo(
+    () => MAJALAH_VISIBLE_KEYS.some((k) => customParams[k] !== DEFAULT_MAJALAH_PARAMS[k]),
+    [customParams]
   );
 
   const handleResetField = (key: keyof MajalahMasterParams) => {
@@ -44,7 +72,14 @@ export default function MajalahMasterParameter({
   };
 
   const handleResetAll = () => {
-    setCustomParams(DEFAULT_MAJALAH_PARAMS);
+    setCustomParams((prev) => {
+      const resetObj = { ...prev };
+      MAJALAH_VISIBLE_KEYS.forEach((k) => {
+        (resetObj as any)[k] = DEFAULT_MAJALAH_PARAMS[k];
+      });
+      return resetObj;
+    });
+    toast.success('Semua parameter dikembalikan ke nilai default.');
   };
 
   const handleChange = (

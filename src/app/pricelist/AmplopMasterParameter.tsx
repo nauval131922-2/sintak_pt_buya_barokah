@@ -25,6 +25,7 @@ const AMPLOP_VISIBLE_KEYS: (keyof AmplopMasterParams)[] = [
   'tarifDesign',
   'tarifRyobi',
   'tarifLipatLemPerPcs',
+  'tarifKardusBox',
   'marginDefaultPct',
   'negoDefaultPct',
 ];

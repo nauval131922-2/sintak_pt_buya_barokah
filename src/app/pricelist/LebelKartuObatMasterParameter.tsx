@@ -27,6 +27,8 @@ const LEBEL_KARTU_OBAT_VISIBLE_KEYS: (keyof LebelKartuObatMasterParams)[] = [
   'tarifDesain',
   'tarifPlatePerPlat',
   'tarifSisirPer500',
+  'tarifDrek',
+  'tarifCetakMinPerPlat',
   'marginDefaultPct',
   'negoDefaultPct',
 ];

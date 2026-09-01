@@ -22,6 +22,36 @@ interface Props {
   setCustomParams: React.Dispatch<React.SetStateAction<BukuSoftCover105x148MasterParams>>;
 }
 
+const BUKU_SOFT_COVER_105X148_VISIBLE_KEYS: (keyof BukuSoftCover105x148MasterParams)[] = [
+  'drekCoverOliver',
+  'drekIsiOliver',
+  'drekIsiRyobi',
+  'jasaFinishingStandar',
+  'marginDefaultPct',
+  'minLaminasi',
+  'minOngkosCoverOliver',
+  'minOngkosIsiOliver',
+  'minOngkosIsiRyobi',
+  'negoDefaultPct',
+  'tarifBendingPerCm',
+  'tarifDesainCover',
+  'tarifDesainIsi',
+  'tarifKardusBox',
+  'tarifKertasAc230Kg',
+  'tarifKertasHvs70Kg',
+  'tarifLakbanRoll',
+  'tarifLaminasiDoffCm2',
+  'tarifLaminasiGlossyCm2',
+  'tarifPlateCoverOliver',
+  'tarifPlateIsiOliver',
+  'tarifPlateIsiRyobi',
+  'tarifPrintCoverA3',
+  'tarifPrintIsiPerLbr',
+  'tarifSisirPcs',
+  'tarifStaplesPcs',
+  'tarifUvVarnishCm2',
+];
+
 export default function BukuSoftCover105x148MasterParameter({
   customParams,
   setCustomParams,
@@ -32,8 +62,9 @@ export default function BukuSoftCover105x148MasterParameter({
     return customParams[key] !== DEFAULT_BUKU_SOFT_COVER_105X148_PARAMS[key];
   };
 
-  const isModified = Object.keys(DEFAULT_BUKU_SOFT_COVER_105X148_PARAMS).some((k) =>
-    isFieldModified(k as keyof BukuSoftCover105x148MasterParams)
+  const isModified = React.useMemo(
+    () => BUKU_SOFT_COVER_105X148_VISIBLE_KEYS.some((k) => customParams[k] !== DEFAULT_BUKU_SOFT_COVER_105X148_PARAMS[k]),
+    [customParams]
   );
 
   const handleResetField = (key: keyof BukuSoftCover105x148MasterParams) => {
@@ -44,7 +75,14 @@ export default function BukuSoftCover105x148MasterParameter({
   };
 
   const handleResetAll = () => {
-    setCustomParams(DEFAULT_BUKU_SOFT_COVER_105X148_PARAMS);
+    setCustomParams((prev) => {
+      const resetObj = { ...prev };
+      BUKU_SOFT_COVER_105X148_VISIBLE_KEYS.forEach((k) => {
+        (resetObj as any)[k] = DEFAULT_BUKU_SOFT_COVER_105X148_PARAMS[k];
+      });
+      return resetObj;
+    });
+    toast.success('Semua parameter dikembalikan ke nilai default.');
   };
 
   const handleChange = (

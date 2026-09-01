@@ -21,6 +21,17 @@ interface Props {
   setCustomParams: React.Dispatch<React.SetStateAction<StikerMasterParams>>;
 }
 
+const STIKER_VISIBLE_KEYS: (keyof StikerMasterParams)[] = [
+  'marginDefaultPct',
+  'negoDefaultPct',
+  'tarifDesainStiker',
+  'tarifDieCutPerPcs',
+  'tarifKissCutPerLbr',
+  'tarifPackingKardus',
+  'tarifRajangPerLbr',
+  'tarifStikerVinylA3',
+];
+
 export default function StikerMasterParameter({
   customParams,
   setCustomParams,
@@ -31,8 +42,9 @@ export default function StikerMasterParameter({
     return customParams[key] !== DEFAULT_STIKER_PARAMS[key];
   };
 
-  const isModified = Object.keys(DEFAULT_STIKER_PARAMS).some((k) =>
-    isFieldModified(k as keyof StikerMasterParams)
+  const isModified = React.useMemo(
+    () => STIKER_VISIBLE_KEYS.some((k) => customParams[k] !== DEFAULT_STIKER_PARAMS[k]),
+    [customParams]
   );
 
   const handleResetField = (key: keyof StikerMasterParams) => {
@@ -43,7 +55,14 @@ export default function StikerMasterParameter({
   };
 
   const handleResetAll = () => {
-    setCustomParams(DEFAULT_STIKER_PARAMS);
+    setCustomParams((prev) => {
+      const resetObj = { ...prev };
+      STIKER_VISIBLE_KEYS.forEach((k) => {
+        (resetObj as any)[k] = DEFAULT_STIKER_PARAMS[k];
+      });
+      return resetObj;
+    });
+    toast.success('Semua parameter dikembalikan ke nilai default.');
   };
 
   const handleChange = (

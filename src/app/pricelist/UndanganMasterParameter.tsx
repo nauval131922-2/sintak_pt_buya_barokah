@@ -25,6 +25,7 @@ const UNDANGAN_VISIBLE_KEYS: (keyof UndanganMasterParams)[] = [
   'tarifDesign',
   'tarifSisirPerPcs',
   'tarifPlastikOppPerPcs',
+  'tarifKardusBox',
   'marginDefaultPct',
   'negoDefaultPct',
 ];

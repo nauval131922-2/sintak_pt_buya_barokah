@@ -25,6 +25,7 @@ const KOP_SURAT_VISIBLE_KEYS: (keyof KopSuratMasterParams)[] = [
   'tarifDesign',
   'tarifRyobi',
   'tarifPotongPerPcs',
+  'tarifKardusBox',
   'marginDefaultPct',
   'negoDefaultPct',
 ];

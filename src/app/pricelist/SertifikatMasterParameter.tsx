@@ -25,6 +25,7 @@ const SERTIFIKAT_VISIBLE_KEYS: (keyof SertifikatMasterParams)[] = [
   'tarifDesign',
   'tarifFoilPerPcs',
   'tarifPotongPerPcs',
+  'tarifKardusBox',
   'marginDefaultPct',
   'negoDefaultPct',
 ];
