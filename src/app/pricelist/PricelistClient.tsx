@@ -783,13 +783,11 @@ export default function PricelistClient() {
   const isFiltered = selectedJenis !== 'ALL' || selectedBahan !== 'ALL' || searchTerm !== '';
 
   return (
-    <div
-      className={`flex flex-col flex-1 min-h-0 transition-all duration-300 ${
-        activeSimulationId
-          ? 'border-2 border-orange-500 bg-orange-50/15 rounded-2xl p-2.5 sm:p-3.5 shadow-lg shadow-orange-500/10 gap-3 ring-4 ring-orange-500/20'
-          : 'gap-4'
-      }`}
-    >
+    <div className="flex flex-col gap-4 flex-1 min-h-0 relative">
+      {/* Lis Garis Oranye Mengitari Seluruh Halaman (Mulai Atas Pill Tab) — Membingkai di luar tanpa mengecilkan lebar isi */}
+      {activeSimulationId && (
+        <div className="pointer-events-none absolute -inset-1.5 sm:-inset-2 border-2 border-orange-500 rounded-2xl ring-4 ring-orange-500/20 z-40 shadow-lg shadow-orange-500/10" />
+      )}
       {/* Banner Mode Edit Aktif — Muncul di atas pill tab saat mengedit simulasi */}
       {activeSimulationId && (
         <div className="flex items-center justify-between gap-3 px-3.5 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl shadow-xs text-xs font-bold animate-in fade-in slide-in-from-top-1 duration-200 shrink-0">
