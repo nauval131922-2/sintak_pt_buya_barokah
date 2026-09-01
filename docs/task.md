@@ -19,10 +19,14 @@ _Tidak ada task yang sedang berjalan saat ini._
 
 ## ✅ Selesai (Done)
 
-- [x] **Pricelist Modul 17: Buku Soft Cover** — kalkulator HPP formula terverifikasi, Master Parameter, Simulator, Matriks A4 & B5, Global Sync, dan integrasi Daftar Kalkulasi — 2026-09-01
-- [x] **Stabilisasi Matriks Murni CSS Multi-Modul** — migrasi 18 modul matriks ke responsive CSS grid murni mencegah kolaps saat toggle mode — 2026-09-01
-- [x] **Standardisasi Grid Master Parameter 2 Kolom** — restrukturisasi 2x2 grid pada Kalender, Manasik, Nota, Yasin, dan Buku Soft Cover — 2026-09-01
-- [x] **Indikator & Proteksi Mode Edit Pill Tab** — aksen dan badge oranye pada tab Master Parameter & Simulator saat edit, auto-release saat pindah tab — 2026-09-01
+- [x] **Pricelist 30 Modul Multi-Produk Percetakan** — ekspansi modul Buku Soft Cover (3 varian ukuran), Buku Hard Cover (3 varian ukuran), Poster, Majalah, Stiker, Kalender Kop, Packaging, dan Paperbag — 2026-09-01
+- [x] **Sinkronisasi Database Server Multi-Device Pricelist** — API CRUD SQLite `pricelist_saved_calculations`, real-time sync, modal Detail HPP & snapshot parameter historis — 2026-09-01
+- [x] **Audit Logging & Activity Logs Pricelist** — integrasi pencatatan log aktivitas otomatis saat simpan, edit, dan hapus kalkulasi — 2026-09-01
+- [x] **Mode Edit Terproteksi & Simpan Baru** — tombol Update Perubahan & Simpan Baru di 30 simulator, auto-backup & restore parameter asli saat keluar mode edit — 2026-09-01
+- [x] **Indikator Mode Edit Pill Tab** — aksen dan badge oranye pada tab Master Parameter & Simulator, auto-release saat pindah tab atau ganti produk — 2026-09-01
+- [x] **Stabilisasi Matriks Murni CSS Multi-Modul** — migrasi modul matriks ke responsive CSS grid murni mencegah kolaps 1 kolom saat toggle mode — 2026-09-01
+- [x] **Standardisasi Grid Master Parameter 2 Kolom** — restrukturisasi 2x2 grid seimbang pada seluruh modul produk — 2026-09-01
+- [x] **Master Parameter Global Real-Time Sync & Modal Panduan 30 Excel** — tarif cetak Toko/Ryobi, desain, margin/nego, dan panduan sumber file Drive H — 2026-09-01
 - [x] **Cek Karyawan Modal JHP** — API batch (belum/sudah), modal 2 tab + search + load more — 2026-06-23
 - [x] **Server-side Sorting Multi-Modul** — Bahan Baku, Barang Jadi, BOM, Jurnal Umum + Reset Sort button — 2026-06-23
 - [x] **SOPD kolom Produk + filter Produksi Selesai** — kolom baru, filter toggle di toolbar — 2026-06-23

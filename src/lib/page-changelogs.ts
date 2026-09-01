@@ -93,16 +93,21 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   // ─── Pricelist Multi-Produk ───
   'pricelist-2026-09-01': entry({
     pageKey: 'pricelist',
-    title: 'Pricelist & Simulator (Buku Soft Cover, Stabilisasi Matriks & Akses Tab Edit)',
+    title: 'Pricelist & Simulator Multi-Produk (Ekspansi 30 Produk, Sync DB Multi-Device & Mode Edit)',
     permissionKeys: ['pricelist_kalkulasi'],
     sortDate: '2026-09-01',
     date: '01 Sep 2026',
     version: '2026-09-01-1',
     items: [
-      'Modul Baru Buku Soft Cover (Katalog 17): Kalkulator formula HPP terverifikasi, Master Parameter, Simulator, dan Matriks varian A4 & B5 terintegrasi penuh ke sinkronisasi Global dan Daftar Kalkulasi',
-      'Stabilisasi Layout Matriks Murni CSS: Migrasi seluruh 18 modul matriks dari hook resize observer ke Responsive CSS Grid (grid-cols-1 md:grid-cols-2 xl:grid-cols-3) untuk mencegah tampilan kolaps saat bolak-balik mode Matriks dan Tabel',
-      'Standardisasi 2 Kolom Master Parameter: Penyusunan ulang kartu parameter Kalender, Manasik, Nota, Yasin, dan Buku Soft Cover agar proporsional dan seimbang 2 kolom di layar desktop/laptop',
-      'Indikator & Proteksi Mode Edit: Pill tab Master Parameter dan Simulator kini otomatis diberi aksen oranye dan badge "Edit" saat memuat riwayat kalkulasi, serta otomatis melepas mode edit dan memulihkan parameter saat berpindah ke tab lain atau mengganti produk',
+      'Ekspansi 30 Modul Produk Percetakan: Penambahan lengkap modul baru meliputi Buku Soft Cover (A4/B5 & 10,5×14,8 & 14,5×20,25), Buku Hard Cover (10,5×14,8 & 14,5×20,25 & 21×29,7), Poster, Majalah 14,5×20,25, Stiker, Kalender Kop, Packaging, dan Paperbag dengan formula HPP terverifikasi, Master Parameter, Simulator, dan Matriks harga',
+      'Sinkronisasi Database Server Multi-Device: Riwayat kalkulasi kini otomatis tersimpan di SQLite server (pricelist_saved_calculations) sehingga dapat diakses, diperbarui, dan disalin lintas perangkat dan staff secara instan',
+      'Snapshot Master Parameter Historis & Modal Detail: Setiap kalkulasi yang disimpan merekam snapshot parameter aktif saat itu dan dapat diinspeksi melalui modal popup "Detail HPP & Parameter Historis" di tab Daftar Kalkulasi',
+      'Fitur Mode Edit Lengkap (Simpan Baru & Update Perubahan): Seluruh 30 simulator kini mendukung pembaruan kalkulasi lama (Update Perubahan) atau penyimpanan sebagai riwayat terpisah (Simpan Baru) tanpa menimpa data asli',
+      'Indikator Aksen Oranye & Proteksi Parameter: Pill tab Master Parameter dan Simulator otomatis menampilkan aksen oranye dan badge "Edit" saat kalkulasi dimuat; Master Parameter aktif di-backup dan otomatis dipulihkan saat keluar mode edit, ganti produk, atau berpindah tab',
+      'Pencatatan Audit Log Otomatis: Setiap aksi simpan kalkulasi baru, perbarui data, atau hapus kalkulasi otomatis tercatat ke log aktivitas sistem (activity_logs)',
+      'Stabilisasi Layout Matriks Murni CSS: Migrasi seluruh modul matriks dari hook resize observer ke Responsive CSS Grid murni (grid-cols-1 md:grid-cols-2 xl:grid-cols-3) mencegah layout kolaps 1 kolom saat bolak-balik mode Matriks dan Tabel',
+      'Standardisasi Grid 2 Kolom Master Parameter: Restrukturisasi kartu parameter pada seluruh modul produk menjadi layout grid 2 kolom seimbang (2x2 grid) yang rapi di layar desktop maupun laptop',
+      'Master Parameter Global & Modal Panduan: Penambahan mesin cetak Toko/Ryobi, tarif desain standar, margin/nego default ke sinkronisasi global real-time, serta modal panduan pemetaan 30 sumber file master Excel percetakan',
     ],
   }),
   'pricelist-2026-08-31': entry({
