@@ -127,13 +127,13 @@ export default function BukuSoftCoverSimulator({
       savedAt: new Date().toISOString(),
       oplah,
       data: result,
-        paramsSnapshot: customParams,
-        paramsSnapshot: customParams,
+      paramsSnapshot: customParams,
     };
     const updated = [newItem, ...savedSimulations.slice(0, 49)];
     setSavedSimulations(updated);
     try {
       localStorage.setItem(LS_KEY, JSON.stringify(updated));
+      saveCalculationToDb({ ...newItem, category: 'Buku Soft Cover' });
     } catch (e) {
       console.error('Failed to save buku soft cover simulation:', e);
     }
@@ -143,20 +143,20 @@ export default function BukuSoftCoverSimulator({
     if (setActiveSimulationTitle) setActiveSimulationTitle(null);
     setSimulationTitle('');
   };
-    try { saveCalculationToDb({ ...newItem, category: 'Buku Soft Cover' }); } catch {}
 
   const handleUpdateSavedSimulation = () => {
     if (!activeSimulationId) return;
     const title = simulationTitle.trim() || activeSimulationTitle || defaultTitle();
     const updated = savedSimulations.map((item) =>
       item.id === activeSimulationId
-        ? { ...item, title, savedAt: new Date().toISOString(), data: result,
-        paramsSnapshot: customParams }
+        ? { ...item, title, savedAt: new Date().toISOString(), data: result, paramsSnapshot: customParams }
         : item
     );
     setSavedSimulations(updated);
     try {
       localStorage.setItem(LS_KEY, JSON.stringify(updated));
+      const targetItem = updated.find((x) => x.id === activeSimulationId);
+      if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Buku Soft Cover' });
     } catch (e) {
       console.error('Failed to update buku soft cover simulation:', e);
     }
@@ -166,8 +166,6 @@ export default function BukuSoftCoverSimulator({
     if (setActiveSimulationTitle) setActiveSimulationTitle(null);
     setSimulationTitle('');
   };
-    try { const targetItem = updated.find((x) => x.id === activeSimulationId); if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Buku Soft Cover' }); } catch {}
-
   const handleCopyQuote = () => {
     const fmt = (n: number) => n.toLocaleString('id-ID');
     const text =

@@ -4,9 +4,10 @@ export async function saveCalculationToDb(item: {
   category: string;
   title: string;
   oplah?: number;
-  data: any;
+  data?: any;
   paramsSnapshot?: any;
   savedAt?: string;
+  [key: string]: any;
 }) {
   try {
     const res = await fetch('/api/pricelist/saved-calculations', {

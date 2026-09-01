@@ -393,4 +393,5 @@ export type SavedBukuSoftCoverSimulationItem = {
   title: string;
   oplah: number;
   data: BukuSoftCoverSimulatorResult;
+  paramsSnapshot?: any;
 };

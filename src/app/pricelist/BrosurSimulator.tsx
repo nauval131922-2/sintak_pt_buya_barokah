@@ -151,8 +151,7 @@ export default function BrosurSimulator({
       title,
       savedAt: new Date().toISOString(),
       data: result,
-        paramsSnapshot: customParams,
-        paramsSnapshot: customParams,
+      paramsSnapshot: customParams,
     };
     const updated = [newItem, ...savedSimulations.slice(0, 49)];
     setSavedSimulations(updated);

@@ -28,13 +28,13 @@ import {
 
 interface PackagingMatrixViewProps {
   customParams?: PackagingMasterParams;
-  viewMode?: 'user' | 'developer';
-  setViewMode?: (mode: 'user' | 'developer') => void;
+  viewMode?: 'matrix' | 'table';
+  setViewMode?: (mode: 'matrix' | 'table') => void;
 }
 
 export default function PackagingMatrixView({
   customParams = DEFAULT_PACKAGING_PARAMS,
-  viewMode = 'user',
+  viewMode = 'matrix',
   setViewMode,
 }: PackagingMatrixViewProps) {
   const [filterUkuran, setFilterUkuran] = useState<string>('ALL');

@@ -43,14 +43,14 @@ export type SavedPackagingSimulationItem = {
 };
 
 interface PackagingSimulatorProps {
-  customParams: PackagingMasterParams;
-  viewMode?: 'user' | 'developer';
+  customParams?: PackagingMasterParams;
+  viewMode?: 'matrix' | 'table';
   setActiveSimulationTitle?: (title: string) => void;
 }
 
 export default function PackagingSimulator({
-  customParams,
-  viewMode = 'user',
+  customParams = DEFAULT_PACKAGING_PARAMS,
+  viewMode = 'matrix',
   setActiveSimulationTitle,
 }: PackagingSimulatorProps) {
   // Input State

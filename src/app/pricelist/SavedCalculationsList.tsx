@@ -483,7 +483,7 @@ export default function SavedCalculationsList({
     });
 
     // 5. Brosur 2026
-    brosurList.forEach((b) => {
+    brosurList.forEach((b: any) => {
       const inp = (b.data && b.data.input) ? b.data.input : (b.input || b.data || b || {});
       items.push({
         id: b.id,
@@ -508,7 +508,7 @@ export default function SavedCalculationsList({
     });
 
     // 6. Label KHQ
-    labelKhqList.forEach((l) => {
+    labelKhqList.forEach((l: any) => {
       const inp = (l.data && l.data.input) ? l.data.input : (l.input || l.data || l || {});
       items.push({
         id: l.id,
@@ -532,7 +532,7 @@ export default function SavedCalculationsList({
     });
 
     // 7. Buku Tulis
-    bukuTulisList.forEach((bt) => {
+    bukuTulisList.forEach((bt: any) => {
       const inp = (bt.data && bt.data.input) ? bt.data.input : (bt.input || bt.data || bt || {});
       items.push({
         id: bt.id,
@@ -556,7 +556,7 @@ export default function SavedCalculationsList({
     });
 
     // 8. Stopmap
-    stopmapList.forEach((sm) => {
+    stopmapList.forEach((sm: any) => {
       const inp = (sm.data && sm.data.input) ? sm.data.input : (sm.input || sm.data || sm || {});
       items.push({
         id: sm.id,
@@ -580,7 +580,7 @@ export default function SavedCalculationsList({
     });
 
     // 9. Syahadah
-    syahadahList.forEach((sy) => {
+    syahadahList.forEach((sy: any) => {
       const inp = (sy.data && sy.data.input) ? sy.data.input : (sy.input || sy.data || sy || {});
       items.push({
         id: sy.id,
@@ -604,7 +604,7 @@ export default function SavedCalculationsList({
     });
 
     // 10. Raport Kaleb
-    raportKalebList.forEach((rk) => {
+    raportKalebList.forEach((rk: any) => {
       const inp = (rk.data && rk.data.input) ? rk.data.input : (rk.input || rk.data || rk || {});
       const extra = inp.tambahanIsiLbr ? ` +${inp.tambahanIsiLbr} lbr` : '';
       items.push({
@@ -629,7 +629,7 @@ export default function SavedCalculationsList({
     });
 
     // 11. Kop Surat
-    kopSuratList.forEach((ks) => {
+    kopSuratList.forEach((ks: any) => {
       const inp = (ks.data && ks.data.input) ? ks.data.input : (ks.input || ks.data || ks || {});
       items.push({
         id: ks.id,
@@ -653,7 +653,7 @@ export default function SavedCalculationsList({
     });
 
     // 12. Amplop
-    amplopList.forEach((a) => {
+    amplopList.forEach((a: any) => {
       const inp = (a.data && a.data.input) ? a.data.input : (a.input || a.data || a || {});
       items.push({
         id: a.id,
@@ -677,7 +677,7 @@ export default function SavedCalculationsList({
     });
 
     // 13. Sertifikat
-    sertifikatList.forEach((s) => {
+    sertifikatList.forEach((s: any) => {
       const inp = (s.data && s.data.input) ? s.data.input : (s.input || s.data || s || {});
       const lam = inp.laminasi !== 'Tanpa Laminasi' ? ` · ${inp.laminasi}` : '';
       const foil = inp.opsiFoil ? ' +Foil' : '';
@@ -703,7 +703,7 @@ export default function SavedCalculationsList({
     });
 
     // 14. Undangan
-    undanganList.forEach((u) => {
+    undanganList.forEach((u: any) => {
       const inp = (u.data && u.data.input) ? u.data.input : (u.input || u.data || u || {});
       const lam = inp.laminasi !== 'Tanpa Laminasi' ? ` · ${inp.laminasi}` : '';
       items.push({
@@ -728,7 +728,7 @@ export default function SavedCalculationsList({
     });
 
     // 15. Buku Tabungan NS
-    bukuTabunganNsList.forEach((b) => {
+    bukuTabunganNsList.forEach((b: any) => {
       const inp = (b.data && b.data.input) ? b.data.input : (b.input || b.data || b || {});
       items.push({
         id: b.id,
@@ -752,7 +752,7 @@ export default function SavedCalculationsList({
     });
 
     // 16. Buku Tabungan Security
-    bukuTabunganSecurityList.forEach((b) => {
+    bukuTabunganSecurityList.forEach((b: any) => {
       const inp = (b.data && b.data.input) ? b.data.input : (b.input || b.data || b || {});
       items.push({
         id: b.id,
@@ -776,7 +776,7 @@ export default function SavedCalculationsList({
     });
 
     // 17. Kartu Koperasi Promise
-    kartuKoperasiPromiseList.forEach((k) => {
+    kartuKoperasiPromiseList.forEach((k: any) => {
       const inp = (k.data && k.data.input) ? k.data.input : (k.input || k.data || k || {});
       items.push({
         id: k.id,
@@ -800,7 +800,7 @@ export default function SavedCalculationsList({
     });
 
     // 18. Lebel Kartu Obat
-    lebelKartuObatList.forEach((l) => {
+    lebelKartuObatList.forEach((l: any) => {
       const inp = (l.data && l.data.input) ? l.data.input : (l.input || l.data || l || {});
       items.push({
         id: l.id,
@@ -824,7 +824,7 @@ export default function SavedCalculationsList({
     });
 
     // 19. Buku Soft Cover
-    bukuSoftCoverList.forEach((b) => {
+    bukuSoftCoverList.forEach((b: any) => {
       const inp = (b.data && b.data.input) ? b.data.input : (b.input || b.data || b || {});
       items.push({
         id: b.id,
@@ -848,7 +848,7 @@ export default function SavedCalculationsList({
     });
 
     // 20. Buku Soft Cover 14,5×20,25
-    bukuSoftCover145x2025List.forEach((b) => {
+    bukuSoftCover145x2025List.forEach((b: any) => {
       const inp = (b.data && b.data.input) ? b.data.input : (b.input || b.data || b || {});
       items.push({
         id: b.id,
@@ -872,7 +872,7 @@ export default function SavedCalculationsList({
     });
 
     // 21. Buku Hard Cover 10,5×14,8
-    bukuHardCover105x148List.forEach((b) => {
+    bukuHardCover105x148List.forEach((b: any) => {
       const inp = (b.data && b.data.input) ? b.data.input : (b.input || b.data || b || {});
       items.push({
         id: b.id,
@@ -896,7 +896,7 @@ export default function SavedCalculationsList({
     });
 
     // 22. Poster
-    posterList.forEach((p) => {
+    posterList.forEach((p: any) => {
       const inp = (p.data && p.data.input) ? p.data.input : (p.input || p.data || p || {});
       items.push({
         id: p.id,
@@ -920,7 +920,7 @@ export default function SavedCalculationsList({
     });
 
     // 23. Majalah 14,5×20,25
-    majalahList.forEach((m) => {
+    majalahList.forEach((m: any) => {
       const inp = (m.data && m.data.input) ? m.data.input : (m.input || m.data || m || {});
       items.push({
         id: m.id,
@@ -944,7 +944,7 @@ export default function SavedCalculationsList({
     });
 
     // 24. Stiker
-    stikerList.forEach((s) => {
+    stikerList.forEach((s: any) => {
       const inp = (s.data && s.data.input) ? s.data.input : (s.input || s.data || s || {});
       items.push({
         id: s.id,
@@ -968,7 +968,7 @@ export default function SavedCalculationsList({
     });
 
     // 25. Buku Soft Cover 10,5×14,8
-    bukuSoftCover105x148List.forEach((b) => {
+    bukuSoftCover105x148List.forEach((b: any) => {
       const inp = (b.data && b.data.input) ? b.data.input : (b.input || b.data || b || {});
       items.push({
         id: b.id,
@@ -992,7 +992,7 @@ export default function SavedCalculationsList({
     });
 
     // 26. Buku Hard Cover 14,5×20,25
-    bukuHardCover145x2025List.forEach((b) => {
+    bukuHardCover145x2025List.forEach((b: any) => {
       const inp = (b.data && b.data.input) ? b.data.input : (b.input || b.data || b || {});
       items.push({
         id: b.id,
@@ -1016,7 +1016,7 @@ export default function SavedCalculationsList({
     });
 
     // 27. Buku Hard Cover 21×29,7
-    bukuHardCover21x297List.forEach((b) => {
+    bukuHardCover21x297List.forEach((b: any) => {
       const inp = (b.data && b.data.input) ? b.data.input : (b.input || b.data || b || {});
       items.push({
         id: b.id,
@@ -1040,7 +1040,7 @@ export default function SavedCalculationsList({
     });
 
     // 28. Kalender Kop
-    kalenderKopList.forEach((k) => {
+    kalenderKopList.forEach((k: any) => {
       const inp = (k.data && k.data.input) ? k.data.input : (k.input || k.data || k || {});
       items.push({
         id: k.id,
@@ -1064,7 +1064,7 @@ export default function SavedCalculationsList({
     });
 
     // 29. Packaging Box Dus
-    packagingList.forEach((p) => {
+    packagingList.forEach((p: any) => {
       const inp = (p.data && p.data.input) ? p.data.input : (p.input || p.data || p || {});
       items.push({
         id: p.id,
@@ -1088,7 +1088,7 @@ export default function SavedCalculationsList({
     });
 
     // 30. Paperbag
-    paperbagList.forEach((p) => {
+    paperbagList.forEach((p: any) => {
       const inp = (p.data && p.data.input) ? p.data.input : (p.input || p.data || p || {});
       items.push({
         id: p.id,
@@ -1421,133 +1421,133 @@ export default function SavedCalculationsList({
     e.stopPropagation();
     let text = '';
     if (item.category === 'Kalender') {
-      const k = item.rawData as SavedSimulationItem;
+      const k: any = item.rawData;
       text = `*PENAWARAN HARGA KALENDER DINDING 2027*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Model*: ${k.modelKalender}\n• *Bahan*: ${k.bahan}\n• *Ukuran*: ${k.ukuran} cm\n• *Finishing*: Jilid ${k.finishingJilid}\n• *Oplah*: ${k.oplah.toLocaleString('id-ID')} pcs\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${k.summary.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${k.summary.totalOmset.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN. Waktu pengerjaan & jadwal kirim dapat disesuaikan._`;
     } else if (item.category === 'Buku Manasik') {
-      const m = item.rawData as SavedManasikSimulationItem;
+      const m: any = item.rawData;
       text = `*PENAWARAN BUKU PANDUAN MANASIK HAJI / UMROH*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Manasik ${m.jumlahHalaman} Halaman\n• *Kuantitas*: ${m.oplah.toLocaleString('id-ID')} eks\n• *Cover*: AC 230 gsm + Laminasi ${m.laminasiCover}\n• *Jilid*: ${m.tipeJilid}\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Eks*: *Rp ${m.summary.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${m.summary.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Buku Yasin') {
-      const y = item.rawData as SavedYasinSimulationItem;
+      const y: any = item.rawData;
       text = `*PENAWARAN BUKU SURAT YASIN & TAHLIL*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Yasin ${y.tipeCover} (${y.jumlahHalamanIsi} Halaman)\n• *Ukuran*: ${y.ukuran} cm\n• *Kuantitas*: ${y.oplah.toLocaleString('id-ID')} buku\n• *Sisipan*: ${y.lembarSisipanFoto} Lembar Foto / ${y.lembarSisipanKeluarga} Lembar Doa\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Buku*: *Rp ${y.summary.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${y.summary.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
     } else if (item.category === 'Nota 1 Warna') {
-      const n = item.rawData as SavedNotaSimulationItem;
+      const n: any = item.rawData;
       text = `*PENAWARAN CETAK NOTA / KWITANSI / SURAT JALAN*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Spesifikasi*: Nota ${n.rangkap} Rangkap (${n.rangkap === 1 ? 'HVS 70 gr' : `Kertas NCR 55 gr ${n.rangkap} Ply`})\n• *Ukuran*: ${n.ukuran}\n• *Warna Cetak*: ${n.jumlahWarna} Warna (Mesin Ryobi)\n• *Kuantitas*: *${n.oplahRim} Rim Folio*\n• *Finishing*: Cover Samson, Alas Board, Susun, Staples & Lem Ngetruk${n.opsiPorporasi ? ', Porporasi' : ''}${n.opsiNomorator ? ', Nomorator Seri' : ''}\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Rim*: *Rp ${n.summary.hargaJualPerRim.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${n.summary.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Kualitas cetak tajam & tembusan NCR pekat._`;
     } else if (item.category === 'Brosur 2026') {
-      const b = item.rawData as SavedBrosurSimulationItem;
+      const b: any = item.rawData;
       const inp = (b.data && b.data.input) ? b.data.input : (b.input || b.data || b || {});
       text = `*PENAWARAN BROSUR 2026*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Brosur ${inp.muka}\n• *Ukuran*: ${inp.ukuran} cm\n• *Bahan*: ${inp.gramatur || 'Art Paper 120 gsm'}\n• *Laminasi*: ${inp.laminasi}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Mesin Cetak*: ${inp.mesin}\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${(b.data?.hargaJualPerPcs ?? b.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(b.data?.totalHargaJual ?? b.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Label KHQ') {
-      const l = item.rawData as SavedLabelKhqSimulationItem;
+      const l: any = item.rawData;
       const inp = (l.data && l.data.input) ? l.data.input : (l.input || l.data || l || {});
       text = `*PENAWARAN LABEL BOTOL KHQ*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: ${inp.varian}\n• *Jumlah*: ${l.data.jumlahKardus} Dus (${l.data.jumlahLbr.toLocaleString('id-ID')} Lembar Label)\n• *Finishing*: ${inp.opsiLaminasi !== false ? 'Laminasi Glossy' : 'Tanpa Laminasi'}, ${inp.opsiRajang !== false ? 'Rajang Potong' : 'Tanpa Potong'}\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Lembar*: *Rp ${(l.data?.hargaJualPerLbr ?? l.hargaJualPerLbr ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(l.data?.totalHargaJual ?? l.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga dapat disesuaikan dengan fluktuasi bahan baku._`;
     } else if (item.category === 'Buku Tulis') {
-      const bt = item.rawData as SavedBukuTulisSimulationItem;
+      const bt: any = item.rawData;
       const inp = (bt.data && bt.data.input) ? bt.data.input : (bt.input || bt.data || bt || {});
       text = `*PENAWARAN BUKU TULIS 72 HAL*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Tulis ${inp.ukuran} 72 Hal Soft Cover (15,5×21 & 16×21 cm)\n• *Ukuran*: ${inp.ukuran} cm (tertutup)\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Finishing*: ${inp.opsiLaminasi ? 'Laminasi Glossy' : 'Tanpa Laminasi'}, ${inp.opsiSisir ? 'Sisir + Packing' : 'Standar'}\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${(bt.data?.hargaJualPerPcs ?? bt.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(bt.data?.totalHargaJual ?? bt.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN. Cover AC 230 gsm 4W, isi HVS 70 gsm 1W bolak-balik._`;
     } else if (item.category === 'Stopmap') {
-      const sm = item.rawData as SavedStopmapSimulationItem;
+      const sm: any = item.rawData;
       const inp = (sm.data && sm.data.input) ? sm.data.input : (sm.input || sm.data || sm || {});
       text = `*PENAWARAN STOPMAP*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Stopmap ${inp.ukuran}\n• *Laminasi*: ${inp.laminasi}${inp.laminasi === 'Doff' ? ' (+Rp 200/pcs)' : ''}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Bahan*: Art Carton 230 gsm 1 Muka Full Colour\n• *Finishing*: Sisir + Lipat + Kupingan Smile + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${(sm.data?.hargaJualPerPcs ?? sm.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(sm.data?.totalHargaJual ?? sm.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Syahadah') {
-      const sy = item.rawData as SavedSyahadahSimulationItem;
+      const sy: any = item.rawData;
       const inp = (sy.data && sy.data.input) ? sy.data.input : (sy.input || sy.data || sy || {});
       text = `*PENAWARAN SYAHADAH*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Syahadah ${inp.varian} 21,5×33 cm\n• *Bahan*: Linen/Hammer Crem Tebal 260 gsm\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Foil*: ${inp.opsiFoil ? 'Ya (+Rp 450/pcs, min 100k + master foil)' : 'Tanpa Foil'}\n• *Finishing*: Sisir + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${(sy.data?.hargaJualPerPcs ?? sy.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(sy.data?.totalHargaJual ?? sy.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Raport Kaleb') {
-      const rk = item.rawData as SavedRaportKalebSimulationItem;
+      const rk: any = item.rawData;
       const inp = (rk.data && rk.data.input) ? rk.data.input : (rk.input || rk.data || rk || {});
       const extra = inp.tambahanIsiLbr ? ` +${inp.tambahanIsiLbr} lbr` : '';
       text = `*PENAWARAN RAPORT KALEB*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Raport Kaleb ${inp.varian}${extra} 24×34 cm\n• *Bahan*: Kaleb Foil Emas\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Isi*: ${inp.varian}${extra ? ` +${inp.tambahanIsiLbr} lbr custom` : ''} (+Rp ${((rk.paramsSnapshot?.tarifIsiPerLbr) || 1200).toLocaleString('id-ID')}/lbr)\n• *Finishing*: Sisir + Packing Kardus + Foil Emas\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${(rk.data?.hargaJualPerPcs ?? rk.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(rk.data?.totalHargaJual ?? rk.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Kop Surat') {
-      const ks = item.rawData as SavedKopSuratSimulationItem;
+      const ks: any = item.rawData;
       const inp = (ks.data && ks.data.input) ? ks.data.input : (ks.input || ks.data || ks || {});
       text = `*PENAWARAN KOP SURAT*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Kop Surat ${inp.varian} A4 21×29,7 cm\n• *Bahan*: HVS ${(inp.varian.includes('100') ? '100' : '80')} gsm\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs (2 pcs/A3+)\n• *Cetak*: ${inp.varian.includes('Full Colour') ? 'Full Colour 1 Muka' : '1 Warna Hitam 1 Muka'}${inp.oplah > 500 ? ' (Oliver)' : ' (Print Inter/Ryobi)'}\n• *Finishing*: Potong + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${(ks.data?.hargaJualPerPcs ?? ks.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(ks.data?.totalHargaJual ?? ks.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Amplop') {
-      const a = item.rawData as SavedAmplopSimulationItem;
+      const a: any = item.rawData;
       const inp = (a.data && a.data.input) ? a.data.input : (a.input || a.data || a || {});
       text = `*PENAWARAN AMPLOP*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Amplop ${inp.varian}\n• *Bahan*: HVS 80 gsm\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Cetak*: 1 Warna Hitam 1 Muka${inp.oplah > 500 ? ' (Oliver)' : ' (Ryobi)'}\n• *Finishing*: Lipat & Lem + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${(a.data?.hargaJualPerPcs ?? a.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(a.data?.totalHargaJual ?? a.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Sertifikat') {
-      const s = item.rawData as SavedSertifikatSimulationItem;
+      const s: any = item.rawData;
       const inp = (s.data && s.data.input) ? s.data.input : (s.input || s.data || s || {});
       const foilTxt = inp.opsiFoil ? ' + Foil Emas' : '';
       const lamTxt = inp.laminasi !== 'Tanpa Laminasi' ? ` + Laminasi ${inp.laminasi}` : '';
       text = `*PENAWARAN SERTIFIKAT*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Sertifikat ${inp.varian}${lamTxt}${foilTxt} A4 21×29,7 cm\n• *Bahan*: ${inp.varian.includes('Ivory') ? 'Ivory 260' : 'Art Carton 260'} gsm\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs (2 pcs/A3+)\n• *Cetak*: Full Colour ${inp.varian.includes('2 Muka') ? '2 Muka' : '1 Muka'}${inp.oplah > 500 ? ' (Oliver)' : ' (Print Inter)'}\n• *Finishing*: ${inp.laminasi}${foilTxt ? ' + Foil Emas' : ''} + Potong + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${(s.data?.hargaJualPerPcs ?? s.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(s.data?.totalHargaJual ?? s.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Undangan') {
-      const u = item.rawData as SavedUndanganSimulationItem;
+      const u: any = item.rawData;
       const inp = (u.data && u.data.input) ? u.data.input : (u.input || u.data || u || {});
       const lamTxt = inp.laminasi !== 'Tanpa Laminasi' ? ` + Laminasi ${inp.laminasi}` : '';
       text = `*PENAWARAN UNDANGAN*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Undangan ${inp.varian}${lamTxt}\n• *Bahan*: Art Carton 230 gsm · ${inp.varian}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs (${u.data.kebutuhanA3} lbr A3+)\n• *Cetak*: Full Colour ${inp.varian.includes('2 Muka') ? '2 Muka' : '1 Muka'}${inp.oplah > 500 ? ' (Oliver)' : ' (Print Inter)'}\n• *Finishing*: Sisir + OPP + Label${lamTxt ? ` + ${inp.laminasi}` : ''} + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${(u.data?.hargaJualPerPcs ?? u.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(u.data?.totalHargaJual ?? u.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Buku Tabungan NS') {
-      const b = item.rawData as SavedBukuTabunganNsSimulationItem;
+      const b: any = item.rawData;
       const inp = (b.data && b.data.input) ? b.data.input : (b.input || b.data || b || {});
       text = `*PENAWARAN BUKU TABUNGAN NON SECURITY*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Tabungan NS ${inp.varian} 9×14,5 cm\n• *Bahan*: Cover AC 260 gsm 1 Muka FC + Laminasi Glossy, Isi HVS 70 gsm 1W BB\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs (${b.data.kebutuhanCoverA3 + b.data.kebutuhanIsiA3} lbr A3+)\n• *Finishing*: Susun Lipat + Jahit + Pound + Plastik Sring + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${(b.data?.hargaJualPerPcs ?? b.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(b.data?.totalHargaJual ?? b.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Buku Tabungan Security') {
-      const b = item.rawData as SavedBukuTabunganSecuritySimulationItem;
+      const b: any = item.rawData;
       const inp = (b.data && b.data.input) ? b.data.input : (b.input || b.data || b || {});
       text = `*PENAWARAN BUKU TABUNGAN SECURITY*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Tabungan Security ${inp.varian} 9×14,5 cm\n• *Bahan*: Cover Ivory 260 gsm Security 1 Muka FC + Laminasi Glossy + Foil Emas, Isi HVS 70 gsm 1W BB\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs (${b.data.kebutuhanCoverA3 + b.data.kebutuhanIsiA3} lbr A3+)\n• *Finishing*: Susun Lipat + Jahit + Pound + Foil Emas + Numbering Seri + Plastik Sring + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${(b.data?.hargaJualPerPcs ?? b.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(b.data?.totalHargaJual ?? b.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Kartu Koperasi Promise') {
-      const k = item.rawData as SavedKartuKoperasiPromiseSimulationItem;
+      const k: any = item.rawData;
       const inp = (k.data && k.data.input) ? k.data.input : (k.input || k.data || k || {});
       text = `*PENAWARAN KARTU KOPERASI PROMISE*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Kartu Koperasi Promise ${inp.varian} cm\n• *Bahan*: BC 160 gsm 2 Muka 1 Warna\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs (${k.data.kebutuhanPlano} lbr plano)\n• *Finishing*: Pound + Sisir + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${(k.data?.hargaJualPerPcs ?? k.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(k.data?.totalHargaJual ?? k.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Lebel Kartu Obat') {
-      const l = item.rawData as SavedLebelKartuObatSimulationItem;
+      const l: any = item.rawData;
       const inp = (l.data && l.data.input) ? l.data.input : (l.input || l.data || l || {});
       text = `*PENAWARAN LEBEL KARTU OBAT*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Lebel Kartu Obat ${inp.varian} cm\n• *Bahan*: HVS 70 gsm 1 Warna 1 Muka\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} rim (${(inp.oplah * 500).toLocaleString('id-ID')} lbr, ${l.data.kebutuhanPlano} lbr plano)\n• *Finishing*: Rajang + Packing\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Rim*: *Rp ${(l.data?.hargaJualPerRim ?? l.hargaJualPerRim ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(l.data?.totalHargaJual ?? l.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Buku Soft Cover') {
-      const bsc = item.rawData as SavedBukuSoftCoverSimulationItem;
+      const bsc: any = item.rawData;
       const inp = (bsc.data && bsc.data.input) ? bsc.data.input : (bsc.input || bsc.data || bsc || {});
       text = `*PENAWARAN BUKU SOFT COVER*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Soft Cover ${inp.varian} 32 Hal\n• *Spesifikasi*: Cover AC 230 (Print Inter) + Isi HVS 70 (Oliver) 1 Warna\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Finishing*: ${inp.finishing} + Staples + Sisir\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${(bsc.data?.hargaJualPerPcs ?? bsc.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${bsc.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(bsc.data?.totalHargaJual ?? bsc.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Buku Soft Cover 14,5×20,25') {
-      const bsc = item.rawData as SavedBukuSoftCover145x2025SimulationItem;
+      const bsc: any = item.rawData;
       const inp = (bsc.data && bsc.data.input) ? bsc.data.input : (bsc.input || bsc.data || bsc || {});
       text = `*PENAWARAN BUKU SOFT COVER 14,5×20,25 CM*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Soft Cover 14,5 × 20,25 cm 32 Hal\n• *Spesifikasi*: Cover AC 230 (${inp.finishing}) + Isi HVS 70 1W BB\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Proses Cetak*: ${bsc.data.prosesCetak}\n• *Finishing*: ${inp.jilid} + Sisir + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${(bsc.data?.hargaJualPerPcs ?? bsc.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${bsc.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(bsc.data?.totalHargaJual ?? bsc.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Buku Hard Cover 10,5×14,8') {
-      const bhc = item.rawData as SavedBukuHardCover105x148SimulationItem;
+      const bhc: any = item.rawData;
       const inp = (bhc.data && bhc.data.input) ? bhc.data.input : (bhc.input || bhc.data || bhc || {});
       const foilTxt = inp.opsiFoil ? ' + Foil Emas' : '';
       const lamTxt = inp.finishing !== 'Tanpa Laminasi' ? ` + ${inp.finishing}` : '';
       text = `*PENAWARAN BUKU HARD COVER 10,5×14,8 CM (A6)*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Hard Cover 10,5 × 14,8 cm (100 Halaman)\n• *Cover*: Hard Cover Art Paper 150 gsm FC + Board${lamTxt}${foilTxt}\n• *Skiblat*: Art Carton 230 gsm Polos\n• *Isi*: HVS 70 gsm 1 Warna Bolak-Balik (100 Hal)\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Alur Mesin*: ${bhc.data.prosesCetak}\n• *Finishing*: Jahit Benang + Lem Press + Headband + Pita + Casing In\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${(bhc.data?.hargaJualPerPcs ?? bhc.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${bhc.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(bhc.data?.totalHargaJual ?? bhc.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Poster') {
-      const p = item.rawData as SavedPosterSimulationItem;
+      const p: any = item.rawData;
       const inp = (p.data && p.data.input) ? p.data.input : (p.input || p.data || p || {});
       const lamTxt = inp.finishing !== 'Tanpa Laminasi' ? ` + ${inp.finishing}` : '';
       text = `*PENAWARAN CETAK POSTER*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Poster ${inp.ukuran}\n• *Bahan*: Art Carton 230 gsm 1 Muka Full Colour${lamTxt}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Alur Mesin*: ${p.data.prosesCetak}\n• *Finishing*: Potong / Sisir + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${(p.data?.hargaJualPerPcs ?? p.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${p.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(p.data?.totalHargaJual ?? p.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Majalah 14,5×20,25') {
-      const m = item.rawData as SavedMajalahSimulationItem;
+      const m: any = item.rawData;
       const inp = (m.data && m.data.input) ? m.data.input : (m.input || m.data || m || {});
       const lamTxt = inp.finishing !== 'Tanpa Laminasi' ? ` + ${inp.finishing}` : '';
       text = `*PENAWARAN MAJALAH 14,5×20,25 CM*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Majalah 14,5 × 20,25 cm (32 Halaman)\n• *Cover*: Art Carton 230 gsm 1 Muka Full Colour${lamTxt}\n• *Isi*: Art Paper 120 gsm Full Colour Bolak-Balik (32 Hal)\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Alur Mesin*: ${m.data.prosesCetak}\n• *Finishing*: ${inp.jilid} + Sisir + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${(m.data?.hargaJualPerPcs ?? m.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${m.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(m.data?.totalHargaJual ?? m.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Stiker') {
-      const s = item.rawData as SavedStikerSimulationItem;
+      const s: any = item.rawData;
       const inp = (s.data && s.data.input) ? s.data.input : (s.input || s.data || s || {});
       text = `*PENAWARAN CETAK STIKER*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Stiker ${inp.ukuran}\n• *Bahan*: Sticker Vinyl Glossy 200 gsm Full Colour\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Finishing*: ${inp.finishing} + Packing Rapi\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${(s.data?.hargaJualPerPcs ?? s.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${s.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(s.data?.totalHargaJual ?? s.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Buku Soft Cover 10,5×14,8') {
-      const bsc = item.rawData as SavedBukuSoftCover105x148SimulationItem;
+      const bsc: any = item.rawData;
       const inp = (bsc.data && bsc.data.input) ? bsc.data.input : (bsc.input || bsc.data || bsc || {});
       const lamTxt = inp.finishing !== 'Tanpa Laminasi' ? ` + ${inp.finishing}` : '';
       text = `*PENAWARAN BUKU SOFT COVER 10,5×14,8 CM (A6)*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Soft Cover 10,5 × 14,8 cm (32 Halaman)\n• *Cover*: Art Carton 230 gsm 1 Muka Full Colour${lamTxt}\n• *Isi*: HVS 70 gsm 1 Warna Bolak-Balik (32 Hal)\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Alur Mesin*: ${bsc.data.prosesCetak}\n• *Finishing*: ${inp.jilid} + Sisir + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${(bsc.data?.hargaJualPerPcs ?? bsc.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${bsc.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(bsc.data?.totalHargaJual ?? bsc.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Buku Hard Cover 14,5×20,25') {
-      const bhc = item.rawData as SavedBukuHardCover145x2025SimulationItem;
+      const bhc: any = item.rawData;
       const inp = (bhc.data && bhc.data.input) ? bhc.data.input : (bhc.input || bhc.data || bhc || {});
       const foilTxt = inp.opsiFoil ? ' + Foil Emas' : '';
       const lamTxt = inp.finishing !== 'Tanpa Laminasi' ? ` + ${inp.finishing}` : '';
       text = `*PENAWARAN BUKU HARD COVER 14,5×20,25 CM*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Hard Cover 14,5 × 20,25 cm (100 Halaman)\n• *Cover*: Hard Cover Art Paper 150 gsm FC + Board${lamTxt}${foilTxt}\n• *Skiblat*: Art Carton 230 gsm Polos\n• *Isi*: HVS 70 gsm 1 Warna Bolak-Balik (100 Hal)\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Alur Mesin*: ${bhc.data.prosesCetak}\n• *Finishing*: Jahit Benang + Lem Press + Headband + Pita + Casing In\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${(bhc.data?.hargaJualPerPcs ?? bhc.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${bhc.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(bhc.data?.totalHargaJual ?? bhc.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Buku Hard Cover 21×29,7') {
-      const bhc = item.rawData as SavedBukuHardCover21x297SimulationItem;
+      const bhc: any = item.rawData;
       const inp = (bhc.data && bhc.data.input) ? bhc.data.input : (bhc.input || bhc.data || bhc || {});
       const foilTxt = inp.opsiFoil ? ' + Foil Emas' : '';
       const lamTxt = inp.finishing !== 'Tanpa Laminasi' ? ` + ${inp.finishing}` : '';
       text = `*PENAWARAN BUKU HARD COVER 21×29,7 CM (A4)*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Hard Cover 21 × 29,7 cm (100 Halaman)\n• *Cover*: Hard Cover Art Paper 150 gsm FC + Board${lamTxt}${foilTxt}\n• *Skiblat*: Art Carton 230 gsm Polos\n• *Isi*: HVS 70 gsm 1 Warna Bolak-Balik (100 Hal)\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Alur Mesin*: ${bhc.data.prosesCetak}\n• *Finishing*: Jahit Benang + Lem Press + Headband + Pita + Casing In\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${(bhc.data?.hargaJualPerPcs ?? bhc.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${bhc.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(bhc.data?.totalHargaJual ?? bhc.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Kalender Kop') {
-      const k = item.rawData as SavedKalenderKopSimulationItem;
+      const k: any = item.rawData;
       const inp = (k.data && k.data.input) ? k.data.input : (k.input || k.data || k || {});
       text = `*PENAWARAN KALENDER KOP (BLANKO DWI WULAN)*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Kalender Dinding Kop 32 × 48 cm\n• *Spesifikasi*: Blanko Dwi Wulan 6 Lembar (Art Paper 120 gsm)\n• *Cetak Kop*: Sablon / Offset ${inp.varian}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} eks\n• *Finishing*: Jilid Klem Seng Kaleng + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Eks*: *Rp ${(k.data?.hargaJualPerPcs ?? k.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Harga Nego / Eks*: *Rp ${k.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(k.data?.totalHargaJual ?? k.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Packaging') {
-      const pkg = item.rawData as SavedPackagingSimulationItem;
+      const pkg: any = item.rawData;
       const inp = (pkg.data && pkg.data.input) ? pkg.data.input : (pkg.input || pkg.data || pkg || {});
       const lamTxt = inp.finishing !== 'Tanpa Laminasi' ? ` + ${inp.finishing}` : '';
       text = `*PENAWARAN PACKAGING BOX DUS / KARDUS*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Packaging Box Dus Tutup Nyambung\n• *Ukuran Jadi*: ${inp.ukuran} (Terbuka: ${pkg.data.variantSpec.ukuranTerbuka})\n• *Bahan*: ${inp.bahan}\n• *Cetak*: Full Colour 1 Muka (${pkg.data.prosesCetak})\n• *Finishing*: Pond Die Cut + Packing Kardus${lamTxt}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${(pkg.data?.hargaJualPerPcs ?? pkg.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${pkg.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(pkg.data?.totalHargaJual ?? pkg.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Paperbag') {
-      const pb = item.rawData as SavedPaperbagSimulationItem;
+      const pb: any = item.rawData;
       const inp = (pb.data && pb.data.input) ? pb.data.input : (pb.input || pb.data || pb || {});
       const lamTxt = inp.finishing !== 'Tanpa Laminasi' ? ` + ${inp.finishing}` : '';
       text = `*PENAWARAN PAPERBAG (TAS KERTAS CUSTOM)*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Paperbag Custom Custom\n• *Ukuran*: ${inp.ukuran} (Terbuka: ${pb.data.spec.ukuranTerbuka})\n• *Bahan*: Art Carton 230 gsm Full Colour 1 Muka\n• *Alur Mesin*: ${pb.data.prosesCetak}\n• *Finishing*: Pond Die Cut + Double Tape + Tali Kur + Lipat Assembly + Packing Kardus${lamTxt}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${(pb.data?.hargaJualPerPcs ?? pb.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${pb.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(pb.data?.totalHargaJual ?? pb.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;

@@ -43,14 +43,14 @@ export type SavedPaperbagSimulationItem = {
 };
 
 interface PaperbagSimulatorProps {
-  customParams: PaperbagMasterParams;
-  viewMode?: 'user' | 'developer';
+  customParams?: PaperbagMasterParams;
+  viewMode?: 'matrix' | 'table';
   setActiveSimulationTitle?: (title: string) => void;
 }
 
 export default function PaperbagSimulator({
-  customParams,
-  viewMode = 'user',
+  customParams = DEFAULT_PAPERBAG_PARAMS,
+  viewMode = 'matrix',
   setActiveSimulationTitle,
 }: PaperbagSimulatorProps) {
   // Input State

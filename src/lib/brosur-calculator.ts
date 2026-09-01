@@ -258,4 +258,5 @@ export type SavedBrosurSimulationItem = {
   title: string;
   savedAt: string;
   data: BrosurSimulatorResult;
+  paramsSnapshot?: any;
 };

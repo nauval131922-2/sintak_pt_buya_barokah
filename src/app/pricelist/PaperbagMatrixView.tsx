@@ -21,13 +21,13 @@ import {
 
 interface PaperbagMatrixViewProps {
   customParams?: PaperbagMasterParams;
-  viewMode?: 'user' | 'developer';
-  setViewMode?: (mode: 'user' | 'developer') => void;
+  viewMode?: 'matrix' | 'table';
+  setViewMode?: (mode: 'matrix' | 'table') => void;
 }
 
 export default function PaperbagMatrixView({
   customParams = DEFAULT_PAPERBAG_PARAMS,
-  viewMode = 'user',
+  viewMode = 'matrix',
   setViewMode,
 }: PaperbagMatrixViewProps) {
   const [filterUkuran, setFilterUkuran] = useState<string>('ALL');

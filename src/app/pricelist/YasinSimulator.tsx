@@ -50,11 +50,13 @@ export interface SavedYasinSimulationItem {
   laminasiCover: 'Glossy' | 'Doff';
   opsiPitaRumbai: boolean;
   opsiSikuEmas: boolean;
+  opsiPlastikOpp: boolean;
   marginPct: number;
   negoDiskonPct: number;
   customParams: YasinMasterParams;
   paramsSnapshot?: YasinMasterParams;
   summary: YasinSimulatorResult['summary'];
+  data?: any;
 }
 
 const HALAMAN_OPTIONS = [
