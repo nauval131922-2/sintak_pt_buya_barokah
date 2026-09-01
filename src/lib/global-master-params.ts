@@ -24,6 +24,7 @@ import { BukuHardCover105x148MasterParams, DEFAULT_BUKU_HARD_COVER_105X148_PARAM
 import { PosterMasterParams, DEFAULT_POSTER_PARAMS } from './poster-calculator';
 import { MajalahMasterParams, DEFAULT_MAJALAH_PARAMS } from './majalah-calculator';
 import { StikerMasterParams, DEFAULT_STIKER_PARAMS } from './stiker-calculator';
+import { BukuSoftCover105x148MasterParams, DEFAULT_BUKU_SOFT_COVER_105X148_PARAMS } from './buku-soft-cover-105x148-calculator';
 
 export interface GlobalMasterParams {
   // 1. Mesin Cetak Offset Oliver (58 / 52)
@@ -117,7 +118,8 @@ export function applyGlobalParamsToAll(
   currBukuHardCover105x148: BukuHardCover105x148MasterParams = DEFAULT_BUKU_HARD_COVER_105X148_PARAMS,
   currPoster: PosterMasterParams = DEFAULT_POSTER_PARAMS,
   currMajalah: MajalahMasterParams = DEFAULT_MAJALAH_PARAMS,
-  currStiker: StikerMasterParams = DEFAULT_STIKER_PARAMS
+  currStiker: StikerMasterParams = DEFAULT_STIKER_PARAMS,
+  currBukuSoftCover105x148: BukuSoftCover105x148MasterParams = DEFAULT_BUKU_SOFT_COVER_105X148_PARAMS
 ) {
   const nextSpiral: SimulatorMasterParams = {
     ...currSpiral,
@@ -489,6 +491,26 @@ export function applyGlobalParamsToAll(
     tarifPackingKardus: g.tarifKardusBox,
   };
 
+  const nextBukuSoftCover105x148: BukuSoftCover105x148MasterParams = {
+    ...currBukuSoftCover105x148,
+    tarifPrintCoverA3: g.tarifPrintA3,
+    tarifKertasAc230Kg: g.tarifAc230Kg,
+    tarifPlateCoverOliver: g.oliverPlatUnit,
+    minOngkosCoverOliver: g.oliverMinOngkos,
+    drekCoverOliver: g.oliverDrekOver,
+    tarifKertasHvs70Kg: g.tarifHvs70,
+    tarifPlateIsiOliver: g.oliverPlatUnit,
+    minOngkosIsiOliver: g.oliverMinOngkos,
+    drekIsiOliver: g.oliverDrekOver,
+    tarifSisirPcs: g.tarifSisirPcs,
+    tarifKardusBox: g.tarifKardusBox,
+    tarifLakbanRoll: g.tarifLakbanRoll,
+    tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
+    tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
+    tarifUvVarnishCm2: g.tarifUvVarnishCm2,
+    minLaminasi: g.minLaminasi,
+  };
+
   return {
     nextSpiral,
     nextKlem,
@@ -515,5 +537,6 @@ export function applyGlobalParamsToAll(
     nextPoster,
     nextMajalah,
     nextStiker,
+    nextBukuSoftCover105x148,
   };
 }
