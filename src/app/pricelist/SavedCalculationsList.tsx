@@ -52,10 +52,11 @@ import { SavedStikerSimulationItem } from './StikerSimulator';
 import { SavedBukuSoftCover105x148SimulationItem } from './BukuSoftCover105x148Simulator';
 import { SavedBukuHardCover145x2025SimulationItem } from './BukuHardCover145x2025Simulator';
 import { SavedBukuHardCover21x297SimulationItem } from './BukuHardCover21x297Simulator';
+import { SavedKalenderKopSimulationItem } from './KalenderKopSimulator';
 
 export type UnifiedCalculationItem = {
   id: string;
-  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7';
+  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop';
   savedAt: string;
   title: string;
   oplah: number;
@@ -95,10 +96,11 @@ export type UnifiedCalculationItem = {
     | SavedBukuSoftCover105x148SimulationItem
     | SavedBukuHardCover145x2025SimulationItem
     | SavedBukuHardCover21x297SimulationItem
+    | SavedKalenderKopSimulationItem
 };
 
 interface SavedCalculationsListProps {
-  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7';
+  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop';
   onLoadSimulation: (item: UnifiedCalculationItem) => void;
   activeSimulationId?: string | null;
 }
@@ -109,9 +111,9 @@ export default function SavedCalculationsList({
   activeSimulationId,
 }: SavedCalculationsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7'>('ALL');
+  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop'>('ALL');
   
-  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7') => {
+  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop') => {
     setFilterCategory(val);
     try {
       localStorage.setItem('sintak_pricelist_saved_list_filter', val);
@@ -152,6 +154,7 @@ export default function SavedCalculationsList({
   const [bukuSoftCover105x148List, setBukuSoftCover105x148List] = useState<SavedBukuSoftCover105x148SimulationItem[]>([]);
   const [bukuHardCover145x2025List, setBukuHardCover145x2025List] = useState<SavedBukuHardCover145x2025SimulationItem[]>([]);
   const [bukuHardCover21x297List, setBukuHardCover21x297List] = useState<SavedBukuHardCover21x297SimulationItem[]>([]);
+  const [kalenderKopList, setKalenderKopList] = useState<SavedKalenderKopSimulationItem[]>([]);
 
   // Load from localStorage
   const refreshData = () => {
@@ -185,7 +188,8 @@ export default function SavedCalculationsList({
         savedFilter === 'Stiker' ||
         savedFilter === 'Buku Soft Cover 10,5×14,8' ||
         savedFilter === 'Buku Hard Cover 14,5×20,25' ||
-        savedFilter === 'Buku Hard Cover 21×29,7'
+        savedFilter === 'Buku Hard Cover 21×29,7' ||
+        savedFilter === 'Kalender Kop'
       ) {
         setFilterCategory(savedFilter as any);
       }
@@ -297,6 +301,10 @@ export default function SavedCalculationsList({
       const rawBhc21 = localStorage.getItem('sintak_saved_buku_hard_cover_21x297_simulations');
       if (rawBhc21) setBukuHardCover21x297List(JSON.parse(rawBhc21));
       else setBukuHardCover21x297List([]);
+
+      const rawKalenderKop = localStorage.getItem('sintak_saved_kalender_kop_simulations');
+      if (rawKalenderKop) setKalenderKopList(JSON.parse(rawKalenderKop));
+      else setKalenderKopList([]);
     } catch (e) {
       console.error('Failed to load saved calculations:', e);
     }
@@ -959,9 +967,33 @@ export default function SavedCalculationsList({
       });
     });
 
+    // 28. Kalender Kop
+    kalenderKopList.forEach((k) => {
+      const inp = k.data.input;
+      items.push({
+        id: k.id,
+        category: 'Kalender Kop',
+        savedAt: k.savedAt,
+        title: k.title,
+        oplah: inp.oplah,
+        specSummary: `Kalender Kop ${inp.varian} • ${inp.oplah.toLocaleString('id-ID')} eks (6 Lembar Dwi Wulan)`,
+        detailSpecs: [
+          `Blanko: AP 120 gsm 32×48 cm`,
+          `Cetak Kop: ${inp.varian} · Jilid Klem Seng`,
+          `Margin: ${inp.marginPct ?? 0}% · Nego: ${inp.negoDiskonPct ?? 4}%`,
+        ],
+        hppUnit: k.data.hppPerPcs,
+        hargaJualUnit: k.data.hargaJualPerPcs,
+        totalOmset: k.data.totalHargaJual,
+        marginPct: inp.marginPct ?? 0,
+        negoDiskonPct: inp.negoDiskonPct ?? 4,
+        rawData: k,
+      });
+    });
+
     // Urutkan dari yang terbaru disimpan
     return items.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
-  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList, bukuTulisList, stopmapList, syahadahList, raportKalebList, kopSuratList, amplopList, sertifikatList, undanganList, bukuTabunganNsList, bukuTabunganSecurityList, kartuKoperasiPromiseList, lebelKartuObatList, bukuSoftCoverList, bukuSoftCover145x2025List, bukuHardCover105x148List, posterList, majalahList, stikerList, bukuSoftCover105x148List, bukuHardCover145x2025List, bukuHardCover21x297List]);
+  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList, bukuTulisList, stopmapList, syahadahList, raportKalebList, kopSuratList, amplopList, sertifikatList, undanganList, bukuTabunganNsList, bukuTabunganSecurityList, kartuKoperasiPromiseList, lebelKartuObatList, bukuSoftCoverList, bukuSoftCover145x2025List, bukuHardCover105x148List, posterList, majalahList, stikerList, bukuSoftCover105x148List, bukuHardCover145x2025List, bukuHardCover21x297List, kalenderKopList]);
 
   // Filtered List
   const filteredList = useMemo(() => {
@@ -1096,6 +1128,10 @@ export default function SavedCalculationsList({
         const updated = bukuHardCover21x297List.filter((b) => b.id !== item.id);
         setBukuHardCover21x297List(updated);
         localStorage.setItem('sintak_saved_buku_hard_cover_21x297_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Kalender Kop') {
+        const updated = kalenderKopList.filter((k) => k.id !== item.id);
+        setKalenderKopList(updated);
+        localStorage.setItem('sintak_saved_kalender_kop_simulations', JSON.stringify(updated));
       }
       toast.success('Kalkulasi berhasil dihapus.');
     } catch (err) {
@@ -1218,6 +1254,10 @@ export default function SavedCalculationsList({
         const updated = bukuHardCover21x297List.map((b) => (b.id === item.id ? { ...b, title: newTitle } : b));
         setBukuHardCover21x297List(updated);
         localStorage.setItem('sintak_saved_buku_hard_cover_21x297_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Kalender Kop') {
+        const updated = kalenderKopList.map((k) => (k.id === item.id ? { ...k, title: newTitle } : k));
+        setKalenderKopList(updated);
+        localStorage.setItem('sintak_saved_kalender_kop_simulations', JSON.stringify(updated));
       }
       setEditingId(null);
       toast.success('Nama kalkulasi berhasil diperbarui.');
@@ -1348,11 +1388,16 @@ export default function SavedCalculationsList({
       const foilTxt = inp.opsiFoil ? ' + Foil Emas' : '';
       const lamTxt = inp.finishing !== 'Tanpa Laminasi' ? ` + ${inp.finishing}` : '';
       text = `*PENAWARAN BUKU HARD COVER 21×29,7 CM (A4)*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Hard Cover 21 × 29,7 cm (100 Halaman)\n• *Cover*: Hard Cover Art Paper 150 gsm FC + Board${lamTxt}${foilTxt}\n• *Skiblat*: Art Carton 230 gsm Polos\n• *Isi*: HVS 70 gsm 1 Warna Bolak-Balik (100 Hal)\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Alur Mesin*: ${bhc.data.prosesCetak}\n• *Finishing*: Jahit Benang + Lem Press + Headband + Pita + Casing In\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${bhc.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${bhc.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${bhc.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
+    } else if (item.category === 'Kalender Kop') {
+      const k = item.rawData as SavedKalenderKopSimulationItem;
+      const inp = k.data.input;
+      text = `*PENAWARAN KALENDER KOP (BLANKO DWI WULAN)*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Kalender Dinding Kop 32 × 48 cm\n• *Spesifikasi*: Blanko Dwi Wulan 6 Lembar (Art Paper 120 gsm)\n• *Cetak Kop*: Sablon / Offset ${inp.varian}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} eks\n• *Finishing*: Jilid Klem Seng Kaleng + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Eks*: *Rp ${k.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Harga Nego / Eks*: *Rp ${k.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${k.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     }
     navigator.clipboard.writeText(text);
+    setCopiedId(item.id);
+    toast.success('Format penawaran WhatsApp berhasil disalin!');
     setTimeout(() => setCopiedId(null), 2500);
   };
-
   return (
     <div className="flex flex-col gap-4 pb-8 overflow-y-auto">
       {/* Header Info Banner */}
@@ -1434,6 +1479,7 @@ export default function SavedCalculationsList({
                 { value: 'Buku Soft Cover 10,5×14,8', label: '📗 Buku Soft Cover 10,5×14,8', count: bukuSoftCover105x148List.length },
                 { value: 'Buku Hard Cover 14,5×20,25', label: '📕 Buku Hard Cover 14,5×20,25', count: bukuHardCover145x2025List.length },
                 { value: 'Buku Hard Cover 21×29,7', label: '📕 Buku Hard Cover 21×29,7', count: bukuHardCover21x297List.length },
+                { value: 'Kalender Kop', label: '🗓️ Kalender Kop', count: kalenderKopList.length },
               ]}
               value={filterCategory}
               onChange={(val) => handleFilterChange(val as any)}
@@ -1548,6 +1594,8 @@ export default function SavedCalculationsList({
                           ? 'bg-amber-100 text-amber-900 border border-amber-200'
                           : item.category === 'Buku Hard Cover 21×29,7'
                           ? 'bg-red-100 text-red-900 border border-red-200'
+                          : item.category === 'Kalender Kop'
+                          ? 'bg-emerald-100 text-emerald-900 border border-emerald-200'
                           : 'bg-slate-100 text-slate-700 border border-slate-200'
                       }`}
                     >
