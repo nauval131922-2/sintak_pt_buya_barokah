@@ -1540,7 +1540,6 @@ export default function SavedCalculationsList({
             <SquareDropdown
               options={[
                 { value: 'ALL', label: 'Semua Kategori', count: unifiedList.length },
-                { value: 'Kalender', label: '🗓️ Kalender', count: kalenderList.length },
                 { value: 'Buku Manasik', label: '📖 Buku Manasik', count: manasikList.length },
                 { value: 'Buku Yasin', label: '📗 Buku Yasin', count: yasinList.length },
                 { value: 'Nota 1 Warna', label: '📋 Nota 1 Warna', count: notaList.length },
@@ -1563,6 +1562,7 @@ export default function SavedCalculationsList({
                 { value: 'Buku Hard Cover 10,5×14,8', label: '📕 Buku Hard Cover 10,5×14,8', count: bukuHardCover105x148List.length },
                 { value: 'Poster', label: '🖼️ Poster', count: posterList.length },
                 { value: 'Majalah 14,5×20,25', label: '📰 Majalah 14,5×20,25', count: majalahList.length },
+                { value: 'Kalender', label: '🗓️ Kalender 2027', count: kalenderList.length },
                 { value: 'Stiker', label: '🏷️ Stiker', count: stikerList.length },
                 { value: 'Buku Soft Cover 10,5×14,8', label: '📗 Buku Soft Cover 10,5×14,8', count: bukuSoftCover105x148List.length },
                 { value: 'Buku Hard Cover 14,5×20,25', label: '📕 Buku Hard Cover 14,5×20,25', count: bukuHardCover145x2025List.length },

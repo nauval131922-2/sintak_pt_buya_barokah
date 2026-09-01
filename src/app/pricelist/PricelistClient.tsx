@@ -786,7 +786,6 @@ export default function PricelistClient() {
           <SquareDropdown
             usePortal
             options={[
-              { value: 'Kalender', label: '🗓️ Kalender 2027' },
               { value: 'Buku Manasik', label: '📖 Buku Manasik Haji' },
               { value: 'Buku Yasin', label: '📗 Buku Surat Yasin' },
               { value: 'Nota 1 Warna', label: '📋 Nota 1 Warna' },
@@ -809,6 +808,7 @@ export default function PricelistClient() {
               { value: 'Buku Hard Cover 10,5×14,8', label: '📕 Buku Hard Cover 10,5×14,8' },
               { value: 'Poster', label: '🖼️ Poster' },
               { value: 'Majalah 14,5×20,25', label: '📰 Majalah 14,5×20,25' },
+              { value: 'Kalender', label: '🗓️ Kalender 2027' },
               { value: 'Stiker', label: '🏷️ Stiker' },
               { value: 'Buku Soft Cover 10,5×14,8', label: '📗 Buku Soft Cover 10,5×14,8' },
               { value: 'Buku Hard Cover 14,5×20,25', label: '📕 Buku Hard Cover 14,5×20,25' },
