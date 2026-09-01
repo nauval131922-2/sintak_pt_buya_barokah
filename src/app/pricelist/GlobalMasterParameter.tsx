@@ -42,14 +42,15 @@ export default function GlobalMasterParameter({
     setGlobalParams(updated);
     onApplyToAllProducts(updated);
    };
+  const isFieldModified = (key: keyof GlobalMasterParams) =>
+    globalParams[key] !== DEFAULT_GLOBAL_PARAMS[key];
 
-   const handleResetField = (key: keyof GlobalMasterParams) => {
+  const handleResetField = (key: keyof GlobalMasterParams) => {
     const updated = { ...globalParams, [key]: DEFAULT_GLOBAL_PARAMS[key] };
     setGlobalParams(updated);
     onApplyToAllProducts(updated);
-     toast.info(`Field dikembalikan ke standar global (${DEFAULT_GLOBAL_PARAMS[key]}).`);
-   };
-
+    toast.info(`Field dikembalikan ke standar global (${DEFAULT_GLOBAL_PARAMS[key]}).`);
+  };
    const isModified = React.useMemo(
      () => JSON.stringify(globalParams) !== JSON.stringify(DEFAULT_GLOBAL_PARAMS),
      [globalParams]
