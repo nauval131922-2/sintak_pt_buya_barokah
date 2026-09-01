@@ -51,6 +51,9 @@ import RaportKalebMatrixView from './RaportKalebMatrixView';
 import KopSuratMasterParameter from './KopSuratMasterParameter';
 import KopSuratSimulator, { SavedKopSuratSimulationItem } from './KopSuratSimulator';
 import KopSuratMatrixView from './KopSuratMatrixView';
+import AmplopMasterParameter from './AmplopMasterParameter';
+import AmplopSimulator, { SavedAmplopSimulationItem } from './AmplopSimulator';
+import AmplopMatrixView from './AmplopMatrixView';
 import SavedCalculationsList, { UnifiedCalculationItem } from './SavedCalculationsList';
 import SquareDropdown from '@/components/SquareDropdown';
 import GlobalMasterParameter from './GlobalMasterParameter';
@@ -70,6 +73,7 @@ import { DEFAULT_STOPMAP_PARAMS, StopmapMasterParams } from '@/lib/stopmap-calcu
 import { DEFAULT_SYAHADAH_PARAMS, SyahadahMasterParams } from '@/lib/syahadah-calculator';
 import { DEFAULT_RAPORT_KALEB_PARAMS, RaportKalebMasterParams } from '@/lib/raport-kaleb-calculator';
 import { DEFAULT_KOP_SURAT_PARAMS, KopSuratMasterParams } from '@/lib/kop-surat-calculator';
+import { DEFAULT_AMPLOP_PARAMS, AmplopMasterParams } from '@/lib/amplop-calculator';
 import { recalculatePricelistFromParams } from '@/lib/pricelist-calculator';
 
 interface PricelistItem {
@@ -111,7 +115,8 @@ export default function PricelistClient() {
   const [paramsSyahadah, setParamsSyahadah] = useState<SyahadahMasterParams>(DEFAULT_SYAHADAH_PARAMS);
   const [paramsRaportKaleb, setParamsRaportKaleb] = useState<RaportKalebMasterParams>(DEFAULT_RAPORT_KALEB_PARAMS);
   const [paramsKopSurat, setParamsKopSurat] = useState<KopSuratMasterParams>(DEFAULT_KOP_SURAT_PARAMS);
-  const [selectedProductCategory, setSelectedProductCategory] = useState<'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat'>('Kalender');
+  const [paramsAmplop, setParamsAmplop] = useState<AmplopMasterParams>(DEFAULT_AMPLOP_PARAMS);
+  const [selectedProductCategory, setSelectedProductCategory] = useState<'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop'>('Kalender');
   const [paramsSpiral, setParamsSpiral] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS);
   const [paramsKlem, setParamsKlem] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS_KLEM);
 
@@ -162,7 +167,8 @@ export default function PricelistClient() {
         savedCategory === 'Stopmap' ||
         savedCategory === 'Syahadah' ||
         savedCategory === 'Raport Kaleb' ||
-        savedCategory === 'Kop Surat'
+        savedCategory === 'Kop Surat' ||
+        savedCategory === 'Amplop'
       ) {
         setSelectedProductCategory(savedCategory as any);
       }
@@ -197,6 +203,11 @@ export default function PricelistClient() {
         setParamsKopSurat({ ...DEFAULT_KOP_SURAT_PARAMS, ...JSON.parse(savedKopSurat) });
       }
 
+      const savedAmplop = localStorage.getItem('sintak_pricelist_master_params_amplop');
+      if (savedAmplop) {
+        setParamsAmplop({ ...DEFAULT_AMPLOP_PARAMS, ...JSON.parse(savedAmplop) });
+      }
+
       const savedGlobal = localStorage.getItem('sintak_pricelist_master_params_global');
       if (savedGlobal) {
         setParamsGlobal({ ...DEFAULT_GLOBAL_PARAMS, ...JSON.parse(savedGlobal) });
@@ -208,7 +219,7 @@ export default function PricelistClient() {
 
   // Sync selectedProductCategory across tabs
   const handleProductCategoryChange = (
-    category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat'
+    category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop'
   ) => {
     setSelectedProductCategory(category);
     try {
@@ -292,17 +303,18 @@ export default function PricelistClient() {
         localStorage.setItem('sintak_pricelist_master_params_syahadah', JSON.stringify(paramsSyahadah));
         localStorage.setItem('sintak_pricelist_master_params_raport_kaleb', JSON.stringify(paramsRaportKaleb));
         localStorage.setItem('sintak_pricelist_master_params_kop_surat', JSON.stringify(paramsKopSurat));
+        localStorage.setItem('sintak_pricelist_master_params_amplop', JSON.stringify(paramsAmplop));
       } catch (e) {
         console.error('Failed to save master params to localStorage:', e);
       }
     }, 400);
     return () => clearTimeout(timer);
-  }, [paramsSpiral, paramsKlem, paramsGlobal, paramsLabelKhq, paramsBukuTulis, paramsStopmap, paramsSyahadah, paramsRaportKaleb, paramsKopSurat]);
+  }, [paramsSpiral, paramsKlem, paramsGlobal, paramsLabelKhq, paramsBukuTulis, paramsStopmap, paramsSyahadah, paramsRaportKaleb, paramsKopSurat, paramsAmplop]);
 
   // Fungsi sebarkan parameter global ke seluruh produk
   const handleApplyGlobalParams = (targetGlobal?: GlobalMasterParams) => {
     const g = targetGlobal || paramsGlobal;
-    const { nextSpiral, nextKlem, nextManasik, nextYasin, nextNota, nextBrosur, nextLabelKhq, nextBukuTulis, nextStopmap, nextSyahadah, nextRaportKaleb, nextKopSurat } = applyGlobalParamsToAll(
+    const { nextSpiral, nextKlem, nextManasik, nextYasin, nextNota, nextBrosur, nextLabelKhq, nextBukuTulis, nextStopmap, nextSyahadah, nextRaportKaleb, nextKopSurat, nextAmplop } = applyGlobalParamsToAll(
       g,
       paramsSpiral,
       paramsKlem,
@@ -315,7 +327,8 @@ export default function PricelistClient() {
       paramsStopmap,
       paramsSyahadah,
       paramsRaportKaleb,
-      paramsKopSurat
+      paramsKopSurat,
+      paramsAmplop
     );
 
     setParamsSpiral(nextSpiral);
@@ -330,6 +343,7 @@ export default function PricelistClient() {
     setParamsSyahadah(nextSyahadah);
     setParamsRaportKaleb(nextRaportKaleb);
     setParamsKopSurat(nextKopSurat);
+    setParamsAmplop(nextAmplop);
   };
 
   const fetchData = useCallback(async () => {
@@ -543,6 +557,7 @@ export default function PricelistClient() {
               { value: 'Syahadah', label: '🕌 Syahadah' },
               { value: 'Raport Kaleb', label: '📒 Raport Kaleb' },
               { value: 'Kop Surat', label: '📄 Kop Surat' },
+              { value: 'Amplop', label: '✉️ Amplop' },
             ]}
             value={selectedProductCategory}
             onChange={(val) => handleProductCategoryChange(val as any)}
@@ -603,6 +618,11 @@ export default function PricelistClient() {
             <KopSuratMasterParameter
               customParams={paramsKopSurat}
               setCustomParams={setParamsKopSurat}
+            />
+          ) : selectedProductCategory === 'Amplop' ? (
+            <AmplopMasterParameter
+              customParams={paramsAmplop}
+              setCustomParams={setParamsAmplop}
             />
           ) : (
             <PricelistMasterParameter
@@ -718,6 +738,16 @@ export default function PricelistClient() {
               activeSimulationTitle={activeSimulationTitle}
               setActiveSimulationTitle={setActiveSimulationTitle}
             />
+          ) : selectedProductCategory === 'Amplop' ? (
+            <AmplopSimulator
+              customParams={paramsAmplop}
+              setCustomParams={setParamsAmplop}
+              onOpenMasterParam={() => setActiveTab('parameter')}
+              activeSimulationId={activeSimulationId}
+              setActiveSimulationId={setActiveSimulationId}
+              activeSimulationTitle={activeSimulationTitle}
+              setActiveSimulationTitle={setActiveSimulationTitle}
+            />
           ) : (
             <PricelistSimulator
               customParams={customParams}
@@ -798,6 +828,12 @@ export default function PricelistClient() {
           ) : selectedProductCategory === 'Kop Surat' ? (
             <KopSuratMatrixView
               customParams={paramsKopSurat}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+            />
+          ) : selectedProductCategory === 'Amplop' ? (
+            <AmplopMatrixView
+              customParams={paramsAmplop}
               viewMode={viewMode}
               setViewMode={setViewMode}
             />
