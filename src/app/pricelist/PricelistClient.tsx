@@ -215,6 +215,7 @@ export default function PricelistClient() {
   const [activeSimulationTitle, setActiveSimulationTitle] = useState<string | null>(null);
   const [backupParamsSpiral, setBackupParamsSpiral] = useState<SimulatorMasterParams | null>(null);
   const [backupParamsKlem, setBackupParamsKlem] = useState<SimulatorMasterParams | null>(null);
+  const [isInitialLoaded, setIsInitialLoaded] = useState(false);
 
   // Load preferences from localStorage after mount (client-only) to prevent hydration mismatch
   useEffect(() => {
@@ -430,6 +431,8 @@ export default function PricelistClient() {
       }
     } catch (e) {
       console.error('Failed to load localStorage preferences:', e);
+    } finally {
+      setIsInitialLoaded(true);
     }
   }, []);
 
@@ -507,47 +510,46 @@ export default function PricelistClient() {
   }, [selectedFinishing]);
 
   // Simpan master parameter ke localStorage per profil (debounced 400ms agar tidak lag saat mengetik)
+  // Simpan master parameter ke localStorage langsung saat state berubah (hanya setelah initial load selesai)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      try {
-        localStorage.setItem('sintak_pricelist_master_params_spiral', JSON.stringify(paramsSpiral));
-        localStorage.setItem('sintak_pricelist_master_params_klem', JSON.stringify(paramsKlem));
-        localStorage.setItem('sintak_pricelist_master_params_global', JSON.stringify(paramsGlobal));
-        localStorage.setItem('sintak_pricelist_master_params_manasik', JSON.stringify(paramsManasik));
-        localStorage.setItem('sintak_pricelist_master_params_yasin', JSON.stringify(paramsYasin));
-        localStorage.setItem('sintak_pricelist_master_params_nota', JSON.stringify(paramsNota));
-        localStorage.setItem('sintak_pricelist_master_params_brosur', JSON.stringify(paramsBrosur));
-        localStorage.setItem('sintak_pricelist_master_params_label_khq', JSON.stringify(paramsLabelKhq));
-        localStorage.setItem('sintak_pricelist_master_params_buku_tulis', JSON.stringify(paramsBukuTulis));
-        localStorage.setItem('sintak_pricelist_master_params_stopmap', JSON.stringify(paramsStopmap));
-        localStorage.setItem('sintak_pricelist_master_params_syahadah', JSON.stringify(paramsSyahadah));
-        localStorage.setItem('sintak_pricelist_master_params_raport_kaleb', JSON.stringify(paramsRaportKaleb));
-        localStorage.setItem('sintak_pricelist_master_params_kop_surat', JSON.stringify(paramsKopSurat));
-        localStorage.setItem('sintak_pricelist_master_params_amplop', JSON.stringify(paramsAmplop));
-        localStorage.setItem('sintak_pricelist_master_params_sertifikat', JSON.stringify(paramsSertifikat));
-        localStorage.setItem('sintak_pricelist_master_params_undangan', JSON.stringify(paramsUndangan));
-        localStorage.setItem('sintak_pricelist_master_params_buku_tabungan_ns', JSON.stringify(paramsBukuTabunganNs));
-        localStorage.setItem('sintak_pricelist_master_params_buku_tabungan_security', JSON.stringify(paramsBukuTabunganSecurity));
-        localStorage.setItem('sintak_pricelist_master_params_kartu_koperasi_promise', JSON.stringify(paramsKartuKoperasiPromise));
-        localStorage.setItem('sintak_pricelist_master_params_lebel_kartu_obat', JSON.stringify(paramsLebelKartuObat));
-        localStorage.setItem('sintak_pricelist_master_params_buku_soft_cover', JSON.stringify(paramsBukuSoftCover));
-        localStorage.setItem('sintak_pricelist_master_params_buku_soft_cover_145x2025', JSON.stringify(paramsBukuSoftCover145x2025));
-        localStorage.setItem('sintak_pricelist_master_params_buku_hard_cover_105x148', JSON.stringify(paramsBukuHardCover105x148));
-        localStorage.setItem('sintak_pricelist_master_params_poster', JSON.stringify(paramsPoster));
-        localStorage.setItem('sintak_pricelist_master_params_majalah', JSON.stringify(paramsMajalah));
-        localStorage.setItem('sintak_pricelist_master_params_stiker', JSON.stringify(paramsStiker));
-        localStorage.setItem('sintak_pricelist_master_params_buku_soft_cover_105x148', JSON.stringify(paramsBukuSoftCover105x148));
-        localStorage.setItem('sintak_pricelist_master_params_buku_hard_cover_145x2025', JSON.stringify(paramsBukuHardCover145x2025));
-        localStorage.setItem('sintak_pricelist_master_params_buku_hard_cover_21x297', JSON.stringify(paramsBukuHardCover21x297));
-        localStorage.setItem('sintak_pricelist_master_params_kalender_kop', JSON.stringify(paramsKalenderKop));
-        localStorage.setItem('sintak_pricelist_master_params_packaging', JSON.stringify(paramsPackaging));
-        localStorage.setItem('sintak_pricelist_master_params_paperbag', JSON.stringify(paramsPaperbag));
-      } catch (e) {
-        console.error('Failed to save master params to localStorage:', e);
-      }
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [paramsSpiral, paramsKlem, paramsGlobal, paramsManasik, paramsYasin, paramsNota, paramsBrosur, paramsLabelKhq, paramsBukuTulis, paramsStopmap, paramsSyahadah, paramsRaportKaleb, paramsKopSurat, paramsAmplop, paramsSertifikat, paramsUndangan, paramsBukuTabunganNs, paramsBukuTabunganSecurity, paramsKartuKoperasiPromise, paramsLebelKartuObat, paramsBukuSoftCover, paramsBukuSoftCover145x2025, paramsBukuHardCover105x148, paramsPoster, paramsMajalah, paramsStiker, paramsBukuSoftCover105x148, paramsBukuHardCover145x2025, paramsBukuHardCover21x297, paramsKalenderKop, paramsPackaging, paramsPaperbag]);
+    if (!isInitialLoaded) return;
+    try {
+      localStorage.setItem('sintak_pricelist_master_params_spiral', JSON.stringify(paramsSpiral));
+      localStorage.setItem('sintak_pricelist_master_params_klem', JSON.stringify(paramsKlem));
+      localStorage.setItem('sintak_pricelist_master_params_global', JSON.stringify(paramsGlobal));
+      localStorage.setItem('sintak_pricelist_master_params_manasik', JSON.stringify(paramsManasik));
+      localStorage.setItem('sintak_pricelist_master_params_yasin', JSON.stringify(paramsYasin));
+      localStorage.setItem('sintak_pricelist_master_params_nota', JSON.stringify(paramsNota));
+      localStorage.setItem('sintak_pricelist_master_params_brosur', JSON.stringify(paramsBrosur));
+      localStorage.setItem('sintak_pricelist_master_params_label_khq', JSON.stringify(paramsLabelKhq));
+      localStorage.setItem('sintak_pricelist_master_params_buku_tulis', JSON.stringify(paramsBukuTulis));
+      localStorage.setItem('sintak_pricelist_master_params_stopmap', JSON.stringify(paramsStopmap));
+      localStorage.setItem('sintak_pricelist_master_params_syahadah', JSON.stringify(paramsSyahadah));
+      localStorage.setItem('sintak_pricelist_master_params_raport_kaleb', JSON.stringify(paramsRaportKaleb));
+      localStorage.setItem('sintak_pricelist_master_params_kop_surat', JSON.stringify(paramsKopSurat));
+      localStorage.setItem('sintak_pricelist_master_params_amplop', JSON.stringify(paramsAmplop));
+      localStorage.setItem('sintak_pricelist_master_params_sertifikat', JSON.stringify(paramsSertifikat));
+      localStorage.setItem('sintak_pricelist_master_params_undangan', JSON.stringify(paramsUndangan));
+      localStorage.setItem('sintak_pricelist_master_params_buku_tabungan_ns', JSON.stringify(paramsBukuTabunganNs));
+      localStorage.setItem('sintak_pricelist_master_params_buku_tabungan_security', JSON.stringify(paramsBukuTabunganSecurity));
+      localStorage.setItem('sintak_pricelist_master_params_kartu_koperasi_promise', JSON.stringify(paramsKartuKoperasiPromise));
+      localStorage.setItem('sintak_pricelist_master_params_lebel_kartu_obat', JSON.stringify(paramsLebelKartuObat));
+      localStorage.setItem('sintak_pricelist_master_params_buku_soft_cover', JSON.stringify(paramsBukuSoftCover));
+      localStorage.setItem('sintak_pricelist_master_params_buku_soft_cover_145x2025', JSON.stringify(paramsBukuSoftCover145x2025));
+      localStorage.setItem('sintak_pricelist_master_params_buku_hard_cover_105x148', JSON.stringify(paramsBukuHardCover105x148));
+      localStorage.setItem('sintak_pricelist_master_params_poster', JSON.stringify(paramsPoster));
+      localStorage.setItem('sintak_pricelist_master_params_majalah', JSON.stringify(paramsMajalah));
+      localStorage.setItem('sintak_pricelist_master_params_stiker', JSON.stringify(paramsStiker));
+      localStorage.setItem('sintak_pricelist_master_params_buku_soft_cover_105x148', JSON.stringify(paramsBukuSoftCover105x148));
+      localStorage.setItem('sintak_pricelist_master_params_buku_hard_cover_145x2025', JSON.stringify(paramsBukuHardCover145x2025));
+      localStorage.setItem('sintak_pricelist_master_params_buku_hard_cover_21x297', JSON.stringify(paramsBukuHardCover21x297));
+      localStorage.setItem('sintak_pricelist_master_params_kalender_kop', JSON.stringify(paramsKalenderKop));
+      localStorage.setItem('sintak_pricelist_master_params_packaging', JSON.stringify(paramsPackaging));
+      localStorage.setItem('sintak_pricelist_master_params_paperbag', JSON.stringify(paramsPaperbag));
+    } catch (e) {
+      console.error('Failed to save master params to localStorage:', e);
+    }
+  }, [isInitialLoaded, paramsSpiral, paramsKlem, paramsGlobal, paramsManasik, paramsYasin, paramsNota, paramsBrosur, paramsLabelKhq, paramsBukuTulis, paramsStopmap, paramsSyahadah, paramsRaportKaleb, paramsKopSurat, paramsAmplop, paramsSertifikat, paramsUndangan, paramsBukuTabunganNs, paramsBukuTabunganSecurity, paramsKartuKoperasiPromise, paramsLebelKartuObat, paramsBukuSoftCover, paramsBukuSoftCover145x2025, paramsBukuHardCover105x148, paramsPoster, paramsMajalah, paramsStiker, paramsBukuSoftCover105x148, paramsBukuHardCover145x2025, paramsBukuHardCover21x297, paramsKalenderKop, paramsPackaging, paramsPaperbag]);
 
   // Fungsi sebarkan parameter global ke seluruh produk
   const handleApplyGlobalParams = (targetGlobal?: GlobalMasterParams) => {
