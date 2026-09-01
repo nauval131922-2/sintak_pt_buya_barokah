@@ -14,7 +14,11 @@ export async function saveCalculationToDb(item: {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(item),
     });
-    return await res.json();
+    const json = await res.json();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('sintak:pricelist-saved', { detail: item }));
+    }
+    return json;
   } catch (e) {
     console.error('Failed to save calculation to server database:', e);
     return null;

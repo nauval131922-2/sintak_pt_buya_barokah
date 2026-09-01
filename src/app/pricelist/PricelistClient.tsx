@@ -483,6 +483,14 @@ export default function PricelistClient() {
     setActiveSimulationTitle(item.title);
     setActiveTab('simulator');
   };
+  // Otomatis pindah ke tab Daftar Kalkulasi setelah kalkulasi berhasil disimpan
+  useEffect(() => {
+    const handleSaved = () => {
+      setActiveTab('saved');
+    };
+    window.addEventListener('sintak:pricelist-saved', handleSaved);
+    return () => window.removeEventListener('sintak:pricelist-saved', handleSaved);
+  }, []);
 
   // Simpan posisi tab aktif dan view mode ke localStorage
   useEffect(() => {
@@ -492,7 +500,6 @@ export default function PricelistClient() {
       console.error('Failed to save active tab to localStorage:', e);
     }
   }, [activeTab]);
-
   useEffect(() => {
     try {
       localStorage.setItem('sintak_pricelist_view_mode', viewMode);

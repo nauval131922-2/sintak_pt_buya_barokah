@@ -358,11 +358,18 @@ export default function SavedCalculationsList({
       setIsSyncing(false);
     }
   };
-
   useEffect(() => {
     refreshData();
   }, []);
-  // Map into unified list
+
+  // Otomatis refresh data saat ada kalkulasi baru disimpan
+  useEffect(() => {
+    const handleSaved = () => {
+      refreshData();
+    };
+    window.addEventListener('sintak:pricelist-saved', handleSaved);
+    return () => window.removeEventListener('sintak:pricelist-saved', handleSaved);
+  }, []);
   const unifiedList = useMemo<UnifiedCalculationItem[]>(() => {
     const items: UnifiedCalculationItem[] = [];
 
