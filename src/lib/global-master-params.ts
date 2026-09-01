@@ -18,6 +18,7 @@ import { BukuTabunganNsMasterParams, DEFAULT_BUKU_TABUNGAN_NS_PARAMS } from './b
 import { BukuTabunganSecurityMasterParams, DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS } from './buku-tabungan-security-calculator';
 import { KartuKoperasiPromiseMasterParams, DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS } from './kartu-koperasi-promise-calculator';
 import { LebelKartuObatMasterParams, DEFAULT_LEBEL_KARTU_OBAT_PARAMS } from './lebel-kartu-obat-calculator';
+import { BukuSoftCoverMasterParams, DEFAULT_BUKU_SOFT_COVER_PARAMS } from './buku-soft-cover-calculator';
 
 export interface GlobalMasterParams {
   // 1. Mesin Cetak Offset Oliver (58 / 52)
@@ -105,7 +106,8 @@ export function applyGlobalParamsToAll(
   currBukuTabunganNs: BukuTabunganNsMasterParams = DEFAULT_BUKU_TABUNGAN_NS_PARAMS,
   currBukuTabunganSecurity: BukuTabunganSecurityMasterParams = DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS,
   currKartuKoperasiPromise: KartuKoperasiPromiseMasterParams = DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS,
-  currLebelKartuObat: LebelKartuObatMasterParams = DEFAULT_LEBEL_KARTU_OBAT_PARAMS
+  currLebelKartuObat: LebelKartuObatMasterParams = DEFAULT_LEBEL_KARTU_OBAT_PARAMS,
+  currBukuSoftCover: BukuSoftCoverMasterParams = DEFAULT_BUKU_SOFT_COVER_PARAMS
 ) {
   const nextSpiral: SimulatorMasterParams = {
     ...currSpiral,
@@ -374,6 +376,21 @@ export function applyGlobalParamsToAll(
     tarifSisirPer500: g.tarifSisirPcs * 66,
   };
 
+  const nextBukuSoftCover: BukuSoftCoverMasterParams = {
+    ...currBukuSoftCover,
+    tarifKertasHvs70Kg: g.tarifHvs70,
+    upKertasIsiPct: g.upKertasPct,
+    tarifOliverPlatUnit: g.oliverPlatUnit,
+    tarifOliverMinIsi: g.oliverMinOngkos,
+    tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
+    tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
+    tarifUvVarnishCm2: g.tarifUvVarnishCm2,
+    minLaminasi: g.minLaminasi,
+    tarifSisirPerPcs: g.tarifSisirPcs,
+    tarifKardusBox: g.tarifKardusBox,
+    tarifLakbanRoll: g.tarifLakbanRoll,
+  };
+
   return {
     nextSpiral,
     nextKlem,
@@ -394,5 +411,6 @@ export function applyGlobalParamsToAll(
     nextBukuTabunganSecurity,
     nextKartuKoperasiPromise,
     nextLebelKartuObat,
+    nextBukuSoftCover,
   };
 }
