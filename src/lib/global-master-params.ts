@@ -21,6 +21,7 @@ import { LebelKartuObatMasterParams, DEFAULT_LEBEL_KARTU_OBAT_PARAMS } from './l
 import { BukuSoftCoverMasterParams, DEFAULT_BUKU_SOFT_COVER_PARAMS } from './buku-soft-cover-calculator';
 import { BukuSoftCover145x2025MasterParams, DEFAULT_BUKU_SOFT_COVER_145X2025_PARAMS } from './buku-soft-cover-145x2025-calculator';
 import { BukuHardCover105x148MasterParams, DEFAULT_BUKU_HARD_COVER_105X148_PARAMS } from './buku-hard-cover-105x148-calculator';
+import { PosterMasterParams, DEFAULT_POSTER_PARAMS } from './poster-calculator';
 
 export interface GlobalMasterParams {
   // 1. Mesin Cetak Offset Oliver (58 / 52)
@@ -111,7 +112,8 @@ export function applyGlobalParamsToAll(
   currLebelKartuObat: LebelKartuObatMasterParams = DEFAULT_LEBEL_KARTU_OBAT_PARAMS,
   currBukuSoftCover: BukuSoftCoverMasterParams = DEFAULT_BUKU_SOFT_COVER_PARAMS,
   currBukuSoftCover145x2025: BukuSoftCover145x2025MasterParams = DEFAULT_BUKU_SOFT_COVER_145X2025_PARAMS,
-  currBukuHardCover105x148: BukuHardCover105x148MasterParams = DEFAULT_BUKU_HARD_COVER_105X148_PARAMS
+  currBukuHardCover105x148: BukuHardCover105x148MasterParams = DEFAULT_BUKU_HARD_COVER_105X148_PARAMS,
+  currPoster: PosterMasterParams = DEFAULT_POSTER_PARAMS
 ) {
   const nextSpiral: SimulatorMasterParams = {
     ...currSpiral,
@@ -435,6 +437,26 @@ export function applyGlobalParamsToAll(
     minLaminasi: g.minLaminasi,
   };
 
+  const nextPoster: PosterMasterParams = {
+    ...currPoster,
+    tarifArtCarton230Kg: g.tarifAc230Kg,
+    upKertasPct: g.upKertasPct,
+    tarifPrintA3: g.tarifPrintA3,
+    oliverPlatUnit: g.oliverPlatUnit,
+    oliverMinOngkos: g.oliverMinOngkos,
+    oliverDrekOver: g.oliverDrekOver,
+    smPlatUnit: 100000,
+    smMinOngkos: 250000,
+    smDrekOver: 100,
+    tarifSisirPcs: g.tarifSisirPcs,
+    tarifKardusBox: g.tarifKardusBox,
+    tarifLakbanRoll: g.tarifLakbanRoll,
+    tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
+    tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
+    tarifUvVarnishCm2: g.tarifUvVarnishCm2,
+    minLaminasi: g.minLaminasi,
+  };
+
   return {
     nextSpiral,
     nextKlem,
@@ -458,5 +480,6 @@ export function applyGlobalParamsToAll(
     nextBukuSoftCover,
     nextBukuSoftCover145x2025,
     nextBukuHardCover105x148,
+    nextPoster,
   };
 }

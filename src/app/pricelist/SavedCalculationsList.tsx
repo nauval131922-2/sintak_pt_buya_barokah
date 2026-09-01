@@ -46,10 +46,11 @@ import { SavedLebelKartuObatSimulationItem } from './LebelKartuObatSimulator';
 import { SavedBukuSoftCoverSimulationItem } from './BukuSoftCoverSimulator';
 import { SavedBukuSoftCover145x2025SimulationItem } from './BukuSoftCover145x2025Simulator';
 import { SavedBukuHardCover105x148SimulationItem } from './BukuHardCover105x148Simulator';
+import { SavedPosterSimulationItem } from './PosterSimulator';
 
 export type UnifiedCalculationItem = {
   id: string;
-  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8';
+  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster';
   savedAt: string;
   title: string;
   oplah: number;
@@ -83,10 +84,11 @@ export type UnifiedCalculationItem = {
     | SavedBukuSoftCoverSimulationItem;
     | SavedBukuSoftCover145x2025SimulationItem
     | SavedBukuHardCover105x148SimulationItem
+    | SavedPosterSimulationItem
 };
 
 interface SavedCalculationsListProps {
-  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8';
+  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster';
   onLoadSimulation: (item: UnifiedCalculationItem) => void;
   activeSimulationId?: string | null;
 }
@@ -97,9 +99,9 @@ export default function SavedCalculationsList({
   activeSimulationId,
 }: SavedCalculationsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8'>('ALL');
+  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster'>('ALL');
   
-  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8') => {
+  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster') => {
     setFilterCategory(val);
     try {
       localStorage.setItem('sintak_pricelist_saved_list_filter', val);
@@ -134,6 +136,7 @@ export default function SavedCalculationsList({
   const [bukuSoftCoverList, setBukuSoftCoverList] = useState<SavedBukuSoftCoverSimulationItem[]>([]);
   const [bukuSoftCover145x2025List, setBukuSoftCover145x2025List] = useState<SavedBukuSoftCover145x2025SimulationItem[]>([]);
   const [bukuHardCover105x148List, setBukuHardCover105x148List] = useState<SavedBukuHardCover105x148SimulationItem[]>([]);
+  const [posterList, setPosterList] = useState<SavedPosterSimulationItem[]>([]);
 
   // Load from localStorage
   const refreshData = () => {
@@ -161,7 +164,8 @@ export default function SavedCalculationsList({
         savedFilter === 'Lebel Kartu Obat' ||
         savedFilter === 'Buku Soft Cover' ||
         savedFilter === 'Buku Soft Cover 14,5×20,25' ||
-        savedFilter === 'Buku Hard Cover 10,5×14,8'
+        savedFilter === 'Buku Hard Cover 10,5×14,8' ||
+        savedFilter === 'Poster'
       ) {
         setFilterCategory(savedFilter as any);
       }
@@ -249,6 +253,10 @@ export default function SavedCalculationsList({
       const rawBhc105 = localStorage.getItem('sintak_saved_buku_hard_cover_105x148_simulations');
       if (rawBhc105) setBukuHardCover105x148List(JSON.parse(rawBhc105));
       else setBukuHardCover105x148List([]);
+
+      const rawPoster = localStorage.getItem('sintak_saved_poster_simulations');
+      if (rawPoster) setPosterList(JSON.parse(rawPoster));
+      else setPosterList([]);
     } catch (e) {
       console.error('Failed to load saved calculations:', e);
     }
@@ -767,9 +775,33 @@ export default function SavedCalculationsList({
       });
     });
 
+    // 22. Poster
+    posterList.forEach((p) => {
+      const inp = p.data.input;
+      items.push({
+        id: p.id,
+        category: 'Poster',
+        savedAt: p.savedAt,
+        title: p.title,
+        oplah: inp.oplah,
+        specSummary: `Poster ${inp.ukuran} • ${inp.oplah.toLocaleString('id-ID')} pcs (${p.data.prosesCetak})`,
+        detailSpecs: [
+          `Bahan: AC 230 gsm 1 Muka · ${inp.finishing}`,
+          `Proses: ${p.data.prosesCetak} · Sisir + Packing`,
+          `Margin: ${inp.marginPct}% · Nego: ${inp.negoDiskonPct}%`,
+        ],
+        hppUnit: p.data.hppPerPcs,
+        hargaJualUnit: p.data.hargaJualPerPcs,
+        totalOmset: p.data.totalHargaJual,
+        marginPct: inp.marginPct,
+        negoDiskonPct: inp.negoDiskonPct,
+        rawData: p,
+      });
+    });
+
     // Urutkan dari yang terbaru disimpan
     return items.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
-  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList, bukuTulisList, stopmapList, syahadahList, raportKalebList, kopSuratList, amplopList, sertifikatList, undanganList, bukuTabunganNsList, bukuTabunganSecurityList, kartuKoperasiPromiseList, lebelKartuObatList, bukuSoftCoverList, bukuSoftCover145x2025List, bukuHardCover105x148List]);
+  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList, bukuTulisList, stopmapList, syahadahList, raportKalebList, kopSuratList, amplopList, sertifikatList, undanganList, bukuTabunganNsList, bukuTabunganSecurityList, kartuKoperasiPromiseList, lebelKartuObatList, bukuSoftCoverList, bukuSoftCover145x2025List, bukuHardCover105x148List, posterList]);
 
   // Filtered List
   const filteredList = useMemo(() => {
@@ -880,6 +912,10 @@ export default function SavedCalculationsList({
         const updated = bukuHardCover105x148List.filter((b) => b.id !== item.id);
         setBukuHardCover105x148List(updated);
         localStorage.setItem('sintak_saved_buku_hard_cover_105x148_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Poster') {
+        const updated = posterList.filter((p) => p.id !== item.id);
+        setPosterList(updated);
+        localStorage.setItem('sintak_saved_poster_simulations', JSON.stringify(updated));
       }
       toast.success('Kalkulasi berhasil dihapus.');
     } catch (err) {
@@ -978,6 +1014,10 @@ export default function SavedCalculationsList({
         const updated = bukuHardCover105x148List.map((b) => (b.id === item.id ? { ...b, title: newTitle } : b));
         setBukuHardCover105x148List(updated);
         localStorage.setItem('sintak_saved_buku_hard_cover_105x148_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Poster') {
+        const updated = posterList.map((p) => (p.id === item.id ? { ...p, title: newTitle } : p));
+        setPosterList(updated);
+        localStorage.setItem('sintak_saved_poster_simulations', JSON.stringify(updated));
       }
       setEditingId(null);
       toast.success('Nama kalkulasi berhasil diperbarui.');
@@ -1077,6 +1117,11 @@ export default function SavedCalculationsList({
       const foilTxt = inp.opsiFoil ? ' + Foil Emas' : '';
       const lamTxt = inp.finishing !== 'Tanpa Laminasi' ? ` + ${inp.finishing}` : '';
       text = `*PENAWARAN BUKU HARD COVER 10,5×14,8 CM (A6)*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Hard Cover 10,5 × 14,8 cm (100 Halaman)\n• *Cover*: Hard Cover Art Paper 150 gsm FC + Board${lamTxt}${foilTxt}\n• *Skiblat*: Art Carton 230 gsm Polos\n• *Isi*: HVS 70 gsm 1 Warna Bolak-Balik (100 Hal)\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Alur Mesin*: ${bhc.data.prosesCetak}\n• *Finishing*: Jahit Benang + Lem Press + Headband + Pita + Casing In\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${bhc.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${bhc.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${bhc.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
+    } else if (item.category === 'Poster') {
+      const p = item.rawData as SavedPosterSimulationItem;
+      const inp = p.data.input;
+      const lamTxt = inp.finishing !== 'Tanpa Laminasi' ? ` + ${inp.finishing}` : '';
+      text = `*PENAWARAN CETAK POSTER*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Poster ${inp.ukuran}\n• *Bahan*: Art Carton 230 gsm 1 Muka Full Colour${lamTxt}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Alur Mesin*: ${p.data.prosesCetak}\n• *Finishing*: Potong / Sisir + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${p.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${p.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${p.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     }
     navigator.clipboard.writeText(text);
     setCopiedId(item.id);
@@ -1159,6 +1204,7 @@ export default function SavedCalculationsList({
                 { value: 'Buku Soft Cover', label: '📗 Buku Soft Cover', count: bukuSoftCoverList.length },
                 { value: 'Buku Soft Cover 14,5×20,25', label: '📗 Buku Soft Cover 14,5×20,25', count: bukuSoftCover145x2025List.length },
                 { value: 'Buku Hard Cover 10,5×14,8', label: '📕 Buku Hard Cover 10,5×14,8', count: bukuHardCover105x148List.length },
+                { value: 'Poster', label: '🖼️ Poster', count: posterList.length },
               ]}
               value={filterCategory}
               onChange={(val) => handleFilterChange(val as any)}
@@ -1261,6 +1307,8 @@ export default function SavedCalculationsList({
                           ? 'bg-teal-100 text-teal-900 border border-teal-200'
                           : item.category === 'Buku Hard Cover 10,5×14,8'
                           ? 'bg-rose-100 text-rose-900 border border-rose-200'
+                          : item.category === 'Poster'
+                          ? 'bg-orange-100 text-orange-900 border border-orange-200'
                           : 'bg-slate-100 text-slate-700 border border-slate-200'
                       }`}
                     >
