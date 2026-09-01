@@ -14,6 +14,8 @@ import {
   HelpCircle,
   CheckCircle2,
   AlertTriangle,
+  X,
+  FileSpreadsheet,
 } from 'lucide-react';
 import {
   GlobalMasterParams,
@@ -34,6 +36,7 @@ export default function GlobalMasterParameter({
   onApplyToAllProducts,
 }: GlobalMasterParameterProps) {
   const [showAppliedToast, setShowAppliedToast] = useState(false);
+  const [showManualModal, setShowManualModal] = useState(false);
 
   const handleChange = (key: keyof GlobalMasterParams, val: number) => {
     setGlobalParams((prev) => ({ ...prev, [key]: Math.max(0, val) }));
@@ -131,6 +134,14 @@ export default function GlobalMasterParameter({
         </div>
 
         <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+          <button
+            type="button"
+            onClick={() => setShowManualModal(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white/10 hover:bg-white/20 text-white rounded-lg border border-white/30 transition-all cursor-pointer"
+          >
+            <HelpCircle className="w-3.5 h-3.5" />
+            Panduan & Pemetaan Excel
+          </button>
           {isModified && (
             <button
               type="button"
@@ -252,6 +263,127 @@ export default function GlobalMasterParameter({
           </div>
         </div>
       </div>
+
+      {/* Modal Panduan & Pemetaan 30 Sumber Excel */}
+      {showManualModal && (
+        <div className="fixed inset-0 z-300 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer">
+          <div
+            className="bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-6 py-4 bg-emerald-900 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-800/80 rounded-xl border border-emerald-700">
+                  <FileSpreadsheet className="w-5 h-5 text-emerald-300" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-white">Manual Pengguna & Pemetaan 30 Sumber Excel Pricelist</h3>
+                  <p className="text-xs text-emerald-200">Referensi: Folder SPH Pricelist Juli–Agustus 2026 PT Buya Barokah</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowManualModal(false)}
+                className="text-emerald-300 hover:text-white p-1.5 rounded-lg hover:bg-emerald-800/60 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto text-xs text-slate-700 space-y-5 leading-relaxed">
+              <div className="p-3.5 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-950 font-medium space-y-1">
+                <p className="font-bold text-emerald-900 text-sm">Prinsip Kerja Sinkronisasi Parameter Global:</p>
+                <p>
+                  Parameter Global adalah pusat kendali tarif bersama (shared rates). Setiap kali ada kenaikan harga bahan baku (HVS, Art Paper, Art Carton, NCR, Stiker) atau penyesuaian ongkos cetak mesin Oliver/SM, Anda cukup mengubahnya di halaman ini lalu menekan tombol <strong>&ldquo;Terapkan ke Semua Produk&rdquo;</strong>.
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-slate-900 text-sm mb-2 flex items-center gap-2">
+                  <Database size={15} className="text-emerald-700" />
+                  Daftar 30 Modul Produk & Pemetaan File Excel Sumber
+                </h4>
+                <div className="overflow-x-auto border border-slate-200 rounded-xl">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-slate-100/80 border-b border-slate-200 text-slate-700 font-bold">
+                        <th className="py-2.5 px-3 w-10 text-center">No</th>
+                        <th className="py-2.5 px-3 min-w-[160px]">Jenis Produk SINTAK</th>
+                        <th className="py-2.5 px-3 min-w-[220px]">Folder Referensi Excel</th>
+                        <th className="py-2.5 px-3 min-w-[180px]">File Sumber Acuan</th>
+                        <th className="py-2.5 px-3 text-center">Alur Mesin</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                      {[
+                        { no: 1, nama: 'Buku Manasik Haji', folder: '01. Pricelist Buku Manasik', file: 'Source/*.xlsm', mesin: 'Oliver' },
+                        { no: 2, nama: 'Buku Surat Yasin', folder: '02. Pricelist Yasin', file: 'Pricelist Yasin 96 dan 128.xlsx', mesin: 'Oliver' },
+                        { no: 3, nama: 'Nota 1 Warna', folder: '03. Pricelist Nota 1 Warna', file: 'Pricelist Nota 1 warna.xlsx', mesin: 'Tokoe / Ryobi' },
+                        { no: 4, nama: 'Brosur 2026', folder: '04. Pricelist Brosur 2026', file: 'Pricelist BROSUR 2026.xlsm', mesin: 'Oliver' },
+                        { no: 5, nama: 'Label KHQ (Air Minum)', folder: '05. Pricelist Label KHQ', file: 'Pricelist Label KHQ JUNI 2026.xlsm', mesin: 'Oliver' },
+                        { no: 6, nama: 'Buku Tulis', folder: '06. Pricelist Buku Tulis', file: 'Pricelist Buku Tulis.xlsx', mesin: 'Oliver' },
+                        { no: 7, nama: 'Stopmap / Map Dokumen', folder: '07. Pricelist Stopmap', file: 'Pricelist Stopmap.xlsx', mesin: 'Oliver' },
+                        { no: 8, nama: 'Syahadah Kelulusan', folder: '08. Pricelist Syahadah', file: 'Pricelist Syahadah Juli 2026.xlsx', mesin: 'Oliver' },
+                        { no: 9, nama: 'Raport Kaleb / Map Raport', folder: '09. Pricelist Raport Kaleb', file: 'Pricelist Raport Kaleb.xlsx', mesin: 'Emboss / Foil Hotprint' },
+                        { no: 10, nama: 'Kop Surat Resmi', folder: '10. Pricelist Kop Surat', file: 'Pricelist Kop Surat.xlsx', mesin: 'Oliver' },
+                        { no: 11, nama: 'Amplop Custom', folder: '11. Pricelist Amplop', file: 'Pricelist Amplop.xlsx', mesin: 'Oliver / Toko' },
+                        { no: 12, nama: 'Sertifikat Piagam', folder: '12. Pricelist Sertifikat', file: 'Pricelist Sertifikat.xlsx', mesin: 'Oliver' },
+                        { no: 13, nama: 'Undangan Pernikahan', folder: '13. Pricelist Undangan', file: 'Pricelist Undangan.xlsx', mesin: 'Oliver' },
+                        { no: 14, nama: 'Buku Tabungan Non-Sec', folder: '14. Pricelist Buku Tabungan Non Security', file: 'Pricelist Buku Tabungan Non Security.xlsx', mesin: 'Oliver' },
+                        { no: 15, nama: 'Buku Tabungan Security', folder: '15. Pricelist Buku Tabungan Security', file: 'Pricelist Buku Tabungan Security.xlsx', mesin: 'Oliver (Invisible/Guilloche)' },
+                        { no: 16, nama: 'Kartu Koperasi Promise', folder: '15. Pricelist kartu Koperasi Promise', file: 'Pricelist kartu Koperasi Promise.xlsx', mesin: 'Oliver' },
+                        { no: 17, nama: 'Lebel Kartu Obat', folder: '16. Pricelist Lebel Kartu Obat', file: 'Pricelist Lebel Kartu Obat.xlsx', mesin: 'Oliver' },
+                        { no: 18, nama: 'Buku Soft Cover (A4)', folder: '17. Pricelist Buku Soft Cover', file: 'Pricelist Buku Soft Cover.xlsx', mesin: 'Print Inter + Oliver' },
+                        { no: 19, nama: 'Buku Soft Cover (A5)', folder: '18. Pricelist Buku Soft Cover - 14,5 x 20,25 cm', file: 'Pricelist Buku Soft Cover - 14,5 x 20,25 cm.xlsx', mesin: 'Oliver' },
+                        { no: 20, nama: 'Buku Hard Cover (A6)', folder: '18. Pricelist Hard Cover - 10,5 x 14,8 cm', file: 'Pricelist Buku Hard Cover 10,5 x 14,8 cm.xlsx', mesin: 'Oliver / Inter' },
+                        { no: 21, nama: 'Poster Custom', folder: '19. Pricelist Poster', file: 'Pricelist Poster.xlsx', mesin: 'Oliver / SM' },
+                        { no: 22, nama: 'Majalah 14,5×20,25', folder: '20. Pricelist Majalah - 14,5 x 20,25 cm', file: '20. Pricelist Majalah - 14,5 x 20,25 cm.xlsx', mesin: 'Oliver' },
+                        { no: 23, nama: 'Kalender 2027 (Spiral & Klem)', folder: '22. Kalender 2027 Spiral / 30. Klem', file: 'Pricelist Kalender 2027 Spiral.xlsx', mesin: 'Oliver / SM' },
+                        { no: 24, nama: 'Stiker Cromo & Vynil', folder: '23. Pricelist Stiker', file: 'Pricelist Stiker.xlsx', mesin: 'Oliver / SM' },
+                        { no: 25, nama: 'Buku Soft Cover (A6)', folder: '24. Pricelist Buku Soft Cover - 10,5 x 14,8 cm', file: 'Pricelist Buku Soft Cover - 10,5 x 14,8 cm.xlsx', mesin: 'Oliver' },
+                        { no: 26, nama: 'Buku Hard Cover (A5)', folder: '25. Pricelist Hard Cover - 14,5 x 20,25 cm', file: 'Pricelist Buku Hard Cover 14,5 x 20,25 cm.xlsx', mesin: 'Oliver / SM' },
+                        { no: 27, nama: 'Buku Hard Cover (A4)', folder: '26. Pricelist Hard Cover - 21 x 29,7 cm', file: 'Pricelist Buku Hard Cover 21 x 29,7 cm.xlsx', mesin: 'Oliver / SM' },
+                        { no: 28, nama: 'Kalender Kop (Blanko)', folder: '27. Pricelist Kalender Kop', file: 'Pricelist Kalender Kop.xlsx', mesin: 'Sablon / Offset' },
+                        { no: 29, nama: 'Packaging Box Dus', folder: '28. Pricelist Packaging', file: 'Pricelist Packaging.xlsx', mesin: 'Oliver / SM + Pond' },
+                        { no: 30, nama: 'Paperbag Tas Kertas', folder: '29. Pricelist Paperbag', file: 'Pricelist Paperbag.xlsx', mesin: 'Oliver / SM + Tali' },
+                      ].map((row) => (
+                        <tr key={row.no} className="hover:bg-slate-50">
+                          <td className="py-2 px-3 text-center font-mono text-slate-500">{row.no}</td>
+                          <td className="py-2 px-3 font-bold text-slate-900">{row.nama}</td>
+                          <td className="py-2 px-3 text-slate-600 font-mono text-[11px]">{row.folder}</td>
+                          <td className="py-2 px-3 text-slate-600 font-mono text-[11px]">{row.file}</td>
+                          <td className="py-2 px-3 text-center">
+                            <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                              {row.mesin}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-slate-900 text-sm mb-1">Rumus Standar Markup Harga & Nego</h4>
+                <p>
+                  Seluruh modul di SINTAK menggunakan formula pembulatan ke atas ratusan (ROUNDUP ke ratusan):<br />
+                  <code>Harga Jual = CEIL(HPP × (1 + Margin_Profit_Pct) / 100) × 100</code><br />
+                  <code>Harga Nego = CEIL(Harga_Jual × (1 - Batas_Nego_Pct) / 100) × 100</code>
+                </p>
+              </div>
+            </div>
+
+            <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
+              <button
+                onClick={() => setShowManualModal(false)}
+                className="px-4 py-1.5 bg-emerald-800 text-white font-bold rounded-lg hover:bg-emerald-900 transition-all cursor-pointer text-xs"
+              >
+                Tutup Panduan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
