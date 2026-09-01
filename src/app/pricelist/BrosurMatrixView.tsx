@@ -9,7 +9,6 @@ import {
   TableProperties,
   Layers,
 } from 'lucide-react';
-import { useAutoFitColumns } from '@/hooks/useAutoFitColumns';
 import {
   calculateBrosurSimulator,
   DEFAULT_BROSUR_PARAMS,
@@ -50,8 +49,6 @@ export default function BrosurMatrixView({
   const viewMode = propViewMode ?? localViewMode;
   const setViewMode = propSetViewMode ?? setLocalViewMode;
   // ponytail: grid dinamis — kalau card kekecilan & tabel muncul scroll horizontal, cols otomatis turun (560px ~ lebar minimal tabel Brosur 4 varian)
-  const { ref: gridRef, cols: autoCols } = useAutoFitColumns(560);
-
   const calc = (oplah: number, ukuran: BrosurUkuranType, muka: BrosurMukaType, mesin: BrosurMesinType) =>
     calculateBrosurSimulator(
       { oplah, gramatur: selectedGramaturFilter, ukuran, muka, mesin, laminasi: 'Tanpa Laminasi', opsiSisir: false, opsiPacking: true, marginPct: 30, negoDiskonPct: 4 },
@@ -231,11 +228,7 @@ export default function BrosurMatrixView({
                 </span>
               </div>
 
-              <div
-                ref={gridRef}
-                className="grid gap-4"
-                style={{ gridTemplateColumns: `repeat(${ukuranCols.length === 1 ? 1 : Math.min(ukuranCols.length, autoCols)}, minmax(0, 1fr))` }}
-              >
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {ukuranCols.map((ukuran) => (
                 <div key={ukuran} className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
                   <div className="bg-amber-50/70 px-4 py-2 border-b border-amber-100 flex items-center justify-between">

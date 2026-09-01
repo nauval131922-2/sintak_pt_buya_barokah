@@ -10,7 +10,6 @@ import {
   Layers,
   Wine,
 } from 'lucide-react';
-import { useAutoFitColumns } from '@/hooks/useAutoFitColumns';
 import {
   LabelKhqMasterParams,
   DEFAULT_LABEL_KHQ_PARAMS,
@@ -42,8 +41,6 @@ export default function LabelKhqMatrixView({
 
   const viewMode = propViewMode ?? localViewMode;
   const setViewMode = propSetViewMode ?? setLocalViewMode;
-  const { ref: gridRef, cols: autoCols } = useAutoFitColumns(380);
-
   const calc = (varian: LabelKhqVarianType, jumlahKardus: number) =>
     calculateLabelKhqHpp(
       {
@@ -232,7 +229,7 @@ export default function LabelKhqMatrixView({
                 </span>
               </div>
 
-              <div ref={gridRef} className="grid gap-4" style={{ gridTemplateColumns: `repeat(${activeVarians.length===1 ? 1 : Math.min(activeVarians.length, autoCols)}, minmax(0, 1fr))` }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {activeVarians.map((varian) => (
                 <div key={varian} className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
                   <div className="bg-amber-50/70 px-4 py-2 border-b border-amber-100 flex items-center justify-between">

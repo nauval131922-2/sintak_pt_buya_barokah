@@ -10,7 +10,6 @@ import {
   Layers,
   Pill,
 } from 'lucide-react';
-import { useAutoFitColumns } from '@/hooks/useAutoFitColumns';
 import {
   calculateLebelKartuObatHpp,
   DEFAULT_LEBEL_KARTU_OBAT_PARAMS,
@@ -39,8 +38,6 @@ export default function LebelKartuObatMatrixView({
 
   const viewMode = propViewMode ?? localViewMode;
   const setViewMode = propSetViewMode ?? setLocalViewMode;
-  const { ref: gridRef, cols: autoCols } = useAutoFitColumns(500);
-
   const calc = (oplah: number, varian: LebelKartuObatVarianType) =>
     calculateLebelKartuObatHpp(
       { oplah, varian, marginPct: 30, negoDiskonPct: 4 },
@@ -195,7 +192,7 @@ export default function LebelKartuObatMatrixView({
                 </span>
               </div>
 
-              <div ref={gridRef} className="grid gap-4" style={{ gridTemplateColumns: `repeat(${varianCols.length===1 ? 1 : Math.min(varianCols.length, autoCols)}, minmax(0, 1fr))` }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {varianCols.map((varian) => (
                 <div key={varian} className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
                   <div className="bg-cyan-50/70 px-4 py-2 border-b border-cyan-100 flex items-center justify-between">
