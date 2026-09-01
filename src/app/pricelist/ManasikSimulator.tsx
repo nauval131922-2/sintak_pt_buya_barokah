@@ -159,9 +159,6 @@ export default function ManasikSimulator({
             setMarginPct(item.marginPct);
             setNegoDiskonPct(item.negoDiskonPct);
             setSimulationTitle(item.title);
-            if (setCustomParams && item.customParams) {
-              setCustomParams(item.customParams);
-            }
           }
         }
       }

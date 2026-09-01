@@ -292,13 +292,6 @@ export default function PricelistSimulator({
             if (onChangeFinishingJilid && item.finishingJilid) {
               onChangeFinishingJilid(item.finishingJilid);
             }
-            if (item.customParams) {
-              if (setParamsForFinishing) {
-                setParamsForFinishing(item.finishingJilid, item.customParams);
-              } else {
-                setCustomParams(item.customParams);
-              }
-            }
           }
         }
       }

@@ -148,9 +148,6 @@ export default function YasinSimulator({
             setMarginPct(item.marginPct);
             setNegoDiskonPct(item.negoDiskonPct);
             setSimulationTitle(item.title);
-            if (setCustomParams && item.customParams) {
-              setCustomParams(item.customParams);
-            }
           }
         }
       }
