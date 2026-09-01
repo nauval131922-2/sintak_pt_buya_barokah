@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { saveCalculationToDb } from '@/lib/pricelist-db-sync';
 import {
   Calculator,
-  Save,
+  Save, BookmarkCheck, Bookmark,
   RotateCcw,
   Copy,
   Settings2,
@@ -165,6 +165,30 @@ export default function BukuSoftCover145x2025Simulator({
     } catch (e) {
       console.error(e);
       toast.error('Gagal menyimpan kalkulasi.');
+    }
+  };
+
+  const handleSaveAsNew = () => {
+    try {
+      const existingRaw = localStorage.getItem('sintak_saved_buku_soft_cover_145x2025_simulations');
+      const list: SavedBukuSoftCover145x2025SimulationItem[] = existingRaw ? JSON.parse(existingRaw) : [];
+      const title = ;
+      const newItem: SavedBukuSoftCover145x2025SimulationItem = {
+        id: ,
+        savedAt: new Date().toISOString(),
+        title,
+        oplah,
+        data: result,
+      };
+      list.unshift(newItem);
+      localStorage.setItem('sintak_saved_buku_soft_cover_145x2025_simulations', JSON.stringify(list));
+      saveCalculationToDb({ ...newItem, category: 'Buku Soft Cover 14,5×20,25' });
+      if (setActiveSimulationId) setActiveSimulationId(null);
+      if (setActiveSimulationTitle) setActiveSimulationTitle(null);
+      toast.success('Simulasi berhasil disimpan sebagai kalkulasi baru & keluar dari mode edit!');
+    } catch (e) {
+      console.error(e);
+      toast.error('Gagal menyimpan kalkulasi baru.');
     }
   };
 
@@ -425,14 +449,37 @@ _Harga belum termasuk PPN. Waktu pengerjaan & pengiriman dapat disesuaikan._`;
               </div>
             </div>
 
+          {activeSimulationId ? (
+            <div className="flex items-center gap-2 w-full mt-2">
+              <button
+                type="button"
+                onClick={handleSaveSimulation}
+                className="flex-1 py-2.5 px-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                title="Perbarui kalkulasi yang sedang diedit"
+              >
+                <BookmarkCheck size={15} />
+                <span>Update Perubahan</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveAsNew}
+                className="flex-1 py-2.5 px-3 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                title="Simpan sebagai kalkulasi baru & keluar dari mode edit"
+              >
+                <Bookmark size={14} />
+                <span>Simpan Baru</span>
+              </button>
+            </div>
+          ) : (
             <button
               type="button"
               onClick={handleSaveSimulation}
               className="w-full mt-2 py-2.5 px-4 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
             >
               <Save size={15} />
-              <span>{activeSimulationId ? 'Perbarui Simulasi Ini' : 'Simpan Kalkulasi ke Riwayat'}</span>
+              <span>Simpan Kalkulasi ke Riwayat</span>
             </button>
+          )}
           </div>
         </div>
 

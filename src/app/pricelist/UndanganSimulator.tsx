@@ -143,6 +143,9 @@ export default function UndanganSimulator({
     }
     setSimulationTitle('');
     toast.success(`Kalkulasi "${title}" berhasil disimpan!`);
+    setActiveSimulationId(null);
+    if (setActiveSimulationTitle) setActiveSimulationTitle(null);
+    setSimulationTitle('');
   };
 
   const handleUpdateSavedSimulation = () => {
@@ -533,14 +536,26 @@ export default function UndanganSimulator({
           {/* Simpan */}
           <div className="pt-1">
             {activeSimulationId ? (
-              <button
-                type="button"
-                onClick={handleUpdateSavedSimulation}
-                className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <BookmarkCheck size={16} />
-                <span>Simpan Perubahan ke Daftar Kalkulasi</span>
-              </button>
+              <div className="flex items-center gap-2 w-full">
+                <button
+                  type="button"
+                  onClick={handleUpdateSavedSimulation}
+                  className="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                  title="Perbarui kalkulasi yang sedang diedit"
+                >
+                  <BookmarkCheck size={15} />
+                  <span>Update Perubahan</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveSimulation}
+                  className="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                  title="Simpan sebagai kalkulasi baru & keluar dari mode edit"
+                >
+                  <Bookmark size={14} />
+                  <span>Simpan Baru</span>
+                </button>
+              </div>
             ) : (
               <button
                 type="button"
