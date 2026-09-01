@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { getSession } from "@/lib/session";
-
+import { logActivity } from "@/lib/activity";
 export const dynamic = "force-dynamic";
 
 // GET: Ambil daftar seluruh kalkulasi tersimpan dari database
@@ -164,6 +164,15 @@ export async function POST(request: NextRequest) {
       ],
     });
 
+    // Catat log aktivitas ke activity_logs
+    logActivity(
+      "INSERT",
+      "pricelist_saved_calculations",
+      `Simpan kalkulasi ${category}: ${title} (${oplahVal.toLocaleString('id-ID')} pcs)`,
+      { id, category, title, oplah: oplahVal },
+      userName
+    ).catch(() => {});
+
     return NextResponse.json({
       success: true,
       message: "Calculation saved to database",
@@ -218,8 +227,16 @@ export async function PUT(request: NextRequest) {
 
     args.push(id);
     const query = `UPDATE pricelist_saved_calculations SET ${updates.join(", ")} WHERE id = ?`;
-
     await db.execute({ sql: query, args });
+
+    // Catat log aktivitas ke activity_logs
+    logActivity(
+      "UPDATE",
+      "pricelist_saved_calculations",
+      `Update kalkulasi #${id}: ${title || "Data diperbarui"}`,
+      body,
+      session?.name || session?.username || "Staff"
+    ).catch(() => {});
 
     return NextResponse.json({
       success: true,
@@ -253,6 +270,15 @@ export async function DELETE(request: NextRequest) {
       sql: "DELETE FROM pricelist_saved_calculations WHERE id = ?",
       args: [id],
     });
+
+    // Catat log aktivitas ke activity_logs
+    logActivity(
+      "DELETE",
+      "pricelist_saved_calculations",
+      `Hapus kalkulasi #${id}`,
+      { id },
+      session?.name || session?.username || "Staff"
+    ).catch(() => {});
 
     return NextResponse.json({
       success: true,
