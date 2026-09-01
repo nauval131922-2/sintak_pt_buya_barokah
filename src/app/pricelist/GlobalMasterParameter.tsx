@@ -159,8 +159,8 @@ export default function GlobalMasterParameter({
         </div>
       )}
 
-      {/* Grid Kategori Parameter */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      {/* Grid Kategori Parameter (2 Kolom) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* 1. Mesin Cetak Offset Oliver */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">

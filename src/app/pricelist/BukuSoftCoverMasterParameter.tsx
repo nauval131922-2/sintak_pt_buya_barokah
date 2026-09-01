@@ -166,61 +166,65 @@ export default function BukuSoftCoverMasterParameter({
         </div>
       )}
 
-      {/* Cover */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-          <Printer size={15} className="text-emerald-700" />
-          <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Tarif Cover (Art Carton 230 — Print Inter A3+)</h4>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Cover */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Printer size={15} className="text-emerald-700" />
+            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Tarif Cover (Art Carton 230 — Print Inter A3+)</h4>
+          </div>
+          {fieldRow('tarifPrintCoverA3', 'Tarif Print Cover A3+ All-In (Rp/lbr)', true)}
+          {fieldRow('tarifDesainCover', 'Tarif Desain Cover (Rp/order)', true)}
         </div>
-        {fieldRow('tarifPrintCoverA3', 'Tarif Print Cover A3+ All-In (Rp/lbr)', true)}
-        {fieldRow('tarifDesainCover', 'Tarif Desain Cover (Rp/order)', true)}
-      </div>
 
-      {/* Isi Oliver */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-          <Layers size={15} className="text-emerald-700" />
-          <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Tarif Isi (HVS 70 gsm — Oliver Offset)</h4>
+        {/* Isi Oliver */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Layers size={15} className="text-emerald-700" />
+            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Tarif Isi (HVS 70 gsm — Oliver Offset)</h4>
+          </div>
+          {fieldRow('tarifKertasHvs70Kg', 'Harga Kertas HVS 70 gsm (Rp/kg)', true)}
+          {fieldRow('upKertasIsiPct', 'Mark-up Kertas Isi (%)', false)}
+          {fieldRow('tarifDesainIsiPerHlm', 'Tarif Desain Isi (Rp/halaman)', true)}
+          {fieldRow('tarifOliverPlatUnit', 'Tarif Plate CTP Oliver (Rp/plat)', true)}
+          {fieldRow('tarifOliverMinIsi', 'Minimum Ongkos Oliver (Rp/order)', true)}
         </div>
-        {fieldRow('tarifKertasHvs70Kg', 'Harga Kertas HVS 70 gsm (Rp/kg)', true)}
-        {fieldRow('upKertasIsiPct', 'Mark-up Kertas Isi (%)', false)}
-        {fieldRow('tarifDesainIsiPerHlm', 'Tarif Desain Isi (Rp/halaman)', true)}
-        {fieldRow('tarifOliverPlatUnit', 'Tarif Plate CTP Oliver (Rp/plat)', true)}
-        {fieldRow('tarifOliverMinIsi', 'Minimum Ongkos Oliver (Rp/order)', true)}
-      </div>
 
-      {/* Laminasi */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-          <Layers size={15} className="text-blue-700" />
-          <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Tarif Laminasi Cover</h4>
+        {/* Laminasi */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Layers size={15} className="text-blue-700" />
+            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Tarif Laminasi Cover</h4>
+          </div>
+          {fieldRow('tarifLaminasiGlossyCm2', 'Laminasi Glossy (Rp/cm²)', false, true)}
+          {fieldRow('tarifLaminasiDoffCm2', 'Laminasi Doff (Rp/cm²)', false, true)}
+          {fieldRow('tarifUvVarnishCm2', 'UV Varnish (Rp/cm²)', false, true)}
+          {fieldRow('minLaminasi', 'Minimum Laminasi (Rp/order)', true)}
         </div>
-        {fieldRow('tarifLaminasiGlossyCm2', 'Laminasi Glossy (Rp/cm²)', false, true)}
-        {fieldRow('tarifLaminasiDoffCm2', 'Laminasi Doff (Rp/cm²)', false, true)}
-        {fieldRow('tarifUvVarnishCm2', 'UV Varnish (Rp/cm²)', false, true)}
-        {fieldRow('minLaminasi', 'Minimum Laminasi (Rp/order)', true)}
-      </div>
 
-      {/* Finishing & Jasa */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-          <Scissors size={15} className="text-emerald-700" />
-          <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Jasa Finishing & Operasional</h4>
+        {/* Finishing & Jasa */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Scissors size={15} className="text-emerald-700" />
+            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Jasa Finishing & Operasional</h4>
+          </div>
+          {fieldRow('tarifSisirPerPcs', 'Tarif Sisir Binding (Rp/pcs)', true)}
+          {fieldRow('umr', 'UMR Kabupaten (Rp/bulan)', true)}
+          {fieldRow('tarifKardusBox', 'Tarif Kardus Box (Rp/box)', true)}
+          {fieldRow('tarifLakbanRoll', 'Tarif Lakban Roll (Rp/roll)', true)}
         </div>
-        {fieldRow('tarifSisirPerPcs', 'Tarif Sisir Binding (Rp/pcs)', true)}
-        {fieldRow('umr', 'UMR Kabupaten (Rp/bulan)', true)}
-        {fieldRow('tarifKardusBox', 'Tarif Kardus Box (Rp/box)', true)}
-        {fieldRow('tarifLakbanRoll', 'Tarif Lakban Roll (Rp/roll)', true)}
-      </div>
 
-      {/* Margin */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-          <Database size={15} className="text-emerald-700" />
-          <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Margin & Nego Default</h4>
+        {/* Margin */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3 md:col-span-2">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Database size={15} className="text-emerald-700" />
+            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Margin & Nego Default</h4>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-md">
+            {fieldRow('marginDefaultPct', 'Margin Profit Default (%)', false)}
+            {fieldRow('negoDefaultPct', 'Batas Nego Default (%)', false)}
+          </div>
         </div>
-        {fieldRow('marginDefaultPct', 'Margin Profit Default (%)', false)}
-        {fieldRow('negoDefaultPct', 'Batas Nego Default (%)', false)}
       </div>
 
       {/* Manual Modal */}
