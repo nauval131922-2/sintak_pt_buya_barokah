@@ -54,10 +54,11 @@ import { SavedBukuHardCover145x2025SimulationItem } from './BukuHardCover145x202
 import { SavedBukuHardCover21x297SimulationItem } from './BukuHardCover21x297Simulator';
 import { SavedKalenderKopSimulationItem } from './KalenderKopSimulator';
 import { SavedPackagingSimulationItem } from './PackagingSimulator';
+import { SavedPaperbagSimulationItem } from './PaperbagSimulator';
 
 export type UnifiedCalculationItem = {
   id: string;
-  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging';
+  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag';
   savedAt: string;
   title: string;
   oplah: number;
@@ -99,10 +100,11 @@ export type UnifiedCalculationItem = {
     | SavedBukuHardCover21x297SimulationItem
     | SavedKalenderKopSimulationItem
     | SavedPackagingSimulationItem
+    | SavedPaperbagSimulationItem
 };
 
 interface SavedCalculationsListProps {
-  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging';
+  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag';
   onLoadSimulation: (item: UnifiedCalculationItem) => void;
   activeSimulationId?: string | null;
 }
@@ -113,9 +115,9 @@ export default function SavedCalculationsList({
   activeSimulationId,
 }: SavedCalculationsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging'>('ALL');
+  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag'>('ALL');
   
-  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging') => {
+  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag') => {
     setFilterCategory(val);
     try {
       localStorage.setItem('sintak_pricelist_saved_list_filter', val);
@@ -158,6 +160,7 @@ export default function SavedCalculationsList({
   const [bukuHardCover21x297List, setBukuHardCover21x297List] = useState<SavedBukuHardCover21x297SimulationItem[]>([]);
   const [kalenderKopList, setKalenderKopList] = useState<SavedKalenderKopSimulationItem[]>([]);
   const [packagingList, setPackagingList] = useState<SavedPackagingSimulationItem[]>([]);
+  const [paperbagList, setPaperbagList] = useState<SavedPaperbagSimulationItem[]>([]);
 
   // Load from localStorage
   const refreshData = () => {
@@ -193,7 +196,8 @@ export default function SavedCalculationsList({
         savedFilter === 'Buku Hard Cover 14,5×20,25' ||
         savedFilter === 'Buku Hard Cover 21×29,7' ||
         savedFilter === 'Kalender Kop' ||
-        savedFilter === 'Packaging'
+        savedFilter === 'Packaging' ||
+        savedFilter === 'Paperbag'
       ) {
         setFilterCategory(savedFilter as any);
       }
@@ -312,6 +316,9 @@ export default function SavedCalculationsList({
       const rawPkg = localStorage.getItem('sintak_saved_packaging_simulations');
       if (rawPkg) setPackagingList(JSON.parse(rawPkg));
       else setPackagingList([]);
+      const rawPb = localStorage.getItem('sintak_saved_paperbag_simulations');
+      if (rawPb) setPaperbagList(JSON.parse(rawPb));
+      else setPaperbagList([]);
     } catch (e) {
       console.error('Failed to load saved calculations:', e);
     }
@@ -1022,9 +1029,33 @@ export default function SavedCalculationsList({
       });
     });
 
+    // 30. Paperbag
+    paperbagList.forEach((p) => {
+      const inp = p.data.input;
+      items.push({
+        id: p.id,
+        category: 'Paperbag',
+        savedAt: p.savedAt,
+        title: p.title,
+        oplah: inp.oplah,
+        specSummary: `Paperbag ${inp.ukuran} • ${inp.oplah.toLocaleString('id-ID')} pcs (${p.data.prosesCetak})`,
+        detailSpecs: [
+          `Ukuran: ${inp.ukuran} · AC 230g (${p.data.spec.planoYieldTas} tas/pln)`,
+          `Finishing: Pond + Double Tape + Tali Kur + Lipat`,
+          `Tambahan: ${inp.finishing} · Margin: ${inp.marginPct}%`,
+        ],
+        hppUnit: p.data.hppPerPcs,
+        hargaJualUnit: p.data.hargaJualPerPcs,
+        totalOmset: p.data.totalHargaJual,
+        marginPct: inp.marginPct,
+        negoDiskonPct: inp.negoDiskonPct,
+        rawData: p,
+      });
+    });
+
     // Urutkan dari yang terbaru disimpan
     return items.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
-  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList, bukuTulisList, stopmapList, syahadahList, raportKalebList, kopSuratList, amplopList, sertifikatList, undanganList, bukuTabunganNsList, bukuTabunganSecurityList, kartuKoperasiPromiseList, lebelKartuObatList, bukuSoftCoverList, bukuSoftCover145x2025List, bukuHardCover105x148List, posterList, majalahList, stikerList, bukuSoftCover105x148List, bukuHardCover145x2025List, bukuHardCover21x297List, kalenderKopList, packagingList]);
+  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList, bukuTulisList, stopmapList, syahadahList, raportKalebList, kopSuratList, amplopList, sertifikatList, undanganList, bukuTabunganNsList, bukuTabunganSecurityList, kartuKoperasiPromiseList, lebelKartuObatList, bukuSoftCoverList, bukuSoftCover145x2025List, bukuHardCover105x148List, posterList, majalahList, stikerList, bukuSoftCover105x148List, bukuHardCover145x2025List, bukuHardCover21x297List, kalenderKopList, packagingList, paperbagList]);
 
   // Filtered List
   const filteredList = useMemo(() => {
@@ -1167,6 +1198,10 @@ export default function SavedCalculationsList({
         const updated = packagingList.filter((p) => p.id !== item.id);
         setPackagingList(updated);
         localStorage.setItem('sintak_saved_packaging_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Paperbag') {
+        const updated = paperbagList.filter((p) => p.id !== item.id);
+        setPaperbagList(updated);
+        localStorage.setItem('sintak_saved_paperbag_simulations', JSON.stringify(updated));
       }
       toast.success('Kalkulasi berhasil dihapus.');
     } catch (err) {
@@ -1297,6 +1332,10 @@ export default function SavedCalculationsList({
         const updated = packagingList.map((p) => (p.id === item.id ? { ...p, title: newTitle } : p));
         setPackagingList(updated);
         localStorage.setItem('sintak_saved_packaging_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Paperbag') {
+        const updated = paperbagList.map((p) => (p.id === item.id ? { ...p, title: newTitle } : p));
+        setPaperbagList(updated);
+        localStorage.setItem('sintak_saved_paperbag_simulations', JSON.stringify(updated));
       }
       setEditingId(null);
       toast.success('Nama kalkulasi berhasil diperbarui.');
@@ -1436,6 +1475,11 @@ export default function SavedCalculationsList({
       const inp = pkg.data.input;
       const lamTxt = inp.finishing !== 'Tanpa Laminasi' ? ` + ${inp.finishing}` : '';
       text = `*PENAWARAN PACKAGING BOX DUS / KARDUS*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Packaging Box Dus Tutup Nyambung\n• *Ukuran Jadi*: ${inp.ukuran} (Terbuka: ${pkg.data.variantSpec.ukuranTerbuka})\n• *Bahan*: ${inp.bahan}\n• *Cetak*: Full Colour 1 Muka (${pkg.data.prosesCetak})\n• *Finishing*: Pond Die Cut + Packing Kardus${lamTxt}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${pkg.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${pkg.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${pkg.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
+    } else if (item.category === 'Paperbag') {
+      const pb = item.rawData as SavedPaperbagSimulationItem;
+      const inp = pb.data.input;
+      const lamTxt = inp.finishing !== 'Tanpa Laminasi' ? ` + ${inp.finishing}` : '';
+      text = `*PENAWARAN PAPERBAG (TAS KERTAS CUSTOM)*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Paperbag Custom Custom\n• *Ukuran*: ${inp.ukuran} (Terbuka: ${pb.data.spec.ukuranTerbuka})\n• *Bahan*: Art Carton 230 gsm Full Colour 1 Muka\n• *Alur Mesin*: ${pb.data.prosesCetak}\n• *Finishing*: Pond Die Cut + Double Tape + Tali Kur + Lipat Assembly + Packing Kardus${lamTxt}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${pb.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${pb.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${pb.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     }
     navigator.clipboard.writeText(text);
     setCopiedId(item.id);
@@ -1525,6 +1569,7 @@ export default function SavedCalculationsList({
                 { value: 'Buku Hard Cover 21×29,7', label: '📕 Buku Hard Cover 21×29,7', count: bukuHardCover21x297List.length },
                 { value: 'Kalender Kop', label: '🗓️ Kalender Kop', count: kalenderKopList.length },
                 { value: 'Packaging', label: '📦 Packaging', count: packagingList.length },
+                { value: 'Paperbag', label: '🛍️ Paperbag', count: paperbagList.length },
               ]}
               value={filterCategory}
               onChange={(val) => handleFilterChange(val as any)}
@@ -1643,6 +1688,8 @@ export default function SavedCalculationsList({
                           ? 'bg-emerald-100 text-emerald-900 border border-emerald-200'
                           : item.category === 'Packaging'
                           ? 'bg-amber-100 text-amber-900 border border-amber-200'
+                          : item.category === 'Paperbag'
+                          ? 'bg-pink-100 text-pink-900 border border-pink-200'
                           : 'bg-slate-100 text-slate-700 border border-slate-200'
                       }`}
                     >
