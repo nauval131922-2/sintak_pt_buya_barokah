@@ -39,10 +39,11 @@ import { SavedKopSuratSimulationItem } from './KopSuratSimulator';
 import { SavedAmplopSimulationItem } from './AmplopSimulator';
 import { SavedSertifikatSimulationItem } from './SertifikatSimulator';
 import { SavedUndanganSimulationItem } from './UndanganSimulator';
+import { SavedBukuTabunganNsSimulationItem } from './BukuTabunganNsSimulator';
 
 export type UnifiedCalculationItem = {
   id: string;
-  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan';
+  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS';
   savedAt: string;
   title: string;
   oplah: number;
@@ -68,11 +69,12 @@ export type UnifiedCalculationItem = {
     | SavedKopSuratSimulationItem
     | SavedAmplopSimulationItem
     | SavedSertifikatSimulationItem
-    | SavedUndanganSimulationItem;
+    | SavedUndanganSimulationItem
+    | SavedBukuTabunganNsSimulationItem;
 };
 
 interface SavedCalculationsListProps {
-  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan';
+  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS';
   onLoadSimulation: (item: UnifiedCalculationItem) => void;
   activeSimulationId?: string | null;
 }
@@ -83,9 +85,9 @@ export default function SavedCalculationsList({
   activeSimulationId,
 }: SavedCalculationsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan'>('ALL');
+  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS'>('ALL');
   
-  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan') => {
+  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS') => {
     setFilterCategory(val);
     try {
       localStorage.setItem('sintak_pricelist_saved_list_filter', val);
@@ -113,6 +115,7 @@ export default function SavedCalculationsList({
   const [amplopList, setAmplopList] = useState<SavedAmplopSimulationItem[]>([]);
   const [sertifikatList, setSertifikatList] = useState<SavedSertifikatSimulationItem[]>([]);
   const [undanganList, setUndanganList] = useState<SavedUndanganSimulationItem[]>([]);
+  const [bukuTabunganNsList, setBukuTabunganNsList] = useState<SavedBukuTabunganNsSimulationItem[]>([]);
 
   // Load from localStorage
   const refreshData = () => {
@@ -133,7 +136,8 @@ export default function SavedCalculationsList({
         savedFilter === 'Kop Surat' ||
         savedFilter === 'Amplop' ||
         savedFilter === 'Sertifikat' ||
-        savedFilter === 'Undangan'
+        savedFilter === 'Undangan' ||
+        savedFilter === 'Buku Tabungan NS'
       ) {
         setFilterCategory(savedFilter as any);
       }
@@ -193,6 +197,10 @@ export default function SavedCalculationsList({
       const rawUnd = localStorage.getItem('sintak_saved_undangan_simulations');
       if (rawUnd) setUndanganList(JSON.parse(rawUnd));
       else setUndanganList([]);
+
+      const rawBtn = localStorage.getItem('sintak_saved_buku_tabungan_ns_simulations');
+      if (rawBtn) setBukuTabunganNsList(JSON.parse(rawBtn));
+      else setBukuTabunganNsList([]);
     } catch (e) {
       console.error('Failed to load saved calculations:', e);
     }
@@ -543,9 +551,33 @@ export default function SavedCalculationsList({
       });
     });
 
+    // 15. Buku Tabungan NS
+    bukuTabunganNsList.forEach((b) => {
+      const inp = b.data.input;
+      items.push({
+        id: b.id,
+        category: 'Buku Tabungan NS',
+        savedAt: b.savedAt,
+        title: b.title,
+        oplah: inp.oplah,
+        specSummary: `Buku Tabungan NS ${inp.varian} • ${inp.oplah.toLocaleString('id-ID')} pcs`,
+        detailSpecs: [
+          `Bahan: Cover AC 260 1 Muka FC + HVS 70 1W BB · ${b.data.kebutuhanCoverA3 + b.data.kebutuhanIsiA3} lbr A3+`,
+          `Finishing: Laminasi Glossy + Susun Lipat + Jahit + Pound + Sring + Packing Kardus`,
+          `Margin: ${inp.marginPct}%`,
+        ],
+        hppUnit: b.data.hppPerPcs,
+        hargaJualUnit: b.data.hargaJualPerPcs,
+        totalOmset: b.data.totalHargaJual,
+        marginPct: inp.marginPct,
+        negoDiskonPct: inp.negoDiskonPct,
+        rawData: b,
+      });
+    });
+
     // Urutkan dari yang terbaru disimpan
     return items.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
-  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList, bukuTulisList, stopmapList, syahadahList, raportKalebList, kopSuratList, amplopList, sertifikatList, undanganList]);
+  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList, bukuTulisList, stopmapList, syahadahList, raportKalebList, kopSuratList, amplopList, sertifikatList, undanganList, bukuTabunganNsList]);
 
   // Filtered List
   const filteredList = useMemo(() => {
@@ -628,6 +660,10 @@ export default function SavedCalculationsList({
         const updated = undanganList.filter((u) => u.id !== item.id);
         setUndanganList(updated);
         localStorage.setItem('sintak_saved_undangan_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Buku Tabungan NS') {
+        const updated = bukuTabunganNsList.filter((b) => b.id !== item.id);
+        setBukuTabunganNsList(updated);
+        localStorage.setItem('sintak_saved_buku_tabungan_ns_simulations', JSON.stringify(updated));
       }
       toast.success('Kalkulasi berhasil dihapus.');
     } catch (err) {
@@ -698,6 +734,10 @@ export default function SavedCalculationsList({
         const updated = undanganList.map((u) => (u.id === item.id ? { ...u, title: newTitle } : u));
         setUndanganList(updated);
         localStorage.setItem('sintak_saved_undangan_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Buku Tabungan NS') {
+        const updated = bukuTabunganNsList.map((b) => (b.id === item.id ? { ...b, title: newTitle } : b));
+        setBukuTabunganNsList(updated);
+        localStorage.setItem('sintak_saved_buku_tabungan_ns_simulations', JSON.stringify(updated));
       }
       setEditingId(null);
       toast.success('Nama kalkulasi berhasil diperbarui.');
@@ -767,6 +807,10 @@ export default function SavedCalculationsList({
       const inp = u.data.input;
       const lamTxt = inp.laminasi !== 'Tanpa Laminasi' ? ` + Laminasi ${inp.laminasi}` : '';
       text = `*PENAWARAN UNDANGAN*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Undangan ${inp.varian}${lamTxt}\n• *Bahan*: Art Carton 230 gsm · ${inp.varian}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs (${u.data.kebutuhanA3} lbr A3+)\n• *Cetak*: Full Colour ${inp.varian.includes('2 Muka') ? '2 Muka' : '1 Muka'}${inp.oplah > 500 ? ' (Oliver)' : ' (Print Inter)'}\n• *Finishing*: Sisir + OPP + Label${lamTxt ? ` + ${inp.laminasi}` : ''} + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${u.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${u.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
+    } else if (item.category === 'Buku Tabungan NS') {
+      const b = item.rawData as SavedBukuTabunganNsSimulationItem;
+      const inp = b.data.input;
+      text = `*PENAWARAN BUKU TABUNGAN NON SECURITY*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Tabungan NS ${inp.varian} 9×14,5 cm\n• *Bahan*: Cover AC 260 gsm 1 Muka FC + Laminasi Glossy, Isi HVS 70 gsm 1W BB\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs (${b.data.kebutuhanCoverA3 + b.data.kebutuhanIsiA3} lbr A3+)\n• *Finishing*: Susun Lipat + Jahit + Pound + Plastik Sring + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${b.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${b.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     }
 
     navigator.clipboard.writeText(text);
@@ -843,6 +887,7 @@ export default function SavedCalculationsList({
                 { value: 'Amplop', label: '✉️ Amplop', count: amplopList.length },
                 { value: 'Sertifikat', label: '📜 Sertifikat', count: sertifikatList.length },
                 { value: 'Undangan', label: '💌 Undangan', count: undanganList.length },
+                { value: 'Buku Tabungan NS', label: '📒 Buku Tabungan NS', count: bukuTabunganNsList.length },
               ]}
               value={filterCategory}
               onChange={(val) => handleFilterChange(val as any)}
@@ -931,6 +976,8 @@ export default function SavedCalculationsList({
                           ? 'bg-lime-100 text-lime-900 border border-lime-300'
                           : item.category === 'Undangan'
                           ? 'bg-fuchsia-100 text-fuchsia-900 border border-fuchsia-300'
+                          : item.category === 'Buku Tabungan NS'
+                          ? 'bg-teal-100 text-teal-900 border border-teal-200'
                           : 'bg-blue-100 text-blue-900 border border-blue-200'
                       }`}
                     >

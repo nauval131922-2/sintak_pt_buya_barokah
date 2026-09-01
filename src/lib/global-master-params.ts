@@ -14,6 +14,7 @@ import { KopSuratMasterParams, DEFAULT_KOP_SURAT_PARAMS } from './kop-surat-calc
 import { AmplopMasterParams, DEFAULT_AMPLOP_PARAMS } from './amplop-calculator';
 import { SertifikatMasterParams, DEFAULT_SERTIFIKAT_PARAMS } from './sertifikat-calculator';
 import { UndanganMasterParams, DEFAULT_UNDANGAN_PARAMS } from './undangan-calculator';
+import { BukuTabunganNsMasterParams, DEFAULT_BUKU_TABUNGAN_NS_PARAMS } from './buku-tabungan-ns-calculator';
 
 export interface GlobalMasterParams {
   // 1. Mesin Cetak Offset Oliver (58 / 52)
@@ -97,7 +98,8 @@ export function applyGlobalParamsToAll(
   currKopSurat: KopSuratMasterParams = DEFAULT_KOP_SURAT_PARAMS,
   currAmplop: AmplopMasterParams = DEFAULT_AMPLOP_PARAMS,
   currSertifikat: SertifikatMasterParams = DEFAULT_SERTIFIKAT_PARAMS,
-  currUndangan: UndanganMasterParams = DEFAULT_UNDANGAN_PARAMS
+  currUndangan: UndanganMasterParams = DEFAULT_UNDANGAN_PARAMS,
+  currBukuTabunganNs: BukuTabunganNsMasterParams = DEFAULT_BUKU_TABUNGAN_NS_PARAMS
 ) {
   const nextSpiral: SimulatorMasterParams = {
     ...currSpiral,
@@ -305,6 +307,24 @@ export function applyGlobalParamsToAll(
     tarifLakbanRoll: g.tarifLakbanRoll,
   };
 
+  const nextBukuTabunganNs: BukuTabunganNsMasterParams = {
+    ...currBukuTabunganNs,
+    tarifKertasCoverKg: g.tarifAc260Kg,
+    upKertasCoverPct: g.upKertasPct,
+    tarifKertasIsiKg: g.tarifHvs70,
+    upKertasIsiPct: g.upKertasPct,
+    tarifPrintCoverA3: g.tarifPrintA3,
+    tarifPrintIsiA3: g.tarifPrintInter1Muka,
+    tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
+    minLaminasi: g.minLaminasi,
+    tarifSusunLipatPerPcs: g.tarifSisirPcs,
+    tarifJahitPerPcs: g.tarifStaplesPcs * 5,
+    tarifPoundPerPcs: g.tarifSisirPcs * 2,
+    tarifPlastikSringPerPcs: g.tarifPlastikOppPcs,
+    tarifKardusBox: g.tarifKardusBox,
+    tarifLakbanRoll: g.tarifLakbanRoll,
+  };
+
   return {
     nextSpiral,
     nextKlem,
@@ -321,5 +341,6 @@ export function applyGlobalParamsToAll(
     nextAmplop,
     nextSertifikat,
     nextUndangan,
+    nextBukuTabunganNs,
   };
 }
