@@ -79,6 +79,10 @@ import BukuSoftCover145x2025MasterParameter from './BukuSoftCover145x2025MasterP
 import BukuSoftCover145x2025Simulator from './BukuSoftCover145x2025Simulator';
 import BukuSoftCover145x2025MatrixView from './BukuSoftCover145x2025MatrixView';
 import { BukuSoftCover145x2025MasterParams, DEFAULT_BUKU_SOFT_COVER_145X2025_PARAMS } from '@/lib/buku-soft-cover-145x2025-calculator';
+import BukuHardCover105x148MasterParameter from './BukuHardCover105x148MasterParameter';
+import BukuHardCover105x148Simulator from './BukuHardCover105x148Simulator';
+import BukuHardCover105x148MatrixView from './BukuHardCover105x148MatrixView';
+import { BukuHardCover105x148MasterParams, DEFAULT_BUKU_HARD_COVER_105X148_PARAMS } from '@/lib/buku-hard-cover-105x148-calculator';
 import SavedCalculationsList, { UnifiedCalculationItem } from './SavedCalculationsList';
 import SquareDropdown from '@/components/SquareDropdown';
 import GlobalMasterParameter from './GlobalMasterParameter';
@@ -156,7 +160,8 @@ export default function PricelistClient() {
   const [paramsLebelKartuObat, setParamsLebelKartuObat] = useState<LebelKartuObatMasterParams>(DEFAULT_LEBEL_KARTU_OBAT_PARAMS);
   const [paramsBukuSoftCover, setParamsBukuSoftCover] = useState<BukuSoftCoverMasterParams>(DEFAULT_BUKU_SOFT_COVER_PARAMS);
   const [paramsBukuSoftCover145x2025, setParamsBukuSoftCover145x2025] = useState<BukuSoftCover145x2025MasterParams>(DEFAULT_BUKU_SOFT_COVER_145X2025_PARAMS);
-  const [selectedProductCategory, setSelectedProductCategory] = useState<'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25'>('Kalender');
+  const [paramsBukuHardCover105x148, setParamsBukuHardCover105x148] = useState<BukuHardCover105x148MasterParams>(DEFAULT_BUKU_HARD_COVER_105X148_PARAMS);
+  const [selectedProductCategory, setSelectedProductCategory] = useState<'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8'>('Kalender');
   const [paramsSpiral, setParamsSpiral] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS);
   const [paramsKlem, setParamsKlem] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS_KLEM);
 
@@ -295,6 +300,11 @@ export default function PricelistClient() {
         setParamsBukuSoftCover145x2025({ ...DEFAULT_BUKU_SOFT_COVER_145X2025_PARAMS, ...JSON.parse(savedBukuSoftCover145x2025) });
       }
 
+      const savedBukuHardCover105x148 = localStorage.getItem('sintak_pricelist_master_params_buku_hard_cover_105x148');
+      if (savedBukuHardCover105x148) {
+        setParamsBukuHardCover105x148({ ...DEFAULT_BUKU_HARD_COVER_105X148_PARAMS, ...JSON.parse(savedBukuHardCover105x148) });
+      }
+
       const savedGlobal = localStorage.getItem('sintak_pricelist_master_params_global');
       if (savedGlobal) {
         setParamsGlobal({ ...DEFAULT_GLOBAL_PARAMS, ...JSON.parse(savedGlobal) });
@@ -306,7 +316,7 @@ export default function PricelistClient() {
 
   // Sync selectedProductCategory across tabs
   const handleProductCategoryChange = (
-    category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25'
+    category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8'
   ) => {
     setSelectedProductCategory(category);
     try {
@@ -399,17 +409,18 @@ export default function PricelistClient() {
         localStorage.setItem('sintak_pricelist_master_params_lebel_kartu_obat', JSON.stringify(paramsLebelKartuObat));
         localStorage.setItem('sintak_pricelist_master_params_buku_soft_cover', JSON.stringify(paramsBukuSoftCover));
         localStorage.setItem('sintak_pricelist_master_params_buku_soft_cover_145x2025', JSON.stringify(paramsBukuSoftCover145x2025));
+        localStorage.setItem('sintak_pricelist_master_params_buku_hard_cover_105x148', JSON.stringify(paramsBukuHardCover105x148));
       } catch (e) {
         console.error('Failed to save master params to localStorage:', e);
       }
     }, 400);
     return () => clearTimeout(timer);
-  }, [paramsSpiral, paramsKlem, paramsGlobal, paramsLabelKhq, paramsBukuTulis, paramsStopmap, paramsSyahadah, paramsRaportKaleb, paramsKopSurat, paramsAmplop, paramsSertifikat, paramsUndangan, paramsBukuTabunganNs, paramsBukuTabunganSecurity, paramsKartuKoperasiPromise, paramsLebelKartuObat, paramsBukuSoftCover, paramsBukuSoftCover145x2025]);
+  }, [paramsSpiral, paramsKlem, paramsGlobal, paramsLabelKhq, paramsBukuTulis, paramsStopmap, paramsSyahadah, paramsRaportKaleb, paramsKopSurat, paramsAmplop, paramsSertifikat, paramsUndangan, paramsBukuTabunganNs, paramsBukuTabunganSecurity, paramsKartuKoperasiPromise, paramsLebelKartuObat, paramsBukuSoftCover, paramsBukuSoftCover145x2025, paramsBukuHardCover105x148]);
 
   // Fungsi sebarkan parameter global ke seluruh produk
   const handleApplyGlobalParams = (targetGlobal?: GlobalMasterParams) => {
     const g = targetGlobal || paramsGlobal;
-    const { nextSpiral, nextKlem, nextManasik, nextYasin, nextNota, nextBrosur, nextLabelKhq, nextBukuTulis, nextStopmap, nextSyahadah, nextRaportKaleb, nextKopSurat, nextAmplop, nextSertifikat, nextUndangan, nextBukuTabunganNs, nextBukuTabunganSecurity, nextKartuKoperasiPromise, nextLebelKartuObat, nextBukuSoftCover, nextBukuSoftCover145x2025 } = applyGlobalParamsToAll(
+    const { nextSpiral, nextKlem, nextManasik, nextYasin, nextNota, nextBrosur, nextLabelKhq, nextBukuTulis, nextStopmap, nextSyahadah, nextRaportKaleb, nextKopSurat, nextAmplop, nextSertifikat, nextUndangan, nextBukuTabunganNs, nextBukuTabunganSecurity, nextKartuKoperasiPromise, nextLebelKartuObat, nextBukuSoftCover, nextBukuSoftCover145x2025, nextBukuHardCover105x148 } = applyGlobalParamsToAll(
       g,
       paramsSpiral,
       paramsKlem,
@@ -431,7 +442,8 @@ export default function PricelistClient() {
       paramsKartuKoperasiPromise,
       paramsLebelKartuObat,
       paramsBukuSoftCover,
-      paramsBukuSoftCover145x2025
+      paramsBukuSoftCover145x2025,
+      paramsBukuHardCover105x148
     );
     setParamsSpiral(nextSpiral);
     setParamsKlem(nextKlem);
@@ -454,6 +466,7 @@ export default function PricelistClient() {
     setParamsLebelKartuObat(nextLebelKartuObat);
     setParamsBukuSoftCover(nextBukuSoftCover);
     setParamsBukuSoftCover145x2025(nextBukuSoftCover145x2025);
+    setParamsBukuHardCover105x148(nextBukuHardCover105x148);
   };
 
   const fetchData = useCallback(async () => {
@@ -676,6 +689,7 @@ export default function PricelistClient() {
               { value: 'Lebel Kartu Obat', label: '💊 Lebel Kartu Obat' },
               { value: 'Buku Soft Cover', label: '📗 Buku Soft Cover' },
               { value: 'Buku Soft Cover 14,5×20,25', label: '📗 Buku Soft Cover 14,5×20,25' },
+              { value: 'Buku Hard Cover 10,5×14,8', label: '📕 Buku Hard Cover 10,5×14,8' },
             ]}
             value={selectedProductCategory}
             onChange={(val) => handleProductCategoryChange(val as any)}
@@ -781,6 +795,11 @@ export default function PricelistClient() {
             <BukuSoftCover145x2025MasterParameter
               customParams={paramsBukuSoftCover145x2025}
               setCustomParams={setParamsBukuSoftCover145x2025}
+            />
+          ) : selectedProductCategory === 'Buku Hard Cover 10,5×14,8' ? (
+            <BukuHardCover105x148MasterParameter
+              customParams={paramsBukuHardCover105x148}
+              setCustomParams={setParamsBukuHardCover105x148}
             />
           ) : (
             <PricelistMasterParameter
@@ -986,6 +1005,16 @@ export default function PricelistClient() {
               activeSimulationTitle={activeSimulationTitle}
               setActiveSimulationTitle={setActiveSimulationTitle}
             />
+          ) : selectedProductCategory === 'Buku Hard Cover 10,5×14,8' ? (
+            <BukuHardCover105x148Simulator
+              customParams={paramsBukuHardCover105x148}
+              setCustomParams={setParamsBukuHardCover105x148}
+              onOpenMasterParam={() => setActiveTab('parameter')}
+              activeSimulationId={activeSimulationId}
+              setActiveSimulationId={setActiveSimulationId}
+              activeSimulationTitle={activeSimulationTitle}
+              setActiveSimulationTitle={setActiveSimulationTitle}
+            />
           ) : (
             <PricelistSimulator
               customParams={customParams}
@@ -1120,6 +1149,12 @@ export default function PricelistClient() {
           ) : selectedProductCategory === 'Buku Soft Cover 14,5×20,25' ? (
             <BukuSoftCover145x2025MatrixView
               customParams={paramsBukuSoftCover145x2025}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+            />
+          ) : selectedProductCategory === 'Buku Hard Cover 10,5×14,8' ? (
+            <BukuHardCover105x148MatrixView
+              customParams={paramsBukuHardCover105x148}
               viewMode={viewMode}
               setViewMode={setViewMode}
             />

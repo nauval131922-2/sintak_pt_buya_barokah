@@ -20,6 +20,7 @@ import { KartuKoperasiPromiseMasterParams, DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS
 import { LebelKartuObatMasterParams, DEFAULT_LEBEL_KARTU_OBAT_PARAMS } from './lebel-kartu-obat-calculator';
 import { BukuSoftCoverMasterParams, DEFAULT_BUKU_SOFT_COVER_PARAMS } from './buku-soft-cover-calculator';
 import { BukuSoftCover145x2025MasterParams, DEFAULT_BUKU_SOFT_COVER_145X2025_PARAMS } from './buku-soft-cover-145x2025-calculator';
+import { BukuHardCover105x148MasterParams, DEFAULT_BUKU_HARD_COVER_105X148_PARAMS } from './buku-hard-cover-105x148-calculator';
 
 export interface GlobalMasterParams {
   // 1. Mesin Cetak Offset Oliver (58 / 52)
@@ -109,7 +110,8 @@ export function applyGlobalParamsToAll(
   currKartuKoperasiPromise: KartuKoperasiPromiseMasterParams = DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS,
   currLebelKartuObat: LebelKartuObatMasterParams = DEFAULT_LEBEL_KARTU_OBAT_PARAMS,
   currBukuSoftCover: BukuSoftCoverMasterParams = DEFAULT_BUKU_SOFT_COVER_PARAMS,
-  currBukuSoftCover145x2025: BukuSoftCover145x2025MasterParams = DEFAULT_BUKU_SOFT_COVER_145X2025_PARAMS
+  currBukuSoftCover145x2025: BukuSoftCover145x2025MasterParams = DEFAULT_BUKU_SOFT_COVER_145X2025_PARAMS,
+  currBukuHardCover105x148: BukuHardCover105x148MasterParams = DEFAULT_BUKU_HARD_COVER_105X148_PARAMS
 ) {
   const nextSpiral: SimulatorMasterParams = {
     ...currSpiral,
@@ -413,6 +415,26 @@ export function applyGlobalParamsToAll(
     minLaminasi: g.minLaminasi,
   };
 
+  const nextBukuHardCover105x148: BukuHardCover105x148MasterParams = {
+    ...currBukuHardCover105x148,
+    tarifPrintCoverA3: g.tarifPrintA3,
+    tarifKertasAp150Kg: g.tarifAp150,
+    tarifPlateCoverOliver: g.oliverPlatUnit,
+    minOngkosCoverOliver: g.oliverMinOngkos,
+    drekCoverOliver: g.oliverDrekOver,
+    tarifKertasAc230Kg: g.tarifAc230Kg,
+    tarifKertasHvs70Kg: g.tarifHvs70,
+    tarifPlateIsiOliver: g.oliverPlatUnit,
+    minOngkosIsiOliver: g.oliverMinOngkos,
+    drekIsiOliver: g.oliverDrekOver,
+    tarifSisirPcs: g.tarifSisirPcs,
+    tarifKardusBox: g.tarifKardusBox,
+    tarifLakbanRoll: g.tarifLakbanRoll,
+    tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
+    tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
+    minLaminasi: g.minLaminasi,
+  };
+
   return {
     nextSpiral,
     nextKlem,
@@ -435,5 +457,6 @@ export function applyGlobalParamsToAll(
     nextLebelKartuObat,
     nextBukuSoftCover,
     nextBukuSoftCover145x2025,
+    nextBukuHardCover105x148,
   };
 }
