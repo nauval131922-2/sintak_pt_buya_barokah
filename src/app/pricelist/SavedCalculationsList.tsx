@@ -19,6 +19,11 @@ import {
   Layers,
   ArrowRight,
   TrendingUp,
+  FileText,
+  Eye,
+  Info,
+  Calculator,
+  Sparkles,
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
 import SquareDropdown from '@/components/SquareDropdown';
@@ -125,6 +130,7 @@ export default function SavedCalculationsList({
       console.error('Failed to save list filter to localStorage:', e);
     }
   };
+  const [viewingDetailItem, setViewingDetailItem] = useState<UnifiedCalculationItem | null>(null);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitleInput, setEditTitleInput] = useState('');
@@ -1785,16 +1791,27 @@ export default function SavedCalculationsList({
 
                 {/* Card Action Footer */}
                 <div className="p-2.5 bg-white border-t border-slate-100 flex items-center justify-between gap-2">
-                  <button
-                    type="button"
-                    onClick={(e) => handleCopyQuote(item, e)}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
-                    title="Salin Format WhatsApp"
-                  >
-                    {copiedId === item.id ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
-                    <span>{copiedId === item.id ? 'Tersalin' : 'WA'}</span>
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setViewingDetailItem(item)}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition cursor-pointer"
+                      title="Lihat Rincian HPP & Parameter Historis"
+                    >
+                      <Eye size={13} />
+                      <span>Detail</span>
+                    </button>
 
+                    <button
+                      type="button"
+                      onClick={(e) => handleCopyQuote(item, e)}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+                      title="Salin Format WhatsApp"
+                    >
+                      {copiedId === item.id ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
+                      <span>{copiedId === item.id ? 'Tersalin' : 'WA'}</span>
+                    </button>
+                  </div>
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
@@ -1818,6 +1835,194 @@ export default function SavedCalculationsList({
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Modal Detail Rincian HPP & Parameter Historis */}
+      {viewingDetailItem && (
+        <div
+          className="fixed inset-0 z-300 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer"
+          onClick={() => setViewingDetailItem(null)}
+        >
+          <div
+            className="bg-white w-full max-w-3xl max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-emerald-950 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-800/80 rounded-xl border border-emerald-700">
+                  <Calculator className="w-5 h-5 text-emerald-300" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-base text-white line-clamp-1">{viewingDetailItem.title}</h3>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-800 text-emerald-200 border border-emerald-700 shrink-0">
+                      {viewingDetailItem.category}
+                    </span>
+                  </div>
+                  <p className="text-xs text-emerald-300 mt-0.5 flex items-center gap-1">
+                    <Clock size={12} /> Disimpan: {new Date(viewingDetailItem.savedAt).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' })}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewingDetailItem(null)}
+                className="text-emerald-300 hover:text-white p-1.5 rounded-lg hover:bg-emerald-800/60 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto text-xs text-slate-700 space-y-5 leading-relaxed">
+              {/* Summary Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                  <span className="text-[10px] text-slate-500 font-medium block">Kuantitas / Oplah</span>
+                  <span className="text-sm font-bold font-mono text-slate-800">
+                    {viewingDetailItem.oplah.toLocaleString('id-ID')} unit
+                  </span>
+                </div>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                  <span className="text-[10px] text-slate-500 font-medium block">HPP / Unit (Modal)</span>
+                  <span className="text-sm font-bold font-mono text-slate-800">
+                    Rp {viewingDetailItem.hppUnit.toLocaleString('id-ID')}
+                  </span>
+                </div>
+                <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                  <span className="text-[10px] text-emerald-700 font-bold block">Harga Jual / Unit</span>
+                  <span className="text-sm font-black font-mono text-emerald-900">
+                    Rp {viewingDetailItem.hargaJualUnit.toLocaleString('id-ID')}
+                  </span>
+                </div>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                  <span className="text-[10px] text-slate-500 font-medium block">Total Omset Penawaran</span>
+                  <span className="text-sm font-bold font-mono text-slate-900">
+                    Rp {viewingDetailItem.totalOmset.toLocaleString('id-ID')}
+                  </span>
+                </div>
+              </div>
+
+              {/* Spesifikasi Teknis */}
+              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <Info size={14} className="text-emerald-700" />
+                  Spesifikasi & Konfigurasi Saat Disimpan
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
+                  {viewingDetailItem.detailSpecs.map((spec, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                      <span>{spec}</span>
+                    </div>
+                  ))}
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                    <span>Margin Profit: <strong>{viewingDetailItem.marginPct}%</strong> · Batas Nego: <strong>{viewingDetailItem.negoDiskonPct}%</strong></span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Rincian Komponen Biaya HPP */}
+              {(() => {
+                const raw: any = viewingDetailItem.rawData;
+                const breakdownList: any[] =
+                  raw?.breakdown ||
+                  raw?.data?.breakdown ||
+                  raw?.summary?.breakdown ||
+                  [];
+
+                if (!breakdownList || breakdownList.length === 0) {
+                  return (
+                    <div className="p-4 text-center bg-slate-50 rounded-xl border border-slate-200 text-slate-500">
+                      Rincian breakdown biaya langsung terlampir pada spesifikasi di atas.
+                    </div>
+                  );
+                }
+
+                return (
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <FileText size={14} className="text-emerald-700" />
+                      Rincian Biaya HPP Pokok (Cost Breakdown)
+                    </h4>
+                    <div className="border border-slate-200 rounded-xl overflow-hidden">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="bg-slate-100/80 border-b border-slate-200 text-slate-700 font-bold">
+                            <th className="py-2.5 px-3 w-10 text-center">No</th>
+                            <th className="py-2.5 px-3">Komponen Biaya</th>
+                            <th className="py-2.5 px-3">Keterangan Spesifikasi</th>
+                            <th className="py-2.5 px-3 text-right">Biaya (Rp)</th>
+                            <th className="py-2.5 px-3 text-right w-16">Porsi</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                          {breakdownList.map((b: any, idx: number) => {
+                            const no = b.no || idx + 1;
+                            const komponen = b.komponen || b.name || b.item || 'Komponen';
+                            const ket = b.keterangan || b.desc || '-';
+                            const biaya = typeof b.biaya === 'number' ? b.biaya : (typeof b.cost === 'number' ? b.cost : 0);
+                            const porsi = typeof b.porsiPct === 'number' ? b.porsiPct : null;
+
+                            return (
+                              <tr key={idx} className="hover:bg-slate-50">
+                                <td className="py-2 px-3 text-center text-slate-500 font-mono">{no}</td>
+                                <td className="py-2 px-3 font-bold text-slate-900">{komponen}</td>
+                                <td className="py-2 px-3 text-slate-600 text-[11px]">{ket}</td>
+                                <td className="py-2 px-3 text-right font-mono font-semibold text-slate-900">
+                                  Rp {Math.round(biaya).toLocaleString('id-ID')}
+                                </td>
+                                <td className="py-2 px-3 text-right font-mono text-slate-500 text-[11px]">
+                                  {porsi !== null ? `${porsi.toFixed(1)}%` : '-'}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Modal Footer Actions */}
+            <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={(e) => handleCopyQuote(viewingDetailItem, e)}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition cursor-pointer shadow-2xs"
+              >
+                {copiedId === viewingDetailItem.id ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+                <span>{copiedId === viewingDetailItem.id ? 'Teks WhatsApp Tersalin!' : 'Salin Format WA'}</span>
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const target = viewingDetailItem;
+                    setViewingDetailItem(null);
+                    onLoadSimulation(target);
+                  }}
+                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white transition cursor-pointer shadow-2xs"
+                >
+                  <Edit2 size={13} />
+                  <span>Buka di Simulator</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewingDetailItem(null)}
+                  className="px-4 py-1.5 rounded-lg text-xs font-bold bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 transition cursor-pointer"
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
