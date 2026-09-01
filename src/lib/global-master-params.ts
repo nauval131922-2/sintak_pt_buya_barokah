@@ -23,6 +23,7 @@ import { BukuSoftCover145x2025MasterParams, DEFAULT_BUKU_SOFT_COVER_145X2025_PAR
 import { BukuHardCover105x148MasterParams, DEFAULT_BUKU_HARD_COVER_105X148_PARAMS } from './buku-hard-cover-105x148-calculator';
 import { PosterMasterParams, DEFAULT_POSTER_PARAMS } from './poster-calculator';
 import { MajalahMasterParams, DEFAULT_MAJALAH_PARAMS } from './majalah-calculator';
+import { StikerMasterParams, DEFAULT_STIKER_PARAMS } from './stiker-calculator';
 
 export interface GlobalMasterParams {
   // 1. Mesin Cetak Offset Oliver (58 / 52)
@@ -115,7 +116,8 @@ export function applyGlobalParamsToAll(
   currBukuSoftCover145x2025: BukuSoftCover145x2025MasterParams = DEFAULT_BUKU_SOFT_COVER_145X2025_PARAMS,
   currBukuHardCover105x148: BukuHardCover105x148MasterParams = DEFAULT_BUKU_HARD_COVER_105X148_PARAMS,
   currPoster: PosterMasterParams = DEFAULT_POSTER_PARAMS,
-  currMajalah: MajalahMasterParams = DEFAULT_MAJALAH_PARAMS
+  currMajalah: MajalahMasterParams = DEFAULT_MAJALAH_PARAMS,
+  currStiker: StikerMasterParams = DEFAULT_STIKER_PARAMS
 ) {
   const nextSpiral: SimulatorMasterParams = {
     ...currSpiral,
@@ -480,6 +482,13 @@ export function applyGlobalParamsToAll(
     minLaminasi: g.minLaminasi,
   };
 
+  const nextStiker: StikerMasterParams = {
+    ...currStiker,
+    tarifStikerVinylA3: g.tarifPrintA3,
+    tarifRajangPerLbr: 50,
+    tarifPackingKardus: g.tarifKardusBox,
+  };
+
   return {
     nextSpiral,
     nextKlem,
@@ -505,5 +514,6 @@ export function applyGlobalParamsToAll(
     nextBukuHardCover105x148,
     nextPoster,
     nextMajalah,
+    nextStiker,
   };
 }

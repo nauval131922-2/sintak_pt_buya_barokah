@@ -48,10 +48,11 @@ import { SavedBukuSoftCover145x2025SimulationItem } from './BukuSoftCover145x202
 import { SavedBukuHardCover105x148SimulationItem } from './BukuHardCover105x148Simulator';
 import { SavedPosterSimulationItem } from './PosterSimulator';
 import { SavedMajalahSimulationItem } from './MajalahSimulator';
+import { SavedStikerSimulationItem } from './StikerSimulator';
 
 export type UnifiedCalculationItem = {
   id: string;
-  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25';
+  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker';
   savedAt: string;
   title: string;
   oplah: number;
@@ -87,10 +88,11 @@ export type UnifiedCalculationItem = {
     | SavedBukuHardCover105x148SimulationItem
     | SavedPosterSimulationItem
     | SavedMajalahSimulationItem
+    | SavedStikerSimulationItem
 };
 
 interface SavedCalculationsListProps {
-  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25';
+  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker';
   onLoadSimulation: (item: UnifiedCalculationItem) => void;
   activeSimulationId?: string | null;
 }
@@ -101,9 +103,9 @@ export default function SavedCalculationsList({
   activeSimulationId,
 }: SavedCalculationsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25'>('ALL');
+  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker'>('ALL');
   
-  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25') => {
+  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker') => {
     setFilterCategory(val);
     try {
       localStorage.setItem('sintak_pricelist_saved_list_filter', val);
@@ -140,6 +142,7 @@ export default function SavedCalculationsList({
   const [bukuHardCover105x148List, setBukuHardCover105x148List] = useState<SavedBukuHardCover105x148SimulationItem[]>([]);
   const [posterList, setPosterList] = useState<SavedPosterSimulationItem[]>([]);
   const [majalahList, setMajalahList] = useState<SavedMajalahSimulationItem[]>([]);
+  const [stikerList, setStikerList] = useState<SavedStikerSimulationItem[]>([]);
 
   // Load from localStorage
   const refreshData = () => {
@@ -169,7 +172,8 @@ export default function SavedCalculationsList({
         savedFilter === 'Buku Soft Cover 14,5×20,25' ||
         savedFilter === 'Buku Hard Cover 10,5×14,8' ||
         savedFilter === 'Poster' ||
-        savedFilter === 'Majalah 14,5×20,25'
+        savedFilter === 'Majalah 14,5×20,25' ||
+        savedFilter === 'Stiker'
       ) {
         setFilterCategory(savedFilter as any);
       }
@@ -265,6 +269,10 @@ export default function SavedCalculationsList({
       const rawMajalah = localStorage.getItem('sintak_saved_majalah_simulations');
       if (rawMajalah) setMajalahList(JSON.parse(rawMajalah));
       else setMajalahList([]);
+
+      const rawStiker = localStorage.getItem('sintak_saved_stiker_simulations');
+      if (rawStiker) setStikerList(JSON.parse(rawStiker));
+      else setStikerList([]);
     } catch (e) {
       console.error('Failed to load saved calculations:', e);
     }
@@ -831,9 +839,33 @@ export default function SavedCalculationsList({
       });
     });
 
+    // 24. Stiker
+    stikerList.forEach((s) => {
+      const inp = s.data.input;
+      items.push({
+        id: s.id,
+        category: 'Stiker',
+        savedAt: s.savedAt,
+        title: s.title,
+        oplah: inp.oplah,
+        specSummary: `Stiker ${inp.ukuran} • ${inp.oplah.toLocaleString('id-ID')} pcs (${inp.finishing})`,
+        detailSpecs: [
+          `Bahan: Sticker Vinyl Glossy 200 gsm`,
+          `Finishing: ${inp.finishing}`,
+          `Margin: ${inp.marginPct}% · Nego: ${inp.negoDiskonPct}%`,
+        ],
+        hppUnit: s.data.hppPerPcs,
+        hargaJualUnit: s.data.hargaJualPerPcs,
+        totalOmset: s.data.totalHargaJual,
+        marginPct: inp.marginPct,
+        negoDiskonPct: inp.negoDiskonPct,
+        rawData: s,
+      });
+    });
+
     // Urutkan dari yang terbaru disimpan
     return items.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
-  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList, bukuTulisList, stopmapList, syahadahList, raportKalebList, kopSuratList, amplopList, sertifikatList, undanganList, bukuTabunganNsList, bukuTabunganSecurityList, kartuKoperasiPromiseList, lebelKartuObatList, bukuSoftCoverList, bukuSoftCover145x2025List, bukuHardCover105x148List, posterList, majalahList]);
+  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList, bukuTulisList, stopmapList, syahadahList, raportKalebList, kopSuratList, amplopList, sertifikatList, undanganList, bukuTabunganNsList, bukuTabunganSecurityList, kartuKoperasiPromiseList, lebelKartuObatList, bukuSoftCoverList, bukuSoftCover145x2025List, bukuHardCover105x148List, posterList, majalahList, stikerList]);
 
   // Filtered List
   const filteredList = useMemo(() => {
@@ -952,6 +984,10 @@ export default function SavedCalculationsList({
         const updated = majalahList.filter((m) => m.id !== item.id);
         setMajalahList(updated);
         localStorage.setItem('sintak_saved_majalah_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Stiker') {
+        const updated = stikerList.filter((s) => s.id !== item.id);
+        setStikerList(updated);
+        localStorage.setItem('sintak_saved_stiker_simulations', JSON.stringify(updated));
       }
       toast.success('Kalkulasi berhasil dihapus.');
     } catch (err) {
@@ -1058,6 +1094,10 @@ export default function SavedCalculationsList({
         const updated = majalahList.map((m) => (m.id === item.id ? { ...m, title: newTitle } : m));
         setMajalahList(updated);
         localStorage.setItem('sintak_saved_majalah_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Stiker') {
+        const updated = stikerList.map((s) => (s.id === item.id ? { ...s, title: newTitle } : s));
+        setStikerList(updated);
+        localStorage.setItem('sintak_saved_stiker_simulations', JSON.stringify(updated));
       }
       setEditingId(null);
       toast.success('Nama kalkulasi berhasil diperbarui.');
@@ -1167,9 +1207,12 @@ export default function SavedCalculationsList({
       const inp = m.data.input;
       const lamTxt = inp.finishing !== 'Tanpa Laminasi' ? ` + ${inp.finishing}` : '';
       text = `*PENAWARAN MAJALAH 14,5×20,25 CM*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Majalah 14,5 × 20,25 cm (32 Halaman)\n• *Cover*: Art Carton 230 gsm 1 Muka Full Colour${lamTxt}\n• *Isi*: Art Paper 120 gsm Full Colour Bolak-Balik (32 Hal)\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Alur Mesin*: ${m.data.prosesCetak}\n• *Finishing*: ${inp.jilid} + Sisir + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${m.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${m.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${m.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
+    } else if (item.category === 'Stiker') {
+      const s = item.rawData as SavedStikerSimulationItem;
+      const inp = s.data.input;
+      text = `*PENAWARAN CETAK STIKER*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Stiker ${inp.ukuran}\n• *Bahan*: Sticker Vinyl Glossy 200 gsm Full Colour\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Finishing*: ${inp.finishing} + Packing Rapi\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${s.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${s.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${s.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     }
     navigator.clipboard.writeText(text);
-    setCopiedId(item.id);
     toast.success('Format penawaran WhatsApp berhasil disalin!');
     setTimeout(() => setCopiedId(null), 2500);
   };
@@ -1251,6 +1294,7 @@ export default function SavedCalculationsList({
                 { value: 'Buku Hard Cover 10,5×14,8', label: '📕 Buku Hard Cover 10,5×14,8', count: bukuHardCover105x148List.length },
                 { value: 'Poster', label: '🖼️ Poster', count: posterList.length },
                 { value: 'Majalah 14,5×20,25', label: '📰 Majalah 14,5×20,25', count: majalahList.length },
+                { value: 'Stiker', label: '🏷️ Stiker', count: stikerList.length },
               ]}
               value={filterCategory}
               onChange={(val) => handleFilterChange(val as any)}
@@ -1357,6 +1401,8 @@ export default function SavedCalculationsList({
                           ? 'bg-orange-100 text-orange-900 border border-orange-200'
                           : item.category === 'Majalah 14,5×20,25'
                           ? 'bg-purple-100 text-purple-900 border border-purple-200'
+                          : item.category === 'Stiker'
+                          ? 'bg-lime-100 text-lime-900 border border-lime-200'
                           : 'bg-slate-100 text-slate-700 border border-slate-200'
                       }`}
                     >
