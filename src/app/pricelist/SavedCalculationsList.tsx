@@ -27,6 +27,7 @@ import {
   Info,
   Calculator,
   Sparkles,
+  Database,
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
 import SquareDropdown from '@/components/SquareDropdown';
