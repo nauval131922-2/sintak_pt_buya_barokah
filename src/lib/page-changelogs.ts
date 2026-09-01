@@ -1023,13 +1023,13 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Laporan Pekerjaan ───
-  'laporan-pekerjaan-2026-08-31': entry({
+  'laporan-pekerjaan-2026-09-01': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan',
     permissionKeys: ['produksi_laporan_pekerjaan'],
-    sortDate: '2026-08-31',
-    date: '31 Agu 2026',
-    version: '2026-08-31-1',
+    sortDate: '2026-09-01',
+    date: '01 Sep 2026',
+    version: '2026-09-01-1',
     items: [
       'feat: Input order manual (non-Digit)',
       'feat: Input jam mulai & selesai (HH:mm) pada aktivitas pekerjaan',
