@@ -221,7 +221,7 @@ export default function ManasikSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_manasik_simulations', JSON.stringify(updated));
-    saveCalculationToDb({ ...newItem, category: 'Buku Manasik' });
+      saveCalculationToDb({ ...newItem, category: 'Buku Manasik' });
       toast.success(`Simulasi "${titleToUse}" berhasil disimpan!`);
       setSimulationTitle('');
     } catch (e) {
@@ -258,7 +258,8 @@ export default function ManasikSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_manasik_simulations', JSON.stringify(updated));
-    saveCalculationToDb({ ...newItem, category: 'Buku Manasik' });
+      const targetItem = updated.find((s) => s.id === activeSimulationId);
+      if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Buku Manasik' });
       setActiveSimulationTitle(titleToUse);
       toast.success(`Perubahan riwayat "${titleToUse}" berhasil disimpan!`);
     } catch (e) {
@@ -294,7 +295,6 @@ export default function ManasikSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_manasik_simulations', JSON.stringify(updated));
-    saveCalculationToDb({ ...newItem, category: 'Buku Manasik' });
       toast.success('Riwayat simulasi berhasil dihapus.');
       if (activeSimulationId === id) {
         setActiveSimulationId(null);

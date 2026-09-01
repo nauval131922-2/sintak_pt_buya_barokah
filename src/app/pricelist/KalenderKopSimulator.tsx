@@ -127,7 +127,8 @@ export default function KalenderKopSimulator({
             : item
         );
         localStorage.setItem('sintak_saved_kalender_kop_simulations', JSON.stringify(updated));
-    saveCalculationToDb({ ...newItem, category: 'Kalender Kop' });
+        const targetItem = updated.find((item) => item.id === activeSimulationId);
+        if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Kalender Kop' });
         toast.success('Simulasi berhasil diperbarui!');
       } else {
         const newItem: SavedKalenderKopSimulationItem = {

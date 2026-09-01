@@ -151,7 +151,8 @@ export default function PosterSimulator({
             : item
         );
         localStorage.setItem('sintak_saved_poster_simulations', JSON.stringify(updated));
-    saveCalculationToDb({ ...newItem, category: 'Poster' });
+        const targetItem = updated.find((item) => item.id === activeSimulationId);
+        if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Poster' });
         toast.success('Simulasi berhasil diperbarui!');
       } else {
         const newItem: SavedPosterSimulationItem = {

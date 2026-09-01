@@ -141,7 +141,8 @@ export default function BukuSoftCover105x148Simulator({
             : item
         );
         localStorage.setItem('sintak_saved_buku_soft_cover_105x148_simulations', JSON.stringify(updated));
-    saveCalculationToDb({ ...newItem, category: 'Buku Soft Cover 10,5×14,8' });
+        const targetItem = updated.find((item) => item.id === activeSimulationId);
+        if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Buku Soft Cover 10,5×14,8' });
         toast.success('Simulasi berhasil diperbarui!');
       } else {
         const newItem: SavedBukuSoftCover105x148SimulationItem = {

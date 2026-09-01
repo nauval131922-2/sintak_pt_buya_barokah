@@ -142,7 +142,8 @@ export default function MajalahSimulator({
             : item
         );
         localStorage.setItem('sintak_saved_majalah_simulations', JSON.stringify(updated));
-    saveCalculationToDb({ ...newItem, category: 'Majalah 14,5×20,25' });
+        const targetItem = updated.find((item) => item.id === activeSimulationId);
+        if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Majalah 14,5×20,25' });
         toast.success('Simulasi berhasil diperbarui!');
       } else {
         const newItem: SavedMajalahSimulationItem = {

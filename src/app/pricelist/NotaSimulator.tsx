@@ -180,7 +180,7 @@ export default function NotaSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_nota_simulations', JSON.stringify(updated));
-    saveCalculationToDb({ ...newItem, category: 'Nota 1 Warna' });
+      saveCalculationToDb({ ...newItem, category: 'Nota 1 Warna' });
     } catch (e) {
       console.error('Failed to save simulation to storage:', e);
     }
@@ -216,7 +216,8 @@ export default function NotaSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_nota_simulations', JSON.stringify(updated));
-    saveCalculationToDb({ ...newItem, category: 'Nota 1 Warna' });
+      const targetItem = updated.find((s) => s.id === activeSimulationId);
+      if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Nota 1 Warna' });
     } catch (e) {
       console.error('Failed to update simulation in storage:', e);
     }

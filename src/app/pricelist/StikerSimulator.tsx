@@ -137,7 +137,8 @@ export default function StikerSimulator({
             : item
         );
         localStorage.setItem('sintak_saved_stiker_simulations', JSON.stringify(updated));
-    saveCalculationToDb({ ...newItem, category: 'Stiker' });
+        const targetItem = updated.find((item) => item.id === activeSimulationId);
+        if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Stiker' });
         toast.success('Simulasi berhasil diperbarui!');
       } else {
         const newItem: SavedStikerSimulationItem = {
