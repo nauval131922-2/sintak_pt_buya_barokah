@@ -58,7 +58,7 @@ export default async function RootLayout({
 
   return (
     <html lang="id" className="overflow-hidden">
-      <body className={`${outfit.className} overflow-hidden h-[100dvh] w-screen`}>
+      <body className={`${outfit.className} overflow-hidden h-[100dvh] w-screen`} suppressHydrationWarning>
         <MainContentWrapper user={user} permissions={permissions}>
           {children}
         </MainContentWrapper>
