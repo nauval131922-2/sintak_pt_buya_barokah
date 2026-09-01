@@ -437,7 +437,6 @@ export default function PricelistClient() {
     handleProductCategoryChange(item.category as typeof selectedProductCategory);
     setActiveSimulationId(item.id);
     setActiveSimulationTitle(item.title);
-
     // Pulihkan snapshot master parameter ke state produk yang bersangkutan
     const raw = item.rawData as Record<string, unknown> | undefined;
     const snapshot = raw?.paramsSnapshot || raw?.customParams;
@@ -476,8 +475,48 @@ export default function PricelistClient() {
       else if (item.category === 'Kalender Kop') setParamsKalenderKop(s);
       else if (item.category === 'Packaging') setParamsPackaging(s);
       else if (item.category === 'Paperbag') setParamsPaperbag(s);
-    }
 
+      // Ekstrak dan sinkronkan juga ke Master Parameter Global selama mode edit aktif
+      setParamsGlobal((prevGlobal) => {
+        const nextGlobal = { ...prevGlobal };
+        const snapObj = s as Record<string, unknown>;
+
+        // 1. Nilai langsung dengan key yang sama
+        (Object.keys(DEFAULT_GLOBAL_PARAMS) as (keyof GlobalMasterParams)[]).forEach((k) => {
+          if (typeof snapObj[k] === 'number') {
+            nextGlobal[k] = snapObj[k] as number;
+          }
+        });
+
+        // 2. Pemetaan alias tarif spesifik produk ke field Master Parameter Global
+        if (typeof snapObj.tarifPlatCtpOliver === 'number') nextGlobal.oliverPlatUnit = snapObj.tarifPlatCtpOliver as number;
+        if (typeof snapObj.minOngkosOliver === 'number') nextGlobal.oliverMinOngkos = snapObj.minOngkosOliver as number;
+        if (typeof snapObj.drekOverOliver === 'number') nextGlobal.oliverDrekOver = snapObj.drekOverOliver as number;
+        if (typeof snapObj.tarifKertasHvs70 === 'number') nextGlobal.tarifHvs70 = snapObj.tarifKertasHvs70 as number;
+        if (typeof snapObj.hargaKertasHvs70 === 'number') nextGlobal.tarifHvs70 = snapObj.hargaKertasHvs70 as number;
+        if (typeof snapObj.tarifKertasAp120 === 'number') nextGlobal.tarifAp120 = snapObj.tarifKertasAp120 as number;
+        if (typeof snapObj.hargaKertasAp120 === 'number') nextGlobal.tarifAp120 = snapObj.hargaKertasAp120 as number;
+        if (typeof snapObj.tarifKertasAp150 === 'number') nextGlobal.tarifAp150 = snapObj.tarifKertasAp150 as number;
+        if (typeof snapObj.hargaKertasAp150 === 'number') nextGlobal.tarifAp150 = snapObj.hargaKertasAp150 as number;
+        if (typeof snapObj.tarifKertasAc230 === 'number') nextGlobal.tarifAc230Kg = snapObj.tarifKertasAc230 as number;
+        if (typeof snapObj.hargaKertasAc230 === 'number') nextGlobal.tarifAc230Kg = snapObj.hargaKertasAc230 as number;
+        if (typeof snapObj.tarifKertasAc260 === 'number') nextGlobal.tarifAc260Kg = snapObj.tarifKertasAc260 as number;
+        if (typeof snapObj.hargaKertasAc260 === 'number') nextGlobal.tarifAc260Kg = snapObj.hargaKertasAc260 as number;
+        if (typeof snapObj.tarifPrintCoverA3 === 'number') nextGlobal.tarifPrintA3 = snapObj.tarifPrintCoverA3 as number;
+        if (typeof snapObj.tarifPrintCover === 'number') nextGlobal.tarifPrintA3 = snapObj.tarifPrintCover as number;
+        if (typeof snapObj.tarifPrintInter === 'number') nextGlobal.tarifPrintInter1Muka = snapObj.tarifPrintInter as number;
+        if (typeof snapObj.tarifLaminasiGlossy === 'number') nextGlobal.tarifLaminasiGlossyCm2 = snapObj.tarifLaminasiGlossy as number;
+        if (typeof snapObj.tarifLaminasiDoff === 'number') nextGlobal.tarifLaminasiDoffCm2 = snapObj.tarifLaminasiDoff as number;
+        if (typeof snapObj.tarifUvVarnish === 'number') nextGlobal.tarifUvVarnishCm2 = snapObj.tarifUvVarnish as number;
+        if (typeof snapObj.minLaminasiPerOrder === 'number') nextGlobal.minLaminasi = snapObj.minLaminasiPerOrder as number;
+        if (typeof snapObj.tarifKardus === 'number') nextGlobal.tarifKardusBox = snapObj.tarifKardus as number;
+        if (typeof snapObj.tarifLakban === 'number') nextGlobal.tarifLakbanRoll = snapObj.tarifLakban as number;
+        if (typeof snapObj.tarifPlastikOpp === 'number') nextGlobal.tarifPlastikOppPcs = snapObj.tarifPlastikOpp as number;
+        if (typeof snapObj.tarifPlastik === 'number') nextGlobal.tarifPlastikOppPcs = snapObj.tarifPlastik as number;
+
+        return nextGlobal;
+      });
+    }
     setActiveTab('simulator');
   };
   // Otomatis pindah ke tab Daftar Kalkulasi setelah kalkulasi berhasil disimpan
