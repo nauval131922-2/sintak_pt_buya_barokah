@@ -89,7 +89,7 @@ export type UnifiedCalculationItem = {
     | SavedBukuTabunganSecuritySimulationItem
     | SavedKartuKoperasiPromiseSimulationItem
     | SavedLebelKartuObatSimulationItem
-    | SavedBukuSoftCoverSimulationItem;
+    | SavedBukuSoftCoverSimulationItem
     | SavedBukuSoftCover145x2025SimulationItem
     | SavedBukuHardCover105x148SimulationItem
     | SavedPosterSimulationItem
