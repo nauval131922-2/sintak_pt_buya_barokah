@@ -810,9 +810,8 @@ export default function PricelistMasterParameter({
             </div>
           </div>
         </div>
-      </div>
 
-        {/* Section 3: Ongkos Finishing & Jasa */}
+        {/* Section 4: Ongkos Finishing & Jasa */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Layers className="w-4 h-4 text-amber-600" />
@@ -1078,10 +1077,10 @@ export default function PricelistMasterParameter({
                   />
                 </div>
               </div>
+            </div>
           </div>
         </div>
       </div>
-      {/* Modal Manual Pengguna & Pemetaan Excel */}
       {showManualModal && (
         <div
           onClick={() => setShowManualModal(false)}
