@@ -8,11 +8,6 @@ export const dynamic = "force-dynamic";
 // GET: Ambil daftar seluruh kalkulasi tersimpan dari database
 export async function GET(request: NextRequest) {
   try {
-    const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
 
@@ -30,11 +25,12 @@ export async function GET(request: NextRequest) {
     const rows = result.rows || [];
 
     const parsedItems = rows.map((r: any) => {
-      let parsedData = null;
+      let rawItem: any = {};
+      let parsedSnapshot: any = null;
       try {
-        parsedData = typeof r.data === "string" ? JSON.parse(r.data) : r.data;
+        rawItem = typeof r.data === "string" ? JSON.parse(r.data) : (r.data || {});
       } catch {
-        parsedData = r.data;
+        rawItem = {};
       }
       try {
         parsedSnapshot =
@@ -49,9 +45,11 @@ export async function GET(request: NextRequest) {
         id: r.id,
         category: r.category,
         title: r.title,
-        oplah: r.oplah,
-        data: parsedData,
-        paramsSnapshot: parsedSnapshot,
+        oplah: r.oplah || rawItem.oplah || rawItem.data?.input?.oplah || 0,
+        savedAt: r.created_at || r.updated_at,
+        paramsSnapshot: parsedSnapshot || rawItem.paramsSnapshot || rawItem.customParams,
+        ...rawItem,
+        data: rawItem.data || rawItem,
         userId: r.user_id,
         createdBy: r.created_by,
         createdAt: r.created_at,
@@ -77,13 +75,10 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const userId = session?.userId || null;
+    const userName = session?.name || session?.username || "Staff";
 
     const body = await request.json();
-    const userId = (session.user as any)?.id || null;
-    const userName = (session.user as any)?.name || (session.user as any)?.username || "User";
 
     // Handle batch sync
     if (Array.isArray(body.items)) {
@@ -91,11 +86,11 @@ export async function POST(request: NextRequest) {
       for (const item of items) {
         if (!item.id || !item.category || !item.title) continue;
 
-        const dataStr = typeof item.data === "string" ? item.data : JSON.stringify(item.data || {});
-        const snapshotStr = item.paramsSnapshot
-          ? (typeof item.paramsSnapshot === "string" ? item.paramsSnapshot : JSON.stringify(item.paramsSnapshot))
+        const dataStr = typeof item === "string" ? item : JSON.stringify(item);
+        const snapshotStr = item.paramsSnapshot || item.customParams
+          ? (typeof item.paramsSnapshot === "string" ? item.paramsSnapshot : JSON.stringify(item.paramsSnapshot || item.customParams))
           : null;
-        const oplah = item.oplah || item.data?.input?.oplah || 0;
+        const oplah = item.oplah || item.data?.input?.oplah || item.summary?.oplah || 0;
         const savedAt = item.savedAt || new Date().toISOString();
 
         await db.execute({
@@ -128,7 +123,6 @@ export async function POST(request: NextRequest) {
         message: `Synced ${items.length} calculations to database`,
       });
     }
-
     // Handle single item save
     const { id, category, title, oplah, data, paramsSnapshot, savedAt } = body;
     if (!id || !category || !title) {
@@ -138,11 +132,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const dataStr = typeof data === "string" ? data : JSON.stringify(data || {});
-    const snapshotStr = paramsSnapshot
-      ? (typeof paramsSnapshot === "string" ? paramsSnapshot : JSON.stringify(paramsSnapshot))
+    const fullPayload = { ...body, ...(typeof data === "object" ? data : {}) };
+    const dataStr = JSON.stringify(fullPayload);
+    const snapshotStr = paramsSnapshot || body.customParams
+      ? (typeof (paramsSnapshot || body.customParams) === "string" ? (paramsSnapshot || body.customParams) : JSON.stringify(paramsSnapshot || body.customParams))
       : null;
     const timestamp = savedAt || new Date().toISOString();
+    const oplahVal = oplah || body.data?.input?.oplah || body.summary?.oplah || 0;
 
     await db.execute({
       sql: `INSERT INTO pricelist_saved_calculations 
@@ -158,7 +154,7 @@ export async function POST(request: NextRequest) {
         id,
         category,
         title,
-        oplah || 0,
+        oplahVal,
         dataStr,
         snapshotStr,
         userId,
