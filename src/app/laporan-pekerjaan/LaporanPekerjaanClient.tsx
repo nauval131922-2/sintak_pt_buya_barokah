@@ -1017,8 +1017,8 @@ export default function LaporanPekerjaanClient({
           task: savedTaskName,
           project: proj,
           division: "",
-          bagian: data.bagian || "SETTING",
-          pic: data.pic,
+          bagian: data.bagian || (roleConfig?.allowed_bagian && roleConfig.allowed_bagian.length === 1 ? roleConfig.allowed_bagian[0] : "SETTING"),
+          pic: data.pic || (roleConfig?.allowed_pic && roleConfig.allowed_pic.length === 1 ? roleConfig.allowed_pic[0] : ""),
           priority: data.priority || "Low",
           startDate: startDateStr,
           endDate: endDateStr,
@@ -3904,9 +3904,22 @@ function InlineAddRow({
   isColVisible: (key: string) => boolean;
   roleConfig?: RoleLaporanPekerjaanConfig;
 }) {
+  const defaultPic = useMemo(() => {
+    if (!roleConfig?.allowed_pic || roleConfig.allowed_pic.length === 0) return "";
+    const cleanPics = roleConfig.allowed_pic.filter((p) => !p.startsWith("@") && p.toLowerCase() !== "tanpa pic");
+    if (cleanPics.length === 1) return cleanPics[0];
+    return "";
+  }, [roleConfig]);
+
+  const defaultBagian = useMemo(() => {
+    if (!roleConfig?.allowed_bagian || roleConfig.allowed_bagian.length === 0) return "";
+    if (roleConfig.allowed_bagian.length === 1) return roleConfig.allowed_bagian[0];
+    return "";
+  }, [roleConfig]);
+
   const [form, setForm] = useState({
-    bagian: roleConfig?.allowed_bagian && roleConfig.allowed_bagian.length === 1 ? roleConfig.allowed_bagian[0] : "",
-    pic: roleConfig?.allowed_pic && roleConfig.allowed_pic.length === 1 ? roleConfig.allowed_pic[0] : "",
+    bagian: defaultBagian,
+    pic: defaultPic,
     task: "",
     priority: "",
     startDate: null as Date | null,
