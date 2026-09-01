@@ -28,6 +28,7 @@ import { BukuSoftCover105x148MasterParams, DEFAULT_BUKU_SOFT_COVER_105X148_PARAM
 import { BukuHardCover145x2025MasterParams, DEFAULT_BUKU_HARD_COVER_145X2025_PARAMS } from './buku-hard-cover-145x2025-calculator';
 import { BukuHardCover21x297MasterParams, DEFAULT_BUKU_HARD_COVER_21X297_PARAMS } from './buku-hard-cover-21x297-calculator';
 import { KalenderKopMasterParams, DEFAULT_KALENDER_KOP_PARAMS } from './kalender-kop-calculator';
+import { PackagingMasterParams, DEFAULT_PACKAGING_PARAMS } from './packaging-calculator';
 
 export interface GlobalMasterParams {
   // 1. Mesin Cetak Offset Oliver (58 / 52)
@@ -125,7 +126,8 @@ export function applyGlobalParamsToAll(
   currBukuSoftCover105x148: BukuSoftCover105x148MasterParams = DEFAULT_BUKU_SOFT_COVER_105X148_PARAMS,
   currBukuHardCover145x2025: BukuHardCover145x2025MasterParams = DEFAULT_BUKU_HARD_COVER_145X2025_PARAMS,
   currBukuHardCover21x297: BukuHardCover21x297MasterParams = DEFAULT_BUKU_HARD_COVER_21X297_PARAMS,
-  currKalenderKop: KalenderKopMasterParams = DEFAULT_KALENDER_KOP_PARAMS
+  currKalenderKop: KalenderKopMasterParams = DEFAULT_KALENDER_KOP_PARAMS,
+  currPackaging: PackagingMasterParams = DEFAULT_PACKAGING_PARAMS
 ) {
   const nextSpiral: SimulatorMasterParams = {
     ...currSpiral,
@@ -562,6 +564,18 @@ export function applyGlobalParamsToAll(
     tarifPackingKardus: g.tarifKardusBox,
   };
 
+  const nextPackaging: PackagingMasterParams = {
+    ...currPackaging,
+    tarifPlatOliverPerWarna: g.oliverPlatUnit,
+    oliverMinOngkosPerWarna: g.oliverMinOngkos,
+    oliverDrekOverPerWarna: g.oliverDrekOver,
+    biayaTransport: g.oliverTransport,
+    tarifLakbanPerRoll: g.tarifLakbanRoll,
+    tarifLaminasiGlossyPerCm2: g.tarifLaminasiGlossyCm2,
+    tarifLaminasiDoffPerCm2: g.tarifLaminasiDoffCm2,
+    minBiayaLaminasi: g.minLaminasi,
+  };
+
   return {
     nextSpiral,
     nextKlem,
@@ -592,5 +606,6 @@ export function applyGlobalParamsToAll(
     nextBukuHardCover145x2025,
     nextBukuHardCover21x297,
     nextKalenderKop,
+    nextPackaging,
   };
 }
