@@ -1573,23 +1573,22 @@ export default function SavedCalculationsList({
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {/* Tombol Reload Data — Style Laporan Pekerjaan */}
-          <button
-            type="button"
-            onClick={() => refreshData()}
-            disabled={isSyncing}
-            className="h-8 px-2.5 sm:px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-white hover:bg-slate-50 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-xs"
-            title="Reload Data Riwayat Kalkulasi"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin text-emerald-600" : ""}`} />
-            <span>Reload</span>
-          </button>
-        </div>
       </div>
 
-      {/* Filter & Search Toolbar */}
+      {/* Filter & Search Toolbar — Style Laporan Pekerjaan */}
       <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center gap-3 text-xs">
+        {/* Tombol Reload Data */}
+        <button
+          type="button"
+          onClick={() => refreshData()}
+          disabled={isSyncing}
+          className="h-8 px-2.5 sm:px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-xs"
+          title="Reload Data Riwayat Kalkulasi"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin text-emerald-600" : ""}`} />
+          <span>Reload</span>
+        </button>
+
         {/* Search Bar */}
         <div className="relative flex-1 w-full">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
