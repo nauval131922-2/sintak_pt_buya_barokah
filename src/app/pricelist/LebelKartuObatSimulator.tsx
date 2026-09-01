@@ -257,18 +257,6 @@ export default function LebelKartuObatSimulator({
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
-              onClick={() => {
-                if (setCustomParams) setCustomParams(DEFAULT_LEBEL_KARTU_OBAT_PARAMS);
-                toast.success('Parameter Lebel Kartu Obat dikembalikan ke tarif Master Standar!');
-              }}
-              className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
-              title="Hitung ulang simulasi ini menggunakan tarif Master acuan hari ini"
-            >
-              <RefreshCw size={12} />
-              <span>Hitung Tarif Master</span>
-            </button>
-            <button
-              type="button"
               onClick={handleUpdateSavedSimulation}
               className="px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
             >

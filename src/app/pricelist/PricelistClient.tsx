@@ -253,8 +253,6 @@ export default function PricelistClient() {
         savedCategory === 'Nota 1 Warna' ||
         savedCategory === 'Brosur 2026' ||
         savedCategory === 'Label KHQ' ||
-          savedCategory === 'Packaging' ||
-          savedCategory === 'Paperbag' ||
         savedCategory === 'Buku Tulis' ||
         savedCategory === 'Stopmap' ||
         savedCategory === 'Syahadah' ||
@@ -267,9 +265,40 @@ export default function PricelistClient() {
         savedCategory === 'Buku Tabungan Security' ||
         savedCategory === 'Kartu Koperasi Promise' ||
         savedCategory === 'Lebel Kartu Obat' ||
-        savedCategory === 'Buku Soft Cover'
+        savedCategory === 'Buku Soft Cover' ||
+        savedCategory === 'Buku Soft Cover 14,5×20,25' ||
+        savedCategory === 'Buku Hard Cover 10,5×14,8' ||
+        savedCategory === 'Poster' ||
+        savedCategory === 'Majalah 14,5×20,25' ||
+        savedCategory === 'Stiker' ||
+        savedCategory === 'Buku Soft Cover 10,5×14,8' ||
+        savedCategory === 'Buku Hard Cover 14,5×20,25' ||
+        savedCategory === 'Buku Hard Cover 21×29,7' ||
+        savedCategory === 'Kalender Kop' ||
+        savedCategory === 'Packaging' ||
+        savedCategory === 'Paperbag'
       ) {
         setSelectedProductCategory(savedCategory as any);
+      }
+
+      const savedManasik = localStorage.getItem('sintak_pricelist_master_params_manasik');
+      if (savedManasik) {
+        setParamsManasik({ ...DEFAULT_MANASIK_PARAMS, ...JSON.parse(savedManasik) });
+      }
+
+      const savedYasin = localStorage.getItem('sintak_pricelist_master_params_yasin');
+      if (savedYasin) {
+        setParamsYasin({ ...DEFAULT_YASIN_PARAMS, ...JSON.parse(savedYasin) });
+      }
+
+      const savedNota = localStorage.getItem('sintak_pricelist_master_params_nota');
+      if (savedNota) {
+        setParamsNota({ ...DEFAULT_NOTA_PARAMS, ...JSON.parse(savedNota) });
+      }
+
+      const savedBrosur = localStorage.getItem('sintak_pricelist_master_params_brosur');
+      if (savedBrosur) {
+        setParamsBrosur({ ...DEFAULT_BROSUR_PARAMS, ...JSON.parse(savedBrosur) });
       }
 
       const savedLabelKhq = localStorage.getItem('sintak_pricelist_master_params_label_khq');
@@ -484,6 +513,10 @@ export default function PricelistClient() {
         localStorage.setItem('sintak_pricelist_master_params_spiral', JSON.stringify(paramsSpiral));
         localStorage.setItem('sintak_pricelist_master_params_klem', JSON.stringify(paramsKlem));
         localStorage.setItem('sintak_pricelist_master_params_global', JSON.stringify(paramsGlobal));
+        localStorage.setItem('sintak_pricelist_master_params_manasik', JSON.stringify(paramsManasik));
+        localStorage.setItem('sintak_pricelist_master_params_yasin', JSON.stringify(paramsYasin));
+        localStorage.setItem('sintak_pricelist_master_params_nota', JSON.stringify(paramsNota));
+        localStorage.setItem('sintak_pricelist_master_params_brosur', JSON.stringify(paramsBrosur));
         localStorage.setItem('sintak_pricelist_master_params_label_khq', JSON.stringify(paramsLabelKhq));
         localStorage.setItem('sintak_pricelist_master_params_buku_tulis', JSON.stringify(paramsBukuTulis));
         localStorage.setItem('sintak_pricelist_master_params_stopmap', JSON.stringify(paramsStopmap));
@@ -514,7 +547,7 @@ export default function PricelistClient() {
       }
     }, 400);
     return () => clearTimeout(timer);
-  }, [paramsSpiral, paramsKlem, paramsGlobal, paramsLabelKhq, paramsBukuTulis, paramsStopmap, paramsSyahadah, paramsRaportKaleb, paramsKopSurat, paramsAmplop, paramsSertifikat, paramsUndangan, paramsBukuTabunganNs, paramsBukuTabunganSecurity, paramsKartuKoperasiPromise, paramsLebelKartuObat, paramsBukuSoftCover, paramsBukuSoftCover145x2025, paramsBukuHardCover105x148, paramsPoster, paramsMajalah, paramsStiker, paramsBukuSoftCover105x148, paramsBukuHardCover145x2025, paramsBukuHardCover21x297, paramsKalenderKop, paramsPackaging, paramsPaperbag]);
+  }, [paramsSpiral, paramsKlem, paramsGlobal, paramsManasik, paramsYasin, paramsNota, paramsBrosur, paramsLabelKhq, paramsBukuTulis, paramsStopmap, paramsSyahadah, paramsRaportKaleb, paramsKopSurat, paramsAmplop, paramsSertifikat, paramsUndangan, paramsBukuTabunganNs, paramsBukuTabunganSecurity, paramsKartuKoperasiPromise, paramsLebelKartuObat, paramsBukuSoftCover, paramsBukuSoftCover145x2025, paramsBukuHardCover105x148, paramsPoster, paramsMajalah, paramsStiker, paramsBukuSoftCover105x148, paramsBukuHardCover145x2025, paramsBukuHardCover21x297, paramsKalenderKop, paramsPackaging, paramsPaperbag]);
 
   // Fungsi sebarkan parameter global ke seluruh produk
   const handleApplyGlobalParams = (targetGlobal?: GlobalMasterParams) => {

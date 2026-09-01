@@ -340,13 +340,6 @@ export default function PricelistSimulator({
   };
 
   const handleLoadSimulation = (item: SavedSimulationItem) => {
-    // 0. Backup parameter aktif & input form sebelum ditimpa oleh riwayat jika belum ada backup
-    if (setBackupParamsSpiral && paramsSpiral && !backupParamsSpiral) {
-      setBackupParamsSpiral({ ...paramsSpiral });
-    }
-    if (setBackupParamsKlem && paramsKlem && !backupParamsKlem) {
-      setBackupParamsKlem({ ...paramsKlem });
-    }
     if (!backupFormInput) {
       setBackupFormInput({
         modelKalender,
@@ -391,17 +384,10 @@ export default function PricelistSimulator({
   };
 
   const handleExitLoadedMode = () => {
-    // 1. Kembalikan Master Parameter ke backup sebelum memuat riwayat
-    if (backupParamsSpiral && setParamsForFinishing) {
-      setParamsForFinishing('Spiral', backupParamsSpiral);
-    }
-    if (backupParamsKlem && setParamsForFinishing) {
-      setParamsForFinishing('Klem', backupParamsKlem);
-    }
     if (setBackupParamsSpiral) setBackupParamsSpiral(null);
     if (setBackupParamsKlem) setBackupParamsKlem(null);
 
-    // 2. Kembalikan input form simulator ke kondisi sebelum memuat riwayat
+    // Kembalikan input form simulator ke kondisi sebelum memuat riwayat
     if (backupFormInput) {
       setModelKalender(backupFormInput.modelKalender);
       setBahan(backupFormInput.bahan);
