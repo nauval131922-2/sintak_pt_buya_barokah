@@ -399,51 +399,7 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
         </div>
       </div>
 
-      {/* Banner Status Mode Edit / Riwayat Dimuat */}
-      {activeSimulationId && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200">
-          <div className="flex items-center gap-2.5">
-            <div className="p-1.5 bg-amber-200 text-amber-900 rounded-lg">
-              <Bookmark className="w-4 h-4 fill-amber-700" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-black uppercase tracking-wider text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded">
-                  Mode Riwayat Aktif
-                </span>
-                <h4 className="text-xs font-bold text-amber-950">
-                  {activeSimulationTitle}
-                </h4>
-              </div>
-              <p className="text-[11px] text-amber-800/90 mt-0.5">
-                Anda sedang melihat atau mengedit data dari riwayat simulasi yang dimuat.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={handleUpdateSavedSimulation}
-              className="px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
-            >
-              <BookmarkCheck size={14} />
-              <span>Simpan Perubahan</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setActiveSimulationId(null);
-                setActiveSimulationTitle(null);
-                setSimulationTitle('');
-              }}
-              className="px-3 py-1.5 bg-white hover:bg-amber-100/50 text-amber-900 border border-amber-300 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center gap-1"
-            >
-              <X size={14} />
-              <span>Keluar</span>
-            </button>
-          </div>
-        </div>
-      )}
+      
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Kolom Kiri: Form Input Spesifikasi */}

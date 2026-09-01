@@ -291,30 +291,7 @@ _Harga belum termasuk PPN. Waktu pengerjaan & pengiriman dapat disesuaikan._`;
         </div>
       </div>
 
-      {activeSimulationId && (
-        <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl flex items-center justify-between gap-3 text-xs text-amber-900 shadow-xs">
-          <div className="flex items-center gap-2">
-            <span className="font-bold">Mode Edit Riwayat:</span>
-            <span>{activeSimulationTitle}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleSaveSimulation}
-              className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-xs transition-all shadow-xs cursor-pointer"
-            >
-              Simpan Perubahan
-            </button>
-            <button
-              type="button"
-              onClick={handleExitSimulation}
-              className="px-3 py-1 bg-white border border-amber-300 hover:bg-amber-100 text-amber-900 font-bold rounded-lg text-xs transition-all cursor-pointer"
-            >
-              Keluar
-            </button>
-          </div>
-        </div>
-      )}
+      
 
       {/* Grid Simulator: Kiri Form, Kanan Hasil Finansial & Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

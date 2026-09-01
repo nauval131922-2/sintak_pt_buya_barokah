@@ -783,39 +783,13 @@ export default function PricelistClient() {
   const isFiltered = selectedJenis !== 'ALL' || selectedBahan !== 'ALL' || searchTerm !== '';
 
   return (
-    <div className="flex flex-col gap-4 flex-1 min-h-0 relative">
-      {/* Lis Garis Oranye Mengitari Seluruh Halaman (Mulai Atas Pill Tab) — Membingkai di luar tanpa mengecilkan lebar isi */}
-      {activeSimulationId && (
-        <div className="pointer-events-none absolute -inset-1.5 sm:-inset-2 border-2 border-orange-500 rounded-2xl ring-4 ring-orange-500/20 z-40 shadow-lg shadow-orange-500/10" />
-      )}
-      {/* Banner Mode Edit Aktif — Muncul di atas pill tab saat mengedit simulasi */}
-      {activeSimulationId && (
-        <div className="flex items-center justify-between gap-3 px-3.5 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl shadow-xs text-xs font-bold animate-in fade-in slide-in-from-top-1 duration-200 shrink-0">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="flex h-2 w-2 relative shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-            </span>
-            <span className="tracking-wider uppercase text-[11px] font-black shrink-0">Mode Edit:</span>
-            <span className="font-semibold text-orange-100 truncate">
-              {activeSimulationTitle || 'Kalkulasi Tersimpan'}
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setActiveSimulationId(null);
-              setActiveSimulationTitle(null);
-            }}
-            className="px-2.5 py-1 bg-white/20 hover:bg-white text-white hover:text-orange-700 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer shrink-0 shadow-2xs"
-            title="Keluar dari mode edit & pulihkan master parameter"
-          >
-            <X size={13} />
-            <span>Keluar Edit</span>
-          </button>
-        </div>
-      )}
-
+    <div
+      className={`flex flex-col gap-4 flex-1 min-h-0 relative transition-all duration-200 rounded-2xl ${
+        activeSimulationId
+          ? 'border-2 border-orange-500 ring-2 ring-orange-500/20'
+          : 'border-2 border-transparent'
+      }`}
+    >
       {/* TABS Navigation + Product Category Selector — 1 baris, tab bisa scroll horizontal */}
       <div className="flex items-center border-b border-gray-100 shrink-0 mt-1 relative z-50 gap-2">
         {/* Tab List — scrollable horizontal jika overflow */}
