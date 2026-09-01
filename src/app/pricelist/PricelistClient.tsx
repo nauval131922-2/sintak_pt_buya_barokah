@@ -783,13 +783,7 @@ export default function PricelistClient() {
   const isFiltered = selectedJenis !== 'ALL' || selectedBahan !== 'ALL' || searchTerm !== '';
 
   return (
-    <div
-      className={`flex flex-col gap-4 flex-1 min-h-0 relative transition-all duration-200 rounded-2xl ${
-        activeSimulationId
-          ? 'border-2 border-orange-500 ring-2 ring-orange-500/20'
-          : 'border-2 border-transparent'
-      }`}
-    >
+    <div className="flex flex-col gap-4 flex-1 min-h-0">
       {/* TABS Navigation + Product Category Selector — 1 baris, tab bisa scroll horizontal */}
       <div className="flex items-center border-b border-gray-100 shrink-0 mt-1 relative z-50 gap-2">
         {/* Tab List — scrollable horizontal jika overflow */}
@@ -808,11 +802,16 @@ export default function PricelistClient() {
               <span>Daftar Kalkulasi</span>
             </button>
 
+            {/* Tab Master Parameter */}
             <div
               className={`flex items-center gap-1.5 pb-2 px-2 border-b-2 transition-all ${
                 activeTab === 'parameter'
-                  ? 'border-emerald-600'
-                  : 'border-transparent'
+                  ? activeSimulationId
+                    ? 'border-orange-500 text-orange-700 bg-orange-50/50 rounded-t-lg'
+                    : 'border-emerald-600 text-emerald-700'
+                  : activeSimulationId
+                    ? 'border-transparent text-orange-600/80 hover:text-orange-800'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
               <button
@@ -820,12 +819,21 @@ export default function PricelistClient() {
                 onClick={() => setActiveTab('parameter')}
                 className={`flex items-center justify-center gap-1.5 text-[13px] font-bold cursor-pointer whitespace-nowrap ${
                   activeTab === 'parameter'
-                    ? 'text-emerald-700'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? activeSimulationId
+                      ? 'text-orange-700'
+                      : 'text-emerald-700'
+                    : activeSimulationId
+                      ? 'text-orange-600 hover:text-orange-800'
+                      : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <Database size={14} />
+                <Database size={14} className={activeSimulationId ? 'text-orange-600' : ''} />
                 <span>Master Parameter</span>
+                {activeSimulationId && (
+                  <span className="text-[9.5px] font-extrabold uppercase px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-300">
+                    Edit
+                  </span>
+                )}
               </button>
               <button
                 type="button"
@@ -833,27 +841,40 @@ export default function PricelistClient() {
                   e.stopPropagation();
                   setShowGlobalParamModal(true);
                 }}
-                className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-100/70 hover:bg-emerald-200 text-emerald-800 border border-emerald-300 rounded text-[10px] font-bold transition-all shadow-2xs cursor-pointer shrink-0"
+                className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold transition-all shadow-2xs cursor-pointer shrink-0 ${
+                  activeSimulationId
+                    ? 'bg-orange-100/80 hover:bg-orange-200 text-orange-800 border border-orange-300'
+                    : 'bg-emerald-100/70 hover:bg-emerald-200 text-emerald-800 border border-emerald-300'
+                }`}
                 title="Kelola Master Parameter Global (Shared Rates antar produk)"
               >
-                <Globe size={10} className="text-emerald-700" />
+                <Globe size={10} className={activeSimulationId ? 'text-orange-700' : 'text-emerald-700'} />
                 <span>Global</span>
               </button>
             </div>
 
+            {/* Tab Simulator */}
             <button
               type="button"
               onClick={() => setActiveTab('simulator')}
               className={`flex items-center justify-center gap-1.5 pb-2 px-2 text-[13px] font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === 'simulator'
-                  ? 'border-emerald-600 text-emerald-700'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? activeSimulationId
+                    ? 'border-orange-500 text-orange-700 bg-orange-50/50 rounded-t-lg'
+                    : 'border-emerald-600 text-emerald-700'
+                  : activeSimulationId
+                    ? 'border-transparent text-orange-600/80 hover:text-orange-800'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
-              <Calculator size={14} />
+              <Calculator size={14} className={activeSimulationId ? 'text-orange-600' : ''} />
               <span>Simulator</span>
+              {activeSimulationId && (
+                <span className="text-[9.5px] font-extrabold uppercase px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-300">
+                  Edit
+                </span>
+              )}
             </button>
-
             <button
               type="button"
               onClick={() => setActiveTab('matrix')}
