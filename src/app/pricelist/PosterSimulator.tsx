@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { saveCalculationToDb } from \'@/lib/pricelist-db-sync\';
+import { saveCalculationToDb } from '@/lib/pricelist-db-sync';
 import {
   Calculator,
   Save,
