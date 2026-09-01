@@ -179,9 +179,9 @@ export default function PosterSimulator({
     try {
       const existingRaw = localStorage.getItem('sintak_saved_poster_simulations');
       const list: SavedPosterSimulationItem[] = existingRaw ? JSON.parse(existingRaw) : [];
-      const title = ;
+      const title = `Poster ${ukuran} • ${oplah.toLocaleString("id-ID")} pcs • ${laminasi}`;
       const newItem: SavedPosterSimulationItem = {
-        id: ,
+        id: `poster_${Date.now()}`,
         savedAt: new Date().toISOString(),
         title,
         oplah,

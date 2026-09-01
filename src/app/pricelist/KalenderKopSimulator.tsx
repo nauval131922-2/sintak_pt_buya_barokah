@@ -155,9 +155,9 @@ export default function KalenderKopSimulator({
     try {
       const existingRaw = localStorage.getItem('sintak_saved_kalender_kop_simulations');
       const list: SavedKalenderKopSimulationItem[] = existingRaw ? JSON.parse(existingRaw) : [];
-      const title = ;
+      const title = `Kalender Kop • ${varian} • ${oplah.toLocaleString("id-ID")} pcs`;
       const newItem: SavedKalenderKopSimulationItem = {
-        id: ,
+        id: `kalender_kop_${Date.now()}`,
         savedAt: new Date().toISOString(),
         title,
         oplah,

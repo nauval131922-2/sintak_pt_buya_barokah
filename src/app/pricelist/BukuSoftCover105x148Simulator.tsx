@@ -169,9 +169,9 @@ export default function BukuSoftCover105x148Simulator({
     try {
       const existingRaw = localStorage.getItem('sintak_saved_buku_soft_cover_105x148_simulations');
       const list: SavedBukuSoftCover105x148SimulationItem[] = existingRaw ? JSON.parse(existingRaw) : [];
-      const title = ;
+      const title = `Buku Soft Cover 10,5×14,8 • ${oplah.toLocaleString("id-ID")} pcs • ${finishing} • ${jilid}`;
       const newItem: SavedBukuSoftCover105x148SimulationItem = {
-        id: ,
+        id: `bsc_105x148_${Date.now()}`,
         savedAt: new Date().toISOString(),
         title,
         oplah,

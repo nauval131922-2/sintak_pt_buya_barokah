@@ -165,9 +165,9 @@ export default function StikerSimulator({
     try {
       const existingRaw = localStorage.getItem('sintak_saved_stiker_simulations');
       const list: SavedStikerSimulationItem[] = existingRaw ? JSON.parse(existingRaw) : [];
-      const title = ;
+      const title = `Stiker ${bahan} • ${oplah.toLocaleString("id-ID")} pcs • ${finishing}`;
       const newItem: SavedStikerSimulationItem = {
-        id: ,
+        id: `stiker_${Date.now()}`,
         savedAt: new Date().toISOString(),
         title,
         oplah,

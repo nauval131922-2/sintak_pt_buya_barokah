@@ -170,9 +170,9 @@ export default function MajalahSimulator({
     try {
       const existingRaw = localStorage.getItem('sintak_saved_majalah_simulations');
       const list: SavedMajalahSimulationItem[] = existingRaw ? JSON.parse(existingRaw) : [];
-      const title = ;
+      const title = `Majalah 14,5×20,25 • ${oplah.toLocaleString("id-ID")} pcs • ${finishing} • ${jilid}`;
       const newItem: SavedMajalahSimulationItem = {
-        id: ,
+        id: `majalah_${Date.now()}`,
         savedAt: new Date().toISOString(),
         title,
         oplah,
