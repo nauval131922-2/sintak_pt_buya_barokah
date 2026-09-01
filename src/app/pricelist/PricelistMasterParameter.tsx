@@ -232,197 +232,11 @@ export default function PricelistMasterParameter({
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Section 1: Mesin Cetak Heidelberg Speedmaster (SM 52) Khusus Kalender Oplah Besar */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Printer className="w-4 h-4 text-emerald-700" />
-            <h3 className="text-xs font-bold text-slate-800">1. Mesin Heidelberg SM 52 (Oplah Besar)</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <div className={`p-2.5 rounded-lg border transition-all ${
-                isFieldModified('smMinOngkos')
-                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-              }`}>
-                <div>
-                  <div className="flex items-center justify-between gap-1 mb-1.5">
-                    <label className="text-xs font-semibold text-slate-700 truncate" title="Min. Ongkos Cetak">Min. Ongkos Cetak</label>
-                    {isFieldModified('smMinOngkos') && (
-                      <button
-                        type="button"
-                        onClick={(e) => handleResetField('smMinOngkos', e)}
-                        title="Reset ke default"
-                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                      >
-                        <RotateCcw className="w-2.5 h-2.5" /> Def
-                      </button>
-                    )}
-                  </div>
-                  <ThousandInput
-                    prefix="Rp"
-                    value={customParams.smMinOngkos}
-                    onValueChange={(val) => handleChange('smMinOngkos', val)}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                  />
-                </div>
-              </div>
-
-              <div className={`p-2.5 rounded-lg border transition-all ${
-                isFieldModified('smPlatUnit')
-                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-              }`}>
-                <div>
-                  <div className="flex items-center justify-between gap-1 mb-1.5">
-                    <label className="text-xs font-semibold text-slate-700 truncate" title="Plat CTP SM">Plat CTP SM</label>
-                    {isFieldModified('smPlatUnit') && (
-                      <button
-                        type="button"
-                        onClick={(e) => handleResetField('smPlatUnit', e)}
-                        title="Reset ke default"
-                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                      >
-                        <RotateCcw className="w-2.5 h-2.5" /> Def
-                      </button>
-                    )}
-                  </div>
-                  <ThousandInput
-                    prefix="Rp"
-                    value={customParams.smPlatUnit}
-                    onValueChange={(val) => handleChange('smPlatUnit', val)}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                  />
-                </div>
-              </div>
-
-              <div className={`p-2.5 rounded-lg border transition-all ${
-                isFieldModified('smDrekOver')
-                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-              }`}>
-                <div>
-                  <div className="flex items-center justify-between gap-1 mb-1.5">
-                    <label className="text-xs font-semibold text-slate-700 truncate" title="Tarif Drek Over">Tarif Drek Over</label>
-                    {isFieldModified('smDrekOver') && (
-                      <button
-                        type="button"
-                        onClick={(e) => handleResetField('smDrekOver', e)}
-                        title="Reset ke default"
-                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                      >
-                        <RotateCcw className="w-2.5 h-2.5" /> Def
-                      </button>
-                    )}
-                  </div>
-                  <ThousandInput
-                    prefix="Rp"
-                    value={customParams.smDrekOver}
-                    onValueChange={(val) => handleChange('smDrekOver', val)}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                  />
-                </div>
-              </div>
-          </div>
-        </div>
-
-        {/* Section 2: Jasa Desain & Almanak Kalender */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <FileText className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Jasa Desain, Almanak & Royalty</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <div className={`p-2.5 rounded-lg border transition-all ${
-                isFieldModified('tarifDesain')
-                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-              }`}>
-                <div>
-                  <div className="flex items-center justify-between gap-1 mb-1.5">
-                    <label className="text-xs font-semibold text-slate-700 truncate" title="Jasa Desain">Jasa Desain</label>
-                    {isFieldModified('tarifDesain') && (
-                      <button
-                        type="button"
-                        onClick={(e) => handleResetField('tarifDesain', e)}
-                        title="Reset ke default"
-                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                      >
-                        <RotateCcw className="w-2.5 h-2.5" /> Def
-                      </button>
-                    )}
-                  </div>
-                  <ThousandInput
-                    prefix="Rp"
-                    value={customParams.tarifDesain}
-                    onValueChange={(val) => handleChange('tarifDesain', val)}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                  />
-                </div>
-              </div>
-
-              <div className={`p-2.5 rounded-lg border transition-all ${
-                isFieldModified('tarifAlmanakDesain')
-                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-              }`}>
-                <div>
-                  <div className="flex items-center justify-between gap-1 mb-1.5">
-                    <label className="text-xs font-semibold text-slate-700 truncate" title="Desain Almanak">Desain Almanak</label>
-                    {isFieldModified('tarifAlmanakDesain') && (
-                      <button
-                        type="button"
-                        onClick={(e) => handleResetField('tarifAlmanakDesain', e)}
-                        title="Reset ke default"
-                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                      >
-                        <RotateCcw className="w-2.5 h-2.5" /> Def
-                      </button>
-                    )}
-                  </div>
-                  <ThousandInput
-                    prefix="Rp"
-                    value={customParams.tarifAlmanakDesain}
-                    onValueChange={(val) => handleChange('tarifAlmanakDesain', val)}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                  />
-                </div>
-              </div>
-
-              <div className={`p-2.5 rounded-lg border transition-all ${
-                isFieldModified('tarifRoyalty')
-                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-              }`}>
-                <div>
-                  <div className="flex items-center justify-between gap-1 mb-1.5">
-                    <label className="text-xs font-semibold text-slate-700 truncate" title="Royalti Almanak">Royalti Almanak</label>
-                    {isFieldModified('tarifRoyalty') && (
-                      <button
-                        type="button"
-                        onClick={(e) => handleResetField('tarifRoyalty', e)}
-                        title="Reset ke default"
-                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                      >
-                        <RotateCcw className="w-2.5 h-2.5" /> Def
-                      </button>
-                    )}
-                  </div>
-                  <ThousandInput
-                    prefix="Rp"
-                    value={customParams.tarifRoyalty}
-                    onValueChange={(val) => handleChange('tarifRoyalty', val)}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                  />
-                </div>
-              </div>
-          </div>
-        </div>
-
-      {/* Section: Tarif Mesin & Insheet Oliver vs SM (tabel perbandingan 50% grid) */}
+        {/* Section: Tarif Mesin & Insheet Oliver vs SM (tabel perbandingan 50% grid) */}
       <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-3.5 shadow-2xs flex flex-col gap-2.5">
         <div className="flex items-center gap-2 border-b border-slate-100 pb-1.5">
           <Printer className="w-4 h-4 text-purple-600" />
-          <h3 className="text-xs font-bold text-slate-800">3. Standar Mesin Cetak & Tarif</h3>
+          <h3 className="text-xs font-bold text-slate-800">1. Standar Mesin Cetak & Tarif (Oliver 58 vs SM 52)</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left border-collapse">
@@ -696,11 +510,314 @@ export default function PricelistMasterParameter({
           </table>
         </div>
       </div>
+
+        {/* Section 2: Jasa Desain & Almanak Kalender */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <FileText className="w-4 h-4 text-blue-600" />
+            <h3 className="text-xs font-bold text-slate-800">2. Jasa Desain, Almanak & Royalty</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className={`p-2.5 rounded-lg border transition-all ${
+                isFieldModified('tarifDesain')
+                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
+              }`}>
+                <div>
+                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <label className="text-xs font-semibold text-slate-700 truncate" title="Jasa Desain">Jasa Desain</label>
+                    {isFieldModified('tarifDesain') && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('tarifDesain', e)}
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
+                      </button>
+                    )}
+                  </div>
+                  <ThousandInput
+                    prefix="Rp"
+                    value={customParams.tarifDesain}
+                    onValueChange={(val) => handleChange('tarifDesain', val)}
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                  />
+                </div>
+              </div>
+
+              <div className={`p-2.5 rounded-lg border transition-all ${
+                isFieldModified('tarifAlmanakDesain')
+                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
+              }`}>
+                <div>
+                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <label className="text-xs font-semibold text-slate-700 truncate" title="Desain Almanak">Desain Almanak</label>
+                    {isFieldModified('tarifAlmanakDesain') && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('tarifAlmanakDesain', e)}
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
+                      </button>
+                    )}
+                  </div>
+                  <ThousandInput
+                    prefix="Rp"
+                    value={customParams.tarifAlmanakDesain}
+                    onValueChange={(val) => handleChange('tarifAlmanakDesain', val)}
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                  />
+                </div>
+              </div>
+
+              <div className={`p-2.5 rounded-lg border transition-all ${
+                isFieldModified('tarifRoyalty')
+                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
+              }`}>
+                <div>
+                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <label className="text-xs font-semibold text-slate-700 truncate" title="Royalti Almanak">Royalti Almanak</label>
+                    {isFieldModified('tarifRoyalty') && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('tarifRoyalty', e)}
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
+                      </button>
+                    )}
+                  </div>
+                  <ThousandInput
+                    prefix="Rp"
+                    value={customParams.tarifRoyalty}
+                    onValueChange={(val) => handleChange('tarifRoyalty', val)}
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                  />
+                </div>
+              </div>
+          </div>
+        </div>
+
+        {/* Section 4: Standar Plano & Konstanta */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Box className="w-4 h-4 text-rose-600" />
+            <h3 className="text-xs font-bold text-slate-800">3. Standar Ukuran Plano & Konstanta</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className={`p-2.5 rounded-lg border flex items-center justify-between transition-all ${
+                isFieldModified('potong32x48') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
+              }`}>
+                <div>
+                  <div className="flex items-center gap-1">
+                    <span className="font-bold text-slate-800 block text-xs">Ukuran 32 x 48 cm</span>
+                    {isFieldModified('potong32x48') && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('potong32x48', e)}
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
+                      </button>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-slate-500">Plano 65 x 100</span>
+                </div>
+                <div className="w-20">
+                  <ThousandInput
+                    suffix="ptg"
+                    value={customParams.potong32x48}
+                    onValueChange={(val) => handleChange('potong32x48', val)}
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                  />
+                </div>
+              </div>
+
+              <div className={`p-2.5 rounded-lg border flex items-center justify-between transition-all ${
+                isFieldModified('potong38x54') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
+              }`}>
+                <div>
+                  <div className="flex items-center gap-1">
+                    <span className="font-bold text-slate-800 block text-xs">Ukuran 38 x 54 cm</span>
+                    {isFieldModified('potong38x54') && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('potong38x54', e)}
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
+                      </button>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-slate-500">Plano 79 x 109</span>
+                </div>
+                <div className="w-20">
+                  <ThousandInput
+                    suffix="ptg"
+                    value={customParams.potong38x54}
+                    onValueChange={(val) => handleChange('potong38x54', val)}
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                  />
+                </div>
+              </div>
+
+              <div className={`p-2.5 rounded-lg border flex items-center justify-between transition-all ${
+                isFieldModified('potong46x64') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
+              }`}>
+                <div>
+                  <div className="flex items-center gap-1">
+                    <span className="font-bold text-slate-800 block text-xs">Ukuran 46 x 64 cm</span>
+                    {isFieldModified('potong46x64') && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('potong46x64', e)}
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
+                      </button>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-slate-500">Plano 65 x 100</span>
+                </div>
+                <div className="w-20">
+                  <ThousandInput
+                    suffix="ptg"
+                    value={customParams.potong46x64}
+                    onValueChange={(val) => handleChange('potong46x64', val)}
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                  />
+                </div>
+              </div>
+
+              <div className={`p-2.5 rounded-lg border flex items-center justify-between transition-all ${
+                isFieldModified('potong48x64') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
+              }`}>
+                <div>
+                  <div className="flex items-center gap-1">
+                    <span className="font-bold text-slate-800 block text-xs">Ukuran 48 x 64 cm</span>
+                    {isFieldModified('potong48x64') && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('potong48x64', e)}
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
+                      </button>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-slate-500">Plano 65 x 100</span>
+                </div>
+                <div className="w-20">
+                  <ThousandInput
+                    suffix="ptg"
+                    value={customParams.potong48x64}
+                    onValueChange={(val) => handleChange('potong48x64', val)}
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Konstanta Grafika */}
+            <div className="p-3 bg-violet-50/60 rounded-lg border border-violet-100 flex flex-col gap-2.5 text-xs text-violet-950">
+              <div className={`flex items-center justify-between gap-2 border-b border-violet-200/50 pb-2 p-1 rounded ${
+                isFieldModified('konstantaBeratRim') ? 'bg-amber-50 border-amber-200' : ''
+              }`}>
+                <div className="flex items-center gap-1">
+                  <span className="font-bold">Konstanta Berat 1 Rim Kertas Plano:</span>
+                  {isFieldModified('konstantaBeratRim') && (
+                    <button
+                      type="button"
+                      onClick={(e) => handleResetField('konstantaBeratRim', e)}
+                      title="Reset ke default"
+                      className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+                    >
+                      <RotateCcw className="w-2.5 h-2.5" /> Def
+                    </button>
+                  )}
+                </div>
+                <div className="w-28">
+                  <ThousandInput
+                    value={customParams.konstantaBeratRim}
+                    onValueChange={(val) => handleChange('konstantaBeratRim', val)}
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                  />
+                </div>
+              </div>
+              <div className={`flex items-center justify-between gap-2 border-b border-violet-200/50 pb-2 p-1 rounded ${
+                isFieldModified('lembarPerRim') ? 'bg-amber-50 border-amber-200' : ''
+              }`}>
+                <div className="flex items-center gap-1">
+                  <span className="font-bold">Standar Isi 1 Rim (Lembar):</span>
+                  {isFieldModified('lembarPerRim') && (
+                    <button
+                      type="button"
+                      onClick={(e) => handleResetField('lembarPerRim', e)}
+                      title="Reset ke default"
+                      className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+                    >
+                      <RotateCcw className="w-2.5 h-2.5" /> Def
+                    </button>
+                  )}
+                </div>
+                <div className="w-28">
+                  <ThousandInput
+                    suffix="lbr"
+                    value={customParams.lembarPerRim}
+                    onValueChange={(val) => handleChange('lembarPerRim', val)}
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                  />
+                </div>
+              </div>
+              <div className={`flex items-center justify-between gap-2 p-1 rounded ${
+                isFieldModified('kapasitasLakbanRoll') ? 'bg-amber-50 border-amber-200' : ''
+              }`}>
+                <div>
+                  <div className="flex items-center gap-1">
+                    <span className="font-bold block">Kapasitas Lakban per Roll:</span>
+                    {isFieldModified('kapasitasLakbanRoll') && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleResetField('kapasitasLakbanRoll', e)}
+                        title="Reset ke default"
+                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" /> Def
+                      </button>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-violet-800">8.000 cm / 60 cm keliling ikat</span>
+                </div>
+                <div className="w-28">
+                  <ThousandInput
+                    suffix="ikat"
+                    value={customParams.kapasitasLakbanRoll}
+                    onValueChange={(val) => handleChange('kapasitasLakbanRoll', val)}
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
         {/* Section 3: Ongkos Finishing & Jasa */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Layers className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">3. Ongkos Finishing & Jasa Cetak</h3>
+            <h3 className="text-xs font-bold text-slate-800">4. Ongkos Finishing & Jasa Cetak</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {/* Sub: Spiral & Jasa Umum */}
@@ -962,219 +1079,9 @@ export default function PricelistMasterParameter({
                   />
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Section 4: Standar Plano & Konstanta */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Box className="w-4 h-4 text-rose-600" />
-            <h3 className="text-xs font-bold text-slate-800">4. Standar Ukuran Plano & Konstanta</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <div className={`p-2.5 rounded-lg border flex items-center justify-between transition-all ${
-                isFieldModified('potong32x48') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-              }`}>
-                <div>
-                  <div className="flex items-center gap-1">
-                    <span className="font-bold text-slate-800 block text-xs">Ukuran 32 x 48 cm</span>
-                    {isFieldModified('potong32x48') && (
-                      <button
-                        type="button"
-                        onClick={(e) => handleResetField('potong32x48', e)}
-                        title="Reset ke default"
-                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                      >
-                        <RotateCcw className="w-2.5 h-2.5" /> Def
-                      </button>
-                    )}
-                  </div>
-                  <span className="text-[10px] text-slate-500">Plano 65 x 100</span>
-                </div>
-                <div className="w-20">
-                  <ThousandInput
-                    suffix="ptg"
-                    value={customParams.potong32x48}
-                    onValueChange={(val) => handleChange('potong32x48', val)}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                  />
-                </div>
-              </div>
-
-              <div className={`p-2.5 rounded-lg border flex items-center justify-between transition-all ${
-                isFieldModified('potong38x54') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-              }`}>
-                <div>
-                  <div className="flex items-center gap-1">
-                    <span className="font-bold text-slate-800 block text-xs">Ukuran 38 x 54 cm</span>
-                    {isFieldModified('potong38x54') && (
-                      <button
-                        type="button"
-                        onClick={(e) => handleResetField('potong38x54', e)}
-                        title="Reset ke default"
-                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                      >
-                        <RotateCcw className="w-2.5 h-2.5" /> Def
-                      </button>
-                    )}
-                  </div>
-                  <span className="text-[10px] text-slate-500">Plano 79 x 109</span>
-                </div>
-                <div className="w-20">
-                  <ThousandInput
-                    suffix="ptg"
-                    value={customParams.potong38x54}
-                    onValueChange={(val) => handleChange('potong38x54', val)}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                  />
-                </div>
-              </div>
-
-              <div className={`p-2.5 rounded-lg border flex items-center justify-between transition-all ${
-                isFieldModified('potong46x64') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-              }`}>
-                <div>
-                  <div className="flex items-center gap-1">
-                    <span className="font-bold text-slate-800 block text-xs">Ukuran 46 x 64 cm</span>
-                    {isFieldModified('potong46x64') && (
-                      <button
-                        type="button"
-                        onClick={(e) => handleResetField('potong46x64', e)}
-                        title="Reset ke default"
-                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                      >
-                        <RotateCcw className="w-2.5 h-2.5" /> Def
-                      </button>
-                    )}
-                  </div>
-                  <span className="text-[10px] text-slate-500">Plano 65 x 100</span>
-                </div>
-                <div className="w-20">
-                  <ThousandInput
-                    suffix="ptg"
-                    value={customParams.potong46x64}
-                    onValueChange={(val) => handleChange('potong46x64', val)}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                  />
-                </div>
-              </div>
-
-              <div className={`p-2.5 rounded-lg border flex items-center justify-between transition-all ${
-                isFieldModified('potong48x64') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-              }`}>
-                <div>
-                  <div className="flex items-center gap-1">
-                    <span className="font-bold text-slate-800 block text-xs">Ukuran 48 x 64 cm</span>
-                    {isFieldModified('potong48x64') && (
-                      <button
-                        type="button"
-                        onClick={(e) => handleResetField('potong48x64', e)}
-                        title="Reset ke default"
-                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                      >
-                        <RotateCcw className="w-2.5 h-2.5" /> Def
-                      </button>
-                    )}
-                  </div>
-                  <span className="text-[10px] text-slate-500">Plano 65 x 100</span>
-                </div>
-                <div className="w-20">
-                  <ThousandInput
-                    suffix="ptg"
-                    value={customParams.potong48x64}
-                    onValueChange={(val) => handleChange('potong48x64', val)}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Konstanta Grafika */}
-            <div className="p-3 bg-violet-50/60 rounded-lg border border-violet-100 flex flex-col gap-2.5 text-xs text-violet-950">
-              <div className={`flex items-center justify-between gap-2 border-b border-violet-200/50 pb-2 p-1 rounded ${
-                isFieldModified('konstantaBeratRim') ? 'bg-amber-50 border-amber-200' : ''
-              }`}>
-                <div className="flex items-center gap-1">
-                  <span className="font-bold">Konstanta Berat 1 Rim Kertas Plano:</span>
-                  {isFieldModified('konstantaBeratRim') && (
-                    <button
-                      type="button"
-                      onClick={(e) => handleResetField('konstantaBeratRim', e)}
-                      title="Reset ke default"
-                      className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                    >
-                      <RotateCcw className="w-2.5 h-2.5" /> Def
-                    </button>
-                  )}
-                </div>
-                <div className="w-28">
-                  <ThousandInput
-                    value={customParams.konstantaBeratRim}
-                    onValueChange={(val) => handleChange('konstantaBeratRim', val)}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                  />
-                </div>
-              </div>
-              <div className={`flex items-center justify-between gap-2 border-b border-violet-200/50 pb-2 p-1 rounded ${
-                isFieldModified('lembarPerRim') ? 'bg-amber-50 border-amber-200' : ''
-              }`}>
-                <div className="flex items-center gap-1">
-                  <span className="font-bold">Standar Isi 1 Rim (Lembar):</span>
-                  {isFieldModified('lembarPerRim') && (
-                    <button
-                      type="button"
-                      onClick={(e) => handleResetField('lembarPerRim', e)}
-                      title="Reset ke default"
-                      className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                    >
-                      <RotateCcw className="w-2.5 h-2.5" /> Def
-                    </button>
-                  )}
-                </div>
-                <div className="w-28">
-                  <ThousandInput
-                    suffix="lbr"
-                    value={customParams.lembarPerRim}
-                    onValueChange={(val) => handleChange('lembarPerRim', val)}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                  />
-                </div>
-              </div>
-              <div className={`flex items-center justify-between gap-2 p-1 rounded ${
-                isFieldModified('kapasitasLakbanRoll') ? 'bg-amber-50 border-amber-200' : ''
-              }`}>
-                <div>
-                  <div className="flex items-center gap-1">
-                    <span className="font-bold block">Kapasitas Lakban per Roll:</span>
-                    {isFieldModified('kapasitasLakbanRoll') && (
-                      <button
-                        type="button"
-                        onClick={(e) => handleResetField('kapasitasLakbanRoll', e)}
-                        title="Reset ke default"
-                        className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                      >
-                        <RotateCcw className="w-2.5 h-2.5" /> Def
-                      </button>
-                    )}
-                  </div>
-                  <span className="text-[10px] text-violet-800">8.000 cm / 60 cm keliling ikat</span>
-                </div>
-                <div className="w-28">
-                  <ThousandInput
-                    suffix="ikat"
-                    value={customParams.kapasitasLakbanRoll}
-                    onValueChange={(val) => handleChange('kapasitasLakbanRoll', val)}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                  />
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
-
       {/* Modal Manual Pengguna & Pemetaan Excel */}
       {showManualModal && (
         <div
