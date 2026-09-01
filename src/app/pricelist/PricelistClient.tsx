@@ -69,6 +69,9 @@ import BukuTabunganSecurityMatrixView from './BukuTabunganSecurityMatrixView';
 import KartuKoperasiPromiseMasterParameter from './KartuKoperasiPromiseMasterParameter';
 import KartuKoperasiPromiseSimulator, { SavedKartuKoperasiPromiseSimulationItem } from './KartuKoperasiPromiseSimulator';
 import KartuKoperasiPromiseMatrixView from './KartuKoperasiPromiseMatrixView';
+import LebelKartuObatMasterParameter from './LebelKartuObatMasterParameter';
+import LebelKartuObatSimulator, { SavedLebelKartuObatSimulationItem } from './LebelKartuObatSimulator';
+import LebelKartuObatMatrixView from './LebelKartuObatMatrixView';
 import SavedCalculationsList, { UnifiedCalculationItem } from './SavedCalculationsList';
 import SquareDropdown from '@/components/SquareDropdown';
 import GlobalMasterParameter from './GlobalMasterParameter';
@@ -94,6 +97,7 @@ import { DEFAULT_UNDANGAN_PARAMS, UndanganMasterParams } from '@/lib/undangan-ca
 import { DEFAULT_BUKU_TABUNGAN_NS_PARAMS, BukuTabunganNsMasterParams } from '@/lib/buku-tabungan-ns-calculator';
 import { DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS, BukuTabunganSecurityMasterParams } from '@/lib/buku-tabungan-security-calculator';
 import { DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS, KartuKoperasiPromiseMasterParams } from '@/lib/kartu-koperasi-promise-calculator';
+import { DEFAULT_LEBEL_KARTU_OBAT_PARAMS, LebelKartuObatMasterParams } from '@/lib/lebel-kartu-obat-calculator';
 import { recalculatePricelistFromParams } from '@/lib/pricelist-calculator';
 
 interface PricelistItem {
@@ -141,7 +145,8 @@ export default function PricelistClient() {
   const [paramsBukuTabunganNs, setParamsBukuTabunganNs] = useState<BukuTabunganNsMasterParams>(DEFAULT_BUKU_TABUNGAN_NS_PARAMS);
   const [paramsBukuTabunganSecurity, setParamsBukuTabunganSecurity] = useState<BukuTabunganSecurityMasterParams>(DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS);
   const [paramsKartuKoperasiPromise, setParamsKartuKoperasiPromise] = useState<KartuKoperasiPromiseMasterParams>(DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS);
-  const [selectedProductCategory, setSelectedProductCategory] = useState<'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise'>('Kalender');
+  const [paramsLebelKartuObat, setParamsLebelKartuObat] = useState<LebelKartuObatMasterParams>(DEFAULT_LEBEL_KARTU_OBAT_PARAMS);
+  const [selectedProductCategory, setSelectedProductCategory] = useState<'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat'>('Kalender');
   const [paramsSpiral, setParamsSpiral] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS);
   const [paramsKlem, setParamsKlem] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS_KLEM);
 
@@ -198,7 +203,8 @@ export default function PricelistClient() {
         savedCategory === 'Undangan' ||
         savedCategory === 'Buku Tabungan NS' ||
         savedCategory === 'Buku Tabungan Security' ||
-        savedCategory === 'Kartu Koperasi Promise'
+        savedCategory === 'Kartu Koperasi Promise' ||
+        savedCategory === 'Lebel Kartu Obat'
       ) {
         setSelectedProductCategory(savedCategory as any);
       }
@@ -263,6 +269,11 @@ export default function PricelistClient() {
         setParamsKartuKoperasiPromise({ ...DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS, ...JSON.parse(savedKartuKoperasiPromise) });
       }
 
+      const savedLebelKartuObat = localStorage.getItem('sintak_pricelist_master_params_lebel_kartu_obat');
+      if (savedLebelKartuObat) {
+        setParamsLebelKartuObat({ ...DEFAULT_LEBEL_KARTU_OBAT_PARAMS, ...JSON.parse(savedLebelKartuObat) });
+      }
+
       const savedGlobal = localStorage.getItem('sintak_pricelist_master_params_global');
       if (savedGlobal) {
         setParamsGlobal({ ...DEFAULT_GLOBAL_PARAMS, ...JSON.parse(savedGlobal) });
@@ -274,7 +285,7 @@ export default function PricelistClient() {
 
   // Sync selectedProductCategory across tabs
   const handleProductCategoryChange = (
-    category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise'
+    category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat'
   ) => {
     setSelectedProductCategory(category);
     try {
@@ -364,17 +375,18 @@ export default function PricelistClient() {
         localStorage.setItem('sintak_pricelist_master_params_buku_tabungan_ns', JSON.stringify(paramsBukuTabunganNs));
         localStorage.setItem('sintak_pricelist_master_params_buku_tabungan_security', JSON.stringify(paramsBukuTabunganSecurity));
         localStorage.setItem('sintak_pricelist_master_params_kartu_koperasi_promise', JSON.stringify(paramsKartuKoperasiPromise));
+        localStorage.setItem('sintak_pricelist_master_params_lebel_kartu_obat', JSON.stringify(paramsLebelKartuObat));
       } catch (e) {
         console.error('Failed to save master params to localStorage:', e);
       }
     }, 400);
     return () => clearTimeout(timer);
-  }, [paramsSpiral, paramsKlem, paramsGlobal, paramsLabelKhq, paramsBukuTulis, paramsStopmap, paramsSyahadah, paramsRaportKaleb, paramsKopSurat, paramsAmplop, paramsSertifikat, paramsUndangan, paramsBukuTabunganNs, paramsBukuTabunganSecurity, paramsKartuKoperasiPromise]);
+  }, [paramsSpiral, paramsKlem, paramsGlobal, paramsLabelKhq, paramsBukuTulis, paramsStopmap, paramsSyahadah, paramsRaportKaleb, paramsKopSurat, paramsAmplop, paramsSertifikat, paramsUndangan, paramsBukuTabunganNs, paramsBukuTabunganSecurity, paramsKartuKoperasiPromise, paramsLebelKartuObat]);
 
   // Fungsi sebarkan parameter global ke seluruh produk
   const handleApplyGlobalParams = (targetGlobal?: GlobalMasterParams) => {
     const g = targetGlobal || paramsGlobal;
-    const { nextSpiral, nextKlem, nextManasik, nextYasin, nextNota, nextBrosur, nextLabelKhq, nextBukuTulis, nextStopmap, nextSyahadah, nextRaportKaleb, nextKopSurat, nextAmplop, nextSertifikat, nextUndangan, nextBukuTabunganNs, nextBukuTabunganSecurity, nextKartuKoperasiPromise } = applyGlobalParamsToAll(
+    const { nextSpiral, nextKlem, nextManasik, nextYasin, nextNota, nextBrosur, nextLabelKhq, nextBukuTulis, nextStopmap, nextSyahadah, nextRaportKaleb, nextKopSurat, nextAmplop, nextSertifikat, nextUndangan, nextBukuTabunganNs, nextBukuTabunganSecurity, nextKartuKoperasiPromise, nextLebelKartuObat } = applyGlobalParamsToAll(
       g,
       paramsSpiral,
       paramsKlem,
@@ -393,7 +405,8 @@ export default function PricelistClient() {
       paramsUndangan,
       paramsBukuTabunganNs,
       paramsBukuTabunganSecurity,
-      paramsKartuKoperasiPromise
+      paramsKartuKoperasiPromise,
+      paramsLebelKartuObat
     );
 
     setParamsSpiral(nextSpiral);
@@ -414,6 +427,7 @@ export default function PricelistClient() {
     setParamsBukuTabunganNs(nextBukuTabunganNs);
     setParamsBukuTabunganSecurity(nextBukuTabunganSecurity);
     setParamsKartuKoperasiPromise(nextKartuKoperasiPromise);
+    setParamsLebelKartuObat(nextLebelKartuObat);
   };
 
   const fetchData = useCallback(async () => {
@@ -633,6 +647,7 @@ export default function PricelistClient() {
               { value: 'Buku Tabungan NS', label: '📒 Buku Tabungan NS' },
               { value: 'Buku Tabungan Security', label: '🔒 Buku Tabungan Security' },
               { value: 'Kartu Koperasi Promise', label: '🪪 Kartu Koperasi' },
+              { value: 'Lebel Kartu Obat', label: '💊 Lebel Kartu Obat' },
             ]}
             value={selectedProductCategory}
             onChange={(val) => handleProductCategoryChange(val as any)}
@@ -723,6 +738,11 @@ export default function PricelistClient() {
             <KartuKoperasiPromiseMasterParameter
               customParams={paramsKartuKoperasiPromise}
               setCustomParams={setParamsKartuKoperasiPromise}
+            />
+          ) : selectedProductCategory === 'Lebel Kartu Obat' ? (
+            <LebelKartuObatMasterParameter
+              customParams={paramsLebelKartuObat}
+              setCustomParams={setParamsLebelKartuObat}
             />
           ) : (
             <PricelistMasterParameter
@@ -898,6 +918,16 @@ export default function PricelistClient() {
               activeSimulationTitle={activeSimulationTitle}
               setActiveSimulationTitle={setActiveSimulationTitle}
             />
+          ) : selectedProductCategory === 'Lebel Kartu Obat' ? (
+            <LebelKartuObatSimulator
+              customParams={paramsLebelKartuObat}
+              setCustomParams={setParamsLebelKartuObat}
+              onOpenMasterParam={() => setActiveTab('parameter')}
+              activeSimulationId={activeSimulationId}
+              setActiveSimulationId={setActiveSimulationId}
+              activeSimulationTitle={activeSimulationTitle}
+              setActiveSimulationTitle={setActiveSimulationTitle}
+            />
           ) : (
             <PricelistSimulator
               customParams={customParams}
@@ -1014,6 +1044,12 @@ export default function PricelistClient() {
           ) : selectedProductCategory === 'Kartu Koperasi Promise' ? (
             <KartuKoperasiPromiseMatrixView
               customParams={paramsKartuKoperasiPromise}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+            />
+          ) : selectedProductCategory === 'Lebel Kartu Obat' ? (
+            <LebelKartuObatMatrixView
+              customParams={paramsLebelKartuObat}
               viewMode={viewMode}
               setViewMode={setViewMode}
             />

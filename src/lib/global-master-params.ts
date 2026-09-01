@@ -17,6 +17,7 @@ import { UndanganMasterParams, DEFAULT_UNDANGAN_PARAMS } from './undangan-calcul
 import { BukuTabunganNsMasterParams, DEFAULT_BUKU_TABUNGAN_NS_PARAMS } from './buku-tabungan-ns-calculator';
 import { BukuTabunganSecurityMasterParams, DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS } from './buku-tabungan-security-calculator';
 import { KartuKoperasiPromiseMasterParams, DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS } from './kartu-koperasi-promise-calculator';
+import { LebelKartuObatMasterParams, DEFAULT_LEBEL_KARTU_OBAT_PARAMS } from './lebel-kartu-obat-calculator';
 
 export interface GlobalMasterParams {
   // 1. Mesin Cetak Offset Oliver (58 / 52)
@@ -103,7 +104,8 @@ export function applyGlobalParamsToAll(
   currUndangan: UndanganMasterParams = DEFAULT_UNDANGAN_PARAMS,
   currBukuTabunganNs: BukuTabunganNsMasterParams = DEFAULT_BUKU_TABUNGAN_NS_PARAMS,
   currBukuTabunganSecurity: BukuTabunganSecurityMasterParams = DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS,
-  currKartuKoperasiPromise: KartuKoperasiPromiseMasterParams = DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS
+  currKartuKoperasiPromise: KartuKoperasiPromiseMasterParams = DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS,
+  currLebelKartuObat: LebelKartuObatMasterParams = DEFAULT_LEBEL_KARTU_OBAT_PARAMS
 ) {
   const nextSpiral: SimulatorMasterParams = {
     ...currSpiral,
@@ -361,6 +363,17 @@ export function applyGlobalParamsToAll(
     tarifLakbanRoll: g.tarifLakbanRoll,
   };
 
+  const nextLebelKartuObat: LebelKartuObatMasterParams = {
+    ...currLebelKartuObat,
+    tarifKertasKg: g.tarifHvs70,
+    upKertasPct: g.upKertasPct,
+    tarifDesain: g.tarifPrintA3 * 4,
+    tarifPlatePerPlat: g.oliverPlatUnit,
+    tarifCetakMinPerPlat: g.oliverMinOngkos,
+    tarifDrek: g.oliverDrekOver,
+    tarifSisirPer500: g.tarifSisirPcs * 66,
+  };
+
   return {
     nextSpiral,
     nextKlem,
@@ -380,5 +393,6 @@ export function applyGlobalParamsToAll(
     nextBukuTabunganNs,
     nextBukuTabunganSecurity,
     nextKartuKoperasiPromise,
+    nextLebelKartuObat,
   };
 }
