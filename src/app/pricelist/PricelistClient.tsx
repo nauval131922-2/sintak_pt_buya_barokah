@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   Loader2,
   FileSpreadsheet,
@@ -216,29 +216,131 @@ export default function PricelistClient() {
   const [backupParamsSpiral, setBackupParamsSpiral] = useState<SimulatorMasterParams | null>(null);
   const [backupParamsKlem, setBackupParamsKlem] = useState<SimulatorMasterParams | null>(null);
   const [isInitialLoaded, setIsInitialLoaded] = useState(false);
+  const previousActiveSimIdRef = useRef<string | null>(null);
+
+  // Helper util untuk memulihkan seluruh master parameter aktif dari localStorage
+  const restoreAllMasterParamsFromLocalStorage = useCallback(() => {
+    try {
+      const savedSpiral = localStorage.getItem('sintak_pricelist_master_params_spiral')
+        ?? localStorage.getItem('sintak_pricelist_master_params');
+      if (savedSpiral) setParamsSpiral({ ...DEFAULT_MASTER_PARAMS, ...JSON.parse(savedSpiral) });
+
+      const savedKlem = localStorage.getItem('sintak_pricelist_master_params_klem');
+      if (savedKlem) setParamsKlem({ ...DEFAULT_MASTER_PARAMS_KLEM, ...JSON.parse(savedKlem) });
+
+      const savedManasik = localStorage.getItem('sintak_pricelist_master_params_manasik');
+      if (savedManasik) setParamsManasik({ ...DEFAULT_MANASIK_PARAMS, ...JSON.parse(savedManasik) });
+
+      const savedYasin = localStorage.getItem('sintak_pricelist_master_params_yasin');
+      if (savedYasin) setParamsYasin({ ...DEFAULT_YASIN_PARAMS, ...JSON.parse(savedYasin) });
+
+      const savedNota = localStorage.getItem('sintak_pricelist_master_params_nota');
+      if (savedNota) setParamsNota({ ...DEFAULT_NOTA_PARAMS, ...JSON.parse(savedNota) });
+
+      const savedBrosur = localStorage.getItem('sintak_pricelist_master_params_brosur');
+      if (savedBrosur) setParamsBrosur({ ...DEFAULT_BROSUR_PARAMS, ...JSON.parse(savedBrosur) });
+
+      const savedLabelKhq = localStorage.getItem('sintak_pricelist_master_params_label_khq');
+      if (savedLabelKhq) setParamsLabelKhq({ ...DEFAULT_LABEL_KHQ_PARAMS, ...JSON.parse(savedLabelKhq) });
+
+      const savedBukuTulis = localStorage.getItem('sintak_pricelist_master_params_buku_tulis');
+      if (savedBukuTulis) setParamsBukuTulis({ ...DEFAULT_BUKU_TULIS_PARAMS, ...JSON.parse(savedBukuTulis) });
+
+      const savedStopmap = localStorage.getItem('sintak_pricelist_master_params_stopmap');
+      if (savedStopmap) setParamsStopmap({ ...DEFAULT_STOPMAP_PARAMS, ...JSON.parse(savedStopmap) });
+
+      const savedSyahadah = localStorage.getItem('sintak_pricelist_master_params_syahadah');
+      if (savedSyahadah) setParamsSyahadah({ ...DEFAULT_SYAHADAH_PARAMS, ...JSON.parse(savedSyahadah) });
+
+      const savedRaportKaleb = localStorage.getItem('sintak_pricelist_master_params_raport_kaleb');
+      if (savedRaportKaleb) setParamsRaportKaleb({ ...DEFAULT_RAPORT_KALEB_PARAMS, ...JSON.parse(savedRaportKaleb) });
+
+      const savedKopSurat = localStorage.getItem('sintak_pricelist_master_params_kop_surat');
+      if (savedKopSurat) setParamsKopSurat({ ...DEFAULT_KOP_SURAT_PARAMS, ...JSON.parse(savedKopSurat) });
+
+      const savedAmplop = localStorage.getItem('sintak_pricelist_master_params_amplop');
+      if (savedAmplop) setParamsAmplop({ ...DEFAULT_AMPLOP_PARAMS, ...JSON.parse(savedAmplop) });
+
+      const savedSertifikat = localStorage.getItem('sintak_pricelist_master_params_sertifikat');
+      if (savedSertifikat) setParamsSertifikat({ ...DEFAULT_SERTIFIKAT_PARAMS, ...JSON.parse(savedSertifikat) });
+
+      const savedUndangan = localStorage.getItem('sintak_pricelist_master_params_undangan');
+      if (savedUndangan) setParamsUndangan({ ...DEFAULT_UNDANGAN_PARAMS, ...JSON.parse(savedUndangan) });
+
+      const savedBukuTabunganNs = localStorage.getItem('sintak_pricelist_master_params_buku_tabungan_ns');
+      if (savedBukuTabunganNs) setParamsBukuTabunganNs({ ...DEFAULT_BUKU_TABUNGAN_NS_PARAMS, ...JSON.parse(savedBukuTabunganNs) });
+
+      const savedBukuTabunganSecurity = localStorage.getItem('sintak_pricelist_master_params_buku_tabungan_security');
+      if (savedBukuTabunganSecurity) setParamsBukuTabunganSecurity({ ...DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS, ...JSON.parse(savedBukuTabunganSecurity) });
+
+      const savedKartuKoperasiPromise = localStorage.getItem('sintak_pricelist_master_params_kartu_koperasi_promise');
+      if (savedKartuKoperasiPromise) setParamsKartuKoperasiPromise({ ...DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS, ...JSON.parse(savedKartuKoperasiPromise) });
+
+      const savedLebelKartuObat = localStorage.getItem('sintak_pricelist_master_params_lebel_kartu_obat');
+      if (savedLebelKartuObat) setParamsLebelKartuObat({ ...DEFAULT_LEBEL_KARTU_OBAT_PARAMS, ...JSON.parse(savedLebelKartuObat) });
+
+      const savedBukuSoftCover = localStorage.getItem('sintak_pricelist_master_params_buku_soft_cover');
+      if (savedBukuSoftCover) setParamsBukuSoftCover({ ...DEFAULT_BUKU_SOFT_COVER_PARAMS, ...JSON.parse(savedBukuSoftCover) });
+
+      const savedBukuSoftCover145x2025 = localStorage.getItem('sintak_pricelist_master_params_buku_soft_cover_145x2025');
+      if (savedBukuSoftCover145x2025) setParamsBukuSoftCover145x2025({ ...DEFAULT_BUKU_SOFT_COVER_145X2025_PARAMS, ...JSON.parse(savedBukuSoftCover145x2025) });
+
+      const savedBukuHardCover105x148 = localStorage.getItem('sintak_pricelist_master_params_buku_hard_cover_105x148');
+      if (savedBukuHardCover105x148) setParamsBukuHardCover105x148({ ...DEFAULT_BUKU_HARD_COVER_105X148_PARAMS, ...JSON.parse(savedBukuHardCover105x148) });
+
+      const savedPoster = localStorage.getItem('sintak_pricelist_master_params_poster');
+      if (savedPoster) setParamsPoster({ ...DEFAULT_POSTER_PARAMS, ...JSON.parse(savedPoster) });
+
+      const savedMajalah = localStorage.getItem('sintak_pricelist_master_params_majalah');
+      if (savedMajalah) setParamsMajalah({ ...DEFAULT_MAJALAH_PARAMS, ...JSON.parse(savedMajalah) });
+
+      const savedStiker = localStorage.getItem('sintak_pricelist_master_params_stiker');
+      if (savedStiker) setParamsStiker({ ...DEFAULT_STIKER_PARAMS, ...JSON.parse(savedStiker) });
+
+      const savedBukuSoftCover105x148 = localStorage.getItem('sintak_pricelist_master_params_buku_soft_cover_105x148');
+      if (savedBukuSoftCover105x148) setParamsBukuSoftCover105x148({ ...DEFAULT_BUKU_SOFT_COVER_105X148_PARAMS, ...JSON.parse(savedBukuSoftCover105x148) });
+
+      const savedBukuHardCover145x2025 = localStorage.getItem('sintak_pricelist_master_params_buku_hard_cover_145x2025');
+      if (savedBukuHardCover145x2025) setParamsBukuHardCover145x2025({ ...DEFAULT_BUKU_HARD_COVER_145X2025_PARAMS, ...JSON.parse(savedBukuHardCover145x2025) });
+
+      const savedBukuHardCover21x297 = localStorage.getItem('sintak_pricelist_master_params_buku_hard_cover_21x297');
+      if (savedBukuHardCover21x297) setParamsBukuHardCover21x297({ ...DEFAULT_BUKU_HARD_COVER_21X297_PARAMS, ...JSON.parse(savedBukuHardCover21x297) });
+
+      const savedKalenderKop = localStorage.getItem('sintak_pricelist_master_params_kalender_kop');
+      if (savedKalenderKop) setParamsKalenderKop({ ...DEFAULT_KALENDER_KOP_PARAMS, ...JSON.parse(savedKalenderKop) });
+
+      const savedPackaging = localStorage.getItem('sintak_pricelist_master_params_packaging');
+      if (savedPackaging) setParamsPackaging({ ...DEFAULT_PACKAGING_PARAMS, ...JSON.parse(savedPackaging) });
+
+      const savedPaperbag = localStorage.getItem('sintak_pricelist_master_params_paperbag');
+      if (savedPaperbag) setParamsPaperbag({ ...DEFAULT_PAPERBAG_PARAMS, ...JSON.parse(savedPaperbag) });
+
+      const savedGlobal = localStorage.getItem('sintak_pricelist_master_params_global');
+      if (savedGlobal) setParamsGlobal({ ...DEFAULT_GLOBAL_PARAMS, ...JSON.parse(savedGlobal) });
+    } catch (e) {
+      console.error('Failed to restore master parameters from localStorage:', e);
+    }
+  }, []);
+
+  // Pantau saat keluar dari mode edit simulasi (activeSimulationId -> null)
+  useEffect(() => {
+    if (previousActiveSimIdRef.current && !activeSimulationId) {
+      restoreAllMasterParamsFromLocalStorage();
+    }
+    previousActiveSimIdRef.current = activeSimulationId;
+  }, [activeSimulationId, restoreAllMasterParamsFromLocalStorage]);
 
   // Load preferences from localStorage after mount (client-only) to prevent hydration mismatch
   useEffect(() => {
     try {
       const savedTab = localStorage.getItem('sintak_pricelist_active_tab');
       if (savedTab === 'parameter' || savedTab === 'simulator' || savedTab === 'matrix' || savedTab === 'saved') {
-        setActiveTab(savedTab as any);
+        setActiveTab(savedTab as 'parameter' | 'simulator' | 'matrix' | 'saved');
       }
 
       const savedFinishing = localStorage.getItem('sintak_pricelist_finishing');
       if (savedFinishing === 'Spiral' || savedFinishing === 'Klem') {
         setSelectedFinishing(savedFinishing);
-      }
-
-      const savedSpiral = localStorage.getItem('sintak_pricelist_master_params_spiral')
-        ?? localStorage.getItem('sintak_pricelist_master_params');
-      if (savedSpiral) {
-        setParamsSpiral({ ...DEFAULT_MASTER_PARAMS, ...JSON.parse(savedSpiral) });
-      }
-
-      const savedKlem = localStorage.getItem('sintak_pricelist_master_params_klem');
-      if (savedKlem) {
-        setParamsKlem({ ...DEFAULT_MASTER_PARAMS_KLEM, ...JSON.parse(savedKlem) });
       }
 
       const savedView = localStorage.getItem('sintak_pricelist_view_mode');
@@ -279,162 +381,16 @@ export default function PricelistClient() {
         savedCategory === 'Packaging' ||
         savedCategory === 'Paperbag'
       ) {
-        setSelectedProductCategory(savedCategory as any);
+        setSelectedProductCategory(savedCategory);
       }
 
-      const savedManasik = localStorage.getItem('sintak_pricelist_master_params_manasik');
-      if (savedManasik) {
-        setParamsManasik({ ...DEFAULT_MANASIK_PARAMS, ...JSON.parse(savedManasik) });
-      }
-
-      const savedYasin = localStorage.getItem('sintak_pricelist_master_params_yasin');
-      if (savedYasin) {
-        setParamsYasin({ ...DEFAULT_YASIN_PARAMS, ...JSON.parse(savedYasin) });
-      }
-
-      const savedNota = localStorage.getItem('sintak_pricelist_master_params_nota');
-      if (savedNota) {
-        setParamsNota({ ...DEFAULT_NOTA_PARAMS, ...JSON.parse(savedNota) });
-      }
-
-      const savedBrosur = localStorage.getItem('sintak_pricelist_master_params_brosur');
-      if (savedBrosur) {
-        setParamsBrosur({ ...DEFAULT_BROSUR_PARAMS, ...JSON.parse(savedBrosur) });
-      }
-
-      const savedLabelKhq = localStorage.getItem('sintak_pricelist_master_params_label_khq');
-      if (savedLabelKhq) {
-        setParamsLabelKhq({ ...DEFAULT_LABEL_KHQ_PARAMS, ...JSON.parse(savedLabelKhq) });
-      }
-
-      const savedBukuTulis = localStorage.getItem('sintak_pricelist_master_params_buku_tulis');
-      if (savedBukuTulis) {
-        setParamsBukuTulis({ ...DEFAULT_BUKU_TULIS_PARAMS, ...JSON.parse(savedBukuTulis) });
-      }
-
-      const savedStopmap = localStorage.getItem('sintak_pricelist_master_params_stopmap');
-      if (savedStopmap) {
-        setParamsStopmap({ ...DEFAULT_STOPMAP_PARAMS, ...JSON.parse(savedStopmap) });
-      }
-
-      const savedSyahadah = localStorage.getItem('sintak_pricelist_master_params_syahadah');
-      if (savedSyahadah) {
-        setParamsSyahadah({ ...DEFAULT_SYAHADAH_PARAMS, ...JSON.parse(savedSyahadah) });
-      }
-
-      const savedRaportKaleb = localStorage.getItem('sintak_pricelist_master_params_raport_kaleb');
-      if (savedRaportKaleb) {
-        setParamsRaportKaleb({ ...DEFAULT_RAPORT_KALEB_PARAMS, ...JSON.parse(savedRaportKaleb) });
-      }
-
-      const savedKopSurat = localStorage.getItem('sintak_pricelist_master_params_kop_surat');
-      if (savedKopSurat) {
-        setParamsKopSurat({ ...DEFAULT_KOP_SURAT_PARAMS, ...JSON.parse(savedKopSurat) });
-      }
-
-      const savedAmplop = localStorage.getItem('sintak_pricelist_master_params_amplop');
-      if (savedAmplop) {
-        setParamsAmplop({ ...DEFAULT_AMPLOP_PARAMS, ...JSON.parse(savedAmplop) });
-      }
-
-      const savedSertifikat = localStorage.getItem('sintak_pricelist_master_params_sertifikat');
-      if (savedSertifikat) {
-        setParamsSertifikat({ ...DEFAULT_SERTIFIKAT_PARAMS, ...JSON.parse(savedSertifikat) });
-      }
-
-      const savedUndangan = localStorage.getItem('sintak_pricelist_master_params_undangan');
-      if (savedUndangan) {
-        setParamsUndangan({ ...DEFAULT_UNDANGAN_PARAMS, ...JSON.parse(savedUndangan) });
-      }
-
-      const savedBukuTabunganNs = localStorage.getItem('sintak_pricelist_master_params_buku_tabungan_ns');
-      if (savedBukuTabunganNs) {
-        setParamsBukuTabunganNs({ ...DEFAULT_BUKU_TABUNGAN_NS_PARAMS, ...JSON.parse(savedBukuTabunganNs) });
-      }
-
-      const savedBukuTabunganSecurity = localStorage.getItem('sintak_pricelist_master_params_buku_tabungan_security');
-      if (savedBukuTabunganSecurity) {
-        setParamsBukuTabunganSecurity({ ...DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS, ...JSON.parse(savedBukuTabunganSecurity) });
-      }
-
-      const savedKartuKoperasiPromise = localStorage.getItem('sintak_pricelist_master_params_kartu_koperasi_promise');
-      if (savedKartuKoperasiPromise) {
-        setParamsKartuKoperasiPromise({ ...DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS, ...JSON.parse(savedKartuKoperasiPromise) });
-      }
-
-      const savedLebelKartuObat = localStorage.getItem('sintak_pricelist_master_params_lebel_kartu_obat');
-      if (savedLebelKartuObat) {
-        setParamsLebelKartuObat({ ...DEFAULT_LEBEL_KARTU_OBAT_PARAMS, ...JSON.parse(savedLebelKartuObat) });
-      }
-
-      const savedBukuSoftCover = localStorage.getItem('sintak_pricelist_master_params_buku_soft_cover');
-      if (savedBukuSoftCover) {
-        setParamsBukuSoftCover({ ...DEFAULT_BUKU_SOFT_COVER_PARAMS, ...JSON.parse(savedBukuSoftCover) });
-      }
-
-      const savedBukuSoftCover145x2025 = localStorage.getItem('sintak_pricelist_master_params_buku_soft_cover_145x2025');
-      if (savedBukuSoftCover145x2025) {
-        setParamsBukuSoftCover145x2025({ ...DEFAULT_BUKU_SOFT_COVER_145X2025_PARAMS, ...JSON.parse(savedBukuSoftCover145x2025) });
-      }
-
-      const savedBukuHardCover105x148 = localStorage.getItem('sintak_pricelist_master_params_buku_hard_cover_105x148');
-      if (savedBukuHardCover105x148) {
-        setParamsBukuHardCover105x148({ ...DEFAULT_BUKU_HARD_COVER_105X148_PARAMS, ...JSON.parse(savedBukuHardCover105x148) });
-      }
-
-      const savedPoster = localStorage.getItem('sintak_pricelist_master_params_poster');
-      if (savedPoster) {
-        setParamsPoster({ ...DEFAULT_POSTER_PARAMS, ...JSON.parse(savedPoster) });
-      }
-
-      const savedMajalah = localStorage.getItem('sintak_pricelist_master_params_majalah');
-      if (savedMajalah) {
-        setParamsMajalah({ ...DEFAULT_MAJALAH_PARAMS, ...JSON.parse(savedMajalah) });
-      }
-
-      const savedStiker = localStorage.getItem('sintak_pricelist_master_params_stiker');
-      if (savedStiker) {
-        setParamsStiker({ ...DEFAULT_STIKER_PARAMS, ...JSON.parse(savedStiker) });
-      }
-
-      const savedBukuSoftCover105x148 = localStorage.getItem('sintak_pricelist_master_params_buku_soft_cover_105x148');
-      if (savedBukuSoftCover105x148) {
-        setParamsBukuSoftCover105x148({ ...DEFAULT_BUKU_SOFT_COVER_105X148_PARAMS, ...JSON.parse(savedBukuSoftCover105x148) });
-      }
-
-      const savedBukuHardCover145x2025 = localStorage.getItem('sintak_pricelist_master_params_buku_hard_cover_145x2025');
-      if (savedBukuHardCover145x2025) {
-        setParamsBukuHardCover145x2025({ ...DEFAULT_BUKU_HARD_COVER_145X2025_PARAMS, ...JSON.parse(savedBukuHardCover145x2025) });
-      }
-
-      const savedBukuHardCover21x297 = localStorage.getItem('sintak_pricelist_master_params_buku_hard_cover_21x297');
-      if (savedBukuHardCover21x297) {
-        setParamsBukuHardCover21x297({ ...DEFAULT_BUKU_HARD_COVER_21X297_PARAMS, ...JSON.parse(savedBukuHardCover21x297) });
-      }
-
-      const savedKalenderKop = localStorage.getItem('sintak_pricelist_master_params_kalender_kop');
-      if (savedKalenderKop) {
-        setParamsKalenderKop({ ...DEFAULT_KALENDER_KOP_PARAMS, ...JSON.parse(savedKalenderKop) });
-      }
-      const savedPackaging = localStorage.getItem('sintak_pricelist_master_params_packaging');
-      if (savedPackaging) {
-        setParamsPackaging({ ...DEFAULT_PACKAGING_PARAMS, ...JSON.parse(savedPackaging) });
-      }
-      const savedPaperbag = localStorage.getItem('sintak_pricelist_master_params_paperbag');
-      if (savedPaperbag) {
-        setParamsPaperbag({ ...DEFAULT_PAPERBAG_PARAMS, ...JSON.parse(savedPaperbag) });
-      }
-
-      const savedGlobal = localStorage.getItem('sintak_pricelist_master_params_global');
-      if (savedGlobal) {
-        setParamsGlobal({ ...DEFAULT_GLOBAL_PARAMS, ...JSON.parse(savedGlobal) });
-      }
+      restoreAllMasterParamsFromLocalStorage();
     } catch (e) {
       console.error('Failed to load localStorage preferences:', e);
     } finally {
       setIsInitialLoaded(true);
     }
-  }, []);
+  }, [restoreAllMasterParamsFromLocalStorage]);
 
   // Sync selectedProductCategory across tabs
   const handleProductCategoryChange = (
@@ -478,9 +434,50 @@ export default function PricelistClient() {
   };
 
   const handleLoadSimulationFromList = (item: UnifiedCalculationItem) => {
-    handleProductCategoryChange(item.category as any);
+    handleProductCategoryChange(item.category as typeof selectedProductCategory);
     setActiveSimulationId(item.id);
     setActiveSimulationTitle(item.title);
+
+    // Pulihkan snapshot master parameter ke state produk yang bersangkutan
+    const raw = item.rawData as Record<string, unknown> | undefined;
+    const snapshot = raw?.paramsSnapshot || raw?.customParams;
+    if (snapshot && typeof snapshot === 'object') {
+      const s = snapshot as never;
+      if (item.category === 'Kalender') {
+        const jilid = (raw?.finishingJilid || (raw?.summary as Record<string, unknown>)?.finishingJilid || 'Spiral') as 'Spiral' | 'Klem';
+        if (jilid === 'Klem') setParamsKlem(s);
+        else setParamsSpiral(s);
+      } else if (item.category === 'Buku Manasik') setParamsManasik(s);
+      else if (item.category === 'Buku Yasin') setParamsYasin(s);
+      else if (item.category === 'Nota 1 Warna') setParamsNota(s);
+      else if (item.category === 'Brosur 2026') setParamsBrosur(s);
+      else if (item.category === 'Label KHQ') setParamsLabelKhq(s);
+      else if (item.category === 'Buku Tulis') setParamsBukuTulis(s);
+      else if (item.category === 'Stopmap') setParamsStopmap(s);
+      else if (item.category === 'Syahadah') setParamsSyahadah(s);
+      else if (item.category === 'Raport Kaleb') setParamsRaportKaleb(s);
+      else if (item.category === 'Kop Surat') setParamsKopSurat(s);
+      else if (item.category === 'Amplop') setParamsAmplop(s);
+      else if (item.category === 'Sertifikat') setParamsSertifikat(s);
+      else if (item.category === 'Undangan') setParamsUndangan(s);
+      else if (item.category === 'Buku Tabungan NS') setParamsBukuTabunganNs(s);
+      else if (item.category === 'Buku Tabungan Security') setParamsBukuTabunganSecurity(s);
+      else if (item.category === 'Kartu Koperasi Promise') setParamsKartuKoperasiPromise(s);
+      else if (item.category === 'Lebel Kartu Obat') setParamsLebelKartuObat(s);
+      else if (item.category === 'Buku Soft Cover') setParamsBukuSoftCover(s);
+      else if (item.category === 'Buku Soft Cover 14,5×20,25') setParamsBukuSoftCover145x2025(s);
+      else if (item.category === 'Buku Hard Cover 10,5×14,8') setParamsBukuHardCover105x148(s);
+      else if (item.category === 'Poster') setParamsPoster(s);
+      else if (item.category === 'Majalah 14,5×20,25') setParamsMajalah(s);
+      else if (item.category === 'Stiker') setParamsStiker(s);
+      else if (item.category === 'Buku Soft Cover 10,5×14,8') setParamsBukuSoftCover105x148(s);
+      else if (item.category === 'Buku Hard Cover 14,5×20,25') setParamsBukuHardCover145x2025(s);
+      else if (item.category === 'Buku Hard Cover 21×29,7') setParamsBukuHardCover21x297(s);
+      else if (item.category === 'Kalender Kop') setParamsKalenderKop(s);
+      else if (item.category === 'Packaging') setParamsPackaging(s);
+      else if (item.category === 'Paperbag') setParamsPaperbag(s);
+    }
+
     setActiveTab('simulator');
   };
   // Otomatis pindah ke tab Daftar Kalkulasi setelah kalkulasi berhasil disimpan
@@ -520,6 +517,7 @@ export default function PricelistClient() {
   // Simpan master parameter ke localStorage langsung saat state berubah (hanya setelah initial load selesai)
   useEffect(() => {
     if (!isInitialLoaded) return;
+    if (activeSimulationId) return; // JANGAN timpa localStorage master parameter permanen jika sedang dalam mode edit simulasi!
     try {
       localStorage.setItem('sintak_pricelist_master_params_spiral', JSON.stringify(paramsSpiral));
       localStorage.setItem('sintak_pricelist_master_params_klem', JSON.stringify(paramsKlem));
