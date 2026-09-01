@@ -57,6 +57,9 @@ import AmplopMatrixView from './AmplopMatrixView';
 import SertifikatMasterParameter from './SertifikatMasterParameter';
 import SertifikatSimulator, { SavedSertifikatSimulationItem } from './SertifikatSimulator';
 import SertifikatMatrixView from './SertifikatMatrixView';
+import UndanganMasterParameter from './UndanganMasterParameter';
+import UndanganSimulator, { SavedUndanganSimulationItem } from './UndanganSimulator';
+import UndanganMatrixView from './UndanganMatrixView';
 import SavedCalculationsList, { UnifiedCalculationItem } from './SavedCalculationsList';
 import SquareDropdown from '@/components/SquareDropdown';
 import GlobalMasterParameter from './GlobalMasterParameter';
@@ -78,6 +81,7 @@ import { DEFAULT_RAPORT_KALEB_PARAMS, RaportKalebMasterParams } from '@/lib/rapo
 import { DEFAULT_KOP_SURAT_PARAMS, KopSuratMasterParams } from '@/lib/kop-surat-calculator';
 import { DEFAULT_AMPLOP_PARAMS, AmplopMasterParams } from '@/lib/amplop-calculator';
 import { DEFAULT_SERTIFIKAT_PARAMS, SertifikatMasterParams } from '@/lib/sertifikat-calculator';
+import { DEFAULT_UNDANGAN_PARAMS, UndanganMasterParams } from '@/lib/undangan-calculator';
 import { recalculatePricelistFromParams } from '@/lib/pricelist-calculator';
 
 interface PricelistItem {
@@ -121,7 +125,8 @@ export default function PricelistClient() {
   const [paramsKopSurat, setParamsKopSurat] = useState<KopSuratMasterParams>(DEFAULT_KOP_SURAT_PARAMS);
   const [paramsAmplop, setParamsAmplop] = useState<AmplopMasterParams>(DEFAULT_AMPLOP_PARAMS);
   const [paramsSertifikat, setParamsSertifikat] = useState<SertifikatMasterParams>(DEFAULT_SERTIFIKAT_PARAMS);
-  const [selectedProductCategory, setSelectedProductCategory] = useState<'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat'>('Kalender');
+  const [paramsUndangan, setParamsUndangan] = useState<UndanganMasterParams>(DEFAULT_UNDANGAN_PARAMS);
+  const [selectedProductCategory, setSelectedProductCategory] = useState<'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan'>('Kalender');
   const [paramsSpiral, setParamsSpiral] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS);
   const [paramsKlem, setParamsKlem] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS_KLEM);
 
@@ -174,7 +179,8 @@ export default function PricelistClient() {
         savedCategory === 'Raport Kaleb' ||
         savedCategory === 'Kop Surat' ||
         savedCategory === 'Amplop' ||
-        savedCategory === 'Sertifikat'
+        savedCategory === 'Sertifikat' ||
+        savedCategory === 'Undangan'
       ) {
         setSelectedProductCategory(savedCategory as any);
       }
@@ -219,6 +225,11 @@ export default function PricelistClient() {
         setParamsSertifikat({ ...DEFAULT_SERTIFIKAT_PARAMS, ...JSON.parse(savedSertifikat) });
       }
 
+      const savedUndangan = localStorage.getItem('sintak_pricelist_master_params_undangan');
+      if (savedUndangan) {
+        setParamsUndangan({ ...DEFAULT_UNDANGAN_PARAMS, ...JSON.parse(savedUndangan) });
+      }
+
       const savedGlobal = localStorage.getItem('sintak_pricelist_master_params_global');
       if (savedGlobal) {
         setParamsGlobal({ ...DEFAULT_GLOBAL_PARAMS, ...JSON.parse(savedGlobal) });
@@ -230,7 +241,7 @@ export default function PricelistClient() {
 
   // Sync selectedProductCategory across tabs
   const handleProductCategoryChange = (
-    category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat'
+    category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan'
   ) => {
     setSelectedProductCategory(category);
     try {
@@ -316,17 +327,18 @@ export default function PricelistClient() {
         localStorage.setItem('sintak_pricelist_master_params_kop_surat', JSON.stringify(paramsKopSurat));
         localStorage.setItem('sintak_pricelist_master_params_amplop', JSON.stringify(paramsAmplop));
         localStorage.setItem('sintak_pricelist_master_params_sertifikat', JSON.stringify(paramsSertifikat));
+        localStorage.setItem('sintak_pricelist_master_params_undangan', JSON.stringify(paramsUndangan));
       } catch (e) {
         console.error('Failed to save master params to localStorage:', e);
       }
     }, 400);
     return () => clearTimeout(timer);
-  }, [paramsSpiral, paramsKlem, paramsGlobal, paramsLabelKhq, paramsBukuTulis, paramsStopmap, paramsSyahadah, paramsRaportKaleb, paramsKopSurat, paramsAmplop, paramsSertifikat]);
+  }, [paramsSpiral, paramsKlem, paramsGlobal, paramsLabelKhq, paramsBukuTulis, paramsStopmap, paramsSyahadah, paramsRaportKaleb, paramsKopSurat, paramsAmplop, paramsSertifikat, paramsUndangan]);
 
   // Fungsi sebarkan parameter global ke seluruh produk
   const handleApplyGlobalParams = (targetGlobal?: GlobalMasterParams) => {
     const g = targetGlobal || paramsGlobal;
-    const { nextSpiral, nextKlem, nextManasik, nextYasin, nextNota, nextBrosur, nextLabelKhq, nextBukuTulis, nextStopmap, nextSyahadah, nextRaportKaleb, nextKopSurat, nextAmplop, nextSertifikat } = applyGlobalParamsToAll(
+    const { nextSpiral, nextKlem, nextManasik, nextYasin, nextNota, nextBrosur, nextLabelKhq, nextBukuTulis, nextStopmap, nextSyahadah, nextRaportKaleb, nextKopSurat, nextAmplop, nextSertifikat, nextUndangan } = applyGlobalParamsToAll(
       g,
       paramsSpiral,
       paramsKlem,
@@ -341,7 +353,8 @@ export default function PricelistClient() {
       paramsRaportKaleb,
       paramsKopSurat,
       paramsAmplop,
-      paramsSertifikat
+      paramsSertifikat,
+      paramsUndangan
     );
 
     setParamsSpiral(nextSpiral);
@@ -358,6 +371,7 @@ export default function PricelistClient() {
     setParamsKopSurat(nextKopSurat);
     setParamsAmplop(nextAmplop);
     setParamsSertifikat(nextSertifikat);
+    setParamsUndangan(nextUndangan);
   };
 
   const fetchData = useCallback(async () => {
@@ -573,6 +587,7 @@ export default function PricelistClient() {
               { value: 'Kop Surat', label: '📄 Kop Surat' },
               { value: 'Amplop', label: '✉️ Amplop' },
               { value: 'Sertifikat', label: '📜 Sertifikat' },
+              { value: 'Undangan', label: '💌 Undangan' },
             ]}
             value={selectedProductCategory}
             onChange={(val) => handleProductCategoryChange(val as any)}
@@ -643,6 +658,11 @@ export default function PricelistClient() {
             <SertifikatMasterParameter
               customParams={paramsSertifikat}
               setCustomParams={setParamsSertifikat}
+            />
+          ) : selectedProductCategory === 'Undangan' ? (
+            <UndanganMasterParameter
+              customParams={paramsUndangan}
+              setCustomParams={setParamsUndangan}
             />
           ) : (
             <PricelistMasterParameter
@@ -778,6 +798,16 @@ export default function PricelistClient() {
               activeSimulationTitle={activeSimulationTitle}
               setActiveSimulationTitle={setActiveSimulationTitle}
             />
+          ) : selectedProductCategory === 'Undangan' ? (
+            <UndanganSimulator
+              customParams={paramsUndangan}
+              setCustomParams={setParamsUndangan}
+              onOpenMasterParam={() => setActiveTab('parameter')}
+              activeSimulationId={activeSimulationId}
+              setActiveSimulationId={setActiveSimulationId}
+              activeSimulationTitle={activeSimulationTitle}
+              setActiveSimulationTitle={setActiveSimulationTitle}
+            />
           ) : (
             <PricelistSimulator
               customParams={customParams}
@@ -870,6 +900,12 @@ export default function PricelistClient() {
           ) : selectedProductCategory === 'Sertifikat' ? (
             <SertifikatMatrixView
               customParams={paramsSertifikat}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+            />
+          ) : selectedProductCategory === 'Undangan' ? (
+            <UndanganMatrixView
+              customParams={paramsUndangan}
               viewMode={viewMode}
               setViewMode={setViewMode}
             />

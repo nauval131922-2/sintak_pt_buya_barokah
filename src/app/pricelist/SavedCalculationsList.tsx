@@ -38,10 +38,11 @@ import { SavedRaportKalebSimulationItem } from './RaportKalebSimulator';
 import { SavedKopSuratSimulationItem } from './KopSuratSimulator';
 import { SavedAmplopSimulationItem } from './AmplopSimulator';
 import { SavedSertifikatSimulationItem } from './SertifikatSimulator';
+import { SavedUndanganSimulationItem } from './UndanganSimulator';
 
 export type UnifiedCalculationItem = {
   id: string;
-  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat';
+  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan';
   savedAt: string;
   title: string;
   oplah: number;
@@ -66,11 +67,12 @@ export type UnifiedCalculationItem = {
     | SavedRaportKalebSimulationItem
     | SavedKopSuratSimulationItem
     | SavedAmplopSimulationItem
-    | SavedSertifikatSimulationItem;
+    | SavedSertifikatSimulationItem
+    | SavedUndanganSimulationItem;
 };
 
 interface SavedCalculationsListProps {
-  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat';
+  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan';
   onLoadSimulation: (item: UnifiedCalculationItem) => void;
   activeSimulationId?: string | null;
 }
@@ -81,9 +83,9 @@ export default function SavedCalculationsList({
   activeSimulationId,
 }: SavedCalculationsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat'>('ALL');
+  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan'>('ALL');
   
-  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat') => {
+  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan') => {
     setFilterCategory(val);
     try {
       localStorage.setItem('sintak_pricelist_saved_list_filter', val);
@@ -110,6 +112,7 @@ export default function SavedCalculationsList({
   const [kopSuratList, setKopSuratList] = useState<SavedKopSuratSimulationItem[]>([]);
   const [amplopList, setAmplopList] = useState<SavedAmplopSimulationItem[]>([]);
   const [sertifikatList, setSertifikatList] = useState<SavedSertifikatSimulationItem[]>([]);
+  const [undanganList, setUndanganList] = useState<SavedUndanganSimulationItem[]>([]);
 
   // Load from localStorage
   const refreshData = () => {
@@ -129,7 +132,8 @@ export default function SavedCalculationsList({
         savedFilter === 'Raport Kaleb' ||
         savedFilter === 'Kop Surat' ||
         savedFilter === 'Amplop' ||
-        savedFilter === 'Sertifikat'
+        savedFilter === 'Sertifikat' ||
+        savedFilter === 'Undangan'
       ) {
         setFilterCategory(savedFilter as any);
       }
@@ -185,6 +189,10 @@ export default function SavedCalculationsList({
       const rawSert = localStorage.getItem('sintak_saved_sertifikat_simulations');
       if (rawSert) setSertifikatList(JSON.parse(rawSert));
       else setSertifikatList([]);
+
+      const rawUnd = localStorage.getItem('sintak_saved_undangan_simulations');
+      if (rawUnd) setUndanganList(JSON.parse(rawUnd));
+      else setUndanganList([]);
     } catch (e) {
       console.error('Failed to load saved calculations:', e);
     }
@@ -510,9 +518,34 @@ export default function SavedCalculationsList({
       });
     });
 
+    // 14. Undangan
+    undanganList.forEach((u) => {
+      const inp = u.data.input;
+      const lam = inp.laminasi !== 'Tanpa Laminasi' ? ` · ${inp.laminasi}` : '';
+      items.push({
+        id: u.id,
+        category: 'Undangan',
+        savedAt: u.savedAt,
+        title: u.title,
+        oplah: inp.oplah,
+        specSummary: `Undangan ${inp.varian}${lam} • ${inp.oplah.toLocaleString('id-ID')} pcs`,
+        detailSpecs: [
+          `Bahan: ${inp.varian} · ${u.data.kebutuhanA3} lbr A3+`,
+          `Finishing: Sisir + OPP + Label${lam ? ` + ${inp.laminasi}` : ''} + Packing Kardus`,
+          `Margin: ${inp.marginPct}%`,
+        ],
+        hppUnit: u.data.hppPerPcs,
+        hargaJualUnit: u.data.hargaJualPerPcs,
+        totalOmset: u.data.totalHargaJual,
+        marginPct: inp.marginPct,
+        negoDiskonPct: inp.negoDiskonPct,
+        rawData: u,
+      });
+    });
+
     // Urutkan dari yang terbaru disimpan
     return items.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
-  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList, bukuTulisList, stopmapList, syahadahList, raportKalebList, kopSuratList, amplopList, sertifikatList]);
+  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList, bukuTulisList, stopmapList, syahadahList, raportKalebList, kopSuratList, amplopList, sertifikatList, undanganList]);
 
   // Filtered List
   const filteredList = useMemo(() => {
@@ -591,6 +624,10 @@ export default function SavedCalculationsList({
         const updated = sertifikatList.filter((s) => s.id !== item.id);
         setSertifikatList(updated);
         localStorage.setItem('sintak_saved_sertifikat_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Undangan') {
+        const updated = undanganList.filter((u) => u.id !== item.id);
+        setUndanganList(updated);
+        localStorage.setItem('sintak_saved_undangan_simulations', JSON.stringify(updated));
       }
       toast.success('Kalkulasi berhasil dihapus.');
     } catch (err) {
@@ -657,6 +694,10 @@ export default function SavedCalculationsList({
         const updated = sertifikatList.map((s) => (s.id === item.id ? { ...s, title: newTitle } : s));
         setSertifikatList(updated);
         localStorage.setItem('sintak_saved_sertifikat_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Undangan') {
+        const updated = undanganList.map((u) => (u.id === item.id ? { ...u, title: newTitle } : u));
+        setUndanganList(updated);
+        localStorage.setItem('sintak_saved_undangan_simulations', JSON.stringify(updated));
       }
       setEditingId(null);
       toast.success('Nama kalkulasi berhasil diperbarui.');
@@ -721,6 +762,11 @@ export default function SavedCalculationsList({
       const foilTxt = inp.opsiFoil ? ' + Foil Emas' : '';
       const lamTxt = inp.laminasi !== 'Tanpa Laminasi' ? ` + Laminasi ${inp.laminasi}` : '';
       text = `*PENAWARAN SERTIFIKAT*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Sertifikat ${inp.varian}${lamTxt}${foilTxt} A4 21×29,7 cm\n• *Bahan*: ${inp.varian.includes('Ivory') ? 'Ivory 260' : 'Art Carton 260'} gsm\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs (2 pcs/A3+)\n• *Cetak*: Full Colour ${inp.varian.includes('2 Muka') ? '2 Muka' : '1 Muka'}${inp.oplah > 500 ? ' (Oliver)' : ' (Print Inter)'}\n• *Finishing*: ${inp.laminasi}${foilTxt ? ' + Foil Emas' : ''} + Potong + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${s.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${s.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
+    } else if (item.category === 'Undangan') {
+      const u = item.rawData as SavedUndanganSimulationItem;
+      const inp = u.data.input;
+      const lamTxt = inp.laminasi !== 'Tanpa Laminasi' ? ` + Laminasi ${inp.laminasi}` : '';
+      text = `*PENAWARAN UNDANGAN*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Undangan ${inp.varian}${lamTxt}\n• *Bahan*: Art Carton 230 gsm · ${inp.varian}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs (${u.data.kebutuhanA3} lbr A3+)\n• *Cetak*: Full Colour ${inp.varian.includes('2 Muka') ? '2 Muka' : '1 Muka'}${inp.oplah > 500 ? ' (Oliver)' : ' (Print Inter)'}\n• *Finishing*: Sisir + OPP + Label${lamTxt ? ` + ${inp.laminasi}` : ''} + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${u.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${u.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     }
 
     navigator.clipboard.writeText(text);
@@ -796,6 +842,7 @@ export default function SavedCalculationsList({
                 { value: 'Kop Surat', label: '📄 Kop Surat', count: kopSuratList.length },
                 { value: 'Amplop', label: '✉️ Amplop', count: amplopList.length },
                 { value: 'Sertifikat', label: '📜 Sertifikat', count: sertifikatList.length },
+                { value: 'Undangan', label: '💌 Undangan', count: undanganList.length },
               ]}
               value={filterCategory}
               onChange={(val) => handleFilterChange(val as any)}
@@ -882,6 +929,8 @@ export default function SavedCalculationsList({
                           ? 'bg-pink-100 text-pink-900 border border-pink-300'
                           : item.category === 'Sertifikat'
                           ? 'bg-lime-100 text-lime-900 border border-lime-300'
+                          : item.category === 'Undangan'
+                          ? 'bg-fuchsia-100 text-fuchsia-900 border border-fuchsia-300'
                           : 'bg-blue-100 text-blue-900 border border-blue-200'
                       }`}
                     >
