@@ -392,11 +392,30 @@ export default function PricelistClient() {
     }
   }, [restoreAllMasterParamsFromLocalStorage]);
 
+  // Tab change handler — auto release edit mode jika tab selain parameter & simulator diklik
+  const handleTabChange = (tab: 'saved' | 'parameter' | 'simulator' | 'matrix') => {
+    setActiveTab(tab);
+    try {
+      localStorage.setItem('sintak_pricelist_active_tab', tab);
+    } catch (e) {
+      console.error(e);
+    }
+    // Jika dalam mode edit dan user klik tab selain Master Parameter dan Simulator, lepas mode edit
+    if (activeSimulationId && tab !== 'parameter' && tab !== 'simulator') {
+      setActiveSimulationId(null);
+      setActiveSimulationTitle(null);
+    }
+  };
+
   // Sync selectedProductCategory across tabs
   const handleProductCategoryChange = (
     category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag'
   ) => {
     setSelectedProductCategory(category);
+    if (activeSimulationId) {
+      setActiveSimulationId(null);
+      setActiveSimulationTitle(null);
+    }
     try {
       localStorage.setItem('sintak_pricelist_selected_category', category);
     } catch (e) {
@@ -434,10 +453,21 @@ export default function PricelistClient() {
   };
 
   const handleLoadSimulationFromList = (item: UnifiedCalculationItem) => {
-    handleProductCategoryChange(item.category as typeof selectedProductCategory);
+    const cat = item.category as typeof selectedProductCategory;
+    setSelectedProductCategory(cat);
+    try {
+      localStorage.setItem('sintak_pricelist_selected_category', cat);
+    } catch (e) {
+      console.error(e);
+    }
     setActiveSimulationId(item.id);
     setActiveSimulationTitle(item.title);
-    // Pulihkan snapshot master parameter ke state produk yang bersangkutan
+    setActiveTab('simulator');
+    try {
+      localStorage.setItem('sintak_pricelist_active_tab', 'simulator');
+    } catch (e) {
+      console.error(e);
+    }
     const raw = item.rawData as Record<string, unknown> | undefined;
     const snapshot = raw?.paramsSnapshot || raw?.customParams;
     if (snapshot && typeof snapshot === 'object') {
@@ -791,7 +821,7 @@ export default function PricelistClient() {
           <div className="flex items-center gap-1 sm:gap-4 px-1 min-w-max">
             <button
               type="button"
-              onClick={() => setActiveTab('saved')}
+              onClick={() => handleTabChange('saved')}
               className={`flex items-center justify-center gap-1.5 pb-2 px-2 text-[13px] font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === 'saved'
                   ? 'border-emerald-600 text-emerald-700'
@@ -816,7 +846,7 @@ export default function PricelistClient() {
             >
               <button
                 type="button"
-                onClick={() => setActiveTab('parameter')}
+                onClick={() => handleTabChange('parameter')}
                 className={`flex items-center justify-center gap-1.5 text-[13px] font-bold cursor-pointer whitespace-nowrap ${
                   activeTab === 'parameter'
                     ? activeSimulationId
@@ -856,7 +886,7 @@ export default function PricelistClient() {
             {/* Tab Simulator */}
             <button
               type="button"
-              onClick={() => setActiveTab('simulator')}
+              onClick={() => handleTabChange('simulator')}
               className={`flex items-center justify-center gap-1.5 pb-2 px-2 text-[13px] font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === 'simulator'
                   ? activeSimulationId
@@ -877,7 +907,7 @@ export default function PricelistClient() {
             </button>
             <button
               type="button"
-              onClick={() => setActiveTab('matrix')}
+              onClick={() => handleTabChange('matrix')}
               className={`flex items-center justify-center gap-1.5 pb-2 px-2 text-[13px] font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === 'matrix'
                   ? 'border-emerald-600 text-emerald-700'
