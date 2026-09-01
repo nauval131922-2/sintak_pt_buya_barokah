@@ -41,10 +41,11 @@ import { SavedSertifikatSimulationItem } from './SertifikatSimulator';
 import { SavedUndanganSimulationItem } from './UndanganSimulator';
 import { SavedBukuTabunganNsSimulationItem } from './BukuTabunganNsSimulator';
 import { SavedBukuTabunganSecuritySimulationItem } from './BukuTabunganSecuritySimulator';
+import { SavedKartuKoperasiPromiseSimulationItem } from './KartuKoperasiPromiseSimulator';
 
 export type UnifiedCalculationItem = {
   id: string;
-  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security';
+  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise';
   savedAt: string;
   title: string;
   oplah: number;
@@ -72,11 +73,12 @@ export type UnifiedCalculationItem = {
     | SavedSertifikatSimulationItem
     | SavedUndanganSimulationItem
     | SavedBukuTabunganNsSimulationItem
-    | SavedBukuTabunganSecuritySimulationItem;
+    | SavedBukuTabunganSecuritySimulationItem
+    | SavedKartuKoperasiPromiseSimulationItem;
 };
 
 interface SavedCalculationsListProps {
-  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security';
+  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise';
   onLoadSimulation: (item: UnifiedCalculationItem) => void;
   activeSimulationId?: string | null;
 }
@@ -87,9 +89,9 @@ export default function SavedCalculationsList({
   activeSimulationId,
 }: SavedCalculationsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security'>('ALL');
+  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise'>('ALL');
   
-  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security') => {
+  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise') => {
     setFilterCategory(val);
     try {
       localStorage.setItem('sintak_pricelist_saved_list_filter', val);
@@ -119,6 +121,7 @@ export default function SavedCalculationsList({
   const [undanganList, setUndanganList] = useState<SavedUndanganSimulationItem[]>([]);
   const [bukuTabunganNsList, setBukuTabunganNsList] = useState<SavedBukuTabunganNsSimulationItem[]>([]);
   const [bukuTabunganSecurityList, setBukuTabunganSecurityList] = useState<SavedBukuTabunganSecuritySimulationItem[]>([]);
+  const [kartuKoperasiPromiseList, setKartuKoperasiPromiseList] = useState<SavedKartuKoperasiPromiseSimulationItem[]>([]);
 
   // Load from localStorage
   const refreshData = () => {
@@ -141,7 +144,8 @@ export default function SavedCalculationsList({
         savedFilter === 'Sertifikat' ||
         savedFilter === 'Undangan' ||
         savedFilter === 'Buku Tabungan NS' ||
-        savedFilter === 'Buku Tabungan Security'
+        savedFilter === 'Buku Tabungan Security' ||
+        savedFilter === 'Kartu Koperasi Promise'
       ) {
         setFilterCategory(savedFilter as any);
       }
@@ -209,6 +213,10 @@ export default function SavedCalculationsList({
       const rawBts = localStorage.getItem('sintak_saved_buku_tabungan_security_simulations');
       if (rawBts) setBukuTabunganSecurityList(JSON.parse(rawBts));
       else setBukuTabunganSecurityList([]);
+
+      const rawKkp = localStorage.getItem('sintak_saved_kartu_koperasi_promise_simulations');
+      if (rawKkp) setKartuKoperasiPromiseList(JSON.parse(rawKkp));
+      else setKartuKoperasiPromiseList([]);
     } catch (e) {
       console.error('Failed to load saved calculations:', e);
     }
@@ -607,9 +615,33 @@ export default function SavedCalculationsList({
       });
     });
 
+    // 17. Kartu Koperasi Promise
+    kartuKoperasiPromiseList.forEach((k) => {
+      const inp = k.data.input;
+      items.push({
+        id: k.id,
+        category: 'Kartu Koperasi Promise',
+        savedAt: k.savedAt,
+        title: k.title,
+        oplah: inp.oplah,
+        specSummary: `Kartu Koperasi Promise ${inp.varian} • ${inp.oplah.toLocaleString('id-ID')} pcs`,
+        detailSpecs: [
+          `Bahan: BC 160 gsm 2 Muka 1 Warna · ${k.data.kebutuhanPlano} lbr plano`,
+          `Finishing: Pound + Sisir + Packing Kardus (Pisau ${k.data.kebutuhanCetak} plat)`,
+          `Margin: ${inp.marginPct}%`,
+        ],
+        hppUnit: k.data.hppPerPcs,
+        hargaJualUnit: k.data.hargaJualPerPcs,
+        totalOmset: k.data.totalHargaJual,
+        marginPct: inp.marginPct,
+        negoDiskonPct: inp.negoDiskonPct,
+        rawData: k,
+      });
+    });
+
     // Urutkan dari yang terbaru disimpan
     return items.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
-  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList, bukuTulisList, stopmapList, syahadahList, raportKalebList, kopSuratList, amplopList, sertifikatList, undanganList, bukuTabunganNsList, bukuTabunganSecurityList]);
+  }, [kalenderList, manasikList, yasinList, notaList, brosurList, labelKhqList, bukuTulisList, stopmapList, syahadahList, raportKalebList, kopSuratList, amplopList, sertifikatList, undanganList, bukuTabunganNsList, bukuTabunganSecurityList, kartuKoperasiPromiseList]);
 
   // Filtered List
   const filteredList = useMemo(() => {
@@ -700,6 +732,10 @@ export default function SavedCalculationsList({
         const updated = bukuTabunganSecurityList.filter((b) => b.id !== item.id);
         setBukuTabunganSecurityList(updated);
         localStorage.setItem('sintak_saved_buku_tabungan_security_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Kartu Koperasi Promise') {
+        const updated = kartuKoperasiPromiseList.filter((k) => k.id !== item.id);
+        setKartuKoperasiPromiseList(updated);
+        localStorage.setItem('sintak_saved_kartu_koperasi_promise_simulations', JSON.stringify(updated));
       }
       toast.success('Kalkulasi berhasil dihapus.');
     } catch (err) {
@@ -778,6 +814,10 @@ export default function SavedCalculationsList({
         const updated = bukuTabunganSecurityList.map((b) => (b.id === item.id ? { ...b, title: newTitle } : b));
         setBukuTabunganSecurityList(updated);
         localStorage.setItem('sintak_saved_buku_tabungan_security_simulations', JSON.stringify(updated));
+      } else if (item.category === 'Kartu Koperasi Promise') {
+        const updated = kartuKoperasiPromiseList.map((k) => (k.id === item.id ? { ...k, title: newTitle } : k));
+        setKartuKoperasiPromiseList(updated);
+        localStorage.setItem('sintak_saved_kartu_koperasi_promise_simulations', JSON.stringify(updated));
       }
       setEditingId(null);
       toast.success('Nama kalkulasi berhasil diperbarui.');
@@ -855,6 +895,10 @@ export default function SavedCalculationsList({
       const b = item.rawData as SavedBukuTabunganSecuritySimulationItem;
       const inp = b.data.input;
       text = `*PENAWARAN BUKU TABUNGAN SECURITY*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Tabungan Security ${inp.varian} 9×14,5 cm\n• *Bahan*: Cover Ivory 260 gsm Security 1 Muka FC + Laminasi Glossy + Foil Emas, Isi HVS 70 gsm 1W BB\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs (${b.data.kebutuhanCoverA3 + b.data.kebutuhanIsiA3} lbr A3+)\n• *Finishing*: Susun Lipat + Jahit + Pound + Foil Emas + Numbering Seri + Plastik Sring + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${b.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${b.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
+    } else if (item.category === 'Kartu Koperasi Promise') {
+      const k = item.rawData as SavedKartuKoperasiPromiseSimulationItem;
+      const inp = k.data.input;
+      text = `*PENAWARAN KARTU KOPERASI PROMISE*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Kartu Koperasi Promise ${inp.varian} cm\n• *Bahan*: BC 160 gsm 2 Muka 1 Warna\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs (${k.data.kebutuhanPlano} lbr plano)\n• *Finishing*: Pound + Sisir + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${k.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${k.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     }
 
     navigator.clipboard.writeText(text);
@@ -933,6 +977,7 @@ export default function SavedCalculationsList({
                 { value: 'Undangan', label: '💌 Undangan', count: undanganList.length },
                 { value: 'Buku Tabungan NS', label: '📒 Buku Tabungan NS', count: bukuTabunganNsList.length },
                 { value: 'Buku Tabungan Security', label: '🔒 Buku Tabungan Security', count: bukuTabunganSecurityList.length },
+                { value: 'Kartu Koperasi Promise', label: '🪪 Kartu Koperasi', count: kartuKoperasiPromiseList.length },
               ]}
               value={filterCategory}
               onChange={(val) => handleFilterChange(val as any)}
@@ -1025,6 +1070,8 @@ export default function SavedCalculationsList({
                           ? 'bg-teal-100 text-teal-900 border border-teal-200'
                           : item.category === 'Buku Tabungan Security'
                           ? 'bg-red-100 text-red-900 border border-red-200'
+                          : item.category === 'Kartu Koperasi Promise'
+                          ? 'bg-indigo-100 text-indigo-900 border border-indigo-200'
                           : 'bg-slate-100 text-slate-700 border border-slate-200'
                       }`}
                     >

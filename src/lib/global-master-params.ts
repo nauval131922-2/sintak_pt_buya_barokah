@@ -16,6 +16,7 @@ import { SertifikatMasterParams, DEFAULT_SERTIFIKAT_PARAMS } from './sertifikat-
 import { UndanganMasterParams, DEFAULT_UNDANGAN_PARAMS } from './undangan-calculator';
 import { BukuTabunganNsMasterParams, DEFAULT_BUKU_TABUNGAN_NS_PARAMS } from './buku-tabungan-ns-calculator';
 import { BukuTabunganSecurityMasterParams, DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS } from './buku-tabungan-security-calculator';
+import { KartuKoperasiPromiseMasterParams, DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS } from './kartu-koperasi-promise-calculator';
 
 export interface GlobalMasterParams {
   // 1. Mesin Cetak Offset Oliver (58 / 52)
@@ -101,7 +102,8 @@ export function applyGlobalParamsToAll(
   currSertifikat: SertifikatMasterParams = DEFAULT_SERTIFIKAT_PARAMS,
   currUndangan: UndanganMasterParams = DEFAULT_UNDANGAN_PARAMS,
   currBukuTabunganNs: BukuTabunganNsMasterParams = DEFAULT_BUKU_TABUNGAN_NS_PARAMS,
-  currBukuTabunganSecurity: BukuTabunganSecurityMasterParams = DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS
+  currBukuTabunganSecurity: BukuTabunganSecurityMasterParams = DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS,
+  currKartuKoperasiPromise: KartuKoperasiPromiseMasterParams = DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS
 ) {
   const nextSpiral: SimulatorMasterParams = {
     ...currSpiral,
@@ -345,6 +347,20 @@ export function applyGlobalParamsToAll(
     tarifLakbanRoll: g.tarifLakbanRoll,
   };
 
+  const nextKartuKoperasiPromise: KartuKoperasiPromiseMasterParams = {
+    ...currKartuKoperasiPromise,
+    tarifKertasKg: g.tarifAc260Kg,
+    upKertasPct: g.upKertasPct,
+    tarifDesign: g.tarifPrintA3 * 6,
+    tarifPlatePerPlat: g.oliverPlatUnit,
+    tarifCetakMinPerPlat: g.oliverMinOngkos,
+    tarifDrek: g.oliverDrekOver,
+    tarifPoundPerUnit: g.tarifSisirPcs * 0.94,
+    tarifSisirPer500: g.tarifSisirPcs * 66,
+    tarifKardusBox: g.tarifKardusBox,
+    tarifLakbanRoll: g.tarifLakbanRoll,
+  };
+
   return {
     nextSpiral,
     nextKlem,
@@ -363,5 +379,6 @@ export function applyGlobalParamsToAll(
     nextUndangan,
     nextBukuTabunganNs,
     nextBukuTabunganSecurity,
+    nextKartuKoperasiPromise,
   };
 }
