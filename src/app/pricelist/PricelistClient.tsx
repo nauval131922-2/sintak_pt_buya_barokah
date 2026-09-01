@@ -63,6 +63,9 @@ import UndanganMatrixView from './UndanganMatrixView';
 import BukuTabunganNsMasterParameter from './BukuTabunganNsMasterParameter';
 import BukuTabunganNsSimulator, { SavedBukuTabunganNsSimulationItem } from './BukuTabunganNsSimulator';
 import BukuTabunganNsMatrixView from './BukuTabunganNsMatrixView';
+import BukuTabunganSecurityMasterParameter from './BukuTabunganSecurityMasterParameter';
+import BukuTabunganSecuritySimulator, { SavedBukuTabunganSecuritySimulationItem } from './BukuTabunganSecuritySimulator';
+import BukuTabunganSecurityMatrixView from './BukuTabunganSecurityMatrixView';
 import SavedCalculationsList, { UnifiedCalculationItem } from './SavedCalculationsList';
 import SquareDropdown from '@/components/SquareDropdown';
 import GlobalMasterParameter from './GlobalMasterParameter';
@@ -86,6 +89,7 @@ import { DEFAULT_AMPLOP_PARAMS, AmplopMasterParams } from '@/lib/amplop-calculat
 import { DEFAULT_SERTIFIKAT_PARAMS, SertifikatMasterParams } from '@/lib/sertifikat-calculator';
 import { DEFAULT_UNDANGAN_PARAMS, UndanganMasterParams } from '@/lib/undangan-calculator';
 import { DEFAULT_BUKU_TABUNGAN_NS_PARAMS, BukuTabunganNsMasterParams } from '@/lib/buku-tabungan-ns-calculator';
+import { DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS, BukuTabunganSecurityMasterParams } from '@/lib/buku-tabungan-security-calculator';
 import { recalculatePricelistFromParams } from '@/lib/pricelist-calculator';
 
 interface PricelistItem {
@@ -131,7 +135,8 @@ export default function PricelistClient() {
   const [paramsSertifikat, setParamsSertifikat] = useState<SertifikatMasterParams>(DEFAULT_SERTIFIKAT_PARAMS);
   const [paramsUndangan, setParamsUndangan] = useState<UndanganMasterParams>(DEFAULT_UNDANGAN_PARAMS);
   const [paramsBukuTabunganNs, setParamsBukuTabunganNs] = useState<BukuTabunganNsMasterParams>(DEFAULT_BUKU_TABUNGAN_NS_PARAMS);
-  const [selectedProductCategory, setSelectedProductCategory] = useState<'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS'>('Kalender');
+  const [paramsBukuTabunganSecurity, setParamsBukuTabunganSecurity] = useState<BukuTabunganSecurityMasterParams>(DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS);
+  const [selectedProductCategory, setSelectedProductCategory] = useState<'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security'>('Kalender');
   const [paramsSpiral, setParamsSpiral] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS);
   const [paramsKlem, setParamsKlem] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS_KLEM);
 
@@ -186,7 +191,8 @@ export default function PricelistClient() {
         savedCategory === 'Amplop' ||
         savedCategory === 'Sertifikat' ||
         savedCategory === 'Undangan' ||
-        savedCategory === 'Buku Tabungan NS'
+        savedCategory === 'Buku Tabungan NS' ||
+        savedCategory === 'Buku Tabungan Security'
       ) {
         setSelectedProductCategory(savedCategory as any);
       }
@@ -241,6 +247,11 @@ export default function PricelistClient() {
         setParamsBukuTabunganNs({ ...DEFAULT_BUKU_TABUNGAN_NS_PARAMS, ...JSON.parse(savedBukuTabunganNs) });
       }
 
+      const savedBukuTabunganSecurity = localStorage.getItem('sintak_pricelist_master_params_buku_tabungan_security');
+      if (savedBukuTabunganSecurity) {
+        setParamsBukuTabunganSecurity({ ...DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS, ...JSON.parse(savedBukuTabunganSecurity) });
+      }
+
       const savedGlobal = localStorage.getItem('sintak_pricelist_master_params_global');
       if (savedGlobal) {
         setParamsGlobal({ ...DEFAULT_GLOBAL_PARAMS, ...JSON.parse(savedGlobal) });
@@ -252,7 +263,7 @@ export default function PricelistClient() {
 
   // Sync selectedProductCategory across tabs
   const handleProductCategoryChange = (
-    category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS'
+    category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security'
   ) => {
     setSelectedProductCategory(category);
     try {
@@ -340,17 +351,18 @@ export default function PricelistClient() {
         localStorage.setItem('sintak_pricelist_master_params_sertifikat', JSON.stringify(paramsSertifikat));
         localStorage.setItem('sintak_pricelist_master_params_undangan', JSON.stringify(paramsUndangan));
         localStorage.setItem('sintak_pricelist_master_params_buku_tabungan_ns', JSON.stringify(paramsBukuTabunganNs));
+        localStorage.setItem('sintak_pricelist_master_params_buku_tabungan_security', JSON.stringify(paramsBukuTabunganSecurity));
       } catch (e) {
         console.error('Failed to save master params to localStorage:', e);
       }
     }, 400);
     return () => clearTimeout(timer);
-  }, [paramsSpiral, paramsKlem, paramsGlobal, paramsLabelKhq, paramsBukuTulis, paramsStopmap, paramsSyahadah, paramsRaportKaleb, paramsKopSurat, paramsAmplop, paramsSertifikat, paramsUndangan, paramsBukuTabunganNs]);
+  }, [paramsSpiral, paramsKlem, paramsGlobal, paramsLabelKhq, paramsBukuTulis, paramsStopmap, paramsSyahadah, paramsRaportKaleb, paramsKopSurat, paramsAmplop, paramsSertifikat, paramsUndangan, paramsBukuTabunganNs, paramsBukuTabunganSecurity]);
 
   // Fungsi sebarkan parameter global ke seluruh produk
   const handleApplyGlobalParams = (targetGlobal?: GlobalMasterParams) => {
     const g = targetGlobal || paramsGlobal;
-    const { nextSpiral, nextKlem, nextManasik, nextYasin, nextNota, nextBrosur, nextLabelKhq, nextBukuTulis, nextStopmap, nextSyahadah, nextRaportKaleb, nextKopSurat, nextAmplop, nextSertifikat, nextUndangan, nextBukuTabunganNs } = applyGlobalParamsToAll(
+    const { nextSpiral, nextKlem, nextManasik, nextYasin, nextNota, nextBrosur, nextLabelKhq, nextBukuTulis, nextStopmap, nextSyahadah, nextRaportKaleb, nextKopSurat, nextAmplop, nextSertifikat, nextUndangan, nextBukuTabunganNs, nextBukuTabunganSecurity } = applyGlobalParamsToAll(
       g,
       paramsSpiral,
       paramsKlem,
@@ -367,7 +379,8 @@ export default function PricelistClient() {
       paramsAmplop,
       paramsSertifikat,
       paramsUndangan,
-      paramsBukuTabunganNs
+      paramsBukuTabunganNs,
+      paramsBukuTabunganSecurity
     );
 
     setParamsSpiral(nextSpiral);
@@ -386,6 +399,7 @@ export default function PricelistClient() {
     setParamsSertifikat(nextSertifikat);
     setParamsUndangan(nextUndangan);
     setParamsBukuTabunganNs(nextBukuTabunganNs);
+    setParamsBukuTabunganSecurity(nextBukuTabunganSecurity);
   };
 
   const fetchData = useCallback(async () => {
@@ -603,6 +617,7 @@ export default function PricelistClient() {
               { value: 'Sertifikat', label: '📜 Sertifikat' },
               { value: 'Undangan', label: '💌 Undangan' },
               { value: 'Buku Tabungan NS', label: '📒 Buku Tabungan NS' },
+              { value: 'Buku Tabungan Security', label: '🔒 Buku Tabungan Security' },
             ]}
             value={selectedProductCategory}
             onChange={(val) => handleProductCategoryChange(val as any)}
@@ -683,6 +698,11 @@ export default function PricelistClient() {
             <BukuTabunganNsMasterParameter
               customParams={paramsBukuTabunganNs}
               setCustomParams={setParamsBukuTabunganNs}
+            />
+          ) : selectedProductCategory === 'Buku Tabungan Security' ? (
+            <BukuTabunganSecurityMasterParameter
+              customParams={paramsBukuTabunganSecurity}
+              setCustomParams={setParamsBukuTabunganSecurity}
             />
           ) : (
             <PricelistMasterParameter
@@ -838,6 +858,16 @@ export default function PricelistClient() {
               activeSimulationTitle={activeSimulationTitle}
               setActiveSimulationTitle={setActiveSimulationTitle}
             />
+          ) : selectedProductCategory === 'Buku Tabungan Security' ? (
+            <BukuTabunganSecuritySimulator
+              customParams={paramsBukuTabunganSecurity}
+              setCustomParams={setParamsBukuTabunganSecurity}
+              onOpenMasterParam={() => setActiveTab('parameter')}
+              activeSimulationId={activeSimulationId}
+              setActiveSimulationId={setActiveSimulationId}
+              activeSimulationTitle={activeSimulationTitle}
+              setActiveSimulationTitle={setActiveSimulationTitle}
+            />
           ) : (
             <PricelistSimulator
               customParams={customParams}
@@ -942,6 +972,12 @@ export default function PricelistClient() {
           ) : selectedProductCategory === 'Buku Tabungan NS' ? (
             <BukuTabunganNsMatrixView
               customParams={paramsBukuTabunganNs}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+            />
+          ) : selectedProductCategory === 'Buku Tabungan Security' ? (
+            <BukuTabunganSecurityMatrixView
+              customParams={paramsBukuTabunganSecurity}
               viewMode={viewMode}
               setViewMode={setViewMode}
             />

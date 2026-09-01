@@ -15,6 +15,7 @@ import { AmplopMasterParams, DEFAULT_AMPLOP_PARAMS } from './amplop-calculator';
 import { SertifikatMasterParams, DEFAULT_SERTIFIKAT_PARAMS } from './sertifikat-calculator';
 import { UndanganMasterParams, DEFAULT_UNDANGAN_PARAMS } from './undangan-calculator';
 import { BukuTabunganNsMasterParams, DEFAULT_BUKU_TABUNGAN_NS_PARAMS } from './buku-tabungan-ns-calculator';
+import { BukuTabunganSecurityMasterParams, DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS } from './buku-tabungan-security-calculator';
 
 export interface GlobalMasterParams {
   // 1. Mesin Cetak Offset Oliver (58 / 52)
@@ -99,7 +100,8 @@ export function applyGlobalParamsToAll(
   currAmplop: AmplopMasterParams = DEFAULT_AMPLOP_PARAMS,
   currSertifikat: SertifikatMasterParams = DEFAULT_SERTIFIKAT_PARAMS,
   currUndangan: UndanganMasterParams = DEFAULT_UNDANGAN_PARAMS,
-  currBukuTabunganNs: BukuTabunganNsMasterParams = DEFAULT_BUKU_TABUNGAN_NS_PARAMS
+  currBukuTabunganNs: BukuTabunganNsMasterParams = DEFAULT_BUKU_TABUNGAN_NS_PARAMS,
+  currBukuTabunganSecurity: BukuTabunganSecurityMasterParams = DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS
 ) {
   const nextSpiral: SimulatorMasterParams = {
     ...currSpiral,
@@ -325,6 +327,24 @@ export function applyGlobalParamsToAll(
     tarifLakbanRoll: g.tarifLakbanRoll,
   };
 
+  const nextBukuTabunganSecurity: BukuTabunganSecurityMasterParams = {
+    ...currBukuTabunganSecurity,
+    tarifKertasCoverKg: g.tarifAc260Kg,
+    upKertasCoverPct: g.upKertasPct,
+    tarifKertasIsiKg: g.tarifHvs70,
+    upKertasIsiPct: g.upKertasPct,
+    tarifPrintCoverA3: g.tarifPrintA3,
+    tarifPrintIsiA3: g.tarifPrintInter1Muka,
+    tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
+    minLaminasi: g.minLaminasi,
+    tarifSusunLipatPerPcs: g.tarifSisirPcs,
+    tarifJahitPerPcs: g.tarifStaplesPcs * 5,
+    tarifPoundPerPcs: g.tarifSisirPcs * 2,
+    tarifPlastikSringPerPcs: g.tarifPlastikOppPcs,
+    tarifKardusBox: g.tarifKardusBox,
+    tarifLakbanRoll: g.tarifLakbanRoll,
+  };
+
   return {
     nextSpiral,
     nextKlem,
@@ -342,5 +362,6 @@ export function applyGlobalParamsToAll(
     nextSertifikat,
     nextUndangan,
     nextBukuTabunganNs,
+    nextBukuTabunganSecurity,
   };
 }
