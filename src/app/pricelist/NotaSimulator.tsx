@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { saveCalculationToDb } from \'@/lib/pricelist-db-sync\';
 import {
   FileSpreadsheet,
   DollarSign,
@@ -182,6 +183,7 @@ export default function NotaSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_nota_simulations', JSON.stringify(updated));
+    saveCalculationToDb({ ...newItem, category: 'Nota 1 Warna' });
     } catch (e) {
       console.error('Failed to save simulation to storage:', e);
     }
@@ -217,6 +219,7 @@ export default function NotaSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_nota_simulations', JSON.stringify(updated));
+    saveCalculationToDb({ ...newItem, category: 'Nota 1 Warna' });
     } catch (e) {
       console.error('Failed to update simulation in storage:', e);
     }

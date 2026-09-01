@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { saveCalculationToDb } from \'@/lib/pricelist-db-sync\';
 import {
   FileSpreadsheet,
   DollarSign,
@@ -136,6 +137,7 @@ export default function UndanganSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_undangan_simulations', JSON.stringify(updated));
+    saveCalculationToDb({ ...newItem, category: 'Undangan' });
     } catch (e) {
       console.error('Failed to save undangan simulation:', e);
     }
@@ -154,6 +156,8 @@ export default function UndanganSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_undangan_simulations', JSON.stringify(updated));
+    const targetItem = updated.find((x) => x.id === activeSimulationId);
+      if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Undangan' });
     } catch (e) {
       console.error('Failed to update undangan simulation:', e);
     }

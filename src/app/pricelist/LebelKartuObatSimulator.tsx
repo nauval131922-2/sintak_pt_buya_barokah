@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { saveCalculationToDb } from \'@/lib/pricelist-db-sync\';
 import {
   FileSpreadsheet,
   DollarSign,
@@ -130,6 +131,7 @@ export default function LebelKartuObatSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_lebel_kartu_obat_simulations', JSON.stringify(updated));
+    saveCalculationToDb({ ...newItem, category: 'Lebel Kartu Obat' });
     } catch (e) {
       console.error('Failed to save lebel kartu obat simulation:', e);
     }
@@ -148,6 +150,8 @@ export default function LebelKartuObatSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_lebel_kartu_obat_simulations', JSON.stringify(updated));
+    const targetItem = updated.find((x) => x.id === activeSimulationId);
+      if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Lebel Kartu Obat' });
     } catch (e) {
       console.error('Failed to update lebel kartu obat simulation:', e);
     }

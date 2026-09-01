@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { saveCalculationToDb } from \'@/lib/pricelist-db-sync\';
 import {
   FileSpreadsheet,
   DollarSign,
@@ -137,6 +138,7 @@ export default function SyahadahSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_syahadah_simulations', JSON.stringify(updated));
+    saveCalculationToDb({ ...newItem, category: 'Syahadah' });
     } catch (e) {
       console.error('Failed to save syahadah simulation:', e);
     }
@@ -155,6 +157,8 @@ export default function SyahadahSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_syahadah_simulations', JSON.stringify(updated));
+    const targetItem = updated.find((x) => x.id === activeSimulationId);
+      if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Syahadah' });
     } catch (e) {
       console.error('Failed to update syahadah simulation:', e);
     }

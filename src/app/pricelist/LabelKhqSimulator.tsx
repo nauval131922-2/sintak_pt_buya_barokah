@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { saveCalculationToDb } from \'@/lib/pricelist-db-sync\';
 import {
   FileSpreadsheet,
   DollarSign,
@@ -142,6 +143,7 @@ export default function LabelKhqSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_label_khq_simulations', JSON.stringify(updated));
+    saveCalculationToDb({ ...newItem, category: 'Label KHQ' });
     } catch (e) {
       console.error('Failed to save label KHQ simulation:', e);
     }
@@ -160,6 +162,8 @@ export default function LabelKhqSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_label_khq_simulations', JSON.stringify(updated));
+    const targetItem = updated.find((x) => x.id === activeSimulationId);
+      if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Label KHQ' });
     } catch (e) {
       console.error('Failed to update label KHQ simulation:', e);
     }

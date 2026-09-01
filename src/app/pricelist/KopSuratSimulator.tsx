@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { saveCalculationToDb } from \'@/lib/pricelist-db-sync\';
 import {
   FileSpreadsheet,
   DollarSign,
@@ -129,6 +130,7 @@ export default function KopSuratSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_kop_surat_simulations', JSON.stringify(updated));
+    saveCalculationToDb({ ...newItem, category: 'Kop Surat' });
     } catch (e) {
       console.error('Failed to save kop surat simulation:', e);
     }
@@ -147,6 +149,8 @@ export default function KopSuratSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_kop_surat_simulations', JSON.stringify(updated));
+    const targetItem = updated.find((x) => x.id === activeSimulationId);
+      if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Kop Surat' });
     } catch (e) {
       console.error('Failed to update kop surat simulation:', e);
     }

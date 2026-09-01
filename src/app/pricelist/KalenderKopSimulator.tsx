@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { saveCalculationToDb } from \'@/lib/pricelist-db-sync\';
 import {
   Calculator,
   Save,
@@ -126,6 +127,7 @@ export default function KalenderKopSimulator({
             : item
         );
         localStorage.setItem('sintak_saved_kalender_kop_simulations', JSON.stringify(updated));
+    saveCalculationToDb({ ...newItem, category: 'Kalender Kop' });
         toast.success('Simulasi berhasil diperbarui!');
       } else {
         const newItem: SavedKalenderKopSimulationItem = {
@@ -137,6 +139,7 @@ export default function KalenderKopSimulator({
         };
         list.unshift(newItem);
         localStorage.setItem('sintak_saved_kalender_kop_simulations', JSON.stringify(list));
+    saveCalculationToDb({ ...newItem, category: 'Kalender Kop' });
         if (setActiveSimulationId) setActiveSimulationId(newItem.id);
         if (setActiveSimulationTitle) setActiveSimulationTitle(newItem.title);
         toast.success('Kalkulasi berhasil disimpan ke daftar!');

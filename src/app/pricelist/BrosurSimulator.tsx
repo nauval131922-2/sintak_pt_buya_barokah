@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { saveCalculationToDb } from \'@/lib/pricelist-db-sync\';
 import {
   FileSpreadsheet,
   DollarSign,
@@ -157,6 +158,7 @@ export default function BrosurSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_brosur_simulations', JSON.stringify(updated));
+    saveCalculationToDb({ ...newItem, category: 'Brosur 2026' });
     } catch (e) {
       console.error('Failed to save brosur simulation:', e);
     }
@@ -176,6 +178,8 @@ export default function BrosurSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_brosur_simulations', JSON.stringify(updated));
+    const targetItem = updated.find((x) => x.id === activeSimulationId);
+      if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Brosur 2026' });
     } catch (e) {
       console.error('Failed to update brosur simulation:', e);
     }

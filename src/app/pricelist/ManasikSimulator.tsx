@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { saveCalculationToDb } from \'@/lib/pricelist-db-sync\';
 import {
   BookOpen,
   DollarSign,
@@ -223,6 +224,7 @@ export default function ManasikSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_manasik_simulations', JSON.stringify(updated));
+    saveCalculationToDb({ ...newItem, category: 'Buku Manasik' });
       toast.success(`Simulasi "${titleToUse}" berhasil disimpan!`);
       setSimulationTitle('');
     } catch (e) {
@@ -259,6 +261,7 @@ export default function ManasikSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_manasik_simulations', JSON.stringify(updated));
+    saveCalculationToDb({ ...newItem, category: 'Buku Manasik' });
       setActiveSimulationTitle(titleToUse);
       toast.success(`Perubahan riwayat "${titleToUse}" berhasil disimpan!`);
     } catch (e) {
@@ -294,6 +297,7 @@ export default function ManasikSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_manasik_simulations', JSON.stringify(updated));
+    saveCalculationToDb({ ...newItem, category: 'Buku Manasik' });
       toast.success('Riwayat simulasi berhasil dihapus.');
       if (activeSimulationId === id) {
         setActiveSimulationId(null);

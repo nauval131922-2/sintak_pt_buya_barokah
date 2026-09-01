@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { saveCalculationToDb } from \'@/lib/pricelist-db-sync\';
 import {
   Calculator,
   Save,
@@ -141,6 +142,7 @@ export default function MajalahSimulator({
             : item
         );
         localStorage.setItem('sintak_saved_majalah_simulations', JSON.stringify(updated));
+    saveCalculationToDb({ ...newItem, category: 'Majalah 14,5×20,25' });
         toast.success('Simulasi berhasil diperbarui!');
       } else {
         const newItem: SavedMajalahSimulationItem = {
@@ -152,6 +154,7 @@ export default function MajalahSimulator({
         };
         list.unshift(newItem);
         localStorage.setItem('sintak_saved_majalah_simulations', JSON.stringify(list));
+    saveCalculationToDb({ ...newItem, category: 'Majalah 14,5×20,25' });
         if (setActiveSimulationId) setActiveSimulationId(newItem.id);
         if (setActiveSimulationTitle) setActiveSimulationTitle(newItem.title);
         toast.success('Kalkulasi berhasil disimpan ke daftar!');

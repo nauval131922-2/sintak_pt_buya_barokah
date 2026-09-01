@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { saveCalculationToDb } from \'@/lib/pricelist-db-sync\';
 import {
   Calculator,
   Save,
@@ -150,6 +151,7 @@ export default function PosterSimulator({
             : item
         );
         localStorage.setItem('sintak_saved_poster_simulations', JSON.stringify(updated));
+    saveCalculationToDb({ ...newItem, category: 'Poster' });
         toast.success('Simulasi berhasil diperbarui!');
       } else {
         const newItem: SavedPosterSimulationItem = {
@@ -161,6 +163,7 @@ export default function PosterSimulator({
         };
         list.unshift(newItem);
         localStorage.setItem('sintak_saved_poster_simulations', JSON.stringify(list));
+    saveCalculationToDb({ ...newItem, category: 'Poster' });
         if (setActiveSimulationId) setActiveSimulationId(newItem.id);
         if (setActiveSimulationTitle) setActiveSimulationTitle(newItem.title);
         toast.success('Kalkulasi berhasil disimpan ke daftar!');

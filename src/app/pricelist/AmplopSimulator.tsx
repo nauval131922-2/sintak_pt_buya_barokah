@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { saveCalculationToDb } from \'@/lib/pricelist-db-sync\';
 import {
   FileSpreadsheet,
   DollarSign,
@@ -129,6 +130,7 @@ export default function AmplopSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_amplop_simulations', JSON.stringify(updated));
+    saveCalculationToDb({ ...newItem, category: 'Amplop' });
     } catch (e) {
       console.error('Failed to save amplop simulation:', e);
     }
@@ -147,6 +149,8 @@ export default function AmplopSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_amplop_simulations', JSON.stringify(updated));
+    const targetItem = updated.find((x) => x.id === activeSimulationId);
+      if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Amplop' });
     } catch (e) {
       console.error('Failed to update amplop simulation:', e);
     }

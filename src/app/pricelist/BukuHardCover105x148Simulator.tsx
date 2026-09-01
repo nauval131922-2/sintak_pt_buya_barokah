@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { saveCalculationToDb } from \'@/lib/pricelist-db-sync\';
 import {
   Calculator,
   Save,
@@ -134,6 +135,7 @@ export default function BukuHardCover105x148Simulator({
             : item
         );
         localStorage.setItem('sintak_saved_buku_hard_cover_105x148_simulations', JSON.stringify(updated));
+    saveCalculationToDb({ ...newItem, category: 'Buku Hard Cover 10,5×14,8' });
         toast.success('Simulasi berhasil diperbarui!');
       } else {
         const newItem: SavedBukuHardCover105x148SimulationItem = {
@@ -145,6 +147,7 @@ export default function BukuHardCover105x148Simulator({
         };
         list.unshift(newItem);
         localStorage.setItem('sintak_saved_buku_hard_cover_105x148_simulations', JSON.stringify(list));
+    saveCalculationToDb({ ...newItem, category: 'Buku Hard Cover 10,5×14,8' });
         if (setActiveSimulationId) setActiveSimulationId(newItem.id);
         if (setActiveSimulationTitle) setActiveSimulationTitle(newItem.title);
         toast.success('Kalkulasi berhasil disimpan ke daftar!');

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { saveCalculationToDb } from \'@/lib/pricelist-db-sync\';
 import {
   Calculator,
   RotateCcw,
@@ -139,6 +140,7 @@ export default function PaperbagSimulator({
 
       list.unshift(newItem);
       localStorage.setItem('sintak_saved_paperbag_simulations', JSON.stringify(list));
+    saveCalculationToDb({ ...newItem, category: 'Paperbag' });
       setSavedSuccess(true);
       setSimName('');
       setTimeout(() => setSavedSuccess(false), 2500);

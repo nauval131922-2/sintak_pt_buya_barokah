@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { saveCalculationToDb } from \'@/lib/pricelist-db-sync\';
 import {
   FileSpreadsheet,
   DollarSign,
@@ -132,6 +133,7 @@ export default function BukuTulisSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_buku_tulis_simulations', JSON.stringify(updated));
+    saveCalculationToDb({ ...newItem, category: 'Buku Tulis' });
     } catch (e) {
       console.error('Failed to save buku tulis simulation:', e);
     }
@@ -150,6 +152,8 @@ export default function BukuTulisSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_buku_tulis_simulations', JSON.stringify(updated));
+    const targetItem = updated.find((x) => x.id === activeSimulationId);
+      if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Buku Tulis' });
     } catch (e) {
       console.error('Failed to update buku tulis simulation:', e);
     }

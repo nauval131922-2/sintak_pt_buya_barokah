@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { saveCalculationToDb } from \'@/lib/pricelist-db-sync\';
 import {
   FileSpreadsheet,
   DollarSign,
@@ -139,6 +140,7 @@ export default function BukuSoftCoverSimulator({
     setSimulationTitle('');
     toast.success(`Kalkulasi "${title}" berhasil disimpan!`);
   };
+    try { saveCalculationToDb({ ...newItem, category: 'Buku Soft Cover' }); } catch {}
 
   const handleUpdateSavedSimulation = () => {
     if (!activeSimulationId) return;
@@ -158,6 +160,7 @@ export default function BukuSoftCoverSimulator({
     setActiveSimulationTitle(title);
     toast.success(`Perubahan "${title}" berhasil disimpan!`);
   };
+    try { const targetItem = updated.find((x) => x.id === activeSimulationId); if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Buku Soft Cover' }); } catch {}
 
   const handleCopyQuote = () => {
     const fmt = (n: number) => n.toLocaleString('id-ID');

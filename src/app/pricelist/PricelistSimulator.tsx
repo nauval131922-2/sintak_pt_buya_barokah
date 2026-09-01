@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { saveCalculationToDb } from \'@/lib/pricelist-db-sync\';
 import {
   Calculator,
   Layers,
@@ -331,6 +332,7 @@ export default function PricelistSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_simulations', JSON.stringify(updated));
+    saveCalculationToDb({ ...newItem, category: 'Kalender' });
       toast.success(`Simulasi "${titleToUse}" berhasil disimpan!`);
       setSimulationTitle('');
     } catch (e) {
@@ -436,6 +438,7 @@ export default function PricelistSimulator({
     setActiveSimulationTitle(titleToUse);
     try {
       localStorage.setItem('sintak_saved_simulations', JSON.stringify(updated));
+    saveCalculationToDb({ ...newItem, category: 'Kalender' });
       toast.success(`Perubahan pada "${titleToUse}" berhasil diperbarui!`);
     } catch (e) {
       console.error('Failed to update saved simulation:', e);
@@ -449,6 +452,7 @@ export default function PricelistSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_simulations', JSON.stringify(updated));
+    saveCalculationToDb({ ...newItem, category: 'Kalender' });
       toast.success('Simulasi tersimpan berhasil dihapus.');
     } catch (err) {
       console.error('Failed to update localStorage:', err);
