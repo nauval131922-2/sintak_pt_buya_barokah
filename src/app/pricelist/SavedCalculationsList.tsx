@@ -1573,20 +1573,17 @@ export default function SavedCalculationsList({
             </p>
           </div>
         </div>
-
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-100/90 text-emerald-900 border border-emerald-300 shadow-2xs">
-            <Cloud size={13} className="text-emerald-700" />
-            <span>Cloud DB Sync {lastSyncTime ? `(${lastSyncTime})` : ''}</span>
-          </span>
+          {/* Tombol Reload Data — Style Laporan Pekerjaan */}
           <button
             type="button"
             onClick={() => refreshData()}
             disabled={isSyncing}
-            className="p-1.5 rounded-lg bg-emerald-100/80 hover:bg-emerald-200 text-emerald-800 border border-emerald-300 transition-all cursor-pointer disabled:opacity-50 shadow-2xs"
-            title="Sinkronkan Ulang dengan Database Server"
+            className="h-8 px-2.5 sm:px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-white hover:bg-slate-50 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-xs"
+            title="Reload Data Riwayat Kalkulasi"
           >
-            <RefreshCw size={13} className={isSyncing ? 'animate-spin text-emerald-700' : ''} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin text-emerald-600" : ""}`} />
+            <span>Reload</span>
           </button>
         </div>
       </div>
@@ -1613,7 +1610,6 @@ export default function SavedCalculationsList({
             </button>
           )}
         </div>
-
         {/* Filter Kategori Produk - SquareDropdown Searchable */}
         <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
           <span className="text-slate-500 font-semibold text-xs hidden md:inline">Kategori:</span>
