@@ -35,7 +35,7 @@ export type SavedBukuSoftCover145x2025SimulationItem = {
   title: string;
   oplah: number;
   data: BukuSoftCover145x2025SimulatorResult;
-}  paramsSnapshot?: any;
+  paramsSnapshot?: any;
 };
 
 const FINISHING_OPTIONS: BukuSoftCover145x2025FinishingOption[] = [

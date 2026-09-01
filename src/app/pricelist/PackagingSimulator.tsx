@@ -38,7 +38,7 @@ export type SavedPackagingSimulationItem = {
   title: string;
   oplah: number;
   data: PackagingSimulatorResult;
-}  paramsSnapshot?: any;
+  paramsSnapshot?: any;
 };
 
 interface PackagingSimulatorProps {

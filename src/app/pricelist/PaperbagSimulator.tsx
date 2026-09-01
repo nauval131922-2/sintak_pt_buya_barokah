@@ -38,7 +38,7 @@ export type SavedPaperbagSimulationItem = {
   title: string;
   oplah: number;
   data: PaperbagSimulatorResult;
-}  paramsSnapshot?: any;
+  paramsSnapshot?: any;
 };
 
 interface PaperbagSimulatorProps {

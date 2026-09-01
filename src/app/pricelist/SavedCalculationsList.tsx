@@ -1986,6 +1986,7 @@ export default function SavedCalculationsList({
                     </div>
                   </div>
                 );
+              })()}
 
               {/* Snapshot Master Parameter Saat Disimpan */}
               {(() => {

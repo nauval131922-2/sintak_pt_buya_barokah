@@ -49,10 +49,10 @@ export interface SavedYasinSimulationItem {
   laminasiCover: 'Glossy' | 'Doff';
   opsiPitaRumbai: boolean;
   opsiSikuEmas: boolean;
-  opsiPlastikOpp: boolean;
   marginPct: number;
   negoDiskonPct: number;
   customParams: YasinMasterParams;
+  paramsSnapshot?: YasinMasterParams;
   summary: YasinSimulatorResult['summary'];
 }
 
@@ -116,8 +116,7 @@ export default function YasinSimulator({
   const setActiveSimulationId = (id: string | null) => {
     if (propSetActiveSimId) propSetActiveSimId(id);
     else setInternalActiveId(id);
-  }  paramsSnapshot?: any;
-};
+  };
 
   const activeSimulationTitle = propActiveSimTitle !== undefined ? propActiveSimTitle : internalActiveTitle;
   const setActiveSimulationTitle = (title: string | null) => {

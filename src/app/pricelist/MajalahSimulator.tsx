@@ -36,7 +36,7 @@ export type SavedMajalahSimulationItem = {
   title: string;
   oplah: number;
   data: MajalahSimulatorResult;
-}  paramsSnapshot?: any;
+  paramsSnapshot?: any;
 };
 
 const FINISHING_OPTIONS: MajalahFinishingOption[] = [

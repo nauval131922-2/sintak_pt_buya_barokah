@@ -37,7 +37,7 @@ export type SavedPosterSimulationItem = {
   title: string;
   oplah: number;
   data: PosterSimulatorResult;
-}  paramsSnapshot?: any;
+  paramsSnapshot?: any;
 };
 
 const FINISHING_OPTIONS: PosterFinishingOption[] = [

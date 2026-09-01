@@ -37,7 +37,7 @@ export type SavedStikerSimulationItem = {
   title: string;
   oplah: number;
   data: StikerSimulatorResult;
-}  paramsSnapshot?: any;
+  paramsSnapshot?: any;
 };
 
 const FINISHING_OPTIONS: StikerFinishingOption[] = [
