@@ -147,6 +147,9 @@ export default function BukuSoftCover145x2025Simulator({
         const targetItem = updated.find((item) => item.id === activeSimulationId);
         if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Buku Soft Cover 14,5×20,25' });
         toast.success('Simulasi berhasil diperbarui!');
+        if (setActiveSimulationId) setActiveSimulationId(null);
+        if (setActiveSimulationTitle) setActiveSimulationTitle(null);
+      
       } else {
         const newItem: SavedBukuSoftCover145x2025SimulationItem = {
           id: `bsc_145x2025_${Date.now()}`,

@@ -140,6 +140,9 @@ export default function StikerSimulator({
         const targetItem = updated.find((item) => item.id === activeSimulationId);
         if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Stiker' });
         toast.success('Simulasi berhasil diperbarui!');
+        if (setActiveSimulationId) setActiveSimulationId(null);
+        if (setActiveSimulationTitle) setActiveSimulationTitle(null);
+      
       } else {
         const newItem: SavedStikerSimulationItem = {
           id: `stiker_${Date.now()}`,

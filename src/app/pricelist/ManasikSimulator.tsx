@@ -264,6 +264,9 @@ export default function ManasikSimulator({
       if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Buku Manasik' });
       setActiveSimulationTitle(titleToUse);
       toast.success(`Perubahan riwayat "${titleToUse}" berhasil disimpan!`);
+    setActiveSimulationId(null);
+    if (setActiveSimulationTitle) setActiveSimulationTitle(null);
+    setSimulationTitle('');
     } catch (e) {
       console.error('Failed to update simulation:', e);
       toast.error('Gagal memperbarui riwayat simulasi.');

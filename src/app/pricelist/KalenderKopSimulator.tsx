@@ -130,6 +130,9 @@ export default function KalenderKopSimulator({
         const targetItem = updated.find((item) => item.id === activeSimulationId);
         if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Kalender Kop' });
         toast.success('Simulasi berhasil diperbarui!');
+        if (setActiveSimulationId) setActiveSimulationId(null);
+        if (setActiveSimulationTitle) setActiveSimulationTitle(null);
+      
       } else {
         const newItem: SavedKalenderKopSimulationItem = {
           id: `kalender_kop_${Date.now()}`,

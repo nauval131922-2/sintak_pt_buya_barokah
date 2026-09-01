@@ -266,6 +266,9 @@ export default function YasinSimulator({
       if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Buku Yasin' });
       setActiveSimulationTitle(titleToUse);
       toast.success(`Perubahan riwayat "${titleToUse}" berhasil disimpan!`);
+    setActiveSimulationId(null);
+    if (setActiveSimulationTitle) setActiveSimulationTitle(null);
+    setSimulationTitle('');
     } catch (e) {
       console.error('Failed to update simulation:', e);
       toast.error('Gagal memperbarui riwayat simulasi.');

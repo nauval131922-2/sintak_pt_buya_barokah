@@ -145,6 +145,9 @@ export default function MajalahSimulator({
         const targetItem = updated.find((item) => item.id === activeSimulationId);
         if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Majalah 14,5×20,25' });
         toast.success('Simulasi berhasil diperbarui!');
+        if (setActiveSimulationId) setActiveSimulationId(null);
+        if (setActiveSimulationTitle) setActiveSimulationTitle(null);
+      
       } else {
         const newItem: SavedMajalahSimulationItem = {
           id: `majalah_${Date.now()}`,

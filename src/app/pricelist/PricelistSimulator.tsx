@@ -436,6 +436,9 @@ export default function PricelistSimulator({
       const targetItem = updated.find((s) => s.id === activeSimulationId);
       if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Kalender' });
       toast.success(`Perubahan pada "${titleToUse}" berhasil diperbarui!`);
+    setActiveSimulationId(null);
+    if (setActiveSimulationTitle) setActiveSimulationTitle(null);
+    setSimulationTitle('');
     } catch (e) {
       console.error('Failed to update saved simulation:', e);
       toast.error('Gagal memperbarui simulasi tersimpan.');

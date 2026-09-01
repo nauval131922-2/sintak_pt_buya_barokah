@@ -154,6 +154,9 @@ export default function PosterSimulator({
         const targetItem = updated.find((item) => item.id === activeSimulationId);
         if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Poster' });
         toast.success('Simulasi berhasil diperbarui!');
+        if (setActiveSimulationId) setActiveSimulationId(null);
+        if (setActiveSimulationTitle) setActiveSimulationTitle(null);
+      
       } else {
         const newItem: SavedPosterSimulationItem = {
           id: `poster_${Date.now()}`,

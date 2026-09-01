@@ -167,6 +167,9 @@ export default function SyahadahSimulator({
     }
     setActiveSimulationTitle(title);
     toast.success(`Perubahan "${title}" berhasil disimpan!`);
+    setActiveSimulationId(null);
+    if (setActiveSimulationTitle) setActiveSimulationTitle(null);
+    setSimulationTitle('');
   };
 
   const handleCopyQuote = () => {

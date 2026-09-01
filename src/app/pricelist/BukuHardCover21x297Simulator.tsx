@@ -138,6 +138,9 @@ export default function BukuHardCover21x297Simulator({
         const targetItem = updated.find((item) => item.id === activeSimulationId);
         if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Buku Hard Cover 21×29,7' });
         toast.success('Simulasi berhasil diperbarui!');
+        if (setActiveSimulationId) setActiveSimulationId(null);
+        if (setActiveSimulationTitle) setActiveSimulationTitle(null);
+      
       } else {
         const newItem: SavedBukuHardCover21x297SimulationItem = {
           id: `bhc_21x297_${Date.now()}`,
