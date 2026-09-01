@@ -222,8 +222,10 @@ export default function ManasikSimulator({
     try {
       localStorage.setItem('sintak_saved_manasik_simulations', JSON.stringify(updated));
       saveCalculationToDb({ ...newItem, category: 'Buku Manasik' });
-      toast.success(`Simulasi "${titleToUse}" berhasil disimpan!`);
+      setActiveSimulationId(null);
+      if (setActiveSimulationTitle) setActiveSimulationTitle(null);
       setSimulationTitle('');
+      toast.success(`Simulasi "${titleToUse}" berhasil disimpan sebagai kalkulasi baru & keluar dari mode edit!`);
     } catch (e) {
       console.error('Failed to save simulation:', e);
       toast.error('Gagal menyimpan hasil simulasi.');
