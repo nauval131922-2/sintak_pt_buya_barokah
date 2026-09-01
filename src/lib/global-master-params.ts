@@ -33,36 +33,46 @@ import { PaperbagMasterParams, DEFAULT_PAPERBAG_PARAMS } from './paperbag-calcul
 
 export interface GlobalMasterParams {
   // 1. Mesin Cetak Offset Oliver (58 / 52)
-  oliverPlatUnit: number;        // Rp 45.000 / plat (Kalender, Manasik, Brosur)
-  oliverMinOngkos: number;       // Rp 90.000 (min 1000 drek) (Kalender, Manasik, Brosur)
-  oliverDrekOver: number;        // Rp 40 / drek (Kalender, Manasik, Brosur)
-  oliverTransport: number;       // Rp 100.000 (Kalender)
+  oliverPlatUnit: number;        // Rp 45.000 / plat (Kalender, Manasik, Brosur, Stopmap, Sertifikat, dll)
+  oliverMinOngkos: number;       // Rp 90.000 (min 1000 drek) (Kalender, Manasik, Brosur, dll)
+  oliverDrekOver: number;        // Rp 40 / drek (Kalender, Manasik, Brosur, dll)
+  oliverTransport: number;       // Rp 100.000 (Kalender, Packaging)
 
-  // 2. Kertas Dasar & Bahan Baku
-  tarifHvs70: number;            // Rp 15.700 / kg (Kalender, Nota)
-  tarifAp120: number;            // Rp 17.400 / kg (Kalender, Brosur dasar)
-  tarifAp150: number;            // Rp 17.400 / kg (Kalender)
-  tarifAc230Kg: number;          // Rp 15.100 / kg (Manasik, Yasin cover)
-  tarifAc260Kg: number;          // Rp 15.500 / kg (Manasik)
+  // 2. Mesin Cetak Offset Toko / Ryobi (1 Warna / Skala Kecil)
+  ryobiPlatUnit: number;         // Rp 25.000 / plat (Nota, Buku Tabungan, Buku Mini)
+  ryobiMinOngkos: number;        // Rp 50.000 (min 1000 drek) (Nota, Buku Tabungan, Buku Mini)
+  ryobiDrekOver: number;         // Rp 35 / drek (Nota, Buku Tabungan, Buku Mini)
+
+  // 3. Kertas Dasar & Bahan Baku
+  tarifHvs70: number;            // Rp 15.700 / kg (Kalender, Nota, Buku Tulis, Buku Tabungan, dll)
+  tarifAp120: number;            // Rp 17.400 / kg (Kalender, Brosur, Majalah isi)
+  tarifAp150: number;            // Rp 17.400 / kg (Kalender, Buku Hardcover cover)
+  tarifAc230Kg: number;          // Rp 15.100 / kg (Manasik, Stopmap, Buku Tulis, Buku Soft/Hard cover)
+  tarifAc260Kg: number;          // Rp 15.500 / kg (Manasik, Syahadah, Sertifikat, Buku Tabungan)
   upKertasPct: number;           // 5% margin/ppn kertas dasar
 
-  // 3. Mesin Print Digital POD A3+
-  tarifPrintA3: number;          // Rp 2.500 / lembar A3+ (Manasik cover, Yasin cover)
-  tarifPrintInter1Muka: number;  // Rp 1.800 / lembar A3+ (Brosur 1 muka)
-  tarifPrintInter2Muka: number;  // Rp 3.300 / lembar A3+ (Brosur 2 muka)
+  // 4. Mesin Print Digital POD A3+
+  tarifPrintA3: number;          // Rp 2.500 / lembar A3+ (Manasik, Yasin, Buku, Sertifikat, dll)
+  tarifPrintInter1Muka: number;  // Rp 1.800 / lembar A3+ (Brosur 1 muka, Buku Tabungan isi)
+  tarifPrintInter2Muka: number;  // Rp 3.300 / lembar A3+ (Brosur 2 muka, Majalah isi)
 
-  // 4. Tarif Laminasi
-  tarifLaminasiGlossyCm2: number; // Rp 0.35 / cm² (Manasik, Yasin, Brosur)
-  tarifLaminasiDoffCm2: number;   // Rp 0.40 / cm² (Manasik, Yasin, Brosur)
-  tarifUvVarnishCm2: number;      // Rp 0.11 / cm² (Manasik, Brosur)
-  minLaminasi: number;            // Rp 50.000 (Manasik, Yasin)
+  // 5. Tarif Laminasi Standar
+  tarifLaminasiGlossyCm2: number; // Rp 0.35 / cm² (Manasik, Yasin, Brosur, Buku, Stopmap, Sertifikat)
+  tarifLaminasiDoffCm2: number;   // Rp 0.40 / cm² (Manasik, Yasin, Brosur, Buku, Sertifikat)
+  tarifUvVarnishCm2: number;      // Rp 0.11 / cm² (Manasik, Brosur, Buku)
+  minLaminasi: number;            // Rp 50.000 (Manasik, Yasin, Brosur, Buku, dll)
 
-  // 5. Finishing & Kemasan Standar
-  tarifKardusBox: number;         // Rp 8.500 / box (Manasik, Brosur)
-  tarifLakbanRoll: number;        // Rp 8.000 / roll (Kalender, Brosur)
-  tarifPlastikOppPcs: number;     // Rp 92 / pcs (Manasik, Yasin)
-  tarifSisirPcs: number;          // Rp 150 / pcs (Manasik, Yasin)
-  tarifStaplesPcs: number;        // Rp 100 / pcs (Manasik, Yasin)
+  // 6. Finishing & Kemasan Standar
+  tarifKardusBox: number;         // Rp 8.500 / box (Semua produk)
+  tarifLakbanRoll: number;        // Rp 8.000 / roll (Semua produk)
+  tarifPlastikOppPcs: number;     // Rp 92 / pcs (Manasik, Yasin, Undangan, Buku Tabungan)
+  tarifSisirPcs: number;          // Rp 150 / pcs (Semua produk ber-finishing potong/sisir)
+  tarifStaplesPcs: number;        // Rp 100 / pcs (Manasik, Yasin, Buku Tulis, Buku Tabungan)
+
+  // 7. Jasa Desain & Margin Standar Perusahaan
+  tarifDesainStandar: number;     // Rp 50.000 (Amplop, Kop Surat, Raport, Sertifikat, Cover Buku, dll)
+  defaultMarginPct: number;       // 25% (Target margin dasar seluruh 30 produk)
+  defaultNegoPct: number;         // 4% (Batas diskon nego dasar seluruh 30 produk)
 }
 
 export const DEFAULT_GLOBAL_PARAMS: GlobalMasterParams = {
@@ -70,6 +80,10 @@ export const DEFAULT_GLOBAL_PARAMS: GlobalMasterParams = {
   oliverMinOngkos: 90000,
   oliverDrekOver: 40,
   oliverTransport: 100000,
+
+  ryobiPlatUnit: 25000,
+  ryobiMinOngkos: 50000,
+  ryobiDrekOver: 35,
 
   tarifHvs70: 15700,
   tarifAp120: 17400,
@@ -92,6 +106,10 @@ export const DEFAULT_GLOBAL_PARAMS: GlobalMasterParams = {
   tarifPlastikOppPcs: 92,
   tarifSisirPcs: 150,
   tarifStaplesPcs: 100,
+
+  tarifDesainStandar: 50000,
+  defaultMarginPct: 25,
+  defaultNegoPct: 4,
 };
 
 /**
@@ -175,6 +193,7 @@ export function applyGlobalParamsToAll(
     tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
     tarifUvVarnishCm2: g.tarifUvVarnishCm2,
     minLaminasi: g.minLaminasi,
+    tarifDesainCover: g.tarifDesainStandar,
     tarifSisir: g.tarifSisirPcs,
     tarifStaplesPalu: g.tarifStaplesPcs,
     tarifKardusBox: g.tarifKardusBox,
@@ -187,6 +206,7 @@ export function applyGlobalParamsToAll(
     tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
     tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
     minLaminasi: g.minLaminasi,
+    tarifDesainCover: g.tarifDesainStandar,
     tarifPlastikOppYasin: Math.round(g.tarifPlastikOppPcs),
     tarifSisirYasin: g.tarifSisirPcs,
     tarifStaplesYasin: Math.round(g.tarifStaplesPcs / 2),
@@ -197,6 +217,13 @@ export function applyGlobalParamsToAll(
     tarifHvs70Kg: g.tarifHvs70,
     upHvsPct: g.upKertasPct,
     upNcrPct: g.upKertasPct,
+    tarifPlatToko: g.ryobiPlatUnit,
+    minOngkosToko: g.ryobiMinOngkos,
+    drekToko: g.ryobiDrekOver,
+    tarifPlatRyobi: g.ryobiPlatUnit,
+    minOngkosCetakRyobi: g.ryobiMinOngkos,
+    tarifDrekOverRyobi: g.ryobiDrekOver,
+    tarifDesainNota: g.tarifDesainStandar,
   };
 
   const nextBrosur: BrosurMasterParams = {
@@ -213,6 +240,9 @@ export function applyGlobalParamsToAll(
     tarifLaminasiGlossy: g.tarifLaminasiGlossyCm2,
     tarifLaminasiDoff: g.tarifLaminasiDoffCm2,
     tarifUvVarnish: g.tarifUvVarnishCm2,
+    tarifDesainBrosur: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextLabelKhq: LabelKhqMasterParams = {
@@ -220,6 +250,9 @@ export function applyGlobalParamsToAll(
     tarifPrintA3: g.tarifPrintA3,
     tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
     minLaminasi: g.minLaminasi,
+    tarifDesain: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextBukuTulis: BukuTulisMasterParams = {
@@ -236,6 +269,9 @@ export function applyGlobalParamsToAll(
     tarifStaplesPerPcs: g.tarifStaplesPcs,
     tarifPackingKardus: g.tarifKardusBox,
     tarifLakbanPerOrder: g.tarifLakbanRoll,
+    tarifDesignCover: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextStopmap: StopmapMasterParams = {
@@ -248,6 +284,9 @@ export function applyGlobalParamsToAll(
     tarifSisirPerPcs: g.tarifSisirPcs,
     tarifKardusBox: g.tarifKardusBox,
     tarifLakbanRoll: g.tarifLakbanRoll,
+    tarifDesign: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextSyahadah: SyahadahMasterParams = {
@@ -255,13 +294,16 @@ export function applyGlobalParamsToAll(
     tarifKertasLinenKg: g.tarifAc260Kg,
     upKertasPct: g.upKertasPct,
     tarifPrintA3: g.tarifPrintA3,
-    tarifRyobi: g.tarifPrintInter1Muka,
+    tarifRyobi: g.ryobiMinOngkos,
     tarifPlatOliver: g.oliverPlatUnit,
     minOliver: g.oliverMinOngkos,
     drekOliver: g.oliverDrekOver,
     tarifSisirPerPcs: g.tarifSisirPcs,
     tarifKardusBox: g.tarifKardusBox,
     tarifLakbanRoll: g.tarifLakbanRoll,
+    tarifDesign: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextRaportKaleb: RaportKalebMasterParams = {
@@ -273,6 +315,9 @@ export function applyGlobalParamsToAll(
     tarifSisir: g.tarifSisirPcs,
     tarifKardus: g.tarifKardusBox,
     tarifLakbanRoll: g.tarifLakbanRoll,
+    tarifDesign: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextKopSurat: KopSuratMasterParams = {
@@ -280,13 +325,16 @@ export function applyGlobalParamsToAll(
     tarifKertasHvsKg: g.tarifHvs70,
     upKertasPct: g.upKertasPct,
     tarifPrintA3: g.tarifPrintA3,
-    tarifRyobi: g.tarifPrintInter1Muka,
+    tarifRyobi: g.ryobiMinOngkos,
     tarifPlatOliver: g.oliverPlatUnit,
     minOliver: g.oliverMinOngkos,
     drekOliver: g.oliverDrekOver,
     tarifPotongPerPcs: g.tarifSisirPcs,
     tarifKardusBox: g.tarifKardusBox,
     tarifLakbanRoll: g.tarifLakbanRoll,
+    tarifDesign: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextAmplop: AmplopMasterParams = {
@@ -294,13 +342,16 @@ export function applyGlobalParamsToAll(
     tarifKertasHvsKg: g.tarifHvs70,
     upKertasPct: g.upKertasPct,
     tarifPrintA3: g.tarifPrintA3,
-    tarifRyobi: g.tarifPrintInter1Muka,
+    tarifRyobi: g.ryobiMinOngkos,
     tarifPlatOliver: g.oliverPlatUnit,
     minOliver: g.oliverMinOngkos,
     drekOliver: g.oliverDrekOver,
     tarifLipatLemPerPcs: g.tarifSisirPcs,
     tarifKardusBox: g.tarifKardusBox,
     tarifLakbanRoll: g.tarifLakbanRoll,
+    tarifDesign: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextSertifikat: SertifikatMasterParams = {
@@ -318,6 +369,9 @@ export function applyGlobalParamsToAll(
     tarifPotongPerPcs: g.tarifSisirPcs,
     tarifKardusBox: g.tarifKardusBox,
     tarifLakbanRoll: g.tarifLakbanRoll,
+    tarifDesign: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextUndangan: UndanganMasterParams = {
@@ -335,6 +389,9 @@ export function applyGlobalParamsToAll(
     tarifPlastikOppPerPcs: g.tarifPlastikOppPcs,
     tarifKardusBox: g.tarifKardusBox,
     tarifLakbanRoll: g.tarifLakbanRoll,
+    tarifDesign: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextBukuTabunganNs: BukuTabunganNsMasterParams = {
@@ -345,6 +402,9 @@ export function applyGlobalParamsToAll(
     upKertasIsiPct: g.upKertasPct,
     tarifPrintCoverA3: g.tarifPrintA3,
     tarifPrintIsiA3: g.tarifPrintInter1Muka,
+    tarifPlateIsiToko: g.ryobiPlatUnit,
+    minOngkosIsiToko: g.ryobiMinOngkos,
+    drekIsiToko: g.ryobiDrekOver,
     tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
     minLaminasi: g.minLaminasi,
     tarifSusunLipatPerPcs: g.tarifSisirPcs,
@@ -353,6 +413,9 @@ export function applyGlobalParamsToAll(
     tarifPlastikSringPerPcs: g.tarifPlastikOppPcs,
     tarifKardusBox: g.tarifKardusBox,
     tarifLakbanRoll: g.tarifLakbanRoll,
+    tarifDesignCover: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextBukuTabunganSecurity: BukuTabunganSecurityMasterParams = {
@@ -363,6 +426,9 @@ export function applyGlobalParamsToAll(
     upKertasIsiPct: g.upKertasPct,
     tarifPrintCoverA3: g.tarifPrintA3,
     tarifPrintIsiA3: g.tarifPrintInter1Muka,
+    tarifPlateIsiToko: g.ryobiPlatUnit,
+    minOngkosIsiToko: g.ryobiMinOngkos,
+    drekIsiToko: g.ryobiDrekOver,
     tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
     minLaminasi: g.minLaminasi,
     tarifSusunLipatPerPcs: g.tarifSisirPcs,
@@ -371,13 +437,16 @@ export function applyGlobalParamsToAll(
     tarifPlastikSringPerPcs: g.tarifPlastikOppPcs,
     tarifKardusBox: g.tarifKardusBox,
     tarifLakbanRoll: g.tarifLakbanRoll,
+    tarifDesignCover: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextKartuKoperasiPromise: KartuKoperasiPromiseMasterParams = {
     ...currKartuKoperasiPromise,
     tarifKertasKg: g.tarifAc260Kg,
     upKertasPct: g.upKertasPct,
-    tarifDesign: g.tarifPrintA3 * 6,
+    tarifDesign: g.tarifDesainStandar,
     tarifPlatePerPlat: g.oliverPlatUnit,
     tarifCetakMinPerPlat: g.oliverMinOngkos,
     tarifDrek: g.oliverDrekOver,
@@ -385,17 +454,21 @@ export function applyGlobalParamsToAll(
     tarifSisirPer500: g.tarifSisirPcs * 66,
     tarifKardusBox: g.tarifKardusBox,
     tarifLakbanRoll: g.tarifLakbanRoll,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextLebelKartuObat: LebelKartuObatMasterParams = {
     ...currLebelKartuObat,
     tarifKertasKg: g.tarifHvs70,
     upKertasPct: g.upKertasPct,
-    tarifDesain: g.tarifPrintA3 * 4,
+    tarifDesain: g.tarifDesainStandar,
     tarifPlatePerPlat: g.oliverPlatUnit,
     tarifCetakMinPerPlat: g.oliverMinOngkos,
     tarifDrek: g.oliverDrekOver,
     tarifSisirPer500: g.tarifSisirPcs * 66,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextBukuSoftCover: BukuSoftCoverMasterParams = {
@@ -411,6 +484,9 @@ export function applyGlobalParamsToAll(
     tarifSisirPerPcs: g.tarifSisirPcs,
     tarifKardusBox: g.tarifKardusBox,
     tarifLakbanRoll: g.tarifLakbanRoll,
+    tarifDesainCover: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextBukuSoftCover145x2025: BukuSoftCover145x2025MasterParams = {
@@ -424,6 +500,9 @@ export function applyGlobalParamsToAll(
     tarifPlateIsiOliver: g.oliverPlatUnit,
     minOngkosIsiOliver: g.oliverMinOngkos,
     drekIsiOliver: g.oliverDrekOver,
+    tarifPlateIsiRyobi: g.ryobiPlatUnit,
+    minOngkosIsiRyobi: g.ryobiMinOngkos,
+    drekIsiRyobi: g.ryobiDrekOver,
     tarifSisirPerPcs: g.tarifSisirPcs,
     tarifKardusBox: g.tarifKardusBox,
     tarifLakbanRoll: g.tarifLakbanRoll,
@@ -431,6 +510,9 @@ export function applyGlobalParamsToAll(
     tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
     tarifUvVarnishCm2: g.tarifUvVarnishCm2,
     minLaminasi: g.minLaminasi,
+    tarifDesainCover: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextBukuHardCover105x148: BukuHardCover105x148MasterParams = {
@@ -445,12 +527,18 @@ export function applyGlobalParamsToAll(
     tarifPlateIsiOliver: g.oliverPlatUnit,
     minOngkosIsiOliver: g.oliverMinOngkos,
     drekIsiOliver: g.oliverDrekOver,
+    tarifPlateIsiRyobi: g.ryobiPlatUnit,
+    minOngkosIsiRyobi: g.ryobiMinOngkos,
+    drekIsiRyobi: g.ryobiDrekOver,
     tarifSisirPcs: g.tarifSisirPcs,
     tarifKardusBox: g.tarifKardusBox,
     tarifLakbanRoll: g.tarifLakbanRoll,
     tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
     tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
     minLaminasi: g.minLaminasi,
+    tarifDesainCover: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextPoster: PosterMasterParams = {
@@ -471,6 +559,8 @@ export function applyGlobalParamsToAll(
     tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
     tarifUvVarnishCm2: g.tarifUvVarnishCm2,
     minLaminasi: g.minLaminasi,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextMajalah: MajalahMasterParams = {
@@ -492,6 +582,9 @@ export function applyGlobalParamsToAll(
     tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
     tarifUvVarnishCm2: g.tarifUvVarnishCm2,
     minLaminasi: g.minLaminasi,
+    tarifDesainCover: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextStiker: StikerMasterParams = {
@@ -499,6 +592,9 @@ export function applyGlobalParamsToAll(
     tarifStikerVinylA3: g.tarifPrintA3,
     tarifRajangPerLbr: 50,
     tarifPackingKardus: g.tarifKardusBox,
+    tarifDesainStiker: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextBukuSoftCover105x148: BukuSoftCover105x148MasterParams = {
@@ -512,6 +608,9 @@ export function applyGlobalParamsToAll(
     tarifPlateIsiOliver: g.oliverPlatUnit,
     minOngkosIsiOliver: g.oliverMinOngkos,
     drekIsiOliver: g.oliverDrekOver,
+    tarifPlateIsiRyobi: g.ryobiPlatUnit,
+    minOngkosIsiRyobi: g.ryobiMinOngkos,
+    drekIsiRyobi: g.ryobiDrekOver,
     tarifSisirPcs: g.tarifSisirPcs,
     tarifKardusBox: g.tarifKardusBox,
     tarifLakbanRoll: g.tarifLakbanRoll,
@@ -519,6 +618,9 @@ export function applyGlobalParamsToAll(
     tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
     tarifUvVarnishCm2: g.tarifUvVarnishCm2,
     minLaminasi: g.minLaminasi,
+    tarifDesainCover: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextBukuHardCover145x2025: BukuHardCover145x2025MasterParams = {
@@ -533,12 +635,18 @@ export function applyGlobalParamsToAll(
     tarifPlateIsiOliver: g.oliverPlatUnit,
     minOngkosIsiOliver: g.oliverMinOngkos,
     drekIsiOliver: g.oliverDrekOver,
+    tarifPlateIsiRyobi: g.ryobiPlatUnit,
+    minOngkosIsiRyobi: g.ryobiMinOngkos,
+    drekIsiRyobi: g.ryobiDrekOver,
     tarifSisirPcs: g.tarifSisirPcs,
     tarifKardusBox: g.tarifKardusBox,
     tarifLakbanRoll: g.tarifLakbanRoll,
     tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
     tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
     minLaminasi: g.minLaminasi,
+    tarifDesainCover: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextBukuHardCover21x297: BukuHardCover21x297MasterParams = {
@@ -559,11 +667,17 @@ export function applyGlobalParamsToAll(
     tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
     tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
     minLaminasi: g.minLaminasi,
+    tarifDesainCover: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextKalenderKop: KalenderKopMasterParams = {
     ...currKalenderKop,
     tarifPackingKardus: g.tarifKardusBox,
+    tarifDesainKop: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextPackaging: PackagingMasterParams = {
@@ -576,6 +690,9 @@ export function applyGlobalParamsToAll(
     tarifLaminasiGlossyPerCm2: g.tarifLaminasiGlossyCm2,
     tarifLaminasiDoffPerCm2: g.tarifLaminasiDoffCm2,
     minBiayaLaminasi: g.minLaminasi,
+    biayaDesain: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextPaperbag: PaperbagMasterParams = {
@@ -587,6 +704,9 @@ export function applyGlobalParamsToAll(
     tarifLaminasiGlossyPerCm2: g.tarifLaminasiGlossyCm2,
     tarifLaminasiDoffPerCm2: g.tarifLaminasiDoffCm2,
     minBiayaLaminasi: g.minLaminasi,
+    biayaDesain: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+    negoDefaultPct: g.defaultNegoPct,
   };
 
   return {

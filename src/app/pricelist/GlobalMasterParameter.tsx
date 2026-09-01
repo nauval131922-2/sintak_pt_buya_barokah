@@ -11,6 +11,9 @@ import {
   Sparkles,
   Layers,
   Box,
+  Palette,
+  Percent,
+  TrendingUp,
   HelpCircle,
   CheckCircle2,
   AlertTriangle,
@@ -159,71 +162,97 @@ export default function GlobalMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Printer className="w-4 h-4 text-emerald-700" />
-            <h3 className="text-xs font-bold text-slate-800">1. Mesin Offset (Oliver 58/52)</h3>
+            <h3 className="text-xs font-bold text-slate-800">1. Mesin Offset Besar (Oliver 58/52)</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('oliverPlatUnit', 'Tarif Plat CTP / Unit', 'Kalender, Manasik, Brosur')}
-            {fieldRow('oliverMinOngkos', 'Min. Cetak (≤1000 Drek)', 'Kalender, Manasik, Brosur')}
-            {fieldRow('oliverDrekOver', 'Tarif Drek Over / Drek', 'Kalender, Manasik, Brosur')}
-            {fieldRow('oliverTransport', 'Ongkos Transport Cetak', 'Kalender')}
+            {fieldRow('oliverPlatUnit', 'Tarif Plat CTP / Unit', 'Kalender, Manasik, Brosur, Stopmap')}
+            {fieldRow('oliverMinOngkos', 'Min. Cetak (≤1000 Drek)', 'Kalender, Manasik, Brosur, Stopmap')}
+            {fieldRow('oliverDrekOver', 'Tarif Drek Over / Drek', 'Kalender, Manasik, Brosur, Stopmap')}
+            {fieldRow('oliverTransport', 'Ongkos Transport Cetak', 'Kalender, Packaging')}
           </div>
         </div>
 
-        {/* 2. Bahan Kertas Dasar */}
+        {/* 2. Mesin Cetak Offset Toko / Ryobi */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Printer className="w-4 h-4 text-cyan-700" />
+            <h3 className="text-xs font-bold text-slate-800">2. Mesin Offset Kecil (Ryobi / Toko 1 Warna)</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {fieldRow('ryobiPlatUnit', 'Tarif Plat Ryobi / Toko', 'Nota, Buku Tabungan, Buku Mini')}
+            {fieldRow('ryobiMinOngkos', 'Min. Cetak (≤1000 Drek)', 'Nota, Buku Tabungan, Buku Mini')}
+            {fieldRow('ryobiDrekOver', 'Tarif Drek Over / Drek', 'Nota, Buku Tabungan, Buku Mini')}
+          </div>
+        </div>
+
+        {/* 3. Bahan Kertas Dasar */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <FileText className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Bahan Kertas Dasar (/Kg)</h3>
+            <h3 className="text-xs font-bold text-slate-800">3. Bahan Kertas Dasar (/Kg)</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifHvs70', 'HVS 70 gsm / Kg', 'Kalender, Nota')}
-            {fieldRow('tarifAp120', 'Art Paper 120 / Kg', 'Kalender, Brosur')}
-            {fieldRow('tarifAp150', 'Art Paper 150 / Kg', 'Kalender')}
-            {fieldRow('tarifAc230Kg', 'Art Carton 230 / Kg', 'Buku Manasik')}
-            {fieldRow('tarifAc260Kg', 'Art Carton 260 / Kg', 'Buku Manasik')}
-            {fieldRow('upKertasPct', 'Up / PPN Kertas Dasar (%)', 'Kalender, Nota, Brosur', false)}
+            {fieldRow('tarifHvs70', 'HVS 70 gsm / Kg', 'Kalender, Nota, Buku')}
+            {fieldRow('tarifAp120', 'Art Paper 120 / Kg', 'Kalender, Brosur, Majalah')}
+            {fieldRow('tarifAp150', 'Art Paper 150 / Kg', 'Kalender, Buku Hardcover')}
+            {fieldRow('tarifAc230Kg', 'Art Carton 230 / Kg', 'Buku Manasik, Cover Buku')}
+            {fieldRow('tarifAc260Kg', 'Art Carton 260 / Kg', 'Manasik, Syahadah, Sertifikat')}
+            {fieldRow('upKertasPct', 'Up / PPN Kertas Dasar (%)', 'Seluruh Produk', false)}
           </div>
         </div>
 
-        {/* 3. Print Digital POD A3+ */}
+        {/* 4. Print Digital POD A3+ */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Printer className="w-4 h-4 text-purple-600" />
-            <h3 className="text-xs font-bold text-slate-800">3. Print Digital POD A3+</h3>
+            <h3 className="text-xs font-bold text-slate-800">4. Print Digital POD A3+</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifPrintA3', 'Print Cover POD A3+', 'Manasik, Yasin')}
-            {fieldRow('tarifPrintInter1Muka', 'Print Inter 1 Muka', 'Brosur 2026')}
-            {fieldRow('tarifPrintInter2Muka', 'Print Inter 2 Muka', 'Brosur 2026')}
+            {fieldRow('tarifPrintA3', 'Print Cover POD A3+', 'Manasik, Yasin, Buku, Sertifikat')}
+            {fieldRow('tarifPrintInter1Muka', 'Print Inter 1 Muka', 'Brosur, Buku Tabungan isi')}
+            {fieldRow('tarifPrintInter2Muka', 'Print Inter 2 Muka', 'Brosur 2 Muka, Majalah isi')}
           </div>
         </div>
 
-        {/* 4. Tarif Laminasi Standar */}
+        {/* 5. Tarif Laminasi Standar */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Layers className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">4. Jasa Laminasi (/cm²)</h3>
+            <h3 className="text-xs font-bold text-slate-800">5. Jasa Laminasi (/cm²)</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifLaminasiGlossyCm2', 'Laminasi Glossy / cm²', 'Manasik, Yasin, Brosur', true, true)}
-            {fieldRow('tarifLaminasiDoffCm2', 'Laminasi Doff / cm²', 'Manasik, Yasin, Brosur', true, true)}
-            {fieldRow('tarifUvVarnishCm2', 'UV Varnish / cm²', 'Manasik, Brosur', true, true)}
-            {fieldRow('minLaminasi', 'Min. Order Laminasi', 'Manasik, Yasin')}
+            {fieldRow('tarifLaminasiGlossyCm2', 'Laminasi Glossy / cm²', 'Manasik, Yasin, Brosur, Buku', true, true)}
+            {fieldRow('tarifLaminasiDoffCm2', 'Laminasi Doff / cm²', 'Manasik, Yasin, Brosur, Buku', true, true)}
+            {fieldRow('tarifUvVarnishCm2', 'UV Varnish / cm²', 'Manasik, Brosur, Buku', true, true)}
+            {fieldRow('minLaminasi', 'Min. Order Laminasi', 'Manasik, Yasin, Buku')}
           </div>
         </div>
 
-        {/* 5. Finishing & Kemasan Standar */}
+        {/* 6. Finishing & Kemasan Standar */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Box className="w-4 h-4 text-rose-600" />
-            <h3 className="text-xs font-bold text-slate-800">5. Packing & Finishing Umum</h3>
+            <h3 className="text-xs font-bold text-slate-800">6. Packing & Finishing Umum</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifKardusBox', 'Kardus Box / Pcs', 'Manasik, Brosur')}
-            {fieldRow('tarifLakbanRoll', 'Lakban Roll / Pcs', 'Kalender, Brosur')}
-            {fieldRow('tarifPlastikOppPcs', 'Plastik OPP / Pcs', 'Manasik, Yasin')}
-            {fieldRow('tarifSisirPcs', 'Ongkos Potong Sisir', 'Manasik, Yasin')}
-            {fieldRow('tarifStaplesPcs', 'Ongkos Staples', 'Manasik, Yasin')}
+            {fieldRow('tarifKardusBox', 'Kardus Box / Pcs', 'Semua Produk')}
+            {fieldRow('tarifLakbanRoll', 'Lakban Roll / Pcs', 'Semua Produk')}
+            {fieldRow('tarifPlastikOppPcs', 'Plastik OPP / Pcs', 'Manasik, Yasin, Undangan')}
+            {fieldRow('tarifSisirPcs', 'Ongkos Potong Sisir', 'Manasik, Yasin, Buku, Brosur')}
+            {fieldRow('tarifStaplesPcs', 'Ongkos Staples', 'Manasik, Yasin, Buku Tulis')}
+          </div>
+        </div>
+
+        {/* 7. Jasa Desain & Margin Standar Perusahaan */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Palette className="w-4 h-4 text-indigo-600" />
+            <h3 className="text-xs font-bold text-slate-800">7. Jasa Desain & Margin Standar</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {fieldRow('tarifDesainStandar', 'Tarif Desain Standar', 'Amplop, Kop Surat, Buku, Sertifikat')}
+            {fieldRow('defaultMarginPct', 'Target Margin Standar (%)', 'Seluruh 30 Produk', false)}
+            {fieldRow('defaultNegoPct', 'Batas Diskon Nego (%)', 'Seluruh 30 Produk', false)}
           </div>
         </div>
 
@@ -234,10 +263,10 @@ export default function GlobalMasterParameter({
             <div className="text-xs text-slate-600 space-y-1">
               <span className="font-bold text-slate-800 block">Cara Kerja Parameter Global:</span>
               <p>
-                1. Ubah tarif standar di atas (misal kenaikan harga kertas atau tarif plat Oliver).
+                1. Ubah tarif standar di atas (misal kenaikan harga kertas, tarif plat offset, tarif desain, atau target margin perusahaan).
               </p>
               <p>
-                2. Klik tombol <strong>&ldquo;Terapkan ke Semua Produk&rdquo;</strong> di atas untuk menyinkronkan seluruh parameter di modul Kalender, Manasik, Yasin, Nota, dan Brosur sekaligus.
+                2. Klik tombol <strong>&ldquo;Terapkan ke Semua Produk&rdquo;</strong> di atas untuk menyinkronkan seluruh parameter di 30 jenis produk sekaligus.
               </p>
               <p>
                 3. Jika ingin tarif khusus untuk produk tertentu saja, Anda tetap bisa mengubahnya di tab Parameter produk terkait.
