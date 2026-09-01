@@ -319,6 +319,20 @@ export async function initSchema(db: any) {
       profit_tot_nego REAL NOT NULL DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`,
+    `CREATE TABLE IF NOT EXISTS pricelist_saved_calculations (
+      id TEXT PRIMARY KEY,
+      category TEXT NOT NULL,
+      title TEXT NOT NULL,
+      oplah INTEGER NOT NULL DEFAULT 0,
+      data TEXT NOT NULL,
+      params_snapshot TEXT,
+      user_id INTEGER,
+      created_by TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );`,
+    `CREATE INDEX IF NOT EXISTS idx_pricelist_saved_calc_cat ON pricelist_saved_calculations (category);`,
+    `CREATE INDEX IF NOT EXISTS idx_pricelist_saved_calc_updated ON pricelist_saved_calculations (updated_at);`,
 
     `CREATE TABLE IF NOT EXISTS sales_reports (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1699,7 +1713,7 @@ async function initDynamicTriggers(db: any) {
       'bill_of_materials', 'purchase_requests', 'purchase_orders',
       'penerimaan_pembelian', 'rekap_pembelian_barang', 'pelunasan_hutang',
       'pelunasan_piutang', 'pengiriman', 'spph_out', 'sph_in', 'sph_out', 'rek_akuntansi',
-      'hpp_kalkulasi', 'pricelist_items', 'stok_master_barang', 'usr_log', 'produksi_selesai', 'user_roles',
+      'hpp_kalkulasi', 'pricelist_items', 'pricelist_saved_calculations', 'stok_master_barang', 'usr_log', 'produksi_selesai', 'user_roles',
       'master_pekerjaan', 'push_subscriptions', 'telegram_users', 'role_permissions', 'app_roles',
       'laporan_pekerjaan', 'role_laporan_pekerjaan_config'
     ];

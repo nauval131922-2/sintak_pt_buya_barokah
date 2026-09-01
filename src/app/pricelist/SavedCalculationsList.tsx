@@ -19,6 +19,9 @@ import {
   Layers,
   ArrowRight,
   TrendingUp,
+  Cloud,
+  CloudCheck,
+  RefreshCw,
   FileText,
   Eye,
   Info,
@@ -135,6 +138,8 @@ export default function SavedCalculationsList({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitleInput, setEditTitleInput] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
 
   // Raw state lists
   const [kalenderList, setKalenderList] = useState<SavedSimulationItem[]>([]);
@@ -168,8 +173,9 @@ export default function SavedCalculationsList({
   const [packagingList, setPackagingList] = useState<SavedPackagingSimulationItem[]>([]);
   const [paperbagList, setPaperbagList] = useState<SavedPaperbagSimulationItem[]>([]);
 
-  // Load from localStorage
-  const refreshData = () => {
+  // Load from localStorage & Sync with Server Database
+  const refreshData = async () => {
+    // 1. Baca LocalStorage dulu (instant UI response)
     try {
       const savedFilter = localStorage.getItem('sintak_pricelist_saved_list_filter');
       if (
@@ -208,132 +214,199 @@ export default function SavedCalculationsList({
         setFilterCategory(savedFilter as any);
       }
 
-      const rawK = localStorage.getItem('sintak_saved_simulations');
-      if (rawK) setKalenderList(JSON.parse(rawK));
-      else setKalenderList([]);
+      const readLs = (key: string) => {
+        try {
+          const raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : [];
+        } catch {
+          return [];
+        }
+      };
 
-      const rawM = localStorage.getItem('sintak_saved_manasik_simulations');
-      if (rawM) setManasikList(JSON.parse(rawM));
-      else setManasikList([]);
+      const currentKalender = readLs('sintak_saved_simulations');
+      const currentManasik = readLs('sintak_saved_manasik_simulations');
+      const currentYasin = readLs('sintak_saved_yasin_simulations');
+      const currentNota = readLs('sintak_saved_nota_simulations');
+      const currentBrosur = readLs('sintak_saved_brosur_simulations');
+      const currentLabelKhq = readLs('sintak_saved_label_khq_simulations');
+      const currentBukuTulis = readLs('sintak_saved_buku_tulis_simulations');
+      const currentStopmap = readLs('sintak_saved_stopmap_simulations');
+      const currentSyahadah = readLs('sintak_saved_syahadah_simulations');
+      const currentRaportKaleb = readLs('sintak_saved_raport_kaleb_simulations');
+      const currentKopSurat = readLs('sintak_saved_kop_surat_simulations');
+      const currentAmplop = readLs('sintak_saved_amplop_simulations');
+      const currentSertifikat = readLs('sintak_saved_sertifikat_simulations');
+      const currentUndangan = readLs('sintak_saved_undangan_simulations');
+      const currentBukuTabunganNs = readLs('sintak_saved_buku_tabungan_ns_simulations');
+      const currentBukuTabunganSecurity = readLs('sintak_saved_buku_tabungan_security_simulations');
+      const currentKartuKoperasi = readLs('sintak_saved_kartu_koperasi_promise_simulations');
+      const currentLebelKartuObat = readLs('sintak_saved_lebel_kartu_obat_simulations');
+      const currentBukuSoftCover = readLs('sintak_saved_buku_soft_cover_simulations');
+      const currentBukuSoftCover145 = readLs('sintak_saved_buku_soft_cover_145x2025_simulations');
+      const currentBukuHardCover105 = readLs('sintak_saved_buku_hard_cover_105x148_simulations');
+      const currentPoster = readLs('sintak_saved_poster_simulations');
+      const currentMajalah = readLs('sintak_saved_majalah_simulations');
+      const currentStiker = readLs('sintak_saved_stiker_simulations');
+      const currentBsc105 = readLs('sintak_saved_buku_soft_cover_105x148_simulations');
+      const currentBhc145 = readLs('sintak_saved_buku_hard_cover_145x2025_simulations');
+      const currentBhc21 = readLs('sintak_saved_buku_hard_cover_21x297_simulations');
+      const currentKalenderKop = readLs('sintak_saved_kalender_kop_simulations');
+      const currentPackaging = readLs('sintak_saved_packaging_simulations');
+      const currentPaperbag = readLs('sintak_saved_paperbag_simulations');
 
-      const rawY = localStorage.getItem('sintak_saved_yasin_simulations');
-      if (rawY) setYasinList(JSON.parse(rawY));
-      else setYasinList([]);
+      setKalenderList(currentKalender);
+      setManasikList(currentManasik);
+      setYasinList(currentYasin);
+      setNotaList(currentNota);
+      setBrosurList(currentBrosur);
+      setLabelKhqList(currentLabelKhq);
+      setBukuTulisList(currentBukuTulis);
+      setStopmapList(currentStopmap);
+      setSyahadahList(currentSyahadah);
+      setRaportKalebList(currentRaportKaleb);
+      setKopSuratList(currentKopSurat);
+      setAmplopList(currentAmplop);
+      setSertifikatList(currentSertifikat);
+      setUndanganList(currentUndangan);
+      setBukuTabunganNsList(currentBukuTabunganNs);
+      setBukuTabunganSecurityList(currentBukuTabunganSecurity);
+      setKartuKoperasiPromiseList(currentKartuKoperasi);
+      setLebelKartuObatList(currentLebelKartuObat);
+      setBukuSoftCoverList(currentBukuSoftCover);
+      setBukuSoftCover145x2025List(currentBukuSoftCover145);
+      setBukuHardCover105x148List(currentBukuHardCover105);
+      setPosterList(currentPoster);
+      setMajalahList(currentMajalah);
+      setStikerList(currentStiker);
+      setBukuSoftCover105x148List(currentBsc105);
+      setBukuHardCover145x2025List(currentBhc145);
+      setBukuHardCover21x297List(currentBhc21);
+      setKalenderKopList(currentKalenderKop);
+      setPackagingList(currentPackaging);
+      setPaperbagList(currentPaperbag);
 
-      const rawN = localStorage.getItem('sintak_saved_nota_simulations');
-      if (rawN) setNotaList(JSON.parse(rawN));
-      else setNotaList([]);
+      // 2. Ambil data terbaru dari Server Database & sinkronkan
+      setIsSyncing(true);
+      const res = await fetch(`/api/pricelist/saved-calculations?_t=${Date.now()}`);
+      const json = await res.json();
 
-      const rawB = localStorage.getItem('sintak_saved_brosur_simulations');
-      if (rawB) setBrosurList(JSON.parse(rawB));
-      else setBrosurList([]);
+      if (json.success && Array.isArray(json.data)) {
+        const serverItems: any[] = json.data;
+        const serverIds = new Set(serverItems.map((s) => s.id));
 
-      const rawL = localStorage.getItem('sintak_saved_label_khq_simulations');
-      if (rawL) setLabelKhqList(JSON.parse(rawL));
-      else setLabelKhqList([]);
+        // Group server items by category
+        const grouped: Record<string, any[]> = {};
+        serverItems.forEach((s) => {
+          if (!grouped[s.category]) grouped[s.category] = [];
+          grouped[s.category].push({
+            id: s.id,
+            title: s.title,
+            savedAt: s.createdAt || s.updatedAt || s.savedAt,
+            oplah: s.oplah,
+            data: s.data,
+            paramsSnapshot: s.paramsSnapshot,
+            ...(s.data || {}),
+          });
+        });
 
-      const rawBT = localStorage.getItem('sintak_saved_buku_tulis_simulations');
-      if (rawBT) setBukuTulisList(JSON.parse(rawBT));
-      else setBukuTulisList([]);
+        // Update list states & localStorage per kategori
+        const updateCategory = (cat: string, lsKey: string, setter: React.Dispatch<React.SetStateAction<any[]>>, localList: any[]) => {
+          const fromServer = grouped[cat] || [];
+          // Merge server items with local items (keep local items that are not yet on server)
+          const localUnsynced = localList.filter((l) => !serverIds.has(l.id));
+          const merged = [...fromServer, ...localUnsynced].sort(
+            (a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()
+          );
+          setter(merged);
+          localStorage.setItem(lsKey, JSON.stringify(merged));
+        };
 
-      const rawSM = localStorage.getItem('sintak_saved_stopmap_simulations');
-      if (rawSM) setStopmapList(JSON.parse(rawSM));
-      else setStopmapList([]);
+        updateCategory('Kalender', 'sintak_saved_simulations', setKalenderList, currentKalender);
+        updateCategory('Buku Manasik', 'sintak_saved_manasik_simulations', setManasikList, currentManasik);
+        updateCategory('Buku Yasin', 'sintak_saved_yasin_simulations', setYasinList, currentYasin);
+        updateCategory('Nota 1 Warna', 'sintak_saved_nota_simulations', setNotaList, currentNota);
+        updateCategory('Brosur 2026', 'sintak_saved_brosur_simulations', setBrosurList, currentBrosur);
+        updateCategory('Label KHQ', 'sintak_saved_label_khq_simulations', setLabelKhqList, currentLabelKhq);
+        updateCategory('Buku Tulis', 'sintak_saved_buku_tulis_simulations', setBukuTulisList, currentBukuTulis);
+        updateCategory('Stopmap', 'sintak_saved_stopmap_simulations', setStopmapList, currentStopmap);
+        updateCategory('Syahadah', 'sintak_saved_syahadah_simulations', setSyahadahList, currentSyahadah);
+        updateCategory('Raport Kaleb', 'sintak_saved_raport_kaleb_simulations', setRaportKalebList, currentRaportKaleb);
+        updateCategory('Kop Surat', 'sintak_saved_kop_surat_simulations', setKopSuratList, currentKopSurat);
+        updateCategory('Amplop', 'sintak_saved_amplop_simulations', setAmplopList, currentAmplop);
+        updateCategory('Sertifikat', 'sintak_saved_sertifikat_simulations', setSertifikatList, currentSertifikat);
+        updateCategory('Undangan', 'sintak_saved_undangan_simulations', setUndanganList, currentUndangan);
+        updateCategory('Buku Tabungan NS', 'sintak_saved_buku_tabungan_ns_simulations', setBukuTabunganNsList, currentBukuTabunganNs);
+        updateCategory('Buku Tabungan Security', 'sintak_saved_buku_tabungan_security_simulations', setBukuTabunganSecurityList, currentBukuTabunganSecurity);
+        updateCategory('Kartu Koperasi Promise', 'sintak_saved_kartu_koperasi_promise_simulations', setKartuKoperasiPromiseList, currentKartuKoperasi);
+        updateCategory('Lebel Kartu Obat', 'sintak_saved_lebel_kartu_obat_simulations', setLebelKartuObatList, currentLebelKartuObat);
+        updateCategory('Buku Soft Cover', 'sintak_saved_buku_soft_cover_simulations', setBukuSoftCoverList, currentBukuSoftCover);
+        updateCategory('Buku Soft Cover 14,5×20,25', 'sintak_saved_buku_soft_cover_145x2025_simulations', setBukuSoftCover145x2025List, currentBukuSoftCover145);
+        updateCategory('Buku Hard Cover 10,5×14,8', 'sintak_saved_buku_hard_cover_105x148_simulations', setBukuHardCover105x148List, currentBukuHardCover105);
+        updateCategory('Poster', 'sintak_saved_poster_simulations', setPosterList, currentPoster);
+        updateCategory('Majalah 14,5×20,25', 'sintak_saved_majalah_simulations', setMajalahList, currentMajalah);
+        updateCategory('Stiker', 'sintak_saved_stiker_simulations', setStikerList, currentStiker);
+        updateCategory('Buku Soft Cover 10,5×14,8', 'sintak_saved_buku_soft_cover_105x148_simulations', setBukuSoftCover105x148List, currentBsc105);
+        updateCategory('Buku Hard Cover 14,5×20,25', 'sintak_saved_buku_hard_cover_145x2025_simulations', setBukuHardCover145x2025List, currentBhc145);
+        updateCategory('Buku Hard Cover 21×29,7', 'sintak_saved_buku_hard_cover_21x297_simulations', setBukuHardCover21x297List, currentBhc21);
+        updateCategory('Kalender Kop', 'sintak_saved_kalender_kop_simulations', setKalenderKopList, currentKalenderKop);
+        updateCategory('Packaging', 'sintak_saved_packaging_simulations', setPackagingList, currentPackaging);
+        updateCategory('Paperbag', 'sintak_saved_paperbag_simulations', setPaperbagList, currentPaperbag);
 
-      const rawSy = localStorage.getItem('sintak_saved_syahadah_simulations');
-      if (rawSy) setSyahadahList(JSON.parse(rawSy));
-      else setSyahadahList([]);
+        // Upload any local calculations that don't exist on server yet
+        const allLocal = [
+          ...currentKalender.map((i: any) => ({ ...i, category: 'Kalender' })),
+          ...currentManasik.map((i: any) => ({ ...i, category: 'Buku Manasik' })),
+          ...currentYasin.map((i: any) => ({ ...i, category: 'Buku Yasin' })),
+          ...currentNota.map((i: any) => ({ ...i, category: 'Nota 1 Warna' })),
+          ...currentBrosur.map((i: any) => ({ ...i, category: 'Brosur 2026' })),
+          ...currentLabelKhq.map((i: any) => ({ ...i, category: 'Label KHQ' })),
+          ...currentBukuTulis.map((i: any) => ({ ...i, category: 'Buku Tulis' })),
+          ...currentStopmap.map((i: any) => ({ ...i, category: 'Stopmap' })),
+          ...currentSyahadah.map((i: any) => ({ ...i, category: 'Syahadah' })),
+          ...currentRaportKaleb.map((i: any) => ({ ...i, category: 'Raport Kaleb' })),
+          ...currentKopSurat.map((i: any) => ({ ...i, category: 'Kop Surat' })),
+          ...currentAmplop.map((i: any) => ({ ...i, category: 'Amplop' })),
+          ...currentSertifikat.map((i: any) => ({ ...i, category: 'Sertifikat' })),
+          ...currentUndangan.map((i: any) => ({ ...i, category: 'Undangan' })),
+          ...currentBukuTabunganNs.map((i: any) => ({ ...i, category: 'Buku Tabungan NS' })),
+          ...currentBukuTabunganSecurity.map((i: any) => ({ ...i, category: 'Buku Tabungan Security' })),
+          ...currentKartuKoperasi.map((i: any) => ({ ...i, category: 'Kartu Koperasi Promise' })),
+          ...currentLebelKartuObat.map((i: any) => ({ ...i, category: 'Lebel Kartu Obat' })),
+          ...currentBukuSoftCover.map((i: any) => ({ ...i, category: 'Buku Soft Cover' })),
+          ...currentBukuSoftCover145.map((i: any) => ({ ...i, category: 'Buku Soft Cover 14,5×20,25' })),
+          ...currentBukuHardCover105.map((i: any) => ({ ...i, category: 'Buku Hard Cover 10,5×14,8' })),
+          ...currentPoster.map((i: any) => ({ ...i, category: 'Poster' })),
+          ...currentMajalah.map((i: any) => ({ ...i, category: 'Majalah 14,5×20,25' })),
+          ...currentStiker.map((i: any) => ({ ...i, category: 'Stiker' })),
+          ...currentBsc105.map((i: any) => ({ ...i, category: 'Buku Soft Cover 10,5×14,8' })),
+          ...currentBhc145.map((i: any) => ({ ...i, category: 'Buku Hard Cover 14,5×20,25' })),
+          ...currentBhc21.map((i: any) => ({ ...i, category: 'Buku Hard Cover 21×29,7' })),
+          ...currentKalenderKop.map((i: any) => ({ ...i, category: 'Kalender Kop' })),
+          ...currentPackaging.map((i: any) => ({ ...i, category: 'Packaging' })),
+          ...currentPaperbag.map((i: any) => ({ ...i, category: 'Paperbag' })),
+        ];
 
-      const rawRK = localStorage.getItem('sintak_saved_raport_kaleb_simulations');
-      if (rawRK) setRaportKalebList(JSON.parse(rawRK));
-      else setRaportKalebList([]);
+        const toUpload = allLocal.filter((l) => !serverIds.has(l.id));
+        if (toUpload.length > 0) {
+          fetch('/api/pricelist/saved-calculations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items: toUpload }),
+          }).catch(() => {});
+        }
 
-      const rawKS = localStorage.getItem('sintak_saved_kop_surat_simulations');
-      if (rawKS) setKopSuratList(JSON.parse(rawKS));
-      else setKopSuratList([]);
-
-      const rawA = localStorage.getItem('sintak_saved_amplop_simulations');
-      if (rawA) setAmplopList(JSON.parse(rawA));
-      else setAmplopList([]);
-
-      const rawSert = localStorage.getItem('sintak_saved_sertifikat_simulations');
-      if (rawSert) setSertifikatList(JSON.parse(rawSert));
-      else setSertifikatList([]);
-
-      const rawUnd = localStorage.getItem('sintak_saved_undangan_simulations');
-      if (rawUnd) setUndanganList(JSON.parse(rawUnd));
-      else setUndanganList([]);
-
-      const rawBtn = localStorage.getItem('sintak_saved_buku_tabungan_ns_simulations');
-      if (rawBtn) setBukuTabunganNsList(JSON.parse(rawBtn));
-      else setBukuTabunganNsList([]);
-
-      const rawBts = localStorage.getItem('sintak_saved_buku_tabungan_security_simulations');
-      if (rawBts) setBukuTabunganSecurityList(JSON.parse(rawBts));
-      else setBukuTabunganSecurityList([]);
-
-      const rawKkp = localStorage.getItem('sintak_saved_kartu_koperasi_promise_simulations');
-      if (rawKkp) setKartuKoperasiPromiseList(JSON.parse(rawKkp));
-      else setKartuKoperasiPromiseList([]);
-
-      const rawLko = localStorage.getItem('sintak_saved_lebel_kartu_obat_simulations');
-      if (rawLko) setLebelKartuObatList(JSON.parse(rawLko));
-      else setLebelKartuObatList([]);
-
-      const rawBsc = localStorage.getItem('sintak_saved_buku_soft_cover_simulations');
-      if (rawBsc) setBukuSoftCoverList(JSON.parse(rawBsc));
-      else setBukuSoftCoverList([]);
-
-      const rawBsc145 = localStorage.getItem('sintak_saved_buku_soft_cover_145x2025_simulations');
-      if (rawBsc145) setBukuSoftCover145x2025List(JSON.parse(rawBsc145));
-      else setBukuSoftCover145x2025List([]);
-
-      const rawBhc105 = localStorage.getItem('sintak_saved_buku_hard_cover_105x148_simulations');
-      if (rawBhc105) setBukuHardCover105x148List(JSON.parse(rawBhc105));
-      else setBukuHardCover105x148List([]);
-
-      const rawPoster = localStorage.getItem('sintak_saved_poster_simulations');
-      if (rawPoster) setPosterList(JSON.parse(rawPoster));
-      else setPosterList([]);
-
-      const rawMajalah = localStorage.getItem('sintak_saved_majalah_simulations');
-      if (rawMajalah) setMajalahList(JSON.parse(rawMajalah));
-      else setMajalahList([]);
-
-      const rawStiker = localStorage.getItem('sintak_saved_stiker_simulations');
-      if (rawStiker) setStikerList(JSON.parse(rawStiker));
-      else setStikerList([]);
-
-      const rawBsc105 = localStorage.getItem('sintak_saved_buku_soft_cover_105x148_simulations');
-      if (rawBsc105) setBukuSoftCover105x148List(JSON.parse(rawBsc105));
-      else setBukuSoftCover105x148List([]);
-
-      const rawBhc145 = localStorage.getItem('sintak_saved_buku_hard_cover_145x2025_simulations');
-      if (rawBhc145) setBukuHardCover145x2025List(JSON.parse(rawBhc145));
-      else setBukuHardCover145x2025List([]);
-
-      const rawBhc21 = localStorage.getItem('sintak_saved_buku_hard_cover_21x297_simulations');
-      if (rawBhc21) setBukuHardCover21x297List(JSON.parse(rawBhc21));
-      else setBukuHardCover21x297List([]);
-
-      const rawKalenderKop = localStorage.getItem('sintak_saved_kalender_kop_simulations');
-      if (rawKalenderKop) setKalenderKopList(JSON.parse(rawKalenderKop));
-      else setKalenderKopList([]);
-      const rawPkg = localStorage.getItem('sintak_saved_packaging_simulations');
-      if (rawPkg) setPackagingList(JSON.parse(rawPkg));
-      else setPackagingList([]);
-      const rawPb = localStorage.getItem('sintak_saved_paperbag_simulations');
-      if (rawPb) setPaperbagList(JSON.parse(rawPb));
-      else setPaperbagList([]);
+        setLastSyncTime(new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }));
+      }
     } catch (e) {
       console.error('Failed to load saved calculations:', e);
+    } finally {
+      setIsSyncing(false);
     }
   };
 
   useEffect(() => {
     refreshData();
   }, []);
-
   // Map into unified list
   const unifiedList = useMemo<UnifiedCalculationItem[]>(() => {
     const items: UnifiedCalculationItem[] = [];
@@ -1209,6 +1282,12 @@ export default function SavedCalculationsList({
         setPaperbagList(updated);
         localStorage.setItem('sintak_saved_paperbag_simulations', JSON.stringify(updated));
       }
+
+      // Sync delete with server database
+      fetch(`/api/pricelist/saved-calculations?id=${encodeURIComponent(item.id)}`, {
+        method: 'DELETE',
+      }).catch((err) => console.error('Failed to delete from server DB:', err));
+
       toast.success('Kalkulasi berhasil dihapus.');
     } catch (err) {
       console.error(err);
@@ -1343,6 +1422,13 @@ export default function SavedCalculationsList({
         setPaperbagList(updated);
         localStorage.setItem('sintak_saved_paperbag_simulations', JSON.stringify(updated));
       }
+      // Sync rename with server database
+      fetch('/api/pricelist/saved-calculations', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: item.id, title: newTitle }),
+      }).catch((err) => console.error('Failed to update title on server DB:', err));
+
       setEditingId(null);
       toast.success('Nama kalkulasi berhasil diperbarui.');
     } catch (err) {
@@ -1487,11 +1573,13 @@ export default function SavedCalculationsList({
       const lamTxt = inp.finishing !== 'Tanpa Laminasi' ? ` + ${inp.finishing}` : '';
       text = `*PENAWARAN PAPERBAG (TAS KERTAS CUSTOM)*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Paperbag Custom Custom\n• *Ukuran*: ${inp.ukuran} (Terbuka: ${pb.data.spec.ukuranTerbuka})\n• *Bahan*: Art Carton 230 gsm Full Colour 1 Muka\n• *Alur Mesin*: ${pb.data.prosesCetak}\n• *Finishing*: Pond Die Cut + Double Tape + Tali Kur + Lipat Assembly + Packing Kardus${lamTxt}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${pb.data.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${pb.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${pb.data.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     }
+
     navigator.clipboard.writeText(text);
     setCopiedId(item.id);
     toast.success('Format penawaran WhatsApp berhasil disalin!');
     setTimeout(() => setCopiedId(null), 2500);
   };
+
   return (
     <div className="flex flex-col gap-4 pb-8 overflow-y-auto">
       {/* Header Info Banner */}
@@ -1509,10 +1597,26 @@ export default function SavedCalculationsList({
                 {unifiedList.length} Tersimpan
               </span>
             </div>
-            <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Kelola, edit judul, salin format penawaran WhatsApp, atau muat kembali hasil kalkulasi ke simulator.
+            <p className="text-xs text-emerald-800/80 mt-0.5">
+              Arsip simulasi penawaran harga tersinkronisasi otomatis ke Database Server SINTAK & multi-perangkat
             </p>
           </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-100/90 text-emerald-900 border border-emerald-300 shadow-2xs">
+            <Cloud size={13} className="text-emerald-700" />
+            <span>Cloud DB Sync {lastSyncTime ? `(${lastSyncTime})` : ''}</span>
+          </span>
+          <button
+            type="button"
+            onClick={() => refreshData()}
+            disabled={isSyncing}
+            className="p-1.5 rounded-lg bg-emerald-100/80 hover:bg-emerald-200 text-emerald-800 border border-emerald-300 transition-all cursor-pointer disabled:opacity-50 shadow-2xs"
+            title="Sinkronkan Ulang dengan Database Server"
+          >
+            <RefreshCw size={13} className={isSyncing ? 'animate-spin text-emerald-700' : ''} />
+          </button>
         </div>
       </div>
 
