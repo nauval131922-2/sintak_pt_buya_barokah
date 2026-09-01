@@ -1986,6 +1986,68 @@ export default function SavedCalculationsList({
                     </div>
                   </div>
                 );
+
+              {/* Snapshot Master Parameter Saat Disimpan */}
+              {(() => {
+                const raw: any = viewingDetailItem.rawData;
+                const snap = raw?.paramsSnapshot || raw?.customParams;
+                if (!snap || typeof snap !== 'object') return null;
+
+                const entries = Object.entries(snap).filter(
+                  ([k, v]) => typeof v === 'number' || typeof v === 'string' || typeof v === 'boolean'
+                );
+
+                if (entries.length === 0) return null;
+
+                return (
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                        <Database size={14} className="text-emerald-700" />
+                        Settingan Master Parameter Saat Disimpan ({entries.length} Nilai)
+                      </h4>
+                      <span className="text-[10px] text-slate-500 font-medium">
+                        Snapshot Tarif Acuan Historis
+                      </span>
+                    </div>
+                    <div className="bg-slate-50 rounded-xl border border-slate-200 p-3 max-h-60 overflow-y-auto">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                        {entries.map(([key, val]) => {
+                          const formattedKey = key
+                            .replace(/([A-Z])/g, ' $1')
+                            .replace(/^./, (str) => str.toUpperCase());
+
+                          let displayVal = String(val);
+                          if (typeof val === 'number') {
+                            if (key.toLowerCase().includes('pct') || key.toLowerCase().includes('margin') || key.toLowerCase().includes('nego') || key.toLowerCase().includes('ppn') || key.toLowerCase().includes('persen')) {
+                              displayVal = `${val}%`;
+                            } else if (key.toLowerCase().includes('tarif') || key.toLowerCase().includes('harga') || key.toLowerCase().includes('biaya') || key.toLowerCase().includes('ongkos') || key.toLowerCase().includes('min')) {
+                              displayVal = `Rp ${Number(val).toLocaleString('id-ID')}`;
+                            } else {
+                              displayVal = Number(val).toLocaleString('id-ID');
+                            }
+                          } else if (typeof val === 'boolean') {
+                            displayVal = val ? 'Aktif (Ya)' : 'Tidak';
+                          }
+
+                          return (
+                            <div
+                              key={key}
+                              className="p-2 bg-white rounded-lg border border-slate-200/80 flex items-center justify-between gap-2"
+                            >
+                              <span className="text-slate-600 truncate text-[11px]" title={key}>
+                                {formattedKey}:
+                              </span>
+                              <span className="font-bold font-mono text-slate-900 text-[11px] shrink-0">
+                                {displayVal}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                );
               })()}
             </div>
 

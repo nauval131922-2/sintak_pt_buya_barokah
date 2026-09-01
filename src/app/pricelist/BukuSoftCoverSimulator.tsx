@@ -126,6 +126,8 @@ export default function BukuSoftCoverSimulator({
       savedAt: new Date().toISOString(),
       oplah,
       data: result,
+        paramsSnapshot: customParams,
+        paramsSnapshot: customParams,
     };
     const updated = [newItem, ...savedSimulations.slice(0, 49)];
     setSavedSimulations(updated);
@@ -143,7 +145,8 @@ export default function BukuSoftCoverSimulator({
     const title = simulationTitle.trim() || activeSimulationTitle || defaultTitle();
     const updated = savedSimulations.map((item) =>
       item.id === activeSimulationId
-        ? { ...item, title, savedAt: new Date().toISOString(), data: result }
+        ? { ...item, title, savedAt: new Date().toISOString(), data: result,
+        paramsSnapshot: customParams }
         : item
     );
     setSavedSimulations(updated);

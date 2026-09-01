@@ -103,7 +103,8 @@ export default function NotaSimulator({
   const setActiveSimulationId = (id: string | null) => {
     if (propSetActiveSimId) propSetActiveSimId(id);
     else setInternalActiveId(id);
-  };
+  }  paramsSnapshot?: any;
+};
 
   const activeSimulationTitle = propActiveSimTitle !== undefined ? propActiveSimTitle : internalActiveTitle;
   const setActiveSimulationTitle = (title: string | null) => {

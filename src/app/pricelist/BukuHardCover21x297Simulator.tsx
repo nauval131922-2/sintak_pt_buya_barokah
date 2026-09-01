@@ -35,6 +35,7 @@ export type SavedBukuHardCover21x297SimulationItem = {
   title: string;
   oplah: number;
   data: BukuHardCover21x297SimulatorResult;
+}  paramsSnapshot?: any;
 };
 
 const FINISHING_OPTIONS: BukuHardCover21x297FinishingOption[] = [

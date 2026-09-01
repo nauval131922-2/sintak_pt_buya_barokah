@@ -36,6 +36,7 @@ export type SavedKalenderKopSimulationItem = {
   title: string;
   oplah: number;
   data: KalenderKopSimulatorResult;
+}  paramsSnapshot?: any;
 };
 
 interface Props {
