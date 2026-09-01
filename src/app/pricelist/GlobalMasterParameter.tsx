@@ -35,38 +35,31 @@ export default function GlobalMasterParameter({
   setGlobalParams,
   onApplyToAllProducts,
 }: GlobalMasterParameterProps) {
-  const [showAppliedToast, setShowAppliedToast] = useState(false);
-  const [showManualModal, setShowManualModal] = useState(false);
+   const [showManualModal, setShowManualModal] = useState(false);
 
-  const handleChange = (key: keyof GlobalMasterParams, val: number) => {
-    setGlobalParams((prev) => ({ ...prev, [key]: Math.max(0, val) }));
-  };
+   const handleChange = (key: keyof GlobalMasterParams, val: number) => {
+    const updated = { ...globalParams, [key]: Math.max(0, val) };
+    setGlobalParams(updated);
+    onApplyToAllProducts(updated);
+   };
 
-  const isFieldModified = (key: keyof GlobalMasterParams) =>
-    globalParams[key] !== DEFAULT_GLOBAL_PARAMS[key];
+   const handleResetField = (key: keyof GlobalMasterParams) => {
+    const updated = { ...globalParams, [key]: DEFAULT_GLOBAL_PARAMS[key] };
+    setGlobalParams(updated);
+    onApplyToAllProducts(updated);
+     toast.info(`Field dikembalikan ke standar global (${DEFAULT_GLOBAL_PARAMS[key]}).`);
+   };
 
-  const handleResetField = (key: keyof GlobalMasterParams) => {
-    setGlobalParams((prev) => ({ ...prev, [key]: DEFAULT_GLOBAL_PARAMS[key] }));
-    toast.info(`Field dikembalikan ke standar global (${DEFAULT_GLOBAL_PARAMS[key]}).`);
-  };
+   const isModified = React.useMemo(
+     () => JSON.stringify(globalParams) !== JSON.stringify(DEFAULT_GLOBAL_PARAMS),
+     [globalParams]
+   );
 
-  const isModified = React.useMemo(
-    () => JSON.stringify(globalParams) !== JSON.stringify(DEFAULT_GLOBAL_PARAMS),
-    [globalParams]
-  );
-
-  const handleResetAll = () => {
-    setGlobalParams(DEFAULT_GLOBAL_PARAMS);
-    toast.success('Semua Master Parameter Global dikembalikan ke standar.');
-  };
-
-  const handleApply = () => {
-    onApplyToAllProducts(globalParams);
-    setShowAppliedToast(true);
-    setTimeout(() => setShowAppliedToast(false), 3000);
-    toast.success('Berhasil sinkronkan parameter global ke SEMUA jenis produk!');
-  };
-
+   const handleResetAll = () => {
+     setGlobalParams(DEFAULT_GLOBAL_PARAMS);
+    onApplyToAllProducts(DEFAULT_GLOBAL_PARAMS);
+    toast.success('Semua Master Parameter Global dikembalikan ke standar & disinkronkan.');
+   };
   const fieldRow = (
     key: keyof GlobalMasterParams,
     label: string,
@@ -152,23 +145,12 @@ export default function GlobalMasterParameter({
               Reset Default
             </button>
           )}
-          <button
-            type="button"
-            onClick={handleApply}
-            className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold bg-white text-emerald-800 hover:bg-emerald-50 rounded-lg shadow-md transition-all cursor-pointer hover:shadow-lg active:scale-98"
-          >
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            Terapkan ke Semua Produk
-          </button>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white/20 text-white border border-white/30 backdrop-blur-xs">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-200" />
+            <span>Otomatis Sinkron Real-time</span>
+          </span>
         </div>
       </div>
-
-      {showAppliedToast && (
-        <div className="p-3 bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-semibold rounded-xl flex items-center gap-2 shadow-xs animate-in fade-in">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>Seluruh parameter produk (Kalender, Manasik, Yasin, Nota, Brosur) telah diperbarui dengan tarif global ini.</span>
-        </div>
-      )}
 
       {/* Grid Kategori Parameter (2 Kolom) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
