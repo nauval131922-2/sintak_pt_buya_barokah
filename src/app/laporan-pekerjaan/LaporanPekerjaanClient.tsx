@@ -2268,61 +2268,59 @@ export default function LaporanPekerjaanClient({
       </div>
 
       {/* Filter & Search Bar (Bisa Collapse/Expand di Mobile, Selalu Terbuka di Desktop) */}
-      <div className="shrink-0 flex flex-col gap-3">
+      <div className="shrink-0 bg-white rounded-xl border border-slate-200/80 shadow-sm transition-all">
         {/* Toggle Bar Khusus Layar Mobile (<sm) */}
-        <div className="sm:hidden bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden transition-all">
-          <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-50/70 hover:bg-slate-100/80 transition-colors">
+        <div className="sm:hidden flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-50/70 hover:bg-slate-100/80 transition-colors rounded-t-xl">
+          <button
+            type="button"
+            onClick={toggleFilterMobile}
+            className="flex items-center space-x-2 text-xs font-bold text-slate-800 hover:text-emerald-700 transition-colors focus:outline-none flex-1 text-left min-w-0"
+          >
+            <Filter className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span className="text-[11px] sm:text-xs font-bold text-slate-800 truncate">Pencarian & Filter</span>
+            {(selectedBagianFilter !== "ALL" ||
+              selectedPic !== "ALL" ||
+              selectedStatus !== "ALL" ||
+              searchTerm !== "" ||
+              filterStartDate !== null ||
+              filterEndDate !== null ||
+              filterStartTime !== "" ||
+              filterEndTime !== "") && (
+              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Filter aktif" />
+            )}
+            <div className="flex items-center space-x-1.5 text-slate-500 text-[10.5px] font-medium ml-auto pr-2 shrink-0">
+              <span>{isFilterOpenMobile ? "Sembunyikan" : "Tampilkan"}</span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 ${
+                  isFilterOpenMobile ? "rotate-180" : ""
+                }`}
+              />
+            </div>
+          </button>
+
+          {/* Tombol Tambah Order Cepat di Header Mobile */}
+          {roleConfig?.can_add !== false && (
             <button
               type="button"
-              onClick={toggleFilterMobile}
-              className="flex items-center space-x-2 text-xs font-bold text-slate-800 hover:text-emerald-700 transition-colors focus:outline-none flex-1 text-left min-w-0"
+              onClick={() => {
+                setNewOrderProject("");
+                setNewOrderTgl(new Date());
+                setShowAddOrderModal(true);
+              }}
+              className="h-7 px-2.5 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1 shrink-0 cursor-pointer shadow-xs ml-1"
+              title="Input Order Produksi Manual"
             >
-              <Filter className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span className="text-[11px] sm:text-xs font-bold text-slate-800 truncate">Pencarian & Filter</span>
-              {(selectedBagianFilter !== "ALL" ||
-                selectedPic !== "ALL" ||
-                selectedStatus !== "ALL" ||
-                searchTerm !== "" ||
-                filterStartDate !== null ||
-                filterEndDate !== null ||
-                filterStartTime !== "" ||
-                filterEndTime !== "") && (
-                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Filter aktif" />
-              )}
-              <div className="flex items-center space-x-1.5 text-slate-500 text-[10.5px] font-medium ml-auto pr-2 shrink-0">
-                <span>{isFilterOpenMobile ? "Sembunyikan" : "Tampilkan"}</span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 ${
-                    isFilterOpenMobile ? "rotate-180" : ""
-                  }`}
-                />
-              </div>
+              <Plus size={13} />
+              <span>Tambah</span>
             </button>
-
-            {/* Tombol Tambah Order Cepat di Header Mobile */}
-            {roleConfig?.can_add !== false && (
-              <button
-                type="button"
-                onClick={() => {
-                  setNewOrderProject("");
-                  setNewOrderTgl(new Date());
-                  setShowAddOrderModal(true);
-                }}
-                className="h-7 px-2.5 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1 shrink-0 cursor-pointer shadow-xs ml-1"
-                title="Input Order Produksi Manual"
-              >
-                <Plus size={13} />
-                <span>Tambah</span>
-              </button>
-            )}
-          </div>
+          )}
         </div>
 
-        {/* Content Toolbar (Search & Filter Inputs - di Mobile LEPAS TOTAL dari card) */}
+        {/* Content Toolbar (Search & Filter Inputs) */}
         <div
           className={`${
             isFilterOpenMobile ? "flex flex-col" : "hidden sm:flex sm:flex-col"
-          } p-0 sm:p-3 sm:bg-white sm:rounded-xl sm:border sm:border-slate-200/80 sm:shadow-sm sm:overflow-hidden gap-2.5 animate-in fade-in slide-in-from-top-1 duration-200`}
+          } p-3.5 sm:p-3 space-y-3 sm:space-y-0 gap-0 sm:gap-2.5 border-t border-slate-100 sm:border-t-0 animate-in fade-in slide-in-from-top-1 duration-200`}
         >
           {/* Baris 1: Search & Reload */}
           <div className="flex items-center gap-2 w-full">

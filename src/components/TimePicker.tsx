@@ -43,7 +43,7 @@ export default function TimePicker({
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
     const scale = getZoomScale(triggerRef.current);
-    const popupWidth = 200;
+    const popupWidth = 210;
     const padding = 8;
 
     if (usePortal) {
@@ -74,6 +74,41 @@ export default function TimePicker({
 
       setPortalStyle(style);
     } else {
+      // Non-portal relative positioning: auto-clamp agar tidak terpotong tepi layar kanan/kiri
+      let leftEdge = 0;
+      let rightEdge = window.innerWidth;
+
+      let container = triggerRef.current.parentElement;
+      while (container && container !== document.body) {
+        const style = getComputedStyle(container);
+        const overflow = (style.overflow || '') + (style.overflowX || '') + (style.overflowY || '');
+        if (overflow.includes('hidden') || overflow.includes('auto') || overflow.includes('scroll')) {
+          const containerRect = container.getBoundingClientRect();
+          leftEdge = Math.max(leftEdge, containerRect.left);
+          rightEdge = Math.min(rightEdge, containerRect.right);
+          break;
+        }
+        container = container.parentElement;
+      }
+
+      const availableLeft = Math.max(padding, leftEdge + padding);
+      const availableRight = Math.min(window.innerWidth - padding, rightEdge - padding);
+
+      let idealPopupLeft = rect.left;
+      if (popupAlign === 'right') {
+        idealPopupLeft = rect.right - popupWidth;
+      }
+
+      let shift = 0;
+      if (idealPopupLeft + popupWidth > availableRight) {
+        shift = availableRight - (idealPopupLeft + popupWidth);
+      }
+      if (idealPopupLeft + shift < availableLeft) {
+        shift = availableLeft - idealPopupLeft;
+      }
+
+      setAlignOffset(popupAlign === 'right' ? shift + (rect.width - popupWidth) : shift);
+
       const spaceBelow = window.innerHeight - rect.bottom;
       const spaceAbove = rect.top;
       setOpenUpward(spaceBelow < 260 && spaceAbove > spaceBelow);
@@ -135,11 +170,11 @@ export default function TimePicker({
   const popupContent = open && (
     <div
       ref={ref}
-      style={usePortal ? portalStyle : undefined}
+      style={usePortal ? portalStyle : (alignOffset ? { left: `${alignOffset}px` } : undefined)}
       className={`${
         usePortal
           ? 'fixed'
-          : `absolute ${openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'} ${popupAlign === 'right' ? 'right-0' : 'left-0'}`
+          : `absolute ${openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'} ${popupAlign === 'right' && !alignOffset ? 'right-0' : 'left-0'}`
       } bg-white border border-slate-200 rounded-xl shadow-2xl p-2.5 w-[210px] z-[10000] animate-in fade-in zoom-in-95 duration-150 select-none`}
     >
       <div className="flex items-center justify-between px-1 pb-2 border-b border-slate-100 mb-2">
