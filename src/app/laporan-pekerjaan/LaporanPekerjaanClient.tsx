@@ -729,8 +729,7 @@ export default function LaporanPekerjaanClient({
       const docScrollHeight = el.scrollHeight;
       const docClientHeight = el.clientHeight;
 
-      const isDocScrollable = isAnalyticsOpen || docScrollHeight > docClientHeight + 40;
-
+      const isDocScrollable = isAnalyticsOpen || isFilterOpenMobile || docScrollHeight > docClientHeight + 40;
       if (isDocScrollable) {
         const canScrollUp = docScrollTop > 30;
         const canScrollDown = docScrollTop + docClientHeight < docScrollHeight - 30;
@@ -773,7 +772,7 @@ export default function LaporanPekerjaanClient({
       clearTimeout(t1);
       clearTimeout(t2);
     };
-  }, [isAnalyticsOpen, loading, tasks.length]);
+  }, [isAnalyticsOpen, isFilterOpenMobile, loading, tasks.length]);
 
   const scrollToTop = () => {
     if (clientContainerRef.current) {
@@ -1912,7 +1911,7 @@ export default function LaporanPekerjaanClient({
     <div
       ref={clientContainerRef}
       className={`text-slate-800 flex-1 min-h-0 flex flex-col gap-3 overflow-y-auto custom-scrollbar ${
-        isAnalyticsOpen ? "pb-12" : "pb-4"
+        isAnalyticsOpen || isFilterOpenMobile ? "pb-12" : "pb-4"
       }`}
     >
       {/* Accordion: Statistik & Grafik Analisis */}
@@ -2269,16 +2268,16 @@ export default function LaporanPekerjaanClient({
       </div>
 
       {/* Filter & Search Bar (Bisa Collapse/Expand di Mobile, Selalu Terbuka di Desktop) */}
-      <div className="shrink-0 flex flex-col gap-2">
+      <div className="shrink-0 bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden transition-all">
         {/* Toggle Bar Khusus Layar Mobile (<sm) */}
-        <div className="sm:hidden flex items-center justify-between px-3 py-2 bg-white rounded-xl border border-slate-200/80 shadow-sm">
+        <div className="sm:hidden flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-50/70 hover:bg-slate-100/80 transition-colors">
           <button
             type="button"
             onClick={toggleFilterMobile}
-            className="flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-emerald-700 transition-colors focus:outline-none"
+            className="flex items-center space-x-2 text-xs font-bold text-slate-800 hover:text-emerald-700 transition-colors focus:outline-none flex-1 text-left min-w-0"
           >
-            <Filter size={13} className="text-emerald-600" />
-            <span>Pencarian & Filter</span>
+            <Filter className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span className="text-[11px] sm:text-xs font-bold text-slate-800 truncate">Pencarian & Filter</span>
             {(selectedBagianFilter !== "ALL" ||
               selectedPic !== "ALL" ||
               selectedStatus !== "ALL" ||
@@ -2289,12 +2288,14 @@ export default function LaporanPekerjaanClient({
               filterEndTime !== "") && (
               <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Filter aktif" />
             )}
-            <ChevronDown
-              size={14}
-              className={`text-slate-400 transition-transform duration-200 ${
-                isFilterOpenMobile ? "rotate-180" : ""
-              }`}
-            />
+            <div className="flex items-center space-x-1.5 text-slate-500 text-[10.5px] sm:text-xs font-medium ml-auto pr-2 shrink-0">
+              <span>{isFilterOpenMobile ? "Sembunyikan" : "Tampilkan"}</span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 ${
+                  isFilterOpenMobile ? "rotate-180" : ""
+                }`}
+              />
+            </div>
           </button>
 
           {/* Tombol Tambah Order Cepat di Header Mobile */}
@@ -2306,7 +2307,7 @@ export default function LaporanPekerjaanClient({
                 setNewOrderTgl(new Date());
                 setShowAddOrderModal(true);
               }}
-              className="h-7 px-2.5 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1 shrink-0 cursor-pointer shadow-xs"
+              className="h-7 px-2.5 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1 shrink-0 cursor-pointer shadow-xs ml-1"
               title="Input Order Produksi Manual"
             >
               <Plus size={13} />
@@ -2315,12 +2316,13 @@ export default function LaporanPekerjaanClient({
           )}
         </div>
 
-        {/* Content Toolbar (Search & Filter Inputs - di Mobile Lepas Tanpa Card, di Desktop Tetap di Card) */}
+        {/* Content Toolbar (Search & Filter Inputs) */}
         <div
           className={`${
             isFilterOpenMobile ? "flex flex-col" : "hidden sm:flex sm:flex-col"
-          } gap-2.5 sm:bg-white sm:p-3 sm:rounded-xl sm:border sm:border-slate-200/80 sm:shadow-sm`}
+          } p-4 sm:p-3 space-y-3 sm:space-y-0 gap-0 sm:gap-2.5 border-t border-slate-100 sm:border-t-0 animate-in fade-in slide-in-from-top-1 duration-200`}
         >
+          {/* Baris 1: Search, Reload & Tombol Tambah Order (Desktop) */}
           <div className="flex items-center gap-2 w-full">
             {/* Tombol Reload Data */}
             <button
@@ -2333,8 +2335,6 @@ export default function LaporanPekerjaanClient({
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-emerald-600" : ""}`} />
               <span className="hidden sm:inline">Reload</span>
             </button>
-
-            {/* Input Search */}
             <div className="relative flex-1 min-w-0">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
@@ -2363,9 +2363,8 @@ export default function LaporanPekerjaanClient({
               </button>
             )}
           </div>
-
           {/* Baris 2: Controls Filter (Tanggal, Jam, Dropdown, Reset) */}
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 sm:pt-2 sm:border-t sm:border-slate-100/80">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2 pt-2.5 sm:pt-2 border-t border-slate-100">
             <div className="hidden sm:flex items-center text-xs text-slate-500 font-medium shrink-0">
               <Filter className="w-3.5 h-3.5 mr-1 text-slate-400" /> Filter:
             </div>
@@ -2523,13 +2522,13 @@ export default function LaporanPekerjaanClient({
       {/* Tabel Data Pekerjaan (Desktop & Tablet) / Card View (HP) */}
       <div
         className={`bg-white rounded-xl border border-slate-200/80 shadow-sm relative min-h-[300px] ${
-          isAnalyticsOpen
+          isAnalyticsOpen || isFilterOpenMobile
             ? "shrink-0"
             : "flex-1 min-h-[320px] flex flex-col overflow-hidden"
         }`}
       >
         {/* Tampilan Card khusus Layar Kecil (Mobile) */}
-        <div className="block sm:hidden divide-y divide-slate-100 p-3 space-y-3 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+        <div className="block sm:hidden space-y-3 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
           {loading ? (
             <div className="py-12 text-center text-slate-400 text-xs">
               <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-600" />
