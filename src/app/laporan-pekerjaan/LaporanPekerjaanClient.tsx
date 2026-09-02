@@ -1265,9 +1265,9 @@ export default function LaporanPekerjaanClient({
   }, [roleConfig?.allowed_pic]);
 
   const isBagianAllowedByRole = useCallback(
-    (bagian?: string | null, source?: string | null) => {
-      // Order baru dari SOPD yang belum memiliki subtask/bagian boleh dilihat agar bisa ditambah pekerjaan
-      if (source === 'sopd' || (!bagian && !source)) return true;
+    (bagian?: string | null, source?: string | null, taskName?: string | null) => {
+      // Order baru (dari SOPD maupun manual placeholder tanpa task) yang belum memiliki subtask/bagian boleh dilihat agar bisa ditambah pekerjaan
+      if (source === 'sopd' || (!bagian && !taskName)) return true;
       if (!allowedBagianSet) return true;
       if (!bagian) return false;
       return allowedBagianSet.has(bagian.toUpperCase());
@@ -1276,9 +1276,9 @@ export default function LaporanPekerjaanClient({
   );
 
   const isPicAllowedByRole = useCallback(
-    (pic?: string | null, source?: string | null) => {
-      // Order baru dari SOPD tanpa subtask hanya diizinkan untuk role yang bisa tambah pekerjaan (can_add)
-      if (source === 'sopd') {
+    (pic?: string | null, source?: string | null, taskName?: string | null) => {
+      // Order baru (dari SOPD maupun manual placeholder tanpa task) hanya diizinkan untuk role yang bisa tambah pekerjaan (can_add)
+      if (source === 'sopd' || (!pic && !taskName)) {
         return roleConfig?.can_add !== false;
       }
       if (!allowedPicSet) return true;
@@ -1316,7 +1316,7 @@ export default function LaporanPekerjaanClient({
   const bagianOptions = useMemo<FilterOption[]>(() => {
     const set = new Set<string>();
     tasks.forEach((t) => {
-      if (!isBagianAllowedByRole(t.bagian, t.source) || !isPicAllowedByRole(t.pic, t.source)) return;
+      if (!isBagianAllowedByRole(t.bagian, t.source, t.task) || !isPicAllowedByRole(t.pic, t.source, t.task)) return;
       if (!isPicMatchingSelection(t.pic, selectedPic)) return;
       if (selectedStatus !== "ALL" && t.status.toUpperCase() !== selectedStatus.toUpperCase()) return;
       if (t.bagian) set.add(t.bagian);
@@ -1336,7 +1336,7 @@ export default function LaporanPekerjaanClient({
     let hasUnassignedTask = false;
 
     tasks.forEach((t) => {
-      if (!isBagianAllowedByRole(t.bagian, t.source) || !isPicAllowedByRole(t.pic, t.source)) return;
+      if (!isBagianAllowedByRole(t.bagian, t.source, t.task) || !isPicAllowedByRole(t.pic, t.source, t.task)) return;
       if (selectedBagianFilter !== "ALL" && (t.bagian || "").toUpperCase() !== selectedBagianFilter.toUpperCase()) return;
       if (selectedStatus !== "ALL" && t.status.toUpperCase() !== selectedStatus.toUpperCase()) return;
       if (!t.pic || t.pic.trim() === "" || t.pic.toUpperCase() === "TANPA PIC") {
@@ -1372,7 +1372,7 @@ export default function LaporanPekerjaanClient({
   const statusOptions = useMemo<FilterOption[]>(() => {
     const set = new Set<string>();
     tasks.forEach((t) => {
-      if (!isBagianAllowedByRole(t.bagian, t.source) || !isPicAllowedByRole(t.pic, t.source)) return;
+      if (!isBagianAllowedByRole(t.bagian, t.source, t.task) || !isPicAllowedByRole(t.pic, t.source, t.task)) return;
       if (selectedBagianFilter !== "ALL" && (t.bagian || "").toUpperCase() !== selectedBagianFilter.toUpperCase()) return;
       if (!isPicMatchingSelection(t.pic, selectedPic)) return;
       if (t.status) set.add(t.status.toUpperCase());
@@ -1401,9 +1401,8 @@ export default function LaporanPekerjaanClient({
 
     return tasks.filter((t) => {
       // Role scope restrictions
-      if (!isBagianAllowedByRole(t.bagian, t.source)) return false;
-      if (!isPicAllowedByRole(t.pic, t.source)) return false;
-
+      if (!isBagianAllowedByRole(t.bagian, t.source, t.task)) return false;
+      if (!isPicAllowedByRole(t.pic, t.source, t.task)) return false;
       if (!isPicMatchingSelection(t.pic, selectedPic)) {
         return false;
       }
@@ -1420,12 +1419,12 @@ export default function LaporanPekerjaanClient({
         return false;
       }
 
-      // Filter Rentang Tanggal (berdasarkan startDate / endDate task)
+      // Filter Rentang Tanggal (berdasarkan startDate / endDate task, atau tglOrder jika placeholder order baru)
       if (startFilterTime !== null || endFilterTime !== null) {
-        const taskStartTime = parseDateToSort(t.startDate || "");
+        const taskStartTime = parseDateToSort(t.startDate || "") || (!t.task ? parseDateToSort(t.tglOrder || "") : 0);
         const taskEndTime = parseDateToSort(t.endDate || "") || taskStartTime;
 
-        // Jika task tidak memiliki tanggal sama sekali, skip jika filter tanggal aktif
+        // Jika task / order tidak memiliki tanggal sama sekali, skip jika filter tanggal aktif
         if (!taskStartTime && !taskEndTime) return false;
 
         // Cek overlap: task rentang [taskStartTime, taskEndTime] vs filter rentang [startFilterTime, endFilterTime]
@@ -1587,8 +1586,8 @@ export default function LaporanPekerjaanClient({
 
     return tasks.filter((t) => {
       if (!t.task) return false;
-      if (!isBagianAllowedByRole(t.bagian, t.source)) return false;
-      if (!isPicAllowedByRole(t.pic, t.source)) return false;
+      if (!isBagianAllowedByRole(t.bagian, t.source, t.task)) return false;
+      if (!isPicAllowedByRole(t.pic, t.source, t.task)) return false;
       if (!isPicMatchingSelection(t.pic, selectedPic)) {
         return false;
       }

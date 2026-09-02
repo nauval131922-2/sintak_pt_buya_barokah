@@ -221,6 +221,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Jika menambahkan task nyata (bukan order-only), bersihkan placeholder kosong (task = '') dari project yang sama
+    if (!isOrderOnly && finalProject) {
+      await db.execute({
+        sql: "DELETE FROM laporan_pekerjaan WHERE project = ? AND (task IS NULL OR task = '')",
+        args: [finalProject],
+      });
+    }
+
     const res = await db.execute({
       sql: `INSERT INTO laporan_pekerjaan (task, project, division, bagian, pic, priority, start_date, end_date, start_time, end_time, work_days, note, status, source, tgl_order)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'sintak', ?)`,
