@@ -1042,6 +1042,22 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Laporan Pekerjaan ───
+  'laporan-pekerjaan-2026-09-02': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-09-02',
+    date: '02 Sep 2026',
+    version: '2026-09-02-1',
+    items: [
+      'Peningkatan responsivitas & UI/UX multi-viewport: perbaikan scroll vertikal pada mobile card view sehingga daftar pekerjaan dapat di-scroll lancar di semua ukuran HP',
+      'Fitur collapsible & expandable pada toolbar Pencarian & Filter di layar mobile dengan indikator titik hijau saat ada filter aktif dan penyimpanan preferensi otomatis',
+      'Penataan layout filter mobile proporsional (grid 50%:50% untuk rentang tanggal & jam, 50%:50% untuk Bagian & PIC, serta 100% penuh untuk Status)',
+      'Optimalisasi auto-clamping pada TimePicker dan DatePicker agar panel popover waktu tidak terpotong tepi layar HP',
+      'Peningkatan ergonomi grafik PIC di mobile: penambahan rotasi kemiringan label sumbu X dan penyingkatan nama cerdas (smart truncate) agar label tidak saling bertumpuk',
+      'Penyelarasan tampilan modal di layar sempit / mobile landscape (simulasi keyboard virtual) dengan scroll form mandiri dan pembatas tinggi maksimal adaptif',
+    ],
+  }),
   'laporan-pekerjaan-2026-09-01': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan',
