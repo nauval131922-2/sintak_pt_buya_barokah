@@ -87,3 +87,6 @@ testsprite_tests/
 # Zip/archive files
 *.zip
 .certs/
+
+# CodeGraph index
+.codegraph/
