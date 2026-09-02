@@ -197,7 +197,7 @@ export default function AkuntingTrendChart() {
   const hasTotal = data.length > 0;
 
   return (
-    <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl p-5 shadow-sm flex flex-col gap-4">
+    <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl p-5 shadow-sm flex flex-col gap-4 relative z-10">
       {/* Header */}
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
