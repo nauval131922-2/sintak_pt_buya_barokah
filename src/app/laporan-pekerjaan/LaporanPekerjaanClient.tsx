@@ -2269,9 +2269,9 @@ export default function LaporanPekerjaanClient({
       </div>
 
       {/* Filter & Search Bar (Bisa Collapse/Expand di Mobile, Selalu Terbuka di Desktop) */}
-      <div className="shrink-0 bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden transition-all">
+      <div className="shrink-0 flex flex-col gap-2">
         {/* Toggle Bar Khusus Layar Mobile (<sm) */}
-        <div className="sm:hidden flex items-center justify-between px-3 py-2 bg-slate-50/80 border-b border-slate-100">
+        <div className="sm:hidden flex items-center justify-between px-3 py-2 bg-white rounded-xl border border-slate-200/80 shadow-sm">
           <button
             type="button"
             onClick={toggleFilterMobile}
@@ -2297,7 +2297,7 @@ export default function LaporanPekerjaanClient({
             />
           </button>
 
-          {/* Tombol Tambah Order Cepat di Header Mobile Toolbar */}
+          {/* Tombol Tambah Order Cepat di Header Mobile */}
           {roleConfig?.can_add !== false && (
             <button
               type="button"
@@ -2306,7 +2306,7 @@ export default function LaporanPekerjaanClient({
                 setNewOrderTgl(new Date());
                 setShowAddOrderModal(true);
               }}
-              className="h-7 px-2 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1 shrink-0 cursor-pointer shadow-xs"
+              className="h-7 px-2.5 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1 shrink-0 cursor-pointer shadow-xs"
               title="Input Order Produksi Manual"
             >
               <Plus size={13} />
@@ -2315,13 +2315,12 @@ export default function LaporanPekerjaanClient({
           )}
         </div>
 
-        {/* Content Toolbar (Search & Filter Inputs) */}
+        {/* Content Toolbar (Search & Filter Inputs - di Mobile Lepas Tanpa Card, di Desktop Tetap di Card) */}
         <div
           className={`${
             isFilterOpenMobile ? "flex flex-col" : "hidden sm:flex sm:flex-col"
-          } p-2.5 sm:p-3 gap-2.5`}
+          } gap-2.5 sm:bg-white sm:p-3 sm:rounded-xl sm:border sm:border-slate-200/80 sm:shadow-sm`}
         >
-          {/* Baris 1: Search, Reload & Tombol Tambah Order */}
           <div className="flex items-center gap-2 w-full">
             {/* Tombol Reload Data */}
             <button
@@ -2347,7 +2346,7 @@ export default function LaporanPekerjaanClient({
               />
             </div>
 
-            {/* Tombol Tambah Order Baru Manual di Baris 1 Kanan */}
+            {/* Tombol Tambah Order Baru Manual di Baris 1 Kanan (Khusus Layar Desktop/Tablet) */}
             {roleConfig?.can_add !== false && (
               <button
                 type="button"
@@ -2356,18 +2355,18 @@ export default function LaporanPekerjaanClient({
                   setNewOrderTgl(new Date());
                   setShowAddOrderModal(true);
                 }}
-                className="h-9 px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm"
+                className="hidden sm:flex h-9 px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all items-center gap-1.5 shrink-0 cursor-pointer shadow-sm"
                 title="Input Order Produksi Manual"
               >
                 <Plus size={15} />
-                <span className="hidden sm:inline">Tambah Order</span>
+                <span>Tambah Order</span>
               </button>
             )}
           </div>
 
           {/* Baris 2: Controls Filter (Tanggal, Jam, Dropdown, Reset) */}
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-2 border-t border-slate-100/80">
-            <div className="flex items-center text-xs text-slate-500 font-medium shrink-0">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 sm:pt-2 sm:border-t sm:border-slate-100/80">
+            <div className="hidden sm:flex items-center text-xs text-slate-500 font-medium shrink-0">
               <Filter className="w-3.5 h-3.5 mr-1 text-slate-400" /> Filter:
             </div>
 
@@ -2476,7 +2475,6 @@ export default function LaporanPekerjaanClient({
               searchPlaceholder="Cari Status..."
               widthClass="flex-1 min-w-[110px] sm:w-28 md:w-32 lg:w-36"
             />
-
             {/* Pengatur Ukuran Font Tabel Utama (Custom Komponen FontSizeControl) */}
             <FontSizeControl
               value={tableFontSize}
@@ -2515,7 +2513,6 @@ export default function LaporanPekerjaanClient({
           </div>
         </div>
       </div>
-
       {/* Error Message */}
       {error && (
         <div className="p-3 bg-rose-50 text-rose-700 rounded-xl border border-rose-200 text-xs font-medium">
