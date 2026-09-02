@@ -646,17 +646,17 @@ export default function LaporanPekerjaanClient({
   const [newOrderTgl, setNewOrderTgl] = useState<Date | null>(new Date());
   const [isSubmittingOrder, setIsSubmittingOrder] = useState<boolean>(false);
 
-  // Persistent Mobile Header Card state (default collapsed on mobile)
-  const [isHeaderOpenMobile, setIsHeaderOpenMobile] = useState<boolean>(false);
+  // Persistent Mobile Search & Filter Toolbar state (default collapsed false di mobile)
+  const [isFilterOpenMobile, setIsFilterOpenMobile] = useState<boolean>(true);
 
   // Persistent Accordion state (default collapsed false)
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState<boolean>(false);
 
   useEffect(() => {
     try {
-      const savedHeader = localStorage.getItem("laporan_pekerjaan_header_open_mobile");
-      if (savedHeader !== null) {
-        setIsHeaderOpenMobile(savedHeader === "true");
+      const savedFilterMobile = localStorage.getItem("laporan_pekerjaan_filter_open_mobile");
+      if (savedFilterMobile !== null) {
+        setIsFilterOpenMobile(savedFilterMobile === "true");
       }
       const savedAnalytics = localStorage.getItem("laporan_pekerjaan_analytics_open");
       if (savedAnalytics !== null) {
@@ -682,11 +682,11 @@ export default function LaporanPekerjaanClient({
     } catch {}
   };
 
-  const toggleHeaderMobile = () => {
-    setIsHeaderOpenMobile((prev) => {
+  const toggleFilterMobile = () => {
+    setIsFilterOpenMobile((prev) => {
       const next = !prev;
       try {
-        localStorage.setItem("laporan_pekerjaan_header_open_mobile", String(next));
+        localStorage.setItem("laporan_pekerjaan_filter_open_mobile", String(next));
       } catch {
         // Ignore storage errors
       }
@@ -2268,9 +2268,59 @@ export default function LaporanPekerjaanClient({
         )}
       </div>
 
-      {/* Filter & Search Bar */}
-      <div>
-        <div className="shrink-0 bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200/80 shadow-sm flex flex-col gap-2.5">
+      {/* Filter & Search Bar (Bisa Collapse/Expand di Mobile, Selalu Terbuka di Desktop) */}
+      <div className="shrink-0 bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden transition-all">
+        {/* Toggle Bar Khusus Layar Mobile (<sm) */}
+        <div className="sm:hidden flex items-center justify-between px-3 py-2 bg-slate-50/80 border-b border-slate-100">
+          <button
+            type="button"
+            onClick={toggleFilterMobile}
+            className="flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-emerald-700 transition-colors focus:outline-none"
+          >
+            <Filter size={13} className="text-emerald-600" />
+            <span>Pencarian & Filter</span>
+            {(selectedBagianFilter !== "ALL" ||
+              selectedPic !== "ALL" ||
+              selectedStatus !== "ALL" ||
+              searchTerm !== "" ||
+              filterStartDate !== null ||
+              filterEndDate !== null ||
+              filterStartTime !== "" ||
+              filterEndTime !== "") && (
+              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Filter aktif" />
+            )}
+            <ChevronDown
+              size={14}
+              className={`text-slate-400 transition-transform duration-200 ${
+                isFilterOpenMobile ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {/* Tombol Tambah Order Cepat di Header Mobile Toolbar */}
+          {roleConfig?.can_add !== false && (
+            <button
+              type="button"
+              onClick={() => {
+                setNewOrderProject("");
+                setNewOrderTgl(new Date());
+                setShowAddOrderModal(true);
+              }}
+              className="h-7 px-2 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1 shrink-0 cursor-pointer shadow-xs"
+              title="Input Order Produksi Manual"
+            >
+              <Plus size={13} />
+              <span>Tambah</span>
+            </button>
+          )}
+        </div>
+
+        {/* Content Toolbar (Search & Filter Inputs) */}
+        <div
+          className={`${
+            isFilterOpenMobile ? "flex flex-col" : "hidden sm:flex sm:flex-col"
+          } p-2.5 sm:p-3 gap-2.5`}
+        >
           {/* Baris 1: Search, Reload & Tombol Tambah Order */}
           <div className="flex items-center gap-2 w-full">
             {/* Tombol Reload Data */}
