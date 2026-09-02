@@ -2268,61 +2268,63 @@ export default function LaporanPekerjaanClient({
       </div>
 
       {/* Filter & Search Bar (Bisa Collapse/Expand di Mobile, Selalu Terbuka di Desktop) */}
-      <div className="shrink-0 bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden transition-all">
+      <div className="shrink-0 flex flex-col gap-3">
         {/* Toggle Bar Khusus Layar Mobile (<sm) */}
-        <div className="sm:hidden flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-50/70 hover:bg-slate-100/80 transition-colors">
-          <button
-            type="button"
-            onClick={toggleFilterMobile}
-            className="flex items-center space-x-2 text-xs font-bold text-slate-800 hover:text-emerald-700 transition-colors focus:outline-none flex-1 text-left min-w-0"
-          >
-            <Filter className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span className="text-[11px] sm:text-xs font-bold text-slate-800 truncate">Pencarian & Filter</span>
-            {(selectedBagianFilter !== "ALL" ||
-              selectedPic !== "ALL" ||
-              selectedStatus !== "ALL" ||
-              searchTerm !== "" ||
-              filterStartDate !== null ||
-              filterEndDate !== null ||
-              filterStartTime !== "" ||
-              filterEndTime !== "") && (
-              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Filter aktif" />
-            )}
-            <div className="flex items-center space-x-1.5 text-slate-500 text-[10.5px] sm:text-xs font-medium ml-auto pr-2 shrink-0">
-              <span>{isFilterOpenMobile ? "Sembunyikan" : "Tampilkan"}</span>
-              <ChevronDown
-                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 ${
-                  isFilterOpenMobile ? "rotate-180" : ""
-                }`}
-              />
-            </div>
-          </button>
-
-          {/* Tombol Tambah Order Cepat di Header Mobile */}
-          {roleConfig?.can_add !== false && (
+        <div className="sm:hidden bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden transition-all">
+          <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-50/70 hover:bg-slate-100/80 transition-colors">
             <button
               type="button"
-              onClick={() => {
-                setNewOrderProject("");
-                setNewOrderTgl(new Date());
-                setShowAddOrderModal(true);
-              }}
-              className="h-7 px-2.5 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1 shrink-0 cursor-pointer shadow-xs ml-1"
-              title="Input Order Produksi Manual"
+              onClick={toggleFilterMobile}
+              className="flex items-center space-x-2 text-xs font-bold text-slate-800 hover:text-emerald-700 transition-colors focus:outline-none flex-1 text-left min-w-0"
             >
-              <Plus size={13} />
-              <span>Tambah</span>
+              <Filter className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span className="text-[11px] sm:text-xs font-bold text-slate-800 truncate">Pencarian & Filter</span>
+              {(selectedBagianFilter !== "ALL" ||
+                selectedPic !== "ALL" ||
+                selectedStatus !== "ALL" ||
+                searchTerm !== "" ||
+                filterStartDate !== null ||
+                filterEndDate !== null ||
+                filterStartTime !== "" ||
+                filterEndTime !== "") && (
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Filter aktif" />
+              )}
+              <div className="flex items-center space-x-1.5 text-slate-500 text-[10.5px] font-medium ml-auto pr-2 shrink-0">
+                <span>{isFilterOpenMobile ? "Sembunyikan" : "Tampilkan"}</span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 ${
+                    isFilterOpenMobile ? "rotate-180" : ""
+                  }`}
+                />
+              </div>
             </button>
-          )}
+
+            {/* Tombol Tambah Order Cepat di Header Mobile */}
+            {roleConfig?.can_add !== false && (
+              <button
+                type="button"
+                onClick={() => {
+                  setNewOrderProject("");
+                  setNewOrderTgl(new Date());
+                  setShowAddOrderModal(true);
+                }}
+                className="h-7 px-2.5 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1 shrink-0 cursor-pointer shadow-xs ml-1"
+                title="Input Order Produksi Manual"
+              >
+                <Plus size={13} />
+                <span>Tambah</span>
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Content Toolbar (Search & Filter Inputs) */}
+        {/* Content Toolbar (Search & Filter Inputs - di Mobile LEPAS TOTAL dari card) */}
         <div
           className={`${
             isFilterOpenMobile ? "flex flex-col" : "hidden sm:flex sm:flex-col"
-          } p-4 sm:p-3 space-y-3 sm:space-y-0 gap-0 sm:gap-2.5 border-t border-slate-100 sm:border-t-0 animate-in fade-in slide-in-from-top-1 duration-200`}
+          } p-0 sm:p-3 sm:bg-white sm:rounded-xl sm:border sm:border-slate-200/80 sm:shadow-sm sm:overflow-hidden gap-2.5 animate-in fade-in slide-in-from-top-1 duration-200`}
         >
-          {/* Baris 1: Search, Reload & Tombol Tambah Order (Desktop) */}
+          {/* Baris 1: Search & Reload */}
           <div className="flex items-center gap-2 w-full">
             {/* Tombol Reload Data */}
             <button
@@ -2364,155 +2366,170 @@ export default function LaporanPekerjaanClient({
             )}
           </div>
           {/* Baris 2: Controls Filter (Tanggal, Jam, Dropdown, Reset) */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-2 pt-2.5 sm:pt-2 border-t border-slate-100">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 sm:pt-2 sm:border-t sm:border-slate-100">
             <div className="hidden sm:flex items-center text-xs text-slate-500 font-medium shrink-0">
               <Filter className="w-3.5 h-3.5 mr-1 text-slate-400" /> Filter:
             </div>
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-1.5 w-full sm:w-auto">
+              {/* Filter Rentang Tanggal (Task) */}
+              <div className="flex items-center justify-between gap-1 bg-slate-50 p-1 sm:p-0.5 rounded-lg border border-slate-200 min-w-0">
+                <div className="flex-1 min-w-0">
+                  <DatePicker
+                    name="filterStartDate"
+                    value={filterStartDate}
+                    onChange={(d) => setFilterStartDate(d)}
+                    popupAlign="left"
+                    customTrigger={() => (
+                      <div
+                        className="h-7 px-1.5 sm:px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer w-full"
+                        title={filterStartDate ? `Dari Tgl: ${formatDateDisplay(filterStartDate)}` : "Filter Dari Tgl Task"}
+                      >
+                        <Calendar size={11} className="text-slate-400 shrink-0" />
+                        <span className={`truncate ${!filterStartDate ? "text-slate-400 font-normal" : ""}`}>
+                          {filterStartDate ? formatDateDisplay(filterStartDate) : "Dari Tgl"}
+                        </span>
+                      </div>
+                    )}
+                  />
+                </div>
+                <span className="text-[10px] text-slate-400 font-bold px-0.5 shrink-0">-</span>
+                <div className="flex-1 min-w-0">
+                  <DatePicker
+                    name="filterEndDate"
+                    value={filterEndDate}
+                    onChange={(d) => setFilterEndDate(d)}
+                    popupAlign="left"
+                    customTrigger={() => (
+                      <div
+                        className="h-7 px-1.5 sm:px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer w-full"
+                        title={filterEndDate ? `Sampai Tgl: ${formatDateDisplay(filterEndDate)}` : "Filter Sampai Tgl Task"}
+                      >
+                        <Calendar size={11} className="text-slate-400 shrink-0" />
+                        <span className={`truncate ${!filterEndDate ? "text-slate-400 font-normal" : ""}`}>
+                          {filterEndDate ? formatDateDisplay(filterEndDate) : "Sampai Tgl"}
+                        </span>
+                      </div>
+                    )}
+                  />
+                </div>
+              </div>
 
-            {/* Filter Rentang Tanggal (Task) */}
-            <div className="flex items-center gap-1 bg-slate-50 p-0.5 rounded-lg border border-slate-200 shrink-0">
-              <DatePicker
-                name="filterStartDate"
-                value={filterStartDate}
-                onChange={(d) => setFilterStartDate(d)}
-                popupAlign="left"
-                customTrigger={() => (
-                  <div
-                    className="h-7 px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer max-w-[105px]"
-                    title={filterStartDate ? `Dari Tgl: ${formatDateDisplay(filterStartDate)}` : "Filter Dari Tgl Task"}
-                  >
-                    <Calendar size={11} className="text-slate-400 shrink-0" />
-                    <span className={`truncate ${!filterStartDate ? "text-slate-400 font-normal" : ""}`}>
-                      {filterStartDate ? formatDateDisplay(filterStartDate) : "Dari Tgl"}
-                    </span>
-                  </div>
-                )}
-              />
-              <span className="text-[10px] text-slate-400 font-bold px-0.5">-</span>
-              <DatePicker
-                name="filterEndDate"
-                value={filterEndDate}
-                onChange={(d) => setFilterEndDate(d)}
-                popupAlign="left"
-                customTrigger={() => (
-                  <div
-                    className="h-7 px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer max-w-[105px]"
-                    title={filterEndDate ? `Sampai Tgl: ${formatDateDisplay(filterEndDate)}` : "Filter Sampai Tgl Task"}
-                  >
-                    <Calendar size={11} className="text-slate-400 shrink-0" />
-                    <span className={`truncate ${!filterEndDate ? "text-slate-400 font-normal" : ""}`}>
-                      {filterEndDate ? formatDateDisplay(filterEndDate) : "Sampai Tgl"}
-                    </span>
-                  </div>
-                )}
-              />
+              {/* Filter Rentang Jam (Task) */}
+              <div className="flex items-center justify-between gap-1 bg-slate-50 p-1 sm:p-0.5 rounded-lg border border-slate-200 min-w-0">
+                <div className="flex-1 min-w-0">
+                  <TimePicker
+                    name="filterStartTime"
+                    value={filterStartTime}
+                    onChange={(val) => setFilterStartTime(val)}
+                    popupAlign="left"
+                    customTrigger={() => (
+                      <div
+                        className="h-7 px-1.5 sm:px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer w-full"
+                        title={filterStartTime ? `Dari Jam: ${filterStartTime}` : "Filter Dari Jam Task"}
+                      >
+                        <Clock size={11} className="text-slate-400 shrink-0" />
+                        <span className={`truncate ${!filterStartTime ? "text-slate-400 font-normal" : ""}`}>
+                          {filterStartTime || "Dari Jam"}
+                        </span>
+                      </div>
+                    )}
+                  />
+                </div>
+                <span className="text-[10px] text-slate-400 font-bold px-0.5 shrink-0">-</span>
+                <div className="flex-1 min-w-0">
+                  <TimePicker
+                    name="filterEndTime"
+                    value={filterEndTime}
+                    onChange={(val) => setFilterEndTime(val)}
+                    popupAlign="left"
+                    customTrigger={() => (
+                      <div
+                        className="h-7 px-1.5 sm:px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer w-full"
+                        title={filterEndTime ? `Sampai Jam: ${filterEndTime}` : "Filter Sampai Jam Task"}
+                      >
+                        <Clock size={11} className="text-slate-400 shrink-0" />
+                        <span className={`truncate ${!filterEndTime ? "text-slate-400 font-normal" : ""}`}>
+                          {filterEndTime || "Sampai Jam"}
+                        </span>
+                      </div>
+                    )}
+                  />
+                </div>
+              </div>
             </div>
 
-            {/* Filter Rentang Jam (Task) */}
-            <div className="flex items-center gap-1 bg-slate-50 p-0.5 rounded-lg border border-slate-200 shrink-0">
-              <TimePicker
-                name="filterStartTime"
-                value={filterStartTime}
-                onChange={(val) => setFilterStartTime(val)}
-                popupAlign="left"
-                customTrigger={() => (
-                  <div
-                    className="h-7 px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer max-w-[85px]"
-                    title={filterStartTime ? `Dari Jam: ${filterStartTime}` : "Filter Dari Jam Task"}
-                  >
-                    <Clock size={11} className="text-slate-400 shrink-0" />
-                    <span className={`truncate ${!filterStartTime ? "text-slate-400 font-normal" : ""}`}>
-                      {filterStartTime || "Dari Jam"}
-                    </span>
-                  </div>
-                )}
-              />
-              <span className="text-[10px] text-slate-400 font-bold px-0.5">-</span>
-              <TimePicker
-                name="filterEndTime"
-                value={filterEndTime}
-                onChange={(val) => setFilterEndTime(val)}
-                popupAlign="left"
-                customTrigger={() => (
-                  <div
-                    className="h-7 px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer max-w-[85px]"
-                    title={filterEndTime ? `Sampai Jam: ${filterEndTime}` : "Filter Sampai Jam Task"}
-                  >
-                    <Clock size={11} className="text-slate-400 shrink-0" />
-                    <span className={`truncate ${!filterEndTime ? "text-slate-400 font-normal" : ""}`}>
-                      {filterEndTime || "Sampai Jam"}
-                    </span>
-                  </div>
-                )}
-              />
+            {/* Baris Filter 2 di Mobile: Bagian (50%) & PIC (50%) */}
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-1.5 w-full sm:w-auto">
+              {showBagianFilter && (
+                <SquareDropdown
+                  options={bagianOptions}
+                  value={selectedBagianFilter}
+                  onChange={setSelectedBagianFilter}
+                  searchPlaceholder="Cari Bagian..."
+                  widthClass="w-full sm:w-28 md:w-32 lg:w-36"
+                />
+              )}
+
+              {showPicFilter && (
+                <SquareDropdown
+                  options={picOptions}
+                  value={selectedPic}
+                  onChange={setSelectedPic}
+                  searchPlaceholder="Cari PIC..."
+                  widthClass="w-full sm:w-28 md:w-32 lg:w-36"
+                />
+              )}
             </div>
 
-            {showBagianFilter && (
+            {/* Baris Filter 3 di Mobile: Status (100% penuh) & Tombol Reset */}
+            <div className="flex items-center gap-2 w-full sm:w-auto">
               <SquareDropdown
-                options={bagianOptions}
-                value={selectedBagianFilter}
-                onChange={setSelectedBagianFilter}
-                searchPlaceholder="Cari Bagian..."
-                widthClass="flex-1 min-w-[110px] sm:w-28 md:w-32 lg:w-36"
+                options={statusOptions}
+                value={selectedStatus}
+                onChange={setSelectedStatus}
+                searchPlaceholder="Cari Status..."
+                widthClass="flex-1 sm:w-28 md:w-32 lg:w-36"
               />
-            )}
 
-            {showPicFilter && (
-              <SquareDropdown
-                options={picOptions}
-                value={selectedPic}
-                onChange={setSelectedPic}
-                searchPlaceholder="Cari PIC..."
-                widthClass="flex-1 min-w-[110px] sm:w-28 md:w-32 lg:w-36"
+              {/* Pengatur Ukuran Font Tabel Utama (Desktop) */}
+              <FontSizeControl
+                value={tableFontSize}
+                onChange={changeTableFontSize}
+                className="hidden sm:flex"
               />
-            )}
 
-            <SquareDropdown
-              options={statusOptions}
-              value={selectedStatus}
-              onChange={setSelectedStatus}
-              searchPlaceholder="Cari Status..."
-              widthClass="flex-1 min-w-[110px] sm:w-28 md:w-32 lg:w-36"
-            />
-            {/* Pengatur Ukuran Font Tabel Utama (Custom Komponen FontSizeControl) */}
-            <FontSizeControl
-              value={tableFontSize}
-              onChange={changeTableFontSize}
-              className="hidden sm:flex"
-            />
-
-            {(selectedBagianFilter !== "ALL" ||
-              selectedPic !== "ALL" ||
-              selectedStatus !== "ALL" ||
-              searchTerm !== "" ||
-              filterStartDate !== null ||
-              filterEndDate !== null ||
-              filterStartTime !== "" ||
-              filterEndTime !== "" ||
-              tableFontSize !== 12) && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedBagianFilter("ALL");
-                  setSelectedPic("ALL");
-                  setSelectedStatus("ALL");
-                  setSearchTerm("");
-                  setFilterStartDate(null);
-                  setFilterEndDate(null);
-                  setFilterStartTime("");
-                  setFilterEndTime("");
-                  changeTableFontSize(12);
-                }}
-                className="flex items-center gap-1 px-2.5 h-7.5 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0 cursor-pointer"
-                title="Reset Semua Filter & Ukuran Font"
-              >
-                <X size={12} /> Reset
-              </button>
-            )}
+              {(selectedBagianFilter !== "ALL" ||
+                selectedPic !== "ALL" ||
+                selectedStatus !== "ALL" ||
+                searchTerm !== "" ||
+                filterStartDate !== null ||
+                filterEndDate !== null ||
+                filterStartTime !== "" ||
+                filterEndTime !== "" ||
+                tableFontSize !== 12) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedBagianFilter("ALL");
+                    setSelectedPic("ALL");
+                    setSelectedStatus("ALL");
+                    setSearchTerm("");
+                    setFilterStartDate(null);
+                    setFilterEndDate(null);
+                    setFilterStartTime("");
+                    setFilterEndTime("");
+                    changeTableFontSize(12);
+                  }}
+                  className="flex items-center gap-1 px-3 h-8 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0 cursor-pointer"
+                  title="Reset Semua Filter & Ukuran Font"
+                >
+                  <X size={12} /> Reset
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
-      {/* Error Message */}
       {error && (
         <div className="p-3 bg-rose-50 text-rose-700 rounded-xl border border-rose-200 text-xs font-medium">
           {error}
