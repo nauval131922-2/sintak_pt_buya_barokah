@@ -460,12 +460,15 @@ const renderPieLabel = ({
 const truncatePicName = (name: string, maxLen = 20) => {
   if (!name) return "";
   let s = name.trim();
-  if (s.length <= maxLen) return s;
   if (s.toLowerCase().startsWith("muhammad ")) {
     s = "M. " + s.slice(9);
+  } else if (s.toLowerCase().startsWith("mochammad ") || s.toLowerCase().startsWith("moch. ")) {
+    s = "M. " + s.replace(/^moch(ammad|\.)\s*/i, "");
+  } else if (s.toLowerCase().startsWith("achmad ") || s.toLowerCase().startsWith("ahmad ")) {
+    s = "A. " + s.replace(/^(achmad|ahmad)\s*/i, "");
   }
   if (s.length <= maxLen) return s;
-  return `${s.slice(0, maxLen - 1)}…`;
+  return `${s.slice(0, Math.max(1, maxLen - 1))}…`;
 };
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -1700,9 +1703,8 @@ export default function LaporanPekerjaanClient({
     const entries = Object.values(map).sort((a, b) => b.Total - a.Total);
     const totalPicCount = entries.length;
 
-    // Auto-truncate adaptif: jika PIC sedikit tampil penuh, jika PIC ramai auto-truncate proporsional
-    const maxLen = totalPicCount <= 3 ? 24 : totalPicCount <= 5 ? 16 : totalPicCount <= 7 ? 12 : 9;
-
+    // Auto-truncate adaptif: jika PIC ramai potong nama panggilan agar tidak bertumpuk di mobile
+    const maxLen = totalPicCount <= 3 ? 18 : totalPicCount <= 5 ? 12 : totalPicCount <= 7 ? 9 : 7;
     return entries.map((item) => ({
       ...item,
       name: truncatePicName(item.fullName, maxLen),
@@ -1944,11 +1946,11 @@ export default function LaporanPekerjaanClient({
         {isAnalyticsOpen && (
           <div className="p-4 border-t border-slate-100 space-y-4 animate-in fade-in slide-in-from-top-1 duration-200">
             {/* Cards Statistik (Klik untuk Filter Status) */}
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              {/* Total Task */}
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 sm:gap-3">
+              {/* Total Task (span 2 pada mobile agar layout simetris rapi) */}
               <div
                 onClick={() => handleCardStatusClick("ALL")}
-                className={`p-3 rounded-xl border transition-all cursor-pointer select-none hover:shadow-md ${
+                className={`col-span-2 sm:col-span-1 p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer select-none hover:shadow-md ${
                   selectedStatus === "ALL"
                     ? "bg-slate-100 border-slate-400 ring-2 ring-slate-400/50 shadow-sm"
                     : "bg-white border-slate-200/80 hover:bg-slate-50 shadow-sm"
@@ -2130,9 +2132,12 @@ export default function LaporanPekerjaanClient({
                         <XAxis
                           dataKey="name"
                           interval={0}
-                          tick={{ fontSize: 10, fill: "#475569", fontWeight: 600 }}
+                          tick={{ fontSize: 9, fill: "#475569", fontWeight: 600 }}
                           axisLine={{ stroke: "#cbd5e1" }}
                           tickLine={false}
+                          angle={-25}
+                          textAnchor="end"
+                          height={40}
                         />
                         <YAxis
                           tick={{ fontSize: 11, fill: "#64748b" }}
@@ -2273,10 +2278,10 @@ export default function LaporanPekerjaanClient({
               type="button"
               onClick={() => fetchData(true)}
               disabled={loading}
-              className="h-8 px-2.5 sm:px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
+              className="h-9 px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
               title="Reload Data Laporan Pekerjaan"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-emerald-600" : ""}`} />
+              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-emerald-600" : ""}`} />
               <span className="hidden sm:inline">Reload</span>
             </button>
 
@@ -2288,7 +2293,7 @@ export default function LaporanPekerjaanClient({
                 placeholder="Cari kata kunci task atau nomor OP (misal: OP.007)..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
+                className="w-full pl-9 pr-4 h-9 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
               />
             </div>
 
@@ -2301,10 +2306,10 @@ export default function LaporanPekerjaanClient({
                   setNewOrderTgl(new Date());
                   setShowAddOrderModal(true);
                 }}
-                className="h-8 px-2.5 sm:px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm"
+                className="h-9 px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm"
                 title="Input Order Produksi Manual"
               >
-                <Plus size={14} />
+                <Plus size={15} />
                 <span className="hidden sm:inline">Tambah Order</span>
               </button>
             )}
@@ -2451,7 +2456,7 @@ export default function LaporanPekerjaanClient({
                   setFilterEndTime("");
                   changeTableFontSize(12);
                 }}
-                className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0 cursor-pointer"
+                className="flex items-center gap-1 px-2.5 h-7.5 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0 cursor-pointer"
                 title="Reset Semua Filter & Ukuran Font"
               >
                 <X size={12} /> Reset
