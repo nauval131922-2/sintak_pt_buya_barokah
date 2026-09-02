@@ -28,3 +28,10 @@ Rules:
 - Mark intentional simplifications with a `ponytail:` comment. If the shortcut has a known ceiling (global lock, O(n²) scan, naive heuristic), the comment names the ceiling and the upgrade path.
 
 Not lazy about: understanding the problem (read it fully and trace the real flow before picking a rung, a small diff you don't understand is just laziness dressed up as efficiency), input validation at trust boundaries, error handling that prevents data loss, security, accessibility, the calibration real hardware needs (the platform is never the spec ideal, a clock drifts, a sensor reads off), anything explicitly requested. Lazy code without its check is unfinished: non-trivial logic leaves ONE runnable check behind, the smallest thing that fails if the logic breaks (an assert-based demo/self-check or one small test file; no frameworks, no fixtures). Trivial one-liners need no test.
+## Aturan Wajib Proyek SINTAK (Project Invariants)
+
+1. **Build**: DILARANG menjalankan `npm run build`.
+2. **npx tsc / Changelog / Push**: HANYA dijalankan jika ada instruksi eksplisit dari pengguna. Dilarang menjalankan `npx tsc`, memperbarui changelog, atau melakukan `git push` tanpa diminta secara langsung.
+3. **Changelog**: Jika diinstruksikan untuk update changelog, tanggal wajib akurat sesuai waktu pengerjaan nyata di hari itu, tidak boleh menghapus/menimpa log lama, dan hanya mencatat perubahan sesuai halaman/modul yang dimodifikasi.
+4. **Commit**: Selalu lakukan commit Git lokal (`git commit -m "..."`) setelah setiap perubahan/perbaikan selesai dan diverifikasi.
+5. **Konfirmasi & Tanya**: Jika ada hal yang belum jelas, ambigu, atau ragu mengenai kebutuhan bisnis/UI, tanyakan terlebih dahulu sebelum berasumsi atau mengeksekusi perubahan.
