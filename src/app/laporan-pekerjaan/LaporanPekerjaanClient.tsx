@@ -728,8 +728,8 @@ export default function LaporanPekerjaanClient({
       const docScrollTop = el.scrollTop;
       const docScrollHeight = el.scrollHeight;
       const docClientHeight = el.clientHeight;
+      const isDocScrollable = isAnalyticsOpen || docScrollHeight > docClientHeight + 40;
 
-      const isDocScrollable = isAnalyticsOpen || isFilterOpenMobile || docScrollHeight > docClientHeight + 40;
       if (isDocScrollable) {
         const canScrollUp = docScrollTop > 30;
         const canScrollDown = docScrollTop + docClientHeight < docScrollHeight - 30;
@@ -772,7 +772,7 @@ export default function LaporanPekerjaanClient({
       clearTimeout(t1);
       clearTimeout(t2);
     };
-  }, [isAnalyticsOpen, isFilterOpenMobile, loading, tasks.length]);
+  }, [isAnalyticsOpen, loading, tasks.length]);
 
   const scrollToTop = () => {
     if (clientContainerRef.current) {
@@ -1910,11 +1910,10 @@ export default function LaporanPekerjaanClient({
   return (
     <div
       ref={clientContainerRef}
-      className={`text-slate-800 flex-1 min-h-0 flex flex-col gap-3 overflow-y-auto custom-scrollbar ${
-        isAnalyticsOpen || isFilterOpenMobile ? "pb-12" : "pb-4"
+      className={`text-slate-800 flex-1 min-h-0 flex flex-col gap-3 ${
+        isAnalyticsOpen ? "overflow-y-auto pb-12" : "overflow-hidden"
       }`}
     >
-      {/* Accordion: Statistik & Grafik Analisis */}
       <div className="shrink-0 bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden transition-all">
         <button
           type="button"
@@ -2536,14 +2535,14 @@ export default function LaporanPekerjaanClient({
 
       {/* Tabel Data Pekerjaan (Desktop & Tablet) / Card View (HP) */}
       <div
-        className={`bg-white rounded-xl border border-slate-200/80 shadow-sm relative min-h-[300px] ${
-          isAnalyticsOpen || isFilterOpenMobile
-            ? "shrink-0"
-            : "flex-1 min-h-[320px] flex flex-col overflow-hidden"
+        className={`bg-white rounded-xl border border-slate-200/80 shadow-sm relative ${
+          isAnalyticsOpen
+            ? "shrink-0 min-h-[300px]"
+            : "flex-1 min-h-0 flex flex-col overflow-hidden"
         }`}
       >
         {/* Tampilan Card khusus Layar Kecil (Mobile) */}
-        <div className="block sm:hidden space-y-3 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+        <div className="block sm:hidden divide-y divide-slate-100 p-3 space-y-3 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
           {loading ? (
             <div className="py-12 text-center text-slate-400 text-xs">
               <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-600" />
