@@ -1911,8 +1911,8 @@ export default function LaporanPekerjaanClient({
   return (
     <div
       ref={clientContainerRef}
-      className={`text-slate-800 flex-1 min-h-0 flex flex-col gap-3 overflow-hidden ${
-        isAnalyticsOpen ? "overflow-y-auto pb-12" : ""
+      className={`text-slate-800 flex-1 min-h-0 flex flex-col gap-3 overflow-y-auto custom-scrollbar ${
+        isAnalyticsOpen ? "pb-12" : "pb-4"
       }`}
     >
       {/* Accordion: Statistik & Grafik Analisis */}
@@ -2475,14 +2475,14 @@ export default function LaporanPekerjaanClient({
 
       {/* Tabel Data Pekerjaan (Desktop & Tablet) / Card View (HP) */}
       <div
-        className={`bg-white rounded-xl border border-slate-200/80 shadow-sm relative ${
+        className={`bg-white rounded-xl border border-slate-200/80 shadow-sm relative min-h-[300px] ${
           isAnalyticsOpen
             ? "shrink-0"
-            : "flex-1 min-h-0 flex flex-col overflow-hidden"
+            : "flex-1 min-h-[320px] flex flex-col overflow-hidden"
         }`}
       >
-        {/* Tampilan Card khusus HP Portrait (Sembunyi di Landscape & Desktop) */}
-        <div className="block landscape:hidden sm:hidden divide-y divide-slate-100 p-3 space-y-3">
+        {/* Tampilan Card khusus Layar Kecil (Mobile) */}
+        <div className="block sm:hidden divide-y divide-slate-100 p-3 space-y-3 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
           {loading ? (
             <div className="py-12 text-center text-slate-400 text-xs">
               <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-600" />
@@ -3036,8 +3036,8 @@ export default function LaporanPekerjaanClient({
       {/* Modal Tambah Order Manual */}
       {showAddOrderModal && (
         <Portal>
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 overflow-hidden">
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] overflow-hidden">
               <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/80 shrink-0">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm">
@@ -3057,7 +3057,7 @@ export default function LaporanPekerjaanClient({
                 </button>
               </div>
 
-              <form onSubmit={handleCreateOrderManual} className="p-5 space-y-4">
+              <form onSubmit={handleCreateOrderManual} className="p-5 space-y-4 overflow-y-auto custom-scrollbar flex-1 min-h-0">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
                     Nama Order / Project <span className="text-rose-500">*</span>
