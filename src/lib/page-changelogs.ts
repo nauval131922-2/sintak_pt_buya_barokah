@@ -877,6 +877,20 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     permissionKeys: ['kalkulasi_rekap_so'],
     items: [...UI_POLISH],
   }),
+  // ─── Hak Akses (Roles) ───
+  'roles-2026-09-03': entry({
+    pageKey: 'roles',
+    title: 'Hak Akses (Roles)',
+    permissionKeys: [...SUPER_ADMIN_ONLY],
+    sortDate: '2026-09-03',
+    date: '03 Sep 2026',
+    version: '2026-09-03-1',
+    items: [
+      'Fitur Pengecualian Dinamis PIC Berbasis Role: Penambahan opsi "Kecuali Role..." pada modal Setting Hak Akses Laporan Pekerjaan (tab PIC) sehingga admin dapat memilih semua PIC sekaligus mengecualikan role tertentu (misal: "Semua (Kecuali Admin/Keuangan)")',
+      'Sistem Token Pengecualian Role (@exclude_role:<Role>): Mendukung pemilihan multi-role pengecualian dengan integrasi filter dinamis ke database schema config',
+      'Penyempurnaan UI Modal Setting: Pembersihan tombol quick-action redundan dan optimalisasi antarmuka seleksi PIC & Bagian',
+    ],
+  }),
   'roles-2026-07-25': entry({
     pageKey: 'roles',
     title: 'Hak Akses (Roles)',
@@ -1071,6 +1085,18 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Laporan Pekerjaan ───
+  'laporan-pekerjaan-2026-09-03': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-09-03',
+    date: '03 Sep 2026',
+    version: '2026-09-03-1',
+    items: [
+      'Integrasi Pengecualian PIC Dinamis (@exclude_role): Daftar opsi PIC pada filter halaman dan dropdown form otomatis mengecualikan pengguna dari role yang diatur di konfigurasi hak akses',
+      'Perbaikan Pemetaan PIC Dropdown: Memastikan kompatibilitas struktur nilai-label pada opsi PIC di InlineEditRow dan InlineAddRow sehingga nama PIC terpilih muncul dengan tepat tanpa error mapping',
+    ],
+  }),
   'laporan-pekerjaan-2026-09-02': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan',
