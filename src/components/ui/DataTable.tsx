@@ -258,7 +258,7 @@ function DataTableInner<TData extends { id: number | string }>({
                     if (isSticky) stickyLeft += colWidth;
                     return (<th 
                       key={header.id} 
-                      className={`p-0 border-b border-r border-gray-100 relative group transition-colors overflow-hidden last:border-r-0 ${
+                      className={`p-0 border-b border-r border-slate-200/90 relative group transition-colors overflow-hidden last:border-r-0 ${
                         isSticky ? 'sticky z-[48]' : ''
                       }`}
                       style={{ 
@@ -378,10 +378,10 @@ function DataTableInner<TData extends { id: number | string }>({
                               document.addEventListener('touchmove', onTouchMove, { passive: false });
                               document.addEventListener('touchend', onTouchEnd);
                             }}
-                            className="absolute -right-[14px] top-0 bottom-0 w-[28px] z-50 cursor-col-resize group/resizer flex items-center justify-center select-none touch-none"
+                            className="absolute -right-[10px] top-0 bottom-0 w-[20px] z-50 cursor-col-resize group/resizer flex items-center justify-center select-none touch-none"
                             title="Geser untuk mengatur lebar kolom"
                           >
-                            <div className="w-[2px] h-[50%] group-hover/resizer:w-[8px] group-hover/resizer:h-[90%] active:w-[8px] active:h-[100%] rounded-full transition-all duration-150 bg-transparent group-hover/resizer:bg-emerald-500 group-hover/resizer:shadow-md group-hover/resizer:shadow-emerald-500/30 active:bg-emerald-600 active:ring-2 active:ring-emerald-200" />
+                            <div className="w-[3px] h-full transition-colors bg-transparent group-hover/resizer:bg-emerald-500 active:bg-emerald-600" />
                           </div>
                         )}
                       </th>);
@@ -507,7 +507,7 @@ const TableRow = React.memo(({
       }}
       onClick={(e) => onRowClick && onRowClick(row.original.id, e)}
       onDoubleClick={(e) => onRowDoubleClick && onRowDoubleClick(row.original.id, e)}
-      className={`${rowHeight} ${rowCursor} group border-b border-gray-50 transition-colors ${
+      className={`${rowHeight} ${rowCursor} group border-b border-slate-200/80 transition-colors ${
         isSelected ? 'bg-blue-50 is-selected' : extraClassName ? extraClassName : isOdd ? 'bg-gray-50/30' : 'bg-white'
       } ${!disableHover && !isSelected ? 'hover:bg-blue-50/30' : ''} text-[13px]`}
     >
@@ -525,7 +525,7 @@ const TableRow = React.memo(({
         return (
           <td 
             key={cell.id} 
-            className={`p-0 border-r border-gray-50/50 last:border-r-0 ${
+            className={`p-0 border-r border-slate-200/80 last:border-r-0 ${
               isSticky ? 'sticky z-[25]' : ''
             }`}
             style={{
@@ -533,7 +533,7 @@ const TableRow = React.memo(({
               ...(isSticky ? {
                 left: stickyOffsets?.[cell.column.id] ?? 6,
                 backgroundColor: stickyBg,
-                boxShadow: 'inset -1px 0 0 #e5e7eb'  // subtle right border for last sticky col
+                boxShadow: 'inset -1px 0 0 #cbd5e1'  // solid right border for sticky col
               } : {})
             }}
           >
