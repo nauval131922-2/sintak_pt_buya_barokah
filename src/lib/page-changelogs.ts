@@ -838,6 +838,20 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     permissionKeys: ['pembelian_po'],
     items: [...UI_POLISH],
   }),
+  'rekap-pembelian-barang-2026-09-03': entry({
+    pageKey: 'rekap-pembelian-barang',
+    title: 'Rekap Pembelian Barang',
+    permissionKeys: ['pembelian_rekap'],
+    sortDate: '2026-09-03',
+    date: '03 Sep 2026',
+    version: '2026-09-03-1',
+    items: [
+      'Fitur Pencarian dengan Keyword Highlighting: Kata kunci pencarian pada kolom Faktur, Supplier, Barang, Keterangan, dan User kini otomatis di-highlight dengan tanda visual kuning yang jelas',
+      'Perbaikan Infinite Scroll & Stabilitas Posisi Scroll: Memperbaiki bug scroll melompat/reset ke atas saat memuat data halaman berikutnya (infinite scroll) sehingga posisi baca pengguna tetap dipertahankan',
+      'Peningkatan Fleksibilitas Pengaturan Lebar Kolom: Kolom tabel kini memiliki batas garis vertikal yang rapi, garis resizer dapat di-drag langsung secara real-time dengan area sentuh/klik yang lebih luas (20px)',
+      'Optimasi Kueri & Indeks Database: Penambahan expression index pada tanggal dan ID (idx_rekap_pembelian_barang_expr_tgl) untuk mempercepat pengurutan data serta penyesuaian debounce pencarian menjadi 350ms yang lebih responsif',
+    ],
+  }),
   'rekap-pembelian-barang-2026-07-25': entry({
     pageKey: 'rekap-pembelian-barang',
     title: 'Rekap Pembelian Barang',
