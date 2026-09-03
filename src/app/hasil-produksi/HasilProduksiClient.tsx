@@ -212,6 +212,8 @@ export default function HasilProduksiClient() {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [isFilterOpenMobile, setIsFilterOpenMobile] = useState<boolean>(true);
+  const [isControlOpenMobile, setIsControlOpenMobile] = useState<boolean>(true);
   useEffect(() => {
     setIsMounted(true);
 
@@ -1020,9 +1022,34 @@ export default function HasilProduksiClient() {
       {/* 1. Header Section - Fixed */}
       <div id="filter-control-container" className="flex flex-col gap-3 shrink-0 relative z-[80]">
         {/* 1. Filter Control Center — 2 Baris di MD, 1 Baris di LG (1024px+) */}
-        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-2.5 sm:p-3 flex flex-col lg:flex-row items-stretch lg:items-end gap-2 relative">
-          {/* Baris 1: SOPd Selection Group (Dinamis mengisi sisa ruang) */}
-          <div className="w-full lg:flex-1 lg:min-w-[140px]">
+        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm transition-all overflow-hidden">
+          {/* Toggle Header Khusus Mobile (< sm) */}
+          <div className="sm:hidden flex items-center justify-between px-3 py-2 bg-slate-50/70 hover:bg-slate-100/80 transition-colors border-b border-slate-100">
+            <button
+              type="button"
+              onClick={() => setIsFilterOpenMobile(!isFilterOpenMobile)}
+              className="flex items-center gap-2 text-xs font-bold text-slate-800 hover:text-emerald-700 transition-colors focus:outline-none flex-1 text-left min-w-0"
+            >
+              <Filter className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span className="text-[11px] font-bold text-slate-800 truncate">Filter & Parameter SOPd</span>
+              {(selectedSopd !== null || selectedBagian !== '' || selectedPekerjaan !== '' || startDate !== null) && (
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Filter aktif" />
+              )}
+              <div className="flex items-center space-x-1 text-slate-500 text-[10.5px] font-medium ml-auto pr-1 shrink-0">
+                <span>{isFilterOpenMobile ? "Sembunyikan" : "Tampilkan"}</span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                    isFilterOpenMobile ? "rotate-180" : ""
+                  }`}
+                />
+              </div>
+            </button>
+          </div>
+
+          {/* Konten Filter — Bisa Diciutkan di Mobile */}
+          <div className={`${isFilterOpenMobile ? "flex flex-col" : "hidden sm:flex sm:flex-col"} lg:flex-row items-stretch lg:items-end gap-2 p-2.5 sm:p-3 relative animate-in fade-in slide-in-from-top-1 duration-200`}>
+            {/* Baris 1: SOPd Selection Group (Dinamis mengisi sisa ruang) */}
+            <div className="w-full lg:flex-1 lg:min-w-[140px]">
             <SearchableDropdown
               id="hasil-sopd"
               label="Pilih Order Produksi (SOPd)"
@@ -1114,13 +1141,38 @@ export default function HasilProduksiClient() {
           </div>
         </div>
       </div>
-
+      </div>
 
         {/* Baris 2 Terpadu (2-Row Redesign): KPI & Tren di Kiri, Tab & Search & Mode di Kanan */}
         {selectedSopd && (
-          <div id="desktop-sticky-control-bar" className="shrink-0 z-[10] bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-1.5 sm:p-2 flex flex-col md:flex-row items-stretch md:items-center gap-2">
-            {/* Bagian Kiri: KPI Metrik & Tren Ringkas */}
-            <div className="flex items-center gap-1.5 sm:gap-2 w-full md:w-auto shrink-0 min-w-0">
+          <div id="desktop-sticky-control-bar" className="shrink-0 z-[10] bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm transition-all overflow-hidden">
+            {/* Toggle Header Khusus Mobile (< sm) */}
+            <div className="sm:hidden flex items-center justify-between px-3 py-2 bg-slate-50/70 hover:bg-slate-100/80 transition-colors border-b border-slate-100">
+              <button
+                type="button"
+                onClick={() => setIsControlOpenMobile(!isControlOpenMobile)}
+                className="flex items-center gap-2 text-xs font-bold text-slate-800 hover:text-emerald-700 transition-colors focus:outline-none flex-1 text-left min-w-0"
+              >
+                <Search className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span className="text-[11px] font-bold text-slate-800 truncate">Pencarian & Kontrol Data</span>
+                {dataSearchQuery !== '' && (
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Pencarian aktif" />
+                )}
+                <div className="flex items-center space-x-1 text-slate-500 text-[10.5px] font-medium ml-auto pr-1 shrink-0">
+                  <span>{isControlOpenMobile ? "Sembunyikan" : "Tampilkan"}</span>
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                      isControlOpenMobile ? "rotate-180" : ""
+                    }`}
+                  />
+                </div>
+              </button>
+            </div>
+
+            {/* Konten Kontrol & Pencarian — Bisa Diciutkan di Mobile */}
+            <div className={`${isControlOpenMobile ? "flex flex-col" : "hidden sm:flex sm:flex-col"} md:flex-row items-stretch md:items-center gap-2 p-1.5 sm:p-2 animate-in fade-in slide-in-from-top-1 duration-200`}>
+              {/* Bagian Kiri: KPI Metrik & Tren Ringkas */}
+              <div className="flex items-center gap-1.5 sm:gap-2 w-full md:w-auto shrink-0 min-w-0">
               {/* Card 1: Order | WIP | Hasil */}
               <div className="bg-gray-50/80 border border-gray-200/60 rounded-lg px-2 sm:px-3 h-8 flex items-center justify-around md:justify-start flex-1 md:flex-none shrink min-w-0 select-none gap-1 sm:gap-2">
                 <div className="flex items-baseline gap-0.5 min-w-0 shrink">
@@ -1287,6 +1339,7 @@ export default function HasilProduksiClient() {
                 </button>
               </div>
             </div>
+          </div>
           </div>
         )}
 
