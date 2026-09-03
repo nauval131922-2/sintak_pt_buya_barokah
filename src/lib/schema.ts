@@ -1255,7 +1255,8 @@ export async function initSchema(db: any) {
     "CREATE INDEX IF NOT EXISTS idx_spph_out_expr_tgl ON spph_out(substr(tgl, 7, 4) DESC, substr(tgl, 4, 2) DESC, substr(tgl, 1, 2) DESC, id DESC);",
     "CREATE INDEX IF NOT EXISTS idx_sph_in_expr_tgl ON sph_in(substr(tgl, 7, 4) DESC, substr(tgl, 4, 2) DESC, substr(tgl, 1, 2) DESC, id DESC);",
     "CREATE INDEX IF NOT EXISTS idx_purchase_orders_expr_tgl ON purchase_orders(substr(tgl, 7, 4) DESC, substr(tgl, 4, 2) DESC, substr(tgl, 1, 2) DESC, id DESC);",
-    "CREATE INDEX IF NOT EXISTS idx_penerimaan_pembelian_expr_tgl ON penerimaan_pembelian(substr(tgl, 7, 4) DESC, substr(tgl, 4, 2) DESC, substr(tgl, 1, 2) DESC, id DESC);"
+    "CREATE INDEX IF NOT EXISTS idx_penerimaan_pembelian_expr_tgl ON penerimaan_pembelian(substr(tgl, 7, 4) DESC, substr(tgl, 4, 2) DESC, substr(tgl, 1, 2) DESC, id DESC);",
+    "CREATE INDEX IF NOT EXISTS idx_rekap_pembelian_barang_expr_tgl ON rekap_pembelian_barang(substr(tgl, 7, 4) DESC, substr(tgl, 4, 2) DESC, substr(tgl, 1, 2) DESC, id DESC);"
   ], "write");
 
   // 4. SMART AUTOMATED ACTIVITY LOG TRIGGERS

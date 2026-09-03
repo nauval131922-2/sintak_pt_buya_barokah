@@ -96,7 +96,7 @@ export default function PembelianBarangClient() {
       setDebouncedQuery(searchQuery);
       if (searchQuery !== urlSearchRef.current) setHighlightQuery(searchQuery);
       setPage(1);
-    }, 500);
+    }, 350);
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
