@@ -69,7 +69,7 @@ export default function Error({ error, reset }: ErrorProps) {
 
           <div className="mt-6 pt-4 border-t border-slate-100 w-full flex items-center justify-between text-[10.5px] font-semibold text-slate-400">
             <span>SINTAK &bull; PT Buya Barokah</span>
-            <span>Pricelist & ERP System</span>
+            <span>Percetakan & Penerbitan</span>
           </div>
         </div>
       </div>
