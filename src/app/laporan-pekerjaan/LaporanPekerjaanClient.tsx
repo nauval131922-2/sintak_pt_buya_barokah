@@ -3768,6 +3768,7 @@ function InlineEditRow({
       if (explicitNames.length === 0) return true;
       return explicitNames.map((p) => p.toLowerCase().trim()).includes(lowerName);
     }).sort((a, b) => a.localeCompare(b, "id"));
+    return uniqueNames.map((name) => ({ value: name, label: name }));
   }, [employeeOptions, roleConfig]);
 
   return (
@@ -4108,6 +4109,7 @@ function InlineAddRow({
       if (explicitNames.length === 0) return true;
       return explicitNames.map((p) => p.toLowerCase().trim()).includes(lowerName);
     }).sort((a, b) => a.localeCompare(b, "id"));
+    return uniqueNames.map((name) => ({ value: name, label: name }));
   }, [employeeOptions, roleConfig]);
 
   return (
