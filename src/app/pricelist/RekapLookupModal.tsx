@@ -263,13 +263,14 @@ export default function RekapLookupModal({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
-                  {items.map((item) => {
+                  {items.map((item, idx) => {
                     const isSelected = selectedId === item.id;
                     const convertedVal = isKgField && item.calculatedPricePerKg && item.unitType !== 'kg'
                       ? item.calculatedPricePerKg
                       : item.harga;
                     return (
                       <tr
+                        key={item.id ?? `rekap-${idx}`}
                         onClick={() => setSelectedId(item.id)}
                         className={`transition-colors cursor-pointer ${
                           isSelected
