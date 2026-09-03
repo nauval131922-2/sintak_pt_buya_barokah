@@ -1602,6 +1602,7 @@ export default function HasilProduksiClient() {
           </div>
 
           <div className={`bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm flex flex-col ${viewMode === 'table' ? 'lg:flex-1 lg:min-h-0 lg:overflow-hidden' : ''}`}>
+            {activeTab === 'barang_jadi' ? (
             <div className={`flex flex-col ${viewMode === 'table' ? 'lg:flex-1 lg:min-h-0 lg:overflow-hidden' : ''}`}>
               {viewMode === 'card' ? (
                 <div className="flex flex-col gap-2 p-3 isolate">
