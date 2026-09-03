@@ -232,34 +232,34 @@ export default function RekapLookupModal({
         )}
 
         {/* Table List of Purchases with Sticky Header */}
-        <div className="overflow-x-auto overflow-y-auto flex-1 p-3 sm:p-5 custom-scrollbar relative">
+        <div className="flex-1 min-h-0 p-3 sm:p-5 flex flex-col">
           {loading && items.length === 0 ? (
-            <div className="py-16 text-center text-slate-400 space-y-2">
+            <div className="py-16 text-center text-slate-400 space-y-2 my-auto">
               <RefreshCw className="w-7 h-7 animate-spin mx-auto text-emerald-600 opacity-60" />
               <p className="text-xs font-semibold text-slate-600">Memuat riwayat transaksi pembelian...</p>
             </div>
           ) : items.length === 0 ? (
-            <div className="py-16 text-center text-slate-400 space-y-2">
+            <div className="py-16 text-center text-slate-400 space-y-2 my-auto">
               <ShoppingCart className="w-10 h-10 mx-auto text-slate-300 stroke-[1.5]" />
               <p className="text-xs font-semibold text-slate-600">Tidak ada riwayat pembelian yang cocok dengan kata kunci.</p>
               <p className="text-[11px] text-slate-400">Coba gunakan kata kunci pencarian yang lebih umum.</p>
             </div>
           ) : (
-            <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
-              <table className="w-full text-left text-xs border-separate border-spacing-0">
-                <thead className="sticky top-0 z-20 bg-slate-100 text-slate-700 font-bold shadow-xs">
+            <div className="border border-slate-200 rounded-xl overflow-auto flex-1 max-h-[52vh] shadow-2xs custom-scrollbar">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="sticky top-0 z-30 bg-slate-100 shadow-xs">
                   <tr>
-                    <th className="py-2.5 px-3 w-28 text-left bg-slate-100 border-b border-slate-200">Tanggal</th>
-                    <th className="py-2.5 px-3 min-w-[200px] text-left bg-slate-100 border-b border-slate-200">Nama Barang & Faktur</th>
-                    <th className="py-2.5 px-3 min-w-[140px] text-left bg-slate-100 border-b border-slate-200">Supplier</th>
-                    <th className="py-2.5 px-3 text-right w-20 bg-slate-100 border-b border-slate-200">Qty</th>
-                    <th className="py-2.5 px-3 text-right w-28 bg-slate-100 border-b border-slate-200">Harga Beli</th>
+                    <th className="py-3 px-3 w-28 text-left bg-slate-100 text-slate-800 font-bold border-b border-slate-200 sticky top-0 z-30">Tanggal</th>
+                    <th className="py-3 px-3 min-w-[200px] text-left bg-slate-100 text-slate-800 font-bold border-b border-slate-200 sticky top-0 z-30">Nama Barang & Faktur</th>
+                    <th className="py-3 px-3 min-w-[140px] text-left bg-slate-100 text-slate-800 font-bold border-b border-slate-200 sticky top-0 z-30">Supplier</th>
+                    <th className="py-3 px-3 text-right w-20 bg-slate-100 text-slate-800 font-bold border-b border-slate-200 sticky top-0 z-30">Qty</th>
+                    <th className="py-3 px-3 text-right w-28 bg-slate-100 text-slate-800 font-bold border-b border-slate-200 sticky top-0 z-30">Harga Beli</th>
                     {isKgField && (
-                      <th className="py-2.5 px-3 text-right w-28 bg-emerald-100/80 text-emerald-950 border-b border-x border-emerald-200">
+                      <th className="py-3 px-3 text-right w-28 bg-emerald-100/90 text-emerald-950 font-bold border-b border-x border-emerald-200 sticky top-0 z-30">
                         Hasil Konversi
                       </th>
                     )}
-                    <th className="py-2.5 px-3 text-center w-24 bg-slate-100 border-b border-slate-200">Aksi</th>
+                    <th className="py-3 px-3 text-center w-24 bg-slate-100 text-slate-800 font-bold border-b border-slate-200 sticky top-0 z-30">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
@@ -270,7 +270,6 @@ export default function RekapLookupModal({
                       : item.harga;
                     return (
                       <tr
-                        key={item.id}
                         onClick={() => setSelectedId(item.id)}
                         className={`transition-colors cursor-pointer ${
                           isSelected
