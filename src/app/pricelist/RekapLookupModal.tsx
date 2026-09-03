@@ -165,6 +165,7 @@ export default function RekapLookupModal({
                 Target Field: <span className="font-semibold text-white underline underline-offset-2">{targetLabel}</span> (Saat ini: <span className="font-bold text-amber-200">Rp {currentValue.toLocaleString('id-ID')}</span>)
               </p>
             </div>
+          </div>
           <div className="flex items-center gap-2">
             <a
               href="/rekap-pembelian-barang"
