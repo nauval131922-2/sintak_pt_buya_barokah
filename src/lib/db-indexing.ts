@@ -63,7 +63,8 @@ export async function initIndexing(database: { execute: (sql: string) => Promise
     // 4b. Jurnal Harian Produksi Optimization
     "CREATE INDEX IF NOT EXISTS idx_jurnal_no_order ON jurnal_harian_produksi(no_order);",
     "CREATE INDEX IF NOT EXISTS idx_jurnal_no_order_2 ON jurnal_harian_produksi(no_order_2);",
-    // Composite index for main query: WHERE tgl BETWEEN ? AND ? + bagian/nama filter
+    "CREATE INDEX IF NOT EXISTS idx_jurnal_no_order_deleted ON jurnal_harian_produksi(no_order, deleted_at);",
+    "CREATE INDEX IF NOT EXISTS idx_jurnal_no_order_2_deleted ON jurnal_harian_produksi(no_order_2, deleted_at);",
     "CREATE INDEX IF NOT EXISTS idx_jurnal_tgl_asc ON jurnal_harian_produksi(tgl ASC);",
     "CREATE INDEX IF NOT EXISTS idx_jurnal_tgl_bagian ON jurnal_harian_produksi(tgl, bagian);",
     "CREATE INDEX IF NOT EXISTS idx_jurnal_tgl_nama_karyawan ON jurnal_harian_produksi(tgl, nama_karyawan);",
