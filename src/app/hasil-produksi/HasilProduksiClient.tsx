@@ -1042,7 +1042,7 @@ export default function HasilProduksiClient() {
             />
           </div>
 
-          {/* Baris 2 (di MD): Date, Bagian, Pekerjaan, Level, Buttons */}
+          {/* Baris 2: Date, Bagian, Pekerjaan, Reset */}
           <div className={`flex flex-wrap lg:flex-nowrap items-end gap-2.5 sm:gap-3 w-full lg:w-auto shrink-0 ${activeTab === 'barang_jadi' ? 'lg:gap-4' : ''}`}>
             {/* Rentang Tanggal */}
             <div className="flex flex-col w-full sm:w-[250px] md:w-[250px] lg:w-[245px] xl:w-[260px] shrink-0">
@@ -1092,52 +1092,15 @@ export default function HasilProduksiClient() {
               </div>
             )}
 
-            {/* Level - Desktop (MD+) */}
-            {activeTab === 'jurnal' && (
-              <div className="hidden md:flex flex-col gap-0.5 shrink-0">
-                <span className="block font-semibold text-gray-500 ml-1 tracking-tight select-none text-[11px] mb-1">Level</span>
-                <div className="flex items-stretch gap-0.5 h-10 bg-white border border-gray-200 rounded-xl p-0.5 shadow-sm">
-                  <button type="button" onClick={() => setDetailLevel(1)} className={`px-2.5 h-full text-[11px] font-bold rounded-lg transition-all ${detailLevel === 1 ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>1</button>
-                  <button type="button" onClick={() => setDetailLevel(2)} className={`px-2.5 h-full text-[11px] font-bold rounded-lg transition-all ${detailLevel === 2 ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>2</button>
-                </div>
-              </div>
-            )}
-
-            {/* Reset & Refresh Buttons */}
+            {/* Reset Button */}
             <div className={`flex items-center gap-2 sm:gap-2.5 shrink-0 ${activeTab === 'barang_jadi' ? 'w-full sm:w-auto mt-1.5 sm:mt-0' : 'w-full md:w-auto mt-1.5 md:mt-0'}`}>
-              {/* Level - Compact (< MD) */}
-              {activeTab === 'jurnal' && (
-                <div className="md:hidden flex items-center gap-1.5 bg-white border border-gray-200 rounded-xl p-0.5 pl-2 shadow-sm h-10 shrink-0">
-                  <span 
-                    onClick={() => setDetailLevel(prev => prev === 1 ? 2 : 1)}
-                    className="text-[11px] font-semibold text-gray-500 hover:text-emerald-600 shrink-0 select-none cursor-pointer transition-colors"
-                    title={`Klik untuk ganti ke Level ${detailLevel === 1 ? 2 : 1}`}
-                  >
-                    Level
-                  </span>
-                  <div className="flex items-stretch gap-0.5 h-full">
-                    <button type="button" onClick={() => setDetailLevel(1)} className={`px-2.5 h-full text-[11px] font-bold rounded-lg transition-all ${detailLevel === 1 ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>1</button>
-                    <button type="button" onClick={() => setDetailLevel(2)} className={`px-2.5 h-full text-[11px] font-bold rounded-lg transition-all ${detailLevel === 2 ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>2</button>
-                  </div>
-                </div>
-              )}
-
               <button
                 onClick={resetFilters}
-                className="h-10 px-3 flex-1 sm:flex-none shrink-0 flex items-center justify-center gap-1.5 bg-rose-50 text-rose-600 font-bold text-[11px] xl:text-[12px] border border-rose-200 rounded-xl hover:bg-rose-100 transition-all group shadow-sm active:scale-95 min-w-0"
+                className="h-10 px-3.5 flex-1 sm:flex-none shrink-0 flex items-center justify-center gap-1.5 bg-rose-50 text-rose-600 font-bold text-[11px] xl:text-[12px] border border-rose-200 rounded-xl hover:bg-rose-100 transition-all group shadow-sm active:scale-95 min-w-0"
                 title="Reset semua filter"
               >
                 <X size={14} className="shrink-0" />
-                <span className={activeTab === 'barang_jadi' ? 'inline' : 'inline md:hidden 2xl:inline'}>Reset</span>
-              </button>
-
-              <button
-                onClick={() => fetchDetails()}
-                className="h-10 px-3 flex-1 sm:flex-none shrink-0 flex items-center justify-center gap-1.5 bg-emerald-50 text-emerald-600 font-bold text-[11px] xl:text-[12px] border border-emerald-200 rounded-xl hover:bg-emerald-100 transition-all group shadow-sm active:scale-95 min-w-0"
-                title="Refresh Data"
-              >
-                <RotateCcw size={14} className={`shrink-0 group-hover:rotate-[-180deg] transition-transform duration-500 ${loadingDetails ? 'animate-spin' : ''}`} />
-                <span className={activeTab === 'barang_jadi' ? 'inline' : 'inline md:hidden 2xl:inline'}>Refresh</span>
+                <span>Reset</span>
               </button>
             </div>
           </div>
@@ -1258,43 +1221,7 @@ export default function HasilProduksiClient() {
                         </span>
                       </div>
                     </div>
-                  <div className="hidden md:flex items-center gap-2 shrink-0 bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-1.5 w-full md:w-auto justify-end">
-                    {/* Tab Selector */}
-                    <div className="flex items-center gap-1 shrink-0 bg-gray-100/60 p-1 rounded-lg border border-gray-200/50">
-                      <button 
-                        onClick={() => setActiveTab('jurnal')} 
-                        className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${activeTab === 'jurnal' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`}
-                      >
-                        Jurnal Produksi
-                      </button>
-                      <button 
-                        onClick={() => setActiveTab('barang_jadi')} 
-                        className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${activeTab === 'barang_jadi' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`}
-                      >
-                        Barang Jadi
-                      </button>
-                    </div>
-                    <div className="w-px h-5 bg-gray-200/80 shrink-0" />
-                    <div className="flex items-center gap-1 shrink-0 bg-gray-100/60 p-1 rounded-lg border border-gray-200/50">
-                      <button 
-                        onClick={() => { setViewMode('table'); localStorage.setItem('hp-view-mode', 'table'); }} 
-                        className={`px-2.5 py-1 rounded-md text-[11px] font-bold flex items-center gap-1.5 transition-all ${viewMode === 'table' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`} 
-                        title="Tampilan tabel"
-                      >
-                        <Table2 size={14} />
-                        <span>Tabel</span>
-                      </button>
-                      <button 
-                        onClick={() => { setViewMode('card'); localStorage.setItem('hp-view-mode', 'card'); }} 
-                        className={`px-2.5 py-1 rounded-md text-[11px] font-bold flex items-center gap-1.5 transition-all ${viewMode === 'card' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`} 
-                        title="Tampilan kartu"
-                      >
-                        <List size={14} />
-                        <span>Kartu</span>
-                      </button>
-                      </div>
-                    </div>
-                  </div>
+                </div>
                 </div>
             ) : (
                 /* === MODE TANPA PEKERJAAN: 1 baris di LG, 2 baris di MD === */
@@ -1354,106 +1281,11 @@ export default function HasilProduksiClient() {
                     </div>
                   </div>
 
-                  {/* Row 2 (di MD): Tab Switcher & View Switcher (taruh di bawah di MD) */}
-                  <div className="hidden md:flex items-center gap-1.5 sm:gap-2 w-full lg:w-auto shrink-0 bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-1 sm:p-1.5">
-                    {/* Tab Selector */}
-                    <div className="flex items-center justify-center gap-1 flex-1 min-w-max bg-gray-100/60 p-0.5 sm:p-1 rounded-lg border border-gray-200/50">
-                      <button 
-                        onClick={() => setActiveTab('jurnal')} 
-                        className={`px-1.5 sm:px-2.5 py-1 rounded-md text-[10.5px] sm:text-[11px] font-bold whitespace-nowrap flex-1 flex items-center justify-center transition-all ${activeTab === 'jurnal' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`}
-                      >
-                        Jurnal Produksi
-                      </button>
-                      <button 
-                        onClick={() => setActiveTab('barang_jadi')} 
-                        className={`px-1.5 sm:px-2.5 py-1 rounded-md text-[10.5px] sm:text-[11px] font-bold whitespace-nowrap flex-1 flex items-center justify-center transition-all ${activeTab === 'barang_jadi' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`}
-                      >
-                        Barang Jadi
-                      </button>
-                    </div>
-                    <div className="w-px h-5 bg-gray-200/80 shrink-0" />
-                    <div className="flex items-center justify-center gap-1 flex-1 min-w-max bg-gray-100/60 p-0.5 sm:p-1 rounded-lg border border-gray-200/50">
-                      <button 
-                        onClick={() => { setViewMode('table'); localStorage.setItem('hp-view-mode', 'table'); }} 
-                        className={`px-1.5 sm:px-2.5 py-1 rounded-md text-[10.5px] sm:text-[11px] font-bold flex items-center justify-center gap-1.5 flex-1 whitespace-nowrap transition-all ${viewMode === 'table' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`} 
-                        title="Tampilan tabel"
-                      >
-                        <Table2 size={14} />
-                        <span>Tabel</span>
-                      </button>
-                      <button 
-                        onClick={() => { setViewMode('card'); localStorage.setItem('hp-view-mode', 'card'); }} 
-                        className={`px-1.5 sm:px-2.5 py-1 rounded-md text-[10.5px] sm:text-[11px] font-bold flex items-center justify-center gap-1.5 flex-1 whitespace-nowrap transition-all ${viewMode === 'card' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`} 
-                        title="Tampilan kartu"
-                      >
-                        <List size={14} />
-                        <span>Kartu</span>
-                      </button>
-                    </div>
-                  </div>
                 </div>
             )}
           </div>
         )}
 
-        {/* Tab Navigation — Mobile Only (< 768px) */}
-        {selectedSopd && (
-          <div id="sticky-tabs-container" className="shrink-0 z-[70] bg-[var(--bg-deep)] pb-1.5 -mx-4 px-4 md:hidden">
-            <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-1 sm:p-1.5 flex items-center gap-1.5 w-full">
-              {/* Tab Selector */}
-              <div className="flex items-center justify-center gap-1 flex-1 min-w-0 bg-gray-100/60 p-0.5 rounded-lg border border-gray-200/50">
-                <button 
-                  onClick={() => setActiveTab('jurnal')}
-                  className={`flex-1 px-1.5 py-1 rounded-md text-[10.5px] sm:text-[11px] font-bold whitespace-nowrap flex items-center justify-center transition-all ${
-                    activeTab === 'jurnal' 
-                    ? 'bg-emerald-600 text-white shadow-sm' 
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
-                  }`}
-                >
-                  Jurnal Produksi
-                </button>
-                <button 
-                  onClick={() => setActiveTab('barang_jadi')}
-                  className={`flex-1 px-1.5 py-1 rounded-md text-[10.5px] sm:text-[11px] font-bold whitespace-nowrap flex items-center justify-center transition-all ${
-                    activeTab === 'barang_jadi' 
-                    ? 'bg-emerald-600 text-white shadow-sm' 
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
-                  }`}
-                >
-                  Barang Jadi
-                </button>
-              </div>
-              <div className="w-px h-5 bg-gray-200/80 shrink-0" />
-              {/* View Mode Selector */}
-              <div className="flex items-center justify-center gap-1 shrink-0 bg-gray-100/60 p-0.5 rounded-lg border border-gray-200/50">
-                <button 
-                  onClick={() => { setViewMode('table'); localStorage.setItem('hp-view-mode', 'table'); }} 
-                  className={`px-2 py-1 rounded-md text-[10.5px] sm:text-[11px] font-bold flex items-center justify-center gap-1 whitespace-nowrap transition-all ${
-                    viewMode === 'table' 
-                    ? 'bg-emerald-600 text-white shadow-sm' 
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
-                  }`} 
-                  title="Tampilan tabel"
-                >
-                  <Table2 size={14} />
-                  <span>Tabel</span>
-                </button>
-                <button 
-                  onClick={() => { setViewMode('card'); localStorage.setItem('hp-view-mode', 'card'); }} 
-                  className={`px-2 py-1 rounded-md text-[10.5px] sm:text-[11px] font-bold flex items-center justify-center gap-1 whitespace-nowrap transition-all ${
-                    viewMode === 'card' 
-                    ? 'bg-emerald-600 text-white shadow-sm' 
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
-                  }`} 
-                  title="Tampilan kartu"
-                >
-                  <List size={14} />
-                  <span>Kartu</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
             {/* Daily Trend Chart - MODAL VERSION */}
             {showChart && chartData.length > 0 && (
@@ -1589,18 +1421,104 @@ export default function HasilProduksiClient() {
         
         {selectedSopd ? (
           <>
-          {/* Search bar — 1 baris penuh di antara control bar dan tabel/kartu */}
-          <div className="shrink-0">
-            <SearchAndReload
-              searchQuery={dataSearchQuery}
-              setSearchQuery={handleDataSearchChange}
-              onReload={() => fetchDetails()}
-              loading={loadingDetails}
-              compact
-              placeholder="Cari kata kunci (contoh: sortir isi, cover, nama karyawan, kendala)..."
-            />
-          </div>
+          {/* Konsep 2: Table Toolbar Header (Tab, Level, Search, View Mode, Reload) */}
+          <div className="shrink-0 bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-1.5 sm:p-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+            {/* Bagian Kiri: Tab Switcher & Level Toggle */}
+            <div className="flex items-center gap-2">
+              {/* Tab Selector */}
+              <div className="flex items-center gap-1 bg-gray-100/70 p-0.5 sm:p-1 rounded-lg border border-gray-200/60">
+                <button 
+                  onClick={() => setActiveTab('jurnal')} 
+                  className={`px-3 py-1.5 rounded-md text-[11px] font-bold whitespace-nowrap flex items-center justify-center transition-all ${activeTab === 'jurnal' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`}
+                >
+                  Jurnal Produksi
+                </button>
+                <button 
+                  onClick={() => setActiveTab('barang_jadi')} 
+                  className={`px-3 py-1.5 rounded-md text-[11px] font-bold whitespace-nowrap flex items-center justify-center transition-all ${activeTab === 'barang_jadi' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`}
+                >
+                  Barang Jadi
+                </button>
+              </div>
 
+              {/* Level Selector (Hanya di Tab Jurnal) */}
+              {activeTab === 'jurnal' && (
+                <div className="flex items-center gap-1 bg-gray-100/70 p-0.5 sm:p-1 rounded-lg border border-gray-200/60 shrink-0">
+                  <span className="text-[10.5px] font-semibold text-gray-400 pl-1.5 pr-0.5 select-none">Lvl:</span>
+                  <button 
+                    type="button" 
+                    onClick={() => setDetailLevel(1)} 
+                    className={`px-2 py-1 text-[11px] font-bold rounded-md transition-all ${detailLevel === 1 ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                    title="Level 1: Hanya Subtotal Pekerjaan"
+                  >
+                    1
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => setDetailLevel(2)} 
+                    className={`px-2 py-1 text-[11px] font-bold rounded-md transition-all ${detailLevel === 2 ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                    title="Level 2: Detail Lengkap per Baris"
+                  >
+                    2
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Bagian Kanan: Search Bar, View Mode Switcher, & Refresh Button */}
+            <div className="flex items-center gap-2 flex-1 sm:flex-initial sm:min-w-[320px] lg:min-w-[420px] justify-end">
+              <div className="flex-1 min-w-0">
+                <div className="relative w-full group">
+                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-emerald-500 transition-colors z-10 pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Cari kata kunci (sortir isi, cover, nama, dll)..."
+                    className="w-full pl-8 pr-7 h-8 text-[11px] bg-gray-50/70 border border-gray-200/70 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-white transition-all font-medium placeholder:text-gray-400 shadow-none"
+                    value={dataSearchQuery}
+                    onChange={(e) => handleDataSearchChange(e.target.value)}
+                  />
+                  {dataSearchQuery && (
+                    <button 
+                      onClick={() => handleDataSearchChange('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 p-0.5"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* View Mode Switcher (Tabel / Kartu) */}
+              <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 shrink-0">
+                <button 
+                  onClick={() => { setViewMode('table'); localStorage.setItem('hp-view-mode', 'table'); }} 
+                  className={`px-2 py-1 rounded-md text-[10.5px] sm:text-[11px] font-bold flex items-center gap-1 transition-all ${viewMode === 'table' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`} 
+                  title="Tampilan tabel"
+                >
+                  <Table2 size={13} />
+                  <span className="hidden sm:inline">Tabel</span>
+                </button>
+                <button 
+                  onClick={() => { setViewMode('card'); localStorage.setItem('hp-view-mode', 'card'); }} 
+                  className={`px-2 py-1 rounded-md text-[10.5px] sm:text-[11px] font-bold flex items-center gap-1 transition-all ${viewMode === 'card' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`} 
+                  title="Tampilan kartu"
+                >
+                  <List size={13} />
+                  <span className="hidden sm:inline">Kartu</span>
+                </button>
+              </div>
+
+              {/* Refresh Button */}
+              <button
+                onClick={() => fetchDetails()}
+                disabled={loadingDetails}
+                className="h-8 w-8 bg-white border border-gray-200/80 rounded-lg text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 flex items-center justify-center transition-all disabled:opacity-50 shrink-0 shadow-sm"
+                title="Refresh Data"
+              >
+                <RotateCcw size={13} className={`shrink-0 ${loadingDetails ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
+          </div>
           <div className={`bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm flex flex-col ${viewMode === 'table' ? 'lg:flex-1 lg:min-h-0 lg:overflow-hidden' : ''}`}>
             {activeTab === 'barang_jadi' ? (
             <div className={`flex flex-col ${viewMode === 'table' ? 'lg:flex-1 lg:min-h-0 lg:overflow-hidden' : ''}`}>
