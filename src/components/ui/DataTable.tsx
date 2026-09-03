@@ -76,11 +76,19 @@ function DataTableInner<TData extends { id: number | string }>({
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const activeVisibility = controlledVisibility !== undefined ? controlledVisibility : columnVisibility;
   const activeOnVisibilityChange = onColumnVisibilityChange !== undefined ? onColumnVisibilityChange : setColumnVisibility;
-  const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>(
+  const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>(() =>
     initialColumnWidths 
       ? Object.entries(initialColumnWidths).reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
       : {}
   );
+  const initialWidthsRef = React.useRef(initialColumnWidths);
+
+  React.useEffect(() => {
+    if (initialColumnWidths && initialColumnWidths !== initialWidthsRef.current) {
+      initialWidthsRef.current = initialColumnWidths;
+      setColumnSizing(prev => ({ ...prev, ...initialColumnWidths }));
+    }
+  }, [initialColumnWidths]);
   
   // To avoid hydration mismatch
   const [isMounted, setIsMounted] = React.useState(false);
@@ -150,7 +158,7 @@ function DataTableInner<TData extends { id: number | string }>({
       columnVisibility: activeVisibility,
     },
     enableColumnResizing: true,
-    columnResizeMode: 'onEnd',
+    columnResizeMode: 'onChange',
     onSortingChange: activeOnSortingChange,
     onColumnSizingChange: setColumnSizing,
     onColumnVisibilityChange: activeOnVisibilityChange,
@@ -162,10 +170,14 @@ function DataTableInner<TData extends { id: number | string }>({
   });
 
   const isResizingColumn = table.getState().columnSizingInfo.isResizingColumn;
+  const prevIsResizingRef = React.useRef(false);
+
   React.useEffect(() => {
-    if (!isResizingColumn && onColumnWidthChange && Object.keys(columnSizing).length > 0) {
+    // Only fire onColumnWidthChange when resizing finishes (drag ends) to prevent external state loop during drag
+    if (prevIsResizingRef.current && !isResizingColumn && onColumnWidthChange && Object.keys(columnSizing).length > 0) {
       onColumnWidthChange(columnSizing as Record<string, number>);
     }
+    prevIsResizingRef.current = !!isResizingColumn;
   }, [isResizingColumn, onColumnWidthChange, columnSizing]);
 
   const parentRef = React.useRef<HTMLDivElement>(null);
@@ -205,8 +217,7 @@ function DataTableInner<TData extends { id: number | string }>({
       const meta = header.column.columnDef.meta as any;
       if (meta?.sticky) {
         map[header.id] = left;
-        const w = columnSizing[header.id] || (header.column.columnDef as any).size || 150;
-        left += w;
+        left += header.getSize();
       }
     }
     return map;
@@ -234,7 +245,7 @@ function DataTableInner<TData extends { id: number | string }>({
           >
             <colgroup>
                 <col style={{ width: 6 }} />
-                {headers.map((header) => (<col key={header.id} style={{ width: columnSizing[header.id] || (header.column.columnDef as any).size || 150 }} />))}
+                {headers.map((header) => (<col key={header.id} style={{ width: header.getSize() }} />))}
             </colgroup>
             <thead className="sticky top-0 z-[40] shadow-sm">
               {table.getHeaderGroups().map((headerGroup) => {
@@ -249,7 +260,7 @@ function DataTableInner<TData extends { id: number | string }>({
                     const sortingState = activeSorting.find((s) => s.id === header.id);
                     const sortIndex = activeSorting.findIndex((s) => s.id === header.id);
                     const meta = header.column.columnDef.meta as any;
-                    const colWidth = columnSizing[header.id] || (header.column.columnDef as any).size || 150;
+                    const colWidth = header.getSize();
                     const isSticky = meta?.sticky;
                     const leftOffset = stickyLeft;
                     if (isSticky) stickyLeft += colWidth;
@@ -259,6 +270,9 @@ function DataTableInner<TData extends { id: number | string }>({
                         isSticky ? 'sticky z-[48]' : ''
                       }`}
                       style={{ 
+                        width: colWidth,
+                        minWidth: colWidth,
+                        maxWidth: colWidth,
                         backgroundColor: meta?.headerBg || '#f8fafc',
                         ...(isSticky ? { left: leftOffset } : {})
                       }}
@@ -302,11 +316,46 @@ function DataTableInner<TData extends { id: number | string }>({
                         </div>
                         {header.column.getCanResize() && (
                           <div
-                            onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); header.getResizeHandler()(e); }}
-                            onTouchStart={(e) => { e.stopPropagation(); header.getResizeHandler()(e); }}
-                            className={`absolute -right-[4px] top-0 bottom-0 w-[12px] z-50 cursor-col-resize group/resizer transition-opacity ${header.column.getIsResizing() ? 'opacity-100' : 'opacity-0 hover:opacity-100'}`}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              const startX = e.clientX;
+                              const colId = header.id;
+                              const currentWidth = header.getSize();
+
+                              const onMouseMove = (moveEvent: MouseEvent) => {
+                                const diff = moveEvent.clientX - startX;
+                                const newWidth = Math.max(40, currentWidth + diff);
+                                setColumnSizing(prev => ({
+                                  ...prev,
+                                  [colId]: newWidth
+                                }));
+                              };
+
+                              const onMouseUp = (upEvent: MouseEvent) => {
+                                document.removeEventListener('mousemove', onMouseMove);
+                                document.removeEventListener('mouseup', onMouseUp);
+                                document.body.style.cursor = '';
+                                document.body.style.userSelect = '';
+                                const diff = upEvent.clientX - startX;
+                                const finalWidth = Math.max(40, currentWidth + diff);
+                                setColumnSizing(prev => {
+                                  const next = { ...prev, [colId]: finalWidth };
+                                  if (onColumnWidthChange) {
+                                    onColumnWidthChange(next as Record<string, number>);
+                                  }
+                                  return next;
+                                });
+                              };
+
+                              document.body.style.cursor = 'col-resize';
+                              document.body.style.userSelect = 'none';
+                              document.addEventListener('mousemove', onMouseMove);
+                              document.addEventListener('mouseup', onMouseUp);
+                            }}
+                            className="absolute -right-[5px] top-0 bottom-0 w-[10px] z-50 cursor-col-resize group/resizer transition-opacity opacity-0 hover:opacity-100 active:opacity-100"
                           >
-                            <div className={`mx-auto h-full w-[3px] rounded-full transition-colors ${header.column.getIsResizing() ? 'bg-emerald-500 shadow-sm' : 'bg-transparent group-hover/resizer:bg-slate-400'}`} />
+                            <div className="mx-auto h-full w-[3px] rounded-full transition-colors bg-transparent group-hover/resizer:bg-emerald-500 active:bg-emerald-600 shadow-sm" />
                           </div>
                         )}
                       </th>);
