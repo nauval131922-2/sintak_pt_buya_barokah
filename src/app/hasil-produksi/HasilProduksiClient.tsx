@@ -1120,25 +1120,25 @@ export default function HasilProduksiClient() {
         {selectedSopd && (
           <div id="desktop-sticky-control-bar" className="shrink-0 z-[10] bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-1.5 sm:p-2 flex flex-col md:flex-row items-stretch md:items-center gap-2">
             {/* Bagian Kiri: KPI Metrik & Tren Ringkas */}
-            <div className="flex items-center gap-1.5 sm:gap-2 w-full md:w-auto shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 w-full md:w-auto shrink-0 min-w-0">
               {/* Card 1: Order | WIP | Hasil */}
-              <div className="bg-gray-50/80 border border-gray-200/60 rounded-lg px-2 sm:px-3 h-8 flex items-center justify-between flex-1 md:flex-none shrink-0 min-w-0 select-none gap-1.5 sm:gap-2">
-                <div className="flex items-center gap-0.5 sm:gap-1 min-w-0">
-                  <span className="text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Order</span>
-                  <span className="text-[11.5px] sm:text-[12px] font-semibold text-gray-800 tabular-nums whitespace-nowrap">{selectedSopd.qty.toLocaleString('id-ID')}</span>
-                  <span className="text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
+              <div className="bg-gray-50/80 border border-gray-200/60 rounded-lg px-2 sm:px-3 h-8 flex items-center justify-around md:justify-start flex-1 md:flex-none shrink min-w-0 select-none gap-1 sm:gap-2">
+                <div className="flex items-baseline gap-0.5 min-w-0 shrink">
+                  <span className="text-[9.5px] sm:text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0 mr-0.5">Order</span>
+                  <span className="text-[11px] sm:text-[12px] font-semibold text-gray-800 tabular-nums whitespace-nowrap">{selectedSopd.qty.toLocaleString('id-ID')}</span>
+                  <span className="hidden sm:inline text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
                 </div>
                 <div className="w-px h-3.5 bg-gray-200 shrink-0"></div>
-                <div className="flex items-center gap-0.5 sm:gap-1 min-w-0">
-                  <span className="text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0">WIP</span>
-                  <span className="text-[11.5px] sm:text-[12px] font-semibold text-rose-600 tabular-nums whitespace-nowrap">{(selectedSopd.qty - grandTotal).toLocaleString('id-ID')}</span>
-                  <span className="text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
+                <div className="flex items-baseline gap-0.5 min-w-0 shrink">
+                  <span className="text-[9.5px] sm:text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0 mr-0.5">WIP</span>
+                  <span className="text-[11px] sm:text-[12px] font-semibold text-rose-600 tabular-nums whitespace-nowrap">{(selectedSopd.qty - grandTotal).toLocaleString('id-ID')}</span>
+                  <span className="hidden sm:inline text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
                 </div>
                 <div className="w-px h-3.5 bg-gray-200 shrink-0"></div>
-                <div className="flex items-center gap-0.5 sm:gap-1 min-w-0">
-                  <span className="text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Hasil</span>
-                  <span className="text-[11.5px] sm:text-[12px] font-semibold text-emerald-600 tabular-nums whitespace-nowrap">{grandTotal.toLocaleString('id-ID')}</span>
-                  <span className="text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
+                <div className="flex items-baseline gap-0.5 min-w-0 shrink">
+                  <span className="text-[9.5px] sm:text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0 mr-0.5">Hasil</span>
+                  <span className="text-[11px] sm:text-[12px] font-semibold text-emerald-600 tabular-nums whitespace-nowrap">{grandTotal.toLocaleString('id-ID')}</span>
+                  <span className="hidden sm:inline text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
                 </div>
               </div>
 
