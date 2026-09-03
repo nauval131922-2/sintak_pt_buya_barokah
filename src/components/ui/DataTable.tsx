@@ -378,10 +378,10 @@ function DataTableInner<TData extends { id: number | string }>({
                               document.addEventListener('touchmove', onTouchMove, { passive: false });
                               document.addEventListener('touchend', onTouchEnd);
                             }}
-                            className="absolute -right-[12px] top-0 bottom-0 w-[24px] z-50 cursor-col-resize group/resizer flex items-center justify-center select-none touch-none"
+                            className="absolute -right-[14px] top-0 bottom-0 w-[28px] z-50 cursor-col-resize group/resizer flex items-center justify-center select-none touch-none"
                             title="Geser untuk mengatur lebar kolom"
                           >
-                            <div className="w-[5px] h-[80%] rounded-full transition-all bg-slate-300/80 group-hover/resizer:bg-emerald-500 group-hover/resizer:w-[6px] active:bg-emerald-600 shadow-sm group-hover/resizer:shadow-md" />
+                            <div className="w-[2px] h-[50%] group-hover/resizer:w-[8px] group-hover/resizer:h-[90%] active:w-[8px] active:h-[100%] rounded-full transition-all duration-150 bg-transparent group-hover/resizer:bg-emerald-500 group-hover/resizer:shadow-md group-hover/resizer:shadow-emerald-500/30 active:bg-emerald-600 active:ring-2 active:ring-emerald-200" />
                           </div>
                         )}
                       </th>);
