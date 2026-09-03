@@ -954,6 +954,7 @@ function LaporanPekerjaanRoleModal({
         can_edit: canEdit,
         can_delete: canDelete,
       });
+    } finally {
       setSaving(false);
     }
   };
