@@ -1,8 +1,8 @@
+import { Suspense } from "react";
 import { Metadata } from "next";
 import PembelianBarangClient from "./PembelianBarangClient";
 import PageHeader from "@/components/PageHeader";
 import { requirePermission } from "@/lib/permissions";
-
 export const metadata: Metadata = {
   title: "SINTAK | Laporan Rekap Pembelian Barang",
 };
@@ -30,14 +30,12 @@ export default async function PembelianBarangPage() {
         }
       />
 
-      <PembelianBarangClient />
+      <Suspense fallback={<div className="h-40 bg-white rounded-2xl animate-pulse" />}>
+        <PembelianBarangClient />
+      </Suspense>
     </div>
   );
 }
-
-
-
-
 
 
 
