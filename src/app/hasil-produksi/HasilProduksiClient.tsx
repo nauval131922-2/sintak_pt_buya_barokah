@@ -10,6 +10,7 @@ import {
 import PageHeader from "@/components/PageHeader";
 import DatePicker from '@/components/DatePicker';
 import SearchableDropdown from '@/components/SearchableDropdown';
+import SearchAndReload from '@/components/SearchAndReload';
 import TableFooter from '@/components/TableFooter';
 import Portal from '@/components/Portal';
 import { persistDateStore, hydrateDateStore } from '@/lib/scraper-period';
@@ -205,11 +206,12 @@ export default function HasilProduksiClient() {
   const [sopdOptions, setSopdOptions] = useState<SopdOption[]>([]);
   const [selectedSopd, setSelectedSopd] = useState<SopdOption | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [dataSearchQuery, setDataSearchQuery] = useState('');
+  const [debouncedDataQuery, setDebouncedDataQuery] = useState('');
   const [loadingSopd, setLoadingSopd] = useState(false);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [isMounted, setIsMounted] = useState(false);
-  
   useEffect(() => {
     setIsMounted(true);
 
@@ -467,11 +469,20 @@ export default function HasilProduksiClient() {
 
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const dataDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleSearchQueryChange = (q: string) => {
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     debounceTimerRef.current = setTimeout(() => {
       setDebouncedSearchQuery(q);
+    }, 300);
+  };
+
+  const handleDataSearchChange = (q: string) => {
+    setDataSearchQuery(q);
+    if (dataDebounceTimerRef.current) clearTimeout(dataDebounceTimerRef.current);
+    dataDebounceTimerRef.current = setTimeout(() => {
+      setDebouncedDataQuery(q);
     }, 300);
   };
 
@@ -546,8 +557,8 @@ export default function HasilProduksiClient() {
          const day = String(d.getDate()).padStart(2, '0');
          return `${y}-${m}-${day}`;
       };
-
-      const url = `/api/hasil-produksi/details?no_sopd=${encodeURIComponent(selectedSopd.no_sopd)}&startDate=${fmtDate(startDate)}&endDate=${fmtDate(endDate)}&bagian=${encodeURIComponent(selectedBagian)}&pekerjaan=${encodeURIComponent(selectedPekerjaan)}&sort=default`;
+      const searchParam = debouncedDataQuery ? `&search=${encodeURIComponent(debouncedDataQuery)}` : '';
+      const url = `/api/hasil-produksi/details?no_sopd=${encodeURIComponent(selectedSopd.no_sopd)}&startDate=${fmtDate(startDate)}&endDate=${fmtDate(endDate)}&bagian=${encodeURIComponent(selectedBagian)}&pekerjaan=${encodeURIComponent(selectedPekerjaan)}${searchParam}&sort=default`;
       const res = await fetch(url);
       if (res.ok) {
         const json = await res.json();
@@ -571,14 +582,15 @@ export default function HasilProduksiClient() {
 
   useEffect(() => {
     fetchDetails();
-  }, [selectedSopd, startDate, endDate, selectedBagian, selectedPekerjaan]);
-
+  }, [selectedSopd, startDate, endDate, selectedBagian, selectedPekerjaan, debouncedDataQuery]);
   const resetFilters = () => {
     setSelectedSopd(null);
     setStartDate(null);
     setEndDate(null);
     setSelectedBagian('');
     setSelectedPekerjaan('');
+    setDataSearchQuery('');
+    setDebouncedDataQuery('');
     setSorting([]);
     setDetailLevel(2);
     persistDateStore('hasil_dates', null, null);
@@ -587,7 +599,6 @@ export default function HasilProduksiClient() {
     localStorage.removeItem('hasil_selectedPekerjaan');
     localStorage.removeItem('hasil_detailLevel');
   };
-
   // Prepare chart data
   const chartData = React.useMemo(() => {
     const dataMap: Record<string, { date: string, displayDate: string, gudang: number, jurnal: number }> = {};
@@ -1578,8 +1589,19 @@ export default function HasilProduksiClient() {
         
         {selectedSopd ? (
           <>
+          {/* Search bar — 1 baris penuh di antara control bar dan tabel/kartu */}
+          <div className="shrink-0">
+            <SearchAndReload
+              searchQuery={dataSearchQuery}
+              setSearchQuery={handleDataSearchChange}
+              onReload={() => fetchDetails()}
+              loading={loadingDetails}
+              compact
+              placeholder="Cari kata kunci (contoh: sortir isi, cover, nama karyawan, kendala)..."
+            />
+          </div>
+
           <div className={`bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm flex flex-col ${viewMode === 'table' ? 'lg:flex-1 lg:min-h-0 lg:overflow-hidden' : ''}`}>
-            {activeTab === 'barang_jadi' ? (
             <div className={`flex flex-col ${viewMode === 'table' ? 'lg:flex-1 lg:min-h-0 lg:overflow-hidden' : ''}`}>
               {viewMode === 'card' ? (
                 <div className="flex flex-col gap-2 p-3 isolate">

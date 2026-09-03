@@ -11,8 +11,8 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate');     // YYYY-MM-DD
     const bagian = searchParams.get('bagian');
     const pekerjaan = searchParams.get('pekerjaan');
+    const search = searchParams.get('search');
     const sortBy = searchParams.get('sort') || 'default';
-
     if (!noSopd) {
       return NextResponse.json({ error: 'no_sopd is required' }, { status: 400 });
     }
@@ -51,6 +51,16 @@ export async function GET(request: NextRequest) {
       bjSql += ` AND (substr(tgl, 7, 4) || '-' || substr(tgl, 4, 2) || '-' || substr(tgl, 1, 2)) <= ?`;
       bjArgs.push(endDate);
     }
+    if (search) {
+      const tokens = search.trim().split(/\s+/).filter(Boolean).slice(0, 5);
+      const bjCols = ['nama_barang', 'nama_prd', 'faktur'];
+      const colClause = bjCols.map(c => `${c} LIKE ?`).join(' OR ');
+      for (const token of tokens) {
+        bjSql += ` AND (${colClause})`;
+        const likeStr = `%${token}%`;
+        bjCols.forEach(() => bjArgs.push(likeStr));
+      }
+    }
     bjSql += ` ORDER BY substr(tgl, 7, 4) DESC, substr(tgl, 4, 2) DESC, substr(tgl, 1, 2) DESC`;
     queries.push({ sql: bjSql, args: bjArgs });
 
@@ -76,6 +86,16 @@ export async function GET(request: NextRequest) {
     if (pekerjaan) {
       jSql += ` AND jenis_pekerjaan_2 = ?`;
       jArgs.push(pekerjaan);
+    }
+    if (search) {
+      const tokens = search.trim().split(/\s+/).filter(Boolean).slice(0, 5);
+      const searchCols = ['jenis_pekerjaan_2', 'nama_karyawan', 'keterangan', 'kendala', 'bagian', 'bahan_kertas'];
+      const colClause = searchCols.map(c => `${c} LIKE ?`).join(' OR ');
+      for (const token of tokens) {
+        jSql += ` AND (${colClause})`;
+        const likeStr = `%${token}%`;
+        searchCols.forEach(() => jArgs.push(likeStr));
+      }
     }
     jSql += ` ORDER BY tgl ASC`;
     queries.push({ sql: jSql, args: jArgs });
