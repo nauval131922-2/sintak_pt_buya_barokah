@@ -59,45 +59,60 @@ export default function RekapLookupModal({
   const [totalCount, setTotalCount] = useState(0);
   const [limit, setLimit] = useState(50);
   const [loading, setLoading] = useState(false);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-  // Debounce search query
+  // Debounce search query (200ms lebih responsif)
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(query);
-    }, 300);
+    }, 200);
     return () => clearTimeout(timer);
   }, [query]);
 
-  // Fetch candidates from API
-  const fetchItems = useCallback(async () => {
+  // Fetch candidates from API dengan AbortController untuk membatalkan request lama
+  useEffect(() => {
     if (!isOpen) return;
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({
-        targetParam: targetKey,
-        limit: limit.toString(),
-      });
-      if (debouncedQuery.trim()) {
-        params.set('q', debouncedQuery.trim());
+    const controller = new AbortController();
+    let active = true;
+
+    async function load() {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({
+          targetParam: targetKey,
+          limit: limit.toString(),
+        });
+        if (debouncedQuery.trim()) {
+          params.set('q', debouncedQuery.trim());
+        }
+        const res = await fetch(`/api/pricelist/rekap-lookup?${params.toString()}`, {
+          signal: controller.signal,
+        });
+        const json = await res.json();
+        if (active && json.success && Array.isArray(json.data)) {
+          setItems(json.data);
+          setTotalCount(json.total || json.data.length);
+        } else if (active) {
+          setItems([]);
+          setTotalCount(0);
+        }
+      } catch (err: any) {
+        if (err.name !== 'AbortError' && active) {
+          console.error('Failed to fetch rekap lookup candidates:', err);
+          setItems([]);
+          setTotalCount(0);
+        }
+      } finally {
+        if (active) setLoading(false);
       }
-      const res = await fetch(`/api/pricelist/rekap-lookup?${params.toString()}`);
-      const json = await res.json();
-      if (json.success && Array.isArray(json.data)) {
-        setItems(json.data);
-        setTotalCount(json.total || json.data.length);
-      } else {
-        setItems([]);
-        setTotalCount(0);
-      }
-    } catch (err) {
-      console.error('Failed to fetch rekap lookup candidates:', err);
-      setItems([]);
-      setTotalCount(0);
-    } finally {
-      setLoading(false);
     }
+
+    load();
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, [isOpen, targetKey, debouncedQuery, limit]);
 
+  // Reset state saat modal dibuka
   useEffect(() => {
     if (isOpen) {
       setQuery('');
@@ -106,12 +121,6 @@ export default function RekapLookupModal({
       setLimit(50);
     }
   }, [isOpen, targetKey]);
-  useEffect(() => {
-    if (isOpen) {
-      fetchItems();
-    }
-  }, [isOpen, debouncedQuery, fetchItems]);
-
   if (!isOpen) return null;
 
   const isKgField = targetKey.toLowerCase().includes('hvs') || 
@@ -148,7 +157,7 @@ export default function RekapLookupModal({
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-base text-white">Ambil dari Rekap Pembelian Barang</h3>
                 <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-700/80 px-2 py-0.5 rounded-full border border-emerald-500/60">
-                  Data Real ERP
+                  Data Riil Pembelian
                 </span>
               </div>
               <p className="text-xs text-emerald-100/90 mt-0.5">
@@ -213,8 +222,8 @@ export default function RekapLookupModal({
         <div className="overflow-x-auto overflow-y-auto flex-1 p-3 sm:p-5 custom-scrollbar">
           {loading && items.length === 0 ? (
             <div className="py-16 text-center text-slate-400 space-y-2">
-              <RefreshCw className="w-8 h-8 animate-spin mx-auto text-emerald-600 opacity-60" />
-              <p className="text-xs font-semibold">Mencari histori pembelian di database ERP...</p>
+              <RefreshCw className="w-7 h-7 animate-spin mx-auto text-emerald-600 opacity-60" />
+              <p className="text-xs font-semibold text-slate-600">Memuat riwayat transaksi pembelian...</p>
             </div>
           ) : items.length === 0 ? (
             <div className="py-16 text-center text-slate-400 space-y-2">
@@ -228,10 +237,9 @@ export default function RekapLookupModal({
                 <thead className="sticky top-0 z-10 bg-slate-100/95 backdrop-blur-xs border-b border-slate-200 text-slate-700 font-bold">
                   <tr>
                     <th className="py-2.5 px-3 w-28">Tanggal</th>
-                    <th className="py-2.5 px-3 min-w-[200px]">Barang & Transaksi ERP</th>
+                    <th className="py-2.5 px-3 min-w-[200px]">Nama Barang & Faktur</th>
                     <th className="py-2.5 px-3 min-w-[140px]">Supplier</th>
                     <th className="py-2.5 px-3 text-right w-24">Qty</th>
-                    <th className="py-2.5 px-3 text-right w-32">Harga Beli Asli</th>
                     {isKgField && (
                       <th className="py-2.5 px-3 text-right w-32 bg-emerald-50/80 text-emerald-950">
                         Hasil Konversi /Kg
