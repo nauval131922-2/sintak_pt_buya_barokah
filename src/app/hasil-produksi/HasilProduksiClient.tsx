@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { BarChart3, Search, ChevronDown, ChevronUp, Filter, RotateCcw, ClipboardList, TrendingUp, X, Target, AlertCircle, Package, ArrowUpDown, ArrowUp, ArrowDown, List, Table2, ChevronRight } from 'lucide-react';
 import { 
@@ -487,6 +487,7 @@ export default function HasilProduksiClient() {
   };
 
   useEffect(() => {
+    const controller = new AbortController();
     async function fetchSopd() {
       setLoadingSopd(true);
       try {
@@ -494,18 +495,21 @@ export default function HasilProduksiClient() {
         if (debouncedSearchQuery) url.searchParams.set('search', debouncedSearchQuery);
         url.searchParams.set('limit', '50');
         
-        const res = await fetch(url.toString());
+        const res = await fetch(url.toString(), { signal: controller.signal });
         if (res.ok) {
           const json = await res.json();
           setSopdOptions(json.data || []);
         }
-      } catch (err) {
-        console.error("Failed to fetch SOPd options", err);
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          console.error("Failed to fetch SOPd options", err);
+        }
       } finally {
         setLoadingSopd(false);
       }
     }
     fetchSopd();
+    return () => { controller.abort(); };
   }, [debouncedSearchQuery]);
 
   const sopdLabels = useMemo(() => {
@@ -537,7 +541,7 @@ export default function HasilProduksiClient() {
     return items;
   }, [sopdOptions, selectedSopd]);
 
-  const fetchDetails = async () => {
+  const fetchDetails = useCallback(async (signal?: AbortSignal) => {
     if (!selectedSopd) {
       setResults([]);
       setJurnalResults([]);
@@ -559,7 +563,7 @@ export default function HasilProduksiClient() {
       };
       const searchParam = debouncedDataQuery ? `&search=${encodeURIComponent(debouncedDataQuery)}` : '';
       const url = `/api/hasil-produksi/details?no_sopd=${encodeURIComponent(selectedSopd.no_sopd)}&startDate=${fmtDate(startDate)}&endDate=${fmtDate(endDate)}&bagian=${encodeURIComponent(selectedBagian)}&pekerjaan=${encodeURIComponent(selectedPekerjaan)}${searchParam}&sort=default`;
-      const res = await fetch(url);
+      const res = await fetch(url, { signal });
       if (res.ok) {
         const json = await res.json();
         setResults(json.barang_jadi || []);
@@ -572,17 +576,21 @@ export default function HasilProduksiClient() {
         setAvailableBagian(json.availableBagian || []);
         setAvailablePekerjaan(json.availablePekerjaan || []);
       }
-    } catch (error) {
-      console.error('Error fetching details:', error);
+    } catch (error: any) {
+      if (error.name !== 'AbortError') {
+        console.error('Error fetching details:', error);
+      }
     } finally {
       setLoadingDetails(false);
       setLoadTime(performance.now() - startTime);
     }
-  };
+  }, [selectedSopd, startDate, endDate, selectedBagian, selectedPekerjaan, debouncedDataQuery]);
 
   useEffect(() => {
-    fetchDetails();
-  }, [selectedSopd, startDate, endDate, selectedBagian, selectedPekerjaan, debouncedDataQuery]);
+    const controller = new AbortController();
+    fetchDetails(controller.signal);
+    return () => { controller.abort(); };
+  }, [fetchDetails]);
   const resetFilters = () => {
     setSelectedSopd(null);
     setStartDate(null);
