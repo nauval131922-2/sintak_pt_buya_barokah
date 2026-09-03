@@ -1051,9 +1051,9 @@ export default function HasilProduksiClient() {
       {/* 1. Header Section - Fixed */}
       <div id="filter-control-container" className="flex flex-col gap-3 shrink-0 relative z-[80]">
         {/* 1. Filter Control Center — 2 Baris di MD, 1 Baris di LG (1024px+) */}
-        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm transition-all overflow-hidden">
+        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm transition-all">
           {/* Toggle Header Khusus Mobile (< sm) */}
-          <div className="sm:hidden flex items-center justify-between px-3 py-2 bg-slate-50/70 hover:bg-slate-100/80 transition-colors border-b border-slate-100">
+          <div className="sm:hidden flex items-center justify-between px-3 py-2 bg-slate-50/70 hover:bg-slate-100/80 transition-colors border-b border-slate-100 rounded-t-xl">
             <button
               type="button"
               onClick={toggleFilterOpenMobile}
@@ -1173,9 +1173,9 @@ export default function HasilProduksiClient() {
       </div>
         {/* Baris 2 Terpadu (2-Row Redesign): KPI & Tren di Kiri, Tab & Search & Mode di Kanan */}
         {selectedSopd && (
-          <div id="desktop-sticky-control-bar" className="shrink-0 z-[10] bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm transition-all overflow-hidden">
+          <div id="desktop-sticky-control-bar" className="shrink-0 z-[10] bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm transition-all">
             {/* Toggle Header Khusus Mobile (< sm) */}
-            <div className="sm:hidden flex items-center justify-between px-3 py-2 bg-slate-50/70 hover:bg-slate-100/80 transition-colors border-b border-slate-100">
+            <div className="sm:hidden flex items-center justify-between px-3 py-2 bg-slate-50/70 hover:bg-slate-100/80 transition-colors border-b border-slate-100 rounded-t-xl">
               <button
                 type="button"
                 onClick={toggleControlOpenMobile}
