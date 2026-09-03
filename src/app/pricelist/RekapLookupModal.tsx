@@ -59,7 +59,8 @@ export default function RekapLookupModal({
   const [totalCount, setTotalCount] = useState(0);
   const [limit, setLimit] = useState(50);
   const [loading, setLoading] = useState(false);
-  // Debounce search query (200ms lebih responsif)
+  const [reloadKey, setReloadKey] = useState(0);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(query);
@@ -110,7 +111,7 @@ export default function RekapLookupModal({
       active = false;
       controller.abort();
     };
-  }, [isOpen, targetKey, debouncedQuery, limit]);
+  }, [isOpen, targetKey, debouncedQuery, limit, reloadKey]);
 
   // Reset state saat modal dibuka
   useEffect(() => {
@@ -198,13 +199,12 @@ export default function RekapLookupModal({
           </div>
           <button
             type="button"
-            onClick={fetchItems}
+            onClick={() => setReloadKey((prev) => prev + 1)}
             className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition-all cursor-pointer shadow-2xs shrink-0"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${loading ? 'animate-spin' : ''}`} />
             Segarkan
           </button>
-        </div>
 
         {/* Quick Tips */}
         {isKgField && (
