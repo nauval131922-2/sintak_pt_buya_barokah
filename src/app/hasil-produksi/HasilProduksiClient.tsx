@@ -241,6 +241,16 @@ export default function HasilProduksiClient() {
 
     const savedLevel = localStorage.getItem('hasil_detailLevel');
     if (savedLevel) setDetailLevel(Number(savedLevel));
+
+    // Load persisted mobile collapse/expand state
+    const savedFilterMobile = localStorage.getItem('hasil_filter_open_mobile');
+    if (savedFilterMobile !== null) {
+      setIsFilterOpenMobile(savedFilterMobile === 'true');
+    }
+    const savedControlMobile = localStorage.getItem('hasil_control_open_mobile');
+    if (savedControlMobile !== null) {
+      setIsControlOpenMobile(savedControlMobile === 'true');
+    }
   }, []);
 
   useEffect(() => {
@@ -254,6 +264,25 @@ export default function HasilProduksiClient() {
     else localStorage.removeItem('hasil_selectedSopd');
   }, [selectedSopd, isMounted]);
 
+  const toggleFilterOpenMobile = () => {
+    setIsFilterOpenMobile(prev => {
+      const next = !prev;
+      try {
+        localStorage.setItem('hasil_filter_open_mobile', String(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  const toggleControlOpenMobile = () => {
+    setIsControlOpenMobile(prev => {
+      const next = !prev;
+      try {
+        localStorage.setItem('hasil_control_open_mobile', String(next));
+      } catch {}
+      return next;
+    });
+  };
   const [results, setResults] = useState<any[]>([]);
   const [jurnalResults, setJurnalResults] = useState<any[]>([]);
   const [grandTotal, setGrandTotal] = useState(0);
@@ -1027,7 +1056,7 @@ export default function HasilProduksiClient() {
           <div className="sm:hidden flex items-center justify-between px-3 py-2 bg-slate-50/70 hover:bg-slate-100/80 transition-colors border-b border-slate-100">
             <button
               type="button"
-              onClick={() => setIsFilterOpenMobile(!isFilterOpenMobile)}
+              onClick={toggleFilterOpenMobile}
               className="flex items-center gap-2 text-xs font-bold text-slate-800 hover:text-emerald-700 transition-colors focus:outline-none flex-1 text-left min-w-0"
             >
               <Filter className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
@@ -1142,7 +1171,6 @@ export default function HasilProduksiClient() {
         </div>
       </div>
       </div>
-
         {/* Baris 2 Terpadu (2-Row Redesign): KPI & Tren di Kiri, Tab & Search & Mode di Kanan */}
         {selectedSopd && (
           <div id="desktop-sticky-control-bar" className="shrink-0 z-[10] bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm transition-all overflow-hidden">
@@ -1150,7 +1178,7 @@ export default function HasilProduksiClient() {
             <div className="sm:hidden flex items-center justify-between px-3 py-2 bg-slate-50/70 hover:bg-slate-100/80 transition-colors border-b border-slate-100">
               <button
                 type="button"
-                onClick={() => setIsControlOpenMobile(!isControlOpenMobile)}
+                onClick={toggleControlOpenMobile}
                 className="flex items-center gap-2 text-xs font-bold text-slate-800 hover:text-emerald-700 transition-colors focus:outline-none flex-1 text-left min-w-0"
               >
                 <Search className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
