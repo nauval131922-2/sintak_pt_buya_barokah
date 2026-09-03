@@ -1,20 +1,23 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { AlertTriangle, RefreshCw, Home, Loader2 } from 'lucide-react';
+import { searchableMenuItems } from '@/lib/menu-registry';
 
 interface ErrorProps {
   error: Error & { digest?: string };
   reset: () => void;
 }
-
 export default function Error({ error, reset }: ErrorProps) {
+  const pathname = usePathname();
+  const currentMenu = searchableMenuItems.find((m) => m.href === pathname)?.label || 'Halaman Sistem';
+
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
       console.error('Global Error Boundary caught an error:', error);
     }
   }, [error]);
-
   return (
     <div className="min-h-screen bg-slate-900/10 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-300">
       <div className="max-w-lg w-full bg-white border border-slate-200/80 shadow-2xl rounded-2xl overflow-hidden">
@@ -69,7 +72,7 @@ export default function Error({ error, reset }: ErrorProps) {
 
           <div className="mt-6 pt-4 border-t border-slate-100 w-full flex items-center justify-between text-[10.5px] font-semibold text-slate-400">
             <span>SINTAK &bull; PT Buya Barokah</span>
-            <span>Percetakan & Penerbitan</span>
+            <span className="text-emerald-700/80 font-bold">{currentMenu}</span>
           </div>
         </div>
       </div>
