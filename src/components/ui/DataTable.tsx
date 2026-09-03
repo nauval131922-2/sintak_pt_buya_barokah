@@ -343,9 +343,45 @@ function DataTableInner<TData extends { id: number | string }>({
                               document.addEventListener('mousemove', onMouseMove);
                               document.addEventListener('mouseup', onMouseUp);
                             }}
-                            className="absolute -right-[8px] top-0 bottom-0 w-[16px] z-50 cursor-col-resize group/resizer transition-opacity opacity-0 hover:opacity-100 active:opacity-100 flex items-center justify-center"
+                            onTouchStart={(e) => {
+                              e.stopPropagation();
+                              const touch = e.touches[0];
+                              if (!touch) return;
+                              const startX = touch.clientX;
+                              const colId = header.id;
+                              const currentWidth = header.getSize();
+
+                              const onTouchMove = (moveEvent: TouchEvent) => {
+                                const t = moveEvent.touches[0];
+                                if (!t) return;
+                                const diff = t.clientX - startX;
+                                const newWidth = Math.max(40, currentWidth + diff);
+                                setColumnSizing(prev => ({
+                                  ...prev,
+                                  [colId]: newWidth
+                                }));
+                              };
+
+                              const onTouchEnd = (endEvent: TouchEvent) => {
+                                document.removeEventListener('touchmove', onTouchMove);
+                                document.removeEventListener('touchend', onTouchEnd);
+                                const t = endEvent.changedTouches[0];
+                                const diff = t ? t.clientX - startX : 0;
+                                const finalWidth = Math.max(40, currentWidth + diff);
+                                const nextWidths = { ...columnSizingRef.current, [colId]: finalWidth };
+                                setColumnSizing(nextWidths);
+                                if (onColumnWidthChange) {
+                                  onColumnWidthChange(nextWidths as Record<string, number>);
+                                }
+                              };
+
+                              document.addEventListener('touchmove', onTouchMove, { passive: false });
+                              document.addEventListener('touchend', onTouchEnd);
+                            }}
+                            className="absolute -right-[12px] top-0 bottom-0 w-[24px] z-50 cursor-col-resize group/resizer flex items-center justify-center select-none touch-none"
+                            title="Geser untuk mengatur lebar kolom"
                           >
-                            <div className="w-[4px] h-[75%] rounded-full transition-all bg-transparent group-hover/resizer:bg-emerald-500 active:bg-emerald-600 shadow-sm group-hover/resizer:shadow-md group-hover/resizer:scale-y-105" />
+                            <div className="w-[5px] h-[80%] rounded-full transition-all bg-slate-300/80 group-hover/resizer:bg-emerald-500 group-hover/resizer:w-[6px] active:bg-emerald-600 shadow-sm group-hover/resizer:shadow-md" />
                           </div>
                         )}
                       </th>);
