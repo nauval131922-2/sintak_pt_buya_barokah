@@ -102,8 +102,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const targetParam = searchParams.get('targetParam') || '';
     const query = searchParams.get('q') || '';
-    const limit = parseInt(searchParams.get('limit') || '30', 10);
-
+    const limit = parseInt(searchParams.get('limit') || '50', 10);
     // Preset keywords jika targetParam ditentukan
     let searchTerms: string[] = [];
     if (query) {
@@ -162,22 +161,33 @@ export async function GET(req: NextRequest) {
           searchTerms = [targetParam];
       }
     }
-
     let sql = `SELECT id, tgl, faktur, kd_supplier, kd_barang, qty, harga, total_item 
                FROM rekap_pembelian_barang WHERE 1=1`;
+    let countSql = `SELECT COUNT(*) as total FROM rekap_pembelian_barang WHERE 1=1`;
     const sqlParams: any[] = [];
+    const countParams: any[] = [];
 
     if (searchTerms.length > 0) {
       const likes = searchTerms.map(() => `kd_barang LIKE ?`).join(' OR ');
       sql += ` AND (${likes})`;
-      searchTerms.forEach(t => sqlParams.push(`%${t}%`));
+      countSql += ` AND (${likes})`;
+      searchTerms.forEach(t => {
+        sqlParams.push(`%${t}%`);
+        countParams.push(`%${t}%`);
+      });
     }
 
-    // Prioritaskan harga > 0 dan transaksi terbaru
     sql += ` AND harga > 0 ORDER BY substr(tgl,7,4) DESC, substr(tgl,4,2) DESC, substr(tgl,1,2) DESC, id DESC LIMIT ?`;
     sqlParams.push(limit);
 
-    const result = await db.execute({ sql, args: sqlParams });
+    countSql += ` AND harga > 0`;
+
+    const [result, countRes] = await Promise.all([
+      db.execute({ sql, args: sqlParams }),
+      db.execute({ sql: countSql, args: countParams }),
+    ]);
+
+    const totalFound = Number((countRes.rows?.[0] as any)?.total || 0);
     const rows = (result.rows || []) as any[];
 
     const data: RekapItemCandidate[] = rows.map((r) => {
@@ -200,6 +210,8 @@ export async function GET(req: NextRequest) {
       success: true,
       targetParam,
       query,
+      total: totalFound,
+      returned: data.length,
       data,
     });
   } catch (error: any) {

@@ -56,9 +56,10 @@ export default function RekapLookupModal({
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [items, setItems] = useState<RekapItem[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [limit, setLimit] = useState(50);
   const [loading, setLoading] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
-
   // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -74,7 +75,7 @@ export default function RekapLookupModal({
     try {
       const params = new URLSearchParams({
         targetParam: targetKey,
-        limit: '35',
+        limit: limit.toString(),
       });
       if (debouncedQuery.trim()) {
         params.set('q', debouncedQuery.trim());
@@ -83,25 +84,28 @@ export default function RekapLookupModal({
       const json = await res.json();
       if (json.success && Array.isArray(json.data)) {
         setItems(json.data);
+        setTotalCount(json.total || json.data.length);
       } else {
         setItems([]);
+        setTotalCount(0);
       }
     } catch (err) {
       console.error('Failed to fetch rekap lookup candidates:', err);
       setItems([]);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }
-  }, [isOpen, targetKey, debouncedQuery]);
+  }, [isOpen, targetKey, debouncedQuery, limit]);
 
   useEffect(() => {
     if (isOpen) {
       setQuery('');
       setDebouncedQuery('');
       setSelectedId(null);
+      setLimit(50);
     }
   }, [isOpen, targetKey]);
-
   useEffect(() => {
     if (isOpen) {
       fetchItems();
@@ -340,18 +344,31 @@ export default function RekapLookupModal({
         </div>
 
         {/* Footer Modal */}
-        <div className="px-5 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
-          <div className="text-[11px] text-slate-500 font-medium flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Memilih item akan langsung memperbarui nilai parameter global dan menyinkronkan seluruh 30 produk.</span>
+        <div className="px-5 py-3 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+            <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <span>
+              Menampilkan <strong>{items.length}</strong> dari total <strong>{totalCount.toLocaleString('id-ID')}</strong> riwayat pembelian cocok.
+            </span>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg transition-all cursor-pointer text-xs"
-          >
-            Tutup
-          </button>
+          <div className="flex items-center gap-2">
+            {items.length < totalCount && (
+              <button
+                type="button"
+                onClick={() => setLimit((prev) => prev + 50)}
+                className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold rounded-lg transition-all cursor-pointer text-xs"
+              >
+                Muat Lebih Banyak (+50)
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg transition-all cursor-pointer text-xs"
+            >
+              Tutup
+            </button>
+          </div>
         </div>
       </div>
     </div>
