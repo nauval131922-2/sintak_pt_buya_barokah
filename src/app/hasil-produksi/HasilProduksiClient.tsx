@@ -1198,89 +1198,85 @@ export default function HasilProduksiClient() {
                     </div>
                   </div>
 
-                  {/* Row 2 di SM: Card Tren (100% di bawah) */}
+                  {/* Row 2 di SM: Card Tren (Compact) */}
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full shrink-0">
-                    <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm px-2.5 sm:px-3.5 py-1.5 md:py-2 flex items-center gap-2 sm:gap-3 flex-1 min-w-0 w-full">
+                    <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm px-2.5 sm:px-3.5 py-1.5 md:py-2 flex items-center gap-2 sm:gap-3 w-full sm:w-auto sm:max-w-[340px] shrink-0">
                       <button
                         onClick={() => setShowChart(!showChart)}
-                        className={`px-3 py-1 rounded-lg border text-[11px] font-semibold transition-all shadow-sm shrink-0 ${
+                        className={`px-2.5 py-0.5 rounded-lg border text-[11px] font-semibold transition-all shadow-sm shrink-0 ${
                           showChart ? 'bg-emerald-600 text-white border-emerald-600' : 'border-emerald-100 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white'
                         }`}
                       >
                         Tren
                       </button>
-                      <div className="flex flex-1 items-center gap-2 min-w-0 ml-1">
-                        <div className="flex-1 h-2 bg-gray-200/50 rounded-full relative overflow-hidden min-w-[12px]">
+                      <div className="flex flex-1 items-center gap-2 min-w-[120px] ml-1">
+                        <div className="flex-1 h-2 bg-gray-200/50 rounded-full relative overflow-hidden min-w-[60px]">
                           <div 
                             className={`h-full transition-all duration-1000 ease-out rounded-full ${grandTotal >= selectedSopd.qty ? 'bg-emerald-500 shadow-sm' : 'bg-emerald-400'}`} 
                             style={{ width: `${Math.min(100, (grandTotal / selectedSopd.qty) * 100)}%` }} 
                           />
                         </div>
-                        <span className="text-[12px] font-bold tabular-nums text-gray-800 shrink-0">
-                          {((grandTotal / selectedSopd.qty) * 100).toFixed(1)}%
-                        </span>
-                      </div>
-                    </div>
-                </div>
-                </div>
-            ) : (
-                /* === MODE TANPA PEKERJAAN: 1 baris di LG, 2 baris di MD === */
-                <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-2.5 sm:gap-3 lg:flex-nowrap pb-0.5">
-                  {/* Row 1 (di SM): Card 1 & Card Tren */}
-                  <div className="flex flex-wrap sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 flex-1 min-w-0 w-full">
-                    {/* Card 1: Order Produksi | WIP | Hasil Produksi */}
-                    <div 
-                      className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm px-2.5 sm:px-3 lg:px-3.5 sm:h-10 py-1.5 sm:py-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-between sm:justify-start shrink-0 w-full sm:w-max max-w-full min-w-0 select-none gap-1.5 sm:gap-0"
-                    >
-                      <div className="flex items-center justify-between sm:justify-start gap-1 min-w-0 flex-1 sm:flex-initial">
-                        <span className="text-[10px] sm:text-[11px] font-bold text-gray-400 capitalize tracking-tight shrink-0" title="Order">Order</span>
-                        <div className="flex items-baseline gap-0.5 min-w-0 shrink">
-                          <span className="text-[12px] sm:text-[14px] lg:text-base font-semibold text-gray-800 tabular-nums whitespace-nowrap" title={selectedSopd.qty.toLocaleString('id-ID')}>{selectedSopd.qty.toLocaleString('id-ID')}</span>
-                          <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 shrink-0 sm:mr-1.5">{selectedSopd.unit}</span>
-                        </div>
-                      </div>
-                      <div className="hidden sm:block w-px h-4 md:h-5 bg-gray-200 shrink-0 mx-1.5 sm:mx-2.5"></div>
-                      <div className="flex items-center justify-between sm:justify-start gap-1 min-w-0 flex-1 sm:flex-initial">
-                        <span className="text-[10px] sm:text-[11px] font-bold text-gray-400 capitalize tracking-tight shrink-0" title="WIP">WIP</span>
-                        <div className="flex items-baseline gap-0.5 min-w-0 shrink">
-                          <span className="text-[12px] sm:text-[14px] lg:text-base font-semibold text-rose-600 tabular-nums whitespace-nowrap" title={(selectedSopd.qty - grandTotal).toLocaleString('id-ID')}>{(selectedSopd.qty - grandTotal).toLocaleString('id-ID')}</span>
-                          <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 shrink-0 sm:mr-1.5">{selectedSopd.unit}</span>
-                        </div>
-                      </div>
-                      <div className="hidden sm:block w-px h-4 md:h-5 bg-gray-200 shrink-0 mx-1.5 sm:mx-2.5"></div>
-                      <div className="flex items-center justify-between sm:justify-start gap-1 min-w-0 flex-1 sm:flex-initial">
-                        <span className="text-[10px] sm:text-[11px] font-bold text-gray-400 capitalize tracking-tight shrink-0" title="Hasil">Hasil</span>
-                        <div className="flex items-baseline gap-0.5 min-w-0 shrink">
-                          <span className="text-[12px] sm:text-[14px] lg:text-base font-semibold text-emerald-600 tabular-nums whitespace-nowrap" title={grandTotal.toLocaleString('id-ID')}>{grandTotal.toLocaleString('id-ID')}</span>
-                          <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Card Tren dengan Progress Bar & Persentase */}
-                    <div className="flex-1 min-w-0 overflow-hidden bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm px-2.5 sm:px-3 lg:px-3.5 sm:h-10 py-1.5 sm:py-0 flex items-center justify-between gap-1.5 sm:gap-2">
-                      <button
-                        onClick={() => setShowChart(!showChart)}
-                        className={`px-2.5 sm:px-3 py-1 rounded-lg border text-[11px] font-semibold transition-all shadow-sm shrink-0 ${
-                          showChart ? 'bg-emerald-600 text-white border-emerald-600' : 'border-emerald-100 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white'
-                        }`}
-                      >
-                        Tren
-                      </button>
-                      <div className="flex flex-1 items-center gap-1.5 sm:gap-2 min-w-0 ml-1">
-                        <div className="flex-1 h-2 bg-gray-200/50 rounded-full relative overflow-hidden min-w-[12px]">
-                          <div 
-                            className={`h-full transition-all duration-1000 ease-out rounded-full ${grandTotal >= selectedSopd.qty ? 'bg-emerald-500 shadow-sm' : 'bg-emerald-400'}`} 
-                            style={{ width: `${Math.min(100, (grandTotal / selectedSopd.qty) * 100)}%` }} 
-                          />
-                        </div>
-                        <span className="text-[11px] sm:text-[12px] font-bold tabular-nums text-gray-800 shrink-0">
+                        <span className="text-[11.5px] font-bold tabular-nums text-gray-800 shrink-0">
                           {((grandTotal / selectedSopd.qty) * 100).toFixed(1)}%
                         </span>
                       </div>
                     </div>
                   </div>
+                </div>
+            ) : (
+                /* === MODE TANPA PEKERJAAN: 1 baris di LG, 2 baris di MD === */
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 flex-wrap pb-0.5">
+                  {/* Card 1: Order Produksi | WIP | Hasil Produksi */}
+                  <div 
+                    className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm px-2.5 sm:px-3 lg:px-3.5 sm:h-10 py-1.5 sm:py-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-between sm:justify-start shrink-0 w-full sm:w-max max-w-full min-w-0 select-none gap-1.5 sm:gap-0"
+                  >
+                    <div className="flex items-center justify-between sm:justify-start gap-1 min-w-0 flex-1 sm:flex-initial">
+                      <span className="text-[10px] sm:text-[11px] font-bold text-gray-400 capitalize tracking-tight shrink-0" title="Order">Order</span>
+                      <div className="flex items-baseline gap-0.5 min-w-0 shrink">
+                        <span className="text-[12px] sm:text-[14px] lg:text-base font-semibold text-gray-800 tabular-nums whitespace-nowrap" title={selectedSopd.qty.toLocaleString('id-ID')}>{selectedSopd.qty.toLocaleString('id-ID')}</span>
+                        <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 shrink-0 sm:mr-1.5">{selectedSopd.unit}</span>
+                      </div>
+                    </div>
+                    <div className="hidden sm:block w-px h-4 md:h-5 bg-gray-200 shrink-0 mx-1.5 sm:mx-2.5"></div>
+                    <div className="flex items-center justify-between sm:justify-start gap-1 min-w-0 flex-1 sm:flex-initial">
+                      <span className="text-[10px] sm:text-[11px] font-bold text-gray-400 capitalize tracking-tight shrink-0" title="WIP">WIP</span>
+                      <div className="flex items-baseline gap-0.5 min-w-0 shrink">
+                        <span className="text-[12px] sm:text-[14px] lg:text-base font-semibold text-rose-600 tabular-nums whitespace-nowrap" title={(selectedSopd.qty - grandTotal).toLocaleString('id-ID')}>{(selectedSopd.qty - grandTotal).toLocaleString('id-ID')}</span>
+                        <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 shrink-0 sm:mr-1.5">{selectedSopd.unit}</span>
+                      </div>
+                    </div>
+                    <div className="hidden sm:block w-px h-4 md:h-5 bg-gray-200 shrink-0 mx-1.5 sm:mx-2.5"></div>
+                    <div className="flex items-center justify-between sm:justify-start gap-1 min-w-0 flex-1 sm:flex-initial">
+                      <span className="text-[10px] sm:text-[11px] font-bold text-gray-400 capitalize tracking-tight shrink-0" title="Hasil">Hasil</span>
+                      <div className="flex items-baseline gap-0.5 min-w-0 shrink">
+                        <span className="text-[12px] sm:text-[14px] lg:text-base font-semibold text-emerald-600 tabular-nums whitespace-nowrap" title={grandTotal.toLocaleString('id-ID')}>{grandTotal.toLocaleString('id-ID')}</span>
+                        <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
+                      </div>
+                    </div>
+                  </div>
 
+                  {/* Card Tren dengan Progress Bar Kompak */}
+                  <div className="overflow-hidden bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm px-2.5 sm:px-3 lg:px-3.5 sm:h-10 py-1.5 sm:py-0 flex items-center justify-between gap-1.5 sm:gap-2 w-full sm:w-auto sm:min-w-[240px] sm:max-w-[340px] shrink-0">
+                    <button
+                      onClick={() => setShowChart(!showChart)}
+                      className={`px-2.5 py-0.5 rounded-lg border text-[11px] font-semibold transition-all shadow-sm shrink-0 ${
+                        showChart ? 'bg-emerald-600 text-white border-emerald-600' : 'border-emerald-100 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white'
+                      }`}
+                    >
+                      Tren
+                    </button>
+                    <div className="flex flex-1 items-center gap-1.5 sm:gap-2 min-w-[100px] ml-1">
+                      <div className="flex-1 h-2 bg-gray-200/50 rounded-full relative overflow-hidden min-w-[50px]">
+                        <div 
+                          className={`h-full transition-all duration-1000 ease-out rounded-full ${grandTotal >= selectedSopd.qty ? 'bg-emerald-500 shadow-sm' : 'bg-emerald-400'}`} 
+                          style={{ width: `${Math.min(100, (grandTotal / selectedSopd.qty) * 100)}%` }} 
+                        />
+                      </div>
+                      <span className="text-[11.5px] font-bold tabular-nums text-gray-800 shrink-0">
+                        {((grandTotal / selectedSopd.qty) * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
                 </div>
             )}
           </div>
@@ -1422,9 +1418,10 @@ export default function HasilProduksiClient() {
         {selectedSopd ? (
           <>
           {/* Konsep 2: Table Toolbar Header (Tab, Level, Search, View Mode, Reload) */}
-          <div className="shrink-0 bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-1.5 sm:p-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
-            {/* Bagian Kiri: Tab Switcher & Level Toggle */}
-            <div className="flex items-center gap-2">
+          {/* Konsep 2: Table Toolbar Header (Tab, Level, Search mengisi tengah, View Mode, Reload) */}
+          <div className="shrink-0 bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-1.5 sm:p-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+            {/* Sisi Kiri: Tab Switcher & Level Toggle */}
+            <div className="flex items-center gap-2 shrink-0">
               {/* Tab Selector */}
               <div className="flex items-center gap-1 bg-gray-100/70 p-0.5 sm:p-1 rounded-lg border border-gray-200/60">
                 <button 
@@ -1465,30 +1462,30 @@ export default function HasilProduksiClient() {
               )}
             </div>
 
-            {/* Bagian Kanan: Search Bar, View Mode Switcher, & Refresh Button */}
-            <div className="flex items-center gap-2 flex-1 sm:flex-initial sm:min-w-[320px] lg:min-w-[420px] justify-end">
-              <div className="flex-1 min-w-0">
-                <div className="relative w-full group">
-                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-emerald-500 transition-colors z-10 pointer-events-none" />
-                  <input
-                    type="text"
-                    placeholder="Cari kata kunci (sortir isi, cover, nama, dll)..."
-                    className="w-full pl-8 pr-7 h-8 text-[11px] bg-gray-50/70 border border-gray-200/70 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-white transition-all font-medium placeholder:text-gray-400 shadow-none"
-                    value={dataSearchQuery}
-                    onChange={(e) => handleDataSearchChange(e.target.value)}
-                  />
-                  {dataSearchQuery && (
-                    <button 
-                      onClick={() => handleDataSearchChange('')}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 p-0.5"
-                    >
-                      <X size={12} />
-                    </button>
-                  )}
-                </div>
+            {/* Area Tengah: Search Bar Fleksibel Melebar */}
+            <div className="flex-1 min-w-[200px] max-w-xl">
+              <div className="relative w-full group">
+                <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-emerald-500 transition-colors z-10 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Cari kata kunci pekerjaan, karyawan, keterangan, kendala..."
+                  className="w-full pl-8 pr-7 h-8 text-[11px] bg-gray-50/70 border border-gray-200/70 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-white transition-all font-medium placeholder:text-gray-400 shadow-none"
+                  value={dataSearchQuery}
+                  onChange={(e) => handleDataSearchChange(e.target.value)}
+                />
+                {dataSearchQuery && (
+                  <button 
+                    onClick={() => handleDataSearchChange('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 p-0.5"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
               </div>
+            </div>
 
-              {/* View Mode Switcher (Tabel / Kartu) */}
+            {/* Sisi Kanan: View Mode Switcher (Tabel / Kartu) & Refresh Button */}
+            <div className="flex items-center gap-2 shrink-0 justify-end">
               <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 shrink-0">
                 <button 
                   onClick={() => { setViewMode('table'); localStorage.setItem('hp-view-mode', 'table'); }} 
