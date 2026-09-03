@@ -1118,27 +1118,27 @@ export default function HasilProduksiClient() {
 
         {/* Baris 2 Terpadu (2-Row Redesign): KPI & Tren di Kiri, Tab & Search & Mode di Kanan */}
         {selectedSopd && (
-          <div id="desktop-sticky-control-bar" className="shrink-0 z-[10] bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-1.5 sm:p-2 flex flex-col md:flex-row items-stretch md:items-center gap-2.5">
+          <div id="desktop-sticky-control-bar" className="shrink-0 z-[10] bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-1.5 sm:p-2 flex flex-col md:flex-row items-stretch md:items-center gap-2">
             {/* Bagian Kiri: KPI Metrik & Tren Ringkas */}
-            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 w-full md:w-auto shrink-0">
               {/* Card 1: Order | WIP | Hasil */}
-              <div className="bg-gray-50/80 border border-gray-200/60 rounded-lg px-2.5 sm:px-3 h-8 flex items-center justify-between sm:justify-start shrink-0 w-full sm:w-auto min-w-0 select-none gap-2">
-                <div className="flex items-center gap-1 min-w-0">
+              <div className="bg-gray-50/80 border border-gray-200/60 rounded-lg px-2 sm:px-3 h-8 flex items-center justify-between flex-1 md:flex-none shrink-0 min-w-0 select-none gap-1.5 sm:gap-2">
+                <div className="flex items-center gap-0.5 sm:gap-1 min-w-0">
                   <span className="text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Order</span>
-                  <span className="text-[12px] font-semibold text-gray-800 tabular-nums whitespace-nowrap">{selectedSopd.qty.toLocaleString('id-ID')}</span>
-                  <span className="text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
+                  <span className="text-[11.5px] sm:text-[12px] font-semibold text-gray-800 tabular-nums whitespace-nowrap">{selectedSopd.qty.toLocaleString('id-ID')}</span>
+                  <span className="text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
                 </div>
                 <div className="w-px h-3.5 bg-gray-200 shrink-0"></div>
-                <div className="flex items-center gap-1 min-w-0">
+                <div className="flex items-center gap-0.5 sm:gap-1 min-w-0">
                   <span className="text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0">WIP</span>
-                  <span className="text-[12px] font-semibold text-rose-600 tabular-nums whitespace-nowrap">{(selectedSopd.qty - grandTotal).toLocaleString('id-ID')}</span>
-                  <span className="text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
+                  <span className="text-[11.5px] sm:text-[12px] font-semibold text-rose-600 tabular-nums whitespace-nowrap">{(selectedSopd.qty - grandTotal).toLocaleString('id-ID')}</span>
+                  <span className="text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
                 </div>
                 <div className="w-px h-3.5 bg-gray-200 shrink-0"></div>
-                <div className="flex items-center gap-1 min-w-0">
+                <div className="flex items-center gap-0.5 sm:gap-1 min-w-0">
                   <span className="text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Hasil</span>
-                  <span className="text-[12px] font-semibold text-emerald-600 tabular-nums whitespace-nowrap">{grandTotal.toLocaleString('id-ID')}</span>
-                  <span className="text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
+                  <span className="text-[11.5px] sm:text-[12px] font-semibold text-emerald-600 tabular-nums whitespace-nowrap">{grandTotal.toLocaleString('id-ID')}</span>
+                  <span className="text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
                 </div>
               </div>
 
@@ -1156,40 +1156,40 @@ export default function HasilProduksiClient() {
                       setExpandedCard2(false);
                     }
                   }}
-                  className="bg-gray-50/80 border border-gray-200/60 rounded-lg px-2.5 h-8 flex items-center gap-2 shrink-0 max-w-[220px] select-none cursor-pointer"
+                  className="bg-gray-50/80 border border-gray-200/60 rounded-lg px-2 sm:px-2.5 h-8 flex items-center gap-1.5 sm:gap-2 shrink-0 max-w-[160px] sm:max-w-[220px] select-none cursor-pointer"
                 >
                   <span className="text-[10px] font-bold text-gray-400 capitalize shrink-0">Job:</span>
-                  <span className="job-name-text text-[11.5px] font-semibold text-gray-800 capitalize truncate" title={selectedPekerjaan}>{selectedPekerjaan}</span>
-                  <span className="text-[11.5px] font-semibold text-emerald-600 tabular-nums shrink-0">{grandTotalJurnal.toLocaleString('id-ID')}</span>
+                  <span className="job-name-text text-[11px] sm:text-[11.5px] font-semibold text-gray-800 capitalize truncate" title={selectedPekerjaan}>{selectedPekerjaan}</span>
+                  <span className="text-[11px] sm:text-[11.5px] font-semibold text-emerald-600 tabular-nums shrink-0">{grandTotalJurnal.toLocaleString('id-ID')}</span>
                 </div>
               )}
 
               {/* Tren Button & Mini Progress */}
-              <div className="bg-gray-50/80 border border-gray-200/60 rounded-lg px-2 h-8 flex items-center gap-1.5 shrink-0">
+              <div className="bg-gray-50/80 border border-gray-200/60 rounded-lg px-1.5 sm:px-2 h-8 flex items-center gap-1 sm:gap-1.5 shrink-0">
                 <button
                   onClick={() => setShowChart(!showChart)}
-                  className={`px-2 py-0.5 rounded text-[10.5px] font-semibold transition-all shadow-none shrink-0 ${
+                  className={`px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-[10.5px] font-semibold transition-all shadow-none shrink-0 ${
                     showChart ? 'bg-emerald-600 text-white' : 'border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white'
                   }`}
                 >
                   Tren
                 </button>
-                <div className="flex items-center gap-1.5 w-[75px] ml-0.5">
+                <div className="flex items-center gap-1 sm:gap-1.5 w-[55px] sm:w-[75px] ml-0.5">
                   <div className="flex-1 h-1.5 bg-gray-200/60 rounded-full relative overflow-hidden">
                     <div 
                       className={`h-full transition-all duration-1000 ease-out rounded-full ${grandTotal >= selectedSopd.qty ? 'bg-emerald-500' : 'bg-emerald-400'}`} 
                       style={{ width: `${Math.min(100, (grandTotal / selectedSopd.qty) * 100)}%` }} 
                     />
                   </div>
-                  <span className="text-[10.5px] font-bold tabular-nums text-gray-700 shrink-0">
+                  <span className="text-[10px] sm:text-[10.5px] font-bold tabular-nums text-gray-700 shrink-0">
                     {((grandTotal / selectedSopd.qty) * 100).toFixed(0)}%
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Bagian Tengah: Search Bar Melebar Mengisi Kekosongan */}
-            <div className="flex-1 min-w-[160px]">
+            {/* Bagian Tengah: Search Bar */}
+            <div className="flex-1 min-w-0 w-full md:w-auto">
               <div className="relative w-full group">
                 <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-emerald-500 transition-colors z-10 pointer-events-none" />
                 <input
@@ -1211,75 +1211,81 @@ export default function HasilProduksiClient() {
             </div>
 
             {/* Bagian Kanan: Tab, Level, View Mode, Refresh */}
-            <div className="flex items-center gap-2 shrink-0 justify-end">
-              {/* Tab Selector */}
-              <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 shrink-0">
-                <button 
-                  onClick={() => setActiveTab('jurnal')} 
-                  className={`px-2.5 py-1 rounded-md text-[11px] font-bold whitespace-nowrap flex items-center justify-center transition-all ${activeTab === 'jurnal' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`}
-                >
-                  Jurnal
-                </button>
-                <button 
-                  onClick={() => setActiveTab('barang_jadi')} 
-                  className={`px-2.5 py-1 rounded-md text-[11px] font-bold whitespace-nowrap flex items-center justify-center transition-all ${activeTab === 'barang_jadi' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`}
-                >
-                  Barang Jadi
-                </button>
-              </div>
-
-              {/* Level Selector (Hanya di Tab Jurnal) */}
-              {activeTab === 'jurnal' && (
+            <div className="flex items-center justify-between md:justify-end gap-1.5 sm:gap-2 w-full md:w-auto shrink-0">
+              {/* Sisi Kiri Mobile: Tab & Level */}
+              <div className="flex items-center gap-1.5">
+                {/* Tab Selector */}
                 <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 shrink-0">
-                  <span className="text-[10px] font-semibold text-gray-400 pl-1 pr-0.5 select-none">Lvl:</span>
                   <button 
-                    type="button" 
-                    onClick={() => setDetailLevel(1)} 
-                    className={`px-1.5 py-0.5 text-[10.5px] font-bold rounded transition-all ${detailLevel === 1 ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                    title="Level 1: Hanya Subtotal Pekerjaan"
+                    onClick={() => setActiveTab('jurnal')} 
+                    className={`px-2.5 py-1 rounded-md text-[10.5px] sm:text-[11px] font-bold whitespace-nowrap flex items-center justify-center transition-all ${activeTab === 'jurnal' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`}
                   >
-                    1
+                    Jurnal
                   </button>
                   <button 
-                    type="button" 
-                    onClick={() => setDetailLevel(2)} 
-                    className={`px-1.5 py-0.5 text-[10.5px] font-bold rounded transition-all ${detailLevel === 2 ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                    title="Level 2: Detail Lengkap per Baris"
+                    onClick={() => setActiveTab('barang_jadi')} 
+                    className={`px-2.5 py-1 rounded-md text-[10.5px] sm:text-[11px] font-bold whitespace-nowrap flex items-center justify-center transition-all ${activeTab === 'barang_jadi' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`}
                   >
-                    2
+                    Barang Jadi
                   </button>
                 </div>
-              )}
 
-              {/* View Mode Switcher */}
-              <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 shrink-0">
-                <button 
-                  onClick={() => { setViewMode('table'); localStorage.setItem('hp-view-mode', 'table'); }} 
-                  className={`px-2 py-1 rounded-md text-[10.5px] font-bold flex items-center gap-1 transition-all ${viewMode === 'table' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`} 
-                  title="Tampilan tabel"
-                >
-                  <Table2 size={13} />
-                  <span className="hidden md:inline">Tabel</span>
-                </button>
-                <button 
-                  onClick={() => { setViewMode('card'); localStorage.setItem('hp-view-mode', 'card'); }} 
-                  className={`px-2 py-1 rounded-md text-[10.5px] font-bold flex items-center gap-1 transition-all ${viewMode === 'card' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`} 
-                  title="Tampilan kartu"
-                >
-                  <List size={13} />
-                  <span className="hidden md:inline">Kartu</span>
-                </button>
+                {/* Level Selector (Hanya di Tab Jurnal) */}
+                {activeTab === 'jurnal' && (
+                  <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 shrink-0">
+                    <span className="text-[10px] font-semibold text-gray-400 pl-1 pr-0.5 select-none">Lvl:</span>
+                    <button 
+                      type="button" 
+                      onClick={() => setDetailLevel(1)} 
+                      className={`px-1.5 py-0.5 text-[10.5px] font-bold rounded transition-all ${detailLevel === 1 ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                      title="Level 1: Hanya Subtotal Pekerjaan"
+                    >
+                      1
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => setDetailLevel(2)} 
+                      className={`px-1.5 py-0.5 text-[10.5px] font-bold rounded transition-all ${detailLevel === 2 ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                      title="Level 2: Detail Lengkap per Baris"
+                    >
+                      2
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {/* Refresh Button */}
-              <button
-                onClick={() => fetchDetails()}
-                disabled={loadingDetails}
-                className="h-8 w-8 bg-white border border-gray-200/80 rounded-lg text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 flex items-center justify-center transition-all disabled:opacity-50 shrink-0 shadow-sm"
-                title="Refresh Data"
-              >
-                <RotateCcw size={13} className={`shrink-0 ${loadingDetails ? 'animate-spin' : ''}`} />
-              </button>
+              {/* Sisi Kanan Mobile: Mode & Reload */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                {/* View Mode Switcher */}
+                <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 shrink-0">
+                  <button 
+                    onClick={() => { setViewMode('table'); localStorage.setItem('hp-view-mode', 'table'); }} 
+                    className={`px-2 py-1 rounded-md text-[10.5px] font-bold flex items-center gap-1 transition-all ${viewMode === 'table' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`} 
+                    title="Tampilan tabel"
+                  >
+                    <Table2 size={13} />
+                    <span className="hidden md:inline">Tabel</span>
+                  </button>
+                  <button 
+                    onClick={() => { setViewMode('card'); localStorage.setItem('hp-view-mode', 'card'); }} 
+                    className={`px-2 py-1 rounded-md text-[10.5px] font-bold flex items-center gap-1 transition-all ${viewMode === 'card' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`} 
+                    title="Tampilan kartu"
+                  >
+                    <List size={13} />
+                    <span className="hidden md:inline">Kartu</span>
+                  </button>
+                </div>
+
+                {/* Refresh Button */}
+                <button
+                  onClick={() => fetchDetails()}
+                  disabled={loadingDetails}
+                  className="h-8 w-8 bg-white border border-gray-200/80 rounded-lg text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 flex items-center justify-center transition-all disabled:opacity-50 shrink-0 shadow-sm"
+                  title="Refresh Data"
+                >
+                  <RotateCcw size={13} className={`shrink-0 ${loadingDetails ? 'animate-spin' : ''}`} />
+                </button>
+              </div>
             </div>
           </div>
         )}
