@@ -91,6 +91,21 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Pricelist Multi-Produk ───
+  'pricelist-2026-09-03': entry({
+    pageKey: 'pricelist',
+    title: 'Pricelist & Simulator Multi-Produk (Integrasi Real-Time Rekap Pembelian Barang & Modal Lookup Cerdas)',
+    permissionKeys: ['pricelist_kalkulasi'],
+    sortDate: '2026-09-03',
+    date: '03 Sep 2026',
+    version: '2026-09-03-1',
+    items: [
+      'Integrasi Tarif Master Parameter Global dengan Rekap Pembelian Barang: Menambahkan tombol aksi "🛒 Rekap" pada setiap field tarif Master Parameter Global untuk mengambil data harga beli riil dari transaksi pembelian',
+      'Modal Lookup Cerdas Rekap Pembelian (RekapLookupModal): Menyediakan pencarian cepat riwayat transaksi faktur, filter kata kunci responsif dengan debouncing 200ms, serta pembatalan request usang (AbortController)',
+      'Smart Auto-Converter Satuan Kertas ke /Kg: Sistem otomatis mendeteksi dimensi plano dan gramatur kertas lembaran/rim (contoh: LEMBAR - HVS 70-65 Rp 705) lalu mengonversikannya menjadi tarif per Kg master (Rp 15.500/kg)',
+      'Optimasi Antarmuka Modal: Header tabel riwayat pembelian dibuat sticky permanen (sticky top-0 z-30), penataan vertikal baris dan tombol "Pilih" simetris, tombol pintasan ke halaman /rekap-pembelian-barang di tab baru, serta navigasi pagination muat bertahap (+50)',
+      'Pembaruan Tampilan Halaman Error Sistem (error.tsx): Desain kartu error modern, log debug terstruktur pada mode dev, pembersihan istilah teknis yang tidak relevan, serta penampilan nama menu aktif secara dinamis',
+    ],
+  }),
   'pricelist-2026-09-01': entry({
     pageKey: 'pricelist',
     title: 'Pricelist & Simulator Multi-Produk (Ekspansi 30 Produk, Sync DB Multi-Device & Mode Edit)',
