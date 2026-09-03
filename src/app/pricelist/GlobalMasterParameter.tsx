@@ -2,7 +2,6 @@
 
 'use client';
 
-import React, { useState } from 'react';
 import {
   Database,
   Printer,
@@ -21,6 +20,7 @@ import {
   FileSpreadsheet,
   Search,
   FolderOpen,
+  ShoppingCart,
 } from 'lucide-react';
 import {
   GlobalMasterParams,
@@ -28,6 +28,7 @@ import {
 } from '@/lib/global-master-params';
 import ThousandInput from '@/components/ThousandInput';
 import { toast } from '@/lib/toast';
+import RekapLookupModal from './RekapLookupModal';
 
 interface GlobalMasterParameterProps {
   globalParams: GlobalMasterParams;
@@ -42,6 +43,14 @@ export default function GlobalMasterParameter({
 }: GlobalMasterParameterProps) {
   const [showManualModal, setShowManualModal] = useState(false);
   const [manualSearchQuery, setManualSearchQuery] = useState('');
+  
+  // State untuk Lookup Modal Rekap Pembelian Barang
+  const [lookupTarget, setLookupTarget] = useState<{
+    key: keyof GlobalMasterParams;
+    label: string;
+    isRupiah: boolean;
+    isDecimal: boolean;
+  } | null>(null);
    const handleChange = (key: keyof GlobalMasterParams, val: number) => {
     const updated = { ...globalParams, [key]: Math.max(0, val) };
     setGlobalParams(updated);
@@ -72,44 +81,68 @@ export default function GlobalMasterParameter({
     affectedProducts: string,
     isRupiah = true,
     isDecimal = false
-  ) => (
-    <div
-      className={`p-2.5 rounded-lg border transition-all ${
-        isFieldModified(key)
-          ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-          : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-      }`}
-    >
-      <div className="flex items-center justify-between gap-1 mb-1.5">
-        <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
-          {label}
-        </label>
-        {isFieldModified(key) && (
-          <button
-            type="button"
-            onClick={() => handleResetField(key)}
-            className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-            title="Reset ke default"
-          >
-            <RotateCcw className="w-2.5 h-2.5" /> Def
-          </button>
-        )}
+  ) => {
+    // Field yang relevan untuk ditarik dari Rekap Pembelian Barang
+    const isLookupEligible =
+      key.startsWith('tarif') ||
+      key === 'oliverPlatUnit' ||
+      key === 'oliverMinOngkos' ||
+      key === 'oliverDrekOver' ||
+      key === 'ryobiPlatUnit' ||
+      key === 'ryobiMinOngkos' ||
+      key === 'ryobiDrekOver';
+
+    return (
+      <div
+        className={`p-2.5 rounded-lg border transition-all ${
+          isFieldModified(key)
+            ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+            : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
+        }`}
+      >
+        <div className="flex items-center justify-between gap-1 mb-1.5">
+          <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
+            {label}
+          </label>
+          <div className="flex items-center gap-1 shrink-0">
+            {isLookupEligible && (
+              <button
+                type="button"
+                onClick={() => setLookupTarget({ key, label, isRupiah, isDecimal })}
+                className="text-[9.5px] font-bold text-emerald-700 hover:text-emerald-900 flex items-center gap-0.5 bg-emerald-100/90 hover:bg-emerald-200/80 px-1.5 py-0.5 rounded cursor-pointer transition-colors shadow-2xs"
+                title="Ambil nilai tarif dari Riwayat Rekap Pembelian Barang"
+              >
+                <ShoppingCart className="w-2.5 h-2.5" /> Rekap
+              </button>
+            )}
+            {isFieldModified(key) && (
+              <button
+                type="button"
+                onClick={() => handleResetField(key)}
+                className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0 transition-colors"
+                title="Reset ke default"
+              >
+                <RotateCcw className="w-2.5 h-2.5" /> Def
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <ThousandInput
+            value={globalParams[key]}
+            onValueChange={(val) => handleChange(key, val)}
+            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+            prefix={isRupiah ? 'Rp' : undefined}
+            suffix={isRupiah ? undefined : '%'}
+            allowDecimals={isDecimal}
+          />
+        </div>
+        <p className="text-[10px] text-slate-500 font-medium mt-1.5 truncate" title={affectedProducts}>
+          Terkait: <span className="text-slate-600 font-semibold">{affectedProducts}</span>
+        </p>
       </div>
-      <div className="flex items-center gap-1.5">
-        <ThousandInput
-          value={globalParams[key]}
-          onValueChange={(val) => handleChange(key, val)}
-          className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-          prefix={isRupiah ? 'Rp' : undefined}
-          suffix={isRupiah ? undefined : '%'}
-          allowDecimals={isDecimal}
-        />
-      </div>
-      <p className="text-[10px] text-slate-500 font-medium mt-1.5 truncate" title={affectedProducts}>
-        Terkait: <span className="text-slate-600 font-semibold">{affectedProducts}</span>
-      </p>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
@@ -434,6 +467,22 @@ export default function GlobalMasterParameter({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal Lookup Rekap Pembelian Barang */}
+      {lookupTarget && (
+        <RekapLookupModal
+          isOpen={Boolean(lookupTarget)}
+          onClose={() => setLookupTarget(null)}
+          targetKey={lookupTarget.key}
+          targetLabel={lookupTarget.label}
+          currentValue={globalParams[lookupTarget.key]}
+          isRupiah={lookupTarget.isRupiah}
+          isDecimal={lookupTarget.isDecimal}
+          onSelectValue={(newVal) => {
+            handleChange(lookupTarget.key, newVal);
+          }}
+        />
       )}
     </div>
   );
