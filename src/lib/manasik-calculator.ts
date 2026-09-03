@@ -217,7 +217,7 @@ export function calculateManasikSimulator(
   // 6. Biaya Jilid & Finishing Sesuai Tipe
   let biayaJilid = 0;
   let biayaTali = 0;
-  let biayaSisir = params.tarifSisir * validOplah;
+  const biayaSisir = params.tarifSisir * validOplah;
 
   if (tipeJilid === 'Softcover (Bending/Lem Panas)') {
     const rawBending = params.tarifBendingPerCm2 * heightCm * tebalPunggung * validOplah;

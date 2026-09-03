@@ -51,7 +51,7 @@ export default function FontSizeControl({
     setOpenUpward(isUpward);
 
     if (usePortal) {
-      let targetLeft = rect.left;
+      const targetLeft = rect.left;
       const minLeft = padding;
       const maxLeft = Math.max(padding, window.innerWidth - popupWidth - padding);
       const clampedLeft = Math.max(minLeft, Math.min(targetLeft, maxLeft));

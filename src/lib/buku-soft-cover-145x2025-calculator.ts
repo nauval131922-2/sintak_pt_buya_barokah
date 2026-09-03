@@ -151,7 +151,7 @@ export function calculateBukuSoftCover145x2025Simulator(
 
   // 1. KERTAS & CETAK COVER
   let biayaKertasCover = 0;
-  let biayaDesainCover = p.tarifDesainCover;
+  const biayaDesainCover = p.tarifDesainCover;
   let biayaPlateCover = 0;
   let biayaCetakCover = 0;
   let kebutuhanCover = 0;
@@ -176,7 +176,7 @@ export function calculateBukuSoftCover145x2025Simulator(
 
   // 2. KERTAS & CETAK ISI
   let biayaKertasIsi = 0;
-  let biayaDesainIsi = p.tarifDesainIsi;
+  const biayaDesainIsi = p.tarifDesainIsi;
   let biayaPlateIsi = 0;
   let biayaCetakIsi = 0;
   let kebutuhanIsi = 0;
