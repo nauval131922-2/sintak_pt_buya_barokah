@@ -35,6 +35,7 @@ async function ensureTable() {
       role TEXT UNIQUE NOT NULL,
       allowed_bagian TEXT DEFAULT '[]',
       allowed_pic TEXT DEFAULT '[]',
+      excluded_pic TEXT DEFAULT '[]',
       visible_columns TEXT DEFAULT '[]',
       can_add INTEGER DEFAULT 1,
       can_edit INTEGER DEFAULT 1,
@@ -44,6 +45,9 @@ async function ensureTable() {
     );`);
     const check = await db.execute("PRAGMA table_info(role_laporan_pekerjaan_config)");
     const cols = (check.rows as any[]).map((r) => r.name);
+    if (!cols.includes('excluded_pic')) {
+      await db.execute("ALTER TABLE role_laporan_pekerjaan_config ADD COLUMN excluded_pic TEXT DEFAULT '[]';");
+    }
     if (!cols.includes('can_add')) {
       await db.execute("ALTER TABLE role_laporan_pekerjaan_config ADD COLUMN can_add INTEGER DEFAULT 1;");
     }
@@ -54,7 +58,7 @@ async function ensureTable() {
       await db.execute("ALTER TABLE role_laporan_pekerjaan_config ADD COLUMN can_delete INTEGER DEFAULT 1;");
     }
     tableChecked = true;
-  } catch (_) {}
+  } catch {}
 }
 
 /**
@@ -67,6 +71,7 @@ export async function getRoleLaporanPekerjaanConfig(role: string): Promise<RoleL
       role: 'Super Admin',
       allowed_bagian: [],
       allowed_pic: [],
+      excluded_pic: [],
       visible_columns: allColumns,
       can_add: true,
       can_edit: true,
@@ -78,7 +83,7 @@ export async function getRoleLaporanPekerjaanConfig(role: string): Promise<RoleL
 
   try {
     const res = await db.execute({
-      sql: 'SELECT role, allowed_bagian, allowed_pic, visible_columns, can_add, can_edit, can_delete FROM role_laporan_pekerjaan_config WHERE role = ?',
+      sql: 'SELECT role, allowed_bagian, allowed_pic, excluded_pic, visible_columns, can_add, can_edit, can_delete FROM role_laporan_pekerjaan_config WHERE role = ?',
       args: [role],
     });
 
@@ -87,6 +92,7 @@ export async function getRoleLaporanPekerjaanConfig(role: string): Promise<RoleL
         role,
         allowed_bagian: [],
         allowed_pic: [],
+        excluded_pic: [],
         visible_columns: allColumns,
         can_add: true,
         can_edit: true,
@@ -97,6 +103,7 @@ export async function getRoleLaporanPekerjaanConfig(role: string): Promise<RoleL
     const row = res.rows[0];
     const allowed_bagian = parseJsonArray(row.allowed_bagian);
     const allowed_pic = parseJsonArray(row.allowed_pic);
+    const excluded_pic = parseJsonArray(row.excluded_pic);
     let visible_columns = parseJsonArray(row.visible_columns);
     if (visible_columns.length === 0) {
       visible_columns = allColumns;
@@ -109,6 +116,7 @@ export async function getRoleLaporanPekerjaanConfig(role: string): Promise<RoleL
       role,
       allowed_bagian,
       allowed_pic,
+      excluded_pic,
       visible_columns,
       can_add,
       can_edit,
@@ -120,6 +128,7 @@ export async function getRoleLaporanPekerjaanConfig(role: string): Promise<RoleL
       role,
       allowed_bagian: [],
       allowed_pic: [],
+      excluded_pic: [],
       visible_columns: allColumns,
       can_add: true,
       can_edit: true,
@@ -138,6 +147,7 @@ export async function getAllRoleLaporanPekerjaanConfigs(): Promise<Record<string
       role: 'Super Admin',
       allowed_bagian: [],
       allowed_pic: [],
+      excluded_pic: [],
       visible_columns: allColumns,
       can_add: true,
       can_edit: true,
@@ -148,11 +158,12 @@ export async function getAllRoleLaporanPekerjaanConfigs(): Promise<Record<string
   await ensureTable();
 
   try {
-    const { rows } = await db.execute('SELECT role, allowed_bagian, allowed_pic, visible_columns, can_add, can_edit, can_delete FROM role_laporan_pekerjaan_config');
+    const { rows } = await db.execute('SELECT role, allowed_bagian, allowed_pic, excluded_pic, visible_columns, can_add, can_edit, can_delete FROM role_laporan_pekerjaan_config');
     for (const row of rows) {
       const roleName = String(row.role);
       const allowed_bagian = parseJsonArray(row.allowed_bagian);
       const allowed_pic = parseJsonArray(row.allowed_pic);
+      const excluded_pic = parseJsonArray(row.excluded_pic);
       let visible_columns = parseJsonArray(row.visible_columns);
       if (visible_columns.length === 0) {
         visible_columns = allColumns;
@@ -165,6 +176,7 @@ export async function getAllRoleLaporanPekerjaanConfigs(): Promise<Record<string
         role: roleName,
         allowed_bagian,
         allowed_pic,
+        excluded_pic,
         visible_columns,
         can_add,
         can_edit,
@@ -191,6 +203,7 @@ export async function getUserMergedLaporanPekerjaanConfig(
       role: 'Super Admin',
       allowed_bagian: [],
       allowed_pic: [],
+      excluded_pic: [],
       visible_columns: allColumns,
     };
   }
@@ -206,11 +219,60 @@ export async function getUserMergedLaporanPekerjaanConfig(
     allConfigs.forEach(c => c.allowed_bagian?.forEach(b => bagianSet.add(b.toUpperCase())));
     allowed_bagian = Array.from(bagianSet);
   }
-
-  // Jika salah satu role memiliki akses ALL pic (array kosong), user mendapatkan akses ALL pic.
-  // Selain itu, union dari allowed_pic masing-masing role (resolving '@me' dan '@role:NamaRole').
-  let allowed_pic: string[] = [];
+  // Resolusi allowed_pic dan excluded_pic:
+  // Jika role memiliki excluded_pic (misal: @role:NamaRole atau nama PIC spesifik), resolve ke daftar nama karyawan
   const hasUnrestrictedPic = allConfigs.some(c => !c.allowed_pic || c.allowed_pic.length === 0);
+  let allowed_pic: string[] = [];
+
+  // Helper untuk me-resolve @role ke nama-nama karyawan dari DB
+  const resolveRoleNames = async (roleNames: string[]): Promise<Set<string>> => {
+    const resultNames = new Set<string>();
+    if (roleNames.length === 0) return resultNames;
+    try {
+      const placeholders = roleNames.map(() => '?').join(',');
+      const { rows } = await db.execute({
+        sql: `SELECT DISTINCT COALESCE(e.name, u.name) as name
+              FROM users u
+              LEFT JOIN employees e ON e.id = u.employee_id
+              LEFT JOIN user_roles ur ON ur.user_id = u.id
+              WHERE (ur.role_name IN (${placeholders}) OR u.role IN (${placeholders}))
+                AND COALESCE(e.name, u.name) IS NOT NULL
+                AND COALESCE(e.name, u.name) != ''`,
+        args: [...roleNames, ...roleNames],
+      });
+      rows.forEach((r: any) => {
+        if (r.name) resultNames.add(String(r.name).trim());
+      });
+    } catch (err) {
+      console.error('[PERMISSIONS] Gagal resolve role names:', err);
+    }
+    return resultNames;
+  };
+
+  // 1. Kumpulkan excluded_pic dari seluruh role user aktif (intersection / union sesuai semantik role)
+  // Untuk multi-role: jika ada role yang memiliki exclusion, kumpulkan excluded names
+  const allExcludedItems = new Set<string>();
+  const excludedRolePicks = new Set<string>();
+
+  allConfigs.forEach(c => {
+    c.excluded_pic?.forEach(p => {
+      if (p.startsWith('@role:')) {
+        const rName = p.slice(6).trim();
+        if (rName) excludedRolePicks.add(rName);
+      } else if (p.trim()) {
+        allExcludedItems.add(p.trim());
+      }
+    });
+  });
+
+  if (excludedRolePicks.size > 0) {
+    const resolvedExcluded = await resolveRoleNames(Array.from(excludedRolePicks));
+    resolvedExcluded.forEach(name => allExcludedItems.add(name));
+  }
+
+  const excluded_pic = Array.from(allExcludedItems);
+
+  // 2. Kumpulkan allowed_pic jika restricted
   if (!hasUnrestrictedPic) {
     const picSet = new Set<string>();
     const userName = currentUser?.employeeName || currentUser?.name;
@@ -230,30 +292,16 @@ export async function getUserMergedLaporanPekerjaanConfig(
     });
 
     if (rolePicks.size > 0) {
-      try {
-        const rList = Array.from(rolePicks);
-        const placeholders = rList.map(() => '?').join(',');
-        const { rows } = await db.execute({
-          sql: `SELECT DISTINCT COALESCE(e.name, u.name) as name
-                FROM users u
-                LEFT JOIN employees e ON e.id = u.employee_id
-                LEFT JOIN user_roles ur ON ur.user_id = u.id
-                WHERE (ur.role_name IN (${placeholders}) OR u.role IN (${placeholders}))
-                  AND COALESCE(e.name, u.name) IS NOT NULL
-                  AND COALESCE(e.name, u.name) != ''`,
-          args: [...rList, ...rList],
-        });
-        rows.forEach((r: any) => {
-          if (r.name) picSet.add(String(r.name).trim());
-        });
-      } catch (err) {
-        console.error('[PERMISSIONS] Gagal resolve @role allowed_pic:', err);
-      }
+      const resolvedAllowed = await resolveRoleNames(Array.from(rolePicks));
+      resolvedAllowed.forEach(name => picSet.add(name));
     }
 
-    allowed_pic = Array.from(picSet);
+    // Hapus nama-nama yang ada di excluded_pic jika allowed_pic spesifik
+    const finalAllowed = Array.from(picSet).filter(
+      p => !allExcludedItems.has(p) && !allExcludedItems.has(p.toLowerCase())
+    );
+    allowed_pic = finalAllowed;
   }
-
   // Column visibility union: jika salah satu role mengizinkan kolom tersebut, kolom ditampilkan.
   const colSet = new Set<string>();
   allConfigs.forEach(c => {
@@ -273,6 +321,7 @@ export async function getUserMergedLaporanPekerjaanConfig(
     role: roles.join(', '),
     allowed_bagian,
     allowed_pic,
+    excluded_pic,
     visible_columns: Array.from(colSet),
     can_add,
     can_edit,

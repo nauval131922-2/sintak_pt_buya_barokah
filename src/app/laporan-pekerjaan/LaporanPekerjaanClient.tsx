@@ -1266,6 +1266,10 @@ export default function LaporanPekerjaanClient({
     return new Set(roleConfig.allowed_pic.map((p) => p.toLowerCase()));
   }, [roleConfig?.allowed_pic]);
 
+  const excludedPicSet = useMemo(() => {
+    if (!roleConfig?.excluded_pic || roleConfig.excluded_pic.length === 0) return null;
+    return new Set(roleConfig.excluded_pic.map((p) => p.toLowerCase()));
+  }, [roleConfig?.excluded_pic]);
   const isBagianAllowedByRole = useCallback(
     (bagian?: string | null, source?: string | null, taskName?: string | null) => {
       // Order baru (dari SOPD maupun manual placeholder tanpa task) yang belum memiliki subtask/bagian boleh dilihat agar bisa ditambah pekerjaan
@@ -1283,6 +1287,9 @@ export default function LaporanPekerjaanClient({
       if (source === 'sopd' || (!pic && !taskName)) {
         return roleConfig?.can_add !== false;
       }
+      if (pic && excludedPicSet && excludedPicSet.has(pic.toLowerCase().trim())) {
+        return false;
+      }
       if (!allowedPicSet) return true;
       if (!pic || pic.trim() === "") {
         return (
@@ -1290,9 +1297,9 @@ export default function LaporanPekerjaanClient({
           allowedPicSet.has("tanpa pic")
         );
       }
-      return allowedPicSet.has(pic.toLowerCase());
+      return allowedPicSet.has(pic.toLowerCase().trim());
     },
-    [allowedPicSet, roleConfig?.can_add]
+    [allowedPicSet, excludedPicSet, roleConfig?.can_add]
   );
 
   // Helper pencocokan task dengan pilihan filter PIC
@@ -1344,7 +1351,9 @@ export default function LaporanPekerjaanClient({
       if (!t.pic || t.pic.trim() === "" || t.pic.toUpperCase() === "TANPA PIC") {
         hasUnassignedTask = true;
       } else {
-        set.add(t.pic.trim());
+        if (!excludedPicSet || !excludedPicSet.has(t.pic.toLowerCase().trim())) {
+          set.add(t.pic.trim());
+        }
       }
     });
 
@@ -1353,11 +1362,12 @@ export default function LaporanPekerjaanClient({
         if (p === "@unassigned" || p.toLowerCase() === "tanpa pic") {
           hasUnassignedTask = true;
         } else if (!p.startsWith("@")) {
-          set.add(p);
+          if (!excludedPicSet || !excludedPicSet.has(p.toLowerCase().trim())) {
+            set.add(p);
+          }
         }
       });
     }
-
     const sorted = Array.from(set).sort((a, b) => a.localeCompare(b, "id"));
     const options: FilterOption[] = [
       { value: "ALL", label: "Semua PIC" },
@@ -3318,6 +3328,12 @@ function TaskDetailModal({
             return false;
           }
         }
+        if (t.pic && roleConfig?.excluded_pic && roleConfig.excluded_pic.length > 0) {
+          const isExcluded = roleConfig.excluded_pic.some(
+            (p) => p.toLowerCase().trim() === t.pic.toLowerCase().trim()
+          );
+          if (isExcluded) return false;
+        }
         if (roleConfig?.allowed_pic && roleConfig.allowed_pic.length > 0) {
           const hasUnassignedAllowed = roleConfig.allowed_pic.some(
             (p) => p === "@unassigned" || p.toLowerCase() === "tanpa pic"
@@ -3741,12 +3757,17 @@ function InlineEditRow({
           .filter(Boolean)
       )
     ).filter((name) => {
+      const lowerName = name.toLowerCase().trim();
+      if (roleConfig?.excluded_pic && roleConfig.excluded_pic.length > 0) {
+        if (roleConfig.excluded_pic.map(p => p.toLowerCase().trim()).includes(lowerName)) {
+          return false;
+        }
+      }
       if (!roleConfig?.allowed_pic || roleConfig.allowed_pic.length === 0) return true;
       const explicitNames = roleConfig.allowed_pic.filter(p => !p.startsWith('@') && p.toLowerCase() !== 'tanpa pic');
       if (explicitNames.length === 0) return true;
-      return explicitNames.map((p) => p.toLowerCase()).includes(name.toLowerCase());
+      return explicitNames.map((p) => p.toLowerCase().trim()).includes(lowerName);
     }).sort((a, b) => a.localeCompare(b, "id"));
-    return uniqueNames.map((name) => ({ value: name, label: name }));
   }, [employeeOptions, roleConfig]);
 
   return (
@@ -4076,12 +4097,17 @@ function InlineAddRow({
           .filter(Boolean)
       )
     ).filter((name) => {
+      const lowerName = name.toLowerCase().trim();
+      if (roleConfig?.excluded_pic && roleConfig.excluded_pic.length > 0) {
+        if (roleConfig.excluded_pic.map(p => p.toLowerCase().trim()).includes(lowerName)) {
+          return false;
+        }
+      }
       if (!roleConfig?.allowed_pic || roleConfig.allowed_pic.length === 0) return true;
       const explicitNames = roleConfig.allowed_pic.filter(p => !p.startsWith('@') && p.toLowerCase() !== 'tanpa pic');
       if (explicitNames.length === 0) return true;
-      return explicitNames.map((p) => p.toLowerCase()).includes(name.toLowerCase());
+      return explicitNames.map((p) => p.toLowerCase().trim()).includes(lowerName);
     }).sort((a, b) => a.localeCompare(b, "id"));
-    return uniqueNames.map((name) => ({ value: name, label: name }));
   }, [employeeOptions, roleConfig]);
 
   return (

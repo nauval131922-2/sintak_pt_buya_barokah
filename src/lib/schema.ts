@@ -210,6 +210,7 @@ export async function initSchema(db: any) {
       role TEXT UNIQUE NOT NULL,
       allowed_bagian TEXT DEFAULT '[]',
       allowed_pic TEXT DEFAULT '[]',
+      excluded_pic TEXT DEFAULT '[]',
       visible_columns TEXT DEFAULT '[]',
       can_add INTEGER DEFAULT 1,
       can_edit INTEGER DEFAULT 1,

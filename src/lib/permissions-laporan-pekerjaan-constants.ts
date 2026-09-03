@@ -29,6 +29,7 @@ export interface RoleLaporanPekerjaanConfig {
   role: string;
   allowed_bagian: string[];   // [] berarti SEMUA Bagian diizinkan
   allowed_pic: string[];      // [] berarti SEMUA PIC diizinkan
+  excluded_pic?: string[];    // [] atau undefined berarti TIDAK ADA PIC yang dikecualikan (misal: @role:X atau nama PIC)
   visible_columns: string[];  // [] berarti SEMUA Kolom ditampilkan
   can_add?: boolean;          // Default true (Izin Tambah Pekerjaan Baru)
   can_edit?: boolean;         // Default true (Izin Edit / Ubah Pekerjaan)

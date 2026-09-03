@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   ShieldCheck, CheckCircle2, XCircle,
   Loader2, ChevronRight, UserCog, Plus, Pencil, Save, Trash2,
-  AlertCircle, X, SlidersHorizontal, Layers, Users, Columns, Search, CheckSquare, Square, UserX
+  AlertCircle, X, SlidersHorizontal, Layers, Users, Columns, Search, CheckSquare, Square, UserX, ShieldX
 } from 'lucide-react';
 import { saveRolePermissions, addRole, updateRole, deleteRole } from '@/lib/permissions-actions';
 import { MODULE_REGISTRY } from '@/lib/permissions-constants';
@@ -31,6 +31,7 @@ interface RolesContentProps {
   customRoles: CustomRole[];
   allLaporanConfigs?: Record<string, RoleLaporanPekerjaanConfig>;
   availablePics?: string[];
+  rolePicsMap?: Record<string, string[]>;
 }
 
 const GROUP_COLORS: Record<string, { text: string; bg: string; dot: string }> = {
@@ -54,6 +55,7 @@ export default function RolesContent({
   customRoles,
   allLaporanConfigs = {},
   availablePics = [],
+  rolePicsMap = {},
 }: RolesContentProps) {
   const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<string>('');
@@ -327,16 +329,19 @@ export default function RolesContent({
     const hasCustomBagian = !!(lpConfig?.allowed_bagian && lpConfig.allowed_bagian.length > 0);
     const isLockedToMe = !!(lpConfig?.allowed_pic && lpConfig.allowed_pic.includes('@me'));
     const rolePics = (lpConfig?.allowed_pic || []).filter(p => p.startsWith('@role:')).map(p => p.slice(6));
+    const excludedRolePics = (lpConfig?.excluded_pic || []).filter(p => p.startsWith('@role:')).map(p => p.slice(6));
+    const excludedCustomPics = (lpConfig?.excluded_pic || []).filter(p => !p.startsWith('@'));
     const hasUnassigned = !!(lpConfig?.allowed_pic && (lpConfig.allowed_pic.includes('@unassigned') || lpConfig.allowed_pic.includes('Tanpa PIC')));
     const customPicNames = (lpConfig?.allowed_pic || []).filter(p => !p.startsWith('@') && p.toLowerCase() !== 'tanpa pic');
     const hasCustomPic = !!(lpConfig?.allowed_pic && lpConfig.allowed_pic.length > 0);
+    const hasExcludedPic = !!(lpConfig?.excluded_pic && lpConfig.excluded_pic.length > 0);
     const hasCustomCols = !!(
       lpConfig?.visible_columns &&
       lpConfig.visible_columns.length > 0 &&
       lpConfig.visible_columns.length < LAPORAN_PEKERJAAN_COLUMNS.length
     );
     const hasCustomActions = lpConfig?.can_add === false || lpConfig?.can_edit === false || lpConfig?.can_delete === false;
-    const hasCustomLp = hasCustomBagian || hasCustomPic || hasCustomCols || hasCustomActions;
+    const hasCustomLp = hasCustomBagian || hasCustomPic || hasExcludedPic || hasCustomCols || hasCustomActions;
 
     const actionSummary = [
       lpConfig?.can_add !== false ? 'Tambah' : null,
@@ -357,6 +362,13 @@ export default function RolesContent({
       picSummary = `Role PIC (${rolePics.length}) + ${customPicNames.length} Nama${hasUnassigned ? ' + Tanpa PIC' : ''}`;
     } else if (customPicNames.length > 0) {
       picSummary = `${customPicNames.length} PIC${hasUnassigned ? ' + Tanpa PIC' : ''}`;
+    }
+
+    if (hasExcludedPic) {
+      const excDesc = excludedRolePics.length > 0
+        ? `Kecuali Role ${excludedRolePics.join(', ')}`
+        : `Kecuali ${excludedCustomPics.length} Nama`;
+      picSummary = `${picSummary} (${excDesc})`;
     }
 
     return (
@@ -740,6 +752,7 @@ export default function RolesContent({
               role: configModalRole,
               allowed_bagian: [],
               allowed_pic: [],
+              excluded_pic: [],
               visible_columns: LAPORAN_PEKERJAAN_COLUMNS.map((c) => c.key),
               can_add: true,
               can_edit: true,
@@ -748,6 +761,7 @@ export default function RolesContent({
           }
           availablePics={availablePics}
           availableRoles={customRoles}
+          rolePicsMap={rolePicsMap}
           onClose={() => setConfigModalRole(null)}
           onSave={async (newConfig) => {
             setSaving(true);
@@ -760,6 +774,7 @@ export default function RolesContent({
                   role: configModalRole,
                   allowed_bagian: newConfig.allowed_bagian,
                   allowed_pic: newConfig.allowed_pic,
+                  excluded_pic: newConfig.excluded_pic || [],
                   visible_columns: newConfig.visible_columns,
                   can_add: newConfig.can_add,
                   can_edit: newConfig.can_edit,
@@ -837,10 +852,12 @@ interface LaporanPekerjaanRoleModalProps {
   initialConfig: RoleLaporanPekerjaanConfig;
   availablePics: string[];
   availableRoles?: CustomRole[];
+  rolePicsMap?: Record<string, string[]>;
   onClose: () => void;
   onSave: (config: {
     allowed_bagian: string[];
     allowed_pic: string[];
+    excluded_pic?: string[];
     visible_columns: string[];
     can_add?: boolean;
     can_edit?: boolean;
@@ -853,12 +870,14 @@ function LaporanPekerjaanRoleModal({
   initialConfig,
   availablePics,
   availableRoles = [],
+  rolePicsMap = {},
   onClose,
   onSave,
 }: LaporanPekerjaanRoleModalProps) {
   const [activeTab, setActiveTab] = useState<'bagian' | 'pic' | 'aksi' | 'kolom'>('bagian');
   const [allowedBagian, setAllowedBagian] = useState<string[]>(() => [...(initialConfig.allowed_bagian || [])]);
   const [allowedPic, setAllowedPic] = useState<string[]>(() => [...(initialConfig.allowed_pic || [])]);
+  const [excludedPic, setExcludedPic] = useState<string[]>(() => [...(initialConfig.excluded_pic || [])]);
   const [canAdd, setCanAdd] = useState<boolean>(initialConfig.can_add !== false);
   const [canEdit, setCanEdit] = useState<boolean>(initialConfig.can_edit !== false);
   const [canDelete, setCanDelete] = useState<boolean>(initialConfig.can_delete !== false);
@@ -885,27 +904,31 @@ function LaporanPekerjaanRoleModal({
     );
   };
 
-  const selectAllBagian = () => {
-    setAllowedBagian([...LAPORAN_PEKERJAAN_BAGIAN_LIST]);
+  const selectAllPics = () => {
+    setAllowedPic([...availablePics]);
   };
 
-  const resetAllBagian = () => {
-    setAllowedBagian([]); // [] = Semua Bagian diizinkan
+  const selectAllPicsExceptRole = (roleName: string) => {
+    const excludedRoleMembers = new Set((rolePicsMap[roleName] || []).map(n => n.toLowerCase()));
+    const remainingPics = availablePics.filter(p => !excludedRoleMembers.has(p.toLowerCase()));
+    setAllowedPic(remainingPics);
   };
 
+  const resetAllPics = () => {
+    setAllowedPic([]); // [] = Semua PIC diizinkan
+  };
+
+  const toggleExcludedRole = (roleName: string) => {
+    const roleKey = `@role:${roleName}`;
+    setExcludedPic(prev =>
+      prev.includes(roleKey) ? prev.filter(item => item !== roleKey) : [...prev, roleKey]
+    );
+  };
   // PIC handlers
   const togglePic = (p: string) => {
     setAllowedPic((prev) =>
       prev.includes(p) ? prev.filter((item) => item !== p) : [...prev, p]
     );
-  };
-
-  const selectAllPics = () => {
-    setAllowedPic([...availablePics]);
-  };
-
-  const resetAllPics = () => {
-    setAllowedPic([]); // [] = Semua PIC diizinkan
   };
 
   // Column handlers
@@ -925,12 +948,12 @@ function LaporanPekerjaanRoleModal({
       await onSave({
         allowed_bagian: allowedBagian,
         allowed_pic: allowedPic,
+        excluded_pic: excludedPic,
         visible_columns: visibleColumns.length === 0 ? LAPORAN_PEKERJAAN_COLUMNS.map((c) => c.key) : visibleColumns,
         can_add: canAdd,
         can_edit: canEdit,
         can_delete: canDelete,
       });
-    } finally {
       setSaving(false);
     }
   };
@@ -1192,7 +1215,7 @@ function LaporanPekerjaanRoleModal({
                 <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-200">
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <UserCog size={13} className="text-indigo-600" />
-                    <span className="text-xs font-bold text-slate-800">Kunci Berdasarkan Role User:</span>
+                    <span className="text-xs font-bold text-slate-800">Izinkan Berdasarkan Role User (Dinamis):</span>
                   </div>
                   <p className="text-[11px] text-slate-500 mb-2.5">
                     Pilih role di bawah untuk mengizinkan semua akun/karyawan yang memiliki role tersebut secara dinamis.
@@ -1236,11 +1259,72 @@ function LaporanPekerjaanRoleModal({
                 </div>
               )}
 
+              {/* FITUR KECUALIKAN ROLE USER (DINAMIS) */}
+              {availableRoles.length > 0 && (
+                <div className="p-3 bg-rose-50/50 rounded-xl border border-rose-200/80">
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <ShieldX size={13} className="text-rose-600" />
+                      <span className="text-xs font-bold text-rose-950">Kecualikan Role User (Dinamis):</span>
+                    </div>
+                    {excludedPic.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setExcludedPic([])}
+                        className="text-[10.5px] font-bold text-rose-700 hover:text-rose-900 hover:underline"
+                      >
+                        Hapus Semua Pengecualian
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-rose-900/70 mb-2.5">
+                    Karyawan dengan role yang ditandai di bawah <b>tidak akan dapat dilihat/dipilih</b> oleh role ini (bahkan saat mode &quot;Semua PIC&quot; aktif).
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {availableRoles.map((r) => {
+                      const roleKey = `@role:${r.name}`;
+                      const isExcluded = excludedPic.includes(roleKey);
+
+                      return (
+                        <button
+                          key={`exc-${r.name}`}
+                          type="button"
+                          onClick={() => toggleExcludedRole(r.name)}
+                          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer select-none ${
+                            isExcluded
+                              ? 'border-rose-500 bg-rose-500 text-white shadow-xs ring-2 ring-rose-400/30'
+                              : 'border-rose-200 bg-white hover:bg-rose-50/80 text-rose-900'
+                          }`}
+                        >
+                          <div
+                            className={`w-3.5 h-3.5 rounded flex items-center justify-center border transition-colors ${
+                              isExcluded
+                                ? 'bg-white border-white text-rose-600'
+                                : 'bg-white border-rose-300'
+                            }`}
+                          >
+                            {isExcluded && <X size={10} className="text-rose-600 stroke-[3]" />}
+                          </div>
+                          <span>Kecuali Role: {r.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-center justify-between gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
                 <div className="text-xs text-slate-600">
                   <span className="font-semibold text-slate-800">Status Izin PIC: </span>
                   {allowedPic.length === 0 ? (
-                    <span className="text-emerald-700 font-bold">Akses SEMUA PIC Karyawan (Termasuk Tanpa PIC)</span>
+                    <span className="text-emerald-700 font-bold">
+                      Akses SEMUA PIC Karyawan
+                      {excludedPic.length > 0 && (
+                        <span className="text-rose-700 font-bold ml-1">
+                          (Dikecualikan: {excludedPic.map(p => p.startsWith('@role:') ? `Role ${p.slice(6)}` : p).join(', ')})
+                        </span>
+                      )}
+                    </span>
                   ) : (
                     <span className="text-blue-700 font-bold">
                       Dibatasi ({[
@@ -1249,10 +1333,15 @@ function LaporanPekerjaanRoleModal({
                         allowedPic.filter(p => p.startsWith('@role:')).length > 0 ? `${allowedPic.filter(p => p.startsWith('@role:')).length} Role` : null,
                         allowedPic.filter(p => !p.startsWith('@')).length > 0 ? `${allowedPic.filter(p => !p.startsWith('@')).length} PIC Nama` : null,
                       ].filter(Boolean).join(', ')})
+                      {excludedPic.length > 0 && (
+                        <span className="text-rose-700 font-bold ml-1">
+                          (Dikecualikan: {excludedPic.map(p => p.startsWith('@role:') ? `Role ${p.slice(6)}` : p).join(', ')})
+                        </span>
+                      )}
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex flex-wrap items-center gap-1.5 shrink-0">
                   <button
                     type="button"
                     onClick={selectAllPics}
@@ -1260,6 +1349,42 @@ function LaporanPekerjaanRoleModal({
                   >
                     Pilih Semua Nama
                   </button>
+
+                  {/* QUICK ACTION DROPDOWN: PILIH SEMUA KECUALI ROLE */}
+                  {availableRoles.length > 0 && (
+                    <div className="relative group/exc">
+                      <button
+                        type="button"
+                        className="px-2.5 py-1 text-[11px] font-bold text-amber-800 hover:bg-amber-100 bg-amber-50 border border-amber-300 rounded-lg transition-colors flex items-center gap-1"
+                      >
+                        <span>Pilih Semua Kecuali Role ▾</span>
+                      </button>
+                      <div className="hidden group-hover/exc:block absolute right-0 top-full pt-1 z-50 min-w-[200px] animate-in fade-in zoom-in-95 duration-150">
+                        <div className="bg-white border border-slate-200 rounded-xl shadow-xl p-1.5 space-y-0.5">
+                          <p className="text-[10px] font-bold text-slate-400 px-2 py-1 uppercase tracking-wider">
+                            Pilih Role yang Dikecualikan
+                          </p>
+                          {availableRoles.map((r) => {
+                            const count = (rolePicsMap[r.name] || []).length;
+                            return (
+                              <button
+                                key={`quick-exc-${r.name}`}
+                                type="button"
+                                onClick={() => selectAllPicsExceptRole(r.name)}
+                                className="w-full text-left px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-amber-50 hover:text-amber-900 rounded-lg flex items-center justify-between transition-colors"
+                              >
+                                <span>Kecuali: {r.name}</span>
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-bold">
+                                  {count} PIC
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <button
                     type="button"
                     onClick={resetAllPics}
@@ -1269,7 +1394,6 @@ function LaporanPekerjaanRoleModal({
                   </button>
                 </div>
               </div>
-
               {/* Search bar PIC */}
               <div className="relative">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />

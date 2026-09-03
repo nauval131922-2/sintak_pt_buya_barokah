@@ -32,6 +32,31 @@ export default async function RolesPage() {
   taskPicRes.rows.forEach((r: any) => { if (r.pic) picSet.add(String(r.pic).trim()); });
   const availablePics = Array.from(picSet).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 
+  // Ambil mapping PIC/karyawan per role untuk quick-exclusion & dynamic helper
+  const userRolesRes = await db.execute(`
+    SELECT DISTINCT ur.role_name, COALESCE(e.name, u.name) as pic_name
+    FROM users u
+    LEFT JOIN employees e ON e.id = u.employee_id
+    JOIN user_roles ur ON ur.user_id = u.id
+    WHERE COALESCE(e.name, u.name) IS NOT NULL AND COALESCE(e.name, u.name) != ''
+    UNION
+    SELECT DISTINCT u.role as role_name, COALESCE(e.name, u.name) as pic_name
+    FROM users u
+    LEFT JOIN employees e ON e.id = u.employee_id
+    WHERE u.role IS NOT NULL AND u.role != '' AND COALESCE(e.name, u.name) IS NOT NULL AND COALESCE(e.name, u.name) != ''
+  `);
+
+  const rolePicsMap: Record<string, string[]> = {};
+  userRolesRes.rows.forEach((r: any) => {
+    const roleName = String(r.role_name).trim();
+    const picName = String(r.pic_name).trim();
+    if (roleName && picName) {
+      if (!rolePicsMap[roleName]) rolePicsMap[roleName] = [];
+      if (!rolePicsMap[roleName].includes(picName)) {
+        rolePicsMap[roleName].push(picName);
+      }
+    }
+  });
   const configurableRoles = rows.map((r: any) => ({
     name: r.role_name as string,
     description: r.description as string,
@@ -46,6 +71,7 @@ export default async function RolesPage() {
       customRoles={configurableRoles}
       allLaporanConfigs={allLaporanConfigs}
       availablePics={availablePics}
+      rolePicsMap={rolePicsMap}
     />
   );
 }
