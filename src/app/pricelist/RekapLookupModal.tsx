@@ -205,7 +205,7 @@ export default function RekapLookupModal({
             <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${loading ? 'animate-spin' : ''}`} />
             Segarkan
           </button>
-
+        </div>
         {/* Quick Tips */}
         {isKgField && (
           <div className="px-5 py-2.5 bg-amber-50/70 border-b border-amber-200/60 flex items-center justify-between text-xs text-amber-900 shrink-0">
