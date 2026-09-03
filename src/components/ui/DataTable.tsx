@@ -343,9 +343,9 @@ function DataTableInner<TData extends { id: number | string }>({
                               document.addEventListener('mousemove', onMouseMove);
                               document.addEventListener('mouseup', onMouseUp);
                             }}
-                            className="absolute -right-[5px] top-0 bottom-0 w-[10px] z-50 cursor-col-resize group/resizer transition-opacity opacity-0 hover:opacity-100 active:opacity-100"
+                            className="absolute -right-[8px] top-0 bottom-0 w-[16px] z-50 cursor-col-resize group/resizer transition-opacity opacity-0 hover:opacity-100 active:opacity-100 flex items-center justify-center"
                           >
-                            <div className="mx-auto h-full w-[3px] rounded-full transition-colors bg-transparent group-hover/resizer:bg-emerald-500 active:bg-emerald-600 shadow-sm" />
+                            <div className="w-[4px] h-[75%] rounded-full transition-all bg-transparent group-hover/resizer:bg-emerald-500 active:bg-emerald-600 shadow-sm group-hover/resizer:shadow-md group-hover/resizer:scale-y-105" />
                           </div>
                         )}
                       </th>);
