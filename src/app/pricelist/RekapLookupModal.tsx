@@ -165,14 +165,26 @@ export default function RekapLookupModal({
                 Target Field: <span className="font-semibold text-white underline underline-offset-2">{targetLabel}</span> (Saat ini: <span className="font-bold text-amber-200">Rp {currentValue.toLocaleString('id-ID')}</span>)
               </p>
             </div>
+          <div className="flex items-center gap-2">
+            <a
+              href="/rekap-pembelian-barang"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-xs transition-colors shadow-2xs"
+              title="Buka Halaman Laporan Rekap Pembelian Barang di Tab Baru"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-emerald-200" />
+              <span className="hidden sm:inline">Buka Laporan Rekap Pembelian</span>
+              <span className="sm:hidden">Laporan</span>
+            </a>
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-emerald-200 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-emerald-200 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
 
         {/* Search & Filter Bar */}
@@ -218,8 +230,8 @@ export default function RekapLookupModal({
           </div>
         )}
 
-        {/* Table List of Purchases */}
-        <div className="overflow-x-auto overflow-y-auto flex-1 p-3 sm:p-5 custom-scrollbar">
+        {/* Table List of Purchases with Sticky Header */}
+        <div className="overflow-x-auto overflow-y-auto flex-1 p-3 sm:p-5 custom-scrollbar relative">
           {loading && items.length === 0 ? (
             <div className="py-16 text-center text-slate-400 space-y-2">
               <RefreshCw className="w-7 h-7 animate-spin mx-auto text-emerald-600 opacity-60" />
@@ -233,20 +245,20 @@ export default function RekapLookupModal({
             </div>
           ) : (
             <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead className="sticky top-0 z-10 bg-slate-100/95 backdrop-blur-xs border-b border-slate-200 text-slate-700 font-bold">
+              <table className="w-full text-left text-xs border-separate border-spacing-0">
+                <thead className="sticky top-0 z-20 bg-slate-100 text-slate-700 font-bold shadow-xs">
                   <tr>
-                    <th className="py-2.5 px-3 w-28 text-left">Tanggal</th>
-                    <th className="py-2.5 px-3 min-w-[200px] text-left">Nama Barang & Faktur</th>
-                    <th className="py-2.5 px-3 min-w-[140px] text-left">Supplier</th>
-                    <th className="py-2.5 px-3 text-right w-20">Qty</th>
-                    <th className="py-2.5 px-3 text-right w-28">Harga Beli</th>
+                    <th className="py-2.5 px-3 w-28 text-left bg-slate-100 border-b border-slate-200">Tanggal</th>
+                    <th className="py-2.5 px-3 min-w-[200px] text-left bg-slate-100 border-b border-slate-200">Nama Barang & Faktur</th>
+                    <th className="py-2.5 px-3 min-w-[140px] text-left bg-slate-100 border-b border-slate-200">Supplier</th>
+                    <th className="py-2.5 px-3 text-right w-20 bg-slate-100 border-b border-slate-200">Qty</th>
+                    <th className="py-2.5 px-3 text-right w-28 bg-slate-100 border-b border-slate-200">Harga Beli</th>
                     {isKgField && (
-                      <th className="py-2.5 px-3 text-right w-28 bg-emerald-50/90 text-emerald-950 border-x border-emerald-200/60">
+                      <th className="py-2.5 px-3 text-right w-28 bg-emerald-100/80 text-emerald-950 border-b border-x border-emerald-200">
                         Hasil Konversi
                       </th>
                     )}
-                    <th className="py-2.5 px-3 text-center w-24">Aksi</th>
+                    <th className="py-2.5 px-3 text-center w-24 bg-slate-100 border-b border-slate-200">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
