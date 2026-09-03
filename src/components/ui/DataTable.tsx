@@ -81,6 +81,8 @@ function DataTableInner<TData extends { id: number | string }>({
       ? Object.entries(initialColumnWidths).reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
       : {}
   );
+  const columnSizingRef = React.useRef(columnSizing);
+  columnSizingRef.current = columnSizing;
   const initialWidthsRef = React.useRef(initialColumnWidths);
 
   React.useEffect(() => {
@@ -170,16 +172,6 @@ function DataTableInner<TData extends { id: number | string }>({
   });
 
   const isResizingColumn = table.getState().columnSizingInfo.isResizingColumn;
-  const prevIsResizingRef = React.useRef(false);
-
-  React.useEffect(() => {
-    // Only fire onColumnWidthChange when resizing finishes (drag ends) to prevent external state loop during drag
-    if (prevIsResizingRef.current && !isResizingColumn && onColumnWidthChange && Object.keys(columnSizing).length > 0) {
-      onColumnWidthChange(columnSizing as Record<string, number>);
-    }
-    prevIsResizingRef.current = !!isResizingColumn;
-  }, [isResizingColumn, onColumnWidthChange, columnSizing]);
-
   const parentRef = React.useRef<HTMLDivElement>(null);
   const { rows } = table.getRowModel();
 
@@ -339,13 +331,11 @@ function DataTableInner<TData extends { id: number | string }>({
                                 document.body.style.userSelect = '';
                                 const diff = upEvent.clientX - startX;
                                 const finalWidth = Math.max(40, currentWidth + diff);
-                                setColumnSizing(prev => {
-                                  const next = { ...prev, [colId]: finalWidth };
-                                  if (onColumnWidthChange) {
-                                    onColumnWidthChange(next as Record<string, number>);
-                                  }
-                                  return next;
-                                });
+                                const nextWidths = { ...columnSizingRef.current, [colId]: finalWidth };
+                                setColumnSizing(nextWidths);
+                                if (onColumnWidthChange) {
+                                  onColumnWidthChange(nextWidths as Record<string, number>);
+                                }
                               };
 
                               document.body.style.cursor = 'col-resize';
