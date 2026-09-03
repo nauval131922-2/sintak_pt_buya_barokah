@@ -41,6 +41,7 @@ interface DataTableProps<TData> {
   enableHiding?: boolean;
   columnVisibility?: VisibilityState;
   onColumnVisibilityChange?: OnChangeFn<VisibilityState>;
+  resetScrollOnDataChange?: boolean;
 }
 
 function DataTableInner<TData extends { id: number | string }>({
@@ -67,6 +68,7 @@ function DataTableInner<TData extends { id: number | string }>({
   enableHiding = false,
   columnVisibility: controlledVisibility,
   onColumnVisibilityChange,
+  resetScrollOnDataChange = true,
 }: DataTableProps<TData>) {
   const [localSorting, setLocalSorting] = React.useState<SortingState>([]);
   const activeSorting = sorting !== undefined ? sorting : localSorting;
@@ -169,12 +171,21 @@ function DataTableInner<TData extends { id: number | string }>({
   const parentRef = React.useRef<HTMLDivElement>(null);
   const { rows } = table.getRowModel();
 
-  // Reset scroll ke paling atas saat data berganti (misal ganti halaman / filter)
+  // Reset scroll ke paling atas HANYA jika data diganti secara total (misal ganti filter/halaman baru yang bukan append infinite scroll)
+  const prevDataLengthRef = React.useRef(data.length);
+  const prevFirstIdRef = React.useRef(data[0]?.id);
+
   React.useEffect(() => {
-    if (parentRef.current) {
+    const currentFirstId = data[0]?.id;
+    const isAppended = data.length > prevDataLengthRef.current && currentFirstId === prevFirstIdRef.current;
+
+    if (resetScrollOnDataChange && !isAppended && parentRef.current) {
       parentRef.current.scrollTop = 0;
     }
-  }, [data]);
+
+    prevDataLengthRef.current = data.length;
+    prevFirstIdRef.current = currentFirstId;
+  }, [data, resetScrollOnDataChange]);
 
   const virtualizer = useVirtualizer({
     count: rows.length,
@@ -375,6 +386,17 @@ function DataTableInner<TData extends { id: number | string }>({
     </ScrollContext.Provider>
   );
 }
+function areObjectsEqual(a?: Record<string, number>, b?: Record<string, number>) {
+  if (a === b) return true;
+  if (!a || !b) return a === b;
+  const keysA = Object.keys(a);
+  const keysB = Object.keys(b);
+  if (keysA.length !== keysB.length) return false;
+  for (const k of keysA) {
+    if (a[k] !== b[k]) return false;
+  }
+  return true;
+}
 
 const TableRow = React.memo(({
   row,
@@ -445,7 +467,8 @@ const TableRow = React.memo(({
             </div>
           </td>
         );
-      })}</tr>
+      })}
+    </tr>
   );
 }, (prev, next) => {
   return (
@@ -456,7 +479,7 @@ const TableRow = React.memo(({
     prev.extraClassName === next.extraClassName &&
     prev.disableHover === next.disableHover &&
     prev.rowCursor === next.rowCursor &&
-    prev.stickyOffsets === next.stickyOffsets
+    (prev.stickyOffsets === next.stickyOffsets || areObjectsEqual(prev.stickyOffsets, next.stickyOffsets))
   );
 });
 

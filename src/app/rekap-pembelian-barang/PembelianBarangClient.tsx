@@ -200,7 +200,8 @@ export default function PembelianBarangClient() {
 
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
-    if (scrollHeight - scrollTop <= clientHeight + 300 && !loading && (data?.length || 0) < totalCount) {
+    if (scrollHeight - scrollTop <= clientHeight + 300 && !loading && !isLoadingMore.current && (data?.length || 0) < totalCount) {
+      isLoadingMore.current = true;
       setPage(prev => prev + 1);
     }
   }, [loading, data, totalCount]);
