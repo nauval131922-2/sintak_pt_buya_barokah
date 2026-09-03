@@ -904,6 +904,13 @@ function LaporanPekerjaanRoleModal({
     );
   };
 
+  const selectAllBagian = () => {
+    setAllowedBagian([...LAPORAN_PEKERJAAN_BAGIAN_LIST]);
+  };
+
+  const resetAllBagian = () => {
+    setAllowedBagian([]); // [] = Semua Bagian diizinkan
+  };
   const selectAllPics = () => {
     setAllowedPic([...availablePics]);
   };
