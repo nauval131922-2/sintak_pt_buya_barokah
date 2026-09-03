@@ -1110,9 +1110,9 @@ export default function HasilProduksiClient() {
 
         {/* Baris 2 Terpadu (2-Row Redesign): KPI & Tren di Kiri, Tab & Search & Mode di Kanan */}
         {selectedSopd && (
-          <div id="desktop-sticky-control-bar" className="shrink-0 z-[10] bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-1.5 sm:p-2 flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-2.5">
+          <div id="desktop-sticky-control-bar" className="shrink-0 z-[10] bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-1.5 sm:p-2 flex flex-col md:flex-row items-stretch md:items-center gap-2.5">
             {/* Bagian Kiri: KPI Metrik & Tren Ringkas */}
-            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 min-w-0">
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 shrink-0">
               {/* Card 1: Order | WIP | Hasil */}
               <div className="bg-gray-50/80 border border-gray-200/60 rounded-lg px-2.5 sm:px-3 h-8 flex items-center justify-between sm:justify-start shrink-0 w-full sm:w-auto min-w-0 select-none gap-2">
                 <div className="flex items-center gap-1 min-w-0">
@@ -1180,8 +1180,30 @@ export default function HasilProduksiClient() {
               </div>
             </div>
 
-            {/* Bagian Kanan: Tab, Level, Search Bar, View Mode, Refresh */}
-            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 min-w-0 flex-1 xl:flex-initial justify-end">
+            {/* Bagian Tengah: Search Bar Melebar Mengisi Kekosongan */}
+            <div className="flex-1 min-w-[160px]">
+              <div className="relative w-full group">
+                <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-emerald-500 transition-colors z-10 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Cari kata kunci (pekerjaan, karyawan, kendala)..."
+                  className="w-full pl-7 pr-6 h-8 text-[11px] bg-gray-50/70 border border-gray-200/70 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-white transition-all font-medium placeholder:text-gray-400 shadow-none"
+                  value={dataSearchQuery}
+                  onChange={(e) => handleDataSearchChange(e.target.value)}
+                />
+                {dataSearchQuery && (
+                  <button 
+                    onClick={() => handleDataSearchChange('')}
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 p-0.5"
+                  >
+                    <X size={11} />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Bagian Kanan: Tab, Level, View Mode, Refresh */}
+            <div className="flex items-center gap-2 shrink-0 justify-end">
               {/* Tab Selector */}
               <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 shrink-0">
                 <button 
@@ -1220,28 +1242,6 @@ export default function HasilProduksiClient() {
                   </button>
                 </div>
               )}
-
-              {/* Search Bar Fleksibel */}
-              <div className="flex-1 min-w-[140px] sm:min-w-[180px] lg:min-w-[220px] max-w-sm">
-                <div className="relative w-full group">
-                  <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-emerald-500 transition-colors z-10 pointer-events-none" />
-                  <input
-                    type="text"
-                    placeholder="Cari kata kunci..."
-                    className="w-full pl-7 pr-6 h-8 text-[11px] bg-gray-50/70 border border-gray-200/70 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-white transition-all font-medium placeholder:text-gray-400 shadow-none"
-                    value={dataSearchQuery}
-                    onChange={(e) => handleDataSearchChange(e.target.value)}
-                  />
-                  {dataSearchQuery && (
-                    <button 
-                      onClick={() => handleDataSearchChange('')}
-                      className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 p-0.5"
-                    >
-                      <X size={11} />
-                    </button>
-                  )}
-                </div>
-              </div>
 
               {/* View Mode Switcher */}
               <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 shrink-0">
