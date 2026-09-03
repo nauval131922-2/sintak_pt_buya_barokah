@@ -31,7 +31,6 @@ interface RolesContentProps {
   customRoles: CustomRole[];
   allLaporanConfigs?: Record<string, RoleLaporanPekerjaanConfig>;
   availablePics?: string[];
-  rolePicsMap?: Record<string, string[]>;
 }
 
 const GROUP_COLORS: Record<string, { text: string; bg: string; dot: string }> = {
@@ -55,7 +54,6 @@ export default function RolesContent({
   customRoles,
   allLaporanConfigs = {},
   availablePics = [],
-  rolePicsMap = {},
 }: RolesContentProps) {
   const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<string>('');
@@ -761,7 +759,6 @@ export default function RolesContent({
           }
           availablePics={availablePics}
           availableRoles={customRoles}
-          rolePicsMap={rolePicsMap}
           onClose={() => setConfigModalRole(null)}
           onSave={async (newConfig) => {
             setSaving(true);
@@ -852,7 +849,6 @@ interface LaporanPekerjaanRoleModalProps {
   initialConfig: RoleLaporanPekerjaanConfig;
   availablePics: string[];
   availableRoles?: CustomRole[];
-  rolePicsMap?: Record<string, string[]>;
   onClose: () => void;
   onSave: (config: {
     allowed_bagian: string[];
@@ -870,7 +866,6 @@ function LaporanPekerjaanRoleModal({
   initialConfig,
   availablePics,
   availableRoles = [],
-  rolePicsMap = {},
   onClose,
   onSave,
 }: LaporanPekerjaanRoleModalProps) {
@@ -915,11 +910,6 @@ function LaporanPekerjaanRoleModal({
     setAllowedPic([...availablePics]);
   };
 
-  const selectAllPicsExceptRole = (roleName: string) => {
-    const excludedRoleMembers = new Set((rolePicsMap[roleName] || []).map(n => n.toLowerCase()));
-    const remainingPics = availablePics.filter(p => !excludedRoleMembers.has(p.toLowerCase()));
-    setAllowedPic(remainingPics);
-  };
 
   const resetAllPics = () => {
     setAllowedPic([]); // [] = Semua PIC diizinkan
@@ -1358,40 +1348,6 @@ function LaporanPekerjaanRoleModal({
                     Pilih Semua Nama
                   </button>
 
-                  {/* QUICK ACTION DROPDOWN: PILIH SEMUA KECUALI ROLE */}
-                  {availableRoles.length > 0 && (
-                    <div className="relative group/exc">
-                      <button
-                        type="button"
-                        className="px-2.5 py-1 text-[11px] font-bold text-amber-800 hover:bg-amber-100 bg-amber-50 border border-amber-300 rounded-lg transition-colors flex items-center gap-1"
-                      >
-                        <span>Pilih Semua Kecuali Role ▾</span>
-                      </button>
-                      <div className="hidden group-hover/exc:block absolute right-0 top-full pt-1 z-50 min-w-[200px] animate-in fade-in zoom-in-95 duration-150">
-                        <div className="bg-white border border-slate-200 rounded-xl shadow-xl p-1.5 space-y-0.5">
-                          <p className="text-[10px] font-bold text-slate-400 px-2 py-1 uppercase tracking-wider">
-                            Pilih Role yang Dikecualikan
-                          </p>
-                          {availableRoles.map((r) => {
-                            const count = (rolePicsMap[r.name] || []).length;
-                            return (
-                              <button
-                                key={`quick-exc-${r.name}`}
-                                type="button"
-                                onClick={() => selectAllPicsExceptRole(r.name)}
-                                className="w-full text-left px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-amber-50 hover:text-amber-900 rounded-lg flex items-center justify-between transition-colors"
-                              >
-                                <span>Kecuali: {r.name}</span>
-                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-bold">
-                                  {count} PIC
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  )}
 
                   <button
                     type="button"
