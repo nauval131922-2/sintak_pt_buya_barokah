@@ -150,7 +150,7 @@ function DataTableInner<TData extends { id: number | string }>({
       columnVisibility: activeVisibility,
     },
     enableColumnResizing: true,
-    columnResizeMode: 'onChange',
+    columnResizeMode: 'onEnd',
     onSortingChange: activeOnSortingChange,
     onColumnSizingChange: setColumnSizing,
     onColumnVisibilityChange: activeOnVisibilityChange,
@@ -304,9 +304,9 @@ function DataTableInner<TData extends { id: number | string }>({
                           <div
                             onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); header.getResizeHandler()(e); }}
                             onTouchStart={(e) => { e.stopPropagation(); header.getResizeHandler()(e); }}
-                            className={`absolute -right-[4px] top-0 bottom-0 w-[10px] z-50 cursor-col-resize group/resizer transition-opacity ${header.column.getIsResizing() ? 'opacity-100' : 'opacity-0 hover:opacity-100'}`}
+                            className={`absolute -right-[4px] top-0 bottom-0 w-[12px] z-50 cursor-col-resize group/resizer transition-opacity ${header.column.getIsResizing() ? 'opacity-100' : 'opacity-0 hover:opacity-100'}`}
                           >
-                            <div className={`mx-auto h-full w-[3px] rounded-full transition-colors ${header.column.getIsResizing() ? 'bg-emerald-500' : 'bg-transparent group-hover/resizer:bg-slate-400'}`} />
+                            <div className={`mx-auto h-full w-[3px] rounded-full transition-colors ${header.column.getIsResizing() ? 'bg-emerald-500 shadow-sm' : 'bg-transparent group-hover/resizer:bg-slate-400'}`} />
                           </div>
                         )}
                       </th>);
