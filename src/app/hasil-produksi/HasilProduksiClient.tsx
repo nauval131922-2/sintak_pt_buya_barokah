@@ -1211,20 +1211,20 @@ export default function HasilProduksiClient() {
             </div>
 
             {/* Bagian Kanan: Tab, Level, View Mode, Refresh */}
-            <div className="flex items-center justify-between md:justify-end gap-1.5 sm:gap-2 w-full md:w-auto shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 w-full md:w-auto shrink-0 justify-between md:justify-end">
               {/* Sisi Kiri Mobile: Tab & Level */}
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 flex-1 md:flex-initial min-w-0">
                 {/* Tab Selector */}
-                <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 shrink-0">
+                <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 flex-1 md:flex-none">
                   <button 
                     onClick={() => setActiveTab('jurnal')} 
-                    className={`px-2.5 py-1 rounded-md text-[10.5px] sm:text-[11px] font-bold whitespace-nowrap flex items-center justify-center transition-all ${activeTab === 'jurnal' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`}
+                    className={`flex-1 md:flex-none px-2.5 sm:px-3 py-1 rounded-md text-[10.5px] sm:text-[11px] font-bold whitespace-nowrap flex items-center justify-center transition-all ${activeTab === 'jurnal' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`}
                   >
                     Jurnal
                   </button>
                   <button 
                     onClick={() => setActiveTab('barang_jadi')} 
-                    className={`px-2.5 py-1 rounded-md text-[10.5px] sm:text-[11px] font-bold whitespace-nowrap flex items-center justify-center transition-all ${activeTab === 'barang_jadi' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`}
+                    className={`flex-1 md:flex-none px-2.5 sm:px-3 py-1 rounded-md text-[10.5px] sm:text-[11px] font-bold whitespace-nowrap flex items-center justify-center transition-all ${activeTab === 'barang_jadi' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`}
                   >
                     Barang Jadi
                   </button>
