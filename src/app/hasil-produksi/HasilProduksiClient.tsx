@@ -1156,8 +1156,32 @@ export default function HasilProduksiClient() {
               </div>
             )}
 
-            {/* Reset Button */}
-            <div className={`flex items-center gap-2 sm:gap-2.5 shrink-0 ${activeTab === 'barang_jadi' ? 'w-full sm:w-auto mt-1.5 sm:mt-0' : 'w-full md:w-auto mt-1.5 md:mt-0'}`}>
+            {/* Level Selector, Reset Button, & Refresh Button */}
+            <div className={`flex items-center gap-1.5 sm:gap-2 shrink-0 ${activeTab === 'barang_jadi' ? 'w-full sm:w-auto mt-1.5 sm:mt-0' : 'w-full md:w-auto mt-1.5 md:mt-0'}`}>
+              {/* Level Selector (Sebelum Reset) */}
+              {activeTab === 'jurnal' && (
+                <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-xl border border-gray-200/60 h-10 px-1.5 shrink-0">
+                  <span className="text-[10.5px] font-semibold text-gray-400 pl-1 pr-0.5 select-none">Lvl:</span>
+                  <button 
+                    type="button" 
+                    onClick={() => setDetailLevel(1)} 
+                    className={`px-2 py-1 text-[11px] font-bold rounded-lg transition-all ${detailLevel === 1 ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                    title="Level 1: Hanya Subtotal Pekerjaan"
+                  >
+                    1
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => setDetailLevel(2)} 
+                    className={`px-2 py-1 text-[11px] font-bold rounded-lg transition-all ${detailLevel === 2 ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                    title="Level 2: Detail Lengkap per Baris"
+                  >
+                    2
+                  </button>
+                </div>
+              )}
+
+              {/* Reset Button */}
               <button
                 onClick={resetFilters}
                 className="h-10 px-3.5 flex-1 sm:flex-none shrink-0 flex items-center justify-center gap-1.5 bg-rose-50 text-rose-600 font-bold text-[11px] xl:text-[12px] border border-rose-200 rounded-xl hover:bg-rose-100 transition-all group shadow-sm active:scale-95 min-w-0"
@@ -1165,6 +1189,16 @@ export default function HasilProduksiClient() {
               >
                 <X size={14} className="shrink-0" />
                 <span>Reset</span>
+              </button>
+
+              {/* Refresh Button (tetap di samping kanan Reset) */}
+              <button
+                onClick={() => fetchDetails()}
+                disabled={loadingDetails}
+                className="h-10 w-10 bg-white border border-gray-200/80 rounded-xl text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 flex items-center justify-center transition-all disabled:opacity-50 shrink-0 shadow-sm active:scale-95"
+                title="Refresh Data"
+              >
+                <RotateCcw size={14} className={`shrink-0 ${loadingDetails ? 'animate-spin' : ''}`} />
               </button>
             </div>
           </div>
@@ -1290,80 +1324,41 @@ export default function HasilProduksiClient() {
               </div>
             </div>
 
-            {/* Bagian Kanan: Tab, Level, View Mode, Refresh */}
+            {/* Bagian Kanan: Tab & View Mode */}
             <div className="flex items-center gap-1.5 sm:gap-2 w-full md:w-auto shrink-0 justify-between md:justify-end">
-              {/* Sisi Kiri Mobile: Tab & Level */}
-              <div className="flex items-center gap-1.5 flex-1 md:flex-initial min-w-0">
-                {/* Tab Selector */}
-                <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 flex-1 md:flex-none">
-                  <button 
-                    onClick={() => setActiveTab('jurnal')} 
-                    className={`flex-1 md:flex-none px-2.5 sm:px-3 py-1 rounded-md text-[10.5px] sm:text-[11px] font-bold whitespace-nowrap flex items-center justify-center transition-all ${activeTab === 'jurnal' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`}
-                  >
-                    Jurnal
-                  </button>
-                  <button 
-                    onClick={() => setActiveTab('barang_jadi')} 
-                    className={`flex-1 md:flex-none px-2.5 sm:px-3 py-1 rounded-md text-[10.5px] sm:text-[11px] font-bold whitespace-nowrap flex items-center justify-center transition-all ${activeTab === 'barang_jadi' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`}
-                  >
-                    Barang Jadi
-                  </button>
-                </div>
-
-                {/* Level Selector (Hanya di Tab Jurnal) */}
-                {activeTab === 'jurnal' && (
-                  <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 shrink-0">
-                    <span className="text-[10px] font-semibold text-gray-400 pl-1 pr-0.5 select-none">Lvl:</span>
-                    <button 
-                      type="button" 
-                      onClick={() => setDetailLevel(1)} 
-                      className={`px-1.5 py-0.5 text-[10.5px] font-bold rounded transition-all ${detailLevel === 1 ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                      title="Level 1: Hanya Subtotal Pekerjaan"
-                    >
-                      1
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={() => setDetailLevel(2)} 
-                      className={`px-1.5 py-0.5 text-[10.5px] font-bold rounded transition-all ${detailLevel === 2 ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                      title="Level 2: Detail Lengkap per Baris"
-                    >
-                      2
-                    </button>
-                  </div>
-                )}
+              {/* Tab Selector */}
+              <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 flex-1 md:flex-none">
+                <button 
+                  onClick={() => setActiveTab('jurnal')} 
+                  className={`flex-1 md:flex-none px-2.5 sm:px-3 py-1 rounded-md text-[10.5px] sm:text-[11px] font-bold whitespace-nowrap flex items-center justify-center transition-all ${activeTab === 'jurnal' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`}
+                >
+                  Jurnal
+                </button>
+                <button 
+                  onClick={() => setActiveTab('barang_jadi')} 
+                  className={`flex-1 md:flex-none px-2.5 sm:px-3 py-1 rounded-md text-[10.5px] sm:text-[11px] font-bold whitespace-nowrap flex items-center justify-center transition-all ${activeTab === 'barang_jadi' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`}
+                >
+                  Barang Jadi
+                </button>
               </div>
 
-              {/* Sisi Kanan Mobile: Mode & Reload */}
-              <div className="flex items-center gap-1.5 shrink-0">
-                {/* View Mode Switcher */}
-                <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 shrink-0">
-                  <button 
-                    onClick={() => { setViewMode('table'); localStorage.setItem('hp-view-mode', 'table'); }} 
-                    className={`px-2 py-1 rounded-md text-[10.5px] font-bold flex items-center gap-1 transition-all ${viewMode === 'table' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`} 
-                    title="Tampilan tabel"
-                  >
-                    <Table2 size={13} />
-                    <span className="hidden md:inline">Tabel</span>
-                  </button>
-                  <button 
-                    onClick={() => { setViewMode('card'); localStorage.setItem('hp-view-mode', 'card'); }} 
-                    className={`px-2 py-1 rounded-md text-[10.5px] font-bold flex items-center gap-1 transition-all ${viewMode === 'card' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`} 
-                    title="Tampilan kartu"
-                  >
-                    <List size={13} />
-                    <span className="hidden md:inline">Kartu</span>
-                  </button>
-                </div>
-
-                {/* Refresh Button */}
-                <button
-                  onClick={() => fetchDetails()}
-                  disabled={loadingDetails}
-                  className="h-8 w-8 bg-white border border-gray-200/80 rounded-lg text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 flex items-center justify-center transition-all disabled:opacity-50 shrink-0 shadow-sm"
-                  title="Refresh Data"
+              {/* View Mode Switcher */}
+              <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 shrink-0">
+                <button 
+                  onClick={() => { setViewMode('table'); localStorage.setItem('hp-view-mode', 'table'); }} 
+                  className={`px-2 py-1 rounded-md text-[10.5px] font-bold flex items-center gap-1 transition-all ${viewMode === 'table' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`} 
+                  title="Tampilan tabel"
                 >
-                  <RotateCcw size={13} className={`shrink-0 ${loadingDetails ? 'animate-spin' : ''}`} />
+                  <Table2 size={13} />
+                  <span className="hidden md:inline">Tabel</span>
+                </button>
+                <button 
+                  onClick={() => { setViewMode('card'); localStorage.setItem('hp-view-mode', 'card'); }} 
+                  className={`px-2 py-1 rounded-md text-[10.5px] font-bold flex items-center gap-1 transition-all ${viewMode === 'card' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`} 
+                  title="Tampilan kartu"
+                >
+                  <List size={13} />
+                  <span className="hidden md:inline">Kartu</span>
                 </button>
               </div>
             </div>
