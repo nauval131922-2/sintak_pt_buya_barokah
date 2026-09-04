@@ -54,7 +54,8 @@ export default function SquareDropdown({
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
     const scale = getZoomScale(triggerRef.current);
-    const popupWidth = Math.max(rect.width, 190);
+    const measuredWidth = panelRef.current ? panelRef.current.offsetWidth : 0;
+    const popupWidth = Math.max(rect.width, measuredWidth || 200);
     const spaceRight = window.innerWidth - rect.left;
     const leftWhenAlignRight = rect.right - popupWidth;
     const padding = 12;
@@ -69,19 +70,20 @@ export default function SquareDropdown({
 
     const spaceBelow = window.innerHeight - rect.bottom;
     const spaceAbove = rect.top;
-    const isUpward = spaceBelow < 220 && spaceAbove > spaceBelow;
+    const isUpward = spaceBelow < 240 && spaceAbove > spaceBelow;
     setOpenUpward(isUpward);
 
     if (usePortal) {
-      const targetLeft = isRight ? (rect.right - popupWidth) : rect.left;
       const minLeft = padding;
-      const maxLeft = Math.max(padding, window.innerWidth - popupWidth - padding);
-      const clampedLeft = Math.max(minLeft, Math.min(targetLeft, maxLeft));
+      const targetLeft = isRight ? Math.max(minLeft, rect.right) : Math.max(minLeft, rect.left);
 
       const style: React.CSSProperties = {
         position: 'fixed',
-        left: clampedLeft / scale,
-        width: `${popupWidth / scale}px`,
+        left: targetLeft / scale,
+        transform: isRight ? 'translateX(-100%)' : undefined,
+        minWidth: `${Math.max(rect.width, 190) / scale}px`,
+        maxWidth: 'calc(100vw - 32px)',
+        width: 'max-content',
         zIndex: 10000,
       };
 
@@ -143,11 +145,11 @@ export default function SquareDropdown({
       className={`${
         usePortal
           ? 'fixed'
-          : `absolute ${openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'} ${alignRight ? 'right-0' : 'left-0'} w-full min-w-[190px]`
-      } bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden z-[10000] animate-in fade-in slide-in-from-top-1 duration-150`}
+          : `absolute ${openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'} ${alignRight ? 'right-0' : 'left-0'} min-w-full w-max max-w-[calc(100vw-32px)]`
+      } bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden z-[10000] animate-in fade-in slide-in-from-top-1 duration-150 flex flex-col`}
     >
-      <div className="p-2 border-b border-slate-100 bg-slate-50/50">
-        <div className="flex items-center gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-slate-200">
+      <div className="p-2 border-b border-slate-100 bg-slate-50/50 shrink-0">
+        <div className="flex items-center gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-slate-200 min-w-[170px]">
           <Search size={12} className="text-slate-400 shrink-0" />
           <input
             ref={searchRef}
@@ -160,7 +162,7 @@ export default function SquareDropdown({
         </div>
       </div>
 
-      <div className="max-h-52 overflow-y-auto custom-scrollbar divide-y divide-slate-50">
+      <div className="max-h-52 overflow-y-auto custom-scrollbar divide-y divide-slate-50 flex flex-col">
         {filtered.length === 0 ? (
           <p className="px-3 py-3 text-[11px] text-slate-400 font-medium text-center">
             Tidak ditemukan
@@ -175,13 +177,14 @@ export default function SquareDropdown({
                 setOpen(false);
                 setSearch('');
               }}
-              className={`w-full flex items-center justify-between px-3 py-2 text-xs font-semibold transition-colors ${
+              className={`w-full min-w-full flex items-center justify-between px-3 py-2 text-xs font-semibold transition-colors gap-3 whitespace-nowrap ${
                 value === opt.value
                   ? 'bg-emerald-50 text-emerald-700'
                   : 'text-slate-700 hover:bg-slate-50'
               }`}
+              title={opt.label}
             >
-              <span className="truncate">{opt.label}</span>
+              <span className="whitespace-nowrap">{opt.label}</span>
               {opt.count !== undefined && (
                 <span className="text-[10px] text-slate-400 font-mono ml-2 shrink-0">
                   {opt.count}
