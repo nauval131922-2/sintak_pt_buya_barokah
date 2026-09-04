@@ -21,15 +21,16 @@ export async function GET(request: NextRequest) {
     const queries: any[] = [];
 
     // Query 1: Available sections
+    // Query 1: Available Bagian (using distributed AND for multi-index scan)
     queries.push({
-      sql: `SELECT DISTINCT bagian FROM jurnal_harian_produksi WHERE (no_order = ? OR no_order_2 = ?) AND bagian != '' AND deleted_at IS NULL`,
+      sql: `SELECT DISTINCT bagian FROM jurnal_harian_produksi WHERE ((no_order = ? AND deleted_at IS NULL) OR (no_order_2 = ? AND deleted_at IS NULL)) AND bagian != ''`,
       args: [noSopd, noSopd]
     });
 
     // Query 2: Available jobs (using jenis_pekerjaan_2 to match frontend)
     // ponytail: jobs option should depend only on SOPD + optionally selected Bagian (NOT selected Pekerjaan itself)
     // to prevent list collapse to 1 selected item on refresh.
-    let jobSql = `SELECT DISTINCT jenis_pekerjaan_2 as jenis_pekerjaan FROM jurnal_harian_produksi WHERE (no_order = ? OR no_order_2 = ?) AND jenis_pekerjaan_2 != '' AND deleted_at IS NULL`;
+    let jobSql = `SELECT DISTINCT jenis_pekerjaan_2 as jenis_pekerjaan FROM jurnal_harian_produksi WHERE ((no_order = ? AND deleted_at IS NULL) OR (no_order_2 = ? AND deleted_at IS NULL)) AND jenis_pekerjaan_2 != ''`;
     const jobArgs: any[] = [noSopd, noSopd];
     if (bagian) {
       jobSql += ` AND bagian = ?`;
@@ -68,9 +69,8 @@ export async function GET(request: NextRequest) {
     let jSql = `SELECT tgl, nama_karyawan, realisasi, target, keterangan, jam, kendala, bagian,
                        no_order_2, nama_order_2, jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek
                 FROM jurnal_harian_produksi
-                WHERE (no_order = ? OR no_order_2 = ?) AND deleted_at IS NULL`;
+                WHERE ((no_order = ? AND deleted_at IS NULL) OR (no_order_2 = ? AND deleted_at IS NULL))`;
     const jArgs: any[] = [noSopd, noSopd];
-
     if (startDate) {
       jSql += ` AND tgl >= ?`;
       jArgs.push(startDate);
@@ -105,7 +105,7 @@ export async function GET(request: NextRequest) {
 
     // Query 6: Unfiltered timeseries data for trend chart (only bounded by SOPD and Dates)
     // ponytail: get Jurnal timeseries unfiltered by Bagian / Pekerjaan to keep trend accurate
-    let trendSql = `SELECT tgl, realisasi FROM jurnal_harian_produksi WHERE (no_order = ? OR no_order_2 = ?) AND deleted_at IS NULL`;
+    let trendSql = `SELECT tgl, realisasi FROM jurnal_harian_produksi WHERE ((no_order = ? AND deleted_at IS NULL) OR (no_order_2 = ? AND deleted_at IS NULL))`;
     const trendArgs: any[] = [noSopd, noSopd];
     if (startDate) {
       trendSql += ` AND tgl >= ?`;
