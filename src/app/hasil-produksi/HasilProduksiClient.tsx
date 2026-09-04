@@ -1079,7 +1079,7 @@ export default function HasilProduksiClient() {
           {/* Konten Filter — Bisa Diciutkan di Mobile */}
           <div className={`${isFilterOpenMobile ? "flex flex-col" : "hidden sm:flex sm:flex-col"} lg:flex-row items-stretch lg:items-end gap-2 p-2.5 sm:p-3 relative animate-in fade-in slide-in-from-top-1 duration-200`}>
             {/* Baris 1: SOPd Selection Group (Dinamis mengisi sisa ruang) */}
-            <div className="w-full lg:flex-1 lg:min-w-[140px]">
+            <div className="w-full lg:flex-1 lg:min-w-[180px]">
             <SearchableDropdown
               id="hasil-sopd"
               label="Pilih Order Produksi (SOPd)"
@@ -1107,95 +1107,18 @@ export default function HasilProduksiClient() {
             />
           </div>
 
-          {/* Baris 2: Date, Bagian, Pekerjaan, Reset */}
-          <div className={`flex flex-wrap lg:flex-nowrap items-end gap-2.5 sm:gap-3 w-full lg:w-auto shrink-0 ${activeTab === 'barang_jadi' ? 'lg:gap-4' : ''}`}>
-            {/* Rentang Tanggal */}
-            <div className="flex flex-col w-full sm:w-[250px] md:w-[250px] lg:w-[245px] xl:w-[260px] shrink-0">
-              <label className="block text-[11px] font-semibold text-gray-500 mb-1 ml-1 tracking-tight select-none">Rentang Tanggal</label>
-              <div className="flex items-center gap-1">
-                <div className="flex-1"><DatePicker name="startDate" value={startDate} onChange={(d) => setStartDate(d)} /></div>
-                <div className="w-2 h-px bg-gray-200 shrink-0"></div>
-                <div className="flex-1"><DatePicker name="endDate" value={endDate} onChange={(d) => setEndDate(d)} /></div>
-              </div>
-            </div>
-
-            {/* Bagian & Pekerjaan Dropdowns (SquareDropdown style seperti di Laporan Pekerjaan) */}
-            {activeTab === 'jurnal' && (
-              <div className="flex items-center gap-2 w-full sm:w-auto flex-1 min-w-0">
-                <div className="flex-1 min-w-0">
-                  <label className="block text-[11px] font-semibold text-gray-500 mb-1 ml-1 tracking-tight select-none">Bagian</label>
-                  <SquareDropdown
-                    options={[{ value: '', label: 'Semua Bagian' }, ...availableBagian.map(b => ({ value: b, label: b }))]}
-                    value={selectedBagian}
-                    onChange={(val) => setSelectedBagian(val)}
-                    searchPlaceholder="Cari Bagian..."
-                    widthClass="w-full"
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <label className="block text-[11px] font-semibold text-gray-500 mb-1 ml-1 tracking-tight select-none">Pekerjaan</label>
-                  <SquareDropdown
-                    options={[{ value: '', label: 'Semua Pekerjaan' }, ...availablePekerjaan.map(p => ({ value: p, label: p }))]}
-                    value={selectedPekerjaan}
-                    onChange={(val) => setSelectedPekerjaan(val)}
-                    searchPlaceholder="Cari Pekerjaan..."
-                    widthClass="w-full"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Level Selector, Reset Button, & Refresh Button */}
-            <div className={`flex items-center gap-1.5 sm:gap-2 shrink-0 ${activeTab === 'barang_jadi' ? 'w-full sm:w-auto mt-1.5 sm:mt-0' : 'w-full md:w-auto mt-1.5 md:mt-0'}`}>
-              {/* Level Selector (Sebelum Reset) */}
-              {activeTab === 'jurnal' && (
-                <div className="flex items-center gap-0.5 bg-slate-50 p-0.5 rounded-lg border border-slate-200 h-9 px-1.5 shrink-0">
-                  <span className="text-[10.5px] font-semibold text-slate-400 pl-1 pr-0.5 select-none">Lvl:</span>
-                  <button 
-                    type="button" 
-                    onClick={() => setDetailLevel(1)} 
-                    className={`px-2 py-1 text-[11px] font-bold rounded-md transition-all ${detailLevel === 1 ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-800'}`}
-                    title="Level 1: Hanya Subtotal Pekerjaan"
-                  >
-                    1
-                  </button>
-                  <button 
-                    type="button" 
-                    onClick={() => setDetailLevel(2)} 
-                    className={`px-2 py-1 text-[11px] font-bold rounded-md transition-all ${detailLevel === 2 ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-800'}`}
-                    title="Level 2: Detail Lengkap per Baris"
-                  >
-                    2
-                  </button>
-                </div>
-              )}
-
-              {/* Reset Button (Style Laporan Pekerjaan) */}
-              <button
-                type="button"
-                onClick={resetFilters}
-                className="h-9 px-3 flex items-center gap-1 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0 cursor-pointer shadow-xs"
-                title="Reset Semua Filter"
-              >
-                <X size={12} />
-                <span>Reset</span>
-              </button>
-
-              {/* Reload / Refresh Button (Style Laporan Pekerjaan) */}
-              <button
-                type="button"
-                onClick={() => fetchDetails()}
-                disabled={loadingDetails}
-                className="h-9 px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-xs"
-                title="Reload Data Hasil Produksi"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${loadingDetails ? 'animate-spin text-emerald-600' : ''}`} />
-                <span className="hidden sm:inline">Reload</span>
-              </button>
+          {/* Rentang Tanggal */}
+          <div className="flex flex-col w-full sm:w-[250px] md:w-[250px] lg:w-[260px] xl:w-[280px] shrink-0">
+            <label className="block text-[11px] font-semibold text-gray-500 mb-1 ml-1 tracking-tight select-none">Rentang Tanggal</label>
+            <div className="flex items-center gap-1">
+              <div className="flex-1"><DatePicker name="startDate" value={startDate} onChange={(d) => setStartDate(d)} /></div>
+              <div className="w-2 h-px bg-gray-200 shrink-0"></div>
+              <div className="flex-1"><DatePicker name="endDate" value={endDate} onChange={(d) => setEndDate(d)} /></div>
             </div>
           </div>
+
+          </div>
         </div>
-      </div>
       </div>
         {/* Baris 2 Terpadu (2-Row Redesign): KPI & Tren di Kiri, Tab & Search & Mode di Kanan */}
         {selectedSopd && (
@@ -1294,28 +1217,8 @@ export default function HasilProduksiClient() {
               </div>
             </div>
 
-            {/* Bagian Tengah: Search Bar (Style Laporan Pekerjaan) */}
-            <div className="relative flex-1 min-w-0 w-full md:w-auto">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Cari kata kunci (pekerjaan, karyawan, kendala)..."
-                className="w-full pl-9 pr-7 h-9 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all font-medium"
-                value={dataSearchQuery}
-                onChange={(e) => handleDataSearchChange(e.target.value)}
-              />
-              {dataSearchQuery && (
-                <button 
-                  type="button"
-                  onClick={() => handleDataSearchChange('')}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
-                >
-                  <X size={13} />
-                </button>
-              )}
-            </div>
             {/* Bagian Kanan: Tab & View Mode */}
-            <div className="flex items-center gap-1.5 sm:gap-2 w-full md:w-auto shrink-0 justify-between md:justify-end">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 justify-between md:justify-end">
               {/* Tab Selector */}
               <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 flex-1 md:flex-none">
                 <button 
@@ -1353,6 +1256,105 @@ export default function HasilProduksiClient() {
               </div>
             </div>
           </div>
+          </div>
+        )}
+
+        {/* Baris 3: Reload, Search, Filter Bagian & Pekerjaan, Level, Reset (Style Laporan Pekerjaan) */}
+        {selectedSopd && (
+          <div className="shrink-0 bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-2 sm:p-2.5 flex flex-col lg:flex-row items-stretch lg:items-center gap-2 transition-all">
+            {/* Reload Button */}
+            <button
+              type="button"
+              onClick={() => fetchDetails()}
+              disabled={loadingDetails}
+              className="h-9 px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center justify-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-xs"
+              title="Reload Data Hasil Produksi"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loadingDetails ? 'animate-spin text-emerald-600' : ''}`} />
+              <span>Reload</span>
+            </button>
+
+            {/* Search Input (Style Laporan Pekerjaan) */}
+            <div className="relative flex-1 min-w-0">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Cari kata kunci (pekerjaan, karyawan, kendala)..."
+                className="w-full pl-9 pr-7 h-9 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all font-medium"
+                value={dataSearchQuery}
+                onChange={(e) => handleDataSearchChange(e.target.value)}
+              />
+              {dataSearchQuery && (
+                <button 
+                  type="button"
+                  onClick={() => handleDataSearchChange('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                >
+                  <X size={13} />
+                </button>
+              )}
+            </div>
+
+            {/* Filter Bagian & Pekerjaan di Baris 3 */}
+            {activeTab === 'jurnal' && (
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2 shrink-0">
+                <div className="w-full sm:w-32 md:w-36 lg:w-40 shrink-0">
+                  <SquareDropdown
+                    options={[{ value: '', label: 'Semua Bagian' }, ...availableBagian.map(b => ({ value: b, label: b }))]}
+                    value={selectedBagian}
+                    onChange={(val) => setSelectedBagian(val)}
+                    searchPlaceholder="Cari Bagian..."
+                    widthClass="w-full"
+                  />
+                </div>
+                <div className="w-full sm:w-36 md:w-40 lg:w-48 shrink-0">
+                  <SquareDropdown
+                    options={[{ value: '', label: 'Semua Pekerjaan' }, ...availablePekerjaan.map(p => ({ value: p, label: p }))]}
+                    value={selectedPekerjaan}
+                    onChange={(val) => setSelectedPekerjaan(val)}
+                    searchPlaceholder="Cari Pekerjaan..."
+                    widthClass="w-full"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Level Selector & Reset Button */}
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 justify-end">
+              {/* Level Selector */}
+              {activeTab === 'jurnal' && (
+                <div className="flex items-center gap-0.5 bg-slate-50 p-0.5 rounded-lg border border-slate-200 h-9 px-1.5 shrink-0">
+                  <span className="text-[10.5px] font-semibold text-slate-400 pl-1 pr-0.5 select-none">Lvl:</span>
+                  <button 
+                    type="button" 
+                    onClick={() => setDetailLevel(1)} 
+                    className={`px-2 py-1 text-[11px] font-bold rounded-md transition-all ${detailLevel === 1 ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-800'}`}
+                    title="Level 1: Hanya Subtotal Pekerjaan"
+                  >
+                    1
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => setDetailLevel(2)} 
+                    className={`px-2 py-1 text-[11px] font-bold rounded-md transition-all ${detailLevel === 2 ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-800'}`}
+                    title="Level 2: Detail Lengkap per Baris"
+                  >
+                    2
+                  </button>
+                </div>
+              )}
+
+              {/* Reset Button */}
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="h-9 px-3 flex items-center gap-1 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0 cursor-pointer shadow-xs"
+                title="Reset Semua Filter"
+              >
+                <X size={12} />
+                <span>Reset</span>
+              </button>
+            </div>
           </div>
         )}
 
