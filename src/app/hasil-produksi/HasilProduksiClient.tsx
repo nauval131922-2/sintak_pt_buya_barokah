@@ -1050,9 +1050,9 @@ export default function HasilProduksiClient() {
   return (
     <div className={`flex flex-col gap-3 ${viewMode === 'table' ? 'lg:flex-1 lg:min-h-0 lg:overflow-hidden' : ''}`}>
       {/* 1. Header Section - Fixed */}
-      <div id="filter-control-container" className="flex flex-col gap-3 shrink-0 relative z-[80]">
+      <div id="filter-control-container" className="flex flex-col gap-3 shrink-0 relative z-[90]">
         {/* 1. Filter Control Center — 2 Baris di MD, 1 Baris di LG (1024px+) */}
-        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm transition-all">
+        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm transition-all relative z-[85]">
           {/* Toggle Header Khusus Mobile (< sm) */}
           <div className="sm:hidden flex items-center justify-between px-3 py-2 bg-slate-50/70 hover:bg-slate-100/80 transition-colors border-b border-slate-100 rounded-t-xl">
             <button
@@ -1123,7 +1123,7 @@ export default function HasilProduksiClient() {
         {/* Baris 2 Terpadu (2-Row Redesign): KPI & Tren di Kiri, Tab & Search & Mode di Kanan */}
         {/* Baris 2 (Toolbar Data): Reload, Search, Filter Bagian & Pekerjaan, Level, Reset */}
         {selectedSopd && (
-          <div className="shrink-0 bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-2 sm:p-2.5 flex flex-col lg:flex-row items-stretch lg:items-center gap-2 transition-all">
+          <div className="shrink-0 bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-2 sm:p-2.5 flex flex-col lg:flex-row items-stretch lg:items-center gap-2 transition-all relative z-[80]">
             {/* Reload Button */}
             <button
               type="button"
@@ -1222,7 +1222,7 @@ export default function HasilProduksiClient() {
 
         {/* Baris 3: KPI, Pekerjaan, Tren Melar, Tab Switcher & View Mode */}
         {selectedSopd && (
-          <div id="desktop-sticky-control-bar" className="shrink-0 z-[10] bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm transition-all">
+          <div id="desktop-sticky-control-bar" className="shrink-0 z-[30] bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm transition-all relative">
             {/* Toggle Header Khusus Mobile (< sm) */}
             <div className="sm:hidden flex items-center justify-between px-3 py-2 bg-slate-50/70 hover:bg-slate-100/80 transition-colors border-b border-slate-100 rounded-t-xl">
               <button
@@ -1268,7 +1268,7 @@ export default function HasilProduksiClient() {
                   </div>
                 </div>
 
-                {/* Card Pekerjaan (Jika terpilih) — Teks Pekerjaan Lengkap & Jelas */}
+                {/* Card Pekerjaan (Jika terpilih) — Format Lengkap: Pekerjaan, Realisasi, Hasil Akhir, WIP */}
                 {selectedPekerjaan && (
                   <div 
                     onClick={(e) => {
@@ -1282,12 +1282,38 @@ export default function HasilProduksiClient() {
                         setExpandedCard2(false);
                       }
                     }}
-                    className="bg-emerald-50/70 border border-emerald-200/70 rounded-lg px-2 sm:px-2.5 h-8 flex items-center gap-1.5 sm:gap-2 shrink-0 max-w-[200px] sm:max-w-[280px] lg:max-w-[340px] select-none cursor-pointer"
+                    className="bg-white/90 border border-gray-200/80 rounded-lg px-2.5 sm:px-3 h-8 flex items-center gap-2 sm:gap-2.5 shrink-0 select-none cursor-pointer shadow-xs"
                     title={selectedPekerjaan}
                   >
-                    <span className="text-[10px] font-bold text-emerald-700 capitalize shrink-0">Pekerjaan:</span>
-                    <span className="job-name-text text-[11px] sm:text-[11.5px] font-bold text-emerald-900 capitalize truncate">{selectedPekerjaan}</span>
-                    <span className="text-[11px] sm:text-[11.5px] font-extrabold text-emerald-700 tabular-nums shrink-0">{grandTotalJurnal.toLocaleString('id-ID')}</span>
+                    {/* Nama Pekerjaan */}
+                    <div className="flex items-center gap-1.5 min-w-0 max-w-[150px] sm:max-w-[220px] lg:max-w-[280px]">
+                      <span className="text-[10px] sm:text-[11px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Pekerjaan</span>
+                      <span className="job-name-text text-[11px] sm:text-[12px] font-bold text-gray-900 capitalize truncate">{selectedPekerjaan}</span>
+                    </div>
+                    <div className="w-px h-3.5 bg-gray-200 shrink-0"></div>
+
+                    {/* Realisasi */}
+                    <div className="flex items-baseline gap-0.5 shrink-0">
+                      <span className="text-[9.5px] sm:text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0 mr-0.5">Realisasi</span>
+                      <span className="text-[11px] sm:text-[12px] font-semibold text-emerald-600 tabular-nums whitespace-nowrap">{grandTotalJurnal.toLocaleString('id-ID')}</span>
+                      <span className="text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
+                    </div>
+                    <div className="w-px h-3.5 bg-gray-200 shrink-0"></div>
+
+                    {/* Hasil Akhir */}
+                    <div className="flex items-baseline gap-0.5 shrink-0">
+                      <span className="text-[9.5px] sm:text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0 mr-0.5">Hasil Akhir</span>
+                      <span className="text-[11px] sm:text-[12px] font-semibold text-emerald-600 tabular-nums whitespace-nowrap">{grandTotal.toLocaleString('id-ID')}</span>
+                      <span className="text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
+                    </div>
+                    <div className="w-px h-3.5 bg-gray-200 shrink-0"></div>
+
+                    {/* WIP */}
+                    <div className="flex items-baseline gap-0.5 shrink-0">
+                      <span className="text-[9.5px] sm:text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0 mr-0.5">WIP</span>
+                      <span className="text-[11px] sm:text-[12px] font-semibold text-rose-600 tabular-nums whitespace-nowrap">{(selectedSopd.qty - grandTotal).toLocaleString('id-ID')}</span>
+                      <span className="text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
+                    </div>
                   </div>
                 )}
               </div>
@@ -1493,7 +1519,7 @@ export default function HasilProduksiClient() {
         
         {selectedSopd ? (
           <>
-          <div className={`bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm flex flex-col ${viewMode === 'table' ? 'lg:flex-1 lg:min-h-0 lg:overflow-hidden' : ''}`}>
+          <div className={`bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm flex flex-col relative z-[10] ${viewMode === 'table' ? 'lg:flex-1 lg:min-h-0 lg:overflow-hidden' : ''}`}>
             {activeTab === 'barang_jadi' ? (
             <div className={`flex flex-col ${viewMode === 'table' ? 'lg:flex-1 lg:min-h-0 lg:overflow-hidden' : ''}`}>
               {viewMode === 'card' ? (
