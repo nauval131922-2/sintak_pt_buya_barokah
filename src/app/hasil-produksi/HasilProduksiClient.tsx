@@ -1181,32 +1181,8 @@ export default function HasilProduksiClient() {
               </div>
             )}
 
-            {/* Level Selector & Reset Button */}
+            {/* Reset Button */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 justify-end">
-              {/* Level Selector */}
-              {activeTab === 'jurnal' && (
-                <div className="flex items-center gap-0.5 bg-slate-50 p-0.5 rounded-lg border border-slate-200 h-9 px-1.5 shrink-0">
-                  <span className="text-[10.5px] font-semibold text-slate-400 pl-1 pr-0.5 select-none">Lvl:</span>
-                  <button 
-                    type="button" 
-                    onClick={() => setDetailLevel(1)} 
-                    className={`px-2 py-1 text-[11px] font-bold rounded-md transition-all ${detailLevel === 1 ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-800'}`}
-                    title="Level 1: Hanya Subtotal Pekerjaan"
-                  >
-                    1
-                  </button>
-                  <button 
-                    type="button" 
-                    onClick={() => setDetailLevel(2)} 
-                    className={`px-2 py-1 text-[11px] font-bold rounded-md transition-all ${detailLevel === 2 ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-800'}`}
-                    title="Level 2: Detail Lengkap per Baris"
-                  >
-                    2
-                  </button>
-                </div>
-              )}
-
-              {/* Reset Button */}
               <button
                 type="button"
                 onClick={resetFilters}
@@ -1300,18 +1276,18 @@ export default function HasilProduksiClient() {
                     </div>
                     <div className="w-px h-3.5 bg-gray-200 shrink-0"></div>
 
-                    {/* Hasil Akhir */}
+                    {/* Hasil Akhir (Realisasi Bersih = Realisasi - Rijek) */}
                     <div className="flex items-baseline gap-0.5 shrink-0">
                       <span className="text-[9.5px] sm:text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0 mr-0.5">Hasil Akhir</span>
-                      <span className="text-[11px] sm:text-[12px] font-semibold text-emerald-600 tabular-nums whitespace-nowrap">{grandTotal.toLocaleString('id-ID')}</span>
+                      <span className="text-[11px] sm:text-[12px] font-semibold text-emerald-600 tabular-nums whitespace-nowrap">{(grandTotalJurnal - grandTotalRijek).toLocaleString('id-ID')}</span>
                       <span className="text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
                     </div>
                     <div className="w-px h-3.5 bg-gray-200 shrink-0"></div>
 
-                    {/* WIP */}
+                    {/* WIP (Order - Hasil Akhir Pekerjaan) */}
                     <div className="flex items-baseline gap-0.5 shrink-0">
                       <span className="text-[9.5px] sm:text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0 mr-0.5">WIP</span>
-                      <span className="text-[11px] sm:text-[12px] font-semibold text-rose-600 tabular-nums whitespace-nowrap">{(selectedSopd.qty - grandTotal).toLocaleString('id-ID')}</span>
+                      <span className="text-[11px] sm:text-[12px] font-semibold text-rose-600 tabular-nums whitespace-nowrap">{Math.max(0, selectedSopd.qty - (grandTotalJurnal - grandTotalRijek)).toLocaleString('id-ID')}</span>
                       <span className="text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
                     </div>
                   </div>
@@ -1341,10 +1317,31 @@ export default function HasilProduksiClient() {
                   </span>
                 </div>
               </div>
+              {/* Level Selector (Hanya di Tab Jurnal) — Di antara Tren dan Tab */}
+              {activeTab === 'jurnal' && (
+                <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 h-8 px-1.5 shrink-0">
+                  <span className="text-[10px] font-semibold text-gray-400 pl-0.5 pr-0.5 select-none">Lvl:</span>
+                  <button 
+                    type="button" 
+                    onClick={() => setDetailLevel(1)} 
+                    className={`px-1.5 py-0.5 text-[10.5px] font-bold rounded transition-all ${detailLevel === 1 ? 'bg-emerald-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-800'}`}
+                    title="Level 1: Hanya Subtotal Pekerjaan"
+                  >
+                    1
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => setDetailLevel(2)} 
+                    className={`px-1.5 py-0.5 text-[10.5px] font-bold rounded transition-all ${detailLevel === 2 ? 'bg-emerald-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-800'}`}
+                    title="Level 2: Detail Lengkap per Baris"
+                  >
+                    2
+                  </button>
+                </div>
+              )}
 
               {/* Bagian Kanan: Tab & View Mode */}
               <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 justify-between md:justify-end">
-                {/* Tab Selector */}
                 <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 flex-1 md:flex-none">
                   <button 
                     onClick={() => setActiveTab('jurnal')} 
