@@ -603,6 +603,24 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Hasil Produksi ───
+  'hasil-produksi-2026-09-04': entry({
+    pageKey: 'hasil-produksi',
+    title: 'Hasil Produksi',
+    permissionKeys: ['produksi_hasil'],
+    sortDate: '2026-09-04',
+    date: '04 Sep 2026',
+    version: '2026-09-04-1',
+    items: [
+      'Redesign tata letak kontrol menjadi 3 baris terstruktur: Baris 1 Parameter SOPd & Tanggal, Baris 2 Toolbar Data & Filter (Style Laporan Pekerjaan), dan Baris 3 Status Produksi, Tren Melar Fleksibel & Kontrol Tampilan',
+      'Dukungan pencarian live kata kunci sebagian (partial search) pada nama pekerjaan, karyawan, kendala, dan keterangan',
+      'Format lengkap kartu detail Pekerjaan terpilih: Pekerjaan, Realisasi, Hasil Akhir (Realisasi Bersih), dan WIP dengan kalkulasi akurat',
+      'Progress bar Tren produksi dibuat melar fleksibel (flex-1) mengisi penuh ruang kosong antar kontrol tanpa celah',
+      'Pemindahan selector Level (1 | 2) ke Baris 3 di antara Tren dan Tab Switcher untuk navigasi yang lebih ergonomis',
+      'Peningkatan responsif view mobile: Card 2 otomatis mengikuti toggle collapse/expand filter, tombol Reload & Search berdampingan 1 baris, tombol Reset melar penuh, status KPI & Pekerjaan terdistribusi rapi per baris, dan penyesuaian tinggi bar Tren agar tidak gepeng',
+      'Penyempurnaan komponen SquareDropdown: panel popup otomatis memanjang (w-max min-w-full) mengikuti teks opsi terpanjang tanpa terpotong',
+      'Optimasi query database disjunction pada endpoint /api/hasil-produksi/details dengan multi-index scan (peningkatan kecepatan hingga 220x lipat)',
+    ],
+  }),
   'hasil-produksi-2026-08-16': entry({
     pageKey: 'hasil-produksi',
     title: 'Hasil Produksi',
