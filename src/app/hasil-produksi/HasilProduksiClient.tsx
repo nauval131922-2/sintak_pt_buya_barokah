@@ -1123,38 +1123,41 @@ export default function HasilProduksiClient() {
         {/* Baris 2 Terpadu (2-Row Redesign): KPI & Tren di Kiri, Tab & Search & Mode di Kanan */}
         {/* Baris 2 (Toolbar Data): Reload, Search, Filter Bagian & Pekerjaan, Level, Reset */}
         {selectedSopd && (
-          <div className="shrink-0 bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-2 sm:p-2.5 flex flex-col lg:flex-row items-stretch lg:items-center gap-2 transition-all relative z-[80]">
-            {/* Reload Button */}
-            <button
-              type="button"
-              onClick={() => fetchDetails()}
-              disabled={loadingDetails}
-              className="h-9 px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center justify-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-xs"
-              title="Reload Data Hasil Produksi"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${loadingDetails ? 'animate-spin text-emerald-600' : ''}`} />
-              <span>Reload</span>
-            </button>
+          <div className={`${isFilterOpenMobile ? "flex flex-col" : "hidden sm:flex sm:flex-col"} shrink-0 bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-2 sm:p-2.5 lg:flex-row items-stretch lg:items-center gap-2 transition-all relative z-[80] animate-in fade-in slide-in-from-top-1 duration-200`}>
+            {/* Baris Reload & Search (1 Row di Mobile) */}
+            <div className="flex items-center gap-2 w-full lg:w-auto lg:flex-1 min-w-0">
+              {/* Reload Button */}
+              <button
+                type="button"
+                onClick={() => fetchDetails()}
+                disabled={loadingDetails}
+                className="h-9 px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center justify-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-xs"
+                title="Reload Data Hasil Produksi"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${loadingDetails ? 'animate-spin text-emerald-600' : ''}`} />
+                <span className="inline">Reload</span>
+              </button>
 
-            {/* Search Input (Style Laporan Pekerjaan) */}
-            <div className="relative flex-1 min-w-0">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Cari kata kunci (pekerjaan, karyawan, kendala)..."
-                className="w-full pl-9 pr-7 h-9 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all font-medium"
-                value={dataSearchQuery}
-                onChange={(e) => handleDataSearchChange(e.target.value)}
-              />
-              {dataSearchQuery && (
-                <button 
-                  type="button"
-                  onClick={() => handleDataSearchChange('')}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
-                >
-                  <X size={13} />
-                </button>
-              )}
+              {/* Search Input (Style Laporan Pekerjaan) */}
+              <div className="relative flex-1 min-w-0">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Cari kata kunci..."
+                  className="w-full pl-9 pr-7 h-9 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all font-medium"
+                  value={dataSearchQuery}
+                  onChange={(e) => handleDataSearchChange(e.target.value)}
+                />
+                {dataSearchQuery && (
+                  <button 
+                    type="button"
+                    onClick={() => handleDataSearchChange('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                  >
+                    <X size={13} />
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Filter Bagian & Pekerjaan */}
@@ -1181,12 +1184,12 @@ export default function HasilProduksiClient() {
               </div>
             )}
 
-            {/* Reset Button */}
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 justify-end">
+            {/* Reset Button (Melar 1 Row di Mobile) */}
+            <div className="flex items-center w-full lg:w-auto shrink-0 justify-end">
               <button
                 type="button"
                 onClick={resetFilters}
-                className="h-9 px-3 flex items-center gap-1 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0 cursor-pointer shadow-xs"
+                className="w-full lg:w-auto h-9 px-3 flex items-center justify-center gap-1 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0 cursor-pointer shadow-xs"
                 title="Reset Semua Filter"
               >
                 <X size={12} />
@@ -1220,31 +1223,31 @@ export default function HasilProduksiClient() {
             </div>
 
             {/* Konten Row 3: KPI & Tren Melar di Kiri/Tengah, Tab & Mode di Kanan */}
-            <div className={`${isControlOpenMobile ? "flex flex-col" : "hidden sm:flex sm:flex-col"} md:flex-row items-stretch md:items-center gap-2 sm:gap-2.5 p-1.5 sm:p-2 animate-in fade-in slide-in-from-top-1 duration-200`}>
+            <div className={`${isControlOpenMobile ? "flex flex-col" : "hidden sm:flex sm:flex-col"} md:flex-row items-stretch md:items-center gap-2 sm:gap-2.5 p-2 sm:p-2 animate-in fade-in slide-in-from-top-1 duration-200`}>
               {/* Bagian Kiri: KPI Metrik & Pekerjaan */}
-              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 min-w-0">
-                {/* Card 1: Order | WIP | Hasil */}
-                <div className="bg-gray-50/80 border border-gray-200/60 rounded-lg px-2 sm:px-3 h-8 flex items-center justify-around md:justify-start shrink-0 min-w-0 select-none gap-1 sm:gap-2">
+              <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 shrink-0 min-w-0">
+                {/* Card 1: Order | WIP | Hasil (Melar 1 Row di Mobile) */}
+                <div className="w-full md:w-auto bg-gray-50/80 border border-gray-200/60 rounded-lg px-2.5 sm:px-3 h-8 sm:h-8 flex items-center justify-between md:justify-start shrink-0 min-w-0 select-none gap-2">
                   <div className="flex items-baseline gap-0.5 min-w-0 shrink">
                     <span className="text-[9.5px] sm:text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0 mr-0.5">Order</span>
                     <span className="text-[11px] sm:text-[12px] font-semibold text-gray-800 tabular-nums whitespace-nowrap">{selectedSopd.qty.toLocaleString('id-ID')}</span>
-                    <span className="hidden sm:inline text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
+                    <span className="text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
                   </div>
                   <div className="w-px h-3.5 bg-gray-200 shrink-0"></div>
                   <div className="flex items-baseline gap-0.5 min-w-0 shrink">
                     <span className="text-[9.5px] sm:text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0 mr-0.5">WIP</span>
                     <span className="text-[11px] sm:text-[12px] font-semibold text-rose-600 tabular-nums whitespace-nowrap">{(selectedSopd.qty - grandTotal).toLocaleString('id-ID')}</span>
-                    <span className="hidden sm:inline text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
+                    <span className="text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
                   </div>
                   <div className="w-px h-3.5 bg-gray-200 shrink-0"></div>
                   <div className="flex items-baseline gap-0.5 min-w-0 shrink">
                     <span className="text-[9.5px] sm:text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0 mr-0.5">Hasil</span>
                     <span className="text-[11px] sm:text-[12px] font-semibold text-emerald-600 tabular-nums whitespace-nowrap">{grandTotal.toLocaleString('id-ID')}</span>
-                    <span className="hidden sm:inline text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
+                    <span className="text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
                   </div>
                 </div>
 
-                {/* Card Pekerjaan (Jika terpilih) */}
+                {/* Card Pekerjaan (Jika terpilih — Row Berbeda di Mobile, Melar Penuh) */}
                 {selectedPekerjaan && (
                   <div 
                     onClick={(e) => {
@@ -1258,55 +1261,55 @@ export default function HasilProduksiClient() {
                         setExpandedCard2(false);
                       }
                     }}
-                    className="bg-white/90 border border-gray-200/80 rounded-lg px-2.5 sm:px-3 h-8 flex items-center gap-2 sm:gap-2.5 shrink-0 select-none cursor-pointer shadow-xs"
+                    className="w-full md:w-auto bg-white/90 border border-gray-200/80 rounded-lg px-2.5 sm:px-3 h-8 sm:h-8 flex items-center justify-between md:justify-start gap-1.5 sm:gap-2.5 shrink-0 select-none cursor-pointer shadow-xs"
                     title={selectedPekerjaan}
                   >
                     {/* Nama Pekerjaan */}
-                    <div className="flex items-center gap-1.5 min-w-0 max-w-[150px] sm:max-w-[220px] lg:max-w-[280px]">
-                      <span className="text-[10px] sm:text-[11px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Pekerjaan</span>
-                      <span className="job-name-text text-[11px] sm:text-[12px] font-bold text-gray-900 capitalize truncate">{selectedPekerjaan}</span>
+                    <div className="flex items-center gap-1 min-w-0 max-w-[110px] sm:max-w-[200px] md:max-w-[180px] lg:max-w-[280px]">
+                      <span className="text-[9.5px] sm:text-[11px] font-bold text-gray-400 capitalize tracking-tight shrink-0">Pekerjaan</span>
+                      <span className="job-name-text text-[10.5px] sm:text-[12px] font-bold text-gray-900 capitalize truncate">{selectedPekerjaan}</span>
                     </div>
                     <div className="w-px h-3.5 bg-gray-200 shrink-0"></div>
 
                     {/* Realisasi */}
                     <div className="flex items-baseline gap-0.5 shrink-0">
-                      <span className="text-[9.5px] sm:text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0 mr-0.5">Realisasi</span>
-                      <span className="text-[11px] sm:text-[12px] font-semibold text-emerald-600 tabular-nums whitespace-nowrap">{grandTotalJurnal.toLocaleString('id-ID')}</span>
-                      <span className="text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
+                      <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0 mr-0.5">Realisasi</span>
+                      <span className="text-[10.5px] sm:text-[12px] font-semibold text-emerald-600 tabular-nums whitespace-nowrap">{grandTotalJurnal.toLocaleString('id-ID')}</span>
+                      <span className="text-[8px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
                     </div>
                     <div className="w-px h-3.5 bg-gray-200 shrink-0"></div>
 
                     {/* Hasil Akhir (Realisasi Bersih = Realisasi - Rijek) */}
                     <div className="flex items-baseline gap-0.5 shrink-0">
-                      <span className="text-[9.5px] sm:text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0 mr-0.5">Hasil Akhir</span>
-                      <span className="text-[11px] sm:text-[12px] font-semibold text-emerald-600 tabular-nums whitespace-nowrap">{(grandTotalJurnal - grandTotalRijek).toLocaleString('id-ID')}</span>
-                      <span className="text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
+                      <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0 mr-0.5">Hasil Akhir</span>
+                      <span className="text-[10.5px] sm:text-[12px] font-semibold text-emerald-600 tabular-nums whitespace-nowrap">{(grandTotalJurnal - grandTotalRijek).toLocaleString('id-ID')}</span>
+                      <span className="text-[8px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
                     </div>
                     <div className="w-px h-3.5 bg-gray-200 shrink-0"></div>
 
                     {/* WIP (Order - Hasil Akhir Pekerjaan) */}
                     <div className="flex items-baseline gap-0.5 shrink-0">
-                      <span className="text-[9.5px] sm:text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0 mr-0.5">WIP</span>
-                      <span className="text-[11px] sm:text-[12px] font-semibold text-rose-600 tabular-nums whitespace-nowrap">{Math.max(0, selectedSopd.qty - (grandTotalJurnal - grandTotalRijek)).toLocaleString('id-ID')}</span>
-                      <span className="text-[8.5px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
+                      <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 capitalize tracking-tight shrink-0 mr-0.5">WIP</span>
+                      <span className="text-[10.5px] sm:text-[12px] font-semibold text-rose-600 tabular-nums whitespace-nowrap">{Math.max(0, selectedSopd.qty - (grandTotalJurnal - grandTotalRijek)).toLocaleString('id-ID')}</span>
+                      <span className="text-[8px] sm:text-[9px] font-bold text-gray-400 shrink-0">{selectedSopd.unit}</span>
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Bagian Tengah: Tren Progress Bar Melar Fleksibel (100% mengisi kekosongan) */}
-              <div className="flex-1 min-w-[140px] bg-gray-50/80 border border-gray-200/60 rounded-lg px-2 sm:px-2.5 h-8 flex items-center gap-2">
+              {/* Bagian Tengah: Tren Progress Bar Melar Fleksibel (Tinggi h-9 di Mobile agar tidak gepeng) */}
+              <div className="w-full md:flex-1 min-w-[140px] bg-gray-50/80 border border-gray-200/60 rounded-lg px-2.5 sm:px-2.5 h-9 sm:h-8 flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setShowChart(!showChart)}
-                  className={`px-2 py-0.5 rounded text-[10.5px] font-semibold transition-all shadow-none shrink-0 ${
+                  className={`px-2 py-1 sm:py-0.5 rounded text-[10.5px] font-semibold transition-all shadow-none shrink-0 ${
                     showChart ? 'bg-emerald-600 text-white' : 'border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white'
                   }`}
                 >
                   Tren
                 </button>
                 <div className="flex-1 flex items-center gap-2 min-w-0">
-                  <div className="flex-1 h-2 bg-gray-200/70 rounded-full relative overflow-hidden min-w-[40px]">
+                  <div className="flex-1 h-2.5 sm:h-2 bg-gray-200/70 rounded-full relative overflow-hidden min-w-[40px]">
                     <div 
                       className={`h-full transition-all duration-1000 ease-out rounded-full ${grandTotal >= selectedSopd.qty ? 'bg-emerald-500 shadow-xs' : 'bg-emerald-400'}`} 
                       style={{ width: `${Math.min(100, (grandTotal / selectedSopd.qty) * 100)}%` }} 
@@ -1317,32 +1320,34 @@ export default function HasilProduksiClient() {
                   </span>
                 </div>
               </div>
-              {/* Level Selector (Hanya di Tab Jurnal) — Di antara Tren dan Tab */}
-              {activeTab === 'jurnal' && (
-                <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 h-8 px-1.5 shrink-0">
-                  <span className="text-[10px] font-semibold text-gray-400 pl-0.5 pr-0.5 select-none">Lvl:</span>
-                  <button 
-                    type="button" 
-                    onClick={() => setDetailLevel(1)} 
-                    className={`px-1.5 py-0.5 text-[10.5px] font-bold rounded transition-all ${detailLevel === 1 ? 'bg-emerald-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-800'}`}
-                    title="Level 1: Hanya Subtotal Pekerjaan"
-                  >
-                    1
-                  </button>
-                  <button 
-                    type="button" 
-                    onClick={() => setDetailLevel(2)} 
-                    className={`px-1.5 py-0.5 text-[10.5px] font-bold rounded transition-all ${detailLevel === 2 ? 'bg-emerald-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-800'}`}
-                    title="Level 2: Detail Lengkap per Baris"
-                  >
-                    2
-                  </button>
-                </div>
-              )}
 
-              {/* Bagian Kanan: Tab & View Mode */}
-              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 flex-1 md:flex-none">
+              {/* Bagian Kanan: Level Selector, Tab Switcher & View Mode (1 Row di Mobile) */}
+              <div className="flex items-center gap-1.5 sm:gap-2 w-full md:w-auto shrink-0 justify-between md:justify-end">
+                {/* Level Selector (Hanya di Tab Jurnal) */}
+                {activeTab === 'jurnal' && (
+                  <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 h-8 px-1.5 shrink-0">
+                    <span className="text-[10px] font-semibold text-gray-400 pl-0.5 pr-0.5 select-none">Lvl:</span>
+                    <button 
+                      type="button" 
+                      onClick={() => setDetailLevel(1)} 
+                      className={`px-1.5 py-0.5 text-[10.5px] font-bold rounded transition-all ${detailLevel === 1 ? 'bg-emerald-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-800'}`}
+                      title="Level 1: Hanya Subtotal Pekerjaan"
+                    >
+                      1
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => setDetailLevel(2)} 
+                      className={`px-1.5 py-0.5 text-[10.5px] font-bold rounded transition-all ${detailLevel === 2 ? 'bg-emerald-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-800'}`}
+                      title="Level 2: Detail Lengkap per Baris"
+                    >
+                      2
+                    </button>
+                  </div>
+                )}
+
+                {/* Tab Selector */}
+                <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 flex-1 md:flex-none justify-center">
                   <button 
                     onClick={() => setActiveTab('jurnal')} 
                     className={`flex-1 md:flex-none px-2.5 sm:px-3 py-1 rounded-md text-[10.5px] sm:text-[11px] font-bold whitespace-nowrap flex items-center justify-center transition-all ${activeTab === 'jurnal' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`}
