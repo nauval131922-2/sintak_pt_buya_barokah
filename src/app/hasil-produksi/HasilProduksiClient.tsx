@@ -1220,7 +1220,7 @@ export default function HasilProduksiClient() {
             </div>
 
             {/* Konten Row 3: KPI & Tren Melar di Kiri/Tengah, Tab & Mode di Kanan */}
-            <div className={`${isControlOpenMobile ? "flex flex-col" : "hidden sm:flex sm:flex-col"} md:flex-row items-stretch md:items-center justify-between gap-2.5 p-1.5 sm:p-2 animate-in fade-in slide-in-from-top-1 duration-200`}>
+            <div className={`${isControlOpenMobile ? "flex flex-col" : "hidden sm:flex sm:flex-col"} md:flex-row items-stretch md:items-center gap-2 sm:gap-2.5 p-1.5 sm:p-2 animate-in fade-in slide-in-from-top-1 duration-200`}>
               {/* Bagian Kiri: KPI Metrik & Pekerjaan */}
               <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 min-w-0">
                 {/* Card 1: Order | WIP | Hasil */}
@@ -1244,7 +1244,7 @@ export default function HasilProduksiClient() {
                   </div>
                 </div>
 
-                {/* Card Pekerjaan (Jika terpilih) — Format Lengkap: Pekerjaan, Realisasi, Hasil Akhir, WIP */}
+                {/* Card Pekerjaan (Jika terpilih) */}
                 {selectedPekerjaan && (
                   <div 
                     onClick={(e) => {
@@ -1294,8 +1294,8 @@ export default function HasilProduksiClient() {
                 )}
               </div>
 
-              {/* Bagian Tengah: Tren Progress Bar Melar Fleksibel */}
-              <div className="flex-1 min-w-[140px] max-w-xl mx-1 bg-gray-50/80 border border-gray-200/60 rounded-lg px-2 sm:px-2.5 h-8 flex items-center gap-2">
+              {/* Bagian Tengah: Tren Progress Bar Melar Fleksibel (100% mengisi kekosongan) */}
+              <div className="flex-1 min-w-[140px] bg-gray-50/80 border border-gray-200/60 rounded-lg px-2 sm:px-2.5 h-8 flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setShowChart(!showChart)}
@@ -1341,7 +1341,7 @@ export default function HasilProduksiClient() {
               )}
 
               {/* Bagian Kanan: Tab & View Mode */}
-              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 justify-between md:justify-end">
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                 <div className="flex items-center gap-0.5 bg-gray-100/70 p-0.5 rounded-lg border border-gray-200/60 flex-1 md:flex-none">
                   <button 
                     onClick={() => setActiveTab('jurnal')} 
