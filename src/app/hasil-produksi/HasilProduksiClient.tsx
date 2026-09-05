@@ -784,9 +784,61 @@ export default function HasilProduksiClient() {
   }, [sortedJurnalResults, sorting]);
 
   const displayRows = React.useMemo(() => {
-    if (detailLevel === 1) return flatRows.filter(r => r.type === 'subtotal');
+    if (detailLevel === 1) {
+      // Jika disortir non-pekerjaan, agregasikan seluruh subtotal per jenis pekerjaan utuh
+      // agar pekerjaan yang sama tidak terpecah menjadi beberapa subtotal kecil terpisah
+      if (sorting.some(s => s.i !== 4)) {
+        const subtotalMap = new Map<string, any>();
+        const src = sortedJurnalResults;
+        const allItems = src.flatMap(g => (g.items || []).map((item: any) => ({ item, g })));
+        
+        allItems.forEach(({ item, g }) => {
+          const jobName = item.jenis_pekerjaan_2 || 'Pekerjaan';
+          const jobKey = jobName.toLowerCase();
+          if (!subtotalMap.has(jobKey)) {
+            subtotalMap.set(jobKey, {
+              type: 'subtotal',
+              jobDisplayName: jobName,
+              code: g?.code || '',
+              totalR: 0,
+              totalRijek: 0,
+              totalTarget: 0,
+              dates: [] as string[],
+              gIdx: 0,
+              _sk: 0,
+            });
+          }
+          const entry = subtotalMap.get(jobKey)!;
+          entry.totalR += Number(item.realisasi || 0);
+          entry.totalRijek += Number(item.rijek || 0);
+          entry.totalTarget += Number(item.target || 0);
+          if (item.tgl) entry.dates.push(item.tgl);
+        });
+
+        let sk = 0;
+        return Array.from(subtotalMap.values()).map(entry => {
+          const sortedDates = entry.dates.filter(Boolean).sort();
+          let dateLabel = formatToDayMonthYear(sortedDates[0]);
+          if (sortedDates[0] && sortedDates[sortedDates.length - 1] && sortedDates[0] !== sortedDates[sortedDates.length - 1]) {
+            dateLabel = `${formatToDayMonthYear(sortedDates[0])} s.d. ${formatToDayMonthYear(sortedDates[sortedDates.length - 1])}`;
+          }
+          return {
+            type: 'subtotal',
+            jobDisplayName: entry.jobDisplayName,
+            dateLabel,
+            totalR: entry.totalR,
+            totalRijek: entry.totalRijek,
+            totalTarget: entry.totalTarget,
+            gIdx: 0,
+            _sk: sk++,
+            code: entry.code,
+          };
+        });
+      }
+      return flatRows.filter(r => r.type === 'subtotal');
+    }
     return flatRows;
-  }, [flatRows, detailLevel]);
+  }, [flatRows, detailLevel, sorting, sortedJurnalResults]);
 
   // Card view renderer — Jurnal Produksi (Standard Flex Layout)
   const jurnalCardContent = React.useMemo(() => {
