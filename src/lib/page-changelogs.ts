@@ -603,6 +603,19 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Hasil Produksi ───
+  'hasil-produksi-2026-09-05': entry({
+    pageKey: 'hasil-produksi',
+    title: 'Hasil Produksi',
+    permissionKeys: ['produksi_hasil'],
+    sortDate: '2026-09-05',
+    date: '05 Sep 2026',
+    version: '2026-09-05-1',
+    items: [
+      'Perbaikan agregasi Level 1 saat pengurutan kolom: seluruh baris dari jenis pekerjaan yang sama diagregasi menjadi tepat satu kartu/baris subtotal utuh tanpa duplikasi',
+      'Penyempurnaan subtotal pekerjaan tunggal: pekerjaan yang hanya memiliki 1 baris data kini selalu dibuatkan subtotal sehingga tetap tampil lengkap pada filter Level 1 saat data disortir',
+      'Peningkatan akurasi rentang tanggal dan akumulasi kuantiti pada kartu ringkasan pekerjaan saat sorting non-pekerjaan aktif',
+    ],
+  }),
   'hasil-produksi-2026-09-04': entry({
     pageKey: 'hasil-produksi',
     title: 'Hasil Produksi',
