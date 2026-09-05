@@ -707,13 +707,24 @@ export default function HasilProduksiClient() {
         const totalR = streak.reduce((s, x) => s + Number(x.realisasi || 0), 0);
         const totalRijek = streak.reduce((s, x) => s + Number(x.rijek || 0), 0);
         const totalTarget = streak.reduce((s, x) => s + Number(x.target || 0), 0);
-        if (streak.length > 1) {
-          const dates = streak.map(x => x.tgl).filter(Boolean).sort();
-          let dateLabel = formatToDayMonthYear(dates[0]);
-          if (dates[0] && dates[dates.length-1] && dates[0] !== dates[dates.length-1]) dateLabel = `${formatToDayMonthYear(dates[0])} s.d. ${formatToDayMonthYear(dates[dates.length-1])}`;
-          rows.push({ type: 'subtotal', jobDisplayName: streak[0]?.jenis_pekerjaan_2 || 'Pekerjaan', dateLabel, totalR, totalRijek, totalTarget, gIdx: 0, _sk: _sk++, code: streakCode });
+        const dates = streak.map(x => x.tgl).filter(Boolean).sort();
+        let dateLabel = formatToDayMonthYear(dates[0]);
+        if (dates[0] && dates[dates.length - 1] && dates[0] !== dates[dates.length - 1]) {
+          dateLabel = `${formatToDayMonthYear(dates[0])} s.d. ${formatToDayMonthYear(dates[dates.length - 1])}`;
         }
-        streak = []; streakCode = '';
+        rows.push({
+          type: 'subtotal',
+          jobDisplayName: streak[0]?.jenis_pekerjaan_2 || 'Pekerjaan',
+          dateLabel,
+          totalR,
+          totalRijek,
+          totalTarget,
+          gIdx: 0,
+          _sk: _sk++,
+          code: streakCode,
+        });
+        streak = [];
+        streakCode = '';
       };
       allItems.forEach(({ item, g }, i) => {
         const jobKey = (item.jenis_pekerjaan_2 || '').toLowerCase();
