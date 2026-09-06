@@ -848,10 +848,10 @@ export default function LaporanPekerjaanClient({
     setSelectedRowIndex(null);
   }, [currentPage]);
   const tableTheadRef = useRef<HTMLTableSectionElement>(null);
+  const fixedHeaderTableRef = useRef<HTMLTableElement>(null);
   const [showFixedLandscapeHeader, setShowFixedLandscapeHeader] = useState(false);
   const [fixedHeaderTop, setFixedHeaderTop] = useState(0);
   const [fixedHeaderRect, setFixedHeaderRect] = useState({ left: 0, width: 0 });
-  const [fixedScrollLeft, setFixedScrollLeft] = useState(0);
 
   // Fixed thead di viewport atas khusus saat mobile landscape + reset scroll saat kembali portrait
   useEffect(() => {
@@ -2616,9 +2616,9 @@ export default function LaporanPekerjaanClient({
             style={{ top: fixedHeaderTop, left: fixedHeaderRect.left, width: fixedHeaderRect.width }}
           >
             <table
+              ref={fixedHeaderTableRef}
               className="text-left border-collapse table-fixed"
               style={{
-                transform: `translateX(-${fixedScrollLeft}px)`,
                 fontSize: `${tableFontSize}px`,
                 width: tableContainerRef.current?.querySelector("table")?.offsetWidth
                   ? `${tableContainerRef.current.querySelector("table")!.offsetWidth}px`
@@ -2765,7 +2765,7 @@ export default function LaporanPekerjaanClient({
         {/* Tampilan Tabel khusus Tablet & Desktop */}
         <div
           ref={tableContainerRef}
-          onScroll={(e) => setFixedScrollLeft(e.currentTarget.scrollLeft)}
+          onScroll={(e) => { fixedHeaderTableRef.current?.style.setProperty("transform", `translateX(-${e.currentTarget.scrollLeft}px)`); }}
           className={`hidden sm:block overflow-x-auto overflow-y-auto custom-scrollbar transition-all duration-200 laporan-pekerjaan-table-container ${
             isAnalyticsOpen
               ? "max-h-[300px] sm:max-h-[480px] shrink-0"
