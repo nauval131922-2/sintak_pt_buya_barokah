@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
       FROM laporan_pekerjaan lp
       WHERE 1=1
     `;
-    const args: any[] = [];
+    const args: unknown[] = [];
 
     if (pic) {
       sql += " AND LOWER(lp.pic) = ?";

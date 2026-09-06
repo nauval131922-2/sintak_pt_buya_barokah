@@ -903,19 +903,23 @@ export default function LaporanPekerjaanClient({
     }
   };
 
+  const fetchAbortRef = useRef<AbortController | null>(null);
   const fetchData = useCallback(async (force = false) => {
+    // Batalkan request lama yang masih jalan agar tidak menumpuk saat filter berubah cepat
+    fetchAbortRef.current?.abort();
+    const ctrl = new AbortController();
+    fetchAbortRef.current = ctrl;
     const startTime = performance.now();
     setLoading(true);
     setError(null);
     try {
       const url = force ? "/api/laporan-pekerjaan?sync=true" : "/api/laporan-pekerjaan";
-      const res = await fetch(url);
+      const res = await fetch(url, { signal: ctrl.signal });
       const json = await res.json();
       if (json.success) {
         setTasks(json.data);
         setLastUpdated(new Date());
         setLoadTime(Math.round(performance.now() - startTime));
-        
         // Handle conflicts
         if (json.conflicts && json.conflicts.length > 0) {
           setConflicts(json.conflicts);
@@ -925,10 +929,11 @@ export default function LaporanPekerjaanClient({
       } else {
         setError(json.error || "Gagal mengambil data laporan pekerjaan");
       }
-    } catch (err: any) {
-      setError(err.message || "Terjadi kesalahan koneksi");
+    } catch (err: unknown) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan koneksi");
     } finally {
-      setLoading(false);
+      if (fetchAbortRef.current === ctrl) setLoading(false);
     }
   }, []);
 
