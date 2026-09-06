@@ -2777,7 +2777,12 @@ export default function LaporanPekerjaanClient({
                 <div
                   ref={fixedHeaderRef}
                   style={fixedHeaderStyle}
-                  className="fixed z-40 overflow-hidden shadow-sm bg-slate-50 border-b border-slate-200 pointer-events-auto select-none"
+                  onScroll={(e) => {
+                    if (tableContainerRef.current) {
+                      tableContainerRef.current.scrollLeft = e.currentTarget.scrollLeft;
+                    }
+                  }}
+                  className="fixed z-40 overflow-x-auto overflow-y-hidden shadow-sm bg-slate-50 border-b border-slate-200 pointer-events-auto select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                 >
                   <table
                     className="text-left border-collapse table-fixed"
@@ -3012,7 +3017,7 @@ export default function LaporanPekerjaanClient({
         totalPages={totalPages}
         onPageChange={setCurrentPage}
       />
-
+      {!isAnalyticsOpen && <div className="laporan-pekerjaan-bottom-spacer" aria-hidden />}
       {/* Floating Scroll Navigation (Ke Atas & Ke Bawah - Fade total saat idle) */}
       {(showTopBtn || showBottomBtn) && (
         <Portal>
