@@ -148,6 +148,19 @@ Project ini adalah aplikasi Next.js App Router berbasis TypeScript untuk operasi
 - **Page Changelog**: entry manual per rilis di `src/lib/page-changelogs.ts` — tambah entry baru, **jangan hapus entry lama** (history rilis tampil di modal ✨ & `/log-perubahan`).
 - **Activity Log manual**: tabel bervolume tinggi (lihat daftar di `AGENTS.md`) tidak punya trigger otomatis — scraping/import massal wajib insert `activity_logs` manual.
 
+
+## Arsitektur RBAC, Hak Akses & Navigasi
+
+Rantai otorisasi modul dan visibilitas menu SINTAK berjalan melalui alur berikut:
+
+1. **Registri Modul & Key**: `src/lib/permissions-constants.ts` (`MODULE_REGISTRY` & `group` metadata). Setiap modul punya key unik dan string prefix grup (`'Sistem - ...'`, `'Data Digit - ...'`).
+2. **Penyimpanan Database**: tabel `role_permissions` (kolom `role`, `module_key`, `can_access`).
+3. **Otorisasi Server**: `src/lib/permissions.ts` (`getMergedPermissions(roles)` untuk gabungan izin user, `requirePermission('key')` di server component `page.tsx`).
+4. **Rantai UI Sidebar**:
+   - `src/app/layout.tsx` memanggil `getMergedPermissions(userRoles)` dan meneruskan objek `permissions` ke `MainContentWrapper` -> `Sidebar`.
+   - `src/components/Sidebar.tsx` mengevaluasi visibilitas menu dengan `canAccess(key)`. Section parent (`hasSistemAccess`, `hasDataDigitAccess`) dihitung dinamis dari grup `MODULE_REGISTRY` agar tidak perlu mendaftar permission manual.
+5. **Troubleshooting Menu Hilang di UI**:
+   - **Wajib Bottom-Up Boolean Trace**: Jangan langsung cek DB atau session. Buka `src/components/Sidebar.tsx`, cari `href` menu terkait, lalu telusuri guard `&&` dan kondisi parent langsung ke atas pembungkus JSX-nya.
 ## Tests and Verification
 
 - Test/verifier yang terlihat: `test/infractions_timestamp_test.js` dan `test/verify_updated_at.js`.

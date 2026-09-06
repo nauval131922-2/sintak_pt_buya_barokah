@@ -38,7 +38,7 @@ import {
   Sparkles,
   FileSpreadsheet,
 } from 'lucide-react';
-import type { PermissionMap } from '@/lib/permissions-constants';
+import { MODULE_REGISTRY, type PermissionMap } from '@/lib/permissions-constants';
 
 
 // --- Shared types ---
@@ -268,12 +268,12 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
     return permissions[moduleKey] === true;
   };
 
+  const hasDataDigitAccess = user?.role === 'Super Admin' ||
+    MODULE_REGISTRY.some(m => m.group.startsWith('Data Digit') && permissions[m.key] === true);
+
   const hasSistemAccess = user?.role === 'Super Admin' ||
-    canAccess('tracking_manufaktur') || canAccess('activity_log_view') || canAccess('activity_log') || canAccess('karyawan') ||
-    canAccess('catat_kesalahan') ||
-    canAccess('hpp_kalkulasi') || canAccess('pricelist_kalkulasi') ||
-    canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp_master_pekerjaan_jurnal_produksi') || canAccess('produksi_jhp') || canAccess('produksi_jhp_target') || canAccess('produksi_hasil') || canAccess('produksi_jhp_analisa') || canAccess('produksi_laporan_pekerjaan') ||
-    canAccess('kalkulasi_rekap_so') || canAccess('telegram_users');
+    canAccess('activity_log') ||
+    MODULE_REGISTRY.some(m => m.group.startsWith('Sistem') && permissions[m.key] === true);
 
   const isAnyChildActive = (item: MenuItem): boolean => {
     if (item.href && checkIsActive(item.href, item.exact)) return true;
@@ -393,14 +393,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
         )}
 
         {/* DATA DIGIT */}
-        {(canAccess('sync') ||
-          canAccess('pembelian_pr') || canAccess('pembelian_spph') || canAccess('pembelian_sph_in') ||
-          canAccess('pembelian_po') || canAccess('pembelian_penerimaan') || canAccess('pembelian_rekap') || canAccess('pembelian_hutang') ||
-          canAccess('produksi_bom') || canAccess('produksi_orders') || canAccess('produksi_selesai') || canAccess('produksi_bahan_baku') || canAccess('produksi_barang_jadi') || canAccess('stok_master_barang') ||
-          canAccess('penjualan_sph_out') || canAccess('penjualan_so') || canAccess('penjualan_laporan') ||
-          canAccess('penjualan_piutang') || canAccess('penjualan_pengiriman') ||
-          canAccess('akt_jurnal_umum') || canAccess('akt_mrek') ||
-          canAccess('usr_log_view')) && (
+        {hasDataDigitAccess && (
           <>
             <SectionLabel label="DATA DIGIT" />
             <div className="space-y-1">
