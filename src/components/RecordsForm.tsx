@@ -457,7 +457,7 @@ export default function RecordsForm({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
           <div className="lg:col-span-5 flex flex-col gap-6">
-            <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl p-5 shadow-sm shadow-emerald-900/5">
+            <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl p-5 shadow-sm shadow-emerald-900/5 relative z-30">
               <div className={sectionHeaderCls}>
                 <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                   <ClipboardList size={18} />
@@ -502,7 +502,7 @@ export default function RecordsForm({
               </div>
             </div>
 
-            <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl p-5 shadow-sm shadow-emerald-900/5">
+            <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl p-5 shadow-sm shadow-emerald-900/5 relative z-10">
               <div className={sectionHeaderCls}>
                 <div className="w-10 h-10 rounded-lg bg-red-50 text-red-600 flex items-center justify-center shrink-0">
                   <ShieldAlert size={18} />
@@ -553,7 +553,7 @@ export default function RecordsForm({
           </div>
 
           <div className="lg:col-span-7 flex flex-col gap-6">
-            <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl p-5 shadow-sm shadow-emerald-900/5 overflow-visible text-black">
+            <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl p-5 shadow-sm shadow-emerald-900/5 overflow-visible text-black relative z-20">
               <div className={sectionHeaderCls}>
                 <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                   <Box size={16} />
