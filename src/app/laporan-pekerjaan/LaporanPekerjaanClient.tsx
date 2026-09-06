@@ -848,53 +848,66 @@ export default function LaporanPekerjaanClient({
     setSelectedRowIndex(null);
   }, [currentPage]);
   const tableTheadRef = useRef<HTMLTableSectionElement>(null);
+  const fixedHeaderRef = useRef<HTMLDivElement>(null);
+  const [showFixedLandscapeHeader, setShowFixedLandscapeHeader] = useState(false);
+  const [fixedHeaderStyle, setFixedHeaderStyle] = useState<React.CSSProperties>({});
 
-  // Sticky thead di viewport atas khusus saat mobile landscape (natural window scroll)
+  // Fixed thead di viewport atas khusus saat mobile landscape (Rock-solid, zero jitter via position:fixed)
   useEffect(() => {
-    let rafId: number | null = null;
+    const updateFixedHeader = () => {
+      const thead = tableTheadRef.current;
+      const container = tableContainerRef.current;
+      if (!thead || !container) return;
 
-    const handleScroll = () => {
-      if (rafId !== null) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = null;
-        const thead = tableTheadRef.current;
-        const container = tableContainerRef.current;
-        if (!thead || !container) return;
+      const isLandscapeMobile = window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
+      if (!isLandscapeMobile) {
+        setShowFixedLandscapeHeader(false);
+        return;
+      }
 
-        const isLandscapeMobile = window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
-        if (!isLandscapeMobile) {
-          if (thead.style.transform) {
-            thead.style.transform = '';
-            thead.style.zIndex = '';
-            thead.style.willChange = '';
-          }
-          return;
-        }
+      const containerRect = container.getBoundingClientRect();
+      const theadH = thead.offsetHeight;
 
-        const containerRect = container.getBoundingClientRect();
-        const theadH = thead.offsetHeight;
-        const portalRoot = document.querySelector('[data-portal-root]');
-        const zoom = portalRoot ? (parseFloat(window.getComputedStyle(portalRoot).zoom) || 1) : 1;
-
-        if (containerRect.top < 0 && containerRect.bottom > theadH * zoom) {
-          const translateY = Math.round((-containerRect.top) / zoom);
-          thead.style.willChange = 'transform';
-          thead.style.transform = `translate3d(0, ${translateY}px, 0)`;
-          thead.style.zIndex = '30';
-        } else {
-          thead.style.transform = '';
-          thead.style.zIndex = '';
-          thead.style.willChange = '';
-        }
-      });
+      // Saat bagian atas kontainer tabel lewat di atas layar dan tabel masih terlihat
+      if (containerRect.top <= 0 && containerRect.bottom > theadH) {
+        setShowFixedLandscapeHeader(true);
+        setFixedHeaderStyle({
+          position: 'fixed',
+          top: 0,
+          left: `${containerRect.left}px`,
+          width: `${container.clientWidth}px`,
+          height: `${theadH}px`,
+        });
+      } else if (containerRect.top <= 0 && containerRect.bottom <= theadH && containerRect.bottom > 0) {
+        setShowFixedLandscapeHeader(true);
+        setFixedHeaderStyle({
+          position: 'fixed',
+          top: `${containerRect.bottom - theadH}px`,
+          left: `${containerRect.left}px`,
+          width: `${container.clientWidth}px`,
+          height: `${theadH}px`,
+        });
+      } else {
+        setShowFixedLandscapeHeader(false);
+      }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', handleScroll, { passive: true });
+    window.addEventListener('scroll', updateFixedHeader, { passive: true });
+    window.addEventListener('resize', updateFixedHeader, { passive: true });
+
+    // Sync scroll horizontal ke fixed header
+    const container = tableContainerRef.current;
+    const handleHorizontalScroll = () => {
+      if (fixedHeaderRef.current && container) {
+        fixedHeaderRef.current.scrollLeft = container.scrollLeft;
+      }
+    };
+    container?.addEventListener('scroll', handleHorizontalScroll, { passive: true });
+
     return () => {
-      if (rafId !== null) cancelAnimationFrame(rafId);
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleScroll);
+      window.removeEventListener('scroll', updateFixedHeader);
+      window.removeEventListener('resize', updateFixedHeader);
+      container?.removeEventListener('scroll', handleHorizontalScroll);
     };
   }, []);
 
@@ -2756,7 +2769,55 @@ export default function LaporanPekerjaanClient({
             className="text-left border-collapse table-fixed"
             style={{ fontSize: `${tableFontSize}px` }}
           >
-            <thead ref={tableTheadRef} className="sticky top-0 z-20 bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 shadow-sm transition-none">
+            {/* Cloned Fixed Header untuk Mobile Landscape (Bebas jitter, 100% smooth) */}
+            {showFixedLandscapeHeader && (
+              <Portal>
+                <div
+                  ref={fixedHeaderRef}
+                  style={fixedHeaderStyle}
+                  className="fixed z-40 overflow-hidden shadow-sm bg-slate-50 border-b border-slate-200 pointer-events-auto select-none"
+                >
+                  <table
+                    className="text-left border-collapse table-fixed"
+                    style={
+                      {
+                        fontSize: `${tableFontSize}px`,
+                        width: tableContainerRef.current?.querySelector("table")?.offsetWidth
+                          ? `${tableContainerRef.current.querySelector("table")!.offsetWidth}px`
+                          : "100%",
+                        "--col-aksi": `${colWidths.aksi || 110}px`,
+                        "--col-tglOrder": `${colWidths.tglOrder || 150}px`,
+                        "--col-project": `${colWidths.project || 450}px`,
+                        "--col-progress": `${colWidths.progress || 140}px`,
+                        "--col-terakhir": `${colWidths.terakhir || 200}px`,
+                        "--col-selanjutnya": `${colWidths.selanjutnya || 200}px`,
+                        "--col-note": `${colWidths.note || 200}px`,
+                      } as React.CSSProperties
+                    }
+                  >
+                    <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 shadow-sm">
+                      <tr className="bg-slate-50">
+                        <th
+                          style={{ width: "var(--col-aksi, 130px)", minWidth: "var(--col-aksi, 130px)" }}
+                          className="relative px-3 py-2.5 text-center bg-slate-50 border-b border-slate-200 select-none group"
+                        >
+                          <span className="truncate">Aksi</span>
+                        </th>
+                        {renderSortableHeader("tglOrder", "Tanggal Order", false, false)}
+                        {renderSortableHeader("project", "Project Order")}
+                        {renderSortableHeader("progress", "Progress")}
+                        {renderSortableHeader("terakhir", "Pekerjaan Terakhir")}
+                        {renderSortableHeader("selanjutnya", "Pekerjaan Selanjutnya")}
+                        {renderSortableHeader("note", "Note")}
+                        <th className="px-0" aria-hidden />
+                      </tr>
+                    </thead>
+                  </table>
+                </div>
+              </Portal>
+            )}
+
+            <thead ref={tableTheadRef} className="sticky top-0 z-20 bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 shadow-sm">
               <tr className="bg-slate-50">
                 <th
                   style={{ width: "var(--col-aksi, 130px)", minWidth: "var(--col-aksi, 130px)" }}

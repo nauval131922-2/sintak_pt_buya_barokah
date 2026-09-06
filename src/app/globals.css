@@ -183,7 +183,7 @@ body {
   #main-content-scroll.laporan-pekerjaan-scroll {
     overflow: visible !important;
     height: auto !important;
-    padding-bottom: 2.5rem !important;
+    padding-bottom: 9rem !important;
   }
   .laporan-pekerjaan-page-root {
     flex: none !important;
