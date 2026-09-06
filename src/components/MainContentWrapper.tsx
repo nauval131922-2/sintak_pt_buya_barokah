@@ -179,7 +179,7 @@ function MainContentInner({
         </div>
         
         {/* Main Content - internal scroll area */}
-        <div id="main-content-scroll" className={`flex-1 min-h-0 flex flex-col min-w-0 ${isLaporanPekerjaanPage ? 'overflow-hidden' : 'overflow-y-auto'} custom-scrollbar bg-[var(--bg-deep)] px-4 xl:px-8 pt-2 xl:pt-3 pb-16 xl:pb-6`}>
+        <div id="main-content-scroll" className={`flex-1 min-h-0 flex flex-col min-w-0 ${isLaporanPekerjaanPage ? 'overflow-hidden laporan-pekerjaan-scroll' : 'overflow-y-auto'} custom-scrollbar bg-[var(--bg-deep)] px-4 xl:px-8 pt-2 xl:pt-3 pb-16 xl:pb-6`}>
           {/* Header Mobile KHUSUS halaman Laporan Pekerjaan di dalam scroll area */}
           {isLaporanPekerjaanPage && (
             <div className="block md:hidden -mx-4 -mt-2 mb-2">

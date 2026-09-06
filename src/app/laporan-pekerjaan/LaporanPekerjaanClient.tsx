@@ -1920,7 +1920,7 @@ export default function LaporanPekerjaanClient({
   return (
     <div
       ref={clientContainerRef}
-      className={`text-slate-800 flex-1 min-h-0 flex flex-col gap-3 ${
+      className={`text-slate-800 flex-1 min-h-0 flex flex-col gap-3 laporan-pekerjaan-client-root ${
         isAnalyticsOpen ? "overflow-y-auto pb-12" : "overflow-hidden"
       }`}
     >
@@ -2465,9 +2465,9 @@ export default function LaporanPekerjaanClient({
               </div>
             </div>
 
-            {/* Baris Filter 2 di Mobile: Bagian (50%) & PIC (50%) */}
-            <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-1.5 w-full sm:w-auto">
-              {showBagianFilter && (
+            {/* Baris Filter Bagian (Desktop/Tablet) */}
+            {showBagianFilter && (
+              <div className="w-full sm:w-auto">
                 <SquareDropdown
                   options={bagianOptions}
                   value={selectedBagianFilter}
@@ -2475,8 +2475,11 @@ export default function LaporanPekerjaanClient({
                   searchPlaceholder="Cari Bagian..."
                   widthClass="w-full sm:w-28 md:w-32 lg:w-36"
                 />
-              )}
+              </div>
+            )}
 
+            {/* Baris Filter PIC (50%) & Status (50%) di Mobile (1 Row 50-50) */}
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-1.5 w-full sm:w-auto">
               {showPicFilter && (
                 <SquareDropdown
                   options={picOptions}
@@ -2486,34 +2489,34 @@ export default function LaporanPekerjaanClient({
                   widthClass="w-full sm:w-28 md:w-32 lg:w-36"
                 />
               )}
-            </div>
 
-            {/* Baris Filter 3 di Mobile: Status (100% penuh) & Tombol Reset */}
-            <div className="flex items-center gap-2 w-full sm:w-auto">
               <SquareDropdown
                 options={statusOptions}
                 value={selectedStatus}
                 onChange={setSelectedStatus}
                 searchPlaceholder="Cari Status..."
-                widthClass="flex-1 sm:w-28 md:w-32 lg:w-36"
+                widthClass="w-full sm:w-28 md:w-32 lg:w-36"
               />
+            </div>
 
-              {/* Pengatur Ukuran Font Tabel Utama (Desktop) */}
-              <FontSizeControl
-                value={tableFontSize}
-                onChange={changeTableFontSize}
-                className="hidden sm:flex"
-              />
+            {/* Pengatur Ukuran Font Tabel Utama (Desktop) */}
+            <FontSizeControl
+              value={tableFontSize}
+              onChange={changeTableFontSize}
+              className="hidden sm:flex"
+            />
 
-              {(selectedBagianFilter !== "ALL" ||
-                selectedPic !== "ALL" ||
-                selectedStatus !== "ALL" ||
-                searchTerm !== "" ||
-                filterStartDate !== null ||
-                filterEndDate !== null ||
-                filterStartTime !== "" ||
-                filterEndTime !== "" ||
-                tableFontSize !== 12) && (
+            {/* Tombol Reset Filter: 100% penuh di baris bawah pada Mobile, auto di Desktop */}
+            {(selectedBagianFilter !== "ALL" ||
+              selectedPic !== "ALL" ||
+              selectedStatus !== "ALL" ||
+              searchTerm !== "" ||
+              filterStartDate !== null ||
+              filterEndDate !== null ||
+              filterStartTime !== "" ||
+              filterEndTime !== "" ||
+              tableFontSize !== 12) && (
+              <div className="w-full sm:w-auto flex items-center shrink-0">
                 <button
                   type="button"
                   onClick={() => {
@@ -2527,13 +2530,13 @@ export default function LaporanPekerjaanClient({
                     setFilterEndTime("");
                     changeTableFontSize(12);
                   }}
-                  className="flex items-center gap-1 px-3 h-8 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0 cursor-pointer"
+                  className="w-full sm:w-auto flex items-center justify-center gap-1 px-3 h-8 text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors shrink-0 cursor-pointer shadow-xs"
                   title="Reset Semua Filter & Ukuran Font"
                 >
                   <X size={12} /> Reset
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -2545,7 +2548,7 @@ export default function LaporanPekerjaanClient({
 
       {/* Tabel Data Pekerjaan (Desktop & Tablet) / Card View (HP) */}
       <div
-        className={`bg-white rounded-xl border border-slate-200/80 shadow-sm relative ${
+        className={`bg-white rounded-xl border border-slate-200/80 shadow-sm relative laporan-pekerjaan-table-card ${
           isAnalyticsOpen
             ? "shrink-0 min-h-[300px]"
             : "flex-1 min-h-0 flex flex-col overflow-hidden"
@@ -2667,7 +2670,7 @@ export default function LaporanPekerjaanClient({
         {/* Tampilan Tabel khusus Tablet & Desktop */}
         <div
           ref={tableContainerRef}
-          className={`hidden sm:block overflow-x-auto overflow-y-auto custom-scrollbar transition-all duration-200 ${
+          className={`hidden sm:block overflow-x-auto overflow-y-auto custom-scrollbar transition-all duration-200 laporan-pekerjaan-table-container ${
             isAnalyticsOpen
               ? "max-h-[300px] sm:max-h-[480px] shrink-0"
               : "flex-1 min-h-0 h-full"

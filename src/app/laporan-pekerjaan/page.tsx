@@ -39,7 +39,7 @@ export default async function LaporanPekerjaanPage() {
   });
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col">
+    <div className="flex-1 min-h-0 flex flex-col laporan-pekerjaan-page-root">
       <PageHeader
         title="Laporan Pekerjaan"
         description="Monitoring & Laporan Pekerjaan Produksi SINTAK"

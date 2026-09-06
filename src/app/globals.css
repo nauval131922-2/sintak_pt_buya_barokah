@@ -163,6 +163,35 @@ body {
   }
 }
 
+/* Mobile Landscape Rules for Laporan Pekerjaan: allow outer vertical scroll when height <= 500px */
+@media (orientation: landscape) and (max-height: 500px) {
+  #main-content-scroll.laporan-pekerjaan-scroll {
+    overflow-y: auto !important;
+    padding-bottom: 2rem !important;
+  }
+  .laporan-pekerjaan-page-root {
+    flex: none !important;
+    min-height: auto !important;
+  }
+  .laporan-pekerjaan-client-root {
+    flex: none !important;
+    min-height: auto !important;
+    overflow: visible !important;
+  }
+  .laporan-pekerjaan-table-card {
+    flex: none !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+  .laporan-pekerjaan-table-container {
+    flex: none !important;
+    min-height: 300px !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+}
+
 @keyframes toast-shrink {
   from { width: 100%; }
   to { width: 0%; }
