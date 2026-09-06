@@ -722,12 +722,24 @@ export default function LaporanPekerjaanClient({
 
   useEffect(() => {
     const checkScrollPosition = () => {
-      const el = clientContainerRef.current || document.getElementById("main-content-scroll");
-      if (!el) return;
+      const isLandscapeMobile = typeof window !== "undefined" && window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
       
-      const docScrollTop = el.scrollTop;
-      const docScrollHeight = el.scrollHeight;
-      const docClientHeight = el.clientHeight;
+      let docScrollTop = 0;
+      let docScrollHeight = 0;
+      let docClientHeight = 0;
+
+      if (isLandscapeMobile) {
+        docScrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+        docScrollHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+        docClientHeight = window.innerHeight;
+      } else {
+        const el = clientContainerRef.current || document.getElementById("main-content-scroll");
+        if (!el) return;
+        docScrollTop = el.scrollTop;
+        docScrollHeight = el.scrollHeight;
+        docClientHeight = el.clientHeight;
+      }
+
       const isDocScrollable = isAnalyticsOpen || docScrollHeight > docClientHeight + 40;
 
       if (isDocScrollable) {
@@ -839,38 +851,48 @@ export default function LaporanPekerjaanClient({
 
   // Sticky thead di viewport atas khusus saat mobile landscape (natural window scroll)
   useEffect(() => {
-    const handleScroll = () => {
-      const thead = tableTheadRef.current;
-      const container = tableContainerRef.current;
-      if (!thead || !container) return;
+    let rafId: number | null = null;
 
-      const isLandscapeMobile = window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
-      if (!isLandscapeMobile) {
-        if (thead.style.transform) {
+    const handleScroll = () => {
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        const thead = tableTheadRef.current;
+        const container = tableContainerRef.current;
+        if (!thead || !container) return;
+
+        const isLandscapeMobile = window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
+        if (!isLandscapeMobile) {
+          if (thead.style.transform) {
+            thead.style.transform = '';
+            thead.style.zIndex = '';
+            thead.style.willChange = '';
+          }
+          return;
+        }
+
+        const containerRect = container.getBoundingClientRect();
+        const theadH = thead.offsetHeight;
+        const portalRoot = document.querySelector('[data-portal-root]');
+        const zoom = portalRoot ? (parseFloat(window.getComputedStyle(portalRoot).zoom) || 1) : 1;
+
+        if (containerRect.top < 0 && containerRect.bottom > theadH * zoom) {
+          const translateY = Math.round((-containerRect.top) / zoom);
+          thead.style.willChange = 'transform';
+          thead.style.transform = `translate3d(0, ${translateY}px, 0)`;
+          thead.style.zIndex = '30';
+        } else {
           thead.style.transform = '';
           thead.style.zIndex = '';
+          thead.style.willChange = '';
         }
-        return;
-      }
-
-      const containerRect = container.getBoundingClientRect();
-      const theadH = thead.offsetHeight;
-      const portalRoot = document.querySelector('[data-portal-root]');
-      const zoom = portalRoot ? (parseFloat(window.getComputedStyle(portalRoot).zoom) || 1) : 1;
-
-      if (containerRect.top < 0 && containerRect.bottom > theadH * zoom) {
-        const translateY = (-containerRect.top) / zoom;
-        thead.style.transform = `translateY(${translateY}px)`;
-        thead.style.zIndex = '30';
-      } else {
-        thead.style.transform = '';
-        thead.style.zIndex = '';
-      }
+      });
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleScroll, { passive: true });
     return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleScroll);
     };
@@ -2734,7 +2756,7 @@ export default function LaporanPekerjaanClient({
             className="text-left border-collapse table-fixed"
             style={{ fontSize: `${tableFontSize}px` }}
           >
-            <thead ref={tableTheadRef} className="sticky top-0 z-20 bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 shadow-sm">
+            <thead ref={tableTheadRef} className="sticky top-0 z-20 bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 shadow-sm transition-none">
               <tr className="bg-slate-50">
                 <th
                   style={{ width: "var(--col-aksi, 130px)", minWidth: "var(--col-aksi, 130px)" }}

@@ -215,6 +215,13 @@ body {
   .laporan-pekerjaan-filter-stretch > div > button {
     width: 100% !important;
   }
+  .laporan-pekerjaan-table-container thead,
+  .laporan-pekerjaan-table-container thead th,
+  .laporan-pekerjaan-table-container thead tr {
+    transition: none !important;
+    -webkit-backface-visibility: hidden !important;
+    backface-visibility: hidden !important;
+  }
 }
 
 @keyframes toast-shrink {
