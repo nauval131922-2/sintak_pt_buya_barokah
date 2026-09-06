@@ -1973,7 +1973,7 @@ export default function LaporanPekerjaanClient({
     <div
       ref={clientContainerRef}
       className={`text-slate-800 flex-1 min-h-0 flex flex-col gap-3 laporan-pekerjaan-client-root ${
-        isAnalyticsOpen ? "overflow-y-auto pb-12 [@media(orientation:landscape)]:pb-0" : "overflow-hidden"
+        isAnalyticsOpen ? "overflow-y-auto" : "overflow-hidden"
       }`}
     >
       <div className="shrink-0 bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden transition-all">
