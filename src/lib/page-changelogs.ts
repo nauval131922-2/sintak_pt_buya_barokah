@@ -1139,6 +1139,21 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Laporan Pekerjaan ───
+  'laporan-pekerjaan-2026-09-06': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-09-06',
+    date: '06 Sep 2026',
+    version: '2026-09-06-1',
+    items: [
+      'Perbaikan scroll vertikal di viewport mobile landscape: document-level scroll agar address bar browser otomatis tersembunyi saat menggulir',
+      'Fixed thead tanpa Portal yang mengunci ke atas viewport saat tabel di-scroll, dengan sinkronisasi horizontal via transform DOM langsung tanpa re-render (nol lag)',
+      'Reset scroll dokumen otomatis saat rotasi kembali ke portrait agar header halaman tidak stuck tersembunyi',
+      'Penyeragaman jarak bawah collapse vs expand di semua viewport (HP landscape, laptop, 2XL) dengan satu sumber padding',
+      'Optimasi performa: AbortController anti-race pada fetch data dan indeks filter pic/bagian/status/faktur',
+    ],
+  }),
   'laporan-pekerjaan-2026-09-03': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan',
