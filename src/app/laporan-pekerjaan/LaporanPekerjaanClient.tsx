@@ -862,6 +862,8 @@ export default function LaporanPekerjaanClient({
       const isLandscapeMobile = window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
       if (!isLandscapeMobile) {
         setShowFixedLandscapeHeader(false);
+        // ponytail: reset document scroll saat kembali ke portrait agar header halaman tidak stuck hidden
+        if (window.scrollY > 0) window.scrollTo(0, 0);
         return;
       }
 
