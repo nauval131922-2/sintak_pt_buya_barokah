@@ -271,9 +271,9 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
   const hasSistemAccess = user?.role === 'Super Admin' ||
     canAccess('tracking_manufaktur') || canAccess('activity_log_view') || canAccess('activity_log') || canAccess('karyawan') ||
     canAccess('catat_kesalahan') ||
-    canAccess('hpp_kalkulasi') ||
+    canAccess('hpp_kalkulasi') || canAccess('pricelist_kalkulasi') ||
     canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp_master_pekerjaan_jurnal_produksi') || canAccess('produksi_jhp') || canAccess('produksi_jhp_target') || canAccess('produksi_hasil') || canAccess('produksi_jhp_analisa') || canAccess('produksi_laporan_pekerjaan') ||
-    canAccess('kalkulasi_rekap_so');
+    canAccess('kalkulasi_rekap_so') || canAccess('telegram_users');
 
   const isAnyChildActive = (item: MenuItem): boolean => {
     if (item.href && checkIsActive(item.href, item.exact)) return true;
