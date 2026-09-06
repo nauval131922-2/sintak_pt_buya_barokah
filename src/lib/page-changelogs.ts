@@ -91,6 +91,18 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Pricelist Multi-Produk ───
+  'pricelist-2026-09-06': entry({
+    pageKey: 'pricelist',
+    title: 'Pricelist & Navigasi Hak Akses Sistem',
+    permissionKeys: ['pricelist_kalkulasi'],
+    sortDate: '2026-09-06',
+    date: '06 Sep 2026',
+    version: '2026-09-06-1',
+    items: [
+      'Perbaikan Visibilitas Menu Sidebar: Memperbaiki kondisi guard parent section SISTEM pada Sidebar agar pengguna dengan izin tunggal "Pricelist" (pricelist_kalkulasi) dapat langsung melihat dan mengakses menu Kalkulasi > Pricelist tanpa harus memiliki izin HPP Kalkulasi',
+      'Refaktorisasi Guard Navigasi Dinamis: Mengganti evaluasi hardcoded izin manual di Sidebar.tsx dengan deteksi dinamis berbasis grup MODULE_REGISTRY (grup Sistem dan Data Digit) guna mencegah tersembunyinya modul baru di masa mendatang',
+    ],
+  }),
   'pricelist-2026-09-03': entry({
     pageKey: 'pricelist',
     title: 'Pricelist & Simulator Multi-Produk (Integrasi Real-Time Rekap Pembelian Barang & Modal Lookup Cerdas)',
