@@ -835,6 +835,46 @@ export default function LaporanPekerjaanClient({
     }
     setSelectedRowIndex(null);
   }, [currentPage]);
+  const tableTheadRef = useRef<HTMLTableSectionElement>(null);
+
+  // Sticky thead di viewport atas khusus saat mobile landscape (natural window scroll)
+  useEffect(() => {
+    const handleScroll = () => {
+      const thead = tableTheadRef.current;
+      const container = tableContainerRef.current;
+      if (!thead || !container) return;
+
+      const isLandscapeMobile = window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
+      if (!isLandscapeMobile) {
+        if (thead.style.transform) {
+          thead.style.transform = '';
+          thead.style.zIndex = '';
+        }
+        return;
+      }
+
+      const containerRect = container.getBoundingClientRect();
+      const theadH = thead.offsetHeight;
+      const portalRoot = document.querySelector('[data-portal-root]');
+      const zoom = portalRoot ? (parseFloat(window.getComputedStyle(portalRoot).zoom) || 1) : 1;
+
+      if (containerRect.top < 0 && containerRect.bottom > theadH * zoom) {
+        const translateY = (-containerRect.top) / zoom;
+        thead.style.transform = `translateY(${translateY}px)`;
+        thead.style.zIndex = '30';
+      } else {
+        thead.style.transform = '';
+        thead.style.zIndex = '';
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, []);
 
   const handleSort = (field: SortField) => {
     if (isResizingRef.current) return;
@@ -2694,7 +2734,7 @@ export default function LaporanPekerjaanClient({
             className="text-left border-collapse table-fixed"
             style={{ fontSize: `${tableFontSize}px` }}
           >
-            <thead className="sticky top-0 z-20 bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 shadow-sm">
+            <thead ref={tableTheadRef} className="sticky top-0 z-20 bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 shadow-sm">
               <tr className="bg-slate-50">
                 <th
                   style={{ width: "var(--col-aksi, 130px)", minWidth: "var(--col-aksi, 130px)" }}
