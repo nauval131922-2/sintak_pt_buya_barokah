@@ -848,69 +848,15 @@ export default function LaporanPekerjaanClient({
     setSelectedRowIndex(null);
   }, [currentPage]);
   const tableTheadRef = useRef<HTMLTableSectionElement>(null);
-  const fixedHeaderRef = useRef<HTMLDivElement>(null);
-  const [showFixedLandscapeHeader, setShowFixedLandscapeHeader] = useState(false);
-  const [fixedHeaderStyle, setFixedHeaderStyle] = useState<React.CSSProperties>({});
 
-  // Fixed thead di viewport atas khusus saat mobile landscape (Rock-solid, zero jitter via position:fixed)
+  // Reset document scroll saat kembali ke portrait agar header halaman tidak stuck hidden
   useEffect(() => {
-    const updateFixedHeader = () => {
-      const thead = tableTheadRef.current;
-      const container = tableContainerRef.current;
-      if (!thead || !container) return;
-
+    const handleOrientationReset = () => {
       const isLandscapeMobile = window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
-      if (!isLandscapeMobile) {
-        setShowFixedLandscapeHeader(false);
-        // ponytail: reset document scroll saat kembali ke portrait agar header halaman tidak stuck hidden
-        if (window.scrollY > 0) window.scrollTo(0, 0);
-        return;
-      }
-
-      const containerRect = container.getBoundingClientRect();
-      const theadH = thead.offsetHeight;
-
-      // Saat bagian atas kontainer tabel lewat di atas layar dan tabel masih terlihat
-      if (containerRect.top <= 0 && containerRect.bottom > theadH) {
-        setShowFixedLandscapeHeader(true);
-        setFixedHeaderStyle({
-          position: 'fixed',
-          top: 0,
-          left: `${containerRect.left}px`,
-          width: `${container.clientWidth}px`,
-          height: `${theadH}px`,
-        });
-      } else if (containerRect.top <= 0 && containerRect.bottom <= theadH && containerRect.bottom > 0) {
-        setShowFixedLandscapeHeader(true);
-        setFixedHeaderStyle({
-          position: 'fixed',
-          top: `${containerRect.bottom - theadH}px`,
-          left: `${containerRect.left}px`,
-          width: `${container.clientWidth}px`,
-          height: `${theadH}px`,
-        });
-      } else {
-        setShowFixedLandscapeHeader(false);
-      }
+      if (!isLandscapeMobile && window.scrollY > 0) window.scrollTo(0, 0);
     };
-
-    window.addEventListener('scroll', updateFixedHeader, { passive: true });
-    window.addEventListener('resize', updateFixedHeader, { passive: true });
-
-    // Sync scroll horizontal ke fixed header
-    const container = tableContainerRef.current;
-    const handleHorizontalScroll = () => {
-      if (fixedHeaderRef.current && container) {
-        fixedHeaderRef.current.scrollLeft = container.scrollLeft;
-      }
-    };
-    container?.addEventListener('scroll', handleHorizontalScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener('scroll', updateFixedHeader);
-      window.removeEventListener('resize', updateFixedHeader);
-      container?.removeEventListener('scroll', handleHorizontalScroll);
-    };
+    window.addEventListener('resize', handleOrientationReset, { passive: true });
+    return () => window.removeEventListener('resize', handleOrientationReset);
   }, []);
 
   const handleSort = (field: SortField) => {
@@ -1998,7 +1944,7 @@ export default function LaporanPekerjaanClient({
     <div
       ref={clientContainerRef}
       className={`text-slate-800 flex-1 min-h-0 flex flex-col gap-3 laporan-pekerjaan-client-root ${
-        isAnalyticsOpen ? "overflow-y-auto pb-12" : "overflow-hidden"
+        isAnalyticsOpen ? "overflow-y-auto" : "overflow-hidden"
       }`}
     >
       <div className="shrink-0 bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden transition-all">
@@ -2771,58 +2717,6 @@ export default function LaporanPekerjaanClient({
             className="text-left border-collapse table-fixed"
             style={{ fontSize: `${tableFontSize}px` }}
           >
-            {/* Cloned Fixed Header untuk Mobile Landscape (Bebas jitter, 100% smooth) */}
-            {showFixedLandscapeHeader && (
-              <Portal>
-                <div
-                  ref={fixedHeaderRef}
-                  style={fixedHeaderStyle}
-                  onScroll={(e) => {
-                    if (tableContainerRef.current) {
-                      tableContainerRef.current.scrollLeft = e.currentTarget.scrollLeft;
-                    }
-                  }}
-                  className="fixed z-40 overflow-x-auto overflow-y-hidden shadow-sm bg-slate-50 border-b border-slate-200 pointer-events-auto select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                >
-                  <table
-                    className="text-left border-collapse table-fixed"
-                    style={
-                      {
-                        fontSize: `${tableFontSize}px`,
-                        width: tableContainerRef.current?.querySelector("table")?.offsetWidth
-                          ? `${tableContainerRef.current.querySelector("table")!.offsetWidth}px`
-                          : "100%",
-                        "--col-aksi": `${colWidths.aksi || 110}px`,
-                        "--col-tglOrder": `${colWidths.tglOrder || 150}px`,
-                        "--col-project": `${colWidths.project || 450}px`,
-                        "--col-progress": `${colWidths.progress || 140}px`,
-                        "--col-terakhir": `${colWidths.terakhir || 200}px`,
-                        "--col-selanjutnya": `${colWidths.selanjutnya || 200}px`,
-                        "--col-note": `${colWidths.note || 200}px`,
-                      } as React.CSSProperties
-                    }
-                  >
-                    <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 shadow-sm">
-                      <tr className="bg-slate-50">
-                        <th
-                          style={{ width: "var(--col-aksi, 130px)", minWidth: "var(--col-aksi, 130px)" }}
-                          className="relative px-3 py-2.5 text-center bg-slate-50 border-b border-slate-200 select-none group"
-                        >
-                          <span className="truncate">Aksi</span>
-                        </th>
-                        {renderSortableHeader("tglOrder", "Tanggal Order", false, false)}
-                        {renderSortableHeader("project", "Project Order")}
-                        {renderSortableHeader("progress", "Progress")}
-                        {renderSortableHeader("terakhir", "Pekerjaan Terakhir")}
-                        {renderSortableHeader("selanjutnya", "Pekerjaan Selanjutnya")}
-                        {renderSortableHeader("note", "Note")}
-                        <th className="px-0" aria-hidden />
-                      </tr>
-                    </thead>
-                  </table>
-                </div>
-              </Portal>
-            )}
 
             <thead ref={tableTheadRef} className="sticky top-0 z-20 bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 shadow-sm">
               <tr className="bg-slate-50">
@@ -3017,7 +2911,6 @@ export default function LaporanPekerjaanClient({
         totalPages={totalPages}
         onPageChange={setCurrentPage}
       />
-      {!isAnalyticsOpen && <div className="laporan-pekerjaan-bottom-spacer" aria-hidden />}
       {/* Floating Scroll Navigation (Ke Atas & Ke Bawah - Fade total saat idle) */}
       {(showTopBtn || showBottomBtn) && (
         <Portal>

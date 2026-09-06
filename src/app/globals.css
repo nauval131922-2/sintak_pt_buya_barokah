@@ -222,11 +222,6 @@ body {
     -webkit-backface-visibility: hidden !important;
     backface-visibility: hidden !important;
   }
-  .laporan-pekerjaan-bottom-spacer {
-    display: block !important;
-    height: 4.5rem !important;
-    flex: none !important;
-  }
 }
 
 @keyframes toast-shrink {
