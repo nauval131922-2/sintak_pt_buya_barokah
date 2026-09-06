@@ -558,6 +558,17 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Records ───
+  'records-2026-09-06': entry({
+    pageKey: 'records',
+    title: 'Catatan / Records',
+    sortDate: '2026-09-06',
+    date: '06 Sep 2026',
+    version: '2026-09-06-1',
+    permissionKeys: ['catat_kesalahan'],
+    items: [
+      'Perbaikan stacking context z-index pada form pencatatan kesalahan (tab form) agar card Tingkat Bahaya tidak menutupi popup dropdown pencarian Nama Karyawan saat dibuka ke bawah',
+    ],
+  }),
   'records-2026-08-24': entry({
     pageKey: 'records',
     title: 'Catatan / Records',
