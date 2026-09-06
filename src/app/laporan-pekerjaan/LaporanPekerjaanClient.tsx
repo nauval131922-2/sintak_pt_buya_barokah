@@ -2465,9 +2465,9 @@ export default function LaporanPekerjaanClient({
               </div>
             </div>
 
-            {/* Baris Filter Bagian (Desktop/Tablet) */}
+            {/* Baris Filter Bagian (Melar di Mobile Landscape via laporan-pekerjaan-filter-stretch, tetap compact di Desktop) */}
             {showBagianFilter && (
-              <div className="w-full sm:w-auto">
+              <div className="w-full sm:w-auto laporan-pekerjaan-filter-stretch">
                 <SquareDropdown
                   options={bagianOptions}
                   value={selectedBagianFilter}
@@ -2478,10 +2478,10 @@ export default function LaporanPekerjaanClient({
               </div>
             )}
 
-            {/* Baris Filter PIC & Status: 1 Row 50-50 di Mobile Portrait, unwrap mandiri di Desktop/Landscape */}
+            {/* Baris Filter PIC & Status: 1 Row 50-50 di Mobile Portrait, PIC melar di Mobile Landscape */}
             <div className="grid grid-cols-2 gap-2 sm:contents w-full sm:w-auto">
               {showPicFilter && (
-                <div className="w-full sm:w-auto">
+                <div className="w-full sm:w-auto laporan-pekerjaan-filter-stretch">
                   <SquareDropdown
                     options={picOptions}
                     value={selectedPic}
@@ -2491,7 +2491,6 @@ export default function LaporanPekerjaanClient({
                   />
                 </div>
               )}
-
               <div className="w-full sm:w-auto">
                 <SquareDropdown
                   options={statusOptions}

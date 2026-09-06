@@ -163,11 +163,27 @@ body {
   }
 }
 
-/* Mobile Landscape Rules for Laporan Pekerjaan: allow outer vertical scroll when height <= 500px */
+/* Mobile Landscape Rules for Laporan Pekerjaan: allow natural document-level vertical scroll (window.scrollY) when height <= 500px so browser address bar autohides on scroll */
 @media (orientation: landscape) and (max-height: 500px) {
-  #main-content-scroll.laporan-pekerjaan-scroll {
+  html:has(#main-content-scroll.laporan-pekerjaan-scroll),
+  html:has(#main-content-scroll.laporan-pekerjaan-scroll) body {
     overflow-y: auto !important;
-    padding-bottom: 2rem !important;
+    height: auto !important;
+    min-height: 100% !important;
+  }
+  html:has(#main-content-scroll.laporan-pekerjaan-scroll) [data-portal-root] {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 100% !important;
+  }
+  html:has(#main-content-scroll.laporan-pekerjaan-scroll) [data-portal-root] > div {
+    overflow: visible !important;
+    height: auto !important;
+  }
+  #main-content-scroll.laporan-pekerjaan-scroll {
+    overflow: visible !important;
+    height: auto !important;
+    padding-bottom: 2.5rem !important;
   }
   .laporan-pekerjaan-page-root {
     flex: none !important;
@@ -189,6 +205,15 @@ body {
     min-height: 300px !important;
     max-height: none !important;
     height: auto !important;
+  }
+  .laporan-pekerjaan-filter-stretch {
+    flex: 1 1 0% !important;
+    min-width: 115px !important;
+    width: auto !important;
+  }
+  .laporan-pekerjaan-filter-stretch > div,
+  .laporan-pekerjaan-filter-stretch > div > button {
+    width: 100% !important;
   }
 }
 
