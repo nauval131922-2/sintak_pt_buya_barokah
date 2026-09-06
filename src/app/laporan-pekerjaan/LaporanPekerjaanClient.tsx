@@ -850,6 +850,7 @@ export default function LaporanPekerjaanClient({
   const tableTheadRef = useRef<HTMLTableSectionElement>(null);
   const [showFixedLandscapeHeader, setShowFixedLandscapeHeader] = useState(false);
   const [fixedHeaderTop, setFixedHeaderTop] = useState(0);
+  const [fixedHeaderRect, setFixedHeaderRect] = useState({ left: 0, width: 0 });
   const [fixedScrollLeft, setFixedScrollLeft] = useState(0);
 
   // Fixed thead di viewport atas khusus saat mobile landscape + reset scroll saat kembali portrait
@@ -870,9 +871,11 @@ export default function LaporanPekerjaanClient({
       if (containerRect.top <= 0 && containerRect.bottom > theadH) {
         setShowFixedLandscapeHeader(true);
         setFixedHeaderTop(0);
+        setFixedHeaderRect({ left: containerRect.left, width: container.clientWidth });
       } else if (containerRect.top <= 0 && containerRect.bottom <= theadH && containerRect.bottom > 0) {
         setShowFixedLandscapeHeader(true);
         setFixedHeaderTop(containerRect.bottom - theadH);
+        setFixedHeaderRect({ left: containerRect.left, width: container.clientWidth });
       } else {
         setShowFixedLandscapeHeader(false);
       }
@@ -2609,8 +2612,8 @@ export default function LaporanPekerjaanClient({
         {/* Cloned Fixed Header untuk Mobile Landscape (tanpa Portal, sinkron via translateX) */}
         {showFixedLandscapeHeader && (
           <div
-            className="hidden sm:block absolute top-0 left-0 right-0 z-40 overflow-hidden shadow-sm bg-slate-50 border-b border-slate-200 pointer-events-none select-none"
-            style={{ transform: `translateY(${fixedHeaderTop}px)` }}
+            className="hidden sm:block fixed z-40 overflow-hidden shadow-sm bg-slate-50 border-b border-slate-200 pointer-events-none select-none"
+            style={{ top: fixedHeaderTop, left: fixedHeaderRect.left, width: fixedHeaderRect.width }}
           >
             <table
               className="text-left border-collapse table-fixed"
