@@ -2478,25 +2478,29 @@ export default function LaporanPekerjaanClient({
               </div>
             )}
 
-            {/* Baris Filter PIC (50%) & Status (50%) di Mobile (1 Row 50-50) */}
-            <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-1.5 w-full sm:w-auto">
+            {/* Baris Filter PIC & Status: 1 Row 50-50 di Mobile Portrait, unwrap mandiri di Desktop/Landscape */}
+            <div className="grid grid-cols-2 gap-2 sm:contents w-full sm:w-auto">
               {showPicFilter && (
-                <SquareDropdown
-                  options={picOptions}
-                  value={selectedPic}
-                  onChange={setSelectedPic}
-                  searchPlaceholder="Cari PIC..."
-                  widthClass="w-full sm:w-28 md:w-32 lg:w-36"
-                />
+                <div className="w-full sm:w-auto">
+                  <SquareDropdown
+                    options={picOptions}
+                    value={selectedPic}
+                    onChange={setSelectedPic}
+                    searchPlaceholder="Cari PIC..."
+                    widthClass="w-full sm:w-28 md:w-32 lg:w-36"
+                  />
+                </div>
               )}
 
-              <SquareDropdown
-                options={statusOptions}
-                value={selectedStatus}
-                onChange={setSelectedStatus}
-                searchPlaceholder="Cari Status..."
-                widthClass="w-full sm:w-28 md:w-32 lg:w-36"
-              />
+              <div className="w-full sm:w-auto">
+                <SquareDropdown
+                  options={statusOptions}
+                  value={selectedStatus}
+                  onChange={setSelectedStatus}
+                  searchPlaceholder="Cari Status..."
+                  widthClass="w-full sm:w-28 md:w-32 lg:w-36"
+                />
+              </div>
             </div>
 
             {/* Pengatur Ukuran Font Tabel Utama (Desktop) */}
