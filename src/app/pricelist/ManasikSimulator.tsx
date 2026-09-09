@@ -144,7 +144,6 @@ export default function ManasikSimulator({
     'Otomatis' | 'Print Digital (A3+)' | 'Offset (Oliver)'
   >('Otomatis');
   const [metodeCetakIsi, setMetodeCetakIsi] = useState<'Print Buya' | 'Ryobi' | 'Oliver'>('Print Buya');
-  const [insheetIsiCustom, setInsheetIsiCustom] = useState<number>(5);
   const [laminasiCover, setLaminasiCover] = useState<
     'Tanpa Laminasi' | 'Glossy' | 'Doff' | 'UV Varnish'
   >('Doff');
@@ -260,7 +259,6 @@ export default function ManasikSimulator({
           tipeJilid,
           metodeCetakCover,
           metodeCetakIsi,
-          insheetIsiCustom,
           laminasiCover,
           opsiPlastikOpp,
           opsiKardus,
@@ -281,7 +279,6 @@ export default function ManasikSimulator({
     tipeJilid,
     metodeCetakCover,
     metodeCetakIsi,
-    insheetIsiCustom,
     laminasiCover,
     opsiSisipan,
     marginPct,
@@ -296,7 +293,6 @@ export default function ManasikSimulator({
       tipeJilid,
       metodeCetakCover,
       metodeCetakIsi,
-      insheetIsiCustom,
       laminasiCover,
       opsiPlastikOpp,
       opsiSisipan,
@@ -310,7 +306,6 @@ export default function ManasikSimulator({
       tipeJilid,
       metodeCetakCover,
       metodeCetakIsi,
-      insheetIsiCustom,
       laminasiCover,
       opsiSisipan,
       marginPct,
@@ -336,7 +331,6 @@ export default function ManasikSimulator({
       tipeJilid,
       metodeCetakCover,
       metodeCetakIsi,
-      insheetIsiCustom,
       laminasiCover,
       opsiPlastikOpp,
       opsiSisipan,
@@ -407,7 +401,6 @@ export default function ManasikSimulator({
     setTipeJilid(item.tipeJilid);
     setMetodeCetakCover(item.metodeCetakCover);
     if (item.metodeCetakIsi) setMetodeCetakIsi(item.metodeCetakIsi);
-    if (item.insheetIsiCustom !== undefined) setInsheetIsiCustom(item.insheetIsiCustom);
     setLaminasiCover(item.laminasiCover);
     setNegoDiskonPct(item.negoDiskonPct);
     if (setCustomParams && item.customParams) {
@@ -651,14 +644,11 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
 
             {/* Cetak Cover atau Cetak Isi (Khusus Kosongan) */}
             {varian === 'Kosongan 10 x 15,5' ? (
-              <div className="space-y-3 p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl">
+              <div className="space-y-2 p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
                     <Printer size={13} className="text-amber-700" />
                     Mesin Cetak Isi Kosongan
-                  </span>
-                  <span className="text-[10px] font-mono font-bold text-amber-800 bg-amber-100/80 px-1.5 py-0.5 rounded border border-amber-200">
-                    Master!D25
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-1.5">
@@ -666,12 +656,7 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                     <button
                       key={m}
                       type="button"
-                      onClick={() => {
-                        setMetodeCetakIsi(m);
-                        if (m === 'Print Buya') setInsheetIsiCustom(5);
-                        else if (m === 'Ryobi') setInsheetIsiCustom(100);
-                        else setInsheetIsiCustom(200);
-                      }}
+                      onClick={() => setMetodeCetakIsi(m)}
                       className={`py-1.5 px-2 rounded-lg border text-center transition-all text-xs font-bold cursor-pointer ${
                         metodeCetakIsi === m
                           ? 'border-amber-600 bg-white text-amber-950 ring-2 ring-amber-500/20 shadow-2xs'
@@ -681,20 +666,6 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                       {m}
                     </button>
                   ))}
-                </div>
-                <div className="flex items-center justify-between gap-2 pt-1 border-t border-amber-200/60">
-                  <label className="text-[11px] font-semibold text-amber-900">
-                    Insheet Cetak Isi (Lbr / Naik):
-                  </label>
-                  <div className="flex items-center gap-1 w-24">
-                    <input
-                      type="number"
-                      value={insheetIsiCustom}
-                      onChange={(e) => setInsheetIsiCustom(Math.max(0, Number(e.target.value) || 0))}
-                      className="w-full bg-white border border-amber-300 rounded-lg px-2 py-1 text-xs font-bold text-right text-amber-950 focus:outline-none focus:ring-1 focus:ring-amber-500"
-                    />
-                    <span className="text-[10px] text-amber-700 font-medium">lbr</span>
-                  </div>
                 </div>
               </div>
             ) : (
