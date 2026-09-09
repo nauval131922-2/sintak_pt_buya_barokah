@@ -85,8 +85,7 @@ export const DEFAULT_MANASIK_PARAMS: ManasikMasterParams = {
   tarifPrintCoverA3: 2700,
   tarifPrintMiniTikTokA3: 2500,
   insheetCover: 5,
-  insheetOffsetCover: 150,
-
+  insheetOffsetCover: 200,
   oliverMinOngkosCover: 90000,
   oliverPlatUnitCover: 45000,
   oliverDrekOverCover: 40,
@@ -607,7 +606,8 @@ export function calculateManasikSimulator(
       });
     } else {
       const planoMuatCover = 16;
-      kebutuhanPlanoCover = Math.ceil(validOplah / planoMuatCover) + Math.ceil(params.insheetCover / 4);
+      const insheetOffset = params.insheetOffsetCover || 200;
+      kebutuhanPlanoCover = Math.ceil(validOplah / planoMuatCover) + Math.ceil(insheetOffset / 4);
       const beratPlanoKg = (65 * 100 * 230) / 10000000;
       const biayaKertasPlano = kebutuhanPlanoCover * beratPlanoKg * params.tarifAc230Kg;
       const jmlPlat = 4;
