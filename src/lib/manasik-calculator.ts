@@ -607,13 +607,17 @@ export function calculateManasikSimulator(
     } else {
       const planoMuatCover = 16;
       const insheetOffset = params.insheetOffsetCover || 200;
-      kebutuhanPlanoCover = Math.ceil(validOplah / planoMuatCover) + Math.ceil(insheetOffset / 4);
-      const beratPlanoKg = (65 * 100 * 230) / 10000000;
-      const biayaKertasPlano = kebutuhanPlanoCover * beratPlanoKg * params.tarifAc230Kg;
+      // Formula Excel R7: =(Oplah / 16) + (Insheet / 4)
+      const planoKebutuhanExact = (validOplah / planoMuatCover) + (insheetOffset / 4);
+      kebutuhanPlanoCover = Math.ceil(planoKebutuhanExact);
+      // Plano Art Carton 230 gsm ukuran 79 x 109 cm (Excel BUKU!V27 x W27)
+      const beratPlano79x109Kg = (79 * 109 * 230) / 20000 / 500;
+      const biayaKertasPlano = planoKebutuhanExact * beratPlano79x109Kg * params.tarifAc230Kg;
       const jmlPlat = 4;
       const biayaPlat = jmlPlat * params.oliverPlatUnitCover;
-      const lbrCetak = kebutuhanPlanoCover * 4;
-      const ongkosDasar = params.oliverMinOngkosCover * jmlPlat;
+      // Jumlah lembar cetak mesin potong 4 (Excel BUKU!Q7 = R7 * 4)
+      const lbrCetak = planoKebutuhanExact * 4;
+      const ongkosDasar = params.oliverMinOngkosCover;
       const cetakOver = Math.max(0, lbrCetak - 1000);
       const ongkosOver = cetakOver * params.oliverDrekOverCover * jmlPlat;
       biayaCover = biayaKertasPlano + biayaPlat + ongkosDasar + ongkosOver + params.tarifDesainCover;
@@ -621,7 +625,7 @@ export function calculateManasikSimulator(
         nama: 'Cover Cetak Offset Oliver (4 Warna)',
         nominal: Math.round(biayaCover),
         pct: 0,
-        keterangan: `AC 230 gsm, ${kebutuhanPlanoCover} plano + 4 plat CTP + Mesin Oliver`,
+        keterangan: `AC 230 gsm (79x109), ${kebutuhanPlanoCover} plano + 4 plat CTP + Mesin Oliver`,
       });
     }
 
