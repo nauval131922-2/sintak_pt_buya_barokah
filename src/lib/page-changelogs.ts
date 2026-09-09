@@ -91,6 +91,20 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Pricelist Multi-Produk ───
+  'pricelist-2026-09-09-2': entry({
+    pageKey: 'pricelist',
+    title: 'Pricelist & Simulator (Sinkronisasi Penuh 12 File Master Brosur & Formula Label KHQ)',
+    permissionKeys: ['pricelist_kalkulasi'],
+    sortDate: '2026-09-09',
+    date: '09 Sep 2026',
+    version: '2026-09-09-2',
+    items: [
+      'Sinkronisasi Komprehensif 12 File Master Brosur 2026: Penyesuaian presisi ukuran plano Oliver 14,5x21 ke 65x100 cm (kertas Rp 225.610/rim sehingga HPP 413 dan jual 540 cocok 100% dengan Excel), penyesuaian insheet plat (100/150 lbr), biaya drek over per warna (Rp 40/drek x 4 warna), serta kebutuhan 8 plat cetak khusus pada ukuran 21x29,7 (A3) cetak 2 muka',
+      'Penyelarasan Formula & Master Parameter Label KHQ: Penyesuaian tarif print POD A3+ menjadi Rp 2.000, koreksi pembulatan rupiah pada kardus besar, serta perhitungan HPP per lembar (Rp 191) dan harga jual (Rp 249) yang 100% presisi dengan master Excel',
+      'Auto-Persist Draft Simulator Label KHQ: Penambahan penyimpanan otomatis draft spesifikasi Label KHQ ke localStorage browser, mencegah hilangnya input saat berpindah tab simulator',
+      'Pembaruan Manual Pengguna Interaktif: Pemutakhiran panduan referensi, pemetaan cell master Excel, dan rumus baku untuk simulator Nota, Brosur, dan Label KHQ sesuai acuan standar Juli 2026',
+    ],
+  }),
   'pricelist-2026-09-09': entry({
     pageKey: 'pricelist',
     title: 'Pricelist & Simulator (Sinkronisasi Formula Nota & Brosur 2026, Auto-Persist, & Type Rigor)',

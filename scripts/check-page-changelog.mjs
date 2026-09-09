@@ -279,6 +279,11 @@ for (const [route, rec] of [...routeMap.entries()].sort((a, b) =>
 
   // 2. Verifikasi jika file halaman dimodifikasi di commit lokal
   if (rec.fromCommits) {
+    // Jika di working tree changelog sudah ada entri baru untuk pageKey ini, maka sudah disiapkan untuk commit
+    if (workingTreeChangelogKeys.has(pageKey)) {
+      covered.push({ route, pageKey, ...rec, fromTree: true });
+      continue;
+    }
     const lastChangelogCommit = getLastChangelogCommitForPage(pageKey);
     if (!lastChangelogCommit) {
       missing.push({
