@@ -232,7 +232,15 @@ export default function PricelistClient() {
       if (savedManasik) {
         const parsed = JSON.parse(savedManasik);
         // Migrasi nilai default lama agar presisi 100% dengan desimal UMR Master Excel 2026
-        if (parsed.tarifCasingIn === 225 || parsed.tarifCasingIn === 225.49 || parsed.tarifStaplesPalu === 113 || parsed.tarifStaplesPalu === 112.74 || parsed.tarifStaplesPalu === 100) {
+        if (
+          parsed.tarifCasingIn === 225 ||
+          parsed.tarifCasingIn === 225.49 ||
+          parsed.tarifStaplesPalu === 113 ||
+          parsed.tarifStaplesPalu === 112.74 ||
+          parsed.tarifStaplesPalu === 100 ||
+          parsed.insheetOffsetCover === 150 ||
+          !parsed.insheetOffsetCover
+        ) {
           delete parsed.tarifCasingIn;
           delete parsed.tarifStaplesPalu;
           delete parsed.jasaPlastikOpp;
@@ -240,6 +248,7 @@ export default function PricelistClient() {
           delete parsed.tarifPasangTali;
           delete parsed.tarifBiayaSisipLipat;
           delete parsed.tarifLakbanBox;
+          delete parsed.insheetOffsetCover;
         }
         setParamsManasik({ ...DEFAULT_MANASIK_PARAMS, ...parsed });
       }
