@@ -436,12 +436,13 @@ export function calculateManasikSimulator(
     const ao = ap * al; // Jumlah lbr cetak (plat)
 
     // Harga Kebutuhan Kertas Plano (AU29):
-    // Print Buya (Folio 21.5x33): (21.5 * 33 * 70)/20000 * hargaKg * 1.07
-    // Ryobi / Oliver (Plano 65x100): (65 * 100 * 70)/20000 * hargaKg * 1.07
+    // Formula Excel AU29: =((AT27*AU27)*AU28)/20000*((AU30*AW30)+AU30)
+    // Di file master Kosongan, cell Master!E22 (AW30) = 0 (tanpa up persentase kertas), sehingga murni harga/kg
+    // Print Buya (Folio 21.5x33): (21.5 * 33 * 70)/20000 * 15700 = Rp 38.987,025 / rim
+    // Ryobi / Oliver (Plano 65x100): (65 * 100 * 70)/20000 * 15700 = Rp 357.175 / rim
     const ukuranKertasPlano = metodeIsi === 'Print Buya' ? (21.5 * 33) : (65 * 100);
-    const hargaPlanoRim = ((ukuranKertasPlano * 70) / 20000) * params.tarifKertasHvs70Kg * 1.07;
+    const hargaPlanoRim = ((ukuranKertasPlano * 70) / 20000) * params.tarifKertasHvs70Kg;
     const biayaKertasIsi = (ap / 500) * hargaPlanoRim;
-
     // Desain Isi: AT6 * C7 = 5000 * (jumlahHalaman / 8)
     const biayaDesain = 5000 * (jumlahHalaman / 8);
 
@@ -482,11 +483,18 @@ export function calculateManasikSimulator(
     // BG: 16.1062 * 27 * oplah (Rp 434.867,40 / 1000 eks)
     // BH: 22.54868 * oplah (Rp 22.548,68 / 1000 eks)
     // BM: 187.90567 * oplah + 4800 lem (Rp 192.705,67 / 1000 eks)
-    const biayaLipat = 6.26352222 * 27 * validOplah;
-    const biayaSusun = 16.1062 * 27 * validOplah;
-    const biayaBelah = params.tarifCasingIn / 10 * validOplah;
-    const biayaLem = 187.90567 * validOplah + 4800;
-    const totalFinishingIsi = biayaLipat + biayaSusun + biayaBelah + biayaLem;
+    // Biaya Finishing Kuras:
+    // BF: (A07.UMR / 25 / 18000) * AN6 * oplah
+    // BG: (A07.UMR / 25 / 7000) * AN6 * oplah
+    // BH: (A07.UMR / 25 / 5000) * oplah
+    // BL: (A07.UMR / 25 / 600) * oplah
+    // BK: max(0.3, oplah / 16666.6667) * 16000 (bahan lem)
+    const biayaLipat = 6.26352222 * an6 * validOplah;
+    const biayaSusun = 16.1062 * an6 * validOplah;
+    const biayaBelah = (22.54868) * validOplah;
+    const biayaLemJasa = 187.90566666666666 * validOplah;
+    const biayaLemBahan = Math.max(0.3, validOplah / (50000 / 3)) * 16000;
+    const totalFinishingIsi = biayaLipat + biayaSusun + biayaBelah + biayaLemJasa + biayaLemBahan;
 
     breakdown.push({
       nama: 'Finishing Blok Isi (Lipat, Susun, Belah, Lem Bending)',
