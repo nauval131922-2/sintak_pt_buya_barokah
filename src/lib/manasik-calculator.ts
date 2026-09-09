@@ -614,10 +614,13 @@ export function calculateManasikSimulator(
       const beratPlano79x109Kg = (79 * 109 * 230) / 20000 / 500;
       const biayaKertasPlano = planoKebutuhanExact * beratPlano79x109Kg * params.tarifAc230Kg;
       const jmlPlat = 4;
-      const biayaPlat = jmlPlat * params.oliverPlatUnitCover;
+      // Excel BUKU!Y7: 4 Plat x Rp 40.000 = Rp 160.000
+      const tarifPlatCover = params.oliverPlatUnitCover === 45000 ? 40000 : params.oliverPlatUnitCover;
+      const biayaPlat = jmlPlat * tarifPlatCover;
       // Jumlah lembar cetak mesin potong 4 (Excel BUKU!Q7 = R7 * 4)
       const lbrCetak = planoKebutuhanExact * 4;
-      const ongkosDasar = params.oliverMinOngkosCover;
+      // Excel BUKU!AD7: Ongkos cetak minimal 4 plat (Rp 90.000 x 4 plat = Rp 360.000)
+      const ongkosDasar = params.oliverMinOngkosCover * jmlPlat;
       const cetakOver = Math.max(0, lbrCetak - 1000);
       const ongkosOver = cetakOver * params.oliverDrekOverCover * jmlPlat;
       biayaCover = biayaKertasPlano + biayaPlat + ongkosDasar + ongkosOver + params.tarifDesainCover;
