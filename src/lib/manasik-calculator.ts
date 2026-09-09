@@ -30,7 +30,16 @@ export interface ManasikMasterParams {
   tarifKertasHvs70Kg: number; // 15700 per kg
   tarifPrintSisipanA3: number; // 350 per lbr A3+
   insheetSisipan: number; // 10
-
+  insheetIsiBuya: number; // 5 lbr per kuras (Print Buya)
+  insheetIsiRyobi: number; // 100 lbr per naik cetak
+  insheetIsiOliver: number; // 200 lbr per naik cetak (Oliver Master!D23)
+  ryobiPlatUnitIsi: number; // 10000 per plat CTP
+  ryobiMinOngkosIsi: number; // 15000 min order / plat
+  ryobiDrekOverIsi: number; // 30 per drek over
+  oliverPlatUnitIsi: number; // 45000 per plat CTP
+  oliverMinOngkosIsi: number; // 90000 min order / plat
+  oliverDrekOverIsi: number; // 40 per drek over
+  tarifPrintBuyaPerLbr: number; // 350 per lbr cetak rotary web
   // 4. Finishing & Jilid
   tarifBendingPerCm2: number; // 50 (min 100000)
   minBending: number; // 100000
@@ -91,10 +100,16 @@ export const DEFAULT_MANASIK_PARAMS: ManasikMasterParams = {
   tarifKertasHvs70Kg: 15700,
   tarifPrintSisipanA3: 350,
   insheetSisipan: 10,
-
-  tarifBendingPerCm2: 50,
-  minBending: 100000,
-  tarifLaminasiGlossyCm2: 0.35,
+  insheetIsiBuya: 5,
+  insheetIsiRyobi: 100,
+  insheetIsiOliver: 200,
+  ryobiPlatUnitIsi: 10000,
+  ryobiMinOngkosIsi: 15000,
+  ryobiDrekOverIsi: 30,
+  oliverPlatUnitIsi: 45000,
+  oliverMinOngkosIsi: 90000,
+  oliverDrekOverIsi: 40,
+  tarifPrintBuyaPerLbr: 350,
   tarifLaminasiDoffCm2: 0.40,
   tarifUvVarnishCm2: 0.11,
   minLaminasi: 50000,
@@ -133,7 +148,8 @@ export interface ManasikSimulatorInput {
   jumlahHalaman: 48 | 96 | 128 | 192 | 208 | 212 | 216;
   tipeJilid: 'Softcover (Bending/Lem Panas)' | 'Staples Kawat' | 'Tali Kur' | 'Spiral Kawat' | 'Ring Binder (TikTok)';
   metodeCetakCover: 'Otomatis' | 'Print Digital (A3+)' | 'Offset (Oliver)';
-  laminasiCover: 'Tanpa Laminasi' | 'Glossy' | 'Doff' | 'UV Varnish';
+  metodeCetakIsi?: 'Print Buya' | 'Ryobi' | 'Oliver';
+  insheetIsiCustom?: number;
   opsiPlastikOpp: boolean;
   opsiKardus: boolean;
   opsiSisipan?: boolean;
@@ -151,7 +167,7 @@ export interface ManasikBreakdownItem {
 export interface ManasikSimulatorOutput {
   input: ManasikSimulatorInput;
   metodeCoverTerpilih: 'Print Digital (A3+)' | 'Offset (Oliver)';
-  tebalPunggungCm: number;
+  metodeIsiTerpilih?: 'Print Buya' | 'Ryobi' | 'Oliver';
   breakdown: ManasikBreakdownItem[];
   kebutuhanPlanoCover: number;
   kebutuhanA3Cover: number;
@@ -393,28 +409,71 @@ export function calculateManasikSimulator(
     tebalPunggung = 1.0;
     metodeCover = 'Offset (Oliver)';
 
-    // Rumus Cetak Buku Kosongan sesuai Sheet BUKU & HARGA 2026:
-    // 212 Halaman = 26.5 sheet (AN18 = 26.5)
-    // Kebutuhan lbr cetak (AP): (oplah * 26.5) + (5 insheet * 27)
-    const ap = Math.ceil(validOplah * 26.5 + 5 * 27);
+    const metodeIsi: 'Print Buya' | 'Ryobi' | 'Oliver' = input.metodeCetakIsi || 'Print Buya';
+    const insheetDefault = metodeIsi === 'Print Buya' 
+      ? params.insheetIsiBuya 
+      : (metodeIsi === 'Ryobi' ? params.insheetIsiRyobi : params.insheetIsiOliver);
+    const insheetIsi = input.insheetIsiCustom !== undefined && input.insheetIsiCustom >= 0 
+      ? input.insheetIsiCustom 
+      : insheetDefault;
 
-    // 1. Kertas Isi HVS 70 gsm: 26.5 lbr plano roll @ Rp 38.987,025 / rim potong
-    const hargaPlanoRim = 38987.025 * (params.tarifKertasHvs70Kg / 15700);
+    // AL7 (Potong Plano) & AM7 (Isi per plano) sesuai Master!D25 & BUKU!AL7/AM7:
+    // Print Buya: Plano Folio 21.5x33 -> AL=1, AM=8 (8 hal/plano)
+    // Ryobi: Plano 65x100 -> AL=9, AM=72 (8 hal/potong)
+    // Oliver: Plano 65x100 -> AL=2, AM=64 (32 hal/potong)
+    const al = metodeIsi === 'Print Buya' ? 1 : (metodeIsi === 'Ryobi' ? 9 : 2);
+    const am = metodeIsi === 'Print Buya' ? 8 : (metodeIsi === 'Ryobi' ? 72 : 64);
+
+    // AN7: Cuttern dapat isi = C6 / (AM7 / AL7)
+    const cuttern = jumlahHalaman / (am / al);
+    const an6 = Math.ceil(cuttern); // ROUNDUP(AN7, 0) -> jumlah kuras / plat 1 warna
+
+    // AP7 (Kebutuhan Plano): ROUNDUP( ((H7/AL)*AN7) + ((AI7/AL)*AN6), 0 )
+    const ap = Math.ceil(((validOplah / al) * cuttern) + ((insheetIsi / al) * an6));
+    const ao = ap * al; // Jumlah lbr cetak (plat)
+
+    // Harga Kebutuhan Kertas Plano (AU29):
+    // Print Buya (Folio 21.5x33): (21.5 * 33 * 70)/20000 * hargaKg * 1.07
+    // Ryobi / Oliver (Plano 65x100): (65 * 100 * 70)/20000 * hargaKg * 1.07
+    const ukuranKertasPlano = metodeIsi === 'Print Buya' ? (21.5 * 33) : (65 * 100);
+    const hargaPlanoRim = ((ukuranKertasPlano * 70) / 20000) * params.tarifKertasHvs70Kg * 1.07;
     const biayaKertasIsi = (ap / 500) * hargaPlanoRim;
 
-    // 2. Desain File Isi: 26.5 set @ Rp 5.000
-    const biayaDesain = 5000 * 26.5;
+    // Desain Isi: AT6 * C7 = 5000 * (jumlahHalaman / 8)
+    const biayaDesain = 5000 * (jumlahHalaman / 8);
 
-    // 3. Ongkos Cetak Rotary Web (Print Buya): Rp 350 / lbr cetak
-    const biayaCetakIsi = ap * 350;
+    // Plat CTP & Ongkos Cetak Isi (AW & BD di sheet BUKU):
+    let biayaPlatIsi = 0;
+    let biayaCetakIsi = 0;
+    let ketCetak = '';
+
+    if (metodeIsi === 'Print Buya') {
+      biayaPlatIsi = 0;
+      biayaCetakIsi = params.tarifPrintBuyaPerLbr * ao;
+      ketCetak = `${ap.toLocaleString('id-ID')} lbr plano Folio HVS 70 gsm @ Rp ${params.tarifPrintBuyaPerLbr}/lbr cetak rotary web`;
+    } else if (metodeIsi === 'Ryobi') {
+      biayaPlatIsi = params.ryobiPlatUnitIsi * an6;
+      const drekPerPlat = validOplah + insheetIsi;
+      const overDrek = Math.max(0, drekPerPlat - 500) * an6;
+      const minOrder = params.ryobiMinOngkosIsi * an6;
+      biayaCetakIsi = minOrder + (overDrek * params.ryobiDrekOverIsi);
+      ketCetak = `${ap.toLocaleString('id-ID')} plano 65x100 (${an6} plat Ryobi, Min Rp ${(minOrder).toLocaleString('id-ID')} + Over ${overDrek} drek)`;
+    } else {
+      // Oliver:
+      biayaPlatIsi = params.oliverPlatUnitIsi * an6;
+      const drekPerPlat = validOplah + insheetIsi;
+      const overDrek = Math.max(0, drekPerPlat - 1000) * an6;
+      const minOrder = params.oliverMinOngkosIsi * an6;
+      biayaCetakIsi = minOrder + (overDrek * params.oliverDrekOverIsi);
+      ketCetak = `${ap.toLocaleString('id-ID')} plano 65x100 (${an6} plat Oliver, Min Rp ${(minOrder).toLocaleString('id-ID')} + Over ${overDrek} drek)`;
+    }
 
     breakdown.push({
-      nama: 'Kertas HVS 70 gsm & Cetak Mesin Buya (212 Hal)',
-      nominal: Math.round(biayaKertasIsi + biayaDesain + biayaCetakIsi),
+      nama: `Kertas HVS 70 gsm & Cetak Isi (${metodeIsi})`,
+      nominal: Math.round(biayaKertasIsi + biayaDesain + biayaPlatIsi + biayaCetakIsi),
       pct: 0,
-      keterangan: `${ap.toLocaleString('id-ID')} lbr cetak HVS 70 gsm @ Rp 350 + kertas & desain`,
+      keterangan: `${ketCetak} + Desain Rp ${Math.round(biayaDesain).toLocaleString('id-ID')}`,
     });
-
     // 4. Finishing Blok Isi (Kuras: Lipat, Susun, Belah, Lem Panas):
     // BF: 6.26352222 * 27 * oplah (Rp 169.115,10 / 1000 eks)
     // BG: 16.1062 * 27 * oplah (Rp 434.867,40 / 1000 eks)
@@ -727,6 +786,7 @@ export function calculateManasikSimulator(
   return {
     input,
     metodeCoverTerpilih: metodeCover,
+    metodeIsiTerpilih: input.metodeCetakIsi || 'Print Buya',
     tebalPunggungCm: tebalPunggung,
     breakdown,
     kebutuhanPlanoCover,

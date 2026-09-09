@@ -193,9 +193,14 @@ export default function ManasikMasterParameter({
             {fieldRow('hargaIsiKosongan96', 'Isi 96 Halaman (Rp/eks)')}
             {fieldRow('tarifKertasHvs70Kg', 'Kertas HVS 70 gsm (Rp/kg)')}
             {fieldRow('tarifPrintSisipanA3', 'Print Sisipan PT A3+ (Rp/lbr)')}
+            {fieldRow('tarifPrintBuyaPerLbr', 'Cetak Rotary Buya (Rp/lbr)')}
+            {fieldRow('insheetIsiBuya', 'Insheet Mesin Buya (lbr)', false)}
+            {fieldRow('insheetIsiRyobi', 'Insheet Ryobi 1W (lbr)', false)}
+            {fieldRow('insheetIsiOliver', 'Insheet Oliver 1W (lbr)', false)}
+            {fieldRow('ryobiPlatUnitIsi', 'Plat CTP Ryobi Isi (Rp/plat)')}
+            {fieldRow('oliverPlatUnitIsi', 'Plat CTP Oliver Isi (Rp/plat)')}
           </div>
         </div>
-
         {/* Card 2: Print Cover & Jasa Desain */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">

@@ -48,10 +48,11 @@ export interface SavedManasikSimulationItem {
   jumlahHalaman: 48 | 96 | 128 | 192 | 208 | 212 | 216;
   tipeJilid: 'Softcover (Bending/Lem Panas)' | 'Staples Kawat' | 'Tali Kur' | 'Spiral Kawat' | 'Ring Binder (TikTok)';
   metodeCetakCover: 'Otomatis' | 'Print Digital (A3+)' | 'Offset (Oliver)';
+  metodeCetakIsi?: 'Print Buya' | 'Ryobi' | 'Oliver';
+  insheetIsiCustom?: number;
   laminasiCover: 'Tanpa Laminasi' | 'Glossy' | 'Doff' | 'UV Varnish';
   opsiPlastikOpp: boolean;
   opsiKardus: boolean;
-  opsiSisipan?: boolean;
   marginPct: number;
   negoDiskonPct: number;
   customParams: ManasikMasterParams;
@@ -141,6 +142,8 @@ export default function ManasikSimulator({
   const [metodeCetakCover, setMetodeCetakCover] = useState<
     'Otomatis' | 'Print Digital (A3+)' | 'Offset (Oliver)'
   >('Otomatis');
+  const [metodeCetakIsi, setMetodeCetakIsi] = useState<'Print Buya' | 'Ryobi' | 'Oliver'>('Print Buya');
+  const [insheetIsiCustom, setInsheetIsiCustom] = useState<number>(5);
   const [laminasiCover, setLaminasiCover] = useState<
     'Tanpa Laminasi' | 'Glossy' | 'Doff' | 'UV Varnish'
   >('Doff');
@@ -212,9 +215,9 @@ export default function ManasikSimulator({
             setJumlahHalaman(item.jumlahHalaman);
             setTipeJilid(item.tipeJilid);
             setMetodeCetakCover(item.metodeCetakCover);
+            if (item.metodeCetakIsi) setMetodeCetakIsi(item.metodeCetakIsi);
+            if (item.insheetIsiCustom !== undefined) setInsheetIsiCustom(item.insheetIsiCustom);
             setLaminasiCover(item.laminasiCover);
-            setOpsiPlastikOpp(item.opsiPlastikOpp);
-            setOpsiKardus(item.opsiKardus);
             setOpsiSisipan(Boolean(item.opsiSisipan));
             setMarginPct(item.marginPct);
             setNegoDiskonPct(item.negoDiskonPct);
@@ -255,6 +258,8 @@ export default function ManasikSimulator({
           jumlahHalaman,
           tipeJilid,
           metodeCetakCover,
+          metodeCetakIsi,
+          insheetIsiCustom,
           laminasiCover,
           opsiPlastikOpp,
           opsiKardus,
@@ -274,9 +279,9 @@ export default function ManasikSimulator({
     jumlahHalaman,
     tipeJilid,
     metodeCetakCover,
+    metodeCetakIsi,
+    insheetIsiCustom,
     laminasiCover,
-    opsiPlastikOpp,
-    opsiKardus,
     opsiSisipan,
     marginPct,
     negoDiskonPct,
@@ -289,9 +294,10 @@ export default function ManasikSimulator({
       jumlahHalaman,
       tipeJilid,
       metodeCetakCover,
+      metodeCetakIsi,
+      insheetIsiCustom,
       laminasiCover,
       opsiPlastikOpp,
-      opsiKardus,
       opsiSisipan,
       marginPct,
       negoDiskonPct,
@@ -302,9 +308,9 @@ export default function ManasikSimulator({
       jumlahHalaman,
       tipeJilid,
       metodeCetakCover,
+      metodeCetakIsi,
+      insheetIsiCustom,
       laminasiCover,
-      opsiPlastikOpp,
-      opsiKardus,
       opsiSisipan,
       marginPct,
       negoDiskonPct,
@@ -328,9 +334,10 @@ export default function ManasikSimulator({
       jumlahHalaman,
       tipeJilid,
       metodeCetakCover,
+      metodeCetakIsi,
+      insheetIsiCustom,
       laminasiCover,
       opsiPlastikOpp,
-      opsiKardus,
       opsiSisipan,
       marginPct,
       negoDiskonPct,
@@ -398,11 +405,9 @@ export default function ManasikSimulator({
     setJumlahHalaman(item.jumlahHalaman);
     setTipeJilid(item.tipeJilid);
     setMetodeCetakCover(item.metodeCetakCover);
+    if (item.metodeCetakIsi) setMetodeCetakIsi(item.metodeCetakIsi);
+    if (item.insheetIsiCustom !== undefined) setInsheetIsiCustom(item.insheetIsiCustom);
     setLaminasiCover(item.laminasiCover);
-    setOpsiPlastikOpp(item.opsiPlastikOpp);
-    setOpsiKardus(item.opsiKardus);
-    if (item.opsiSisipan !== undefined) setOpsiSisipan(item.opsiSisipan);
-    setMarginPct(item.marginPct);
     setNegoDiskonPct(item.negoDiskonPct);
     if (setCustomParams && item.customParams) {
       setCustomParams(item.customParams);
@@ -643,23 +648,72 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
               </div>
             </div>
 
-            {/* Cetak Cover */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Metode Produksi Cover
-              </label>
-              <select
-                value={metodeCetakCover}
-                onChange={(e) => setMetodeCetakCover(e.target.value as any)}
-                className="w-full px-3 py-2 text-xs font-semibold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
-              >
-                {METODE_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label} ({opt.desc})
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Cetak Cover atau Cetak Isi (Khusus Kosongan) */}
+            {varian === 'Kosongan 10 x 15,5' ? (
+              <div className="space-y-3 p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
+                    <Printer size={13} className="text-amber-700" />
+                    Mesin Cetak Isi Kosongan
+                  </span>
+                  <span className="text-[10px] font-mono font-bold text-amber-800 bg-amber-100/80 px-1.5 py-0.5 rounded border border-amber-200">
+                    Master!D25
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {(['Print Buya', 'Ryobi', 'Oliver'] as const).map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => {
+                        setMetodeCetakIsi(m);
+                        if (m === 'Print Buya') setInsheetIsiCustom(5);
+                        else if (m === 'Ryobi') setInsheetIsiCustom(100);
+                        else setInsheetIsiCustom(200);
+                      }}
+                      className={`py-1.5 px-2 rounded-lg border text-center transition-all text-xs font-bold cursor-pointer ${
+                        metodeCetakIsi === m
+                          ? 'border-amber-600 bg-white text-amber-950 ring-2 ring-amber-500/20 shadow-2xs'
+                          : 'border-amber-200/80 bg-amber-50/50 hover:bg-white text-amber-900'
+                      }`}
+                    >
+                      {m}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center justify-between gap-2 pt-1 border-t border-amber-200/60">
+                  <label className="text-[11px] font-semibold text-amber-900">
+                    Insheet Cetak Isi (Lbr / Naik):
+                  </label>
+                  <div className="flex items-center gap-1 w-24">
+                    <input
+                      type="number"
+                      value={insheetIsiCustom}
+                      onChange={(e) => setInsheetIsiCustom(Math.max(0, Number(e.target.value) || 0))}
+                      className="w-full bg-white border border-amber-300 rounded-lg px-2 py-1 text-xs font-bold text-right text-amber-950 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    />
+                    <span className="text-[10px] text-amber-700 font-medium">lbr</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  Metode Produksi Cover
+                </label>
+                <select
+                  value={metodeCetakCover}
+                  onChange={(e) => setMetodeCetakCover(e.target.value as 'Otomatis' | 'Print Digital (A3+)' | 'Offset (Oliver)')}
+                  className="w-full px-3 py-2 text-xs font-semibold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+                >
+                  {METODE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label} ({opt.desc})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Checkbox Kemasan & Sisipan */}
             <div className="pt-2 border-t border-slate-200 flex flex-col gap-2 text-xs">
