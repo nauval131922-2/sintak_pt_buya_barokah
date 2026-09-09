@@ -148,7 +148,7 @@ export const DEFAULT_MANASIK_PARAMS: ManasikMasterParams = {
 export interface ManasikSimulatorInput {
   varian: ManasikVarianType;
   oplah: number;
-  jumlahHalaman: 48 | 96 | 128 | 192 | 208 | 212 | 216;
+  jumlahHalaman: number; // Mendukung 48, 96, 128, 192, 208, 212, 216 maupun input custom
   tipeJilid: 'Softcover (Bending/Lem Panas)' | 'Staples Kawat' | 'Tali Kur' | 'Spiral Kawat' | 'Ring Binder (TikTok)';
   metodeCetakCover: 'Otomatis' | 'Print Digital (A3+)' | 'Offset (Oliver)';
   metodeCetakIsi?: 'Print Buya' | 'Ryobi' | 'Oliver';
@@ -625,21 +625,29 @@ export function calculateManasikSimulator(
       });
     }
 
-    // B. Blok Isi Kosongan (212 hal standar 2026)
+    // B. Blok Isi Kosongan (Interpolasi presisi jika jumlah halaman custom)
     let hargaIsiPerPcs = params.hargaIsiKosongan208;
-    if (jumlahHalaman === 96) hargaIsiPerPcs = params.hargaIsiKosongan96;
-    else if (jumlahHalaman === 128) hargaIsiPerPcs = params.hargaIsiKosongan128;
-    else if (jumlahHalaman === 192) hargaIsiPerPcs = params.hargaIsiKosongan192;
-    else hargaIsiPerPcs = params.hargaIsiKosongan208;
+    if (jumlahHalaman === 96) {
+      hargaIsiPerPcs = params.hargaIsiKosongan96;
+    } else if (jumlahHalaman === 128) {
+      hargaIsiPerPcs = params.hargaIsiKosongan128;
+    } else if (jumlahHalaman === 192) {
+      hargaIsiPerPcs = params.hargaIsiKosongan192;
+    } else if (jumlahHalaman === 208 || jumlahHalaman === 212 || jumlahHalaman === 216) {
+      hargaIsiPerPcs = params.hargaIsiKosongan208;
+    } else {
+      // Custom halaman: rasio linier berbasis standar 212 halaman (Rp 3.620)
+      const basePerHal = params.hargaIsiKosongan208 / 212;
+      hargaIsiPerPcs = Math.round(basePerHal * jumlahHalaman);
+    }
     const insheetIsi = 2;
     const biayaIsi = hargaIsiPerPcs * (validOplah + insheetIsi);
     breakdown.push({
-      nama: `Blok Isi Manasik (${jumlahHalaman >= 208 ? '212' : jumlahHalaman} Halaman)`,
+      nama: `Blok Isi Manasik (${jumlahHalaman} Halaman)`,
       nominal: Math.round(biayaIsi),
       pct: 0,
       keterangan: `@ Rp ${hargaIsiPerPcs.toLocaleString('id-ID')} x ${validOplah + insheetIsi} eks (inkl. 2 insheet)`,
     });
-
     // C. Sisipan 4 Halaman (Nama PT / Biro Travel)
     let biayaSisipan = 0;
     if (opsiSisipan) {

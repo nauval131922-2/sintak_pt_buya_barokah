@@ -45,8 +45,7 @@ export interface SavedManasikSimulationItem {
   savedAt: string;
   title: string;
   varian?: ManasikVarianType;
-  oplah: number;
-  jumlahHalaman: 48 | 96 | 128 | 192 | 208 | 212 | 216;
+  jumlahHalaman: number;
   tipeJilid: 'Softcover (Bending/Lem Panas)' | 'Staples Kawat' | 'Tali Kur' | 'Spiral Kawat' | 'Ring Binder (TikTok)';
   metodeCetakCover: 'Otomatis' | 'Print Digital (A3+)' | 'Offset (Oliver)';
   metodeCetakIsi?: 'Print Buya' | 'Ryobi' | 'Oliver';
@@ -136,7 +135,8 @@ export default function ManasikSimulator({
 }: ManasikSimulatorProps) {
   const [varian, setVarian] = useState<ManasikVarianType>('Custom Cover 10 x 15,5');
   const [oplah, setOplah] = useState<number>(500);
-  const [jumlahHalaman, setJumlahHalaman] = useState<48 | 96 | 128 | 192 | 208 | 212 | 216>(216);
+  const [jumlahHalaman, setJumlahHalaman] = useState<number>(216);
+  const [isCustomHal, setIsCustomHal] = useState<boolean>(false);
   const [tipeJilid, setTipeJilid] = useState<
     'Softcover (Bending/Lem Panas)' | 'Staples Kawat' | 'Tali Kur' | 'Spiral Kawat' | 'Ring Binder (TikTok)'
   >('Tali Kur');
@@ -236,11 +236,11 @@ export default function ManasikSimulator({
         if (d.jumlahHalaman !== undefined) setJumlahHalaman(d.jumlahHalaman);
         if (d.tipeJilid !== undefined) setTipeJilid(d.tipeJilid);
         if (d.metodeCetakCover !== undefined) setMetodeCetakCover(d.metodeCetakCover);
+        if (d.metodeCetakIsi !== undefined) setMetodeCetakIsi(d.metodeCetakIsi);
         if (d.laminasiCover !== undefined) setLaminasiCover(d.laminasiCover);
         if (d.opsiPlastikOpp !== undefined) setOpsiPlastikOpp(Boolean(d.opsiPlastikOpp));
         if (d.opsiKardus !== undefined) setOpsiKardus(Boolean(d.opsiKardus));
         if (d.opsiSisipan !== undefined) setOpsiSisipan(Boolean(d.opsiSisipan));
-        if (d.marginPct !== undefined) setMarginPct(Number(d.marginPct) || 30);
         if (d.negoDiskonPct !== undefined) setNegoDiskonPct(Number(d.negoDiskonPct) || 0);
       }
     } catch (e) {
@@ -280,11 +280,12 @@ export default function ManasikSimulator({
     metodeCetakCover,
     metodeCetakIsi,
     laminasiCover,
+    opsiPlastikOpp,
+    opsiKardus,
     opsiSisipan,
     marginPct,
     negoDiskonPct,
   ]);
-
   const inputConfig: ManasikSimulatorInput = useMemo(
     () => ({
       varian,
@@ -295,6 +296,7 @@ export default function ManasikSimulator({
       metodeCetakIsi,
       laminasiCover,
       opsiPlastikOpp,
+      opsiKardus,
       opsiSisipan,
       marginPct,
       negoDiskonPct,
@@ -307,6 +309,8 @@ export default function ManasikSimulator({
       metodeCetakCover,
       metodeCetakIsi,
       laminasiCover,
+      opsiPlastikOpp,
+      opsiKardus,
       opsiSisipan,
       marginPct,
       negoDiskonPct,
@@ -522,9 +526,9 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
 
       
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Kolom Kiri: Form Input Spesifikasi */}
-        <div className="lg:col-span-5 space-y-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Kolom Kiri: Form Input Spesifikasi (Scrollbar Mandiri) */}
+        <div className="lg:col-span-5 lg:sticky lg:top-4 max-h-[calc(100vh-190px)] overflow-y-auto pr-1 pb-4 space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
               <Sliders size={15} className="text-emerald-700" />
@@ -573,52 +577,91 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
 
             {/* Jumlah Halaman */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Varian Isi Buku Manasik
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {(HALAMAN_OPTIONS[varian] || HALAMAN_OPTIONS['Custom Cover 10 x 15,5']).map((opt) => (
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-bold text-slate-700">
+                  Varian Isi Buku Manasik
+                </label>
+                {varian !== 'Mini TikTok 6,3 x 10,3' && (
                   <button
-                    key={opt.value}
                     type="button"
-                    onClick={() => setJumlahHalaman(opt.value as any)}
-                    className={`p-2 px-2.5 rounded-lg border text-left flex flex-col justify-between transition-all cursor-pointer ${
-                      jumlahHalaman === opt.value
-                        ? 'border-emerald-600 bg-emerald-50/70 text-emerald-950 font-bold ring-1 ring-emerald-500'
-                        : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 text-slate-700'
-                    }`}
+                    onClick={() => {
+                      setIsCustomHal(!isCustomHal);
+                      if (!isCustomHal) setJumlahHalaman(216);
+                    }}
+                    className="text-[10px] font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 cursor-pointer"
                   >
-                    <span className="text-xs">{opt.label}</span>
-                    <span className="text-[10px] text-slate-500 mt-0.5">{opt.desc}</span>
+                    {isCustomHal ? '← Pilih Preset' : '+ Input Custom'}
                   </button>
-                ))}
+                )}
               </div>
+
+              {isCustomHal && varian !== 'Mini TikTok 6,3 x 10,3' ? (
+                <div className="space-y-1.5 p-3 bg-emerald-50/50 border border-emerald-200 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-emerald-950">Jumlah Halaman Custom:</span>
+                    <span className="text-[10px] text-slate-500 font-medium">Harus kelipatan 4</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min={4}
+                      step={4}
+                      value={jumlahHalaman}
+                      onChange={(e) => setJumlahHalaman(Math.max(4, Number(e.target.value) || 4))}
+                      className="w-full bg-white border border-emerald-300 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                    />
+                    <span className="text-xs font-bold text-emerald-900 shrink-0">Halaman</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  {(HALAMAN_OPTIONS[varian] || HALAMAN_OPTIONS['Custom Cover 10 x 15,5']).map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => {
+                        setJumlahHalaman(opt.value);
+                        setIsCustomHal(false);
+                      }}
+                      className={`p-2 px-2.5 rounded-lg border text-left flex flex-col justify-between transition-all cursor-pointer ${
+                        jumlahHalaman === opt.value && !isCustomHal
+                          ? 'border-emerald-600 bg-emerald-50/70 text-emerald-950 font-bold ring-1 ring-emerald-500'
+                          : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      <span className="text-xs">{opt.label}</span>
+                      <span className="text-[10px] text-slate-500 mt-0.5">{opt.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Tipe Jilid & Finishing */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Model Jilid & Binding
-              </label>
-              <div className="grid grid-cols-1 gap-2">
-                {JILID_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => setTipeJilid(opt.value as any)}
-                    className={`p-2 px-2.5 rounded-lg border text-left flex flex-col justify-between transition-all cursor-pointer ${
-                      tipeJilid === opt.value
-                        ? 'border-emerald-600 bg-emerald-50/70 text-emerald-950 font-bold ring-1 ring-emerald-500'
-                        : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 text-slate-700'
-                    }`}
-                  >
-                    <span className="text-xs">{opt.label}</span>
-                    <span className="text-[10px] text-slate-500 mt-0.5">{opt.desc}</span>
-                  </button>
-                ))}
+            {/* Tipe Jilid & Finishing (Hanya ditampilkan untuk Custom Cover karena Kosongan & Cocard memiliki jilid paten) */}
+            {varian === 'Custom Cover 10 x 15,5' && (
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  Model Jilid &amp; Binding
+                </label>
+                <div className="grid grid-cols-1 gap-2">
+                  {JILID_OPTIONS.filter((opt) => opt.value !== 'Ring Binder (TikTok)').map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setTipeJilid(opt.value as any)}
+                      className={`p-2 px-2.5 rounded-lg border text-left flex flex-col justify-between transition-all cursor-pointer ${
+                        tipeJilid === opt.value
+                          ? 'border-emerald-600 bg-emerald-50/70 text-emerald-950 font-bold ring-1 ring-emerald-500'
+                          : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      <span className="text-xs">{opt.label}</span>
+                      <span className="text-[10px] text-slate-500 mt-0.5">{opt.desc}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-
+            )}
             {/* Laminasi Cover */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
@@ -758,8 +801,8 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
           </div>
         </div>
 
-        {/* Kolom Kanan: Rincian Kalkulasi & Breakdown */}
-        <div className="lg:col-span-7 space-y-5">
+        {/* Kolom Kanan: Rincian Kalkulasi & Breakdown (Scrollbar Mandiri) */}
+        <div className="lg:col-span-7 max-h-[calc(100vh-190px)] overflow-y-auto pr-1 pb-4 space-y-5">
           {/* Card Hasil Ringkasan - Soft Style Presisi */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {/* HPP Modal Card */}
