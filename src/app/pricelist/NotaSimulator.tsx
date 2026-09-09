@@ -735,9 +735,9 @@ _Kualitas cetak tajam & tembusan NCR pekat. Desain dibantu layouting standar._`;
                   <Calculator className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold tracking-tight">Panduan Simulator Nota 1 Warna (Ryobi)</h3>
+                  <h3 className="text-base font-bold tracking-tight">Panduan Simulator Nota 1 & 2 Warna (Ryobi)</h3>
                   <p className="text-xs text-emerald-200/90 mt-0.5">
-                    Alur perhitungan berbasis rim folio, kertas HVS 70 / NCR 55, jilid bendel, porporasi, dan nomorator
+                    Alur perhitungan berbasis rim folio, kertas HVS 70 / NCR 55, tinta 1 atau 2 warna, jilid bendel, porporasi, dan nomorator
                   </p>
                 </div>
               </div>
@@ -790,13 +790,13 @@ _Kualitas cetak tajam & tembusan NCR pekat. Desain dibantu layouting standar._`;
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5">
                 <h5 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
                   <Layers className="w-4 h-4 text-emerald-700" />
-                  Struktur Biaya Produksi Nota 1 Warna
+                  Struktur Biaya Produksi Nota 1 & 2 Warna
                 </h5>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
                   <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
                     <span className="font-bold text-emerald-900 block">Kertas & Plat Cetak Ryobi:</span>
                     <p className="text-slate-600 leading-snug">
-                      Kertas HVS 70 / NCR 55 (Top/Middle/Bottom) per rim folio. Tiap rangkap membutuhkan 1 plat CTP Ryobi (@ Rp 10.000) dengan minimum ongkos cetak Rp 15.000 / 500 drek.
+                      Kertas HVS 70 / NCR 55 (Top/Middle/Bottom) per rim folio. Plat CTP Ryobi (@ Rp 10.000) dihitung per warna desain (1 Warna = 1 Plat, 2 Warna = 2 Plat) dengan minimum cetak Rp 15.000 / plat s/d 500 drek.
                     </p>
                   </div>
                   <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">

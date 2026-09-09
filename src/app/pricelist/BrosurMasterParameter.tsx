@@ -236,9 +236,8 @@ export default function BrosurMasterParameter({
                       <span>1. Bahan Kertas Art Paper 120gsm</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Harga Art Paper/kg</strong>: <span className="font-mono text-emerald-700">Master!D12</span> (Rp 16.900/kg). Formula berat plano 65×90: <code className="text-[10px] bg-white px-1 py-0.5 rounded border">120 × 0.65 × 0.90 / 1000 = 0.0702 kg</code>.</li>
-                      <li>• <strong>Up Kertas</strong>: <span className="font-mono text-emerald-700">Master!E12</span> default 5%. Insheet per ukuran (Print Inter): <span className="font-mono text-emerald-700">BUKU!H6</span> (5 lembar per A3+).</li>
-                      <li>• Plano Oliver 79×109 cm: berat 0.103284 kg/plano. Plano 65×90 cm: 0.0702 kg/plano.</li>
+                      <li>• <strong>Harga Art Paper/kg</strong>: <span className="font-mono text-emerald-700">Master!D12</span> (Rp 16.900/kg). Plano Oliver: 79×109cm (10,5×21 &amp; 21,5×33) dan 65×100cm (14,5×21, A4, A3).</li>
+                      <li>• <strong>Up Kertas</strong>: <span className="font-mono text-emerald-700">Master!E12</span> default 5%. Insheet POD per order: 5 lembar A3+. Insheet plat Oliver: 100/150 lembar.</li>
                     </ul>
                   </div>
 
@@ -248,10 +247,10 @@ export default function BrosurMasterParameter({
                       <span>2. Mesin Cetak Print Inter &amp; Oliver</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Print Inter 1 Muka</strong>: <span className="font-mono text-blue-700">Master!D18</span> = Rp 1.800/lbr A3+ (digital inkjet).</li>
-                      <li>• <strong>Print Inter 2 Muka</strong>: <span className="font-mono text-blue-700">Master!D18 (col 8)</span> = Rp 3.300/lbr A3+.</li>
-                      <li>• <strong>Plat CTP Oliver</strong>: <span className="font-mono text-blue-700">BUKU!Z6</span> = Rp 45.000/plat, jumlah plat <span className="font-mono text-blue-700">BUKU!Z2</span> = 4.</li>
-                      <li>• <strong>Min Order Oliver</strong>: <span className="font-mono text-blue-700">BUKU!AB6</span> = Rp 90.000/plat. Drek over: <span className="font-mono text-blue-700">BUKU!AC6</span> = Rp 40/drek.</li>
+                      <li>• <strong>Print Inter 1 Muka</strong>: <span className="font-mono text-blue-700">Master!D18</span> = Rp 2.000/lbr A3+ (digital POD).</li>
+                      <li>• <strong>Print Inter 2 Muka</strong>: <span className="font-mono text-blue-700">Master!D18</span> = Rp 3.300/lbr A3+ bolak-balik.</li>
+                      <li>• <strong>Plat CTP Oliver</strong>: <span className="font-mono text-blue-700">BUKU!Y6</span> = Rp 45.000/plat (khusus 10,5×21 2 muka = Rp 43.000). Menggunakan 4 plat CMYK work-and-turn (kecuali A3 2 muka = 8 plat).</li>
+                      <li>• <strong>Min Order Oliver</strong>: <span className="font-mono text-blue-700">BUKU!AB6</span> = Rp 90.000/plat. Drek over: <span className="font-mono text-blue-700">BUKU!AC6</span> = Rp 40/drek/warna.</li>
                     </ul>
                   </div>
 
@@ -277,8 +276,7 @@ export default function BrosurMasterParameter({
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
                       <li>• <strong>Target Margin Standar</strong>: 30% dari HPP (dapat diubah per simulasi).</li>
                       <li>• <strong>Batas Nego Diskon</strong>: 4% dari harga jual standar.</li>
-                      <li>• Harga jual = <code className="text-[10px] bg-white px-1 py-0.5 rounded border">ceil(HPP/pcs × (1 + margin%))</code>.</li>
-                      <li>• Harga nego = <code className="text-[10px] bg-white px-1 py-0.5 rounded border">ceil(hargaJual × (1 − nego%))</code>.</li>
+                      <li>• <strong>Pembulatan Harga Jual</strong>: <span className="font-mono text-violet-700">BUKU!BI7</span> = <code className="text-[10px] bg-white px-1 py-0.5 rounded border">ROUNDUP(BH7, -1)</code> (kelipatan 10 terdekat).</li>
                     </ul>
                   </div>
                 </div>

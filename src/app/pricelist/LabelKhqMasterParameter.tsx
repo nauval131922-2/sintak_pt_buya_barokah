@@ -232,10 +232,10 @@ export default function LabelKhqMasterParameter({
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                      <span>1. Bahan &amp; Cetak Print A3+ (via Master Global)</span>
+                      <span>1. Bahan &amp; Cetak Print A3+</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Tarif Print A3+</strong>: <span className="font-mono text-emerald-700">Master!D18</span> = Rp 2.000/lbr A3+.</li>
+                      <li>• <strong>Tarif Print A3+</strong>: <span className="font-mono text-emerald-700">Master!D18</span> = Rp 2.000/lbr A3+ (khusus label POD, independen dari tarif A3 umum).</li>
                       <li>• <strong>Insheet Waste</strong>: <span className="font-mono text-emerald-700">Master!D13</span> = 7 lembar/order.</li>
                       <li>• Kapasitas: 220ml 19 pcs/A3+, 330ml 20 pcs/A3+, 600ml 17 pcs/A3+.</li>
                       <li>• Kebutuhan A3+ = <code className="text-[10px] bg-white px-1 py-0.5 rounded border">ceil(lbr / pcsPerA3) + 7</code>.</li>
@@ -273,7 +273,8 @@ export default function LabelKhqMasterParameter({
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
                       <li>• <strong>Margin Standar</strong>: 30% dari HPP (Pricelist Label!F8).</li>
-                      <li>• <strong>Nego</strong>: 4% dari harga jual. Harga dibulatkan ke kelipatan Rp 10 (<code className="text-[10px] bg-white px-1 py-0.5 rounded border">ROUNDUP,-1</code>).</li>
+                      <li>• <strong>Pembulatan Harga Jual</strong>: <span className="font-mono text-violet-700">BUKU!BJ7</span> = <code className="text-[10px] bg-white px-1 py-0.5 rounded border">ROUNDUP(BI7, BK7)</code> (kelipatan 10 untuk ≤22 dus, satuan rupiah untuk &gt;22 dus).</li>
+                      <li>• <strong>Batas Nego</strong>: 4% dari harga jual standar.</li>
                       <li>• HPP/lbr = Total HPP / total lembar label.</li>
                     </ul>
                   </div>

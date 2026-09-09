@@ -301,9 +301,9 @@ export default function NotaMasterParameter({
                   <Database className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold tracking-tight">Manual Pengguna & Pemetaan Sumber Excel</h3>
+                  <h3 className="text-base font-bold tracking-tight">Manual Pengguna & Pemetaan Sumber Excel (Nota 1 & 2 Warna)</h3>
                   <p className="text-xs text-emerald-200/90 mt-0.5">
-                    Dokumentasi referensi letak sheet, cell, dan formula dari master kalkulasi Nota 1 Warna
+                    Dokumentasi referensi letak sheet, cell, dan formula dari master kalkulasi Nota 1 Warna &amp; 2 Warna (Juli 2026)
                   </p>
                 </div>
               </div>
@@ -322,7 +322,7 @@ export default function NotaMasterParameter({
               <div className="space-y-3">
                 <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                  Pemetaan 4 Bagian Master Parameter ke File Excel (Folder 03. Pricelist Nota 1 Warna/*.xlsx)
+                  Pemetaan 4 Bagian Master Parameter ke File Excel (Folder 03. Pricelist Nota 1 Warna/*.xlsx &amp; PENDUKUNG/)
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                   {/* Poin 1 */}
@@ -333,7 +333,7 @@ export default function NotaMasterParameter({
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
                       <li>• <strong>Kertas HVS 70</strong>: <span className="font-mono text-emerald-700">Master!D12</span> (Rp 15.700/kg, up 7%). Formula: <code className="text-[10px] bg-white px-1 py-0.5 rounded border">(21.5*33*70)/20.000 * 15.700 * 1.07 = Rp 41.716/rim</code>.</li>
-                      <li>• <strong>Kertas NCR 55</strong>: Top (Rp 65.500), Middle (Rp 65.500), Bottom (Rp 62.000) dengan presentase up 5% (<span className="font-mono text-emerald-700">Master!E11</span>).</li>
+                      <li>• <strong>Kertas NCR 55</strong>: Top (Rp 65.500), Middle (Rp 65.500), Bottom (Rp 62.000) dengan up 5% (<span className="font-mono text-emerald-700">Master!E11</span>). 2 Rangkap: Rp 133.875/rim, 3 Rangkap: Rp 202.650/rim.</li>
                     </ul>
                   </div>
 
@@ -344,9 +344,9 @@ export default function NotaMasterParameter({
                       <span>2. Mesin Cetak Toko / Ryobi</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Biaya Plat CTP Ryobi</strong>: <span className="font-mono text-blue-700">BUKU!U6</span> (Rp 10.000 / plat).</li>
-                      <li>• <strong>Ongkos Cetak Min Order</strong>: <span className="font-mono text-blue-700">BUKU!W6</span> (Rp 15.000 / 500 drek).</li>
-                      <li>• <strong>Tarif Drek Over</strong>: <span className="font-mono text-blue-700">BUKU!X6</span> (Rp 30 / drek over).</li>
+                      <li>• <strong>Biaya Plat CTP Ryobi</strong>: <span className="font-mono text-blue-700">BUKU!U6</span> (Rp 10.000 / plat). Plat dihitung per warna desain (1 Warna = 1 Plat, 2 Warna = 2 Plat; lembar ply NCR memakai plat yang sama).</li>
+                      <li>• <strong>Ongkos Cetak Min Order</strong>: <span className="font-mono text-blue-700">BUKU!W6</span> (Rp 15.000 / plat s/d 500 drek).</li>
+                      <li>• <strong>Tarif Drek Over</strong>: <span className="font-mono text-blue-700">BUKU!X6</span> (Rp 30 / drek over). Putaran over = total putaran cetak − (warna × 500).</li>
                       <li>• <strong>Biaya Desain</strong>: <span className="font-mono text-blue-700">Master!D16</span> (Rp 0 / free standard).</li>
                     </ul>
                   </div>
@@ -376,6 +376,7 @@ export default function NotaMasterParameter({
                       <li>• <strong>Porporasi Sobekan</strong>: <span className="font-mono text-violet-700">BUKU!AM6</span> (Rp 5.000 / rim rangkap).</li>
                       <li>• <strong>Nomorator Otomatis</strong>: <span className="font-mono text-violet-700">BUKU!AO6</span> (Rp 10.000 / rim rangkap).</li>
                       <li>• <strong>Target Margin Standar</strong>: <span className="font-mono text-violet-700">Master!E19</span> (30%).</li>
+                      <li>• <strong>Pembulatan Harga Jual</strong>: <span className="font-mono text-violet-700">BUKU!AY7</span> = <code className="text-[10px] bg-white px-1 py-0.5 rounded border">ROUNDUP(AW7, -1)</code> (kelipatan 10 terdekat).</li>
                       <li>• <strong>Batas Nego Diskon</strong>: 4% dari harga jual standar.</li>
                     </ul>
                   </div>
