@@ -88,50 +88,70 @@ export default function ManasikMasterParameter({
     key: keyof ManasikMasterParams,
     label: string,
     isRupiah = true,
-    isDecimal = false
-  ) => (
-    <div
-      className={`p-2.5 rounded-lg border transition-all ${
-        isFieldModified(key)
-          ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-          : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-      }`}
-    >
-      <div className="flex items-center justify-between gap-1 mb-1.5">
-        <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
-          {label}
-        </label>
-        {isFieldModified(key) && (
-          <button
-            type="button"
-            onClick={() => handleResetField(key)}
-            className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-            title="Reset ke default"
-          >
-            <RotateCcw className="w-2.5 h-2.5" /> Def
-          </button>
-        )}
+    isDecimal = false,
+    badge?: string,
+    badgeColor: 'emerald' | 'amber' | 'blue' | 'purple' | 'cyan' | 'slate' = 'slate'
+  ) => {
+    const badgeBg = {
+      emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      amber: 'bg-amber-50 text-amber-700 border-amber-200',
+      blue: 'bg-blue-50 text-blue-700 border-blue-200',
+      purple: 'bg-purple-50 text-purple-700 border-purple-200',
+      cyan: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+      slate: 'bg-slate-100 text-slate-600 border-slate-200',
+    }[badgeColor];
+
+    return (
+      <div
+        className={`p-2.5 rounded-lg border transition-all ${
+          isFieldModified(key)
+            ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+            : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
+        }`}
+      >
+        <div className="flex items-center justify-between gap-1 mb-1.5">
+          <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
+            {label}
+          </label>
+          <div className="flex items-center gap-1 shrink-0">
+            {badge && (
+              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${badgeBg}`}>
+                {badge}
+              </span>
+            )}
+            {isFieldModified(key) && (
+              <button
+                type="button"
+                onClick={() => handleResetField(key)}
+                className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer"
+                title="Reset ke default"
+              >
+                <RotateCcw className="w-2.5 h-2.5" /> Def
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {isRupiah ? (
+            <ThousandInput
+              value={customParams[key] as number}
+              onValueChange={(v) => handleChange(key, v || 0)}
+              className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+              prefix="Rp"
+              allowDecimals={isDecimal}
+            />
+          ) : (
+            <input
+              type="number"
+              value={customParams[key] as number}
+              onChange={(e) => handleChange(key, Number(e.target.value) || 0)}
+              className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+            />
+          )}
+        </div>
       </div>
-      <div className="flex items-center gap-1.5">
-        {isRupiah ? (
-          <ThousandInput
-            value={customParams[key] as number}
-            onValueChange={(v) => handleChange(key, v || 0)}
-            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-            prefix="Rp"
-            allowDecimals={isDecimal}
-          />
-        ) : (
-          <input
-            type="number"
-            value={customParams[key] as number}
-            onChange={(e) => handleChange(key, Number(e.target.value) || 0)}
-            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-          />
-        )}
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
@@ -184,73 +204,139 @@ export default function ManasikMasterParameter({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Card 1: Blok Isi Kosongan */}
+        {/* Card 1: Blok Isi Kosongan & Bahan Kertas (Emerald) */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Box className="w-4 h-4 text-emerald-700" />
-            <h3 className="text-xs font-bold text-slate-800">1. Blok Isi Kosongan</h3>
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            <div className="flex items-center gap-2">
+              <Box className="w-4 h-4 text-emerald-700" />
+              <h3 className="text-xs font-bold text-slate-800">1. Blok Isi Kosongan & Bahan Kertas</h3>
+            </div>
+            <span className="text-[10px] font-bold bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200">
+              Harga Blok Ready
+            </span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('hargaIsiKosongan208', 'Isi 212 Halaman (Rp/eks)')}
-            {fieldRow('hargaIsiKosongan192', 'Isi 192 Halaman (Rp/eks)')}
-            {fieldRow('hargaIsiKosongan128', 'Isi 128 Halaman (Rp/eks)')}
-            {fieldRow('hargaIsiKosongan96', 'Isi 96 Halaman (Rp/eks)')}
-            {fieldRow('tarifKertasHvs70Kg', 'Kertas HVS 70 gsm (Rp/kg)')}
-            {fieldRow('tarifPrintSisipanA3', 'Print Sisipan PT A3+ (Rp/lbr)')}
-            {fieldRow('tarifPrintBuyaPerLbr', 'Cetak Rotary Buya (Rp/lbr)')}
-            {fieldRow('insheetIsiBuya', 'Insheet Mesin Buya (lbr)', false)}
-            {fieldRow('insheetIsiRyobi', 'Insheet Ryobi 1W (lbr)', false)}
-            {fieldRow('insheetIsiOliver', 'Insheet Oliver 1W (lbr)', false)}
-            {fieldRow('ryobiPlatUnitIsi', 'Plat CTP Ryobi Isi (Rp/plat)')}
-            {fieldRow('oliverPlatUnitIsi', 'Plat CTP Oliver Isi (Rp/plat)')}
+
+          {/* Sub-grup: Harga Blok Jadi */}
+          <div>
+            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
+              • Harga Stok Blok Jadi (per Buku):
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {fieldRow('hargaIsiKosongan208', 'Isi 212 Hal (Standar 2026)', true, false, '212 Hal', 'emerald')}
+              {fieldRow('hargaIsiKosongan192', 'Isi 192 Hal (Lama)', true, false, '192 Hal', 'slate')}
+              {fieldRow('hargaIsiKosongan128', 'Isi 128 Hal', true, false, '128 Hal', 'slate')}
+              {fieldRow('hargaIsiKosongan96', 'Isi 96 Hal', true, false, '96 Hal', 'slate')}
+            </div>
           </div>
-        </div>
-        {/* Card 2: Print Cover & Jasa Desain */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Printer className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Print Cover POD & Desain</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifPrintCoverA3', 'Print Cover AC230 A3+ (Rp)')}
-            {fieldRow('tarifPrintMiniTikTokA3', 'Print Cocard AC310 A3+ (Rp)')}
-            {fieldRow('tarifDesainCover', 'Desain Custom Cover (Rp)')}
-            {fieldRow('tarifDesainMiniTikTok', 'Desain Cocard (Rp)')}
-            {fieldRow('insheetCover', 'Insheet POD (lembar)', false)}
+
+          {/* Sub-grup: Bahan Kertas & Sisipan */}
+          <div className="pt-2 border-t border-slate-100">
+            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
+              • Bahan Kertas Plano & Sisipan:
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {fieldRow('tarifKertasHvs70Kg', 'Kertas HVS 70 gsm', true, false, 'Rp/kg', 'emerald')}
+              {fieldRow('tarifPrintSisipanA3', 'Print Sisipan PT A3+', true, false, 'Rp/lbr', 'blue')}
+            </div>
           </div>
         </div>
 
-        {/* Card 3: Jilid, Tali & Finishing Custom Cover */}
+        {/* Card 2: Mesin Cetak Isi & Insheet Kosongan (Amber & Cyan) */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Layers className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">3. Jilid, Tali & Finishing Manasik</h3>
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            <div className="flex items-center gap-2">
+              <Printer className="w-4 h-4 text-amber-700" />
+              <h3 className="text-xs font-bold text-slate-800">2. Mesin Cetak Isi & Insheet (Kosongan)</h3>
+            </div>
+            <span className="text-[10px] font-bold bg-amber-50 text-amber-800 px-2 py-0.5 rounded border border-amber-200">
+              Produksi Blok Isi
+            </span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifTaliKurPerPcs', 'Tali Kur Warna Leher (Rp/pcs)')}
-            {fieldRow('tarifBendingPerCm2', 'Tarif Bending (Rp/cm²)')}
-            {fieldRow('tarifSpiralManasik', 'Spiral Kawat (Rp/eks)')}
-            {fieldRow('tarifLubangBor', 'Jasa Lubang Bor Mata Ayam (Rp)')}
-            {fieldRow('tarifPasangTali', 'Jasa Pasang Tali Kur (Rp)')}
+
+          {/* Sub-grup Insheet */}
+          <div className="p-2.5 bg-amber-50/50 rounded-lg border border-amber-100/80">
+            <span className="text-[11px] font-bold text-amber-900 block mb-1.5">
+              • Insheet Kertas Cetak Isi (Toleransi Afstelan):
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {fieldRow('insheetIsiBuya', 'Insheet Buya', false, false, 'Rotary', 'amber')}
+              {fieldRow('insheetIsiRyobi', 'Insheet Ryobi', false, false, 'Offset 1W', 'cyan')}
+              {fieldRow('insheetIsiOliver', 'Insheet Oliver', false, false, 'Offset 1W', 'purple')}
+            </div>
+          </div>
+
+          {/* Sub-grup Tarif Cetak & Plat CTP */}
+          <div>
+            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
+              • Ongkos Cetak & Plat CTP Mesin:
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {fieldRow('tarifPrintBuyaPerLbr', 'Cetak Rotary Buya', true, false, 'Rp/lbr', 'amber')}
+              {fieldRow('ryobiPlatUnitIsi', 'Plat CTP Ryobi Isi', true, false, 'Rp/plat', 'cyan')}
+              {fieldRow('oliverPlatUnitIsi', 'Plat CTP Oliver Isi', true, false, 'Rp/plat', 'purple')}
+            </div>
           </div>
         </div>
 
-        {/* Card 4: Komponen Khusus Cocard */}
+        {/* Card 3: Print Cover POD & Desain (Blue) */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Sparkles className="w-4 h-4 text-purple-600" />
-            <h3 className="text-xs font-bold text-slate-800">4. Komponen Khusus Cocard</h3>
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            <div className="flex items-center gap-2">
+              <FileText className="w-4 h-4 text-blue-600" />
+              <h3 className="text-xs font-bold text-slate-800">3. Print Cover POD & Desain</h3>
+            </div>
+            <span className="text-[10px] font-bold bg-blue-50 text-blue-800 px-2 py-0.5 rounded border border-blue-200">
+              Cover Digital
+            </span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifRingBinderMini', 'Ring Binder 3cm (Rp/pcs)')}
-            {fieldRow('tarifTaliCocardMini', 'Tali Cocard (Rp/pcs)')}
-            {fieldRow('tarifPlastikZiplockMini', 'Plastik Ziplock (Rp/pcs)')}
-            {fieldRow('tarifPisauPoundMini', 'Pisau Pond Cocard (Rp/pcs)')}
+            {fieldRow('tarifPrintCoverA3', 'Print Cover AC230 A3+', true, false, 'Custom Cover', 'blue')}
+            {fieldRow('tarifPrintMiniTikTokA3', 'Print Cocard AC310 A3+', true, false, 'Cocard TikTok', 'purple')}
+            {fieldRow('tarifDesainCover', 'Desain Custom Cover', true, false, 'Biro Travel', 'blue')}
+            {fieldRow('tarifDesainMiniTikTok', 'Desain Cocard', true, false, 'Template Cocard', 'purple')}
+            {fieldRow('insheetCover', 'Insheet Cover POD', false, false, 'Toleransi Cetak', 'amber')}
+          </div>
+        </div>
+
+        {/* Card 4: Jilid, Tali & Finishing Manasik (Amber / Indigo) */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            <div className="flex items-center gap-2">
+              <Layers className="w-4 h-4 text-indigo-600" />
+              <h3 className="text-xs font-bold text-slate-800">4. Jilid, Tali & Finishing Manasik</h3>
+            </div>
+            <span className="text-[10px] font-bold bg-indigo-50 text-indigo-800 px-2 py-0.5 rounded border border-indigo-200">
+              Jilid & Tali
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {fieldRow('tarifTaliKurPerPcs', 'Tali Kur Warna Leher', true, false, 'Tali Kur', 'amber')}
+            {fieldRow('tarifBendingPerCm2', 'Tarif Bending (Lem Panas)', true, false, 'Softcover', 'emerald')}
+            {fieldRow('tarifSpiralManasik', 'Spiral Kawat', true, false, 'Spiral', 'cyan')}
+            {fieldRow('tarifLubangBor', 'Lubang Bor Mata Ayam', true, false, 'Mata Ayam', 'indigo')}
+            {fieldRow('tarifPasangTali', 'Jasa Pasang Tali Kur', true, false, 'Pasang Manual', 'amber')}
+          </div>
+        </div>
+
+        {/* Card 5: Komponen Khusus Cocard (Purple) */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3 md:col-span-2">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-purple-600" />
+              <h3 className="text-xs font-bold text-slate-800">5. Komponen Khusus Cocard (Mini TikTok 6,3 x 10,3 cm)</h3>
+            </div>
+            <span className="text-[10px] font-bold bg-purple-50 text-purple-800 px-2 py-0.5 rounded border border-purple-200">
+              Aksesoris Cocard
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
+            {fieldRow('tarifRingBinderMini', 'Ring Binder 3cm', true, false, 'Ring Besi', 'purple')}
+            {fieldRow('tarifTaliCocardMini', 'Tali Cocard', true, false, 'Gantungan', 'purple')}
+            {fieldRow('tarifPlastikZiplockMini', 'Plastik Ziplock', true, false, 'Pelindung', 'purple')}
+            {fieldRow('tarifPisauPoundMini', 'Pisau Pond Cocard', true, false, 'Pond Sudut', 'purple')}
           </div>
         </div>
       </div>
-
-      {/* Modal Manual Pengguna Master Parameter */}
       {showManualModal && (
         <div
           onClick={() => setShowManualModal(false)}
