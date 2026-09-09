@@ -105,10 +105,52 @@ export default function LabelKhqSimulator({
           }
         }
       }
+
+      // Restore draft settingan pengguna dari localStorage saat pindah tab
+      const rawDraft = localStorage.getItem('sintak_label_khq_simulator_draft');
+      if (rawDraft) {
+        const d = JSON.parse(rawDraft);
+        if (d.varian !== undefined) setVarian(d.varian);
+        if (d.jumlahKardus !== undefined) setJumlahKardus(Number(d.jumlahKardus) || 10);
+        if (d.jumlahLbrCustom !== undefined) setJumlahLbrCustom(Number(d.jumlahLbrCustom) || 0);
+        if (d.opsiLaminasi !== undefined) setOpsiLaminasi(Boolean(d.opsiLaminasi));
+        if (d.opsiRajang !== undefined) setOpsiRajang(Boolean(d.opsiRajang));
+        if (d.marginPct !== undefined) setMarginPct(Number(d.marginPct) || 30);
+        if (d.negoDiskonPct !== undefined) setNegoDiskonPct(Number(d.negoDiskonPct) || 4);
+      }
     } catch (e) {
-      console.error('Failed to load saved Label KHQ simulations:', e);
+      console.error('Failed to load saved Label KHQ simulations or draft:', e);
     }
   }, [activeSimulationId]);
+
+  // Simpan draft settingan simulator secara otomatis saat ada perubahan input (auto-persist)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      try {
+        const draft = {
+          varian,
+          jumlahKardus,
+          jumlahLbrCustom,
+          opsiLaminasi,
+          opsiRajang,
+          marginPct,
+          negoDiskonPct,
+        };
+        localStorage.setItem('sintak_label_khq_simulator_draft', JSON.stringify(draft));
+      } catch (e) {
+        console.error('Failed to save label KHQ simulator draft:', e);
+      }
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [
+    varian,
+    jumlahKardus,
+    jumlahLbrCustom,
+    opsiLaminasi,
+    opsiRajang,
+    marginPct,
+    negoDiskonPct,
+  ]);
 
   const result = useMemo(
     () =>
