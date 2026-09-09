@@ -281,7 +281,13 @@ export default function PricelistClient() {
         setParamsBrosur({ ...DEFAULT_BROSUR_PARAMS, ...parsedBrosur });
       }
       const savedLabelKhq = localStorage.getItem('sintak_pricelist_master_params_label_khq');
-      if (savedLabelKhq) setParamsLabelKhq({ ...DEFAULT_LABEL_KHQ_PARAMS, ...JSON.parse(savedLabelKhq) });
+      if (savedLabelKhq) {
+        const parsedLabelKhq = JSON.parse(savedLabelKhq);
+        if (parsedLabelKhq.tarifPrintA3 === 2500) {
+          delete parsedLabelKhq.tarifPrintA3;
+        }
+        setParamsLabelKhq({ ...DEFAULT_LABEL_KHQ_PARAMS, ...parsedLabelKhq });
+      }
 
       const savedBukuTulis = localStorage.getItem('sintak_pricelist_master_params_buku_tulis');
       if (savedBukuTulis) setParamsBukuTulis({ ...DEFAULT_BUKU_TULIS_PARAMS, ...JSON.parse(savedBukuTulis) });

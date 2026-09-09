@@ -244,7 +244,7 @@ export function applyGlobalParamsToAll(
 
   const nextLabelKhq: LabelKhqMasterParams = {
     ...currLabelKhq,
-    tarifPrintA3: g.tarifPrintA3,
+    tarifPrintA3: 2000, // Master!D18 Label KHQ khusus POD label selalu Rp 2.000 / lbr A3+
     tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
     minLaminasi: g.minLaminasi,
     tarifDesain: g.tarifDesainStandar,
