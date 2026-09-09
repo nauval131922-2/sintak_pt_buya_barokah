@@ -103,9 +103,9 @@ const JILID_OPTIONS = [
 ];
 
 const METODE_OPTIONS = [
-  { value: 'Otomatis', label: 'Otomatis (Rekomendasi)', desc: '< 300 POD Digital, >= 300 Offset' },
-  { value: 'Print Digital (A3+)', label: 'Digital Print (A3+)', desc: 'Cepat untuk oplah kecil' },
-  { value: 'Offset (Oliver)', label: 'Offset Mesin Oliver', desc: 'Ekonomis untuk oplah partai besar' },
+  { value: 'Otomatis', label: 'Standar Master Excel', desc: 'POD Print Digital A3+ (Sesuai Master HARGA FILE BARU)' },
+  { value: 'Print Digital (A3+)', label: 'Digital Print (A3+)', desc: 'Cepat & praktis untuk cetak cover POD' },
+  { value: 'Offset (Oliver)', label: 'Offset Mesin Oliver', desc: 'Cover Art Carton 79x109 + 4 Plat CTP (Oplah Besar)' },
 ];
 
 const LAMINASI_OPTIONS = [
