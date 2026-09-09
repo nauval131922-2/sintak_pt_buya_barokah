@@ -87,15 +87,15 @@ const UKURAN_CONFIG: Record<BrosurUkuranType, {
 }> = {
   // Di Excel master Oliver (sheet BUKU):
   // 10,5 x 21: plano 79x109, muatPlano = 30, potong = 5, insheetPlat = 100
-  // 14,5 x 21: plano 65x90,  muatPlano = 16, potong = 4, insheetPlat = 150
-  // 21 x 29,7: plano 65x90,  muatPlano = 8,  potong = 4, insheetPlat = 150
+  // 14,5 x 21: plano 65x100, muatPlano = 16, potong = 4, insheetPlat = 150
+  // 21 x 29,7: plano 65x100, muatPlano = 8,  potong = 4, insheetPlat = 150
   // 21,5 x 33: plano 79x109, muatPlano = 10, potong = 5, insheetPlat = 100
-  // 29,7 x 42: plano 65x90,  muatPlano = 4,  potong = 4, insheetPlat = 100
+  // 29,7 x 42: plano 65x100, muatPlano = 4,  potong = 4, insheetPlat = 100
   '10,5 x 21':  { w: 10.5, h: 21,   insheetPrint: 6, muatPlano: 30, potongPlano: 5, insheetPlat: 100, planoL: 79, planoP: 109 },
-  '14,5 x 21':  { w: 14.5, h: 21,   insheetPrint: 4, muatPlano: 16, potongPlano: 4, insheetPlat: 150, planoL: 65, planoP: 90 },
-  '21 x 29,7':  { w: 21,   h: 29.7, insheetPrint: 2, muatPlano: 8,  potongPlano: 4, insheetPlat: 150, planoL: 65, planoP: 90 },
+  '14,5 x 21':  { w: 14.5, h: 21,   insheetPrint: 4, muatPlano: 16, potongPlano: 4, insheetPlat: 150, planoL: 65, planoP: 100 },
+  '21 x 29,7':  { w: 21,   h: 29.7, insheetPrint: 2, muatPlano: 8,  potongPlano: 4, insheetPlat: 150, planoL: 65, planoP: 100 },
   '21,5 x 33':  { w: 21.5, h: 33,   insheetPrint: 1, muatPlano: 10, potongPlano: 5, insheetPlat: 100, planoL: 79, planoP: 109 },
-  '29,7 x 42':  { w: 29.7, h: 42,   insheetPrint: 1, muatPlano: 4,  potongPlano: 4, insheetPlat: 100, planoL: 65, planoP: 90 },
+  '29,7 x 42':  { w: 29.7, h: 42,   insheetPrint: 1, muatPlano: 4,  potongPlano: 4, insheetPlat: 100, planoL: 65, planoP: 100 },
 };
 // Gramatur Art Paper: berat per plano = gramatur × (planoL/100 × planoP/100) / 1000 kg
 function beratPlanoKg(planoL: number, planoP: number, gramatur = 120): number {
