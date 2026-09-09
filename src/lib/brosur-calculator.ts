@@ -89,13 +89,13 @@ const UKURAN_CONFIG: Record<BrosurUkuranType, {
   // 10,5 x 21: plano 79x109, muatPlano = 30, potong = 5, insheetPlat = 100
   // 14,5 x 21: plano 65x100, muatPlano = 16, potong = 4, insheetPlat = 150
   // 21 x 29,7: plano 65x100, muatPlano = 8,  potong = 4, insheetPlat = 150
-  // 21,5 x 33: plano 79x109, muatPlano = 10, potong = 5, insheetPlat = 100
-  // 29,7 x 42: plano 65x100, muatPlano = 4,  potong = 4, insheetPlat = 100
+  // 21,5 x 33: plano 79x109, muatPlano = 10, potong = 5, insheetPlat = 150 (2 muka) / 100 (1 muka)
+  // 29,7 x 42: plano 65x100, muatPlano = 4,  potong = 4, insheetPlat = 150 (2 muka) / 100 (1 muka)
   '10,5 x 21':  { w: 10.5, h: 21,   insheetPrint: 6, muatPlano: 30, potongPlano: 5, insheetPlat: 100, planoL: 79, planoP: 109 },
   '14,5 x 21':  { w: 14.5, h: 21,   insheetPrint: 4, muatPlano: 16, potongPlano: 4, insheetPlat: 150, planoL: 65, planoP: 100 },
   '21 x 29,7':  { w: 21,   h: 29.7, insheetPrint: 2, muatPlano: 8,  potongPlano: 4, insheetPlat: 150, planoL: 65, planoP: 100 },
-  '21,5 x 33':  { w: 21.5, h: 33,   insheetPrint: 1, muatPlano: 10, potongPlano: 5, insheetPlat: 100, planoL: 79, planoP: 109 },
-  '29,7 x 42':  { w: 29.7, h: 42,   insheetPrint: 1, muatPlano: 4,  potongPlano: 4, insheetPlat: 100, planoL: 65, planoP: 100 },
+  '21,5 x 33':  { w: 21.5, h: 33,   insheetPrint: 1, muatPlano: 10, potongPlano: 5, insheetPlat: 150, planoL: 79, planoP: 109 },
+  '29,7 x 42':  { w: 29.7, h: 42,   insheetPrint: 1, muatPlano: 4,  potongPlano: 4, insheetPlat: 150, planoL: 65, planoP: 100 },
 };
 // Gramatur Art Paper: berat per plano = gramatur × (planoL/100 × planoP/100) / 1000 kg
 function beratPlanoKg(planoL: number, planoP: number, gramatur = 120): number {
@@ -168,7 +168,8 @@ export function calculateBrosurSimulator(
   // 1. Biaya Kertas
   if (isOliver) {
     // Oliver: Kebutuhan plano sesuai Excel cell R = ROUNDUP((oplah / muatPlano) + (insheetPlat / potongPlano), 0)
-    const planoPerOrder = Math.ceil((oplah / cfg.muatPlano) + (cfg.insheetPlat / cfg.potongPlano));
+    const insheetPlatEff = (!is2Muka && (ukuran === '21,5 x 33' || ukuran === '29,7 x 42')) ? 100 : cfg.insheetPlat;
+    const planoPerOrder = Math.ceil((oplah / cfg.muatPlano) + (insheetPlatEff / cfg.potongPlano));
     const hargaPlano = hargaPlanoRupiah(p, cfg.planoL, cfg.planoP, gramaturNum);
     const biayaKertas = planoPerOrder * hargaPlano;
     add(`Kertas ${gramatur}`, biayaKertas,
@@ -185,22 +186,25 @@ export function calculateBrosurSimulator(
 
   // 2. Biaya Cetak Oliver (hanya jika mesin = Oliver)
   if (isOliver) {
-    // Di Excel master Oliver (cell Z): jumlah plat cetak adalah 4 plat (CMYK) baik 1 muka maupun 2 muka (cetak bolak-balik work-and-turn)
-    // Di Excel cell Y6: tarif plat 1 muka = 45.000, 2 muka = 43.000 (total plat Rp 172.000)
-    const jmlPlat = p.jumlahPlatOliver;
-    const tarifPlatUnit = is2Muka ? 43000 : p.tarifPlatOliver;
+    // Di Excel master Oliver (cell Z):
+    // Ukuran 29,7 x 42 (A3) 2 Muka tidak bisa work-and-turn karena ukuran plano penuh, sehingga butuh 8 plat (4 depan + 4 belakang)
+    // Ukuran lainnya menggunakan 4 plat (work-and-turn)
+    const jmlPlat = (ukuran === '29,7 x 42' && is2Muka) ? 8 : p.jumlahPlatOliver;
+    // Tarif plat Oliver: 43.000 khusus 10,5 x 21 2 muka, ukuran lainnya 45.000 / plat
+    const tarifPlatUnit = (ukuran === '10,5 x 21' && is2Muka) ? 43000 : p.tarifPlatOliver;
     const biayaPlat = jmlPlat * tarifPlatUnit;
     add('Plate CTP Oliver', biayaPlat, `${jmlPlat} plat × Rp ${tarifPlatUnit.toLocaleString('id-ID')}`);
 
-    // Ongkos cetak: Di Excel cell AD = jmlPlat * Rp 90.000
-    // Total drek plat = planoPerOrder * potongPlano * muka
-    const planoPerOrder = Math.ceil((oplah / cfg.muatPlano) + (cfg.insheetPlat / cfg.potongPlano));
+    // Ongkos cetak: Di Excel cell AD = jmlPlat * Rp 90.000 + biaya over (cell AF = over * tarifDrek * 4 warna)
+    const insheetPlatEff = (!is2Muka && (ukuran === '21,5 x 33' || ukuran === '29,7 x 42')) ? 100 : cfg.insheetPlat;
+    const planoPerOrder = Math.ceil((oplah / cfg.muatPlano) + (insheetPlatEff / cfg.potongPlano));
     const totalDrekPlat = planoPerOrder * cfg.potongPlano * (is2Muka ? 2 : 1);
     const drekOverPerPlat = Math.max(0, totalDrekPlat - 1000);
-    const ongkosCetakPerPlat = p.minOrderOliver + (drekOverPerPlat * p.tarifDrekOliver);
-    const ongkosCetak = ongkosCetakPerPlat * jmlPlat;
+    const biayaOverCetak = drekOverPerPlat * p.tarifDrekOliver * 4;
+    const ongkosCetakDasar = jmlPlat * p.minOrderOliver;
+    const ongkosCetak = ongkosCetakDasar + biayaOverCetak;
     add('Ongkos Cetak Oliver', ongkosCetak,
-      `${jmlPlat} plat × Rp ${ongkosCetakPerPlat.toLocaleString('id-ID')}`);
+      `${jmlPlat} plat × Rp ${p.minOrderOliver.toLocaleString('id-ID')}${biayaOverCetak > 0 ? ` + Over Rp ${biayaOverCetak.toLocaleString('id-ID')}` : ''}`);
   }
 
   // 3. Desain
