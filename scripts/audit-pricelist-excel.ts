@@ -62,7 +62,6 @@ for (const b of kosonganBenchmarks) {
     },
     DEFAULT_MANASIK_PARAMS
   );
-
   const diffHpp = Math.abs(res.summary.hppPerPcs - b.excelHpp);
   const diffJual = Math.abs(res.summary.hargaJualPerPcs - b.excelJual);
   const pass = diffHpp <= 1 && diffJual <= 1;
@@ -71,6 +70,56 @@ for (const b of kosonganBenchmarks) {
     modul: 'Manasik',
     skenario: `Kosongan ${b.oplah} eks`,
     excelRef: `BUKU!EB${b.oplah === 100 ? 7 : ''}`,
+    excelHpp: b.excelHpp,
+    sintakHpp: res.summary.hppPerPcs,
+    diffHpp,
+    excelJual: b.excelJual,
+    sintakJual: res.summary.hargaJualPerPcs,
+    diffJual,
+    status: pass ? 'PASS' : 'FAIL',
+  });
+}
+
+// ==========================================
+// 1b. AUDIT BUKU MANASIK KOSONGAN RYOBI (INSHEET 100)
+// Referensi: Kosongan.xlsm -> Sheet BUKU saat D25=Ryobi & D23=100
+// ==========================================
+const kosonganRyobiBenchmarks = [
+  { oplah: 100, excelTotal: 2218699, excelHpp: 22187, excelJual: 22190 },
+  { oplah: 200, excelTotal: 2693279, excelHpp: 13466, excelJual: 13470 },
+  { oplah: 300, excelTotal: 3178033, excelHpp: 10593, excelJual: 10600 },
+  { oplah: 2000, excelTotal: 14093532, excelHpp: 7047, excelJual: 7050 },
+  { oplah: 3000, excelTotal: 20618603, excelHpp: 6873, excelJual: 6880 },
+  { oplah: 5000, excelTotal: 33668030, excelHpp: 6734, excelJual: 6740 },
+  { oplah: 10000, excelTotal: 66296040, excelHpp: 6630, excelJual: 6630 },
+];
+
+for (const b of kosonganRyobiBenchmarks) {
+  const res = calculateManasikSimulator(
+    {
+      varian: 'Kosongan 10 x 15,5',
+      oplah: b.oplah,
+      jumlahHalaman: 212,
+      tipeJilid: 'Tali Kur',
+      metodeCetakCover: 'Offset (Oliver)',
+      metodeCetakIsi: 'Ryobi',
+      laminasiCover: 'Tanpa Laminasi',
+      opsiPlastikOpp: false,
+      opsiKardus: false,
+      marginPct: 0,
+      negoDiskonPct: 0,
+    },
+    DEFAULT_MANASIK_PARAMS
+  );
+
+  const diffHpp = Math.abs(res.summary.hppPerPcs - b.excelHpp);
+  const diffJual = Math.abs(res.summary.hargaJualPerPcs - b.excelJual);
+  const pass = diffHpp <= 1 && diffJual <= 1;
+
+  results.push({
+    modul: 'Manasik',
+    skenario: `Kosongan Ryobi ${b.oplah} eks`,
+    excelRef: 'BUKU!EB_Ryobi',
     excelHpp: b.excelHpp,
     sintakHpp: res.summary.hppPerPcs,
     diffHpp,

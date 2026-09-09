@@ -426,11 +426,14 @@ export function calculateManasikSimulator(
     // Oliver: Plano 65x100 -> AL=2, AM=64 (32 hal/potong)
     const al = metodeIsi === 'Print Buya' ? 1 : (metodeIsi === 'Ryobi' ? 9 : 2);
     const am = metodeIsi === 'Print Buya' ? 8 : (metodeIsi === 'Ryobi' ? 72 : 64);
+    // AK7: 1 Naik Cetak dapat isi (Master!D25: Print Buya=4, Ryobi=4, Oliver=16)
+    const ak = metodeIsi === 'Oliver' ? 16 : 4;
 
     // AN7: Cuttern dapat isi = C6 / (AM7 / AL7)
     const cuttern = jumlahHalaman / (am / al);
-    const an6 = Math.ceil(cuttern); // ROUNDUP(AN7, 0) -> jumlah kuras / plat 1 warna
-
+    const an6 = Math.ceil(cuttern); // ROUNDUP(AN7, 0) -> jumlah kuras finishing
+    // AX7 / AY2: Jumlah Plat CTP Isi = ROUNDUP(C6 / AK7, 0) * 1 warna
+    const jmlPlatIsi = Math.ceil(jumlahHalaman / ak);
     // AP7 (Kebutuhan Plano): ROUNDUP( ((H7/AL)*AN7) + ((AI7/AL)*AN6), 0 )
     const ap = Math.ceil(((validOplah / al) * cuttern) + ((insheetIsi / al) * an6));
     const ao = ap * al; // Jumlah lbr cetak (plat)
@@ -456,20 +459,20 @@ export function calculateManasikSimulator(
       biayaCetakIsi = params.tarifPrintBuyaPerLbr * ao;
       ketCetak = `${ap.toLocaleString('id-ID')} lbr plano Folio HVS 70 gsm @ Rp ${params.tarifPrintBuyaPerLbr}/lbr cetak rotary web`;
     } else if (metodeIsi === 'Ryobi') {
-      biayaPlatIsi = params.ryobiPlatUnitIsi * an6;
+      biayaPlatIsi = params.ryobiPlatUnitIsi * jmlPlatIsi;
       const drekPerPlat = validOplah + insheetIsi;
-      const overDrek = Math.max(0, drekPerPlat - 500) * an6;
-      const minOrder = params.ryobiMinOngkosIsi * an6;
+      const overDrek = Math.max(0, drekPerPlat - 500) * jmlPlatIsi;
+      const minOrder = params.ryobiMinOngkosIsi * jmlPlatIsi;
       biayaCetakIsi = minOrder + (overDrek * params.ryobiDrekOverIsi);
-      ketCetak = `${ap.toLocaleString('id-ID')} plano 65x100 (${an6} plat Ryobi, Min Rp ${(minOrder).toLocaleString('id-ID')} + Over ${overDrek} drek)`;
+      ketCetak = `${ap.toLocaleString('id-ID')} plano 65x100 (${jmlPlatIsi} plat Ryobi, Min Rp ${(minOrder).toLocaleString('id-ID')} + Over ${overDrek} drek)`;
     } else {
       // Oliver:
-      biayaPlatIsi = params.oliverPlatUnitIsi * an6;
+      biayaPlatIsi = params.oliverPlatUnitIsi * jmlPlatIsi;
       const drekPerPlat = validOplah + insheetIsi;
-      const overDrek = Math.max(0, drekPerPlat - 1000) * an6;
-      const minOrder = params.oliverMinOngkosIsi * an6;
+      const overDrek = Math.max(0, drekPerPlat - 1000) * jmlPlatIsi;
+      const minOrder = params.oliverMinOngkosIsi * jmlPlatIsi;
       biayaCetakIsi = minOrder + (overDrek * params.oliverDrekOverIsi);
-      ketCetak = `${ap.toLocaleString('id-ID')} plano 65x100 (${an6} plat Oliver, Min Rp ${(minOrder).toLocaleString('id-ID')} + Over ${overDrek} drek)`;
+      ketCetak = `${ap.toLocaleString('id-ID')} plano 65x100 (${jmlPlatIsi} plat Oliver, Min Rp ${(minOrder).toLocaleString('id-ID')} + Over ${overDrek} drek)`;
     }
 
     breakdown.push({
@@ -562,6 +565,7 @@ export function calculateManasikSimulator(
     totalHpp = Math.round(
       biayaKertasIsi +
         biayaDesain +
+        biayaPlatIsi +
         biayaCetakIsi +
         totalFinishingIsi +
         biayaSisipan +
