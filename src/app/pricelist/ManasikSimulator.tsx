@@ -712,21 +712,32 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                 </div>
               </div>
             ) : (
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Metode Produksi Cover
-                </label>
-                <select
-                  value={metodeCetakCover}
-                  onChange={(e) => setMetodeCetakCover(e.target.value as 'Otomatis' | 'Print Digital (A3+)' | 'Offset (Oliver)')}
-                  className="w-full px-3 py-2 text-xs font-semibold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
-                >
-                  {METODE_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label} ({opt.desc})
-                    </option>
+              <div className="space-y-2 p-3 bg-emerald-50/60 border border-emerald-200/80 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                    <Printer size={13} className="text-emerald-700" />
+                    Mesin Cetak Cover
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { value: 'Print Digital (A3+)', label: 'Print Digital (A3+)' },
+                    { value: 'Offset (Oliver)', label: 'Offset Mesin Oliver' },
+                  ].map((m) => (
+                    <button
+                      key={m.value}
+                      type="button"
+                      onClick={() => setMetodeCetakCover(m.value as any)}
+                      className={`py-2 px-2.5 rounded-lg border text-center transition-all text-xs font-bold cursor-pointer ${
+                        metodeCetakCover === m.value || (metodeCetakCover === 'Otomatis' && m.value === 'Print Digital (A3+)')
+                          ? 'border-emerald-600 bg-white text-emerald-950 ring-2 ring-emerald-500/20 shadow-2xs'
+                          : 'border-emerald-200/70 bg-emerald-50/40 hover:bg-white text-emerald-900'
+                      }`}
+                    >
+                      {m.label}
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
             )}
 
