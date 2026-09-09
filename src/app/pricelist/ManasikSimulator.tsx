@@ -26,6 +26,7 @@ import {
   Settings2,
   Calculator,
   RefreshCw,
+  Printer,
 } from 'lucide-react';
 import {
   calculateManasikSimulator,
