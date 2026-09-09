@@ -36,3 +36,8 @@ Not lazy about: understanding the problem (read it fully and trace the real flow
 4. **Commit**: Selalu lakukan commit Git lokal (`git commit -m "..."`) setelah setiap perubahan/perbaikan selesai dan diverifikasi.
 5. **Konfirmasi & Tanya**: Jika ada hal yang belum jelas, ambigu, atau ragu mengenai kebutuhan bisnis/UI, tanyakan terlebih dahulu sebelum berasumsi atau mengeksekusi perubahan.
 6. **Kecepatan Eksekusi & Anti-Looping**: DILARANG melakukan pengujian browser headless (Puppeteer / browser tab / eval) berulang-ulang saat menangani perbaikan styling/UI. Langsung terapkan solusi pada kode (read -> edit -> commit) untuk menghindari latency tinggi dan timeout proses.
+7. **Integritas Modul Pricelist & Audit Mekanis Wajib (Zero-Assumption Protocol)**:
+   - DILARANG membuat asumsi formula atau menyalin formula antar-produk tanpa mengecek sel asli di file Excel master (drive H:).
+   - Setiap kali memodifikasi, memperbaiki, atau menambah kalkulator pada modul Pricelist, ASISTEN WAJIB menjalankan skrip audit mekanis:
+     `bun run scripts/audit-pricelist-excel.ts`
+   - DILARANG menyatakan tugas "selesai", "cocok", atau "100% akurat" kepada pengguna SEBELUM skrip audit di atas dijalankan dan menampilkan hasil **`100% PASS (Diff: 0)`** pada seluruh skenario dan tier oplah di terminal.
