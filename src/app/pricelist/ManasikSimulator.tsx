@@ -470,7 +470,7 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
     setTimeout(() => setCopiedQuote(false), 2500);
   };
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
       {/* Header Info */}
       <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
         <div className="flex items-center gap-3">
@@ -526,9 +526,9 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
 
       
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Kolom Kiri: Form Input Spesifikasi (Scrollbar Mandiri) */}
-        <div className="lg:col-span-5 lg:sticky lg:top-4 max-h-[calc(100vh-190px)] overflow-y-auto pr-1 pb-4 space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-0 pb-1">
+        {/* Kolom Kiri: Form Input Spesifikasi (Scrollbar Mandiri Mengisi Penuh Layar ke Bawah) */}
+        <div className="lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
               <Sliders size={15} className="text-emerald-700" />
@@ -800,12 +800,10 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
             </div>
           </div>
         </div>
-
-        {/* Kolom Kanan: Rincian Kalkulasi & Breakdown (Scrollbar Mandiri) */}
-        <div className="lg:col-span-7 max-h-[calc(100vh-190px)] overflow-y-auto pr-1 pb-4 space-y-5">
+        {/* Kolom Kanan: Rincian Kalkulasi & Breakdown (Scrollbar Mandiri Mengisi Penuh Layar ke Bawah) */}
+        <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           {/* Card Hasil Ringkasan - Soft Style Presisi */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {/* HPP Modal Card */}
             <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-500 mb-1">
                 <span className="text-[11px] font-semibold">HPP Modal</span>

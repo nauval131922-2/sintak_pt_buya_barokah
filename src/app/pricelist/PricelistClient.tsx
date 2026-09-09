@@ -1171,7 +1171,7 @@ export default function PricelistClient() {
           )}
         </div>
       ) : activeTab === 'simulator' ? (
-        <div className="flex-1 overflow-y-auto pr-1">
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
           {selectedProductCategory === 'Buku Manasik' ? (
             <ManasikSimulator
               customParams={paramsManasik}
