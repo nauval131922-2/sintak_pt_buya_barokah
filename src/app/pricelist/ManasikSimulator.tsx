@@ -95,10 +95,10 @@ const HALAMAN_OPTIONS: Record<ManasikVarianType, { value: number; label: string;
 };
 
 const JILID_OPTIONS = [
-  { value: 'Tali Kur', label: 'Tali Kur (Standar 2026)', desc: 'Staples + Casing In + Bor Lubang Tali Kur Leher' },
-  { value: 'Softcover (Bending/Lem Panas)', label: 'Softcover (Lem Panas)', desc: 'Jilid bending punggung rapi' },
-  { value: 'Staples Kawat', label: 'Staples Kawat', desc: 'Staples tengah / casing in ekonomis' },
-  { value: 'Spiral Kawat', label: 'Spiral Kawat', desc: 'Jilid kawat ring spiral' },
+  { value: 'Tali Kur', label: 'Paket Standar: Staples + Casing In + Tali Kur', desc: 'Rangkaian lengkap asli master Excel (Staples Kawat + Casing In Cover + Bor Lubang Mata Ayam + Pasang Tali Kur Leher)' },
+  { value: 'Staples Kawat', label: 'Staples + Casing In Saja (Tanpa Tali)', desc: 'Staples kawat tengah 1213 + casing in tempel cover (tanpa bor & tali kur)' },
+  { value: 'Softcover (Bending/Lem Panas)', label: 'Lem Panas (Bending Punggung)', desc: 'Jilid lem panas punggung buku tanpa staples/tali (min. Rp 100.000)' },
+  { value: 'Spiral Kawat', label: 'Spiral Kawat (Ring Wire)', desc: 'Jilid lubang ring spiral kawat (min. Rp 250.000)' },
   { value: 'Ring Binder (TikTok)', label: 'Ring Binder 3cm', desc: 'Khusus varian Cocard (+ Tali Co Card)' },
 ];
 

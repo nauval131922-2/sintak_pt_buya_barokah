@@ -131,42 +131,58 @@ for (const b of kosonganRyobiBenchmarks) {
 }
 
 // ==========================================
-// 2. AUDIT BUKU MANASIK CUSTOM COVER (500 EKS)
-// Referensi: Custom Cover 2026.xlsm -> Sheet BUKU Row 19
+// 2. AUDIT BUKU MANASIK CUSTOM COVER (11 TIER OPLAH: 20 s/d 5000 EKS)
+// Referensi: Custom Cover 2026.xlsm -> Sheet BUKU (Row 9 s/d 19)
 // ==========================================
-const manasikCustom = calculateManasikSimulator(
-  {
-    varian: 'Custom Cover 10 x 15,5',
-    oplah: 500,
-    jumlahHalaman: 216,
-    tipeJilid: 'Tali Kur',
-    metodeCetakCover: 'Otomatis',
-    laminasiCover: 'Doff',
-    opsiPlastikOpp: true,
-    opsiKardus: true,
-    opsiSisipan: true,
-    marginPct: 30,
-    negoDiskonPct: 0,
-  },
-  DEFAULT_MANASIK_PARAMS
-);
+const customCoverBenchmarks = [
+  { oplah: 20, excelTotal: 232463, excelHpp: 11623, excelJual: 15120 },
+  { oplah: 50, excelTotal: 416249, excelHpp: 8325, excelJual: 10830 },
+  { oplah: 100, excelTotal: 722557, excelHpp: 7226, excelJual: 9400 },
+  { oplah: 150, excelTotal: 1028866, excelHpp: 6859, excelJual: 8920 },
+  { oplah: 200, excelTotal: 1335175, excelHpp: 6676, excelJual: 8680 },
+  { oplah: 250, excelTotal: 1649983, excelHpp: 6600, excelJual: 8580 },
+  { oplah: 300, excelTotal: 1957732, excelHpp: 6526, excelJual: 8490 },
+  { oplah: 350, excelTotal: 2265481, excelHpp: 6473, excelJual: 8420 },
+  { oplah: 400, excelTotal: 2573229, excelHpp: 6433, excelJual: 8370 },
+  { oplah: 450, excelTotal: 2895278, excelHpp: 6434, excelJual: 8370 },
+  { oplah: 500, excelTotal: 3209227, excelHpp: 6418, excelJual: 8350 },
+];
 
-results.push({
-  modul: 'Manasik',
-  skenario: 'Custom Cover 500 eks',
-  excelRef: 'BUKU!DE19',
-  excelHpp: 6418,
-  sintakHpp: manasikCustom.summary.hppPerPcs,
-  diffHpp: Math.abs(manasikCustom.summary.hppPerPcs - 6418),
-  excelJual: 8350,
-  sintakJual: manasikCustom.summary.hargaJualPerPcs,
-  diffJual: Math.abs(manasikCustom.summary.hargaJualPerPcs - 8350),
-  status:
-    manasikCustom.summary.hppPerPcs === 6418 && manasikCustom.summary.hargaJualPerPcs === 8350
-      ? 'PASS'
-      : 'FAIL',
-});
+for (const b of customCoverBenchmarks) {
+  const res = calculateManasikSimulator(
+    {
+      varian: 'Custom Cover 10 x 15,5',
+      oplah: b.oplah,
+      jumlahHalaman: 216,
+      tipeJilid: 'Tali Kur',
+      metodeCetakCover: 'Otomatis',
+      laminasiCover: 'Doff',
+      opsiPlastikOpp: true,
+      opsiKardus: true,
+      opsiSisipan: true,
+      marginPct: 30,
+      negoDiskonPct: 0,
+    },
+    DEFAULT_MANASIK_PARAMS
+  );
 
+  const diffHpp = Math.abs(res.summary.hppPerPcs - b.excelHpp);
+  const diffJual = Math.abs(res.summary.hargaJualPerPcs - b.excelJual);
+  const pass = diffHpp <= 1 && diffJual <= 1;
+
+  results.push({
+    modul: 'Manasik',
+    skenario: `Custom Cover ${b.oplah} eks`,
+    excelRef: `BUKU!DE${b.oplah === 500 ? 19 : ''}`,
+    excelHpp: b.excelHpp,
+    sintakHpp: res.summary.hppPerPcs,
+    diffHpp,
+    excelJual: b.excelJual,
+    sintakJual: res.summary.hargaJualPerPcs,
+    diffJual,
+    status: pass ? 'PASS' : 'FAIL',
+  });
+}
 // ==========================================
 // 3. AUDIT BUKU SURAT YASIN HARDCOVER (175 EKS)
 // Referensi: Surat Yasin Hardcover 175 Eks.xlsm
