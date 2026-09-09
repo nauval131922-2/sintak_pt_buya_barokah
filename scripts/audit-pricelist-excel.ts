@@ -183,7 +183,43 @@ for (const b of customCoverBenchmarks) {
     status: pass ? 'PASS' : 'FAIL',
   });
 }
+
 // ==========================================
+// 2b. AUDIT BUKU MANASIK CUSTOM COVER (MESIN OLIVER 5.000 EKS)
+// Referensi: Custom Cover 2026.xlsm -> Sheet BUKU Row 7 (Oliver, Insheet 200)
+// ==========================================
+const manasikOliver5k = calculateManasikSimulator(
+  {
+    varian: 'Custom Cover 10 x 15,5',
+    oplah: 5000,
+    jumlahHalaman: 216,
+    tipeJilid: 'Tali Kur',
+    metodeCetakCover: 'Offset (Oliver)',
+    laminasiCover: 'Doff',
+    opsiPlastikOpp: true,
+    opsiKardus: true,
+    opsiSisipan: true,
+    marginPct: 30,
+    negoDiskonPct: 0,
+  },
+  DEFAULT_MANASIK_PARAMS
+);
+
+results.push({
+  modul: 'Manasik',
+  skenario: 'Custom Cover Oliver 5.000 eks',
+  excelRef: 'BUKU!CZ7 / DE7',
+  excelHpp: 6007,
+  sintakHpp: manasikOliver5k.summary.hppPerPcs,
+  diffHpp: Math.abs(manasikOliver5k.summary.hppPerPcs - 6007),
+  excelJual: 7810,
+  sintakJual: manasikOliver5k.summary.hargaJualPerPcs,
+  diffJual: Math.abs(manasikOliver5k.summary.hargaJualPerPcs - 7810),
+  status:
+    manasikOliver5k.summary.hppPerPcs === 6007 && manasikOliver5k.summary.hargaJualPerPcs === 7810
+      ? 'PASS'
+      : 'FAIL',
+});
 // 3. AUDIT BUKU SURAT YASIN HARDCOVER (175 EKS)
 // Referensi: Surat Yasin Hardcover 175 Eks.xlsm
 // ==========================================
