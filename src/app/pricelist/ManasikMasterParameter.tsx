@@ -333,7 +333,7 @@ export default function ManasikMasterParameter({
           {/* Sub: Bahan Cetak & Desain Cocard */}
           <div>
             <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Cetak Kartu & Desain (AC 310 gsm):
+              • Print Digital Cocard (A3+ 2 Muka):
             </span>
             <div className="grid grid-cols-1 gap-2">
               {fieldRow('tarifPrintMiniTikTokA3', 'Print Cocard AC 310 A3+', true, false, '20 Kartu/A3+', 'purple')}
@@ -341,6 +341,18 @@ export default function ManasikMasterParameter({
             </div>
           </div>
 
+          {/* Sub: Cetak Offset Oliver Cocard */}
+          <div className="pt-2 border-t border-slate-100">
+            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
+              • Cetak Offset Oliver (Plano 79x109 AC 310):
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {fieldRow('oliverPlatUnitCover', 'Plat CTP Oliver (2 Muka)', true, false, '8 Plat CTP', 'purple')}
+              {fieldRow('oliverMinOngkosCover', 'Min. Cetak Oliver', true, false, 'Rp/order', 'emerald')}
+              {fieldRow('oliverDrekOverCover', 'Tarif Drek Over', true, false, 'Rp/drek', 'slate')}
+              {fieldRow('insheetOffsetCover', 'Insheet Toleransi', false, false, 'plano', 'amber')}
+            </div>
+          </div>
           {/* Sub: Aksesoris & Perlengkapan Cocard */}
           <div className="pt-2 border-t border-slate-100">
             <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
