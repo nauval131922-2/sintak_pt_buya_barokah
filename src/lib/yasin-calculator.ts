@@ -149,13 +149,15 @@ export function calculateYasinSimulator(
   else tebalPunggung = 1.0;
 
   // 2. Biaya Cover POD A3+
-  // Softcover muat 3 cover / A3+ (insheet 5), Hardcover muat 2 cover (insheet 10 di Excel Master!D11)
-  const a3MuatCover = isHardcover ? 2 : 3;
+  // Di Excel Cell O7:
+  // Ukuran 9.5 x 14 cm = 1 A3+ muat 4 cover (insheet 5)
+  // Ukuran 11.7 x 15 cm = 1 A3+ muat 3 cover (insheet 5)
+  // Hardcover = 1 A3+ muat 2 cover (insheet 10 di Excel Master!D11)
+  const a3MuatCover = isHardcover ? 2 : (ukuran === '9.5 x 14' ? 4 : 3);
   const insheetCoverEffective = isHardcover ? 10 : (params.insheetCover ?? 5);
   const kebutuhanA3Cover = Math.ceil(validOplah / a3MuatCover) + insheetCoverEffective;
   const hargaPrintCoverUnit = isHardcover ? 2000 : (params.tarifPrintCoverA3 ?? 2500);
   const biayaPrintCover = (kebutuhanA3Cover * hargaPrintCoverUnit) + (params.tarifDesainCover ?? 25000);
-
   // 3. Biaya Blok Isi Yasin
   let hargaIsiPerPcs = params.hargaIsiYasin96 ?? DEFAULT_YASIN_PARAMS.hargaIsiYasin96;
   if (jumlahHalamanIsi === 64) hargaIsiPerPcs = params.hargaIsiYasin64 ?? DEFAULT_YASIN_PARAMS.hargaIsiYasin64;
@@ -186,14 +188,14 @@ export function calculateYasinSimulator(
   }
 
   // 5. Biaya Laminasi Cover
-  // Sesuai formula Excel cell AZ: =(((D*2+1)*(F+1)*tarif)*oplah)
+  // Sesuai formula Excel Sheet BUKU cell AZ7 (Glossy) & BC7 (Doff):
+  // AZ7 = (((D7 * 2 + 1) * (F7 + 1) * AZ6) * H7) * BA6 di mana AZ6 = 0.35, BC6 = 0.40
   const bentanganWidth = isHardcover ? (widthCm * 2 + 4) : (widthCm * 2 + 1);
   const bentanganHeight = isHardcover ? (heightCm + 4) : (heightCm + 1);
   const luasCm2Cover = bentanganWidth * bentanganHeight;
   const tarifLamCm2 = laminasiCover === 'Doff' ? params.tarifLaminasiDoffCm2 : params.tarifLaminasiGlossyCm2;
   const rawLam = luasCm2Cover * tarifLamCm2 * validOplah;
-  const biayaLaminasi = Math.max(params.minLaminasi, rawLam);
-
+  const biayaLaminasi = laminasiCover === 'Tanpa Laminasi' ? 0 : Math.max(params.minLaminasi, rawLam);
   // 6. Finishing Perakitan Jilid
   // Di Excel Sheet BUKU cell AT: =$AT$2 * $AT$6 * H di mana AT2 = 3 lembar sisipan (Rp 300/buku)
   const totalLembarSisip = Math.max(3, lembarSisipanFoto + lembarSisipanKeluarga);
