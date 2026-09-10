@@ -278,23 +278,43 @@ export default function ManasikMasterParameter({
           </div>
         </div>
 
-        {/* Card 3: Print Cover & Desain (Blue) */}
+        {/* Card 3: Cetak Cover & Desain (Print Digital & Offset Oliver) */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-blue-600" />
-              <h3 className="text-xs font-bold text-slate-800">3. Print Cover & Desain</h3>
+              <h3 className="text-xs font-bold text-slate-800">3. Cetak Cover & Desain</h3>
             </div>
             <span className="text-[10px] font-bold bg-blue-50 text-blue-800 px-2 py-0.5 rounded border border-blue-200">
-              Print Cover
+              Cover Digital & Oliver
             </span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifPrintCoverA3', 'Print Cover AC230 A3+', true, false, 'Custom Cover', 'blue')}
-            {fieldRow('tarifPrintMiniTikTokA3', 'Print Cocard AC310 A3+', true, false, 'Cocard TikTok', 'purple')}
-            {fieldRow('tarifDesainCover', 'Desain Custom Cover', true, false, 'Biro Travel', 'blue')}
-            {fieldRow('tarifDesainMiniTikTok', 'Desain Cocard', true, false, 'Template Cocard', 'purple')}
-            {fieldRow('insheetCover', 'Insheet Print Cover', false, false, 'Toleransi Cetak', 'amber')}
+
+          {/* Sub-grup Print Digital Cover */}
+          <div>
+            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
+              • Print Digital Cover (A3+):
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {fieldRow('tarifPrintCoverA3', 'Print Cover AC 230 A3+', true, false, 'Custom Cover', 'blue')}
+              {fieldRow('tarifPrintMiniTikTokA3', 'Print Cocard AC 310 A3+', true, false, 'Cocard TikTok', 'purple')}
+              {fieldRow('insheetCover', 'Insheet Print Digital', false, false, 'lbr A3+', 'amber')}
+              {fieldRow('tarifDesainCover', 'Desain Custom Cover', true, false, 'Rp/order', 'blue')}
+              {fieldRow('tarifDesainMiniTikTok', 'Desain Cocard', true, false, 'Rp/order', 'purple')}
+            </div>
+          </div>
+
+          {/* Sub-grup Cetak Offset Mesin Oliver */}
+          <div className="pt-2 border-t border-slate-100">
+            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
+              • Cetak Cover Offset Mesin Oliver (Plano 79x109):
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {fieldRow('oliverPlatUnitCover', 'Plat CTP Oliver Cover', true, false, 'Rp/plat', 'purple')}
+              {fieldRow('oliverMinOngkosCover', 'Min. Cetak Oliver', true, false, 'Rp/order', 'emerald')}
+              {fieldRow('oliverDrekOverCover', 'Tarif Drek Over Cover', true, false, 'Rp/drek', 'slate')}
+              {fieldRow('insheetOffsetCover', 'Insheet Cover Oliver', false, false, 'plano', 'amber')}
+            </div>
           </div>
         </div>
 
