@@ -493,7 +493,7 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
                         : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 text-slate-700'
                     }`}
                   >
-                    {t === 'Hardcover' ? '📘 Hard Cover (Mewah)' : '📄 Soft Cover (Standar)'}
+                    {t === 'Hardcover' ? '📘 Hard Cover' : '📄 Soft Cover'}
                   </button>
                 ))}
               </div>
@@ -1031,7 +1031,7 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
                 <div>
                   <h3 className="text-base font-bold tracking-tight">Panduan Simulator Buku Surat Yasin & Tahlil</h3>
                   <p className="text-xs text-emerald-200/90 mt-0.5">
-                    Alur perhitungan berbasis blok isi Yasin ready, cover soft/hardcover, sisipan foto/doa, dan aksesoris mewah
+                    Alur perhitungan berbasis isi Yasin kosongan, cover soft/hardcover, sisipan foto/doa, dan aksesoris
                   </p>
                 </div>
               </div>
@@ -1056,7 +1056,7 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
                   <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
                     <span className="font-bold text-emerald-800 text-xs">1. Tipe Cover & Isi</span>
                     <p className="text-[11px] text-slate-600">
-                      Pilih <strong>Softcover (AC 230)</strong> atau <strong>Hardcover Board Mewah</strong>, lalu pilih tebal isi (64 - 192 Halaman).
+                      Pilih <strong>Softcover (AC 230)</strong> atau <strong>Hardcover</strong>, lalu pilih tebal isi (64 - 192 Halaman).
                     </p>
                   </div>
                   <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
@@ -1066,7 +1066,7 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
                     </p>
                   </div>
                   <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
-                    <span className="font-bold text-emerald-800 text-xs">3. Aksesoris Mewah</span>
+                    <span className="font-bold text-emerald-800 text-xs">3. Aksesoris</span>
                     <p className="text-[11px] text-slate-600">
                       Centang opsi <strong>Pita Pembatas Rumbai</strong>, <strong>Siku Sudut Emas</strong>, serta plastik segel OPP satuan.
                     </p>

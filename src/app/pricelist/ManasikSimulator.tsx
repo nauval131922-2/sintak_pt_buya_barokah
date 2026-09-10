@@ -80,10 +80,10 @@ const VARIAN_OPTIONS: { value: ManasikVarianType; label: string; desc: string }[
 
 const HALAMAN_OPTIONS: Record<ManasikVarianType, { value: number; label: string; desc: string }[]> = {
   'Custom Cover 10 x 15,5': [
-    { value: 216, label: '216 Halaman (Standar 2026)', desc: '212 Hal Blok Isi + 4 Hal Sisipan PT' },
-    { value: 192, label: '192 Halaman', desc: 'Blok Manasik Lengkap Klasik' },
-    { value: 128, label: '128 Halaman', desc: 'Blok Manasik Standar' },
-    { value: 96, label: '96 Halaman', desc: 'Blok Manasik Ringkas' },
+    { value: 216, label: '216 Halaman (Standar 2026)', desc: '212 Hal Isi + 4 Hal Sisipan PT' },
+    { value: 192, label: '192 Halaman', desc: 'Isi 192 Halaman' },
+    { value: 128, label: '128 Halaman', desc: 'Isi 128 Halaman' },
+    { value: 96, label: '96 Halaman', desc: 'Isi 96 Halaman' },
   ],
   'Kosongan 10 x 15,5': [
     { value: 212, label: '212 Halaman (Standar 2026)', desc: 'Isi Kosongan Standar 2026' },
@@ -109,10 +109,10 @@ const METODE_OPTIONS = [
 ];
 
 const LAMINASI_OPTIONS = [
-  { value: 'Doff', label: 'Laminasi Doff (Standar 2026)', desc: 'Matte elegan & eksklusif' },
-  { value: 'Glossy', label: 'Laminasi Glossy', desc: 'Mengkilap cerah' },
-  { value: 'UV Varnish', label: 'UV Varnish', desc: 'Lapisan vernis mengkilap' },
-  { value: 'Tanpa Laminasi', label: 'Tanpa Laminasi', desc: 'Standar cetak polos' },
+  { value: 'Doff', label: 'Laminasi Doff', desc: 'Laminasi Doff' },
+  { value: 'Glossy', label: 'Laminasi Glossy', desc: 'Laminasi Glossy' },
+  { value: 'UV Varnish', label: 'UV Varnish', desc: 'UV Varnish' },
+  { value: 'Tanpa Laminasi', label: 'Tanpa Laminasi', desc: 'Tanpa Laminasi' },
 ];
 interface ManasikSimulatorProps {
   customParams?: ManasikMasterParams;

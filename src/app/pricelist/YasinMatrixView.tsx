@@ -64,8 +64,7 @@ export default function YasinMatrixView({
           },
           customParams
         );
-
-        // Model 2: Hardcover Mewah (Foil Emas + Siku Emas + Pita Rumbai)
+        // Model 2: Hardcover (Foil Emas + Siku Emas + Pita Rumbai)
         const hard = calculateYasinSimulator(
           {
             oplah,
@@ -123,7 +122,7 @@ export default function YasinMatrixView({
       OPLAH_TIERS.forEach((oplah) => {
         const coverOptions: Array<{ type: 'Softcover' | 'Hardcover'; label: string; filterKey: 'Softcover' | 'Hardcover'; pitaSiku: boolean }> = [
           { type: 'Softcover', label: 'Soft Cover (AC 230)', filterKey: 'Softcover', pitaSiku: false },
-          { type: 'Hardcover', label: 'Hard Cover Mewah', filterKey: 'Hardcover', pitaSiku: true },
+          { type: 'Hardcover', label: 'Hard Cover', filterKey: 'Hardcover', pitaSiku: true },
         ];
 
         coverOptions.forEach(({ type, label, filterKey, pitaSiku }) => {

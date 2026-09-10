@@ -5,8 +5,7 @@ export interface YasinMasterParams {
   tarifPrintCoverA3: number; // 2500 (Softcover AC 230) / 2000 (Hardcover AP 150)
   tarifDesainCover: number; // 25000
   insheetCover: number; // 5-10 lembar
-
-  // 2. Blok Isi Yasin Kosongan (Ready)
+  // 2. Isi Yasin Kosongan
   hargaIsiYasin64: number; // 1650
   hargaIsiYasin96: number; // 2250 (standar Buya Barokah)
   hargaIsiYasin112: number; // 2470
@@ -259,7 +258,7 @@ export function calculateYasinSimulator(
       keterangan: `${kebutuhanA3Cover} lbr A3+, ${isHardcover ? 'Art Paper 150' : 'Art Carton 230'}`,
     },
     {
-      nama: `Blok Kitab Yasin (${jumlahHalamanIsi} Halaman Ready)`,
+      nama: `Isi Kitab Yasin (${jumlahHalamanIsi} Halaman)`,
       nominal: Math.round(biayaIsi),
       pct: totalHpp > 0 ? (biayaIsi / totalHpp) * 100 : 0,
       keterangan: `@ Rp ${hargaIsiPerPcs.toLocaleString('id-ID')} x ${validOplah} buku`,

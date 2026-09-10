@@ -237,14 +237,14 @@ export default function GlobalMasterParameter({
           </div>
         </div>
 
-        {/* 4. Print Digital POD A3+ */}
+        {/* 4. Print Digital A3+ */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Printer className="w-4 h-4 text-purple-600" />
-            <h3 className="text-xs font-bold text-slate-800">4. Print Digital POD A3+</h3>
+            <h3 className="text-xs font-bold text-slate-800">4. Print Digital A3+</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifPrintA3', 'Print Cover POD A3+', 'Manasik, Yasin, Buku, Sertifikat')}
+            {fieldRow('tarifPrintA3', 'Print Cover A3+', 'Manasik, Yasin, Buku, Sertifikat')}
             {fieldRow('tarifPrintInter1Muka', 'Print Inter 1 Muka', 'Brosur, Buku Tabungan isi')}
             {fieldRow('tarifPrintInter2Muka', 'Print Inter 2 Muka', 'Brosur 2 Muka, Majalah isi')}
           </div>

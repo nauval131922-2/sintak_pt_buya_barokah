@@ -169,8 +169,7 @@ export default function YasinMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Box className="w-4 h-4 text-emerald-700" />
-            <h3 className="text-xs font-bold text-slate-800">1. Blok Isi Kitab Yasin (Ready)</h3>
-          </div>
+            <h3 className="text-xs font-bold text-slate-800">1. Isi Kitab Yasin Kosongan</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('hargaIsiYasin64', 'Yasin 64 Hal')}
             {fieldRow('hargaIsiYasin96', 'Yasin 96 Hal')}
@@ -325,8 +324,7 @@ export default function YasinMasterParameter({
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                      <span>1. Blok Isi Kitab Yasin (Ready)</span>
-                    </div>
+                      <span>1. Isi Kitab Yasin Kosongan</span>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
                       <li>• <strong>Database Harga Isi</strong>: <span className="font-mono text-emerald-700">Data_Yasin!A1:P104</span> & <span className="font-mono text-emerald-700">Master!D36</span>.</li>
                       <li>• <strong>Harga Netto</strong>: 64 Hal: Rp 1.650, 96 Hal: Rp 2.250, 112 Hal: Rp 2.470, 128 Hal: Rp 3.000 (Buya Barokah), 144 Hal: Rp 3.200, 192 Hal: Rp 3.800.</li>
@@ -367,7 +365,7 @@ export default function YasinMasterParameter({
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-violet-500"></span>
-                      <span>4. Aksesoris Mewah, Gembos Emas & OPP</span>
+                      <span>4. Aksesoris, Gembos Emas & OPP</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
                       <li>• <strong>Pita Pembatas Rumbai</strong>: <span className="font-mono text-violet-700">BUKU!AY6</span> (Rp 470 / buku).</li>

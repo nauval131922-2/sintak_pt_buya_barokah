@@ -636,7 +636,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                       { label: 'HPP Kalkulasi', href: '/hpp-kalkulasi', icon: <Calculator size={14} /> },
                     ]
                   }] : []),
-                  ...(canAccess('pricelist_kalkulasi') ? [{ label: 'Pricelist', href: '/pricelist', icon: <FileSpreadsheet size={16} /> }] : []),
+                  ...(canAccess('pricelist_kalkulasi') ? [{ label: 'Kalkulasi Harga', href: '/pricelist', icon: <FileSpreadsheet size={16} /> }] : []),
                 ]}
               />
             )}

@@ -937,8 +937,7 @@ export default function PricelistClient() {
                 <span>Global</span>
               </button>
             </div>
-
-            {/* Tab Simulator */}
+            {/* Tab Kalkulasi (dahulu Simulator) */}
             <button
               type="button"
               onClick={() => handleTabChange('simulator')}
@@ -953,7 +952,7 @@ export default function PricelistClient() {
               }`}
             >
               <Calculator size={14} className={activeSimulationId ? 'text-orange-600' : ''} />
-              <span>Simulator</span>
+              <span>Kalkulasi</span>
               {activeSimulationId && (
                 <span className="text-[9.5px] font-extrabold uppercase px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-300">
                   Edit
