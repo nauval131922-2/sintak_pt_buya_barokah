@@ -203,17 +203,65 @@ export default function ManasikMasterParameter({
         </div>
       </div>
 
-      {/* Grid Parameter: Dikelompokkan Presisi Sesuai 3 Model / Varian Produk */}
+      {/* Grid Parameter: Dikelompokkan Presisi Sesuai 3 Model / Varian Produk (Urutan: Kosongan -> Custom Cover -> Cocard) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Varian 1: Custom Cover (10 x 15,5 cm) */}
+        {/* Varian 1: Kosongan (10 x 15,5 cm) */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3.5">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            <div className="flex items-center gap-2">
+              <Printer className="w-4 h-4 text-amber-700" />
+              <h3 className="text-xs font-bold text-slate-800">1. Kosongan (10 x 15,5 cm)</h3>
+            </div>
+            <span className="text-[10px] font-bold bg-amber-50 text-amber-800 px-2 py-0.5 rounded border border-amber-200">
+              Varian 1
+            </span>
+          </div>
+
+          {/* Sub: Bahan Baku Kertas */}
+          <div>
+            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
+              • Bahan Baku Kertas:
+            </span>
+            <div className="grid grid-cols-1 gap-2">
+              {fieldRow('tarifKertasHvs70Kg', 'Kertas HVS 70 gsm / Kg', true, false, 'Folio HVS', 'emerald')}
+            </div>
+          </div>
+
+          {/* Sub: Insheet Toleransi Mesin */}
+          <div className="pt-2 border-t border-slate-100">
+            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
+              • Insheet Kertas Cetak Isi (Toleransi):
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {fieldRow('insheetIsiBuya', 'Insheet Buya', false, false, 'Print Buya', 'amber')}
+              {fieldRow('insheetIsiRyobi', 'Insheet Ryobi', false, false, 'Ryobi', 'cyan')}
+              {fieldRow('insheetIsiOliver', 'Insheet Oliver', false, false, 'Oliver', 'purple')}
+            </div>
+          </div>
+
+          {/* Sub: Ongkos Cetak & Plat Mesin */}
+          <div className="pt-2 border-t border-slate-100">
+            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
+              • Ongkos Cetak & Plat CTP Mesin:
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {fieldRow('tarifPrintBuyaPerLbr', 'Cetak Print Buya', true, false, 'Rp/lbr', 'amber')}
+              {fieldRow('ryobiPlatUnitIsi', 'Plat CTP Ryobi Isi', true, false, 'Rp/plat', 'cyan')}
+              {fieldRow('oliverPlatUnitIsi', 'Plat CTP Oliver Isi', true, false, 'Rp/plat', 'purple')}
+              {fieldRow('tarifSpiralManasik', 'Spiral Kawat Alternatif', true, false, 'Spiral', 'cyan')}
+            </div>
+          </div>
+        </div>
+
+        {/* Varian 2: Custom Cover (10 x 15,5 cm) */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3.5">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
             <div className="flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-emerald-700" />
-              <h3 className="text-xs font-bold text-slate-800">1. Custom Cover (10 x 15,5 cm)</h3>
+              <h3 className="text-xs font-bold text-slate-800">2. Custom Cover (10 x 15,5 cm)</h3>
             </div>
             <span className="text-[10px] font-bold bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200">
-              Varian 1
+              Varian 2
             </span>
           </div>
 
@@ -270,54 +318,6 @@ export default function ManasikMasterParameter({
           </div>
         </div>
 
-        {/* Varian 2: Kosongan (10 x 15,5 cm) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3.5">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <div className="flex items-center gap-2">
-              <Printer className="w-4 h-4 text-amber-700" />
-              <h3 className="text-xs font-bold text-slate-800">2. Kosongan (10 x 15,5 cm)</h3>
-            </div>
-            <span className="text-[10px] font-bold bg-amber-50 text-amber-800 px-2 py-0.5 rounded border border-amber-200">
-              Varian 2
-            </span>
-          </div>
-
-          {/* Sub: Bahan Baku Kertas */}
-          <div>
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Bahan Baku Kertas:
-            </span>
-            <div className="grid grid-cols-1 gap-2">
-              {fieldRow('tarifKertasHvs70Kg', 'Kertas HVS 70 gsm / Kg', true, false, 'Folio HVS', 'emerald')}
-            </div>
-          </div>
-
-          {/* Sub: Insheet Toleransi Mesin */}
-          <div className="pt-2 border-t border-slate-100">
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Insheet Kertas Cetak Isi (Toleransi):
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {fieldRow('insheetIsiBuya', 'Insheet Buya', false, false, 'Print Buya', 'amber')}
-              {fieldRow('insheetIsiRyobi', 'Insheet Ryobi', false, false, 'Ryobi', 'cyan')}
-              {fieldRow('insheetIsiOliver', 'Insheet Oliver', false, false, 'Oliver', 'purple')}
-            </div>
-          </div>
-
-          {/* Sub: Ongkos Cetak & Plat Mesin */}
-          <div className="pt-2 border-t border-slate-100">
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Ongkos Cetak & Plat CTP Mesin:
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {fieldRow('tarifPrintBuyaPerLbr', 'Cetak Print Buya', true, false, 'Rp/lbr', 'amber')}
-              {fieldRow('ryobiPlatUnitIsi', 'Plat CTP Ryobi Isi', true, false, 'Rp/plat', 'cyan')}
-              {fieldRow('oliverPlatUnitIsi', 'Plat CTP Oliver Isi', true, false, 'Rp/plat', 'purple')}
-              {fieldRow('tarifSpiralManasik', 'Spiral Kawat Alternatif', true, false, 'Spiral', 'cyan')}
-            </div>
-          </div>
-        </div>
-
         {/* Varian 3: Cocard Mini TikTok (6,3 x 10,3 cm) */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3.5">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
@@ -353,6 +353,7 @@ export default function ManasikMasterParameter({
               {fieldRow('insheetOffsetCover', 'Insheet Toleransi', false, false, 'plano', 'amber')}
             </div>
           </div>
+
           {/* Sub: Aksesoris & Perlengkapan Cocard */}
           <div className="pt-2 border-t border-slate-100">
             <span className="text-[11px] font-bold text-slate-600 block mb-1.5">

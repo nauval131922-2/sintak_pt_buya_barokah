@@ -62,14 +62,14 @@ export interface SavedManasikSimulationItem {
 
 const VARIAN_OPTIONS: { value: ManasikVarianType; label: string; desc: string }[] = [
   {
-    value: 'Custom Cover 10 x 15,5',
-    label: 'Custom Cover 10 x 15,5 cm',
-    desc: 'Cover AC 230 Custom Travel + Sisipan 4 Hal + Blok 212 Hal + Tali Kur (Pricelist 2026)',
-  },
-  {
     value: 'Kosongan 10 x 15,5',
     label: 'Kosongan 10 x 15,5 cm',
     desc: 'Blok Isi Kosongan 212 Hal HVS 70 (Tanpa Cover Custom)',
+  },
+  {
+    value: 'Custom Cover 10 x 15,5',
+    label: 'Custom Cover 10 x 15,5 cm',
+    desc: 'Cover AC 230 Custom Travel + Sisipan 4 Hal + Blok 212 Hal + Tali Kur (Pricelist 2026)',
   },
   {
     value: 'Mini TikTok 6,3 x 10,3',
