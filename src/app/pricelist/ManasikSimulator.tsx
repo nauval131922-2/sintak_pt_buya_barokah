@@ -484,12 +484,12 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
           <div>
             <h3 className="font-bold text-sm sm:text-base text-emerald-950 flex items-center gap-2">
               Simulator & Kalkulator Buku Manasik Haji / Umroh
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
+              <span className="text-[10px] font-mono font-normal px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300/80">
                 Katalog 01
               </span>
             </h3>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Kalkulasi HPP cepat berbasis blok isi ready, cover custom, laminasi, dan variasi jilid cocard/bending.
+              Kalkulasi HPP & Harga Jual Buku Manasik: Custom Cover (10x15,5), Kosongan (10x15,5), dan Cocard (6,3x10,3 cm).
             </p>
           </div>
         </div>

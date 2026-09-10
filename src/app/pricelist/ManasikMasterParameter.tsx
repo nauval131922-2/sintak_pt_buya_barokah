@@ -209,23 +209,23 @@ export default function ManasikMasterParameter({
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
             <div className="flex items-center gap-2">
               <Box className="w-4 h-4 text-emerald-700" />
-              <h3 className="text-xs font-bold text-slate-800">1. Blok Isi Kosongan & Bahan Kertas</h3>
+              <h3 className="text-xs font-bold text-slate-800">1. Isi Kosongan & Bahan Kertas</h3>
             </div>
-            <span className="text-[10px] font-bold bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200">
-              Harga Blok Ready
+            <span className="text-[10px] font-bold bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200 font-mono">
+              Master!D20 (ISI KOSONGAN)
             </span>
           </div>
 
-          {/* Sub-grup: Harga Blok Jadi */}
+          {/* Sub-grup: Harga Isi Kosongan */}
           <div>
             <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Harga Stok Blok Jadi (per Buku):
+              • Harga Isi Kosongan Netto HPP (per Buku):
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {fieldRow('hargaIsiKosongan208', 'Isi 212 Hal (Standar 2026)', true, false, '212 Hal', 'emerald')}
-              {fieldRow('hargaIsiKosongan192', 'Isi 192 Hal (Lama)', true, false, '192 Hal', 'slate')}
-              {fieldRow('hargaIsiKosongan128', 'Isi 128 Hal', true, false, '128 Hal', 'slate')}
-              {fieldRow('hargaIsiKosongan96', 'Isi 96 Hal', true, false, '96 Hal', 'slate')}
+              {fieldRow('hargaIsiKosongan208', 'ISI KOSONGAN 212 (Standar 2026)', true, false, '212 Hal', 'emerald')}
+              {fieldRow('hargaIsiKosongan192', 'ISI KOSONGAN 192 (Lama)', true, false, '192 Hal', 'slate')}
+              {fieldRow('hargaIsiKosongan128', 'ISI KOSONGAN 128', true, false, '128 Hal', 'slate')}
+              {fieldRow('hargaIsiKosongan96', 'ISI KOSONGAN 96', true, false, '96 Hal', 'slate')}
             </div>
           </div>
 
