@@ -183,16 +183,20 @@ export default function ManasikSimulator({
     setTipeJilid(cfg.defaultJilid);
     if (newVarian === 'Mini TikTok 6,3 x 10,3') {
       setLaminasiCover('Glossy');
+      setMetodeCetakCover('Offset (Oliver)');
       setOpsiPlastikOpp(false);
       setOpsiSisipan(false);
       setMarginPct(32);
     } else if (newVarian === 'Kosongan 10 x 15,5') {
       setLaminasiCover('Tanpa Laminasi');
+      setMetodeCetakCover('Offset (Oliver)');
+      setMetodeCetakIsi('Print Buya');
       setOpsiPlastikOpp(false);
       setOpsiSisipan(false);
-      setMarginPct(30);
+      setMarginPct(0);
     } else {
       setLaminasiCover('Doff');
+      setMetodeCetakCover('Print Digital (A3+)');
       setOpsiPlastikOpp(true);
       setOpsiSisipan(true);
       setMarginPct(30);
