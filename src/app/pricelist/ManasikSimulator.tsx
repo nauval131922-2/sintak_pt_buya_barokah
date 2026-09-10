@@ -717,7 +717,7 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
                     <Printer size={13} className="text-emerald-700" />
-                    Mesin Cetak Cover
+                    {varian === 'Mini TikTok 6,3 x 10,3' ? 'Mesin Cetak Cocard' : 'Mesin Cetak Cover'}
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
