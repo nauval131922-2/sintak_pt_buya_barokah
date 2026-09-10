@@ -575,12 +575,10 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
               />
             </div>
 
-            {/* Jumlah Halaman */}
+            {/* Varian Isi / Halaman */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold text-slate-700">
-                  Varian Isi Buku Manasik
-                </label>
+                <label className="text-xs font-bold text-slate-700">Varian Isi Buku Manasik</label>
                 {varian !== 'Mini TikTok 6,3 x 10,3' && (
                   <button
                     type="button"
@@ -594,7 +592,6 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                   </button>
                 )}
               </div>
-
               {isCustomHal && varian !== 'Mini TikTok 6,3 x 10,3' ? (
                 <div className="space-y-1.5 p-3 bg-emerald-50/50 border border-emerald-200 rounded-xl">
                   <div className="flex items-center justify-between">

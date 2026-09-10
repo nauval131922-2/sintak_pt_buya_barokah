@@ -398,15 +398,16 @@ export function calculateManasikSimulator(
       keterangan: 'Transportasi pengadaan & distribusi pengerjaan ring',
     });
 
-    // Kardus & Lakban: 1 kardus isi 300 pcs
+    // Kardus & Lakban: 1 kardus isi 300 pcs (Formula Excel BG7)
     const jmlBox = Math.ceil(validOplah / params.kapasitasKardusMini);
-    const biayaLakban = (validOplah / params.kapasitasKardusMini / 39.03061224489796) * params.tarifLakbanBox;
+    const kebutuhanLakban = (validOplah / params.kapasitasKardusMini) / 39.03061224489796;
+    const biayaLakban = kebutuhanLakban * params.tarifLakbanBox;
     const biayaKardus = jmlBox * params.tarifKardusBox + biayaLakban;
     breakdown.push({
       nama: 'Packing Kardus & Lakban Master',
       nominal: Math.round(biayaKardus),
       pct: 0,
-      keterangan: `${jmlBox} box kardus (isi 300 pcs/box) + segel lakban`,
+      keterangan: `${jmlBox} box kardus (isi ${params.kapasitasKardusMini} pcs/box) + segel lakban`,
     });
 
     totalHpp = Math.round(
