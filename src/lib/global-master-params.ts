@@ -87,9 +87,8 @@ export interface GlobalMasterParams {
   // 7. Finishing & Kemasan Standar
   tarifKardusBox: number;         // Rp 8.500 / box (Semua produk)
   tarifLakbanRoll: number;        // Rp 8.000 / roll (Semua produk)
-  tarifPlastikOppPcs: number;     // Rp 92 / pcs (Manasik, Yasin, Undangan, Buku Tabungan)
+  tarifPlastikOppPcs: number;     // Rp 90 / pcs (Rp 9.000 / pack 100 pcs)
   tarifSisirPcs: number;          // Rp 150 / pcs (Semua produk ber-finishing potong/sisir)
-  tarifStaplesPcs: number;        // Rp 100 / pcs (Manasik, Yasin, Buku Tulis, Buku Tabungan)
 
   // 8. Jasa Desain & Margin Standar Perusahaan
   tarifDesainStandar: number;     // Rp 50.000 (Amplop, Kop Surat, Raport, Sertifikat, Cover Buku, dll)
@@ -141,7 +140,7 @@ export const DEFAULT_GLOBAL_PARAMS: GlobalMasterParams = {
 
   tarifKardusBox: 8500,
   tarifLakbanRoll: 8000,
-  tarifPlastikOppPcs: 92,
+  tarifPlastikOppPcs: 90,
   tarifSisirPcs: 150,
   tarifStaplesPcs: 100,
 
@@ -239,18 +238,16 @@ export function applyGlobalParamsToAll(
     minLaminasi: g.minLaminasi,
     tarifDesainCover: g.tarifDesainStandar,
     tarifSisir: g.tarifSisirPcs,
-    tarifStaplesPalu: g.tarifStaplesPcs,
     tarifKardusBox: g.tarifKardusBox,
-    tarifPlastikOppPack: Math.round(g.tarifPlastikOppPcs * 100),
+    tarifPlastikOppPack: 9200, // Manasik Master!D29: Rp 9.200 / pack 100 pcs (Rp 92/pcs)
   };
   const nextYasin: YasinMasterParams = {
     ...currYasin,
     tarifPrintCoverA3: g.tarifPrintA3,
-    tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
-    tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
-    minLaminasi: g.minLaminasi,
+    tarifPrintSisipanFotoA3: 1750,
+    tarifPrintSisipanTeksA3: g.tarifPrintInter2Muka,
     tarifDesainCover: g.tarifDesainStandar,
-    tarifPlastikOppYasin: Math.round(g.tarifPlastikOppPcs),
+    tarifPlastikOppYasin: 90, // Yasin Master!D41: Rp 9.000 / pack 100 pcs (Rp 90/pcs)
     tarifSisirYasin: g.tarifSisirPcs,
     tarifStaplesYasin: Math.round(g.tarifStaplesPcs / 2),
   };

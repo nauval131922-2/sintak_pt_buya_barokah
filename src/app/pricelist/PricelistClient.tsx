@@ -223,11 +223,6 @@ export default function PricelistClient() {
     try {
       const savedSpiral = localStorage.getItem('sintak_pricelist_master_params_spiral')
         ?? localStorage.getItem('sintak_pricelist_master_params');
-      if (savedSpiral) setParamsSpiral({ ...DEFAULT_MASTER_PARAMS, ...JSON.parse(savedSpiral) });
-
-      const savedKlem = localStorage.getItem('sintak_pricelist_master_params_klem');
-      if (savedKlem) setParamsKlem({ ...DEFAULT_MASTER_PARAMS_KLEM, ...JSON.parse(savedKlem) });
-
       const savedManasik = localStorage.getItem('sintak_pricelist_master_params_manasik');
       if (savedManasik) {
         const parsed = JSON.parse(savedManasik);
@@ -372,9 +367,8 @@ export default function PricelistClient() {
 
       const savedPaperbag = localStorage.getItem('sintak_pricelist_master_params_paperbag');
       if (savedPaperbag) setParamsPaperbag({ ...DEFAULT_PAPERBAG_PARAMS, ...JSON.parse(savedPaperbag) });
-
-      const savedGlobal = localStorage.getItem('sintak_pricelist_master_params_global');
-      if (savedGlobal) setParamsGlobal({ ...DEFAULT_GLOBAL_PARAMS, ...JSON.parse(savedGlobal) });
+      const savedGlobalParams = localStorage.getItem('sintak_pricelist_master_params_global');
+      if (savedGlobalParams) setParamsGlobal({ ...DEFAULT_GLOBAL_PARAMS, ...JSON.parse(savedGlobalParams) });
     } catch (e) {
       console.error('Failed to restore master parameters from localStorage:', e);
     }
