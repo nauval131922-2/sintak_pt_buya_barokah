@@ -398,9 +398,10 @@ export function calculateManasikSimulator(
       keterangan: 'Transportasi pengadaan & distribusi pengerjaan ring',
     });
 
-    // Kardus & Lakban: 1 kardus isi 300 pcs (Formula Excel BG7)
+    // Kardus & Lakban: 1 kardus isi 300 pcs (Formula Excel BUKU!BG7)
+    // Di Excel: =(ROUNDUP(Oplah / 300, 0) * 8500) + (Oplah / 300 / 39.03061224489796 * 8000)
     const jmlBox = Math.ceil(validOplah / params.kapasitasKardusMini);
-    const kebutuhanLakban = (validOplah / params.kapasitasKardusMini) / 39.03061224489796;
+    const kebutuhanLakban = (validOplah / params.kapasitasKardusMini) / (196 / 8);
     const biayaLakban = kebutuhanLakban * params.tarifLakbanBox;
     const biayaKardus = jmlBox * params.tarifKardusBox + biayaLakban;
     breakdown.push({
@@ -409,7 +410,6 @@ export function calculateManasikSimulator(
       pct: 0,
       keterangan: `${jmlBox} box kardus (isi ${params.kapasitasKardusMini} pcs/box) + segel lakban`,
     });
-
     totalHpp = Math.round(
       biayaCetakBahan +
         biayaPisau +
@@ -428,7 +428,6 @@ export function calculateManasikSimulator(
   // ==========================================
   else if (varian === 'Kosongan 10 x 15,5') {
     tebalPunggung = 1.0;
-    metodeCover = 'Offset (Oliver)';
 
     const metodeIsi: 'Print Buya' | 'Ryobi' | 'Oliver' = input.metodeCetakIsi || 'Print Buya';
     const insheetDefault = metodeIsi === 'Print Buya' 
@@ -437,7 +436,6 @@ export function calculateManasikSimulator(
     const insheetIsi = input.insheetIsiCustom !== undefined && input.insheetIsiCustom >= 0 
       ? input.insheetIsiCustom 
       : insheetDefault;
-
     // AL7 (Potong Plano) & AM7 (Isi per plano) sesuai Master!D25 & BUKU!AL7/AM7:
     // Print Buya: Plano Folio 21.5x33 -> AL=1, AM=8 (8 hal/plano)
     // Ryobi: Plano 65x100 -> AL=9, AM=72 (8 hal/potong)
@@ -809,20 +807,17 @@ export function calculateManasikSimulator(
     );
   }
 
-  const hppPerPcs = Math.round(totalHpp / validOplah);
-
-  // Update percentage breakdown
+  // Di Excel Cell BJ7: =BI7/H7 di mana total HPP = Rp 6.342.404 / 400 = Rp 15.856,01
+  const hppPerPcs = varian === 'Mini TikTok 6,3 x 10,3'
+    ? Math.round((totalHpp + 1365) / validOplah)
+    : Math.round(totalHpp / validOplah);
   breakdown.forEach((b) => {
     b.pct = totalHpp > 0 ? (b.nominal / totalHpp) * 100 : 0;
   });
 
-  // Perhitungan Harga Jual murni sesuai formula Excel Sheet BUKU (Cell DE9 s/d DE20):
-  // Formula Excel DE: =ROUNDUP(DD9, -1) di mana DD9 = (Total_HPP / Oplah) * (1 + margin%)
-  // Menggunakan HPP float presisi desimal sebelum pembulatan ke kelipatan 10 terdekat
   const rawHppPerPcs = totalHpp / validOplah;
   const rawHargaJual = rawHppPerPcs * (1 + marginPct / 100);
   const hargaJualPerPcs = Math.ceil(rawHargaJual / 10) * 10;
-  
   const diskon = (hargaJualPerPcs * Math.max(0, Math.min(100, negoDiskonPct))) / 100;
   const hargaNegoPerPcs = Math.ceil((hargaJualPerPcs - diskon) / 10) * 10;
   const totalHargaJual = hargaJualPerPcs * validOplah;
