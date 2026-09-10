@@ -775,8 +775,8 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
                     <th className="py-2 px-3 w-10 text-center">No</th>
                     <th className="py-2 px-3">Komponen Biaya</th>
                     <th className="py-2 px-3 hidden sm:table-cell text-slate-400">Formula / Deskripsi</th>
-                    <th className="py-2 px-3 text-right">Subtotal (Rp)</th>
-                    <th className="py-2 px-3 text-right w-16">% Porsi</th>
+                    <th className="py-2 px-3 text-right whitespace-nowrap">Subtotal (Rp)</th>
+                    <th className="py-2 px-3 text-right w-16 whitespace-nowrap">% Porsi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -792,10 +792,10 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
                         <td className="py-2 px-3 hidden sm:table-cell text-slate-500 text-[11px]">
                           {item.keterangan}
                         </td>
-                        <td className="py-2 px-3 text-right font-mono font-bold text-slate-800">
+                        <td className="py-2 px-3 text-right font-mono font-bold text-slate-800 whitespace-nowrap">
                           Rp {item.nominal.toLocaleString('id-ID')}
                         </td>
-                        <td className="py-2 px-3 text-right font-mono text-slate-500 text-[11px]">
+                        <td className="py-2 px-3 text-right font-mono text-slate-500 text-[11px] whitespace-nowrap">
                           {item.pct.toFixed(1)}%
                         </td>
                       </tr>
@@ -808,10 +808,10 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
                       TOTAL BIAYA PRODUKSI
                     </td>
                     <td className="hidden sm:table-cell"></td>
-                    <td className="py-2.5 px-3 text-right font-mono text-emerald-900 font-black text-sm">
+                    <td className="py-2.5 px-3 text-right font-mono text-emerald-900 font-black text-sm whitespace-nowrap">
                       Rp {result.summary.totalHpp.toLocaleString('id-ID')}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-[11px] text-emerald-800">
+                    <td className="py-2.5 px-3 text-right font-mono text-[11px] text-emerald-800 whitespace-nowrap">
                       100%
                     </td>
                   </tr>
