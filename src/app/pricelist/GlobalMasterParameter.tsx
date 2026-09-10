@@ -335,6 +335,7 @@ export default function GlobalMasterParameter({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('tarifKardusBox', 'Kardus Box / Pcs', 'Semua Produk')}
             {fieldRow('tarifLakbanRoll', 'Lakban Roll / Pcs', 'Semua Produk')}
+            {fieldRow('tarifPlastikOppPcs', 'Plastik OPP / Pcs', 'Manasik, Yasin, Undangan')}
             {fieldRow('tarifSisirPcs', 'Ongkos Potong Sisir', 'Manasik, Yasin, Buku, Brosur')}
             {fieldRow('tarifStaplesPcs', 'Ongkos Staples', 'Manasik, Yasin, Buku Tulis')}
           </div>
