@@ -208,11 +208,10 @@ export default function GlobalMasterParameter({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('oliverOplahMin', 'Oplah Minimal (Mulai)', 'Batas bawah mesin Oliver', false, false, 'eks')}
             {fieldRow('oliverOplahMax', 'Oplah Maksimal (Sampai)', 'Batas atas mesin Oliver', false, false, 'eks')}
-            {fieldRow('insheetOliverOffset', 'Insheet Mesin Oliver', 'Toleransi Cetak Plano', false, false, 'lbr plano')}
+            {fieldRow('insheetOliverOffset', 'Insheet Mesin Oliver', 'Toleransi Cetak Plano', false, false, 'plano')}
             {fieldRow('oliverPlatUnit', 'Tarif Plat CTP / Unit', 'Semua Produk Oliver')}
             {fieldRow('oliverMinOngkos', 'Min. Cetak (≤1000 Drek)', 'Semua Produk Oliver')}
             {fieldRow('oliverDrekOver', 'Tarif Drek Over / Drek', 'Over 1000 Drek')}
-            {fieldRow('oliverTransport', 'Ongkos Transport Cetak', 'Kalender, Packaging')}
           </div>
         </div>
 
@@ -227,10 +226,9 @@ export default function GlobalMasterParameter({
               Oplah {globalParams.smOplahMin} - {globalParams.smOplahMax}
             </span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('smOplahMin', 'Oplah Minimal (Mulai)', 'Batas bawah mesin SM', false, false, 'eks')}
             {fieldRow('smOplahMax', 'Oplah Maksimal (Sampai)', 'Batas atas mesin SM', false, false, 'eks')}
-            {fieldRow('insheetSmOffset', 'Insheet Mesin SM', 'Toleransi Cetak Plano', false, false, 'lbr plano')}
+            {fieldRow('insheetSmOffset', 'Insheet Mesin SM', 'Toleransi Cetak Plano', false, false, 'plano')}
             {fieldRow('smPlatUnit', 'Tarif Plat CTP SM', 'Buku HC A4, Poster Plano')}
             {fieldRow('smMinOngkos', 'Min. Cetak SM (≤1000 Drek)', 'Buku HC A4, Poster Plano')}
             {fieldRow('smDrekOver', 'Tarif Drek Over SM', 'Over 1000 Drek SM')}
@@ -251,7 +249,7 @@ export default function GlobalMasterParameter({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('ryobiOplahMin', 'Oplah Minimal (Mulai)', 'Batas bawah mesin Ryobi', false, false, 'eks')}
             {fieldRow('ryobiOplahMax', 'Oplah Maksimal (Sampai)', 'Batas atas mesin Ryobi', false, false, 'eks')}
-            {fieldRow('insheetRyobiOffset', 'Insheet Mesin Ryobi', 'Toleransi Cetak Mesin', false, false, 'lbr mesin')}
+            {fieldRow('insheetRyobiOffset', 'Insheet Mesin Ryobi', 'Toleransi Cetak Mesin', false, false, 'lbr')}
             {fieldRow('ryobiPlatUnit', 'Tarif Plat Ryobi / Toko', 'Nota, Buku Tabungan, Buku')}
             {fieldRow('ryobiMinOngkos', 'Min. Cetak (≤500/1000 Drek)', 'Nota, Buku Tabungan')}
             {fieldRow('ryobiDrekOver', 'Tarif Drek Over / Drek', 'Over Drek Ryobi')}
@@ -291,11 +289,10 @@ export default function GlobalMasterParameter({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('interOplahMin', 'Oplah Minimal (Mulai)', 'Batas bawah Print Inter', false, false, 'eks')}
             {fieldRow('interOplahMax', 'Oplah Maksimal (Sampai)', 'Batas atas Print Inter', false, false, 'eks')}
-            {fieldRow('insheetPrintInter', 'Insheet Print Inter (Lbr A3+)', 'Toleransi Lembar A3+', false, false, 'lbr A3+')}
+            {fieldRow('insheetPrintInter', 'Insheet Print Inter', 'Toleransi Lembar A3+', false, false, 'A3+')}
             {fieldRow('tarifPrintA3', 'Print Cover A3+ (1 Muka)', 'Manasik, Yasin, Sertifikat')}
             {fieldRow('tarifPrintInter1Muka', 'Print Inter 1 Muka', 'Brosur 1 Muka, Isi Tabungan')}
             {fieldRow('tarifPrintInter2Muka', 'Print Inter 2 Muka', 'Brosur 2 Muka, Majalah, Cocard')}
-          </div>
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">

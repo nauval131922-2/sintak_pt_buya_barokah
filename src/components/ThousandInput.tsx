@@ -150,12 +150,14 @@ export default function ThousandInput({
   const getSuffixPaddingClass = () => {
     if (!suffix) return '';
     const len = suffix.length;
-    if (len >= 4) return 'pr-11'; // misal 'drek', 'ikat'
-    if (len === 3) return 'pr-9';  // misal 'lbr', 'ptg'
-    if (len === 2) return 'pr-7';  // misal 'cm', 'kg'
-    return 'pr-6';                 // misal '%'
+    if (len >= 9) return '!pr-24'; // misal 'lbr plano', 'lbr mesin'
+    if (len >= 7) return '!pr-20'; // misal 'lbr A3+'
+    if (len >= 5) return '!pr-16'; // misal 'plano'
+    if (len >= 4) return '!pr-12'; // misal 'drek', 'ikat'
+    if (len === 3) return '!pr-9';  // misal 'lbr', 'eks'
+    if (len === 2) return '!pr-7';  // misal 'cm', 'kg'
+    return '!pr-6';                 // misal '%'
   };
-
   return (
     <div className="relative w-full">
       {prefix && (
