@@ -39,8 +39,7 @@ export interface ManasikMasterParams {
   oliverPlatUnitIsi: number; // 45000 per plat CTP
   oliverMinOngkosIsi: number; // 90000 min order / plat
   oliverDrekOverIsi: number; // 40 per drek over
-  tarifPrintBuyaPerLbr: number; // 350 per lbr cetak rotary web
-  // 4. Finishing & Jilid
+  tarifPrintBuyaPerLbr: number; // 350 per lbr cetak Print Buya
   tarifBendingPerCm2: number; // 50 (min 100000)
   minBending: number; // 100000
   tarifLaminasiGlossyCm2: number; // 0.35 (min 50000)
@@ -472,7 +471,7 @@ export function calculateManasikSimulator(
     if (metodeIsi === 'Print Buya') {
       biayaPlatIsi = 0;
       biayaCetakIsi = params.tarifPrintBuyaPerLbr * ao;
-      ketCetak = `${ap.toLocaleString('id-ID')} lbr plano Folio HVS 70 gsm @ Rp ${params.tarifPrintBuyaPerLbr}/lbr cetak rotary web`;
+      ketCetak = `${ap.toLocaleString('id-ID')} lbr plano Folio HVS 70 gsm @ Rp ${params.tarifPrintBuyaPerLbr}/lbr (Print Buya)`;
     } else if (metodeIsi === 'Ryobi') {
       biayaPlatIsi = params.ryobiPlatUnitIsi * jmlPlatIsi;
       const drekPerPlat = validOplah + insheetIsi;
