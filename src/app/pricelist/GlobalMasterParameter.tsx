@@ -202,7 +202,7 @@ export default function GlobalMasterParameter({
               <h3 className="text-xs font-bold text-slate-800">1. Mesin Offset Oliver (58 / 52)</h3>
             </div>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono">
-              Oplah {params.oliverOplahMin} - {params.oliverOplahMax}
+              Oplah {globalParams.oliverOplahMin} - {globalParams.oliverOplahMax}
             </span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -224,7 +224,7 @@ export default function GlobalMasterParameter({
               <h3 className="text-xs font-bold text-slate-800">2. Mesin Offset Heidelberg SM</h3>
             </div>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200 font-mono">
-              Oplah {params.smOplahMin} - {params.smOplahMax}
+              Oplah {globalParams.smOplahMin} - {globalParams.smOplahMax}
             </span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -245,7 +245,7 @@ export default function GlobalMasterParameter({
               <h3 className="text-xs font-bold text-slate-800">3. Mesin Offset Kecil (Ryobi / Toko)</h3>
             </div>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-50 text-cyan-800 border border-cyan-200 font-mono">
-              Oplah {params.ryobiOplahMin} - {params.ryobiOplahMax}
+              Oplah {globalParams.ryobiOplahMin} - {globalParams.ryobiOplahMax}
             </span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -266,7 +266,7 @@ export default function GlobalMasterParameter({
               <h3 className="text-xs font-bold text-slate-800">4. Mesin Cetak Isi (Print Buya)</h3>
             </div>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 font-mono">
-              Oplah {params.buyaOplahMin} - {params.buyaOplahMax}
+              Oplah {globalParams.buyaOplahMin} - {globalParams.buyaOplahMax}
             </span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -285,7 +285,7 @@ export default function GlobalMasterParameter({
               <h3 className="text-xs font-bold text-slate-800">5. Mesin Digital (Print Inter A3+)</h3>
             </div>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-50 text-purple-800 border border-purple-200 font-mono">
-              Oplah {params.interOplahMin} - {params.interOplahMax}
+              Oplah {globalParams.interOplahMin} - {globalParams.interOplahMax}
             </span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
