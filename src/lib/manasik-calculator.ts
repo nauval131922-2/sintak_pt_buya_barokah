@@ -299,11 +299,10 @@ export function calculateManasikSimulator(
       // Insheet K6 di Excel BUKU = 200 lbr mesin
       const insheetPlano = (200 / 4) * 1; // 50 plano
       kebutuhanPlanoCover = Math.ceil(((validOplah * 24) / 96) + insheetPlano);
-      // Harga Kertas per plano = (Berat Rim x Harga Kg) / 500
+      // Harga Kertas per plano = (Berat Rim x Harga Kg) / 500 (Excel BUKU!W29 tanpa up)
       const beratRim79x109 = (79 * 109 * 310) / 20000;
-      const hargaPlano = (beratRim79x109 * (params.tarifAc310Kg * 1.05)) / 500;
+      const hargaPlano = (beratRim79x109 * params.tarifAc310Kg) / 500;
       const biayaKertas = kebutuhanPlanoCover * hargaPlano;
-      // Desain file: 24 kartu x Rp 2.500 = Rp 60.000
       const biayaDesain = params.tarifDesainMiniTikTok * 24;
       
       // Plate: 8 plat @ Rp 43.000 (CTP 2 Muka) = Rp 344.000
@@ -806,14 +805,10 @@ export function calculateManasikSimulator(
         biayaKardus
     );
   }
-
-  // Di Excel Cell BJ7: =BI7/H7 di mana total HPP = Rp 6.342.404 / 400 = Rp 15.856,01
+  // Di Excel Cell BJ7: =BI7/H7 di mana total HPP Oliver = Rp 5.068.672 / 400 = Rp 12.671,68 -> Rp 12.672
   const hppPerPcs = varian === 'Mini TikTok 6,3 x 10,3'
-    ? Math.round((totalHpp + 1365) / validOplah)
+    ? (metodeCover === 'Offset (Oliver)' ? Math.round(totalHpp / validOplah) : Math.round((totalHpp + 1365) / validOplah))
     : Math.round(totalHpp / validOplah);
-  breakdown.forEach((b) => {
-    b.pct = totalHpp > 0 ? (b.nominal / totalHpp) * 100 : 0;
-  });
 
   const rawHppPerPcs = totalHpp / validOplah;
   const rawHargaJual = rawHppPerPcs * (1 + marginPct / 100);
