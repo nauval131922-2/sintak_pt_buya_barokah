@@ -170,6 +170,7 @@ export default function YasinMasterParameter({
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Box className="w-4 h-4 text-emerald-700" />
             <h3 className="text-xs font-bold text-slate-800">1. Isi Kitab Yasin Kosongan</h3>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('hargaIsiYasin64', 'Yasin 64 Hal')}
             {fieldRow('hargaIsiYasin96', 'Yasin 96 Hal')}
@@ -325,13 +326,13 @@ export default function YasinMasterParameter({
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                       <span>1. Isi Kitab Yasin Kosongan</span>
+                    </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
                       <li>• <strong>Database Harga Isi</strong>: <span className="font-mono text-emerald-700">Data_Yasin!A1:P104</span> & <span className="font-mono text-emerald-700">Master!D36</span>.</li>
                       <li>• <strong>Harga Netto</strong>: 64 Hal: Rp 1.650, 96 Hal: Rp 2.250, 112 Hal: Rp 2.470, 128 Hal: Rp 3.000 (Buya Barokah), 144 Hal: Rp 3.200, 192 Hal: Rp 3.800.</li>
                       <li>• <strong>Kode Master</strong>: <span className="font-mono text-slate-600">Master!D34</span> = <code className="text-[10px] bg-white px-1 py-0.5 rounded border">Bo-[96-2250]-11,5[0#2250]Tgg</code> &amp; <code className="text-[10px] bg-white px-1 py-0.5 rounded border">Bo-[128-3000]-11,5[0#3000]Tgg</code>.</li>
                     </ul>
                   </div>
-
                   {/* Poin 2 */}
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">

@@ -32,17 +32,34 @@ import { PackagingMasterParams, DEFAULT_PACKAGING_PARAMS } from './packaging-cal
 import { PaperbagMasterParams, DEFAULT_PAPERBAG_PARAMS } from './paperbag-calculator';
 
 export interface GlobalMasterParams {
-  // 1. Mesin Cetak Offset Oliver (58 / 52)
+  // 1. Mesin Cetak Offset Besar (Oliver 58 / 52)
   oliverPlatUnit: number;        // Rp 45.000 / plat (Kalender, Manasik, Brosur, Stopmap, Sertifikat, dll)
   oliverMinOngkos: number;       // Rp 90.000 (min 1000 drek) (Kalender, Manasik, Brosur, dll)
   oliverDrekOver: number;        // Rp 40 / drek (Kalender, Manasik, Brosur, dll)
   oliverTransport: number;       // Rp 100.000 (Kalender, Packaging)
+  insheetOliverOffset: number;   // 200 lbr insheet mesin Oliver
 
-  // 2. Mesin Cetak Offset Toko / Ryobi (1 Warna / Skala Kecil)
+  // 2. Mesin Cetak Offset Skala Besar (Heidelberg SM 52 / SM 72 / SM 102)
+  smPlatUnit: number;            // Rp 65.000 / plat CTP SM
+  smMinOngkos: number;           // Rp 150.000 (min 1000 drek)
+  smDrekOver: number;            // Rp 50 / drek over
+  insheetSmOffset: number;       // 250 lbr insheet mesin SM
+
+  // 3. Mesin Cetak Offset Kecil (Ryobi / Toko 1 Warna)
   ryobiPlatUnit: number;         // Rp 25.000 / plat (Nota, Buku Tabungan, Buku Mini)
   ryobiMinOngkos: number;        // Rp 50.000 (min 1000 drek) (Nota, Buku Tabungan, Buku Mini)
   ryobiDrekOver: number;         // Rp 35 / drek (Nota, Buku Tabungan, Buku Mini)
+  insheetRyobiOffset: number;    // 100 lbr insheet mesin Ryobi
 
+  // 4. Mesin Cetak Isi Buku (Print Buya / Rotary)
+  tarifPrintBuyaPerLbr: number;  // Rp 350 / lembar Folio
+  insheetPrintBuya: number;      // 5 lbr per kuras / order
+
+  // 5. Mesin Print Digital (Print Inter A3+)
+  tarifPrintA3: number;          // Rp 2.500 / lembar A3+
+  tarifPrintInter1Muka: number;  // Rp 1.800 / lembar A3+ (Brosur 1 muka, Buku Tabungan isi)
+  tarifPrintInter2Muka: number;  // Rp 3.300 / lembar A3+ (Brosur 2 muka, Majalah isi)
+  insheetPrintInter: number;     // 5 lbr insheet per order
   // 3. Kertas Dasar & Bahan Baku
   tarifHvs70: number;            // Rp 15.700 / kg (Kalender, Nota, Buku Tulis, Buku Tabungan, dll)
   tarifAp120: number;            // Rp 17.400 / kg (Kalender, Brosur, Majalah isi)
@@ -80,22 +97,25 @@ export const DEFAULT_GLOBAL_PARAMS: GlobalMasterParams = {
   oliverMinOngkos: 90000,
   oliverDrekOver: 40,
   oliverTransport: 100000,
+  insheetOliverOffset: 200,
+
+  smPlatUnit: 65000,
+  smMinOngkos: 150000,
+  smDrekOver: 50,
+  insheetSmOffset: 250,
 
   ryobiPlatUnit: 25000,
   ryobiMinOngkos: 50000,
   ryobiDrekOver: 35,
+  insheetRyobiOffset: 100,
 
-  tarifHvs70: 15700,
-  tarifAp120: 17400,
-  tarifAp150: 17400,
-  tarifAc230Kg: 15100,
-  tarifAc260Kg: 15500,
-  upKertasPct: 5,
+  tarifPrintBuyaPerLbr: 350,
+  insheetPrintBuya: 5,
 
   tarifPrintA3: 2500,
   tarifPrintInter1Muka: 1800,
   tarifPrintInter2Muka: 3300,
-
+  insheetPrintInter: 5,
   tarifLaminasiGlossyCm2: 0.35,
   tarifLaminasiDoffCm2: 0.40,
   tarifUvVarnishCm2: 0.11,
