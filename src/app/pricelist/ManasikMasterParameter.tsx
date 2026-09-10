@@ -211,8 +211,8 @@ export default function ManasikMasterParameter({
               <Box className="w-4 h-4 text-emerald-700" />
               <h3 className="text-xs font-bold text-slate-800">1. Isi Kosongan & Bahan Kertas</h3>
             </div>
-            <span className="text-[10px] font-bold bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200 font-mono">
-              Master!D20 (ISI KOSONGAN)
+            <span className="text-[10px] font-bold bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200">
+              Isi Kosongan
             </span>
           </div>
 
