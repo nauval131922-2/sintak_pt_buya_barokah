@@ -226,8 +226,8 @@ export default function GlobalMasterParameter({
               Oplah {globalParams.smOplahMin} - {globalParams.smOplahMax}
             </span>
           </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('smOplahMin', 'Oplah Minimal (Mulai)', 'Batas bawah mesin SM', false, false, 'eks')}
-            {fieldRow('smOplahMax', 'Oplah Maksimal (Sampai)', 'Batas atas mesin SM', false, false, 'eks')}
             {fieldRow('insheetSmOffset', 'Insheet Mesin SM', 'Toleransi Cetak Plano', false, false, 'plano')}
             {fieldRow('smPlatUnit', 'Tarif Plat CTP SM', 'Buku HC A4, Poster Plano')}
             {fieldRow('smMinOngkos', 'Min. Cetak SM (≤1000 Drek)', 'Buku HC A4, Poster Plano')}
@@ -293,7 +293,10 @@ export default function GlobalMasterParameter({
             {fieldRow('tarifPrintA3', 'Print Cover A3+ (1 Muka)', 'Manasik, Yasin, Sertifikat')}
             {fieldRow('tarifPrintInter1Muka', 'Print Inter 1 Muka', 'Brosur 1 Muka, Isi Tabungan')}
             {fieldRow('tarifPrintInter2Muka', 'Print Inter 2 Muka', 'Brosur 2 Muka, Majalah, Cocard')}
+          </div>
         </div>
+
+        {/* 6. Bahan Kertas Dasar */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <FileText className="w-4 h-4 text-blue-600" />
@@ -315,10 +318,6 @@ export default function GlobalMasterParameter({
             <Layers className="w-4 h-4 text-amber-600" />
             <h3 className="text-xs font-bold text-slate-800">7. Jasa Laminasi (/cm²)</h3>
           </div>
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Layers className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">5. Jasa Laminasi (/cm²)</h3>
-          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('tarifLaminasiGlossyCm2', 'Laminasi Glossy / cm²', 'Manasik, Yasin, Brosur, Buku', true, true)}
             {fieldRow('tarifLaminasiDoffCm2', 'Laminasi Doff / cm²', 'Manasik, Yasin, Brosur, Buku', true, true)}
@@ -327,11 +326,11 @@ export default function GlobalMasterParameter({
           </div>
         </div>
 
-        {/* 6. Finishing & Kemasan Standar */}
+        {/* 8. Finishing & Kemasan Standar */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Box className="w-4 h-4 text-rose-600" />
-            <h3 className="text-xs font-bold text-slate-800">6. Packing & Finishing Umum</h3>
+            <h3 className="text-xs font-bold text-slate-800">8. Packing & Finishing Umum</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('tarifKardusBox', 'Kardus Box / Pcs', 'Semua Produk')}
@@ -342,11 +341,11 @@ export default function GlobalMasterParameter({
           </div>
         </div>
 
-        {/* 7. Jasa Desain & Margin Standar Perusahaan */}
+        {/* 9. Jasa Desain & Margin Standar Perusahaan */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Palette className="w-4 h-4 text-indigo-600" />
-            <h3 className="text-xs font-bold text-slate-800">7. Jasa Desain & Margin Standar</h3>
+            <h3 className="text-xs font-bold text-slate-800">9. Jasa Desain & Margin Standar</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('tarifDesainStandar', 'Tarif Desain Standar', 'Amplop, Kop Surat, Buku, Sertifikat')}
@@ -354,27 +353,26 @@ export default function GlobalMasterParameter({
             {fieldRow('defaultNegoPct', 'Batas Diskon Nego (%)', 'Seluruh 30 Produk', false)}
           </div>
         </div>
+      </div>
 
-        {/* Info Box Cara Kerja */}
-        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between gap-3">
-          <div className="flex items-start gap-2.5">
-            <HelpCircle className="w-5 h-5 text-slate-400 shrink-0 mt-0.5" />
-            <div className="text-xs text-slate-600 space-y-1">
-              <span className="font-bold text-slate-800 block">Cara Kerja Parameter Global:</span>
-              <p>
-                1. Ubah tarif standar di atas (misal kenaikan harga kertas, tarif plat offset, tarif desain, atau target margin perusahaan).
-              </p>
-              <p>
-                2. Klik tombol <strong>&ldquo;Terapkan ke Semua Produk&rdquo;</strong> di atas untuk menyinkronkan seluruh parameter di 30 jenis produk sekaligus.
-              </p>
-              <p>
-                3. Jika ingin tarif khusus untuk produk tertentu saja, Anda tetap bisa mengubahnya di tab Parameter produk terkait.
-              </p>
-            </div>
+      {/* Info Box Cara Kerja */}
+      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between gap-3">
+        <div className="flex items-start gap-2.5">
+          <HelpCircle className="w-5 h-5 text-slate-400 shrink-0 mt-0.5" />
+          <div className="text-xs text-slate-600 space-y-1">
+            <span className="font-bold text-slate-800 block">Cara Kerja Parameter Global:</span>
+            <p>
+              1. Ubah tarif standar di atas (misal kenaikan harga kertas, tarif plat offset, tarif desain, atau target margin perusahaan).
+            </p>
+            <p>
+              2. Klik tombol <strong>&ldquo;Terapkan ke Semua Produk&rdquo;</strong> di atas untuk menyinkronkan seluruh parameter di 30 jenis produk sekaligus.
+            </p>
+            <p>
+              3. Jika ingin tarif khusus untuk produk tertentu saja, Anda tetap bisa mengubahnya di tab Parameter produk terkait.
+            </p>
           </div>
         </div>
       </div>
-
       {/* Modal Panduan & Pemetaan 30 Sumber Excel */}
       {showManualModal && (
         <div className="fixed inset-0 z-300 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer">
