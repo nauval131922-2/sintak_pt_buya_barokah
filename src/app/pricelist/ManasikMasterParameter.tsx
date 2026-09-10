@@ -405,99 +405,83 @@ export default function ManasikMasterParameter({
               <div className="space-y-3">
                 <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                  Pemetaan Sumber Master Excel (3 File Referensi 2026)
+                  Pemetaan 3 File Master Excel Buku Manasik (Katalog 02020107)
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-3 space-y-1.5">
-                    <span className="font-bold text-emerald-950 text-xs block">1. Custom Cover 10 x 15,5 cm</span>
-                    <p className="text-[10.5px] text-emerald-800 leading-snug">
-                      Ref: <code>...UK. 10 x 15,5 - BUKU MANASIK - Custom Cover 2026.xlsm</code><br />
-                      Sheet: <span className="font-mono font-semibold">HARGA FILE BARU</span> & <span className="font-mono font-semibold">BUKU</span>.<br />
-                      Cover AC 230 Print Inter (Rp 2.700) / Oliver + Sisipan 4 hal PT (Rp 350 + Rp 225,49) + Blok 212 hal (Rp 3.620) + Tali Kur (Rp 285,71) + Staples 1213 (Rp 24.000).
+                  <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-3.5 space-y-1.5">
+                    <span className="font-bold text-amber-950 text-xs block">1. Kosongan 10 x 15,5 cm</span>
+                    <p className="text-[10.5px] text-amber-900 leading-snug">
+                      <strong>File:</strong> <code>02020107 BUKU, KITAB SOFT COVER UK. 10 x 15,5 - BUKU MANASIK - Kosongan.xlsm</code><br />
+                      <strong>Sheet:</strong> <span className="font-mono font-semibold">Master</span>, <span className="font-mono font-semibold">BUKU</span>, <span className="font-mono font-semibold">HARGA 2026</span>.<br />
+                      <strong>Spesifikasi:</strong> Blok isi 212 Hal HVS 70 gsm (Rp 15.700/kg) cetak mesin Print Buya (Rp 350/lbr), Ryobi (Plat CTP), atau Oliver + lipat kuras + susun urut + lem panas bending + kardus master. Margin default 0% (HPP Netto).
                     </p>
                   </div>
-                  <div className="bg-blue-50/70 border border-blue-200 rounded-xl p-3 space-y-1.5">
-                    <span className="font-bold text-blue-950 text-xs block">2. Kosongan 10 x 15,5 cm</span>
-                    <p className="text-[10.5px] text-blue-800 leading-snug">
-                      Ref: <code>...UK. 10 x 15,5 - BUKU MANASIK - Kosongan.xlsm</code><br />
-                      Sheet: <span className="font-mono font-semibold">HARGA 2026</span> & <span className="font-mono font-semibold">BUKU</span>.<br />
-                      HVS 70 gsm (Rp 15.700/kg) cetak Oliver 1 warna 53 plat CTP + lipat kuras + susun urut + jilid lem panas (bending) + kardus master (200 pcs/box).
+                  <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-3.5 space-y-1.5">
+                    <span className="font-bold text-emerald-950 text-xs block">2. Custom Cover 10 x 15,5 cm</span>
+                    <p className="text-[10.5px] text-emerald-900 leading-snug">
+                      <strong>File:</strong> <code>02020107 BUKU, KITAB SOFT COVER UK. 10 x 15,5 - BUKU MANASIK - Custom Cover 2026.xlsm</code><br />
+                      <strong>Sheet:</strong> <span className="font-mono font-semibold">Master</span>, <span className="font-mono font-semibold">BUKU</span>, <span className="font-mono font-semibold">HARGA FILE BARU</span>.<br />
+                      <strong>Spesifikasi:</strong> Cover AC 230 Print Digital (Rp 2.700) / Mesin Oliver (Plano 79x109) + Sisipan 4 hal PT (Rp 350 + Rp 225,49) + Blok isi 212 hal (Rp 3.620) + Staples kawat + Casing In + Bor + Tali Kur (Rp 285,71 + Rp 112,74) + OPP + Kardus.
                     </p>
                   </div>
-                  <div className="bg-purple-50/70 border border-purple-200 rounded-xl p-3 space-y-1.5">
+                  <div className="bg-purple-50/70 border border-purple-200 rounded-xl p-3.5 space-y-1.5">
                     <span className="font-bold text-purple-950 text-xs block">3. Cocard 6,3 x 10,3 cm</span>
-                    <p className="text-[10.5px] text-purple-800 leading-snug">
-                      Ref: <code>...UK. 6,3 x 10,3 - BUKU MANASIK MINI TIKTOK.xlsm</code><br />
-                      Sheet: <span className="font-mono font-semibold">Master</span> & <span className="font-mono font-semibold">BUKU</span>.<br />
-                      Art Carton 310 gsm (Rp 33.500/kg) bolak-balik + pisau & jasa pond (Rp 524,79) + Ring Binder 3cm (Rp 925) + Tali cocard (Rp 2.500) + Ziplock (Rp 465).
+                    <p className="text-[10.5px] text-purple-900 leading-snug">
+                      <strong>File:</strong> <code>02020107 BUKU, KITAB SOFT COVER UK. 6,3 x 10,3 - BUKU MANASIK MINI TIKTOK.xlsm</code><br />
+                      <strong>Sheet:</strong> <span className="font-mono font-semibold">Master</span> & <span className="font-mono font-semibold">BUKU</span>.<br />
+                      <strong>Spesifikasi:</strong> AC 310 gsm (Rp 33.500/kg) bolak-balik (48 hal / 24 kartu) Print Digital A3+ (20 kartu/lbr) / Oliver (150 plano) + Pisau Pond Custom (Rp 258.595) + Jasa Pond + Ring Binder 3cm (Rp 925) + Tali cocard (Rp 2.500) + Ziplock (Rp 465) + Margin 32%.
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Bagian 2: Rincian 4 Kelompok Parameter */}
+              {/* Bagian 2: Rincian 3 Kolom Varian Parameter Master */}
               <div className="space-y-3">
                 <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
-                  Rincian Rumus & Komponen Parameter Master
+                  Rincian Rumus & Komponen Parameter per Varian
                 </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                  {/* Poin 1 */}
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
-                    <div className="flex items-center gap-2 font-bold text-slate-900">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                      <span>1. Blok Isi Kosongan & Kertas HVS</span>
-                    </div>
-                    <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Isi 212 Halaman Standar 2026</strong>: <span className="font-mono text-emerald-700">Master!D21</span> = Rp 3.620 / eks (insheet 2 eks).</li>
-                      <li>• <strong>Isi Klasik</strong>: 192 Hal (Rp 3.421), 128 Hal (Rp 2.300), 96 Hal (Rp 1.800).</li>
-                      <li>• <strong>Kertas HVS 70 gsm</strong>: <span className="font-mono text-emerald-700">Kosongan!Master!D22</span> = Rp 15.700 / kg.</li>
-                      <li>• <strong>Print Sisipan PT A3+</strong>: <span className="font-mono text-emerald-700">BUKU!AM6</span> = Rp 350 / lbr A3+ (4 hal per lembar).</li>
-                    </ul>
-                  </div>
-
-                  {/* Kelompok 2 */}
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
-                    <div className="flex items-center gap-2 font-bold text-slate-900">
-                      <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                      <span>2. Bahan Cover & Cetak Cover</span>
-                    </div>
-                    <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Tarif Print Cover AC 230</strong>: <span className="font-mono text-blue-700">Custom!Master!D18</span> = Rp 2.700 / lbr A3+.</li>
-                      <li>• <strong>Tarif Print Cocard AC 310</strong>: <span className="font-mono text-blue-700">TikTok!Master!D18</span> = Rp 2.500 / lbr A3+.</li>
-                      <li>• <strong>Kertas AC 230 / 260</strong>: Rp 16.400 / kg | <strong>AC 310</strong>: Rp 33.500 / kg.</li>
-                      <li>• <strong>Desain Cover</strong>: Custom Cover Rp 20.000 | Cocard Rp 2.500.</li>
-                      <li>• <strong>Offset Oliver</strong>: Plat Rp 45.000, Min Rp 90.000, Drek over Rp 40.</li>
-                    </ul>
-                  </div>
-
-                  {/* Kelompok 3 */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                  {/* Poin 1: Kosongan */}
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                      <span>3. Ongkos Jilid & Finishing Custom</span>
+                      <span>1. Parameter Kosongan 10 x 15,5</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Tali Kur Warna Leher</strong>: <span className="font-mono text-amber-700">BUKU!BQ6</span> (Rp 16.000/roll isi 56 pcs = Rp 285,71) + jasa pasang Rp 112,74.</li>
-                      <li>• <strong>Isi Staples 1213</strong>: Rp 24.000/pack + tenaga Rp 112,74 + casing in Rp 225,49.</li>
-                      <li>• <strong>Lubang Bor Mata Ayam</strong>: <span className="font-mono text-amber-700">BUKU!BM6</span> (Rp 225,49 / buku).</li>
-                      <li>• <strong>Potong Sisir 3 Sisi</strong>: <span className="font-mono text-amber-700">BUKU!BK6</span> (Rp 150 / buku).</li>
-                      <li>• <strong>Jasa Sisip & Lipat Nama PT</strong>: Rp 225,49 / buku.</li>
+                      <li>• <strong>Kertas HVS 70 gsm</strong>: <span className="font-mono text-amber-700">Kosongan!Master!D22</span> = Rp 15.700 / kg.</li>
+                      <li>• <strong>Insheet Toleransi</strong>: Print Buya (5 lbr), Ryobi (100 lbr), Oliver (200 lbr plano).</li>
+                      <li>• <strong>Ongkos Cetak Print Buya</strong>: <span className="font-mono text-amber-700">BUKU!AL6</span> = Rp 350 / lbr folio.</li>
+                      <li>• <strong>Plat CTP Mesin</strong>: Ryobi (Rp 25.000), Oliver (Rp 40.000).</li>
                     </ul>
                   </div>
 
-                  {/* Kelompok 4 */}
+                  {/* Poin 2: Custom Cover */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center gap-2 font-bold text-slate-900">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                      <span>2. Parameter Custom Cover 10 x 15,5</span>
+                    </div>
+                    <ul className="space-y-1.5 text-[11px] text-slate-600">
+                      <li>• <strong>Harga Isi Kosongan 212 Hal</strong>: <span className="font-mono text-emerald-700">Master!D21</span> = Rp 3.620 / eks (192 hal: Rp 3.421, 128 hal: Rp 2.300, 96 hal: Rp 1.800).</li>
+                      <li>• <strong>Print Cover AC 230 A3+</strong>: <span className="font-mono text-emerald-700">Master!D18</span> = Rp 2.700 / lbr A3+ (muat 4 cover + 5 insheet).</li>
+                      <li>• <strong>Cover Oliver Offset</strong>: Plano 79x109 (16 cover/plano) + 4 Plat CTP (Rp 40.000) + Min Ongkos 4 Plat (Rp 360.000) + Drek Over Rp 40 x 4 + Insheet 200 plano.</li>
+                      <li>• <strong>Sisipan 4 Hal PT</strong>: Print A3+ Rp 350 + Sisip Lipat Rp 225,49.</li>
+                      <li>• <strong>Jilid Staples + Tali</strong>: Tali Kur Rp 285,71 + Pasang Rp 112,74 + Bor Rp 225,49 + Staples Rp 112,74 + Casing In Rp 225,49.</li>
+                    </ul>
+                  </div>
+
+                  {/* Poin 3: Cocard TikTok */}
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-purple-500"></span>
-                      <span>4. Aksesoris Khusus Cocard & Kemasan</span>
+                      <span>3. Parameter Cocard 6,3 x 10,3 cm</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Ring Binder 3 cm</strong>: <span className="font-mono text-purple-700">TikTok!Master!D24</span> = Rp 925 / pcs.</li>
-                      <li>• <strong>Tali Cocard</strong>: <span className="font-mono text-purple-700">TikTok!Master!D23</span> = Rp 2.500 / pcs.</li>
-                      <li>• <strong>Plastik Ziplock</strong>: <span className="font-mono text-purple-700">TikTok!Master!D25</span> = Rp 465 / pcs.</li>
-                      <li>• <strong>Pisau + Jasa Pond Cocard</strong>: Rp 299,30 + Rp 225,49.</li>
-                      <li>• <strong>Plastik OPP Satuan</strong>: Rp 92 / pcs + jasa Rp 225,49 | <strong>Kardus</strong>: Rp 8.500/box.</li>
+                      <li>• <strong>Print Cocard AC 310 A3+</strong>: <span className="font-mono text-purple-700">Master!D18</span> = Rp 2.500 / lbr A3+ (20 kartu/A3+ bolak-balik).</li>
+                      <li>• <strong>Oliver Offset AC 310</strong>: Plano 79x109 + 8 Plat CTP 2 Muka + Insheet 200 plano.</li>
+                      <li>• <strong>Pisau & Jasa Pond</strong>: Pisau Rp 258.595/order + Jasa Pond Rp 225,49/lbr.</li>
+                      <li>• <strong>Aksesoris</strong>: Ring Binder 3cm (Rp 925) + Tali Cocard (Rp 2.500) + Plastik Ziplock (Rp 465) + Susun Ring (Rp 751,62).</li>
                     </ul>
                   </div>
                 </div>

@@ -1188,19 +1188,19 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                   <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
                     <span className="font-bold text-emerald-800 text-xs">1. Pilih Model Varian</span>
                     <p className="text-[11px] text-slate-600">
-                      Pilih: <strong>Custom Cover 10×15,5</strong> (standar 2026), <strong>Kosongan</strong>, atau <strong>Cocard 6,3×10,3</strong>. Parameter otomatis menyesuaikan.
+                      Pilih: <strong>1. Kosongan 10×15,5</strong>, <strong>2. Custom Cover 10×15,5</strong>, atau <strong>3. Cocard 6,3×10,3</strong>. Parameter otomatis menyesuaikan.
                     </p>
                   </div>
                   <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
                     <span className="font-bold text-emerald-800 text-xs">2. Tentukan Oplah & Halaman</span>
                     <p className="text-[11px] text-slate-600">
-                      Tentukan kuantiti (20 s/d 5.000 eks) dan varian isi (misal 216 hal untuk 212 blok + 4 sisipan PT).
+                      Tentukan kuantiti (20 s/d 5.000+ eks) dan jumlah halaman (tersedia preset cepat atau input custom bebas kelipatan 4).
                     </p>
                   </div>
                   <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
-                    <span className="font-bold text-emerald-800 text-xs">3. Jilid, Finishing & Sisipan</span>
+                    <span className="font-bold text-emerald-800 text-xs">3. Mesin Cetak & Jilid</span>
                     <p className="text-[11px] text-slate-600">
-                      Tersedia: <strong>Staples + Casing In + Tali Kur</strong>, <strong>Bending Lem Panas</strong>, <strong>Spiral</strong>, atau <strong>Ring Binder 3cm + Tali Co Card</strong>.
+                      Pilih mesin (Print Digital A3+ vs Offset Mesin Oliver, atau Print Buya/Ryobi). Jilid otomatis presisi per varian.
                     </p>
                   </div>
                   <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
@@ -1219,22 +1219,22 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                   Struktur Biaya Produksi Berdasarkan 3 Varian (Pricelist 2026)
                 </h5>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-[11px]">
-                  <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
-                    <span className="font-bold text-emerald-900 block">Custom Cover 10 x 15,5 cm:</span>
+                  <div className="p-2.5 bg-white rounded border border-amber-200 space-y-1">
+                    <span className="font-bold text-amber-900 block text-xs">1. Kosongan 10 x 15,5 cm:</span>
                     <p className="text-slate-600 leading-snug">
-                      Cover AC 230 gsm Print Inter/Oliver + Laminasi Doff + Sisipan 4 hal PT + Isi kosongan 212 hal + Staples tengah 1213 + Casing In + Bor + Tali Kur warna leher + Plastik OPP + Kardus master.
+                      Isi kosongan 212 hal HVS 70 gsm cetak mesin Print Buya / Ryobi / Oliver, finishing pelipatan kuras, susun urut, lem panas bending punggung, dan kemasan kardus master. Margin default 0% (HPP Modal Netto).
                     </p>
                   </div>
-                  <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">
-                    <span className="font-bold text-blue-900 block text-xs">Kosongan 10 x 15,5 cm</span>
+                  <div className="p-2.5 bg-white rounded border border-emerald-200 space-y-1">
+                    <span className="font-bold text-emerald-900 block text-xs">2. Custom Cover 10 x 15,5 cm:</span>
                     <p className="text-slate-600 leading-snug">
-                      Isi kosongan 212 hal HVS 70 gsm cetak mesin Print Buya / Ryobi / Oliver, finishing pelipatan kuras, susun urut, lem panas bending, dan kemasan kardus master.
+                      Cover AC 230 gsm Print Digital A3+ / Mesin Oliver (Plano 79x109) + Laminasi Doff + Sisipan 4 hal PT + Isi kosongan 212 hal + Staples tengah 1213 + Casing In + Bor + Tali Kur warna leher + Plastik OPP + Kardus master.
                     </p>
                   </div>
-                  <div className="p-2.5 bg-white rounded border border-purple-100 space-y-1">
-                    <span className="font-bold text-purple-900 block">Cocard 6,3 x 10,3 cm:</span>
+                  <div className="p-2.5 bg-white rounded border border-purple-200 space-y-1">
+                    <span className="font-bold text-purple-900 block text-xs">3. Cocard 6,3 x 10,3 cm:</span>
                     <p className="text-slate-600 leading-snug">
-                      Art Carton 310 gsm full color bolak-balik (48 hal / 24 kartu) + Laminasi glossy + Pisau & jasa pond sudut + Ring binder 3cm + Tali cocard + Plastik ziplock.
+                      Art Carton 310 gsm full color bolak-balik (48 hal / 24 kartu) Print Digital A3+ (20 kartu/lbr) / Offset Oliver + Laminasi glossy + Pisau & jasa pond sudut + Ring binder 3cm + Tali cocard + Plastik ziplock. Margin default 32%.
                     </p>
                   </div>
                 </div>
