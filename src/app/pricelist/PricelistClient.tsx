@@ -261,7 +261,10 @@ export default function PricelistClient() {
           parsedYasin.tarifPasangCoverSoft === 100 ||
           parsedYasin.tarifCasingInHardcover === 750 ||
           parsedYasin.tarifBoardHardcover === 280 ||
-          parsedYasin.hargaIsiYasin128 === 2600
+          parsedYasin.hargaIsiYasin128 === 2600 ||
+          parsedYasin.tarifPlastikOppYasin === 92 ||
+          parsedYasin.tarifPlastikOppYasin === 95 ||
+          !parsedYasin.tarifPlastikOppYasin
         ) {
           delete parsedYasin.tarifPrintSisipanTeksA3;
           delete parsedYasin.tarifPasangCoverSoft;
