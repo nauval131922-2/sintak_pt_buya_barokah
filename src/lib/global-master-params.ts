@@ -87,7 +87,6 @@ export interface GlobalMasterParams {
   // 7. Finishing & Kemasan Standar
   tarifKardusBox: number;         // Rp 8.500 / box (Semua produk)
   tarifLakbanRoll: number;        // Rp 8.000 / roll (Semua produk)
-  tarifPlastikOppPcs: number;     // Rp 90 / pcs (Rp 9.000 / pack 100 pcs)
   tarifSisirPcs: number;          // Rp 150 / pcs (Semua produk ber-finishing potong/sisir)
 
   // 8. Jasa Desain & Margin Standar Perusahaan
@@ -140,7 +139,6 @@ export const DEFAULT_GLOBAL_PARAMS: GlobalMasterParams = {
 
   tarifKardusBox: 8500,
   tarifLakbanRoll: 8000,
-  tarifPlastikOppPcs: 90,
   tarifSisirPcs: 150,
   tarifStaplesPcs: 100,
 
@@ -239,7 +237,6 @@ export function applyGlobalParamsToAll(
     tarifDesainCover: g.tarifDesainStandar,
     tarifSisir: g.tarifSisirPcs,
     tarifKardusBox: g.tarifKardusBox,
-    tarifPlastikOppPack: 9200, // Manasik Master!D29: Rp 9.200 / pack 100 pcs (Rp 92/pcs)
   };
   const nextYasin: YasinMasterParams = {
     ...currYasin,
@@ -247,7 +244,6 @@ export function applyGlobalParamsToAll(
     tarifPrintSisipanFotoA3: 1750,
     tarifPrintSisipanTeksA3: g.tarifPrintInter2Muka,
     tarifDesainCover: g.tarifDesainStandar,
-    tarifPlastikOppYasin: 90, // Yasin Master!D41: Rp 9.000 / pack 100 pcs (Rp 90/pcs)
     tarifSisirYasin: g.tarifSisirPcs,
     tarifStaplesYasin: Math.round(g.tarifStaplesPcs / 2),
   };
