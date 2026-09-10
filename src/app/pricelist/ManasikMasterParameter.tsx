@@ -203,60 +203,99 @@ export default function ManasikMasterParameter({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Card 1: Blok Isi Kosongan & Bahan Kertas (Emerald) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+      {/* Grid Parameter: Dikelompokkan Presisi Sesuai 3 Model / Varian Produk */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Varian 1: Custom Cover (10 x 15,5 cm) */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3.5">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
             <div className="flex items-center gap-2">
-              <Box className="w-4 h-4 text-emerald-700" />
-              <h3 className="text-xs font-bold text-slate-800">1. Isi Kosongan & Bahan Kertas</h3>
+              <BookOpen className="w-4 h-4 text-emerald-700" />
+              <h3 className="text-xs font-bold text-slate-800">1. Custom Cover (10 x 15,5 cm)</h3>
             </div>
             <span className="text-[10px] font-bold bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200">
-              Isi Kosongan
+              Varian 1
             </span>
           </div>
 
-          {/* Sub-grup: Harga Isi Kosongan */}
+          {/* Sub: Harga Isi Kosongan */}
           <div>
             <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Harga Isi Kosongan Netto HPP (per Buku):
+              • Harga Isi Kosongan (per Buku):
             </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {fieldRow('hargaIsiKosongan208', 'ISI KOSONGAN 212 (Standar 2026)', true, false, '212 Hal', 'emerald')}
-              {fieldRow('hargaIsiKosongan192', 'ISI KOSONGAN 192 (Lama)', true, false, '192 Hal', 'slate')}
-              {fieldRow('hargaIsiKosongan128', 'ISI KOSONGAN 128', true, false, '128 Hal', 'slate')}
-              {fieldRow('hargaIsiKosongan96', 'ISI KOSONGAN 96', true, false, '96 Hal', 'slate')}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {fieldRow('hargaIsiKosongan208', 'Isi 212 Hal (2026)', true, false, '212 Hal', 'emerald')}
+              {fieldRow('hargaIsiKosongan192', 'Isi 192 Hal (Lama)', true, false, '192 Hal', 'slate')}
+              {fieldRow('hargaIsiKosongan128', 'Isi 128 Hal', true, false, '128 Hal', 'slate')}
+              {fieldRow('hargaIsiKosongan96', 'Isi 96 Hal', true, false, '96 Hal', 'slate')}
             </div>
           </div>
 
-          {/* Sub-grup: Bahan Kertas & Sisipan */}
+          {/* Sub: Cetak Cover & Sisipan */}
           <div className="pt-2 border-t border-slate-100">
             <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Bahan Kertas Plano & Sisipan:
+              • Cetak Cover & Sisipan PT:
             </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {fieldRow('tarifKertasHvs70Kg', 'Kertas HVS 70 gsm', true, false, 'Rp/kg', 'emerald')}
-              {fieldRow('tarifPrintSisipanA3', 'Print Sisipan PT A3+', true, false, 'Rp/lbr', 'blue')}
+            <div className="grid grid-cols-1 gap-2">
+              {fieldRow('tarifPrintCoverA3', 'Print Digital Cover A3+', true, false, 'AC 230 POD', 'blue')}
+              {fieldRow('tarifPrintSisipanA3', 'Print Sisipan PT A3+', true, false, 'Sisipan PT', 'blue')}
+              {fieldRow('tarifDesainCover', 'Jasa Desain Cover', true, false, 'Cover Baru', 'blue')}
+              {fieldRow('insheetCover', 'Insheet Print Digital', false, false, 'lbr A3+', 'amber')}
+            </div>
+          </div>
+
+          {/* Sub: Cover Offset Oliver */}
+          <div className="pt-2 border-t border-slate-100">
+            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
+              • Cover Offset Oliver (Plano 79x109):
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {fieldRow('oliverPlatUnitCover', 'Plat CTP Oliver', true, false, 'Rp/plat', 'purple')}
+              {fieldRow('oliverMinOngkosCover', 'Min. Cetak Oliver', true, false, '4 Plat', 'emerald')}
+              {fieldRow('oliverDrekOverCover', 'Tarif Drek Over', true, false, 'Rp/drek', 'slate')}
+              {fieldRow('insheetOffsetCover', 'Insheet Cover Oliver', false, false, 'plano', 'amber')}
+            </div>
+          </div>
+
+          {/* Sub: Jilid & Tali Kur */}
+          <div className="pt-2 border-t border-slate-100">
+            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
+              • Jilid Staples, Tali & Finishing:
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {fieldRow('tarifTaliKurPerPcs', 'Bahan Tali Kur', true, false, 'Rp/pcs', 'amber')}
+              {fieldRow('tarifPasangTali', 'Jasa Pasang Tali', true, false, 'Rp/pcs', 'amber')}
+              {fieldRow('tarifLubangBor', 'Lubang Bor Mata Ayam', true, false, 'Rp/pcs', 'indigo')}
+              {fieldRow('tarifBendingPerCm2', 'Tarif Lem Panas', true, false, 'Bending', 'emerald')}
             </div>
           </div>
         </div>
 
-        {/* Card 2: Mesin Cetak Isi & Insheet Kosongan (Amber & Cyan) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+        {/* Varian 2: Kosongan (10 x 15,5 cm) */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3.5">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
             <div className="flex items-center gap-2">
               <Printer className="w-4 h-4 text-amber-700" />
-              <h3 className="text-xs font-bold text-slate-800">2. Mesin Cetak Isi & Insheet (Kosongan)</h3>
+              <h3 className="text-xs font-bold text-slate-800">2. Kosongan (10 x 15,5 cm)</h3>
             </div>
             <span className="text-[10px] font-bold bg-amber-50 text-amber-800 px-2 py-0.5 rounded border border-amber-200">
-              Produksi Blok Isi
+              Varian 2
             </span>
           </div>
 
-          {/* Sub-grup Insheet */}
-          <div className="p-2.5 bg-amber-50/50 rounded-lg border border-amber-100/80">
-            <span className="text-[11px] font-bold text-amber-900 block mb-1.5">
-              • Insheet Kertas Cetak Isi (Toleransi Afstelan):
+          {/* Sub: Bahan Baku Kertas */}
+          <div>
+            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
+              • Bahan Baku Kertas:
+            </span>
+            <div className="grid grid-cols-1 gap-2">
+              {fieldRow('tarifKertasHvs70Kg', 'Kertas HVS 70 gsm / Kg', true, false, 'Folio HVS', 'emerald')}
+            </div>
+          </div>
+
+          {/* Sub: Insheet Toleransi Mesin */}
+          <div className="pt-2 border-t border-slate-100">
+            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
+              • Insheet Kertas Cetak Isi (Toleransi):
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {fieldRow('insheetIsiBuya', 'Insheet Buya', false, false, 'Print Buya', 'amber')}
@@ -265,95 +304,54 @@ export default function ManasikMasterParameter({
             </div>
           </div>
 
-          {/* Sub-grup Tarif Cetak & Plat CTP */}
-          <div>
+          {/* Sub: Ongkos Cetak & Plat Mesin */}
+          <div className="pt-2 border-t border-slate-100">
             <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
               • Ongkos Cetak & Plat CTP Mesin:
             </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {fieldRow('tarifPrintBuyaPerLbr', 'Cetak Print Buya', true, false, 'Rp/lbr', 'amber')}
               {fieldRow('ryobiPlatUnitIsi', 'Plat CTP Ryobi Isi', true, false, 'Rp/plat', 'cyan')}
               {fieldRow('oliverPlatUnitIsi', 'Plat CTP Oliver Isi', true, false, 'Rp/plat', 'purple')}
+              {fieldRow('tarifSpiralManasik', 'Spiral Kawat Alternatif', true, false, 'Spiral', 'cyan')}
             </div>
           </div>
         </div>
 
-        {/* Card 3: Cetak Cover & Desain (Print Digital & Offset Oliver) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <div className="flex items-center gap-2">
-              <FileText className="w-4 h-4 text-blue-600" />
-              <h3 className="text-xs font-bold text-slate-800">3. Cetak Cover & Desain</h3>
-            </div>
-            <span className="text-[10px] font-bold bg-blue-50 text-blue-800 px-2 py-0.5 rounded border border-blue-200">
-              Cover Digital & Oliver
-            </span>
-          </div>
-
-          {/* Sub-grup Print Digital Cover */}
-          <div>
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Print Digital Cover (A3+):
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {fieldRow('tarifPrintCoverA3', 'Print Cover AC 230 A3+', true, false, 'Custom Cover', 'blue')}
-              {fieldRow('tarifPrintMiniTikTokA3', 'Print Cocard AC 310 A3+', true, false, 'Cocard TikTok', 'purple')}
-              {fieldRow('insheetCover', 'Insheet Print Digital', false, false, 'lbr A3+', 'amber')}
-              {fieldRow('tarifDesainCover', 'Desain Custom Cover', true, false, 'Rp/order', 'blue')}
-              {fieldRow('tarifDesainMiniTikTok', 'Desain Cocard', true, false, 'Rp/order', 'purple')}
-            </div>
-          </div>
-
-          {/* Sub-grup Cetak Offset Mesin Oliver */}
-          <div className="pt-2 border-t border-slate-100">
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Cetak Cover Offset Mesin Oliver (Plano 79x109):
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {fieldRow('oliverPlatUnitCover', 'Plat CTP Oliver Cover', true, false, 'Rp/plat', 'purple')}
-              {fieldRow('oliverMinOngkosCover', 'Min. Cetak Oliver', true, false, 'Rp/order', 'emerald')}
-              {fieldRow('oliverDrekOverCover', 'Tarif Drek Over Cover', true, false, 'Rp/drek', 'slate')}
-              {fieldRow('insheetOffsetCover', 'Insheet Cover Oliver', false, false, 'plano', 'amber')}
-            </div>
-          </div>
-        </div>
-
-        {/* Card 4: Jilid, Tali & Finishing Manasik (Amber / Indigo) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <div className="flex items-center gap-2">
-              <Layers className="w-4 h-4 text-indigo-600" />
-              <h3 className="text-xs font-bold text-slate-800">4. Jilid, Tali & Finishing Manasik</h3>
-            </div>
-            <span className="text-[10px] font-bold bg-indigo-50 text-indigo-800 px-2 py-0.5 rounded border border-indigo-200">
-              Jilid & Tali
-            </span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifTaliKurPerPcs', 'Tali Kur Warna Leher', true, false, 'Tali Kur', 'amber')}
-            {fieldRow('tarifBendingPerCm2', 'Tarif Bending (Lem Panas)', true, false, 'Softcover', 'emerald')}
-            {fieldRow('tarifSpiralManasik', 'Spiral Kawat', true, false, 'Spiral', 'cyan')}
-            {fieldRow('tarifLubangBor', 'Lubang Bor Mata Ayam', true, false, 'Mata Ayam', 'indigo')}
-            {fieldRow('tarifPasangTali', 'Jasa Pasang Tali Kur', true, false, 'Pasang Manual', 'amber')}
-          </div>
-        </div>
-
-        {/* Card 5: Komponen Khusus Cocard (Purple) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3 md:col-span-2">
+        {/* Varian 3: Cocard Mini TikTok (6,3 x 10,3 cm) */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3.5">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-purple-600" />
-              <h3 className="text-xs font-bold text-slate-800">5. Komponen Khusus Cocard (Mini TikTok 6,3 x 10,3 cm)</h3>
+              <h3 className="text-xs font-bold text-slate-800">3. Cocard Mini TikTok (6,3 x 10,3 cm)</h3>
             </div>
             <span className="text-[10px] font-bold bg-purple-50 text-purple-800 px-2 py-0.5 rounded border border-purple-200">
-              Aksesoris Cocard
+              Varian 3
             </span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
-            {fieldRow('tarifRingBinderMini', 'Ring Binder 3cm', true, false, 'Ring Besi', 'purple')}
-            {fieldRow('tarifTaliCocardMini', 'Tali Cocard', true, false, 'Gantungan', 'purple')}
-            {fieldRow('tarifPlastikZiplockMini', 'Plastik Ziplock', true, false, 'Pelindung', 'purple')}
-            {fieldRow('tarifPisauPoundMini', 'Pisau Pond Cocard', true, false, 'Pond Sudut', 'purple')}
+
+          {/* Sub: Bahan Cetak & Desain Cocard */}
+          <div>
+            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
+              • Cetak Kartu & Desain (AC 310 gsm):
+            </span>
+            <div className="grid grid-cols-1 gap-2">
+              {fieldRow('tarifPrintMiniTikTokA3', 'Print Cocard AC 310 A3+', true, false, '20 Kartu/A3+', 'purple')}
+              {fieldRow('tarifDesainMiniTikTok', 'Jasa Desain Cocard', true, false, 'Rp/order', 'purple')}
+            </div>
+          </div>
+
+          {/* Sub: Aksesoris & Perlengkapan Cocard */}
+          <div className="pt-2 border-t border-slate-100">
+            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
+              • Aksesoris & Perlengkapan Cocard:
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {fieldRow('tarifRingBinderMini', 'Ring Binder 3cm', true, false, 'Rp/pcs', 'purple')}
+              {fieldRow('tarifTaliCocardMini', 'Tali Cocard Mini', true, false, 'Rp/pcs', 'purple')}
+              {fieldRow('tarifPlastikZiplockMini', 'Plastik Ziplock', true, false, 'Rp/pcs', 'purple')}
+              {fieldRow('tarifPisauPoundMini', 'Pisau Pond Custom', true, false, 'Rp/order', 'purple')}
+            </div>
           </div>
         </div>
       </div>
