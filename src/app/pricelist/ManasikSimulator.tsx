@@ -688,10 +688,10 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
 
             {/* Cetak Cover atau Cetak Isi (Khusus Kosongan) */}
             {varian === 'Kosongan 10 x 15,5' ? (
-              <div className="space-y-2 p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl">
+              <div className="space-y-2 p-3 bg-emerald-50/60 border border-emerald-200/80 rounded-xl">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
-                    <Printer size={13} className="text-amber-700" />
+                  <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                    <Printer size={13} className="text-emerald-700" />
                     Mesin Cetak Isi Kosongan
                   </span>
                 </div>
@@ -703,8 +703,8 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                       onClick={() => setMetodeCetakIsi(m)}
                       className={`py-1.5 px-2 rounded-lg border text-center transition-all text-xs font-bold cursor-pointer ${
                         metodeCetakIsi === m
-                          ? 'border-amber-600 bg-white text-amber-950 ring-2 ring-amber-500/20 shadow-2xs'
-                          : 'border-amber-200/80 bg-amber-50/50 hover:bg-white text-amber-900'
+                          ? 'border-emerald-600 bg-white text-emerald-950 ring-2 ring-emerald-500/20 shadow-2xs'
+                          : 'border-emerald-200/70 bg-emerald-50/40 hover:bg-white text-emerald-900'
                       }`}
                     >
                       {m}
