@@ -103,8 +103,8 @@ const JILID_OPTIONS = [
 ];
 
 const METODE_OPTIONS = [
-  { value: 'Otomatis', label: 'Standar Digital POD', desc: 'POD Print Digital A3+' },
-  { value: 'Print Digital (A3+)', label: 'Digital Print (A3+)', desc: 'Cepat & praktis untuk cetak cover POD' },
+  { value: 'Otomatis', label: 'Standar Print Inter', desc: 'Print Digital Inter A3+' },
+  { value: 'Print Digital (A3+)', label: 'Digital Print (A3+)', desc: 'Cetak cover mesin digital A3+' },
   { value: 'Offset (Oliver)', label: 'Offset Mesin Oliver', desc: 'Cover Art Carton 79x109 + 4 Plat CTP (Oplah Besar)' },
 ];
 
@@ -1222,13 +1222,13 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                   <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
                     <span className="font-bold text-emerald-900 block">Custom Cover 10 x 15,5 cm:</span>
                     <p className="text-slate-600 leading-snug">
-                      Cover AC 230 gsm POD/Oliver + Laminasi Doff + Sisipan 4 hal PT + Blok isi 212 hal + Staples tengah 1213 + Casing In + Bor + Tali Kur warna leher + Plastik OPP + Kardus master.
+                      Cover AC 230 gsm Print Inter/Oliver + Laminasi Doff + Sisipan 4 hal PT + Isi kosongan 212 hal + Staples tengah 1213 + Casing In + Bor + Tali Kur warna leher + Plastik OPP + Kardus master.
                     </p>
                   </div>
                   <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">
-                    <span className="font-bold text-blue-900 block">Kosongan 10 x 15,5 cm:</span>
+                    <span className="font-bold text-blue-900 block text-xs">Kosongan 10 x 15,5 cm</span>
                     <p className="text-slate-600 leading-snug">
-                      Blok isi 212 hal HVS 70 gsm cetak mesin Buya/Web Rotary, finishing pelipatan kuras, susun urut, lem panas bending, dan kemasan kardus master.
+                      Isi kosongan 212 hal HVS 70 gsm cetak mesin Print Buya / Ryobi / Oliver, finishing pelipatan kuras, susun urut, lem panas bending, dan kemasan kardus master.
                     </p>
                   </div>
                   <div className="p-2.5 bg-white rounded border border-purple-100 space-y-1">

@@ -259,9 +259,9 @@ export default function ManasikMasterParameter({
               • Insheet Kertas Cetak Isi (Toleransi Afstelan):
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {fieldRow('insheetIsiBuya', 'Insheet Buya', false, false, 'Rotary', 'amber')}
-              {fieldRow('insheetIsiRyobi', 'Insheet Ryobi', false, false, 'Offset 1W', 'cyan')}
-              {fieldRow('insheetIsiOliver', 'Insheet Oliver', false, false, 'Offset 1W', 'purple')}
+              {fieldRow('insheetIsiBuya', 'Insheet Buya', false, false, 'Print Buya', 'amber')}
+              {fieldRow('insheetIsiRyobi', 'Insheet Ryobi', false, false, 'Ryobi', 'cyan')}
+              {fieldRow('insheetIsiOliver', 'Insheet Oliver', false, false, 'Oliver', 'purple')}
             </div>
           </div>
 
@@ -271,22 +271,22 @@ export default function ManasikMasterParameter({
               • Ongkos Cetak & Plat CTP Mesin:
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {fieldRow('tarifPrintBuyaPerLbr', 'Cetak Rotary Buya', true, false, 'Rp/lbr', 'amber')}
+              {fieldRow('tarifPrintBuyaPerLbr', 'Cetak Print Buya', true, false, 'Rp/lbr', 'amber')}
               {fieldRow('ryobiPlatUnitIsi', 'Plat CTP Ryobi Isi', true, false, 'Rp/plat', 'cyan')}
               {fieldRow('oliverPlatUnitIsi', 'Plat CTP Oliver Isi', true, false, 'Rp/plat', 'purple')}
             </div>
           </div>
         </div>
 
-        {/* Card 3: Print Cover POD & Desain (Blue) */}
+        {/* Card 3: Print Cover & Desain (Blue) */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-blue-600" />
-              <h3 className="text-xs font-bold text-slate-800">3. Print Cover POD & Desain</h3>
+              <h3 className="text-xs font-bold text-slate-800">3. Print Cover & Desain</h3>
             </div>
             <span className="text-[10px] font-bold bg-blue-50 text-blue-800 px-2 py-0.5 rounded border border-blue-200">
-              Cover Digital
+              Print Cover
             </span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -294,7 +294,7 @@ export default function ManasikMasterParameter({
             {fieldRow('tarifPrintMiniTikTokA3', 'Print Cocard AC310 A3+', true, false, 'Cocard TikTok', 'purple')}
             {fieldRow('tarifDesainCover', 'Desain Custom Cover', true, false, 'Biro Travel', 'blue')}
             {fieldRow('tarifDesainMiniTikTok', 'Desain Cocard', true, false, 'Template Cocard', 'purple')}
-            {fieldRow('insheetCover', 'Insheet Cover POD', false, false, 'Toleransi Cetak', 'amber')}
+            {fieldRow('insheetCover', 'Insheet Print Cover', false, false, 'Toleransi Cetak', 'amber')}
           </div>
         </div>
 
@@ -382,7 +382,7 @@ export default function ManasikMasterParameter({
                     <p className="text-[10.5px] text-emerald-800 leading-snug">
                       Ref: <code>...UK. 10 x 15,5 - BUKU MANASIK - Custom Cover 2026.xlsm</code><br />
                       Sheet: <span className="font-mono font-semibold">HARGA FILE BARU</span> & <span className="font-mono font-semibold">BUKU</span>.<br />
-                      Cover AC 230 POD (Rp 2.700) / Oliver + Sisipan 4 hal PT (Rp 350 + Rp 225,49) + Blok 212 hal (Rp 3.620) + Tali Kur (Rp 285,71) + Staples 1213 (Rp 24.000).
+                      Cover AC 230 Print Inter (Rp 2.700) / Oliver + Sisipan 4 hal PT (Rp 350 + Rp 225,49) + Blok 212 hal (Rp 3.620) + Tali Kur (Rp 285,71) + Staples 1213 (Rp 24.000).
                     </p>
                   </div>
                   <div className="bg-blue-50/70 border border-blue-200 rounded-xl p-3 space-y-1.5">
@@ -429,11 +429,11 @@ export default function ManasikMasterParameter({
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                      <span>2. Bahan Cover & Print POD / Offset</span>
+                      <span>2. Bahan Cover & Cetak Cover</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Tarif Print Cover AC 230 (POD)</strong>: <span className="font-mono text-blue-700">Custom!Master!D18</span> = Rp 2.700 / lbr A3+.</li>
-                      <li>• <strong>Tarif Print Cocard AC 310 (POD)</strong>: <span className="font-mono text-blue-700">TikTok!Master!D18</span> = Rp 2.500 / lbr A3+.</li>
+                      <li>• <strong>Tarif Print Cover AC 230</strong>: <span className="font-mono text-blue-700">Custom!Master!D18</span> = Rp 2.700 / lbr A3+.</li>
+                      <li>• <strong>Tarif Print Cocard AC 310</strong>: <span className="font-mono text-blue-700">TikTok!Master!D18</span> = Rp 2.500 / lbr A3+.</li>
                       <li>• <strong>Kertas AC 230 / 260</strong>: Rp 16.400 / kg | <strong>AC 310</strong>: Rp 33.500 / kg.</li>
                       <li>• <strong>Desain Cover</strong>: Custom Cover Rp 20.000 | Cocard Rp 2.500.</li>
                       <li>• <strong>Offset Oliver</strong>: Plat Rp 45.000, Min Rp 90.000, Drek over Rp 40.</li>
