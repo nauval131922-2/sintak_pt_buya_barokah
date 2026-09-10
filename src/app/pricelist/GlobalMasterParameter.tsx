@@ -201,15 +201,17 @@ export default function GlobalMasterParameter({
               <Printer className="w-4 h-4 text-emerald-700" />
               <h3 className="text-xs font-bold text-slate-800">1. Mesin Offset Oliver (58 / 52)</h3>
             </div>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
-              Oplah ≥ 300 / 500
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono">
+              Oplah {params.oliverOplahMin} - {params.oliverOplahMax}
             </span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {fieldRow('oliverOplahMin', 'Oplah Minimal (Mulai)', 'Batas bawah mesin Oliver', false)}
+            {fieldRow('oliverOplahMax', 'Oplah Maksimal (Sampai)', 'Batas atas mesin Oliver', false)}
+            {fieldRow('insheetOliverOffset', 'Insheet Mesin Oliver', 'Toleransi Cetak Plano', false)}
             {fieldRow('oliverPlatUnit', 'Tarif Plat CTP / Unit', 'Semua Produk Oliver')}
             {fieldRow('oliverMinOngkos', 'Min. Cetak (≤1000 Drek)', 'Semua Produk Oliver')}
             {fieldRow('oliverDrekOver', 'Tarif Drek Over / Drek', 'Over 1000 Drek')}
-            {fieldRow('insheetOliverOffset', 'Insheet Mesin Oliver', 'Toleransi Cetak Plano', false)}
             {fieldRow('oliverTransport', 'Ongkos Transport Cetak', 'Kalender, Packaging')}
           </div>
         </div>
@@ -221,15 +223,17 @@ export default function GlobalMasterParameter({
               <Printer className="w-4 h-4 text-blue-700" />
               <h3 className="text-xs font-bold text-slate-800">2. Mesin Offset Heidelberg SM</h3>
             </div>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200">
-              Partai Besar (≥ 3.000)
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200 font-mono">
+              Oplah {params.smOplahMin} - {params.smOplahMax}
             </span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {fieldRow('smOplahMin', 'Oplah Minimal (Mulai)', 'Batas bawah mesin SM', false)}
+            {fieldRow('smOplahMax', 'Oplah Maksimal (Sampai)', 'Batas atas mesin SM', false)}
+            {fieldRow('insheetSmOffset', 'Insheet Mesin SM', 'Toleransi Cetak Plano', false)}
             {fieldRow('smPlatUnit', 'Tarif Plat CTP SM', 'Buku HC A4, Poster Plano')}
             {fieldRow('smMinOngkos', 'Min. Cetak SM (≤1000 Drek)', 'Buku HC A4, Poster Plano')}
             {fieldRow('smDrekOver', 'Tarif Drek Over SM', 'Over 1000 Drek SM')}
-            {fieldRow('insheetSmOffset', 'Insheet Mesin SM', 'Toleransi Cetak Plano', false)}
           </div>
         </div>
 
@@ -240,15 +244,17 @@ export default function GlobalMasterParameter({
               <Printer className="w-4 h-4 text-cyan-700" />
               <h3 className="text-xs font-bold text-slate-800">3. Mesin Offset Kecil (Ryobi / Toko)</h3>
             </div>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-50 text-cyan-800 border border-cyan-200">
-              1-2 Warna (≤ 500)
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-50 text-cyan-800 border border-cyan-200 font-mono">
+              Oplah {params.ryobiOplahMin} - {params.ryobiOplahMax}
             </span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {fieldRow('ryobiOplahMin', 'Oplah Minimal (Mulai)', 'Batas bawah mesin Ryobi', false)}
+            {fieldRow('ryobiOplahMax', 'Oplah Maksimal (Sampai)', 'Batas atas mesin Ryobi', false)}
+            {fieldRow('insheetRyobiOffset', 'Insheet Mesin Ryobi', 'Toleransi Cetak Mesin', false)}
             {fieldRow('ryobiPlatUnit', 'Tarif Plat Ryobi / Toko', 'Nota, Buku Tabungan, Buku')}
             {fieldRow('ryobiMinOngkos', 'Min. Cetak (≤500/1000 Drek)', 'Nota, Buku Tabungan')}
             {fieldRow('ryobiDrekOver', 'Tarif Drek Over / Drek', 'Over Drek Ryobi')}
-            {fieldRow('insheetRyobiOffset', 'Insheet Mesin Ryobi', 'Toleransi Cetak Mesin', false)}
           </div>
         </div>
 
@@ -259,32 +265,36 @@ export default function GlobalMasterParameter({
               <Printer className="w-4 h-4 text-amber-700" />
               <h3 className="text-xs font-bold text-slate-800">4. Mesin Cetak Isi (Print Buya)</h3>
             </div>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
-              Isi Buku Kosongan
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 font-mono">
+              Oplah {params.buyaOplahMin} - {params.buyaOplahMax}
             </span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifPrintBuyaPerLbr', 'Tarif Cetak Print Buya / Lbr', 'Buku Manasik, Buku Softcover')}
+            {fieldRow('buyaOplahMin', 'Oplah Minimal (Mulai)', 'Batas bawah Print Buya', false)}
+            {fieldRow('buyaOplahMax', 'Oplah Maksimal (Sampai)', 'Batas atas Print Buya', false)}
             {fieldRow('insheetPrintBuya', 'Insheet Print Buya', 'Toleransi per kuras', false)}
+            {fieldRow('tarifPrintBuyaPerLbr', 'Tarif Cetak Print Buya / Lbr', 'Buku Manasik, Buku Softcover')}
           </div>
         </div>
 
-        {/* 5. Mesin Print Digital (Print Inter A3+) */}
+        {/* 5. Mesin Digital (Print Inter A3+) */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
             <div className="flex items-center gap-2">
               <Printer className="w-4 h-4 text-purple-600" />
               <h3 className="text-xs font-bold text-slate-800">5. Mesin Digital (Print Inter A3+)</h3>
             </div>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-50 text-purple-800 border border-purple-200">
-              Oplah Kecil (≤ 300)
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-50 text-purple-800 border border-purple-200 font-mono">
+              Oplah {params.interOplahMin} - {params.interOplahMax}
             </span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {fieldRow('interOplahMin', 'Oplah Minimal (Mulai)', 'Batas bawah Print Inter', false)}
+            {fieldRow('interOplahMax', 'Oplah Maksimal (Sampai)', 'Batas atas Print Inter', false)}
+            {fieldRow('insheetPrintInter', 'Insheet Print Inter (Lbr A3+)', 'Toleransi Lembar A3+', false)}
             {fieldRow('tarifPrintA3', 'Print Cover A3+ (1 Muka)', 'Manasik, Yasin, Sertifikat')}
             {fieldRow('tarifPrintInter1Muka', 'Print Inter 1 Muka', 'Brosur 1 Muka, Isi Tabungan')}
             {fieldRow('tarifPrintInter2Muka', 'Print Inter 2 Muka', 'Brosur 2 Muka, Majalah, Cocard')}
-            {fieldRow('insheetPrintInter', 'Insheet Print Inter (Lbr A3+)', 'Toleransi Lembar A3+', false)}
           </div>
         </div>
         {/* 6. Bahan Kertas Dasar */}

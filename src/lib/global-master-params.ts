@@ -32,35 +32,45 @@ import { PackagingMasterParams, DEFAULT_PACKAGING_PARAMS } from './packaging-cal
 import { PaperbagMasterParams, DEFAULT_PAPERBAG_PARAMS } from './paperbag-calculator';
 
 export interface GlobalMasterParams {
-  // 1. Mesin Cetak Offset Besar (Oliver 58 / 52)
-  oliverPlatUnit: number;        // Rp 45.000 / plat (Kalender, Manasik, Brosur, Stopmap, Sertifikat, dll)
-  oliverMinOngkos: number;       // Rp 90.000 (min 1000 drek) (Kalender, Manasik, Brosur, dll)
-  oliverDrekOver: number;        // Rp 40 / drek (Kalender, Manasik, Brosur, dll)
-  oliverTransport: number;       // Rp 100.000 (Kalender, Packaging)
+  // 1. Mesin Cetak Offset Oliver (58 / 52)
+  oliverPlatUnit: number;        // Rp 45.000 / plat
+  oliverMinOngkos: number;       // Rp 90.000 (min 1000 drek)
+  oliverDrekOver: number;        // Rp 40 / drek over
+  oliverTransport: number;       // Rp 100.000
+  oliverOplahMin: number;        // Rentang oplah minimal: default 300 / 500
+  oliverOplahMax: number;        // Rentang oplah maksimal: default 10000
   insheetOliverOffset: number;   // 200 lbr insheet mesin Oliver
 
-  // 2. Mesin Cetak Offset Skala Besar (Heidelberg SM 52 / SM 72 / SM 102)
+  // 2. Mesin Cetak Offset Skala Besar (Heidelberg SM 52 / 72 / 102)
   smPlatUnit: number;            // Rp 65.000 / plat CTP SM
   smMinOngkos: number;           // Rp 150.000 (min 1000 drek)
   smDrekOver: number;            // Rp 50 / drek over
+  smOplahMin: number;            // Rentang oplah minimal: default 3000
+  smOplahMax: number;            // Rentang oplah maksimal: default 50000
   insheetSmOffset: number;       // 250 lbr insheet mesin SM
 
   // 3. Mesin Cetak Offset Kecil (Ryobi / Toko 1 Warna)
-  ryobiPlatUnit: number;         // Rp 25.000 / plat (Nota, Buku Tabungan, Buku Mini)
-  ryobiMinOngkos: number;        // Rp 50.000 (min 1000 drek) (Nota, Buku Tabungan, Buku Mini)
-  ryobiDrekOver: number;         // Rp 35 / drek (Nota, Buku Tabungan, Buku Mini)
+  ryobiPlatUnit: number;         // Rp 25.000 / plat
+  ryobiMinOngkos: number;        // Rp 50.000 (min 500/1000 drek)
+  ryobiDrekOver: number;         // Rp 35 / drek
+  ryobiOplahMin: number;         // Rentang oplah minimal: default 20
+  ryobiOplahMax: number;         // Rentang oplah maksimal: default 500
   insheetRyobiOffset: number;    // 100 lbr insheet mesin Ryobi
 
-  // 4. Mesin Cetak Isi Buku (Print Buya / Rotary)
+  // 4. Mesin Cetak Isi Buku (Print Buya)
   tarifPrintBuyaPerLbr: number;  // Rp 350 / lembar Folio
+  buyaOplahMin: number;          // Rentang oplah minimal: default 50
+  buyaOplahMax: number;          // Rentang oplah maksimal: default 5000
   insheetPrintBuya: number;      // 5 lbr per kuras / order
 
-  // 5. Mesin Print Digital (Print Inter A3+)
-  tarifPrintA3: number;          // Rp 2.500 / lembar A3+
-  tarifPrintInter1Muka: number;  // Rp 1.800 / lembar A3+ (Brosur 1 muka, Buku Tabungan isi)
-  tarifPrintInter2Muka: number;  // Rp 3.300 / lembar A3+ (Brosur 2 muka, Majalah isi)
+  // 5. Mesin Digital (Print Inter A3+)
+  tarifPrintA3: number;          // Rp 2.500 / lembar A3+ (1 Muka)
+  tarifPrintInter1Muka: number;  // Rp 1.800 / lembar A3+
+  tarifPrintInter2Muka: number;  // Rp 3.300 / lembar A3+
+  interOplahMin: number;         // Rentang oplah minimal: default 1
+  interOplahMax: number;         // Rentang oplah maksimal: default 300
   insheetPrintInter: number;     // 5 lbr insheet per order
-  // 3. Kertas Dasar & Bahan Baku
+  // 5. Kertas Dasar & Bahan Baku
   tarifHvs70: number;            // Rp 15.700 / kg (Kalender, Nota, Buku Tulis, Buku Tabungan, dll)
   tarifAp120: number;            // Rp 17.400 / kg (Kalender, Brosur, Majalah isi)
   tarifAp150: number;            // Rp 17.400 / kg (Kalender, Buku Hardcover cover)
@@ -68,25 +78,20 @@ export interface GlobalMasterParams {
   tarifAc260Kg: number;          // Rp 15.500 / kg (Manasik, Syahadah, Sertifikat, Buku Tabungan)
   upKertasPct: number;           // 5% margin/ppn kertas dasar
 
-  // 4. Mesin Print Digital POD A3+
-  tarifPrintA3: number;          // Rp 2.500 / lembar A3+ (Manasik, Yasin, Buku, Sertifikat, dll)
-  tarifPrintInter1Muka: number;  // Rp 1.800 / lembar A3+ (Brosur 1 muka, Buku Tabungan isi)
-  tarifPrintInter2Muka: number;  // Rp 3.300 / lembar A3+ (Brosur 2 muka, Majalah isi)
-
-  // 5. Tarif Laminasi Standar
+  // 6. Tarif Laminasi Standar
   tarifLaminasiGlossyCm2: number; // Rp 0.35 / cm² (Manasik, Yasin, Brosur, Buku, Stopmap, Sertifikat)
   tarifLaminasiDoffCm2: number;   // Rp 0.40 / cm² (Manasik, Yasin, Brosur, Buku, Sertifikat)
   tarifUvVarnishCm2: number;      // Rp 0.11 / cm² (Manasik, Brosur, Buku)
   minLaminasi: number;            // Rp 50.000 (Manasik, Yasin, Brosur, Buku, dll)
 
-  // 6. Finishing & Kemasan Standar
+  // 7. Finishing & Kemasan Standar
   tarifKardusBox: number;         // Rp 8.500 / box (Semua produk)
   tarifLakbanRoll: number;        // Rp 8.000 / roll (Semua produk)
   tarifPlastikOppPcs: number;     // Rp 92 / pcs (Manasik, Yasin, Undangan, Buku Tabungan)
   tarifSisirPcs: number;          // Rp 150 / pcs (Semua produk ber-finishing potong/sisir)
   tarifStaplesPcs: number;        // Rp 100 / pcs (Manasik, Yasin, Buku Tulis, Buku Tabungan)
 
-  // 7. Jasa Desain & Margin Standar Perusahaan
+  // 8. Jasa Desain & Margin Standar Perusahaan
   tarifDesainStandar: number;     // Rp 50.000 (Amplop, Kop Surat, Raport, Sertifikat, Cover Buku, dll)
   defaultMarginPct: number;       // 25% (Target margin dasar seluruh 30 produk)
   defaultNegoPct: number;         // 4% (Batas diskon nego dasar seluruh 30 produk)
@@ -97,25 +102,38 @@ export const DEFAULT_GLOBAL_PARAMS: GlobalMasterParams = {
   oliverMinOngkos: 90000,
   oliverDrekOver: 40,
   oliverTransport: 100000,
+  oliverOplahMin: 500,
+  oliverOplahMax: 10000,
   insheetOliverOffset: 200,
 
   smPlatUnit: 65000,
   smMinOngkos: 150000,
   smDrekOver: 50,
+  smOplahMin: 3000,
+  smOplahMax: 50000,
   insheetSmOffset: 250,
 
   ryobiPlatUnit: 25000,
   ryobiMinOngkos: 50000,
   ryobiDrekOver: 35,
+  ryobiOplahMin: 20,
+  ryobiOplahMax: 500,
   insheetRyobiOffset: 100,
 
   tarifPrintBuyaPerLbr: 350,
+  buyaOplahMin: 50,
+  buyaOplahMax: 5000,
   insheetPrintBuya: 5,
 
   tarifPrintA3: 2500,
   tarifPrintInter1Muka: 1800,
   tarifPrintInter2Muka: 3300,
+  interOplahMin: 1,
+  interOplahMax: 300,
   insheetPrintInter: 5,
+  tarifAc260Kg: 15500,
+  upKertasPct: 5,
+
   tarifLaminasiGlossyCm2: 0.35,
   tarifLaminasiDoffCm2: 0.40,
   tarifUvVarnishCm2: 0.11,
