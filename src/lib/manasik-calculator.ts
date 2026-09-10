@@ -264,27 +264,45 @@ export function calculateManasikSimulator(
       metodeCover = validOplah >= 400 ? 'Offset (Oliver)' : 'Print Digital (A3+)';
     }
 
-    // 48 halaman = 24 lembar bolak-balik 6.3 x 10.3 cm
+    // 48 halaman = 24 kartu bolak-balik 6.3 x 10.3 cm
     let biayaCetakBahan = 0;
     if (metodeCover === 'Print Digital (A3+)') {
-      // 1 Lbr A3+ muat 12 kartu mini
-      kebutuhanA3Cover = Math.ceil((validOplah * 24) / 12) + params.insheetCover;
-      biayaCetakBahan = kebutuhanA3Cover * params.tarifPrintMiniTikTokA3 + params.tarifDesainMiniTikTok;
+      // Excel Cell P7 saat Print Inter: 1 Lembar A3+ muat 20 kartu mini
+      // Excel Cell R7: =ROUNDUP(((Oplah * 24) / 20) + (Insheet / 1), 0)
+      const kartuPerA3 = 20;
+      const insheetA3 = params.insheetCover || 5;
+      const lbrA3 = Math.ceil((validOplah * 24) / kartuPerA3) + insheetA3;
+      kebutuhanA3Cover = lbrA3;
+      
+      // Kertas AC 310 gsm A3+ (Excel Cell T7):
+      // W29 = ((32.5 * 48 * 310) / 20000) * (33500 * 1.05) = Rp 850.531,5 / rim A3+ (Rp 1.701,06 / lbr)
+      const beratRimA3 = (32.5 * 48 * 310) / 20000;
+      const hargaRimA3 = beratRimA3 * (params.tarifAc310Kg * 1.05);
+      const biayaKertas = (hargaRimA3 / 500) * lbrA3;
+      
+      // Cetak 2 Muka Digital A3+ (Excel Cell AG7): 2 Muka x Lbr A3 x Rp 2.500
+      const sisiCetak = lbrA3 * 2;
+      const biayaPrint = sisiCetak * params.tarifPrintMiniTikTokA3;
+      
+      // Jasa Desain File (Excel Cell V7): 24 kartu x Rp 2.500 = Rp 60.000
+      const biayaDesain = params.tarifDesainMiniTikTok * 24;
+      
+      biayaCetakBahan = biayaKertas + biayaPrint + biayaDesain;
       breakdown.push({
-        nama: 'Kertas & Print POD A3+ (AC 310 gsm 2 Muka)',
+        nama: 'Kertas AC 310, Cetak POD 2 Muka & Desain',
         nominal: Math.round(biayaCetakBahan),
         pct: 0,
-        keterangan: `${kebutuhanA3Cover} lbr A3+ POD @ Rp ${params.tarifPrintMiniTikTokA3.toLocaleString('id-ID')}`,
+        keterangan: `${lbrA3} lbr A3+ AC 310 + ${sisiCetak} sisi cetak POD @ Rp ${params.tarifPrintMiniTikTokA3.toLocaleString('id-ID')} + Desain`,
       });
     } else {
       // Naik Oliver offset sesuai sheet BUKU baris 9:
       // Insheet K6 di Excel BUKU = 200 lbr mesin
       const insheetPlano = (200 / 4) * 1; // 50 plano
       kebutuhanPlanoCover = Math.ceil(((validOplah * 24) / 96) + insheetPlano);
-      // Harga Kertas per plano = W29 / 500 = 8.942,5235 (1.564.941,61 untuk 175 plano)
-      const hargaPlano = (params.tarifAc310Kg * (79 * 109 * 310)) / 10000000;
-      const biayaKertas = kebutuhanPlanoCover * (4471261.75 / 500);
-      
+      // Harga Kertas per plano = (Berat Rim x Harga Kg) / 500
+      const beratRim79x109 = (79 * 109 * 310) / 20000;
+      const hargaPlano = (beratRim79x109 * (params.tarifAc310Kg * 1.05)) / 500;
+      const biayaKertas = kebutuhanPlanoCover * hargaPlano;
       // Desain file: 24 kartu x Rp 2.500 = Rp 60.000
       const biayaDesain = params.tarifDesainMiniTikTok * 24;
       
@@ -293,9 +311,6 @@ export function calculateManasikSimulator(
       const biayaPlat = jmlPlat * 43000;
       
       // Ongkos Cetak Oliver:
-      // Q9 = kebutuhanPlanoCover * 4 * 2 (lbr mesin)
-      // Ongkos dasar = Rp 90.000 * 8 = Rp 720.000
-      // Over = max(0, Q9 - 1000) * 40 * 4
       const lbrMesin = kebutuhanPlanoCover * 4 * 2;
       const ongkosDasar = params.oliverMinOngkosCover * jmlPlat;
       const cetakOver = Math.max(0, lbrMesin - 1000);
@@ -310,17 +325,17 @@ export function calculateManasikSimulator(
         keterangan: `${kebutuhanPlanoCover} lbr plano AC 310 + 8 Plat CTP + Oliver Offset (Over ${cetakOver} lbr)`,
       });
     }
-
     // Finishing Khusus TikTok (Sheet BUKU):
-    // Pisau pound (AL9): 27 * 32 * 299.30 = Rp 258.595,20 (tetap per pesanan)
-    // Jasa pond (AM9): max(50000, kebutuhanPlanoCover * 2 * 225.4868)
+    // Pisau pound (AL7): 27 * 32 * 299.30 = Rp 258.595,20 (tetap per pesanan)
+    // Jasa pond (AM7): (Lembar * 2) * 225.4868
+    const jmlLbrPond = metodeCover === 'Print Digital (A3+)' ? kebutuhanA3Cover : kebutuhanPlanoCover;
     const biayaPisau = 27 * 32 * params.tarifPisauPoundMini;
-    const biayaJasaPound = Math.max(50000, (kebutuhanPlanoCover * 2) * params.tarifJasaPoundMini);
+    const biayaJasaPound = Math.max(50000, (jmlLbrPond * 2) * params.tarifJasaPoundMini);
     breakdown.push({
       nama: 'Pisau Pond & Jasa Pond Kartu Mini',
       nominal: Math.round(biayaPisau + biayaJasaPound),
       pct: 0,
-      keterangan: `Pisau pond custom (Rp ${Math.round(biayaPisau).toLocaleString('id-ID')}) + jasa pond ${kebutuhanPlanoCover * 2} lbr`,
+      keterangan: `Pisau pond custom (Rp ${Math.round(biayaPisau).toLocaleString('id-ID')}) + jasa pond ${jmlLbrPond * 2} lbr`,
     });
 
     // Tali Cocard: Rp 2.500 * oplah
@@ -359,15 +374,18 @@ export function calculateManasikSimulator(
       keterangan: `@ Rp ${Math.round(params.tarifSusunPasangRingMini).toLocaleString('id-ID')} x ${validOplah} pcs`,
     });
 
-    // Laminasi Glossy 2 Muka: AU30 * AV30 * 0.35 * kebutuhanPlanoCover * 2
+    // Laminasi Glossy 2 Muka: AU30 * AV30 * 0.35 * Lembar * 2
     let biayaLaminasi = 0;
     if (laminasiCover !== 'Tanpa Laminasi') {
-      biayaLaminasi = Math.max(params.minLaminasi, 39 * 54 * params.tarifLaminasiGlossyCm2 * kebutuhanPlanoCover * 2);
+      const pLaminasi = metodeCover === 'Print Digital (A3+)' ? 32.5 : 39;
+      const lLaminasi = metodeCover === 'Print Digital (A3+)' ? 48 : 54;
+      const jmlLbrLam = metodeCover === 'Print Digital (A3+)' ? kebutuhanA3Cover : kebutuhanPlanoCover;
+      biayaLaminasi = Math.max(params.minLaminasi, pLaminasi * lLaminasi * params.tarifLaminasiGlossyCm2 * jmlLbrLam * 2);
       breakdown.push({
         nama: `Laminasi (${laminasiCover}) 2 Muka`,
         nominal: Math.round(biayaLaminasi),
         pct: 0,
-        keterangan: `${kebutuhanPlanoCover * 2} lbr laminasi 39x54 cm @ Rp ${params.tarifLaminasiGlossyCm2}/cm²`,
+        keterangan: `${jmlLbrLam * 2} sisi laminasi ${pLaminasi}x${lLaminasi} cm @ Rp ${params.tarifLaminasiGlossyCm2}/cm²`,
       });
     }
 

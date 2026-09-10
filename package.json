@@ -9,7 +9,6 @@
     "start": "next start",
     "lint": "eslint",
     "check:changelog": "node scripts/check-page-changelog.mjs",
-    "audit:pricelist": "bun run scripts/audit-pricelist-excel.ts",
     "test": "vitest run",
     "init-db": "npx tsx scripts/init-db.ts",
     "init-db:dev": "npx tsx -e \"process.env.DB_PATH='database_dev.sqlite'\" scripts/init-db.ts",
