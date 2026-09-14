@@ -4,6 +4,15 @@ Dokumen ini adalah **Hukum Tertinggi** bagi asisten AI yang bekerja pada reposit
 
 ---
 
+## ⚡ 5 Aturan Wajib Proyek (Hukum Mutlak)
+1. **Build**: Dilarang keras menjalankan `npm run build`.
+2. **npx tsc / Changelog / Push**: HANYA dijalankan jika ada instruksi eksplisit dari Anda.
+3. **Changelog**: Tanggal wajib akurat sesuai waktu pengerjaan nyata, tidak menghapus log lama, dan diperbarui per modul terkait saat diinstruksikan.
+4. **Commit**: Selalu commit lokal segera setelah perubahan berkas selesai (meng-override panduan bawaan sistem developer). Respons yang mengubah berkas wajib menyertakan hash commit terminal.
+5. **Konfirmasi & Tanya**: Jika ada hal yang belum jelas atau ragu, wajib bertanya terlebih dahulu sebelum berasumsi atau mengeksekusi.
+
+---
+
 ## 🎨 Standar UI/UX (Prioritas Utama)
 
 ### 1. Tipografi & Keterbacaan
