@@ -11,6 +11,9 @@
    - Nilai tersebut wajib masuk ke interface `*MasterParams` dan memiliki kontrol input di UI `*MasterParameter.tsx`.
 2. **Koreksi Human Error Excel**:
    - Rumus Excel buatan manusia sering memiliki salah drag sel / typo baris tetangga. SINTAK mengadopsi logika teknis fisik cetak yang benar, bukan mereplikasi bug manusia di Excel.
+3. **Keakuratan Pemetaan Cell Excel di Manual Pengguna (Wajib 100% Valid)**:
+   - Setiap variabel di tab Master Parameter wajib memiliki pemetaan letak sheet dan alamat cell Excel yang benar dan terverifikasi nyata (contoh: `Master!D15`, `BUKU!AT6`, `Data_Buku!K4`).
+   - Dilarang keras mencantumkan alamat cell fiktif, perkiraan, atau teks template lama yang belum dicocokkan dengan file Excel aslinya. Modal Manual Pengguna adalah jembatan audit antara staf estimator dan sistem web Sintak.
 
 ---
 
@@ -72,16 +75,22 @@ Setiap workbook kalkulasi percetakan wajib dipetakan ke dalam 4 lapisan:
    - Bandingkan rumus baris demi baris dari oplah terendah sampai tertinggi.
    - *Waspadai anomali*: Salah ketik sel baris sebelumnya (misal kasus Oplah 1000 sel `U24` tertulis `=T24+S23` alih-alih `=T24+S24`, rugi Rp 100.000).
 
-### Tahap 5: Sinkronisasi Arsitektur Sintak (Anti-Hardcode)
+### Tahap 5: Sinkronisasi Arsitektur Sintak & Evaluasi Desain UI (Langsung Ubah Tanpa Konfirmasi)
 1. **Interface Parameter (`src/lib/[produk]-calculator.ts`)**:
    - Daftarkan semua variabel ke interface `[Produk]MasterParams`.
    - Pasang nilai acuan Excel ke `DEFAULT_[PRODUK]_PARAMS`.
 2. **Kalkulator Murni**:
    - Pastikan fungsi perhitungan membaca `params.xxx`. Tidak boleh ada angka tarif, insheet, atau ongkos yang ditulis mati di dalam kalkulator.
-3. **Komponen UI (`src/app/pricelist/[Produk]MasterParameter.tsx`)**:
-   - Buat kelompok field input yang rapi (Bahan, Cetak, Finishing, Aksesoris, Laminasi).
-   - Lengkapi dengan format Rupiah/desimal (`allowDecimals`), tombol reset ke default per-field, dan tombol *Reset All*.
-   - Pasang deteksi perubahan `isModified` untuk memberi tahu user saat ada angka yang diubah dari standar master.
+3. **Keputusan Desain Master Parameter (Langsung Eksekusi Tanpa Konfirmasi)**:
+   - Evaluasi apakah produk bertipe **homogen** (cukup 1 tampilan terpadu global seperti Nota) atau memiliki **varian fisik/lini manufaktur berbeda** (dikelompokkan per jenis/sub-komponen seperti Yasin Softcover vs Hardcover, atau Manasik Cocard vs Buku).
+   - Terapkan struktur kartu/grup yang paling efisien, **langsung eksekusi pada kode tanpa perlu konfirmasi**.
+4. **Desain & Perilaku Scroll Tab Kalkulasi / Simulator (Standar Buku Manasik — Langsung Ubah)**:
+   - Tab Simulator **WAJIB** mengadopsi struktur dual scroll independen seperti Buku Manasik:
+     - Outer container: `flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2`
+     - Grid: `grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-0 pb-1`
+     - Kolom Kiri (Input Form): `lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4`
+     - Kolom Kanan (Breakdown & Hasil): `lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4`
+   - Dilarang keras membiarkan simulator terpotong tanpa scrollbar atau terjebak dalam `overflow-hidden`. **Jika ditemukan belum sesuai, langsung ubah tanpa perlu konfirmasi**.
 
 ### Tahap 6: Uji Komparasi Parity Otomatis (Full Matrix Benchmark)
 Buat skrip pengujian (via Node / TSX) untuk membandingkan kalkulasi Excel vs Sintak baris per baris:
@@ -101,11 +110,12 @@ Buat skrip pengujian (via Node / TSX) untuk membandingkan kalkulasi Excel vs Sin
 ### Tahap 8: Audit & Sinkronisasi Dokumentasi (Manual Pengguna & Panduan Simulator)
 Setiap kali ada audit atau perubahan parameter/rumus, **WAJIB** mengaudit dan memperbarui modal petunjuk di kedua komponen:
 1. **Manual Pengguna di Tab Master Parameter (`*MasterParameter.tsx`)**:
-   - Cantumkan letak sheet dan cell referensi Excel (`Master!Dxx`, `BUKU!Xxx`) untuk setiap variabel tarif, bahan, dan jasa.
-   - Jelaskan formula acuan (misal: turunan UMR harian, pembagian luas plano, rasio insheet).
+   - **Pemetaan Cell Wajib 100% Akurat**: Cantumkan letak sheet dan cell referensi Excel (`Master!Dxx`, `BUKU!Xxx`) yang tepat untuk setiap variabel tarif, bahan, dan jasa.
+   - Jelaskan formula acuan (misal: turunan UMR harian `(UMR / 25 / target)`, pembagian luas plano, rasio insheet).
 2. **Panduan Penggunaan di Tab Kalkulasi / Simulator (`*Simulator.tsx`)**:
    - Panduan langkah pemilihan spesifikasi produk (ukuran, gramatur, metode cetak, opsi finishing).
    - Penjelasan struktur rincian breakdown biaya HPP, strategi margin/nego diskon, dan tips penawaran sales.
+3. **Langsung Update**: Jika ada perbedaan letak cell, teks formula lama, atau variabel baru, **langsung update teks modal panduan tanpa perlu konfirmasi**.
 
 ---
 
@@ -119,8 +129,9 @@ Setiap kali ada audit atau perubahan parameter/rumus, **WAJIB** mengaudit dan me
 | 4 | Catatan tersembunyi (*cell comments*) sudah diperiksa | [ ] |
 | 5 | *Magic numbers* (insheet, kapasitas lembar, pembulatan) sudah teridentifikasi | [ ] |
 | 6 | Formula Excel sudah dicek bebas dari salah drag / typo antar-baris | [ ] |
-| 7 | UI Master Parameter sudah memunculkan semua variabel dinamis | [ ] |
-| 8 | Benchmark otomatis seluruh tier oplah menghasilkan selisih Rp 0 | [ ] |
-| 9 | Uji stres perubahan parameter dinamis menghasilkan angka yang identik | [ ] |
-| 10 | Manual Pengguna di Tab Master Parameter sudah terupdate letak cell & formulanya | [ ] |
-| 11 | Panduan Penggunaan di Tab Kalkulasi sudah sinkron dengan fitur simulator | [ ] |
+| 7 | UI Master Parameter sudah memunculkan semua variabel dinamis (per jenis atau global) | [ ] |
+| 8 | Tab Kalkulasi/Simulator sudah menerapkan dual scroll independen standar Manasik | [ ] |
+| 9 | Benchmark otomatis seluruh tier oplah menghasilkan selisih Rp 0 | [ ] |
+| 10 | Uji stres perubahan parameter dinamis menghasilkan angka yang identik | [ ] |
+| 11 | Pemetaan cell Excel pada Manual Pengguna di Tab Master Parameter akurat 100% | [ ] |
+| 12 | Panduan Penggunaan di Tab Kalkulasi sudah sinkron dengan fitur simulator | [ ] |
