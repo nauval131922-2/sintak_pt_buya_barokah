@@ -61,7 +61,7 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
     }
     return {
       no: 70,
-      action: 160,
+      action: 140,
       category: 200,
       name: 480,
     };
@@ -276,28 +276,26 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
       {
         id: 'action',
         header: 'Aksi',
-        size: 160,
+        size: 140,
         cell: ({ row }: { row: { original: PekerjaanJurnalProduksiRecord } }) => {
           const record = row.original;
           return (
-            <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
               <button
                 type="button"
-                title="Edit"
-                onClick={() => openEdit(record)}
-                className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+                title="Edit Pekerjaan"
+                onClick={(e) => { e.stopPropagation(); openEdit(record); }}
+                className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
               >
-                <Edit2 size={12} />
-                Edit
+                <Edit2 size={14} />
               </button>
               <button
                 type="button"
-                title="Hapus"
-                onClick={() => requestDelete([record.id], `"${record.name}" (${record.category})`)}
-                className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                title="Hapus Pekerjaan"
+                onClick={(e) => { e.stopPropagation(); requestDelete([record.id], `"${record.name}" (${record.category})`); }}
+                className="p-1.5 text-rose-600 hover:bg-rose-50 rounded transition-colors"
               >
-                <Trash2 size={12} />
-                Hapus
+                <Trash2 size={14} />
               </button>
             </div>
           );
