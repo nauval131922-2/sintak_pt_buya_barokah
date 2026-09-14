@@ -254,6 +254,7 @@ export default function YasinMasterParameter({
               {fieldRow('tarifSikuSudutEmas', 'Siku Sudut Emas (4 Pcs)')}
               {fieldRow('tarifEmbossFoilGembos', 'Foil Gembos Emboss Setup')}
               {fieldRow('tarifPlastikOppHC', 'Plastik OPP Hardcover /pcs')}
+            </div>
           </div>
         </div>
       </div>
