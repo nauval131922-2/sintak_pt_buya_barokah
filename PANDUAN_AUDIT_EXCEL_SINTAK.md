@@ -84,13 +84,17 @@ Setiap workbook kalkulasi percetakan wajib dipetakan ke dalam 4 lapisan:
 3. **Keputusan Desain Master Parameter (Langsung Eksekusi Tanpa Konfirmasi)**:
    - Evaluasi apakah produk bertipe **homogen** (cukup 1 tampilan terpadu global seperti Nota) atau memiliki **varian fisik/lini manufaktur berbeda** (dikelompokkan per jenis/sub-komponen seperti Yasin Softcover vs Hardcover, atau Manasik Cocard vs Buku).
    - Terapkan struktur kartu/grup yang paling efisien, **langsung eksekusi pada kode tanpa perlu konfirmasi**.
-4. **Desain & Perilaku Scroll Tab Kalkulasi / Simulator (Standar Buku Manasik — Langsung Ubah)**:
-   - Tab Simulator **WAJIB** mengadopsi struktur dual scroll independen seperti Buku Manasik:
+4. **Desain, Perilaku Scroll & Pembaruan Isi Tab Kalkulasi (Simulator) — Langsung Ubah Tanpa Konfirmasi**:
+   - **Perilaku Scroll Standar Buku Manasik**: Tab Simulator **WAJIB** mengadopsi struktur dual scroll independen:
      - Outer container: `flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2`
      - Grid: `grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-0 pb-1`
      - Kolom Kiri (Input Form): `lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4`
      - Kolom Kanan (Breakdown & Hasil): `lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4`
-   - Dilarang keras membiarkan simulator terpotong tanpa scrollbar atau terjebak dalam `overflow-hidden`. **Jika ditemukan belum sesuai, langsung ubah tanpa perlu konfirmasi**.
+     - Dilarang keras membiarkan simulator terpotong tanpa scrollbar atau terjebak dalam `overflow-hidden`.
+   - **Pembaruan Isi Form & Fitur di Tab Kalkulasi (Langsung Ubah)**:
+     - Evaluasi apakah seluruh opsi spesifikasi di Excel (dropdown ukuran, variasi gramatur kertas, pilihan mesin cetak, opsi finishing opsional seperti porporasi, nomorator, laminasi, kardus) sudah ada di form input simulator.
+     - Evaluasi apakah tabel rincian (breakdown) biaya HPP dan kartu ringkasan harga jual sudah transparan dan lengkap mencerminkan seluruh komponen biaya di Excel.
+     - **Jika ada opsi input atau isi kalkulasi yang perlu diperbarui/ditambahkan, WAJIB LANGSUNG UBAH PADA KODE TANPA PERLU KONFIRMASI**.
 
 ### Tahap 6: Uji Komparasi Parity Otomatis (Full Matrix Benchmark)
 Buat skrip pengujian (via Node / TSX) untuk membandingkan kalkulasi Excel vs Sintak baris per baris:
@@ -131,7 +135,8 @@ Setiap kali ada audit atau perubahan parameter/rumus, **WAJIB** mengaudit dan me
 | 6 | Formula Excel sudah dicek bebas dari salah drag / typo antar-baris | [ ] |
 | 7 | UI Master Parameter sudah memunculkan semua variabel dinamis (per jenis atau global) | [ ] |
 | 8 | Tab Kalkulasi/Simulator sudah menerapkan dual scroll independen standar Manasik | [ ] |
-| 9 | Benchmark otomatis seluruh tier oplah menghasilkan selisih Rp 0 | [ ] |
-| 10 | Uji stres perubahan parameter dinamis menghasilkan angka yang identik | [ ] |
-| 11 | Pemetaan cell Excel pada Manual Pengguna di Tab Master Parameter akurat 100% | [ ] |
-| 12 | Panduan Penggunaan di Tab Kalkulasi sudah sinkron dengan fitur simulator | [ ] |
+| 9 | Isi opsi form input spesifikasi & breakdown biaya di Tab Kalkulasi sudah lengkap sesuai Excel | [ ] |
+| 10 | Benchmark otomatis seluruh tier oplah menghasilkan selisih Rp 0 | [ ] |
+| 11 | Uji stres perubahan parameter dinamis menghasilkan angka yang identik | [ ] |
+| 12 | Pemetaan cell Excel pada Manual Pengguna di Tab Master Parameter akurat 100% | [ ] |
+| 13 | Panduan Penggunaan di Tab Kalkulasi sudah sinkron dengan fitur simulator | [ ] |
