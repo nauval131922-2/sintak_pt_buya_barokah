@@ -106,13 +106,7 @@ export async function POST(request: NextRequest) {
       });
 
       const newId = Number(result.lastInsertRowid);
-      logActivity(
-        'CREATE',
-        'master_pekerjaan_jurnal_produksi',
-        `Pekerjaan baru ditambahkan: [${category}] ${name}`,
-        { id: newId, category, name },
-        session?.username
-      ).catch(() => {});
+      // ponytail: tanpa logActivity manual — trigger trg_master_pekerjaan_jurnal_produksi_insert sudah mencatat INSERT otomatis, log manual ganda di activity log
 
       return NextResponse.json({
         success: true,
