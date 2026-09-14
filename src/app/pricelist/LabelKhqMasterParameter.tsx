@@ -10,6 +10,7 @@ import {
   Layers,
   Box,
   FileText,
+  Sliders,
 } from 'lucide-react';
 import {
   LabelKhqMasterParams,
