@@ -4,33 +4,44 @@
 
 export interface BukuTulisMasterParams {
   // A. Bahan Kertas
-  tarifArtCarton230Kg: number; // Master!E12 default 16.400 /kg
-  upArtCartonPct: number; // default 5%
-  tarifHvs70Kg: number; // Master HVS 70 15.700 /kg
-  upHvsPct: number; // default 3%
+  tarifArtCarton230Kg: number; // Master!D12 default 16.400 /kg
+  upArtCartonPct: number; // default 0% (sesuai Master!E12 = 0)
+  tarifHvs70Kg: number; // Master!D22 HVS 70 15.700 /kg
+  upHvsPct: number; // default 3% (sesuai Master!E22 = 0.03)
 
   // B. Insheet
-  insheetCover: number; // BUKU!H6 default 7
-  insheetIsi: number; // default 30
+  insheetCoverPod: number; // Master!D13 default 7
+  insheetCoverOffset: number; // Master!D13 default 100
+  insheetIsiRyobi: number; // Master!D23 default 30
+  insheetIsiOliver: number; // Master!D23 default 100
+  insheetIsiSm: number; // Master!D23 default 300
 
   // C. Desain
   tarifDesignCover: number; // Master!D17 default 20.000
-  tarifDesignIsiPerHlm: number; // 2.500 per halaman
+  tarifDesignIsiPerHlm: number; // Master!D26 default 2.500 per halaman
 
-  // D. Cetak
+  // D. Cetak Cover & Isi
   tarifPrintCoverA3: number; // Rp 2.500 / lbr A3+
-  tarifPrintIsiA3: number; // Rp 2.000 / lbr A3+ (Ryobi)
+  tarifPlatOliver: number; // Rp 45.000
+  minOrderOliver: number; // Rp 90.000
+  tarifDrekOliver: number; // Rp 40
+  tarifPlatRyobi: number; // Rp 10.000
+  minOrderRyobi: number; // Rp 15.000
+  tarifDrekRyobi: number; // Rp 30
+  tarifPlatSm: number; // Rp 78.000
+  minOrderSm: number; // Rp 310.000
+  tarifDrekSm: number; // Rp 100
 
   // E. Laminasi
   tarifLaminasiGlossyCm2: number; // Rp 0.35 / cm2
   minLaminasi: number; // Rp 50.000
 
-  // F. Finishing
-  tarifSusunPerPcs: number; // susun per pcs
-  tarifStaplesPerPcs: number; // staples tengah per pcs
-  tarifSisirPerPcs: number; // sisir per pcs
-  tarifPackingKardus: number; // per order
-  tarifLakbanPerOrder: number; // per order
+  // F. Finishing & Packing
+  tarifSisirPerPcs: number; // Rp 150 / pcs
+  tarifTransport: number; // Rp 15.000
+  tarifKardusBox: number; // Rp 8.500
+  kapasitasKardus: number; // 300 pcs / box
+  tarifLakbanRoll: number; // Rp 9.600
 
   // G. Margin & nego
   marginDefaultPct: number; // default 20%
@@ -39,47 +50,55 @@ export interface BukuTulisMasterParams {
 
 export const DEFAULT_BUKU_TULIS_PARAMS: BukuTulisMasterParams = {
   tarifArtCarton230Kg: 16400,
-  upArtCartonPct: 5,
+  upArtCartonPct: 0,
   tarifHvs70Kg: 15700,
   upHvsPct: 3,
-  insheetCover: 7,
-  insheetIsi: 30,
+
+  insheetCoverPod: 7,
+  insheetCoverOffset: 100,
+  insheetIsiRyobi: 30,
+  insheetIsiOliver: 100,
+  insheetIsiSm: 300,
+
   tarifDesignCover: 20000,
   tarifDesignIsiPerHlm: 2500,
+
   tarifPrintCoverA3: 2500,
-  tarifPrintIsiA3: 2000,
+  tarifPlatOliver: 45000,
+  minOrderOliver: 90000,
+  tarifDrekOliver: 40,
+  tarifPlatRyobi: 10000,
+  minOrderRyobi: 15000,
+  tarifDrekRyobi: 30,
+  tarifPlatSm: 78000,
+  minOrderSm: 310000,
+  tarifDrekSm: 100,
+
   tarifLaminasiGlossyCm2: 0.35,
   minLaminasi: 50000,
-  tarifSusunPerPcs: 50,
-  tarifStaplesPerPcs: 50,
-  tarifSisirPerPcs: 80,
-  tarifPackingKardus: 8500,
-  tarifLakbanPerOrder: 8000,
+
+  tarifSisirPerPcs: 150,
+  tarifTransport: 15000,
+  tarifKardusBox: 8500,
+  kapasitasKardus: 300,
+  tarifLakbanRoll: 9600,
+
   marginDefaultPct: 20,
   negoDefaultPct: 4,
 };
 
 export type BukuTulisUkuranType = '15,5 x 21' | '16 x 21';
 
-// Konfigurasi fisik per ukuran
-// ponytail: coverPcsPerA3 = berapa cover per lembar A3+ (33x48), leavesPerA3 = berapa lembar isi (A5) per A3
-// 15,5x21 closed 31x21 open, 16x21 closed 32x21 open – beda tipis, 16x21 sedikit lebih boros (coverPcs 3 vs 4, leaves 12 vs 14)
 export const BUKU_TULIS_CONFIG: Record<BukuTulisUkuranType, {
   w: number; h: number;
-  coverPcsPerA3: number;
-  leavesPerA3: number;
   description: string;
 }> = {
   '15,5 x 21': {
     w: 15.5, h: 21,
-    coverPcsPerA3: 4,
-    leavesPerA3: 14,
     description: '15,5 x 21 cm (tertutup) · 72 hal / 18 lbr · Cover AC 230 gsm 4W 1Muka + Laminasi Glossy',
   },
   '16 x 21': {
     w: 16, h: 21,
-    coverPcsPerA3: 3,
-    leavesPerA3: 12,
     description: '16 x 21 cm (tertutup) · 72 hal / 18 lbr · Cover AC 230 gsm 4W 1Muka + Laminasi Glossy',
   },
 };
@@ -92,7 +111,7 @@ export const BUKU_TULIS_TIERS: number[] = [
 export interface BukuTulisSimulatorInput {
   oplah: number;
   ukuran: BukuTulisUkuranType;
-  jumlahHalaman: number; // fixed 72, kept for extensibility
+  jumlahHalaman: number; // fixed 72
   opsiLaminasi: boolean;
   opsiSisir: boolean;
   marginPct: number;
@@ -109,8 +128,8 @@ export interface BukuTulisBreakdownItem {
 export interface BukuTulisSimulatorResult {
   input: BukuTulisSimulatorInput;
   breakdown: BukuTulisBreakdownItem[];
-  kebutuhanCoverA3: number;
-  kebutuhanIsiA3: number;
+  kebutuhanCover: number;
+  kebutuhanIsi: number;
   totalHpp: number;
   hppPerPcs: number;
   hargaJualPerPcs: number;
@@ -125,20 +144,20 @@ export interface BukuTulisSimulatorResult {
   marginNegoPct: number;
 }
 
-function beratA3Kg(gramatur: number): number {
-  // A3+ 33 x 48 cm = 0.1584 m2
-  return 0.1584 * gramatur / 1000;
-}
-
 export function calculateBukuTulisHpp(
   input: BukuTulisSimulatorInput,
   rawParams: BukuTulisMasterParams = DEFAULT_BUKU_TULIS_PARAMS
 ): BukuTulisSimulatorResult {
   const p: BukuTulisMasterParams = { ...DEFAULT_BUKU_TULIS_PARAMS, ...(rawParams || {}) };
-  const { oplah, ukuran, jumlahHalaman = 72, opsiLaminasi = true, opsiSisir = true, marginPct, negoDiskonPct } = input;
+  const { oplah, jumlahHalaman = 72, opsiLaminasi = true, opsiSisir = true, marginPct = p.marginDefaultPct, negoDiskonPct = p.negoDefaultPct } = input;
   const validOplah = Math.max(1, oplah);
-  const cfg = BUKU_TULIS_CONFIG[ukuran];
-  const lbrIsiPerBuku = Math.ceil(jumlahHalaman / 4); // 72/4=18
+
+  // Klasifikasi skala mesin produksi sesuai master Excel 2026:
+  // 1. Oplah <= 500 pcs: Cover Print Inter A3+ (POD) & Isi Ryobi 1W
+  // 2. Oplah 600 - 2.500 pcs: Cover Oliver 4W & Isi Oliver 1W
+  // 3. Oplah >= 3.000 pcs: Cover Oliver 4W & Isi Speedmaster SM 102 1W
+  const isKecil = validOplah <= 500;
+  const isBesarSM = validOplah >= 3000;
 
   const breakdown: BukuTulisBreakdownItem[] = [];
   let totalHpp = 0;
@@ -149,95 +168,198 @@ export function calculateBukuTulisHpp(
     totalHpp += nominal;
   };
 
-  // 1. Kebutuhan Cover A3+
-  const kebutuhanCoverA3 = Math.ceil(validOplah / cfg.coverPcsPerA3) + p.insheetCover;
-  const beratCoverPerA3 = beratA3Kg(230);
-  const biayaKertasCover = kebutuhanCoverA3 * beratCoverPerA3 * p.tarifArtCarton230Kg * (1 + p.upArtCartonPct / 100);
-  add('Kertas Cover Art Carton 230 gsm', biayaKertasCover,
-    `${kebutuhanCoverA3} lbr A3+ (${Math.ceil(validOplah / cfg.coverPcsPerA3)} + ${p.insheetCover} insheet) × Rp ${Math.round(beratCoverPerA3 * p.tarifArtCarton230Kg * (1 + p.upArtCartonPct / 100)).toLocaleString('id-ID')} (+${p.upArtCartonPct}%)`);
-
-  const biayaPrintCover = kebutuhanCoverA3 * p.tarifPrintCoverA3;
-  add('Cetak Cover Print A3+ 4W 1Muka', biayaPrintCover,
-    `${kebutuhanCoverA3} lbr A3+ × Rp ${p.tarifPrintCoverA3.toLocaleString('id-ID')}`);
-
-  // 2. Kebutuhan Isi A3+ (HVS 70 gsm, 1 warna bolak-balik)
-  // ponytail: leavesPerA3 adalah berapa lembar isi A5 per lembar A3 (4-6 biasanya). Kebutuhan = ceil(oplah*18 / leavesPerA3) + insheetIsi
-  // Untuk oplah >500, cetak isi pakai Oliver (lebih murah per lbr, + plat fixed) – disederhanakan jadi 60% tarif Ryobi + plat 180k jika >500
-  const kebutuhanIsiA3Net = Math.ceil((validOplah * lbrIsiPerBuku) / cfg.leavesPerA3);
-  const kebutuhanIsiA3 = kebutuhanIsiA3Net + p.insheetIsi;
-  const beratIsiPerA3 = beratA3Kg(70);
-  const biayaKertasIsi = kebutuhanIsiA3 * beratIsiPerA3 * p.tarifHvs70Kg * (1 + p.upHvsPct / 100);
-  add('Kertas Isi HVS 70 gsm', biayaKertasIsi,
-    `${kebutuhanIsiA3} lbr A3+ (${kebutuhanIsiA3Net} + ${p.insheetIsi} insheet, ${lbrIsiPerBuku} lbr/buku ÷ ${cfg.leavesPerA3}/A3) × Rp ${Math.round(beratIsiPerA3 * p.tarifHvs70Kg * (1 + p.upHvsPct / 100)).toLocaleString('id-ID')} (+${p.upHvsPct}%)`);
-
-  // Cetak isi: Ryobi untuk ≤500, Oliver untuk >500 (ponytail: per cetak Oliver = 0.6x tarif Ryobi + plat fixed Rp 180k, O(n) naive – upgrade ke plat/drek dinamis jika butuh presisi)
-  let biayaPrintIsi = 0;
-  let ketPrintIsi = '';
-  if (validOplah <= 500) {
-    biayaPrintIsi = kebutuhanIsiA3 * p.tarifPrintIsiA3;
-    ketPrintIsi = `${kebutuhanIsiA3} lbr A3+ × Rp ${p.tarifPrintIsiA3.toLocaleString('id-ID')} (Ryobi 1W)`;
-  } else {
-    const tarifOliverPerLbr = Math.round(p.tarifPrintIsiA3 * 0.6);
-    const platOliverFixed = 180000; // 4 plat? 1W jadi 1 plat 45k, tapi pakai 180k untuk total cetak 1W Oliver incl. min order
-    biayaPrintIsi = kebutuhanIsiA3 * tarifOliverPerLbr + platOliverFixed;
-    ketPrintIsi = `${kebutuhanIsiA3} lbr A3+ × Rp ${tarifOliverPerLbr.toLocaleString('id-ID')} + Plat Oliver Rp ${platOliverFixed.toLocaleString('id-ID')} (Oliver 1W)`;
-  }
-  add('Cetak Isi 1W Bolak-Balik', biayaPrintIsi, ketPrintIsi);
-
-  // 3. Desain
+  // 1. COVER (Art Carton 230 gsm)
+  let biayaKertasCover = 0;
+  let biayaPlatCover = 0;
+  let biayaCetakCover = 0;
   const biayaDesainCover = p.tarifDesignCover;
-  const biayaDesainIsi = p.tarifDesignIsiPerHlm * jumlahHalaman;
-  add('Desain Cover + Isi', biayaDesainCover + biayaDesainIsi,
-    `Cover Rp ${p.tarifDesignCover.toLocaleString('id-ID')} + Isi ${jumlahHalaman} hal × Rp ${p.tarifDesignIsiPerHlm.toLocaleString('id-ID')}`);
+  let kebutuhanCover = 0;
 
-  // 4. Laminasi Glossy (opsional)
+  if (isKecil) {
+    // Print Inter A3+ (Ukuran 15.5 x 21 cm, 1 A3+ muat 2 cover)
+    const insheet = p.insheetCoverPod ?? 7;
+    const rCover = (validOplah / 2) + insheet;
+    kebutuhanCover = Math.ceil(rCover);
+    biayaKertasCover = rCover * p.tarifPrintCoverA3;
+    add('Cover Print Digital A3+ (POD Inter)', biayaKertasCover,
+      `${rCover.toFixed(1)} lbr A3+ POD (net ${validOplah / 2} + ${insheet} insheet) @ Rp ${p.tarifPrintCoverA3.toLocaleString('id-ID')}`);
+  } else {
+    // Oliver Offset (Ukuran 16 x 21 cm, Plano 79 x 109 cm muat 10 cover)
+    const insheetBase = p.insheetCoverOffset ?? 100;
+    const insheet = Math.max(insheetBase, validOplah * 0.03); // Insheet K9: MAX(100, 3%)
+    const rCover = (validOplah / 10) + (insheet / 5);
+    kebutuhanCover = Math.ceil(rCover);
+
+    // Berat plano 79x109x230/20000 = 99,0265 kg/rim * 16400 * (1 + up%) / 500
+    const beratPlanoRim = (79 * 109 * 230) / 20000;
+    const hargaPlanoCover = (beratPlanoRim * p.tarifArtCarton230Kg * (1 + p.upArtCartonPct / 100)) / 500;
+    biayaKertasCover = rCover * hargaPlanoCover;
+
+    biayaPlatCover = 4 * p.tarifPlatOliver;
+    const qCetakCover = rCover * 5;
+    const minOrderCover = p.minOrderOliver * 4;
+    const overDrekCover = Math.max(0, qCetakCover - 1000);
+    const biayaOverCover = overDrekCover * p.tarifDrekOliver * 4;
+    biayaCetakCover = minOrderCover + biayaOverCover;
+
+    add('Kertas Cover Art Carton 230 gsm (Plano)', biayaKertasCover,
+      `${rCover.toFixed(1)} plano 79×109 cm @ Rp ${Math.round(hargaPlanoCover).toLocaleString('id-ID')}`);
+    add('Plat & Cetak Mesin Oliver Cover (4W)', biayaPlatCover + biayaCetakCover,
+      `4 Plat CTP Oliver + Ongkos Cetak Oliver (Min Rp ${minOrderCover.toLocaleString('id-ID')}${overDrekCover > 0 ? ` + Over Rp ${biayaOverCover.toLocaleString('id-ID')}` : ''})`);
+  }
+
+  // 2. ISI BUKU (72 Halaman = 18 Lembar HVS 70 gsm)
+  let biayaKertasIsi = 0;
+  let biayaDesainIsi = 0;
+  let biayaPlatIsi = 0;
+  let biayaCetakIsi = 0;
+  let kebutuhanIsi = 0;
+
+  if (isKecil) {
+    // Cetak Ryobi (15.5 x 21 cm): Plano 65x100 potong Folio (1 Plano potong 1 folio, muat 4 isi)
+    biayaDesainIsi = p.tarifDesignIsiPerHlm * 18; // 18 cuttern x 2500 = 45.000
+    const an = 18;
+    const insheet = p.insheetIsiRyobi ?? 30;
+    const apIsi = (validOplah * an) + (insheet * an);
+    kebutuhanIsi = apIsi;
+
+    // Berat folio rim: (21.5 * 33 * 70)/20000 = 2.48325 kg * 15700 * 1.03 = Rp 40.156,63575 / rim
+    const beratFolioKg = (21.5 * 33 * 70) / 20000;
+    const hargaFolioRim = beratFolioKg * p.tarifHvs70Kg * (1 + p.upHvsPct / 100);
+    biayaKertasIsi = (apIsi / 500) * hargaFolioRim;
+
+    biayaPlatIsi = p.tarifPlatRyobi; // 10.000
+    const putaranIsi = apIsi * 2;
+    const overDrekIsi = Math.max(0, putaranIsi - 500);
+    biayaCetakIsi = p.minOrderRyobi + (overDrekIsi * p.tarifDrekRyobi);
+
+    add('Kertas Isi HVS 70 gsm (Folio)', biayaKertasIsi,
+      `${apIsi} lbr folio (${(apIsi / 500).toFixed(1)} rim) @ Rp ${Math.round(hargaFolioRim).toLocaleString('id-ID')}/rim`);
+    add('Plat & Cetak Mesin Ryobi Isi (1W)', biayaPlatIsi + biayaCetakIsi,
+      `1 Plat CTP + Ongkos Cetak Ryobi (Min Rp ${p.minOrderRyobi.toLocaleString('id-ID')} + Over ${overDrekIsi} drek)`);
+  } else if (!isBesarSM) {
+    // Cetak Oliver (16 x 21 cm): Plano 65x100 potong 2 (muat 32 isi per plano, 4.5 cuttern)
+    biayaDesainIsi = p.tarifDesignIsiPerHlm * 18; // 45.000
+    const an = 4.5;
+    const an6 = 5; // ROUNDUP(4.5, 0)
+    const insheet = p.insheetIsiOliver ?? 100;
+    const apIsi = ((validOplah / 2) * an) + ((insheet / 2) * an6);
+    kebutuhanIsi = Math.ceil(apIsi);
+    const aoIsi = apIsi * 2;
+
+    // Berat plano 65x100x70/20000 = 22.75 kg * 15700 / 500 = Rp 714,35 / plano
+    const hargaPlanoIsi = ((65 * 100 * 70) / 20000 * p.tarifHvs70Kg) / 500;
+    biayaKertasIsi = apIsi * hargaPlanoIsi;
+
+    biayaPlatIsi = p.tarifPlatOliver; // 45.000
+    const putaranIsi = aoIsi * 2;
+    const overDrekIsi = Math.max(0, putaranIsi - 1000);
+    biayaCetakIsi = p.minOrderOliver + (overDrekIsi * p.tarifDrekOliver);
+
+    add('Kertas Isi HVS 70 gsm (Plano 65×100)', biayaKertasIsi,
+      `${apIsi.toFixed(1)} plano 65×100 @ Rp ${Math.round(hargaPlanoIsi).toLocaleString('id-ID')}/plano`);
+    add('Plat & Cetak Mesin Oliver Isi (1W)', biayaPlatIsi + biayaCetakIsi,
+      `1 Plat CTP + Ongkos Cetak Oliver (Min Rp ${p.minOrderOliver.toLocaleString('id-ID')} + Over ${overDrekIsi} drek)`);
+  } else {
+    // Cetak Speedmaster SM 102 (16 x 21 cm, Oplah >= 3000): Plano 65x100 potong 1 (muat 32 isi, 2.25 cuttern)
+    biayaDesainIsi = 0; // Free setting di oplah besar (Master!D26 = 0)
+    const an = 2.25;
+    const an6 = 3; // ROUNDUP(2.25, 0)
+    const insheet = p.insheetIsiSm ?? 300;
+    const apIsi = (validOplah * an) + (insheet * an6);
+    kebutuhanIsi = Math.ceil(apIsi);
+    const aoIsi = apIsi * 1;
+
+    const hargaPlanoIsi = ((65 * 100 * 70) / 20000 * p.tarifHvs70Kg) / 500;
+    biayaKertasIsi = apIsi * hargaPlanoIsi;
+
+    biayaPlatIsi = p.tarifPlatSm; // 78.000
+    const putaranIsi = aoIsi * 2;
+    const overDrekIsi = Math.max(0, putaranIsi - 3000);
+    biayaCetakIsi = p.minOrderSm + (overDrekIsi * p.tarifDrekSm);
+
+    add('Kertas Isi HVS 70 gsm (Plano 65×100)', biayaKertasIsi,
+      `${apIsi} plano 65×100 @ Rp ${Math.round(hargaPlanoIsi).toLocaleString('id-ID')}/plano`);
+    add('Plat & Cetak Mesin SM 102 Isi (1W)', biayaPlatIsi + biayaCetakIsi,
+      `1 Plat CTP SM + Ongkos Cetak Speedmaster (Min Rp ${p.minOrderSm.toLocaleString('id-ID')} + Over ${overDrekIsi} drek)`);
+  }
+
+  // 3. DESAIN ARTWORK
+  if (biayaDesainCover + biayaDesainIsi > 0) {
+    add('Desain Setting Cover & Isi', biayaDesainCover + biayaDesainIsi,
+      `Cover Rp ${biayaDesainCover.toLocaleString('id-ID')}${biayaDesainIsi > 0 ? ` + Isi Rp ${biayaDesainIsi.toLocaleString('id-ID')}` : ' (Isi gratis)'}`);
+  }
+
+  // 4. LAMINASI GLOSSY COVER
   if (opsiLaminasi) {
-    // Luas bentangan cover terbuka: (w*2 + punggung 0.5) x (h + 1) estimasi
-    const luasCoverCm2 = (cfg.w * 2 + 1) * (cfg.h + 1);
-    const biayaLaminasiRaw = luasCoverCm2 * p.tarifLaminasiGlossyCm2 * validOplah;
-    const biayaLaminasi = Math.max(p.minLaminasi, biayaLaminasiRaw);
+    let rawLam = 0;
+    if (isBesarSM) {
+      rawLam = (15.5 * 2 * 21 * p.tarifLaminasiGlossyCm2) * validOplah;
+    } else {
+      rawLam = (32 * 22 * p.tarifLaminasiGlossyCm2) * validOplah;
+    }
+    const biayaLaminasi = Math.max(p.minLaminasi, rawLam);
     add('Laminasi Glossy Cover', biayaLaminasi,
-      biayaLaminasiRaw < p.minLaminasi
-        ? `Tarif Minimum Rp ${p.minLaminasi.toLocaleString('id-ID')}`
-        : `${validOplah} pcs × ${luasCoverCm2.toFixed(1)} cm² × Rp ${p.tarifLaminasiGlossyCm2}/cm²`);
+      biayaLaminasi <= p.minLaminasi ? `Tarif Minimum Rp ${p.minLaminasi.toLocaleString('id-ID')}` : `${validOplah} pcs × Rp ${(biayaLaminasi / validOplah).toFixed(1)}/pcs`);
   }
 
-  // 5. Finishing: Susun + Staples tengah + Lipat + Sisir + Packing
-  const biayaSusun = validOplah * p.tarifSusunPerPcs;
-  const biayaStaples = validOplah * p.tarifStaplesPerPcs;
-  const biayaSisir = opsiSisir ? validOplah * p.tarifSisirPerPcs : 0;
-  const finishingPerPcsTotal = p.tarifSusunPerPcs + p.tarifStaplesPerPcs + (opsiSisir ? p.tarifSisirPerPcs : 0);
-  if (finishingPerPcsTotal > 0) {
-    add('Finishing Susun + Staples + Sisir', biayaSusun + biayaStaples + biayaSisir,
-      `${validOplah} pcs × Rp ${finishingPerPcsTotal} (Susun Rp ${p.tarifSusunPerPcs} + Staples Rp ${p.tarifStaplesPerPcs}${opsiSisir ? ` + Sisir Rp ${p.tarifSisirPerPcs}` : ''})`);
+  // 5. FINISHING JILID & POTONG SISIR
+  const sisir = opsiSisir ? validOplah * p.tarifSisirPerPcs : 0;
+  let jilidSusun = 0;
+  let ketFinishing = '';
+
+  if (isKecil) {
+    jilidSusun = (validOplah * 161.062) + (validOplah * 9);
+    ketFinishing = `Susun & Staples manual (Rp 170,06/pcs)${opsiSisir ? ` + Sisir Rp ${p.tarifSisirPerPcs}/pcs` : ''}`;
+  } else if (!isBesarSM) {
+    const lipat = 6.012981333333333 * 5 * validOplah;
+    const sisip = 45.097359999999995 * 2 * validOplah;
+    const kawat = 4.761904761904762 * validOplah;
+    const stiching = 17.34513846153846 * validOplah;
+    jilidSusun = lipat + sisip + kawat + stiching;
+    ketFinishing = `Lipat + Sisip + Stiching kawat mesin Oliver (Rp 142,37/pcs)${opsiSisir ? ` + Sisir Rp ${p.tarifSisirPerPcs}/pcs` : ''}`;
+  } else {
+    const lipat = 6.012981333333333 * 3 * validOplah;
+    const sisip = 45.097359999999995 * 1 * validOplah;
+    const kawat = 4.761904761904762 * validOplah;
+    const stiching = 17.34513846153846 * validOplah;
+    jilidSusun = lipat + sisip + kawat + stiching;
+    ketFinishing = `Lipat + Sisip + Stiching kawat otomatis SM (Rp 255,73/pcs)${opsiSisir ? ` + Sisir Rp ${p.tarifSisirPerPcs}/pcs` : ''}`;
   }
 
-  // Packing Kardus + Lakban (per order)
-  const biayaPacking = p.tarifPackingKardus + p.tarifLakbanPerOrder;
-  // ponytail: packing per order flat, upgrade ke per kardus @50 pcs jika volume besar
-  add('Packing Kardus & Lakban', biayaPacking, '1 paket packing order');
+  add('Jilid Staples / Stiching & Sisir', jilidSusun + sisir, ketFinishing);
+  add('Transportasi Finishing', p.tarifTransport, 'Biaya transportasi antar proses');
 
-  // Hitung pct
+  // 6. KARDUS MASTER & PACKING LAKBAN
+  const boxCount = Math.ceil(validOplah / (p.kapasitasKardus ?? 300));
+  const biayaKardus = boxCount * p.tarifKardusBox;
+  const biayaLakban = (validOplah / (p.kapasitasKardus ?? 300) / 39.03061224489796) * (p.tarifLakbanRoll ?? 9600);
+  add('Packing Kardus Master & Lakban', biayaKardus + biayaLakban,
+    `${boxCount} box kardus master (@ ${p.kapasitasKardus ?? 300} pcs/box) + segel lakban`);
+
+  // Recompute pct
   breakdown.forEach(b => { b.pct = totalHpp > 0 ? b.nominal / totalHpp : 0; });
 
-  const hppPerPcs = validOplah > 0 ? totalHpp / validOplah : 0;
-  const hargaJualPerPcs = Math.ceil((hppPerPcs * (1 + marginPct / 100)) / 10) * 10;
+  const roundedTotalHpp = Math.round(totalHpp);
+  const hppPerPcs = roundedTotalHpp / validOplah;
+  const rawHargaJual = hppPerPcs * (1 + marginPct / 100);
+  const hargaJualPerPcs = Math.ceil(rawHargaJual / 10) * 10;
   const hargaNegoPerPcs = Math.ceil((hargaJualPerPcs * (1 - negoDiskonPct / 100)) / 10) * 10;
-  const totalHargaJual = Math.round(hargaJualPerPcs * validOplah);
-  const totalHargaNego = Math.round(hargaNegoPerPcs * validOplah);
+  const totalHargaJual = hargaJualPerPcs * validOplah;
+  const totalHargaNego = hargaNegoPerPcs * validOplah;
   const profitPerPcs = hargaJualPerPcs - hppPerPcs;
   const profitNegoPerPcs = hargaNegoPerPcs - hppPerPcs;
-  const profitTotal = totalHargaJual - totalHpp;
-  const profitNegoTotal = totalHargaNego - totalHpp;
+  const profitTotal = totalHargaJual - roundedTotalHpp;
+  const profitNegoTotal = totalHargaNego - roundedTotalHpp;
   const marginPctActual = hargaJualPerPcs > 0 ? profitPerPcs / hargaJualPerPcs : 0;
   const marginNegoPct = hargaNegoPerPcs > 0 ? profitNegoPerPcs / hargaNegoPerPcs : 0;
 
   return {
     input,
     breakdown,
-    kebutuhanCoverA3,
-    kebutuhanIsiA3,
-    totalHpp: Math.round(totalHpp),
+    kebutuhanCover,
+    kebutuhanIsi,
+    totalHpp: roundedTotalHpp,
     hppPerPcs,
     hargaJualPerPcs,
     hargaNegoPerPcs,
