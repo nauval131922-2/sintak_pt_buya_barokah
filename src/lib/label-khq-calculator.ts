@@ -181,8 +181,8 @@ export function calculateLabelKhqHpp(
   // Di Excel master: jika oplah besar / kardus > 22, BK7 = 0 (pembulatan ke rupiah terdekat, misal 248,42 -> Rp 249)
   // Untuk oplah kecil (s/d 22 kardus), pembulatan kelipatan 10 (misal 1235 -> 1240)
   const rawHargaJual = hppPerLbr * (1 + marginPct / 100);
-  const hargaJualPerLbr = kardusActual > 22 ? Math.ceil(rawHargaJual) : Math.ceil(rawHargaJual / 10) * 10;
-  const hargaNegoPerLbr = kardusActual > 22 ? Math.ceil(hargaJualPerLbr * (1 - negoDiskonPct / 100)) : Math.ceil((hargaJualPerLbr * (1 - negoDiskonPct / 100)) / 10) * 10;
+  const hargaJualPerLbr = Math.ceil(rawHargaJual);
+  const hargaNegoPerLbr = Math.ceil(hargaJualPerLbr * (1 - negoDiskonPct / 100));
 
   const totalHargaJual = Math.round(hargaJualPerLbr * jumlahLbr);
   const totalHargaNego = Math.round(hargaNegoPerLbr * jumlahLbr);

@@ -24,8 +24,12 @@ interface LabelKhqMasterParameterProps {
 }
 
 const LABEL_KHQ_VISIBLE_KEYS: (keyof LabelKhqMasterParams)[] = [
-  'tarifRajangPerPcs',
+  'tarifPrintA3',
+  'insheetWasteLbr',
   'tarifDesain',
+  'tarifRajangPerPcs',
+  'tarifLaminasiGlossyCm2',
+  'minLaminasi',
   'marginDefaultPct',
   'negoDefaultPct',
 ];
@@ -166,26 +170,40 @@ export default function LabelKhqMasterParameter({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Card 1: Finishing & Desain */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Card 1: Kertas & Print Digital POD A3+ */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Printer className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">1. Finishing & Desain Label</h3>
+            <h3 className="text-xs font-bold text-slate-800">1. Cetak Print Digital A3+</h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifRajangPerPcs', 'Rajang/Potong per lbr (Rp)')}
+          <div className="grid grid-cols-1 gap-2.5">
+            {fieldRow('tarifPrintA3', 'Print A3+ POD (Rp/lbr)')}
+            {fieldRow('insheetWasteLbr', 'Insheet Waste (lbr)', false)}
             {fieldRow('tarifDesain', 'Biaya Desain Label (Rp)')}
           </div>
         </div>
 
-        {/* Card 2: Margin & Nego Default */}
+        {/* Card 2: Finishing Rajang & Laminasi Glossy */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Sliders className="w-4 h-4 text-emerald-700" />
+            <h3 className="text-xs font-bold text-slate-800">2. Finishing Rajang &amp; Laminasi</h3>
+          </div>
+          <div className="grid grid-cols-1 gap-2.5">
+            {fieldRow('tarifRajangPerPcs', 'Rajang / Potong per lbr (Rp)')}
+            {fieldRow('tarifLaminasiGlossyCm2', 'Laminasi Glossy (Rp/cm²)', true, true)}
+            {fieldRow('minLaminasi', 'Min. Order Laminasi (Rp)')}
+          </div>
+        </div>
+
+        {/* Card 3: Margin & Nego Default */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Layers className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Margin & Nego Standar</h3>
+            <h3 className="text-xs font-bold text-slate-800">3. Margin &amp; Nego Standar</h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-1 gap-2.5">
             {fieldRow('marginDefaultPct', 'Margin Default (%)', false)}
             {fieldRow('negoDefaultPct', 'Nego Default (%)', false)}
           </div>
@@ -273,7 +291,7 @@ export default function LabelKhqMasterParameter({
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
                       <li>• <strong>Margin Standar</strong>: 30% dari HPP (Pricelist Label!F8).</li>
-                      <li>• <strong>Pembulatan Harga Jual</strong>: <span className="font-mono text-violet-700">BUKU!BJ7</span> = <code className="text-[10px] bg-white px-1 py-0.5 rounded border">ROUNDUP(BI7, BK7)</code> (kelipatan 10 untuk ≤22 dus, satuan rupiah untuk &gt;22 dus).</li>
+                      <li>• <strong>Pembulatan Harga Jual</strong>: <span className="font-mono text-violet-700">BUKU!BJ7</span> = <code className="text-[10px] bg-white px-1 py-0.5 rounded border">ROUNDUP(BI7, 0)</code> (pembulatan ke atas ke satuan rupiah terdekat, cell BK7 = 0).</li>
                       <li>• <strong>Batas Nego</strong>: 4% dari harga jual standar.</li>
                       <li>• HPP/lbr = Total HPP / total lembar label.</li>
                     </ul>
