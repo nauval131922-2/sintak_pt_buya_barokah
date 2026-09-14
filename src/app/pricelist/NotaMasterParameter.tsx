@@ -24,9 +24,12 @@ interface NotaMasterParameterProps {
 }
 
 const NOTA_VISIBLE_KEYS: (keyof NotaMasterParams)[] = [
+  'tarifHvs70Kg',
+  'upHvsPct',
   'tarifNcrTopRim',
   'tarifNcrMiddleRim',
   'tarifNcrBottomRim',
+  'upNcrPct',
   'tarifPlatRyobi',
   'minOngkosCetakRyobi',
   'tarifDrekOverRyobi',
@@ -36,6 +39,7 @@ const NOTA_VISIBLE_KEYS: (keyof NotaMasterParams)[] = [
   'tarifSusunKomplit',
   'tarifStaplesNota',
   'tarifLemNgetruk',
+  'tarifSisirNota',
   'tarifPorporasiPerRim',
   'tarifNomoratorPerRim',
 ];
@@ -166,16 +170,35 @@ export default function NotaMasterParameter({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Card 1: Bahan Kertas NCR Nota */}
+        {/* Card 1: Bahan Kertas Nota (HVS 70 & NCR 55) */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <FileText className="w-4 h-4 text-emerald-700" />
-            <h3 className="text-xs font-bold text-slate-800">1. Bahan Kertas NCR Nota</h3>
+            <h3 className="text-xs font-bold text-slate-800">1. Bahan Kertas Nota (HVS 70 &amp; NCR 55)</h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifNcrTopRim', 'NCR Top (Rp/Rim Folio)')}
-            {fieldRow('tarifNcrMiddleRim', 'NCR Middle (Rp/Rim Folio)')}
-            {fieldRow('tarifNcrBottomRim', 'NCR Bottom (Rp/Rim Folio)')}
+
+          {/* Sub: Kertas HVS 70 (1 Rangkap) */}
+          <div>
+            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
+              • Kertas HVS 70 gsm (Nota 1 Rangkap):
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {fieldRow('tarifHvs70Kg', 'HVS 70 gsm (Rp/Kg)')}
+              {fieldRow('upHvsPct', 'Markup / Up HVS', false)}
+            </div>
+          </div>
+
+          {/* Sub: Kertas NCR 55 (2, 3 & 4 Rangkap) */}
+          <div className="pt-2 border-t border-slate-100">
+            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
+              • Kertas NCR 55 gsm (Nota 2, 3 &amp; 4 Rangkap):
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {fieldRow('tarifNcrTopRim', 'NCR Top (Rp/Rim Folio)')}
+              {fieldRow('tarifNcrMiddleRim', 'NCR Middle (Rp/Rim Folio)')}
+              {fieldRow('tarifNcrBottomRim', 'NCR Bottom (Rp/Rim Folio)')}
+              {fieldRow('upNcrPct', 'Markup / Up NCR', false)}
+            </div>
           </div>
         </div>
 
@@ -278,6 +301,7 @@ export default function NotaMasterParameter({
               </div>
             </div>
 
+            {fieldRow('tarifSisirNota', 'Potong Sisir (Rp/Rim)')}
             {fieldRow('tarifPorporasiPerRim', 'Porporasi Sobekan (Rp/Rim)')}
             {fieldRow('tarifNomoratorPerRim', 'Nomorator Seri (Rp/Rim)')}
           </div>
