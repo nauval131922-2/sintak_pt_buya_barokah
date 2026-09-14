@@ -57,11 +57,17 @@ Setiap workbook kalkulasi percetakan wajib dipetakan ke dalam 4 lapisan:
    - Kumpulkan semua angka statis: tarif print per plano/A3+, insheet lembar cadangan, ongkos jilid (sisip, staples, lem, jahit, casing-in), biaya aksesoris, harga kemasan plastik/dus.
 2. Buat daftar parameter yang akan dibuatkan ke interface TypeScript (`*MasterParams`).
 
-### Tahap 3: Audit Data Validation List & Catatan Sel (Comments)
-1. **Inspeksi Aturan Data Validation**:
+### Tahap 3: Audit Data Validation List, Pilihan Mesin Cetak & Catatan Sel
+1. **Inspeksi Aturan Data Validation & Dropdown Mesin Cetak (WAJIB)**:
    - Ekstrak seluruh sel yang memiliki validasi (`list`, `wholeNumber`, `decimal`).
-   - Jadikan daftar dropdown Excel sebagai acuan opsi form simulator di Sintak (dropdown ukuran, varian isi, jenis laminasi, dsb.).
-2. **Inspeksi Cell Comments (`<comment>`)**:
+   - **Pilihan Mesin Cetak (Cover & Isi) di Sheet Master**: Periksa sel dropdown penentu mesin cetak (contoh: `Master!D16` Cetak Cover & `Master!D25` Cetak Isi). Seluruh opsi mesin cetak di Excel (POD Print Inter, Ryobi, Oliver, Heidelberg Speedmaster SM 102, dll) **WAJIB TERSEDIA DINAMIS** di form simulator Sintak:
+     - Sediakan opsi **⚙️ Otomatis** (default rekomendasi cerdas yang memilih mesin paling efisien sesuai jenjang oplah Excel).
+     - Sediakan tombol pilihan mesin eksplisit agar estimator bebas mengubah mesin cetak secara manual kapan saja.
+   - Jadikan daftar dropdown Excel lainnya sebagai acuan opsi form simulator di Sintak (dropdown ukuran, varian isi/halaman, jenis laminasi, dsb.).
+2. **Audit Variasi Antar-File Sejenis (Perbedaan Skala Oplah)**:
+   - Jika suatu produk memiliki beberapa file Excel master (misal file rentang 50–500 pcs, 600–2.500 pcs, 3.000–10.000 pcs), **WAJIB MEMERIKSA PERBEDAAN MESIN CETAK & FORMULA ANTAR-FILE**.
+   - **DILARANG KERAS MENGUNCI 1 MESIN SAJA**: Jangan berasumsi produk hanya dicetak di 1 mesin (misal hanya digital POD). Kalkulator backend wajib mendukung transisi mesin sesuai skala oplah dan mendukung *override* pilihan mesin manual dari pengguna.
+3. **Inspeksi Cell Comments (`<comment>`)**:
    - Periksa segitiga merah pada pojok sel. Catatan estimator sering menyimpan biaya tersembunyi (contoh temuan: `BUKU!AX6` mencatat *"jika tambah pembatas : 275/pcs"*).
 
 ### Tahap 4: Reverse Engineering Logika Rumus & Deteksi Bug Excel
@@ -130,13 +136,15 @@ Setiap kali ada audit atau perubahan parameter/rumus, **WAJIB** mengaudit dan me
 | 1 | 4 Lapisan sheet (Input, Database, Engine, Output) sudah dipetakan | [ ] |
 | 2 | Semua sel manual non-rumus sudah diekstrak ke `MasterParams` | [ ] |
 | 3 | Semua aturan Data Validation List sudah tersedia di form simulator | [ ] |
-| 4 | Catatan tersembunyi (*cell comments*) sudah diperiksa | [ ] |
-| 5 | *Magic numbers* (insheet, kapasitas lembar, pembulatan) sudah teridentifikasi | [ ] |
-| 6 | Formula Excel sudah dicek bebas dari salah drag / typo antar-baris | [ ] |
-| 7 | UI Master Parameter sudah memunculkan semua variabel dinamis (per jenis atau global) | [ ] |
-| 8 | Tab Kalkulasi/Simulator sudah menerapkan dual scroll independen standar Manasik | [ ] |
-| 9 | Isi opsi form input spesifikasi & breakdown biaya di Tab Kalkulasi sudah lengkap sesuai Excel | [ ] |
-| 10 | Benchmark otomatis seluruh tier oplah menghasilkan selisih Rp 0 | [ ] |
-| 11 | Uji stres perubahan parameter dinamis menghasilkan angka yang identik | [ ] |
-| 12 | Pemetaan cell Excel pada Manual Pengguna di Tab Master Parameter akurat 100% | [ ] |
-| 13 | Panduan Penggunaan di Tab Kalkulasi sudah sinkron dengan fitur simulator | [ ] |
+| 4 | Pilihan mesin cetak Cover & Isi dari sel Master Excel sudah tersedia dinamis di form Simulator (Otomatis + Pilihan Mesin Eksplisit) | [ ] |
+| 5 | Variasi mesin & formula antar-file sejenis (skala oplah kecil, sedang, besar) sudah didukung penuh di kalkulator | [ ] |
+| 6 | Catatan tersembunyi (*cell comments*) sudah diperiksa | [ ] |
+| 7 | *Magic numbers* (insheet, kapasitas lembar, pembulatan) sudah teridentifikasi | [ ] |
+| 8 | Formula Excel sudah dicek bebas dari salah drag / typo antar-baris | [ ] |
+| 9 | UI Master Parameter sudah memunculkan semua variabel dinamis (per jenis atau global) | [ ] |
+| 10 | Tab Kalkulasi/Simulator sudah menerapkan dual scroll independen standar Manasik | [ ] |
+| 11 | Isi opsi form input spesifikasi & breakdown biaya di Tab Kalkulasi sudah lengkap sesuai Excel | [ ] |
+| 12 | Benchmark otomatis seluruh tier oplah menghasilkan selisih Rp 0 | [ ] |
+| 13 | Uji stres perubahan parameter dinamis menghasilkan angka yang identik | [ ] |
+| 14 | Pemetaan cell Excel pada Manual Pengguna di Tab Master Parameter akurat 100% | [ ] |
+| 15 | Panduan Penggunaan di Tab Kalkulasi sudah sinkron dengan fitur simulator | [ ] |
