@@ -34,11 +34,17 @@ const YASIN_VISIBLE_KEYS: (keyof YasinMasterParams)[] = [
   'hargaIsiYasin192',
   'tarifPrintCoverA3',
   'tarifPrintCoverHC',
-  'tarifPrintSisipanFotoA3',
-  'tarifPrintSisipanTeksA3',
   'tarifDesainCover',
   'insheetCover',
   'insheetCoverHC',
+  'tarifSisipLembar',
+  'tarifStaplesYasin',
+  'tarifSisirYasin',
+  'tarifPasangCoverSoft',
+  'tarifPlastikOppYasin',
+  'tarifPrintSisipanFotoA3',
+  'tarifPrintSisipanTeksA3',
+  'insheetSisipan',
   'tarifBoardHardcover',
   'tarifCasingInHardcover',
   'tarifSkiblat',
@@ -46,6 +52,9 @@ const YASIN_VISIBLE_KEYS: (keyof YasinMasterParams)[] = [
   'tarifPitaRumbaiPapercraft',
   'tarifEmbossFoilGembos',
   'tarifPlastikOppHC',
+  'tarifLaminasiGlossyCm2',
+  'tarifLaminasiDoffCm2',
+  'minLaminasi',
 ];
 
 export default function YasinMasterParameter({
@@ -215,6 +224,20 @@ export default function YasinMasterParameter({
               {fieldRow('insheetCoverHC', 'Insheet Cover Hard (lbr A3+)', false, false, 'A3+')}
             </div>
           </div>
+
+          {/* Sub: Finishing Jilid Dasar & Softcover */}
+          <div className="pt-2 border-t border-slate-100">
+            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
+              • Finishing Jilid Dasar &amp; Softcover:
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {fieldRow('tarifSisipLembar', 'Ongkos Sisip /lbr')}
+              {fieldRow('tarifStaplesYasin', 'Ongkos Staples /buku')}
+              {fieldRow('tarifSisirYasin', 'Ongkos Sisir Potong /buku')}
+              {fieldRow('tarifPasangCoverSoft', 'Pasang Cover Soft /buku')}
+              {fieldRow('tarifPlastikOppYasin', 'Plastik OPP Soft /pcs')}
+            </div>
+          </div>
         </div>
 
         {/* Kolom 2: Komponen Khusus Hardcover, Sisipan & Foil Gembos */}
@@ -247,13 +270,25 @@ export default function YasinMasterParameter({
               • Komponen & Aksesoris Hardcover:
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {fieldRow('tarifBoardHardcover', 'Board Greyboard No.30/40')}
-              {fieldRow('tarifCasingInHardcover', 'Jasa Casing-In Hardcover')}
+              {fieldRow('tarifBoardHardcover', 'Board Greyboard No.30/40', true, true)}
+              {fieldRow('tarifCasingInHardcover', 'Jasa Casing-In Hardcover', true, true)}
               {fieldRow('tarifSkiblat', 'Skiblat Sambung Dalam')}
               {fieldRow('tarifPitaRumbaiPapercraft', 'Pita Pembatas Rumbai')}
               {fieldRow('tarifSikuSudutEmas', 'Siku Sudut Emas (4 Pcs)')}
               {fieldRow('tarifEmbossFoilGembos', 'Foil Gembos Emboss Setup')}
               {fieldRow('tarifPlastikOppHC', 'Plastik OPP Hardcover /pcs')}
+            </div>
+          </div>
+
+          {/* Sub: Tarif Laminasi Cover */}
+          <div className="pt-2 border-t border-slate-100">
+            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
+              • Tarif Laminasi Cover (Glossy &amp; Doff):
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {fieldRow('tarifLaminasiGlossyCm2', 'Laminasi Glossy /cm²', true, true)}
+              {fieldRow('tarifLaminasiDoffCm2', 'Laminasi Doff /cm²', true, true)}
+              {fieldRow('minLaminasi', 'Min. Order Laminasi')}
             </div>
           </div>
         </div>
