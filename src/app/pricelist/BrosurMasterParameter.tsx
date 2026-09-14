@@ -24,10 +24,22 @@ interface BrosurMasterParameterProps {
 }
 
 const BROSUR_VISIBLE_KEYS: (keyof BrosurMasterParams)[] = [
+  'tarifArtPaperKg',
+  'upKertasPct',
+  'tarifPrintInter1Muka',
+  'tarifPrintInter2Muka',
+  'tarifPlatOliver',
+  'minOrderOliver',
+  'tarifDrekOliver',
+  'jumlahPlatOliver',
+  'tarifDesainBrosur',
   'tarifSisirMin',
   'tarifSisirPer1000',
-  'tarifDesainBrosur',
-  'jumlahPlatOliver',
+  'tarifLaminasiGlossy',
+  'tarifLaminasiDoff',
+  'tarifUvVarnish',
+  'tarifKardus',
+  'tarifLakbanRoll',
   'marginDefaultPct',
   'negoDefaultPct',
 ];
@@ -166,25 +178,57 @@ export default function BrosurMasterParameter({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Card 1: Finishing & Desain Brosur */}
+        {/* Card 1: Bahan Kertas Art Paper & POD Inter */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Printer className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">1. Finishing & Desain Brosur</h3>
+            <FileText className="w-4 h-4 text-emerald-700" />
+            <h3 className="text-xs font-bold text-slate-800">1. Kertas Art Paper &amp; Digital POD</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifSisirMin', 'Sisir/Potong Min (Rp)')}
-            {fieldRow('tarifSisirPer1000', 'Sisir per 1000 pcs (Rp)')}
+            {fieldRow('tarifArtPaperKg', 'Art Paper (Rp/Kg)')}
+            {fieldRow('upKertasPct', 'Markup / Up Kertas (%)', false)}
+            {fieldRow('tarifPrintInter1Muka', 'Print Inter 1 Muka (Rp/A3+)')}
+            {fieldRow('tarifPrintInter2Muka', 'Print Inter 2 Muka (Rp/A3+)')}
             {fieldRow('tarifDesainBrosur', 'Biaya Desain Brosur (Rp)')}
-            {fieldRow('jumlahPlatOliver', 'Jumlah Plat Oliver (pcs)', false)}
           </div>
         </div>
 
-        {/* Card 2: Margin & Nego Standar */}
+        {/* Card 2: Mesin Cetak Offset Oliver */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Printer className="w-4 h-4 text-blue-600" />
+            <h3 className="text-xs font-bold text-slate-800">2. Mesin Cetak Offset Oliver</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {fieldRow('tarifPlatOliver', 'Plat CTP Oliver (Rp/plat)')}
+            {fieldRow('jumlahPlatOliver', 'Jumlah Plat (Default 4)', false)}
+            {fieldRow('minOrderOliver', 'Min Order Oliver (Rp/plat)')}
+            {fieldRow('tarifDrekOliver', 'Ongkos Drek Over (Rp/drek)')}
+          </div>
+        </div>
+
+        {/* Card 3: Finishing Sisir, Packing & Laminasi */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Sliders className="w-4 h-4 text-emerald-700" />
+            <h3 className="text-xs font-bold text-slate-800">3. Finishing Sisir, Packing &amp; Laminasi</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {fieldRow('tarifSisirMin', 'Ongkos Sisir Min (≤500 pcs)')}
+            {fieldRow('tarifSisirPer1000', 'Ongkos Sisir (>500 pcs/1rb)')}
+            {fieldRow('tarifLaminasiGlossy', 'Laminasi Glossy (Rp/cm²)', true, true)}
+            {fieldRow('tarifLaminasiDoff', 'Laminasi Doff (Rp/cm²)', true, true)}
+            {fieldRow('tarifUvVarnish', 'UV Varnish (Rp/cm²)', true, true)}
+            {fieldRow('tarifKardus', 'Kardus Box (Rp/box)')}
+            {fieldRow('tarifLakbanRoll', 'Lakban Roll (Rp/roll)')}
+          </div>
+        </div>
+
+        {/* Card 4: Margin & Nego Standar */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Layers className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Margin & Nego Standar</h3>
+            <h3 className="text-xs font-bold text-slate-800">4. Margin &amp; Nego Standar</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('marginDefaultPct', 'Margin Default (%)', false)}
