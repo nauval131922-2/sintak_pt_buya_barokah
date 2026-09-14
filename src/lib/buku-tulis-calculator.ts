@@ -88,6 +88,8 @@ export const DEFAULT_BUKU_TULIS_PARAMS: BukuTulisMasterParams = {
 };
 
 export type BukuTulisUkuranType = '15,5 x 21' | '16 x 21';
+export type BukuTulisMesinCoverType = 'Otomatis' | 'Print Inter' | 'Oliver';
+export type BukuTulisMesinIsiType = 'Otomatis' | 'Ryobi' | 'Oliver' | 'SM';
 
 export const BUKU_TULIS_CONFIG: Record<BukuTulisUkuranType, {
   w: number; h: number;
@@ -112,6 +114,8 @@ export interface BukuTulisSimulatorInput {
   oplah: number;
   ukuran: BukuTulisUkuranType;
   jumlahHalaman: number; // fixed 72
+  metodeCetakCover?: BukuTulisMesinCoverType;
+  metodeCetakIsi?: BukuTulisMesinIsiType;
   opsiLaminasi: boolean;
   opsiSisir: boolean;
   marginPct: number;
@@ -127,6 +131,8 @@ export interface BukuTulisBreakdownItem {
 
 export interface BukuTulisSimulatorResult {
   input: BukuTulisSimulatorInput;
+  metodeCoverTerpilih: 'Print Inter' | 'Oliver';
+  metodeIsiTerpilih: 'Ryobi' | 'Oliver' | 'SM';
   breakdown: BukuTulisBreakdownItem[];
   kebutuhanCover: number;
   kebutuhanIsi: number;
@@ -156,8 +162,20 @@ export function calculateBukuTulisHpp(
   // 1. Oplah <= 500 pcs: Cover Print Inter A3+ (POD) & Isi Ryobi 1W
   // 2. Oplah 600 - 2.500 pcs: Cover Oliver 4W & Isi Oliver 1W
   // 3. Oplah >= 3.000 pcs: Cover Oliver 4W & Isi Speedmaster SM 102 1W
-  const isKecil = validOplah <= 500;
-  const isBesarSM = validOplah >= 3000;
+  const coverMesin: 'Print Inter' | 'Oliver' =
+    input.metodeCetakCover && input.metodeCetakCover !== 'Otomatis'
+      ? input.metodeCetakCover
+      : (validOplah <= 500 ? 'Print Inter' : 'Oliver');
+
+  const isiMesin: 'Ryobi' | 'Oliver' | 'SM' =
+    input.metodeCetakIsi && input.metodeCetakIsi !== 'Otomatis'
+      ? input.metodeCetakIsi
+      : (validOplah <= 500 ? 'Ryobi' : (validOplah < 3000 ? 'Oliver' : 'SM'));
+
+  const isCoverPrintInter = coverMesin === 'Print Inter';
+  const isIsiRyobi = isiMesin === 'Ryobi';
+  const isIsiOliver = isiMesin === 'Oliver';
+  const isIsiSM = isiMesin === 'SM';
 
   const breakdown: BukuTulisBreakdownItem[] = [];
   let totalHpp = 0;
@@ -175,7 +193,7 @@ export function calculateBukuTulisHpp(
   const biayaDesainCover = p.tarifDesignCover;
   let kebutuhanCover = 0;
 
-  if (isKecil) {
+  if (isCoverPrintInter) {
     // Print Inter A3+ (Ukuran 15.5 x 21 cm, 1 A3+ muat 2 cover)
     const insheet = p.insheetCoverPod ?? 7;
     const rCover = (validOplah / 2) + insheet;
@@ -215,7 +233,7 @@ export function calculateBukuTulisHpp(
   let biayaCetakIsi = 0;
   let kebutuhanIsi = 0;
 
-  if (isKecil) {
+  if (isIsiRyobi) {
     // Cetak Ryobi (15.5 x 21 cm): Plano 65x100 potong Folio (1 Plano potong 1 folio, muat 4 isi)
     biayaDesainIsi = p.tarifDesignIsiPerHlm * 18; // 18 cuttern x 2500 = 45.000
     const an = 18;
@@ -237,7 +255,7 @@ export function calculateBukuTulisHpp(
       `${apIsi} lbr folio (${(apIsi / 500).toFixed(1)} rim) @ Rp ${Math.round(hargaFolioRim).toLocaleString('id-ID')}/rim`);
     add('Plat & Cetak Mesin Ryobi Isi (1W)', biayaPlatIsi + biayaCetakIsi,
       `1 Plat CTP + Ongkos Cetak Ryobi (Min Rp ${p.minOrderRyobi.toLocaleString('id-ID')} + Over ${overDrekIsi} drek)`);
-  } else if (!isBesarSM) {
+  } else if (isIsiOliver) {
     // Cetak Oliver (16 x 21 cm): Plano 65x100 potong 2 (muat 32 isi per plano, 4.5 cuttern)
     biayaDesainIsi = p.tarifDesignIsiPerHlm * 18; // 45.000
     const an = 4.5;
@@ -293,7 +311,7 @@ export function calculateBukuTulisHpp(
   // 4. LAMINASI GLOSSY COVER
   if (opsiLaminasi) {
     let rawLam = 0;
-    if (isBesarSM) {
+    if (coverMesin === 'Oliver' && isIsiSM) {
       rawLam = (15.5 * 2 * 21 * p.tarifLaminasiGlossyCm2) * validOplah;
     } else {
       rawLam = (32 * 22 * p.tarifLaminasiGlossyCm2) * validOplah;
@@ -308,10 +326,19 @@ export function calculateBukuTulisHpp(
   let jilidSusun = 0;
   let ketFinishing = '';
 
-  if (isKecil) {
-    jilidSusun = (validOplah * 161.062) + (validOplah * 9);
-    ketFinishing = `Susun & Staples manual (Rp 170,06/pcs)${opsiSisir ? ` + Sisir Rp ${p.tarifSisirPerPcs}/pcs` : ''}`;
-  } else if (!isBesarSM) {
+  if (isIsiRyobi) {
+    if (coverMesin === 'Oliver') {
+      const lipat = 6.012981333333333 * 18 * validOplah;
+      const sisip = 45.097359999999995 * 2 * validOplah;
+      const kawat = 4.761904761904762 * validOplah;
+      const stiching = 17.34513846153846 * validOplah;
+      jilidSusun = lipat + sisip + kawat + stiching;
+      ketFinishing = `Lipat + Sisip + Stiching kawat mesin (Rp 220,84/pcs)${opsiSisir ? ` + Sisir Rp ${p.tarifSisirPerPcs}/pcs` : ''}`;
+    } else {
+      jilidSusun = (validOplah * 161.062) + (validOplah * 9);
+      ketFinishing = `Susun & Staples manual (Rp 170,06/pcs)${opsiSisir ? ` + Sisir Rp ${p.tarifSisirPerPcs}/pcs` : ''}`;
+    }
+  } else if (isIsiOliver) {
     const lipat = 6.012981333333333 * 5 * validOplah;
     const sisip = 45.097359999999995 * 2 * validOplah;
     const kawat = 4.761904761904762 * validOplah;
@@ -356,6 +383,8 @@ export function calculateBukuTulisHpp(
 
   return {
     input,
+    metodeCoverTerpilih: coverMesin,
+    metodeIsiTerpilih: isiMesin,
     breakdown,
     kebutuhanCover,
     kebutuhanIsi,

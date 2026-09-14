@@ -27,6 +27,8 @@ import {
   DEFAULT_BUKU_TULIS_PARAMS,
   BukuTulisMasterParams,
   BukuTulisUkuranType,
+  BukuTulisMesinCoverType,
+  BukuTulisMesinIsiType,
   BUKU_TULIS_TIERS,
   SavedBukuTulisSimulationItem,
   BUKU_TULIS_CONFIG,
@@ -58,6 +60,8 @@ export default function BukuTulisSimulator({
 }: BukuTulisSimulatorProps) {
   const [oplah, setOplah] = useState<number>(500);
   const [ukuran, setUkuran] = useState<BukuTulisUkuranType>('15,5 x 21');
+  const [metodeCetakCover, setMetodeCetakCover] = useState<BukuTulisMesinCoverType>('Otomatis');
+  const [metodeCetakIsi, setMetodeCetakIsi] = useState<BukuTulisMesinIsiType>('Otomatis');
   const [opsiLaminasi, setOpsiLaminasi] = useState(true);
   const [opsiSisir, setOpsiSisir] = useState(true);
   const [marginPct, setMarginPct] = useState(20);
@@ -95,6 +99,8 @@ export default function BukuTulisSimulator({
             const inp = item.data.input;
             setOplah(inp.oplah);
             setUkuran(inp.ukuran);
+            if (inp.metodeCetakCover) setMetodeCetakCover(inp.metodeCetakCover);
+            if (inp.metodeCetakIsi) setMetodeCetakIsi(inp.metodeCetakIsi);
             setOpsiLaminasi(inp.opsiLaminasi !== false);
             setOpsiSisir(inp.opsiSisir !== false);
             setMarginPct(inp.marginPct);
@@ -111,10 +117,10 @@ export default function BukuTulisSimulator({
   const result = useMemo(
     () =>
       calculateBukuTulisHpp(
-        { oplah, ukuran, jumlahHalaman: 72, opsiLaminasi, opsiSisir, marginPct, negoDiskonPct },
+        { oplah, ukuran, jumlahHalaman: 72, metodeCetakCover, metodeCetakIsi, opsiLaminasi, opsiSisir, marginPct, negoDiskonPct },
         customParams
       ),
-    [oplah, ukuran, opsiLaminasi, opsiSisir, marginPct, negoDiskonPct, customParams]
+    [oplah, ukuran, metodeCetakCover, metodeCetakIsi, opsiLaminasi, opsiSisir, marginPct, negoDiskonPct, customParams]
   );
 
   const defaultTitle = () =>
@@ -354,6 +360,68 @@ export default function BukuTulisSimulator({
                   placeholder="Custom..."
                 />
               </div>
+            </div>
+
+            {/* Mesin Cetak Cover */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-bold text-slate-700">Mesin Cetak Cover (4W)</label>
+                <span className="text-[10.5px] font-mono text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  Aktif: {result.metodeCoverTerpilih}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-1.5">
+                {(['Otomatis', 'Print Inter', 'Oliver'] as BukuTulisMesinCoverType[]).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setMetodeCetakCover(m)}
+                    className={`py-1.5 px-2 rounded-lg border text-[11px] font-bold text-center transition cursor-pointer ${
+                      metodeCetakCover === m
+                        ? 'border-emerald-600 bg-emerald-50 text-emerald-950 ring-1 ring-emerald-500'
+                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    {m === 'Otomatis' ? '⚙️ Auto' : m === 'Print Inter' ? 'Print Inter' : 'Oliver 4W'}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-slate-500 mt-1">
+                {metodeCetakCover === 'Otomatis'
+                  ? 'Auto: ≤500 eks Print Inter A3+, ≥600 eks Offset Oliver 4W'
+                  : `Dipaksa mesin: ${metodeCetakCover}`}
+              </p>
+            </div>
+
+            {/* Mesin Cetak Isi */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-bold text-slate-700">Mesin Cetak Isi HVS 70 (1W)</label>
+                <span className="text-[10.5px] font-mono text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  Aktif: {result.metodeIsiTerpilih}
+                </span>
+              </div>
+              <div className="grid grid-cols-4 gap-1.5">
+                {(['Otomatis', 'Ryobi', 'Oliver', 'SM'] as BukuTulisMesinIsiType[]).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setMetodeCetakIsi(m)}
+                    className={`py-1.5 px-1 rounded-lg border text-[11px] font-bold text-center transition cursor-pointer ${
+                      metodeCetakIsi === m
+                        ? 'border-emerald-600 bg-emerald-50 text-emerald-950 ring-1 ring-emerald-500'
+                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    {m === 'Otomatis' ? '⚙️ Auto' : m === 'Ryobi' ? 'Ryobi' : m === 'Oliver' ? 'Oliver' : 'SM 102'}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-slate-500 mt-1">
+                {metodeCetakIsi === 'Otomatis'
+                  ? 'Auto: ≤500 eks Ryobi, 600–2.500 Oliver, ≥3.000 Speedmaster SM 102'
+                  : `Dipaksa mesin: ${metodeCetakIsi}`}
+              </p>
             </div>
 
             {/* Finishing */}
