@@ -98,6 +98,15 @@ Buat skrip pengujian (via Node / TSX) untuk membandingkan kalkulasi Excel vs Sin
 2. **Ubah Nilai Manual Secara Ekstrem**: Ubah tarif cetak, insheet waste, biaya perakitan, dan margin profit di Master Parameter.
 3. Rekalkulasi formula Excel vs Sintak dengan angka baru tersebut. Jika hasil keduanya **tetap identik**, integrasi dinyatakan **100% Selesai & Terverifikasi**.
 
+### Tahap 8: Audit & Sinkronisasi Dokumentasi (Manual Pengguna & Panduan Simulator)
+Setiap kali ada audit atau perubahan parameter/rumus, **WAJIB** mengaudit dan memperbarui modal petunjuk di kedua komponen:
+1. **Manual Pengguna di Tab Master Parameter (`*MasterParameter.tsx`)**:
+   - Cantumkan letak sheet dan cell referensi Excel (`Master!Dxx`, `BUKU!Xxx`) untuk setiap variabel tarif, bahan, dan jasa.
+   - Jelaskan formula acuan (misal: turunan UMR harian, pembagian luas plano, rasio insheet).
+2. **Panduan Penggunaan di Tab Kalkulasi / Simulator (`*Simulator.tsx`)**:
+   - Panduan langkah pemilihan spesifikasi produk (ukuran, gramatur, metode cetak, opsi finishing).
+   - Penjelasan struktur rincian breakdown biaya HPP, strategi margin/nego diskon, dan tips penawaran sales.
+
 ---
 
 ## 4. Checklist Ringkas Audit
@@ -113,3 +122,5 @@ Buat skrip pengujian (via Node / TSX) untuk membandingkan kalkulasi Excel vs Sin
 | 7 | UI Master Parameter sudah memunculkan semua variabel dinamis | [ ] |
 | 8 | Benchmark otomatis seluruh tier oplah menghasilkan selisih Rp 0 | [ ] |
 | 9 | Uji stres perubahan parameter dinamis menghasilkan angka yang identik | [ ] |
+| 10 | Manual Pengguna di Tab Master Parameter sudah terupdate letak cell & formulanya | [ ] |
+| 11 | Panduan Penggunaan di Tab Kalkulasi sudah sinkron dengan fitur simulator | [ ] |
