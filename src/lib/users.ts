@@ -3,7 +3,6 @@
 import db from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { getSession } from '@/lib/session';
-import { logActivity } from '@/lib/activity';
 
 
 // Helper: pastikan hanya Super Admin yang bisa akses
@@ -120,7 +119,7 @@ export async function createUser(data: {
   employee_id?: number | null;
 }) {
   try {
-    const session = await requireSuperAdmin();
+    await requireSuperAdmin();
     await ensureUserColumns();
 
     if (!data.name || !data.username || !data.password || !data.roles?.length) {
@@ -154,13 +153,7 @@ export async function createUser(data: {
     // Insert ke junction table
     await setUserRoles(newUserId, uniqueRoles);
 
-    logActivity(
-      'CREATE',
-      'users',
-      `User ${data.username} dibuat dengan role: ${uniqueRoles.join(', ')}`,
-      {},
-      session.username
-    ).catch(() => {});
+    // ponytail: tanpa logActivity manual — trigger trg_users_insert sudah mencatat INSERT otomatis
 
     return { success: true };
   } catch (error: any) {
@@ -241,13 +234,7 @@ export async function updateUser(
       });
     }
 
-    logActivity(
-      'UPDATE',
-      'users',
-      `User ${data.username} diperbarui dengan role: ${uniqueRoles.join(', ')}`,
-      {},
-      session.username
-    ).catch(() => {});
+    // ponytail: tanpa logActivity manual — trigger trg_users_update sudah mencatat UPDATE otomatis
 
     return { success: true };
   } catch (error: any) {
