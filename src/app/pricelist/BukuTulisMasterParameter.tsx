@@ -29,19 +29,30 @@ const BUKU_TULIS_VISIBLE_KEYS: (keyof BukuTulisMasterParams)[] = [
   'upArtCartonPct',
   'tarifHvs70Kg',
   'upHvsPct',
-  'insheetCover',
-  'insheetIsi',
+  'insheetCoverPod',
+  'insheetCoverOffset',
+  'insheetIsiRyobi',
+  'insheetIsiOliver',
+  'insheetIsiSm',
+  'tarifPrintCoverA3',
+  'tarifPlatRyobi',
+  'minOrderRyobi',
+  'tarifDrekRyobi',
+  'tarifPlatOliver',
+  'minOrderOliver',
+  'tarifDrekOliver',
+  'tarifPlatSm',
+  'minOrderSm',
+  'tarifDrekSm',
   'tarifDesignCover',
   'tarifDesignIsiPerHlm',
-  'tarifPrintCoverA3',
-  'tarifPrintIsiA3',
   'tarifLaminasiGlossyCm2',
   'minLaminasi',
-  'tarifSusunPerPcs',
-  'tarifStaplesPerPcs',
   'tarifSisirPerPcs',
-  'tarifPackingKardus',
-  'tarifLakbanPerOrder',
+  'tarifTransport',
+  'tarifKardusBox',
+  'kapasitasKardus',
+  'tarifLakbanRoll',
   'marginDefaultPct',
   'negoDefaultPct',
 ];
@@ -57,7 +68,7 @@ export default function BukuTulisMasterParameter({
   };
 
   const isFieldModified = (key: keyof BukuTulisMasterParams) =>
-    customParams[key] !== DEFAULT_BUKU_TULIS_PARAMS[key];
+    (customParams[key] ?? DEFAULT_BUKU_TULIS_PARAMS[key]) !== DEFAULT_BUKU_TULIS_PARAMS[key];
 
   const handleResetField = (key: keyof BukuTulisMasterParams) => {
     setCustomParams((prev) => ({ ...prev, [key]: DEFAULT_BUKU_TULIS_PARAMS[key] }));
@@ -65,7 +76,7 @@ export default function BukuTulisMasterParameter({
   };
 
   const isModified = React.useMemo(
-    () => BUKU_TULIS_VISIBLE_KEYS.some((key) => customParams[key] !== DEFAULT_BUKU_TULIS_PARAMS[key]),
+    () => BUKU_TULIS_VISIBLE_KEYS.some((key) => (customParams[key] ?? DEFAULT_BUKU_TULIS_PARAMS[key]) !== DEFAULT_BUKU_TULIS_PARAMS[key]),
     [customParams]
   );
 
@@ -85,50 +96,55 @@ export default function BukuTulisMasterParameter({
     label: string,
     isRupiah = true,
     isDecimal = false
-  ) => (
-    <div
-      className={`p-2.5 rounded-lg border transition-all ${
-        isFieldModified(key)
-          ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-          : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-      }`}
-    >
-      <div className="flex items-center justify-between gap-1 mb-1.5">
-        <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
-          {label}
-        </label>
-        {isFieldModified(key) && (
-          <button
-            type="button"
-            onClick={() => handleResetField(key)}
-            className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-            title="Reset ke default"
-          >
-            <RotateCcw className="w-2.5 h-2.5" /> Def
-          </button>
-        )}
+  ) => {
+    const rawVal = customParams[key] ?? DEFAULT_BUKU_TULIS_PARAMS[key];
+    const val = typeof rawVal === 'number' ? rawVal : 0;
+    return (
+      <div
+        key={key}
+        className={`p-2.5 rounded-lg border transition-all ${
+          isFieldModified(key)
+            ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+            : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
+        }`}
+      >
+        <div className="flex items-center justify-between gap-1 mb-1.5">
+          <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
+            {label}
+          </label>
+          {isFieldModified(key) && (
+            <button
+              type="button"
+              onClick={() => handleResetField(key)}
+              className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+              title="Reset ke default"
+            >
+              <RotateCcw className="w-2.5 h-2.5" /> Def
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5">
+          {isRupiah && !isDecimal ? (
+            <ThousandInput
+              value={val}
+              onValueChange={(v) => handleChange(key, v || 0)}
+              className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+              prefix="Rp"
+              allowDecimals={isDecimal}
+            />
+          ) : (
+            <input
+              type="number"
+              step={isDecimal ? 0.01 : 1}
+              value={val}
+              onChange={(e) => handleChange(key, Number(e.target.value) || 0)}
+              className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+            />
+          )}
+        </div>
       </div>
-      <div className="flex items-center gap-1.5">
-        {isRupiah && !isDecimal ? (
-          <ThousandInput
-            value={customParams[key] as number}
-            onValueChange={(v) => handleChange(key, v || 0)}
-            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-            prefix="Rp"
-            allowDecimals={isDecimal}
-          />
-        ) : (
-          <input
-            type="number"
-            step={isDecimal ? 0.01 : 1}
-            value={customParams[key] as number}
-            onChange={(e) => handleChange(key, Number(e.target.value) || 0)}
-            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-          />
-        )}
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
@@ -188,11 +204,14 @@ export default function BukuTulisMasterParameter({
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('tarifArtCarton230Kg', 'Art Carton 230 (Rp/Kg)')}
-            {fieldRow('upArtCartonPct', 'Markup / Up AC 230 (%)', false)}
+            {fieldRow('upArtCartonPct', 'Markup AC 230 (%)', false)}
             {fieldRow('tarifHvs70Kg', 'Kertas HVS 70 (Rp/Kg)')}
-            {fieldRow('upHvsPct', 'Markup / Up HVS 70 (%)', false)}
-            {fieldRow('insheetCover', 'Insheet Cover (lbr)', false)}
-            {fieldRow('insheetIsi', 'Insheet Isi (lbr)', false)}
+            {fieldRow('upHvsPct', 'Markup HVS 70 (%)', false)}
+            {fieldRow('insheetCoverPod', 'Insheet Cover POD (lbr)', false)}
+            {fieldRow('insheetCoverOffset', 'Insheet Cover Offset (lbr)', false)}
+            {fieldRow('insheetIsiRyobi', 'Insheet Isi Ryobi (lbr)', false)}
+            {fieldRow('insheetIsiOliver', 'Insheet Isi Oliver (lbr)', false)}
+            {fieldRow('insheetIsiSm', 'Insheet Isi SM (lbr)', false)}
           </div>
         </div>
 
@@ -203,10 +222,18 @@ export default function BukuTulisMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">2. Cetak &amp; Desain</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifPrintCoverA3', 'Print Cover A3+ (Rp/lbr)')}
-            {fieldRow('tarifPrintIsiA3', 'Print Isi A3+ (Rp/lbr)')}
-            {fieldRow('tarifDesignCover', 'Desain Cover / Order (Rp)')}
-            {fieldRow('tarifDesignIsiPerHlm', 'Desain Isi / Hal (Rp)')}
+            {fieldRow('tarifPrintCoverA3', 'Print Cover POD (Rp/lbr)')}
+            {fieldRow('tarifPlatRyobi', 'Plat Ryobi (Rp/plat)')}
+            {fieldRow('minOrderRyobi', 'Min Order Ryobi (Rp)')}
+            {fieldRow('tarifDrekRyobi', 'Ongkos Drek Ryobi (Rp/drek)')}
+            {fieldRow('tarifPlatOliver', 'Plat Oliver (Rp/plat)')}
+            {fieldRow('minOrderOliver', 'Min Order Oliver (Rp)')}
+            {fieldRow('tarifDrekOliver', 'Ongkos Drek Oliver (Rp/drek)')}
+            {fieldRow('tarifPlatSm', 'Plat SM (Rp/plat)')}
+            {fieldRow('minOrderSm', 'Min Order SM (Rp)')}
+            {fieldRow('tarifDrekSm', 'Ongkos Drek SM (Rp/drek)')}
+            {fieldRow('tarifDesignCover', 'Desain Setting Cover (Rp)')}
+            {fieldRow('tarifDesignIsiPerHlm', 'Desain Setting Isi/Hal (Rp)')}
           </div>
         </div>
 
@@ -219,11 +246,11 @@ export default function BukuTulisMasterParameter({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('tarifLaminasiGlossyCm2', 'Laminasi Glossy (Rp/cm²)', true, true)}
             {fieldRow('minLaminasi', 'Min. Order Laminasi (Rp)')}
-            {fieldRow('tarifSusunPerPcs', 'Jasa Susun / pcs (Rp)')}
-            {fieldRow('tarifStaplesPerPcs', 'Staples Tengah / pcs (Rp)')}
             {fieldRow('tarifSisirPerPcs', 'Ongkos Sisir / pcs (Rp)')}
-            {fieldRow('tarifPackingKardus', 'Kardus Box / Order (Rp)')}
-            {fieldRow('tarifLakbanPerOrder', 'Lakban / Order (Rp)')}
+            {fieldRow('tarifTransport', 'Ongkos Transport (Rp)')}
+            {fieldRow('tarifKardusBox', 'Kardus Box (Rp/box)')}
+            {fieldRow('kapasitasKardus', 'Kapasitas Box (pcs/box)', false)}
+            {fieldRow('tarifLakbanRoll', 'Lakban Roll (Rp/roll)')}
           </div>
         </div>
 
@@ -312,9 +339,9 @@ export default function BukuTulisMasterParameter({
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
                       <li>• <strong>Laminasi Glossy</strong>: <span className="font-mono text-amber-700">BUKU!CI6</span> Rp 0,35/cm² (min <span className="font-mono text-amber-700">CJ7</span> Rp 50.000) × luas bentangan cover terbuka.</li>
-                      <li>• <strong>Susun &amp; Staples Tengah</strong>: <span className="font-mono text-amber-700">BUKU!BP6</span> Jasa Rp 161,06/pcs + Kawat <span className="font-mono text-amber-700">BUKU!BQ6</span> Rp 9/pcs.</li>
-                      <li>• <strong>Potong Sisir 3 Sisi</strong>: <span className="font-mono text-amber-700">BUKU!BT6</span> Rp 150/pcs (standar min 80/pcs).</li>
-                      <li>• <strong>Kardus &amp; Lakban</strong>: <span className="font-mono text-amber-700">BUKU!DD7</span> Kardus Box Rp 8.500 + Lakban <span className="font-mono text-amber-700">Master!D34</span> Rp 9.600/roll.</li>
+                      <li>• <strong>Potong Sisir 3 Sisi</strong>: <span className="font-mono text-amber-700">BUKU!BT6</span> Rp 150/pcs.</li>
+                      <li>• <strong>Ongkos Transport</strong>: Rp 15.000 flat per batch.</li>
+                      <li>• <strong>Kardus &amp; Lakban</strong>: <span className="font-mono text-amber-700">BUKU!DD7</span> Kardus Box Rp 8.500 (kapasitas 300 pcs) + Lakban <span className="font-mono text-amber-700">Master!D34</span> Rp 9.600/roll.</li>
                     </ul>
                   </div>
 
