@@ -365,14 +365,16 @@ export default function YasinMasterParameter({
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                      <span>3. Perakitan Jilid & Skiblat Hardcover</span>
+                      <span>3. Perakitan Jilid &amp; Hardcover</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
+                      <li>• <strong>Board Hardcover No.30/40</strong>: <span className="font-mono text-amber-700">BUKU!BA6</span> (Rp 279,48 / buku).</li>
+                      <li>• <strong>Casing-In Hardcover</strong>: <span className="font-mono text-amber-700">BUKU!AZ6</span> (Formula: UMR/25/150 = Rp 751,62 / buku).</li>
                       <li>• <strong>Skiblat Sambung Dalam</strong>: <span className="font-mono text-amber-700">BUKU!AT6</span> (Rp 350 / buku).</li>
                       <li>• <strong>Susun Sisipan Lembar</strong>: <span className="font-mono text-amber-700">BUKU!AU6</span> (Rp 100 / lbr).</li>
                       <li>• <strong>Steples Tengah</strong>: <span className="font-mono text-amber-700">BUKU!AV6</span> (Rp 50 / buku).</li>
                       <li>• <strong>Potong Sisir 3 Sisi</strong>: <span className="font-mono text-amber-700">BUKU!AW6</span> (Rp 150 / buku).</li>
-                      <li>• <strong>Casing-In Hardcover</strong>: <span className="font-mono text-amber-700">BUKU!AZ6</span> (Rp 751,62 / buku).</li>
+                      <li>• <strong>Pasang Softcover</strong>: <span className="font-mono text-amber-700">BUKU!AU6 (SC)</span> (Rp 200 / buku).</li>
                     </ul>
                   </div>
 
@@ -380,14 +382,15 @@ export default function YasinMasterParameter({
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-violet-500"></span>
-                      <span>4. Aksesoris, Gembos Emas & OPP</span>
+                      <span>4. Aksesoris, Laminasi, Gembos &amp; OPP</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Pita Pembatas Rumbai</strong>: <span className="font-mono text-violet-700">BUKU!AY6</span> (Rp 470 / buku).</li>
-                      <li>• <strong>Siku Sudut Emas (4 Pcs)</strong>: <span className="font-mono text-violet-700">Master Parameter</span> (Rp 400 / set, opsi tambahan di luar paket standar).</li>
-                      <li>• <strong>Gembos Klise Foil Emas</strong>: <span className="font-mono text-violet-700">Master!D40</span> (Rp 195.000 / pack = Rp 4.875 / 12 pcs setup).</li>
-                      <li>• <strong>Plastik OPP /Pack</strong>: <span className="font-mono text-violet-700">BUKU!AX6 / BC6</span> (Softcover: min 1 pack 100 pcs @ Rp 90 = Rp 9.000, Hardcover: Rp 95 / buku).</li>
-                      <li>• <strong>Target Margin Standar</strong>: <span className="font-mono text-violet-700">Master!E43 &amp; Sheet Harga 2026</span> (30% pembulatan ke kelipatan 10 / ratusan).</li>
+                      <li>• <strong>Pita Pembatas Rumbai</strong>: <span className="font-mono text-violet-700">BUKU!AY6</span> (Rp 470 / buku; Note cell AX6: opsi pembatas Rp 275/pcs).</li>
+                      <li>• <strong>Siku Sudut Emas (4 Pcs)</strong>: <span className="font-mono text-violet-700">Master Parameter</span> (Rp 400 / set).</li>
+                      <li>• <strong>Gembos Klise Foil Emas</strong>: <span className="font-mono text-violet-700">Master!D40 / 40</span> (Rp 195.000 / pack = Rp 4.875 / setup).</li>
+                      <li>• <strong>Plastik OPP</strong>: <span className="font-mono text-violet-700">BUKU!AX6 (SC) / BC6 (HC)</span> (SC: Rp 90/pcs min kelipatan 100, HC: Rp 95/pcs).</li>
+                      <li>• <strong>Laminasi Glossy &amp; Doff</strong>: <span className="font-mono text-violet-700">BUKU!BE6 / BH6</span> (Glossy: Rp 0,35/cm², Doff: Rp 0,40/cm², Min. Rp 50.000 di cell BF7/BI7).</li>
+                      <li>• <strong>Target Margin Standar</strong>: <span className="font-mono text-violet-700">Master!E43</span> (30% pembulatan puluhan di BUKU!BS7 / BM7).</li>
                     </ul>
                   </div>
                 </div>
