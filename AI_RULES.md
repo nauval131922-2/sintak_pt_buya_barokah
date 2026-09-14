@@ -45,6 +45,10 @@ Dokumen ini adalah **Hukum Tertinggi** bagi asisten AI yang bekerja pada reposit
 - **No Placeholders**: Jangan gunakan gambar placeholder. Gunakan `generate_image` atau data asli.
 - **Workflow**: Jika melakukan perbaikan bug, ikuti workflow `/debug-safe-fixing`.
 - **Dokumentasi**: Perbarui `AI_SESSION_SUMMARY.md` atau `task.md` secara berkala untuk menjaga kesinambungan antar sesi.
+- **Protokol Wajib Audit Excel Pricelist (`PANDUAN_AUDIT_EXCEL_SINTAK.md`)**:
+  1. **Dilarang Terbalik**: Jangan menyentuh UI, form, scroll, atau manual panduan sebelum logika kalkulator backend dibuktikan lulus 100% di terminal.
+  2. **Bukti Log Terminal Wajib**: Laporan audit dianggap tidak valid/belum selesai jika tidak menyertakan log terminal nyata hasil eksekusi skrip `npx tsx` yang membandingkan setiap tier baris Excel (`PASSED (0 selisih)`).
+  3. **Presisi 1:1 Matematis**: Semua sel manual non-rumus wajib dinamis di `MasterParams`, dan semua formula mesin (Print Inter, Oliver, SM, Ryobi, dll) wajib mengikuti formula matematis nyata dari sheet `BUKU` Excel, bukan perkiraan naive.
 
 ---
 
