@@ -399,7 +399,7 @@ export function calculateManasikSimulator(
     // Kardus & Lakban: 1 kardus isi 300 pcs (Formula Excel BUKU!BG7)
     // Di Excel: =(ROUNDUP(Oplah / 300, 0) * 8500) + (Oplah / 300 / 39.03061224489796 * 8000)
     const jmlBox = Math.ceil(validOplah / params.kapasitasKardusMini);
-    const kebutuhanLakban = (validOplah / params.kapasitasKardusMini) / (196 / 8);
+    const kebutuhanLakban = (validOplah / params.kapasitasKardusMini) / 39.03061224489796;
     const biayaLakban = kebutuhanLakban * params.tarifLakbanBox;
     const biayaKardus = jmlBox * params.tarifKardusBox + biayaLakban;
     breakdown.push({
