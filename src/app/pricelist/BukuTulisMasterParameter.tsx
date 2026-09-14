@@ -10,6 +10,7 @@ import {
   Layers,
   Box,
   FileText,
+  Sliders,
 } from 'lucide-react';
 import {
   DEFAULT_BUKU_TULIS_PARAMS,
@@ -24,10 +25,23 @@ interface BukuTulisMasterParameterProps {
 }
 
 const BUKU_TULIS_VISIBLE_KEYS: (keyof BukuTulisMasterParams)[] = [
+  'tarifArtCarton230Kg',
+  'upArtCartonPct',
+  'tarifHvs70Kg',
+  'upHvsPct',
+  'insheetCover',
+  'insheetIsi',
   'tarifDesignCover',
   'tarifDesignIsiPerHlm',
+  'tarifPrintCoverA3',
+  'tarifPrintIsiA3',
+  'tarifLaminasiGlossyCm2',
+  'minLaminasi',
+  'tarifSusunPerPcs',
+  'tarifStaplesPerPcs',
   'tarifSisirPerPcs',
   'tarifPackingKardus',
+  'tarifLakbanPerOrder',
   'marginDefaultPct',
   'negoDefaultPct',
 ];
@@ -166,32 +180,65 @@ export default function BukuTulisMasterParameter({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Card 1: Desain & Finishing */}
+        {/* Card 1: Bahan Kertas & Insheet */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Printer className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">1. Desain & Finishing Buku Tulis</h3>
+            <FileText className="w-4 h-4 text-emerald-700" />
+            <h3 className="text-xs font-bold text-slate-800">1. Bahan Kertas &amp; Insheet</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifDesignCover', 'Desain Cover / Order (Rp)')}
-            {fieldRow('tarifDesignIsiPerHlm', 'Desain Isi / Hal (Rp)')}
-            {fieldRow('tarifSisirPerPcs', 'Ongkos Sisir / pcs (Rp)')}
-            {fieldRow('tarifPackingKardus', 'Packing Kardus / Order (Rp)', true)}
+            {fieldRow('tarifArtCarton230Kg', 'Art Carton 230 (Rp/Kg)')}
+            {fieldRow('upArtCartonPct', 'Markup / Up AC 230 (%)', false)}
+            {fieldRow('tarifHvs70Kg', 'Kertas HVS 70 (Rp/Kg)')}
+            {fieldRow('upHvsPct', 'Markup / Up HVS 70 (%)', false)}
+            {fieldRow('insheetCover', 'Insheet Cover (lbr)', false)}
+            {fieldRow('insheetIsi', 'Insheet Isi (lbr)', false)}
           </div>
         </div>
 
-        {/* Card 2: Margin & Nego Standar */}
+        {/* Card 2: Cetak & Desain */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Printer className="w-4 h-4 text-blue-600" />
+            <h3 className="text-xs font-bold text-slate-800">2. Cetak &amp; Desain</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {fieldRow('tarifPrintCoverA3', 'Print Cover A3+ (Rp/lbr)')}
+            {fieldRow('tarifPrintIsiA3', 'Print Isi A3+ (Rp/lbr)')}
+            {fieldRow('tarifDesignCover', 'Desain Cover / Order (Rp)')}
+            {fieldRow('tarifDesignIsiPerHlm', 'Desain Isi / Hal (Rp)')}
+          </div>
+        </div>
+
+        {/* Card 3: Finishing, Laminasi & Packing */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Sliders className="w-4 h-4 text-emerald-700" />
+            <h3 className="text-xs font-bold text-slate-800">3. Finishing &amp; Packing</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {fieldRow('tarifLaminasiGlossyCm2', 'Laminasi Glossy (Rp/cm²)', true, true)}
+            {fieldRow('minLaminasi', 'Min. Order Laminasi (Rp)')}
+            {fieldRow('tarifSusunPerPcs', 'Jasa Susun / pcs (Rp)')}
+            {fieldRow('tarifStaplesPerPcs', 'Staples Tengah / pcs (Rp)')}
+            {fieldRow('tarifSisirPerPcs', 'Ongkos Sisir / pcs (Rp)')}
+            {fieldRow('tarifPackingKardus', 'Kardus Box / Order (Rp)')}
+            {fieldRow('tarifLakbanPerOrder', 'Lakban / Order (Rp)')}
+          </div>
+        </div>
+
+        {/* Card 4: Margin & Nego Standar */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Layers className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Margin & Nego Standar</h3>
+            <h3 className="text-xs font-bold text-slate-800">4. Margin &amp; Nego Standar</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('marginDefaultPct', 'Margin Default (%)', false)}
             {fieldRow('negoDefaultPct', 'Nego Default (%)', false)}
           </div>
           <p className="text-[10px] text-slate-500">
-            Margin 20% & nego 4% sesuai PRICELIST 2026 sheet HARGA JULI 2026. HPP dihitung per pcs dengan pembulatan ke kelipatan Rp 10.
+            Margin 20% &amp; nego 4% sesuai PRICELIST 2026 sheet HARGA JULI 2026. HPP dihitung per pcs dengan pembulatan ke kelipatan Rp 10.
           </p>
         </div>
       </div>
@@ -236,49 +283,50 @@ export default function BukuTulisMasterParameter({
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                      <span>1. Bahan Kertas Cover & Isi</span>
+                      <span>1. Bahan Kertas Cover &amp; Isi</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Art Carton 230 gsm</strong>: <span className="font-mono text-emerald-700">Source!E12</span> Rp 16.400/kg + <span className="font-mono text-emerald-700">Source!E13</span> up 0-5% (global 5%).</li>
-                      <li>• <strong>Insheet Cover</strong>: <span className="font-mono text-emerald-700">BUKU!K7</span> 7 lbr (Print Inter 2 cover/plano, Oliver 10 cover/plano).</li>
-                      <li>• <strong>HVS 70 gsm</strong>: <span className="font-mono text-emerald-700">Source!E14</span> Rp 15.700/kg + up 3% (Source!F14).</li>
-                      <li>• <strong>Insheet Isi</strong>: 30 lbr, 72 hal = 18 lembar isi (Source!C7=18).</li>
+                      <li>• <strong>Art Carton 230 gsm</strong>: <span className="font-mono text-emerald-700">Master!D12</span> Rp 16.400/kg + up 0–5% (<span className="font-mono text-emerald-700">Master!E12</span>).</li>
+                      <li>• <strong>Insheet Cover</strong>: <span className="font-mono text-emerald-700">Master!D13 / BUKU!K6</span> (Print Inter: 7 lbr, Oliver: 100 lbr).</li>
+                      <li>• <strong>HVS 70 gsm</strong>: <span className="font-mono text-emerald-700">Master!D22</span> Rp 15.700/kg + up 3% (<span className="font-mono text-emerald-700">Master!E22</span>).</li>
+                      <li>• <strong>Insheet Isi</strong>: <span className="font-mono text-emerald-700">Master!D23 / BUKU!AI6</span> (Ryobi: 30 lbr, Oliver: 100 lbr), 72 hal = 18 lembar isi/buku.</li>
                     </ul>
                   </div>
 
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                      <span>2. Cetak Cover & Isi</span>
+                      <span>2. Cetak Cover &amp; Isi</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Cover</strong>: <span className="font-mono text-blue-700">Source!R7</span> Print Inter 1 muka 4 warna @ Rp 2.500/A3+.</li>
-                      <li>• <strong>Isi</strong>: <span className="font-mono text-blue-700">Source!AE7</span> Ryobi 1 warna bolak-balik @ Rp 2.000/A3+ (≤500), Oliver untuk &gt;500 (0.6× + plat).</li>
-                      <li>• <strong>Desain</strong>: Cover Rp 20.000 + Isi Rp 2.500/hal × 72 hal = Rp 180.000.</li>
+                      <li>• <strong>Cover Print A3+</strong>: <span className="font-mono text-blue-700">Master!D18</span> Print Inter 1 muka 4W @ Rp 2.500/A3+.</li>
+                      <li>• <strong>Isi Ryobi / Oliver</strong>: <span className="font-mono text-blue-700">Master!D27 / BUKU!BD</span> Ryobi 1W bolak-balik @ Rp 2.000/A3+ (≤500 eks), Oliver/SM untuk oplah besar.</li>
+                      <li>• <strong>Desain Setting</strong>: Cover <span className="font-mono text-blue-700">Master!D17</span> Rp 20.000 + Isi <span className="font-mono text-blue-700">Master!D26</span> Rp 2.500/hal × 72 hal.</li>
                     </ul>
                   </div>
 
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                      <span>3. Finishing & Packing</span>
+                      <span>3. Finishing &amp; Packing</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Laminasi Glossy</strong>: Rp 0,35/cm² (min Rp 50.000) × luas cover terbuka.</li>
-                      <li>• <strong>Susun + Staples + Sisir + Lipat + Packing</strong>: tarif per pcs (sisir, staples) + kardus 8.500/box.</li>
-                      <li>• <strong>Ukuran</strong>: 15,5×21 & 16×21 cm (tertutup), 72 hal, 1 muka cover full colour.</li>
+                      <li>• <strong>Laminasi Glossy</strong>: <span className="font-mono text-amber-700">BUKU!CI6</span> Rp 0,35/cm² (min <span className="font-mono text-amber-700">CJ7</span> Rp 50.000) × luas bentangan cover terbuka.</li>
+                      <li>• <strong>Susun &amp; Staples Tengah</strong>: <span className="font-mono text-amber-700">BUKU!BP6</span> Jasa Rp 161,06/pcs + Kawat <span className="font-mono text-amber-700">BUKU!BQ6</span> Rp 9/pcs.</li>
+                      <li>• <strong>Potong Sisir 3 Sisi</strong>: <span className="font-mono text-amber-700">BUKU!BT6</span> Rp 150/pcs (standar min 80/pcs).</li>
+                      <li>• <strong>Kardus &amp; Lakban</strong>: <span className="font-mono text-amber-700">BUKU!DD7</span> Kardus Box Rp 8.500 + Lakban <span className="font-mono text-amber-700">Master!D34</span> Rp 9.600/roll.</li>
                     </ul>
                   </div>
 
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-violet-500"></span>
-                      <span>4. Margin & Nego</span>
+                      <span>4. Margin &amp; Nego</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Margin</strong>: 20% dari HPP, nego 4% dari harga jual.</li>
-                      <li>• Harga jual = <code className="text-[10px] bg-white px-1 py-0.5 rounded border">ceil(HPP/pcs ×1.20 /10)*10</code>.</li>
-                      <li>• Tier oplah: 15,5×21 (20-500), 16×21 (600-10000) – gabung 28 tier.</li>
+                      <li>• <strong>Margin Standar</strong>: <span className="font-mono text-violet-700">BUKU!DH6</span> 20% dari HPP, nego 4% dari harga jual.</li>
+                      <li>• <strong>Pembulatan Harga Jual</strong>: <span className="font-mono text-violet-700">BUKU!DL7</span> = <code className="text-[10px] bg-white px-1 py-0.5 rounded border">ROUNDUP(DK7, -1)</code> (kelipatan 10 terdekat).</li>
+                      <li>• Tier oplah: 15,5×21 (20–500 eks), 16×21 (600–10.000 eks).</li>
                     </ul>
                   </div>
                 </div>
