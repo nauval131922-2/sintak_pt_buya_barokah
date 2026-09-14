@@ -2,9 +2,11 @@
 
 export interface YasinMasterParams {
   // 1. Cover (Digital POD A3+ / Offset)
-  tarifPrintCoverA3: number; // 2500 (Softcover AC 230) / 2000 (Hardcover AP 150)
+  tarifPrintCoverA3: number; // softcover AC 230
+  tarifPrintCoverHC: number; // hardcover AP 150 (Excel Master!D15 HC = 2000)
   tarifDesainCover: number; // 25000
-  insheetCover: number; // 5-10 lembar
+  insheetCover: number; // softcover 5
+  insheetCoverHC: number; // hardcover (Excel Master!D11 HC = 10)
   // 2. Isi Yasin Kosongan
   hargaIsiYasin64: number; // 1650
   hargaIsiYasin96: number; // 2250 (standar Buya Barokah)
@@ -28,7 +30,8 @@ export interface YasinMasterParams {
   tarifStaplesYasin: number; // 50
   tarifPasangCoverSoft: number; // 100
   tarifSisirYasin: number; // 150
-  tarifPlastikOppYasin: number; // 95
+  tarifPlastikOppYasin: number; // softcover 90 (Excel BUKU!AX6)
+  tarifPlastikOppHC: number; // hardcover 95 (Excel BUKU!BC6)
 
   // 6. Komponen Khusus Hardcover
   tarifBoardHardcover: number; // 280 (Greyboard No. 30/40)
@@ -41,8 +44,10 @@ export interface YasinMasterParams {
 
 export const DEFAULT_YASIN_PARAMS: YasinMasterParams = {
   tarifPrintCoverA3: 2500,
+  tarifPrintCoverHC: 2000, // Excel Master!D15 HC
   tarifDesainCover: 25000,
   insheetCover: 5,
+  insheetCoverHC: 10, // Excel Master!D11 HC
 
   hargaIsiYasin64: 1650,
   hargaIsiYasin96: 2250,
@@ -64,6 +69,7 @@ export const DEFAULT_YASIN_PARAMS: YasinMasterParams = {
   tarifPasangCoverSoft: 200, // Excel BUKU!AU6: Rp 200 / buku
   tarifSisirYasin: 150,
   tarifPlastikOppYasin: 90, // Excel BUKU!AX6: Rp 90 / buku
+  tarifPlastikOppHC: 95, // Excel BUKU!BC6 HC
 
   tarifBoardHardcover: 279.48, // Excel BUKU!BA6
   tarifCasingInHardcover: 751.62, // Excel BUKU!AZ6 (formula UMR)
@@ -154,9 +160,9 @@ export function calculateYasinSimulator(
   // Ukuran 11.7 x 15 cm = 1 A3+ muat 3 cover (insheet 5)
   // Hardcover = 1 A3+ muat 2 cover (insheet 10 di Excel Master!D11)
   const a3MuatCover = isHardcover ? 2 : (ukuran === '9.5 x 14' ? 4 : 3);
-  const insheetCoverEffective = isHardcover ? 10 : (params.insheetCover ?? 5);
+  const insheetCoverEffective = isHardcover ? (params.insheetCoverHC ?? 10) : (params.insheetCover ?? 5);
   const kebutuhanA3Cover = Math.ceil(validOplah / a3MuatCover) + insheetCoverEffective;
-  const hargaPrintCoverUnit = isHardcover ? 2000 : (params.tarifPrintCoverA3 ?? 2500);
+  const hargaPrintCoverUnit = isHardcover ? (params.tarifPrintCoverHC ?? 2000) : (params.tarifPrintCoverA3 ?? 2500);
   const biayaPrintCover = (kebutuhanA3Cover * hargaPrintCoverUnit) + (params.tarifDesainCover ?? 25000);
   // 3. Biaya Blok Isi Yasin
   let hargaIsiPerPcs = params.hargaIsiYasin96 ?? DEFAULT_YASIN_PARAMS.hargaIsiYasin96;
@@ -226,7 +232,7 @@ export function calculateYasinSimulator(
   let biayaOpp = 0;
   if (opsiPlastikOpp) {
     if (isHardcover) {
-      biayaOpp = 95 * validOplah;
+      biayaOpp = (params.tarifPlastikOppHC ?? 95) * validOplah;
     } else {
       // Di Excel cell AX7: pembulatan minimal 1 pack plastik OPP (kelipatan 100 pcs x Rp 90 = min Rp 9.000)
       const packOppQty = Math.ceil(validOplah / 100) * 100;

@@ -33,17 +33,19 @@ const YASIN_VISIBLE_KEYS: (keyof YasinMasterParams)[] = [
   'hargaIsiYasin144',
   'hargaIsiYasin192',
   'tarifPrintCoverA3',
+  'tarifPrintCoverHC',
   'tarifPrintSisipanFotoA3',
   'tarifPrintSisipanTeksA3',
   'tarifDesainCover',
   'insheetCover',
-  'insheetSisipan',
+  'insheetCoverHC',
   'tarifBoardHardcover',
   'tarifCasingInHardcover',
   'tarifSkiblat',
   'tarifSikuSudutEmas',
   'tarifPitaRumbaiPapercraft',
   'tarifEmbossFoilGembos',
+  'tarifPlastikOppHC',
 ];
 
 export default function YasinMasterParameter({
@@ -203,12 +205,14 @@ export default function YasinMasterParameter({
           {/* Sub: Cover AC 230 & Desain */}
           <div className="pt-2 border-t border-slate-100">
             <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Cetak Cover Softcover (AC 230 gsm):
+              • Cetak Cover Softcover (AC 230) & Hardcover (AP 150):
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {fieldRow('tarifPrintCoverA3', 'Print Cover A3+ (AC 230)')}
+              {fieldRow('tarifPrintCoverA3', 'Print Cover A3+ Soft (AC 230)')}
+              {fieldRow('tarifPrintCoverHC', 'Print Cover A3+ Hard (AP 150)')}
               {fieldRow('tarifDesainCover', 'Jasa Desain Cover & Foto')}
-              {fieldRow('insheetCover', 'Insheet Cover (lbr A3+)', false, false, 'A3+')}
+              {fieldRow('insheetCover', 'Insheet Cover Soft (lbr A3+)', false, false, 'A3+')}
+              {fieldRow('insheetCoverHC', 'Insheet Cover Hard (lbr A3+)', false, false, 'A3+')}
             </div>
           </div>
         </div>
@@ -249,7 +253,7 @@ export default function YasinMasterParameter({
               {fieldRow('tarifPitaRumbaiPapercraft', 'Pita Pembatas Rumbai')}
               {fieldRow('tarifSikuSudutEmas', 'Siku Sudut Emas (4 Pcs)')}
               {fieldRow('tarifEmbossFoilGembos', 'Foil Gembos Emboss Setup')}
-            </div>
+              {fieldRow('tarifPlastikOppHC', 'Plastik OPP Hardcover /pcs')}
           </div>
         </div>
       </div>
