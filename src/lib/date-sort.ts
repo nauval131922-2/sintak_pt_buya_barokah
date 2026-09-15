@@ -114,6 +114,9 @@ export async function ensureLaporanPekerjaanNorms(db: any): Promise<number> {
       await db.execute(`ALTER TABLE laporan_pekerjaan ADD COLUMN ${col} TEXT DEFAULT ''`);
     } catch {}
   }
+  try {
+    await db.execute(`CREATE INDEX IF NOT EXISTS idx_laporan_pekerjaan_start_norm ON laporan_pekerjaan(start_date_norm)`);
+  } catch {}
   let total = 0;
   for (;;) {
     const missing = await db.execute(
