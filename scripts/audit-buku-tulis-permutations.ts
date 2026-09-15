@@ -27,14 +27,17 @@ for (let r = 7; r <= 18; r++) {
   const oplah = Number(b1['H' + r]?.v);
   const exTotal = Math.round(Number(b1['DF' + r]?.v));
   const exJual = Number(b1['DL' + r]?.v);
-  const res = calculateBukuTulisHpp({
-    ukuran: '15,5 x 21',
-    oplah,
-    metodeCetakCover: 'Print Inter',
-    metodeCetakIsi: 'Ryobi',
-    opsiLaminasi: true,
-    opsiSisir: true,
-  });
+  const res = calculateBukuTulisHpp(
+    {
+      ukuran: '15,5 x 21',
+      oplah,
+      metodeCetakCover: 'Print Inter',
+      metodeCetakIsi: 'Ryobi',
+      opsiLaminasi: true,
+      opsiSisir: true,
+    },
+    { ...DEFAULT_BUKU_TULIS_PARAMS, upHvsPct: 3, tarifDesignIsiPerHlm: 2500, insheetIsiRyobi: 30 }
+  );
   assertCheck(`Oplah ${oplah} (Cover: POD | Isi: Ryobi)`, res.totalHpp, exTotal, res.hargaJualPerPcs, exJual);
 }
 
@@ -47,14 +50,17 @@ for (let r = 7; r <= 18; r++) {
   const oplah = Number(b2['H' + r]?.v);
   const exTotal = Math.round(Number(b2['DF' + r]?.v));
   const exJual = Number(b2['DL' + r]?.v);
-  const res = calculateBukuTulisHpp({
-    ukuran: '16 x 21',
-    oplah,
-    metodeCetakCover: 'Oliver',
-    metodeCetakIsi: 'Oliver',
-    opsiLaminasi: true,
-    opsiSisir: true,
-  });
+  const res = calculateBukuTulisHpp(
+    {
+      ukuran: '16 x 21',
+      oplah,
+      metodeCetakCover: 'Oliver',
+      metodeCetakIsi: 'Oliver',
+      opsiLaminasi: true,
+      opsiSisir: true,
+    },
+    { ...DEFAULT_BUKU_TULIS_PARAMS, upHvsPct: 0, tarifDesignIsiPerHlm: 2500, insheetIsiOliver: 100 }
+  );
   assertCheck(`Oplah ${oplah} (Cover: Oliver | Isi: Oliver)`, res.totalHpp, exTotal, res.hargaJualPerPcs, exJual);
 }
 
@@ -67,14 +73,17 @@ for (let r = 7; r <= 10; r++) {
   const oplah = Number(b3['H' + r]?.v);
   const exTotal = Math.round(Number(b3['DF' + r]?.v));
   const exJual = Number(b3['DL' + r]?.v);
-  const res = calculateBukuTulisHpp({
-    ukuran: '16 x 21',
-    oplah,
-    metodeCetakCover: 'Oliver',
-    metodeCetakIsi: 'SM',
-    opsiLaminasi: true,
-    opsiSisir: true,
-  });
+  const res = calculateBukuTulisHpp(
+    {
+      ukuran: '16 x 21',
+      oplah,
+      metodeCetakCover: 'Oliver',
+      metodeCetakIsi: 'SM',
+      opsiLaminasi: true,
+      opsiSisir: true,
+    },
+    { ...DEFAULT_BUKU_TULIS_PARAMS, upHvsPct: 0, tarifDesignIsiPerHlm: 0, insheetIsiSm: 300 }
+  );
   assertCheck(`Oplah ${oplah} (Cover: Oliver | Isi: SM 102)`, res.totalHpp, exTotal, res.hargaJualPerPcs, exJual);
 }
 
@@ -89,7 +98,7 @@ const oliverLargeCases = [
 ];
 
 for (const tc of oliverLargeCases) {
-  // Pada file 3.000 - 10.000 pcs, sel Master!D23 (Insheet Isi) adalah 300
+  // Pada file 3.000 - 10.000 pcs, sel Master!D23 = 300, Master!D26 = 0, Master!E22 = 0
   const res = calculateBukuTulisHpp(
     {
       ukuran: '16 x 21',
@@ -99,25 +108,67 @@ for (const tc of oliverLargeCases) {
       opsiLaminasi: true,
       opsiSisir: true,
     },
-    { ...DEFAULT_BUKU_TULIS_PARAMS, insheetIsiOliver: 300 }
+    { ...DEFAULT_BUKU_TULIS_PARAMS, upHvsPct: 0, tarifDesignIsiPerHlm: 0, insheetIsiOliver: 300 }
   );
   assertCheck(`Oplah ${tc.oplah} (Cover: Oliver | Isi: Oliver 300 insh)`, res.totalHpp, tc.exTotal, res.hargaJualPerPcs, tc.exJual);
 }
 
-// 5. UJI DINAMIS PERUBAHAN INSHEET OLIVER (100 vs 300 lbr)
-console.log('\n--- 5. UJI DINAMIS: RESPON KALKULATOR SAAT INSHEET OLIVER DIUBAH (100 vs 300 lbr) ---');
-const r100 = calculateBukuTulisHpp(
+// 5. UJI REAKTIVITAS PARAMETER (ANTI-HARDCODE / ANTI-HIJACKING TEST)
+console.log('\n--- 5. UJI REAKTIVITAS PARAMETER (Memastikan Tidak Ada Variabel Dibajak/Mati) ---');
+
+function assertReactivity(paramName: string, hpp1: number, hpp2: number) {
+  totalTests++;
+  const diff = Math.abs(hpp2 - hpp1);
+  const pass = diff > 0;
+  if (pass) passedTests++;
+  console.log(`[${pass ? 'PASS' : 'FAIL'}] Reaktivitas ${paramName.padEnd(30)} | HPP A: Rp ${hpp1.toLocaleString('id-ID')} -> HPP B: Rp ${hpp2.toLocaleString('id-ID')} (Delta: Rp ${diff.toLocaleString('id-ID')})`);
+  if (!pass) throw new Error(`CRITICAL: Parameter ${paramName} tidak merespons perubahan (Hardcode/Hijacking terdeteksi)!`);
+  return pass;
+}
+
+// A. Test Insheet Oliver (100 vs 300)
+const testInsh100 = calculateBukuTulisHpp(
   { ukuran: '16 x 21', oplah: 3000, metodeCetakCover: 'Oliver', metodeCetakIsi: 'Oliver' },
   { ...DEFAULT_BUKU_TULIS_PARAMS, insheetIsiOliver: 100 }
-);
-const r300 = calculateBukuTulisHpp(
+).totalHpp;
+const testInsh300 = calculateBukuTulisHpp(
   { ukuran: '16 x 21', oplah: 3000, metodeCetakCover: 'Oliver', metodeCetakIsi: 'Oliver' },
   { ...DEFAULT_BUKU_TULIS_PARAMS, insheetIsiOliver: 300 }
-);
-const selisihHpp = r300.totalHpp - r100.totalHpp;
-console.log(`Insheet 100 lbr -> Total HPP: Rp ${r100.totalHpp.toLocaleString('id-ID')} | HPP/pcs: Rp ${Math.round(r100.hppPerPcs).toLocaleString('id-ID')} | Jual: Rp ${r100.hargaJualPerPcs.toLocaleString('id-ID')}`);
-console.log(`Insheet 300 lbr -> Total HPP: Rp ${r300.totalHpp.toLocaleString('id-ID')} | HPP/pcs: Rp ${Math.round(r300.hppPerPcs).toLocaleString('id-ID')} | Jual: Rp ${r300.hargaJualPerPcs.toLocaleString('id-ID')}`);
-console.log(`Respon Perubahan Parameter Insheet: ${selisihHpp > 0 ? `✅ BERHASIL DINAMIS (Selisih Biaya: Rp ${selisihHpp.toLocaleString('id-ID')})` : '❌ TIDAK BERUBAH'}`);
+).totalHpp;
+assertReactivity('insheetIsiOliver (100 vs 300)', testInsh100, testInsh300);
+
+// B. Test Desain Setting Isi (0 vs 2.500)
+const testDesain0 = calculateBukuTulisHpp(
+  { ukuran: '16 x 21', oplah: 3000, metodeCetakCover: 'Oliver', metodeCetakIsi: 'Oliver' },
+  { ...DEFAULT_BUKU_TULIS_PARAMS, tarifDesignIsiPerHlm: 0 }
+).totalHpp;
+const testDesain2500 = calculateBukuTulisHpp(
+  { ukuran: '16 x 21', oplah: 3000, metodeCetakCover: 'Oliver', metodeCetakIsi: 'Oliver' },
+  { ...DEFAULT_BUKU_TULIS_PARAMS, tarifDesignIsiPerHlm: 2500 }
+).totalHpp;
+assertReactivity('tarifDesignIsiPerHlm (0 vs 2.500)', testDesain0, testDesain2500);
+
+// C. Test Markup Kertas HVS (0% vs 5%)
+const testUp0 = calculateBukuTulisHpp(
+  { ukuran: '16 x 21', oplah: 3000, metodeCetakCover: 'Oliver', metodeCetakIsi: 'Oliver' },
+  { ...DEFAULT_BUKU_TULIS_PARAMS, upHvsPct: 0 }
+).totalHpp;
+const testUp5 = calculateBukuTulisHpp(
+  { ukuran: '16 x 21', oplah: 3000, metodeCetakCover: 'Oliver', metodeCetakIsi: 'Oliver' },
+  { ...DEFAULT_BUKU_TULIS_PARAMS, upHvsPct: 5 }
+).totalHpp;
+assertReactivity('upHvsPct (0% vs 5%)', testUp0, testUp5);
+
+// D. Test Ongkos Potong Sisir (150 vs 250)
+const testSisir150 = calculateBukuTulisHpp(
+  { ukuran: '16 x 21', oplah: 3000, metodeCetakCover: 'Oliver', metodeCetakIsi: 'Oliver' },
+  { ...DEFAULT_BUKU_TULIS_PARAMS, tarifSisirPerPcs: 150 }
+).totalHpp;
+const testSisir250 = calculateBukuTulisHpp(
+  { ukuran: '16 x 21', oplah: 3000, metodeCetakCover: 'Oliver', metodeCetakIsi: 'Oliver' },
+  { ...DEFAULT_BUKU_TULIS_PARAMS, tarifSisirPerPcs: 250 }
+).totalHpp;
+assertReactivity('tarifSisirPerPcs (150 vs 250)', testSisir150, testSisir250);
 
 console.log('\n========================================================================================');
 console.log(`TOTAL UJI PERMUTASI: ${totalTests} | LULUS: ${passedTests} | GAGAL: ${totalTests - passedTests}`);

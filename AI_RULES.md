@@ -60,6 +60,7 @@ Dokumen ini adalah **Hukum Tertinggi** bagi asisten AI yang bekerja pada reposit
   3. **Presisi 1:1 Matematis**: Semua sel manual non-rumus wajib dinamis di `MasterParams`, dan semua formula mesin (Print Inter, Oliver, SM, Ryobi, dll) wajib mengikuti formula matematis nyata dari sheet `BUKU` Excel, bukan perkiraan naive.
   4. **Uji Permutasi Dropdown (No Permutation Benchmark = Not Done)**: Dilarang hanya menguji snapshot statis file disk. Wajib menguji seluruh permutasi opsi dropdown mesin cetak dan finishing di terminal.
   5. **Anti-Magic Number & Komentar Cell Mapping**: Setiap rumus di kalkulator wajib mencantumkan komentar letak cell asli Excel (`BUKU!xxx`). Dilarang keras menebak angka pengali sendiri.
+  6. **Uji Reaktivitas Parameter Wajib (Anti-Conditional Hijacking)**: Dilarang membelokkan variabel mesin tertentu ke mesin lain berdasarkan kondisi oplah. Setiap parameter form input wajib diuji reaktivitasnya di skrip benchmark (nilai input diubah dari A ke B wajib menghasilkan delta HPP nyata > 0; jika delta = 0 maka audit dinyatakan GAGAL/REJECT).
 
 ---
 

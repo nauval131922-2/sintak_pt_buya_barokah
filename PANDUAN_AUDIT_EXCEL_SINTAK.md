@@ -125,6 +125,10 @@ Buat skrip pengujian (via Node / TSX) untuk membandingkan kalkulasi Excel vs Sin
    - Dilarang keras menebak angka pengali (misal mengalikan 2 jika di cell Excel tertulis 1, atau menebak dimensi bentangan jika di rumus Excel menggunakan sel lain).
 4. **Parameter Spesifik Skala Oplah (Cross-Tier Parameter Drift)**:
    - Jika file oplah kecil (≤500) dan oplah besar (≥3.000) memiliki nilai acuan master berbeda (misal setting desain gratis pada oplah besar atau insheet waste berbeda), kalkulator dan simulator wajib memperlakukan parameter tersebut sesuai tier oplahnya atau mendokumentasikannya secara presisi.
+5. **Uji Reaktivitas Parameter Wajib (Anti-Conditional Hijacking)**:
+   - Skrip benchmark **WAJIB** menyertakan pengujian reaktivitas (*sensitivity test*) untuk parameter input form.
+   - Uji dengan membandingkan hasil saat parameter diubah (misal insheet 100 vs 300, tarif desain 0 vs 2.500, markup 0% vs 5%).
+   - Skrip **WAJIB meng-assert bahwa perubahan nilai input menghasilkan perubahan biaya nyata (`deltaHpp > 0`)**. Jika nilai parameter diubah tetapi hasil kalkulasi tetap sama (`delta === 0`), audit dinyatakan **GAGAL TOTAL (terindikasi hardcode/variabel dibajak)**.
 
 ### Tahap 8: Audit & Sinkronisasi Dokumentasi (Manual Pengguna & Panduan Simulator)
 Setiap kali ada audit atau perubahan parameter/rumus, **WAJIB** mengaudit dan memperbarui modal petunjuk di kedua komponen:
@@ -155,5 +159,6 @@ Setiap kali ada audit atau perubahan parameter/rumus, **WAJIB** mengaudit dan me
 | 11 | Isi opsi form input spesifikasi & breakdown biaya di Tab Kalkulasi sudah lengkap sesuai Excel | [ ] |
 | 12 | Benchmark otomatis seluruh tier oplah menghasilkan selisih Rp 0 | [ ] |
 | 13 | Uji stres perubahan parameter dinamis menghasilkan angka yang identik | [ ] |
-| 14 | Pemetaan cell Excel pada Manual Pengguna di Tab Master Parameter akurat 100% | [ ] |
-| 15 | Panduan Penggunaan di Tab Kalkulasi sudah sinkron dengan fitur simulator | [ ] |
+| 14 | Uji reaktivitas parameter membuktikan semua input form berdampak nyata pada kalkulasi (tidak ada variabel mati / conditional hijacking) | [ ] |
+| 15 | Pemetaan cell Excel pada Manual Pengguna di Tab Master Parameter akurat 100% | [ ] |
+| 16 | Panduan Penggunaan di Tab Kalkulasi sudah sinkron dengan fitur simulator | [ ] |

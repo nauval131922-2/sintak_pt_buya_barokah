@@ -230,24 +230,22 @@ export function calculateBukuTulisHpp(
 
   // 2. ISI BUKU (72 Halaman = 18 Lembar HVS 70 gsm)
   let biayaKertasIsi = 0;
-  let biayaDesainIsi = 0;
+  // BUKU!AT7: Desain isi = Master!D26 * 18 lembar (72 halaman)
+  const biayaDesainIsi = p.tarifDesignIsiPerHlm * 18;
   let biayaPlatIsi = 0;
   let biayaCetakIsi = 0;
   let kebutuhanIsi = 0;
 
   if (isIsiRyobi) {
     // Cetak Ryobi (15.5 x 21 cm / 16 x 21 cm): Folio muat 4 isi (AN = 18)
-    // BUKU!AT7: Desain isi 18 hal x 2500 = 45.000
-    biayaDesainIsi = p.tarifDesignIsiPerHlm * 18;
     const an = 18;
     const insheet = p.insheetIsiRyobi ?? 30;
     const apIsi = (validOplah * an) + (insheet * an);
     kebutuhanIsi = apIsi;
 
-    // Berat folio rim: (21.5 * 33 * 70)/20000 = 2.48325 kg * 15700 * (1 + up%) / rim
-    const upHvs = validOplah <= 500 ? (p.upHvsPct / 100) : 0;
+    // Berat folio rim: (21.5 * 33 * 70)/20000 = 2.48325 kg * 15700 * (1 + up%) / rim (BUKU!AU29)
     const beratFolioKg = (21.5 * 33 * 70) / 20000;
-    const hargaFolioRim = beratFolioKg * p.tarifHvs70Kg * (1 + upHvs);
+    const hargaFolioRim = beratFolioKg * p.tarifHvs70Kg * (1 + p.upHvsPct / 100);
     biayaKertasIsi = (apIsi / 500) * hargaFolioRim;
 
     biayaPlatIsi = p.tarifPlatRyobi; // 10.000
@@ -261,9 +259,6 @@ export function calculateBukuTulisHpp(
       `1 Plat CTP + Ongkos Cetak Ryobi (Min Rp ${p.minOrderRyobi.toLocaleString('id-ID')} + Over ${overDrekIsi} drek)`);
   } else if (isIsiOliver) {
     // Cetak Oliver (16 x 21 cm): Plano 65x100 potong 2 (muat 32 isi per plano, AN=4.5, AN6=5)
-    // BUKU!AT7: Desain isi. Pada file 3.000-10.000 pcs, Master!D26 = 0 (Free setting).
-    // Pada file < 3000 pcs, Master!D26 = 2500/hlm * 18 cuttern = 45.000.
-    biayaDesainIsi = isOplahBesar ? 0 : p.tarifDesignIsiPerHlm * 18;
     const an = 4.5;
     const an6 = 5; // ROUNDUP(4.5, 0)
     // BUKU!AI6: Insheet Isi Oliver mengacu dinamis ke p.insheetIsiOliver
@@ -272,8 +267,8 @@ export function calculateBukuTulisHpp(
     kebutuhanIsi = Math.ceil(apIsi);
     const aoIsi = apIsi * 2;
 
-    // Berat plano 65x100x70/20000 = 22.75 kg * 15700 / 500 = Rp 714,35 / plano (BUKU!AU29)
-    const hargaPlanoIsi = ((65 * 100 * 70) / 20000 * p.tarifHvs70Kg) / 500;
+    // Berat plano 65x100x70/20000 = 22.75 kg * 15700 * (1 + up%) / 500 = Rp 714,35 / plano (BUKU!AU29)
+    const hargaPlanoIsi = ((65 * 100 * 70) / 20000 * p.tarifHvs70Kg * (1 + p.upHvsPct / 100)) / 500;
     biayaKertasIsi = apIsi * hargaPlanoIsi;
 
     biayaPlatIsi = p.tarifPlatOliver; // 45.000
@@ -287,8 +282,6 @@ export function calculateBukuTulisHpp(
       `1 Plat CTP + Ongkos Cetak Oliver (Min Rp ${p.minOrderOliver.toLocaleString('id-ID')} + Over ${overDrekIsi} drek)`);
   } else {
     // Cetak Speedmaster SM 102 (16 x 21 cm, Oplah >= 3000): Plano 65x100 potong 1 (muat 32 isi, AN=2.25, AN6=3)
-    // BUKU!AT7: Free setting di oplah besar (Master!D26 = 0)
-    biayaDesainIsi = 0;
     const an = 2.25;
     const an6 = 3; // ROUNDUP(2.25, 0)
     const insheet = p.insheetIsiSm ?? 300;
@@ -296,7 +289,8 @@ export function calculateBukuTulisHpp(
     kebutuhanIsi = Math.ceil(apIsi);
     const aoIsi = apIsi * 1;
 
-    const hargaPlanoIsi = ((65 * 100 * 70) / 20000 * p.tarifHvs70Kg) / 500;
+    // Berat plano 65x100x70/20000 = 22.75 kg * 15700 * (1 + up%) / 500 (BUKU!AU29)
+    const hargaPlanoIsi = ((65 * 100 * 70) / 20000 * p.tarifHvs70Kg * (1 + p.upHvsPct / 100)) / 500;
     biayaKertasIsi = apIsi * hargaPlanoIsi;
 
     biayaPlatIsi = p.tarifPlatSm; // 78.000
