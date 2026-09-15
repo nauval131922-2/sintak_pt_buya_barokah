@@ -140,26 +140,49 @@ export async function GET(request: NextRequest) {
       ORDER_BY = DEFAULT_ORDER;
     }
 
-    const sqlData = `SELECT ${SELECT_COLS} FROM jurnal_harian_produksi ${whereClause} ${ORDER_BY} LIMIT ? OFFSET ?`;
+    const sqlDataFor = (from: string) => `SELECT ${SELECT_COLS} FROM ${from} ${whereClause} ${ORDER_BY} LIMIT ? OFFSET ?`;
+    // ponytail: paksa idx_jurnal_tgl_deleted hanya bila ada rentang tanggal TANPA filter equality
+    // (bagian/karyawan/order/pekerjaan/belumRealisasi). Alasan: planner salah memilih full scan
+    // idx_jurnal_deleted_at untuk search+1hari (140ms → 0ms di dev). Dengan equality filter,
+    // planner dibiarkan bebas (covering index bagian/tgl biasanya lebih baik). Range scan tak pernah
+    // lebih buruk dari full scan karena himpunan barisnya subset.
+    // ceiling: rentang lebar (1 thn) + search tetap berat; upgrade: FTS/pembatasan rentang di UI
+    const hasDateRange = !!(startDate && endDate);
+    const forceDateIndex = hasDateRange && !bagian && !namaKaryawan && !noOrder && !jenisPekerjaan && !belumRealisasi;
+    const INDEXED_FROM = 'jurnal_harian_produksi INDEXED BY idx_jurnal_tgl_deleted';
+    const PLAIN_FROM = 'jurnal_harian_produksi';
+    const mainFrom = forceDateIndex ? INDEXED_FROM : PLAIN_FROM;
     const additionalWhere = whereParts.length > 1 ? 'AND ' + whereParts.filter(p => p !== 'deleted_at IS NULL').join(' AND ') : '';
 
     // ponytail: count + totals digabung 1 query (dulu 2 scan penuh). Sekalian perbaiki bug lama:
     // jenisPekerjaan tidak masuk kondisi totals sehingga total tampil 0 saat filter hanya pekerjaan.
-    const hasFilter = !!(search || (startDate && endDate) || bagian || namaKaryawan || noOrder || jenisPekerjaan || belumRealisasi);
+    const hasFilter = !!(search || hasDateRange || bagian || namaKaryawan || noOrder || jenisPekerjaan || belumRealisasi);
     const wantTotals = needTotals && hasFilter;
     const sqlCount = wantTotals
-      ? `SELECT COUNT(*) as count, COALESCE(SUM(COALESCE(realisasi, 0)), 0) as totalRealisasi, COALESCE(SUM(COALESCE(rijek, 0)), 0) as totalRijek FROM jurnal_harian_produksi WHERE deleted_at IS NULL ${additionalWhere}`
-      : `SELECT COUNT(*) as count FROM jurnal_harian_produksi WHERE deleted_at IS NULL ${additionalWhere}`;
+      ? `SELECT COUNT(*) as count, COALESCE(SUM(COALESCE(realisasi, 0)), 0) as totalRealisasi, COALESCE(SUM(COALESCE(rijek, 0)), 0) as totalRijek FROM ${mainFrom} WHERE deleted_at IS NULL ${additionalWhere}`
+      : `SELECT COUNT(*) as count FROM ${mainFrom} WHERE deleted_at IS NULL ${additionalWhere}`;
 
     const sqlLastUpdated = `SELECT strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) as lastUpdated
           FROM activity_logs
           WHERE table_name = 'jurnal_harian_produksi' AND action_type = 'UPLOAD'`;
 
-    const batchResults = await db.batch([
-      { sql: sqlData, args: [...args, limit, offset] },
-      { sql: sqlCount, args },
+    const runBatch = (from: string) => db.batch([
+      { sql: sqlDataFor(from), args: [...args, limit, offset] },
+      { sql: from === mainFrom ? sqlCount : sqlCount.replace(mainFrom, from), args },
       { sql: sqlLastUpdated, args: [] },
     ], "read");
+
+    let batchResults;
+    try {
+      batchResults = await runBatch(mainFrom);
+    } catch (e: any) {
+      // Fallback tanpa INDEXED BY bila index belum ada di DB tersebut (mis. remote baru)
+      if (forceDateIndex && /no such index|indexed by/i.test(String(e?.message || e))) {
+        batchResults = await runBatch(PLAIN_FROM);
+      } else {
+        throw e;
+      }
+    }
 
     const data = batchResults[0].rows;
     const total = Number((batchResults[1].rows[0] as any).count);
