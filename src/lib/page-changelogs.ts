@@ -429,6 +429,17 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
       'Urutan Koordinasi-first dikembalikan sesuai permintaan',
     ],
   }),
+  'jurnal-harian-produksi-2026-09-15-2': entry({
+    pageKey: 'jurnal-harian-produksi',
+    title: 'Jurnal Harian Produksi',
+    version: '2026-09-15-2',
+    date: '15 Sep 2026',
+    sortDate: '2026-09-15',
+    permissionKeys: ['produksi_jhp'],
+    items: [
+      'Rentang tanggal otomatis kini dibatasi maksimal 31 hari agar daftar tetap ringan dan cepat dibuka',
+    ],
+  }),
   'jurnal-harian-produksi-2026-09-07': entry({
     pageKey: 'jurnal-harian-produksi',
     title: 'Jurnal Harian Produksi',
