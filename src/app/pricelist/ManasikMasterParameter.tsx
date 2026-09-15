@@ -65,7 +65,7 @@ export default function ManasikMasterParameter({
   };
 
   const isFieldModified = (key: keyof ManasikMasterParams) => {
-    return customParams[key] !== DEFAULT_MANASIK_PARAMS[key];
+    return (customParams[key] ?? DEFAULT_MANASIK_PARAMS[key]) !== DEFAULT_MANASIK_PARAMS[key];
   };
 
   const handleResetField = (key: keyof ManasikMasterParams) => {
@@ -74,8 +74,8 @@ export default function ManasikMasterParameter({
   };
 
   const isModified = React.useMemo(() => {
-    return (Object.keys(DEFAULT_MANASIK_PARAMS) as (keyof ManasikMasterParams)[]).some(
-      (key) => customParams[key] !== DEFAULT_MANASIK_PARAMS[key]
+    return MANASIK_VISIBLE_KEYS.some(
+      (key) => (customParams[key] ?? DEFAULT_MANASIK_PARAMS[key]) !== DEFAULT_MANASIK_PARAMS[key]
     );
   }, [customParams]);
 
@@ -100,6 +100,9 @@ export default function ManasikMasterParameter({
       cyan: 'bg-cyan-50 text-cyan-700 border-cyan-200',
       slate: 'bg-slate-100 text-slate-600 border-slate-200',
     }[badgeColor];
+
+    const rawVal = customParams[key] ?? DEFAULT_MANASIK_PARAMS[key];
+    const val = typeof rawVal === 'number' ? rawVal : 0;
 
     return (
       <div
@@ -134,7 +137,7 @@ export default function ManasikMasterParameter({
         <div className="flex items-center gap-1.5">
           {isRupiah ? (
             <ThousandInput
-              value={customParams[key] as number}
+              value={val}
               onValueChange={(v) => handleChange(key, v || 0)}
               className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
               prefix="Rp"
@@ -143,7 +146,7 @@ export default function ManasikMasterParameter({
           ) : (
             <input
               type="number"
-              value={customParams[key] as number}
+              value={val}
               onChange={(e) => handleChange(key, Number(e.target.value) || 0)}
               className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
             />

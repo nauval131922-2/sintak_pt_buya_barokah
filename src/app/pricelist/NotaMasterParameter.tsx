@@ -55,7 +55,7 @@ export default function NotaMasterParameter({
   };
 
   const isFieldModified = (key: keyof NotaMasterParams) => {
-    return customParams[key] !== DEFAULT_NOTA_PARAMS[key];
+    return (customParams[key] ?? DEFAULT_NOTA_PARAMS[key]) !== DEFAULT_NOTA_PARAMS[key];
   };
 
   const handleResetField = (key: keyof NotaMasterParams) => {
@@ -64,7 +64,7 @@ export default function NotaMasterParameter({
   };
 
   const isModified = React.useMemo(() => {
-    return NOTA_VISIBLE_KEYS.some((key) => customParams[key] !== DEFAULT_NOTA_PARAMS[key]);
+    return NOTA_VISIBLE_KEYS.some((key) => (customParams[key] ?? DEFAULT_NOTA_PARAMS[key]) !== DEFAULT_NOTA_PARAMS[key]);
   }, [customParams]);
 
   const handleResetAll = () => {
@@ -83,41 +83,45 @@ export default function NotaMasterParameter({
     label: string,
     isRupiah = true,
     isDecimal = false
-  ) => (
-    <div
-      className={`p-2.5 rounded-lg border transition-all ${
-        isFieldModified(key)
-          ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-          : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-      }`}
-    >
-      <div className="flex items-center justify-between gap-1 mb-1.5">
-        <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
-          {label}
-        </label>
-        {isFieldModified(key) && (
-          <button
-            type="button"
-            onClick={() => handleResetField(key)}
-            className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-            title="Reset ke default"
-          >
-            <RotateCcw className="w-2.5 h-2.5" /> Def
-          </button>
-        )}
+  ) => {
+    const rawVal = customParams[key] ?? DEFAULT_NOTA_PARAMS[key];
+    const val = typeof rawVal === 'number' ? rawVal : 0;
+    return (
+      <div
+        className={`p-2.5 rounded-lg border transition-all ${
+          isFieldModified(key)
+            ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+            : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
+        }`}
+      >
+        <div className="flex items-center justify-between gap-1 mb-1.5">
+          <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
+            {label}
+          </label>
+          {isFieldModified(key) && (
+            <button
+              type="button"
+              onClick={() => handleResetField(key)}
+              className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+              title="Reset ke default"
+            >
+              <RotateCcw className="w-2.5 h-2.5" /> Def
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5">
+          <ThousandInput
+            value={val}
+            onValueChange={(v) => handleChange(key, v || 0)}
+            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+            prefix={isRupiah ? 'Rp' : undefined}
+            suffix={isRupiah ? undefined : '%'}
+            allowDecimals={isDecimal}
+          />
+        </div>
       </div>
-      <div className="flex items-center gap-1.5">
-        <ThousandInput
-          value={customParams[key] as number}
-          onValueChange={(v) => handleChange(key, v || 0)}
-          className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-          prefix={isRupiah ? 'Rp' : undefined}
-          suffix={isRupiah ? undefined : '%'}
-          allowDecimals={isDecimal}
-        />
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
