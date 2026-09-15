@@ -106,13 +106,59 @@ export default function BukuTulisSimulator({
             setMarginPct(inp.marginPct);
             setNegoDiskonPct(inp.negoDiskonPct);
             setSimulationTitle(item.title);
+            return;
           }
         }
       }
+
+      // Restore draft settingan pengguna dari localStorage saat pindah tab
+      const rawDraft = localStorage.getItem('sintak_buku_tulis_simulator_draft');
+      if (rawDraft) {
+        const d = JSON.parse(rawDraft);
+        if (d.oplah !== undefined) setOplah(Number(d.oplah) || 500);
+        if (d.ukuran !== undefined) setUkuran(d.ukuran);
+        if (d.metodeCetakCover !== undefined) setMetodeCetakCover(d.metodeCetakCover);
+        if (d.metodeCetakIsi !== undefined) setMetodeCetakIsi(d.metodeCetakIsi);
+        if (d.opsiLaminasi !== undefined) setOpsiLaminasi(Boolean(d.opsiLaminasi));
+        if (d.opsiSisir !== undefined) setOpsiSisir(Boolean(d.opsiSisir));
+        if (d.marginPct !== undefined) setMarginPct(Number(d.marginPct) || 20);
+        if (d.negoDiskonPct !== undefined) setNegoDiskonPct(Number(d.negoDiskonPct) || 4);
+      }
     } catch (e) {
-      console.error('Failed to load saved buku tulis simulations:', e);
+      console.error('Failed to load saved buku tulis simulations or draft:', e);
     }
   }, [activeSimulationId]);
+
+  // Simpan draft settingan simulator secara otomatis saat ada perubahan input (auto-persist)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      try {
+        const draft = {
+          oplah,
+          ukuran,
+          metodeCetakCover,
+          metodeCetakIsi,
+          opsiLaminasi,
+          opsiSisir,
+          marginPct,
+          negoDiskonPct,
+        };
+        localStorage.setItem('sintak_buku_tulis_simulator_draft', JSON.stringify(draft));
+      } catch (e) {
+        console.error('Failed to save buku tulis simulator draft:', e);
+      }
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [
+    oplah,
+    ukuran,
+    metodeCetakCover,
+    metodeCetakIsi,
+    opsiLaminasi,
+    opsiSisir,
+    marginPct,
+    negoDiskonPct,
+  ]);
 
   const result = useMemo(
     () =>
