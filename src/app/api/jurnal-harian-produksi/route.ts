@@ -41,8 +41,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (search) {
-      // ponytail: token-based AND search — tiap token harus cocok di salah satu kolom
-      // ceiling: O(tokens × cols) LIKE scans; upgrade path: FTS5 virtual table jika data > 1M baris
+      // ponytail: token-based AND search — tiap token harus cocok di salah satu kolom.
+      // Sengaja tetap LIKE (bukan FTS): benchmark membuktikan FTS+OR-manual tak lebih cepat
+      // (count 200ms vs 194ms — OR nama_order_manual* memaksa full scan juga) tapi FTS prefix-match
+      // menghilangkan recall substring (cth. 'resetting' tak cocok 'setting*'). Jalur normal UI
+      // selalu berfilter tanggal sehingga LIKE hanya memindai ~1 hari (≈0ms).
       const cols = ['nama_karyawan', 'nama_order', 'no_order', 'jenis_pekerjaan', 'nama_order_2', 'no_order_2', 'jenis_pekerjaan_2', 'nama_order_manual', 'nama_order_manual_2'];
       const colClause = cols.map(c => `${c} LIKE ?`).join(' OR ');
       const tokens = search.trim().split(/\s+/).filter(Boolean).slice(0, 10); // max 10 token
@@ -108,7 +111,7 @@ export async function GET(request: NextRequest) {
       id:               'id',
     };
 
-    const DEFAULT_ORDER = `ORDER BY
+    const DEFAULT_ORDER_FULL = `ORDER BY
         tgl ASC,
         CASE UPPER(bagian)
           WHEN 'SETTING' THEN 1 WHEN 'QUALITY CONTROL' THEN 2 WHEN 'CETAK' THEN 3
@@ -116,6 +119,19 @@ export async function GET(request: NextRequest) {
         END ASC,
         CASE WHEN jenis_pekerjaan LIKE '%Koordinasi%' THEN 0 ELSE 1 END ASC,
         absensi ASC, id ASC`;
+
+    // ponytail: tanpa filter tanggal, FULL sort 180rb baris di memori (~216ms). FAST
+    // membuang klausa LIKE-Koordinasi lalu dipaksa (INDEXED BY) memakai partial index
+    // idx_jurnal_main_active → ~9ms tanpa TEMP B-TREE. Beda vs FULL hanya urutan baris
+    // 'Koordinasi' dalam grup yang sama; FULL dipakai saat range tanggal ada (murah).
+    const DEFAULT_ORDER_FAST = `ORDER BY
+        tgl ASC,
+        CASE UPPER(bagian)
+          WHEN 'SETTING' THEN 1 WHEN 'QUALITY CONTROL' THEN 2 WHEN 'CETAK' THEN 3
+          WHEN 'FINISHING' THEN 4 WHEN 'GUDANG' THEN 5 WHEN 'TEKNISI' THEN 6 WHEN 'MESIN' THEN 7 ELSE 8
+        END ASC,
+        absensi ASC, id ASC`;
+    const DEFAULT_ORDER = (startDate && endDate) ? DEFAULT_ORDER_FULL : DEFAULT_ORDER_FAST;
 
     const sortRaw = searchParams.get('sort') || '';
     let ORDER_BY: string;
@@ -134,42 +150,52 @@ export async function GET(request: NextRequest) {
       ORDER_BY = DEFAULT_ORDER;
     }
 
-    const sqlData = `SELECT ${SELECT_COLS} FROM jurnal_harian_produksi ${whereClause} ${ORDER_BY} LIMIT ? OFFSET ?`;
-    // Count query — pakai INDEXED BY idx_jurnal_tgl_deleted jika ada filter tgl
-    const countTableRef = (startDate && endDate) ? 'jurnal_harian_produksi INDEXED BY idx_jurnal_tgl_deleted' : 'jurnal_harian_produksi';
+    const sqlDataFor = (from: string) => `SELECT ${SELECT_COLS} FROM ${from} ${whereClause} ${ORDER_BY} LIMIT ? OFFSET ?`;
+    // INDEXED BY hanya untuk query data di jalur tanpa-tanggal-tanpa-sort (ORDER persis = prefix index).
+    // Count dibiarkan ke planner agar tetap bisa memakai index filter (bagian/tgl). Fallback plain jika index belum ada.
+    const useMainIndex = !sortRaw && !(startDate && endDate);
+    const INDEXED_FROM = 'jurnal_harian_produksi INDEXED BY idx_jurnal_main_active';
+    const PLAIN_FROM = 'jurnal_harian_produksi';
     const additionalWhere = whereParts.length > 1 ? 'AND ' + whereParts.filter(p => p !== 'deleted_at IS NULL').join(' AND ') : '';
-    const sqlTotal = `SELECT COUNT(*) as count FROM ${countTableRef} WHERE deleted_at IS NULL ${additionalWhere}`;
 
-    // Totals query — hanya jalan jika needTotals=true (filter aktif di client)
-    let sqlTotals = '';
-    if (needTotals && (search || startDate || endDate || bagian || namaKaryawan || noOrder || belumRealisasi)) {
-      sqlTotals = `SELECT COALESCE(SUM(COALESCE(realisasi, 0)), 0) as totalRealisasi, COALESCE(SUM(COALESCE(rijek, 0)), 0) as totalRijek FROM ${countTableRef} WHERE deleted_at IS NULL ${additionalWhere}`;
-    }
+    // ponytail: count + totals digabung 1 query (dulu 2 scan penuh). Sekalian perbaiki bug lama:
+    // jenisPekerjaan tidak masuk kondisi totals sehingga total tampil 0 saat filter hanya pekerjaan.
+    const hasFilter = !!(search || (startDate && endDate) || bagian || namaKaryawan || noOrder || jenisPekerjaan || belumRealisasi);
+    const wantTotals = needTotals && hasFilter;
+    const sqlCount = wantTotals
+      ? `SELECT COUNT(*) as count, COALESCE(SUM(COALESCE(realisasi, 0)), 0) as totalRealisasi, COALESCE(SUM(COALESCE(rijek, 0)), 0) as totalRijek FROM jurnal_harian_produksi WHERE deleted_at IS NULL ${additionalWhere}`
+      : `SELECT COUNT(*) as count FROM jurnal_harian_produksi WHERE deleted_at IS NULL ${additionalWhere}`;
 
     const sqlLastUpdated = `SELECT strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) as lastUpdated
           FROM activity_logs
           WHERE table_name = 'jurnal_harian_produksi' AND action_type = 'UPLOAD'`;
 
-    const batchStmts: any[] = [
-      { sql: sqlData, args: [...args, limit, offset] },
-      { sql: sqlTotal, args },
-    ];
-    if (sqlTotals) {
-      batchStmts.push({ sql: sqlTotals, args });
-    }
-    batchStmts.push({ sql: sqlLastUpdated, args: [] });
+    const runBatch = (from: string) => db.batch([
+      { sql: sqlDataFor(from), args: [...args, limit, offset] },
+      { sql: sqlCount, args },
+      { sql: sqlLastUpdated, args: [] },
+    ], "read");
 
-    const batchResults = await db.batch(batchStmts, "read");
+    let batchResults;
+    try {
+      batchResults = await runBatch(useMainIndex ? INDEXED_FROM : PLAIN_FROM);
+    } catch (e: any) {
+      if (useMainIndex && /no such index|indexed by/i.test(String(e?.message || e))) {
+        batchResults = await runBatch(PLAIN_FROM);
+      } else {
+        throw e;
+      }
+    }
 
     const data = batchResults[0].rows;
     const total = Number((batchResults[1].rows[0] as any).count);
     let totalRealisasi = 0, totalRijek = 0;
-    if (sqlTotals) {
-      const totals = batchResults[2].rows[0] as any;
-      totalRealisasi = Number(totals?.totalRealisasi || 0);
-      totalRijek = Number(totals?.totalRijek || 0);
+    if (wantTotals) {
+      const row = batchResults[1].rows[0] as any;
+      totalRealisasi = Number(row?.totalRealisasi || 0);
+      totalRijek = Number(row?.totalRijek || 0);
     }
-    const lastUpdated = batchResults[batchResults.length - 1].rows[0] as any;
+    const lastUpdated = batchResults[2].rows[0] as any;
     const lastUpdatedVal = lastUpdated?.lastUpdated || null;
 
     return NextResponse.json({ success: true, data, total, page, limit, lastUpdated: lastUpdatedVal, totalRealisasi, totalRijek });

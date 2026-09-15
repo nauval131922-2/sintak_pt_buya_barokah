@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
         FROM (
           SELECT no_order, nama_order
           FROM jurnal_harian_produksi
-          WHERE no_order LIKE ? OR nama_order LIKE ?
+          WHERE (no_order LIKE ? OR nama_order LIKE ?) AND deleted_at IS NULL
           GROUP BY no_order
         ) jhp
         LEFT JOIN orders o ON o.faktur = jhp.no_order
@@ -74,6 +74,7 @@ export async function GET(request: NextRequest) {
         FROM (
           SELECT no_order, nama_order
           FROM jurnal_harian_produksi
+          WHERE deleted_at IS NULL
           GROUP BY no_order
         ) jhp
         LEFT JOIN orders o ON o.faktur = jhp.no_order

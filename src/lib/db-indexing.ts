@@ -61,10 +61,16 @@ export async function initIndexing(database: { execute: (sql: string) => Promise
     "CREATE INDEX IF NOT EXISTS idx_jurnal_tgl_no_order_2 ON jurnal_harian_produksi(tgl, no_order_2);",
 
     // 4b. Jurnal Harian Produksi Optimization
+    // ponytail: tanpa varian (…, deleted_at) — single-col idx_jurnal_no_order(_2) sudah
+    // meng-cover WHERE no_order=? + filter deleted_at, varian ganda hanya bengkakkan tulis saat upload
     "CREATE INDEX IF NOT EXISTS idx_jurnal_no_order ON jurnal_harian_produksi(no_order);",
     "CREATE INDEX IF NOT EXISTS idx_jurnal_no_order_2 ON jurnal_harian_produksi(no_order_2);",
-    "CREATE INDEX IF NOT EXISTS idx_jurnal_no_order_deleted ON jurnal_harian_produksi(no_order, deleted_at);",
-    "CREATE INDEX IF NOT EXISTS idx_jurnal_no_order_2_deleted ON jurnal_harian_produksi(no_order_2, deleted_at);",
+    // ponytail: partial index jalur panas — WHERE deleted_at IS NULL + ORDER default
+    // (tgl, CASE bagian, absensi, id). Tanpa ini sort 180rb baris ~216ms; dengannya ~9ms.
+    // Baris ini juga melindungi legacy idx_jurnal_main_active agar tidak hilang di DB lama.
+    "CREATE INDEX IF NOT EXISTS idx_jurnal_main_active ON jurnal_harian_produksi(tgl ASC, (CASE UPPER(bagian) WHEN 'SETTING' THEN 1 WHEN 'QUALITY CONTROL' THEN 2 WHEN 'CETAK' THEN 3 WHEN 'FINISHING' THEN 4 WHEN 'GUDANG' THEN 5 WHEN 'TEKNISI' THEN 6 WHEN 'MESIN' THEN 7 ELSE 8 END) ASC, absensi ASC, id ASC) WHERE deleted_at IS NULL;",
+    // ponytail: drop sisa index legacy yang tak ada di daftar V2 (mati, tapi bayar biaya tulis tiap insert)
+    "DROP INDEX IF EXISTS idx_jurnal_tgl_desc;",
     "CREATE INDEX IF NOT EXISTS idx_jurnal_tgl_asc ON jurnal_harian_produksi(tgl ASC);",
     "CREATE INDEX IF NOT EXISTS idx_jurnal_tgl_bagian ON jurnal_harian_produksi(tgl, bagian);",
     "CREATE INDEX IF NOT EXISTS idx_jurnal_tgl_nama_karyawan ON jurnal_harian_produksi(tgl, nama_karyawan);",
