@@ -91,6 +91,55 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Pricelist Multi-Produk ───
+  'pricelist-2026-09-10': entry({
+    pageKey: 'pricelist',
+    title: 'Kalkulasi Harga (Restrukturisasi 3 Varian Manasik, Parameter Yasin 2 Kolom, & Master Global)',
+    permissionKeys: ["pricelist_kalkulasi"],
+    sortDate: '2026-09-10',
+    date: '10 Sep 2026',
+    version: '2026-09-10-1',
+    items: [
+      "Restrukturisasi nama menu sidebar dan halaman menjadi Kalkulasi Harga serta tab kalkulator menjadi Kalkulasi",
+      "Penyusunan Master Parameter Manasik menjadi 3 kolom sesuai varian (Kosongan, Custom Cover, Cocard) dan sinkronisasi formula Cocard Oliver",
+      "Pemisahan Master Parameter Yasin menjadi 2 kolom varian (Softcover vs Hardcover) dan penetapan tarif plastik OPP mandiri (Rp 90/pcs)",
+      "Konfigurasi rentang oplah min-max dan insheet manual pada 5 mesin cetak di Master Global",
+      "Penerapan layout dual independent scroll pada Yasin Simulator dan pembersihan sisa istilah teknis non-Excel",
+    ],
+  }),
+
+  'pricelist-2026-09-14': entry({
+    pageKey: 'pricelist',
+    title: 'Kalkulasi Harga (Master Parameter Buku Tulis, Nota HVS 70, Brosur & Label KHQ)',
+    permissionKeys: ["pricelist_kalkulasi"],
+    sortDate: '2026-09-14',
+    date: '14 Sep 2026',
+    version: '2026-09-14-1',
+    items: [
+      "Kelengkapan 4 card Master Parameter Buku Tulis dan sinkronisasi awal engine kalkulasi dengan 6 file master Excel (selisih Rp 0)",
+      "Penyempurnaan Master Parameter Nota dengan opsi kertas HVS 70, persentase markup up, dan ongkos potong sisir",
+      "Kelengkapan Master Parameter Brosur & Label KHQ beserta modal panduan pengguna dan perbaikan pembulatan satuan rupiah",
+      "Penerapan tampilan dual independent scroll pada simulator Nota dan Buku Tulis",
+      "Penambahan parameter laminasi & finishing jilid dasar serta pemetaan cell Excel pada manual pengguna Surat Yasin",
+      "Penyelarasan formula lakban varian Cocard Manasik 100% cocok dengan sheet BUKU master Excel",
+    ],
+  }),
+
+  'pricelist-2026-09-15': entry({
+    pageKey: 'pricelist',
+    title: 'Kalkulasi Harga (Buku Tulis Mesin Cover SM 102 4W, Auto-Persist, & Parity Benchmark)',
+    permissionKeys: ["pricelist_kalkulasi"],
+    sortDate: '2026-09-15',
+    date: '15 Sep 2026',
+    version: '2026-09-15-1',
+    items: [
+      "Penambahan opsi dan engine kalkulasi mesin cover SM 102 4W serta mesin isi dinamis (SM vs Oliver 58) pada Buku Tulis dengan 100% parity Excel",
+      "Integrasi insheet dinamis (uji respon 100 vs 300 lbr) dan presisi formula jilid sisip serta laminasi cover Buku Tulis",
+      "Fitur auto-persist draft kalkulasi Buku Tulis ke localStorage browser agar form tidak reset saat berpindah tab simulator",
+      "Fallback controlled input guard pada master parameter Manasik, Yasin, dan Nota untuk mencegah warning uncontrolled input",
+      "Automated benchmark test suite untuk validasi presisi 100% formula (selisih Rp 0) pada 36 file Label KHQ, 17 varian Brosur, 3 file Nota, 4 file Yasin, dan 3 file Manasik",
+    ],
+  }),
+
   'pricelist-2026-09-09-2': entry({
     pageKey: 'pricelist',
     title: 'Pricelist & Simulator (Sinkronisasi Penuh 12 File Master Brosur & Formula Label KHQ)',
@@ -474,6 +523,19 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Master Pekerjaan Jurnal Produksi ───
+  'master-pekerjaan-jurnal-produksi-2026-09-14': entry({
+    pageKey: 'master-pekerjaan-jurnal-produksi',
+    title: 'Master Pekerjaan Jurnal Produksi',
+    permissionKeys: ["produksi_jhp_master_pekerjaan_jurnal_produksi"],
+    sortDate: '2026-09-14',
+    date: '14 Sep 2026',
+    version: '2026-09-14-1',
+    items: [
+      "Penyelarasan gaya tombol aksi agar konsisten dengan standar tabel Jurnal Harian Produksi",
+      "Pembersihan pencatatan log manual ganda pada aksi UPDATE/DELETE dan CREATE yang sebelumnya redundan dengan trigger database",
+    ],
+  }),
+
   'master-pekerjaan-jurnal-produksi-2026-07-26': entry({
     pageKey: 'master-pekerjaan-jurnal-produksi',
     title: 'Master Pekerjaan Jurnal Produksi',
