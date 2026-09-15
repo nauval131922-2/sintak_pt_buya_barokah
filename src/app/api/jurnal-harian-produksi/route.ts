@@ -111,7 +111,10 @@ export async function GET(request: NextRequest) {
       id:               'id',
     };
 
-    const DEFAULT_ORDER_FULL = `ORDER BY
+    // ponytail: urutan default dipertahankan persis seperti semula (Koordinasi tetap di atas
+    // dalam grupnya) — request user. Konsekuensi: tanpa filter tanggal, sort 180rb baris
+    // jalan di memori (~216ms). Jalur normal UI selalu berfilter tanggal sehingga tetap cepat (0-3ms).
+    const DEFAULT_ORDER = `ORDER BY
         tgl ASC,
         CASE UPPER(bagian)
           WHEN 'SETTING' THEN 1 WHEN 'QUALITY CONTROL' THEN 2 WHEN 'CETAK' THEN 3
@@ -119,19 +122,6 @@ export async function GET(request: NextRequest) {
         END ASC,
         CASE WHEN jenis_pekerjaan LIKE '%Koordinasi%' THEN 0 ELSE 1 END ASC,
         absensi ASC, id ASC`;
-
-    // ponytail: tanpa filter tanggal, FULL sort 180rb baris di memori (~216ms). FAST
-    // membuang klausa LIKE-Koordinasi lalu dipaksa (INDEXED BY) memakai partial index
-    // idx_jurnal_main_active → ~9ms tanpa TEMP B-TREE. Beda vs FULL hanya urutan baris
-    // 'Koordinasi' dalam grup yang sama; FULL dipakai saat range tanggal ada (murah).
-    const DEFAULT_ORDER_FAST = `ORDER BY
-        tgl ASC,
-        CASE UPPER(bagian)
-          WHEN 'SETTING' THEN 1 WHEN 'QUALITY CONTROL' THEN 2 WHEN 'CETAK' THEN 3
-          WHEN 'FINISHING' THEN 4 WHEN 'GUDANG' THEN 5 WHEN 'TEKNISI' THEN 6 WHEN 'MESIN' THEN 7 ELSE 8
-        END ASC,
-        absensi ASC, id ASC`;
-    const DEFAULT_ORDER = (startDate && endDate) ? DEFAULT_ORDER_FULL : DEFAULT_ORDER_FAST;
 
     const sortRaw = searchParams.get('sort') || '';
     let ORDER_BY: string;
@@ -150,12 +140,7 @@ export async function GET(request: NextRequest) {
       ORDER_BY = DEFAULT_ORDER;
     }
 
-    const sqlDataFor = (from: string) => `SELECT ${SELECT_COLS} FROM ${from} ${whereClause} ${ORDER_BY} LIMIT ? OFFSET ?`;
-    // INDEXED BY hanya untuk query data di jalur tanpa-tanggal-tanpa-sort (ORDER persis = prefix index).
-    // Count dibiarkan ke planner agar tetap bisa memakai index filter (bagian/tgl). Fallback plain jika index belum ada.
-    const useMainIndex = !sortRaw && !(startDate && endDate);
-    const INDEXED_FROM = 'jurnal_harian_produksi INDEXED BY idx_jurnal_main_active';
-    const PLAIN_FROM = 'jurnal_harian_produksi';
+    const sqlData = `SELECT ${SELECT_COLS} FROM jurnal_harian_produksi ${whereClause} ${ORDER_BY} LIMIT ? OFFSET ?`;
     const additionalWhere = whereParts.length > 1 ? 'AND ' + whereParts.filter(p => p !== 'deleted_at IS NULL').join(' AND ') : '';
 
     // ponytail: count + totals digabung 1 query (dulu 2 scan penuh). Sekalian perbaiki bug lama:
@@ -170,22 +155,11 @@ export async function GET(request: NextRequest) {
           FROM activity_logs
           WHERE table_name = 'jurnal_harian_produksi' AND action_type = 'UPLOAD'`;
 
-    const runBatch = (from: string) => db.batch([
-      { sql: sqlDataFor(from), args: [...args, limit, offset] },
+    const batchResults = await db.batch([
+      { sql: sqlData, args: [...args, limit, offset] },
       { sql: sqlCount, args },
       { sql: sqlLastUpdated, args: [] },
     ], "read");
-
-    let batchResults;
-    try {
-      batchResults = await runBatch(useMainIndex ? INDEXED_FROM : PLAIN_FROM);
-    } catch (e: any) {
-      if (useMainIndex && /no such index|indexed by/i.test(String(e?.message || e))) {
-        batchResults = await runBatch(PLAIN_FROM);
-      } else {
-        throw e;
-      }
-    }
 
     const data = batchResults[0].rows;
     const total = Number((batchResults[1].rows[0] as any).count);
