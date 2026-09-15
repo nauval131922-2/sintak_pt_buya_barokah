@@ -31,6 +31,13 @@ Jika ditemukan perbedaan angka master antar-file sejenis (misal file oplah kecil
 - **DILARANG MEMBUAT RUMUS KOMPROMI SENDIRI** atau mematikan/membajak variabel di kode backend.
 - **WAJIB BERHENTI** dan paparkan perbedaannya kepada pengguna untuk konfirmasi nilai default yang dikehendaki.
 
+## 1.3 Ketentuan Sumber Folder Master Excel (Baku & Permanen)
+- **HANYA Buku Manasik** yang mengambil sumber dari folder **Master Harga**:
+  `E:\percetakan buya barokah\backup\a1\02__PEMASARAN\0202_KALKULASI HARGA\020201 MASTER HARGA\02020107 BUKU, KITAB, MAJALAH\`
+- **Seluruh Produk Lainnya** (Buku Yasin, Nota, Brosur, Label KHQ, Buku Tulis, Stopmap, Syahadah, Kalender, Amplop, Kop Surat, Raport, dst.):
+  Wajib mengambil sumber dari folder rilis **Pricelist Juli 2026**:
+  `E:\percetakan buya barokah\backup\a1\02__PEMASARAN\0203_SURAT PENAWARAN HARGA (SPH) out\020326 2026 SURAT PENAWARAN HARGA (SPH) out\Pricelist Juli 2026\`
+
 ---
 
 ## 2. Pemetaan 4 Lapisan Arsitektur Excel Percetakan

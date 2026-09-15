@@ -27,6 +27,7 @@ Project ERP/internal web Next.js 16 App Router (TypeScript, Tailwind v4, SQLite/
   5. **Uji Reaktivitas Parameter Wajib**: Skrip benchmark wajib meng-assert bahwa perubahan nilai parameter form input menghasilkan perubahan HPP nyata (Delta HPP > 0). Jika Delta = 0, audit otomatis GAGAL/REJECT.
   6. **Aturan Stop & Tanya**: Jika ditemukan inkonsistensi nilai/parameter antar file master sejenis, dilarang membuat rumus kompromi sendiri atau mematikan variabel. Wajib berhenti dan tanyakan kepada pengguna.
   7. **Perilaku Scroll Simulator**: Seluruh tab Simulator wajib mengadopsi dual scroll independen standar Buku Manasik (`h-[calc(100vh-140px)] min-h-0` dengan `overflow-y-auto` mandiri pada kolom input kiri dan kolom breakdown kanan).
+  8. **Ketentuan Sumber Folder File Excel**: HANYA Buku Manasik yang mengambil sumber dari folder `020201 MASTER HARGA` (`02020107 BUKU, KITAB, MAJALAH`). Seluruh produk lainnya (Yasin, Nota, Brosur, Label KHQ, Buku Tulis, Stopmap, Kalender, dsb.) wajib mengambil sumber dari folder `Pricelist Juli 2026`.
 
 ## Arsitektur & Kebiasaan
 
