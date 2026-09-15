@@ -112,10 +112,19 @@ Buat skrip pengujian (via Node / TSX) untuk membandingkan kalkulasi Excel vs Sin
    - Harga Jual Final Bulat (Kolom Harga Jual Excel vs `summary.hargaJualPerPcs` Sintak)
 3. **Kriteria Kelulusan**: Selisih wajib **Rp 0** di seluruh tier oplah standar.
 
-### Tahap 7: Uji Stres & Modifikasi Dinamis (Stress Test)
-1. **Ubah Dropdown Validasi**: Ganti ukuran cetak, ganti varian isi/halaman, ganti mode laminasi (Glossy vs Doff vs Tanpa).
-2. **Ubah Nilai Manual Secara Ekstrem**: Ubah tarif cetak, insheet waste, biaya perakitan, dan margin profit di Master Parameter.
-3. Rekalkulasi formula Excel vs Sintak dengan angka baru tersebut. Jika hasil keduanya **tetap identik**, integrasi dinyatakan **100% Selesai & Terverifikasi**.
+### Tahap 7: Uji Stres Permutasi Dropdown Dinamis (Wajib - Dilarang Snapshot Statis Saja)
+1. **Dilarang Keras Hanya Menguji Kondisi File yang Tersimpan (Snapshot Disk)**:
+   - File Excel sering kali disimpan dalam 1 kondisi dropdown aktif tertentu (contoh: `Master!D25` tersimpan `SM`).
+   - Audit dianggap **TIDAK SAH & GAGAL** jika hanya menguji kondisi statis tersebut.
+2. **Uji Permutasi Seluruh Opsi Dropdown Mesin & Finishing (Dynamic Matrix)**:
+   - Skrip benchmark **WAJIB** mengeksekusi perhitungan untuk SEMUA kemungkinan pilihan dropdown mesin cetak Cover (POD, Oliver, SM) dan Isi (Ryobi, Oliver, SM) yang diizinkan pada tier tersebut.
+   - Uji opsi finishing aktif vs non-aktif (Laminasi Glossy vs Doff vs Tanpa, Sisir vs Tanpa).
+   - Tampilkan log terminal untuk setiap permutasi mesin dengan bukti `PASSED (0 selisih)`.
+3. **Anti-Magic Number & Komentar Alamat Cell Wajib**:
+   - Di file kalkulator (`*-calculator.ts`), setiap rumus komponen **WAJIB** menyertakan komentar alamat cell Excel asli (`// BUKU!BK7: ... = BK2`).
+   - Dilarang keras menebak angka pengali (misal mengalikan 2 jika di cell Excel tertulis 1, atau menebak dimensi bentangan jika di rumus Excel menggunakan sel lain).
+4. **Parameter Spesifik Skala Oplah (Cross-Tier Parameter Drift)**:
+   - Jika file oplah kecil (≤500) dan oplah besar (≥3.000) memiliki nilai acuan master berbeda (misal setting desain gratis pada oplah besar atau insheet waste berbeda), kalkulator dan simulator wajib memperlakukan parameter tersebut sesuai tier oplahnya atau mendokumentasikannya secara presisi.
 
 ### Tahap 8: Audit & Sinkronisasi Dokumentasi (Manual Pengguna & Panduan Simulator)
 Setiap kali ada audit atau perubahan parameter/rumus, **WAJIB** mengaudit dan memperbarui modal petunjuk di kedua komponen:
