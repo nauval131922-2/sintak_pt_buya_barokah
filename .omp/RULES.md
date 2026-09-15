@@ -10,5 +10,5 @@
    - **Ekstraksi Programatis di Awal (Pos 1)**: Wajib menjalankan skrip untuk mengekstrak seluruh aturan `dataValidation` (dropdown) dari sheet Master sebelum menulis kode apa pun. Dilarang melihat manual atau berasumsi.
    - **Anti-Conditional Hijacking & Direct Binding 1:1**: Setiap variabel parameter form input wajib terhubung langsung 1:1 ke rumusnya tanpa logika pengkondisian yang membelokkan variabel antar-mesin atau antar-tier oplah.
    - **Uji Reaktivitas Parameter Wajib**: Skrip benchmark wajib meng-assert bahwa perubahan nilai parameter form input menghasilkan perubahan HPP nyata (Delta HPP > 0). Jika Delta = 0, audit otomatis GAGAL/REJECT.
-   - **Permutasi Mesin Wajib**: Seluruh mesin cetak Cover dan Isi hasil ekstraksi dropdown wajib diuji di terminal dan menghasilkan selisih Rp 0.
+   - **Permutasi Dropdown & Opsi Wajib**: Seluruh opsi dropdown hasil ekstraksi (pilihan mesin cetak, varian bahan, ukuran, opsi finishing seperti laminasi/pond/spiral/poly/lem) wajib diuji kombinasinya di terminal dan menghasilkan selisih Rp 0.
    - **Aturan Stop & Tanya**: Jika ditemukan inkonsistensi nilai/parameter antar file master sejenis, dilarang membuat rumus kompromi sendiri atau mematikan variabel. Wajib berhenti dan tanyakan kepada pengguna.
