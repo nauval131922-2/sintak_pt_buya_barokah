@@ -10,6 +10,7 @@ export interface SpreadsheetTask {
   endDate: string;
   startTime?: string;
   endTime?: string;
+  sortOrder?: number;
   status: string;
   workDays?: string;
   note?: string;

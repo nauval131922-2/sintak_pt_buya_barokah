@@ -29,6 +29,7 @@ import {
   ClipboardList,
   PlusSquare,
   RotateCcw,
+  GripVertical,
   Eye,
   Calendar,
   AlertCircle,
@@ -274,9 +275,23 @@ const compareTasksChronological = (a: SpreadsheetTask, b: SpreadsheetTask): numb
   return (a.id || 0) - (b.id || 0);
 };
 
+// ponytail: manual menimpa auto — task yang pernah di-drag (sortOrder>0) selalu di atas, sisanya kronologis di bawah
+const getSortOrderValue = (t: SpreadsheetTask): number =>
+  typeof t.sortOrder === "number" && Number.isFinite(t.sortOrder) ? t.sortOrder : 0;
+
+const compareTasksDisplay = (a: SpreadsheetTask, b: SpreadsheetTask): number => {
+  const ao = getSortOrderValue(a);
+  const bo = getSortOrderValue(b);
+  if (ao > 0 || bo > 0) {
+    if (ao > 0 && bo > 0 && ao !== bo) return ao - bo;
+    if (ao > 0 !== bo > 0) return ao > 0 ? -1 : 1;
+  }
+  return compareTasksChronological(a, b);
+};
+
 // ponytail: single-pass loop untuk hitung summary tasks (active, selesai, last, next, note) tanpa multi-filter loop
 const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
-  const sorted = [...tasks].sort(compareTasksChronological);
+  const sorted = [...tasks].sort(compareTasksDisplay);
 
   let activeCount = 0;
   let selesaiCount = 0;
@@ -1206,6 +1221,43 @@ export default function LaporanPekerjaanClient({
       fetchData();
     }
   };
+
+  // Drag-to-sort permanen: urutan manual disimpan ke DB dan menimpa urutan kronologis
+  const handleReorderInlineTasks = useCallback(async (project: string, orderedIds: number[]) => {
+    const orderMap = new Map(orderedIds.map((id, i) => [id, i + 1]));
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.project === project && orderMap.has(t.id || 0)
+          ? { ...t, sortOrder: orderMap.get(t.id || 0)! }
+          : t
+      )
+    );
+    setSelectedProjectGroup((prev) =>
+      prev && prev.project === project
+        ? {
+            ...prev,
+            tasks: prev.tasks.map((t) =>
+              orderMap.has(t.id || 0) ? { ...t, sortOrder: orderMap.get(t.id || 0)! } : t
+            ),
+          }
+        : prev
+    );
+    try {
+      const res = await fetch("/api/laporan-pekerjaan", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ project, orderedIds }),
+      });
+      const json = await res.json();
+      if (!json.success) {
+        toast.error(json.error || "Gagal menyimpan urutan");
+        fetchData();
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Gagal menyimpan urutan");
+      fetchData();
+    }
+  }, [fetchData]);
 
   const handleCreateOrderManual = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -3357,6 +3409,7 @@ export default function LaporanPekerjaanClient({
           onSaveTask={handleSaveInlineEdit}
           onCreateTask={handleCreateInlineTask}
           onDeleteTask={handleDeleteInlineTask}
+          onReorder={handleReorderInlineTasks}
           roleConfig={roleConfig}
         />
       )}
@@ -3404,6 +3457,7 @@ function TaskDetailModal({
   onSaveTask,
   onCreateTask,
   onDeleteTask,
+  onReorder,
   roleConfig,
 }: {
   selectedProjectGroup: {
@@ -3417,15 +3471,18 @@ function TaskDetailModal({
   onSaveTask: (taskId: number, data: any) => Promise<void>;
   onCreateTask: (data: any) => Promise<void>;
   onDeleteTask: (taskId: number) => Promise<void>;
+  onReorder: (project: string, orderedIds: number[]) => Promise<void>;
   roleConfig?: RoleLaporanPekerjaanConfig;
 }) {
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
   const [isAddingTask, setIsAddingTask] = useState<boolean>(false);
+  const [dragId, setDragId] = useState<number | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<number | null>(null);
 
   // Column visibility & min width (px) agar form input dan tanggal/jam tidak gepeng di layar sempit/tablet
   const COLUMN_MIN_WIDTHS: Record<string, number> = {
-    no: 40,
+    no: 56,
     bagian: 140,
     pic: 150,
     task: 200,
@@ -3496,8 +3553,41 @@ function TaskDetailModal({
         }
         return true;
       })
-      .sort(compareTasksChronological);
+      .sort(compareTasksDisplay);
   }, [selectedProjectGroup.tasks, roleConfig]);
+
+  const hasManualOrder = useMemo(
+    () => sortedTasks.some((t) => getSortOrderValue(t) > 0),
+    [sortedTasks]
+  );
+
+  // ponytail: reorder lokal lalu persist via onReorder (optimistic sudah di parent)
+  const persistOrder = (next: typeof sortedTasks) => {
+    const orderedIds = next.map((t) => t.id || 0).filter((id) => id > 0);
+    if (orderedIds.length === 0) return;
+    onReorder(selectedProjectGroup.project, orderedIds);
+  };
+
+  const moveTask = (taskId: number, dir: -1 | 1) => {
+    const idx = sortedTasks.findIndex((t) => t.id === taskId);
+    const target = idx + dir;
+    if (idx < 0 || target < 0 || target >= sortedTasks.length) return;
+    const next = [...sortedTasks];
+    const [moved] = next.splice(idx, 1);
+    next.splice(target, 0, moved);
+    persistOrder(next);
+  };
+
+  const handleDropOnTask = (targetId: number) => {
+    if (!dragId || dragId === targetId) return;
+    const from = sortedTasks.findIndex((t) => t.id === dragId);
+    const to = sortedTasks.findIndex((t) => t.id === targetId);
+    if (from < 0 || to < 0) return;
+    const next = [...sortedTasks];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    persistOrder(next);
+  };
 
   return (
     <Portal>
@@ -3512,6 +3602,11 @@ function TaskDetailModal({
                 </span>
                 <span className="text-xs text-slate-500 font-medium">
                   {sortedTasks.length} Aktivitas Pekerjaan
+                  {hasManualOrder && canEdit && (
+                    <span className="ml-1.5 text-emerald-700 font-semibold" title="Urutan manual tersimpan dan menimpa urutan tanggal">
+                      • Urutan manual
+                    </span>
+                  )}
                 </span>
               </div>
               <h3 className="text-sm sm:text-base font-bold text-slate-800 truncate" title={selectedProjectGroup.project}>
@@ -3601,6 +3696,29 @@ function TaskDetailModal({
                     ) : (
                       <tr
                         key={task.id || idx}
+                        draggable={canEdit}
+                        onDragStart={(e) => {
+                          if (!canEdit) return;
+                          setDragId(task.id || null);
+                          e.dataTransfer.effectAllowed = "move";
+                        }}
+                        onDragOver={(e) => {
+                          if (!canEdit || !dragId || dragId === task.id) return;
+                          e.preventDefault();
+                          e.dataTransfer.dropEffect = "move";
+                          setDropTargetId(task.id || null);
+                        }}
+                        onDragLeave={() => setDropTargetId((prev) => (prev === task.id ? null : prev))}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          handleDropOnTask(task.id || 0);
+                          setDragId(null);
+                          setDropTargetId(null);
+                        }}
+                        onDragEnd={() => {
+                          setDragId(null);
+                          setDropTargetId(null);
+                        }}
                         onClick={() => setSelectedTaskId((prev) => (prev === task.id ? null : task.id || null))}
                         onDoubleClick={() => {
                           if (canEdit) {
@@ -3610,12 +3728,54 @@ function TaskDetailModal({
                         className={`transition-all group cursor-pointer ${
                           selectedTaskId === task.id
                             ? "bg-emerald-100/70 shadow-[inset_3px_0_0_0_#059669] font-semibold text-emerald-950"
-                            : "hover:bg-slate-50/80"
-                        }`}
+                            : dropTargetId === task.id
+                              ? "bg-emerald-50/80 shadow-[inset_0_2px_0_0_#059669]"
+                              : "hover:bg-slate-50/80"
+                        } ${dragId === task.id ? "opacity-50" : ""}`}
                       >
                         {isColVisible('no') && (
-                          <td className="px-1.5 py-2 text-center font-medium text-slate-400">
-                            {idx + 1}
+                          <td className="px-1 py-2 text-center font-medium text-slate-400">
+                            <div className="flex flex-col items-center gap-0.5">
+                              <div className="flex items-center gap-1">
+                                {canEdit && (
+                                  <span
+                                    className="cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 touch-none"
+                                    title="Geser untuk menyusun ulang urutan"
+                                  >
+                                    <GripVertical size={14} />
+                                  </span>
+                                )}
+                                <span>{idx + 1}</span>
+                              </div>
+                              {canEdit && (
+                                <div className="flex items-center gap-0.5">
+                                  <button
+                                    type="button"
+                                    disabled={idx === 0}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      moveTask(task.id || 0, -1);
+                                    }}
+                                    className="p-0.5 rounded text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                                    title="Pindah ke atas"
+                                  >
+                                    <ChevronUp size={12} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    disabled={idx === sortedTasks.length - 1}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      moveTask(task.id || 0, 1);
+                                    }}
+                                    className="p-0.5 rounded text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                                    title="Pindah ke bawah"
+                                  >
+                                    <ChevronDown size={12} />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </td>
                         )}
                         {isColVisible('bagian') && (

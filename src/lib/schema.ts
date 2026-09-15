@@ -70,6 +70,7 @@ export async function initSchema(db: any) {
       { table: 'laporan_pekerjaan', column: 'tgl_order', type: 'TEXT DEFAULT \'\'' },
       { table: 'laporan_pekerjaan', column: 'start_time', type: 'TEXT DEFAULT \'\'' },
       { table: 'laporan_pekerjaan', column: 'end_time', type: 'TEXT DEFAULT \'\'' },
+      { table: 'laporan_pekerjaan', column: 'sort_order', type: 'INTEGER DEFAULT 0' },
     ];
 
     for (const col of columns) {
@@ -391,6 +392,7 @@ export async function initSchema(db: any) {
       end_date TEXT DEFAULT '',
       start_time TEXT DEFAULT '',
       end_time TEXT DEFAULT '',
+      sort_order INTEGER DEFAULT 0,
       work_days TEXT DEFAULT '',
       note TEXT DEFAULT '',
       status TEXT DEFAULT 'BELUM DIKERJAKAN',

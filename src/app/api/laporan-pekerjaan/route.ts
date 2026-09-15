@@ -114,6 +114,7 @@ export async function GET(request: NextRequest) {
       endDate: String(row.end_date || ""),
       startTime: String(row.start_time || ""),
       endTime: String(row.end_time || ""),
+      sortOrder: Number((row as any).sort_order || 0),
       workDays: String(row.work_days || ""),
       note: String(row.note || ""),
       status: String(row.status || "BELUM DIKERJAKAN"),
@@ -388,6 +389,63 @@ export async function PUT(request: NextRequest) {
       success: true,
       message: "Data pekerjaan berhasil diperbarui",
     });
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { project, orderedIds } = body as { project?: string; orderedIds?: number[] };
+
+    if (!project?.trim() || !Array.isArray(orderedIds) || orderedIds.length === 0) {
+      return NextResponse.json(
+        { success: false, error: "Project dan orderedIds wajib diisi" },
+        { status: 400 }
+      );
+    }
+
+    const ids = orderedIds.map(Number).filter((n) => Number.isFinite(n) && n > 0);
+    if (ids.length === 0) {
+      return NextResponse.json(
+        { success: false, error: "orderedIds tidak valid" },
+        { status: 400 }
+      );
+    }
+
+    const runUpdates = () =>
+      db.batch(
+        ids.map((id, i) => ({
+          sql: "UPDATE laporan_pekerjaan SET sort_order = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND project = ?",
+          args: [i + 1, id, project.trim()],
+        })),
+        "write"
+      );
+
+    try {
+      await runUpdates();
+    } catch (e: any) {
+      // Self-heal jika kolom belum ada di DB lama
+      if (String(e?.message || e).includes("no such column")) {
+        await db.execute("ALTER TABLE laporan_pekerjaan ADD COLUMN sort_order INTEGER DEFAULT 0");
+        await runUpdates();
+      } else {
+        throw e;
+      }
+    }
+
+    logActivity(
+      "UPDATE",
+      "laporan_pekerjaan",
+      `Menyusun ulang urutan pekerjaan project: "${project.trim()}" (${ids.length} baris)`,
+      { project: project.trim(), orderedIds: ids }
+    ).catch(() => {});
+
+    return NextResponse.json({ success: true, message: "Urutan pekerjaan berhasil disimpan" });
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error.message },
