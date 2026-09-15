@@ -19,11 +19,14 @@ Project ERP/internal web Next.js 16 App Router (TypeScript, Tailwind v4, SQLite/
 - **Update Changelog jika perlu**: Pastikan tanggal update changelog sesuai dengan tanggal pengubahan dilakukan, dan jangan pernah menghapus changelog lama.
 - **Lakukan commit local setelah melakukan perubahan**.
 - **JANGAN jalankan `npx tsc` (kecuali hanya untuk cek internal lokal), jangan update changelog, dan jangan push sampai diinstruksikan oleh user.**
-- **Aturan Wajib Audit Excel Pricelist (PANDUAN_AUDIT_EXCEL_SINTAK.md)**:
+- **Aturan Wajib Audit Excel Pricelist (PANDUAN_AUDIT_EXCEL_SINTAK.md & AI_RULES.md)**:
   1. **Urutan Wajib (Test-Driven Alignment)**: DILARANG menyentuh UI, form, scroll, atau manual pengguna sebelum Tahap 6 (Parity Benchmark Otomatis) dieksekusi dan terbukti lulus di terminal.
-  2. **Bukti Terminal Nyata (No Log = Not Done)**: Dilarang mengklaim audit selesai hanya dengan narasi/kata-kata. Wajib menjalankan skrip pengujian kalkulator terhadap seluruh tier oplah Excel via `npx tsx` dan menyertakan bukti log terminal `PASSED (0 selisih)` pada 100% tier.
-  3. **Anti-Hardcode**: Semua sel manual Excel wajib jadi parameter dinamis di `MasterParams` & UI.
-  4. **Perilaku Scroll Simulator**: Seluruh tab Simulator wajib mengadopsi dual scroll independen standar Buku Manasik (`h-[calc(100vh-140px)] min-h-0` dengan `overflow-y-auto` mandiri pada kolom input kiri dan kolom breakdown kanan).
+  2. **Ekstraksi Programatis di Awal (Pos 1)**: Wajib menjalankan skrip untuk mengekstrak seluruh aturan `dataValidation` (dropdown) dari sheet Master sebelum menulis kode apa pun. Dilarang melihat manual atau berasumsi.
+  3. **Bukti Terminal Nyata (No Log = Not Done)**: Dilarang mengklaim audit selesai hanya dengan narasi/kata-kata. Wajib menjalankan skrip pengujian kalkulator terhadap seluruh tier oplah Excel via `npx tsx` dan menyertakan bukti log terminal `PASSED (0 selisih)` pada 100% tier dan seluruh permutasi mesin.
+  4. **Anti-Conditional Hijacking & Direct Binding 1:1**: Semua sel manual Excel wajib jadi parameter dinamis di `MasterParams` & UI. Dilarang membelokkan variabel mesin tertentu ke mesin lain berdasarkan kondisi oplah.
+  5. **Uji Reaktivitas Parameter Wajib**: Skrip benchmark wajib meng-assert bahwa perubahan nilai parameter form input menghasilkan perubahan HPP nyata (Delta HPP > 0). Jika Delta = 0, audit otomatis GAGAL/REJECT.
+  6. **Aturan Stop & Tanya**: Jika ditemukan inkonsistensi nilai/parameter antar file master sejenis, dilarang membuat rumus kompromi sendiri atau mematikan variabel. Wajib berhenti dan tanyakan kepada pengguna.
+  7. **Perilaku Scroll Simulator**: Seluruh tab Simulator wajib mengadopsi dual scroll independen standar Buku Manasik (`h-[calc(100vh-140px)] min-h-0` dengan `overflow-y-auto` mandiri pada kolom input kiri dan kolom breakdown kanan).
 
 ## Arsitektur & Kebiasaan
 
