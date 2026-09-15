@@ -72,7 +72,7 @@ export const DEFAULT_YASIN_PARAMS: YasinMasterParams = {
   tarifPlastikOppHC: 95, // Excel BUKU!BC6 HC
 
   tarifBoardHardcover: 279.48, // Excel BUKU!BA6
-  tarifCasingInHardcover: 751.62, // Excel BUKU!AZ6 (formula UMR)
+  tarifCasingInHardcover: 751.6226666666666, // Excel BUKU!AZ6 (formula UMR: Master!D7/25/150)
   tarifSkiblat: 350,
   tarifPitaRumbaiPapercraft: 470,
   tarifSikuSudutEmas: 400,
