@@ -289,6 +289,16 @@ const compareTasksDisplay = (a: SpreadsheetTask, b: SpreadsheetTask): number => 
   return compareTasksChronological(a, b);
 };
 
+// ponytail: selipkan 1 task ke posisi kronologisnya di dalam urutan tampil saat ini (urutan manual lain tidak diacak)
+const insertTaskChronologically = (displayOrdered: SpreadsheetTask[], item: SpreadsheetTask): SpreadsheetTask[] => {
+  const others = displayOrdered.filter((t) => t.id !== item.id);
+  let idx = others.findIndex((t) => compareTasksChronological(item, t) < 0);
+  if (idx === -1) idx = others.length;
+  const next = [...others];
+  next.splice(idx, 0, item);
+  return next;
+};
+
 // ponytail: single-pass loop untuk hitung summary tasks (active, selesai, last, next, note) tanpa multi-filter loop
 const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
   const sorted = [...tasks].sort(compareTasksDisplay);
@@ -1002,6 +1012,15 @@ export default function LaporanPekerjaanClient({
     const startDateStr = formatDateForApi(data.startDate);
     const endDateStr = formatDateForApi(data.endDate);
 
+    // Deteksi perubahan tanggal/jam untuk auto-slip di mode manual
+    const oldInlineTask = selectedProjectGroup?.tasks.find((t) => t.id === taskId);
+    const inlineDatesChanged =
+      !!oldInlineTask &&
+      (startDateStr !== (oldInlineTask.startDate || "") ||
+        endDateStr !== (oldInlineTask.endDate || "") ||
+        (data.startTime || "") !== (oldInlineTask.startTime || "") ||
+        (data.endTime || "") !== (oldInlineTask.endTime || ""));
+
     let workDays = "";
     if (data.startDate && data.endDate) {
       const s = data.startDate instanceof Date ? data.startDate : new Date(data.startDate);
@@ -1071,6 +1090,16 @@ export default function LaporanPekerjaanClient({
       const json = await res.json();
       if (json.success) {
         toast.success("Pekerjaan berhasil diperbarui!");
+        // Auto-slip: tanggal/jam berubah + project sudah mode manual -> selipkan ke posisi kronologis
+        const siblings = (selectedProjectGroup?.tasks || []).filter((t) => !!t.task && (t.id || 0) > 0);
+        if (inlineDatesChanged && siblings.some((t) => t.id !== taskId && getSortOrderValue(t) > 0) && oldInlineTask) {
+          const updated: SpreadsheetTask = { ...oldInlineTask, ...updatedTaskData };
+          const next = insertTaskChronologically(
+            siblings.filter((t) => t.id !== taskId).sort(compareTasksDisplay),
+            updated
+          );
+          handleReorderInlineTasks(proj, next.map((t) => t.id || 0).filter((id) => id > 0));
+        }
       } else {
         toast.error(json.error || "Gagal menyimpan perubahan");
         fetchData();
@@ -1160,6 +1189,15 @@ export default function LaporanPekerjaanClient({
               tasks: [...validTasks, createdTask],
             };
           });
+          // Auto-slip: project sudah mode manual -> selipkan task baru ke posisi kronologisnya
+          const createSiblings = (selectedProjectGroup?.tasks || []).filter((t) => !!t.task && (t.id || 0) > 0);
+          if (createSiblings.some((t) => getSortOrderValue(t) > 0)) {
+            const next = insertTaskChronologically(
+              [...createSiblings].sort(compareTasksDisplay),
+              createdTask
+            );
+            handleReorderInlineTasks(proj, next.map((t) => t.id || 0).filter((id) => id > 0));
+          }
         }
       } else {
         toast.error(json.error || "Gagal menambahkan pekerjaan");
