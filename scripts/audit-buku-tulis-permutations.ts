@@ -113,6 +113,29 @@ for (const tc of oliverLargeCases) {
   assertCheck(`Oplah ${tc.oplah} (Cover: Oliver | Isi: Oliver 300 insh)`, res.totalHpp, tc.exTotal, res.hargaJualPerPcs, tc.exJual);
 }
 
+// 4B. FILE 3 (Mode Cover SM): 3.000 - 10.000 pcs - 16 x 21.xlsm (Cover: SM 102 4W | Isi: SM 102 1W)
+console.log('\n--- 4B. TIER OPLAH BESAR (3.000 - 10.000 pcs): Permutasi Cover SM (Cover: SM 102 | Isi: SM 102) ---');
+const smCoverCases = [
+  { oplah: 3000, exTotal: 11526947, exJual: 4620 },
+  { oplah: 5000, exTotal: 17522067, exJual: 4210 },
+  { oplah: 10000, exTotal: 32546219, exJual: 3910 },
+];
+
+for (const tc of smCoverCases) {
+  const res = calculateBukuTulisHpp(
+    {
+      ukuran: '16 x 21',
+      oplah: tc.oplah,
+      metodeCetakCover: 'SM',
+      metodeCetakIsi: 'SM',
+      opsiLaminasi: true,
+      opsiSisir: true,
+    },
+    { ...DEFAULT_BUKU_TULIS_PARAMS, upHvsPct: 0, tarifDesignIsiPerHlm: 0, insheetIsiSm: 300 }
+  );
+  assertCheck(`Oplah ${tc.oplah} (Cover: SM 102 | Isi: SM 102)`, res.totalHpp, tc.exTotal, res.hargaJualPerPcs, tc.exJual);
+}
+
 // 5. UJI REAKTIVITAS PARAMETER (ANTI-HARDCODE / ANTI-HIJACKING TEST)
 console.log('\n--- 5. UJI REAKTIVITAS PARAMETER (Memastikan Tidak Ada Variabel Dibajak/Mati) ---');
 

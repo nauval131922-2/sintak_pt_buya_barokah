@@ -88,7 +88,7 @@ export const DEFAULT_BUKU_TULIS_PARAMS: BukuTulisMasterParams = {
 };
 
 export type BukuTulisUkuranType = '15,5 x 21' | '16 x 21';
-export type BukuTulisMesinCoverType = 'Otomatis' | 'Print Inter' | 'Oliver';
+export type BukuTulisMesinCoverType = 'Otomatis' | 'Print Inter' | 'Oliver' | 'SM';
 export type BukuTulisMesinIsiType = 'Otomatis' | 'Ryobi' | 'Oliver' | 'SM';
 
 export const BUKU_TULIS_CONFIG: Record<BukuTulisUkuranType, {
@@ -162,7 +162,7 @@ export function calculateBukuTulisHpp(
   // 1. Oplah <= 500 pcs: Cover Print Inter A3+ (POD) & Isi Ryobi 1W
   // 2. Oplah 600 - 2.500 pcs: Cover Oliver 4W & Isi Oliver 1W
   // 3. Oplah >= 3.000 pcs: Cover Oliver 4W & Isi Speedmaster SM 102 1W
-  const coverMesin: 'Print Inter' | 'Oliver' =
+  const coverMesin: 'Print Inter' | 'Oliver' | 'SM' =
     input.metodeCetakCover && input.metodeCetakCover !== 'Otomatis'
       ? input.metodeCetakCover
       : (validOplah <= 500 ? 'Print Inter' : 'Oliver');
@@ -173,6 +173,7 @@ export function calculateBukuTulisHpp(
       : (validOplah <= 500 ? 'Ryobi' : (validOplah < 3000 ? 'Oliver' : 'SM'));
 
   const isCoverPrintInter = coverMesin === 'Print Inter';
+  const isCoverSM = coverMesin === 'SM';
   const isIsiRyobi = isiMesin === 'Ryobi';
   const isIsiOliver = isiMesin === 'Oliver';
   const isIsiSM = isiMesin === 'SM';
@@ -202,6 +203,29 @@ export function calculateBukuTulisHpp(
     biayaKertasCover = rCover * p.tarifPrintCoverA3;
     add('Cover Print Digital A3+ (POD Inter)', biayaKertasCover,
       `${rCover.toFixed(1)} lbr A3+ POD (net ${validOplah / 2} + ${insheet} insheet) @ Rp ${p.tarifPrintCoverA3.toLocaleString('id-ID')}`);
+  } else if (isCoverSM) {
+    // Speedmaster SM 102 (Ukuran 16 x 21 cm, Plano 79 x 109 cm potong 2, muat 8 cover)
+    // BUKU!O7 = 2, BUKU!P7 = 8, BUKU!Y6 = 78.000, BUKU!AB6 = 310.000, BUKU!AC7 = 100
+    const insheetBase = p.insheetCoverOffset ?? 100;
+    const insheet = isOplahBesar ? Math.max(insheetBase, validOplah * 0.03) : insheetBase;
+    const rCover = (validOplah / 8) + (insheet / 2);
+    kebutuhanCover = Math.ceil(rCover);
+
+    const beratPlanoRim = (79 * 109 * 230) / 20000;
+    const hargaPlanoCover = (beratPlanoRim * p.tarifArtCarton230Kg * (1 + p.upArtCartonPct / 100)) / 500;
+    biayaKertasCover = rCover * hargaPlanoCover;
+
+    biayaPlatCover = 4 * p.tarifPlatSm; // 4 * 78.000 = 312.000
+    const qCetakCover = rCover * 2;
+    const minOrderCover = p.minOrderSm * 4; // 4 * 310.000 = 1.240.000
+    const overDrekCover = Math.max(0, qCetakCover - 3000);
+    const biayaOverCover = overDrekCover * p.tarifDrekSm * 4; // over * 100 * 4
+    biayaCetakCover = minOrderCover + biayaOverCover;
+
+    add('Kertas Cover Art Carton 230 gsm (Plano)', biayaKertasCover,
+      `${rCover.toFixed(1)} plano 79×109 cm @ Rp ${Math.round(hargaPlanoCover).toLocaleString('id-ID')}`);
+    add('Plat & Cetak Mesin SM 102 Cover (4W)', biayaPlatCover + biayaCetakCover,
+      `4 Plat CTP SM + Ongkos Cetak Speedmaster (Min Rp ${minOrderCover.toLocaleString('id-ID')}${overDrekCover > 0 ? ` + Over Rp ${biayaOverCover.toLocaleString('id-ID')}` : ''})`);
   } else {
     // Oliver Offset (Ukuran 16 x 21 cm, Plano 79 x 109 cm muat 10 cover)
     // BUKU!K7: di oplah besar (>=3000) K7 = MAX(100, H * 0.03). Di oplah < 3000 K7 = flat 100.

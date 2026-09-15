@@ -416,8 +416,8 @@ export default function BukuTulisSimulator({
                   Aktif: {result.metodeCoverTerpilih}
                 </span>
               </div>
-              <div className="grid grid-cols-3 gap-1.5">
-                {(['Otomatis', 'Print Inter', 'Oliver'] as BukuTulisMesinCoverType[]).map((m) => (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                {(['Otomatis', 'Print Inter', 'Oliver', 'SM'] as BukuTulisMesinCoverType[]).map((m) => (
                   <button
                     key={m}
                     type="button"
@@ -428,14 +428,14 @@ export default function BukuTulisSimulator({
                         : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                     }`}
                   >
-                    {m === 'Otomatis' ? '⚙️ Auto' : m === 'Print Inter' ? 'Print Inter' : 'Oliver 4W'}
+                    {m === 'Otomatis' ? '⚙️ Auto' : m === 'Print Inter' ? 'Print Inter' : m === 'Oliver' ? 'Oliver 4W' : 'SM 102'}
                   </button>
                 ))}
               </div>
               <p className="text-[10px] text-slate-500 mt-1">
                 {metodeCetakCover === 'Otomatis'
                   ? 'Auto: ≤500 eks Print Inter A3+, ≥600 eks Offset Oliver 4W'
-                  : `Dipaksa mesin: ${metodeCetakCover}`}
+                  : `Dipaksa mesin: ${metodeCetakCover === 'SM' ? 'Speedmaster SM 102 (4W)' : metodeCetakCover === 'Oliver' ? 'Oliver 4W' : 'Print Inter A3+'}`}
               </p>
             </div>
 
