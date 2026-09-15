@@ -2700,18 +2700,12 @@ export default function LaporanPekerjaanClient({
 
       {/* Tabel Data Pekerjaan (Desktop & Tablet) / Card View (HP) */}
       <div
-        className={`bg-white rounded-xl border border-slate-200/80 shadow-sm relative laporan-pekerjaan-table-card transition-opacity ${
+        className={`bg-white rounded-xl border border-slate-200/80 shadow-sm relative laporan-pekerjaan-table-card ${
           isAnalyticsOpen
             ? "shrink-0 min-h-[300px]"
             : "flex-1 min-h-0 flex flex-col overflow-hidden"
-        } ${isRangeLoading ? "opacity-60" : ""}`}
+        }`}
       >
-        {isRangeLoading && (
-          <div className="absolute top-2 right-3 z-30 flex items-center gap-1.5 px-2 py-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg shadow-sm">
-            <RefreshCw className="w-3 h-3 animate-spin" />
-            Memuat rentang tanggal...
-          </div>
-        )}
         {/* Cloned Fixed Header untuk Mobile Landscape (tanpa Portal, sinkron via translateX) */}
         {showFixedLandscapeHeader && (
           <div
