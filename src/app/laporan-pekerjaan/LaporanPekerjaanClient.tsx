@@ -176,6 +176,16 @@ function parseDateToSort(str: string): number {
   return result;
 }
 
+// ponytail: "HH:mm" -> menit agar "8:00" vs "08:00" tetap benar dibanding string biasa; kosong -> paling belakang
+const parseTimeToMinutes = (str?: string): number => {
+  if (!str || !str.trim()) return Number.MAX_SAFE_INTEGER;
+  const m = str.trim().match(/(\d{1,2})\s*[:.]\s*(\d{1,2})/);
+  if (m) return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+  const h = str.trim().match(/(\d{1,2})/);
+  if (h) return parseInt(h[1], 10) * 60;
+  return Number.MAX_SAFE_INTEGER;
+};
+
 const fmtTglOrder = (s?: string): string => {
   if (!s || !s.trim()) return "-";
   const time = parseDateToSort(s);
@@ -247,14 +257,26 @@ const formatDateForApi = (val?: Date | string | null): string => {
 };
 
 // Progress & penanda pekerjaan terakhir (SELESAI terakhir)/selanjutnya per order,
+// Urutan kronologis detail pekerjaan: startDate -> startTime -> endDate -> endTime -> id (kosong selalu di belakang)
+const compareTasksChronological = (a: SpreadsheetTask, b: SpreadsheetTask): number => {
+  const sDateA = parseDateToSort(a.startDate || "") || Number.MAX_SAFE_INTEGER;
+  const sDateB = parseDateToSort(b.startDate || "") || Number.MAX_SAFE_INTEGER;
+  if (sDateA !== sDateB) return sDateA - sDateB;
+  const sTimeA = parseTimeToMinutes(a.startTime);
+  const sTimeB = parseTimeToMinutes(b.startTime);
+  if (sTimeA !== sTimeB) return sTimeA - sTimeB;
+  const eDateA = parseDateToSort(a.endDate || "") || Number.MAX_SAFE_INTEGER;
+  const eDateB = parseDateToSort(b.endDate || "") || Number.MAX_SAFE_INTEGER;
+  if (eDateA !== eDateB) return eDateA - eDateB;
+  const eTimeA = parseTimeToMinutes(a.endTime);
+  const eTimeB = parseTimeToMinutes(b.endTime);
+  if (eTimeA !== eTimeB) return eTimeA - eTimeB;
+  return (a.id || 0) - (b.id || 0);
+};
+
 // ponytail: single-pass loop untuk hitung summary tasks (active, selesai, last, next, note) tanpa multi-filter loop
 const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
-  const sorted = [...tasks].sort((a, b) => {
-    const timeA = parseDateToSort(a.startDate || "") || Number.MAX_SAFE_INTEGER;
-    const timeB = parseDateToSort(b.startDate || "") || Number.MAX_SAFE_INTEGER;
-    if (timeA !== timeB) return timeA - timeB;
-    return (a.id || 0) - (b.id || 0);
-  });
+  const sorted = [...tasks].sort(compareTasksChronological);
 
   let activeCount = 0;
   let selesaiCount = 0;
@@ -3474,12 +3496,7 @@ function TaskDetailModal({
         }
         return true;
       })
-      .sort((a, b) => {
-        const timeA = parseDateToSort(a.startDate || "") || Number.MAX_SAFE_INTEGER;
-        const timeB = parseDateToSort(b.startDate || "") || Number.MAX_SAFE_INTEGER;
-        if (timeA !== timeB) return timeA - timeB;
-        return (a.id || 0) - (b.id || 0);
-      });
+      .sort(compareTasksChronological);
   }, [selectedProjectGroup.tasks, roleConfig]);
 
   return (
