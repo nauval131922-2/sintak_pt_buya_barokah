@@ -61,6 +61,14 @@ Dokumen ini adalah **Hukum Tertinggi** bagi asisten AI yang bekerja pada reposit
   4. **Uji Permutasi Dropdown (No Permutation Benchmark = Not Done)**: Dilarang hanya menguji snapshot statis file disk. Wajib menguji seluruh permutasi opsi dropdown mesin cetak dan finishing di terminal.
   5. **Anti-Magic Number & Komentar Cell Mapping**: Setiap rumus di kalkulator wajib mencantumkan komentar letak cell asli Excel (`BUKU!xxx`). Dilarang keras menebak angka pengali sendiri.
   6. **Uji Reaktivitas Parameter Wajib (Anti-Conditional Hijacking)**: Dilarang membelokkan variabel mesin tertentu ke mesin lain berdasarkan kondisi oplah. Setiap parameter form input wajib diuji reaktivitasnya di skrip benchmark (nilai input diubah dari A ke B wajib menghasilkan delta HPP nyata > 0; jika delta = 0 maka audit dinyatakan GAGAL/REJECT).
+  7. **Stop & Tanya Jika Ada Perbedaan Antar-File**: Jika ditemukan inkonsistensi nilai/parameter antar file master sejenis (misal oplah kecil vs oplah besar), DILARANG membuat rumus kompromi sendiri atau membajak variabel. Wajib berhenti dan tanyakan kepada pengguna.
+  8. **Wajib 4 Pos Pemeriksaan Bertahap (Anti Asal Jalan & Cepat Selesai)**:
+     - **Pos 1 (Bedah Cell)**: Buka Excel dan kutip rumus formula aslinya (`BUKU!xxx = ...`). Jangan tulis kode sebelum rumus aslinya dipaparkan.
+     - **Pos 2 (Edit Kode)**: Tulis kode murni 1:1 direct binding lengkap dengan komentar alamat cell Excel aslinya. Dilarang ada variabel yang di-bypass.
+     - **Pos 3 (Terminal Test)**: Jalankan skrip benchmark terminal yang menguji:
+       * Permutasi dropdown (semua kombinasi mesin).
+       * Reaktivitas parameter (ubah angka $A \rightarrow B$, buktikan $\Delta\text{HPP} > 0$).
+     - **Pos 4 (Commit & Lapor)**: Commit lokal di terminal, verifikasi `working tree clean`, lalu baru laporkan hasilnya dengan bukti log terminal.
 
 ---
 

@@ -17,6 +17,22 @@
 
 ---
 
+## 1.1 Rem Prosedural: 4 Pos Pemeriksaan Bertahap (Anti Asal Jalan & Cepat Selesai)
+Pengerjaan audit **DILARANG KERAS** dilakukan secara borongan atau terburu-buru. Wajib melewati 4 pos pemeriksaan bertahap:
+1. **Pos 1 (Bedah Cell)**: Buka file Excel via script/parser, kutip rumus formula aslinya (`BUKU!xxx = ...`). Jangan tulis kode sebelum rumus cell dipaparkan.
+2. **Pos 2 (Direct Binding 1:1)**: Tulis kode kalkulator murni 1:1 terhubung ke `params.xxx` lengkap dengan komentar alamat cell Excel. DILARANG membuat *conditional hijacking* (seperti `isOplahBesar ? sm : oliver`).
+3. **Pos 3 (Terminal Benchmark & Reaktivitas)**:
+   - Jalankan benchmark seluruh tier oplah dan seluruh permutasi dropdown mesin di terminal.
+   - Wajib menyertakan **Uji Reaktivitas Parameter** (mengubah nilai input form A ke B membuktikan $\Delta\text{HPP} > 0$).
+4. **Pos 4 (Commit & Lapor)**: Lakukan commit lokal di terminal segera setelah berkas selesai diubah, pastikan `working tree clean`, lalu baru laporkan ke pengguna dengan bukti log terminal.
+
+## 1.2 Aturan Stop & Tanya (Inkonsistensi Antar-File)
+Jika ditemukan perbedaan angka master antar-file sejenis (misal file oplah kecil insheet 30/desain 2.500, sedangkan oplah besar insheet 300/desain 0):
+- **DILARANG MEMBUAT RUMUS KOMPROMI SENDIRI** atau mematikan/membajak variabel di kode backend.
+- **WAJIB BERHENTI** dan paparkan perbedaannya kepada pengguna untuk konfirmasi nilai default yang dikehendaki.
+
+---
+
 ## 2. Pemetaan 4 Lapisan Arsitektur Excel Percetakan
 Setiap workbook kalkulasi percetakan wajib dipetakan ke dalam 4 lapisan:
 
