@@ -903,9 +903,11 @@ export default function LaporanPekerjaanClient({
       if (err instanceof DOMException && err.name === "AbortError") return;
       setError(err instanceof Error ? err.message : "Terjadi kesalahan koneksi");
     } finally {
+      // ponytail: request terakhir yang selesai selalu mematikan SEMUA indikator —
+      // request lama yang di-abort oleh refetch rentang tidak boleh menyisakan skeleton menyala
       if (fetchAbortRef.current === ctrl) {
-        if (quiet) setIsRangeLoading(false);
-        else setLoading(false);
+        setLoading(false);
+        setIsRangeLoading(false);
       }
     }
   }, []);
@@ -918,18 +920,21 @@ export default function LaporanPekerjaanClient({
   const refetchWithCurrentRange = (force = false, quiet = false) =>
     fetchData(force, toISODateParam(filterStartDate), toISODateParam(filterEndDate), quiet);
 
-  // Initial fetch on mount (pakai rentang default hari ini agar payload ringan)
+  // Initial fetch: tunggu restore filter localStorage selesai agar tidak double-fetch
+  // (restore membuat objek Date baru walau nilainya sama, yang akan memicu refetch sia-sia)
   useEffect(() => {
+    if (!isFilterHydrated) return;
     refetchWithCurrentRange(false);
     fetchEmployeeOptions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchData]);
+  }, [fetchData, isFilterHydrated]);
 
   // Ganti rentang tanggal -> refetch ringan (debounce; tanpa skeleton penuh)
-  const isFirstRangeFetch = useRef(true);
+  const rangeFetchArmed = useRef(false);
   useEffect(() => {
-    if (isFirstRangeFetch.current) {
-      isFirstRangeFetch.current = false;
+    if (!isFilterHydrated) return;
+    if (!rangeFetchArmed.current) {
+      rangeFetchArmed.current = true; // fetch awal sudah diurus efek di atas
       return;
     }
     const t = setTimeout(() => {
@@ -937,7 +942,7 @@ export default function LaporanPekerjaanClient({
     }, 400);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterStartDate, filterEndDate]);
+  }, [filterStartDate, filterEndDate, isFilterHydrated]);
 
   const fetchEmployeeOptions = async () => {
     try {
