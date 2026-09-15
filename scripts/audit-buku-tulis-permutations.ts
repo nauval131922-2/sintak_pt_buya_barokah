@@ -89,16 +89,35 @@ const oliverLargeCases = [
 ];
 
 for (const tc of oliverLargeCases) {
-  const res = calculateBukuTulisHpp({
-    ukuran: '16 x 21',
-    oplah: tc.oplah,
-    metodeCetakCover: 'Oliver',
-    metodeCetakIsi: 'Oliver',
-    opsiLaminasi: true,
-    opsiSisir: true,
-  });
-  assertCheck(`Oplah ${tc.oplah} (Cover: Oliver | Isi: Oliver Override)`, res.totalHpp, tc.exTotal, res.hargaJualPerPcs, tc.exJual);
+  // Pada file 3.000 - 10.000 pcs, sel Master!D23 (Insheet Isi) adalah 300
+  const res = calculateBukuTulisHpp(
+    {
+      ukuran: '16 x 21',
+      oplah: tc.oplah,
+      metodeCetakCover: 'Oliver',
+      metodeCetakIsi: 'Oliver',
+      opsiLaminasi: true,
+      opsiSisir: true,
+    },
+    { ...DEFAULT_BUKU_TULIS_PARAMS, insheetIsiOliver: 300 }
+  );
+  assertCheck(`Oplah ${tc.oplah} (Cover: Oliver | Isi: Oliver 300 insh)`, res.totalHpp, tc.exTotal, res.hargaJualPerPcs, tc.exJual);
 }
+
+// 5. UJI DINAMIS PERUBAHAN INSHEET OLIVER (100 vs 300 lbr)
+console.log('\n--- 5. UJI DINAMIS: RESPON KALKULATOR SAAT INSHEET OLIVER DIUBAH (100 vs 300 lbr) ---');
+const r100 = calculateBukuTulisHpp(
+  { ukuran: '16 x 21', oplah: 3000, metodeCetakCover: 'Oliver', metodeCetakIsi: 'Oliver' },
+  { ...DEFAULT_BUKU_TULIS_PARAMS, insheetIsiOliver: 100 }
+);
+const r300 = calculateBukuTulisHpp(
+  { ukuran: '16 x 21', oplah: 3000, metodeCetakCover: 'Oliver', metodeCetakIsi: 'Oliver' },
+  { ...DEFAULT_BUKU_TULIS_PARAMS, insheetIsiOliver: 300 }
+);
+const selisihHpp = r300.totalHpp - r100.totalHpp;
+console.log(`Insheet 100 lbr -> Total HPP: Rp ${r100.totalHpp.toLocaleString('id-ID')} | HPP/pcs: Rp ${Math.round(r100.hppPerPcs).toLocaleString('id-ID')} | Jual: Rp ${r100.hargaJualPerPcs.toLocaleString('id-ID')}`);
+console.log(`Insheet 300 lbr -> Total HPP: Rp ${r300.totalHpp.toLocaleString('id-ID')} | HPP/pcs: Rp ${Math.round(r300.hppPerPcs).toLocaleString('id-ID')} | Jual: Rp ${r300.hargaJualPerPcs.toLocaleString('id-ID')}`);
+console.log(`Respon Perubahan Parameter Insheet: ${selisihHpp > 0 ? `✅ BERHASIL DINAMIS (Selisih Biaya: Rp ${selisihHpp.toLocaleString('id-ID')})` : '❌ TIDAK BERUBAH'}`);
 
 console.log('\n========================================================================================');
 console.log(`TOTAL UJI PERMUTASI: ${totalTests} | LULUS: ${passedTests} | GAGAL: ${totalTests - passedTests}`);

@@ -266,8 +266,8 @@ export function calculateBukuTulisHpp(
     biayaDesainIsi = isOplahBesar ? 0 : p.tarifDesignIsiPerHlm * 18;
     const an = 4.5;
     const an6 = 5; // ROUNDUP(4.5, 0)
-    // BUKU!AI6: Master!D23 = 300 di file 3000-10000 pcs, dan 100 di file 600-2500 pcs
-    const insheet = isOplahBesar ? (p.insheetIsiSm ?? 300) : (p.insheetIsiOliver ?? 100);
+    // BUKU!AI6: Insheet Isi Oliver mengacu dinamis ke p.insheetIsiOliver
+    const insheet = p.insheetIsiOliver ?? 100;
     const apIsi = ((validOplah / 2) * an) + ((insheet / 2) * an6);
     kebutuhanIsi = Math.ceil(apIsi);
     const aoIsi = apIsi * 2;
