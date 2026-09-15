@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { logActivity } from "@/lib/activity";
 import { getSpreadsheetTasks } from "@/lib/google-sheets";
+import { toNormDateString, isValidRangeDate } from "@/lib/date-sort";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,12 @@ export async function GET(request: NextRequest) {
     const bagian = searchParams.get("bagian")?.toLowerCase();
     const status = searchParams.get("status")?.toLowerCase();
     const search = searchParams.get("search")?.toLowerCase();
+    // Filter rentang tanggal server-side (mirror logika overlap client; 1 sisi boleh kosong)
+    const from = searchParams.get("from");
+    const to = searchParams.get("to");
+    const hasFrom = isValidRangeDate(from);
+    const hasTo = isValidRangeDate(to);
+    const hasRange = hasFrom || hasTo;
 
     // Auto-seed dari Google Spreadsheet 1x saja jika database masih kosong
     if (!isInitialSeedChecked) {
@@ -98,6 +105,18 @@ export async function GET(request: NextRequest) {
       sql += " AND (LOWER(lp.task) LIKE ? OR LOWER(lp.project) LIKE ?)";
       args.push(`%${search}%`, `%${search}%`);
     }
+    if (hasRange) {
+      // Mirror filter client: task tanpa start_date disingkirkan; overlap [start, end||start] vs [from, to]
+      sql += " AND lp.start_date_norm != ''";
+      if (hasFrom) {
+        sql += " AND COALESCE(NULLIF(lp.end_date_norm,''), lp.start_date_norm) >= ?";
+        args.push(from);
+      }
+      if (hasTo) {
+        sql += " AND lp.start_date_norm <= ?";
+        args.push(to);
+      }
+    }
 
     sql += " ORDER BY lp.id DESC";
 
@@ -155,6 +174,18 @@ export async function GET(request: NextRequest) {
         if (search) {
           sopdSql += " AND LOWER(s.nama_order) LIKE ?";
           sopdArgs.push(`%${search}%`);
+        }
+        if (hasRange) {
+          // s.tgl berformat DD-MM-YYYY -> samakan ke ISO agar bisa difilter rentang (mirror tglOrder client)
+          const sopdIso = "(substr(s.tgl,7,4)||'-'||substr(s.tgl,4,2)||'-'||substr(s.tgl,1,2))";
+          if (hasFrom) {
+            sopdSql += ` AND ${sopdIso} >= ?`;
+            sopdArgs.push(from);
+          }
+          if (hasTo) {
+            sopdSql += ` AND ${sopdIso} <= ?`;
+            sopdArgs.push(to);
+          }
         }
         sopdSql += " GROUP BY s.nama_order ORDER BY s.id DESC";
 
@@ -230,9 +261,13 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const startNorm = toNormDateString(startDate?.trim() || "");
+    const endNorm = toNormDateString(endDate?.trim() || "");
+    const tglOrderNorm = toNormDateString(tglOrder?.trim() || "");
+
     const res = await db.execute({
-      sql: `INSERT INTO laporan_pekerjaan (task, project, division, bagian, pic, priority, start_date, end_date, start_time, end_time, work_days, note, status, source, tgl_order)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'sintak', ?)`,
+      sql: `INSERT INTO laporan_pekerjaan (task, project, division, bagian, pic, priority, start_date, end_date, start_time, end_time, work_days, note, status, source, tgl_order, start_date_norm, end_date_norm, tgl_order_norm)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'sintak', ?, ?, ?, ?)`,
       args: [
         finalTask,
         finalProject,
@@ -248,6 +283,9 @@ export async function POST(request: NextRequest) {
         note?.trim() || "",
         status?.trim() || "BELUM DIKERJAKAN",
         tglOrder?.trim() || "",
+        startNorm,
+        endNorm,
+        tglOrderNorm,
       ],
     });
 
@@ -354,9 +392,10 @@ export async function PUT(request: NextRequest) {
 
     // Update data di database lokal Sintak
     await db.execute({
-      sql: `UPDATE laporan_pekerjaan SET 
-              task = ?, project = ?, division = ?, bagian = ?, pic = ?, priority = ?, 
+      sql: `UPDATE laporan_pekerjaan SET
+              task = ?, project = ?, division = ?, bagian = ?, pic = ?, priority = ?,
               start_date = ?, end_date = ?, start_time = ?, end_time = ?, work_days = ?, note = ?, status = ?,
+              start_date_norm = ?, end_date_norm = ?,
               source = 'sintak',
               updated_at = CURRENT_TIMESTAMP
             WHERE id = ?`,
@@ -374,6 +413,8 @@ export async function PUT(request: NextRequest) {
         afterData.work_days,
         afterData.note,
         afterData.status,
+        toNormDateString(afterData.start_date),
+        toNormDateString(afterData.end_date),
         id,
       ],
     });

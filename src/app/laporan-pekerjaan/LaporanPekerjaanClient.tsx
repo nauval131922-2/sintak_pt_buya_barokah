@@ -54,6 +54,7 @@ import TimePicker from "@/components/TimePicker";
 import FontSizeControl from "@/components/FontSizeControl";
 import { toast } from "@/lib/toast";
 import { type SpreadsheetTask } from "@/lib/google-sheets";
+import { parseDateToSort } from "@/lib/date-sort";
 import {
   LAPORAN_PEKERJAAN_COLUMNS,
   type RoleLaporanPekerjaanConfig,
@@ -90,93 +91,7 @@ const STATUS_LEGEND = [
   { name: "SELESAI", color: "#10b981" },
 ];
 
-const dateSortCache = new Map<string, number>();
-
-const MONTH_MAP: Record<string, number> = {
-  jan: 0, januari: 0, january: 0,
-  feb: 1, februari: 1, february: 1,
-  mar: 2, maret: 2, march: 2,
-  apr: 3, april: 3,
-  mei: 4, may: 4,
-  jun: 5, juni: 5, june: 5,
-  jul: 6, juli: 6, july: 6,
-  agu: 7, ags: 7, agt: 7, aug: 7, agustus: 7, august: 7,
-  sep: 8, sept: 8, september: 8,
-  okt: 9, oct: 9, oktober: 9, october: 9,
-  nov: 10, november: 10,
-  des: 11, dec: 11, desember: 11, december: 11,
-};
-
-function parseDateToSort(str: string): number {
-  if (!str || !str.trim()) return 0;
-  const s = str.trim();
-  const cached = dateSortCache.get(s);
-  if (cached !== undefined) return cached;
-
-  let result = 0;
-
-  // 1. Format text-month: "3-Jan-26", "18-Jan-2026", "9-Agu-26", "13-Mei-26", "30-Okt-25", "3.Jan.26", "3 Jan 26"
-  const m1 = s.match(/^(\d{1,2})[\s\-\/\.]([a-zA-Z]+)[\s\-\/\.](\d{2,4})$/);
-  if (m1) {
-    const day = parseInt(m1[1], 10);
-    const mStr = m1[2].toLowerCase();
-    const month = MONTH_MAP[mStr];
-    let year = parseInt(m1[3], 10);
-    if (year < 100) year += 2000;
-    if (month !== undefined && !isNaN(day) && !isNaN(year)) {
-      result = new Date(year, month, day, 12, 0, 0).getTime();
-    }
-  }
-
-  // 2. Format text-month reversed: "Jan-3-26", "Jan 3 2026"
-  if (!result) {
-    const mRev = s.match(/^([a-zA-Z]+)[\s\-\/\.](\d{1,2})[\s\-\/\.,\s]*(\d{2,4})$/);
-    if (mRev) {
-      const month = MONTH_MAP[mRev[1].toLowerCase()];
-      const day = parseInt(mRev[2], 10);
-      let year = parseInt(mRev[3], 10);
-      if (year < 100) year += 2000;
-      if (month !== undefined && !isNaN(day) && !isNaN(year)) {
-        result = new Date(year, month, day, 12, 0, 0).getTime();
-      }
-    }
-  }
-
-  // 3. Format numerik DD/MM/YYYY atau DD-MM-YYYY atau D/M/YY (contoh: "03/01/2026", "3-1-26", "23-08-2026")
-  if (!result) {
-    const ddmmyyyy = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);
-    if (ddmmyyyy) {
-      const day = parseInt(ddmmyyyy[1], 10);
-      const month = parseInt(ddmmyyyy[2], 10) - 1;
-      let year = parseInt(ddmmyyyy[3], 10);
-      if (year < 100) year += 2000;
-      if (month >= 0 && month <= 11 && day >= 1 && day <= 31) {
-        result = new Date(year, month, day, 12, 0, 0).getTime();
-      }
-    }
-  }
-
-  // 4. Format YYYY-MM-DD
-  if (!result) {
-    const yyyymmdd = s.match(/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})/);
-    if (yyyymmdd) {
-      const year = parseInt(yyyymmdd[1], 10);
-      const month = parseInt(yyyymmdd[2], 10) - 1;
-      const day = parseInt(yyyymmdd[3], 10);
-      result = new Date(year, month, day, 12, 0, 0).getTime();
-    }
-  }
-
-  // 5. Fallback Date.parse
-  if (!result) {
-    const parsed = Date.parse(s);
-    result = isNaN(parsed) ? 0 : parsed;
-  }
-
-  dateSortCache.set(s, result);
-  return result;
-}
-
+// ponytail: parse tanggal diimpor dari lib bersama (dipakai juga oleh API & backfill via toNormDateString)
 // ponytail: "HH:mm" -> menit agar "8:00" vs "08:00" tetap benar dibanding string biasa; kosong -> paling belakang
 const parseTimeToMinutes = (str?: string): number => {
   if (!str || !str.trim()) return Number.MAX_SAFE_INTEGER;
@@ -582,6 +497,7 @@ export default function LaporanPekerjaanClient({
 } = {}) {
   const [tasks, setTasks] = useState<SpreadsheetTask[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isRangeLoading, setIsRangeLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -951,16 +867,23 @@ export default function LaporanPekerjaanClient({
   };
 
   const fetchAbortRef = useRef<AbortController | null>(null);
-  const fetchData = useCallback(async (force = false) => {
+  // ponytail: from/to = filter tanggal server-side (YYYY-MM-DD); quiet = ganti tanggal tanpa skeleton penuh
+  const fetchData = useCallback(async (force = false, from?: string | null, to?: string | null, quiet = false) => {
     // Batalkan request lama yang masih jalan agar tidak menumpuk saat filter berubah cepat
     fetchAbortRef.current?.abort();
     const ctrl = new AbortController();
     fetchAbortRef.current = ctrl;
     const startTime = performance.now();
-    setLoading(true);
+    if (quiet) setIsRangeLoading(true);
+    else setLoading(true);
     setError(null);
     try {
-      const url = force ? "/api/laporan-pekerjaan?sync=true" : "/api/laporan-pekerjaan";
+      const params = new URLSearchParams();
+      if (force) params.set("sync", "true");
+      if (from) params.set("from", from);
+      if (to) params.set("to", to);
+      const qs = params.toString();
+      const url = qs ? `/api/laporan-pekerjaan?${qs}` : "/api/laporan-pekerjaan";
       const res = await fetch(url, { signal: ctrl.signal });
       const json = await res.json();
       if (json.success) {
@@ -980,15 +903,41 @@ export default function LaporanPekerjaanClient({
       if (err instanceof DOMException && err.name === "AbortError") return;
       setError(err instanceof Error ? err.message : "Terjadi kesalahan koneksi");
     } finally {
-      if (fetchAbortRef.current === ctrl) setLoading(false);
+      if (fetchAbortRef.current === ctrl) {
+        if (quiet) setIsRangeLoading(false);
+        else setLoading(false);
+      }
     }
   }, []);
 
-  // Initial fetch on mount
+  const toISODateParam = (d: Date | null): string | null => {
+    if (!d || isNaN(d.getTime())) return null;
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  };
+
+  const refetchWithCurrentRange = (force = false, quiet = false) =>
+    fetchData(force, toISODateParam(filterStartDate), toISODateParam(filterEndDate), quiet);
+
+  // Initial fetch on mount (pakai rentang default hari ini agar payload ringan)
   useEffect(() => {
-    fetchData();
+    refetchWithCurrentRange(false);
     fetchEmployeeOptions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchData]);
+
+  // Ganti rentang tanggal -> refetch ringan (debounce; tanpa skeleton penuh)
+  const isFirstRangeFetch = useRef(true);
+  useEffect(() => {
+    if (isFirstRangeFetch.current) {
+      isFirstRangeFetch.current = false;
+      return;
+    }
+    const t = setTimeout(() => {
+      refetchWithCurrentRange(false, true);
+    }, 400);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterStartDate, filterEndDate]);
 
   const fetchEmployeeOptions = async () => {
     try {
@@ -1102,11 +1051,11 @@ export default function LaporanPekerjaanClient({
         }
       } else {
         toast.error(json.error || "Gagal menyimpan perubahan");
-        fetchData();
+        refetchWithCurrentRange();
       }
     } catch (err: any) {
       toast.error(err.message || "Terjadi kesalahan");
-      fetchData();
+      refetchWithCurrentRange();
     }
   };
 
@@ -1252,16 +1201,17 @@ export default function LaporanPekerjaanClient({
         toast.success("Pekerjaan berhasil dihapus");
       } else {
         toast.error(json.error || "Gagal menghapus data");
-        fetchData();
+        refetchWithCurrentRange();
       }
     } catch (err: any) {
       toast.error(err.message || "Terjadi kesalahan");
-      fetchData();
+      refetchWithCurrentRange();
     }
   };
 
   // Drag-to-sort permanen: urutan manual disimpan ke DB dan menimpa urutan kronologis
-  const handleReorderInlineTasks = useCallback(async (project: string, orderedIds: number[]) => {
+  // ponytail: fungsi biasa (bukan useCallback) agar refetch selalu pakai rentang tanggal terbaru
+  const handleReorderInlineTasks = async (project: string, orderedIds: number[]) => {
     const orderMap = new Map(orderedIds.map((id, i) => [id, i + 1]));
     setTasks((prev) =>
       prev.map((t) =>
@@ -1289,13 +1239,13 @@ export default function LaporanPekerjaanClient({
       const json = await res.json();
       if (!json.success) {
         toast.error(json.error || "Gagal menyimpan urutan");
-        fetchData();
+        refetchWithCurrentRange();
       }
     } catch (err: any) {
       toast.error(err.message || "Gagal menyimpan urutan");
-      fetchData();
+      refetchWithCurrentRange();
     }
-  }, [fetchData]);
+  };
 
   const handleCreateOrderManual = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1392,11 +1342,11 @@ export default function LaporanPekerjaanClient({
         toast.success(`Order "${projectName}" berhasil dihapus`);
       } else {
         toast.error(json.error || "Gagal menghapus order");
-        fetchData();
+        refetchWithCurrentRange();
       }
     } catch (err: any) {
       toast.error(err.message || "Terjadi kesalahan");
-      fetchData();
+      refetchWithCurrentRange();
     }
   };
 
@@ -2530,12 +2480,12 @@ export default function LaporanPekerjaanClient({
             {/* Tombol Reload Data */}
             <button
               type="button"
-              onClick={() => fetchData(true)}
-              disabled={loading}
+              onClick={() => refetchWithCurrentRange(true)}
+              disabled={loading || isRangeLoading}
               className="h-9 px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
               title="Reload Data Laporan Pekerjaan"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-emerald-600" : ""}`} />
+              <RefreshCw className={`w-4 h-4 ${loading || isRangeLoading ? "animate-spin text-emerald-600" : ""}`} />
               <span className="hidden sm:inline">Reload</span>
             </button>
             <div className="relative flex-1 min-w-0">
@@ -2745,12 +2695,18 @@ export default function LaporanPekerjaanClient({
 
       {/* Tabel Data Pekerjaan (Desktop & Tablet) / Card View (HP) */}
       <div
-        className={`bg-white rounded-xl border border-slate-200/80 shadow-sm relative laporan-pekerjaan-table-card ${
+        className={`bg-white rounded-xl border border-slate-200/80 shadow-sm relative laporan-pekerjaan-table-card transition-opacity ${
           isAnalyticsOpen
             ? "shrink-0 min-h-[300px]"
             : "flex-1 min-h-0 flex flex-col overflow-hidden"
-        }`}
+        } ${isRangeLoading ? "opacity-60" : ""}`}
       >
+        {isRangeLoading && (
+          <div className="absolute top-2 right-3 z-30 flex items-center gap-1.5 px-2 py-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg shadow-sm">
+            <RefreshCw className="w-3 h-3 animate-spin" />
+            Memuat rentang tanggal...
+          </div>
+        )}
         {/* Cloned Fixed Header untuk Mobile Landscape (tanpa Portal, sinkron via translateX) */}
         {showFixedLandscapeHeader && (
           <div
@@ -3284,7 +3240,7 @@ export default function LaporanPekerjaanClient({
                         setShowConflictModal(false);
                         setCurrentConflict(null);
                         setConflicts([]);
-                        await fetchData();
+                        await refetchWithCurrentRange();
                       }
                     }}
                     className="px-6 py-2.5 text-[13px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
@@ -3323,7 +3279,7 @@ export default function LaporanPekerjaanClient({
                             setShowConflictModal(false);
                             setCurrentConflict(null);
                             setConflicts([]);
-                            await fetchData();
+                            await refetchWithCurrentRange();
                           }
                         } else {
                           alert(json.error || 'Gagal update data');

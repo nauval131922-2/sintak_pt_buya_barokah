@@ -71,6 +71,9 @@ export async function initSchema(db: any) {
       { table: 'laporan_pekerjaan', column: 'start_time', type: 'TEXT DEFAULT \'\'' },
       { table: 'laporan_pekerjaan', column: 'end_time', type: 'TEXT DEFAULT \'\'' },
       { table: 'laporan_pekerjaan', column: 'sort_order', type: 'INTEGER DEFAULT 0' },
+      { table: 'laporan_pekerjaan', column: 'start_date_norm', type: 'TEXT DEFAULT \'\'' },
+      { table: 'laporan_pekerjaan', column: 'end_date_norm', type: 'TEXT DEFAULT \'\'' },
+      { table: 'laporan_pekerjaan', column: 'tgl_order_norm', type: 'TEXT DEFAULT \'\'' },
     ];
 
     for (const col of columns) {
@@ -393,6 +396,9 @@ export async function initSchema(db: any) {
       start_time TEXT DEFAULT '',
       end_time TEXT DEFAULT '',
       sort_order INTEGER DEFAULT 0,
+      start_date_norm TEXT DEFAULT '',
+      end_date_norm TEXT DEFAULT '',
+      tgl_order_norm TEXT DEFAULT '',
       work_days TEXT DEFAULT '',
       note TEXT DEFAULT '',
       status TEXT DEFAULT 'BELUM DIKERJAKAN',
@@ -968,6 +974,7 @@ export async function initSchema(db: any) {
     "CREATE INDEX IF NOT EXISTS idx_laporan_pekerjaan_pic ON laporan_pekerjaan(pic);",
     "CREATE INDEX IF NOT EXISTS idx_laporan_pekerjaan_bagian ON laporan_pekerjaan(bagian);",
     "CREATE INDEX IF NOT EXISTS idx_laporan_pekerjaan_status ON laporan_pekerjaan(status);",
+    "CREATE INDEX IF NOT EXISTS idx_laporan_pekerjaan_start_norm ON laporan_pekerjaan(start_date_norm);",
     "CREATE INDEX IF NOT EXISTS idx_orders_faktur ON orders(faktur);",
     "ALTER TABLE sopd ADD COLUMN tgl TEXT;",
     "ALTER TABLE sopd_harga ADD COLUMN keterangan TEXT;",
@@ -1692,6 +1699,32 @@ export async function initSchema(db: any) {
 
   } catch (e: any) {
      console.error("[FTS-INIT] Failed to initialize FTS5:", e.message);
+  }
+
+  // 5b. Backfill kolom norm tanggal laporan_pekerjaan (sekali saja; no-op setelah terisi).
+  // Tabel ini dikecualikan dari trigger audit, jadi UPDATE massal aman tanpa spam activity_logs.
+  try {
+    const { toNormDateString } = await import('./date-sort');
+    for (;;) {
+      const missing = await db.execute(
+        "SELECT id, start_date, end_date, tgl_order FROM laporan_pekerjaan WHERE (COALESCE(start_date,'') != '' AND COALESCE(start_date_norm,'') = '') OR (COALESCE(end_date,'') != '' AND COALESCE(end_date_norm,'') = '') OR (COALESCE(tgl_order,'') != '' AND COALESCE(tgl_order_norm,'') = '') LIMIT 2000"
+      );
+      const rows = ((missing as any).rows as any[]) || [];
+      if (rows.length === 0) break;
+      await db.batch(rows.map((r: any) => ({
+        sql: "UPDATE laporan_pekerjaan SET start_date_norm = ?, end_date_norm = ?, tgl_order_norm = ? WHERE id = ?",
+        args: [
+          toNormDateString(String(r.start_date || '')),
+          toNormDateString(String(r.end_date || '')),
+          toNormDateString(String(r.tgl_order || '')),
+          r.id,
+        ],
+      })), "write");
+      console.log(`[DB] Backfill norm tanggal laporan_pekerjaan: ${rows.length} baris`);
+      if (rows.length < 2000) break;
+    }
+  } catch (e) {
+    console.error('[DB] Backfill norm tanggal laporan_pekerjaan gagal:', e);
   }
 
   // 6. Default Admin Setup
