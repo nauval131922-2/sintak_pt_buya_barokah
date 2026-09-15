@@ -1298,6 +1298,21 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Laporan Pekerjaan ───
+  'laporan-pekerjaan-2026-09-15': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-09-15',
+    date: '15 Sep 2026',
+    version: '2026-09-15-1',
+    items: [
+      'Filter tanggal kini diproses di server sehingga daftar lebih cepat dimuat dan data yang diunduh jauh lebih ringan',
+      'Perbaikan kolom tanggal otomatis (self-heal) agar filter dan urutan tetap akurat walau struktur database berubah',
+      'Grafik dimuat terpisah (lazy-load) sehingga halaman utama terbuka lebih cepat',
+      'Perbaikan indikator loading dan ikon refresh saat ganti tanggal agar tidak macet',
+      'Daftar rincian pekerjaan kini tersusun kronologis otomatis, mendukung geser untuk menyusun ulang (drag to sort) yang tersimpan permanen',
+    ],
+  }),
   'laporan-pekerjaan-2026-09-08': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan',
