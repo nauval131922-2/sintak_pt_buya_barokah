@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { logActivity } from "@/lib/activity";
 import { getSpreadsheetTasks } from "@/lib/google-sheets";
-import { toNormDateString, isValidRangeDate } from "@/lib/date-sort";
+import { toNormDateString, isValidRangeDate, ensureLaporanPekerjaanNorms } from "@/lib/date-sort";
 
 export const dynamic = "force-dynamic";
 
@@ -120,7 +120,18 @@ export async function GET(request: NextRequest) {
 
     sql += " ORDER BY lp.id DESC";
 
-    const res = await db.execute({ sql, args });
+    // ponytail: self-heal jika kolom norm belum ada (mis. server lama belum restart) — tambah + backfill lalu ulangi
+    let res;
+    try {
+      res = await db.execute({ sql, args });
+    } catch (e: any) {
+      if (String(e?.message || e).includes("no such column")) {
+        await ensureLaporanPekerjaanNorms(db);
+        res = await db.execute({ sql, args });
+      } else {
+        throw e;
+      }
+    }
     const tasks = res.rows.map((row: any) => ({
       id: Number(row.id),
       task: String(row.task || ""),
@@ -202,6 +213,7 @@ export async function GET(request: NextRequest) {
           endDate: "",
           startTime: "",
           endTime: "",
+          sortOrder: 0,
           workDays: "",
           note: "",
           status: "BELUM DIKERJAKAN",
@@ -265,7 +277,7 @@ export async function POST(request: NextRequest) {
     const endNorm = toNormDateString(endDate?.trim() || "");
     const tglOrderNorm = toNormDateString(tglOrder?.trim() || "");
 
-    const res = await db.execute({
+    const insertStmt = {
       sql: `INSERT INTO laporan_pekerjaan (task, project, division, bagian, pic, priority, start_date, end_date, start_time, end_time, work_days, note, status, source, tgl_order, start_date_norm, end_date_norm, tgl_order_norm)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'sintak', ?, ?, ?, ?)`,
       args: [
@@ -287,7 +299,18 @@ export async function POST(request: NextRequest) {
         endNorm,
         tglOrderNorm,
       ],
-    });
+    };
+    let res;
+    try {
+      res = await db.execute(insertStmt);
+    } catch (e: any) {
+      if (String(e?.message || e).includes("no such column")) {
+        await ensureLaporanPekerjaanNorms(db);
+        res = await db.execute(insertStmt);
+      } else {
+        throw e;
+      }
+    }
 
     const insertId = Number(res.lastInsertRowid);
 
@@ -391,7 +414,7 @@ export async function PUT(request: NextRequest) {
     };
 
     // Update data di database lokal Sintak
-    await db.execute({
+    const updateStmt = {
       sql: `UPDATE laporan_pekerjaan SET
               task = ?, project = ?, division = ?, bagian = ?, pic = ?, priority = ?,
               start_date = ?, end_date = ?, start_time = ?, end_time = ?, work_days = ?, note = ?, status = ?,
@@ -417,7 +440,17 @@ export async function PUT(request: NextRequest) {
         toNormDateString(afterData.end_date),
         id,
       ],
-    });
+    };
+    try {
+      await db.execute(updateStmt);
+    } catch (e: any) {
+      if (String(e?.message || e).includes("no such column")) {
+        await ensureLaporanPekerjaanNorms(db);
+        await db.execute(updateStmt);
+      } else {
+        throw e;
+      }
+    }
 
     logActivity(
       "UPDATE",

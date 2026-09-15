@@ -1704,25 +1704,9 @@ export async function initSchema(db: any) {
   // 5b. Backfill kolom norm tanggal laporan_pekerjaan (sekali saja; no-op setelah terisi).
   // Tabel ini dikecualikan dari trigger audit, jadi UPDATE massal aman tanpa spam activity_logs.
   try {
-    const { toNormDateString } = await import('./date-sort');
-    for (;;) {
-      const missing = await db.execute(
-        "SELECT id, start_date, end_date, tgl_order FROM laporan_pekerjaan WHERE (COALESCE(start_date,'') != '' AND COALESCE(start_date_norm,'') = '') OR (COALESCE(end_date,'') != '' AND COALESCE(end_date_norm,'') = '') OR (COALESCE(tgl_order,'') != '' AND COALESCE(tgl_order_norm,'') = '') LIMIT 2000"
-      );
-      const rows = ((missing as any).rows as any[]) || [];
-      if (rows.length === 0) break;
-      await db.batch(rows.map((r: any) => ({
-        sql: "UPDATE laporan_pekerjaan SET start_date_norm = ?, end_date_norm = ?, tgl_order_norm = ? WHERE id = ?",
-        args: [
-          toNormDateString(String(r.start_date || '')),
-          toNormDateString(String(r.end_date || '')),
-          toNormDateString(String(r.tgl_order || '')),
-          r.id,
-        ],
-      })), "write");
-      console.log(`[DB] Backfill norm tanggal laporan_pekerjaan: ${rows.length} baris`);
-      if (rows.length < 2000) break;
-    }
+    const { ensureLaporanPekerjaanNorms } = await import('./date-sort');
+    const n = await ensureLaporanPekerjaanNorms(db);
+    if (n > 0) console.log(`[DB] Backfill norm tanggal laporan_pekerjaan: ${n} baris`);
   } catch (e) {
     console.error('[DB] Backfill norm tanggal laporan_pekerjaan gagal:', e);
   }

@@ -105,3 +105,35 @@ export function toNormDateString(str?: string | null): string {
 export function isValidRangeDate(s: unknown): s is string {
   return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
 }
+
+// Self-heal kolom norm + backfill (dipakai initSchema & retry API).
+// Idempoten: no-op jika kolom sudah ada dan tidak ada baris yang norm-nya kosong.
+export async function ensureLaporanPekerjaanNorms(db: any): Promise<number> {
+  for (const col of ["start_date_norm", "end_date_norm", "tgl_order_norm"]) {
+    try {
+      await db.execute(`ALTER TABLE laporan_pekerjaan ADD COLUMN ${col} TEXT DEFAULT ''`);
+    } catch {}
+  }
+  let total = 0;
+  for (;;) {
+    const missing = await db.execute(
+      "SELECT id, start_date, end_date, tgl_order FROM laporan_pekerjaan WHERE (COALESCE(start_date,'') != '' AND COALESCE(start_date_norm,'') = '') OR (COALESCE(end_date,'') != '' AND COALESCE(end_date_norm,'') = '') OR (COALESCE(tgl_order,'') != '' AND COALESCE(tgl_order_norm,'') = '') LIMIT 2000"
+    );
+    const rows = ((missing as any).rows as any[]) || [];
+    if (rows.length === 0) break;
+    const batch = rows.map((r: any) => ({
+      sql: "UPDATE laporan_pekerjaan SET start_date_norm = ?, end_date_norm = ?, tgl_order_norm = ? WHERE id = ?",
+      args: [
+        toNormDateString(String(r.start_date || "")),
+        toNormDateString(String(r.end_date || "")),
+        toNormDateString(String(r.tgl_order || "")),
+        r.id,
+      ],
+    }));
+    if (typeof db.batch === "function") await db.batch(batch, "write");
+    else for (const b of batch) await db.execute(b);
+    total += rows.length;
+    if (rows.length < 2000) break;
+  }
+  return total;
+}
