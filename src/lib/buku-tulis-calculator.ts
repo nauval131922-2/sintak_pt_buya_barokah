@@ -192,9 +192,10 @@ export function calculateBukuTulisHpp(
   let biayaCetakCover = 0;
   const biayaDesainCover = p.tarifDesignCover;
   let kebutuhanCover = 0;
+  const isOplahBesar = validOplah >= 3000;
 
   if (isCoverPrintInter) {
-    // Print Inter A3+ (Ukuran 15.5 x 21 cm, 1 A3+ muat 2 cover)
+    // Print Inter A3+ (Ukuran 15.5 x 21 cm, 1 A3+ muat 2 cover) - BUKU!R7: (H7/2)+K6
     const insheet = p.insheetCoverPod ?? 7;
     const rCover = (validOplah / 2) + insheet;
     kebutuhanCover = Math.ceil(rCover);
@@ -203,12 +204,13 @@ export function calculateBukuTulisHpp(
       `${rCover.toFixed(1)} lbr A3+ POD (net ${validOplah / 2} + ${insheet} insheet) @ Rp ${p.tarifPrintCoverA3.toLocaleString('id-ID')}`);
   } else {
     // Oliver Offset (Ukuran 16 x 21 cm, Plano 79 x 109 cm muat 10 cover)
+    // BUKU!K7: di oplah besar (>=3000) K7 = MAX(100, H * 0.03). Di oplah < 3000 K7 = flat 100.
     const insheetBase = p.insheetCoverOffset ?? 100;
-    const insheet = Math.max(insheetBase, validOplah * 0.03); // Insheet K9: MAX(100, 3%)
+    const insheet = isOplahBesar ? Math.max(insheetBase, validOplah * 0.03) : insheetBase;
     const rCover = (validOplah / 10) + (insheet / 5);
     kebutuhanCover = Math.ceil(rCover);
 
-    // Berat plano 79x109x230/20000 = 99,0265 kg/rim * 16400 * (1 + up%) / 500
+    // Berat plano 79x109x230/20000 = 99,0265 kg/rim * 16400 * (1 + up%) / 500 (BUKU!W29)
     const beratPlanoRim = (79 * 109 * 230) / 20000;
     const hargaPlanoCover = (beratPlanoRim * p.tarifArtCarton230Kg * (1 + p.upArtCartonPct / 100)) / 500;
     biayaKertasCover = rCover * hargaPlanoCover;
@@ -234,16 +236,18 @@ export function calculateBukuTulisHpp(
   let kebutuhanIsi = 0;
 
   if (isIsiRyobi) {
-    // Cetak Ryobi (15.5 x 21 cm): Plano 65x100 potong Folio (1 Plano potong 1 folio, muat 4 isi)
-    biayaDesainIsi = p.tarifDesignIsiPerHlm * 18; // 18 cuttern x 2500 = 45.000
+    // Cetak Ryobi (15.5 x 21 cm / 16 x 21 cm): Folio muat 4 isi (AN = 18)
+    // BUKU!AT7: Desain isi 18 hal x 2500 = 45.000
+    biayaDesainIsi = p.tarifDesignIsiPerHlm * 18;
     const an = 18;
     const insheet = p.insheetIsiRyobi ?? 30;
     const apIsi = (validOplah * an) + (insheet * an);
     kebutuhanIsi = apIsi;
 
-    // Berat folio rim: (21.5 * 33 * 70)/20000 = 2.48325 kg * 15700 * 1.03 = Rp 40.156,63575 / rim
+    // Berat folio rim: (21.5 * 33 * 70)/20000 = 2.48325 kg * 15700 * (1 + up%) / rim
+    const upHvs = validOplah <= 500 ? (p.upHvsPct / 100) : 0;
     const beratFolioKg = (21.5 * 33 * 70) / 20000;
-    const hargaFolioRim = beratFolioKg * p.tarifHvs70Kg * (1 + p.upHvsPct / 100);
+    const hargaFolioRim = beratFolioKg * p.tarifHvs70Kg * (1 + upHvs);
     biayaKertasIsi = (apIsi / 500) * hargaFolioRim;
 
     biayaPlatIsi = p.tarifPlatRyobi; // 10.000
@@ -256,16 +260,19 @@ export function calculateBukuTulisHpp(
     add('Plat & Cetak Mesin Ryobi Isi (1W)', biayaPlatIsi + biayaCetakIsi,
       `1 Plat CTP + Ongkos Cetak Ryobi (Min Rp ${p.minOrderRyobi.toLocaleString('id-ID')} + Over ${overDrekIsi} drek)`);
   } else if (isIsiOliver) {
-    // Cetak Oliver (16 x 21 cm): Plano 65x100 potong 2 (muat 32 isi per plano, 4.5 cuttern)
-    biayaDesainIsi = p.tarifDesignIsiPerHlm * 18; // 45.000
+    // Cetak Oliver (16 x 21 cm): Plano 65x100 potong 2 (muat 32 isi per plano, AN=4.5, AN6=5)
+    // BUKU!AT7: Desain isi. Pada file 3.000-10.000 pcs, Master!D26 = 0 (Free setting).
+    // Pada file < 3000 pcs, Master!D26 = 2500/hlm * 18 cuttern = 45.000.
+    biayaDesainIsi = isOplahBesar ? 0 : p.tarifDesignIsiPerHlm * 18;
     const an = 4.5;
     const an6 = 5; // ROUNDUP(4.5, 0)
-    const insheet = p.insheetIsiOliver ?? 100;
+    // BUKU!AI6: Master!D23 = 300 di file 3000-10000 pcs, dan 100 di file 600-2500 pcs
+    const insheet = isOplahBesar ? (p.insheetIsiSm ?? 300) : (p.insheetIsiOliver ?? 100);
     const apIsi = ((validOplah / 2) * an) + ((insheet / 2) * an6);
     kebutuhanIsi = Math.ceil(apIsi);
     const aoIsi = apIsi * 2;
 
-    // Berat plano 65x100x70/20000 = 22.75 kg * 15700 / 500 = Rp 714,35 / plano
+    // Berat plano 65x100x70/20000 = 22.75 kg * 15700 / 500 = Rp 714,35 / plano (BUKU!AU29)
     const hargaPlanoIsi = ((65 * 100 * 70) / 20000 * p.tarifHvs70Kg) / 500;
     biayaKertasIsi = apIsi * hargaPlanoIsi;
 
@@ -279,8 +286,9 @@ export function calculateBukuTulisHpp(
     add('Plat & Cetak Mesin Oliver Isi (1W)', biayaPlatIsi + biayaCetakIsi,
       `1 Plat CTP + Ongkos Cetak Oliver (Min Rp ${p.minOrderOliver.toLocaleString('id-ID')} + Over ${overDrekIsi} drek)`);
   } else {
-    // Cetak Speedmaster SM 102 (16 x 21 cm, Oplah >= 3000): Plano 65x100 potong 1 (muat 32 isi, 2.25 cuttern)
-    biayaDesainIsi = 0; // Free setting di oplah besar (Master!D26 = 0)
+    // Cetak Speedmaster SM 102 (16 x 21 cm, Oplah >= 3000): Plano 65x100 potong 1 (muat 32 isi, AN=2.25, AN6=3)
+    // BUKU!AT7: Free setting di oplah besar (Master!D26 = 0)
+    biayaDesainIsi = 0;
     const an = 2.25;
     const an6 = 3; // ROUNDUP(2.25, 0)
     const insheet = p.insheetIsiSm ?? 300;
@@ -309,55 +317,53 @@ export function calculateBukuTulisHpp(
   }
 
   // 4. LAMINASI GLOSSY COVER
+  // BUKU!CI7: (((D7*2)*(F7)*$CI$6)*H7)*N7
+  // Pada file 3.000-10.000 pcs (16x21): D7 = 15.5, F7 = 21 (tanpa +1 bleed, luas = 651 cm2)
+  // Pada file < 3000 pcs: D7*2+1 = 32, F7+1 = 22 (dengan +1 bleed, luas = 704 cm2)
   if (opsiLaminasi) {
-    let rawLam = 0;
-    if (coverMesin === 'Oliver' && isIsiSM) {
-      rawLam = (15.5 * 2 * 21 * p.tarifLaminasiGlossyCm2) * validOplah;
-    } else {
-      rawLam = (32 * 22 * p.tarifLaminasiGlossyCm2) * validOplah;
-    }
+    const luasLaminasi = isOplahBesar ? (15.5 * 2 * 21) : (32 * 22);
+    const rawLam = luasLaminasi * p.tarifLaminasiGlossyCm2 * validOplah;
     const biayaLaminasi = Math.max(p.minLaminasi, rawLam);
     add('Laminasi Glossy Cover', biayaLaminasi,
       biayaLaminasi <= p.minLaminasi ? `Tarif Minimum Rp ${p.minLaminasi.toLocaleString('id-ID')}` : `${validOplah} pcs × Rp ${(biayaLaminasi / validOplah).toFixed(1)}/pcs`);
   }
 
   // 5. FINISHING JILID & POTONG SISIR
+  // BUKU!BT7: Ongkos Sisir H7 * 150
   const sisir = opsiSisir ? validOplah * p.tarifSisirPerPcs : 0;
   let jilidSusun = 0;
   let ketFinishing = '';
 
-  if (isIsiRyobi) {
-    if (coverMesin === 'Oliver') {
-      const lipat = 6.012981333333333 * 18 * validOplah;
-      const sisip = 45.097359999999995 * 2 * validOplah;
-      const kawat = 4.761904761904762 * validOplah;
-      const stiching = 17.34513846153846 * validOplah;
-      jilidSusun = lipat + sisip + kawat + stiching;
-      ketFinishing = `Lipat + Sisip + Stiching kawat mesin (Rp 220,84/pcs)${opsiSisir ? ` + Sisir Rp ${p.tarifSisirPerPcs}/pcs` : ''}`;
-    } else {
-      jilidSusun = (validOplah * 161.062) + (validOplah * 9);
-      ketFinishing = `Susun & Staples manual (Rp 170,06/pcs)${opsiSisir ? ` + Sisir Rp ${p.tarifSisirPerPcs}/pcs` : ''}`;
-    }
-  } else if (isIsiOliver) {
-    const lipat = 6.012981333333333 * 5 * validOplah;
-    const sisip = 45.097359999999995 * 2 * validOplah;
-    const kawat = 4.761904761904762 * validOplah;
-    const stiching = 17.34513846153846 * validOplah;
-    jilidSusun = lipat + sisip + kawat + stiching;
-    ketFinishing = `Lipat + Sisip + Stiching kawat mesin Oliver (Rp 142,37/pcs)${opsiSisir ? ` + Sisir Rp ${p.tarifSisirPerPcs}/pcs` : ''}`;
+  if (isIsiRyobi && validOplah <= 500) {
+    // BUKU!BP7 + BQ7: Susun & Staples manual di oplah kecil
+    jilidSusun = (validOplah * 161.062) + (validOplah * 9);
+    ketFinishing = `Susun & Staples manual (Rp 170,06/pcs)${opsiSisir ? ` + Sisir Rp ${p.tarifSisirPerPcs}/pcs` : ''}`;
   } else {
-    const lipat = 6.012981333333333 * 3 * validOplah;
-    const sisip = 45.097359999999995 * 1 * validOplah;
-    const kawat = 4.761904761904762 * validOplah;
-    const stiching = 17.34513846153846 * validOplah;
-    jilidSusun = lipat + sisip + kawat + stiching;
-    ketFinishing = `Lipat + Sisip + Stiching kawat otomatis SM (Rp 255,73/pcs)${opsiSisir ? ` + Sisir Rp ${p.tarifSisirPerPcs}/pcs` : ''}`;
+    // Jilid Mesin Stiching (BUKU!BJ7 + BK7 + BL7 + BM7)
+    // BUKU!BK7: ($BK$6 * (H7 * $BK$2)) -> BK2 bernilai 1 di oplah >= 3.000, bernilai 2 di oplah 600-2.500
+    const pengaliSisip = isOplahBesar ? 1 : 2;
+    const sisipJilid = 45.097359999999995 * pengaliSisip * validOplah;
+
+    // BUKU!BJ7: ($BJ$6 * $AN$6) * H7 -> AN6 = 3 (SM), 5 (Oliver), 18 (Ryobi)
+    let an6 = 5;
+    if (isIsiSM) an6 = 3;
+    else if (isIsiOliver) an6 = 5;
+    else if (isIsiRyobi) an6 = 18;
+
+    const lipat = 6.012981333333333 * an6 * validOplah;
+    const kawat = 4.761904761904762 * validOplah; // BUKU!BL7
+    const stiching = 17.34513846153846 * validOplah; // BUKU!BM7
+    jilidSusun = lipat + sisipJilid + kawat + stiching;
+
+    const mesinLabel = isIsiSM ? 'otomatis SM' : (isIsiOliver ? 'mesin Oliver' : 'mesin Ryobi');
+    const tarifPcs = (jilidSusun / validOplah).toFixed(2);
+    ketFinishing = `Lipat + Sisip + Stiching kawat ${mesinLabel} (Rp ${tarifPcs}/pcs)${opsiSisir ? ` + Sisir Rp ${p.tarifSisirPerPcs}/pcs` : ''}`;
   }
 
   add('Jilid Staples / Stiching & Sisir', jilidSusun + sisir, ketFinishing);
   add('Transportasi Finishing', p.tarifTransport, 'Biaya transportasi antar proses');
 
-  // 6. KARDUS MASTER & PACKING LAKBAN
+  // 6. KARDUS MASTER & PACKING LAKBAN (BUKU!DD7)
   const boxCount = Math.ceil(validOplah / (p.kapasitasKardus ?? 300));
   const biayaKardus = boxCount * p.tarifKardusBox;
   const biayaLakban = (validOplah / (p.kapasitasKardus ?? 300) / 39.03061224489796) * (p.tarifLakbanRoll ?? 9600);
