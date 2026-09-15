@@ -74,7 +74,7 @@ export interface GlobalMasterParams {
   tarifHvs70: number;            // Rp 15.700 / kg (Kalender, Nota, Buku Tulis, Buku Tabungan, dll)
   tarifAp120: number;            // Rp 17.400 / kg (Kalender, Brosur, Majalah isi)
   tarifAp150: number;            // Rp 17.400 / kg (Kalender, Buku Hardcover cover)
-  tarifAc230Kg: number;          // Rp 15.100 / kg (Manasik, Stopmap, Buku Tulis, Buku Soft/Hard cover)
+  tarifAc230Kg: number;          // Rp 16.400 / kg (Manasik, Stopmap, Buku Tulis, Buku Soft/Hard cover)
   tarifAc260Kg: number;          // Rp 15.500 / kg (Manasik, Syahadah, Sertifikat, Buku Tabungan)
   upKertasPct: number;           // 5% margin/ppn kertas dasar
 
@@ -89,6 +89,7 @@ export interface GlobalMasterParams {
   tarifLakbanRoll: number;        // Rp 8.000 / roll (Semua produk)
   tarifPlastikOppPcs: number;     // Rp 90 / pcs (Rp 9.000 / pack 100 pcs)
   tarifSisirPcs: number;          // Rp 150 / pcs (Semua produk ber-finishing potong/sisir)
+  tarifStaplesPcs: number;        // Rp 100 / pcs (Manasik, Yasin, Buku Tulis)
 
   // 8. Jasa Desain & Margin Standar Perusahaan
   tarifDesainStandar: number;     // Rp 50.000 (Amplop, Kop Surat, Raport, Sertifikat, Cover Buku, dll)
@@ -130,6 +131,10 @@ export const DEFAULT_GLOBAL_PARAMS: GlobalMasterParams = {
   interOplahMin: 1,
   interOplahMax: 300,
   insheetPrintInter: 5,
+  tarifHvs70: 15700,
+  tarifAp120: 17400,
+  tarifAp150: 17400,
+  tarifAc230Kg: 16400,
   tarifAc260Kg: 15500,
   upKertasPct: 5,
 
@@ -299,13 +304,11 @@ export function applyGlobalParamsToAll(
     upArtCartonPct: g.upKertasPct,
     upHvsPct: g.upKertasPct,
     tarifPrintCoverA3: g.tarifPrintA3,
-    tarifPrintIsiA3: g.tarifPrintA3,
     tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
     minLaminasi: g.minLaminasi,
     tarifSisirPerPcs: g.tarifSisirPcs,
-    tarifStaplesPerPcs: g.tarifStaplesPcs,
-    tarifPackingKardus: g.tarifKardusBox,
-    tarifLakbanPerOrder: g.tarifLakbanRoll,
+    tarifKardusBox: g.tarifKardusBox,
+    tarifLakbanRoll: g.tarifLakbanRoll,
     tarifDesignCover: g.tarifDesainStandar,
     marginDefaultPct: g.defaultMarginPct,
     negoDefaultPct: g.defaultNegoPct,

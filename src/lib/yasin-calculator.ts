@@ -86,7 +86,7 @@ export interface YasinSimulatorInput {
   jumlahHalamanIsi: 64 | 96 | 112 | 128 | 144 | 192;
   lembarSisipanFoto: number; // 0, 1, 2, 3, 4
   lembarSisipanKeluarga: number; // 0, 1, 2, 3, 4
-  laminasiCover: 'Glossy' | 'Doff';
+  laminasiCover: 'Glossy' | 'Doff' | 'Tanpa Laminasi';
   opsiPitaRumbai: boolean;
   opsiSikuEmas: boolean;
   opsiPlastikOpp: boolean;

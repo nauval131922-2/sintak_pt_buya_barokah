@@ -131,7 +131,7 @@ export interface BukuTulisBreakdownItem {
 
 export interface BukuTulisSimulatorResult {
   input: BukuTulisSimulatorInput;
-  metodeCoverTerpilih: 'Print Inter' | 'Oliver';
+  metodeCoverTerpilih: 'Print Inter' | 'Oliver' | 'SM';
   metodeIsiTerpilih: 'Ryobi' | 'Oliver' | 'SM';
   breakdown: BukuTulisBreakdownItem[];
   kebutuhanCover: number;

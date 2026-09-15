@@ -315,7 +315,7 @@ export default function ManasikMasterParameter({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {fieldRow('tarifTaliKurPerPcs', 'Bahan Tali Kur', true, false, 'Rp/pcs', 'amber')}
               {fieldRow('tarifPasangTali', 'Jasa Pasang Tali', true, false, 'Rp/pcs', 'amber')}
-              {fieldRow('tarifLubangBor', 'Lubang Bor Mata Ayam', true, false, 'Rp/pcs', 'indigo')}
+              {fieldRow('tarifLubangBor', 'Lubang Bor Mata Ayam', true, false, 'Rp/pcs', 'blue')}
               {fieldRow('tarifBendingPerCm2', 'Tarif Lem Panas', true, false, 'Bending', 'emerald')}
             </div>
           </div>

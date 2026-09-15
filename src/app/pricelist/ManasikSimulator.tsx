@@ -45,6 +45,7 @@ export interface SavedManasikSimulationItem {
   savedAt: string;
   title: string;
   varian?: ManasikVarianType;
+  oplah: number;
   jumlahHalaman: number;
   tipeJilid: 'Softcover (Bending/Lem Panas)' | 'Staples Kawat' | 'Tali Kur' | 'Spiral Kawat' | 'Ring Binder (TikTok)';
   metodeCetakCover: 'Otomatis' | 'Print Digital (A3+)' | 'Offset (Oliver)';
@@ -53,6 +54,7 @@ export interface SavedManasikSimulationItem {
   laminasiCover: 'Tanpa Laminasi' | 'Glossy' | 'Doff' | 'UV Varnish';
   opsiPlastikOpp: boolean;
   opsiKardus: boolean;
+  opsiSisipan?: boolean;
   marginPct: number;
   negoDiskonPct: number;
   customParams: ManasikMasterParams;
@@ -220,7 +222,6 @@ export default function ManasikSimulator({
             setTipeJilid(item.tipeJilid);
             setMetodeCetakCover(item.metodeCetakCover);
             if (item.metodeCetakIsi) setMetodeCetakIsi(item.metodeCetakIsi);
-            if (item.insheetIsiCustom !== undefined) setInsheetIsiCustom(item.insheetIsiCustom);
             setLaminasiCover(item.laminasiCover);
             setOpsiSisipan(Boolean(item.opsiSisipan));
             setMarginPct(item.marginPct);
@@ -341,6 +342,7 @@ export default function ManasikSimulator({
       metodeCetakIsi,
       laminasiCover,
       opsiPlastikOpp,
+      opsiKardus,
       opsiSisipan,
       marginPct,
       negoDiskonPct,

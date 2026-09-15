@@ -151,6 +151,7 @@ export interface ManasikSimulatorInput {
   metodeCetakCover: 'Otomatis' | 'Print Digital (A3+)' | 'Offset (Oliver)';
   metodeCetakIsi?: 'Print Buya' | 'Ryobi' | 'Oliver';
   insheetIsiCustom?: number;
+  laminasiCover: 'Tanpa Laminasi' | 'Glossy' | 'Doff' | 'UV Varnish';
   opsiPlastikOpp: boolean;
   opsiKardus: boolean;
   opsiSisipan?: boolean;
@@ -169,6 +170,7 @@ export interface ManasikSimulatorOutput {
   input: ManasikSimulatorInput;
   metodeCoverTerpilih: 'Print Digital (A3+)' | 'Offset (Oliver)';
   metodeIsiTerpilih?: 'Print Buya' | 'Ryobi' | 'Oliver';
+  tebalPunggungCm: number;
   breakdown: ManasikBreakdownItem[];
   kebutuhanPlanoCover: number;
   kebutuhanA3Cover: number;
