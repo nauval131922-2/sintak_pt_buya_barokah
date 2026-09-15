@@ -416,6 +416,19 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Jurnal Harian Produksi ───
+  'jurnal-harian-produksi-2026-09-15': entry({
+    pageKey: 'jurnal-harian-produksi',
+    title: 'Jurnal Harian Produksi',
+    version: '2026-09-15-1',
+    date: '15 Sep 2026',
+    sortDate: '2026-09-15',
+    permissionKeys: ['produksi_jhp'],
+    items: [
+      'Pencarian berdasarkan tanggal jauh lebih cepat dibuka berkat indeks khusus',
+      'Daftar dimuat lebih ringan (penggabungan hitung total dan cache opsi filter)',
+      'Urutan Koordinasi-first dikembalikan sesuai permintaan',
+    ],
+  }),
   'jurnal-harian-produksi-2026-09-07': entry({
     pageKey: 'jurnal-harian-produksi',
     title: 'Jurnal Harian Produksi',
@@ -583,6 +596,17 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Analisa Jurnal Harian Produksi ───
+  'jurnal-harian-produksi-analisa-2026-09-15': entry({
+    pageKey: 'jurnal-harian-produksi-analisa',
+    title: 'Analisa Jurnal Harian Produksi',
+    version: '2026-09-15-1',
+    date: '15 Sep 2026',
+    sortDate: '2026-09-15',
+    permissionKeys: ['produksi_jhp_analisa'],
+    items: [
+      'Data analisa dimuat lebih cepat berkat indeks urutan bawaan di sisi server',
+    ],
+  }),
   'jurnal-harian-produksi-analisa-2026-07-25': entry({
     pageKey: 'jurnal-harian-produksi-analisa',
     title: 'Analisa Jurnal Harian Produksi',

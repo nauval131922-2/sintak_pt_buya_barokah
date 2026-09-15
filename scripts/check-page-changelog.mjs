@@ -106,6 +106,20 @@ function fileToRoute(file) {
   return '/' + parts.join('/');
 }
 
+/** src/app/api/foo/bar/route.ts → /foo/bar (agar perubahan API yang user rasakan ikut wajib changelog) */
+function fileToApiRoute(file) {
+  const f = norm(file);
+  if (!f.startsWith('src/app/api/')) return null;
+  const rest = f.slice('src/app/api/'.length);
+  const parts = rest.split('/');
+  const last = parts[parts.length - 1] || '';
+  if (last.includes('.')) {
+    parts.pop();
+  }
+  if (parts.length === 0) return null;
+  return '/' + parts.join('/');
+}
+
 function loadChangelogRegistry() {
   const full = path.join(process.cwd(), CHANGELOG_FILE);
   if (!fs.existsSync(full)) {
@@ -207,8 +221,12 @@ if (!workingTreeOnly) {
 const commitSet = new Set(fromCommits);
 const changed = new Set([...treeSet, ...commitSet]);
 const pageFiles = [...changed].filter(isPageIsh).sort();
+// ponytail: kandidat API dikumpulkan terpisah, baru dipetakan ke route halaman
+// setelah registry dimuat — hanya route yang terdaftar di PAGE_CHANGELOG_PATHS
+// yang ikut diwajibkan, API backend murni tanpa halaman tetap lolos.
+const apiCandidates = [...changed].filter((f) => norm(f).startsWith('src/app/api/')).sort();
 
-if (pageFiles.length === 0) {
+if (pageFiles.length === 0 && apiCandidates.length === 0) {
   console.log(
     workingTreeOnly
       ? 'check:changelog — OK (tidak ada ubahan halaman user-facing di working tree).'
@@ -230,14 +248,30 @@ const workingTreeChangelogKeys = getWorkingTreeChangelogKeys();
 
 // route → { files, sources }
 const routeMap = new Map();
-for (const f of pageFiles) {
-  const route = fileToRoute(f);
-  if (!route) continue;
+function addToRouteMap(route, f) {
+  if (!route) return;
   if (!routeMap.has(route)) {
-    routeMap.set(route, { files: [], fromTree: false, fromCommits: false });
+    routeMap.set(route, { files: [], fromTree: false, fromCommits: false, fromApi: false });
   }
   const rec = routeMap.get(route);
   rec.files.push(f);
+  if (treeSet.has(f)) rec.fromTree = true;
+  if (commitSet.has(f)) rec.fromCommits = true;
+}
+for (const f of pageFiles) {
+  addToRouteMap(fileToRoute(f), f);
+}
+// API yang memetakan ke path halaman terdaftar ikut wajib changelog (sumber: api)
+for (const f of apiCandidates) {
+  const route = fileToApiRoute(f);
+  if (!route || SKIP_ROUTES.has(route)) continue;
+  if (!registry.paths.has(route)) continue;
+  if (!routeMap.has(route)) {
+    routeMap.set(route, { files: [], fromTree: false, fromCommits: false, fromApi: true });
+  }
+  const rec = routeMap.get(route);
+  rec.files.push(f);
+  rec.fromApi = true;
   if (treeSet.has(f)) rec.fromTree = true;
   if (commitSet.has(f)) rec.fromCommits = true;
 }
@@ -329,6 +363,7 @@ if (missing.length === 0) {
     const src = [
       c.fromTree ? 'tree' : null,
       c.fromCommits ? 'commit' : null,
+      c.fromApi ? 'api' : null,
     ]
       .filter(Boolean)
       .join('+');
