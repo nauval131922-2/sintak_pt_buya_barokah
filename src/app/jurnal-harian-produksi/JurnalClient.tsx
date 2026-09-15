@@ -269,9 +269,19 @@ export default function JurnalClient({
 
     const hydrated = hydrateDateStore('jurnal_dates');
     if (hydrated.startDate && hydrated.endDate) {
-      setStartDate(hydrated.startDate);
-      setEndDate(hydrated.endDate);
-      persistDateStore('jurnal_dates', hydrated.startDate, hydrated.endDate);
+      // ponytail: startDate lama menempel selamanya sementara endDate menggelinding ke today
+      // (pernah terlihat request 2019-01-01 → today = full scan + sort 189rb baris, belasan detik).
+      // Batasi auto-restore max 31 hari; pilihan eksplisit lebih lebar via date picker tetap dihormati.
+      // ceiling: user yang sengaja butuh >31 hari tiap buka halaman harus pilih ulang; upgrade: preset rentang bernama
+      let s = hydrated.startDate;
+      const e = hydrated.endDate;
+      const MAX_SPAN = 31 * 86400000;
+      if (e.getTime() - s.getTime() > MAX_SPAN) {
+        s = new Date(e.getTime() - MAX_SPAN);
+      }
+      setStartDate(s);
+      setEndDate(e);
+      persistDateStore('jurnal_dates', s, e);
     } else {
       setStartDate(today);
       setEndDate(today);
