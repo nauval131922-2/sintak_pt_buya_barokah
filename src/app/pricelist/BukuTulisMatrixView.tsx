@@ -199,7 +199,7 @@ export default function BukuTulisMatrixView({
                   <div className="bg-amber-50/70 px-4 py-2 border-b border-amber-100 flex items-center justify-between">
                     <span className="text-[11px] font-bold text-amber-900 tracking-wider uppercase flex items-center gap-1.5">
                       <Layers size={13} className="text-amber-600" />
-                      Bahan: {ukuran} cm — {BUKU_TULIS_CONFIG[ukuran].w}×{BUKU_TULIS_CONFIG[ukuran].h} cm · {BUKU_TULIS_CONFIG[ukuran].leavesPerA3} lbr/A3
+                      Bahan: {ukuran} cm — {BUKU_TULIS_CONFIG[ukuran].w}×{BUKU_TULIS_CONFIG[ukuran].h} cm
                     </span>
                   </div>
                   <div className="overflow-x-auto max-h-[500px]">
