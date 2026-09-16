@@ -1738,6 +1738,11 @@ export default function LaporanPekerjaanClient({
   // urut kronologis sama seperti modal list pekerjaan (tgl/jam mulai -> selesai -> id; kosong di belakang)
   const detailTasksAll = useMemo(() => filteredTasks.filter((t) => !!t.task).sort(compareTasksChronological), [filteredTasks]);
 
+  // ponytail: lebar kolom modal rincian (mandiri dari tabel utama, tersimpan di localStorage)
+  const DETAIL_COL_DEFAULTS = useMemo(() => ({ no: 44, tanggal: 150, jam: 110, project: 220, bagian: 100, pic: 140, task: 220, status: 120, note: 200 }), []);
+  const [detailColWidths, setDetailColWidths] = useState<Record<string, number>>(DETAIL_COL_DEFAULTS);
+  const detailTableWrapRef = useRef<HTMLDivElement>(null);
+
   // Chart Data 1: Breakdown Pekerjaan per Status per PIC (Lazy: hanya dihitung saat accordion terbuka)
   const picChartData = useMemo(() => {
     if (!isAnalyticsOpen) return [];
@@ -1853,29 +1858,68 @@ export default function LaporanPekerjaanClient({
     }
   }, []);
 
+  // ponytail: muat + terapkan lebar kolom modal rincian (efek terpisah agar tidak mengaduk tabel utama)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("laporan_pekerjaan_detail_col_widths");
+      if (saved) {
+        setDetailColWidths((prev) => ({ ...prev, ...JSON.parse(saved) }));
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!showFilterDetailModal) return;
+    const container = detailTableWrapRef.current;
+    if (!container) return;
+    Object.entries(detailColWidths).forEach(([f, w]) => {
+      container.style.setProperty(`--dcol-${f}`, `${w}px`);
+    });
+    applyTableWidth(detailColWidths, container);
+  }, [showFilterDetailModal, detailColWidths]);
+
+  // ponytail: 1 fungsi resize dipakai tabel utama + modal rincian (beda state/ref/prefix var/storage key)
   const handleResizeStart = (
     field: string,
-    e: React.MouseEvent<HTMLDivElement>
+    e: React.MouseEvent<HTMLDivElement>,
+    opts?: {
+      widths: Record<string, number>;
+      setWidths: React.Dispatch<React.SetStateAction<Record<string, number>>>;
+      getContainer: () => HTMLDivElement | null;
+      varPrefix: string;
+      storageKey: string;
+      minWidth?: number;
+    }
   ) => {
     e.stopPropagation();
     e.preventDefault();
     isResizingRef.current = true;
 
+    const widths = opts?.widths ?? colWidths;
+    const setWidths = opts?.setWidths ?? setColWidths;
+    const getContainer = opts?.getContainer ?? (() => tableContainerRef.current);
+    const varPrefix = opts?.varPrefix ?? "col";
+    const storageKey = opts?.storageKey ?? "laporan_pekerjaan_col_widths";
+    const minW = opts?.minWidth ?? 60;
+
     const startX = e.clientX;
-    const startWidth = colWidths[field] || 100;
+    const startWidth = widths[field] || 100;
     let finalWidth = startWidth;
 
     const onMouseMove = (moveEvent: MouseEvent) => {
       const delta = moveEvent.clientX - startX;
-      finalWidth = Math.max(60, startWidth + delta);
-      if (tableContainerRef.current) {
-        tableContainerRef.current.style.setProperty(
-          `--col-${field}`,
+      finalWidth = Math.max(minW, startWidth + delta);
+      const container = getContainer();
+      if (container) {
+        container.style.setProperty(
+          `--${varPrefix}-${field}`,
           `${finalWidth}px`
         );
         applyTableWidth(
-          { ...colWidths, [field]: finalWidth },
-          tableContainerRef.current
+          { ...widths, [field]: finalWidth },
+          container
         );
       }
     };
@@ -1883,11 +1927,11 @@ export default function LaporanPekerjaanClient({
     const onMouseUp = () => {
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
-      setColWidths((prev) => {
+      setWidths((prev) => {
         const updated = { ...prev, [field]: finalWidth };
         try {
           localStorage.setItem(
-            "laporan_pekerjaan_col_widths",
+            storageKey,
             JSON.stringify(updated)
           );
         } catch {
@@ -1951,6 +1995,35 @@ export default function LaporanPekerjaanClient({
       </th>
     );
   };
+
+  // ponytail: header kolom modal rincian (resize + tooltip), 1 helper untuk 9 kolom
+  const renderDetailTh = (field: string, label: string, className = "") => (
+    <th
+      style={{
+        width: `var(--dcol-${field}, ${detailColWidths[field] || 100}px)`,
+        minWidth: `var(--dcol-${field}, ${detailColWidths[field] || 100}px)`,
+      }}
+      className={`relative px-2 py-2.5 bg-slate-50 group ${className}`}
+      title={label}
+    >
+      <span className="block truncate">{label}</span>
+      <div
+        onMouseDown={(resizeEvt) =>
+          handleResizeStart(field, resizeEvt, {
+            widths: detailColWidths,
+            setWidths: setDetailColWidths,
+            getContainer: () => detailTableWrapRef.current,
+            varPrefix: "dcol",
+            storageKey: "laporan_pekerjaan_detail_col_widths",
+            minWidth: 40,
+          })
+        }
+        onClick={(resizeEvt) => resizeEvt.stopPropagation()}
+        className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-emerald-500/50 active:bg-emerald-600 z-20 group-hover:bg-slate-300/80 transition-colors"
+        title="Geser untuk mengatur lebar kolom"
+      />
+    </th>
+  );
 
   return (
     <div
@@ -2855,8 +2928,14 @@ export default function LaporanPekerjaanClient({
       {/* Modal Rincian Pekerjaan sesuai filter aktif */}
       {showFilterDetailModal && (
         <Portal>
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="w-full max-w-5xl bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[88vh] overflow-hidden">
+          <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={() => setShowFilterDetailModal(false)}
+          >
+            <div
+              className="w-full max-w-5xl bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[88vh] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
               {/* Header */}
               <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 border-b border-slate-100 bg-slate-50/80 shrink-0 gap-3">
                 <div className="min-w-0 flex-1">
@@ -2900,19 +2979,19 @@ export default function LaporanPekerjaanClient({
               </div>
               {/* Body */}
               <div className="flex-1 min-h-0 flex flex-col overflow-hidden p-3 sm:p-4">
-                <div className="flex-1 min-h-0 border border-slate-200 rounded-xl overflow-x-auto overflow-y-auto bg-white">
+                <div ref={detailTableWrapRef} className="flex-1 min-h-0 border border-slate-200 rounded-xl overflow-x-auto overflow-y-auto bg-white">
                 <table className="w-full text-left border-collapse" style={{ fontSize: tableFontSize }}>
                   <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200 sticky top-0 z-10 shadow-xs">
                     <tr className="bg-slate-50">
-                      <th className="px-2 py-2.5 bg-slate-50 text-center w-10">No</th>
-                      <th className="px-2 py-2.5 bg-slate-50">Tanggal</th>
-                      <th className="px-2 py-2.5 bg-slate-50">Jam</th>
-                      <th className="px-2 py-2.5 bg-slate-50">Project / Order</th>
-                      <th className="px-2 py-2.5 bg-slate-50">Bagian</th>
-                      <th className="px-2 py-2.5 bg-slate-50">PIC</th>
-                      <th className="px-2 py-2.5 bg-slate-50">Task / Aktivitas</th>
-                      <th className="px-2 py-2.5 bg-slate-50">Status</th>
-                      <th className="px-2 py-2.5 bg-slate-50">Note</th>
+                      {renderDetailTh("no", "No", "text-center")}
+                      {renderDetailTh("tanggal", "Tanggal")}
+                      {renderDetailTh("jam", "Jam")}
+                      {renderDetailTh("project", "Project / Order")}
+                      {renderDetailTh("bagian", "Bagian")}
+                      {renderDetailTh("pic", "PIC")}
+                      {renderDetailTh("task", "Task / Aktivitas")}
+                      {renderDetailTh("status", "Status")}
+                      {renderDetailTh("note", "Note")}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
