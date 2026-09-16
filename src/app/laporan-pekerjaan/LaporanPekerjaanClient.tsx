@@ -2899,8 +2899,8 @@ export default function LaporanPekerjaanClient({
                 </button>
               </div>
               {/* Body */}
-              <div className="flex-1 min-h-0 overflow-hidden p-3 sm:p-4">
-                <div className="h-full border border-slate-200 rounded-xl overflow-x-auto overflow-y-auto bg-white">
+              <div className="flex-1 min-h-0 flex flex-col overflow-hidden p-3 sm:p-4">
+                <div className="flex-1 min-h-0 border border-slate-200 rounded-xl overflow-x-auto overflow-y-auto bg-white">
                 <table className="w-full text-left border-collapse" style={{ fontSize: tableFontSize }}>
                   <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200 sticky top-0 z-10 shadow-xs">
                     <tr className="bg-slate-50">
