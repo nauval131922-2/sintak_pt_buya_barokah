@@ -1907,6 +1907,8 @@ export default function LaporanPekerjaanClient({
     e.stopPropagation();
     e.preventDefault();
     isResizingRef.current = true;
+    // ponytail: matikan seleksi teks selama drag agar tidak ada paint tambahan
+    document.body.style.userSelect = "none";
 
     const widths = opts?.widths ?? colWidths;
     const setWidths = opts?.setWidths ?? setColWidths;
@@ -1918,9 +1920,12 @@ export default function LaporanPekerjaanClient({
     const startX = e.clientX;
     const startWidth = widths[field] || 100;
     let finalWidth = startWidth;
-
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      const delta = moveEvent.clientX - startX;
+    // ponytail: throttle via rAF agar drag resize maksimal 1 layout/frame (tabel ratusan baris tidak dihitung tiap mousemove)
+    let rafId = 0;
+    let latestX = startX;
+    const applyWidth = () => {
+      rafId = 0;
+      const delta = latestX - startX;
       finalWidth = Math.max(minW, startWidth + delta);
       const container = getContainer();
       if (container) {
@@ -1935,9 +1940,20 @@ export default function LaporanPekerjaanClient({
       }
     };
 
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      latestX = moveEvent.clientX;
+      if (!rafId) rafId = requestAnimationFrame(applyWidth);
+    };
+
     const onMouseUp = () => {
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = 0;
+        applyWidth();
+      }
+      document.body.style.userSelect = "";
       setWidths((prev) => {
         const updated = { ...prev, [field]: finalWidth };
         try {
