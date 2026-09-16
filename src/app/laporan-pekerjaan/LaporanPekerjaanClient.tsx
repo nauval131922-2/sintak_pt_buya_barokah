@@ -508,6 +508,8 @@ export default function LaporanPekerjaanClient({
 
   // Modal Tambah Order Manual state
   const [showAddOrderModal, setShowAddOrderModal] = useState<boolean>(false);
+  // ponytail: modal rincian flat pekerjaan yang lolos filter aktif
+  const [showFilterDetailModal, setShowFilterDetailModal] = useState<boolean>(false);
   const [newOrderProject, setNewOrderProject] = useState<string>("");
   const [newOrderTgl, setNewOrderTgl] = useState<Date | null>(new Date());
   const [isSubmittingOrder, setIsSubmittingOrder] = useState<boolean>(false);
@@ -1732,6 +1734,9 @@ export default function LaporanPekerjaanClient({
     return { total, belumDikerjakan, selesai, inProgress, cancel };
   }, [tasksForCounts]);
 
+  // ponytail: daftar flat pekerjaan lolos filter untuk modal rincian (placeholder order tanpa task dikecualikan)
+  const detailTasksAll = useMemo(() => filteredTasks.filter((t) => !!t.task), [filteredTasks]);
+
   // Chart Data 1: Breakdown Pekerjaan per Status per PIC (Lazy: hanya dihitung saat accordion terbuka)
   const picChartData = useMemo(() => {
     if (!isAnalyticsOpen) return [];
@@ -2192,6 +2197,19 @@ export default function LaporanPekerjaanClient({
             >
               <RefreshCw className={`w-4 h-4 ${loading || isRangeLoading ? "animate-spin text-emerald-600" : ""}`} />
               <span className="hidden sm:inline">Reload</span>
+            </button>
+            {/* Tombol Rincian Pekerjaan sesuai filter aktif */}
+            <button
+              type="button"
+              onClick={() => setShowFilterDetailModal(true)}
+              className="h-9 px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm"
+              title="Lihat rincian pekerjaan sesuai filter aktif"
+            >
+              <Eye className="w-4 h-4" />
+              <span className="hidden sm:inline">Detail</span>
+              <span className="px-1.5 py-0.5 text-[10px] font-black bg-emerald-100 text-emerald-700 rounded-full">
+                {detailTasksAll.length}
+              </span>
             </button>
             <div className="relative flex-1 min-w-0">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -2826,6 +2844,108 @@ export default function LaporanPekerjaanClient({
                   <ChevronDown size={20} strokeWidth={2.5} />
                 </button>
               )}
+            </div>
+          </div>
+        </Portal>
+      )}
+
+      {/* Modal Rincian Pekerjaan sesuai filter aktif */}
+      {showFilterDetailModal && (
+        <Portal>
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="w-full max-w-5xl bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[88vh] overflow-hidden">
+              {/* Header */}
+              <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 border-b border-slate-100 bg-slate-50/80 shrink-0 gap-3">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-sm font-bold text-slate-800 truncate">
+                    Rincian Pekerjaan{" "}
+                    <span className="text-xs font-semibold text-slate-500">
+                      ({detailTasksAll.length} task lolos filter)
+                    </span>
+                  </h3>
+                  <div className="flex flex-wrap gap-1.5 mt-1.5">
+                    {selectedBagianFilter !== "ALL" && (
+                      <span className="px-1.5 py-0.5 text-[10px] font-bold bg-white text-slate-600 border border-slate-200 rounded-md">Bagian: {selectedBagianFilter}</span>
+                    )}
+                    {selectedPic !== "ALL" && (
+                      <span className="px-1.5 py-0.5 text-[10px] font-bold bg-white text-slate-600 border border-slate-200 rounded-md">PIC: {selectedPic}</span>
+                    )}
+                    {selectedStatus !== "ALL" && (
+                      <span className="px-1.5 py-0.5 text-[10px] font-bold bg-white text-slate-600 border border-slate-200 rounded-md">Status: {selectedStatus}</span>
+                    )}
+                    {deferredSearchTerm && (
+                      <span className="px-1.5 py-0.5 text-[10px] font-bold bg-white text-slate-600 border border-slate-200 rounded-md">Cari: {deferredSearchTerm}</span>
+                    )}
+                    {(filterStartDate || filterEndDate) && (
+                      <span className="px-1.5 py-0.5 text-[10px] font-bold bg-white text-slate-600 border border-slate-200 rounded-md">
+                        Tgl: {filterStartDate ? formatDateDisplay(filterStartDate) : "…"} - {filterEndDate ? formatDateDisplay(filterEndDate) : "…"}
+                      </span>
+                    )}
+                    {selectedBagianFilter === "ALL" && selectedPic === "ALL" && selectedStatus === "ALL" && !deferredSearchTerm && !filterStartDate && !filterEndDate && (
+                      <span className="px-1.5 py-0.5 text-[10px] font-bold bg-white text-slate-400 border border-slate-200 rounded-md">Tanpa filter (semua data)</span>
+                    )}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowFilterDetailModal(false)}
+                  className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-all cursor-pointer shrink-0"
+                  title="Tutup Modal"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              {/* Body */}
+              <div className="flex-1 min-h-0 overflow-x-auto overflow-y-auto p-3 sm:p-4">
+                <table className="w-full text-left border-collapse" style={{ fontSize: tableFontSize }}>
+                  <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200 sticky top-0 z-10 shadow-xs">
+                    <tr className="bg-slate-50">
+                      <th className="px-2 py-2.5 bg-slate-50 text-center w-10">No</th>
+                      <th className="px-2 py-2.5 bg-slate-50">Project / Order</th>
+                      <th className="px-2 py-2.5 bg-slate-50">Bagian</th>
+                      <th className="px-2 py-2.5 bg-slate-50">PIC</th>
+                      <th className="px-2 py-2.5 bg-slate-50">Task / Aktivitas</th>
+                      <th className="px-2 py-2.5 bg-slate-50">Status</th>
+                      <th className="px-2 py-2.5 bg-slate-50">Note</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
+                    {detailTasksAll.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="px-2 py-8 text-center text-slate-400">
+                          Tidak ada pekerjaan yang lolos filter saat ini.
+                        </td>
+                      </tr>
+                    ) : (
+                      detailTasksAll.slice(0, 500).map((t, idx) => (
+                        <tr key={t.id || idx} className="hover:bg-slate-50/70">
+                          <td className="px-2 py-1.5 text-center text-slate-400">{idx + 1}</td>
+                          <td className="px-2 py-1.5 font-semibold max-w-[220px] truncate" title={t.project || ""}>{t.project || "-"}</td>
+                          <td className="px-2 py-1.5 whitespace-nowrap">{t.bagian || "-"}</td>
+                          <td className="px-2 py-1.5 whitespace-nowrap">{t.pic || "-"}</td>
+                          <td className="px-2 py-1.5 max-w-[220px] truncate" title={t.task || ""}>{cleanTaskName(t.task || "", t.project || "")}</td>
+                          <td className="px-2 py-1.5 whitespace-nowrap">{getStatusBadge(t.status)}</td>
+                          <td className="px-2 py-1.5 max-w-[200px] truncate text-slate-500" title={t.note || ""}>{t.note || "-"}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              {/* Footer */}
+              <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-t border-slate-100 shrink-0 gap-3">
+                <span className="text-xs text-slate-500">
+                  Menampilkan {Math.min(detailTasksAll.length, 500)} dari {detailTasksAll.length} task
+                  {detailTasksAll.length > 500 && " — persempit filter untuk melihat sisanya"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowFilterDetailModal(false)}
+                  className="px-4 py-1.5 text-xs font-bold text-slate-600 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 transition-all cursor-pointer"
+                >
+                  Tutup
+                </button>
+              </div>
             </div>
           </div>
         </Portal>
