@@ -1920,8 +1920,11 @@ export default function LaporanPekerjaanClient({
     const startX = e.clientX;
     const startWidth = widths[field] || 100;
     // ponytail: garis bayangan selama drag (compositor-only, 0 layout tabel); lebar dihitung sekali saat dilepas
+    const lineRect = getContainer()?.getBoundingClientRect();
     const line = document.createElement("div");
-    line.style.cssText = `position:fixed;top:0;bottom:0;left:${startX}px;width:2px;margin-left:-1px;background:#059669;opacity:0.8;z-index:20000;pointer-events:none;`;
+    line.style.cssText = lineRect
+      ? `position:fixed;top:${lineRect.top}px;height:${lineRect.height}px;left:${startX}px;width:2px;margin-left:-1px;background:#059669;opacity:0.8;z-index:20000;pointer-events:none;border-radius:2px;`
+      : `position:fixed;top:0;bottom:0;left:${startX}px;width:2px;margin-left:-1px;background:#059669;opacity:0.8;z-index:20000;pointer-events:none;`;
     document.body.appendChild(line);
 
     const onMouseMove = (moveEvent: MouseEvent) => {
