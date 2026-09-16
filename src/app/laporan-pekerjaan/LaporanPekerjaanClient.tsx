@@ -403,6 +403,7 @@ interface ColumnResizeOpts {
   varPrefix: string;
   storageKey: string;
   minWidth?: number;
+  onEnd?: () => void;
 }
 
 // ponytail: lebar tabel = jumlah lebar kolom (min. selebar container) supaya resize
@@ -433,6 +434,8 @@ interface RincianModalProps {
 
 // ponytail: komponen sendiri agar interaksi modal (resize/paginasi) tidak me-render ulang seluruh halaman
 function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate, endDate, onClose, onResizeStart }: RincianModalProps) {
+  // ponytail: matikan blur backdrop selama drag agar tiap frame tidak repaint blur sehalaman
+  const [isDetailResizing, setIsDetailResizing] = useState<boolean>(false);
   // ponytail: lazy init dari localStorage agar tanpa render beruntun saat mount
   const [detailColWidths, setDetailColWidths] = useState<Record<string, number>>(() => {
     const defaults = { no: 44, tanggal: 150, jam: 110, project: 220, bagian: 100, pic: 140, task: 220, status: 120, note: 200 };
@@ -491,7 +494,8 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
     >
       <span className="block truncate">{label}</span>
       <div
-        onMouseDown={(resizeEvt) =>
+        onMouseDown={(resizeEvt) => {
+          setIsDetailResizing(true);
           onResizeStart(field, resizeEvt, {
             widths: detailColWidths,
             setWidths: setDetailColWidths,
@@ -499,8 +503,9 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
             varPrefix: "dcol",
             storageKey: "laporan_pekerjaan_detail_col_widths",
             minWidth: 40,
-          })
-        }
+            onEnd: () => setIsDetailResizing(false),
+          });
+        }}
         onClick={(resizeEvt) => resizeEvt.stopPropagation()}
         className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-emerald-500/50 active:bg-emerald-600 z-20 group-hover:bg-slate-300/80 transition-colors"
         title="Geser untuk mengatur lebar kolom"
@@ -511,7 +516,7 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
   return (
     <Portal>
       <div
-        className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
+        className={`fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 animate-in fade-in duration-200 ${isDetailResizing ? "" : "backdrop-blur-sm"}`}
         onClick={onClose}
       >
         <div
@@ -562,7 +567,7 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
           {/* Body */}
           <div className="flex-1 min-h-0 flex flex-col overflow-hidden p-3 sm:p-4">
             <div ref={detailTableWrapRef} className="flex-1 min-h-0 border border-slate-200 rounded-xl overflow-x-auto overflow-y-auto bg-white">
-            <table className="w-full text-left border-collapse" style={{ fontSize }}>
+            <table className="w-full table-fixed text-left border-collapse" style={{ fontSize }}>
               <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200 sticky top-0 z-10 shadow-xs">
                 <tr className="bg-slate-50">
                   {renderDetailTh("no", "No", "text-center")}
@@ -2198,6 +2203,7 @@ export default function LaporanPekerjaanClient({
       applyDomWidth(finalWidth);
       document.body.style.userSelect = "";
       saveWidth(finalWidth);
+      opts?.onEnd?.();
     };
 
     document.addEventListener("mousemove", onMouseMove);
