@@ -2139,38 +2139,24 @@ export default function LaporanPekerjaanClient({
 
     const startX = e.clientX;
     const startWidth = widths[field] || 100;
-    // ponytail: garis bayangan selama drag (compositor-only, 0 layout tabel); lebar dihitung sekali saat dilepas
-    const lineRect = getContainer()?.getBoundingClientRect();
-    const line = document.createElement("div");
-    line.style.cssText = lineRect
-      ? `position:fixed;top:${lineRect.top}px;height:${lineRect.height}px;left:${startX}px;width:2px;margin-left:-1px;background:#059669;opacity:0.8;z-index:20000;pointer-events:none;border-radius:2px;`
-      : `position:fixed;top:0;bottom:0;left:${startX}px;width:2px;margin-left:-1px;background:#059669;opacity:0.8;z-index:20000;pointer-events:none;`;
-    document.body.appendChild(line);
 
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      const clampedDelta = Math.max(minW - startWidth, moveEvent.clientX - startX);
-      line.style.transform = `translateX(${clampedDelta}px)`;
-    };
-
-    const onMouseUp = (upEvent: MouseEvent) => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-      const finalWidth = Math.max(minW, startWidth + (upEvent.clientX - startX));
-      line.remove();
-      document.body.style.userSelect = "";
+    const applyDomWidth = (w: number) => {
       const container = getContainer();
       if (container) {
         container.style.setProperty(
           `--${varPrefix}-${field}`,
-          `${finalWidth}px`
+          `${w}px`
         );
         applyTableWidth(
-          { ...widths, [field]: finalWidth },
+          { ...widths, [field]: w },
           container
         );
       }
+    };
+
+    const saveWidth = (w: number) => {
       setWidths((prev) => {
-        const updated = { ...prev, [field]: finalWidth };
+        const updated = { ...prev, [field]: w };
         try {
           localStorage.setItem(
             storageKey,
@@ -2184,6 +2170,34 @@ export default function LaporanPekerjaanClient({
       setTimeout(() => {
         isResizingRef.current = false;
       }, 100);
+    };
+
+    // ponytail: live-update di-throttle rAF (maksimal 1 layout/frame); state React sekali saat dilepas
+    let rafId = 0;
+    let latestX = startX;
+    let finalWidth = startWidth;
+    const applyLive = () => {
+      rafId = 0;
+      finalWidth = Math.max(minW, startWidth + (latestX - startX));
+      applyDomWidth(finalWidth);
+    };
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      latestX = moveEvent.clientX;
+      if (!rafId) rafId = requestAnimationFrame(applyLive);
+    };
+
+    const onMouseUp = () => {
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+      finalWidth = Math.max(minW, startWidth + (latestX - startX));
+      applyDomWidth(finalWidth);
+      document.body.style.userSelect = "";
+      saveWidth(finalWidth);
     };
 
     document.addEventListener("mousemove", onMouseMove);
