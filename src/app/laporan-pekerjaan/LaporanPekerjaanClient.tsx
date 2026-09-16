@@ -592,16 +592,16 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
                   detailPageRows.map((t, idx) => (
                     <tr key={t.id || idx} className="hover:bg-slate-50/70">
                       <td className="px-2 py-1.5 text-center text-slate-400">{(safeDetailPage - 1) * DETAIL_PAGE_SIZE + idx + 1}</td>
-                      <td className="px-2 py-1.5 whitespace-nowrap text-slate-500">
-                        {t.startDate || t.endDate
+                          <td className="px-2 py-1.5 max-w-[150px] truncate text-slate-500" title={t.startDate || t.endDate ? `${t.startDate ? formatDateDisplay(t.startDate) : "-"}${t.endDate && t.endDate !== t.startDate ? ` ~ ${formatDateDisplay(t.endDate)}` : ""}` : ""}>
+                            {t.startDate || t.endDate
                           ? `${t.startDate ? formatDateDisplay(t.startDate) : "-"}${t.endDate && t.endDate !== t.startDate ? ` ~ ${formatDateDisplay(t.endDate)}` : ""}`
                           : "-"}
                       </td>
-                      <td className="px-2 py-1.5 whitespace-nowrap text-slate-500">
-                        {t.startTime || t.endTime ? `${t.startTime || "-"} ~ ${t.endTime || "-"}` : "-"}
+                          <td className="px-2 py-1.5 max-w-[110px] truncate text-slate-500" title={t.startTime || t.endTime ? `${t.startTime || "-"} ~ ${t.endTime || "-"}` : ""}>
+                            {t.startTime || t.endTime ? `${t.startTime || "-"} ~ ${t.endTime || "-"}` : "-"}
                       </td>
                       <td className="px-2 py-1.5 font-semibold max-w-[220px] truncate" title={t.project || ""}>{t.project || "-"}</td>
-                      <td className="px-2 py-1.5 whitespace-nowrap">{t.bagian || "-"}</td>
+                          <td className="px-2 py-1.5 max-w-[100px] truncate" title={t.bagian || ""}>{t.bagian || "-"}</td>
                           <td className="px-2 py-1.5 max-w-[140px] truncate" title={t.pic || ""}>{t.pic || "-"}</td>
                       <td className="px-2 py-1.5 max-w-[220px] truncate" title={t.task || ""}>{cleanTaskName(t.task || "", t.project || "")}</td>
                       <td className="px-2 py-1.5 whitespace-nowrap">{getStatusBadge(t.status)}</td>
