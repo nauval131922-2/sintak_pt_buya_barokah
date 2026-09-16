@@ -242,6 +242,15 @@ const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
   const shownCancel = isLastCancel ? lastSorted : cancelFallback;
   const cancelName = shownCancel ? cleanTaskName(shownCancel.task || "", project) : "";
 
+  // ponytail: gabung note agar note cancel tidak ketutup note selanjutnya
+  const nextNote = nextTask?.note?.trim() || "";
+  const cancelNoteText = shownCancel?.note?.trim() || "";
+  const selesaiNote = !isLastCancel ? lastSelesaiTask?.note?.trim() || "" : "";
+  const note =
+    nextNote && cancelNoteText && nextNote !== cancelNoteText
+      ? `${nextNote} / ${cancelNoteText}`
+      : nextNote || cancelNoteText || selesaiNote || "-";
+
   return {
     progressPct:
       activeCount > 0
@@ -255,7 +264,7 @@ const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
     pekerjaanSelanjutnya: nextTask
       ? cleanTaskName(nextTask.task || "", project)
       : "-",
-    note: nextTask?.note || shownCancel?.note || (!isLastCancel ? lastSelesaiTask?.note : undefined) || "-",
+    note,
   };
 };
 
