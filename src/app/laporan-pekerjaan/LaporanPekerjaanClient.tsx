@@ -2199,19 +2199,6 @@ export default function LaporanPekerjaanClient({
               <RefreshCw className={`w-4 h-4 ${loading || isRangeLoading ? "animate-spin text-emerald-600" : ""}`} />
               <span className="hidden sm:inline">Reload</span>
             </button>
-            {/* Tombol Rincian Pekerjaan sesuai filter aktif */}
-            <button
-              type="button"
-              onClick={() => setShowFilterDetailModal(true)}
-              className="h-9 px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm"
-              title="Lihat rincian pekerjaan sesuai filter aktif"
-            >
-              <Eye className="w-4 h-4" />
-              <span className="hidden sm:inline">Detail</span>
-              <span className="px-1.5 py-0.5 text-[10px] font-black bg-emerald-100 text-emerald-700 rounded-full">
-                {detailTasksAll.length}
-              </span>
-            </button>
             <div className="relative flex-1 min-w-0">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
@@ -2408,6 +2395,21 @@ export default function LaporanPekerjaanClient({
                 </button>
               </div>
             )}
+            {/* Tombol Rincian Pekerjaan sesuai filter aktif */}
+            <div className="w-full sm:w-auto flex items-center shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowFilterDetailModal(true)}
+                className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 h-8 text-[11px] font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-all shrink-0 cursor-pointer shadow-xs"
+                title="Lihat rincian pekerjaan sesuai filter aktif"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                Detail
+                <span className="px-1.5 py-0.5 text-[10px] font-black bg-emerald-100 text-emerald-700 rounded-full">
+                  {detailTasksAll.length}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
