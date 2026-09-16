@@ -14,6 +14,8 @@ import {
   Filter,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   Check,
   BarChart3,
   ArrowUpDown,
@@ -1742,6 +1744,15 @@ export default function LaporanPekerjaanClient({
   const DETAIL_COL_DEFAULTS = useMemo(() => ({ no: 44, tanggal: 150, jam: 110, project: 220, bagian: 100, pic: 140, task: 220, status: 120, note: 200 }), []);
   const [detailColWidths, setDetailColWidths] = useState<Record<string, number>>(DETAIL_COL_DEFAULTS);
   const detailTableWrapRef = useRef<HTMLDivElement>(null);
+  // ponytail: paginasi 100/halaman agar buka modal tetap ringan saat data ribuan (5x lebih sedikit node)
+  const DETAIL_PAGE_SIZE = 100;
+  const [detailPage, setDetailPage] = useState<number>(1);
+  const detailTotalPages = Math.max(1, Math.ceil(detailTasksAll.length / DETAIL_PAGE_SIZE));
+  const safeDetailPage = Math.min(detailPage, detailTotalPages);
+  const detailPageRows = useMemo(
+    () => detailTasksAll.slice((safeDetailPage - 1) * DETAIL_PAGE_SIZE, safeDetailPage * DETAIL_PAGE_SIZE),
+    [detailTasksAll, safeDetailPage]
+  );
 
   // Chart Data 1: Breakdown Pekerjaan per Status per PIC (Lazy: hanya dihitung saat accordion terbuka)
   const picChartData = useMemo(() => {
@@ -2472,7 +2483,7 @@ export default function LaporanPekerjaanClient({
             <div className="w-full sm:w-auto flex items-center shrink-0">
               <button
                 type="button"
-                onClick={() => setShowFilterDetailModal(true)}
+                onClick={() => { setDetailPage(1); setShowFilterDetailModal(true); }}
                 className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 h-8 text-[11px] font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-all shrink-0 cursor-pointer shadow-xs"
                 title="Lihat rincian pekerjaan sesuai filter aktif"
               >
@@ -3002,9 +3013,9 @@ export default function LaporanPekerjaanClient({
                         </td>
                       </tr>
                     ) : (
-                      detailTasksAll.slice(0, 500).map((t, idx) => (
+                      detailPageRows.map((t, idx) => (
                         <tr key={t.id || idx} className="hover:bg-slate-50/70">
-                          <td className="px-2 py-1.5 text-center text-slate-400">{idx + 1}</td>
+                          <td className="px-2 py-1.5 text-center text-slate-400">{(safeDetailPage - 1) * DETAIL_PAGE_SIZE + idx + 1}</td>
                           <td className="px-2 py-1.5 whitespace-nowrap text-slate-500">
                             {t.startDate || t.endDate
                               ? `${t.startDate ? formatDateDisplay(t.startDate) : "-"}${t.endDate && t.endDate !== t.startDate ? ` ~ ${formatDateDisplay(t.endDate)}` : ""}`
@@ -3027,11 +3038,37 @@ export default function LaporanPekerjaanClient({
                 </div>
               </div>
               {/* Footer */}
-              <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-t border-slate-100 shrink-0 gap-3">
+              <div className="flex flex-wrap items-center justify-between px-4 sm:px-5 py-3 border-t border-slate-100 shrink-0 gap-2">
                 <span className="text-xs text-slate-500">
-                  Menampilkan {Math.min(detailTasksAll.length, 500)} dari {detailTasksAll.length} task
-                  {detailTasksAll.length > 500 && " — persempit filter untuk melihat sisanya"}
+                  {detailTasksAll.length === 0
+                    ? "0 task"
+                    : `${(safeDetailPage - 1) * DETAIL_PAGE_SIZE + 1}–${Math.min(safeDetailPage * DETAIL_PAGE_SIZE, detailTasksAll.length)} dari ${detailTasksAll.length} task`}
                 </span>
+                {detailTotalPages > 1 && (
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      disabled={safeDetailPage <= 1}
+                      onClick={() => { setDetailPage(safeDetailPage - 1); detailTableWrapRef.current?.scrollTo({ top: 0 }); }}
+                      className="h-7 px-2 text-[11px] font-bold text-slate-600 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-0.5 cursor-pointer disabled:opacity-40 disabled:cursor-default"
+                      title="Halaman sebelumnya"
+                    >
+                      <ChevronLeft size={13} /> Prev
+                    </button>
+                    <span className="text-[11px] font-bold text-slate-500">
+                      {safeDetailPage} / {detailTotalPages}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={safeDetailPage >= detailTotalPages}
+                      onClick={() => { setDetailPage(safeDetailPage + 1); detailTableWrapRef.current?.scrollTo({ top: 0 }); }}
+                      className="h-7 px-2 text-[11px] font-bold text-slate-600 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-0.5 cursor-pointer disabled:opacity-40 disabled:cursor-default"
+                      title="Halaman berikutnya"
+                    >
+                      Next <ChevronRight size={13} />
+                    </button>
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={() => setShowFilterDetailModal(false)}
