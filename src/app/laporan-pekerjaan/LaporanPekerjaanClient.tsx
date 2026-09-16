@@ -395,6 +395,282 @@ const truncatePicName = (name: string, maxLen = 20) => {
   return `${s.slice(0, Math.max(1, maxLen - 1))}…`;
 };
 
+// ponytail: opsi resize kolom generik dipakai tabel utama + modal rincian
+interface ColumnResizeOpts {
+  widths: Record<string, number>;
+  setWidths: React.Dispatch<React.SetStateAction<Record<string, number>>>;
+  getContainer: () => HTMLDivElement | null;
+  varPrefix: string;
+  storageKey: string;
+  minWidth?: number;
+}
+
+// ponytail: lebar tabel = jumlah lebar kolom (min. selebar container) supaya resize
+// satu kolom tidak mendistribusikan ulang lebar kolom lain.
+const applyTableWidth = (
+  widths: Record<string, number>,
+  container: HTMLDivElement | null
+) => {
+  if (!container) return;
+  const table = container.querySelector("table");
+  if (!table) return;
+  const sum = Object.values(widths).reduce((a, b) => a + b, 0);
+  table.style.width = `${Math.max(sum, container.clientWidth)}px`;
+};
+
+interface RincianModalProps {
+  tasks: SpreadsheetTask[];
+  fontSize: number;
+  bagian: string;
+  pic: string;
+  status: string;
+  search: string;
+  startDate: Date | null;
+  endDate: Date | null;
+  onClose: () => void;
+  onResizeStart: (field: string, e: React.MouseEvent<HTMLDivElement>, opts: ColumnResizeOpts) => void;
+}
+
+// ponytail: komponen sendiri agar interaksi modal (resize/paginasi) tidak me-render ulang seluruh halaman
+function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate, endDate, onClose, onResizeStart }: RincianModalProps) {
+  // ponytail: lazy init dari localStorage agar tanpa render beruntun saat mount
+  const [detailColWidths, setDetailColWidths] = useState<Record<string, number>>(() => {
+    const defaults = { no: 44, tanggal: 150, jam: 110, project: 220, bagian: 100, pic: 140, task: 220, status: 120, note: 200 };
+    try {
+      const saved = localStorage.getItem("laporan_pekerjaan_detail_col_widths");
+      if (saved) return { ...defaults, ...JSON.parse(saved) };
+    } catch {
+      // Ignore localStorage errors
+    }
+    return defaults;
+  });
+  const detailTableWrapRef = useRef<HTMLDivElement>(null);
+  const DETAIL_PAGE_SIZE = 100;
+  const [detailPage, setDetailPage] = useState<number>(1);
+  const detailTotalPages = Math.max(1, Math.ceil(tasks.length / DETAIL_PAGE_SIZE));
+  const safeDetailPage = Math.min(detailPage, detailTotalPages);
+  const detailPageRows = useMemo(
+    () => tasks.slice((safeDetailPage - 1) * DETAIL_PAGE_SIZE, safeDetailPage * DETAIL_PAGE_SIZE),
+    [tasks, safeDetailPage]
+  );
+  // ponytail: nomor halaman ringkas (1 … 4 5 [6] 7 8 … 20) agar pager tetap ramping saat puluhan halaman
+  const detailPageItems = useMemo<(number | "…")[]>(() => {
+    const nums = Array.from(
+      new Set(
+        [1, safeDetailPage - 1, safeDetailPage, safeDetailPage + 1, detailTotalPages].filter(
+          (p) => p >= 1 && p <= detailTotalPages
+        )
+      )
+    ).sort((a, b) => a - b);
+    const out: (number | "…")[] = [];
+    nums.forEach((p, i) => {
+      if (i > 0 && p - nums[i - 1] > 1) out.push("…");
+      out.push(p);
+    });
+    return out;
+  }, [detailTotalPages, safeDetailPage]);
+
+  useEffect(() => {
+    const container = detailTableWrapRef.current;
+    if (!container) return;
+    Object.entries(detailColWidths).forEach(([f, w]) => {
+      container.style.setProperty(`--dcol-${f}`, `${w}px`);
+    });
+    applyTableWidth(detailColWidths, container);
+  }, [detailColWidths]);
+
+  // ponytail: header kolom modal rincian (resize + tooltip), 1 helper untuk 9 kolom
+  const renderDetailTh = (field: string, label: string, className = "") => (
+    <th
+      style={{
+        width: `var(--dcol-${field}, ${detailColWidths[field] || 100}px)`,
+        minWidth: `var(--dcol-${field}, ${detailColWidths[field] || 100}px)`,
+      }}
+      className={`relative px-2 py-2.5 bg-slate-50 group ${className}`}
+      title={label}
+    >
+      <span className="block truncate">{label}</span>
+      <div
+        onMouseDown={(resizeEvt) =>
+          onResizeStart(field, resizeEvt, {
+            widths: detailColWidths,
+            setWidths: setDetailColWidths,
+            getContainer: () => detailTableWrapRef.current,
+            varPrefix: "dcol",
+            storageKey: "laporan_pekerjaan_detail_col_widths",
+            minWidth: 40,
+          })
+        }
+        onClick={(resizeEvt) => resizeEvt.stopPropagation()}
+        className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-emerald-500/50 active:bg-emerald-600 z-20 group-hover:bg-slate-300/80 transition-colors"
+        title="Geser untuk mengatur lebar kolom"
+      />
+    </th>
+  );
+
+  return (
+    <Portal>
+      <div
+        className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
+        onClick={onClose}
+      >
+        <div
+          className="w-full max-w-[98vw] bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[94vh] overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 border-b border-slate-100 bg-slate-50/80 shrink-0 gap-3">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm font-bold text-slate-800 truncate">
+                Rincian Pekerjaan{" "}
+                <span className="text-xs font-semibold text-slate-500">
+                  ({tasks.length} task lolos filter)
+                </span>
+              </h3>
+              <div className="flex flex-wrap gap-1.5 mt-1.5">
+                {bagian !== "ALL" && (
+                  <span className="px-1.5 py-0.5 text-[10px] font-bold bg-white text-slate-600 border border-slate-200 rounded-md">Bagian: {bagian}</span>
+                )}
+                {pic !== "ALL" && (
+                  <span className="px-1.5 py-0.5 text-[10px] font-bold bg-white text-slate-600 border border-slate-200 rounded-md">PIC: {pic}</span>
+                )}
+                {status !== "ALL" && (
+                  <span className="px-1.5 py-0.5 text-[10px] font-bold bg-white text-slate-600 border border-slate-200 rounded-md">Status: {status}</span>
+                )}
+                {search && (
+                  <span className="px-1.5 py-0.5 text-[10px] font-bold bg-white text-slate-600 border border-slate-200 rounded-md">Cari: {search}</span>
+                )}
+                {(startDate || endDate) && (
+                  <span className="px-1.5 py-0.5 text-[10px] font-bold bg-white text-slate-600 border border-slate-200 rounded-md">
+                    Tgl: {startDate ? formatDateDisplay(startDate) : "…"} - {endDate ? formatDateDisplay(endDate) : "…"}
+                  </span>
+                )}
+                {bagian === "ALL" && pic === "ALL" && status === "ALL" && !search && !startDate && !endDate && (
+                  <span className="px-1.5 py-0.5 text-[10px] font-bold bg-white text-slate-400 border border-slate-200 rounded-md">Tanpa filter (semua data)</span>
+                )}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-all cursor-pointer shrink-0"
+              title="Tutup Modal"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          {/* Body */}
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden p-3 sm:p-4">
+            <div ref={detailTableWrapRef} className="flex-1 min-h-0 border border-slate-200 rounded-xl overflow-x-auto overflow-y-auto bg-white">
+            <table className="w-full text-left border-collapse" style={{ fontSize }}>
+              <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200 sticky top-0 z-10 shadow-xs">
+                <tr className="bg-slate-50">
+                  {renderDetailTh("no", "No", "text-center")}
+                  {renderDetailTh("tanggal", "Tanggal")}
+                  {renderDetailTh("jam", "Jam")}
+                  {renderDetailTh("project", "Project / Order")}
+                  {renderDetailTh("bagian", "Bagian")}
+                  {renderDetailTh("pic", "PIC")}
+                  {renderDetailTh("task", "Task / Aktivitas")}
+                  {renderDetailTh("status", "Status")}
+                  {renderDetailTh("note", "Note")}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
+                {tasks.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="px-2 py-8 text-center text-slate-400">
+                      Tidak ada pekerjaan yang lolos filter saat ini.
+                    </td>
+                  </tr>
+                ) : (
+                  detailPageRows.map((t, idx) => (
+                    <tr key={t.id || idx} className="hover:bg-slate-50/70">
+                      <td className="px-2 py-1.5 text-center text-slate-400">{(safeDetailPage - 1) * DETAIL_PAGE_SIZE + idx + 1}</td>
+                      <td className="px-2 py-1.5 whitespace-nowrap text-slate-500">
+                        {t.startDate || t.endDate
+                          ? `${t.startDate ? formatDateDisplay(t.startDate) : "-"}${t.endDate && t.endDate !== t.startDate ? ` ~ ${formatDateDisplay(t.endDate)}` : ""}`
+                          : "-"}
+                      </td>
+                      <td className="px-2 py-1.5 whitespace-nowrap text-slate-500">
+                        {t.startTime || t.endTime ? `${t.startTime || "-"} ~ ${t.endTime || "-"}` : "-"}
+                      </td>
+                      <td className="px-2 py-1.5 font-semibold max-w-[220px] truncate" title={t.project || ""}>{t.project || "-"}</td>
+                      <td className="px-2 py-1.5 whitespace-nowrap">{t.bagian || "-"}</td>
+                      <td className="px-2 py-1.5 whitespace-nowrap">{t.pic || "-"}</td>
+                      <td className="px-2 py-1.5 max-w-[220px] truncate" title={t.task || ""}>{cleanTaskName(t.task || "", t.project || "")}</td>
+                      <td className="px-2 py-1.5 whitespace-nowrap">{getStatusBadge(t.status)}</td>
+                      <td className="px-2 py-1.5 max-w-[200px] truncate text-slate-500" title={t.note || ""}>{t.note || "-"}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+            </div>
+          </div>
+          {/* Footer */}
+          <div className="flex flex-wrap items-center justify-between px-4 sm:px-5 py-3 border-t border-slate-100 shrink-0 gap-2">
+            <span className="text-xs text-slate-500">
+              {tasks.length === 0
+                ? "0 task"
+                : `${(safeDetailPage - 1) * DETAIL_PAGE_SIZE + 1}–${Math.min(safeDetailPage * DETAIL_PAGE_SIZE, tasks.length)} dari ${tasks.length} task`}
+            </span>
+            {detailTotalPages > 1 && (
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  disabled={safeDetailPage <= 1}
+                  onClick={() => { setDetailPage(safeDetailPage - 1); detailTableWrapRef.current?.scrollTo({ top: 0 }); }}
+                  className="h-7 px-2 text-[11px] font-bold text-slate-600 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-0.5 cursor-pointer disabled:opacity-40 disabled:cursor-default"
+                  title="Halaman sebelumnya"
+                >
+                  <ChevronLeft size={13} /> Prev
+                </button>
+                {detailPageItems.map((p, i) =>
+                  p === "…" ? (
+                    <span key={`ellipsis-${i}`} className="text-[11px] text-slate-400 px-0.5 select-none">…</span>
+                  ) : (
+                    <button
+                      key={p}
+                      type="button"
+                      disabled={p === safeDetailPage}
+                      onClick={() => { setDetailPage(p); detailTableWrapRef.current?.scrollTo({ top: 0 }); }}
+                      className={`min-w-7 h-7 px-1.5 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
+                        p === safeDetailPage
+                          ? "text-white bg-emerald-600 shadow-sm"
+                          : "text-slate-600 bg-white hover:bg-slate-100 border border-slate-200"
+                      } disabled:cursor-default`}
+                      title={`Halaman ${p}`}
+                    >
+                      {p}
+                    </button>
+                  )
+                )}
+                <button
+                  type="button"
+                  disabled={safeDetailPage >= detailTotalPages}
+                  onClick={() => { setDetailPage(safeDetailPage + 1); detailTableWrapRef.current?.scrollTo({ top: 0 }); }}
+                  className="h-7 px-2 text-[11px] font-bold text-slate-600 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-0.5 cursor-pointer disabled:opacity-40 disabled:cursor-default"
+                  title="Halaman berikutnya"
+                >
+                  Next <ChevronRight size={13} />
+                </button>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-1.5 text-xs font-bold text-slate-600 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 transition-all cursor-pointer"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      </div>
+    </Portal>
+  );
+}
+
 export default function LaporanPekerjaanClient({
   roleConfig,
 }: {
@@ -1740,36 +2016,6 @@ export default function LaporanPekerjaanClient({
   // urut kronologis sama seperti modal list pekerjaan (tgl/jam mulai -> selesai -> id; kosong di belakang)
   const detailTasksAll = useMemo(() => filteredTasks.filter((t) => !!t.task).sort(compareTasksChronological), [filteredTasks]);
 
-  // ponytail: lebar kolom modal rincian (mandiri dari tabel utama, tersimpan di localStorage)
-  const DETAIL_COL_DEFAULTS = useMemo(() => ({ no: 44, tanggal: 150, jam: 110, project: 220, bagian: 100, pic: 140, task: 220, status: 120, note: 200 }), []);
-  const [detailColWidths, setDetailColWidths] = useState<Record<string, number>>(DETAIL_COL_DEFAULTS);
-  const detailTableWrapRef = useRef<HTMLDivElement>(null);
-  // ponytail: paginasi 100/halaman agar buka modal tetap ringan saat data ribuan (5x lebih sedikit node)
-  const DETAIL_PAGE_SIZE = 100;
-  const [detailPage, setDetailPage] = useState<number>(1);
-  const detailTotalPages = Math.max(1, Math.ceil(detailTasksAll.length / DETAIL_PAGE_SIZE));
-  const safeDetailPage = Math.min(detailPage, detailTotalPages);
-  const detailPageRows = useMemo(
-    () => detailTasksAll.slice((safeDetailPage - 1) * DETAIL_PAGE_SIZE, safeDetailPage * DETAIL_PAGE_SIZE),
-    [detailTasksAll, safeDetailPage]
-  );
-  // ponytail: nomor halaman ringkas (1 … 4 5 [6] 7 8 … 20) agar pager tetap ramping saat puluhan halaman
-  const detailPageItems = useMemo<(number | "…")[]>(() => {
-    const nums = Array.from(
-      new Set(
-        [1, safeDetailPage - 1, safeDetailPage, safeDetailPage + 1, detailTotalPages].filter(
-          (p) => p >= 1 && p <= detailTotalPages
-        )
-      )
-    ).sort((a, b) => a - b);
-    const out: (number | "…")[] = [];
-    nums.forEach((p, i) => {
-      if (i > 0 && p - nums[i - 1] > 1) out.push("…");
-      out.push(p);
-    });
-    return out;
-  }, [detailTotalPages, safeDetailPage]);
-
   // Chart Data 1: Breakdown Pekerjaan per Status per PIC (Lazy: hanya dihitung saat accordion terbuka)
   const picChartData = useMemo(() => {
     if (!isAnalyticsOpen) return [];
@@ -1848,19 +2094,6 @@ export default function LaporanPekerjaanClient({
 
   const [colWidths, setColWidths] = useState<Record<string, number>>(DEFAULT_COL_WIDTHS);
 
-  // Lebar tabel = jumlah lebar kolom (min. selebar container) supaya resize
-  // satu kolom tidak mendistribusikan ulang lebar kolom lain.
-  const applyTableWidth = (
-    widths: Record<string, number>,
-    container: HTMLDivElement | null
-  ) => {
-    if (!container) return;
-    const table = container.querySelector("table");
-    if (!table) return;
-    const sum = Object.values(widths).reduce((a, b) => a + b, 0);
-    table.style.width = `${Math.max(sum, container.clientWidth)}px`;
-  };
-
   // Sync lebar tabel saat colWidths / layout berubah atau window di-resize
   useEffect(() => {
     applyTableWidth(colWidths, tableContainerRef.current);
@@ -1885,40 +2118,11 @@ export default function LaporanPekerjaanClient({
     }
   }, []);
 
-  // ponytail: muat + terapkan lebar kolom modal rincian (efek terpisah agar tidak mengaduk tabel utama)
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("laporan_pekerjaan_detail_col_widths");
-      if (saved) {
-        setDetailColWidths((prev) => ({ ...prev, ...JSON.parse(saved) }));
-      }
-    } catch {
-      // Ignore localStorage errors
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!showFilterDetailModal) return;
-    const container = detailTableWrapRef.current;
-    if (!container) return;
-    Object.entries(detailColWidths).forEach(([f, w]) => {
-      container.style.setProperty(`--dcol-${f}`, `${w}px`);
-    });
-    applyTableWidth(detailColWidths, container);
-  }, [showFilterDetailModal, detailColWidths]);
-
   // ponytail: 1 fungsi resize dipakai tabel utama + modal rincian (beda state/ref/prefix var/storage key)
   const handleResizeStart = (
     field: string,
     e: React.MouseEvent<HTMLDivElement>,
-    opts?: {
-      widths: Record<string, number>;
-      setWidths: React.Dispatch<React.SetStateAction<Record<string, number>>>;
-      getContainer: () => HTMLDivElement | null;
-      varPrefix: string;
-      storageKey: string;
-      minWidth?: number;
-    }
+    opts?: ColumnResizeOpts
   ) => {
     e.stopPropagation();
     e.preventDefault();
@@ -2033,35 +2237,6 @@ export default function LaporanPekerjaanClient({
       </th>
     );
   };
-
-  // ponytail: header kolom modal rincian (resize + tooltip), 1 helper untuk 9 kolom
-  const renderDetailTh = (field: string, label: string, className = "") => (
-    <th
-      style={{
-        width: `var(--dcol-${field}, ${detailColWidths[field] || 100}px)`,
-        minWidth: `var(--dcol-${field}, ${detailColWidths[field] || 100}px)`,
-      }}
-      className={`relative px-2 py-2.5 bg-slate-50 group ${className}`}
-      title={label}
-    >
-      <span className="block truncate">{label}</span>
-      <div
-        onMouseDown={(resizeEvt) =>
-          handleResizeStart(field, resizeEvt, {
-            widths: detailColWidths,
-            setWidths: setDetailColWidths,
-            getContainer: () => detailTableWrapRef.current,
-            varPrefix: "dcol",
-            storageKey: "laporan_pekerjaan_detail_col_widths",
-            minWidth: 40,
-          })
-        }
-        onClick={(resizeEvt) => resizeEvt.stopPropagation()}
-        className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-emerald-500/50 active:bg-emerald-600 z-20 group-hover:bg-slate-300/80 transition-colors"
-        title="Geser untuk mengatur lebar kolom"
-      />
-    </th>
-  );
 
   return (
     <div
@@ -2510,7 +2685,7 @@ export default function LaporanPekerjaanClient({
             <div className="w-full sm:w-auto flex items-center shrink-0">
               <button
                 type="button"
-                onClick={() => { setDetailPage(1); setShowFilterDetailModal(true); }}
+                onClick={() => setShowFilterDetailModal(true)}
                 className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 h-8 text-[11px] font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-all shrink-0 cursor-pointer shadow-xs"
                 title="Lihat rincian pekerjaan sesuai filter aktif"
               >
@@ -2965,165 +3140,18 @@ export default function LaporanPekerjaanClient({
 
       {/* Modal Rincian Pekerjaan sesuai filter aktif */}
       {showFilterDetailModal && (
-        <Portal>
-          <div
-            className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
-            onClick={() => setShowFilterDetailModal(false)}
-          >
-            <div
-              className="w-full max-w-[98vw] bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[94vh] overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 border-b border-slate-100 bg-slate-50/80 shrink-0 gap-3">
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-sm font-bold text-slate-800 truncate">
-                    Rincian Pekerjaan{" "}
-                    <span className="text-xs font-semibold text-slate-500">
-                      ({detailTasksAll.length} task lolos filter)
-                    </span>
-                  </h3>
-                  <div className="flex flex-wrap gap-1.5 mt-1.5">
-                    {selectedBagianFilter !== "ALL" && (
-                      <span className="px-1.5 py-0.5 text-[10px] font-bold bg-white text-slate-600 border border-slate-200 rounded-md">Bagian: {selectedBagianFilter}</span>
-                    )}
-                    {selectedPic !== "ALL" && (
-                      <span className="px-1.5 py-0.5 text-[10px] font-bold bg-white text-slate-600 border border-slate-200 rounded-md">PIC: {selectedPic}</span>
-                    )}
-                    {selectedStatus !== "ALL" && (
-                      <span className="px-1.5 py-0.5 text-[10px] font-bold bg-white text-slate-600 border border-slate-200 rounded-md">Status: {selectedStatus}</span>
-                    )}
-                    {deferredSearchTerm && (
-                      <span className="px-1.5 py-0.5 text-[10px] font-bold bg-white text-slate-600 border border-slate-200 rounded-md">Cari: {deferredSearchTerm}</span>
-                    )}
-                    {(filterStartDate || filterEndDate) && (
-                      <span className="px-1.5 py-0.5 text-[10px] font-bold bg-white text-slate-600 border border-slate-200 rounded-md">
-                        Tgl: {filterStartDate ? formatDateDisplay(filterStartDate) : "…"} - {filterEndDate ? formatDateDisplay(filterEndDate) : "…"}
-                      </span>
-                    )}
-                    {selectedBagianFilter === "ALL" && selectedPic === "ALL" && selectedStatus === "ALL" && !deferredSearchTerm && !filterStartDate && !filterEndDate && (
-                      <span className="px-1.5 py-0.5 text-[10px] font-bold bg-white text-slate-400 border border-slate-200 rounded-md">Tanpa filter (semua data)</span>
-                    )}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowFilterDetailModal(false)}
-                  className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-all cursor-pointer shrink-0"
-                  title="Tutup Modal"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-              {/* Body */}
-              <div className="flex-1 min-h-0 flex flex-col overflow-hidden p-3 sm:p-4">
-                <div ref={detailTableWrapRef} className="flex-1 min-h-0 border border-slate-200 rounded-xl overflow-x-auto overflow-y-auto bg-white">
-                <table className="w-full text-left border-collapse" style={{ fontSize: tableFontSize }}>
-                  <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200 sticky top-0 z-10 shadow-xs">
-                    <tr className="bg-slate-50">
-                      {renderDetailTh("no", "No", "text-center")}
-                      {renderDetailTh("tanggal", "Tanggal")}
-                      {renderDetailTh("jam", "Jam")}
-                      {renderDetailTh("project", "Project / Order")}
-                      {renderDetailTh("bagian", "Bagian")}
-                      {renderDetailTh("pic", "PIC")}
-                      {renderDetailTh("task", "Task / Aktivitas")}
-                      {renderDetailTh("status", "Status")}
-                      {renderDetailTh("note", "Note")}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
-                    {detailTasksAll.length === 0 ? (
-                      <tr>
-                        <td colSpan={9} className="px-2 py-8 text-center text-slate-400">
-                          Tidak ada pekerjaan yang lolos filter saat ini.
-                        </td>
-                      </tr>
-                    ) : (
-                      detailPageRows.map((t, idx) => (
-                        <tr key={t.id || idx} className="hover:bg-slate-50/70">
-                          <td className="px-2 py-1.5 text-center text-slate-400">{(safeDetailPage - 1) * DETAIL_PAGE_SIZE + idx + 1}</td>
-                          <td className="px-2 py-1.5 whitespace-nowrap text-slate-500">
-                            {t.startDate || t.endDate
-                              ? `${t.startDate ? formatDateDisplay(t.startDate) : "-"}${t.endDate && t.endDate !== t.startDate ? ` ~ ${formatDateDisplay(t.endDate)}` : ""}`
-                              : "-"}
-                          </td>
-                          <td className="px-2 py-1.5 whitespace-nowrap text-slate-500">
-                            {t.startTime || t.endTime ? `${t.startTime || "-"} ~ ${t.endTime || "-"}` : "-"}
-                          </td>
-                          <td className="px-2 py-1.5 font-semibold max-w-[220px] truncate" title={t.project || ""}>{t.project || "-"}</td>
-                          <td className="px-2 py-1.5 whitespace-nowrap">{t.bagian || "-"}</td>
-                          <td className="px-2 py-1.5 whitespace-nowrap">{t.pic || "-"}</td>
-                          <td className="px-2 py-1.5 max-w-[220px] truncate" title={t.task || ""}>{cleanTaskName(t.task || "", t.project || "")}</td>
-                          <td className="px-2 py-1.5 whitespace-nowrap">{getStatusBadge(t.status)}</td>
-                          <td className="px-2 py-1.5 max-w-[200px] truncate text-slate-500" title={t.note || ""}>{t.note || "-"}</td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-                </div>
-              </div>
-              {/* Footer */}
-              <div className="flex flex-wrap items-center justify-between px-4 sm:px-5 py-3 border-t border-slate-100 shrink-0 gap-2">
-                <span className="text-xs text-slate-500">
-                  {detailTasksAll.length === 0
-                    ? "0 task"
-                    : `${(safeDetailPage - 1) * DETAIL_PAGE_SIZE + 1}–${Math.min(safeDetailPage * DETAIL_PAGE_SIZE, detailTasksAll.length)} dari ${detailTasksAll.length} task`}
-                </span>
-                {detailTotalPages > 1 && (
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      disabled={safeDetailPage <= 1}
-                      onClick={() => { setDetailPage(safeDetailPage - 1); detailTableWrapRef.current?.scrollTo({ top: 0 }); }}
-                      className="h-7 px-2 text-[11px] font-bold text-slate-600 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-0.5 cursor-pointer disabled:opacity-40 disabled:cursor-default"
-                      title="Halaman sebelumnya"
-                    >
-                      <ChevronLeft size={13} /> Prev
-                    </button>
-                    {detailPageItems.map((p, i) =>
-                      p === "…" ? (
-                        <span key={`ellipsis-${i}`} className="text-[11px] text-slate-400 px-0.5 select-none">…</span>
-                      ) : (
-                        <button
-                          key={p}
-                          type="button"
-                          disabled={p === safeDetailPage}
-                          onClick={() => { setDetailPage(p); detailTableWrapRef.current?.scrollTo({ top: 0 }); }}
-                          className={`min-w-7 h-7 px-1.5 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
-                            p === safeDetailPage
-                              ? "text-white bg-emerald-600 shadow-sm"
-                              : "text-slate-600 bg-white hover:bg-slate-100 border border-slate-200"
-                          } disabled:cursor-default`}
-                          title={`Halaman ${p}`}
-                        >
-                          {p}
-                        </button>
-                      )
-                    )}
-                    <button
-                      type="button"
-                      disabled={safeDetailPage >= detailTotalPages}
-                      onClick={() => { setDetailPage(safeDetailPage + 1); detailTableWrapRef.current?.scrollTo({ top: 0 }); }}
-                      className="h-7 px-2 text-[11px] font-bold text-slate-600 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-0.5 cursor-pointer disabled:opacity-40 disabled:cursor-default"
-                      title="Halaman berikutnya"
-                    >
-                      Next <ChevronRight size={13} />
-                    </button>
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={() => setShowFilterDetailModal(false)}
-                  className="px-4 py-1.5 text-xs font-bold text-slate-600 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 transition-all cursor-pointer"
-                >
-                  Tutup
-                </button>
-              </div>
-            </div>
-          </div>
-        </Portal>
+        <RincianModal
+          tasks={detailTasksAll}
+          fontSize={tableFontSize}
+          bagian={selectedBagianFilter}
+          pic={selectedPic}
+          status={selectedStatus}
+          search={deferredSearchTerm}
+          startDate={filterStartDate}
+          endDate={filterEndDate}
+          onClose={() => setShowFilterDetailModal(false)}
+          onResizeStart={handleResizeStart}
+        />
       )}
 
       {/* Conflict Resolution Modal */}
