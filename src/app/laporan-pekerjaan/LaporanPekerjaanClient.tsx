@@ -602,7 +602,7 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
                       </td>
                       <td className="px-2 py-1.5 font-semibold max-w-[220px] truncate" title={t.project || ""}>{t.project || "-"}</td>
                       <td className="px-2 py-1.5 whitespace-nowrap">{t.bagian || "-"}</td>
-                      <td className="px-2 py-1.5 whitespace-nowrap">{t.pic || "-"}</td>
+                          <td className="px-2 py-1.5 max-w-[140px] truncate" title={t.pic || ""}>{t.pic || "-"}</td>
                       <td className="px-2 py-1.5 max-w-[220px] truncate" title={t.task || ""}>{cleanTaskName(t.task || "", t.project || "")}</td>
                       <td className="px-2 py-1.5 whitespace-nowrap">{getStatusBadge(t.status)}</td>
                       <td className="px-2 py-1.5 max-w-[200px] truncate text-slate-500" title={t.note || ""}>{t.note || "-"}</td>
