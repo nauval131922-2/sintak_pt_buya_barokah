@@ -216,6 +216,7 @@ const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
   let selesaiCount = 0;
   let lastSelesaiTask: SpreadsheetTask | undefined;
   let nextTask: SpreadsheetTask | undefined;
+  let lastCancelTask: SpreadsheetTask | undefined;
 
   for (let i = 0; i < sorted.length; i++) {
     const t = sorted[i];
@@ -228,8 +229,14 @@ const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
       } else if (!nextTask) {
         nextTask = t;
       }
+    } else {
+      lastCancelTask = t;
     }
   }
+
+  // ponytail: fallback cancel hanya saat tidak ada task aktif tersisa (semua CANCEL),
+  // agar order campuran tetap menampilkan progres aktif yang benar
+  const cancelFallback = !nextTask && !lastSelesaiTask ? lastCancelTask : undefined;
 
   return {
     progressPct:
@@ -238,11 +245,13 @@ const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
         : 0,
     pekerjaanTerakhir: lastSelesaiTask
       ? cleanTaskName(lastSelesaiTask.task || "", project)
-      : "-",
+      : cancelFallback
+        ? cleanTaskName(cancelFallback.task || "", project)
+        : "-",
     pekerjaanSelanjutnya: nextTask
       ? cleanTaskName(nextTask.task || "", project)
       : "-",
-    note: nextTask?.note || lastSelesaiTask?.note || "-",
+    note: nextTask?.note || lastSelesaiTask?.note || cancelFallback?.note || "-",
   };
 };
 
