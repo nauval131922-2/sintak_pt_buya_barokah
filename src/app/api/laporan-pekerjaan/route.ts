@@ -73,17 +73,10 @@ export async function GET(request: NextRequest) {
       isInitialSeedChecked = true;
     }
 
-    // Query data murni dari database lokal Sintak dengan join tgl_order dari sopd / orders (fallback ke lp.tgl_order)
+    // Query data murni dari database lokal Sintak (tanpa correlated subquery per baris;
+    // fallback tgl_order diambil batch di bawah agar tidak jadi N+1 query)
     let sql = `
-      SELECT lp.*,
-             COALESCE(
-               NULLIF(lp.tgl_order, ''),
-               (SELECT s.tgl FROM sopd s WHERE s.nama_order = lp.project LIMIT 1),
-               (SELECT s.tgl FROM sopd s WHERE s.no_sopd = lp.project LIMIT 1),
-               (SELECT o.tgl FROM orders o WHERE o.nama_prd = lp.project LIMIT 1),
-               (SELECT o.tgl FROM orders o WHERE o.faktur = lp.project LIMIT 1),
-               ''
-             ) as calculated_tgl_order
+      SELECT lp.*
       FROM laporan_pekerjaan lp
       WHERE 1=1
     `;
@@ -132,7 +125,40 @@ export async function GET(request: NextRequest) {
         throw e;
       }
     }
-    const tasks = res.rows.map((row: any) => ({
+    const lpRows = res.rows as any[];
+    // ponytail: fallback tgl_order via 4 query batch IN (preseden sama), bukan 4 subquery per baris
+    const needFallback = [...new Set(
+      lpRows.filter((r) => !String(r.tgl_order || "")).map((r) => String(r.project || "")).filter(Boolean)
+    )];
+    const fallbackTgl = new Map<string, string>();
+    if (needFallback.length > 0) {
+      const lookups = [
+        { table: "sopd", keyCol: "nama_order" },
+        { table: "sopd", keyCol: "no_sopd" },
+        { table: "orders", keyCol: "nama_prd" },
+        { table: "orders", keyCol: "faktur" },
+      ];
+      for (const q of lookups) {
+        for (let i = 0; i < needFallback.length; i += 500) {
+          const chunk = needFallback.slice(i, i + 500);
+          try {
+            const r = await db.execute({
+              sql: `SELECT ${q.keyCol} AS k, tgl AS v FROM ${q.table} WHERE ${q.keyCol} IN (${chunk.map(() => "?").join(",")}) ORDER BY rowid`,
+              args: chunk,
+            });
+            for (const row of r.rows as any[]) {
+              const k = String(row.k || "");
+              const v = String(row.v || "");
+              if (k && v && !fallbackTgl.has(k)) fallbackTgl.set(k, v);
+            }
+          } catch {
+            // tabel/kolom tak ada -> lewati lookup ini
+          }
+        }
+        if (needFallback.every((p) => fallbackTgl.has(p))) break;
+      }
+    }
+    const tasks = lpRows.map((row: any) => ({
       id: Number(row.id),
       task: String(row.task || ""),
       project: String(row.project || ""),
@@ -149,12 +175,22 @@ export async function GET(request: NextRequest) {
       note: String(row.note || ""),
       status: String(row.status || "BELUM DIKERJAKAN"),
       source: String(row.source || "sintak"),
-      tglOrder: String(row.calculated_tgl_order || row.tgl_order || ""),
+      tglOrder: String(row.tgl_order || fallbackTgl.get(String(row.project || "")) || ""),
       updated_at: row.updated_at,
     }));
 
     // Inklusi order SOPd yang belum ada di laporan_pekerjaan (jika tidak sedang difilter PIC spesifik)
     const shouldIncludeSopd = !pic && (!status || status === "all" || status === "belum dikerjakan");
+    // ponytail: himpunan proyek existing diambil SEKALI (ganti NOT EXISTS per baris sopd)
+    let existingProjects = new Set<string>();
+    if (shouldIncludeSopd) {
+      try {
+        const exRes = await db.execute("SELECT DISTINCT project FROM laporan_pekerjaan");
+        existingProjects = new Set((exRes.rows as any[]).map((r) => String(r.project || "")));
+      } catch {
+        existingProjects = new Set(lpRows.map((r) => String(r.project || "")));
+      }
+    }
     if (shouldIncludeSopd) {
       try {
         let sopdSql = `
@@ -177,9 +213,6 @@ export async function GET(request: NextRequest) {
           FROM sopd s
           WHERE s.nama_order IS NOT NULL AND s.nama_order != ''
             AND (substr(s.tgl, 7, 4) >= '2026' OR s.tgl LIKE '%2026%')
-            AND NOT EXISTS (
-              SELECT 1 FROM laporan_pekerjaan lp WHERE lp.project = s.nama_order
-            )
         `;
         const sopdArgs: any[] = [];
         if (search) {
@@ -222,7 +255,7 @@ export async function GET(request: NextRequest) {
           updated_at: null,
         }));
 
-        tasks.push(...sopdTasks);
+        tasks.push(...sopdTasks.filter((t) => !existingProjects.has(t.project)));
       } catch (e) {
         console.error("Gagal menyertakan order SOPD baru:", e);
       }
