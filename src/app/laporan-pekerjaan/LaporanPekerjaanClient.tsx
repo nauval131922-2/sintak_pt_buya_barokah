@@ -1919,14 +1919,22 @@ export default function LaporanPekerjaanClient({
 
     const startX = e.clientX;
     const startWidth = widths[field] || 100;
-    let finalWidth = startWidth;
-    // ponytail: throttle via rAF agar drag resize maksimal 1 layout/frame (tabel ratusan baris tidak dihitung tiap mousemove)
-    let rafId = 0;
-    let latestX = startX;
-    const applyWidth = () => {
-      rafId = 0;
-      const delta = latestX - startX;
-      finalWidth = Math.max(minW, startWidth + delta);
+    // ponytail: garis bayangan selama drag (compositor-only, 0 layout tabel); lebar dihitung sekali saat dilepas
+    const line = document.createElement("div");
+    line.style.cssText = `position:fixed;top:0;bottom:0;left:${startX}px;width:2px;margin-left:-1px;background:#059669;opacity:0.8;z-index:20000;pointer-events:none;`;
+    document.body.appendChild(line);
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const clampedDelta = Math.max(minW - startWidth, moveEvent.clientX - startX);
+      line.style.transform = `translateX(${clampedDelta}px)`;
+    };
+
+    const onMouseUp = (upEvent: MouseEvent) => {
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+      const finalWidth = Math.max(minW, startWidth + (upEvent.clientX - startX));
+      line.remove();
+      document.body.style.userSelect = "";
       const container = getContainer();
       if (container) {
         container.style.setProperty(
@@ -1938,22 +1946,6 @@ export default function LaporanPekerjaanClient({
           container
         );
       }
-    };
-
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      latestX = moveEvent.clientX;
-      if (!rafId) rafId = requestAnimationFrame(applyWidth);
-    };
-
-    const onMouseUp = () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-      if (rafId) {
-        cancelAnimationFrame(rafId);
-        rafId = 0;
-        applyWidth();
-      }
-      document.body.style.userSelect = "";
       setWidths((prev) => {
         const updated = { ...prev, [field]: finalWidth };
         try {
