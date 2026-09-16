@@ -234,24 +234,28 @@ const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
     }
   }
 
-  // ponytail: fallback cancel hanya saat tidak ada task aktif tersisa (semua CANCEL),
-  // agar order campuran tetap menampilkan progres aktif yang benar
+  // ponytail: penanda cancel kronologis-terakhir agar terlihat di ringkasan;
+  // fallback cancel penuh hanya saat tidak ada task aktif tersisa (semua CANCEL)
+  const lastSorted = sorted.length > 0 ? sorted[sorted.length - 1] : undefined;
+  const isLastCancel = (lastSorted?.status || "").toUpperCase() === "CANCEL";
   const cancelFallback = !nextTask && !lastSelesaiTask ? lastCancelTask : undefined;
+  const shownCancel = isLastCancel ? lastSorted : cancelFallback;
+  const cancelName = shownCancel ? cleanTaskName(shownCancel.task || "", project) : "";
 
   return {
     progressPct:
       activeCount > 0
         ? Math.round((selesaiCount / activeCount) * 100)
         : 0,
-    pekerjaanTerakhir: lastSelesaiTask
-      ? cleanTaskName(lastSelesaiTask.task || "", project)
-      : cancelFallback
-        ? cleanTaskName(cancelFallback.task || "", project)
+    pekerjaanTerakhir: shownCancel && (isLastCancel || !lastSelesaiTask)
+      ? cancelName ? `${cancelName} (Batal)` : "-"
+      : lastSelesaiTask
+        ? cleanTaskName(lastSelesaiTask.task || "", project)
         : "-",
     pekerjaanSelanjutnya: nextTask
       ? cleanTaskName(nextTask.task || "", project)
       : "-",
-    note: nextTask?.note || lastSelesaiTask?.note || cancelFallback?.note || "-",
+    note: nextTask?.note || shownCancel?.note || (!isLastCancel ? lastSelesaiTask?.note : undefined) || "-",
   };
 };
 
