@@ -1734,8 +1734,9 @@ export default function LaporanPekerjaanClient({
     return { total, belumDikerjakan, selesai, inProgress, cancel };
   }, [tasksForCounts]);
 
-  // ponytail: daftar flat pekerjaan lolos filter untuk modal rincian (placeholder order tanpa task dikecualikan)
-  const detailTasksAll = useMemo(() => filteredTasks.filter((t) => !!t.task), [filteredTasks]);
+  // ponytail: daftar flat pekerjaan lolos filter untuk modal rincian (placeholder order tanpa task dikecualikan);
+  // urut kronologis sama seperti modal list pekerjaan (tgl/jam mulai -> selesai -> id; kosong di belakang)
+  const detailTasksAll = useMemo(() => filteredTasks.filter((t) => !!t.task).sort(compareTasksChronological), [filteredTasks]);
 
   // Chart Data 1: Breakdown Pekerjaan per Status per PIC (Lazy: hanya dihitung saat accordion terbuka)
   const picChartData = useMemo(() => {
