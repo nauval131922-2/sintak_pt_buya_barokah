@@ -2905,6 +2905,8 @@ export default function LaporanPekerjaanClient({
                       <th className="px-2 py-2.5 bg-slate-50">Bagian</th>
                       <th className="px-2 py-2.5 bg-slate-50">PIC</th>
                       <th className="px-2 py-2.5 bg-slate-50">Task / Aktivitas</th>
+                      <th className="px-2 py-2.5 bg-slate-50">Tanggal</th>
+                      <th className="px-2 py-2.5 bg-slate-50">Jam</th>
                       <th className="px-2 py-2.5 bg-slate-50">Status</th>
                       <th className="px-2 py-2.5 bg-slate-50">Note</th>
                     </tr>
@@ -2912,7 +2914,7 @@ export default function LaporanPekerjaanClient({
                   <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
                     {detailTasksAll.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="px-2 py-8 text-center text-slate-400">
+                        <td colSpan={9} className="px-2 py-8 text-center text-slate-400">
                           Tidak ada pekerjaan yang lolos filter saat ini.
                         </td>
                       </tr>
@@ -2924,6 +2926,14 @@ export default function LaporanPekerjaanClient({
                           <td className="px-2 py-1.5 whitespace-nowrap">{t.bagian || "-"}</td>
                           <td className="px-2 py-1.5 whitespace-nowrap">{t.pic || "-"}</td>
                           <td className="px-2 py-1.5 max-w-[220px] truncate" title={t.task || ""}>{cleanTaskName(t.task || "", t.project || "")}</td>
+                          <td className="px-2 py-1.5 whitespace-nowrap text-slate-500">
+                            {t.startDate || t.endDate
+                              ? `${t.startDate ? formatDateDisplay(t.startDate) : "-"}${t.endDate && t.endDate !== t.startDate ? ` ~ ${formatDateDisplay(t.endDate)}` : ""}`
+                              : "-"}
+                          </td>
+                          <td className="px-2 py-1.5 whitespace-nowrap text-slate-500">
+                            {t.startTime || t.endTime ? `${t.startTime || "-"} ~ ${t.endTime || "-"}` : "-"}
+                          </td>
                           <td className="px-2 py-1.5 whitespace-nowrap">{getStatusBadge(t.status)}</td>
                           <td className="px-2 py-1.5 max-w-[200px] truncate text-slate-500" title={t.note || ""}>{t.note || "-"}</td>
                         </tr>
