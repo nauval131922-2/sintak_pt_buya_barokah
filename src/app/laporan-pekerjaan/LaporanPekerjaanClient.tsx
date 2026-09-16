@@ -258,6 +258,9 @@ const summarizeOrderTasks = (tasks: SpreadsheetTask[], project: string) => {
       activeCount > 0
         ? Math.round((selesaiCount / activeCount) * 100)
         : 0,
+    // ponytail: diekspos agar kartu mobile tak perlu filter ulang per kartu per render
+    totalTask: tasks.length,
+    selesaiTask: selesaiCount,
     pekerjaanTerakhir: shownCancel && (isLastCancel || !lastSelesaiTask)
       ? cancelName ? `${cancelName} (Batal)` : "-"
       : lastSelesaiTask
@@ -280,8 +283,12 @@ const compareTglOrderDesc = (tglA?: string, tglB?: string) => {
   return timeB - timeA; // Terbaru ke terlama
 };
 
+// ponytail: collator sekali di scope modul (localeCompare ber-opsi mengalokasi Intl baru tiap perbandingan sort)
+const collatorIdBase = new Intl.Collator("id", { numeric: true, sensitivity: "base" });
+const collatorIdNumeric = new Intl.Collator("id", { numeric: true });
+
 const compareProjectNaturalDesc = (projA?: string, projB?: string) => {
-  return (projB || "").localeCompare(projA || "", "id", { numeric: true, sensitivity: "base" });
+  return collatorIdBase.compare(projB || "", projA || "");
 };
 
 const getStatusBadge = (status?: string) => {
@@ -452,9 +459,11 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
   const [detailPage, setDetailPage] = useState<number>(1);
   const detailTotalPages = Math.max(1, Math.ceil(tasks.length / DETAIL_PAGE_SIZE));
   const safeDetailPage = Math.min(detailPage, detailTotalPages);
+  // ponytail: sort kronologis di sini (mount-only) agar parent tak ikut sort saat modal tertutup
+  const sortedDetailTasks = useMemo(() => [...tasks].sort(compareTasksChronological), [tasks]);
   const detailPageRows = useMemo(
-    () => tasks.slice((safeDetailPage - 1) * DETAIL_PAGE_SIZE, safeDetailPage * DETAIL_PAGE_SIZE),
-    [tasks, safeDetailPage]
+    () => sortedDetailTasks.slice((safeDetailPage - 1) * DETAIL_PAGE_SIZE, safeDetailPage * DETAIL_PAGE_SIZE),
+    [sortedDetailTasks, safeDetailPage]
   );
   // ponytail: nomor halaman ringkas (1 … 4 5 [6] 7 8 … 20) agar pager tetap ramping saat puluhan halaman
   const detailPageItems = useMemo<(number | "…")[]>(() => {
@@ -989,6 +998,15 @@ export default function LaporanPekerjaanClient({
   };
 
   const tableContainerRef = useRef<HTMLDivElement>(null);
+  // ponytail: render hanya cabang mobile ATAU desktop (sebelumnya keduanya selalu mounted = 2x node)
+  const [isDesktopSm, setIsDesktopSm] = useState<boolean>(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 640px)");
+    const onChange = () => setIsDesktopSm(mq.matches);
+    mq.addEventListener("change", onChange);
+    onChange();
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
   const isResizingRef = useRef<boolean>(false);
 
   // Scroll ke atas & reset row selection saat ganti halaman
@@ -1807,7 +1825,9 @@ export default function LaporanPekerjaanClient({
   // Group filtered tasks by unique project order
   // ponytail: progress dihitung dari SELURUH task order (role-scoped, abaikan filter UI)
   // agar konsisten dengan modal Detail; filter hanya menentukan order mana yang tampil
-  const groupedOrders = useMemo(() => {
+  // ponytail: ringkasan dihitung SEKALI dari seluruh task (dep: data+role saja);
+  // filter UI hanya memilih order mana yang tampil (tanpa re-sort per grup)
+  const orderSummaries = useMemo(() => {
     const fullMap = new Map<string, { project: string; tglOrder: string; tasks: SpreadsheetTask[] }>();
     tasks.forEach((t) => {
       if (!isBagianAllowedByRole(t.bagian, t.source, t.task)) return;
@@ -1830,33 +1850,27 @@ export default function LaporanPekerjaanClient({
       }
     });
 
-    const map = new Map<string, { project: string; tglOrder: string }>();
+    return Array.from(fullMap.values()).map((g) => ({
+      project: g.project,
+      tglOrder: g.tglOrder,
+      tasks: g.tasks,
+      ...summarizeOrderTasks(g.tasks, g.project),
+    }));
+  }, [tasks, isBagianAllowedByRole, isPicAllowedByRole]);
+
+  const groupedOrders = useMemo(() => {
+    const byProject = new Map(orderSummaries.map((o) => [o.project, o]));
+    const seen = new Set<string>();
+    const out: typeof orderSummaries = [];
     filteredTasks.forEach((t) => {
       const proj = t.project || "Tanpa Project Order";
-      if (!map.has(proj)) {
-        map.set(proj, {
-          project: proj,
-          tglOrder: t.tglOrder || fullMap.get(proj)?.tglOrder || "",
-        });
-      } else {
-        const group = map.get(proj)!;
-        if (!group.tglOrder && t.tglOrder) {
-          group.tglOrder = t.tglOrder;
-        }
-      }
+      if (seen.has(proj)) return;
+      seen.add(proj);
+      const full = byProject.get(proj);
+      if (full) out.push(full);
     });
-
-    return Array.from(map.values()).map((g) => {
-      const full = fullMap.get(g.project);
-      const allTasks = full?.tasks ?? [];
-      return {
-        project: g.project,
-        tglOrder: g.tglOrder || full?.tglOrder || "",
-        tasks: allTasks,
-        ...summarizeOrderTasks(allTasks, g.project),
-      };
-    });
-  }, [tasks, filteredTasks, isBagianAllowedByRole, isPicAllowedByRole]);
+    return out;
+  }, [orderSummaries, filteredTasks]);
 
   // Global Sorted Unique Orders
   // ponytail: tanpa sort pun default urut tgl order terbaru dulu, lalu nomor project order terbesar (terbaru) dulu
@@ -1883,27 +1897,13 @@ export default function LaporanPekerjaanClient({
       if (sortField === "progress") {
         comp = a.progressPct - b.progressPct;
       } else if (sortField === "terakhir") {
-        comp = (a.pekerjaanTerakhir || "").localeCompare(
-          b.pekerjaanTerakhir || "",
-          "id",
-          { numeric: true }
-        );
+        comp = collatorIdNumeric.compare(a.pekerjaanTerakhir || "", b.pekerjaanTerakhir || "");
       } else if (sortField === "selanjutnya") {
-        comp = (a.pekerjaanSelanjutnya || "").localeCompare(
-          b.pekerjaanSelanjutnya || "",
-          "id",
-          { numeric: true }
-        );
+        comp = collatorIdNumeric.compare(a.pekerjaanSelanjutnya || "", b.pekerjaanSelanjutnya || "");
       } else if (sortField === "note") {
-        comp = (a.note || "").localeCompare(
-          b.note || "",
-          "id",
-          { numeric: true }
-        );
+        comp = collatorIdNumeric.compare(a.note || "", b.note || "");
       } else {
-        comp = (a.project || "").localeCompare(b.project || "", "id", {
-          numeric: true,
-        });
+        comp = collatorIdNumeric.compare(a.project || "", b.project || "");
       }
       if (comp !== 0) return sortOrder === "asc" ? comp : -comp;
       // Tie-breaker: urutan dasar tgl order terbaru & nomor project terbesar
@@ -2017,9 +2017,9 @@ export default function LaporanPekerjaanClient({
     return { total, belumDikerjakan, selesai, inProgress, cancel };
   }, [tasksForCounts]);
 
-  // ponytail: daftar flat pekerjaan lolos filter untuk modal rincian (placeholder order tanpa task dikecualikan);
-  // urut kronologis sama seperti modal list pekerjaan (tgl/jam mulai -> selesai -> id; kosong di belakang)
-  const detailTasksAll = useMemo(() => filteredTasks.filter((t) => !!t.task).sort(compareTasksChronological), [filteredTasks]);
+  // ponytail: daftar flat pekerjaan lolos filter untuk badge + modal rincian (tanpa sort;
+  // sort kronologis dikerjakan di dalam RincianModal yang mount-only)
+  const detailTasksAll = useMemo(() => filteredTasks.filter((t) => !!t.task), [filteredTasks]);
 
   // Chart Data 1: Breakdown Pekerjaan per Status per PIC (Lazy: hanya dihitung saat accordion terbuka)
   const picChartData = useMemo(() => {
@@ -2774,6 +2774,7 @@ export default function LaporanPekerjaanClient({
           </div>
         )}
         {/* Tampilan Card khusus Layar Kecil (Mobile) */}
+      {!isDesktopSm && (
         <div className="block sm:hidden divide-y divide-slate-100 p-3 space-y-3 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
           {loading ? (
             <div className="py-12 text-center text-slate-400 text-xs">
@@ -2786,8 +2787,8 @@ export default function LaporanPekerjaanClient({
             </div>
           ) : (
             paginatedOrders.map((group, idx) => {
-              const totalTask = group.tasks.length;
-              const selesaiTask = group.tasks.filter((t) => (t.status || "").toUpperCase() === "SELESAI").length;
+              const totalTask = group.totalTask;
+              const selesaiTask = group.selesaiTask;
               const accent = getOrderStatusAccent(group);
 
               return (
@@ -2885,8 +2886,10 @@ export default function LaporanPekerjaanClient({
             })
           )}
         </div>
+        )}
 
         {/* Tampilan Tabel khusus Tablet & Desktop */}
+        {isDesktopSm && (
         <div
           ref={tableContainerRef}
           onScroll={(e) => { fixedHeaderTableRef.current?.style.setProperty("transform", `translateX(-${e.currentTarget.scrollLeft}px)`); }}
@@ -3026,7 +3029,7 @@ export default function LaporanPekerjaanClient({
                             className={`shrink-0 font-normal px-2 py-0.5 rounded-full border ${accent.badge.bg}`}
                             style={{ fontSize: `${Math.max(9, Math.round(tableFontSize * 0.88))}px` }}
                           >
-                            {group.tasks.length} task
+                            {group.totalTask} task
                           </span>
                         </div>
                       </td>
@@ -3091,6 +3094,7 @@ export default function LaporanPekerjaanClient({
             </tbody>
           </table>
         </div>
+        )}
       </div>
 
       {/* Footer Sintak Standard TableFooter (Mandiri di luar card tabel, samakan 100% dengan SOPd) */}
