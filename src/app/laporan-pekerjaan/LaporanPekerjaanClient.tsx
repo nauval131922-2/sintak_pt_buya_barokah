@@ -2905,12 +2905,12 @@ export default function LaporanPekerjaanClient({
                   <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200 sticky top-0 z-10 shadow-xs">
                     <tr className="bg-slate-50">
                       <th className="px-2 py-2.5 bg-slate-50 text-center w-10">No</th>
+                      <th className="px-2 py-2.5 bg-slate-50">Tanggal</th>
+                      <th className="px-2 py-2.5 bg-slate-50">Jam</th>
                       <th className="px-2 py-2.5 bg-slate-50">Project / Order</th>
                       <th className="px-2 py-2.5 bg-slate-50">Bagian</th>
                       <th className="px-2 py-2.5 bg-slate-50">PIC</th>
                       <th className="px-2 py-2.5 bg-slate-50">Task / Aktivitas</th>
-                      <th className="px-2 py-2.5 bg-slate-50">Tanggal</th>
-                      <th className="px-2 py-2.5 bg-slate-50">Jam</th>
                       <th className="px-2 py-2.5 bg-slate-50">Status</th>
                       <th className="px-2 py-2.5 bg-slate-50">Note</th>
                     </tr>
@@ -2926,10 +2926,6 @@ export default function LaporanPekerjaanClient({
                       detailTasksAll.slice(0, 500).map((t, idx) => (
                         <tr key={t.id || idx} className="hover:bg-slate-50/70">
                           <td className="px-2 py-1.5 text-center text-slate-400">{idx + 1}</td>
-                          <td className="px-2 py-1.5 font-semibold max-w-[220px] truncate" title={t.project || ""}>{t.project || "-"}</td>
-                          <td className="px-2 py-1.5 whitespace-nowrap">{t.bagian || "-"}</td>
-                          <td className="px-2 py-1.5 whitespace-nowrap">{t.pic || "-"}</td>
-                          <td className="px-2 py-1.5 max-w-[220px] truncate" title={t.task || ""}>{cleanTaskName(t.task || "", t.project || "")}</td>
                           <td className="px-2 py-1.5 whitespace-nowrap text-slate-500">
                             {t.startDate || t.endDate
                               ? `${t.startDate ? formatDateDisplay(t.startDate) : "-"}${t.endDate && t.endDate !== t.startDate ? ` ~ ${formatDateDisplay(t.endDate)}` : ""}`
@@ -2938,6 +2934,10 @@ export default function LaporanPekerjaanClient({
                           <td className="px-2 py-1.5 whitespace-nowrap text-slate-500">
                             {t.startTime || t.endTime ? `${t.startTime || "-"} ~ ${t.endTime || "-"}` : "-"}
                           </td>
+                          <td className="px-2 py-1.5 font-semibold max-w-[220px] truncate" title={t.project || ""}>{t.project || "-"}</td>
+                          <td className="px-2 py-1.5 whitespace-nowrap">{t.bagian || "-"}</td>
+                          <td className="px-2 py-1.5 whitespace-nowrap">{t.pic || "-"}</td>
+                          <td className="px-2 py-1.5 max-w-[220px] truncate" title={t.task || ""}>{cleanTaskName(t.task || "", t.project || "")}</td>
                           <td className="px-2 py-1.5 whitespace-nowrap">{getStatusBadge(t.status)}</td>
                           <td className="px-2 py-1.5 max-w-[200px] truncate text-slate-500" title={t.note || ""}>{t.note || "-"}</td>
                         </tr>
