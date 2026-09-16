@@ -1753,6 +1753,22 @@ export default function LaporanPekerjaanClient({
     () => detailTasksAll.slice((safeDetailPage - 1) * DETAIL_PAGE_SIZE, safeDetailPage * DETAIL_PAGE_SIZE),
     [detailTasksAll, safeDetailPage]
   );
+  // ponytail: nomor halaman ringkas (1 … 4 5 [6] 7 8 … 20) agar pager tetap ramping saat puluhan halaman
+  const detailPageItems = useMemo<(number | "…")[]>(() => {
+    const nums = Array.from(
+      new Set(
+        [1, safeDetailPage - 1, safeDetailPage, safeDetailPage + 1, detailTotalPages].filter(
+          (p) => p >= 1 && p <= detailTotalPages
+        )
+      )
+    ).sort((a, b) => a - b);
+    const out: (number | "…")[] = [];
+    nums.forEach((p, i) => {
+      if (i > 0 && p - nums[i - 1] > 1) out.push("…");
+      out.push(p);
+    });
+    return out;
+  }, [detailTotalPages, safeDetailPage]);
 
   // Chart Data 1: Breakdown Pekerjaan per Status per PIC (Lazy: hanya dihitung saat accordion terbuka)
   const picChartData = useMemo(() => {
@@ -2955,7 +2971,7 @@ export default function LaporanPekerjaanClient({
             onClick={() => setShowFilterDetailModal(false)}
           >
             <div
-              className="w-full max-w-5xl bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[88vh] overflow-hidden"
+              className="w-full max-w-[98vw] bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[94vh] overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -3056,7 +3072,7 @@ export default function LaporanPekerjaanClient({
                     : `${(safeDetailPage - 1) * DETAIL_PAGE_SIZE + 1}–${Math.min(safeDetailPage * DETAIL_PAGE_SIZE, detailTasksAll.length)} dari ${detailTasksAll.length} task`}
                 </span>
                 {detailTotalPages > 1 && (
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1">
                     <button
                       type="button"
                       disabled={safeDetailPage <= 1}
@@ -3066,9 +3082,26 @@ export default function LaporanPekerjaanClient({
                     >
                       <ChevronLeft size={13} /> Prev
                     </button>
-                    <span className="text-[11px] font-bold text-slate-500">
-                      {safeDetailPage} / {detailTotalPages}
-                    </span>
+                    {detailPageItems.map((p, i) =>
+                      p === "…" ? (
+                        <span key={`ellipsis-${i}`} className="text-[11px] text-slate-400 px-0.5 select-none">…</span>
+                      ) : (
+                        <button
+                          key={p}
+                          type="button"
+                          disabled={p === safeDetailPage}
+                          onClick={() => { setDetailPage(p); detailTableWrapRef.current?.scrollTo({ top: 0 }); }}
+                          className={`min-w-7 h-7 px-1.5 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
+                            p === safeDetailPage
+                              ? "text-white bg-emerald-600 shadow-sm"
+                              : "text-slate-600 bg-white hover:bg-slate-100 border border-slate-200"
+                          } disabled:cursor-default`}
+                          title={`Halaman ${p}`}
+                        >
+                          {p}
+                        </button>
+                      )
+                    )}
                     <button
                       type="button"
                       disabled={safeDetailPage >= detailTotalPages}
