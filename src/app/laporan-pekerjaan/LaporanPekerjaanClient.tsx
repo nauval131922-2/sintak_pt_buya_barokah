@@ -1861,13 +1861,16 @@ export default function LaporanPekerjaanClient({
   const groupedOrders = useMemo(() => {
     const byProject = new Map(orderSummaries.map((o) => [o.project, o]));
     const seen = new Set<string>();
+    // ponytail: tgl dari task terfilter diutamakan (samakan preferensi versi lama untuk data inkonsisten)
+    const filteredTgl = new Map<string, string>();
     const out: typeof orderSummaries = [];
     filteredTasks.forEach((t) => {
       const proj = t.project || "Tanpa Project Order";
+      if (!filteredTgl.has(proj) && t.tglOrder) filteredTgl.set(proj, t.tglOrder);
       if (seen.has(proj)) return;
       seen.add(proj);
       const full = byProject.get(proj);
-      if (full) out.push(full);
+      if (full) out.push(filteredTgl.has(proj) ? { ...full, tglOrder: filteredTgl.get(proj)! } : full);
     });
     return out;
   }, [orderSummaries, filteredTasks]);
