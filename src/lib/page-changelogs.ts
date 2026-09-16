@@ -45,6 +45,21 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
+  'laporan-pekerjaan-2026-09-16': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-09-16',
+    date: '16 Sep 2026',
+    version: '2026-09-16-1',
+    items: [
+      "Pekerjaan berstatus CANCEL kini tetap tampil di tabel utama dengan penanda (Batal) beserta catatannya",
+      "Tombol Detail baru di samping Reset untuk melihat rincian semua pekerjaan sesuai filter aktif (kolom Tanggal & Jam, urut kronologis, lebar kolom bisa digeser, ada nomor halaman, klik di luar untuk tutup)",
+      "Halaman, tabel, dan modal terasa lebih cepat saat data banyak (buka, geser kolom, dan ganti halaman lebih ringan)",
+      "Perbaikan tampilan modal rincian: header tidak lagi menimpa baris, bisa scroll ke bawah, dan teks antar kolom tidak saling bertumpuk",
+    ],
+  }),
+
   // ─── Tracking Manufaktur ───
   'tracking-manufaktur-2026-08-28': entry({
     pageKey: 'tracking_manufaktur',
