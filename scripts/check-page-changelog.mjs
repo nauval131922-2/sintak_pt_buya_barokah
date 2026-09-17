@@ -38,6 +38,13 @@ const SKIP_BASENAMES = new Set([
 /** Route sistem — tidak wajib page changelog */
 const SKIP_ROUTES = new Set(['/login', '/unauthorized']);
 
+/** Komponen lintas-halaman → wajib entry pageKey 'global' (bukan per-halaman).
+ *  samakan dengan GLOBAL_COMPONENTS di skill changelog-tracker (scripts/diff_summary.mjs) */
+const GLOBAL_FILE_TO_PAGEKEY = new Map([
+  ['src/components/GlobalSearch.tsx', 'global'],
+  ['src/components/MainContentWrapper.tsx', 'global'],
+]);
+
 const args = process.argv.slice(2);
 const allowSkip =
   process.env.SKIP_CHANGELOG_CHECK === '1' || args.includes('--allow-skip');
@@ -225,8 +232,16 @@ const pageFiles = [...changed].filter(isPageIsh).sort();
 // setelah registry dimuat — hanya route yang terdaftar di PAGE_CHANGELOG_PATHS
 // yang ikut diwajibkan, API backend murni tanpa halaman tetap lolos.
 const apiCandidates = [...changed].filter((f) => norm(f).startsWith('src/app/api/')).sort();
+// ponytail: file komponen lintas-halaman dikumpulkan terpisah → pageKey 'global'
+const globalFiles = [...changed].filter((f) => GLOBAL_FILE_TO_PAGEKEY.has(norm(f))).sort();
+const globalRec = {
+  files: globalFiles,
+  fromTree: globalFiles.some((f) => treeSet.has(f)),
+  fromCommits: globalFiles.some((f) => commitSet.has(f)),
+  fromApi: false,
+};
 
-if (pageFiles.length === 0 && apiCandidates.length === 0) {
+if (pageFiles.length === 0 && apiCandidates.length === 0 && globalFiles.length === 0) {
   console.log(
     workingTreeOnly
       ? 'check:changelog — OK (tidak ada ubahan halaman user-facing di working tree).'
@@ -279,27 +294,15 @@ for (const f of apiCandidates) {
 const missing = [];
 const covered = [];
 
-for (const [route, rec] of [...routeMap.entries()].sort((a, b) =>
-  a[0].localeCompare(b[0])
-)) {
-  if (SKIP_ROUTES.has(route)) continue;
-
-  const pageKey = registry.paths.get(route);
-  if (!pageKey) {
-    missing.push({
-      route,
-      reason: 'path belum di PAGE_CHANGELOG_PATHS',
-      ...rec,
-    });
-    continue;
-  }
+// ponytail: verifikasi cakupan 1 route/pageKey dipakai loop halaman + ekstra pageKey 'global'
+function verifyCoverage(route, rec, pageKey) {
   if (!registry.pageKeys.has(pageKey)) {
     missing.push({
       route,
       reason: `pageKey "${pageKey}" belum di PAGE_CHANGELOGS`,
       ...rec,
     });
-    continue;
+    return;
   }
   // 1. Verifikasi jika file halaman dimodifikasi di working tree
   if (rec.fromTree && !workingTreeChangelogKeys.has(pageKey)) {
@@ -308,7 +311,7 @@ for (const [route, rec] of [...routeMap.entries()].sort((a, b) =>
       reason: `file halaman dimodifikasi di working tree tetapi belum ada entri baru untuk pageKey "${pageKey}" di working tree ${CHANGELOG_FILE}`,
       ...rec,
     });
-    continue;
+    return;
   }
 
   // 2. Verifikasi jika file halaman dimodifikasi di commit lokal
@@ -316,7 +319,7 @@ for (const [route, rec] of [...routeMap.entries()].sort((a, b) =>
     // Jika di working tree changelog sudah ada entri baru untuk pageKey ini, maka sudah disiapkan untuk commit
     if (workingTreeChangelogKeys.has(pageKey)) {
       covered.push({ route, pageKey, ...rec, fromTree: true });
-      continue;
+      return;
     }
     const lastChangelogCommit = getLastChangelogCommitForPage(pageKey);
     if (!lastChangelogCommit) {
@@ -325,7 +328,7 @@ for (const [route, rec] of [...routeMap.entries()].sort((a, b) =>
         reason: `halaman diubah pada commit lokal tetapi belum ada entri changelog untuk pageKey "${pageKey}" di range ${baseRef}..HEAD`,
         ...rec,
       });
-      continue;
+      return;
     }
 
     // Cek commit terakhir yang menyentuh file-file halaman ini
@@ -346,11 +349,33 @@ for (const [route, rec] of [...routeMap.entries()].sort((a, b) =>
           reason: `halaman dimodifikasi lagi pada commit ${lastPageCommit.slice(0, 7)} (${afterCount} commit setelah update changelog terakhir ${lastChangelogCommit.slice(0, 7)}), changelog perlu diperbarui`,
           ...rec,
         });
-        continue;
+        return;
       }
     }
   }
   covered.push({ route, pageKey, ...rec });
+}
+
+for (const [route, rec] of [...routeMap.entries()].sort((a, b) =>
+  a[0].localeCompare(b[0])
+)) {
+  if (SKIP_ROUTES.has(route)) continue;
+
+  const pageKey = registry.paths.get(route);
+  if (!pageKey) {
+    missing.push({
+      route,
+      reason: 'path belum di PAGE_CHANGELOG_PATHS',
+      ...rec,
+    });
+    continue;
+  }
+  verifyCoverage(route, rec, pageKey);
+}
+
+// Komponen lintas-halaman wajib entry pageKey 'global' (bukan per-halaman)
+if (globalRec.files.length > 0) {
+  verifyCoverage('/global', globalRec, 'global');
 }
 
 if (missing.length === 0) {

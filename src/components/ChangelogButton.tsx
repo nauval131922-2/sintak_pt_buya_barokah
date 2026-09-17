@@ -2,11 +2,11 @@
 
 import { usePathname } from 'next/navigation';
 import { Sparkles } from 'lucide-react';
-import { getAllPageChangelogsByPath } from '@/lib/page-changelogs';
+import { getAllPageChangelogsByPathWithGlobal } from '@/lib/page-changelogs';
 
 export default function ChangelogButton({ className = '' }: { className?: string }) {
   const pathname = usePathname();
-  const changelogs = getAllPageChangelogsByPath(pathname);
+  const changelogs = getAllPageChangelogsByPathWithGlobal(pathname);
 
   if (!changelogs || changelogs.length === 0) return null;
 

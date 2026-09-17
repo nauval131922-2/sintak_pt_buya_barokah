@@ -6,8 +6,8 @@ import { Sparkles, ChevronDown } from 'lucide-react';
 import BaseModal from '@/components/ui/BaseModal';
 import {
   changelogDismissKey,
-  getAllPageChangelogs,
-  getAllPageChangelogsByPath,
+  getAllPageChangelogsWithGlobal,
+  getAllPageChangelogsByPathWithGlobal,
   type PageChangelog,
 } from '@/lib/page-changelogs';
 
@@ -24,8 +24,8 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
 
   const resolveChangelog = useCallback((): PageChangelog[] => {
-    if (pageKey) return getAllPageChangelogs(pageKey);
-    return getAllPageChangelogsByPath(pathname);
+    if (pageKey) return getAllPageChangelogsWithGlobal(pageKey);
+    return getAllPageChangelogsByPathWithGlobal(pathname);
   }, [pageKey, pathname]);
 
   // ponytail: group by sortDate+pageKey, merge items dengan section v1/v2
@@ -97,7 +97,7 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<{ pageKey?: string }>).detail;
       const changelogs = detail?.pageKey
-        ? getAllPageChangelogs(detail.pageKey)
+        ? getAllPageChangelogsWithGlobal(detail.pageKey)
         : resolveChangelog();
       if (!changelogs || changelogs.length === 0) return;
       const grouped = groupByDate(changelogs);

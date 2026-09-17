@@ -69,6 +69,7 @@ Kriteria sederhana: **apakah user di halaman itu merasakan bedanya?** Jika ya �
 - Hub arsip user: `/log-perubahan` (menu profil) memfilter entry lewat `permissionKeys` + urut `sortDate` terbaru di atas. Modal ✨ per page menampilkan **semua rilis** halaman itu (accordion per tanggal) — karena itu entry lama wajib dipertahankan.
 - **Skip** jika user **tidak** merasakan: refactor internal, lint, typo kode, schema-only, API murni tanpa UI, micro-opt tak kasat mata, dependency bump tanpa efek halaman.
 - Jangan bulk-isi semua halaman — hanya path yang disentuh sesi ini. Halaman tanpa entry = tidak ada modal/icon log.
+- **Perubahan lintas-halaman** (komponen global mis. GlobalSearch, MainContentWrapper — peta di `GLOBAL_FILE_TO_PAGEKEY` pada check script + `GLOBAL_COMPONENTS` pada skill): pakai **`pageKey: 'global'`** + **`permissionKeys: []`** (terlihat semua user login, tanpa tombol Buka). Otomatis tampil di hub `/log-perubahan` dan sebagai seksi tambahan di modal ✨ tiap halaman.
 - Sebelum bilang selesai setelah ubah UI page: jalankan `npm run check:changelog` (exit 1 = path belum punya entry). Scope: **working tree + commit lokal sejak `origin/master`**. Lulus hanya jika **setiap path** halaman yang berubah ada di `PAGE_CHANGELOG_PATHS` + `PAGE_CHANGELOGS` (bukan cuma menyentuh file changelog). Skip sadar: `SKIP_CHANGELOG_CHECK=1` atau `--allow-skip`. Hanya dirty tree: `--working-tree-only`.
 
 ## Gaya & Tema

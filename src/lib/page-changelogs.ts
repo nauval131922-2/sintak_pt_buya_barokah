@@ -45,6 +45,18 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
+  'global-2026-09-17': entry({
+    pageKey: 'global',
+    title: 'Perubahan Umum',
+    permissionKeys: [],
+    sortDate: '2026-09-17',
+    date: '17 Sep 2026',
+    version: '2026-09-17-1',
+    items: [
+      'Pencarian global di HP: hasil yang dipilih dengan tombol Enter kini langsung menutup panel pencarian (sebelumnya tertinggal di halaman tujuan)',
+    ],
+  }),
+
   'laporan-pekerjaan-2026-09-17': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan',
@@ -1744,6 +1756,27 @@ export function getPageChangelog(pageKey: string): PageChangelog | null {
   if (entries.length === 0) return null;
   entries.sort((a, b) => (b.sortDate || '').localeCompare(a.sortDate || ''));
   return entries[0];
+}
+
+/** Semua rilis lintas-halaman (pageKey 'global'), terbaru di atas — terlihat semua user login */
+export function getGlobalChangelogs(): PageChangelog[] {
+  const entries = Object.values(PAGE_CHANGELOGS).filter(e => e.pageKey === 'global');
+  entries.sort((a, b) => (b.sortDate || '').localeCompare(a.sortDate || ''));
+  return entries;
+}
+
+/** Untuk modal per-halaman: rilis halaman ini + pengumuman global (dismiss global berlaku di semua halaman) */
+export function getAllPageChangelogsWithGlobal(pageKey: string): PageChangelog[] {
+  if (!pageKey || pageKey === 'global') return getGlobalChangelogs();
+  return [...getAllPageChangelogs(pageKey), ...getGlobalChangelogs()];
+}
+
+/** Varian by-pathname: halaman tanpa rilis sendiri tetap menampilkan pengumuman global */
+export function getAllPageChangelogsByPathWithGlobal(pathname: string | null): PageChangelog[] {
+  if (!pathname) return getGlobalChangelogs();
+  const pageKey = PAGE_CHANGELOG_PATHS[pathname];
+  if (!pageKey) return getGlobalChangelogs();
+  return getAllPageChangelogsWithGlobal(pageKey);
 }
 
 /** Get all changelog releases for a pageKey (untuk modal multi-history) */
