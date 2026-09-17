@@ -3634,8 +3634,15 @@ function TaskDetailModal({
 
   return (
     <Portal>
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-        <div className="w-full max-w-[96vw] 2xl:max-w-7xl bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[92vh] overflow-hidden">
+      <div
+        className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
+        // ponytail: abaikan klik luar saat tambah/edit agar ketikan yang belum disimpan tidak hilang
+        onClick={() => { if (editingTaskId === null && !isAddingTask) onClose(); }}
+      >
+        <div
+          className="w-full max-w-[96vw] 2xl:max-w-7xl bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[92vh] overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* Header Modal */}
           <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100 bg-slate-50/80 shrink-0 gap-3">
             <div className="min-w-0 flex-1 pr-2">
