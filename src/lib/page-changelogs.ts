@@ -1768,7 +1768,10 @@ export function getGlobalChangelogs(): PageChangelog[] {
 /** Untuk modal per-halaman: rilis halaman ini + pengumuman global (dismiss global berlaku di semua halaman) */
 export function getAllPageChangelogsWithGlobal(pageKey: string): PageChangelog[] {
   if (!pageKey || pageKey === 'global') return getGlobalChangelogs();
-  return [...getAllPageChangelogs(pageKey), ...getGlobalChangelogs()];
+  // ponytail: gabung kronologis (stabil: halaman dulu saat tanggal sama) agar seksi global tak tenggelam di bawah
+  const merged = [...getAllPageChangelogs(pageKey), ...getGlobalChangelogs()];
+  merged.sort((a, b) => (b.sortDate || '').localeCompare(a.sortDate || ''));
+  return merged;
 }
 
 /** Varian by-pathname: halaman tanpa rilis sendiri tetap menampilkan pengumuman global */
