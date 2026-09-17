@@ -1118,37 +1118,19 @@ export default function LaporanPekerjaanClient({
     }
   }, []);
 
-  const toISODateParam = (d: Date | null): string | null => {
-    if (!d || isNaN(d.getTime())) return null;
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  };
-
-  const refetchWithCurrentRange = (force = false, quiet = false) =>
-    fetchData(force, toISODateParam(filterStartDate), toISODateParam(filterEndDate), quiet);
+  // ponytail: selalu ambil SEMUA data (tanpa batas tanggal); filter tanggal/jam murni client-side
+  // agar isi modal & ringkasan selalu full 1 order seperti filter status/search
+  const refetchAll = (force = false, quiet = false) =>
+    fetchData(force, null, null, quiet);
 
   // Initial fetch: tunggu restore filter localStorage selesai agar tidak double-fetch
   // (restore membuat objek Date baru walau nilainya sama, yang akan memicu refetch sia-sia)
   useEffect(() => {
     if (!isFilterHydrated) return;
-    refetchWithCurrentRange(false);
+    refetchAll(false);
     fetchEmployeeOptions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchData, isFilterHydrated]);
-
-  // Ganti rentang tanggal -> refetch ringan (debounce; tanpa skeleton penuh)
-  const rangeFetchArmed = useRef(false);
-  useEffect(() => {
-    if (!isFilterHydrated) return;
-    if (!rangeFetchArmed.current) {
-      rangeFetchArmed.current = true; // fetch awal sudah diurus efek di atas
-      return;
-    }
-    const t = setTimeout(() => {
-      refetchWithCurrentRange(false, true);
-    }, 400);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterStartDate, filterEndDate, isFilterHydrated]);
 
   const fetchEmployeeOptions = async () => {
     try {
@@ -1262,11 +1244,11 @@ export default function LaporanPekerjaanClient({
         }
       } else {
         toast.error(json.error || "Gagal menyimpan perubahan");
-        refetchWithCurrentRange();
+        refetchAll();
       }
     } catch (err: any) {
       toast.error(err.message || "Terjadi kesalahan");
-      refetchWithCurrentRange();
+      refetchAll();
     }
   };
 
@@ -1412,11 +1394,11 @@ export default function LaporanPekerjaanClient({
         toast.success("Pekerjaan berhasil dihapus");
       } else {
         toast.error(json.error || "Gagal menghapus data");
-        refetchWithCurrentRange();
+        refetchAll();
       }
     } catch (err: any) {
       toast.error(err.message || "Terjadi kesalahan");
-      refetchWithCurrentRange();
+      refetchAll();
     }
   };
 
@@ -1450,11 +1432,11 @@ export default function LaporanPekerjaanClient({
       const json = await res.json();
       if (!json.success) {
         toast.error(json.error || "Gagal menyimpan urutan");
-        refetchWithCurrentRange();
+        refetchAll();
       }
     } catch (err: any) {
       toast.error(err.message || "Gagal menyimpan urutan");
-      refetchWithCurrentRange();
+      refetchAll();
     }
   };
 
@@ -1553,11 +1535,11 @@ export default function LaporanPekerjaanClient({
         toast.success(`Order "${projectName}" berhasil dihapus`);
       } else {
         toast.error(json.error || "Gagal menghapus order");
-        refetchWithCurrentRange();
+        refetchAll();
       }
     } catch (err: any) {
       toast.error(err.message || "Terjadi kesalahan");
-      refetchWithCurrentRange();
+      refetchAll();
     }
   };
 
@@ -2500,7 +2482,7 @@ export default function LaporanPekerjaanClient({
             {/* Tombol Reload Data */}
             <button
               type="button"
-              onClick={() => refetchWithCurrentRange(true)}
+              onClick={() => refetchAll(true)}
               disabled={loading || isRangeLoading}
               className="h-9 px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
               title="Reload Data Laporan Pekerjaan"
@@ -3289,7 +3271,7 @@ export default function LaporanPekerjaanClient({
                         setShowConflictModal(false);
                         setCurrentConflict(null);
                         setConflicts([]);
-                        await refetchWithCurrentRange();
+                        await refetchAll();
                       }
                     }}
                     className="px-6 py-2.5 text-[13px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
@@ -3328,7 +3310,7 @@ export default function LaporanPekerjaanClient({
                             setShowConflictModal(false);
                             setCurrentConflict(null);
                             setConflicts([]);
-                            await refetchWithCurrentRange();
+                            await refetchAll();
                           }
                         } else {
                           alert(json.error || 'Gagal update data');
