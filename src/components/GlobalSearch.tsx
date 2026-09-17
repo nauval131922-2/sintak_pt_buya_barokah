@@ -170,6 +170,7 @@ export default function GlobalSearch() {
       }
     }
     setIsOpen(false);
+    setIsMobileSearchOpen(false);
     setQuery('');
     setSelectedIndex(-1);
   };
