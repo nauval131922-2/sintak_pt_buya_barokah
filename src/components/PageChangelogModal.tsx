@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { Sparkles, ChevronDown } from 'lucide-react';
+import { Sparkles, ChevronDown, Globe } from 'lucide-react';
 import BaseModal from '@/components/ui/BaseModal';
 import {
   changelogDismissKey,
@@ -28,28 +28,29 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
     return getAllPageChangelogsByPathWithGlobal(pathname);
   }, [pageKey, pathname]);
 
-  // ponytail: group by sortDate+pageKey, merge items dengan section v1/v2
+  // ponytail: group by sortDate+pageKey, merge items dengan section v1/v2;
+  // entri global tanggal sama digabung ke accordion tanggal itu sebagai seksi khusus
   const groupByDate = useCallback((changelogs: PageChangelog[]) => {
-    const map = new Map<string, PageChangelog & { sections: Array<{label: string; items: string[]}> }>();
+    const map = new Map<string, PageChangelog & { sections: Array<{label: string; items: string[]; global?: boolean}> }>();
     for (const c of changelogs) {
-      const key = `${c.sortDate}-${c.pageKey}`;
+      const key = `${c.sortDate}`;
       const existing = map.get(key);
       if (!existing) {
         const initialSections = c.versionLabel
           ? [{ label: c.versionLabel, items: c.items }]
-          : c.items.length > 0 ? [{ label: '', items: c.items }] : [];
+          : c.items.length > 0 ? [{ label: c.pageKey === 'global' ? 'Perubahan umum' : '', items: c.items, ...(c.pageKey === 'global' ? { global: true as const } : {}) }] : [];
         map.set(key, { ...c, sections: initialSections });
       } else {
         if (c.versionLabel) {
           existing.sections.push({ label: c.versionLabel, items: c.items });
+        } else if (c.pageKey === 'global') {
+          existing.sections.push({ label: 'Perubahan umum', items: c.items, global: true });
+        } else if (existing.sections.length === 0) {
+          existing.sections.push({ label: '', items: c.items });
         } else {
-          if (existing.sections.length === 0) {
-            existing.sections.push({ label: '', items: c.items });
-          } else {
-            existing.sections[0].items = [...existing.sections[0].items, ...c.items];
-          }
-          existing.items = [...existing.items, ...c.items];
+          existing.sections[0].items = [...existing.sections[0].items, ...c.items];
         }
+        existing.items = [...existing.items, ...c.items];
       }
     }
     return [...map.values()];
@@ -183,6 +184,8 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
       <div className="flex flex-col gap-3">
         {active.map((changelog, idx) => {
           const isOpen = openSections.has(changelog.version);
+          const sections = (changelog as any).sections;
+          const useSections = Array.isArray(sections) && ((sections.length > 1 && sections.some((s: any) => s.label)) || sections.some((s: any) => s.global));
           return (
             <div key={`${changelog.pageKey}-${changelog.version}-${idx}`} className="border border-gray-100 rounded-xl overflow-hidden">
               {/* Accordion Header */}
@@ -211,8 +214,29 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
               {/* Accordion Body */}
               {isOpen && (
                 <div className="flex flex-col px-4 py-3 bg-white">
-                  {('sections' in changelog && Array.isArray((changelog as any).sections) && (changelog as any).sections.length > 1 && (changelog as any).sections.some((s: any) => s.label)) ? (
-                    (changelog as any).sections.map((section: {label: string; items: string[]}, sIdx: number) => (
+                  {useSections ? (
+                    (changelog as any).sections.map((section: {label: string; items: string[]; global?: boolean}, sIdx: number) => (
+                      section.global ? (
+                        <div key={sIdx} className={sIdx > 0 ? 'mt-3' : ''}>
+                          <div className="rounded-xl bg-emerald-50/70 border border-emerald-100 px-3 py-2.5">
+                            <div className="flex items-center gap-1.5 mb-2">
+                              <Globe size={13} className="text-emerald-600 shrink-0" />
+                              <span className="text-[11px] font-black uppercase tracking-wider text-emerald-700">Perubahan umum</span>
+                            </div>
+                            <ul className="flex flex-col gap-2">
+                              {section.items.map((item: string, i: number) => (
+                                <li
+                                  key={i}
+                                  className="flex items-start gap-2.5 text-[13px] text-emerald-950 font-medium leading-snug"
+                                >
+                                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" />
+                                  <span>{item}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      ) : (
                       <div key={sIdx} className={sIdx > 0 ? 'mt-4' : ''}>
                         {section.label && <div className="text-[12px] font-bold text-emerald-700 mb-2">{section.label}:</div>}
                         <ul className="flex flex-col gap-2.5">
@@ -227,6 +251,7 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
                           ))}
                         </ul>
                       </div>
+                      )
                     ))
                   ) : (
                     <ul className="flex flex-col gap-2.5">
