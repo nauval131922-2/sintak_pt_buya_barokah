@@ -588,6 +588,8 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
                   {renderDetailTh("task", "Task / Aktivitas")}
                   {renderDetailTh("status", "Status")}
                   {renderDetailTh("note", "Note")}
+                  {/* Spacer: menyerap sisa lebar tabel agar resize tidak menggeser kolom lain */}
+                  <th className="px-0" aria-hidden />
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
