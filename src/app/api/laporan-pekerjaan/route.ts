@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { gzipSync } from "zlib";
 import db from "@/lib/db";
 import { logActivity } from "@/lib/activity";
 import { getSpreadsheetTasks } from "@/lib/google-sheets";
@@ -228,6 +229,21 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // ponytail: gzip manual via zlib — nginx depan hanya mengompres text/html,
+    // payload JSON 2MB+ harus dikompres di aplikasi (browser decode otomatis)
+    const body = JSON.stringify({ success: true, total: tasks.length, data: tasks });
+    const acceptEncoding = request.headers.get("accept-encoding") || "";
+    if (/\bgzip\b/.test(acceptEncoding)) {
+      const buf = gzipSync(body);
+      return new Response(buf as unknown as BodyInit, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Content-Encoding": "gzip",
+          "Vary": "Accept-Encoding",
+        },
+      });
+    }
     return NextResponse.json({
       success: true,
       total: tasks.length,
