@@ -45,6 +45,19 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
+  'laporan-pekerjaan-2026-09-17': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-09-17',
+    date: '17 Sep 2026',
+    version: '2026-09-17-1',
+    items: [
+      "Ganti filter Tanggal dan Jam kini instan tanpa loading, dan isi modal selalu menampilkan seluruh pekerjaan dalam order",
+      "Modal detail order kini bisa ditutup dengan klik di luar modal (tetap aman saat tambah/edit: klik luar diabaikan agar ketikan tidak hilang)",
+    ],
+  }),
+
   'laporan-pekerjaan-2026-09-16': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan',
