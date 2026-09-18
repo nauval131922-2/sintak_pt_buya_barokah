@@ -1163,6 +1163,11 @@ export async function initSchema(db: any) {
   // 2.7 Fix: Hapus UNIQUE constraint pada kolom faktur di sales_orders
   // Constraint ini mencegah satu faktur punya banyak baris (beda kd_barang).
   // Unique key yang benar adalah composite (faktur, kd_barang, tgl) via idx_sales_orders_unique.
+  // Riwayat bug: sales_orders_new didefinisikan 21 kolom (tanpa `recid`, tabel aktual 22 kolom
+  // karena recid/kd_pelanggan ditempel via ALTER) sehingga INSERT ... SELECT * selalu gagal;
+  // guard lama juga hanya cek NAMA autoindex sehingga terpicu di DB fresh (autoindex di sana
+  // milik UNIQUE recid). Perbaikan: guard cek kolom aktual via PRAGMA index_info + INSERT
+  // eksplisit per kolom (tahan beda urutan kolom) + kembalikan index unik recid yang ikut ter-drop.
   try {
     if (executor.execute) {
       // Cek apakah tabel sales_orders_new sudah ada (artinya migration ini sudah pernah jalan sebagian)
@@ -1170,14 +1175,23 @@ export async function initSchema(db: any) {
         `SELECT name FROM sqlite_master WHERE type='table' AND name='sales_orders'`
       );
       if (tableCheck.rows.length > 0) {
-        // Cek apakah kolom faktur masih punya UNIQUE constraint dengan melihat index
+        // Cek kolom apa yang di-cover UNIQUE autoindex — recreate hanya jika itu `faktur`.
+        // (Di DB fresh, autoindex bernama sama tapi milik UNIQUE `recid` → skip.)
         const indexCheck = await executor.execute(
           `SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='sales_orders' AND name='sqlite_autoindex_sales_orders_1'`
         );
+        let uniqueCol: string | null = null;
         if (indexCheck.rows.length > 0) {
-          // Masih ada auto-index UNIQUE pada faktur, perlu recreate
+          const idxInfo = await executor.execute(`PRAGMA index_info(sqlite_autoindex_sales_orders_1)`);
+          const tblInfo = await executor.execute(`PRAGMA table_info(sales_orders)`);
+          const cid = (idxInfo.rows as any[])[0]?.cid;
+          uniqueCol = (tblInfo.rows as any[]).find((c: any) => c.cid === cid)?.name ?? null;
+        }
+        if (uniqueCol === 'faktur') {
+          // Masih ada UNIQUE pada faktur, perlu recreate — bersihkan artefak run gagal sebelumnya
+          await executor.execute(`DROP TABLE IF EXISTS sales_orders_new`);
           await executor.execute(`
-            CREATE TABLE IF NOT EXISTS sales_orders_new (
+            CREATE TABLE sales_orders_new (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               faktur TEXT NOT NULL,
               kd_pelanggan TEXT,
@@ -1197,17 +1211,30 @@ export async function initSchema(db: any) {
               gol_barang TEXT,
               spesifikasi TEXT,
               keterangan TEXT,
+              recid TEXT,
               raw_data TEXT,
               created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
           `);
-          await executor.execute(`INSERT OR IGNORE INTO sales_orders_new SELECT * FROM sales_orders`);
+          const wantCols = ['id','faktur','kd_pelanggan','tgl','kd_barang','faktur_sph','top_hari','harga','qty','satuan','jumlah','ppn','faktur_prd','nama_prd','nama_pelanggan','dati_2','gol_barang','spesifikasi','keterangan','recid','raw_data','created_at'];
+          const tblInfo = await executor.execute(`PRAGMA table_info(sales_orders)`);
+          const existing = new Set((tblInfo.rows as any[]).map((c: any) => c.name));
+          const cols = wantCols.filter((c) => existing.has(c)).join(', ');
+          await executor.execute(`INSERT INTO sales_orders_new (${cols}) SELECT ${cols} FROM sales_orders`);
           await executor.execute(`DROP TABLE sales_orders`);
           await executor.execute(`ALTER TABLE sales_orders_new RENAME TO sales_orders`);
-          // Recreate composite unique index
+          // Recreate composite unique index (DROP TABLE ikut menghapus index lama)
           await executor.execute(
             `CREATE UNIQUE INDEX IF NOT EXISTS idx_sales_orders_unique ON sales_orders(faktur, kd_barang, tgl)`
           );
+          // Kembalikan index unik recid yang ikut ter-drop (dibuat di blok recid di atas)
+          try {
+            await executor.execute(
+              `CREATE UNIQUE INDEX IF NOT EXISTS idx_sales_orders_recid ON sales_orders(recid)`
+            );
+          } catch (e: any) {
+            console.warn('[DB] Migration 2.7: idx_sales_orders_recid not restored:', e.message);
+          }
           console.log('[DB] Migration 2.7: sales_orders UNIQUE(faktur) constraint removed, composite index restored.');
         }
       }
