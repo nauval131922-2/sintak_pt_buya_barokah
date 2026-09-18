@@ -595,7 +595,7 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
               <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
                 {tasks.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-2 py-8 text-center text-slate-400">
+                    <td colSpan={10} className="px-2 py-8 text-center text-slate-400">
                       Tidak ada pekerjaan yang lolos filter saat ini.
                     </td>
                   </tr>
@@ -617,6 +617,7 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
                       <td className="px-2 py-1.5 max-w-[220px] truncate" title={t.task || ""}>{cleanTaskName(t.task || "", t.project || "")}</td>
                       <td className="px-2 py-1.5 whitespace-nowrap">{getStatusBadge(t.status)}</td>
                       <td className="px-2 py-1.5 max-w-[200px] truncate text-slate-500" title={t.note || ""}>{t.note || "-"}</td>
+                      <td className="px-0" aria-hidden />
                     </tr>
                   ))
                 )}
