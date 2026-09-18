@@ -65,9 +65,11 @@ export function getDefaultScraperDateRange() {
 }
 
 export function buildScrapedPeriod(startDate: Date, endDate: Date): ScrapedPeriod {
+  // ponytail: pin Asia/Jakarta — display untuk user WIB harus deterministik, tidak ikut TZ server/runner (CI=UTC)
+  const fmt = (d: Date) => d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Jakarta' });
   return {
-    start: startDate.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
-    end: endDate.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
+    start: fmt(startDate),
+    end: fmt(endDate),
     startRaw: startDate.toISOString(),
     endRaw: endDate.toISOString(),
     fetchedOn: getTodayStorageDate(),

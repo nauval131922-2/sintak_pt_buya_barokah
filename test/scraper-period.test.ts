@@ -26,8 +26,8 @@ describe('buildScrapedPeriod', () => {
     expect(period.startRaw).toBe(start.toISOString());
     expect(period.endRaw).toBe(end.toISOString());
     expect(period.start).toBe('01 Mar 2026');
-    // NOTE: buildScrapedPeriod uses toLocaleDateString without TZ -> end (23:59:59Z) shifts to
-    // next day in WIB (+7). This documents current behaviour; flag if display date matters.
+    // NOTE: buildScrapedPeriod pin timeZone Asia/Jakarta -> end (23:59:59Z) tampil
+    // sebagai hari berikutnya di WIB (+7), deterministik di semua runner (CI=UTC).
     expect(period.end).toBe('01 Apr 2026');
     expect(typeof period.fetchedOn).toBe('string');
   });
