@@ -29,3 +29,8 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          SESSION_SECRET: build_placeholder
+          SCRAPER_EMAIL: build_placeholder
+          SCRAPER_PASSWORD: build_placeholder
+          SCRAPER_API_KEY: build_placeholder
