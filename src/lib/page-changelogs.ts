@@ -45,6 +45,18 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
+  'laporan-pekerjaan-2026-09-18': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-09-18',
+    date: '18 Sep 2026',
+    version: '2026-09-18-1',
+    items: [
+      'Perbaikan tampilan modal rincian pekerjaan: pesan kosong kini selebar tabel dan sorotan baris tidak lagi terpotong di tepi kanan',
+    ],
+  }),
+
   'global-2026-09-17': entry({
     pageKey: 'global',
     title: 'Perubahan Umum',
