@@ -24,7 +24,7 @@ interface StopmapMatrixViewProps {
   setViewMode?: (mode: 'matrix' | 'table') => void;
 }
 
-const UKURAN_LIST: StopmapUkuranType[] = ['A4 (22 x 31 cm)', 'FOLIO (24 x 35 cm)'];
+const UKURAN_LIST: StopmapUkuranType[] = ['A4 (22 x 32 cm)', 'FOLIO (24 x 35 cm)'];
 
 export default function StopmapMatrixView({
   customParams = DEFAULT_STOPMAP_PARAMS,

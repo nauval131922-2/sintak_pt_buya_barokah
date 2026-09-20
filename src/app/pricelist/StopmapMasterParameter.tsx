@@ -8,6 +8,11 @@ import {
   X,
   Printer,
   Layers,
+  Sparkles,
+  PackageCheck,
+  Scissors,
+  DollarSign,
+  Truck,
 } from 'lucide-react';
 import {
   DEFAULT_STOPMAP_PARAMS,
@@ -20,15 +25,6 @@ interface StopmapMasterParameterProps {
   customParams: StopmapMasterParams;
   setCustomParams: React.Dispatch<React.SetStateAction<StopmapMasterParams>>;
 }
-
-const STOPMAP_VISIBLE_KEYS: (keyof StopmapMasterParams)[] = [
-  'tarifDesign',
-  'tarifLaminasiDoffAdd',
-  'tarifSisirPerPcs',
-  'tarifLipatPerPcs',
-  'marginDefaultPct',
-  'negoDefaultPct',
-];
 
 export default function StopmapMasterParameter({
   customParams,
@@ -48,74 +44,88 @@ export default function StopmapMasterParameter({
     toast.info(`Field dikembalikan ke standar master (${DEFAULT_STOPMAP_PARAMS[key]}).`);
   };
 
+  const allKeys = Object.keys(DEFAULT_STOPMAP_PARAMS) as (keyof StopmapMasterParams)[];
   const isModified = React.useMemo(
-    () => STOPMAP_VISIBLE_KEYS.some((key) => customParams[key] !== DEFAULT_STOPMAP_PARAMS[key]),
-    [customParams]
+    () => allKeys.some((key) => customParams[key] !== DEFAULT_STOPMAP_PARAMS[key]),
+    [customParams, allKeys]
   );
 
   const handleResetAll = () => {
-    setCustomParams((prev) => {
-      const resetObj = { ...prev };
-      STOPMAP_VISIBLE_KEYS.forEach((k) => {
-        (resetObj as any)[k] = DEFAULT_STOPMAP_PARAMS[k];
-      });
-      return resetObj;
-    });
+    setCustomParams({ ...DEFAULT_STOPMAP_PARAMS });
     toast.success('Semua parameter Stopmap dikembalikan ke standar master.');
   };
 
+  // Controlled input guard: fallback ke DEFAULT_STOPMAP_PARAMS[key] jika undefined
   const fieldRow = (
     key: keyof StopmapMasterParams,
     label: string,
     isRupiah = true,
-    isDecimal = false
-  ) => (
-    <div
-      className={`p-2.5 rounded-lg border transition-all ${
-        isFieldModified(key)
-          ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-          : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-      }`}
-    >
-      <div className="flex items-center justify-between gap-1 mb-1.5">
-        <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
-          {label}
-        </label>
-        {isFieldModified(key) && (
-          <button
-            type="button"
-            onClick={() => handleResetField(key)}
-            className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-            title="Reset ke default"
-          >
-            <RotateCcw className="w-2.5 h-2.5" /> Def
-          </button>
+    isDecimal = false,
+    suffix?: string,
+    helpText?: string
+  ) => {
+    const rawVal = customParams[key];
+    const val = rawVal ?? DEFAULT_STOPMAP_PARAMS[key];
+
+    return (
+      <div
+        className={`p-2.5 rounded-lg border transition-all ${
+          isFieldModified(key)
+            ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+            : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
+        }`}
+      >
+        <div className="flex items-center justify-between gap-1 mb-1.5">
+          <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
+            {label}
+          </label>
+          {isFieldModified(key) && (
+            <button
+              type="button"
+              onClick={() => handleResetField(key)}
+              className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+              title="Reset ke default"
+            >
+              <RotateCcw className="w-2.5 h-2.5" /> Def
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5">
+          {isRupiah && !isDecimal ? (
+            <ThousandInput
+              value={val}
+              onValueChange={(v) => handleChange(key, v || 0)}
+              className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+              prefix="Rp"
+              allowDecimals={false}
+            />
+          ) : (
+            <div className="relative w-full">
+              <input
+                type="number"
+                step={isDecimal ? 0.01 : 1}
+                value={val}
+                onChange={(e) => handleChange(key, Number(e.target.value) || 0)}
+                className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+              />
+              {suffix && (
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-slate-400 pointer-events-none">
+                  {suffix}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+        {helpText && (
+          <p className="text-[10px] text-slate-400 mt-1 leading-tight">{helpText}</p>
         )}
       </div>
-      <div className="flex items-center gap-1.5">
-        {isRupiah && !isDecimal ? (
-          <ThousandInput
-            value={customParams[key] as number}
-            onValueChange={(v) => handleChange(key, v || 0)}
-            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-            prefix="Rp"
-            allowDecimals={isDecimal}
-          />
-        ) : (
-          <input
-            type="number"
-            step={isDecimal ? 0.01 : 1}
-            value={customParams[key] as number}
-            onChange={(e) => handleChange(key, Number(e.target.value) || 0)}
-            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-          />
-        )}
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
+      {/* Header Banner */}
       <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
           <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
@@ -124,7 +134,7 @@ export default function StopmapMasterParameter({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-sm sm:text-base font-bold text-emerald-950 tracking-tight">
-                Master Parameter Stopmap
+                Master Parameter Stopmap (07. Pricelist Stopmap)
               </h2>
               {isModified && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
@@ -134,7 +144,7 @@ export default function StopmapMasterParameter({
               )}
             </div>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Tarif acuan Art Carton 230 gsm, cetak Print Inter, laminasi Glossy/Doff, finishing sisir-lipat-kupingan, dan desain stopmap A4 & Folio.
+              Sinkronisasi 1:1 terhadap sheet Master &amp; BUKU file Excel: <span className="font-semibold text-emerald-900">Pricelist STOPMAP A4.xlsm</span> dan <span className="font-semibold text-emerald-900">Pricelist STOPMAP FOLIO.xlsm</span>.
             </p>
           </div>
         </div>
@@ -163,37 +173,99 @@ export default function StopmapMasterParameter({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Card 1: Desain & Finishing */}
+      {/* Grid Kartu Master Parameter */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Card 1: Standar Upah & Bahan Kertas */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <DollarSign className="w-4 h-4 text-emerald-600" />
+            <h3 className="text-xs font-bold text-slate-800">1. Standar Upah &amp; Bahan Kertas</h3>
+          </div>
+          <div className="space-y-2.5">
+            {fieldRow('standarUMR', 'Standar UMR / Bulan (Rp)', true, false, undefined, 'Master!D8: Basis hitungan upah per hari (UMR / 25)')}
+            {fieldRow('tarifArtCartonKg', 'Harga Art Carton 230 /Kg', true, false, undefined, 'Master!D12: Harga dasar bahan kertas per kg')}
+            {fieldRow('upArtCartonPct', 'Markup Kertas (%)', false, false, '%', 'Master!E12: Kenaikan harga kertas (default 5%)')}
+          </div>
+        </div>
+
+        {/* Card 2: Cetak Digital Print Inter (A4) */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Printer className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">1. Desain & Finishing Stopmap</h3>
+            <h3 className="text-xs font-bold text-slate-800">2. Cetak Digital Print Inter (A4)</h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifDesign', 'Desain Cover / Order (Rp)')}
-            {fieldRow('tarifLaminasiDoffAdd', 'Tambahan Laminasi Doff / pcs (Rp)')}
-            {fieldRow('tarifSisirPerPcs', 'Ongkos Sisir / pcs (Rp)')}
-            {fieldRow('tarifLipatPerPcs', 'Ongkos Lipat / pcs (Rp)')}
+          <div className="space-y-2.5">
+            {fieldRow('tarifPrintA3', 'Tarif Print A3+ Digital', true, false, undefined, 'Master!D18: Biaya cetak digital 4W per lbr A3+')}
+            {fieldRow('insheetCoverPrintInter', 'Insheet Cetak POD (Lembar)', false, false, 'Lbr', 'Master!D13: Cadangan cetak digital A4 (default 5 lbr)')}
+            {fieldRow('tarifDesainA4', 'Desain Stopmap A4', true, false, undefined, 'Master!D17: Biaya artwork cover A4')}
+            {fieldRow('tarifTransportA4', 'Transportasi A4', true, false, undefined, 'BUKU!AK6: Biaya transport A4 (default Rp 0)')}
           </div>
         </div>
 
-        {/* Card 2: Margin & Nego Standar */}
+        {/* Card 3: Cetak Offset Oliver 4 Warna (Folio) */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Printer className="w-4 h-4 text-indigo-600" />
+            <h3 className="text-xs font-bold text-slate-800">3. Cetak Offset Oliver 4W</h3>
+          </div>
+          <div className="space-y-2.5">
+            {fieldRow('tarifPlatOliver', 'Tarif Plat Oliver / Warna', true, false, undefined, 'BUKU!Y6: Biaya plat cetak offset per warna')}
+            {fieldRow('minOrderOliver', 'Min. Order Cetak / Plat', true, false, undefined, 'BUKU!AB6: Ongkos dasar cetak per plat s.d 1.000 drek')}
+            {fieldRow('tarifDrekOverOliver', 'Tarif Drek Over / Warna', true, false, undefined, 'BUKU!AC7: Drek over di atas 1.000 (per warna)')}
+            {fieldRow('insheetCoverOliver', 'Insheet Cetak Oliver (Lembar)', false, false, 'Lbr', 'Master!D13: Cadangan cetak offset Folio (default 150 lbr)')}
+            {fieldRow('tarifDesainFolio', 'Desain Stopmap Folio', true, false, undefined, 'Master!D17: Biaya artwork cover Folio')}
+            {fieldRow('tarifTransportFolio', 'Transportasi Folio', true, false, undefined, 'BUKU!AK6: Biaya transport Folio (default Rp 30.000)')}
+          </div>
+        </div>
+
+        {/* Card 4: Kupingan / Kantong Map */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Scissors className="w-4 h-4 text-purple-600" />
+            <h3 className="text-xs font-bold text-slate-800">4. Bahan Kupingan / Kantong</h3>
+          </div>
+          <div className="space-y-2.5">
+            {fieldRow('kupinganPerPlano', 'Isi Kupingan / Lembar Plano', false, false, 'Pcs', 'BUKU!AN6: 1 plano 79×109 cm menghasilkan 15 kupingan')}
+            {fieldRow('insheetPlanoKupinganA4', 'Insheet Kupingan A4 (Plano)', false, false, 'Plano', 'BUKU!AN7: Cadangan bahan kupingan A4 (default 3 plano)')}
+            {fieldRow('insheetPlanoKupinganFolio', 'Insheet Kupingan Folio (Plano)', false, false, 'Plano', 'BUKU!AN7: Cadangan bahan kupingan Folio (default 8 plano)')}
+            {fieldRow('biayaPisauPonzBaru', 'Biaya Pisau Ponz Baru', true, false, undefined, 'BUKU!AQ6: Biaya pisau ponz jika buat cetakan baru')}
+          </div>
+        </div>
+
+        {/* Card 5: Jasa Tangan Finishing Tenaga UMR */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Layers className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Margin & Nego Standar</h3>
+            <h3 className="text-xs font-bold text-slate-800">5. Jasa Finishing Tenaga UMR</h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('marginDefaultPct', 'Margin Default (%)', false)}
-            {fieldRow('negoDefaultPct', 'Nego Default (%)', false)}
+          <div className="space-y-2.5">
+            {fieldRow('targetLipatPerHari', 'Target Harian Lipat (Pcs)', false, false, 'Pcs', 'BUKU!AL28: Target harian lipat (UMR/25/Target)')}
+            {fieldRow('targetPonzPerHari', 'Target Harian Ponz (Pcs)', false, false, 'Pcs', 'BUKU!AR28: Target harian ponz kupingan')}
+            {fieldRow('biayaLemKupinganPerPcs', 'Biaya Lem Kupingan / Pcs', true, false, undefined, 'BUKU!AR6: Ongkos bahan lem perekat per pcs')}
+            {fieldRow('targetPasangPerHari', 'Target Pasang Kupingan (Pcs)', false, false, 'Pcs', 'BUKU!AU28: Target harian tempel kantong ke map')}
           </div>
-          <p className="text-[10px] text-slate-500">
-            Margin 30% & nego 4% sesuai PRICELIST 2026 sheet HARGA JULI 2026. HPP dihitung per pcs dengan pembulatan ke kelipatan Rp 10.
-          </p>
+        </div>
+
+        {/* Card 6: Laminasi & Pengemasan */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <PackageCheck className="w-4 h-4 text-rose-600" />
+            <h3 className="text-xs font-bold text-slate-800">6. Laminasi &amp; Pengemasan</h3>
+          </div>
+          <div className="space-y-2.5">
+            {fieldRow('tarifLaminasiGlossyCm2', 'Tarif Laminasi Glossy / cm²', false, true, 'Rp', 'BUKU!AW6: Tarif glossy per cm² (default 0.35)')}
+            {fieldRow('tarifLaminasiDoffCm2', 'Tarif Laminasi Doff / cm²', false, true, 'Rp', 'BUKU!AZ6: Tarif doff per cm² (default 0.40)')}
+            {fieldRow('tarifUvVarnishCm2', 'Tarif UV Varnish / cm²', false, true, 'Rp', 'BUKU!BC6: Tarif UV per cm² (default 0.12)')}
+            {fieldRow('minLaminasi', 'Min. Order Laminasi', true, false, undefined, 'BUKU!AW7..BE7: Minimum biaya finishing')}
+            {fieldRow('tarifKardusBox', 'Harga Kardus / Box', true, false, undefined, 'Master!D22: Kardus per box (isi 300 pcs)')}
+            {fieldRow('tarifLakbanRoll', 'Harga Lakban / Roll', true, false, undefined, 'Master!D21: Lakban 90 yard per roll')}
+            {fieldRow('marginDefaultPct', 'Margin Laba Default (%)', false, false, '%', 'Master!E24: Standar margin profit 30%')}
+            {fieldRow('negoDefaultPct', 'Nego Diskon Default (%)', false, false, '%', 'HARGA JULI 2026: Batas diskon sales 5%')}
+          </div>
         </div>
       </div>
 
+      {/* Modal Manual Pengguna & Pemetaan Sumber Excel */}
       {showManualModal && (
         <div
           onClick={() => setShowManualModal(false)}
@@ -228,56 +300,61 @@ export default function StopmapMasterParameter({
               <div className="space-y-3">
                 <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                  Pemetaan Master Parameter ke File Excel (Folder 07. Pricelist Stopmap/*.xlsx)
+                  Pemetaan Cell Excel Asli ke Parameter SINTAK
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                      <span>1. Bahan Kertas & Cetak</span>
+                      <span>1. Bahan Kertas &amp; Standar Upah UMR</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Art Carton 230 gsm</strong>: <span className="font-mono text-emerald-700">Source!E12</span> Rp 16.400/kg + <span className="font-mono text-emerald-700">Source!E13</span> up 5% (global 5%).</li>
-                      <li>• <strong>Insheet</strong>: <span className="font-mono text-emerald-700">BUKU!H6</span> 5 lbr (A4 Print Inter), Folio 150 lbr (Oliver).</li>
-                      <li>• <strong>Cetak</strong>: <span className="font-mono text-emerald-700">Source!R7 / AE7</span> Print Inter 1 muka 4 warna @ Rp 2.500/A3+.</li>
-                      <li>• <strong>Desain</strong>: A4 Rp 10.000 (<span className="font-mono text-emerald-700">Source!D17</span>), Folio Rp 20.000.</li>
+                      <li>• <strong>Standar UMR</strong>: <span className="font-mono text-emerald-700">Master!D8</span> Rp 2.818.585 (dasar upah harian UMR / 25).</li>
+                      <li>• <strong>Art Carton 230 gsm</strong>: <span className="font-mono text-emerald-700">Master!D12</span> Rp 16.400/kg.</li>
+                      <li>• <strong>Markup Kertas</strong>: <span className="font-mono text-emerald-700">Master!E12</span> 5% (harga net per kg = Rp 17.220).</li>
+                      <li>• <strong>Harga Plano 79×109</strong>: <span className="font-mono text-emerald-700">BUKU!W29</span> Berat rim = (79×109×230)/20.000 = 99,0265 kg → Rp 1.705.236/rim (Rp 3.410,47/lbr plano).</li>
                     </ul>
                   </div>
 
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                      <span>2. Laminasi & Finishing</span>
+                      <span>2. Cetak POD (Print Inter) vs Offset (Oliver)</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Laminasi Glossy</strong>: Rp 0,35/cm² (min Rp 50.000) × luas stopmap (22×31 cm / 24×35 cm).</li>
-                      <li>• <strong>Laminasi Doff</strong>: Glossy + Rp 200/pcs (catatan HARGA JULI 2026).</li>
-                      <li>• <strong>Sisir + Lipat + Kupingan Smile</strong>: tarif per pcs (sisir 150, lipat 100, kupingan 100).</li>
-                      <li>• <strong>Packing</strong>: Kardus Rp 8.500 + Lakban Rp 8.000 per order.</li>
+                      <li>• <strong>Print Inter A3+</strong>: <span className="font-mono text-emerald-700">Master!D18</span> Rp 2.500/lbr A3+ (sudah termasuk kertas dan cetak 4W).</li>
+                      <li>• <strong>Insheet POD</strong>: <span className="font-mono text-emerald-700">Master!D13</span> 5 lbr A3+ (flat).</li>
+                      <li>• <strong>Insheet Oliver</strong>: <span className="font-mono text-emerald-700">Master!D13</span> 150 lbr plano offset.</li>
+                      <li>• <strong>Plat Oliver</strong>: <span className="font-mono text-emerald-700">BUKU!Y6</span> Rp 45.000/plat (4 plat = Rp 180.000).</li>
+                      <li>• <strong>Ongkos Cetak Oliver</strong>: <span className="font-mono text-emerald-700">BUKU!AB6</span> Min Rp 90.000/plat (Rp 360.000 dasar) + <span className="font-mono text-emerald-700">BUKU!AC7</span> drek over Rp 40/drek/warna.</li>
                     </ul>
                   </div>
 
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
-                      <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                      <span>3. Ukuran & Kapasitas</span>
+                      <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                      <span>3. Kupingan (Kantong Stopmap) &amp; Jasa Finishing</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>A4 (22×31 cm)</strong>: 1 pcs/A3+ (33×48 cm), HARGA JULI 2026 tier 20–2000 pcs.</li>
-                      <li>• <strong>FOLIO (24×35 cm)</strong>: 1 pcs/A3+ (24×35 cm ~ A3+), tier 250–3000 pcs.</li>
-                      <li>• Berat A3+ AC 230 = 0.1584 m² × 230 /1000 ≈ 0.0364 kg/lbr.</li>
+                      <li>• <strong>Yield Kupingan</strong>: <span className="font-mono text-emerald-700">BUKU!AN6</span> 1 plano 79×109 menghasilkan 15 kupingan.</li>
+                      <li>• <strong>Cadangan Plano Kupingan</strong>: <span className="font-mono text-emerald-700">BUKU!AN7</span> A4 = 3 plano, Folio = 8 plano (120 kupingan cadangan).</li>
+                      <li>• <strong>Lipat Stopmap</strong>: <span className="font-mono text-emerald-700">BUKU!AL7</span> (UMR/25/4.000) = Rp 28,18585/pcs.</li>
+                      <li>• <strong>Ponz &amp; Lem</strong>: <span className="font-mono text-emerald-700">BUKU!AR7</span> (UMR/25/2.000) + Rp 50 lem = Rp 106,3717/pcs.</li>
+                      <li>• <strong>Pasang Kupingan</strong>: <span className="font-mono text-emerald-700">BUKU!AU7</span> (UMR/25/500) = Rp 225,4868/pcs.</li>
                     </ul>
                   </div>
 
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
-                      <span className="w-2 h-2 rounded-full bg-violet-500"></span>
-                      <span>4. Margin & Nego</span>
+                      <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                      <span>4. Laminasi, Packing Kardus &amp; Margin</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Margin</strong>: 30% dari HPP, nego 4% dari harga jual.</li>
-                      <li>• Harga jual = <code className="text-[10px] bg-white px-1 py-0.5 rounded border">ceil(HPP/pcs ×1.30 /10)*10</code>.</li>
-                      <li>• Tier global: 10–3000 pcs (union A4 & Folio).</li>
+                      <li>• <strong>Laminasi Glossy</strong>: <span className="font-mono text-emerald-700">BUKU!AW6</span> Rp 0,35/cm² × (2×W × H) (Min. Rp 50.000).</li>
+                      <li>• <strong>Laminasi Doff</strong>: <span className="font-mono text-emerald-700">BUKU!AZ6</span> Rp 0,40/cm² × (2×W+1 × H+1) bleed (Min. Rp 50.000).</li>
+                      <li>• <strong>Packing Lakban</strong>: <span className="font-mono text-emerald-700">BUKU!BH7</span> Rp 8.000/roll (panjang 7.650 cm / konsumsi 196 cm per box).</li>
+                      <li>• <strong>Kardus</strong>: <span className="font-mono text-emerald-700">Master!D22</span> Rp 8.500/box (kapasitas 300 pcs map).</li>
+                      <li>• <strong>Margin &amp; Nego</strong>: Margin 30% (<span className="font-mono text-emerald-700">Master!E24</span>), Nego 5% (<span className="font-mono text-emerald-700">HARGA JULI 2026</span>).</li>
                     </ul>
                   </div>
                 </div>

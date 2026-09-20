@@ -316,15 +316,19 @@ export function applyGlobalParamsToAll(
 
   const nextStopmap: StopmapMasterParams = {
     ...currStopmap,
-    tarifArtCarton230Kg: g.tarifAc230Kg,
+    tarifArtCartonKg: g.tarifAc230Kg,
     upArtCartonPct: g.upKertasPct,
     tarifPrintA3: g.tarifPrintA3,
     tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
+    tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
+    tarifUvVarnishCm2: g.tarifUvVarnishCm2,
     minLaminasi: g.minLaminasi,
-    tarifSisirPerPcs: g.tarifSisirPcs,
+    tarifPlatOliver: g.oliverPlatUnit,
+    minOrderOliver: g.oliverMinOngkos,
+    tarifDrekOverOliver: g.oliverDrekOver,
     tarifKardusBox: g.tarifKardusBox,
     tarifLakbanRoll: g.tarifLakbanRoll,
-    tarifDesign: g.tarifDesainStandar,
+    tarifDesainA4: g.tarifDesainStandar,
     marginDefaultPct: g.defaultMarginPct,
     negoDefaultPct: g.defaultNegoPct,
   };
