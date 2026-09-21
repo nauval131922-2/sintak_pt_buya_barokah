@@ -66,7 +66,7 @@ function check(label: string, cond: boolean, detail = '') {
 console.log('=== A. Snapshot Excel tersimpan (FOLIO, 1 Muka, CETAK, TANPA SISIR, margin 30) ===');
 for (const [w, exp] of [[1, EXP_W1], [2, EXP_W2], [3, EXP_W3], [4, EXP_W4]] as [number, Snap[]][]) {
   for (const s of exp) {
-    const r = calculateKopSuratHpp({ oplahRim: s.h, jenisKop: 'FOLIO', nWarna: w as 1 | 2 | 3 | 4, muka: 1, jenisCetak: 'CETAK', finishingSisir: false, filmAktif: false, insheetLembar: INSHET[w], marginPct: 30 }, P);
+    const r = calculateKopSuratHpp({ oplahRim: s.h, jenisKop: 'FOLIO', nWarna: w as 1 | 2 | 3 | 4, muka: 1, jenisCetak: 'CETAK', finishingSisir: false, insheetLembar: INSHET[w], marginPct: 30 }, P);
     const ok = close(r.totalHpp, s.am) && close(r.hppPerRim, s.an) && close(r.totalHarga, s.aq) && close(r.hargaPerRim, s.ar) && r.hargaFinalPerRim === s.as;
     check(`${w} Warna rim=${s.h} HPP=${r.totalHpp} Final=${r.hargaFinalPerRim}`,
       ok, `exp AM=${s.am} AN=${s.an} AQ=${s.aq} AR=${s.ar} AS=${s.as} | got AM=${r.totalHpp} AN=${r.hppPerRim} AQ=${r.totalHarga} AR=${r.hargaPerRim} AS=${r.hargaFinalPerRim}`);
@@ -74,12 +74,12 @@ for (const [w, exp] of [[1, EXP_W1], [2, EXP_W2], [3, EXP_W3], [4, EXP_W4]] as [
 }
 
 // Transkripsi independen rumus BUKU (tanpa memakai calculateKopSuratHpp)
-function expected(jenisKop: KopSuratJenisKop, w: number, muka: number, jenisCetak: KopSuratJenisCetak, sisir: boolean, film: boolean, insheet: number, H: number, margin: number) {
-  const dims: Record<string, { d: number; f: number; t: number; u: number; o: number }> = {
-    'FOLIO': { d: 21.5, f: 33, t: 21.5, u: 33, o: 1 },
-    'A4': { d: 21, f: 29.7, t: 21, u: 29.7, o: 1 },
-    'Setengah Folio': { d: 16.5, f: 21.5, t: 21.5, u: 33, o: 2 },
-    'Setengah A4': { d: 14.8, f: 21, t: 21, u: 29.7, o: 2 },
+function expected(jenisKop: KopSuratJenisKop, w: number, muka: number, jenisCetak: KopSuratJenisCetak, sisir: boolean, insheet: number, H: number, margin: number) {
+  const dims: Record<string, { t: number; u: number; o: number }> = {
+    'FOLIO': { t: 21.5, u: 33, o: 1 },
+    'A4': { t: 21, u: 29.7, o: 1 },
+    'Setengah Folio': { t: 21.5, u: 33, o: 2 },
+    'Setengah A4': { t: 21, u: 29.7, o: 2 },
   };
   const D = dims[jenisKop];
   const q = ((H * 500) / D.o) + insheet;
@@ -91,28 +91,28 @@ function expected(jenisKop: KopSuratJenisKop, w: number, muka: number, jenisCeta
   const ab = x * 15000;
   const ac = p - 500 === 0 ? 0 : (p - 500 >= 1 ? p - 500 : 0);
   const ad = ac === 0 ? 0 : ac * 30 * x;
-  const filmC = film ? (D.d + 1) * (D.f + 1) * 0 : 0;
+  // U7 (Film) ≡ 0: T30 kosong + AM7 tak mencakup U7 (sesuai Excel)
   const sisirC = sisir ? ((((D.t * D.u) * 70) / 20000) / 500) * q * 1000 : 0;
-  const am = r + 10000 + filmC + plate + ab + ad + sisirC;
+  const am = r + 10000 + plate + ab + ad + sisirC;
   const an = am / H;
   const aq = (an + an * (margin / 100)) * H;
   return { am, as: Math.ceil((aq / H) / 10) * 10 };
 }
 
-console.log('=== B. Matriks permutasi (4 kop × 4 warna × 2 muka × 2 cetak × 2 sisir × 2 film × 10 rim) ===');
+console.log('=== B. Matriks permutasi (4 kop × 4 warna × 2 muka × 2 cetak × 2 sisir × 10 rim) ===');
 const JENIS: KopSuratJenisKop[] = ['FOLIO', 'A4', 'Setengah Folio', 'Setengah A4'];
 let permPass = 0, permFail = 0;
-for (const jk of JENIS) for (let w = 1; w <= 4; w++) for (const muka of [1, 2]) for (const jc of ['CETAK', 'ONGKOS CETAK'] as KopSuratJenisCetak[]) for (const sisir of [false, true]) for (const film of [false, true]) for (let h = 1; h <= 10; h++) {
-  const r = calculateKopSuratHpp({ oplahRim: h, jenisKop: jk, nWarna: w as 1 | 2 | 3 | 4, muka: muka as 1 | 2, jenisCetak: jc, finishingSisir: sisir, filmAktif: film, insheetLembar: INSHET[w], marginPct: 30 }, P);
-  const e = expected(jk, w, muka, jc, sisir, film, INSHET[w], h, 30);
+for (const jk of JENIS) for (let w = 1; w <= 4; w++) for (const muka of [1, 2]) for (const jc of ['CETAK', 'ONGKOS CETAK'] as KopSuratJenisCetak[]) for (const sisir of [false, true]) for (let h = 1; h <= 10; h++) {
+  const r = calculateKopSuratHpp({ oplahRim: h, jenisKop: jk, nWarna: w as 1 | 2 | 3 | 4, muka: muka as 1 | 2, jenisCetak: jc, finishingSisir: sisir, insheetLembar: INSHET[w], marginPct: 30 }, P);
+  const e = expected(jk, w, muka, jc, sisir, INSHET[w], h, 30);
   if (close(r.totalHpp, e.am) && r.hargaFinalPerRim === e.as) permPass++;
-  else { permFail++; console.log(`[FAIL] permutasi ${jk}/${w}W/m${muka}/${jc}/${sisir ? 'S' : 'TS'}/${film ? 'F' : '-'}/rim${h}: got ${r.totalHpp}/${r.hargaFinalPerRim} exp ${e.am}/${e.as}`); }
+  else { permFail++; console.log(`[FAIL] permutasi ${jk}/${w}W/m${muka}/${jc}/${sisir ? 'S' : 'TS'}/rim${h}: got ${r.totalHpp}/${r.hargaFinalPerRim} exp ${e.am}/${e.as}`); }
 }
 console.log(`Permutasi: ${permPass} PASSED, ${permFail} FAILED (0 selisih)`);
 if (permFail === 0) pass++; else fail++;
 
 console.log('=== C. Reaktivitas parameter (Delta HPP > 0) ===');
-const base = { oplahRim: 2, jenisKop: 'FOLIO' as KopSuratJenisKop, nWarna: 2 as const, muka: 1 as const, jenisCetak: 'CETAK' as KopSuratJenisCetak, finishingSisir: false, filmAktif: false, insheetLembar: 30, marginPct: 30 };
+const base = { oplahRim: 2, jenisKop: 'FOLIO' as KopSuratJenisKop, nWarna: 2 as const, muka: 1 as const, jenisCetak: 'CETAK' as KopSuratJenisCetak, finishingSisir: false, insheetLembar: 30, marginPct: 30 };
 const hpp = (p: KopSuratMasterParams) => calculateKopSuratHpp(base, p).totalHpp;
 const baseHpp = hpp(P);
 const tests: [string, KopSuratMasterParams][] = [
@@ -123,13 +123,11 @@ const tests: [string, KopSuratMasterParams][] = [
   ['Desain 10000→50000', { ...P, desain: 50000 }],
   ['Royalty 0→1000/rim', { ...P, royaltyPerRim: 1000 }],
   ['Transport 0→5000', { ...P, transportPerOrder: 5000 }],
-  ['Film aktif + tarif 500', { ...P, tarifFilm: 500 }],
   ['Plat override 0→9', { ...P, platOverride: 9 }],
 ];
 for (const [label, mp] of tests) {
   let got: number;
   if (label.startsWith('Insheet')) got = calculateKopSuratHpp({ ...base, insheetLembar: 60 }, P).totalHpp;
-  else if (label.startsWith('Film')) got = calculateKopSuratHpp({ ...base, filmAktif: true }, mp).totalHpp;
   else got = hpp(mp);
   check(`Reaktivitas: ${label} | ${baseHpp} -> ${got}`, got - baseHpp > 0, `delta=${got - baseHpp}`);
 }

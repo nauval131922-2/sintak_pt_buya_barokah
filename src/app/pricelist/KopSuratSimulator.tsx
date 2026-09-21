@@ -65,7 +65,6 @@ export default function KopSuratSimulator({
   const [muka, setMuka] = useState<1 | 2>(1);
   const [jenisCetak, setJenisCetak] = useState<KopSuratJenisCetak>('CETAK');
   const [finishingSisir, setFinishingSisir] = useState(false);
-  const [filmAktif, setFilmAktif] = useState(false);
   const [insheetLembar, setInsheetLembar] = useState<number>(params.insheet1Warna);
   const [marginPct, setMarginPct] = useState(params.labaPct);
   const [copiedQuote, setCopiedQuote] = useState(false);
@@ -103,7 +102,6 @@ export default function KopSuratSimulator({
           if ([1, 2].includes(d.muka)) setMuka(d.muka);
           if (['CETAK', 'ONGKOS CETAK'].includes(d.jenisCetak)) setJenisCetak(d.jenisCetak);
           if (typeof d.finishingSisir === 'boolean') setFinishingSisir(d.finishingSisir);
-          if (typeof d.filmAktif === 'boolean') setFilmAktif(d.filmAktif);
           if (typeof d.insheetLembar === 'number') setInsheetLembar(d.insheetLembar);
           if (typeof d.marginPct === 'number') setMarginPct(d.marginPct);
         }
@@ -117,11 +115,11 @@ export default function KopSuratSimulator({
   useEffect(() => {
     if (!draftLoaded.current) return;
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify({ oplahRim, jenisKop, nWarna, muka, jenisCetak, finishingSisir, filmAktif, insheetLembar, marginPct }));
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ oplahRim, jenisKop, nWarna, muka, jenisCetak, finishingSisir, insheetLembar, marginPct }));
     } catch (e) {
       console.error('Failed to save kop surat draft:', e);
     }
-  }, [oplahRim, jenisKop, nWarna, muka, jenisCetak, finishingSisir, filmAktif, insheetLembar, marginPct]);
+  }, [oplahRim, jenisKop, nWarna, muka, jenisCetak, finishingSisir, insheetLembar, marginPct]);
 
   useEffect(() => {
     try {
@@ -140,7 +138,6 @@ export default function KopSuratSimulator({
             setMuka(inp.muka);
             setJenisCetak(inp.jenisCetak);
             setFinishingSisir(inp.finishingSisir);
-            setFilmAktif(inp.filmAktif);
             setInsheetLembar(inp.insheetLembar);
             setMarginPct(inp.marginPct);
             setSimulationTitle(item.title);
@@ -160,11 +157,11 @@ export default function KopSuratSimulator({
   const result = useMemo(
     () =>
       calculateKopSuratHpp(
-        { oplahRim, jenisKop, nWarna, muka, jenisCetak, finishingSisir, filmAktif, insheetLembar, marginPct },
+        { oplahRim, jenisKop, nWarna, muka, jenisCetak, finishingSisir, insheetLembar, marginPct },
         params
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [oplahRim, jenisKop, nWarna, muka, jenisCetak, finishingSisir, filmAktif, insheetLembar, marginPct, customParams]
+    [oplahRim, jenisKop, nWarna, muka, jenisCetak, finishingSisir, insheetLembar, marginPct, customParams]
   );
 
   const defaultTitle = () => {
@@ -408,32 +405,16 @@ export default function KopSuratSimulator({
               </div>
             </div>
 
-            {/* Finishing + Film */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">Finishing (D20)</label>
-                <div className="grid grid-cols-1 gap-2">
-                  <button type="button" onClick={() => setFinishingSisir(false)} className={specButton(!finishingSisir)}>
-                    <span className="text-[11px]">TANPA SISIR</span>
-                  </button>
-                  <button type="button" onClick={() => setFinishingSisir(true)} className={specButton(finishingSisir)}>
-                    <span className="text-[11px]">SISIR</span>
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">Film (T30)</label>
-                <button
-                  type="button"
-                  onClick={() => setFilmAktif(!filmAktif)}
-                  className={`${specButton(filmAktif)} w-full flex items-center justify-center gap-1.5`}
-                >
-                  <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${filmAktif ? 'bg-white border-white' : 'border-slate-300'}`}>
-                    {filmAktif && <Check size={12} className="text-emerald-700" />}
-                  </span>
-                  <span className="text-[11px]">Film √ {filmAktif ? 'Aktif' : 'Mati'}</span>
+            {/* Finishing */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Finishing (D20)</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button type="button" onClick={() => setFinishingSisir(false)} className={specButton(!finishingSisir)}>
+                  <span className="text-[11px]">TANPA SISIR</span>
                 </button>
-                <p className="text-[10px] text-slate-500 mt-1">BUKU!U7 aktif hanya jika T30 = √.</p>
+                <button type="button" onClick={() => setFinishingSisir(true)} className={specButton(finishingSisir)}>
+                  <span className="text-[11px]">SISIR</span>
+                </button>
               </div>
             </div>
 

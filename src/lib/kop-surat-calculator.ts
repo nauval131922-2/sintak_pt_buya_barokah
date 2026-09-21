@@ -22,7 +22,8 @@ export interface KopSuratMasterParams {
   insheet3Warna: number; // Master!D15 file 3 Warna
   insheet4Warna: number; // Master!D15 file 4 Warna
   desain: number; // Master!D16
-  tarifFilm: number; // BUKU!U6 (Film BW, aktif hanya jika T30=√)
+  // BUKU!U6/U7 (Film): selamanya 0 — BUKU!T30 kosong (tak pernah √) DAN
+  // BUKU!AM7 = SUM(R+T+W+AE+AH+AJ+AK) tidak mencakup U7. Tanpa param.
   platOverride: number; // BUKU!X6 (0 = otomatis L7*M7)
   royaltyPerRim: number; // BUKU!AH6
   transportPerOrder: number; // BUKU!AJ6
@@ -42,7 +43,6 @@ export const DEFAULT_KOP_SURAT_PARAMS: KopSuratMasterParams = {
   insheet3Warna: 40,
   insheet4Warna: 50,
   desain: 10000,
-  tarifFilm: 0,
   platOverride: 0,
   royaltyPerRim: 0,
   transportPerOrder: 0,
@@ -67,14 +67,6 @@ export const KOP_SURAT_UKURAN_LABEL: Record<KopSuratJenisKop, string> = {
   'Setengah A4': '14,8 x 21',
 };
 
-// BUKU!D7/F7: dimensi display (d, f)
-const KOP_SURAT_DIM_DISPLAY: Record<KopSuratJenisKop, { d: number; f: number }> = {
-  'FOLIO': { d: 21.5, f: 33 },
-  'A4': { d: 21, f: 29.7 },
-  'Setengah Folio': { d: 16.5, f: 21.5 },
-  'Setengah A4': { d: 14.8, f: 21 },
-};
-
 // BUKU!T27/U27: dimensi dasar harga kertas + BUKU!O7: jadi kop per area cetak
 const KOP_SURAT_DIM_KERTAS: Record<KopSuratJenisKop, { t27: number; u27: number; o7: number }> = {
   'FOLIO': { t27: 21.5, u27: 33, o7: 1 },
@@ -92,7 +84,6 @@ export interface KopSuratSimulatorInput {
   muka: 1 | 2; // Master!D18 → BUKU!M7
   jenisCetak: KopSuratJenisCetak; // Master!D10
   finishingSisir: boolean; // Master!D20 SISIR vs TANPA SISIR
-  filmAktif: boolean; // BUKU!T30 = "√"
   insheetLembar: number; // Master!D15 (default per file warna)
   marginPct: number; // override BUKU!AO6 (= Master!E21)
 }
@@ -134,9 +125,8 @@ export function calculateKopSuratHpp(
   rawParams: KopSuratMasterParams = DEFAULT_KOP_SURAT_PARAMS
 ): KopSuratSimulatorResult {
   const p: KopSuratMasterParams = { ...DEFAULT_KOP_SURAT_PARAMS, ...(rawParams || {}) };
-  const { oplahRim, jenisKop, nWarna, muka, jenisCetak, finishingSisir, filmAktif, insheetLembar, marginPct } = input;
+  const { oplahRim, jenisKop, nWarna, muka, jenisCetak, finishingSisir, insheetLembar, marginPct } = input;
   const H = Math.max(1, oplahRim);
-  const disp = KOP_SURAT_DIM_DISPLAY[jenisKop];
   const krt = KOP_SURAT_DIM_KERTAS[jenisKop];
 
   const breakdown: KopSuratBreakdownItem[] = [];
@@ -162,9 +152,7 @@ export function calculateKopSuratHpp(
     `${Q7.toLocaleString('id-ID')} lbr plano (${H} rim × 500${O7 > 1 ? ` / ${O7}` : ''} + ${insheetLembar} insheet) × Rp ${(U29 / 500).toLocaleString('id-ID')}/lbr`);
   // BUKU!T7 = T6 = Master!D16
   add('Desain', p.desain, `Master!D16 Rp ${p.desain.toLocaleString('id-ID')}`);
-  // BUKU!U7 = IF($T$30="√",(D7+1)*(F7+1)*$U$6*1,0)
-  add('Film', filmAktif ? (disp.d + 1) * (disp.f + 1) * p.tarifFilm : 0,
-    filmAktif ? `(${disp.d}+1) × (${disp.f}+1) × Rp ${p.tarifFilm.toLocaleString('id-ID')}` : 'T30 ≠ √ → 0');
+  // BUKU!U7 (Film) ≡ 0: T30 kosong + AM7 tak mencakup U7 — tidak ditampilkan.
   // BUKU!X7 = IF(X6>0,X6,L7*M7) — BUKU!W7 = $W$6*X7, W6 = IF(D10 ONGKOS CETAK,0,CETAK,10000)
   const X7 = p.platOverride > 0 ? p.platOverride : L7 * M7;
   const W6 = jenisCetak === 'CETAK' ? 10000 : 0; // BUKU!W6

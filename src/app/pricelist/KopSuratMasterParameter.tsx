@@ -39,7 +39,6 @@ const KOP_SURAT_VISIBLE_KEYS: NumKey[] = [
   'insheet3Warna',
   'insheet4Warna',
   'desain',
-  'tarifFilm',
   'platOverride',
   'royaltyPerRim',
   'transportPerOrder',
@@ -258,7 +257,6 @@ export default function KopSuratMasterParameter({
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('desain', 'Desain / Order (Rp)')}
-            {fieldRow('tarifFilm', 'Film BW / satuan (Rp)')}
             {fieldRow('platOverride', 'Override Jml Plat X6 (0=auto)', false)}
             {fieldRow('royaltyPerRim', 'Royalty / rim (Rp)')}
             {fieldRow('transportPerOrder', 'Transport / order (Rp)')}

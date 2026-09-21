@@ -670,7 +670,7 @@ export default function SavedCalculationsList({
         specSummary: `Kop Surat ${inp.jenisKop ?? ''} ${inp.nWarna ?? ''} Warna • ${(inp.oplahRim ?? 0)} rim`,
         detailSpecs: [
           `Jenis: ${inp.jenisKop ?? ''} · ${inp.nWarna ?? ''} Warna · ${inp.muka ?? ''} Muka · ${inp.jenisCetak ?? ''}`,
-          `Finishing: ${inp.finishingSisir ? 'SISIR' : 'TANPA SISIR'}${inp.filmAktif ? ' · Film √' : ''} · Insheet ${inp.insheetLembar ?? ''} lbr`,
+          `Finishing: ${inp.finishingSisir ? 'SISIR' : 'TANPA SISIR'} · Insheet ${inp.insheetLembar ?? ''} lbr`,
           `Margin: ${inp.marginPct}%`,
         ],
         hppUnit: (ks.data?.hppPerRim ?? ks.hppPerRim ?? 0),
