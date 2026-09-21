@@ -40,6 +40,16 @@ export type { SavedRaportKalebSimulationItem };
 
 const DRAFT_STORAGE_KEY = 'sintak_raport_kaleb_draft';
 
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
+
 interface RaportKalebSimulatorProps {
   customParams?: RaportKalebMasterParams;
   setCustomParams?: React.Dispatch<React.SetStateAction<RaportKalebMasterParams>>;
@@ -60,13 +70,13 @@ export default function RaportKalebSimulator({
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: RaportKalebSimulatorProps) {
   // 1. Form Inputs State
-  const [oplah, setOplah] = useState<number>(100);
-  const [varian, setVarian] = useState<RaportKalebVarianType>('Kosongan');
-  const [opsiTambahanIsi, setOpsiTambahanIsi] = useState(false);
-  const [jumlahTambahanIsi, setJumlahTambahanIsi] = useState(2);
-  const [opsiPacking, setOpsiPacking] = useState(false);
-  const [marginPct, setMarginPct] = useState<number>(customParams.marginDefaultPct || 25);
-  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(customParams.negoDefaultPct || 4);
+  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 100));
+  const [varian, setVarian] = useState<RaportKalebVarianType>(() => draftVal('varian', 'Kosongan'));
+  const [opsiTambahanIsi, setOpsiTambahanIsi] = useState(() => draftVal('opsiTambahanIsi', false));
+  const [jumlahTambahanIsi, setJumlahTambahanIsi] = useState(() => draftVal('jumlahTambahanIsi', 2));
+  const [opsiPacking, setOpsiPacking] = useState(() => draftVal('opsiPacking', false));
+  const [marginPct, setMarginPct] = useState<number>(() => draftVal('marginPct', customParams.marginDefaultPct || 25));
+  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(() => draftVal('negoDiskonPct', customParams.negoDefaultPct || 4));
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   // 2. Saved Simulation State

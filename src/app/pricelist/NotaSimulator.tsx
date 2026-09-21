@@ -65,6 +65,18 @@ const UKURAN_OPTIONS: Array<{ value: NotaUkuranType; label: string; desc: string
   { value: '1/8 Folio (10.75 x 8.25)', label: '1/8 Folio (Kupon / Karcis)', desc: '10.75 x 8.25 cm (8 buku per lembar)' },
 ];
 
+const DRAFT_KEY = 'sintak_nota_simulator_draft';
+
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
+
 interface NotaSimulatorProps {
   customParams?: NotaMasterParams;
   setCustomParams?: React.Dispatch<React.SetStateAction<NotaMasterParams>>;
@@ -84,14 +96,14 @@ export default function NotaSimulator({
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: NotaSimulatorProps) {
-  const [oplahRim, setOplahRim] = useState<number>(1);
-  const [rangkap, setRangkap] = useState<NotaRangkapType>(1);
-  const [ukuran, setUkuran] = useState<NotaUkuranType>('1/4 Folio (10.7 x 16.5)');
-  const [jumlahWarna, setJumlahWarna] = useState<1 | 2>(1);
-  const [opsiPorporasi, setOpsiPorporasi] = useState<boolean>(true);
-  const [opsiNomorator, setOpsiNomorator] = useState<boolean>(false);
-  const [marginPct, setMarginPct] = useState<number>(30);
-  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(4);
+  const [oplahRim, setOplahRim] = useState<number>(() => draftVal('oplahRim', 1));
+  const [rangkap, setRangkap] = useState<NotaRangkapType>(() => draftVal('rangkap', 1));
+  const [ukuran, setUkuran] = useState<NotaUkuranType>(() => draftVal('ukuran', '1/4 Folio (10.7 x 16.5)'));
+  const [jumlahWarna, setJumlahWarna] = useState<1 | 2>(() => draftVal('jumlahWarna', 1));
+  const [opsiPorporasi, setOpsiPorporasi] = useState<boolean>(() => draftVal('opsiPorporasi', true));
+  const [opsiNomorator, setOpsiNomorator] = useState<boolean>(() => draftVal('opsiNomorator', false));
+  const [marginPct, setMarginPct] = useState<number>(() => draftVal('marginPct', 30));
+  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(() => draftVal('negoDiskonPct', 4));
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   // Fitur Simpan Simulasi Nota

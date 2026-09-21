@@ -38,6 +38,16 @@ export type { SavedBukuTabunganSecuritySimulationItem };
 
 const DRAFT_KEY = 'sintak_buku_tabungan_security_draft';
 
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
+
 const VARIAN_OPTIONS: BukuTabunganSecurityVarianType[] = ['24 Hal', '32 Hal', '48 Hal'];
 
 interface BukuTabunganSecuritySimulatorProps {
@@ -59,10 +69,10 @@ export default function BukuTabunganSecuritySimulator({
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: BukuTabunganSecuritySimulatorProps) {
-  const [oplah, setOplah] = useState<number>(250);
-  const [varian, setVarian] = useState<BukuTabunganSecurityVarianType>('24 Hal');
-  const [marginPct, setMarginPct] = useState(30);
-  const [negoDiskonPct, setNegoDiskonPct] = useState(5);
+  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 250));
+  const [varian, setVarian] = useState<BukuTabunganSecurityVarianType>(() => draftVal('varian', '24 Hal'));
+  const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', 30));
+  const [negoDiskonPct, setNegoDiskonPct] = useState(() => draftVal('negoDiskonPct', 5));
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedBukuTabunganSecuritySimulationItem[]>([]);

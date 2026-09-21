@@ -23,6 +23,16 @@ import {
 import { toast } from '@/lib/toast';
 
 const DRAFT_KEY = 'sintak_kalender_kop_draft';
+
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
 import {
   KalenderKopMasterParams,
   KalenderKopSimulatorInput,
@@ -60,10 +70,10 @@ export default function KalenderKopSimulator({
   activeSimulationTitle,
   setActiveSimulationTitle,
 }: Props) {
-  const [varian, setVarian] = useState<KalenderKopVarian>('1 Warna');
-  const [oplah, setOplah] = useState<number>(100);
-  const [marginPct, setMarginPct] = useState<number>(customParams.marginDefaultPct ?? 0);
-  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(customParams.negoDefaultPct ?? 4);
+  const [varian, setVarian] = useState<KalenderKopVarian>(() => draftVal('varian', '1 Warna'));
+  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 100));
+  const [marginPct, setMarginPct] = useState<number>(() => draftVal('marginPct', customParams.marginDefaultPct ?? 0));
+  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(() => draftVal('negoDiskonPct', customParams.negoDefaultPct ?? 4));
 
   const [copiedQuote, setCopiedQuote] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);

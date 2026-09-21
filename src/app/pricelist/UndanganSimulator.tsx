@@ -40,6 +40,16 @@ export type { SavedUndanganSimulationItem };
 const DRAFT_KEY = 'sintak_undangan_draft';
 const SAVED_KEY = 'sintak_saved_undangan_simulations';
 
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
+
 interface UndanganSimulatorProps {
   customParams?: UndanganMasterParams;
   setCustomParams?: React.Dispatch<React.SetStateAction<UndanganMasterParams>>;
@@ -68,18 +78,18 @@ export default function UndanganSimulator({
 }: UndanganSimulatorProps) {
   const params: UndanganMasterParams = { ...DEFAULT_UNDANGAN_PARAMS, ...(customParams || {}) };
 
-  const [oplahPcs, setOplahPcs] = useState<number>(1000);
-  const [ukuran, setUkuran] = useState<UndanganUkuran>('15 x 17');
-  const [nWarna, setNWarna] = useState<1 | 2 | 3 | 4>(4);
-  const [muka, setMuka] = useState<1 | 2>(2);
-  const [mesin, setMesin] = useState<UndanganMesin>('Oliver');
-  const [finishing, setFinishing] = useState<UndanganFinishing>('None,');
-  const [labelAktif, setLabelAktif] = useState(false);
-  const [lipatAktif, setLipatAktif] = useState(false);
-  const [pasangPlastikAktif, setPasangPlastikAktif] = useState(false);
-  const [kardusAktif, setKardusAktif] = useState(true);
-  const [insheetLembar, setInsheetLembar] = useState<number>(params.insheetOliver);
-  const [marginPct, setMarginPct] = useState(params.labaPct);
+  const [oplahPcs, setOplahPcs] = useState<number>(() => draftVal('oplahPcs', 1000));
+  const [ukuran, setUkuran] = useState<UndanganUkuran>(() => draftVal('ukuran', '15 x 17'));
+  const [nWarna, setNWarna] = useState<1 | 2 | 3 | 4>(() => draftVal('nWarna', 4));
+  const [muka, setMuka] = useState<1 | 2>(() => draftVal('muka', 2));
+  const [mesin, setMesin] = useState<UndanganMesin>(() => draftVal('mesin', 'Oliver'));
+  const [finishing, setFinishing] = useState<UndanganFinishing>(() => draftVal('finishing', 'None,'));
+  const [labelAktif, setLabelAktif] = useState(() => draftVal('labelAktif', false));
+  const [lipatAktif, setLipatAktif] = useState(() => draftVal('lipatAktif', false));
+  const [pasangPlastikAktif, setPasangPlastikAktif] = useState(() => draftVal('pasangPlastikAktif', false));
+  const [kardusAktif, setKardusAktif] = useState(() => draftVal('kardusAktif', true));
+  const [insheetLembar, setInsheetLembar] = useState<number>(() => draftVal('insheetLembar', params.insheetOliver));
+  const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', params.labaPct));
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedUndanganSimulationItem[]>([]);

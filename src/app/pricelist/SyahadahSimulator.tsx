@@ -38,6 +38,18 @@ import {
 } from '@/lib/syahadah-calculator';
 import { toast } from '@/lib/toast';
 
+const DRAFT_KEY = 'sintak_syahadah_simulator_draft';
+
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
+
 export type { SavedSyahadahSimulationItem };
 
 const UKURAN_OPTIONS: SyahadahUkuranType[] = ['21,5 x 33 cm', '21 x 29,7 cm'];
@@ -68,15 +80,15 @@ export default function SyahadahSimulator({
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: SyahadahSimulatorProps) {
-  const [oplah, setOplah] = useState<number>(100);
-  const [varian, setVarian] = useState<SyahadahVarianType>('1 Muka FC');
-  const [ukuran, setUkuran] = useState<SyahadahUkuranType>('21,5 x 33 cm');
-  const [mesin, setMesin] = useState<SyahadahMesinType>('Auto');
-  const [laminasi, setLaminasi] = useState<SyahadahLaminasiType>('Tanpa Laminasi');
-  const [opsiFoil, setOpsiFoil] = useState<boolean>(false);
-  const [opsiKardusLakban, setOpsiKardusLakban] = useState<boolean>(false);
-  const [marginPct, setMarginPct] = useState<number>(30);
-  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(5);
+  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 100));
+  const [varian, setVarian] = useState<SyahadahVarianType>(() => draftVal('varian', '1 Muka FC'));
+  const [ukuran, setUkuran] = useState<SyahadahUkuranType>(() => draftVal('ukuran', '21,5 x 33 cm'));
+  const [mesin, setMesin] = useState<SyahadahMesinType>(() => draftVal('mesin', 'Auto'));
+  const [laminasi, setLaminasi] = useState<SyahadahLaminasiType>(() => draftVal('laminasi', 'Tanpa Laminasi'));
+  const [opsiFoil, setOpsiFoil] = useState<boolean>(() => draftVal('opsiFoil', false));
+  const [opsiKardusLakban, setOpsiKardusLakban] = useState<boolean>(() => draftVal('opsiKardusLakban', false));
+  const [marginPct, setMarginPct] = useState<number>(() => draftVal('marginPct', 30));
+  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(() => draftVal('negoDiskonPct', 5));
   const [copiedQuote, setCopiedQuote] = useState<boolean>(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedSyahadahSimulationItem[]>([]);

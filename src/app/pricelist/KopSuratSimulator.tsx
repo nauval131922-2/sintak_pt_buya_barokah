@@ -38,6 +38,16 @@ export type { SavedKopSuratSimulationItem };
 const DRAFT_KEY = 'sintak_kop_surat_draft';
 const SAVED_KEY = 'sintak_saved_kop_surat_simulations';
 
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
+
 interface KopSuratSimulatorProps {
   customParams?: KopSuratMasterParams;
   setCustomParams?: React.Dispatch<React.SetStateAction<KopSuratMasterParams>>;
@@ -59,14 +69,14 @@ export default function KopSuratSimulator({
 }: KopSuratSimulatorProps) {
   const params: KopSuratMasterParams = { ...DEFAULT_KOP_SURAT_PARAMS, ...(customParams || {}) };
 
-  const [oplahRim, setOplahRim] = useState<number>(1);
-  const [jenisKop, setJenisKop] = useState<KopSuratJenisKop>('FOLIO');
-  const [nWarna, setNWarna] = useState<1 | 2 | 3 | 4>(1);
-  const [muka, setMuka] = useState<1 | 2>(1);
-  const [jenisCetak, setJenisCetak] = useState<KopSuratJenisCetak>('CETAK');
-  const [finishingSisir, setFinishingSisir] = useState(false);
-  const [insheetLembar, setInsheetLembar] = useState<number>(params.insheet1Warna);
-  const [marginPct, setMarginPct] = useState(params.labaPct);
+  const [oplahRim, setOplahRim] = useState<number>(() => draftVal('oplahRim', 1));
+  const [jenisKop, setJenisKop] = useState<KopSuratJenisKop>(() => draftVal('jenisKop', 'FOLIO'));
+  const [nWarna, setNWarna] = useState<1 | 2 | 3 | 4>(() => draftVal('nWarna', 1));
+  const [muka, setMuka] = useState<1 | 2>(() => draftVal('muka', 1));
+  const [jenisCetak, setJenisCetak] = useState<KopSuratJenisCetak>(() => draftVal('jenisCetak', 'CETAK'));
+  const [finishingSisir, setFinishingSisir] = useState(() => draftVal('finishingSisir', false));
+  const [insheetLembar, setInsheetLembar] = useState<number>(() => draftVal('insheetLembar', params.insheet1Warna));
+  const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', params.labaPct));
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedKopSuratSimulationItem[]>([]);

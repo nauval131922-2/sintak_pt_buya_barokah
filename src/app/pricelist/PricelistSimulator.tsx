@@ -41,6 +41,16 @@ import ThousandInput from '@/components/ThousandInput';
 import { toast } from '@/lib/toast';
 
 const DRAFT_KEY = 'sintak_pricelist_kalender_draft';
+
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
 export interface SavedSimulationItem {
   id: string;
   savedAt: string;
@@ -117,13 +127,13 @@ export default function PricelistSimulator({
   const [showSimulatorManual, setShowSimulatorManual] = useState(false);
 
   // Input states with persistent localStorage support (loaded in useEffect to prevent hydration mismatch)
-  const [modelKalender, setModelKalender] = useState<string>('Eko Wulan (12 Lbr)');
-  const [bahan, setBahan] = useState<string>('Art Paper 150');
-  const [ukuran, setUkuran] = useState<string>('32 x 48');
-  const [oplah, setOplah] = useState<number>(1500);
-  const [pilihanMesin, setPilihanMesin] = useState<'Otomatis' | 'Oliver' | 'SM'>('Otomatis');
-  const [marginPct, setMarginPct] = useState<number>(30);
-  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(4);
+  const [modelKalender, setModelKalender] = useState<string>(() => draftVal('modelKalender', 'Eko Wulan (12 Lbr)'));
+  const [bahan, setBahan] = useState<string>(() => draftVal('bahan', 'Art Paper 150'));
+  const [ukuran, setUkuran] = useState<string>(() => draftVal('ukuran', '32 x 48'));
+  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 1500));
+  const [pilihanMesin, setPilihanMesin] = useState<'Otomatis' | 'Oliver' | 'SM'>(() => draftVal('pilihanMesin', 'Otomatis'));
+  const [marginPct, setMarginPct] = useState<number>(() => draftVal('marginPct', 30));
+  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(() => draftVal('negoDiskonPct', 4));
 
   // Load preferences from localStorage after mount (client-only)
   React.useEffect(() => {

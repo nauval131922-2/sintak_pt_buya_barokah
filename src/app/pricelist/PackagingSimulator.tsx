@@ -34,6 +34,15 @@ import {
 } from '@/lib/packaging-calculator';
 
 const DRAFT_KEY = 'sintak_packaging_draft';
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
 
 export type SavedPackagingSimulationItem = {
   id: string;
@@ -56,15 +65,15 @@ export default function PackagingSimulator({
   setActiveSimulationTitle,
 }: PackagingSimulatorProps) {
   // Input State
-  const [ukuran, setUkuran] = useState<PackagingUkuran>('15 x 15 x 8 cm');
-  const [bahan, setBahan] = useState<PackagingBahan>('Duplex 350 gsm');
-  const [oplah, setOplah] = useState<number>(1000);
+  const [ukuran, setUkuran] = useState<PackagingUkuran>(() => draftVal('ukuran', '15 x 15 x 8 cm'));
+  const [bahan, setBahan] = useState<PackagingBahan>(() => draftVal('bahan', 'Duplex 350 gsm'));
+  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 1000));
   const [customOplahInput, setCustomOplahInput] = useState<string>('');
   const [isCustomOplah, setIsCustomOplah] = useState<boolean>(false);
 
-  const [finishing, setFinishing] = useState<PackagingFinishing>('Tanpa Laminasi');
-  const [marginPct, setMarginPct] = useState<number>(customParams.marginDefaultPct || 30);
-  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(customParams.negoDefaultPct || 5);
+  const [finishing, setFinishing] = useState<PackagingFinishing>(() => draftVal('finishing', 'Tanpa Laminasi'));
+  const [marginPct, setMarginPct] = useState<number>(() => draftVal('marginPct', customParams.marginDefaultPct || 30));
+  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(() => draftVal('negoDiskonPct', customParams.negoDefaultPct || 5));
 
   const [copiedQuote, setCopiedQuote] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);

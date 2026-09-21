@@ -43,6 +43,16 @@ export type { SavedSertifikatSimulationItem };
 const DRAFT_KEY = 'sintak_sertifikat_draft';
 const SAVED_KEY = 'sintak_saved_sertifikat_simulations';
 
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
+
 interface SertifikatSimulatorProps {
   customParams?: SertifikatMasterParams;
   setCustomParams?: React.Dispatch<React.SetStateAction<SertifikatMasterParams>>;
@@ -71,18 +81,18 @@ export default function SertifikatSimulator({
 }: SertifikatSimulatorProps) {
   const params: SertifikatMasterParams = { ...DEFAULT_SERTIFIKAT_PARAMS, ...(customParams || {}) };
 
-  const [oplahPcs, setOplahPcs] = useState<number>(1000);
-  const [ukuran, setUkuran] = useState<SertifikatUkuran>('21 x 29,7');
-  const [bahan, setBahan] = useState<SertifikatBahan>('Art Carton');
-  const [gramatur, setGramatur] = useState<number>(params.gramaturAc);
-  const [nWarna, setNWarna] = useState<1 | 2 | 3 | 4>(4);
-  const [muka, setMuka] = useState<1 | 2>(1);
-  const [mesin, setMesin] = useState<SertifikatMesin>('Oliver');
-  const [finishing, setFinishing] = useState<SertifikatFinishing>('None,');
-  const [foilAktif, setFoilAktif] = useState(false);
-  const [kardusAktif, setKardusAktif] = useState(true);
-  const [insheetLembar, setInsheetLembar] = useState<number>(params.insheetOffset);
-  const [marginPct, setMarginPct] = useState(params.labaPct);
+  const [oplahPcs, setOplahPcs] = useState<number>(() => draftVal('oplahPcs', 1000));
+  const [ukuran, setUkuran] = useState<SertifikatUkuran>(() => draftVal('ukuran', '21 x 29,7'));
+  const [bahan, setBahan] = useState<SertifikatBahan>(() => draftVal('bahan', 'Art Carton'));
+  const [gramatur, setGramatur] = useState<number>(() => draftVal('gramatur', params.gramaturAc));
+  const [nWarna, setNWarna] = useState<1 | 2 | 3 | 4>(() => draftVal('nWarna', 4));
+  const [muka, setMuka] = useState<1 | 2>(() => draftVal('muka', 1));
+  const [mesin, setMesin] = useState<SertifikatMesin>(() => draftVal('mesin', 'Oliver'));
+  const [finishing, setFinishing] = useState<SertifikatFinishing>(() => draftVal('finishing', 'None,'));
+  const [foilAktif, setFoilAktif] = useState(() => draftVal('foilAktif', false));
+  const [kardusAktif, setKardusAktif] = useState(() => draftVal('kardusAktif', true));
+  const [insheetLembar, setInsheetLembar] = useState<number>(() => draftVal('insheetLembar', params.insheetOffset));
+  const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', params.labaPct));
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedSertifikatSimulationItem[]>([]);

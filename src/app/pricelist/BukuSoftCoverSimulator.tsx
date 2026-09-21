@@ -40,6 +40,16 @@ export type { SavedBukuSoftCoverSimulationItem };
 const LS_KEY = 'sintak_saved_buku_soft_cover_simulations';
 const DRAFT_KEY = 'sintak_buku_soft_cover_draft';
 
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
+
 interface BukuSoftCoverSimulatorProps {
   customParams?: BukuSoftCoverMasterParams;
   setCustomParams?: React.Dispatch<React.SetStateAction<BukuSoftCoverMasterParams>>;
@@ -59,11 +69,11 @@ export default function BukuSoftCoverSimulator({
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: BukuSoftCoverSimulatorProps) {
-  const [oplah, setOplah] = useState<number>(100);
-  const [varian, setVarian] = useState<BukuSoftCoverVarianType>('21 x 29,7 cm');
-  const [finishing, setFinishing] = useState<BukuSoftCoverFinishingType>('Laminasi Glossy');
-  const [marginPct, setMarginPct] = useState(customParams.marginDefaultPct);
-  const [negoDiskonPct, setNegoDiskonPct] = useState(customParams.negoDefaultPct);
+  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 100));
+  const [varian, setVarian] = useState<BukuSoftCoverVarianType>(() => draftVal('varian', '21 x 29,7 cm'));
+  const [finishing, setFinishing] = useState<BukuSoftCoverFinishingType>(() => draftVal('finishing', 'Laminasi Glossy'));
+  const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', customParams.marginDefaultPct));
+  const [negoDiskonPct, setNegoDiskonPct] = useState(() => draftVal('negoDiskonPct', customParams.negoDefaultPct));
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedBukuSoftCoverSimulationItem[]>([]);

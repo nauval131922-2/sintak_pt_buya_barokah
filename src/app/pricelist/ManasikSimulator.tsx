@@ -116,6 +116,18 @@ const LAMINASI_OPTIONS = [
   { value: 'UV Varnish', label: 'UV Varnish', desc: 'UV Varnish' },
   { value: 'Tanpa Laminasi', label: 'Tanpa Laminasi', desc: 'Tanpa Laminasi' },
 ];
+
+const DRAFT_KEY = 'sintak_manasik_simulator_draft';
+
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
 interface ManasikSimulatorProps {
   customParams?: ManasikMasterParams;
   setCustomParams?: React.Dispatch<React.SetStateAction<ManasikMasterParams>>;
@@ -135,25 +147,25 @@ export default function ManasikSimulator({
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: ManasikSimulatorProps) {
-  const [varian, setVarian] = useState<ManasikVarianType>('Custom Cover 10 x 15,5');
-  const [oplah, setOplah] = useState<number>(500);
-  const [jumlahHalaman, setJumlahHalaman] = useState<number>(216);
+  const [varian, setVarian] = useState<ManasikVarianType>(() => draftVal('varian', 'Custom Cover 10 x 15,5'));
+  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 500));
+  const [jumlahHalaman, setJumlahHalaman] = useState<number>(() => draftVal('jumlahHalaman', 216));
   const [isCustomHal, setIsCustomHal] = useState<boolean>(false);
   const [tipeJilid, setTipeJilid] = useState<
     'Softcover (Bending/Lem Panas)' | 'Staples Kawat' | 'Tali Kur' | 'Spiral Kawat' | 'Ring Binder (TikTok)'
-  >('Tali Kur');
+  >(() => draftVal('tipeJilid', 'Tali Kur'));
   const [metodeCetakCover, setMetodeCetakCover] = useState<
     'Otomatis' | 'Print Digital (A3+)' | 'Offset (Oliver)'
-  >('Otomatis');
-  const [metodeCetakIsi, setMetodeCetakIsi] = useState<'Print Buya' | 'Ryobi' | 'Oliver'>('Print Buya');
+  >(() => draftVal('metodeCetakCover', 'Otomatis'));
+  const [metodeCetakIsi, setMetodeCetakIsi] = useState<'Print Buya' | 'Ryobi' | 'Oliver'>(() => draftVal('metodeCetakIsi', 'Print Buya'));
   const [laminasiCover, setLaminasiCover] = useState<
     'Tanpa Laminasi' | 'Glossy' | 'Doff' | 'UV Varnish'
-  >('Doff');
-  const [opsiPlastikOpp, setOpsiPlastikOpp] = useState<boolean>(true);
-  const [opsiKardus, setOpsiKardus] = useState<boolean>(true);
-  const [opsiSisipan, setOpsiSisipan] = useState<boolean>(true);
-  const [marginPct, setMarginPct] = useState<number>(30);
-  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(0);
+  >(() => draftVal('laminasiCover', 'Doff'));
+  const [opsiPlastikOpp, setOpsiPlastikOpp] = useState<boolean>(() => draftVal('opsiPlastikOpp', true));
+  const [opsiKardus, setOpsiKardus] = useState<boolean>(() => draftVal('opsiKardus', true));
+  const [opsiSisipan, setOpsiSisipan] = useState<boolean>(() => draftVal('opsiSisipan', true));
+  const [marginPct, setMarginPct] = useState<number>(() => draftVal('marginPct', 30));
+  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(() => draftVal('negoDiskonPct', 0));
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   // Fitur Simpan Simulasi Manasik

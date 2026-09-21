@@ -23,6 +23,16 @@ import {
 import { toast } from '@/lib/toast';
 
 const DRAFT_KEY = 'sintak_stiker_draft';
+
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
 import {
   StikerMasterParams,
   StikerSimulatorInput,
@@ -67,11 +77,11 @@ export default function StikerSimulator({
   activeSimulationTitle,
   setActiveSimulationTitle,
 }: Props) {
-  const [ukuran, setUkuran] = useState<StikerUkuran>('8 x 5 cm');
-  const [oplah, setOplah] = useState<number>(100);
-  const [finishing, setFinishing] = useState<StikerFinishingOption>('Non Cutting (Rajang Potong)');
-  const [marginPct, setMarginPct] = useState<number>(customParams.marginDefaultPct ?? 30);
-  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(customParams.negoDefaultPct ?? 4);
+  const [ukuran, setUkuran] = useState<StikerUkuran>(() => draftVal('ukuran', '8 x 5 cm'));
+  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 100));
+  const [finishing, setFinishing] = useState<StikerFinishingOption>(() => draftVal('finishing', 'Non Cutting (Rajang Potong)'));
+  const [marginPct, setMarginPct] = useState<number>(() => draftVal('marginPct', customParams.marginDefaultPct ?? 30));
+  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(() => draftVal('negoDiskonPct', customParams.negoDefaultPct ?? 4));
 
   const [copiedQuote, setCopiedQuote] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);

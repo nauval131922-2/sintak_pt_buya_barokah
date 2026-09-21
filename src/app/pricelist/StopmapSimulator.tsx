@@ -37,6 +37,18 @@ import {
 } from '@/lib/stopmap-calculator';
 import { toast } from '@/lib/toast';
 
+const DRAFT_KEY = 'sintak_stopmap_simulator_draft';
+
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
+
 export type { SavedStopmapSimulationItem };
 
 const UKURAN_OPTIONS: { id: StopmapUkuranType; label: string; desc: string }[] = [
@@ -70,14 +82,14 @@ export default function StopmapSimulator({
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: StopmapSimulatorProps) {
-  const [oplah, setOplah] = useState<number>(200);
-  const [ukuran, setUkuran] = useState<StopmapUkuranType>('A4 (22 x 32 cm)');
-  const [mesin, setMesin] = useState<StopmapMesinType>('Auto');
-  const [laminasi, setLaminasi] = useState<StopmapLaminasiType>('Glossy');
-  const [opsiPisauPonzBaru, setOpsiPisauPonzBaru] = useState<boolean>(false);
-  const [opsiKardusLakban, setOpsiKardusLakban] = useState<boolean>(true);
-  const [marginPct, setMarginPct] = useState(30);
-  const [negoDiskonPct, setNegoDiskonPct] = useState(5);
+  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 200));
+  const [ukuran, setUkuran] = useState<StopmapUkuranType>(() => draftVal('ukuran', 'A4 (22 x 32 cm)'));
+  const [mesin, setMesin] = useState<StopmapMesinType>(() => draftVal('mesin', 'Auto'));
+  const [laminasi, setLaminasi] = useState<StopmapLaminasiType>(() => draftVal('laminasi', 'Glossy'));
+  const [opsiPisauPonzBaru, setOpsiPisauPonzBaru] = useState<boolean>(() => draftVal('opsiPisauPonzBaru', false));
+  const [opsiKardusLakban, setOpsiKardusLakban] = useState<boolean>(() => draftVal('opsiKardusLakban', true));
+  const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', 30));
+  const [negoDiskonPct, setNegoDiskonPct] = useState(() => draftVal('negoDiskonPct', 5));
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedStopmapSimulationItem[]>([]);

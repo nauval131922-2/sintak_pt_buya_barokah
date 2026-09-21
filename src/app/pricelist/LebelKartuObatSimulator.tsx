@@ -36,6 +36,16 @@ import { toast } from '@/lib/toast';
 
 const DRAFT_KEY = 'sintak_lebel_kartu_obat_draft';
 
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
+
 export type { SavedLebelKartuObatSimulationItem };
 
 const VARIAN_OPTIONS: LebelKartuObatVarianType[] = ['3,5 x 7 cm', '4 x 6 cm', '5 x 6,7 cm'];
@@ -59,10 +69,10 @@ export default function LebelKartuObatSimulator({
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: LebelKartuObatSimulatorProps) {
-  const [oplah, setOplah] = useState<number>(5);
-  const [varian, setVarian] = useState<LebelKartuObatVarianType>('3,5 x 7 cm');
-  const [marginPct, setMarginPct] = useState(30);
-  const [negoDiskonPct, setNegoDiskonPct] = useState(4);
+  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 5));
+  const [varian, setVarian] = useState<LebelKartuObatVarianType>(() => draftVal('varian', '3,5 x 7 cm'));
+  const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', 30));
+  const [negoDiskonPct, setNegoDiskonPct] = useState(() => draftVal('negoDiskonPct', 4));
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedLebelKartuObatSimulationItem[]>([]);

@@ -23,6 +23,15 @@ import {
 import { toast } from '@/lib/toast';
 
 const DRAFT_KEY = 'sintak_poster_draft';
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
 import {
   PosterMasterParams,
   PosterSimulatorInput,
@@ -68,11 +77,11 @@ export default function PosterSimulator({
   activeSimulationTitle,
   setActiveSimulationTitle,
 }: Props) {
-  const [ukuran, setUkuran] = useState<PosterUkuran>('32 x 48 cm');
-  const [oplah, setOplah] = useState<number>(500);
-  const [finishing, setFinishing] = useState<PosterFinishingOption>('Tanpa Laminasi');
-  const [marginPct, setMarginPct] = useState<number>(customParams.marginDefaultPct ?? 30);
-  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(customParams.negoDefaultPct ?? 5);
+  const [ukuran, setUkuran] = useState<PosterUkuran>(() => draftVal('ukuran', '32 x 48 cm'));
+  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 500));
+  const [finishing, setFinishing] = useState<PosterFinishingOption>(() => draftVal('finishing', 'Tanpa Laminasi'));
+  const [marginPct, setMarginPct] = useState<number>(() => draftVal('marginPct', customParams.marginDefaultPct ?? 30));
+  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(() => draftVal('negoDiskonPct', customParams.negoDefaultPct ?? 5));
 
   const [copiedQuote, setCopiedQuote] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);

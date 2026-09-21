@@ -54,6 +54,18 @@ const LAMINASI_OPTIONS: BrosurLaminasiType[] = [
 
 const OPLAH_TIERS = [100, 150, 200, 300, 400, 500, 1000, 1500, 2000, 2500, 3000];
 
+const DRAFT_KEY = 'sintak_brosur_simulator_draft';
+
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
+
 interface BrosurSimulatorProps {
   customParams?: BrosurMasterParams;
   setCustomParams?: React.Dispatch<React.SetStateAction<BrosurMasterParams>>;
@@ -73,16 +85,16 @@ export default function BrosurSimulator({
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: BrosurSimulatorProps) {
-  const [oplah, setOplah] = useState<number>(500);
-  const [gramatur, setGramatur] = useState<BrosurGramaturType>('Art Paper 120 gsm');
-  const [ukuran, setUkuran] = useState<BrosurUkuranType>('21 x 29,7');
-  const [muka, setMuka] = useState<BrosurMukaType>('2 Muka');
-  const [mesin, setMesin] = useState<BrosurMesinType>('Print Inter');
-  const [laminasi, setLaminasi] = useState<BrosurLaminasiType>('Glossy');
-  const [opsiSisir, setOpsiSisir] = useState(true); // Standar brosur selalu disisir potong bersih
-  const [opsiPacking, setOpsiPacking] = useState(false);
-  const [marginPct, setMarginPct] = useState(30);
-  const [negoDiskonPct, setNegoDiskonPct] = useState(4);
+  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 500));
+  const [gramatur, setGramatur] = useState<BrosurGramaturType>(() => draftVal('gramatur', 'Art Paper 120 gsm'));
+  const [ukuran, setUkuran] = useState<BrosurUkuranType>(() => draftVal('ukuran', '21 x 29,7'));
+  const [muka, setMuka] = useState<BrosurMukaType>(() => draftVal('muka', '2 Muka'));
+  const [mesin, setMesin] = useState<BrosurMesinType>(() => draftVal('mesin', 'Print Inter'));
+  const [laminasi, setLaminasi] = useState<BrosurLaminasiType>(() => draftVal('laminasi', 'Glossy'));
+  const [opsiSisir, setOpsiSisir] = useState(() => draftVal('opsiSisir', true)); // Standar brosur selalu disisir potong bersih
+  const [opsiPacking, setOpsiPacking] = useState(() => draftVal('opsiPacking', false));
+  const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', 30));
+  const [negoDiskonPct, setNegoDiskonPct] = useState(() => draftVal('negoDiskonPct', 4));
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedBrosurSimulationItem[]>([]);

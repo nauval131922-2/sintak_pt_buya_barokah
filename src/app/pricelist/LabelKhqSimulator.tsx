@@ -37,6 +37,18 @@ export type { SavedLabelKhqSimulationItem };
 const VARIAN_LIST: LabelKhqVarianType[] = ['KHQ 220 ml', 'KHQ 330 ml', 'KHQ 600 ml'];
 const KARDUS_TIERS = [5, 6, 7, 8, 9, 10, 12, 15, 20, 25, 30, 35, 40, 50, 100];
 
+const DRAFT_KEY = 'sintak_label_khq_simulator_draft';
+
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
+
 interface LabelKhqSimulatorProps {
   customParams?: LabelKhqMasterParams;
   setCustomParams?: React.Dispatch<React.SetStateAction<LabelKhqMasterParams>>;
@@ -56,13 +68,13 @@ export default function LabelKhqSimulator({
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: LabelKhqSimulatorProps) {
-  const [varian, setVarian] = useState<LabelKhqVarianType>('KHQ 220 ml');
-  const [jumlahKardus, setJumlahKardus] = useState<number>(10);
-  const [jumlahLbrCustom, setJumlahLbrCustom] = useState<number>(0);
-  const [opsiLaminasi, setOpsiLaminasi] = useState<boolean>(true);
-  const [opsiRajang, setOpsiRajang] = useState<boolean>(true);
-  const [marginPct, setMarginPct] = useState<number>(30);
-  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(4);
+  const [varian, setVarian] = useState<LabelKhqVarianType>(() => draftVal('varian', 'KHQ 220 ml'));
+  const [jumlahKardus, setJumlahKardus] = useState<number>(() => draftVal('jumlahKardus', 10));
+  const [jumlahLbrCustom, setJumlahLbrCustom] = useState<number>(() => draftVal('jumlahLbrCustom', 0));
+  const [opsiLaminasi, setOpsiLaminasi] = useState<boolean>(() => draftVal('opsiLaminasi', true));
+  const [opsiRajang, setOpsiRajang] = useState<boolean>(() => draftVal('opsiRajang', true));
+  const [marginPct, setMarginPct] = useState<number>(() => draftVal('marginPct', 30));
+  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(() => draftVal('negoDiskonPct', 4));
   const [copiedQuote, setCopiedQuote] = useState<boolean>(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedLabelKhqSimulationItem[]>([]);

@@ -40,6 +40,16 @@ export type { SavedAmplopSimulationItem };
 const DRAFT_KEY = 'sintak_amplop_draft';
 const SAVED_KEY = 'sintak_saved_amplop_simulations';
 
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
+
 interface AmplopSimulatorProps {
   customParams?: AmplopMasterParams;
   setCustomParams?: React.Dispatch<React.SetStateAction<AmplopMasterParams>>;
@@ -61,13 +71,13 @@ export default function AmplopSimulator({
 }: AmplopSimulatorProps) {
   const params: AmplopMasterParams = { ...DEFAULT_AMPLOP_PARAMS, ...(customParams || {}) };
 
-  const [oplahPcs, setOplahPcs] = useState<number>(100);
-  const [ukuran, setUkuran] = useState<AmplopUkuran>('11 x 23');
-  const [nWarna, setNWarna] = useState<1 | 2 | 3 | 4>(1);
-  const [mesin, setMesin] = useState<AmplopMesin>('Ryobi');
-  const [insheetLembar, setInsheetLembar] = useState<number>(params.insheetLembar);
-  const [desain, setDesain] = useState<number>(desainDefaultForSpec('11 x 23', 'Ryobi', params));
-  const [marginPct, setMarginPct] = useState(params.labaPct);
+  const [oplahPcs, setOplahPcs] = useState<number>(() => draftVal('oplahPcs', 100));
+  const [ukuran, setUkuran] = useState<AmplopUkuran>(() => draftVal('ukuran', '11 x 23'));
+  const [nWarna, setNWarna] = useState<1 | 2 | 3 | 4>(() => draftVal('nWarna', 1));
+  const [mesin, setMesin] = useState<AmplopMesin>(() => draftVal('mesin', 'Ryobi'));
+  const [insheetLembar, setInsheetLembar] = useState<number>(() => draftVal('insheetLembar', params.insheetLembar));
+  const [desain, setDesain] = useState<number>(() => draftVal('desain', desainDefaultForSpec('11 x 23', 'Ryobi', params)));
+  const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', params.labaPct));
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedAmplopSimulationItem[]>([]);

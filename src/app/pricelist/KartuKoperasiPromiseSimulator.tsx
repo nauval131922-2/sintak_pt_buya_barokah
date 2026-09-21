@@ -36,6 +36,16 @@ import { toast } from '@/lib/toast';
 
 const DRAFT_KEY = 'sintak_kartu_koperasi_promise_draft';
 
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
+
 export type { SavedKartuKoperasiPromiseSimulationItem };
 
 const VARIAN_OPTIONS: KartuKoperasiPromiseVarianType[] = ['10,5 x 16,5', '10,5 x 21,5', '12,7 x 16,3'];
@@ -59,10 +69,10 @@ export default function KartuKoperasiPromiseSimulator({
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: KartuKoperasiPromiseSimulatorProps) {
-  const [oplah, setOplah] = useState<number>(500);
-  const [varian, setVarian] = useState<KartuKoperasiPromiseVarianType>('10,5 x 16,5');
-  const [marginPct, setMarginPct] = useState(30);
-  const [negoDiskonPct, setNegoDiskonPct] = useState(4);
+  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 500));
+  const [varian, setVarian] = useState<KartuKoperasiPromiseVarianType>(() => draftVal('varian', '10,5 x 16,5'));
+  const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', 30));
+  const [negoDiskonPct, setNegoDiskonPct] = useState(() => draftVal('negoDiskonPct', 4));
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedKartuKoperasiPromiseSimulationItem[]>([]);

@@ -23,6 +23,15 @@ import {
 import { toast } from '@/lib/toast';
 
 const DRAFT_KEY = 'sintak_buku_hard_cover_145x2025_draft';
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
 import {
   BukuHardCover145x2025MasterParams,
   BukuHardCover145x2025SimulatorInput,
@@ -65,11 +74,11 @@ export default function BukuHardCover145x2025Simulator({
   activeSimulationTitle,
   setActiveSimulationTitle,
 }: Props) {
-  const [oplah, setOplah] = useState<number>(500);
-  const [finishing, setFinishing] = useState<BukuHardCover145x2025FinishingOption>('Tanpa Laminasi');
-  const [opsiFoil, setOpsiFoil] = useState<boolean>(false);
-  const [marginPct, setMarginPct] = useState<number>(customParams.marginDefaultPct ?? 30);
-  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(customParams.negoDefaultPct ?? 5);
+  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 500));
+  const [finishing, setFinishing] = useState<BukuHardCover145x2025FinishingOption>(() => draftVal('finishing', 'Tanpa Laminasi'));
+  const [opsiFoil, setOpsiFoil] = useState<boolean>(() => draftVal('opsiFoil', false));
+  const [marginPct, setMarginPct] = useState<number>(() => draftVal('marginPct', customParams.marginDefaultPct ?? 30));
+  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(() => draftVal('negoDiskonPct', customParams.negoDefaultPct ?? 5));
 
   const [copiedQuote, setCopiedQuote] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);

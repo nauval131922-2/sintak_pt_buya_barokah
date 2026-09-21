@@ -39,6 +39,18 @@ export type { SavedBukuTulisSimulationItem };
 
 const UKURAN_OPTIONS: BukuTulisUkuranType[] = ['15,5 x 21', '16 x 21'];
 
+const DRAFT_KEY = 'sintak_buku_tulis_simulator_draft';
+
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
+
 interface BukuTulisSimulatorProps {
   customParams?: BukuTulisMasterParams;
   setCustomParams?: React.Dispatch<React.SetStateAction<BukuTulisMasterParams>>;
@@ -58,14 +70,14 @@ export default function BukuTulisSimulator({
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: BukuTulisSimulatorProps) {
-  const [oplah, setOplah] = useState<number>(500);
-  const [ukuran, setUkuran] = useState<BukuTulisUkuranType>('15,5 x 21');
-  const [metodeCetakCover, setMetodeCetakCover] = useState<BukuTulisMesinCoverType>('Otomatis');
-  const [metodeCetakIsi, setMetodeCetakIsi] = useState<BukuTulisMesinIsiType>('Otomatis');
-  const [opsiLaminasi, setOpsiLaminasi] = useState(true);
-  const [opsiSisir, setOpsiSisir] = useState(true);
-  const [marginPct, setMarginPct] = useState(20);
-  const [negoDiskonPct, setNegoDiskonPct] = useState(4);
+  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 500));
+  const [ukuran, setUkuran] = useState<BukuTulisUkuranType>(() => draftVal('ukuran', '15,5 x 21'));
+  const [metodeCetakCover, setMetodeCetakCover] = useState<BukuTulisMesinCoverType>(() => draftVal('metodeCetakCover', 'Otomatis'));
+  const [metodeCetakIsi, setMetodeCetakIsi] = useState<BukuTulisMesinIsiType>(() => draftVal('metodeCetakIsi', 'Otomatis'));
+  const [opsiLaminasi, setOpsiLaminasi] = useState(() => draftVal('opsiLaminasi', true));
+  const [opsiSisir, setOpsiSisir] = useState(() => draftVal('opsiSisir', true));
+  const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', 20));
+  const [negoDiskonPct, setNegoDiskonPct] = useState(() => draftVal('negoDiskonPct', 4));
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedBukuTulisSimulationItem[]>([]);

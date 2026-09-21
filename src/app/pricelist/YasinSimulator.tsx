@@ -37,6 +37,18 @@ import {
 import ThousandInput from '@/components/ThousandInput';
 import { toast } from '@/lib/toast';
 
+const DRAFT_KEY = 'sintak_yasin_simulator_draft';
+
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
+
 export interface SavedYasinSimulationItem {
   id: string;
   savedAt: string;
@@ -92,18 +104,18 @@ export default function YasinSimulator({
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: YasinSimulatorProps) {
-  const [oplah, setOplah] = useState<number>(100);
-  const [tipeCover, setTipeCover] = useState<'Softcover' | 'Hardcover'>('Hardcover');
-  const [ukuran, setUkuran] = useState<'11.7 x 15' | '9.5 x 14'>('11.7 x 15');
-  const [jumlahHalamanIsi, setJumlahHalamanIsi] = useState<64 | 96 | 112 | 128 | 144 | 192>(96);
-  const [lembarSisipanFoto, setLembarSisipanFoto] = useState<number>(1);
-  const [lembarSisipanKeluarga, setLembarSisipanKeluarga] = useState<number>(1);
-  const [laminasiCover, setLaminasiCover] = useState<'Glossy' | 'Doff'>('Glossy');
-  const [opsiPitaRumbai, setOpsiPitaRumbai] = useState<boolean>(true);
-  const [opsiSikuEmas, setOpsiSikuEmas] = useState<boolean>(false);
-  const [opsiPlastikOpp, setOpsiPlastikOpp] = useState<boolean>(true);
-  const [marginPct, setMarginPct] = useState<number>(30);
-  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(0);
+  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 100));
+  const [tipeCover, setTipeCover] = useState<'Softcover' | 'Hardcover'>(() => draftVal('tipeCover', 'Hardcover'));
+  const [ukuran, setUkuran] = useState<'11.7 x 15' | '9.5 x 14'>(() => draftVal('ukuran', '11.7 x 15'));
+  const [jumlahHalamanIsi, setJumlahHalamanIsi] = useState<64 | 96 | 112 | 128 | 144 | 192>(() => draftVal('jumlahHalamanIsi', 96));
+  const [lembarSisipanFoto, setLembarSisipanFoto] = useState<number>(() => draftVal('lembarSisipanFoto', 1));
+  const [lembarSisipanKeluarga, setLembarSisipanKeluarga] = useState<number>(() => draftVal('lembarSisipanKeluarga', 1));
+  const [laminasiCover, setLaminasiCover] = useState<'Glossy' | 'Doff'>(() => draftVal('laminasiCover', 'Glossy'));
+  const [opsiPitaRumbai, setOpsiPitaRumbai] = useState<boolean>(() => draftVal('opsiPitaRumbai', true));
+  const [opsiSikuEmas, setOpsiSikuEmas] = useState<boolean>(() => draftVal('opsiSikuEmas', false));
+  const [opsiPlastikOpp, setOpsiPlastikOpp] = useState<boolean>(() => draftVal('opsiPlastikOpp', true));
+  const [marginPct, setMarginPct] = useState<number>(() => draftVal('marginPct', 30));
+  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(() => draftVal('negoDiskonPct', 0));
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   // Fitur Simpan Simulasi Yasin

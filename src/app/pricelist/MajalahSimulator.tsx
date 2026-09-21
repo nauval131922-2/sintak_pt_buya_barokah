@@ -23,6 +23,15 @@ import {
 import { toast } from '@/lib/toast';
 
 const DRAFT_KEY = 'sintak_majalah_draft';
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
 import {
   MajalahMasterParams,
   MajalahSimulatorInput,
@@ -72,11 +81,11 @@ export default function MajalahSimulator({
   activeSimulationTitle,
   setActiveSimulationTitle,
 }: Props) {
-  const [oplah, setOplah] = useState<number>(500);
-  const [finishing, setFinishing] = useState<MajalahFinishingOption>('Tanpa Laminasi');
-  const [jilid, setJilid] = useState<MajalahJilidOption>('Staples Tengah');
-  const [marginPct, setMarginPct] = useState<number>(customParams.marginDefaultPct ?? 30);
-  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(customParams.negoDefaultPct ?? 5);
+  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 500));
+  const [finishing, setFinishing] = useState<MajalahFinishingOption>(() => draftVal('finishing', 'Tanpa Laminasi'));
+  const [jilid, setJilid] = useState<MajalahJilidOption>(() => draftVal('jilid', 'Staples Tengah'));
+  const [marginPct, setMarginPct] = useState<number>(() => draftVal('marginPct', customParams.marginDefaultPct ?? 30));
+  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(() => draftVal('negoDiskonPct', customParams.negoDefaultPct ?? 5));
 
   const [copiedQuote, setCopiedQuote] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
