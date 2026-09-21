@@ -27,7 +27,7 @@ export interface SyahadahMasterParams {
   minOrderOliver: number; // BUKU!AB6 default Rp 90.000 / plat (s.d. 1.000 drek)
   tarifDrekOverOliver: number; // BUKU!AC7 default Rp 40 per drek/warna (> 1.000 drek)
 
-  // E. Desain Artwork & Potong Sisir (Master!D17, BUKU!AS6)
+  // E. Desain & Potong Sisir (Master!D17, BUKU!AS6)
   tarifDesign: number; // Master!D17 default Rp 20.000 per order
   tarifSisirPer500: number; // BUKU!AS6 default Rp 5.000 per 500 pcs
 
@@ -347,10 +347,10 @@ export function calculateSyahadahHpp(
   }
 
   // -------------------------------------------------------------
-  // 2. DESAIN ARTWORK & POTONG SISIR (BUKU!V7, BUKU!AS7)
+  // 2. DESAIN & POTONG SISIR (BUKU!V7, BUKU!AS7)
   // -------------------------------------------------------------
   if (p.tarifDesign > 0) {
-    add('Desain Artwork Syahadah', p.tarifDesign, 'BUKU!V7: Biaya setting layout desain sertifikat/syahadah');
+    add('Desain Syahadah', p.tarifDesign, 'BUKU!V7: Biaya setting layout desain sertifikat/syahadah');
   }
 
   // BUKU!AS7: Ongkos Potong Sisir = ROUNDUP(oplah / 500, 0) * 5.000

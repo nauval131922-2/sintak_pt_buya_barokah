@@ -16,7 +16,7 @@ export interface KopSuratMasterParams {
   tarifRyobi: number; // Rp 1.900 / lbr A3+ per warna Ryobi 1W
 
   // D. Cetak Oliver (offset untuk oplah besar >500)
-  tarifPlatOliver: number; // Rp 45.000 / plat CTP
+  tarifPlatOliver: number; // Rp 45.000 / plat
   minOliver: number; // Rp 90.000 / plat min 1000 drek
   drekOliver: number; // Rp 40 / drek over
 
@@ -165,7 +165,7 @@ export function calculateKopSuratHpp(
     } else {
       const totalPlat = 4;
       const biayaPlat = totalPlat * p.tarifPlatOliver;
-      add('Plate CTP Oliver (FC)', biayaPlat, `${totalPlat} plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`);
+      add('Plat Oliver (FC)', biayaPlat, `${totalPlat} plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`);
       const ongkosDasar = p.minOliver * totalPlat;
       const overSheets = Math.max(0, kebutuhanA3 - 1000);
       const biayaOver = overSheets * p.drekOliver * totalPlat;
@@ -184,7 +184,7 @@ export function calculateKopSuratHpp(
         `${kebutuhanA3} lbr A3+ × ${totalPlat} plat × Rp ${p.tarifRyobi.toLocaleString('id-ID')}`);
     } else {
       const biayaPlat = totalPlat * p.tarifPlatOliver;
-      add('Plate CTP Oliver', biayaPlat, `${totalPlat} plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`);
+      add('Plat Oliver', biayaPlat, `${totalPlat} plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`);
       const ongkosDasar = p.minOliver * totalPlat;
       const overSheets = Math.max(0, kebutuhanA3 - 1000);
       const biayaOver = overSheets * p.drekOliver * totalPlat;
@@ -198,7 +198,7 @@ export function calculateKopSuratHpp(
 
   // 3. Desain
   if (p.tarifDesign > 0) {
-    add('Desain Artwork Kop Surat', p.tarifDesign, 'Biaya desain & setting kop surat');
+    add('Desain Kop Surat', p.tarifDesign, 'Biaya desain & setting kop surat');
   }
 
   // 4. Finishing Potong per pcs

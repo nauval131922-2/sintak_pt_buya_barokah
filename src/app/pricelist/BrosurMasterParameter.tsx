@@ -206,7 +206,7 @@ export default function BrosurMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">2. Mesin Cetak Offset Oliver</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifPlatOliver', 'Plat CTP Oliver (Rp/plat)')}
+            {fieldRow('tarifPlatOliver', 'Plat Oliver (Rp/plat)')}
             {fieldRow('jumlahPlatOliver', 'Jumlah Plat (Default 4)', false)}
             {fieldRow('minOrderOliver', 'Min Order Oliver (Rp/plat)')}
             {fieldRow('tarifDrekOliver', 'Ongkos Drek Over (Rp/drek)')}
@@ -299,7 +299,7 @@ export default function BrosurMasterParameter({
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
                       <li>• <strong>Print Inter 1 Muka</strong>: <span className="font-mono text-blue-700">Master!D18</span> = Rp 2.000/lbr A3+ (cetak digital).</li>
                       <li>• <strong>Print Inter 2 Muka</strong>: <span className="font-mono text-blue-700">Master!D18</span> = Rp 3.300/lbr A3+ bolak-balik.</li>
-                      <li>• <strong>Plat CTP Oliver</strong>: <span className="font-mono text-blue-700">BUKU!Y6</span> = Rp 45.000/plat (khusus 10,5×21 2 muka = Rp 43.000). Menggunakan 4 plat CMYK work-and-turn (kecuali A3 2 muka = 8 plat).</li>
+                      <li>• <strong>Plat Oliver</strong>: <span className="font-mono text-blue-700">BUKU!Y6</span> = Rp 45.000/plat (khusus 10,5×21 2 muka = Rp 43.000). Menggunakan 4 plat CMYK work-and-turn (kecuali A3 2 muka = 8 plat).</li>
                       <li>• <strong>Min Order Oliver</strong>: <span className="font-mono text-blue-700">BUKU!AB6</span> = Rp 90.000/plat. Drek over: <span className="font-mono text-blue-700">BUKU!AC6</span> = Rp 40/drek/warna.</li>
                     </ul>
                   </div>

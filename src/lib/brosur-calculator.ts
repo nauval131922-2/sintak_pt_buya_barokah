@@ -193,7 +193,7 @@ export function calculateBrosurSimulator(
     // Tarif plat Oliver: 43.000 khusus 10,5 x 21 2 muka, ukuran lainnya 45.000 / plat
     const tarifPlatUnit = (ukuran === '10,5 x 21' && is2Muka) ? 43000 : p.tarifPlatOliver;
     const biayaPlat = jmlPlat * tarifPlatUnit;
-    add('Plate CTP Oliver', biayaPlat, `${jmlPlat} plat × Rp ${tarifPlatUnit.toLocaleString('id-ID')}`);
+    add('Plat Oliver', biayaPlat, `${jmlPlat} plat × Rp ${tarifPlatUnit.toLocaleString('id-ID')}`);
 
     // Ongkos cetak: Di Excel cell AD = jmlPlat * Rp 90.000 + biaya over (cell AF = over * tarifDrek * 4 warna)
     const insheetPlatEff = (!is2Muka && (ukuran === '21,5 x 33' || ukuran === '29,7 x 42')) ? 100 : cfg.insheetPlat;

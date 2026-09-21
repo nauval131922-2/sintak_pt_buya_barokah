@@ -186,7 +186,7 @@ export default function BukuSoftCoverMasterParameter({
           {fieldRow('tarifKertasHvs70Kg', 'Harga Kertas HVS 70 gsm (Rp/kg)', true)}
           {fieldRow('upKertasIsiPct', 'Mark-up Kertas Isi (%)', false)}
           {fieldRow('tarifDesainIsiPerHlm', 'Tarif Desain Isi (Rp/halaman)', true)}
-          {fieldRow('tarifOliverPlatUnit', 'Tarif Plate CTP Oliver (Rp/plat)', true)}
+          {fieldRow('tarifOliverPlatUnit', 'Tarif Plat Oliver (Rp/plat)', true)}
           {fieldRow('tarifOliverMinIsi', 'Minimum Ongkos Oliver (Rp/order)', true)}
         </div>
 
@@ -265,7 +265,7 @@ export default function BukuSoftCoverMasterParameter({
                     ['HVS 70 gsm', 'Rp 15.700/kg · berat plano 65×100 = 0,04549 kg'],
                     ['Mark-up Kertas Isi', '3% (margin/ppn kertas)'],
                     ['Desain Isi', 'Rp 15.000/halaman (32 hal = Rp 480.000)'],
-                    ['Plate Oliver', 'Rp 45.000/plat CTP (1 plat per order)'],
+                    ['Plate Oliver', 'Rp 45.000/plat (1 plat per order)'],
                     ['Min Ongkos Oliver', 'Rp 90.000'],
                     ['Laminasi Glossy', 'Rp 0,35/cm² · min Rp 50.000'],
                     ['Laminasi Doff', 'Rp 0,40/cm²'],

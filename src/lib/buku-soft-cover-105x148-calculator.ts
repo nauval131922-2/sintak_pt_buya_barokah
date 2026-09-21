@@ -223,7 +223,7 @@ export function calculateBukuSoftCover105x148Simulator(
     },
     {
       komponen: 'Desain Cover',
-      keterangan: 'Artwork Cover Buku',
+      keterangan: 'Setting Desain Cover Buku',
       biaya: p.tarifDesainCover,
     },
     {

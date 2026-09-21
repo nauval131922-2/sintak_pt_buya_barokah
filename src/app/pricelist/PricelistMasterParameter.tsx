@@ -334,7 +334,7 @@ export default function PricelistMasterParameter({
                 </td>
               </tr>
               <tr>
-                <td className="py-1 px-1.5 text-slate-700">Biaya Plat CTP / Unit</td>
+                <td className="py-1 px-1.5 text-slate-700">Biaya Plat / Unit</td>
                 <td className={`py-1 px-1.5 ${isFieldModified('oliverPlatUnit') ? 'bg-amber-50/70' : ''}`}>
                   <div className="flex items-center gap-1">
                     <ThousandInput
@@ -1142,7 +1142,7 @@ export default function PricelistMasterParameter({
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
                       <li>• <strong>Insheet Plat</strong>: <span className="font-mono text-blue-700">Dashboard!D29</span> (Oliver: 100 lbr, SM: 300 lbr).</li>
-                      <li>• <strong>Biaya Plat CTP / Unit</strong>: <span className="font-mono text-blue-700">KALENDER!BG6</span> (Oliver: Rp 45.000, SM: Rp 78.000).</li>
+                      <li>• <strong>Biaya Plat / Unit</strong>: <span className="font-mono text-blue-700">KALENDER!BG6</span> (Oliver: Rp 45.000, SM: Rp 78.000).</li>
                       <li>• <strong>Ongkos Cetak Min Order</strong>: <span className="font-mono text-blue-700">KALENDER!BJ6</span> (Oliver: Rp 90.000, SM: Rp 310.000).</li>
                       <li>• <strong>Batas Min Drek (Kapasitas)</strong>: <span className="font-mono text-blue-700">KALENDER!BM7</span> (Oliver: 1.000 drek, SM: 3.000 drek).</li>
                       <li>• <strong>Tarif Drek Over</strong>: <span className="font-mono text-blue-700">KALENDER!BK7</span> (Oliver: Rp 40, SM: Rp 100).</li>

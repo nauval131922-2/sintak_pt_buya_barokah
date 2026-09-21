@@ -250,10 +250,10 @@ export default function PosterMasterParameter({
             </h4>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('oliverPlatUnit', 'Plat CTP Oliver (Rp/plat)', true)}
+            {fieldRow('oliverPlatUnit', 'Plat Oliver (Rp/plat)', true)}
             {fieldRow('oliverMinOngkos', 'Min Cetak Oliver (Rp/plat)', true)}
             {fieldRow('oliverDrekOver', 'Drek Over Oliver (Rp/drek)', true)}
-            {fieldRow('smPlatUnit', 'Plat CTP SM 52 (Rp/plat)', true)}
+            {fieldRow('smPlatUnit', 'Plat SM 52 (Rp/plat)', true)}
             {fieldRow('smMinOngkos', 'Min Cetak SM 52 (Rp/plat)', true)}
             {fieldRow('smDrekOver', 'Drek Over SM 52 (Rp/drek)', true)}
           </div>

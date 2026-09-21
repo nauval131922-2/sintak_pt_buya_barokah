@@ -619,7 +619,7 @@ _Kualitas cetak tajam & tembusan NCR pekat. Desain dibantu layouting standar._`;
               <span className="font-semibold text-slate-800">{result.totalLembarFolio.toLocaleString('id-ID')} Lbr</span>
             </div>
             <div>
-              <span className="text-slate-400">Plat CTP Ryobi: </span>
+              <span className="text-slate-400">Plat Ryobi: </span>
               <span className="font-semibold text-slate-800">{result.jumlahPlat} Plat</span>
             </div>
           </div>
@@ -796,7 +796,7 @@ _Kualitas cetak tajam & tembusan NCR pekat. Desain dibantu layouting standar._`;
                   <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
                     <span className="font-bold text-emerald-900 block">Kertas & Plat Cetak Ryobi:</span>
                     <p className="text-slate-600 leading-snug">
-                      Kertas HVS 70 / NCR 55 (Top/Middle/Bottom) per rim folio. Plat CTP Ryobi (@ Rp 10.000) dihitung per warna desain (1 Warna = 1 Plat, 2 Warna = 2 Plat) dengan minimum cetak Rp 15.000 / plat s/d 500 drek.
+                      Kertas HVS 70 / NCR 55 (Top/Middle/Bottom) per rim folio. Plat Ryobi (@ Rp 10.000) dihitung per warna desain (1 Warna = 1 Plat, 2 Warna = 2 Plat) dengan minimum cetak Rp 15.000 / plat s/d 500 drek.
                     </p>
                   </div>
                   <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">

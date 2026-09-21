@@ -171,7 +171,7 @@ export default function UndanganMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">1. Desain &amp; Finishing Undangan</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifDesign', 'Desain Artwork / Order (Rp)')}
+            {fieldRow('tarifDesign', 'Desain / Order (Rp)')}
             {fieldRow('tarifSisirPerPcs', 'Sisir / pcs (Rp)')}
             {fieldRow('tarifPlastikOppPerPcs', 'Plastik OPP / pcs (Rp)')}
             {fieldRow('tarifKardusBox', 'Kardus Packing / Order (Rp)')}

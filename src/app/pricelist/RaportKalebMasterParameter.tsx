@@ -171,7 +171,7 @@ export default function RaportKalebMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">1. Desain &amp; Finishing Raport Kaleb</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifDesign', 'Desain Artwork / Order (Rp)')}
+            {fieldRow('tarifDesign', 'Desain / Order (Rp)')}
             {fieldRow('tarifFoilPerPcs', 'Tambahan Foil / pcs (Rp)')}
             {fieldRow('tarifSisir', 'Ongkos Sisir / pcs (Rp)')}
             {fieldRow('tarifIsiPerLbr', 'Tambahan Isi / lbr (Rp)')}

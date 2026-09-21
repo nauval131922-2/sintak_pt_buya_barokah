@@ -1105,7 +1105,7 @@ export default function SavedCalculationsList({
         specSummary: `Packaging ${inp.ukuran} (${inp.bahan}) • ${inp.oplah.toLocaleString('id-ID')} pcs (${p.data.prosesCetak})`,
         detailSpecs: [
           `Ukuran: ${inp.ukuran} · Terbuka: ${p.data.variantSpec.ukuranTerbuka}`,
-          `Bahan: ${inp.bahan} (${p.data.variantSpec.planoYield} box/pln) · Pond Die Cut`,
+          `Bahan: ${inp.bahan} (${p.data.variantSpec.planoYield} box/pln) · Pond`,
           `Finishing: ${inp.finishing} · Margin: ${inp.marginPct}%`,
         ],
         hppUnit: (p.data?.hppPerPcs ?? p.hppPerPcs ?? 0),
@@ -1793,12 +1793,12 @@ export default function SavedCalculationsList({
       const pkg: any = item.rawData;
       const inp = (pkg.data && pkg.data.input) ? pkg.data.input : (pkg.input || pkg.data || pkg || {});
       const lamTxt = inp.finishing !== 'Tanpa Laminasi' ? ` + ${inp.finishing}` : '';
-      text = `*PENAWARAN PACKAGING BOX DUS / KARDUS*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Packaging Box Dus Tutup Nyambung\n• *Ukuran Jadi*: ${inp.ukuran} (Terbuka: ${pkg.data.variantSpec.ukuranTerbuka})\n• *Bahan*: ${inp.bahan}\n• *Cetak*: Full Colour 1 Muka (${pkg.data.prosesCetak})\n• *Finishing*: Pond Die Cut + Packing Kardus${lamTxt}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${(pkg.data?.hargaJualPerPcs ?? pkg.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${pkg.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(pkg.data?.totalHargaJual ?? pkg.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
+      text = `*PENAWARAN PACKAGING BOX DUS / KARDUS*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Packaging Box Dus Tutup Nyambung\n• *Ukuran Jadi*: ${inp.ukuran} (Terbuka: ${pkg.data.variantSpec.ukuranTerbuka})\n• *Bahan*: ${inp.bahan}\n• *Cetak*: Full Colour 1 Muka (${pkg.data.prosesCetak})\n• *Finishing*: Pond + Packing Kardus${lamTxt}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${(pkg.data?.hargaJualPerPcs ?? pkg.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${pkg.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(pkg.data?.totalHargaJual ?? pkg.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Paperbag') {
       const pb: any = item.rawData;
       const inp = (pb.data && pb.data.input) ? pb.data.input : (pb.input || pb.data || pb || {});
       const lamTxt = inp.finishing !== 'Tanpa Laminasi' ? ` + ${inp.finishing}` : '';
-      text = `*PENAWARAN PAPERBAG (TAS KERTAS CUSTOM)*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Paperbag Custom Custom\n• *Ukuran*: ${inp.ukuran} (Terbuka: ${pb.data.spec.ukuranTerbuka})\n• *Bahan*: Art Carton 230 gsm Full Colour 1 Muka\n• *Alur Mesin*: ${pb.data.prosesCetak}\n• *Finishing*: Pond Die Cut + Double Tape + Tali Kur + Lipat Assembly + Packing Kardus${lamTxt}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${(pb.data?.hargaJualPerPcs ?? pb.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${pb.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(pb.data?.totalHargaJual ?? pb.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
+      text = `*PENAWARAN PAPERBAG (TAS KERTAS CUSTOM)*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Paperbag Custom Custom\n• *Ukuran*: ${inp.ukuran} (Terbuka: ${pb.data.spec.ukuranTerbuka})\n• *Bahan*: Art Carton 230 gsm Full Colour 1 Muka\n• *Alur Mesin*: ${pb.data.prosesCetak}\n• *Finishing*: Pond + Double Tape + Tali Kur + Lipat Assembly + Packing Kardus${lamTxt}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${(pb.data?.hargaJualPerPcs ?? pb.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${pb.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(pb.data?.totalHargaJual ?? pb.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     }
 
     navigator.clipboard.writeText(text);

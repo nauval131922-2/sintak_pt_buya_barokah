@@ -280,11 +280,11 @@ export function calculateStopmapHpp(
   }
 
   // -------------------------------------------------------------
-  // 2. DESAIN ARTWORK & TRANSPORTASI (BUKU!V7, BUKU!AK7)
+  // 2. DESAIN & TRANSPORTASI (BUKU!V7, BUKU!AK7)
   // -------------------------------------------------------------
   const tarifDesain = isFolio ? p.tarifDesainFolio : p.tarifDesainA4; // Master!D17
   if (tarifDesain > 0) {
-    add('Desain Artwork Cover', tarifDesain, `BUKU!V7: Biaya setting desain ${cfg.label}`);
+    add('Desain Cover', tarifDesain, `BUKU!V7: Biaya setting desain ${cfg.label}`);
   }
 
   const tarifTransport = isFolio ? p.tarifTransportFolio : p.tarifTransportA4; // BUKU!AK6

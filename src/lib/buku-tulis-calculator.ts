@@ -225,7 +225,7 @@ export function calculateBukuTulisHpp(
     add('Kertas Cover Art Carton 230 gsm (Plano)', biayaKertasCover,
       `${rCover.toFixed(1)} plano 79×109 cm @ Rp ${Math.round(hargaPlanoCover).toLocaleString('id-ID')}`);
     add('Plat & Cetak Mesin SM 102 Cover (4W)', biayaPlatCover + biayaCetakCover,
-      `4 Plat CTP SM + Ongkos Cetak Speedmaster (Min Rp ${minOrderCover.toLocaleString('id-ID')}${overDrekCover > 0 ? ` + Over Rp ${biayaOverCover.toLocaleString('id-ID')}` : ''})`);
+      `4 Plat SM + Ongkos Cetak Speedmaster (Min Rp ${minOrderCover.toLocaleString('id-ID')}${overDrekCover > 0 ? ` + Over Rp ${biayaOverCover.toLocaleString('id-ID')}` : ''})`);
   } else {
     // Oliver Offset (Ukuran 16 x 21 cm, Plano 79 x 109 cm muat 10 cover)
     // BUKU!K7: di oplah besar (>=3000) K7 = MAX(100, H * 0.03). Di oplah < 3000 K7 = flat 100.
@@ -249,7 +249,7 @@ export function calculateBukuTulisHpp(
     add('Kertas Cover Art Carton 230 gsm (Plano)', biayaKertasCover,
       `${rCover.toFixed(1)} plano 79×109 cm @ Rp ${Math.round(hargaPlanoCover).toLocaleString('id-ID')}`);
     add('Plat & Cetak Mesin Oliver Cover (4W)', biayaPlatCover + biayaCetakCover,
-      `4 Plat CTP Oliver + Ongkos Cetak Oliver (Min Rp ${minOrderCover.toLocaleString('id-ID')}${overDrekCover > 0 ? ` + Over Rp ${biayaOverCover.toLocaleString('id-ID')}` : ''})`);
+      `4 Plat Oliver + Ongkos Cetak Oliver (Min Rp ${minOrderCover.toLocaleString('id-ID')}${overDrekCover > 0 ? ` + Over Rp ${biayaOverCover.toLocaleString('id-ID')}` : ''})`);
   }
 
   // 2. ISI BUKU (72 Halaman = 18 Lembar HVS 70 gsm)
@@ -280,7 +280,7 @@ export function calculateBukuTulisHpp(
     add('Kertas Isi HVS 70 gsm (Folio)', biayaKertasIsi,
       `${apIsi} lbr folio (${(apIsi / 500).toFixed(1)} rim) @ Rp ${Math.round(hargaFolioRim).toLocaleString('id-ID')}/rim`);
     add('Plat & Cetak Mesin Ryobi Isi (1W)', biayaPlatIsi + biayaCetakIsi,
-      `1 Plat CTP + Ongkos Cetak Ryobi (Min Rp ${p.minOrderRyobi.toLocaleString('id-ID')} + Over ${overDrekIsi} drek)`);
+      `1 Plat + Ongkos Cetak Ryobi (Min Rp ${p.minOrderRyobi.toLocaleString('id-ID')} + Over ${overDrekIsi} drek)`);
   } else if (isIsiOliver) {
     // Cetak Oliver (16 x 21 cm): Plano 65x100 potong 2 (muat 32 isi per plano, AN=4.5, AN6=5)
     const an = 4.5;
@@ -303,7 +303,7 @@ export function calculateBukuTulisHpp(
     add('Kertas Isi HVS 70 gsm (Plano 65×100)', biayaKertasIsi,
       `${apIsi.toFixed(1)} plano 65×100 @ Rp ${Math.round(hargaPlanoIsi).toLocaleString('id-ID')}/plano`);
     add('Plat & Cetak Mesin Oliver Isi (1W)', biayaPlatIsi + biayaCetakIsi,
-      `1 Plat CTP + Ongkos Cetak Oliver (Min Rp ${p.minOrderOliver.toLocaleString('id-ID')} + Over ${overDrekIsi} drek)`);
+      `1 Plat + Ongkos Cetak Oliver (Min Rp ${p.minOrderOliver.toLocaleString('id-ID')} + Over ${overDrekIsi} drek)`);
   } else {
     // Cetak Speedmaster SM 102 (16 x 21 cm, Oplah >= 3000): Plano 65x100 potong 1 (muat 32 isi, AN=2.25, AN6=3)
     const an = 2.25;
@@ -325,10 +325,10 @@ export function calculateBukuTulisHpp(
     add('Kertas Isi HVS 70 gsm (Plano 65×100)', biayaKertasIsi,
       `${apIsi} plano 65×100 @ Rp ${Math.round(hargaPlanoIsi).toLocaleString('id-ID')}/plano`);
     add('Plat & Cetak Mesin SM 102 Isi (1W)', biayaPlatIsi + biayaCetakIsi,
-      `1 Plat CTP SM + Ongkos Cetak Speedmaster (Min Rp ${p.minOrderSm.toLocaleString('id-ID')} + Over ${overDrekIsi} drek)`);
+      `1 Plat SM + Ongkos Cetak Speedmaster (Min Rp ${p.minOrderSm.toLocaleString('id-ID')} + Over ${overDrekIsi} drek)`);
   }
 
-  // 3. DESAIN ARTWORK
+  // 3. DESAIN
   if (biayaDesainCover + biayaDesainIsi > 0) {
     add('Desain Setting Cover & Isi', biayaDesainCover + biayaDesainIsi,
       `Cover Rp ${biayaDesainCover.toLocaleString('id-ID')}${biayaDesainIsi > 0 ? ` + Isi Rp ${biayaDesainIsi.toLocaleString('id-ID')}` : ' (Isi gratis)'}`);

@@ -107,7 +107,7 @@ const JILID_OPTIONS = [
 const METODE_OPTIONS = [
   { value: 'Otomatis', label: 'Standar Print Inter', desc: 'Print Digital Inter A3+' },
   { value: 'Print Digital (A3+)', label: 'Digital Print (A3+)', desc: 'Cetak cover mesin digital A3+' },
-  { value: 'Offset (Oliver)', label: 'Offset Mesin Oliver', desc: 'Cover Art Carton 79x109 + 4 Plat CTP (Oplah Besar)' },
+  { value: 'Offset (Oliver)', label: 'Offset Mesin Oliver', desc: 'Cover Art Carton 79x109 + 4 Plat (Oplah Besar)' },
 ];
 
 const LAMINASI_OPTIONS = [

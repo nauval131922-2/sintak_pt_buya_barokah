@@ -33,10 +33,10 @@ export interface ManasikMasterParams {
   insheetIsiBuya: number; // 5 lbr per kuras (Print Buya)
   insheetIsiRyobi: number; // 100 lbr per naik cetak
   insheetIsiOliver: number; // 200 lbr per naik cetak (Oliver Master!D23)
-  ryobiPlatUnitIsi: number; // 10000 per plat CTP
+  ryobiPlatUnitIsi: number; // 10000 per plat
   ryobiMinOngkosIsi: number; // 15000 min order / plat
   ryobiDrekOverIsi: number; // 30 per drek over
-  oliverPlatUnitIsi: number; // 45000 per plat CTP
+  oliverPlatUnitIsi: number; // 45000 per plat
   oliverMinOngkosIsi: number; // 90000 min order / plat
   oliverDrekOverIsi: number; // 40 per drek over
   tarifPrintBuyaPerLbr: number; // 350 per lbr cetak Print Buya
@@ -306,7 +306,7 @@ export function calculateManasikSimulator(
       const biayaKertas = kebutuhanPlanoCover * hargaPlano;
       const biayaDesain = params.tarifDesainMiniTikTok * 24;
       
-      // Plate: 8 plat @ Rp 43.000 (CTP 2 Muka) = Rp 344.000
+      // Plate: 8 plat @ Rp 43.000 (2 Muka) = Rp 344.000
       const jmlPlat = 8;
       const biayaPlat = jmlPlat * 43000;
       
@@ -322,7 +322,7 @@ export function calculateManasikSimulator(
         nama: 'Kertas AC 310, Plat & Cetak Oliver Offset (2 Muka)',
         nominal: Math.round(biayaCetakBahan),
         pct: 0,
-        keterangan: `${kebutuhanPlanoCover} lbr plano AC 310 + 8 Plat CTP + Oliver Offset (Over ${cetakOver} lbr)`,
+        keterangan: `${kebutuhanPlanoCover} lbr plano AC 310 + 8 Plat + Oliver Offset (Over ${cetakOver} lbr)`,
       });
     }
     // Finishing Khusus TikTok (Sheet BUKU):
@@ -448,7 +448,7 @@ export function calculateManasikSimulator(
     // AN7: Cuttern dapat isi = C6 / (AM7 / AL7)
     const cuttern = jumlahHalaman / (am / al);
     const an6 = Math.ceil(cuttern); // ROUNDUP(AN7, 0) -> jumlah kuras finishing
-    // AX7 / AY2: Jumlah Plat CTP Isi = ROUNDUP(C6 / AK7, 0) * 1 warna
+    // AX7 / AY2: Jumlah Plat Isi = ROUNDUP(C6 / AK7, 0) * 1 warna
     const jmlPlatIsi = Math.ceil(jumlahHalaman / ak);
     // AP7 (Kebutuhan Plano): ROUNDUP( ((H7/AL)*AN7) + ((AI7/AL)*AN6), 0 )
     const ap = Math.ceil(((validOplah / al) * cuttern) + ((insheetIsi / al) * an6));
@@ -465,7 +465,7 @@ export function calculateManasikSimulator(
     // Desain Isi: AT6 * C7 = 5000 * (jumlahHalaman / 8)
     const biayaDesain = 5000 * (jumlahHalaman / 8);
 
-    // Plat CTP & Ongkos Cetak Isi (AW & BD di sheet BUKU):
+    // Plat & Ongkos Cetak Isi (AW & BD di sheet BUKU):
     let biayaPlatIsi = 0;
     let biayaCetakIsi = 0;
     let ketCetak = '';
@@ -644,7 +644,7 @@ export function calculateManasikSimulator(
         nama: 'Cover Cetak Offset Oliver (4 Warna)',
         nominal: Math.round(biayaCover),
         pct: 0,
-        keterangan: `AC 230 gsm (79x109), ${kebutuhanPlanoCover} plano + 4 plat CTP + Mesin Oliver`,
+        keterangan: `AC 230 gsm (79x109), ${kebutuhanPlanoCover} plano + 4 plat + Mesin Oliver`,
       });
     }
 

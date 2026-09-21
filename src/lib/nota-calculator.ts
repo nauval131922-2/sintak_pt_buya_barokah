@@ -215,7 +215,7 @@ export function calculateNotaSimulator(
       keterangan: `@ Rp ${Math.round(hargaKertasPerRim).toLocaleString('id-ID')} x ${validOplahRim} rim`,
     },
     {
-      nama: `Plat CTP Ryobi (${jumlahPlat} Plat Cetak)`,
+      nama: `Plat Ryobi (${jumlahPlat} Plat Cetak)`,
       nominal: biayaPlat,
       pct: totalHpp > 0 ? (biayaPlat / totalHpp) * 100 : 0,
       keterangan: `${jumlahPlat} plat cetak @ Rp ${params.tarifPlatRyobi.toLocaleString('id-ID')}`,

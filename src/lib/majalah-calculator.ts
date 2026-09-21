@@ -213,7 +213,7 @@ export function calculateMajalahSimulator(
     },
     {
       komponen: 'Desain Cover',
-      keterangan: 'Artwork Cover Majalah',
+      keterangan: 'Setting Desain Cover Majalah',
       biaya: p.tarifDesainCover,
     },
     {

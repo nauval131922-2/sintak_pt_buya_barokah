@@ -245,12 +245,12 @@ export default function ManasikMasterParameter({
           {/* Sub: Ongkos Cetak & Plat Mesin */}
           <div className="pt-2 border-t border-slate-100">
             <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Ongkos Cetak & Plat CTP Mesin:
+              • Ongkos Cetak & Plat Mesin:
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {fieldRow('tarifPrintBuyaPerLbr', 'Cetak Print Buya', true, false, 'Rp/lbr', 'amber')}
-              {fieldRow('ryobiPlatUnitIsi', 'Plat CTP Ryobi Isi', true, false, 'Rp/plat', 'cyan')}
-              {fieldRow('oliverPlatUnitIsi', 'Plat CTP Oliver Isi', true, false, 'Rp/plat', 'purple')}
+              {fieldRow('ryobiPlatUnitIsi', 'Plat Ryobi Isi', true, false, 'Rp/plat', 'cyan')}
+              {fieldRow('oliverPlatUnitIsi', 'Plat Oliver Isi', true, false, 'Rp/plat', 'purple')}
               {fieldRow('tarifSpiralManasik', 'Spiral Kawat Alternatif', true, false, 'Spiral', 'cyan')}
             </div>
           </div>
@@ -300,7 +300,7 @@ export default function ManasikMasterParameter({
               • Cover Offset Oliver (Plano 79x109):
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {fieldRow('oliverPlatUnitCover', 'Plat CTP Oliver', true, false, 'Rp/plat', 'purple')}
+              {fieldRow('oliverPlatUnitCover', 'Plat Oliver', true, false, 'Rp/plat', 'purple')}
               {fieldRow('oliverMinOngkosCover', 'Min. Cetak Oliver', true, false, '4 Plat', 'emerald')}
               {fieldRow('oliverDrekOverCover', 'Tarif Drek Over', true, false, 'Rp/drek', 'slate')}
               {fieldRow('insheetOffsetCover', 'Insheet Cover Oliver', false, false, 'plano', 'amber')}
@@ -350,7 +350,7 @@ export default function ManasikMasterParameter({
               • Cetak Offset Oliver (Plano 79x109 AC 310):
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {fieldRow('oliverPlatUnitCover', 'Plat CTP Oliver (2 Muka)', true, false, '8 Plat CTP', 'purple')}
+              {fieldRow('oliverPlatUnitCover', 'Plat Oliver (2 Muka)', true, false, '8 Plat', 'purple')}
               {fieldRow('oliverMinOngkosCover', 'Min. Cetak Oliver', true, false, 'Rp/order', 'emerald')}
               {fieldRow('oliverDrekOverCover', 'Tarif Drek Over', true, false, 'Rp/drek', 'slate')}
               {fieldRow('insheetOffsetCover', 'Insheet Toleransi', false, false, 'plano', 'amber')}
@@ -416,7 +416,7 @@ export default function ManasikMasterParameter({
                     <p className="text-[10.5px] text-amber-900 leading-snug">
                       <strong>File:</strong> <code>02020107 BUKU, KITAB SOFT COVER UK. 10 x 15,5 - BUKU MANASIK - Kosongan.xlsm</code><br />
                       <strong>Sheet:</strong> <span className="font-mono font-semibold">Master</span>, <span className="font-mono font-semibold">BUKU</span>, <span className="font-mono font-semibold">HARGA 2026</span>.<br />
-                      <strong>Spesifikasi:</strong> Blok isi 212 Hal HVS 70 gsm (Rp 15.700/kg) cetak mesin Print Buya (Rp 350/lbr), Ryobi (Plat CTP), atau Oliver + lipat kuras + susun urut + lem panas bending + kardus master. Margin default 0% (HPP Netto).
+                      <strong>Spesifikasi:</strong> Blok isi 212 Hal HVS 70 gsm (Rp 15.700/kg) cetak mesin Print Buya (Rp 350/lbr), Ryobi (Plat), atau Oliver + lipat kuras + susun urut + lem panas bending + kardus master. Margin default 0% (HPP Netto).
                     </p>
                   </div>
                   <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-3.5 space-y-1.5">
@@ -455,7 +455,7 @@ export default function ManasikMasterParameter({
                       <li>• <strong>Kertas HVS 70 gsm</strong>: <span className="font-mono text-amber-700">Kosongan!Master!D22</span> = Rp 15.700 / kg.</li>
                       <li>• <strong>Insheet Toleransi</strong>: Print Buya (5 lbr), Ryobi (100 lbr), Oliver (200 lbr plano).</li>
                       <li>• <strong>Ongkos Cetak Print Buya</strong>: <span className="font-mono text-amber-700">BUKU!AL6</span> = Rp 350 / lbr folio.</li>
-                      <li>• <strong>Plat CTP Mesin</strong>: Ryobi (Rp 25.000), Oliver (Rp 40.000).</li>
+                      <li>• <strong>Plat Mesin</strong>: Ryobi (Rp 25.000), Oliver (Rp 40.000).</li>
                     </ul>
                   </div>
 
@@ -468,7 +468,7 @@ export default function ManasikMasterParameter({
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
                       <li>• <strong>Harga Isi Kosongan 212 Hal</strong>: <span className="font-mono text-emerald-700">Master!D21</span> = Rp 3.620 / eks (192 hal: Rp 3.421, 128 hal: Rp 2.300, 96 hal: Rp 1.800).</li>
                       <li>• <strong>Print Cover AC 230 A3+</strong>: <span className="font-mono text-emerald-700">Master!D18</span> = Rp 2.700 / lbr A3+ (muat 4 cover + 5 insheet).</li>
-                      <li>• <strong>Cover Oliver Offset</strong>: Plano 79x109 (16 cover/plano) + 4 Plat CTP (Rp 40.000) + Min Ongkos 4 Plat (Rp 360.000) + Drek Over Rp 40 x 4 + Insheet 200 plano.</li>
+                      <li>• <strong>Cover Oliver Offset</strong>: Plano 79x109 (16 cover/plano) + 4 Plat (Rp 40.000) + Min Ongkos 4 Plat (Rp 360.000) + Drek Over Rp 40 x 4 + Insheet 200 plano.</li>
                       <li>• <strong>Sisipan 4 Hal PT</strong>: Print A3+ Rp 350 + Sisip Lipat Rp 225,49.</li>
                       <li>• <strong>Jilid Staples + Tali</strong>: Tali Kur Rp 285,71 + Pasang Rp 112,74 + Bor Rp 225,49 + Staples Rp 112,74 + Casing In Rp 225,49.</li>
                     </ul>
@@ -482,7 +482,7 @@ export default function ManasikMasterParameter({
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
                       <li>• <strong>Print Cocard AC 310 A3+</strong>: <span className="font-mono text-purple-700">Master!D18</span> = Rp 2.500 / lbr A3+ (20 kartu/A3+ bolak-balik).</li>
-                      <li>• <strong>Oliver Offset AC 310</strong>: Plano 79x109 + 8 Plat CTP 2 Muka + Insheet 200 plano.</li>
+                      <li>• <strong>Oliver Offset AC 310</strong>: Plano 79x109 + 8 Plat 2 Muka + Insheet 200 plano.</li>
                       <li>• <strong>Pisau & Jasa Pond</strong>: Pisau Rp 258.595/order + Jasa Pond Rp 225,49/lbr.</li>
                       <li>• <strong>Aksesoris</strong>: Ring Binder 3cm (Rp 925) + Tali Cocard (Rp 2.500) + Plastik Ziplock (Rp 465) + Susun Ring (Rp 751,62).</li>
                     </ul>

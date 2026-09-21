@@ -184,7 +184,7 @@ export default function SyahadahMasterParameter({
           <div className="space-y-2.5">
             {fieldRow('tarifKertasLinenKg', 'Harga Kertas Linen/Hammer /Kg', true, false, undefined, 'Master!D12: Hammer Crem / Linen Tebal 300 gsm')}
             {fieldRow('upKertasPct', 'Markup Kertas (%)', false, false, '%', 'Master!E12: Kenaikan harga kertas (default 0%)')}
-            {fieldRow('tarifDesign', 'Desain Artwork / Order', true, false, undefined, 'Master!D17: Biaya setting layout syahadah (Rp 20.000)')}
+            {fieldRow('tarifDesign', 'Desain / Order', true, false, undefined, 'Master!D17: Biaya setting layout syahadah (Rp 20.000)')}
             {fieldRow('tarifSisirPer500', 'Potong Sisir / 500 Pcs', true, false, undefined, 'BUKU!AS6: Ongkos potong sisir (Rp 5.000 per 500 pcs)')}
           </div>
         </div>

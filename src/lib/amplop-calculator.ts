@@ -17,7 +17,7 @@ export interface AmplopMasterParams {
   tarifRyobi: number; // Rp 1.900 / lbr A3+ per warna Ryobi 1W
 
   // D. Cetak Oliver (offset untuk oplah besar >500)
-  tarifPlatOliver: number; // Rp 45.000 / plat CTP
+  tarifPlatOliver: number; // Rp 45.000 / plat
   minOliver: number; // Rp 90.000 / plat min 1000 drek
   drekOliver: number; // Rp 40 / drek over
 
@@ -159,7 +159,7 @@ export function calculateAmplopHpp(
         `${kebutuhanA3} lbr A3+ × ${totalPlat} plat × Rp ${p.tarifRyobi.toLocaleString('id-ID')}`);
     } else {
       const biayaPlat = totalPlat * p.tarifPlatOliver;
-      add('Plate CTP Oliver', biayaPlat, `${totalPlat} plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`);
+      add('Plat Oliver', biayaPlat, `${totalPlat} plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`);
       const ongkosDasar = p.minOliver * totalPlat;
       const overSheets = Math.max(0, kebutuhanA3 - 1000);
       const biayaOver = overSheets * p.drekOliver * totalPlat;
@@ -173,7 +173,7 @@ export function calculateAmplopHpp(
 
   // 3. Desain
   if (p.tarifDesign > 0) {
-    add('Desain Artwork Amplop', p.tarifDesign, 'Biaya desain & setting amplop');
+    add('Desain Amplop', p.tarifDesign, 'Biaya desain & setting amplop');
   }
 
   // 4. Finishing Lipat & Lem per pcs

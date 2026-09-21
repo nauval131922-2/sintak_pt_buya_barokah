@@ -255,12 +255,12 @@ const rDrekRyobi = calculateSyahadahHpp(
 );
 assertReactivity('Reaktivitas: Tarif Drek Over Ryobi', baseRyobi.totalHpp, rDrekRyobi.totalHpp);
 
-// Test 9: Desain Artwork
+// Test 9: Desain
 const rDesain = calculateSyahadahHpp(
   { oplah: 100, varian: '1 Muka FC', mesin: 'Print Inter' },
   { ...DEFAULT_SYAHADAH_PARAMS, tarifDesign: 50000 }
 );
-assertReactivity('Reaktivitas: Desain Artwork Syahadah', basePod.totalHpp, rDesain.totalHpp);
+assertReactivity('Reaktivitas: Desain Syahadah', basePod.totalHpp, rDesain.totalHpp);
 
 // Test 10: Potong Sisir per 500
 const rSisir = calculateSyahadahHpp(

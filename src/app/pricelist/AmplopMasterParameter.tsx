@@ -171,7 +171,7 @@ export default function AmplopMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">1. Desain &amp; Finishing Amplop</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifDesign', 'Desain Artwork / Order (Rp)')}
+            {fieldRow('tarifDesign', 'Desain / Order (Rp)')}
             {fieldRow('tarifRyobi', 'Cetak Ryobi 1 Warna / lbr (Rp)')}
             {fieldRow('tarifLipatLemPerPcs', 'Lipat & Lem / pcs (Rp)')}
             {fieldRow('tarifKardusBox', 'Kardus Packing / Order (Rp)')}

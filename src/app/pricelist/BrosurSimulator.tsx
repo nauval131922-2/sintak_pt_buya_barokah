@@ -786,7 +786,7 @@ export default function BrosurSimulator({
                   <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
                     <span className="font-bold text-emerald-900 block">Kertas &amp; Mesin Cetak:</span>
                     <p className="text-slate-600 leading-snug">
-                      Art Paper 120gsm dengan harga/kg + up%. Print Inter: tarif per lembar A3+ (1 atau 2 muka). Oliver: biaya plat CTP + ongkos cetak minimum Rp 90.000/plat atau per drek × warna.
+                      Art Paper 120gsm dengan harga/kg + up%. Print Inter: tarif per lembar A3+ (1 atau 2 muka). Oliver: biaya plat + ongkos cetak minimum Rp 90.000/plat atau per drek × warna.
                     </p>
                   </div>
                   <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">

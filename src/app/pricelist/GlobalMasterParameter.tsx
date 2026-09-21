@@ -209,7 +209,7 @@ export default function GlobalMasterParameter({
             {fieldRow('oliverOplahMin', 'Oplah Minimal (Mulai)', 'Batas bawah mesin Oliver', false, false, 'eks')}
             {fieldRow('oliverOplahMax', 'Oplah Maksimal (Sampai)', 'Batas atas mesin Oliver', false, false, 'eks')}
             {fieldRow('insheetOliverOffset', 'Insheet Mesin Oliver', 'Toleransi Cetak Plano', false, false, 'plano')}
-            {fieldRow('oliverPlatUnit', 'Tarif Plat CTP / Unit', 'Semua Produk Oliver')}
+            {fieldRow('oliverPlatUnit', 'Tarif Plat / Unit', 'Semua Produk Oliver')}
             {fieldRow('oliverMinOngkos', 'Min. Cetak (≤1000 Drek)', 'Semua Produk Oliver')}
             {fieldRow('oliverDrekOver', 'Tarif Drek Over / Drek', 'Over 1000 Drek')}
           </div>
@@ -229,7 +229,7 @@ export default function GlobalMasterParameter({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('smOplahMin', 'Oplah Minimal (Mulai)', 'Batas bawah mesin SM', false, false, 'eks')}
             {fieldRow('insheetSmOffset', 'Insheet Mesin SM', 'Toleransi Cetak Plano', false, false, 'plano')}
-            {fieldRow('smPlatUnit', 'Tarif Plat CTP SM', 'Buku HC A4, Poster Plano')}
+            {fieldRow('smPlatUnit', 'Tarif Plat SM', 'Buku HC A4, Poster Plano')}
             {fieldRow('smMinOngkos', 'Min. Cetak SM (≤1000 Drek)', 'Buku HC A4, Poster Plano')}
             {fieldRow('smDrekOver', 'Tarif Drek Over SM', 'Over 1000 Drek SM')}
           </div>

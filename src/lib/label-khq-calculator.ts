@@ -11,7 +11,7 @@ export interface LabelKhqMasterParams {
   tarifLaminasiGlossyCm2: number;// Rp 0.35 / cm²
   minLaminasi: number;           // Rp 50.000 minimum laminasi
 
-  // C. Desain & Overhead
+  // C. Desain & Biaya Lain-Lain
   tarifDesain: number;           // Rp 30.000 (Master!D17)
 
   // D. Margin & Nego Standar
@@ -149,7 +149,7 @@ export function calculateLabelKhqHpp(
 
   // 2. Biaya Desain
   if (p.tarifDesain > 0) {
-    add('Biaya Desain Artwork', p.tarifDesain, 'Biaya setup desain label');
+    add('Biaya Desain', p.tarifDesain, 'Biaya setup desain label');
   }
 
   // 3. Biaya Rajang / Potong Lembaran

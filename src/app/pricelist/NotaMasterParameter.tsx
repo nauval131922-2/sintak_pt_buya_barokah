@@ -213,7 +213,7 @@ export default function NotaMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">2. Mesin Cetak Toko / Ryobi</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifPlatRyobi', 'Plat CTP Ryobi (Rp/plat)')}
+            {fieldRow('tarifPlatRyobi', 'Plat Ryobi (Rp/plat)')}
             {fieldRow('minOngkosCetakRyobi', 'Ongkos Min Cetak Ryobi (Rp/500 drek)')}
             {fieldRow('tarifDrekOverRyobi', 'Ongkos Drek Over (Rp/drek)')}
             {fieldRow('tarifDesainNota', 'Biaya Desain Setting (Rp)')}
@@ -372,7 +372,7 @@ export default function NotaMasterParameter({
                       <span>2. Mesin Cetak Toko / Ryobi</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Biaya Plat CTP Ryobi</strong>: <span className="font-mono text-blue-700">BUKU!U6</span> (Rp 10.000 / plat). Plat dihitung per warna desain (1 Warna = 1 Plat, 2 Warna = 2 Plat; lembar ply NCR memakai plat yang sama).</li>
+                      <li>• <strong>Biaya Plat Ryobi</strong>: <span className="font-mono text-blue-700">BUKU!U6</span> (Rp 10.000 / plat). Plat dihitung per warna desain (1 Warna = 1 Plat, 2 Warna = 2 Plat; lembar ply NCR memakai plat yang sama).</li>
                       <li>• <strong>Ongkos Cetak Min Order</strong>: <span className="font-mono text-blue-700">BUKU!W6</span> (Rp 15.000 / plat s/d 500 drek).</li>
                       <li>• <strong>Tarif Drek Over</strong>: <span className="font-mono text-blue-700">BUKU!X6</span> (Rp 30 / drek over). Putaran over = total putaran cetak − (warna × 500).</li>
                       <li>• <strong>Biaya Desain</strong>: <span className="font-mono text-blue-700">Master!D16</span> (Rp 0 / free standard).</li>

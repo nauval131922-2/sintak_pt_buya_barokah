@@ -275,14 +275,14 @@ export function calculateBukuSoftCover145x2025Simulator(
     },
     {
       komponen: 'Desain Cover',
-      keterangan: 'Artwork Cover',
+      keterangan: 'Setting Desain Cover',
       biaya: biayaDesainCover,
     },
     ...(biayaPlateCover > 0
       ? [
           {
             komponen: 'Plate Cetak Cover',
-            keterangan: '4 Plat CTP Oliver',
+            keterangan: '4 Plat Oliver',
             biaya: biayaPlateCover,
           },
         ]

@@ -27,7 +27,7 @@ export interface BukuSoftCoverMasterParams {
   tarifKertasHvs70Kg: number;     // Rp 15.700 / kg
   upKertasIsiPct: number;         // 3% margin/ppn
   tarifDesainIsiPerHlm: number;   // Rp 15.000 / halaman
-  tarifOliverPlatUnit: number;    // Rp 45.000 / plat CTP
+  tarifOliverPlatUnit: number;    // Rp 45.000 / plat
   tarifOliverMinIsi: number;      // Rp 90.000 minimum order
 
   // Laminasi Cover
@@ -273,7 +273,7 @@ export function calculateBukuSoftCoverHpp(
     },
     {
       komponen: 'Plate Oliver Isi',
-      keterangan: '1 plat CTP · 1 warna',
+      keterangan: '1 plat · 1 warna',
       biaya: biayaPlateIsi,
     },
     {

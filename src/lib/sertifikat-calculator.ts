@@ -14,7 +14,7 @@ export interface SertifikatMasterParams {
 
   // C. Cetak Print Inter (FC) & Oliver (offset untuk oplah besar >500)
   tarifPrintA3: number; // Rp 2.500 / lbr A3+ 1 Muka FC Print Inter
-  tarifPlatOliver: number; // Rp 45.000 / plat CTP
+  tarifPlatOliver: number; // Rp 45.000 / plat
   minOliver: number; // Rp 90.000 / plat min 1000 drek
   drekOliver: number; // Rp 40 / drek over
 
@@ -192,7 +192,7 @@ export function calculateSertifikatHpp(
     } else {
       const totalPlat = 8; // 4 plat × 2 muka
       const biayaPlat = totalPlat * p.tarifPlatOliver;
-      add('Plate CTP Oliver (FC 2 Muka)', biayaPlat, `${totalPlat} plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`);
+      add('Plat Oliver (FC 2 Muka)', biayaPlat, `${totalPlat} plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`);
       const ongkosDasar = p.minOliver * totalPlat;
       const overSheets = Math.max(0, kebutuhanA3 - 1000);
       const biayaOver = overSheets * p.drekOliver * totalPlat;
@@ -211,7 +211,7 @@ export function calculateSertifikatHpp(
     } else {
       const totalPlat = 4;
       const biayaPlat = totalPlat * p.tarifPlatOliver;
-      add('Plate CTP Oliver (FC)', biayaPlat, `${totalPlat} plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`);
+      add('Plat Oliver (FC)', biayaPlat, `${totalPlat} plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`);
       const ongkosDasar = p.minOliver * totalPlat;
       const overSheets = Math.max(0, kebutuhanA3 - 1000);
       const biayaOver = overSheets * p.drekOliver * totalPlat;
@@ -225,7 +225,7 @@ export function calculateSertifikatHpp(
 
   // 3. Desain
   if (p.tarifDesign > 0) {
-    add('Desain Artwork Sertifikat', p.tarifDesign, 'Biaya desain & setting sertifikat');
+    add('Desain Sertifikat', p.tarifDesign, 'Biaya desain & setting sertifikat');
   }
 
   // 4. Laminasi (opsional)

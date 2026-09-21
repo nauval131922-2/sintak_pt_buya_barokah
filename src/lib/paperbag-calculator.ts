@@ -6,7 +6,7 @@
 // 3. 23 x 30 x 11 cm (Besar / Seminar) -> Terbuka: 35,5 x 38,5 cm (2 tas / plano)
 // Bahan: Art Carton 230 gsm | 1 Muka
 // Cetak: Full Colour 1 Muka (Oliver 58/52 s/d 2.500 pcs, SM 52/72 >= 3.000 pcs)
-// Finishing: Pond Die Cut + Double Tape + Lem Putih + Tali Kur + Lipat Assembly + Packing Kardus
+// Finishing: Pond + Double Tape + Lem Putih + Tali Kur + Lipat Assembly + Packing Kardus
 // Finishing Tambahan Opsional: Laminasi Glossy, Laminasi Doff, UV Varnish, Tanpa Laminasi
 // Margin default: 30%, Nego default: 5%
 
@@ -358,7 +358,7 @@ export function calculatePaperbag(
       biaya: biayaTransport,
     },
     {
-      komponen: 'Pond Die Cut (Pisau + Ongkos)',
+      komponen: 'Pond (Pisau + Ongkos)',
       keterangan: `Pisau Pond: Rp ${Math.round(biayaPisauPond).toLocaleString('id-ID')} + Ongkos: Rp ${Math.round(biayaOngkosPond).toLocaleString('id-ID')}`,
       biaya: biayaPondTotal,
     },

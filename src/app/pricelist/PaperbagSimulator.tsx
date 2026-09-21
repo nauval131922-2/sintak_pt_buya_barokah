@@ -151,7 +151,7 @@ export default function PaperbagSimulator({
 
   const handleCopyWhatsAppQuote = () => {
     const lamTxt = finishing !== 'Tanpa Laminasi' ? ` + ${finishing}` : '';
-    const quote = `*PENAWARAN PAPERBAG (TAS KERTAS CUSTOM)*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Paperbag Custom Custom\n• *Ukuran*: ${ukuran} (Terbuka: ${result.spec.ukuranTerbuka})\n• *Bahan*: Art Carton 230 gsm Full Colour 1 Muka\n• *Alur Mesin*: ${result.prosesCetak}\n• *Finishing*: Pond Die Cut + Double Tape + Tali Kur + Lipat Assembly + Packing Kardus${lamTxt}\n• *Kuantitas*: ${oplah.toLocaleString('id-ID')} pcs\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${result.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${result.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${result.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._\n_Penawaran berlaku 14 hari._`;
+    const quote = `*PENAWARAN PAPERBAG (TAS KERTAS CUSTOM)*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Paperbag Custom Custom\n• *Ukuran*: ${ukuran} (Terbuka: ${result.spec.ukuranTerbuka})\n• *Bahan*: Art Carton 230 gsm Full Colour 1 Muka\n• *Alur Mesin*: ${result.prosesCetak}\n• *Finishing*: Pond + Double Tape + Tali Kur + Lipat Assembly + Packing Kardus${lamTxt}\n• *Kuantitas*: ${oplah.toLocaleString('id-ID')} pcs\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${result.hargaJualPerPcs.toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${result.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${result.totalHargaJual.toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._\n_Penawaran berlaku 14 hari._`;
 
     navigator.clipboard.writeText(quote);
     setCopiedQuote(true);
@@ -605,10 +605,10 @@ export default function PaperbagSimulator({
 
             <div className="p-6 overflow-y-auto text-xs text-slate-700 space-y-4 leading-relaxed">
               <p>
-                Simulator ini menghitung estimasi biaya riil percetakan, pond die cut, pengeleman double tape, pemasangan tali kur, dan pembentukan tas paperbag custom dari oplah 100 pcs hingga 10.000+ pcs.
+                Simulator ini menghitung estimasi biaya riil percetakan, pond, pengeleman double tape, pemasangan tali kur, dan pembentukan tas paperbag custom dari oplah 100 pcs hingga 10.000+ pcs.
               </p>
               <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-950 font-medium">
-                Komponen Biaya Meliputi: Kertas Art Carton 230g + Desain Paperbag (Rp 25.000) + Plat Cetak (4W) + Ongkos Cetak (Oliver/SM) + Transport + Pisau & Ongkos Pond Die Cut + Double Tape & Lem + Tali Kur & Upah Pasang + Upah Lipat & Rakit Tas + Packing Kardus.
+                Komponen Biaya Meliputi: Kertas Art Carton 230g + Desain Paperbag (Rp 25.000) + Plat Cetak (4W) + Ongkos Cetak (Oliver/SM) + Transport + Pisau & Ongkos Pond + Double Tape & Lem + Tali Kur & Upah Pasang + Upah Lipat & Rakit Tas + Packing Kardus.
               </div>
             </div>
 

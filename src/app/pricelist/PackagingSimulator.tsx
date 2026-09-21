@@ -154,7 +154,7 @@ export default function PackagingSimulator({
 
   const handleCopyWhatsAppQuote = () => {
     const lamTxt = finishing !== 'Tanpa Laminasi' ? ` + ${finishing}` : '';
-    const quote = `*PENAWARAN PACKAGING BOX DUS / KARDUS*\n*PT Buya Barokah*\n--------------------\n* *Produk*: Packaging Box Dus Tutup Nyambung\n* *Ukuran Jadi*: ${ukuran} (Terbuka: ${result.variantSpec.ukuranTerbuka})\n* *Bahan*: ${bahan}\n* *Cetak*: Full Colour 1 Muka (${result.prosesCetak})\n* *Finishing*: Pond Die Cut + Packing Kardus${lamTxt}\n* *Kuantitas*: ${oplah.toLocaleString('id-ID')} pcs\n--------------------\n* *Harga / pcs*: *Rp ${result.hargaJualPerPcs.toLocaleString('id-ID')}*\n* *Harga Nego / pcs*: *Rp ${result.negoPerPcs.toLocaleString('id-ID')}*\n* *Total Penawaran*: *Rp ${result.totalHargaJual.toLocaleString('id-ID')}*\n--------------------\n_Harga belum termasuk PPN._\n_Penawaran berlaku 14 hari._`;
+    const quote = `*PENAWARAN PACKAGING BOX DUS / KARDUS*\n*PT Buya Barokah*\n--------------------\n* *Produk*: Packaging Box Dus Tutup Nyambung\n* *Ukuran Jadi*: ${ukuran} (Terbuka: ${result.variantSpec.ukuranTerbuka})\n* *Bahan*: ${bahan}\n* *Cetak*: Full Colour 1 Muka (${result.prosesCetak})\n* *Finishing*: Pond + Packing Kardus${lamTxt}\n* *Kuantitas*: ${oplah.toLocaleString('id-ID')} pcs\n--------------------\n* *Harga / pcs*: *Rp ${result.hargaJualPerPcs.toLocaleString('id-ID')}*\n* *Harga Nego / pcs*: *Rp ${result.negoPerPcs.toLocaleString('id-ID')}*\n* *Total Penawaran*: *Rp ${result.totalHargaJual.toLocaleString('id-ID')}*\n--------------------\n_Harga belum termasuk PPN._\n_Penawaran berlaku 14 hari._`;
 
     navigator.clipboard.writeText(quote);
     setCopiedQuote(true);
@@ -622,7 +622,7 @@ export default function PackagingSimulator({
                 Simulator ini menghitung estimasi biaya riil percetakan dan finishing box kemasan kardus/packaging dari oplah 250 pcs hingga 10.000+ pcs secara otomatis.
               </p>
               <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-950 font-medium">
-                Komponen Biaya Meliputi: Kertas Plano (Duplex/AC/Ivory) + Desain Box (Rp 20.000) + Plat Cetak (4W) + Ongkos Cetak (Oliver/SM) + Transport + Pisau & Ongkos Pond Die Cut + Packing Kardus & Lakban.
+                Komponen Biaya Meliputi: Kertas Plano (Duplex/AC/Ivory) + Desain Box (Rp 20.000) + Plat Cetak (4W) + Ongkos Cetak (Oliver/SM) + Transport + Pisau & Ongkos Pond + Packing Kardus & Lakban.
               </div>
             </div>
 

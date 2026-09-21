@@ -230,7 +230,7 @@ export default function PackagingMasterParameter({
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Scissors className="w-4 h-4 text-emerald-700" />
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              4. Pond (Die Cut) & Transport
+              4. Pond & Transport
             </h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -326,7 +326,7 @@ export default function PackagingMasterParameter({
               </div>
 
               <div>
-                <h4 className="font-bold text-slate-900 text-sm mb-1">3. Pond (Die Cut) & Finishing</h4>
+                <h4 className="font-bold text-slate-900 text-sm mb-1">3. Pond & Finishing</h4>
                 <p>
                   <code>Pisau Pond = MAX(50.000, Area_Terbuka_cm² × Tarif_Pisau)</code><br />
                   <code>Ongkos Pond = Oplah × Tarif_Ongkos_Pond (Rp 144/pcs)</code><br />

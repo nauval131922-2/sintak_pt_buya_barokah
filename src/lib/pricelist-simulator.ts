@@ -266,7 +266,7 @@ export function calculatePricelistSimulator(input: SimulatorInput): SimulatorOut
   const totalPlanoDibutuhkan = ((safeOplah + insheet) * lembar) / (planoPotong || 1);
   const biayaKertas = hargaPerPlano * totalPlanoDibutuhkan;
 
-  // 2. Biaya Plat CTP
+  // 2. Biaya Plat
   const jmlPlat = Math.ceil(lembar / areaCetak) * 4;
   const biayaPlat = jmlPlat * biayaPlatUnit;
 
@@ -335,7 +335,7 @@ export function calculatePricelistSimulator(input: SimulatorInput): SimulatorOut
       formula: `[(L*P*GSM / 20.000 kg) * (Tarif/kg + PPN) / 500 lbr] * [(Oplah+Insheet)*Lbr / Potong]`,
     },
     {
-      name: 'Biaya Plat Cetak (CTP)',
+      name: 'Biaya Plat Cetak',
       amount: biayaPlat,
       formula: `Jumlah Plat (${jmlPlat} Plat) * Tarif Satuan (Rp ${biayaPlatUnit.toLocaleString('id-ID')})`,
     },

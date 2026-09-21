@@ -231,19 +231,19 @@ const rDrekOver = calculateStopmapHpp(
 );
 assertReactivity('Reaktivitas: Tarif Drek Over Oliver', baseFolio2000.totalHpp, rDrekOver.totalHpp);
 
-// Test 10: Desain Artwork A4
+// Test 10: Desain A4
 const rDesainA4 = calculateStopmapHpp(
   { oplah: 100, ukuran: 'A4 (22 x 32 cm)', mesin: 'PRINT INTER', laminasi: 'Glossy' },
   { ...DEFAULT_STOPMAP_PARAMS, tarifDesainA4: 25000 }
 );
-assertReactivity('Reaktivitas: Desain Artwork A4', baseA4.totalHpp, rDesainA4.totalHpp);
+assertReactivity('Reaktivitas: Desain A4', baseA4.totalHpp, rDesainA4.totalHpp);
 
-// Test 11: Desain Artwork Folio
+// Test 11: Desain Folio
 const rDesainFolio = calculateStopmapHpp(
   { oplah: 500, ukuran: 'FOLIO (24 x 35 cm)', mesin: 'Oliver', laminasi: 'Glossy' },
   { ...DEFAULT_STOPMAP_PARAMS, tarifDesainFolio: 50000 }
 );
-assertReactivity('Reaktivitas: Desain Artwork Folio', baseFolio.totalHpp, rDesainFolio.totalHpp);
+assertReactivity('Reaktivitas: Desain Folio', baseFolio.totalHpp, rDesainFolio.totalHpp);
 
 // Test 12: Transportasi Folio
 const rTransportFolio = calculateStopmapHpp(

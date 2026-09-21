@@ -42,7 +42,7 @@ export interface GlobalMasterParams {
   insheetOliverOffset: number;   // 200 lbr insheet mesin Oliver
 
   // 2. Mesin Cetak Offset Skala Besar (Heidelberg SM 52 / 72 / 102)
-  smPlatUnit: number;            // Rp 65.000 / plat CTP SM
+  smPlatUnit: number;            // Rp 65.000 / plat SM
   smMinOngkos: number;           // Rp 150.000 (min 1000 drek)
   smDrekOver: number;            // Rp 50 / drek over
   smOplahMin: number;            // Rentang oplah minimal: default 3000

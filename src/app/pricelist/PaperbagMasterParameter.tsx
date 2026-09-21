@@ -228,12 +228,12 @@ export default function PaperbagMasterParameter({
           </div>
         </div>
 
-        {/* Card 3: Pond Die Cut & Transport */}
+        {/* Card 3: Pond & Transport */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Scissors className="w-4 h-4 text-emerald-700" />
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              3. Pond (Die Cut) & Transport
+              3. Pond & Transport
             </h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -343,7 +343,7 @@ export default function PaperbagMasterParameter({
                 <ul className="list-disc pl-5 space-y-1">
                   <li><strong>Oplah 100 s/d 2.500 pcs:</strong> Oliver 58 / 52 (4 plat @ Rp 45.000, min cetak 4x Rp 90.000).</li>
                   <li><strong>Oplah ≥ 3.000 pcs:</strong> Heidelberg SM 52 / SM 72 (4 plat @ Rp 78.000, min cetak 4x Rp 310.000).</li>
-                  <li><strong>Finishing Assembly:</strong> Pond Die Cut + Double Tape + Pasang Tali Kur 2 Sisi + Lipat Bentuk Tas + Packing Kardus.</li>
+                  <li><strong>Finishing Assembly:</strong> Pond + Double Tape + Pasang Tali Kur 2 Sisi + Lipat Bentuk Tas + Packing Kardus.</li>
                 </ul>
               </div>
 

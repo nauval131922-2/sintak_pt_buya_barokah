@@ -3,7 +3,7 @@
 // Ukuran: 15 x 15 x 8 cm, 20 x 20 x 7 cm, 15,2 x 10,2 x 4,5 cm, 18 x 18 x 8,5 cm
 // Bahan: Duplex 350 gsm, Art Carton 230 gsm, Ivory 230 gsm
 // Cetak: Full Colour 1 Muka (Oliver 58/52 s/d 2.500 pcs, SM 52/72 >= 3.000 pcs)
-// Finishing: Pond (Die Cut) + Packing Kardus + Lakban, Opsi: Laminasi Glossy / Doff / UV Varnish / Tanpa Laminasi
+// Finishing: Pond + Packing Kardus + Lakban, Opsi: Laminasi Glossy / Doff / UV Varnish / Tanpa Laminasi
 // Margin default: 30%, Nego default: 5%
 
 export type PackagingUkuran =
@@ -471,7 +471,7 @@ export function calculatePackaging(
       biaya: biayaTransport,
     },
     {
-      komponen: 'Finishing Pond (Die Cut / Pisau)',
+      komponen: 'Finishing Pond (Pisau + Ongkos)',
       keterangan: `Pisau Pond: Rp ${Math.round(biayaPisauPond).toLocaleString('id-ID')} + Ongkos Pond: Rp ${Math.round(biayaOngkosPond).toLocaleString('id-ID')}`,
       biaya: biayaPondTotal,
     },

@@ -143,7 +143,7 @@ export function calculateRaportKalebHpp(
 
   // 3. Desain
   if (p.tarifDesign > 0) {
-    add('Desain Artwork Raport Kaleb', p.tarifDesign, 'Biaya desain & setting cover raport');
+    add('Desain Raport Kaleb', p.tarifDesign, 'Biaya desain & setting cover raport');
   }
 
   // 4. Foil Emas (per pcs + min order) - default ON untuk Kaleb Foil Emas

@@ -13,7 +13,7 @@ export interface UndanganMasterParams {
 
   // C. Cetak Print Inter (FC 4500) & Oliver (offset untuk oplah besar >500)
   tarifPrintA3: number; // Rp 4.500 / lbr A3+ Print Inter undangan (beda dari global 2500 — disinkron bisa overide)
-  tarifPlatOliver: number; // Rp 45.000 / plat CTP
+  tarifPlatOliver: number; // Rp 45.000 / plat
   minOliver: number; // Rp 90.000 / plat min 1000 drek
   drekOliver: number; // Rp 40 / drek over
 
@@ -180,7 +180,7 @@ export function calculateUndanganHpp(
     } else {
       const totalPlat = 8; // 4 plat × 2 muka
       const biayaPlat = totalPlat * p.tarifPlatOliver;
-      add('Plate CTP Oliver (FC 2 Muka)', biayaPlat, `${totalPlat} plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`);
+      add('Plat Oliver (FC 2 Muka)', biayaPlat, `${totalPlat} plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`);
       const ongkosDasar = p.minOliver * totalPlat;
       const overSheets = Math.max(0, kebutuhanA3 - 1000);
       const biayaOver = overSheets * p.drekOliver * totalPlat;
@@ -199,7 +199,7 @@ export function calculateUndanganHpp(
     } else {
       const totalPlat = 4;
       const biayaPlat = totalPlat * p.tarifPlatOliver;
-      add('Plate CTP Oliver (FC)', biayaPlat, `${totalPlat} plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`);
+      add('Plat Oliver (FC)', biayaPlat, `${totalPlat} plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`);
       const ongkosDasar = p.minOliver * totalPlat;
       const overSheets = Math.max(0, kebutuhanA3 - 1000);
       const biayaOver = overSheets * p.drekOliver * totalPlat;
@@ -213,7 +213,7 @@ export function calculateUndanganHpp(
 
   // 3. Desain
   if (p.tarifDesign > 0) {
-    add('Desain Artwork Undangan', p.tarifDesign, 'Biaya desain & setting undangan');
+    add('Desain Undangan', p.tarifDesign, 'Biaya desain & setting undangan');
   }
 
   // 4. Laminasi (opsional) — glossy/doff per cm2, 2 muka jika 2 Muka varian
