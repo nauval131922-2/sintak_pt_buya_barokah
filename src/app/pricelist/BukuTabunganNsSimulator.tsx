@@ -41,6 +41,20 @@ export type { SavedBukuTabunganNsSimulationItem };
 
 const DRAFT_KEY = 'sintak_tabungan_ns_draft';
 
+// Baca 1 field draft secara sinkron (aman SSR: fallback saat prerender).
+// Dipakai lazy initializer useState agar remount (pindah tab) langsung
+// melukis nilai draft tanpa menunggu effect — imun terhadap anomali
+// penjadwalan effect/HMR. Cross-session & keluar-riwayat tetap via effect.
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
+
 interface BukuTabunganNsSimulatorProps {
   customParams?: BukuTabunganNsMasterParams;
   setCustomParams?: React.Dispatch<React.SetStateAction<BukuTabunganNsMasterParams>>;
@@ -60,26 +74,26 @@ export default function BukuTabunganNsSimulator({
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: BukuTabunganNsSimulatorProps) {
-  const [oplahPcs, setOplahPcs] = useState<number>(1000);
-  const [jumlahHalaman, setJumlahHalaman] = useState<number>(24);
-  const [mukaCover, setMukaCover] = useState<1 | 2>(1);
-  const [warnaCover, setWarnaCover] = useState<1 | 2 | 3 | 4>(4);
-  const [mesinCover, setMesinCover] = useState<TabunganNsMesinCover>('Otomatis');
-  const [bahanCover, setBahanCover] = useState<string>('Art Carton');
-  const [gramaturCover, setGramaturCover] = useState<number>(260);
-  const [warnaIsi, setWarnaIsi] = useState<1 | 2 | 3 | 4>(1);
-  const [mesinIsi, setMesinIsi] = useState<TabunganNsMesinIsi>('Otomatis');
-  const [bahanIsi, setBahanIsi] = useState<string>('HVS');
-  const [gramaturIsi, setGramaturIsi] = useState<number>(70);
-  const [finishing, setFinishing] = useState<TabunganNsFinishing>('Laminasi Glossy,');
-  const [jahitAktif, setJahitAktif] = useState(true);
-  const [pisauPoundAktif, setPisauPoundAktif] = useState(true);
-  const [jasaPoundAktif, setJasaPoundAktif] = useState(true);
-  const [sisirAktif, setSisirAktif] = useState(false);
-  const [kardusAktif, setKardusAktif] = useState(true);
-  const [insheetCover, setInsheetCover] = useState<number>(15);
-  const [insheetIsi, setInsheetIsi] = useState<number>(30);
-  const [marginPct, setMarginPct] = useState(30);
+  const [oplahPcs, setOplahPcs] = useState<number>(() => draftVal('oplahPcs', 1000));
+  const [jumlahHalaman, setJumlahHalaman] = useState<number>(() => draftVal('jumlahHalaman', 24));
+  const [mukaCover, setMukaCover] = useState<1 | 2>(() => draftVal('mukaCover', 1));
+  const [warnaCover, setWarnaCover] = useState<1 | 2 | 3 | 4>(() => draftVal('warnaCover', 4));
+  const [mesinCover, setMesinCover] = useState<TabunganNsMesinCover>(() => draftVal('mesinCover', 'Otomatis'));
+  const [bahanCover, setBahanCover] = useState<string>(() => draftVal('bahanCover', 'Art Carton'));
+  const [gramaturCover, setGramaturCover] = useState<number>(() => draftVal('gramaturCover', 260));
+  const [warnaIsi, setWarnaIsi] = useState<1 | 2 | 3 | 4>(() => draftVal('warnaIsi', 1));
+  const [mesinIsi, setMesinIsi] = useState<TabunganNsMesinIsi>(() => draftVal('mesinIsi', 'Otomatis'));
+  const [bahanIsi, setBahanIsi] = useState<string>(() => draftVal('bahanIsi', 'HVS'));
+  const [gramaturIsi, setGramaturIsi] = useState<number>(() => draftVal('gramaturIsi', 70));
+  const [finishing, setFinishing] = useState<TabunganNsFinishing>(() => draftVal('finishing', 'Laminasi Glossy,'));
+  const [jahitAktif, setJahitAktif] = useState(() => draftVal('jahitAktif', true));
+  const [pisauPoundAktif, setPisauPoundAktif] = useState(() => draftVal('pisauPoundAktif', true));
+  const [jasaPoundAktif, setJasaPoundAktif] = useState(() => draftVal('jasaPoundAktif', true));
+  const [sisirAktif, setSisirAktif] = useState(() => draftVal('sisirAktif', false));
+  const [kardusAktif, setKardusAktif] = useState(() => draftVal('kardusAktif', true));
+  const [insheetCover, setInsheetCover] = useState<number>(() => draftVal('insheetCover', 15));
+  const [insheetIsi, setInsheetIsi] = useState<number>(() => draftVal('insheetIsi', 30));
+  const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', 30));
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedBukuTabunganNsSimulationItem[]>([]);
@@ -109,15 +123,17 @@ export default function BukuTabunganNsSimulator({
     setInsheetCover(inp.insheetCover); setInsheetIsi(inp.insheetIsi); setMarginPct(inp.marginPct);
   };
 
-  // Draft persist (tidak reset saat pindah tab)
+  // Draft persist (tidak reset saat pindah tab; skip saat Mode Edit Riwayat)
   useEffect(() => {
+    if (activeSimulationId) return;
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (raw) applyInput(JSON.parse(raw));
     } catch { /* abaikan draft rusak */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [activeSimulationId]);
   useEffect(() => {
+    if (activeSimulationId) return;
     try {
       localStorage.setItem(DRAFT_KEY, JSON.stringify({
         oplahPcs, jumlahHalaman, mukaCover, warnaCover, mesinCover, bahanCover, gramaturCover,
@@ -125,7 +141,7 @@ export default function BukuTabunganNsSimulator({
         jasaPoundAktif, sisirAktif, kardusAktif, insheetCover, insheetIsi, marginPct,
       }));
     } catch { /* abaikan */ }
-  }, [oplahPcs, jumlahHalaman, mukaCover, warnaCover, mesinCover, bahanCover, gramaturCover, warnaIsi, mesinIsi, bahanIsi, gramaturIsi, finishing, jahitAktif, pisauPoundAktif, jasaPoundAktif, sisirAktif, kardusAktif, insheetCover, insheetIsi, marginPct]);
+  }, [oplahPcs, jumlahHalaman, mukaCover, warnaCover, mesinCover, bahanCover, gramaturCover, warnaIsi, mesinIsi, bahanIsi, gramaturIsi, finishing, jahitAktif, pisauPoundAktif, jasaPoundAktif, sisirAktif, kardusAktif, insheetCover, insheetIsi, marginPct, activeSimulationId]);
 
   useEffect(() => {
     try {
