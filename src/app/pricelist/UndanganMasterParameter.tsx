@@ -8,10 +8,14 @@ import {
   X,
   Printer,
   Layers,
+  Package,
+  Info,
 } from 'lucide-react';
 import {
   DEFAULT_UNDANGAN_PARAMS,
   UndanganMasterParams,
+  UNDANGAN_GRAMATUR_OPTIONS,
+  UNDANGAN_BAHAN_OPTIONS,
 } from '@/lib/undangan-calculator';
 import ThousandInput from '@/components/ThousandInput';
 import { toast } from '@/lib/toast';
@@ -21,13 +25,32 @@ interface UndanganMasterParameterProps {
   setCustomParams: React.Dispatch<React.SetStateAction<UndanganMasterParams>>;
 }
 
-const UNDANGAN_VISIBLE_KEYS: (keyof UndanganMasterParams)[] = [
-  'tarifDesign',
-  'tarifSisirPerPcs',
-  'tarifPlastikOppPerPcs',
+type NumKey = {
+  [K in keyof UndanganMasterParams]: UndanganMasterParams[K] extends number ? K : never;
+}[keyof UndanganMasterParams];
+
+const UNDANGAN_VISIBLE_KEYS: NumKey[] = [
+  'hargaPerKg',
+  'upOffsetPct',
+  'upPrintPct',
+  'gramatur',
+  'insheetOliver',
+  'insheetPrint',
+  'desain',
+  'tarifPrintA3',
+  'tarifLakbanRoll',
+  'tarifPlastikOpp',
+  'tarifLabel',
+  'royaltyPerPcs',
+  'transportOliver',
+  'transportPrint',
+  'tarifPrintLabel',
+  'tarifSisirBase',
+  'tarifLamGlossy',
+  'tarifLamDoff',
+  'tarifUv',
   'tarifKardusBox',
-  'marginDefaultPct',
-  'negoDefaultPct',
+  'labaPct',
 ];
 
 export default function UndanganMasterParameter({
@@ -36,40 +59,32 @@ export default function UndanganMasterParameter({
 }: UndanganMasterParameterProps) {
   const [showManualModal, setShowManualModal] = useState(false);
 
-  const handleChange = (key: keyof UndanganMasterParams, val: number) => {
+  const safe: UndanganMasterParams = { ...DEFAULT_UNDANGAN_PARAMS, ...(customParams || {}) };
+
+  const handleChange = (key: NumKey, val: number) => {
     setCustomParams((prev) => ({ ...prev, [key]: Math.max(0, val) }));
   };
 
   const isFieldModified = (key: keyof UndanganMasterParams) =>
-    customParams[key] !== DEFAULT_UNDANGAN_PARAMS[key];
+    safe[key] !== DEFAULT_UNDANGAN_PARAMS[key];
 
   const handleResetField = (key: keyof UndanganMasterParams) => {
     setCustomParams((prev) => ({ ...prev, [key]: DEFAULT_UNDANGAN_PARAMS[key] }));
-    toast.info(`Field dikembalikan ke standar master (${DEFAULT_UNDANGAN_PARAMS[key]}).`);
+    toast.info(`Field dikembalikan ke standar master (${String(DEFAULT_UNDANGAN_PARAMS[key])}).`);
   };
 
   const isModified = React.useMemo(
-    () => UNDANGAN_VISIBLE_KEYS.some((key) => customParams[key] !== DEFAULT_UNDANGAN_PARAMS[key]),
+    () => (Object.keys(DEFAULT_UNDANGAN_PARAMS) as (keyof UndanganMasterParams)[]).some((key) => safe[key] !== DEFAULT_UNDANGAN_PARAMS[key]),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [customParams]
   );
 
   const handleResetAll = () => {
-    setCustomParams((prev) => {
-      const resetObj = { ...prev };
-      UNDANGAN_VISIBLE_KEYS.forEach((k) => {
-        (resetObj as any)[k] = DEFAULT_UNDANGAN_PARAMS[k];
-      });
-      return resetObj;
-    });
+    setCustomParams({ ...DEFAULT_UNDANGAN_PARAMS });
     toast.success('Semua parameter Undangan dikembalikan ke standar master.');
   };
 
-  const fieldRow = (
-    key: keyof UndanganMasterParams,
-    label: string,
-    isRupiah = true,
-    isDecimal = false
-  ) => (
+  const fieldRow = (key: NumKey, label: string, isRupiah = true) => (
     <div
       className={`p-2.5 rounded-lg border transition-all ${
         isFieldModified(key)
@@ -93,19 +108,19 @@ export default function UndanganMasterParameter({
         )}
       </div>
       <div className="flex items-center gap-1.5">
-        {isRupiah && !isDecimal ? (
+        {isRupiah ? (
           <ThousandInput
-            value={customParams[key] as number}
+            value={safe[key] as number}
             onValueChange={(v) => handleChange(key, v || 0)}
             className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
             prefix="Rp"
-            allowDecimals={isDecimal}
           />
         ) : (
           <input
             type="number"
-            step={isDecimal ? 0.01 : 1}
-            value={customParams[key] as number}
+            min={0}
+            step={key.startsWith('tarifLam') || key.startsWith('tarifUv') ? 0.01 : 1}
+            value={safe[key] as number}
             onChange={(e) => handleChange(key, Number(e.target.value) || 0)}
             className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
           />
@@ -134,7 +149,7 @@ export default function UndanganMasterParameter({
               )}
             </div>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Tarif acuan Undangan 15,5×15,5 & 15×17 cm Art Carton 230 gsm 1/2 Muka Full Colour, sisir + plastik OPP + label & packing.
+              Tarif acuan 4 file Undangan (15×17, 15,5×15,5 × Oliver/Print) — kertas plano, Plate, OPP, Label, Sisir, Laminasi/UV, Kardus.
             </p>
           </div>
         </div>
@@ -164,35 +179,77 @@ export default function UndanganMasterParameter({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Card 1: Desain & Finishing */}
+        {/* Card 1: Bahan & kertas */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Printer className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">1. Desain &amp; Finishing Undangan</h3>
+            <Package className="w-4 h-4 text-emerald-600" />
+            <h3 className="text-xs font-bold text-slate-800">1. Bahan &amp; Kertas (Master!D10–E12)</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifDesign', 'Desain / Order (Rp)')}
-            {fieldRow('tarifSisirPerPcs', 'Sisir / pcs (Rp)')}
-            {fieldRow('tarifPlastikOppPerPcs', 'Plastik OPP / pcs (Rp)')}
-            {fieldRow('tarifKardusBox', 'Kardus Packing / Order (Rp)')}
+            {fieldRow('hargaPerKg', 'Harga / kg (Rp)')}
+            {fieldRow('gramatur', 'Gramatur (gsm)', false)}
+            {fieldRow('upOffsetPct', 'Up Oliver (%)', false)}
+            {fieldRow('upPrintPct', 'Up Print (%)', false)}
+            {fieldRow('insheetOliver', 'Insheet Oliver (lbr)', false)}
+            {fieldRow('insheetPrint', 'Insheet Print (lbr)', false)}
+            {fieldRow('umr', 'UMR (lipat/pasang) (Rp)')}
           </div>
           <p className="text-[10px] text-slate-500">
-            Cetak FC Print Inter Rp 4.500/A3+ (≤500 pcs) atau Oliver FC ＞500 pcs 4 plat (1 Muka) / 8 plat (2 Muka). Sisir Rp 150/pcs (min 7000), plastik OPP Rp 120/pcs, label Rp 60/pcs, laminasi glossy Rp 0,35/cm² / doff Rp 0,40/cm² min Rp 50.000.
+            Bahan file: Art Carton 230 gsm (opsi: {UNDANGAN_BAHAN_OPTIONS.join(', ')}; gramatur {UNDANGAN_GRAMATUR_OPTIONS.join(', ')}). Up: Oliver 5%, Print 0%.
           </p>
         </div>
 
-        {/* Card 2: Margin & Nego Standar */}
+        {/* Card 2: Cetak */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Layers className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Margin &amp; Nego Standar</h3>
+            <Printer className="w-4 h-4 text-blue-600" />
+            <h3 className="text-xs font-bold text-slate-800">2. Cetak: Desain, Print, Plate (BUKU!T2–Y6)</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('marginDefaultPct', 'Margin Default (%)', false)}
-            {fieldRow('negoDefaultPct', 'Nego Default (%)', false)}
+            {fieldRow('desain', 'Desain / Order (Rp)')}
+            {fieldRow('tarifPrintA3', 'Print A3+ / lbr (Rp)')}
+            {fieldRow('transportOliver', 'Transport Oliver (Rp)')}
+            {fieldRow('transportPrint', 'Transport Print (Rp)')}
           </div>
           <p className="text-[10px] text-slate-500">
-            Margin 30% &amp; nego 4% sesuai HARGA JULI 2026. HPP dihitung per pcs dengan pembulatan ke kelipatan Rp 10 (15,5: 3 pcs/A3+ · 15×17: 2 pcs/A3+).
+            Plate Oliver Rp 45.000/plat (jml = warna×muka), min Rp 90.000/plat, drek over Rp 40 (Q−1000). Print Inter: tanpa plate, R×tarif.
+          </p>
+        </div>
+
+        {/* Card 3: OPP, label & jasa */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Layers className="w-4 h-4 text-sky-600" />
+            <h3 className="text-xs font-bold text-slate-800">3. OPP, Label &amp; Jasa (Master!D22–D23)</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {fieldRow('tarifPlastikOpp', 'Plastik OPP /100 (Rp)')}
+            {fieldRow('tarifLabel', 'Label /84 (Rp)')}
+            {fieldRow('tarifPrintLabel', 'Print Label /12 (Rp)')}
+            {fieldRow('royaltyPerPcs', 'Royalty /pcs (Rp)')}
+          </div>
+          <p className="text-[10px] text-slate-500">
+            Label + print label masuk total hanya bila AT26=√. Lipat &amp; pasang plastik ikut UMR (nunggu toggle di simulator, default X=0).
+          </p>
+        </div>
+
+        {/* Card 4: Finishing & laba */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Info className="w-4 h-4 text-amber-600" />
+            <h3 className="text-xs font-bold text-slate-800">4. Sisir, Laminasi, Kardus &amp; Laba</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {fieldRow('tarifSisirBase', 'Sisir base (Rp)')}
+            {fieldRow('tarifLamGlossy', 'Laminasi Glossy (Rp/cm²)', false)}
+            {fieldRow('tarifLamDoff', 'Laminasi Doff (Rp/cm²)', false)}
+            {fieldRow('tarifUv', 'UV Varnish (Rp/cm²)', false)}
+            {fieldRow('tarifLakbanRoll', 'Lakban /roll (Rp)')}
+            {fieldRow('tarifKardusBox', 'Kardus /box (Rp)')}
+            {fieldRow('labaPct', 'Laba Default (%)', false)}
+          </div>
+          <p className="text-[10px] text-slate-500">
+            Sisir min Rp 7.000. Laminasi/UV bila dipilih (min Rp 50.000). Laba 30% → final ROUNDUP puluhan.
           </p>
         </div>
       </div>
@@ -214,7 +271,7 @@ export default function UndanganMasterParameter({
                 <div>
                   <h3 className="text-base font-bold tracking-tight">Manual Pengguna &amp; Pemetaan Sumber Excel</h3>
                   <p className="text-xs text-emerald-200/90 mt-0.5">
-                    Dokumentasi referensi letak sheet, cell, dan formula dari master kalkulasi Undangan (13. Pricelist Undangan)
+                    4 file Undangan (15×17, 15,5×15,5 × Oliver, Print) — sheet Master, BUKU, Oplah &amp; Harga_Final
                   </p>
                 </div>
               </div>
@@ -231,55 +288,57 @@ export default function UndanganMasterParameter({
               <div className="space-y-3">
                 <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                  Pemetaan Master Parameter ke File Excel (Folder 13. Pricelist Undangan/*.xlsm)
+                  Pemetaan Sel Excel → Parameter SINTAK
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                      <span>1. Bahan Kertas &amp; Ukuran</span>
+                      <span>1. Bahan &amp; Kertas</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Art Carton 230 gsm</strong>: <span className="font-mono text-emerald-700">HARGA JULI 2026</span> 15,5×15,5 (15,5×30 terbuka, 3 pcs/A3+) & 15×17 (17×30 terbuka, 2 pcs/A3+).</li>
-                      <li>• <strong>Ukuran</strong>: <span className="font-mono text-emerald-700">15,5 x 15,5 cm & 15 x 17 cm</span> closed, AC 230 gsm 0,0364 kg/A3+, up kertas 5%, insheet 7 lbr (Print Inter) / 150 (Oliver plano 79×109).</li>
-                      <li>• <strong>Varian</strong>: 15,5 1 Muka, 15,5 2 Muka, 15×17 1 Muka, 15×17 2 Muka — semua Full Colour.</li>
+                      <li>• <strong>Harga/kg</strong> <span className="font-mono text-emerald-700">Master!D12</span> = Rp 16.400 (Art Carton 230) → <span className="font-mono">BUKU!W30</span>.</li>
+                      <li>• <strong>Up</strong> <span className="font-mono text-emerald-700">Master!E12</span>: Oliver 0,05, Print 0 → <span className="font-mono">BUKU!Y30</span>.</li>
+                      <li>• <strong>Insheet</strong> <span className="font-mono text-emerald-700">Master!D13</span>: Oliver 150, Print 7 → <span className="font-mono">BUKU!K6/K7</span>.</li>
+                      <li>• <strong>Plano</strong> <span className="font-mono text-emerald-700">BUKU!R7</span> = ceil(H/P7 + K7/O7); O7/P7: Oliver 4/12, Print 1/2 (15,5: 1/3).</li>
+                    </ul>
+                  </div>
+
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center gap-2 font-bold text-slate-900">
+                      <span className="w-2 h-2 rounded-full bg-sky-500"></span>
+                      <span>2. Cetak</span>
+                    </div>
+                    <ul className="space-y-1.5 text-[11px] text-slate-600">
+                      <li>• <strong>Oliver</strong>: plate Rp 45.000/plat (jml = warna×muka), min Rp 90.000/plat, over (Q−1000) × Rp 40 × warna.</li>
+                      <li>• <strong>Print Inter</strong>: tanpa plate — <span className="font-mono">T7</span> = R7 × tarif Print A3+ (<span className="font-mono">D18</span> = Rp 4.500).</li>
+                      <li>• <strong>Desain</strong> <span className="font-mono text-emerald-700">Master!D17</span> = Rp 20.000 → <span className="font-mono">BUKU!V6/V7</span>.</li>
                     </ul>
                   </div>
 
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                      <span>2. Cetak</span>
+                      <span>3. OPP, Label &amp; Jasa</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>FC Print Inter</strong>: ≤500 pcs Rp 4.500/A3+ 1 Muka; 2 Muka 1,8× Rp 4.500; <strong>Oliver FC</strong>: ＞500 pcs 4 plat (1M) / 8 plat (2M) Rp 45.000 + min Rp 90.000/plat + drek Rp 40.</li>
-                      <li>• <strong>Desain</strong>: Rp 20.000/order.</li>
-                      <li>• Undangan Full Colour 1/2 Muka, sisir + plastik OPP + label.</li>
-                    </ul>
-                  </div>
-
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
-                    <div className="flex items-center gap-2 font-bold text-slate-900">
-                      <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                      <span>3. Finishing &amp; Packing</span>
-                    </div>
-                    <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Sisir</strong>: Rp 150/pcs (Excel min 7000/500 pcs), <strong>Plastik OPP</strong>: Rp 120/pcs (Excel 12000/100 pcs).</li>
-                      <li>• <strong>Label Undangan</strong>: Rp 60/pcs (Excel 5000/84 pcs + print 1500/12 pcs).</li>
-                      <li>• <strong>Laminasi opsional</strong>: Glossy Rp 0,35/cm², Doff Rp 0,40/cm² min Rp 50.000, luas (w+1)*(hOpen+1) × pcs × muka.</li>
-                      <li>• <strong>Packing</strong>: Kardus Rp 8.000 + Lakban Rp 9.200 + Transport Rp 10.000 (Print) / 15.000 (Oliver) per order.</li>
+                      <li>• <strong>Plastik OPP</strong> <span className="font-mono text-emerald-700">Master!D22</span> = Rp 12.000/100 pcs (AM26 selalu √).</li>
+                      <li>• <strong>Label + print label</strong> bila <span className="font-mono">AT26</span>=√: ceil(H/84)×Rp 5.000 + ceil(H/12)×Rp 1.500.</li>
+                      <li>• <strong>Lipat &amp; pasang plastik</strong> ikut UMR bila <span className="font-mono">AN26/AO26</span>=√ (tersimpan X di file).</li>
+                      <li>• <strong>Kardus @ Rp 8.000</strong> (<span className="font-mono">D24</span>) sel mati — kardus dihitung pakai tarif lakban Rp 9.200.</li>
                     </ul>
                   </div>
 
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-violet-500"></span>
-                      <span>4. Margin &amp; Nego</span>
+                      <span>4. Sisir, Laminasi &amp; Total</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Margin</strong>: 30% dari HPP, nego 4% dari harga jual.</li>
-                      <li>• Harga jual = <code className="text-[10px] bg-white px-1 py-0.5 rounded border">ceil(HPP/pcs ×1.30 /10)*10</code>.</li>
-                      <li>• Tier global: 20–10000 pcs (union semua varian undangan).</li>
+                      <li>• <strong>Sisir</strong>: max(Rp 7.000, (H/500)×Rp 7.000). <strong>Laminasi/UV</strong> bila dipilih, min Rp 50.000.</li>
+                      <li>• <strong>Kardus + lakban</strong> bila <span className="font-mono">BK28</span>=√: ceil(H/500)×Rp 9.200 + lakban.</li>
+                      <li>• <strong>Total HPP</strong> <span className="font-mono text-emerald-700">BUKU!BM7</span> (14 komponen) → laba 30% → <span className="font-mono">BS7</span> = ROUNDUP(..., −1) puluhan.</li>
+                      <li>• Output via <span className="font-mono">Oplah</span> (H7:H24) &amp; <span className="font-mono">Harga_Final</span> (BS7:BS24) + INDEX/MATCH di <span className="font-mono">B39</span>.</li>
                     </ul>
                   </div>
                 </div>

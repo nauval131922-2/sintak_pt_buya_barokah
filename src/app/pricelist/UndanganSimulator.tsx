@@ -1,14 +1,12 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { saveCalculationToDb } from '@/lib/pricelist-db-sync';
 import {
   FileSpreadsheet,
   DollarSign,
   TrendingUp,
-  Percent,
   FileText,
-  Copy,
   Check,
   Share2,
   Sliders,
@@ -19,27 +17,28 @@ import {
   Calculator,
   Info,
   Layers,
-  RefreshCw,
-  Mail,
-  Sparkles,
+  Wallet,
 } from 'lucide-react';
 import {
   calculateUndanganHpp,
   DEFAULT_UNDANGAN_PARAMS,
   UndanganMasterParams,
-  UndanganVarianType,
-  UndanganLaminasiType,
+  UndanganUkuran,
+  UndanganMesin,
+  UndanganFinishing,
+  UNDANGAN_UKURAN,
+  UNDANGAN_MESIN,
+  UNDANGAN_FINISHING,
   UNDANGAN_TIERS,
+  insheetDefaultForMesin,
   SavedUndanganSimulationItem,
-  UNDANGAN_CONFIG,
-  UNDANGAN_VARIANTS,
-  UNDANGAN_LAMINASI_OPTIONS,
 } from '@/lib/undangan-calculator';
 import { toast } from '@/lib/toast';
 
 export type { SavedUndanganSimulationItem };
 
-const VARIAN_OPTIONS: UndanganVarianType[] = ['15,5 x 15,5 cm - 1 Muka', '15,5 x 15,5 cm - 2 Muka', '15 x 17 cm - 1 Muka', '15 x 17 cm - 2 Muka'];
+const DRAFT_KEY = 'sintak_undangan_draft';
+const SAVED_KEY = 'sintak_saved_undangan_simulations';
 
 interface UndanganSimulatorProps {
   customParams?: UndanganMasterParams;
@@ -51,6 +50,13 @@ interface UndanganSimulatorProps {
   setActiveSimulationTitle?: (title: string | null) => void;
 }
 
+const FINISHING_LABEL: Record<UndanganFinishing, string> = {
+  'None,': 'None',
+  'UV Varnish,': 'UV Varnish',
+  'Laminasi Glossy,': 'Laminasi Glossy',
+  'Laminasi Doff,': 'Laminasi Doff',
+};
+
 export default function UndanganSimulator({
   customParams = DEFAULT_UNDANGAN_PARAMS,
   setCustomParams,
@@ -60,11 +66,20 @@ export default function UndanganSimulator({
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: UndanganSimulatorProps) {
-  const [oplah, setOplah] = useState<number>(300);
-  const [varian, setVarian] = useState<UndanganVarianType>('15,5 x 15,5 cm - 2 Muka');
-  const [laminasi, setLaminasi] = useState<UndanganLaminasiType>('Tanpa Laminasi');
-  const [marginPct, setMarginPct] = useState(30);
-  const [negoDiskonPct, setNegoDiskonPct] = useState(4);
+  const params: UndanganMasterParams = { ...DEFAULT_UNDANGAN_PARAMS, ...(customParams || {}) };
+
+  const [oplahPcs, setOplahPcs] = useState<number>(1000);
+  const [ukuran, setUkuran] = useState<UndanganUkuran>('15 x 17');
+  const [nWarna, setNWarna] = useState<1 | 2 | 3 | 4>(4);
+  const [muka, setMuka] = useState<1 | 2>(2);
+  const [mesin, setMesin] = useState<UndanganMesin>('Oliver');
+  const [finishing, setFinishing] = useState<UndanganFinishing>('None,');
+  const [labelAktif, setLabelAktif] = useState(false);
+  const [lipatAktif, setLipatAktif] = useState(false);
+  const [pasangPlastikAktif, setPasangPlastikAktif] = useState(false);
+  const [kardusAktif, setKardusAktif] = useState(true);
+  const [insheetLembar, setInsheetLembar] = useState<number>(params.insheetOliver);
+  const [marginPct, setMarginPct] = useState(params.labaPct);
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedUndanganSimulationItem[]>([]);
@@ -72,6 +87,7 @@ export default function UndanganSimulator({
   const [internalActiveId, setInternalActiveId] = useState<string | null>(null);
   const [internalActiveTitle, setInternalActiveTitle] = useState<string | null>(null);
   const [showSimulatorManual, setShowSimulatorManual] = useState(false);
+  const draftLoaded = useRef(false);
 
   const activeSimulationId = propActiveSimId !== undefined ? propActiveSimId : internalActiveId;
   const setActiveSimulationId = (id: string | null) => {
@@ -85,9 +101,46 @@ export default function UndanganSimulator({
     else setInternalActiveTitle(title);
   };
 
+  // Auto-persist draft agar tidak reset saat pindah tab
+  useEffect(() => {
+    if (!draftLoaded.current) {
+      draftLoaded.current = true;
+      try {
+        const raw = localStorage.getItem(DRAFT_KEY);
+        if (raw) {
+          const d = JSON.parse(raw);
+          if (typeof d.oplahPcs === 'number') setOplahPcs(d.oplahPcs);
+          if (UNDANGAN_UKURAN.includes(d.ukuran)) setUkuran(d.ukuran);
+          if ([1, 2, 3, 4].includes(d.nWarna)) setNWarna(d.nWarna);
+          if ([1, 2].includes(d.muka)) setMuka(d.muka);
+          if (UNDANGAN_MESIN.includes(d.mesin)) setMesin(d.mesin);
+          if (UNDANGAN_FINISHING.includes(d.finishing)) setFinishing(d.finishing);
+          if (typeof d.labelAktif === 'boolean') setLabelAktif(d.labelAktif);
+          if (typeof d.lipatAktif === 'boolean') setLipatAktif(d.lipatAktif);
+          if (typeof d.pasangPlastikAktif === 'boolean') setPasangPlastikAktif(d.pasangPlastikAktif);
+          if (typeof d.kardusAktif === 'boolean') setKardusAktif(d.kardusAktif);
+          if (typeof d.insheetLembar === 'number') setInsheetLembar(d.insheetLembar);
+          if (typeof d.marginPct === 'number') setMarginPct(d.marginPct);
+        }
+      } catch (e) {
+        console.error('Failed to load undangan draft:', e);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!draftLoaded.current) return;
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ oplahPcs, ukuran, nWarna, muka, mesin, finishing, labelAktif, lipatAktif, pasangPlastikAktif, kardusAktif, insheetLembar, marginPct }));
+    } catch (e) {
+      console.error('Failed to save undangan draft:', e);
+    }
+  }, [oplahPcs, ukuran, nWarna, muka, mesin, finishing, labelAktif, lipatAktif, pasangPlastikAktif, kardusAktif, insheetLembar, marginPct]);
+
   useEffect(() => {
     try {
-      const raw = localStorage.getItem('sintak_saved_undangan_simulations');
+      const raw = localStorage.getItem(SAVED_KEY);
       if (raw) {
         const list: SavedUndanganSimulationItem[] = JSON.parse(raw);
         setSavedSimulations(list);
@@ -96,11 +149,18 @@ export default function UndanganSimulator({
           const item = list.find((s) => s.id === activeSimulationId);
           if (item) {
             const inp = item.data.input;
-            setOplah(inp.oplah);
-            setVarian(inp.varian);
-            setLaminasi(inp.laminasi);
+            setOplahPcs(inp.oplahPcs);
+            setUkuran(inp.ukuran);
+            setNWarna(inp.nWarna);
+            setMuka(inp.muka);
+            setMesin(inp.mesin);
+            setFinishing(inp.finishing);
+            setLabelAktif(inp.labelAktif);
+            setLipatAktif(inp.lipatAktif);
+            setPasangPlastikAktif(inp.pasangPlastikAktif);
+            setKardusAktif(inp.kardusAktif);
+            setInsheetLembar(inp.insheetLembar);
             setMarginPct(inp.marginPct);
-            setNegoDiskonPct(inp.negoDiskonPct);
             setSimulationTitle(item.title);
           }
         }
@@ -110,18 +170,25 @@ export default function UndanganSimulator({
     }
   }, [activeSimulationId]);
 
+  // Ganti mesin → insheet + kardus ikut pola file
+  const handleMesinChange = (m: UndanganMesin) => {
+    setMesin(m);
+    setInsheetLembar(insheetDefaultForMesin(m, params));
+    setKardusAktif(m === 'Oliver');
+  };
+
   const result = useMemo(
     () =>
       calculateUndanganHpp(
-        { oplah, varian, laminasi, marginPct, negoDiskonPct },
-        customParams
+        { oplahPcs, ukuran, nWarna, muka, mesin, finishing, labelAktif, lipatAktif, pasangPlastikAktif, kardusAktif, insheetLembar, marginPct },
+        params
       ),
-    [oplah, varian, laminasi, marginPct, negoDiskonPct, customParams]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [oplahPcs, ukuran, nWarna, muka, mesin, finishing, labelAktif, lipatAktif, pasangPlastikAktif, kardusAktif, insheetLembar, marginPct, customParams]
   );
 
   const defaultTitle = () => {
-    const lam = laminasi !== 'Tanpa Laminasi' ? ` +${laminasi}` : '';
-    return `Undangan ${varian}${lam} (${oplah} pcs)`;
+    return `Undangan ${ukuran} ${nWarna}W ${mesin} (${oplahPcs} pcs)`;
   };
 
   const handleSaveSimulation = () => {
@@ -131,13 +198,13 @@ export default function UndanganSimulator({
       title,
       savedAt: new Date().toISOString(),
       data: result,
-      paramsSnapshot: customParams,
+      paramsSnapshot: params,
     };
     const updated = [newItem, ...savedSimulations.slice(0, 49)];
     setSavedSimulations(updated);
     try {
-      localStorage.setItem('sintak_saved_undangan_simulations', JSON.stringify(updated));
-    saveCalculationToDb({ ...newItem, category: 'Undangan' });
+      localStorage.setItem(SAVED_KEY, JSON.stringify(updated));
+      saveCalculationToDb({ ...newItem, category: 'Undangan' });
     } catch (e) {
       console.error('Failed to save undangan simulation:', e);
     }
@@ -153,13 +220,13 @@ export default function UndanganSimulator({
     const title = simulationTitle.trim() || activeSimulationTitle || defaultTitle();
     const updated = savedSimulations.map((item) =>
       item.id === activeSimulationId
-        ? { ...item, title, savedAt: new Date().toISOString(), data: result, paramsSnapshot: customParams }
+        ? { ...item, title, savedAt: new Date().toISOString(), data: result, paramsSnapshot: params }
         : item
     );
     setSavedSimulations(updated);
     try {
-      localStorage.setItem('sintak_saved_undangan_simulations', JSON.stringify(updated));
-    const targetItem = updated.find((x) => x.id === activeSimulationId);
+      localStorage.setItem(SAVED_KEY, JSON.stringify(updated));
+      const targetItem = updated.find((x) => x.id === activeSimulationId);
       if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Undangan' });
     } catch (e) {
       console.error('Failed to update undangan simulation:', e);
@@ -173,24 +240,24 @@ export default function UndanganSimulator({
 
   const handleCopyQuote = () => {
     const fmt = (n: number) => n.toLocaleString('id-ID');
-    const cfg = UNDANGAN_CONFIG[varian];
-    const lamTxt = laminasi !== 'Tanpa Laminasi' ? ` + Laminasi ${laminasi}` : '';
+    const extras = [
+      labelAktif ? 'Label' : '',
+      lipatAktif ? 'Lipat' : '',
+      pasangPlastikAktif ? 'Pasang Plastik' : '',
+      kardusAktif ? 'Kardus' : '',
+    ].filter(Boolean).join(', ');
     const text =
       `*PENAWARAN UNDANGAN*\n` +
       `*PT Buya Barokah*\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
-      `• *Produk*: Undangan ${varian}${lamTxt}\n` +
-      `• *Spesifikasi*: ${cfg.description}\n` +
-      `• *Ukuran*: ${varian.split(' - ')[0]} (${cfg.wOpen}×${cfg.hOpen} cm terbuka, ${cfg.pcsPerA3} pcs/A3+)\n` +
-      `• *Bahan*: Art Carton 230 gsm 2 Muka Full Colour${oplah > 500 ? ' (Oliver)' : ' (Print Inter 4.500/lbr)'}\n` +
-      `• *Finishing*: Sisir + Plastik OPP (pasang sendiri) + Label + Packing Kardus${lamTxt ? ` + Laminasi ${laminasi}` : ''}\n` +
-      `• *Kuantitas*: ${oplah} pcs\n` +
+      `• *Produk*: Undangan Lembaran ${ukuran}\n` +
+      `• *Spesifikasi*: Art Carton ${params.gramatur} gsm, ${nWarna} Warna ${muka} Muka, Cetak ${mesin}, ${FINISHING_LABEL[finishing]}${extras ? `, ${extras}` : ''}\n` +
+      `• *Kuantitas*: ${oplahPcs.toLocaleString('id-ID')} pcs\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
-      `• *Harga / Pcs*: *Rp ${fmt(result.hargaJualPerPcs)}*\n` +
-      `• *Harga Nego / Pcs*: *Rp ${fmt(result.hargaNegoPerPcs)}*\n` +
-      `• *Total Penawaran*: *Rp ${fmt(result.totalHargaJual)}*\n` +
+      `• *Harga / Pcs*: *Rp ${fmt(result.hargaFinalPerPcs)}*\n` +
+      `• *Total Penawaran*: *Rp ${fmt(Math.round(result.totalHarga))}*\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
-      `_Harga belum termasuk PPN. Undangan AC 230 gsm, FC, sisir + OPP + label, packing kardus._`;
+      `_Harga belum termasuk PPN._`;
 
     navigator.clipboard.writeText(text);
     setCopiedQuote(true);
@@ -198,10 +265,24 @@ export default function UndanganSimulator({
     setTimeout(() => setCopiedQuote(false), 2000);
   };
 
+  const specButton = (active: boolean) => `py-2 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
+    active
+      ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
+      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+  }`;
+
+  const toggleButton = (active: boolean) => `${specButton(active)} w-full flex items-center justify-center gap-1.5`;
+
+  const toggleBox = (active: boolean) => (
+    <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${active ? 'bg-white border-white' : 'border-slate-300'}`}>
+      {active && <Check size={12} className="text-emerald-700" />}
+    </span>
+  );
+
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
       {/* Header */}
-      <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
+      <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs shrink-0">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
             <FileSpreadsheet className="w-5 h-5" />
@@ -214,7 +295,7 @@ export default function UndanganSimulator({
               </span>
             </h3>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Hitung HPP, harga penawaran, dan estimasi profit Undangan 15,5×15,5 & 15×17 cm Art Carton 230 gsm 1/2 Muka FC, sisir + OPP + label.
+              Engine BUKU 1:1 file Undangan Lembaran — 15×17 / 15,5×15,5, Oliver vs Print Inter, OPP, Label, Sisir, Kardus.
             </p>
           </div>
         </div>
@@ -254,7 +335,7 @@ export default function UndanganSimulator({
 
       {/* Banner riwayat aktif */}
       {activeSimulationId && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200">
+        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="p-1.5 bg-amber-200 text-amber-900 rounded-lg">
               <Bookmark className="w-4 h-4 fill-amber-700" />
@@ -296,101 +377,155 @@ export default function UndanganSimulator({
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Kolom Kiri: Form Input */}
-        <div className="lg:col-span-5 space-y-5">
+      {/* Grid Dual Scroll Mandiri */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-0 pb-1">
+        {/* Kolom Kiri: Input Form (lg:col-span-5) */}
+        <div className="lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
               <Sliders size={15} className="text-emerald-700" />
               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Input Spesifikasi Undangan</h3>
             </div>
 
-            {/* Varian Ukuran + Muka */}
+            {/* Ukuran */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Varian Undangan (Art Carton 230 gsm)
+                Ukuran (Master!D5)
               </label>
               <div className="grid grid-cols-2 gap-2">
-                {VARIAN_OPTIONS.map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => setVarian(v)}
-                    className={`py-2 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer flex flex-col items-center gap-1 ${
-                      varian === v
-                        ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
-                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    <Mail size={14} className={varian === v ? 'text-white' : 'text-slate-500'} />
-                    <span className="leading-tight text-[11px]">{v}</span>
+                {UNDANGAN_UKURAN.map((u) => (
+                  <button key={u} type="button" onClick={() => setUkuran(u)} className={specButton(ukuran === u)}>
+                    <span className="text-[11px]">{u}</span>
                   </button>
                 ))}
               </div>
-              <p className="text-[11px] text-slate-500 mt-1.5 italic">{UNDANGAN_CONFIG[varian].description}</p>
             </div>
 
-            {/* Laminasi */}
+            {/* Mesin */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Finishing Laminasi (opsional)
+                Mesin Cetak (Master!D16)
               </label>
-              <div className="grid grid-cols-3 gap-2">
-                {UNDANGAN_LAMINASI_OPTIONS.map((l) => (
-                  <button
-                    key={l}
-                    type="button"
-                    onClick={() => setLaminasi(l as UndanganLaminasiType)}
-                    className={`py-2 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
-                      laminasi === l
-                        ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
-                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span className="text-[11px]">{l}</span>
+              <div className="grid grid-cols-2 gap-2">
+                {UNDANGAN_MESIN.map((m) => (
+                  <button key={m} type="button" onClick={() => handleMesinChange(m)} className={specButton(mesin === m)}>
+                    <span className="text-[11px]">{m}</span>
                   </button>
                 ))}
               </div>
-              <p className="text-[10px] text-slate-500 mt-1">Laminasi {laminasi} {UNDANGAN_CONFIG[varian].muka === 2 && laminasi !== 'Tanpa Laminasi' ? '2 Muka' : ''} · Glossy Rp 0,35/cm² · Doff Rp 0,40/cm² min Rp 50.000</p>
+              <p className="text-[10px] text-slate-500 mt-1">Ganti mesin = insheet &amp; kardus ikut pola file (Oliver 150/√, Print 7/X).</p>
+            </div>
+
+            {/* Warna + Muka */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Warna (D15)</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {([1, 2, 3, 4] as const).map((w) => (
+                    <button key={w} type="button" onClick={() => setNWarna(w)} className={specButton(nWarna === w)}>
+                      {w}W
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Muka (D14)</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {([1, 2] as const).map((m) => (
+                    <button key={m} type="button" onClick={() => setMuka(m)} className={specButton(muka === m)}>
+                      {m} Muka
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Finishing */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Finishing (Master!D20)
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {UNDANGAN_FINISHING.map((f) => (
+                  <button key={f} type="button" onClick={() => setFinishing(f)} className={specButton(finishing === f)}>
+                    <span className="text-[11px]">{FINISHING_LABEL[f]}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Toggle jasa */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Opsi Jasa &amp; Packing (checkbox BUKU)
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button type="button" onClick={() => setLabelAktif(!labelAktif)} className={toggleButton(labelAktif)}>
+                  {toggleBox(labelAktif)}
+                  <span className="text-[11px]">Label {labelAktif ? '√' : 'X'}</span>
+                </button>
+                <button type="button" onClick={() => setLipatAktif(!lipatAktif)} className={toggleButton(lipatAktif)}>
+                  {toggleBox(lipatAktif)}
+                  <span className="text-[11px]">Lipat {lipatAktif ? '√' : 'X'}</span>
+                </button>
+                <button type="button" onClick={() => setPasangPlastikAktif(!pasangPlastikAktif)} className={toggleButton(pasangPlastikAktif)}>
+                  {toggleBox(pasangPlastikAktif)}
+                  <span className="text-[11px]">Pasang Plastik {pasangPlastikAktif ? '√' : 'X'}</span>
+                </button>
+                <button type="button" onClick={() => setKardusAktif(!kardusAktif)} className={toggleButton(kardusAktif)}>
+                  {toggleBox(kardusAktif)}
+                  <span className="text-[11px]">Kardus {kardusAktif ? '√' : 'X'}</span>
+                </button>
+              </div>
             </div>
 
             {/* Oplah */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                Kuantitas Oplah (pcs)
+                Oplah (pcs — Master!D7)
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <select
-                  value={UNDANGAN_TIERS.includes(oplah) ? oplah : 'custom'}
+                  value={UNDANGAN_TIERS.includes(oplahPcs) ? oplahPcs : 'custom'}
                   onChange={(e) => {
                     const v = e.target.value;
-                    if (v !== 'custom') setOplah(Number(v));
+                    if (v !== 'custom') setOplahPcs(Number(v));
                   }}
                   className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none cursor-pointer"
                 >
                   {UNDANGAN_TIERS.map((t) => (
                     <option key={t} value={t}>{t.toLocaleString('id-ID')} pcs</option>
                   ))}
-                  {!UNDANGAN_TIERS.includes(oplah) && <option value="custom">{oplah.toLocaleString('id-ID')} pcs (custom)</option>}
+                  {!UNDANGAN_TIERS.includes(oplahPcs) && <option value="custom">{oplahPcs.toLocaleString('id-ID')} pcs (custom)</option>}
                 </select>
                 <input
                   type="number"
                   min={1}
-                  max={20000}
+                  max={100000}
                   step={10}
-                  value={oplah}
-                  onChange={(e) => setOplah(Math.max(1, Number(e.target.value) || 1))}
+                  value={oplahPcs}
+                  onChange={(e) => setOplahPcs(Math.max(1, Number(e.target.value) || 1))}
                   className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
                   placeholder="Custom..."
                 />
               </div>
-              <p className="text-[10px] text-slate-500 mt-1">{UNDANGAN_CONFIG[varian].pcsPerA3} pcs/A3+ · Kebutuhan A3+: {result.kebutuhanA3} lbr (inkl. insheet {customParams.insheetWaste})</p>
+              <p className="text-[10px] text-slate-500 mt-1">Kebutuhan plano: {result.kebutuhanPlano.toLocaleString('id-ID')} lbr (inkl. insheet {insheetLembar}).</p>
             </div>
 
-            {/* Margin & Nego */}
+            {/* Insheet + Margin */}
             <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Margin Profit (%)</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Insheet (lbr)</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={insheetLembar}
+                  onChange={(e) => setInsheetLembar(Math.max(0, Number(e.target.value) || 0))}
+                  className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Margin Laba (%)</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -403,26 +538,12 @@ export default function UndanganSimulator({
                   <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
                 </div>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Batas Nego (%)</label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={negoDiskonPct}
-                    onChange={(e) => setNegoDiskonPct(Number(e.target.value) || 0)}
-                    className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
-                  />
-                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
 
-        {/* Kolom Kanan: Hasil */}
-        <div className="lg:col-span-7 space-y-5">
+        {/* Kolom Kanan: Hasil & Rincian (lg:col-span-7) */}
+        <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           {/* 4 Kartu Finansial */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
@@ -442,41 +563,43 @@ export default function UndanganSimulator({
 
             <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-emerald-800 mb-1">
-                <span className="text-[11px] font-bold">Harga Jual (+{marginPct}%)</span>
+                <span className="text-[11px] font-bold">Final / pcs (+{marginPct}%)</span>
                 <TrendingUp size={13} className="text-emerald-600" />
               </div>
               <div>
                 <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
-                  Rp {result.hargaJualPerPcs.toLocaleString('id-ID')}
+                  Rp {result.hargaFinalPerPcs.toLocaleString('id-ID')}
                 </span>
-                <span className="block text-[10px] text-emerald-700/80 mt-0.5">/ pcs</span>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-xl border border-blue-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-blue-800 mb-1">
-                <span className="text-[11px] font-bold">Harga Nego (-{negoDiskonPct}%)</span>
-                <Percent size={13} className="text-blue-600" />
-              </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-blue-800 font-mono">
-                  Rp {result.hargaNegoPerPcs.toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-blue-700/80 mt-0.5">/ pcs</span>
+                <span className="block text-[10px] text-emerald-700/80 mt-0.5">/ pcs (ROUNDUP puluhan)</span>
               </div>
             </div>
 
             <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">Total Harga Jual</span>
-                <TrendingUp size={13} className="text-emerald-500" />
+                <span className="text-[11px] font-semibold">Total Harga</span>
+                <Wallet size={13} className="text-slate-400" />
               </div>
               <div>
                 <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">
-                  Rp {result.totalHargaJual.toLocaleString('id-ID')}
+                  Rp {Math.round(result.totalHarga).toLocaleString('id-ID')}
                 </span>
                 <span className="block text-[10px] text-slate-500 mt-0.5">
-                  Profit: Rp {Math.round(result.profitTotal).toLocaleString('id-ID')}
+                  {oplahPcs.toLocaleString('id-ID')} pcs
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-slate-500 mb-1">
+                <span className="text-[11px] font-semibold">Laba Total</span>
+                <TrendingUp size={13} className="text-emerald-500" />
+              </div>
+              <div>
+                <span className="text-base sm:text-lg font-black text-slate-800 font-mono">
+                  Rp {Math.round(result.labaTotal).toLocaleString('id-ID')}
+                </span>
+                <span className="block text-[10px] text-slate-500 mt-0.5">
+                  Rp {Math.round(result.labaPerPcs).toLocaleString('id-ID')} / pcs
                 </span>
               </div>
             </div>
@@ -488,11 +611,11 @@ export default function UndanganSimulator({
               <div className="flex items-center gap-2">
                 <FileText size={15} className="text-emerald-700" />
                 <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Rincian Estimasi Komponen Biaya Undangan
+                  Rincian Biaya (BUKU!T7–BK7 → BM7)
                 </h4>
               </div>
               <span className="text-[11px] font-bold text-slate-500">
-                {oplah.toLocaleString('id-ID')} pcs · {varian} · {laminasi}
+                {oplahPcs.toLocaleString('id-ID')} pcs · {ukuran} {nWarna}W {mesin}
               </span>
             </div>
             <div className="overflow-x-auto">
@@ -524,7 +647,7 @@ export default function UndanganSimulator({
                 <tfoot>
                   <tr className="bg-slate-50/90 font-bold border-t border-slate-200 text-xs">
                     <td colSpan={3} className="py-2.5 px-3 text-slate-800 font-sans">
-                      Total HPP Biaya Produksi ({oplah.toLocaleString('id-ID')} pcs)
+                      Total HPP ({oplahPcs.toLocaleString('id-ID')} pcs — BUKU!BM7)
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-sm">
                       Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
@@ -591,7 +714,7 @@ export default function UndanganSimulator({
                 <div>
                   <h3 className="text-base font-bold tracking-tight">Panduan Simulator Undangan</h3>
                   <p className="text-xs text-emerald-200/90 mt-0.5">
-                    Alur perhitungan berbasis oplah pcs, 2 ukuran AC 230 gsm Full Colour 1/2 Muka, sisir + OPP + label
+                    Lembaran 15×17 / 15,5×15,5 — Oliver vs Print Inter; OPP, Label, Sisir, Laminasi/UV, Kardus
                   </p>
                 </div>
               </div>
@@ -612,10 +735,10 @@ export default function UndanganSimulator({
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   {[
-                    ['1. Varian', 'Pilih ukuran 15,5×15,5 (3/A3+) atau 15×17 (2/A3+) dan 1 Muka atau 2 Muka Full Colour.'],
-                    ['2. Laminasi', 'Pilih Tanpa/Glossy/Doff — glossy Rp 0,35/cm² / doff Rp 0,40/cm² min Rp 50.000.'],
-                    ['3. Oplah & Margin', 'Tentukan oplah 20–10000 pcs via dropdown tier atau custom, atur margin 30% & nego 4%.'],
-                    ['4. Salin Penawaran', 'Klik Salin Penawaran untuk teks WA otomatis, atau simpan ke daftar kalkulasi.'],
+                    ['1. Ukuran & Mesin', 'Pilih 15×17 atau 15,5×15,5, lalu Oliver (plate + min + drek) atau Print Inter (tarif per plano). Warna 1–4, muka 1–2.'],
+                    ['2. Finishing & Jasa', 'None / UV / Laminasi (min Rp 50.000). Toggle Label, Lipat, Pasang Plastik, Kardus sesuai checkbox √/X Excel.'],
+                    ['3. Oplah & Margin', 'Tier 50–3000 pcs atau custom. Atur insheet (Oliver 150, Print 7) dan margin laba (default 30%).'],
+                    ['4. Salin / Simpan', 'Klik Salin Penawaran untuk teks WA otomatis, atau simpan ke daftar kalkulasi.'],
                   ].map(([title, desc]) => (
                     <div key={title} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
                       <span className="font-bold text-emerald-800 text-xs">{title}</span>
@@ -628,19 +751,19 @@ export default function UndanganSimulator({
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5">
                 <h5 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
                   <Layers className="w-4 h-4 text-emerald-700" />
-                  Struktur Biaya Produksi Undangan
+                  Struktur Biaya Engine BUKU
                 </h5>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
                   <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
-                    <span className="font-bold text-emerald-900 block">Kertas &amp; Cetak:</span>
+                    <span className="font-bold text-emerald-900 block">Kertas, Cetak &amp; OPP:</span>
                     <p className="text-slate-600 leading-snug">
-                      Art Carton 230 gsm 0,0364 kg/A3+ @ Rp 16.400/kg + up 5%, 15,5 3/A3+ · 15×17 2/A3+, insheet 7 lbr, FC Print Inter Rp 4.500/A3+ (≤500) → Oliver ＞500 pcs 4 plat (1M) / 8 plat (2M) Rp 45.000 + min Rp 90.000 + drek Rp 40.
+                      Plano = ceil(oplah/potongan + insheet/potongan); harga/rim dari gramatur × harga/kg. Oliver: plate Rp 45.000/plat, min Rp 90.000, over × Rp 40. OPP (oplah/100) × Rp 12.000 selalu ditarik.
                     </p>
                   </div>
                   <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">
-                    <span className="font-bold text-blue-900 block">Finishing &amp; Margin:</span>
+                    <span className="font-bold text-blue-900 block">Jasa &amp; Harga Final:</span>
                     <p className="text-slate-600 leading-snug">
-                      Sisir Rp 150/pcs, plastik OPP Rp 120/pcs, label Rp 60/pcs, laminasi gluon/doff min Rp 50.000, packing kardus Rp 8.000 + lakban Rp 9.200 per order, desain Rp 20.000, margin 30% nego 4% pembulatan Rp 10.
+                      Label, lipat, pasang plastik bila √. Sisir min Rp 7.000. Laminasi/UV bila dipilih (min Rp 50.000). Kardus bila √. Total + laba 30%, final ROUNDUP puluhan.
                     </p>
                   </div>
                 </div>

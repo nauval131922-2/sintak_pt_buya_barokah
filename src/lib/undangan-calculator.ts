@@ -1,114 +1,110 @@
-// ponytail: kalkulator dan master parameter Undangan (13. Pricelist Undangan)
-// Referensi: Pricelist Undangan.xlsx sheets HARGA JULI 2026 (2 ukuran) + Source file Harga UNDANGAN 15 x 17 / 15,5 x 15,5 cm (Print Inter 4500/A3+ insheet 7 & Oliver insheet 150, AC 230 gsm 16400/kg +5%)
-// Ukuran: 15,5 x 15,5 cm (15,5 x 30 terbuka, 3 pcs/A3+) & 15 x 17 cm (17 x 30 terbuka, 2 pcs/A3+) — Art Carton 230 gsm 2 Muka Full Colour, finishing Sisir + Plastik OPP + Label + Packing Kardus
+// Undangan — kalkulator murni 1:1 engine BUKU dari 4 file master:
+//   Harga UNDANGAN {15 x 17 cm, 15,5 x 15,5 cm} {- Oliver, ''} (.xlsm)
+//   (13. Pricelist Undangan/Source)
+// Lapisan: Master (input) → BUKU (engine per tier pcs) → Harga_Final (output).
+// Oplah Excel dalam PCS (Oliver: 1000–3000; Print Inter: 50–600).
+// Terminologi 1:1 Excel: Insheet, Plate, Drek, Desain, Film, Sisir, Plastik Opp,
+//   Lipat Undangan, Pasang Plastik, Label Undangan, Print Label, Biaya Lain-Lain,
+//   Laminasi Glossy/Doff, UV Varnish, Lakban, Kardus, Royalty, Transp, Oliver,
+//   Print Inter. Harga jual per PCS (BUKU!BR7/BS7).
+
+export type UndanganUkuran = '15 x 17' | '15,5 x 15,5';
+export type UndanganMesin = 'Oliver' | 'Print Inter';
+export type UndanganFinishing = 'None,' | 'UV Varnish,' | 'Laminasi Glossy,' | 'Laminasi Doff,';
+
+export const UNDANGAN_UKURAN: UndanganUkuran[] = ['15 x 17', '15,5 x 15,5'];
+export const UNDANGAN_MESIN: UndanganMesin[] = ['Oliver', 'Print Inter'];
+export const UNDANGAN_FINISHING: UndanganFinishing[] = ['None,', 'UV Varnish,', 'Laminasi Glossy,', 'Laminasi Doff,'];
+export const UNDANGAN_BAHAN_OPTIONS = ['BC', 'Art Paper', 'Art Carton', 'Duplex', 'Vp', 'Ivory']; // Master!D10
+export const UNDANGAN_GRAMATUR_OPTIONS = [120, 150, 200, 210, 230, 260, 300, 310]; // Master!D11
 
 export interface UndanganMasterParams {
-  // A. Bahan Kertas Art Carton
-  tarifKertasAc230Kg: number; // default 16.400 /kg (Art Carton 230 gsm)
-  upKertasPct: number; // default 5%
-  insheetWaste: number; // default 7 lbr insheet A3+ (Print Inter); Oliver 150 di Source tapi disederhanakan jadi 7 untuk ponytail single param
-
-  // B. Desain
-  tarifDesign: number; // default 20.000 /order
-
-  // C. Cetak Print Inter (FC 4500) & Oliver (offset untuk oplah besar >500)
-  tarifPrintA3: number; // Rp 4.500 / lbr A3+ Print Inter undangan (beda dari global 2500 — disinkron bisa overide)
-  tarifPlatOliver: number; // Rp 45.000 / plat
-  minOliver: number; // Rp 90.000 / plat min 1000 drek
-  drekOliver: number; // Rp 40 / drek over
-
-  // D. Laminasi (opsional, per cm2)
-  tarifLaminasiGlossyCm2: number; // Rp 0.35 / cm2
-  tarifLaminasiDoffCm2: number; // Rp 0.40 / cm2
-  minLaminasi: number; // Rp 50.000 min order laminasi
-
-  // E. Finishing per pcs / per order
-  tarifSisirPerPcs: number; // sisir per pcs (Excel: 7000 min /500 = ~14/pcs, disederhanakan 150? pakai 150 sinkron global)
-  tarifPlastikOppPerPcs: number; // plastik OPP pasang sendiri per pcs (Excel ~120/pcs, disederhanakan 92 global? pakai 120)
-  tarifLabelPerPcs: number; // label undangan per pcs (Excel 5000/84≈60/pcs, pakai 60)
-  tarifKardusBox: number; // Rp 8.000 / box (Master D24)
-  tarifLakbanRoll: number; // Rp 9.200 / roll (Master D21) — sinkron global 8000
-
-  // F. Margin & nego
-  marginDefaultPct: number; // default 30%
-  negoDefaultPct: number; // default 4%
+  umr: number; // Master!D8 → BUKU!AN6/AO6 (lipat & pasang plastik)
+  hargaPerKg: number; // Master!D12
+  upOffsetPct: number; // Master!E12 file Oliver (0.05 → UI 5)
+  upPrintPct: number; // Master!E12 file Print Inter (0 → UI 0)
+  gramatur: number; // Master!D11 → BUKU!W28 (230 gsm)
+  insheetOliver: number; // Master!D13 file Oliver (150)
+  insheetPrint: number; // Master!D13 file Print Inter (7)
+  desain: number; // Master!D17 (20000)
+  tarifPrintA3: number; // Master!D18 → BUKU!T2 (4500)
+  tarifLakbanRoll: number; // Master!D21 → BUKU!BJ32 (9200)
+  tarifPlastikOpp: number; // Master!D22 → BUKU!AM6 (12000 per 100)
+  tarifLabel: number; // Master!D23 → BUKU!AR6 (5000)
+  // Master!D24 Kardus @ Rp 8000 = sel mati (0 referensi di BUKU). Tanpa param.
+  royaltyPerPcs: number; // Master!D25 → BUKU!AI6
+  transportOliver: number; // BUKU!AK6 file Oliver (15000)
+  transportPrint: number; // BUKU!AK6 file Print Inter (10000)
+  tarifPrintLabel: number; // BUKU!AS6 = 1500
+  tarifSisirBase: number; // BUKU!AW6 = 7000 (min 7000 via AW7)
+  tarifLamGlossy: number; // BUKU!AY6 = 0,35 (string koma di Excel)
+  tarifLamDoff: number; // BUKU!BB6 = 0,4
+  tarifUv: number; // BUKU!BE6 = 0,12
+  tarifKardusBox: number; // BUKU!BK6 = BJ32 (9200 — kardus dihitung pakai harga lakban!)
+  labaPct: number; // Master!E26 → BUKU!BO6
 }
 
 export const DEFAULT_UNDANGAN_PARAMS: UndanganMasterParams = {
-  tarifKertasAc230Kg: 16400,
-  upKertasPct: 5,
-  insheetWaste: 7,
-  tarifDesign: 20000,
+  umr: 2815858,
+  hargaPerKg: 16400,
+  upOffsetPct: 5,
+  upPrintPct: 0,
+  gramatur: 230,
+  insheetOliver: 150,
+  insheetPrint: 7,
+  desain: 20000,
   tarifPrintA3: 4500,
-  tarifPlatOliver: 45000,
-  minOliver: 90000,
-  drekOliver: 40,
-  tarifLaminasiGlossyCm2: 0.35,
-  tarifLaminasiDoffCm2: 0.40,
-  minLaminasi: 50000,
-  tarifSisirPerPcs: 150,
-  tarifPlastikOppPerPcs: 120,
-  tarifLabelPerPcs: 60,
-  tarifKardusBox: 8000,
   tarifLakbanRoll: 9200,
-  marginDefaultPct: 30,
-  negoDefaultPct: 4,
+  tarifPlastikOpp: 12000,
+  tarifLabel: 5000,
+  royaltyPerPcs: 0,
+  transportOliver: 15000,
+  transportPrint: 10000,
+  tarifPrintLabel: 1500,
+  tarifSisirBase: 7000,
+  tarifLamGlossy: 0.35,
+  tarifLamDoff: 0.4,
+  tarifUv: 0.12,
+  tarifKardusBox: 9200,
+  labaPct: 30,
 };
 
-export type UndanganVarianType =
-  | '15,5 x 15,5 cm - 1 Muka'
-  | '15,5 x 15,5 cm - 2 Muka'
-  | '15 x 17 cm - 1 Muka'
-  | '15 x 17 cm - 2 Muka';
-
-export const UNDANGAN_VARIANTS: UndanganVarianType[] = [
-  '15,5 x 15,5 cm - 1 Muka',
-  '15,5 x 15,5 cm - 2 Muka',
-  '15 x 17 cm - 1 Muka',
-  '15 x 17 cm - 2 Muka',
-];
-
-export type UndanganLaminasiType = 'Tanpa Laminasi' | 'Glossy' | 'Doff';
-
-export const UNDANGAN_LAMINASI_OPTIONS: UndanganLaminasiType[] = ['Tanpa Laminasi', 'Glossy', 'Doff'];
-
-// ponytail: pcsPerA3 heuristik Print Inter: 15,5=3/A3+ (32x48) , 15x17=2/A3+ ; Oliver 12/A3+ pada plano 79x109 tapi disederhanakan pakai pcsPerA3 Print Inter untuk kertas kalkulasi naive — upgrade ke plano-aware jika butuh presisi Oliver
-export const UNDANGAN_CONFIG: Record<UndanganVarianType, {
-  w: number; h: number;
-  wOpen: number; hOpen: number;
-  pcsPerA3: number;
-  gramatur: number;
-  muka: 1 | 2;
-  description: string;
-}> = {
-  '15,5 x 15,5 cm - 1 Muka': {
-    w: 15.5, h: 15.5, wOpen: 15.5, hOpen: 31, pcsPerA3: 3, gramatur: 230, muka: 1,
-    description: '15,5 × 15,5 cm (15,5 × 30 terbuka) · Art Carton 230 gsm · 1 Muka Full Colour · 3 pcs/A3+ · Sisir + Plastik OPP + Label',
+// BUKU!O7/P7/V27/W27 per (ukuran, mesin)
+const UNDANGAN_MESIN_SPEC: Record<UndanganUkuran, Record<UndanganMesin, {
+  o7: number; p7: number; v27: number; w27: number;
+}>> = {
+  // BUKU!O7 — BUKU!P7 — BUKU!V27 — BUKU!W27
+  '15 x 17': {
+    'Oliver': { o7: 4, p7: 12, v27: 79, w27: 109 },
+    'Print Inter': { o7: 1, p7: 2, v27: 32.5, w27: 48 },
   },
-  '15,5 x 15,5 cm - 2 Muka': {
-    w: 15.5, h: 15.5, wOpen: 15.5, hOpen: 31, pcsPerA3: 3, gramatur: 230, muka: 2,
-    description: '15,5 × 15,5 cm (15,5 × 30 terbuka) · Art Carton 230 gsm · 2 Muka Full Colour · 3 pcs/A3+ · Sisir + Plastik OPP + Label',
-  },
-  '15 x 17 cm - 1 Muka': {
-    w: 15, h: 17, wOpen: 17, hOpen: 30, pcsPerA3: 2, gramatur: 230, muka: 1,
-    description: '15 × 17 cm (17 × 30 terbuka) · Art Carton 230 gsm · 1 Muka Full Colour · 2 pcs/A3+ · Sisir + Plastik OPP + Label',
-  },
-  '15 x 17 cm - 2 Muka': {
-    w: 15, h: 17, wOpen: 17, hOpen: 30, pcsPerA3: 2, gramatur: 230, muka: 2,
-    description: '15 × 17 cm (17 × 30 terbuka) · Art Carton 230 gsm · 2 Muka Full Colour · 2 pcs/A3+ · Sisir + Plastik OPP + Label',
+  '15,5 x 15,5': {
+    'Oliver': { o7: 4, p7: 12, v27: 79, w27: 109 },
+    'Print Inter': { o7: 1, p7: 3, v27: 32.5, w27: 48 },
   },
 };
 
-export const UNDANGAN_TIERS: number[] = [
-  20, 50, 100, 150, 200, 250, 300, 350, 400, 500, 600, 1000, 1500, 2000, 2500, 3000, 4000, 5000, 7500, 10000,
-];
+// BUKU!D7/F7 dimensi display untuk basis laminasi/UV
+const UNDANGAN_DIM_DISPLAY: Record<UndanganUkuran, { d: number; f: number }> = {
+  '15 x 17': { d: 17, f: 30 },
+  '15,5 x 15,5': { d: 15.5, f: 31 },
+};
+
+export const UNDANGAN_TIERS = [50, 100, 150, 200, 250, 300, 350, 400, 500, 600, 1000, 1500, 2000, 2500, 3000]; // union tier
 
 export interface UndanganSimulatorInput {
-  oplah: number;
-  varian: UndanganVarianType;
-  laminasi: UndanganLaminasiType;
-  marginPct: number;
-  negoDiskonPct: number;
+  oplahPcs: number; // BUKU!H
+  ukuran: UndanganUkuran; // Master!D5
+  nWarna: 1 | 2 | 3 | 4; // Master!D15 → BUKU!L7/Z2
+  muka: 1 | 2; // Master!D14 → BUKU!N7
+  mesin: UndanganMesin; // Master!D16
+  finishing: UndanganFinishing; // Master!D20 → AZ27/BC27/BF27
+  labelAktif: boolean; // BUKU!AT26 √/X (Label + Print Label)
+  lipatAktif: boolean; // BUKU!AN26 √/X (Lipat Undangan)
+  pasangPlastikAktif: boolean; // BUKU!AO26 √/X (Pasang Plastik)
+  kardusAktif: boolean; // BUKU!BK28 √/X
+  insheetLembar: number; // Master!D13 → BUKU!K6
+  marginPct: number; // override BUKU!BO6 (= Master!E26)
 }
 
 export interface UndanganBreakdownItem {
@@ -121,23 +117,23 @@ export interface UndanganBreakdownItem {
 export interface UndanganSimulatorResult {
   input: UndanganSimulatorInput;
   breakdown: UndanganBreakdownItem[];
-  kebutuhanA3: number;
-  totalHpp: number;
-  hppPerPcs: number;
-  hargaJualPerPcs: number;
-  hargaNegoPerPcs: number;
-  totalHargaJual: number;
-  totalHargaNego: number;
-  profitPerPcs: number;
-  profitNegoPerPcs: number;
-  profitTotal: number;
-  profitNegoTotal: number;
+  kebutuhanPlano: number; // BUKU!R7
+  totalHpp: number; // BUKU!BM7
+  hppPerPcs: number; // BUKU!BN7
+  labaPerPcs: number; // BUKU!BO7
+  labaTotal: number; // BUKU!BP7
+  totalHarga: number; // BUKU!BQ7
+  hargaPerPcs: number; // BUKU!BR7
+  hargaFinalPerPcs: number; // BUKU!BS7
   marginPct: number;
-  marginNegoPct: number;
 }
 
-function beratA3Kg(gramatur: number): number {
-  return 0.1584 * gramatur / 1000;
+export function insheetDefaultForMesin(mesin: UndanganMesin, p: UndanganMasterParams): number {
+  return mesin === 'Oliver' ? p.insheetOliver : p.insheetPrint;
+}
+
+export function roundUpTens(n: number): number {
+  return Math.ceil(n / 10) * 10;
 }
 
 export function calculateUndanganHpp(
@@ -145,143 +141,110 @@ export function calculateUndanganHpp(
   rawParams: UndanganMasterParams = DEFAULT_UNDANGAN_PARAMS
 ): UndanganSimulatorResult {
   const p: UndanganMasterParams = { ...DEFAULT_UNDANGAN_PARAMS, ...(rawParams || {}) };
-  const { oplah, varian, laminasi = 'Tanpa Laminasi', marginPct, negoDiskonPct } = input;
-  const validOplah = Math.max(1, oplah);
-  const cfg = UNDANGAN_CONFIG[varian];
+  const { oplahPcs, ukuran, nWarna, muka, mesin, finishing, labelAktif, lipatAktif, pasangPlastikAktif, kardusAktif, insheetLembar, marginPct } = input;
+  const H = Math.max(1, oplahPcs);
+  const spec = UNDANGAN_MESIN_SPEC[ukuran][mesin];
+  const disp = UNDANGAN_DIM_DISPLAY[ukuran];
+  const isOliver = mesin === 'Oliver';
 
   const breakdown: UndanganBreakdownItem[] = [];
   let totalHpp = 0;
-
   const add = (nama: string, nominal: number, keterangan = '') => {
     if (nominal === 0) return;
-    breakdown.push({ nama, nominal: Math.round(nominal), pct: 0, keterangan });
+    breakdown.push({ nama, nominal: Math.round(nominal * 100) / 100, pct: 0, keterangan });
     totalHpp += nominal;
   };
 
-  // 1. Kebutuhan kertas A3+ & Biaya Kertas Art Carton 230 gsm
-  const kebutuhanA3Net = Math.ceil(validOplah / cfg.pcsPerA3);
-  const kebutuhanA3 = kebutuhanA3Net + p.insheetWaste;
-  const beratPerA3 = beratA3Kg(cfg.gramatur);
-  const hargaPerA3 = beratPerA3 * p.tarifKertasAc230Kg * (1 + p.upKertasPct / 100);
-  const biayaKertas = kebutuhanA3 * hargaPerA3;
-  add(`Kertas Art Carton ${cfg.gramatur} gsm`, biayaKertas,
-    `${kebutuhanA3} lbr A3+ (${kebutuhanA3Net} + ${p.insheetWaste} insheet) × Rp ${Math.round(hargaPerA3).toLocaleString('id-ID')} (+${p.upKertasPct}%)`);
+  // BUKU!K7 = K6 — BUKU!N7 = muka (M7 selalu 0)
+  const K7 = insheetLembar; // BUKU!K7 = IF(H>0, K6, 0)
+  const N7 = muka; // BUKU!N7
+  // BUKU!R7 = ROUNDUP((H/P7)+(K7/O7),0) — BUKU!Q7 = R7*O7*N7
+  const R7 = Math.ceil(H / spec.p7 + K7 / spec.o7); // BUKU!R7
+  const Q7 = R7 * spec.o7 * N7; // BUKU!Q7
+  // BUKU!W29 = ((V27*W27)*W28)/20000*((W30*Y30)+W30)
+  const upPct = isOliver ? p.upOffsetPct : p.upPrintPct;
+  const W29 = ((spec.v27 * spec.w27) * p.gramatur) / 20000 * ((p.hargaPerKg * (upPct / 100)) + p.hargaPerKg);
+  // BUKU!T7 = (W29/500)*R7 (Oliver) atau R7*T2 (Print Inter, T2 = D18)
+  const T7 = isOliver ? (W29 / 500) * R7 : R7 * p.tarifPrintA3;
+  add(isOliver ? 'Kertas' : 'Cetak Print Inter', T7,
+    isOliver ? `${R7} lbr plano × Rp ${(W29 / 500).toLocaleString('id-ID')}` : `${R7} × Rp ${p.tarifPrintA3.toLocaleString('id-ID')}`);
+  // BUKU!V7 = V6 = D17
+  add('Desain', p.desain, `Master!D17 Rp ${p.desain.toLocaleString('id-ID')}`);
+  // BUKU!Z7 = Z2*N7 (Z6 = 0) — BUKU!Y7 = Y6*Z7 (Y6 = 45000 Oliver else 0)
+  const Z7 = nWarna * N7; // BUKU!Z7
+  const Y6 = isOliver ? 45000 : 0; // BUKU!Y6
+  add('Plate', Y6 * Z7, `${Z7} plat × Rp ${Y6.toLocaleString('id-ID')} (${mesin})`);
+  // BUKU!AD7 = AB6*Z7 (AB6 = 90000 Oliver else 0) — BUKU!AE7 = Q-1000 (Oliver) — BUKU!AF7 = AE*AC*Z2 (AC = 40)
+  const AD7 = (isOliver ? 90000 : 0) * Z7; // BUKU!AD7
+  const AE7 = isOliver && Q7 - 1000 > 1 ? Q7 - 1000 : 0; // BUKU!AE7 (Print: 0 tetap)
+  const AF7 = AE7 === 0 ? 0 : AE7 * 40 * nWarna; // BUKU!AF7 (AE7>1 selalu benar bila AE7>0)
+  add('Ongkos Cetak Min Order', AD7, `${Z7} plat × Rp ${(isOliver ? 90000 : 0).toLocaleString('id-ID')}`);
+  add('Ongkos Cetak Over', AF7, AE7 > 0 ? `${AE7} × Rp 40/drek × ${nWarna}` : 'Q ≤ 1000 → 0');
+  // BUKU!AI7 = H*AI6 (royalty)
+  add('Royalty', H * p.royaltyPerPcs, `${H} pcs × Rp ${p.royaltyPerPcs.toLocaleString('id-ID')}`);
+  // BUKU!AK7 = AK6 (transport per mesin)
+  add('Transport', isOliver ? p.transportOliver : p.transportPrint, `per order (${mesin})`);
+  // BUKU!AM7 = (H/100)*AM6 (plastik OPP, AM26 selalu √) — AN7/AO7 lipat & pasang (X = 0)
+  // BUKU!AP7 = AM7+AN7+AO7
+  add('Plastik OPP', (H / 100) * p.tarifPlastikOpp, `(${H}/100) × Rp ${p.tarifPlastikOpp.toLocaleString('id-ID')}`);
+  // BUKU!AN6 = (UMR/25)/AN28 (5000) — BUKU!AO6 = (UMR/25)/AO28 (500)
+  add('Lipat Undangan', lipatAktif ? ((p.umr / 25) / 5000) * H : 0,
+    lipatAktif ? `AN26=√: (UMR/25)/5000 × ${H}` : 'AN26=X → 0');
+  add('Pasang Plastik', pasangPlastikAktif ? ((p.umr / 25) / 500) * H : 0,
+    pasangPlastikAktif ? `AO26=√: (UMR/25)/500 × ${H}` : 'AO26=X → 0');
+  // BUKU!AR7 = ROUNDUP(H/84)*AR6 (label) — BUKU!AS7 = ROUNDUP(H/12)*AS6 (print label)
+  // BUKU!AT7 = AR7+AS7 bila AT26 √
+  const labelTotal = Math.ceil(H / 84) * p.tarifLabel + Math.ceil(H / 12) * p.tarifPrintLabel;
+  add('Label + Print Label', labelAktif ? labelTotal : 0,
+    labelAktif ? `AT26=√: ceil(${H}/84)×${p.tarifLabel} + ceil(${H}/12)×${p.tarifPrintLabel}` : 'AT26=X → 0');
+  // BUKU!AV7 = AV6 = 0 (Biaya Lain-Lain — sel manual 0)
+  add('Biaya Lain-Lain', 0, 'AV6 = 0 di semua file');
+  // BUKU!AW7 = IF((H/500)*AW6<7000, 7000, (H/500)*AW6) (Sisir, min 7000)
+  const sisirHitung = (H / 500) * p.tarifSisirBase;
+  add('Sisir', sisirHitung < 7000 ? 7000 : sisirHitung, `max(7000, (${H}/500) × ${p.tarifSisirBase})`);
+  // Laminasi/UV: basis selalu dihitung; dikenakan bila checkbox √ (min 50000)
+  // BUKU!AY7 = ((D+1)*(F+1)*AY6)*H*N7 — AZ7 = IF(AZ27 √, guard, 0)
+  const lamBase = (disp.d + 1) * (disp.f + 1) * p.tarifLamGlossy * H * N7; // BUKU!AY7
+  const doffBase = (disp.d + 1) * (disp.f + 1) * p.tarifLamDoff * H * N7; // BUKU!BB7
+  const uvBase = (disp.d + 1) * (disp.f + 1) * p.tarifUv * H * N7; // BUKU!BE7
+  const aboveMin = (v: number) => (v === 0 ? 0 : v > 50000 ? v : 50000);
+  add('Laminasi Glossy', finishing === 'Laminasi Glossy,' ? aboveMin(lamBase) : 0,
+    finishing === 'Laminasi Glossy,' ? `AZ27=√, max(Rp ${Math.round(lamBase).toLocaleString('id-ID')}, 50000)` : 'AZ27=X → 0');
+  add('Laminasi Doff', finishing === 'Laminasi Doff,' ? aboveMin(doffBase) : 0,
+    finishing === 'Laminasi Doff,' ? `BC27=√, max(Rp ${Math.round(doffBase).toLocaleString('id-ID')}, 50000)` : 'BC27=X → 0');
+  add('UV Varnish', finishing === 'UV Varnish,' ? aboveMin(uvBase) : 0,
+    finishing === 'UV Varnish,' ? `BF27=√, max(Rp ${Math.round(uvBase).toLocaleString('id-ID')}, 50000)` : 'BF27=X → 0');
+  // BUKU!BI7 = (H/BI35)/BI6 (BI35 = 500, BI6 = 7650/196) — BUKU!BJ7 = BJ32*BI7
+  // BUKU!BK7 = IF(BK28 √, ROUNDUP(H/BI35)*BK6 + BJ7, 0)
+  const BI7 = (H / 500) / (7650 / 196); // BUKU!BI7
+  const BJ7 = p.tarifLakbanRoll * BI7; // BUKU!BJ7
+  add('Kardus + Lakban', kardusAktif ? Math.ceil(H / 500) * p.tarifKardusBox + BJ7 : 0,
+    kardusAktif ? `BK28=√: ceil(${H}/500) × Rp ${p.tarifKardusBox.toLocaleString('id-ID')} + lakban` : 'BK28=X → 0');
 
-  // 2. Biaya Cetak Full Colour
-  const is2Muka = cfg.muka === 2;
-  if (is2Muka) {
-    // 2 Muka FC: Print Inter double side (1.8×) untuk ≤500, Oliver untuk >500
-    // ponytail: multiplier 1.8 duplex surcharge naive — upgrade ke 2× jika duplex full cost dibuktikan
-    if (validOplah <= 500) {
-      const tarifEfektif = Math.round(p.tarifPrintA3 * 1.8);
-      const biayaPrint = kebutuhanA3 * tarifEfektif;
-      add('Cetak Print Inter 2 Muka Full Colour', biayaPrint,
-        `${kebutuhanA3} lbr A3+ × Rp ${tarifEfektif.toLocaleString('id-ID')} (1,8× 1 Muka)`);
-    } else {
-      const totalPlat = 8; // 4 plat × 2 muka
-      const biayaPlat = totalPlat * p.tarifPlatOliver;
-      add('Plat Oliver (FC 2 Muka)', biayaPlat, `${totalPlat} plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`);
-      const ongkosDasar = p.minOliver * totalPlat;
-      const overSheets = Math.max(0, kebutuhanA3 - 1000);
-      const biayaOver = overSheets * p.drekOliver * totalPlat;
-      const biayaCetakOliver = ongkosDasar + biayaOver;
-      const ketOver = overSheets > 0
-        ? `Min Rp ${ongkosDasar.toLocaleString('id-ID')} + Over ${overSheets} lbr × Rp ${p.drekOliver}/drek × ${totalPlat} plat`
-        : `Min order ${totalPlat} plat × Rp ${p.minOliver.toLocaleString('id-ID')} (≤1000 lbr)`;
-      add('Ongkos Cetak Oliver FC 2 Muka', biayaCetakOliver, ketOver);
-    }
-  } else {
-    // 1 Muka FC
-    if (validOplah <= 500) {
-      const biayaPrint = kebutuhanA3 * p.tarifPrintA3;
-      add('Cetak Print Inter 1 Muka Full Colour', biayaPrint,
-        `${kebutuhanA3} lbr A3+ × Rp ${p.tarifPrintA3.toLocaleString('id-ID')}`);
-    } else {
-      const totalPlat = 4;
-      const biayaPlat = totalPlat * p.tarifPlatOliver;
-      add('Plat Oliver (FC)', biayaPlat, `${totalPlat} plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`);
-      const ongkosDasar = p.minOliver * totalPlat;
-      const overSheets = Math.max(0, kebutuhanA3 - 1000);
-      const biayaOver = overSheets * p.drekOliver * totalPlat;
-      const biayaCetakOliver = ongkosDasar + biayaOver;
-      const ketOver = overSheets > 0
-        ? `Min Rp ${ongkosDasar.toLocaleString('id-ID')} + Over ${overSheets} lbr × Rp ${p.drekOliver}/drek × ${totalPlat} plat`
-        : `Min order ${totalPlat} plat × Rp ${p.minOliver.toLocaleString('id-ID')} (≤1000 lbr)`;
-      add('Ongkos Cetak Oliver FC', biayaCetakOliver, ketOver);
-    }
-  }
+  breakdown.forEach((b) => { b.pct = totalHpp > 0 ? b.nominal / totalHpp : 0; });
 
-  // 3. Desain
-  if (p.tarifDesign > 0) {
-    add('Desain Undangan', p.tarifDesign, 'Biaya desain & setting undangan');
-  }
-
-  // 4. Laminasi (opsional) — glossy/doff per cm2, 2 muka jika 2 Muka varian
-  if (laminasi !== 'Tanpa Laminasi') {
-    const luasPerPcsCm2 = (cfg.wOpen + 1) * (cfg.hOpen + 1);
-    const tarifCm2 = laminasi === 'Doff' ? p.tarifLaminasiDoffCm2 : p.tarifLaminasiGlossyCm2;
-    const mukaLaminasi = is2Muka ? 2 : 1;
-    const biayaLaminasiRaw = luasPerPcsCm2 * tarifCm2 * validOplah * mukaLaminasi;
-    const biayaLaminasi = Math.max(p.minLaminasi, biayaLaminasiRaw);
-    const ketLam = biayaLaminasiRaw < p.minLaminasi
-      ? `Min Laminasi Rp ${p.minLaminasi.toLocaleString('id-ID')} (raw ${luasPerPcsCm2.toFixed(1)} cm² × ${validOplah} pcs × ${mukaLaminasi} muka × Rp ${tarifCm2})`
-      : `${validOplah} pcs × ${luasPerPcsCm2.toFixed(1)} cm² × ${mukaLaminasi} muka × Rp ${tarifCm2}/cm²`;
-    add(`Laminasi ${laminasi}${is2Muka ? ' 2 Muka' : ''}`, biayaLaminasi, ketLam);
-  }
-
-  // 5. Finishing Sisir + Plastik OPP + Label per pcs
-  if (p.tarifSisirPerPcs > 0) {
-    const biayaSisir = validOplah * p.tarifSisirPerPcs;
-    add('Finishing Sisir', biayaSisir,
-      `${validOplah} pcs × Rp ${p.tarifSisirPerPcs.toLocaleString('id-ID')}`);
-  }
-  if (p.tarifPlastikOppPerPcs > 0) {
-    const biayaPlastik = validOplah * p.tarifPlastikOppPerPcs;
-    add('Plastik OPP (Pasang Sendiri)', biayaPlastik,
-      `${validOplah} pcs × Rp ${p.tarifPlastikOppPerPcs.toLocaleString('id-ID')}`);
-  }
-  if (p.tarifLabelPerPcs > 0) {
-    const biayaLabel = validOplah * p.tarifLabelPerPcs;
-    add('Label Undangan', biayaLabel,
-      `${validOplah} pcs × Rp ${p.tarifLabelPerPcs.toLocaleString('id-ID')}`);
-  }
-
-  // 6. Packing Kardus + Lakban per order
-  {
-    const biayaPacking = p.tarifKardusBox + p.tarifLakbanRoll;
-    add('Packing Kardus & Lakban', biayaPacking, '1 paket packing order');
-  }
-
-  breakdown.forEach(b => { b.pct = totalHpp > 0 ? b.nominal / totalHpp : 0; });
-
-  const hppPerPcs = validOplah > 0 ? totalHpp / validOplah : 0;
-  const hargaJualPerPcs = Math.ceil((hppPerPcs * (1 + marginPct / 100)) / 10) * 10;
-  const hargaNegoPerPcs = Math.ceil((hargaJualPerPcs * (1 - negoDiskonPct / 100)) / 10) * 10;
-  const totalHargaJual = Math.round(hargaJualPerPcs * validOplah);
-  const totalHargaNego = Math.round(hargaNegoPerPcs * validOplah);
-  const profitPerPcs = hargaJualPerPcs - hppPerPcs;
-  const profitNegoPerPcs = hargaNegoPerPcs - hppPerPcs;
-  const profitTotal = totalHargaJual - totalHpp;
-  const profitNegoTotal = totalHargaNego - totalHpp;
-  const marginPctActual = hargaJualPerPcs > 0 ? profitPerPcs / hargaJualPerPcs : 0;
-  const marginNegoPct = hargaNegoPerPcs > 0 ? profitNegoPerPcs / hargaNegoPerPcs : 0;
+  // BUKU!BM7 = jumlah — BN7 = BM/H — BO7 = BN*(BO6/100) — BP7 = BO*H
+  // BUKU!BQ7 = (BN+BO)*H — BR7 = BQ/H — BS7 = ROUNDUP(BR,-1)
+  const BM7 = totalHpp;
+  const BN7 = BM7 / H;
+  const BO7 = BN7 * (marginPct / 100);
+  const BP7 = BO7 * H;
+  const BQ7 = (BN7 + BO7) * H;
+  const BR7 = BQ7 / H;
+  const BS7 = roundUpTens(BR7);
 
   return {
     input,
     breakdown,
-    kebutuhanA3,
-    totalHpp: Math.round(totalHpp),
-    hppPerPcs,
-    hargaJualPerPcs,
-    hargaNegoPerPcs,
-    totalHargaJual,
-    totalHargaNego,
-    profitPerPcs,
-    profitNegoPerPcs,
-    profitTotal,
-    profitNegoTotal,
-    marginPct: marginPctActual,
-    marginNegoPct,
+    kebutuhanPlano: R7,
+    totalHpp: BM7,
+    hppPerPcs: BN7,
+    labaPerPcs: BO7,
+    labaTotal: BP7,
+    totalHarga: BQ7,
+    hargaPerPcs: BR7,
+    hargaFinalPerPcs: BS7,
+    marginPct: marginPct / 100,
   };
 }
 

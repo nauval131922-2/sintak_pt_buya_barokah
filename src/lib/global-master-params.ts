@@ -387,22 +387,12 @@ export function applyGlobalParamsToAll(
 
   const nextUndangan: UndanganMasterParams = {
     ...currUndangan,
-    tarifKertasAc230Kg: g.tarifAc230Kg,
-    upKertasPct: g.upKertasPct,
-    tarifPrintA3: g.tarifPrintA3,
-    tarifPlatOliver: g.oliverPlatUnit,
-    minOliver: g.oliverMinOngkos,
-    drekOliver: g.oliverDrekOver,
-    tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
-    tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
-    minLaminasi: g.minLaminasi,
-    tarifSisirPerPcs: g.tarifSisirPcs,
-    tarifPlastikOppPerPcs: g.tarifPlastikOppPcs,
+    tarifLamGlossy: g.tarifLaminasiGlossyCm2,
+    tarifLamDoff: g.tarifLaminasiDoffCm2,
     tarifKardusBox: g.tarifKardusBox,
     tarifLakbanRoll: g.tarifLakbanRoll,
-    tarifDesign: g.tarifDesainStandar,
-    marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
+    desain: g.tarifDesainStandar,
+    labaPct: g.defaultMarginPct,
   };
 
   const nextBukuTabunganNs: BukuTabunganNsMasterParams = {

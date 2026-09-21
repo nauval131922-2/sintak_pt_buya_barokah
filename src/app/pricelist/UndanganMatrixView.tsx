@@ -13,10 +13,12 @@ import {
   calculateUndanganHpp,
   DEFAULT_UNDANGAN_PARAMS,
   UndanganMasterParams,
-  UndanganVarianType,
-  UndanganLaminasiType,
+  UndanganUkuran,
+  UndanganMesin,
+  UNDANGAN_UKURAN,
+  UNDANGAN_MESIN,
   UNDANGAN_TIERS,
-  UNDANGAN_CONFIG,
+  insheetDefaultForMesin,
 } from '@/lib/undangan-calculator';
 
 interface UndanganMatrixViewProps {
@@ -25,82 +27,87 @@ interface UndanganMatrixViewProps {
   setViewMode?: (mode: 'matrix' | 'table') => void;
 }
 
-const VARIAN_LIST: UndanganVarianType[] = ['15,5 x 15,5 cm - 1 Muka', '15,5 x 15,5 cm - 2 Muka', '15 x 17 cm - 1 Muka', '15 x 17 cm - 2 Muka'];
-const LAMINASI_LIST: UndanganLaminasiType[] = ['Tanpa Laminasi', 'Glossy', 'Doff'];
+type Warna = 1 | 2 | 3 | 4;
 
 export default function UndanganMatrixView({
   customParams = DEFAULT_UNDANGAN_PARAMS,
   viewMode: propViewMode,
   setViewMode: propSetViewMode,
 }: UndanganMatrixViewProps) {
+  const params: UndanganMasterParams = { ...DEFAULT_UNDANGAN_PARAMS, ...(customParams || {}) };
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedVarianFilter, setSelectedVarianFilter] = useState<UndanganVarianType | 'ALL'>('ALL');
-  const [selectedLaminasiFilter, setSelectedLaminasiFilter] = useState<UndanganLaminasiType | 'ALL'>('ALL');
+  const [selectedMesin, setSelectedMesin] = useState<UndanganMesin>('Oliver');
+  const [selectedWarna, setSelectedWarna] = useState<Warna>(4);
   const [localViewMode, setLocalViewMode] = useState<'matrix' | 'table'>('matrix');
 
   const viewMode = propViewMode ?? localViewMode;
   const setViewMode = propSetViewMode ?? setLocalViewMode;
-  const calc = (oplah: number, varian: UndanganVarianType, laminasi: UndanganLaminasiType) =>
+
+  // Spesifikasi baku matriks = kondisi file tersimpan: 2 Muka, finishing None, jasa X, kardus ikut mesin
+  const calc = (oplahPcs: number, ukuran: UndanganUkuran) =>
     calculateUndanganHpp(
-      { oplah, varian, laminasi, marginPct: 30, negoDiskonPct: 4 },
-      customParams
+      {
+        oplahPcs,
+        ukuran,
+        nWarna: selectedWarna,
+        muka: 2,
+        mesin: selectedMesin,
+        finishing: 'None,',
+        labelAktif: false,
+        lipatAktif: false,
+        pasangPlastikAktif: false,
+        kardusAktif: selectedMesin === 'Oliver',
+        insheetLembar: insheetDefaultForMesin(selectedMesin, params),
+        marginPct: params.labaPct ?? 30,
+      },
+      params
     );
 
-  // Matrix: baris = oplah, kolom = varian (laminasi filter menentukan tarif laminasi)
-  const effectiveLaminasi: UndanganLaminasiType = selectedLaminasiFilter === 'ALL' ? 'Tanpa Laminasi' : selectedLaminasiFilter;
-
+  // Matrix: baris = pcs, kolom = ukuran
   const matrixData = useMemo(() => {
-    const varians = selectedVarianFilter === 'ALL' ? VARIAN_LIST : [selectedVarianFilter];
-    return UNDANGAN_TIERS.map((oplah) => {
+    return UNDANGAN_TIERS.map((pcs) => {
       const q = searchTerm.trim();
-      if (q && !oplah.toString().includes(q)) return null;
+      if (q && !pcs.toString().includes(q)) return null;
       return {
-        oplah,
-        cols: varians.map((varian) => {
-          const r = calc(oplah, varian, effectiveLaminasi);
-          return { varian, hpp: r.hppPerPcs, jual: r.hargaJualPerPcs, nego: r.hargaNegoPerPcs, totalJual: r.totalHargaJual };
+        pcs,
+        cols: UNDANGAN_UKURAN.map((ukuran) => {
+          const r = calc(pcs, ukuran);
+          return { ukuran, hpp: r.hppPerPcs, final: r.hargaFinalPerPcs, total: r.totalHarga };
         }),
       };
-    }).filter(Boolean) as { oplah: number; cols: { varian: UndanganVarianType; hpp: number; jual: number; nego: number; totalJual: number }[] }[];
-  }, [customParams, searchTerm, selectedVarianFilter, effectiveLaminasi]);
+    }).filter(Boolean) as { pcs: number; cols: { ukuran: UndanganUkuran; hpp: number; final: number; total: number }[] }[];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customParams, searchTerm, selectedMesin, selectedWarna]);
 
   // Flat table
   const flatTableRows = useMemo(() => {
     const list: {
-      oplah: number; varian: UndanganVarianType; laminasi: UndanganLaminasiType; hpp: number; jual: number; nego: number; totalJual: number; margin: number;
+      pcs: number; ukuran: UndanganUkuran; hpp: number; final: number; total: number; margin: number;
     }[] = [];
 
-    const varians = selectedVarianFilter === 'ALL' ? VARIAN_LIST : [selectedVarianFilter];
-    const laminasis = selectedLaminasiFilter === 'ALL' ? LAMINASI_LIST : [selectedLaminasiFilter];
-
-    varians.forEach((varian) => {
-      laminasis.forEach((laminasi) => {
-        UNDANGAN_TIERS.forEach((oplah) => {
-          const q = searchTerm.toLowerCase().trim();
-          if (q) {
-            const match =
-              oplah.toString().includes(q) ||
-              varian.toLowerCase().includes(q) ||
-              laminasi.toLowerCase().includes(q);
-            if (!match) return;
-          }
-          const r = calc(oplah, varian, laminasi);
-          list.push({
-            oplah, varian, laminasi,
-            hpp: r.hppPerPcs,
-            jual: r.hargaJualPerPcs,
-            nego: r.hargaNegoPerPcs,
-            totalJual: r.totalHargaJual,
-            margin: r.marginPct,
-          });
+    UNDANGAN_UKURAN.forEach((ukuran) => {
+      UNDANGAN_TIERS.forEach((pcs) => {
+        const q = searchTerm.toLowerCase().trim();
+        if (q) {
+          const match =
+            pcs.toString().includes(q) ||
+            ukuran.includes(q);
+          if (!match) return;
+        }
+        const r = calc(pcs, ukuran);
+        list.push({
+          pcs, ukuran,
+          hpp: r.hppPerPcs,
+          final: r.hargaFinalPerPcs,
+          total: r.totalHarga,
+          margin: r.marginPct,
         });
       });
     });
 
     return list;
-  }, [customParams, searchTerm, selectedVarianFilter, selectedLaminasiFilter]);
-
-  const varianCols = selectedVarianFilter === 'ALL' ? VARIAN_LIST : [selectedVarianFilter];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customParams, searchTerm, selectedMesin, selectedWarna]);
 
   return (
     <div className="space-y-4">
@@ -115,7 +122,7 @@ export default function UndanganMatrixView({
               Pricelist Matriks Undangan
             </h2>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Tabel perbandingan HPP &amp; harga jual Undangan AC 230 gsm 15,5×15,5 & 15×17 cm per oplah &amp; varian 1/2 Muka (margin 30%, nego 4%, sisir+OPP+label).
+              Lembaran 2 Muka · {selectedMesin} · {selectedWarna} Warna · finishing None · laba {params.labaPct ?? 30}%.
             </p>
           </div>
         </div>
@@ -127,7 +134,7 @@ export default function UndanganMatrixView({
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Cari oplah, varian, laminasi..."
+            placeholder="Cari pcs, ukuran..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-9 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
@@ -142,32 +149,30 @@ export default function UndanganMatrixView({
           )}
         </div>
 
-        {/* Filter Varian */}
+        {/* Filter Mesin */}
         <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
-          <span className="text-slate-500 font-semibold hidden sm:inline">Varian:</span>
+          <span className="text-slate-500 font-semibold hidden sm:inline">Mesin:</span>
           <select
-            value={selectedVarianFilter}
-            onChange={(e) => setSelectedVarianFilter(e.target.value as UndanganVarianType | 'ALL')}
+            value={selectedMesin}
+            onChange={(e) => setSelectedMesin(e.target.value as UndanganMesin)}
             className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-bold focus:bg-white focus:outline-none cursor-pointer"
           >
-            <option value="ALL">Semua Varian</option>
-            {VARIAN_LIST.map((v) => (
-              <option key={v} value={v}>{v}</option>
+            {UNDANGAN_MESIN.map((m) => (
+              <option key={m} value={m}>{m}</option>
             ))}
           </select>
         </div>
 
-        {/* Filter Laminasi */}
+        {/* Filter Warna */}
         <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
-          <span className="text-slate-500 font-semibold hidden sm:inline">Laminasi:</span>
+          <span className="text-slate-500 font-semibold hidden sm:inline">Warna:</span>
           <select
-            value={selectedLaminasiFilter}
-            onChange={(e) => setSelectedLaminasiFilter(e.target.value as UndanganLaminasiType | 'ALL')}
+            value={selectedWarna}
+            onChange={(e) => setSelectedWarna(Number(e.target.value) as Warna)}
             className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-bold focus:bg-white focus:outline-none cursor-pointer"
           >
-            <option value="ALL">Semua Laminasi</option>
-            {LAMINASI_LIST.map((l) => (
-              <option key={l} value={l}>{l}</option>
+            {([1, 2, 3, 4] as Warna[]).map((w) => (
+              <option key={w} value={w}>{w} Warna</option>
             ))}
           </select>
         </div>
@@ -209,55 +214,50 @@ export default function UndanganMatrixView({
             <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between border-b border-gray-200 pb-2">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-fuchsia-500 inline-block"></span>
-                  <h3 className="text-sm font-bold text-gray-800 tracking-tight">Undangan AC 230 gsm — 15,5×15,5 & 15×17 cm · Laminasi {effectiveLaminasi}</h3>
+                  <span className="w-2.5 h-2.5 rounded-full bg-sky-500 inline-block"></span>
+                  <h3 className="text-sm font-bold text-gray-800 tracking-tight">Undangan Lembaran — {selectedMesin}, {selectedWarna} Warna 2 Muka</h3>
                 </div>
                 <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
-                  {selectedVarianFilter === 'ALL' ? 'Semua Varian (4)' : `${selectedVarianFilter}`} · {effectiveLaminasi}
+                  2 Ukuran
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {varianCols.map((varian) => (
-                <div key={varian} className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
-                  <div className="bg-fuchsia-50/70 px-4 py-2 border-b border-fuchsia-100 flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-fuchsia-900 tracking-wider uppercase flex items-center gap-1.5">
-                      <Layers size={13} className="text-fuchsia-600" />
-                      Varian: {varian} — {UNDANGAN_CONFIG[varian].w}×{UNDANGAN_CONFIG[varian].h} cm · {UNDANGAN_CONFIG[varian].pcsPerA3} pcs/A3+ · {UNDANGAN_CONFIG[varian].muka} Muka
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {UNDANGAN_UKURAN.map((ukuran) => (
+                <div key={ukuran} className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
+                  <div className="bg-sky-50/70 px-4 py-2 border-b border-sky-100 flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-sky-900 tracking-wider uppercase flex items-center gap-1.5">
+                      <Layers size={13} className="text-sky-600" />
+                      {ukuran}
                     </span>
                   </div>
                   <div className="overflow-x-auto max-h-[500px]">
                     <table className="w-full text-xs text-left border-collapse">
                       <thead className="sticky top-0 z-10 bg-white shadow-xs">
                         <tr className="bg-gray-100 border-b border-gray-200 text-gray-700 font-bold">
-                          <th className="py-2.5 px-3 border-r border-gray-200 text-center w-20 bg-gray-100" rowSpan={2}>
-                            Oplah
+                          <th className="py-2.5 px-3 border-r border-gray-200 text-center w-20 bg-gray-100">
+                            Pcs
                           </th>
-                          <th colSpan={3} className="py-1.5 px-2 text-center border-r border-gray-200 font-bold text-gray-900 bg-gray-200/80">
-                            {varian} · {effectiveLaminasi}
-                          </th>
-                        </tr>
-                        <tr className="bg-gray-50 border-b border-gray-200 text-[11px] text-gray-600">
-                          <th className="py-1.5 px-2 text-right font-semibold bg-gray-50">HPP</th>
-                          <th className="py-1.5 px-2 text-right font-bold text-emerald-800 bg-emerald-100/50">Harga</th>
-                          <th className="py-1.5 px-2 text-right font-bold text-blue-800 bg-blue-100/50 border-r border-gray-200">Nego</th>
+                          <th className="py-1.5 px-2 text-right font-semibold bg-gray-50">HPP/pcs</th>
+                          <th className="py-1.5 px-2 text-right font-bold text-emerald-800 bg-emerald-100/50">Final/pcs</th>
+                          <th className="py-1.5 px-2 text-right font-semibold bg-gray-50 border-r border-gray-200">Total</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {matrixData.map((row) => {
-                          const col = row.cols.find((c) => c.varian === varian);
+                          const col = row.cols.find((c) => c.ukuran === ukuran);
                           if (!col) return null;
                           return (
-                            <tr key={row.oplah} className="hover:bg-fuchsia-50/30 transition-colors">
+                            <tr key={row.pcs} className="hover:bg-sky-50/30 transition-colors">
                               <td className="py-2 px-3 text-center font-bold text-gray-900 border-r border-gray-200 bg-gray-50/30">
-                                {row.oplah.toLocaleString('id-ID')}
+                                {row.pcs.toLocaleString('id-ID')}
                               </td>
                               <td className="py-2 px-2 text-right text-gray-500 font-mono">{Math.round(col.hpp).toLocaleString('id-ID')}</td>
                               <td className="py-2 px-2 text-right font-bold text-emerald-700 font-mono bg-emerald-50/30">
-                                {col.jual.toLocaleString('id-ID')}
+                                {col.final.toLocaleString('id-ID')}
                               </td>
-                              <td className="py-2 px-2 text-right font-bold text-blue-700 font-mono bg-blue-50/30 border-r border-gray-200">
-                                {col.nego.toLocaleString('id-ID')}
+                              <td className="py-2 px-2 text-right text-gray-600 font-mono border-r border-gray-200">
+                                {Math.round(col.total).toLocaleString('id-ID')}
                               </td>
                             </tr>
                           );
@@ -277,33 +277,31 @@ export default function UndanganMatrixView({
             <table className="w-full text-xs text-left border-collapse">
               <thead className="sticky top-0 z-10 bg-slate-100 border-b border-slate-200 text-slate-700 font-bold">
                 <tr>
-                  <th className="py-2.5 px-3">Oplah</th>
-                  <th className="py-2.5 px-3">Varian</th>
-                  <th className="py-2.5 px-3">Laminasi</th>
+                  <th className="py-2.5 px-3">Pcs</th>
+                  <th className="py-2.5 px-3">Ukuran</th>
+                  <th className="py-2.5 px-3">Mesin</th>
                   <th className="py-2.5 px-3 text-right">HPP / pcs</th>
-                  <th className="py-2.5 px-3 text-right text-emerald-700">Harga Jual / pcs</th>
-                  <th className="py-2.5 px-3 text-right text-blue-700">Harga Nego / pcs</th>
-                  <th className="py-2.5 px-3 text-right text-emerald-800">Total Omset</th>
+                  <th className="py-2.5 px-3 text-right text-emerald-700">Final / pcs</th>
+                  <th className="py-2.5 px-3 text-right text-emerald-800">Total Harga</th>
                   <th className="py-2.5 px-3 text-right text-slate-600">Margin</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
                 {flatTableRows.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="p-8 text-center text-slate-400 font-sans">
+                    <td colSpan={7} className="p-8 text-center text-slate-400 font-sans">
                       Tidak ada data yang sesuai dengan pencarian atau filter.
                     </td>
                   </tr>
                 ) : (
                   flatTableRows.map((row, idx) => (
-                    <tr key={idx} className="hover:bg-fuchsia-50/40 transition-colors">
-                      <td className="py-2 px-3 font-bold text-slate-800 font-sans">{row.oplah.toLocaleString('id-ID')}</td>
-                      <td className="py-2 px-3 text-slate-700 font-sans">{row.varian}</td>
-                      <td className="py-2 px-3 text-slate-500 font-sans">{row.laminasi}</td>
+                    <tr key={idx} className="hover:bg-sky-50/40 transition-colors">
+                      <td className="py-2 px-3 font-bold text-slate-800 font-sans">{row.pcs.toLocaleString('id-ID')}</td>
+                      <td className="py-2 px-3 text-slate-700 font-sans">{row.ukuran}</td>
+                      <td className="py-2 px-3 text-slate-500 font-sans">{selectedMesin}</td>
                       <td className="py-2 px-3 text-right text-slate-600">Rp {Math.round(row.hpp).toLocaleString('id-ID')}</td>
-                      <td className="py-2 px-3 text-right font-bold text-emerald-700">Rp {row.jual.toLocaleString('id-ID')}</td>
-                      <td className="py-2 px-3 text-right font-bold text-blue-600">Rp {row.nego.toLocaleString('id-ID')}</td>
-                      <td className="py-2 px-3 text-right font-bold text-slate-800">Rp {row.totalJual.toLocaleString('id-ID')}</td>
+                      <td className="py-2 px-3 text-right font-bold text-emerald-700">Rp {row.final.toLocaleString('id-ID')}</td>
+                      <td className="py-2 px-3 text-right font-bold text-slate-800">Rp {Math.round(row.total).toLocaleString('id-ID')}</td>
                       <td className="py-2 px-3 text-right text-slate-500 font-sans">{Math.round(row.margin * 100)}%</td>
                     </tr>
                   ))

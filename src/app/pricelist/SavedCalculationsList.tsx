@@ -735,24 +735,30 @@ export default function SavedCalculationsList({
     // 14. Undangan
     undanganList.forEach((u: any) => {
       const inp = (u.data && u.data.input) ? u.data.input : (u.input || u.data || u || {});
-      const lam = inp.laminasi !== 'Tanpa Laminasi' ? ` · ${inp.laminasi}` : '';
+      const finLabel = (inp.finishing ?? 'None,').replace(/,$/, '');
+      const extras = [
+        inp.labelAktif ? 'Label' : '',
+        inp.lipatAktif ? 'Lipat' : '',
+        inp.pasangPlastikAktif ? 'Pasang' : '',
+        inp.kardusAktif ? 'Kardus' : '',
+      ].filter(Boolean).join('+');
       items.push({
         id: u.id,
         category: 'Undangan',
         savedAt: u.savedAt,
         title: u.title,
-        oplah: inp.oplah,
-        specSummary: `Undangan ${inp.varian}${lam} • ${inp.oplah.toLocaleString('id-ID')} pcs`,
+        oplah: inp.oplahPcs,
+        specSummary: `Undangan ${inp.ukuran ?? ''} ${inp.nWarna ?? ''}W ${inp.mesin ?? ''}${finLabel !== 'None' ? ` · ${finLabel}` : ''} • ${(inp.oplahPcs ?? 0).toLocaleString('id-ID')} pcs`,
         detailSpecs: [
-          `Bahan: ${inp.varian} · ${u.data.kebutuhanA3} lbr A3+`,
-          `Finishing: Sisir + OPP + Label${lam ? ` + ${inp.laminasi}` : ''} + Packing Kardus`,
+          `Ukuran: ${inp.ukuran ?? ''} · ${inp.nWarna ?? ''} Warna ${inp.muka ?? ''} Muka · Cetak ${inp.mesin ?? ''}`,
+          `Finishing: ${finLabel}${extras ? ` + ${extras}` : ''} · Insheet ${inp.insheetLembar ?? ''}`,
           `Margin: ${inp.marginPct}%`,
         ],
         hppUnit: (u.data?.hppPerPcs ?? u.hppPerPcs ?? 0),
-        hargaJualUnit: (u.data?.hargaJualPerPcs ?? u.hargaJualPerPcs ?? 0),
-        totalOmset: (u.data?.totalHargaJual ?? u.totalHargaJual ?? 0),
+        hargaJualUnit: (u.data?.hargaFinalPerPcs ?? u.hargaFinalPerPcs ?? 0),
+        totalOmset: (u.data?.totalHarga ?? u.totalHarga ?? 0),
         marginPct: inp.marginPct,
-        negoDiskonPct: inp.negoDiskonPct,
+        negoDiskonPct: 0,
         rawData: u,
       });
     });
@@ -1720,8 +1726,7 @@ export default function SavedCalculationsList({
     } else if (item.category === 'Undangan') {
       const u: any = item.rawData;
       const inp = (u.data && u.data.input) ? u.data.input : (u.input || u.data || u || {});
-      const lamTxt = inp.laminasi !== 'Tanpa Laminasi' ? ` + Laminasi ${inp.laminasi}` : '';
-      text = `*PENAWARAN UNDANGAN*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Undangan ${inp.varian}${lamTxt}\n• *Bahan*: Art Carton 230 gsm · ${inp.varian}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs (${u.data.kebutuhanA3} lbr A3+)\n• *Cetak*: Full Colour ${inp.varian.includes('2 Muka') ? '2 Muka' : '1 Muka'}${inp.oplah > 500 ? ' (Oliver)' : ' (Print Inter)'}\n• *Finishing*: Sisir + OPP + Label${lamTxt ? ` + ${inp.laminasi}` : ''} + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${(u.data?.hargaJualPerPcs ?? u.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(u.data?.totalHargaJual ?? u.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
+        text = `*PENAWARAN UNDANGAN*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Undangan Lembaran ${inp.ukuran ?? ''}\n• *Spesifikasi*: Art Carton ${inp.gramatur ?? 230} gsm, ${inp.nWarna ?? ''} Warna ${inp.muka ?? ''} Muka, Cetak ${inp.mesin ?? ''}, ${((inp.finishing ?? 'None,').replace(/,$/, ''))}${inp.labelAktif ? ', Label' : ''}${inp.kardusAktif ? ', Kardus' : ''}\n• *Kuantitas*: ${(inp.oplahPcs ?? 0).toLocaleString('id-ID')} pcs\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${(u.data?.hargaFinalPerPcs ?? u.hargaFinalPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${Math.round(u.data?.totalHarga ?? u.totalHarga ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Buku Tabungan NS') {
       const b: any = item.rawData;
       const inp = (b.data && b.data.input) ? b.data.input : (b.input || b.data || b || {});
