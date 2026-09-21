@@ -13,10 +13,15 @@ import {
   calculateSertifikatHpp,
   DEFAULT_SERTIFIKAT_PARAMS,
   SertifikatMasterParams,
-  SertifikatVarianType,
-  SertifikatLaminasiType,
+  SertifikatBahan,
+  SertifikatMesin,
+  SertifikatUkuran,
+  SERTIFIKAT_BAHAN,
+  SERTIFIKAT_MESIN,
+  SERTIFIKAT_UKURAN,
   SERTIFIKAT_TIERS,
-  SERTIFIKAT_CONFIG,
+  gramaturDefaultForBahan,
+  insheetDefaultForMesin,
 } from '@/lib/sertifikat-calculator';
 
 interface SertifikatMatrixViewProps {
@@ -25,82 +30,88 @@ interface SertifikatMatrixViewProps {
   setViewMode?: (mode: 'matrix' | 'table') => void;
 }
 
-const VARIAN_LIST: SertifikatVarianType[] = ['Art Carton 260 - 1 Muka', 'Art Carton 260 - 2 Muka', 'Ivory 260 - 1 Muka', 'Ivory 260 - 2 Muka'];
-const LAMINASI_LIST: SertifikatLaminasiType[] = ['Tanpa Laminasi', 'Glossy', 'Doff'];
+type Warna = 1 | 2 | 3 | 4;
 
 export default function SertifikatMatrixView({
   customParams = DEFAULT_SERTIFIKAT_PARAMS,
   viewMode: propViewMode,
   setViewMode: propSetViewMode,
 }: SertifikatMatrixViewProps) {
+  const params: SertifikatMasterParams = { ...DEFAULT_SERTIFIKAT_PARAMS, ...(customParams || {}) };
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedVarianFilter, setSelectedVarianFilter] = useState<SertifikatVarianType | 'ALL'>('ALL');
-  const [selectedLaminasiFilter, setSelectedLaminasiFilter] = useState<SertifikatLaminasiType | 'ALL'>('ALL');
+  const [selectedMesin, setSelectedMesin] = useState<SertifikatMesin>('Oliver');
+  const [selectedUkuran, setSelectedUkuran] = useState<SertifikatUkuran>('21 x 29,7');
+  const [selectedWarna, setSelectedWarna] = useState<Warna>(4);
   const [localViewMode, setLocalViewMode] = useState<'matrix' | 'table'>('matrix');
 
   const viewMode = propViewMode ?? localViewMode;
   const setViewMode = propSetViewMode ?? setLocalViewMode;
-  const calc = (oplah: number, varian: SertifikatVarianType, laminasi: SertifikatLaminasiType) =>
+
+  // Spesifikasi baku matriks: finishing None, foil X, kardus ikut pola mesin, laba master
+  const calc = (oplahPcs: number, bahan: SertifikatBahan) =>
     calculateSertifikatHpp(
-      { oplah, varian, laminasi, opsiFoil: false, marginPct: 30, negoDiskonPct: 4 },
-      customParams
+      {
+        oplahPcs,
+        ukuran: selectedUkuran,
+        bahan,
+        gramatur: gramaturDefaultForBahan(bahan, params),
+        nWarna: selectedWarna,
+        muka: 1,
+        mesin: selectedMesin,
+        finishing: 'None,',
+        foilAktif: false,
+        kardusAktif: selectedMesin !== 'Print Inter',
+        insheetLembar: insheetDefaultForMesin(selectedMesin, params),
+        marginPct: params.labaPct ?? 30,
+      },
+      params
     );
 
-  // Matrix: baris = oplah, kolom = varian (laminasi filter menentukan tarif laminasi)
-  const effectiveLaminasi: SertifikatLaminasiType = selectedLaminasiFilter === 'ALL' ? 'Glossy' : selectedLaminasiFilter;
-
+  // Matrix: baris = pcs, kolom = bahan
   const matrixData = useMemo(() => {
-    const varians = selectedVarianFilter === 'ALL' ? VARIAN_LIST : [selectedVarianFilter];
-    return SERTIFIKAT_TIERS.map((oplah) => {
+    return SERTIFIKAT_TIERS.map((pcs) => {
       const q = searchTerm.trim();
-      if (q && !oplah.toString().includes(q)) return null;
+      if (q && !pcs.toString().includes(q)) return null;
       return {
-        oplah,
-        cols: varians.map((varian) => {
-          const r = calc(oplah, varian, effectiveLaminasi);
-          return { varian, hpp: r.hppPerPcs, jual: r.hargaJualPerPcs, nego: r.hargaNegoPerPcs, totalJual: r.totalHargaJual };
+        pcs,
+        cols: SERTIFIKAT_BAHAN.map((bahan) => {
+          const r = calc(pcs, bahan);
+          return { bahan, hpp: r.hppPerPcs, final: r.hargaFinalPerPcs, total: r.totalHarga };
         }),
       };
-    }).filter(Boolean) as { oplah: number; cols: { varian: SertifikatVarianType; hpp: number; jual: number; nego: number; totalJual: number }[] }[];
-  }, [customParams, searchTerm, selectedVarianFilter, effectiveLaminasi]);
+    }).filter(Boolean) as { pcs: number; cols: { bahan: SertifikatBahan; hpp: number; final: number; total: number }[] }[];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customParams, searchTerm, selectedMesin, selectedUkuran, selectedWarna]);
 
   // Flat table
   const flatTableRows = useMemo(() => {
     const list: {
-      oplah: number; varian: SertifikatVarianType; laminasi: SertifikatLaminasiType; hpp: number; jual: number; nego: number; totalJual: number; margin: number;
+      pcs: number; bahan: SertifikatBahan; hpp: number; final: number; total: number; margin: number;
     }[] = [];
 
-    const varians = selectedVarianFilter === 'ALL' ? VARIAN_LIST : [selectedVarianFilter];
-    const laminasis = selectedLaminasiFilter === 'ALL' ? LAMINASI_LIST : [selectedLaminasiFilter];
-
-    varians.forEach((varian) => {
-      laminasis.forEach((laminasi) => {
-        SERTIFIKAT_TIERS.forEach((oplah) => {
-          const q = searchTerm.toLowerCase().trim();
-          if (q) {
-            const match =
-              oplah.toString().includes(q) ||
-              varian.toLowerCase().includes(q) ||
-              laminasi.toLowerCase().includes(q);
-            if (!match) return;
-          }
-          const r = calc(oplah, varian, laminasi);
-          list.push({
-            oplah, varian, laminasi,
-            hpp: r.hppPerPcs,
-            jual: r.hargaJualPerPcs,
-            nego: r.hargaNegoPerPcs,
-            totalJual: r.totalHargaJual,
-            margin: r.marginPct,
-          });
+    SERTIFIKAT_BAHAN.forEach((bahan) => {
+      SERTIFIKAT_TIERS.forEach((pcs) => {
+        const q = searchTerm.toLowerCase().trim();
+        if (q) {
+          const match =
+            pcs.toString().includes(q) ||
+            bahan.toLowerCase().includes(q);
+          if (!match) return;
+        }
+        const r = calc(pcs, bahan);
+        list.push({
+          pcs, bahan,
+          hpp: r.hppPerPcs,
+          final: r.hargaFinalPerPcs,
+          total: r.totalHarga,
+          margin: r.marginPct,
         });
       });
     });
 
     return list;
-  }, [customParams, searchTerm, selectedVarianFilter, selectedLaminasiFilter]);
-
-  const varianCols = selectedVarianFilter === 'ALL' ? VARIAN_LIST : [selectedVarianFilter];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customParams, searchTerm, selectedMesin, selectedUkuran, selectedWarna]);
 
   return (
     <div className="space-y-4">
@@ -115,7 +126,7 @@ export default function SertifikatMatrixView({
               Pricelist Matriks Sertifikat
             </h2>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Tabel perbandingan HPP &amp; harga jual Sertifikat A4 21×29,7 cm Art Carton/Ivory 260 gsm per oplah &amp; varian (margin 30%, nego 4%, laminasi + foil).
+              {selectedUkuran} 1 Muka · {selectedMesin} · {selectedWarna} Warna · finishing None · laba {params.labaPct ?? 30}%.
             </p>
           </div>
         </div>
@@ -127,7 +138,7 @@ export default function SertifikatMatrixView({
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Cari oplah, varian, laminasi..."
+            placeholder="Cari pcs, bahan..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-9 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
@@ -142,32 +153,44 @@ export default function SertifikatMatrixView({
           )}
         </div>
 
-        {/* Filter Varian */}
+        {/* Filter Mesin */}
         <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
-          <span className="text-slate-500 font-semibold hidden sm:inline">Varian:</span>
+          <span className="text-slate-500 font-semibold hidden sm:inline">Mesin:</span>
           <select
-            value={selectedVarianFilter}
-            onChange={(e) => setSelectedVarianFilter(e.target.value as SertifikatVarianType | 'ALL')}
+            value={selectedMesin}
+            onChange={(e) => setSelectedMesin(e.target.value as SertifikatMesin)}
             className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-bold focus:bg-white focus:outline-none cursor-pointer"
           >
-            <option value="ALL">Semua Varian</option>
-            {VARIAN_LIST.map((v) => (
-              <option key={v} value={v}>{v}</option>
+            {SERTIFIKAT_MESIN.map((m) => (
+              <option key={m} value={m}>{m}</option>
             ))}
           </select>
         </div>
 
-        {/* Filter Laminasi */}
+        {/* Filter Ukuran */}
         <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
-          <span className="text-slate-500 font-semibold hidden sm:inline">Laminasi:</span>
+          <span className="text-slate-500 font-semibold hidden sm:inline">Ukuran:</span>
           <select
-            value={selectedLaminasiFilter}
-            onChange={(e) => setSelectedLaminasiFilter(e.target.value as SertifikatLaminasiType | 'ALL')}
+            value={selectedUkuran}
+            onChange={(e) => setSelectedUkuran(e.target.value as SertifikatUkuran)}
             className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-bold focus:bg-white focus:outline-none cursor-pointer"
           >
-            <option value="ALL">Semua Laminasi</option>
-            {LAMINASI_LIST.map((l) => (
-              <option key={l} value={l}>{l}</option>
+            {SERTIFIKAT_UKURAN.map((u) => (
+              <option key={u} value={u}>{u}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Filter Warna */}
+        <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
+          <span className="text-slate-500 font-semibold hidden sm:inline">Warna:</span>
+          <select
+            value={selectedWarna}
+            onChange={(e) => setSelectedWarna(Number(e.target.value) as Warna)}
+            className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-bold focus:bg-white focus:outline-none cursor-pointer"
+          >
+            {([1, 2, 3, 4] as Warna[]).map((w) => (
+              <option key={w} value={w}>{w} Warna</option>
             ))}
           </select>
         </div>
@@ -209,55 +232,50 @@ export default function SertifikatMatrixView({
             <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between border-b border-gray-200 pb-2">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-lime-500 inline-block"></span>
-                  <h3 className="text-sm font-bold text-gray-800 tracking-tight">Sertifikat A4 21×29,7 cm — Art Carton / Ivory 260 gsm · Laminasi {effectiveLaminasi}</h3>
+                  <span className="w-2.5 h-2.5 rounded-full bg-sky-500 inline-block"></span>
+                  <h3 className="text-sm font-bold text-gray-800 tracking-tight">Sertifikat {selectedUkuran} — {selectedMesin}, {selectedWarna} Warna</h3>
                 </div>
                 <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
-                  {selectedVarianFilter === 'ALL' ? 'Semua Varian (4)' : `${selectedVarianFilter}`} · {effectiveLaminasi}
+                  3 Bahan
                 </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {varianCols.map((varian) => (
-                <div key={varian} className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
-                  <div className="bg-lime-50/70 px-4 py-2 border-b border-lime-100 flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-lime-900 tracking-wider uppercase flex items-center gap-1.5">
-                      <Layers size={13} className="text-lime-600" />
-                      Varian: {varian} — {SERTIFIKAT_CONFIG[varian].w}×{SERTIFIKAT_CONFIG[varian].h} cm · {SERTIFIKAT_CONFIG[varian].pcsPerA3} pcs/A3+ · {SERTIFIKAT_CONFIG[varian].bahan}
+                {SERTIFIKAT_BAHAN.map((bahan) => (
+                <div key={bahan} className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
+                  <div className="bg-sky-50/70 px-4 py-2 border-b border-sky-100 flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-sky-900 tracking-wider uppercase flex items-center gap-1.5">
+                      <Layers size={13} className="text-sky-600" />
+                      {bahan}
                     </span>
                   </div>
                   <div className="overflow-x-auto max-h-[500px]">
                     <table className="w-full text-xs text-left border-collapse">
                       <thead className="sticky top-0 z-10 bg-white shadow-xs">
                         <tr className="bg-gray-100 border-b border-gray-200 text-gray-700 font-bold">
-                          <th className="py-2.5 px-3 border-r border-gray-200 text-center w-20 bg-gray-100" rowSpan={2}>
-                            Oplah
+                          <th className="py-2.5 px-3 border-r border-gray-200 text-center w-20 bg-gray-100">
+                            Pcs
                           </th>
-                          <th colSpan={3} className="py-1.5 px-2 text-center border-r border-gray-200 font-bold text-gray-900 bg-gray-200/80">
-                            {varian} · {effectiveLaminasi}
-                          </th>
-                        </tr>
-                        <tr className="bg-gray-50 border-b border-gray-200 text-[11px] text-gray-600">
-                          <th className="py-1.5 px-2 text-right font-semibold bg-gray-50">HPP</th>
-                          <th className="py-1.5 px-2 text-right font-bold text-emerald-800 bg-emerald-100/50">Harga</th>
-                          <th className="py-1.5 px-2 text-right font-bold text-blue-800 bg-blue-100/50 border-r border-gray-200">Nego</th>
+                          <th className="py-1.5 px-2 text-right font-semibold bg-gray-50">HPP/pcs</th>
+                          <th className="py-1.5 px-2 text-right font-bold text-emerald-800 bg-emerald-100/50">Final/pcs</th>
+                          <th className="py-1.5 px-2 text-right font-semibold bg-gray-50 border-r border-gray-200">Total</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {matrixData.map((row) => {
-                          const col = row.cols.find((c) => c.varian === varian);
+                          const col = row.cols.find((c) => c.bahan === bahan);
                           if (!col) return null;
                           return (
-                            <tr key={row.oplah} className="hover:bg-lime-50/30 transition-colors">
+                            <tr key={row.pcs} className="hover:bg-sky-50/30 transition-colors">
                               <td className="py-2 px-3 text-center font-bold text-gray-900 border-r border-gray-200 bg-gray-50/30">
-                                {row.oplah.toLocaleString('id-ID')}
+                                {row.pcs.toLocaleString('id-ID')}
                               </td>
                               <td className="py-2 px-2 text-right text-gray-500 font-mono">{Math.round(col.hpp).toLocaleString('id-ID')}</td>
                               <td className="py-2 px-2 text-right font-bold text-emerald-700 font-mono bg-emerald-50/30">
-                                {col.jual.toLocaleString('id-ID')}
+                                {col.final.toLocaleString('id-ID')}
                               </td>
-                              <td className="py-2 px-2 text-right font-bold text-blue-700 font-mono bg-blue-50/30 border-r border-gray-200">
-                                {col.nego.toLocaleString('id-ID')}
+                              <td className="py-2 px-2 text-right text-gray-600 font-mono border-r border-gray-200">
+                                {Math.round(col.total).toLocaleString('id-ID')}
                               </td>
                             </tr>
                           );
@@ -277,33 +295,31 @@ export default function SertifikatMatrixView({
             <table className="w-full text-xs text-left border-collapse">
               <thead className="sticky top-0 z-10 bg-slate-100 border-b border-slate-200 text-slate-700 font-bold">
                 <tr>
-                  <th className="py-2.5 px-3">Oplah</th>
-                  <th className="py-2.5 px-3">Varian</th>
-                  <th className="py-2.5 px-3">Laminasi</th>
+                  <th className="py-2.5 px-3">Pcs</th>
+                  <th className="py-2.5 px-3">Bahan</th>
+                  <th className="py-2.5 px-3">Mesin</th>
                   <th className="py-2.5 px-3 text-right">HPP / pcs</th>
-                  <th className="py-2.5 px-3 text-right text-emerald-700">Harga Jual / pcs</th>
-                  <th className="py-2.5 px-3 text-right text-blue-700">Harga Nego / pcs</th>
-                  <th className="py-2.5 px-3 text-right text-emerald-800">Total Omset</th>
+                  <th className="py-2.5 px-3 text-right text-emerald-700">Final / pcs</th>
+                  <th className="py-2.5 px-3 text-right text-emerald-800">Total Harga</th>
                   <th className="py-2.5 px-3 text-right text-slate-600">Margin</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
                 {flatTableRows.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="p-8 text-center text-slate-400 font-sans">
+                    <td colSpan={7} className="p-8 text-center text-slate-400 font-sans">
                       Tidak ada data yang sesuai dengan pencarian atau filter.
                     </td>
                   </tr>
                 ) : (
                   flatTableRows.map((row, idx) => (
-                    <tr key={idx} className="hover:bg-lime-50/40 transition-colors">
-                      <td className="py-2 px-3 font-bold text-slate-800 font-sans">{row.oplah.toLocaleString('id-ID')}</td>
-                      <td className="py-2 px-3 text-slate-700 font-sans">{row.varian}</td>
-                      <td className="py-2 px-3 text-slate-500 font-sans">{row.laminasi}</td>
+                    <tr key={idx} className="hover:bg-sky-50/40 transition-colors">
+                      <td className="py-2 px-3 font-bold text-slate-800 font-sans">{row.pcs.toLocaleString('id-ID')}</td>
+                      <td className="py-2 px-3 text-slate-700 font-sans">{row.bahan}</td>
+                      <td className="py-2 px-3 text-slate-500 font-sans">{selectedMesin}</td>
                       <td className="py-2 px-3 text-right text-slate-600">Rp {Math.round(row.hpp).toLocaleString('id-ID')}</td>
-                      <td className="py-2 px-3 text-right font-bold text-emerald-700">Rp {row.jual.toLocaleString('id-ID')}</td>
-                      <td className="py-2 px-3 text-right font-bold text-blue-600">Rp {row.nego.toLocaleString('id-ID')}</td>
-                      <td className="py-2 px-3 text-right font-bold text-slate-800">Rp {row.totalJual.toLocaleString('id-ID')}</td>
+                      <td className="py-2 px-3 text-right font-bold text-emerald-700">Rp {row.final.toLocaleString('id-ID')}</td>
+                      <td className="py-2 px-3 text-right font-bold text-slate-800">Rp {Math.round(row.total).toLocaleString('id-ID')}</td>
                       <td className="py-2 px-3 text-right text-slate-500 font-sans">{Math.round(row.margin * 100)}%</td>
                     </tr>
                   ))

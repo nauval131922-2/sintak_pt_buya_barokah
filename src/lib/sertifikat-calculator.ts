@@ -1,125 +1,120 @@
-// ponytail: kalkulator dan master parameter Sertifikat (12. Pricelist Sertifikat)
-// Referensi: Pricelist Sertifikat.xlsx sheets HARGA JULI 2026 (fallback heuristik jika file tidak ditemukan di H:\)
-// A4 21×29,7 cm Art Carton 260 / Ivory 260 gsm Full Colour 1/2 Muka, 2 pcs/A3+, finishing Laminasi Glossy/Doff + Foil opsional + Potong + Packing Kardus
+// Sertifikat — kalkulator murni 1:1 engine BUKU dari 6 file master:
+//   Pricelist Sertifikat 1 Muka {Ac 230, BC, Linen} × {Oliver, Print} - 21 x 29,7 cm
+//   (12. Pricelist Sertifikat/Source)
+// Lapisan: Master (input) → BUKU (engine per tier pcs) → Harga_Final (output).
+// Oplah Excel dalam PCS (Oliver: 1000–3000; Print Inter: 100–500).
+// Terminologi 1:1 Excel: Insheet, Plate, Drek, Desain, Film, Sisir, Klise Foil,
+//   Laminasi Glossy/Doff, UV Varnish, Lakban, Kardus, Royalty, Transp, BTKL/BOP
+//   (BTKL/BOP tak ada di file Sertifikat — tidak dipakai).
+
+export type SertifikatBahan = 'Art Carton' | 'BC Putih' | 'Linen Crem';
+export type SertifikatMesin = 'Oliver' | 'SM' | 'Print Inter' | 'Ryobi';
+export type SertifikatUkuran = '21 x 29,7' | '21,5 x 33';
+export type SertifikatFinishing = 'None,' | 'UV Varnish,' | 'Laminasi Glossy,' | 'Laminasi Doff,';
+
+export const SERTIFIKAT_BAHAN: SertifikatBahan[] = ['Art Carton', 'BC Putih', 'Linen Crem'];
+export const SERTIFIKAT_MESIN: SertifikatMesin[] = ['Oliver', 'SM', 'Print Inter', 'Ryobi'];
+export const SERTIFIKAT_UKURAN: SertifikatUkuran[] = ['21 x 29,7', '21,5 x 33'];
+export const SERTIFIKAT_FINISHING: SertifikatFinishing[] = ['None,', 'UV Varnish,', 'Laminasi Glossy,', 'Laminasi Doff,'];
+export const SERTIFIKAT_GRAMATUR_OPTIONS = [50, 52, 57, 58, 60, 70, 80, 100, 120, 150, 210, 230, 260, 300, 310]; // Master!D11
 
 export interface SertifikatMasterParams {
-  // A. Bahan Kertas Art Carton / Ivory
-  tarifKertasArtCartonKg: number; // default 16.400 /kg (Art Carton 260)
-  tarifKertasIvoryKg: number; // default 16.500 /kg (Ivory 260 premium)
-  upKertasPct: number; // default 5%
-  insheetWaste: number; // default 5 lbr insheet A3+
-
-  // B. Desain
-  tarifDesign: number; // default 20.000 /order
-
-  // C. Cetak Print Inter (FC) & Oliver (offset untuk oplah besar >500)
-  tarifPrintA3: number; // Rp 2.500 / lbr A3+ 1 Muka FC Print Inter
-  tarifPlatOliver: number; // Rp 45.000 / plat
-  minOliver: number; // Rp 90.000 / plat min 1000 drek
-  drekOliver: number; // Rp 40 / drek over
-
-  // D. Laminasi
-  tarifLaminasiGlossyCm2: number; // Rp 0.35 / cm²
-  tarifLaminasiDoffCm2: number; // Rp 0.40 / cm²
-  minLaminasi: number; // Rp 50.000 min order
-
-  // E. Foil (opsional)
-  tarifFoilPerPcs: number; // Rp 450 / pcs
-  minFoil: number; // Rp 100.000 min order
-  tarifMasterFoil: number; // Rp 150.000 master foil per order
-
-  // F. Finishing per pcs / per order
-  tarifPotongPerPcs: number; // potong A3+ jadi A4 per pcs
-  tarifKardusBox: number; // Rp 8.500 / box
-  tarifLakbanRoll: number; // Rp 8.000 / roll
-
-  // G. Margin & nego
-  marginDefaultPct: number; // default 30%
-  negoDefaultPct: number; // default 4%
+  umr: number; // Master!D8 → jasa foil BUKU!AO6 = (UMR/25)/500
+  hargaKgAc: number; // Master!D12 file Art Carton
+  hargaKgBc: number; // Master!D12 file BC
+  hargaKgLinen: number; // Master!D12 file Linen
+  upAcOffset: number; // Master!E12 Ac + Oliver-family (%) — SM/Ryobi ikut pola Oliver
+  upAcPrint: number; // Master!E12 Ac + Print Inter (%)
+  upBcOffset: number; // Master!E12 BC + Oliver-family (%)
+  upBcPrint: number; // Master!E12 BC + Print Inter (%)
+  upLinenOffset: number; // Master!E12 Linen + Oliver-family (%)
+  upLinenPrint: number; // Master!E12 Linen + Print Inter (%)
+  gramaturAc: number; // Master!D11 file Art Carton
+  gramaturBc: number; // Master!D11 file BC
+  gramaturLinen: number; // Master!D11 file Linen
+  insheetOffset: number; // Master!D13 file Oliver (100) — SM/Ryobi ikut pola Oliver
+  insheetPrint: number; // Master!D13 file Print Inter (7)
+  desain: number; // Master!D17 (20000 semua file)
+  tarifPrintAc: number; // Master!D18 file Ac (2700) → BUKU!T2
+  tarifPrintBc: number; // Master!D18 file BC (3800) → BUKU!T2
+  tarifPrintLinen: number; // Master!D18 file Linen (3800) → BUKU!T2
+  tarifSisir: number; // BUKU!AS6 = 5000 (selalu ditarik via AS7)
+  tarifLamGlossy: number; // BUKU!AU6 = 0,35 (string koma di Excel)
+  tarifLamDoff: number; // BUKU!AX6 = 0,4
+  tarifUv: number; // BUKU!BA6 = 0,12
+  tarifLakbanRoll: number; // Master!D21 → BUKU!BF32
+  tarifKardusBox: number; // Master!D22 → BUKU!BG6
+  tarifFoilPlastikRoll: number; // BUKU!AN33 = 295000 (masuk via AP7 bila foil √)
+  royaltyPerPcs: number; // Master!D23 → BUKU!AI6
+  transportPerOrder: number; // BUKU!AR6
+  labaPct: number; // Master!E24 → BUKU!BK6
 }
 
 export const DEFAULT_SERTIFIKAT_PARAMS: SertifikatMasterParams = {
-  tarifKertasArtCartonKg: 16400,
-  tarifKertasIvoryKg: 16500,
-  upKertasPct: 5,
-  insheetWaste: 5,
-  tarifDesign: 20000,
-  tarifPrintA3: 2500,
-  tarifPlatOliver: 45000,
-  minOliver: 90000,
-  drekOliver: 40,
-  tarifLaminasiGlossyCm2: 0.35,
-  tarifLaminasiDoffCm2: 0.40,
-  minLaminasi: 50000,
-  tarifFoilPerPcs: 450,
-  minFoil: 100000,
-  tarifMasterFoil: 150000,
-  tarifPotongPerPcs: 50,
-  tarifKardusBox: 8500,
+  umr: 2818585,
+  hargaKgAc: 16400,
+  hargaKgBc: 24100,
+  hargaKgLinen: 29900,
+  upAcOffset: 5,
+  upAcPrint: 0,
+  upBcOffset: 5,
+  upBcPrint: 5,
+  upLinenOffset: 0,
+  upLinenPrint: 0,
+  gramaturAc: 230,
+  gramaturBc: 200,
+  gramaturLinen: 300,
+  insheetOffset: 100,
+  insheetPrint: 7,
+  desain: 20000,
+  tarifPrintAc: 2700,
+  tarifPrintBc: 3800,
+  tarifPrintLinen: 3800,
+  tarifSisir: 5000,
+  tarifLamGlossy: 0.35,
+  tarifLamDoff: 0.4,
+  tarifUv: 0.12,
   tarifLakbanRoll: 8000,
-  marginDefaultPct: 30,
-  negoDefaultPct: 4,
+  tarifKardusBox: 8500,
+  tarifFoilPlastikRoll: 295000,
+  royaltyPerPcs: 0,
+  transportPerOrder: 0,
+  labaPct: 30,
 };
 
-export type SertifikatUkuranType = 'A4 (21 x 29,7 cm)';
-export type SertifikatBahanType = 'Art Carton 260' | 'Ivory 260';
-export type SertifikatMukaType = '1 Muka' | '2 Muka';
-export type SertifikatLaminasiType = 'Tanpa Laminasi' | 'Glossy' | 'Doff';
-export type LaminasiType = SertifikatLaminasiType;
-
-export type SertifikatVarianType =
-  | 'Art Carton 260 - 1 Muka'
-  | 'Art Carton 260 - 2 Muka'
-  | 'Ivory 260 - 1 Muka'
-  | 'Ivory 260 - 2 Muka';
-
-export const SERTIFIKAT_VARIANTS: SertifikatVarianType[] = [
-  'Art Carton 260 - 1 Muka',
-  'Art Carton 260 - 2 Muka',
-  'Ivory 260 - 1 Muka',
-  'Ivory 260 - 2 Muka',
-];
-
-export const SERTIFIKAT_LAMINASI_OPTIONS: SertifikatLaminasiType[] = ['Tanpa Laminasi', 'Glossy', 'Doff'];
-
-// ponytail: A4 21×29,7 cm muat 2 per A3+ (33×48) dengan imposisi 2-up, gripper 1 cm; 260 gsm premium
-export const SERTIFIKAT_CONFIG: Record<SertifikatVarianType, {
-  w: number; h: number;
-  pcsPerA3: number;
-  gramatur: number;
-  bahan: SertifikatBahanType;
-  muka: SertifikatMukaType;
-  description: string;
+// BUKU!O7/P7 per mesin (sama untuk kedua ukuran) — BUKU!V27/W27 dimensi dasar kertas
+const SERTIFIKAT_MESIN_SPEC: Record<SertifikatMesin, {
+  o7: number; p7: number; v27: number; w27: number;
+  plate: number; minOrder: number; drek: number; overMode: 'Q-1000' | 'Q-3000' | 'none' | 'Q-500';
 }> = {
-  'Art Carton 260 - 1 Muka': {
-    w: 21, h: 29.7, pcsPerA3: 2, gramatur: 260, bahan: 'Art Carton 260', muka: '1 Muka',
-    description: 'A4 21×29,7 cm · Art Carton 260 gsm · 1 Muka Full Colour · 2 pcs/A3+ · Laminasi + Foil opsional',
-  },
-  'Art Carton 260 - 2 Muka': {
-    w: 21, h: 29.7, pcsPerA3: 2, gramatur: 260, bahan: 'Art Carton 260', muka: '2 Muka',
-    description: 'A4 21×29,7 cm · Art Carton 260 gsm · 2 Muka Full Colour · 2 pcs/A3+ · Laminasi + Foil opsional',
-  },
-  'Ivory 260 - 1 Muka': {
-    w: 21, h: 29.7, pcsPerA3: 2, gramatur: 260, bahan: 'Ivory 260', muka: '1 Muka',
-    description: 'A4 21×29,7 cm · Ivory 260 gsm · 1 Muka Full Colour · 2 pcs/A3+ · Laminasi + Foil opsional',
-  },
-  'Ivory 260 - 2 Muka': {
-    w: 21, h: 29.7, pcsPerA3: 2, gramatur: 260, bahan: 'Ivory 260', muka: '2 Muka',
-    description: 'A4 21×29,7 cm · Ivory 260 gsm · 2 Muka Full Colour · 2 pcs/A3+ · Laminasi + Foil opsional',
-  },
+  // BUKU!O7 — BUKU!P7 — BUKU!V27 — BUKU!W27 — BUKU!Y6 — BUKU!AB6 — BUKU!AC7 — BUKU!AE7
+  'Oliver': { o7: 5, p7: 10, v27: 79, w27: 109, plate: 45000, minOrder: 90000, drek: 40, overMode: 'Q-1000' },
+  'SM': { o7: 2, p7: 8, v27: 79, w27: 109, plate: 78000, minOrder: 310000, drek: 100, overMode: 'Q-3000' },
+  'Print Inter': { o7: 1, p7: 2, v27: 32.5, w27: 48, plate: 0, minOrder: 0, drek: 0, overMode: 'none' },
+  'Ryobi': { o7: 11, p7: 11, v27: 79, w27: 109, plate: 10000, minOrder: 15000, drek: 30, overMode: 'Q-500' },
 };
 
-export const SERTIFIKAT_TIERS: number[] = [
-  50, 100, 150, 200, 250, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2500, 3000, 4000, 5000, 7500, 10000,
-];
+// BUKU!D7/F7 dimensi display untuk basis laminasi/UV
+const SERTIFIKAT_DIM_DISPLAY: Record<SertifikatUkuran, { d: number; f: number }> = {
+  '21 x 29,7': { d: 21, f: 29.7 },
+  '21,5 x 33': { d: 21.5, f: 33 },
+};
+
+export const SERTIFIKAT_TIERS = [100, 200, 300, 400, 500, 1000, 1500, 2000, 2500, 3000]; // union tier file
 
 export interface SertifikatSimulatorInput {
-  oplah: number;
-  varian: SertifikatVarianType;
-  laminasi: SertifikatLaminasiType;
-  opsiFoil: boolean;
-  marginPct: number;
-  negoDiskonPct: number;
+  oplahPcs: number; // BUKU!H
+  ukuran: SertifikatUkuran; // Master!D5
+  bahan: SertifikatBahan; // Master!D10
+  gramatur: number; // Master!D11 → BUKU!W28
+  nWarna: 1 | 2 | 3 | 4; // Master!D15 → BUKU!L7/Z2
+  muka: 1 | 2; // Master!D14 → BUKU!N7
+  mesin: SertifikatMesin; // Master!D16
+  finishing: SertifikatFinishing; // Master!D20 → AV27/AY27/BB27
+  foilAktif: boolean; // BUKU!AP27 √/X (AN27 selalu √ sesuai file)
+  kardusAktif: boolean; // BUKU!BG28 √/X
+  insheetLembar: number; // Master!D13 → BUKU!K6
+  marginPct: number; // override BUKU!BK6 (= Master!E24)
 }
 
 export interface SertifikatBreakdownItem {
@@ -132,23 +127,42 @@ export interface SertifikatBreakdownItem {
 export interface SertifikatSimulatorResult {
   input: SertifikatSimulatorInput;
   breakdown: SertifikatBreakdownItem[];
-  kebutuhanA3: number;
-  totalHpp: number;
-  hppPerPcs: number;
-  hargaJualPerPcs: number;
-  hargaNegoPerPcs: number;
-  totalHargaJual: number;
-  totalHargaNego: number;
-  profitPerPcs: number;
-  profitNegoPerPcs: number;
-  profitTotal: number;
-  profitNegoTotal: number;
+  kebutuhanPlano: number; // BUKU!R7
+  totalHpp: number; // BUKU!BI7
+  hppPerPcs: number; // BUKU!BJ7
+  labaPerPcs: number; // BUKU!BK7
+  labaTotal: number; // BUKU!BL7
+  totalHarga: number; // BUKU!BM7
+  hargaPerPcs: number; // BUKU!BN7
+  hargaFinalPerPcs: number; // BUKU!BO7
   marginPct: number;
-  marginNegoPct: number;
 }
 
-function beratA3Kg(gramatur: number): number {
-  return 0.1584 * gramatur / 1000;
+export function hargaKgForBahan(bahan: SertifikatBahan, p: SertifikatMasterParams): number {
+  return bahan === 'Art Carton' ? p.hargaKgAc : bahan === 'BC Putih' ? p.hargaKgBc : p.hargaKgLinen;
+}
+
+export function upPctForSpec(bahan: SertifikatBahan, mesin: SertifikatMesin, p: SertifikatMasterParams): number {
+  const isPrint = mesin === 'Print Inter';
+  if (bahan === 'Art Carton') return isPrint ? p.upAcPrint : p.upAcOffset;
+  if (bahan === 'BC Putih') return isPrint ? p.upBcPrint : p.upBcOffset;
+  return isPrint ? p.upLinenPrint : p.upLinenOffset;
+}
+
+export function gramaturDefaultForBahan(bahan: SertifikatBahan, p: SertifikatMasterParams): number {
+  return bahan === 'Art Carton' ? p.gramaturAc : bahan === 'BC Putih' ? p.gramaturBc : p.gramaturLinen;
+}
+
+export function tarifPrintForBahan(bahan: SertifikatBahan, p: SertifikatMasterParams): number {
+  return bahan === 'Art Carton' ? p.tarifPrintAc : bahan === 'BC Putih' ? p.tarifPrintBc : p.tarifPrintLinen;
+}
+
+export function insheetDefaultForMesin(mesin: SertifikatMesin, p: SertifikatMasterParams): number {
+  return mesin === 'Print Inter' ? p.insheetPrint : p.insheetOffset;
+}
+
+export function roundUpTens(n: number): number {
+  return Math.ceil(n / 10) * 10;
 }
 
 export function calculateSertifikatHpp(
@@ -156,147 +170,107 @@ export function calculateSertifikatHpp(
   rawParams: SertifikatMasterParams = DEFAULT_SERTIFIKAT_PARAMS
 ): SertifikatSimulatorResult {
   const p: SertifikatMasterParams = { ...DEFAULT_SERTIFIKAT_PARAMS, ...(rawParams || {}) };
-  const { oplah, varian, laminasi = 'Tanpa Laminasi', opsiFoil = false, marginPct, negoDiskonPct } = input;
-  const validOplah = Math.max(1, oplah);
-  const cfg = SERTIFIKAT_CONFIG[varian];
+  const { oplahPcs, ukuran, bahan, gramatur, nWarna, muka, mesin, finishing, foilAktif, kardusAktif, insheetLembar, marginPct } = input;
+  const H = Math.max(1, oplahPcs);
+  const spec = SERTIFIKAT_MESIN_SPEC[mesin];
+  const disp = SERTIFIKAT_DIM_DISPLAY[ukuran];
+  const isPrint = mesin === 'Print Inter';
 
   const breakdown: SertifikatBreakdownItem[] = [];
   let totalHpp = 0;
-
   const add = (nama: string, nominal: number, keterangan = '') => {
     if (nominal === 0) return;
-    breakdown.push({ nama, nominal: Math.round(nominal), pct: 0, keterangan });
+    breakdown.push({ nama, nominal: Math.round(nominal * 100) / 100, pct: 0, keterangan });
     totalHpp += nominal;
   };
 
-  // 1. Kebutuhan kertas A3+ & Biaya Kertas Art Carton / Ivory 260 gsm
-  const kebutuhanA3Net = Math.ceil(validOplah / cfg.pcsPerA3);
-  const kebutuhanA3 = kebutuhanA3Net + p.insheetWaste;
-  const beratPerA3 = beratA3Kg(cfg.gramatur);
-  const tarifKertasKg = cfg.bahan === 'Ivory 260' ? p.tarifKertasIvoryKg : p.tarifKertasArtCartonKg;
-  const hargaPerA3 = beratPerA3 * tarifKertasKg * (1 + p.upKertasPct / 100);
-  const biayaKertas = kebutuhanA3 * hargaPerA3;
-  add(`Kertas ${cfg.bahan}`, biayaKertas,
-    `${kebutuhanA3} lbr A3+ (${kebutuhanA3Net} + ${p.insheetWaste} insheet) × Rp ${Math.round(hargaPerA3).toLocaleString('id-ID')} (+${p.upKertasPct}%)`);
+  // BUKU!K7 = K6 — BUKU!L7 = warna — BUKU!N7 = muka (M7 selalu 0)
+  const K7 = insheetLembar; // BUKU!K7
+  const N7 = muka; // BUKU!N7
+  // BUKU!R7 = ROUNDUP((H/P7)+(K7/O7),0) — BUKU!Q7 = R7*O7*N7
+  const R7 = Math.ceil(H / spec.p7 + K7 / spec.o7); // BUKU!R7
+  const Q7 = R7 * spec.o7 * N7; // BUKU!Q7
+  // BUKU!W29 = ((V27*W27)*W28)/20000*((W30*Y30)+W30)
+  const hargaKg = hargaKgForBahan(bahan, p);
+  const upPct = upPctForSpec(bahan, mesin, p);
+  const W29 = ((spec.v27 * spec.w27) * gramatur) / 20000 * ((hargaKg * (upPct / 100)) + hargaKg);
+  // BUKU!T7 = (W29/500)*R7 (offset) atau Q7*T2 (Print Inter, T2 = D18)
+  const T7 = isPrint ? Q7 * tarifPrintForBahan(bahan, p) : (W29 / 500) * R7;
+  add(isPrint ? 'Cetak Print Inter' : 'Kertas', T7,
+    isPrint ? `${Q7} × Rp ${tarifPrintForBahan(bahan, p).toLocaleString('id-ID')}` : `${R7} lbr plano × Rp ${(W29 / 500).toLocaleString('id-ID')}`);
+  // BUKU!V7 = V6 = D17
+  add('Desain', p.desain, `Master!D17 Rp ${p.desain.toLocaleString('id-ID')}`);
+  // BUKU!Z7 = IF(Z6>0, Z6, Z2*N7)
+  const Z7 = p.platOverride > 0 ? p.platOverride : nWarna * N7; // BUKU!Z7
+  add('Plate', spec.plate * Z7, `${Z7} plat × Rp ${spec.plate.toLocaleString('id-ID')} (${mesin})`);
+  // BUKU!AD7 = AB6*Z7 — BUKU!AE7 over — BUKU!AF7 = AE*AC*Z2 — BUKU!AG7 = AF+AD
+  const AD7 = spec.minOrder * Z7; // BUKU!AD7
+  const overBase = spec.overMode === 'Q-1000' ? Q7 - 1000 : spec.overMode === 'Q-3000' ? Q7 - 3000 : spec.overMode === 'Q-500' ? Q7 - 500 : -1;
+  const AE7 = overBase > 1 ? overBase : 0; // BUKU!AE7 (Print Inter: 0 tetap)
+  const AF7 = AE7 <= 0 ? 0 : AE7 * spec.drek * nWarna; // BUKU!AF7 (AE7>1 selalu benar bila AE7>0)
+  add('Ongkos Cetak Min Order', AD7, `${Z7} plat × Rp ${spec.minOrder.toLocaleString('id-ID')}`);
+  add('Ongkos Cetak Over', AF7, AE7 > 0 ? `${AE7} × Rp ${spec.drek}/drek × ${nWarna}` : 'di bawah ambang → 0');
+  // BUKU!AI7 = H*AI6 (royalty)
+  add('Royalty', H * p.royaltyPerPcs, `${H} pcs × Rp ${p.royaltyPerPcs.toLocaleString('id-ID')}`);
+  // BUKU!AR7 = AR6 (transport)
+  add('Transport', p.transportPerOrder, 'per order');
+  // BUKU!AS7 = ROUNDUP(H/500,0)*AS6 (Sisir — selalu, tanpa syarat)
+  add('Sisir', Math.ceil(H / 500) * p.tarifSisir, `ceil(${H}/500) × Rp ${p.tarifSisir.toLocaleString('id-ID')}`);
+  // Laminasi/UV: basis selalu dihitung; dikenakan bila checkbox √ (min 50000)
+  // BUKU!AU7 = ((D+1)*(F+1)*AU6)*H — BUKU!AV7 = IF(AV27 √, MAX(AU7,50000), 0)
+  const lamBase = (disp.d + 1) * (disp.f + 1) * p.tarifLamGlossy * H; // BUKU!AU7
+  const doffBase = (disp.d + 1) * (disp.f + 1) * p.tarifLamDoff * H; // BUKU!AX7
+  const uvBase = (disp.d + 1) * (disp.f + 1) * p.tarifUv * H; // BUKU!BA7
+  const aboveMin = (v: number) => (v === 0 ? 0 : v > 50000 ? v : 50000);
+  add('Laminasi Glossy', finishing === 'Laminasi Glossy,' ? aboveMin(lamBase) : 0,
+    finishing === 'Laminasi Glossy,' ? `AV27=√, max(Rp ${Math.round(lamBase).toLocaleString('id-ID')}, 50000)` : 'AV27=X → 0');
+  add('Laminasi Doff', finishing === 'Laminasi Doff,' ? aboveMin(doffBase) : 0,
+    finishing === 'Laminasi Doff,' ? `AY27=√, max(Rp ${Math.round(doffBase).toLocaleString('id-ID')}, 50000)` : 'AY27=X → 0');
+  add('UV Varnish', finishing === 'UV Varnish,' ? aboveMin(uvBase) : 0,
+    finishing === 'UV Varnish,' ? `BB27=√, max(Rp ${Math.round(uvBase).toLocaleString('id-ID')}, 50000)` : 'BB27=X → 0');
+  // BUKU!BE7 = (H/BE35)/BE6 — BUKU!BF7 = BF32*BE7 — BUKU!BG7 = IF(BG28 √, ROUNDUP(H/BE35)*BG6+BF7, 0)
+  const BE6 = 7650 / 196; // BUKU!BE6 = BF30/196
+  const BE7 = (H / 1000) / BE6; // BUKU!BE7
+  const BF7 = p.tarifLakbanRoll * BE7; // BUKU!BF7
+  add('Kardus + Lakban', kardusAktif ? Math.ceil(H / 1000) * p.tarifKardusBox + BF7 : 0,
+    kardusAktif ? `ceil(${H}/1000) × Rp ${p.tarifKardusBox.toLocaleString('id-ID')} + lakban` : 'BG28=X → 0');
+  // Foil: AN7 = AN6*AN2 (AN27 selalu √) ; AO7 = ((UMR/25)/500*H)*AN2 ; AP7 = AO+AN+AL bila AP27 √
+  // BUKU!AN6 = IF(((7*19)*400)<50000, 50000, IF(>50000, nilai, 0)) — AL35=6, AN35=18
+  const kliseBase = ((6 + 1) * (18 + 1)) * 400; // BUKU!AN6
+  const AN6 = kliseBase < 50000 ? 50000 : kliseBase > 50000 ? kliseBase : 0;
+  const AN7 = AN6 * 2; // BUKU!AN7 (AN27=√, AN2=2)
+  const AO7 = ((p.umr / 25) / 500 * H) * 2; // BUKU!AO7 (AO30=500, AN2=2)
+  const AL7 = (H / 4800) * p.tarifFoilPlastikRoll; // BUKU!AL7 (AK6=4800)
+  add('Foil (Klise + Jasa + Plastik)', foilAktif ? AO7 + AN7 + AL7 : 0,
+    foilAktif ? `AP27=√: jasa + klise Rp ${AN6.toLocaleString('id-ID')} + plastik` : 'AP27=X → 0');
+  // BUKU!AK7 = H/AK6 — masuk BI7 (pecahan roll, quirk Excel)
+  const AK7 = H / 4800; // BUKU!AK7
+  add('Kebutuhan Foil Roll', AK7, `${H}/4800 roll (pecahan, sesuai BI7)`);
 
-  // 2. Biaya Cetak Full Colour
-  const is2Muka = cfg.muka === '2 Muka';
-  if (is2Muka) {
-    // 2 Muka FC: Print Inter double side (1.8×) untuk ≤500, Oliver untuk >500
-    // ponytail: multiplier 1.8 duplex surcharge naive — upgrade ke 2× jika duplex full cost dibuktikan
-    if (validOplah <= 500) {
-      const tarifEfektif = Math.round(p.tarifPrintA3 * 1.8);
-      const biayaPrint = kebutuhanA3 * tarifEfektif;
-      add('Cetak Print Inter 2 Muka Full Colour', biayaPrint,
-        `${kebutuhanA3} lbr A3+ × Rp ${tarifEfektif.toLocaleString('id-ID')} (1,8× 1 Muka)`);
-    } else {
-      const totalPlat = 8; // 4 plat × 2 muka
-      const biayaPlat = totalPlat * p.tarifPlatOliver;
-      add('Plat Oliver (FC 2 Muka)', biayaPlat, `${totalPlat} plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`);
-      const ongkosDasar = p.minOliver * totalPlat;
-      const overSheets = Math.max(0, kebutuhanA3 - 1000);
-      const biayaOver = overSheets * p.drekOliver * totalPlat;
-      const biayaCetakOliver = ongkosDasar + biayaOver;
-      const ketOver = overSheets > 0
-        ? `Min Rp ${ongkosDasar.toLocaleString('id-ID')} + Over ${overSheets} lbr × Rp ${p.drekOliver}/drek × ${totalPlat} plat`
-        : `Min order ${totalPlat} plat × Rp ${p.minOliver.toLocaleString('id-ID')} (≤1000 lbr)`;
-      add('Ongkos Cetak Oliver FC 2 Muka', biayaCetakOliver, ketOver);
-    }
-  } else {
-    // 1 Muka FC
-    if (validOplah <= 500) {
-      const biayaPrint = kebutuhanA3 * p.tarifPrintA3;
-      add('Cetak Print Inter 1 Muka Full Colour', biayaPrint,
-        `${kebutuhanA3} lbr A3+ × Rp ${p.tarifPrintA3.toLocaleString('id-ID')}`);
-    } else {
-      const totalPlat = 4;
-      const biayaPlat = totalPlat * p.tarifPlatOliver;
-      add('Plat Oliver (FC)', biayaPlat, `${totalPlat} plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`);
-      const ongkosDasar = p.minOliver * totalPlat;
-      const overSheets = Math.max(0, kebutuhanA3 - 1000);
-      const biayaOver = overSheets * p.drekOliver * totalPlat;
-      const biayaCetakOliver = ongkosDasar + biayaOver;
-      const ketOver = overSheets > 0
-        ? `Min Rp ${ongkosDasar.toLocaleString('id-ID')} + Over ${overSheets} lbr × Rp ${p.drekOliver}/drek × ${totalPlat} plat`
-        : `Min order ${totalPlat} plat × Rp ${p.minOliver.toLocaleString('id-ID')} (≤1000 lbr)`;
-      add('Ongkos Cetak Oliver FC', biayaCetakOliver, ketOver);
-    }
-  }
+  breakdown.forEach((b) => { b.pct = totalHpp > 0 ? b.nominal / totalHpp : 0; });
 
-  // 3. Desain
-  if (p.tarifDesign > 0) {
-    add('Desain Sertifikat', p.tarifDesign, 'Biaya desain & setting sertifikat');
-  }
-
-  // 4. Laminasi (opsional)
-  if (laminasi !== 'Tanpa Laminasi') {
-    const luasPerPcsCm2 = cfg.w * cfg.h;
-    const tarifCm2 = laminasi === 'Doff' ? p.tarifLaminasiDoffCm2 : p.tarifLaminasiGlossyCm2;
-    const mukaLaminasi = is2Muka ? 2 : 1;
-    const biayaLaminasiRaw = luasPerPcsCm2 * tarifCm2 * validOplah * mukaLaminasi;
-    const biayaLaminasi = Math.max(p.minLaminasi, biayaLaminasiRaw);
-    const ketLam = biayaLaminasiRaw < p.minLaminasi
-      ? `Min Laminasi Rp ${p.minLaminasi.toLocaleString('id-ID')} (raw ${luasPerPcsCm2} cm² × ${validOplah} pcs × ${mukaLaminasi} muka × Rp ${tarifCm2})`
-      : `${validOplah} pcs × ${luasPerPcsCm2.toFixed(1)} cm² × ${mukaLaminasi} muka × Rp ${tarifCm2}/cm²`;
-    add(`Laminasi ${laminasi}${is2Muka ? ' 2 Muka' : ''}`, biayaLaminasi, ketLam);
-  }
-
-  // 5. Foil opsional
-  if (opsiFoil && p.tarifFoilPerPcs > 0) {
-    const rawFoil = validOplah * p.tarifFoilPerPcs;
-    const biayaFoilCetak = Math.max(p.minFoil, rawFoil);
-    const ketFoil = rawFoil < p.minFoil
-      ? `Min Foil Rp ${p.minFoil.toLocaleString('id-ID')} (raw ${validOplah}×${p.tarifFoilPerPcs}=${rawFoil.toLocaleString('id-ID')})`
-      : `${validOplah} pcs × Rp ${p.tarifFoilPerPcs.toLocaleString('id-ID')}`;
-    add('Hot Foil Emas', biayaFoilCetak, ketFoil);
-    if (p.tarifMasterFoil > 0) {
-      add('Master Foil (pelat foil)', p.tarifMasterFoil, 'Biaya master/pelat foil per order');
-    }
-  }
-
-  // 6. Finishing Potong per pcs
-  if (p.tarifPotongPerPcs > 0) {
-    const biayaPotong = validOplah * p.tarifPotongPerPcs;
-    add('Finishing Potong', biayaPotong,
-      `${validOplah} pcs × Rp ${p.tarifPotongPerPcs.toLocaleString('id-ID')}`);
-  }
-
-  // 7. Packing Kardus + Lakban per order
-  {
-    const biayaPacking = p.tarifKardusBox + p.tarifLakbanRoll;
-    add('Packing Kardus & Lakban', biayaPacking, '1 paket packing order');
-  }
-
-  breakdown.forEach(b => { b.pct = totalHpp > 0 ? b.nominal / totalHpp : 0; });
-
-  const hppPerPcs = validOplah > 0 ? totalHpp / validOplah : 0;
-  const hargaJualPerPcs = Math.ceil((hppPerPcs * (1 + marginPct / 100)) / 10) * 10;
-  const hargaNegoPerPcs = Math.ceil((hargaJualPerPcs * (1 - negoDiskonPct / 100)) / 10) * 10;
-  const totalHargaJual = Math.round(hargaJualPerPcs * validOplah);
-  const totalHargaNego = Math.round(hargaNegoPerPcs * validOplah);
-  const profitPerPcs = hargaJualPerPcs - hppPerPcs;
-  const profitNegoPerPcs = hargaNegoPerPcs - hppPerPcs;
-  const profitTotal = totalHargaJual - totalHpp;
-  const profitNegoTotal = totalHargaNego - totalHpp;
-  const marginPctActual = hargaJualPerPcs > 0 ? profitPerPcs / hargaJualPerPcs : 0;
-  const marginNegoPct = hargaNegoPerPcs > 0 ? profitNegoPerPcs / hargaNegoPerPcs : 0;
+  // BUKU!BI7 = jumlah — BJ7 = BI/H — BK7 = BJ*(BK6/100) — BL7 = BK*H
+  // BUKU!BM7 = (BJ+BK)*H — BN7 = BM/H — BO7 = ROUNDUP(BN,-1)
+  const BI7 = totalHpp;
+  const BJ7 = BI7 / H;
+  const BK7 = BJ7 * (marginPct / 100);
+  const BL7 = BK7 * H;
+  const BM7 = (BJ7 + BK7) * H;
+  const BN7 = BM7 / H;
+  const BO7 = roundUpTens(BN7);
 
   return {
     input,
     breakdown,
-    kebutuhanA3,
-    totalHpp: Math.round(totalHpp),
-    hppPerPcs,
-    hargaJualPerPcs,
-    hargaNegoPerPcs,
-    totalHargaJual,
-    totalHargaNego,
-    profitPerPcs,
-    profitNegoPerPcs,
-    profitTotal,
-    profitNegoTotal,
-    marginPct: marginPctActual,
-    marginNegoPct,
+    kebutuhanPlano: R7,
+    totalHpp: BI7,
+    hppPerPcs: BJ7,
+    labaPerPcs: BK7,
+    labaTotal: BL7,
+    totalHarga: BM7,
+    hargaPerPcs: BN7,
+    hargaFinalPerPcs: BO7,
+    marginPct: marginPct / 100,
   };
 }
 

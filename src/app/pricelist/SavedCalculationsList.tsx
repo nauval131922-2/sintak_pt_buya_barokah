@@ -709,25 +709,25 @@ export default function SavedCalculationsList({
     // 13. Sertifikat
     sertifikatList.forEach((s: any) => {
       const inp = (s.data && s.data.input) ? s.data.input : (s.input || s.data || s || {});
-      const lam = inp.laminasi !== 'Tanpa Laminasi' ? ` · ${inp.laminasi}` : '';
-      const foil = inp.opsiFoil ? ' +Foil' : '';
+      const finLabel = (inp.finishing ?? 'None,').replace(/,$/, '');
+      const foil = inp.foilAktif ? ' +Foil' : '';
       items.push({
         id: s.id,
         category: 'Sertifikat',
         savedAt: s.savedAt,
         title: s.title,
-        oplah: inp.oplah,
-        specSummary: `Sertifikat ${inp.varian}${lam}${foil} • ${inp.oplah.toLocaleString('id-ID')} pcs`,
+        oplah: inp.oplahPcs,
+        specSummary: `Sertifikat ${inp.bahan ?? ''} ${inp.nWarna ?? ''}W ${inp.mesin ?? ''}${finLabel !== 'None' ? ` · ${finLabel}` : ''}${foil} • ${(inp.oplahPcs ?? 0).toLocaleString('id-ID')} pcs`,
         detailSpecs: [
-          `Bahan: ${inp.varian} · A4 21×29,7 cm · ${s.data.kebutuhanA3} lbr A3+`,
-          `Finishing: ${inp.laminasi}${foil ? ' +Foil Emas' : ''} + Potong + Packing Kardus`,
+          `Bahan: ${inp.bahan ?? ''} ${inp.gramatur ?? ''} gsm · ${inp.ukuran ?? ''} · ${inp.muka ?? ''} Muka`,
+          `Finishing: ${finLabel}${foil ? ' +Foil' : ''}${inp.kardusAktif ? ' +Kardus' : ''} · Insheet ${inp.insheetLembar ?? ''}`,
           `Margin: ${inp.marginPct}%`,
         ],
         hppUnit: (s.data?.hppPerPcs ?? s.hppPerPcs ?? 0),
-        hargaJualUnit: (s.data?.hargaJualPerPcs ?? s.hargaJualPerPcs ?? 0),
-        totalOmset: (s.data?.totalHargaJual ?? s.totalHargaJual ?? 0),
+        hargaJualUnit: (s.data?.hargaFinalPerPcs ?? s.hargaFinalPerPcs ?? 0),
+        totalOmset: (s.data?.totalHarga ?? s.totalHarga ?? 0),
         marginPct: inp.marginPct,
-        negoDiskonPct: inp.negoDiskonPct,
+        negoDiskonPct: 0,
         rawData: s,
       });
     });
@@ -1716,9 +1716,7 @@ export default function SavedCalculationsList({
     } else if (item.category === 'Sertifikat') {
       const s: any = item.rawData;
       const inp = (s.data && s.data.input) ? s.data.input : (s.input || s.data || s || {});
-      const foilTxt = inp.opsiFoil ? ' + Foil Emas' : '';
-      const lamTxt = inp.laminasi !== 'Tanpa Laminasi' ? ` + Laminasi ${inp.laminasi}` : '';
-      text = `*PENAWARAN SERTIFIKAT*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Sertifikat ${inp.varian}${lamTxt}${foilTxt} A4 21×29,7 cm\n• *Bahan*: ${inp.varian.includes('Ivory') ? 'Ivory 260' : 'Art Carton 260'} gsm\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs (2 pcs/A3+)\n• *Cetak*: Full Colour ${inp.varian.includes('2 Muka') ? '2 Muka' : '1 Muka'}${inp.oplah > 500 ? ' (Oliver)' : ' (Print Inter)'}\n• *Finishing*: ${inp.laminasi}${foilTxt ? ' + Foil Emas' : ''} + Potong + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${(s.data?.hargaJualPerPcs ?? s.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(s.data?.totalHargaJual ?? s.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
+        text = `*PENAWARAN SERTIFIKAT*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Sertifikat ${inp.ukuran ?? ''} 1 Muka\n• *Spesifikasi*: ${inp.bahan ?? ''} ${inp.gramatur ?? ''} gsm, ${inp.nWarna ?? ''} Warna, Cetak ${inp.mesin ?? ''}, ${((inp.finishing ?? 'None,').replace(/,$/, ''))}${inp.foilAktif ? ', Foil' : ''}\n• *Kuantitas*: ${(inp.oplahPcs ?? 0).toLocaleString('id-ID')} pcs\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${(s.data?.hargaFinalPerPcs ?? s.hargaFinalPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${Math.round(s.data?.totalHarga ?? s.totalHarga ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Undangan') {
       const u: any = item.rawData;
       const inp = (u.data && u.data.input) ? u.data.input : (u.input || u.data || u || {});
