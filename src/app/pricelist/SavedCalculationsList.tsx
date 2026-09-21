@@ -690,18 +690,18 @@ export default function SavedCalculationsList({
         category: 'Amplop',
         savedAt: a.savedAt,
         title: a.title,
-        oplah: inp.oplah,
-        specSummary: `Amplop ${inp.varian} • ${inp.oplah.toLocaleString('id-ID')} pcs`,
+        oplah: inp.oplahPcs,
+        specSummary: `Amplop ${inp.ukuran === '11 x 23' ? 'Besar' : 'Tanggung'} ${inp.nWarna ?? ''}W ${inp.mesin ?? ''} • ${(inp.oplahPcs ?? 0).toLocaleString('id-ID')} pcs`,
         detailSpecs: [
-          `Bahan: HVS 80 gsm · ${inp.varian} · ${a.data.kebutuhanA3} lbr A3+`,
-          `Finishing: Lipat & Lem + Packing Kardus`,
+          `Ukuran: ${inp.ukuran ?? ''} · ${inp.nWarna ?? ''} Warna · Cetak ${inp.mesin ?? ''}`,
+          `Insheet: ${inp.insheetLembar ?? ''} lbr · Desain Rp ${(inp.desain ?? 0).toLocaleString('id-ID')}`,
           `Margin: ${inp.marginPct}%`,
         ],
-        hppUnit: (a.data?.hppPerPcs ?? a.hppPerPcs ?? 0),
-        hargaJualUnit: (a.data?.hargaJualPerPcs ?? a.hargaJualPerPcs ?? 0),
-        totalOmset: (a.data?.totalHargaJual ?? a.totalHargaJual ?? 0),
+        hppUnit: (a.data?.hppPerPack ?? a.hppPerPack ?? 0),
+        hargaJualUnit: (a.data?.hargaFinalPerPack ?? a.hargaFinalPerPack ?? 0),
+        totalOmset: (a.data?.totalHarga ?? a.totalHarga ?? 0),
         marginPct: inp.marginPct,
-        negoDiskonPct: inp.negoDiskonPct,
+        negoDiskonPct: 0,
         rawData: a,
       });
     });
@@ -1712,7 +1712,7 @@ export default function SavedCalculationsList({
     } else if (item.category === 'Amplop') {
       const a: any = item.rawData;
       const inp = (a.data && a.data.input) ? a.data.input : (a.input || a.data || a || {});
-      text = `*PENAWARAN AMPLOP*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Amplop ${inp.varian}\n• *Bahan*: HVS 80 gsm\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Cetak*: 1 Warna Hitam 1 Muka${inp.oplah > 500 ? ' (Oliver)' : ' (Ryobi)'}\n• *Finishing*: Lipat & Lem + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${(a.data?.hargaJualPerPcs ?? a.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(a.data?.totalHargaJual ?? a.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
+        text = `*PENAWARAN AMPLOP*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Amplop Kabinet ${inp.ukuran === '11 x 23' ? 'Besar' : 'Tanggung'} (${inp.ukuran ?? ''})\n• *Spesifikasi*: ${inp.nWarna ?? ''} Warna, Cetak ${inp.mesin ?? ''}\n• *Kuantitas*: ${(inp.oplahPcs ?? 0).toLocaleString('id-ID')} pcs\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pack*: *Rp ${(a.data?.hargaFinalPerPack ?? a.hargaFinalPerPack ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${Math.round(a.data?.totalHarga ?? a.totalHarga ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN. Pack @100 pcs._`;
     } else if (item.category === 'Sertifikat') {
       const s: any = item.rawData;
       const inp = (s.data && s.data.input) ? s.data.input : (s.input || s.data || s || {});

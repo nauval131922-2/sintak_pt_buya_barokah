@@ -371,19 +371,8 @@ export function applyGlobalParamsToAll(
 
   const nextAmplop: AmplopMasterParams = {
     ...currAmplop,
-    tarifKertasHvsKg: g.tarifHvs70,
-    upKertasPct: g.upKertasPct,
-    tarifPrintA3: g.tarifPrintA3,
-    tarifRyobi: g.ryobiMinOngkos,
-    tarifPlatOliver: g.oliverPlatUnit,
-    minOliver: g.oliverMinOngkos,
-    drekOliver: g.oliverDrekOver,
-    tarifLipatLemPerPcs: g.tarifSisirPcs,
-    tarifKardusBox: g.tarifKardusBox,
-    tarifLakbanRoll: g.tarifLakbanRoll,
-    tarifDesign: g.tarifDesainStandar,
-    marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
+    desainStandar: g.tarifDesainStandar,
+    labaPct: g.defaultMarginPct,
   };
 
   const nextSertifikat: SertifikatMasterParams = {

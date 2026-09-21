@@ -1,14 +1,12 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { saveCalculationToDb } from '@/lib/pricelist-db-sync';
 import {
   FileSpreadsheet,
   DollarSign,
   TrendingUp,
-  Percent,
   FileText,
-  Copy,
   Check,
   Share2,
   Sliders,
@@ -19,23 +17,28 @@ import {
   Calculator,
   Info,
   Layers,
-  RefreshCw,
-  Mail,
+  Wallet,
 } from 'lucide-react';
 import {
   calculateAmplopHpp,
   DEFAULT_AMPLOP_PARAMS,
   AmplopMasterParams,
-  AmplopUkuranType,
+  AmplopUkuran,
+  AmplopMesin,
+  AMPLOP_UKURAN,
+  AMPLOP_MESIN,
   AMPLOP_TIERS,
+  AMPLOP_PRODUK_LABEL,
+  AMPLOP_WARNA_OPTIONS,
+  desainDefaultForSpec,
   SavedAmplopSimulationItem,
-  AMPLOP_CONFIG,
 } from '@/lib/amplop-calculator';
 import { toast } from '@/lib/toast';
 
 export type { SavedAmplopSimulationItem };
 
-const VARIAN_OPTIONS: AmplopUkuranType[] = ['Kecil (11 x 22 cm)', 'Sedang (16 x 23 cm)', 'Besar (24 x 35 cm)'];
+const DRAFT_KEY = 'sintak_amplop_draft';
+const SAVED_KEY = 'sintak_saved_amplop_simulations';
 
 interface AmplopSimulatorProps {
   customParams?: AmplopMasterParams;
@@ -56,10 +59,15 @@ export default function AmplopSimulator({
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: AmplopSimulatorProps) {
-  const [oplah, setOplah] = useState<number>(500);
-  const [varian, setVarian] = useState<AmplopUkuranType>('Kecil (11 x 22 cm)');
-  const [marginPct, setMarginPct] = useState(30);
-  const [negoDiskonPct, setNegoDiskonPct] = useState(4);
+  const params: AmplopMasterParams = { ...DEFAULT_AMPLOP_PARAMS, ...(customParams || {}) };
+
+  const [oplahPcs, setOplahPcs] = useState<number>(100);
+  const [ukuran, setUkuran] = useState<AmplopUkuran>('11 x 23');
+  const [nWarna, setNWarna] = useState<1 | 2 | 3 | 4>(1);
+  const [mesin, setMesin] = useState<AmplopMesin>('Ryobi');
+  const [insheetLembar, setInsheetLembar] = useState<number>(params.insheetLembar);
+  const [desain, setDesain] = useState<number>(desainDefaultForSpec('11 x 23', 'Ryobi', params));
+  const [marginPct, setMarginPct] = useState(params.labaPct);
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedAmplopSimulationItem[]>([]);
@@ -67,6 +75,7 @@ export default function AmplopSimulator({
   const [internalActiveId, setInternalActiveId] = useState<string | null>(null);
   const [internalActiveTitle, setInternalActiveTitle] = useState<string | null>(null);
   const [showSimulatorManual, setShowSimulatorManual] = useState(false);
+  const draftLoaded = useRef(false);
 
   const activeSimulationId = propActiveSimId !== undefined ? propActiveSimId : internalActiveId;
   const setActiveSimulationId = (id: string | null) => {
@@ -80,9 +89,41 @@ export default function AmplopSimulator({
     else setInternalActiveTitle(title);
   };
 
+  // Auto-persist draft agar tidak reset saat pindah tab
+  useEffect(() => {
+    if (!draftLoaded.current) {
+      draftLoaded.current = true;
+      try {
+        const raw = localStorage.getItem(DRAFT_KEY);
+        if (raw) {
+          const d = JSON.parse(raw);
+          if (typeof d.oplahPcs === 'number') setOplahPcs(d.oplahPcs);
+          if (AMPLOP_UKURAN.includes(d.ukuran)) setUkuran(d.ukuran);
+          if ([1, 2, 3, 4].includes(d.nWarna)) setNWarna(d.nWarna);
+          if (AMPLOP_MESIN.includes(d.mesin)) setMesin(d.mesin);
+          if (typeof d.insheetLembar === 'number') setInsheetLembar(d.insheetLembar);
+          if (typeof d.desain === 'number') setDesain(d.desain);
+          if (typeof d.marginPct === 'number') setMarginPct(d.marginPct);
+        }
+      } catch (e) {
+        console.error('Failed to load amplop draft:', e);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!draftLoaded.current) return;
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ oplahPcs, ukuran, nWarna, mesin, insheetLembar, desain, marginPct }));
+    } catch (e) {
+      console.error('Failed to save amplop draft:', e);
+    }
+  }, [oplahPcs, ukuran, nWarna, mesin, insheetLembar, desain, marginPct]);
+
   useEffect(() => {
     try {
-      const raw = localStorage.getItem('sintak_saved_amplop_simulations');
+      const raw = localStorage.getItem(SAVED_KEY);
       if (raw) {
         const list: SavedAmplopSimulationItem[] = JSON.parse(raw);
         setSavedSimulations(list);
@@ -91,10 +132,13 @@ export default function AmplopSimulator({
           const item = list.find((s) => s.id === activeSimulationId);
           if (item) {
             const inp = item.data.input;
-            setOplah(inp.oplah);
-            setVarian(inp.varian);
+            setOplahPcs(inp.oplahPcs);
+            setUkuran(inp.ukuran);
+            setNWarna(inp.nWarna);
+            setMesin(inp.mesin);
+            setInsheetLembar(inp.insheetLembar);
+            setDesain(inp.desain);
             setMarginPct(inp.marginPct);
-            setNegoDiskonPct(inp.negoDiskonPct);
             setSimulationTitle(item.title);
           }
         }
@@ -104,17 +148,28 @@ export default function AmplopSimulator({
     }
   }, [activeSimulationId]);
 
+  // Ganti ukuran/mesin → desain ikut default file (jawaban STOP&ASK)
+  const handleUkuranChange = (u: AmplopUkuran) => {
+    setUkuran(u);
+    setDesain(desainDefaultForSpec(u, mesin, params));
+  };
+  const handleMesinChange = (m: AmplopMesin) => {
+    setMesin(m);
+    setDesain(desainDefaultForSpec(ukuran, m, params));
+  };
+
   const result = useMemo(
     () =>
       calculateAmplopHpp(
-        { oplah, varian, marginPct, negoDiskonPct },
-        customParams
+        { oplahPcs, ukuran, nWarna, mesin, insheetLembar, desain, marginPct },
+        params
       ),
-    [oplah, varian, marginPct, negoDiskonPct, customParams]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [oplahPcs, ukuran, nWarna, mesin, insheetLembar, desain, marginPct, customParams]
   );
 
   const defaultTitle = () => {
-    return `Amplop ${varian} (${oplah} pcs)`;
+    return `Amplop ${ukuran === '11 x 23' ? 'Besar' : 'Tanggung'} ${nWarna}W ${mesin} (${oplahPcs} pcs)`;
   };
 
   const handleSaveSimulation = () => {
@@ -124,13 +179,13 @@ export default function AmplopSimulator({
       title,
       savedAt: new Date().toISOString(),
       data: result,
-      paramsSnapshot: customParams,
+      paramsSnapshot: params,
     };
     const updated = [newItem, ...savedSimulations.slice(0, 49)];
     setSavedSimulations(updated);
     try {
-      localStorage.setItem('sintak_saved_amplop_simulations', JSON.stringify(updated));
-    saveCalculationToDb({ ...newItem, category: 'Amplop' });
+      localStorage.setItem(SAVED_KEY, JSON.stringify(updated));
+      saveCalculationToDb({ ...newItem, category: 'Amplop' });
     } catch (e) {
       console.error('Failed to save amplop simulation:', e);
     }
@@ -146,13 +201,13 @@ export default function AmplopSimulator({
     const title = simulationTitle.trim() || activeSimulationTitle || defaultTitle();
     const updated = savedSimulations.map((item) =>
       item.id === activeSimulationId
-        ? { ...item, title, savedAt: new Date().toISOString(), data: result, paramsSnapshot: customParams }
+        ? { ...item, title, savedAt: new Date().toISOString(), data: result, paramsSnapshot: params }
         : item
     );
     setSavedSimulations(updated);
     try {
-      localStorage.setItem('sintak_saved_amplop_simulations', JSON.stringify(updated));
-    const targetItem = updated.find((x) => x.id === activeSimulationId);
+      localStorage.setItem(SAVED_KEY, JSON.stringify(updated));
+      const targetItem = updated.find((x) => x.id === activeSimulationId);
       if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Amplop' });
     } catch (e) {
       console.error('Failed to update amplop simulation:', e);
@@ -166,22 +221,18 @@ export default function AmplopSimulator({
 
   const handleCopyQuote = () => {
     const fmt = (n: number) => n.toLocaleString('id-ID');
-    const cfg = AMPLOP_CONFIG[varian];
     const text =
       `*PENAWARAN AMPLOP*\n` +
       `*PT Buya Barokah*\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
-      `• *Produk*: Amplop ${varian}\n` +
-      `• *Spesifikasi*: ${cfg.description}\n` +
-      `• *Kuantitas*: ${oplah} pcs (${cfg.pcsPerA3} pcs/A3+)\n` +
-      `• *Bahan*: HVS ${cfg.gramatur} gsm + Cetak 1 Warna 1 Muka${oplah > 500 ? ' (Oliver)' : ' (Ryobi)'}\n` +
-      `• *Finishing*: Lipat & Lem + Packing Kardus\n` +
+      `• *Produk*: ${AMPLOP_PRODUK_LABEL[ukuran]} (${ukuran})\n` +
+      `• *Spesifikasi*: ${nWarna} Warna, Cetak ${mesin}\n` +
+      `• *Kuantitas*: ${oplahPcs.toLocaleString('id-ID')} pcs\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
-      `• *Harga / Pcs*: *Rp ${fmt(result.hargaJualPerPcs)}*\n` +
-      `• *Harga Nego / Pcs*: *Rp ${fmt(result.hargaNegoPerPcs)}*\n` +
-      `• *Total Penawaran*: *Rp ${fmt(result.totalHargaJual)}*\n` +
+      `• *Harga / Pack*: *Rp ${fmt(result.hargaFinalPerPack)}*\n` +
+      `• *Total Penawaran*: *Rp ${fmt(Math.round(result.totalHarga))}*\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
-      `_Harga belum termasuk PPN. Amplop HVS, cetak 1 warna, lipat & lem + packing kardus._`;
+      `_Harga belum termasuk PPN. Pack @100 pcs._`;
 
     navigator.clipboard.writeText(text);
     setCopiedQuote(true);
@@ -189,10 +240,16 @@ export default function AmplopSimulator({
     setTimeout(() => setCopiedQuote(false), 2000);
   };
 
+  const specButton = (active: boolean) => `py-2 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
+    active
+      ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
+      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+  }`;
+
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
       {/* Header */}
-      <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
+      <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs shrink-0">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
             <FileSpreadsheet className="w-5 h-5" />
@@ -205,7 +262,7 @@ export default function AmplopSimulator({
               </span>
             </h3>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Hitung HPP, harga penawaran, dan estimasi profit Amplop (Kecil 11×22 · Sedang 16×23 · Besar 24×35 cm, HVS 80 gsm 1 Warna, lipat & lem).
+              Engine BUKU 1:1 file Harga AMPLOP JADI — pack @100 pcs, Ryobi vs Print Ungu/Buya, BTKL/BOP.
             </p>
           </div>
         </div>
@@ -245,7 +302,7 @@ export default function AmplopSimulator({
 
       {/* Banner riwayat aktif */}
       {activeSimulationId && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200">
+        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="p-1.5 bg-amber-200 text-amber-900 rounded-lg">
               <Bookmark className="w-4 h-4 fill-amber-700" />
@@ -287,166 +344,207 @@ export default function AmplopSimulator({
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Kolom Kiri: Form Input */}
-        <div className="lg:col-span-5 space-y-5">
+      {/* Grid Dual Scroll Mandiri */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-0 pb-1">
+        {/* Kolom Kiri: Input Form (lg:col-span-5) */}
+        <div className="lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
               <Sliders size={15} className="text-emerald-700" />
               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Input Spesifikasi Amplop</h3>
             </div>
 
-            {/* Varian Ukuran */}
+            {/* Ukuran */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Ukuran Amplop (HVS 80 gsm)
+                Ukuran (Master!D5)
               </label>
-              <div className="grid grid-cols-1 gap-2">
-                {VARIAN_OPTIONS.map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => setVarian(v)}
-                    className={`py-2.5 px-3 rounded-lg border text-xs font-bold text-left transition cursor-pointer flex items-center gap-2.5 ${
-                      varian === v
-                        ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
-                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    <Mail size={14} className={varian === v ? 'text-white' : 'text-slate-500'} />
-                    <div className="flex flex-col">
-                      <span className="leading-tight text-xs">{v}</span>
-                      <span className={`text-[10.5px] leading-tight ${varian === v ? 'text-emerald-100' : 'text-slate-500'}`}>{AMPLOP_CONFIG[v].description}</span>
-                    </div>
+              <div className="grid grid-cols-2 gap-2">
+                {AMPLOP_UKURAN.map((u) => (
+                  <button key={u} type="button" onClick={() => handleUkuranChange(u)} className={specButton(ukuran === u)}>
+                    <span className="leading-tight text-[11px]">{u === '11 x 23' ? 'Besar 11 × 23' : 'Tanggung 9,5 × 15,5'}</span>
+                    <span className={`block text-[10px] font-semibold ${ukuran === u ? 'text-emerald-100' : 'text-slate-400'}`}>{AMPLOP_PRODUK_LABEL[u]}</span>
                   </button>
                 ))}
               </div>
-              <p className="text-[11px] text-slate-500 mt-1.5 italic">{AMPLOP_CONFIG[varian].description}</p>
+            </div>
+
+            {/* Mesin cetak */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Mesin Cetak (Master!D15)
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {AMPLOP_MESIN.map((m) => (
+                  <button key={m} type="button" onClick={() => handleMesinChange(m)} className={specButton(mesin === m)}>
+                    <span className="text-[11px]">{m}</span>
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-slate-500 mt-1">Ryobi = plate + min + drek + BTKL/BOP. Print = tarif per pack, tanpa plate.</p>
+            </div>
+
+            {/* Jumlah warna */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Jumlah Warna (Master!D14)
+              </label>
+              <div className="grid grid-cols-4 gap-2">
+                {([1, 2, 3, 4] as const).map((w) => (
+                  <button key={w} type="button" onClick={() => setNWarna(w)} className={specButton(nWarna === w)}>
+                    {w}W
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-slate-500 mt-1">Berpengaruh pada jml plate Ryobi ({nWarna} plat). Print: warna tak memengaruhi tarif.</p>
             </div>
 
             {/* Oplah */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                Kuantitas Oplah (pcs)
+                Oplah (pcs — Master!D7)
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <select
-                  value={AMPLOP_TIERS.includes(oplah) ? oplah : 'custom'}
+                  value={AMPLOP_TIERS.includes(oplahPcs) ? oplahPcs : 'custom'}
                   onChange={(e) => {
                     const v = e.target.value;
-                    if (v !== 'custom') setOplah(Number(v));
+                    if (v !== 'custom') setOplahPcs(Number(v));
                   }}
                   className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none cursor-pointer"
                 >
                   {AMPLOP_TIERS.map((t) => (
                     <option key={t} value={t}>{t.toLocaleString('id-ID')} pcs</option>
                   ))}
-                  {!AMPLOP_TIERS.includes(oplah) && <option value="custom">{oplah.toLocaleString('id-ID')} pcs (custom)</option>}
+                  {!AMPLOP_TIERS.includes(oplahPcs) && <option value="custom">{oplahPcs.toLocaleString('id-ID')} pcs (custom)</option>}
                 </select>
                 <input
                   type="number"
                   min={1}
-                  max={20000}
+                  max={100000}
                   step={10}
-                  value={oplah}
-                  onChange={(e) => setOplah(Math.max(1, Number(e.target.value) || 1))}
+                  value={oplahPcs}
+                  onChange={(e) => setOplahPcs(Math.max(1, Number(e.target.value) || 1))}
                   className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
                   placeholder="Custom..."
                 />
               </div>
-              <p className="text-[10px] text-slate-500 mt-1">{AMPLOP_CONFIG[varian].pcsPerA3} pcs/A3+ · Kebutuhan A3+: {result.kebutuhanA3} lbr (inkl. insheet {customParams.insheetWaste})</p>
+              <p className="text-[10px] text-slate-500 mt-1">Kebutuhan: {result.kebutuhanPcs.toLocaleString('id-ID')} pcs (inkl. insheet {result.insheetPakai.toLocaleString('id-ID')}).</p>
             </div>
 
-            {/* Margin & Nego */}
+            {/* Insheet + Desain + Margin */}
             <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Margin Profit (%)</label>
-                <div className="relative">
+                <label className="block text-xs font-bold text-slate-700 mb-1">Insheet (lbr)</label>
+                <div className="flex items-center gap-1.5">
                   <input
                     type="number"
                     min={0}
-                    max={100}
-                    value={marginPct}
-                    onChange={(e) => setMarginPct(Number(e.target.value) || 0)}
-                    className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+                    value={insheetLembar}
+                    onChange={(e) => setInsheetLembar(Math.max(0, Number(e.target.value) || 0))}
+                    disabled={ukuran === '11 x 23'}
+                    className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none disabled:opacity-50"
                   />
-                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
                 </div>
+                <p className="text-[10px] text-slate-500 mt-1">{ukuran === '11 x 23' ? 'Besar: otomatis 3% (K2).' : 'Tanggung: manual (default 0).'}</p>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Batas Nego (%)</label>
-                <div className="relative">
+                <label className="block text-xs font-bold text-slate-700 mb-1">Desain (Rp)</label>
+                <div className="flex items-center gap-1.5">
                   <input
                     type="number"
                     min={0}
-                    max={100}
-                    value={negoDiskonPct}
-                    onChange={(e) => setNegoDiskonPct(Number(e.target.value) || 0)}
-                    className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+                    value={desain}
+                    onChange={(e) => setDesain(Math.max(0, Number(e.target.value) || 0))}
+                    className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
                   />
-                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
+                  <button
+                    type="button"
+                    title="Kembalikan ke default file"
+                    onClick={() => setDesain(desainDefaultForSpec(ukuran, mesin, params))}
+                    className="px-2 py-1.5 text-[10px] font-bold text-slate-500 hover:text-emerald-700 border border-slate-200 rounded-lg cursor-pointer shrink-0"
+                  >
+                    File
+                  </button>
                 </div>
+                <p className="text-[10px] text-slate-500 mt-1">Dihitung bila H &lt; 1000.</p>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Margin Laba (%)</label>
+              <div className="relative">
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={marginPct}
+                  onChange={(e) => setMarginPct(Number(e.target.value) || 0)}
+                  className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+                />
+                <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Kolom Kanan: Hasil */}
-        <div className="lg:col-span-7 space-y-5">
+        {/* Kolom Kanan: Hasil & Rincian (lg:col-span-7) */}
+        <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           {/* 4 Kartu Finansial */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">HPP / pcs</span>
+                <span className="text-[11px] font-semibold">HPP / pack</span>
                 <DollarSign size={13} className="text-slate-400" />
               </div>
               <div>
                 <span className="text-base sm:text-lg font-black text-slate-800 font-mono">
-                  Rp {Math.round(result.hppPerPcs).toLocaleString('id-ID')}
+                  Rp {Math.round(result.hppPerPack).toLocaleString('id-ID')}
                 </span>
                 <span className="block text-[10px] text-slate-400 mt-0.5">
-                  Total HPP: Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
+                  Rp {Math.round(result.hppPerPcs).toLocaleString('id-ID')} / pcs
                 </span>
               </div>
             </div>
 
             <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-emerald-800 mb-1">
-                <span className="text-[11px] font-bold">Harga Jual (+{marginPct}%)</span>
+                <span className="text-[11px] font-bold">Final / pack (+{marginPct}%)</span>
                 <TrendingUp size={13} className="text-emerald-600" />
               </div>
               <div>
                 <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
-                  Rp {result.hargaJualPerPcs.toLocaleString('id-ID')}
+                  Rp {result.hargaFinalPerPack.toLocaleString('id-ID')}
                 </span>
-                <span className="block text-[10px] text-emerald-700/80 mt-0.5">/ pcs</span>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-xl border border-blue-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-blue-800 mb-1">
-                <span className="text-[11px] font-bold">Harga Nego (-{negoDiskonPct}%)</span>
-                <Percent size={13} className="text-blue-600" />
-              </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-blue-800 font-mono">
-                  Rp {result.hargaNegoPerPcs.toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-blue-700/80 mt-0.5">/ pcs</span>
+                <span className="block text-[10px] text-emerald-700/80 mt-0.5">/ pack @100 (ROUNDUP)</span>
               </div>
             </div>
 
             <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">Total Harga Jual</span>
-                <TrendingUp size={13} className="text-emerald-500" />
+                <span className="text-[11px] font-semibold">Total Harga</span>
+                <Wallet size={13} className="text-slate-400" />
               </div>
               <div>
                 <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">
-                  Rp {result.totalHargaJual.toLocaleString('id-ID')}
+                  Rp {Math.round(result.totalHarga).toLocaleString('id-ID')}
                 </span>
                 <span className="block text-[10px] text-slate-500 mt-0.5">
-                  Profit: Rp {Math.round(result.profitTotal).toLocaleString('id-ID')}
+                  {oplahPcs.toLocaleString('id-ID')} pcs
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-slate-500 mb-1">
+                <span className="text-[11px] font-semibold">Laba Total</span>
+                <TrendingUp size={13} className="text-emerald-500" />
+              </div>
+              <div>
+                <span className="text-base sm:text-lg font-black text-slate-800 font-mono">
+                  Rp {Math.round(result.labaTotal).toLocaleString('id-ID')}
+                </span>
+                <span className="block text-[10px] text-slate-500 mt-0.5">
+                  Rp {Math.round(result.labaPerPcs).toLocaleString('id-ID')} / pcs
                 </span>
               </div>
             </div>
@@ -458,11 +556,11 @@ export default function AmplopSimulator({
               <div className="flex items-center gap-2">
                 <FileText size={15} className="text-emerald-700" />
                 <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Rincian Estimasi Komponen Biaya Amplop
+                  Rincian Biaya (BUKU!P7–AG7 → AI7)
                 </h4>
               </div>
               <span className="text-[11px] font-bold text-slate-500">
-                {oplah.toLocaleString('id-ID')} pcs · {varian}
+                {oplahPcs.toLocaleString('id-ID')} pcs · {ukuran === '11 x 23' ? 'Besar' : 'Tgg'} {nWarna}W {mesin}
               </span>
             </div>
             <div className="overflow-x-auto">
@@ -494,7 +592,7 @@ export default function AmplopSimulator({
                 <tfoot>
                   <tr className="bg-slate-50/90 font-bold border-t border-slate-200 text-xs">
                     <td colSpan={3} className="py-2.5 px-3 text-slate-800 font-sans">
-                      Total HPP Biaya Produksi ({oplah.toLocaleString('id-ID')} pcs)
+                      Total HPP ({oplahPcs.toLocaleString('id-ID')} pcs — BUKU!AI7)
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-sm">
                       Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
@@ -561,7 +659,7 @@ export default function AmplopSimulator({
                 <div>
                   <h3 className="text-base font-bold tracking-tight">Panduan Simulator Amplop</h3>
                   <p className="text-xs text-emerald-200/90 mt-0.5">
-                    Alur perhitungan berbasis oplah pcs, 3 ukuran amplop HVS 80 gsm 1 Warna, lipat & lem + packing kardus
+                    Pack @100 pcs — Besar 11×23 vs Tanggung 9,5×15,5; Ryobi vs Print Ungu/Buya; 1–4 warna
                   </p>
                 </div>
               </div>
@@ -582,10 +680,10 @@ export default function AmplopSimulator({
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   {[
-                    ['1. Ukuran', 'Pilih Kecil 11×22 cm (DL, 4/A3+) · Sedang 16×23 cm (2/A3+) · Besar 24×35 cm (1/A3+).'],
-                    ['2. Oplah', 'Tentukan oplah 50–10000 pcs via dropdown tier atau custom langsung ketik angka.'],
-                    ['3. Margin & Nego', 'Atur margin profit 30% & batas nego 4% sesuai kebijakan penawaran.'],
-                    ['4. Salin Penawaran', 'Klik Salin Penawaran untuk teks WA otomatis, atau simpan ke daftar kalkulasi.'],
+                    ['1. Ukuran', 'Pilih Besar 11×23 (insheet otomatis 3%) atau Tanggung 9,5×15,5 (insheet manual, default 0).'],
+                    ['2. Mesin & Warna', 'Ryobi (plate + min + drek + BTKL/BOP) atau Print Ungu/Buya (tarif per pack). Warna 1–4 mengatur jml plate Ryobi.'],
+                    ['3. Oplah & Desain', 'Tier 100–5000 pcs atau custom. Desain ikut default file (Besar+Print Rp 2.500, lain Rp 5.000, hanya H<1000).'],
+                    ['4. Salin / Simpan', 'Klik Salin Penawaran untuk teks WA otomatis, atau simpan ke daftar kalkulasi.'],
                   ].map(([title, desc]) => (
                     <div key={title} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
                       <span className="font-bold text-emerald-800 text-xs">{title}</span>
@@ -598,19 +696,19 @@ export default function AmplopSimulator({
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5">
                 <h5 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
                   <Layers className="w-4 h-4 text-emerald-700" />
-                  Struktur Biaya Produksi Amplop
+                  Struktur Biaya Engine BUKU
                 </h5>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
                   <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
-                    <span className="font-bold text-emerald-900 block">Kertas &amp; Cetak:</span>
+                    <span className="font-bold text-emerald-900 block">Bahan &amp; Cetak:</span>
                     <p className="text-slate-600 leading-snug">
-                      HVS 80 gsm 0,0127 kg/A3+ @ Rp 15.700/kg + up 5%, Kecil 4/A3+ · Sedang 2/A3+ · Besar 1/A3+, insheet 5 lbr, 1W Ryobi Rp 1.900/warna → Oliver ＞500 pcs.
+                      Kebutuhan = oplah + insheet; bahan = (N/100) × tarif pack. Ryobi: plate Rp 10.000/plat (jml = warna), min Rp 15.000/plat, over (M−500) × Rp 30 × plat.
                     </p>
                   </div>
                   <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">
-                    <span className="font-bold text-blue-900 block">Finishing &amp; Margin:</span>
+                    <span className="font-bold text-blue-900 block">Jasa &amp; Harga Final:</span>
                     <p className="text-slate-600 leading-snug">
-                      Lipat & lem Rp 75/pcs, packing kardus+lakban per order, desain Rp 20.000/order, margin 30% nego 4% pembulatan Rp 10.
+                      BTKL 20% + BOP 10% hanya Ryobi &amp; H≥1000. Total HPP + laba 30% = total harga; harga/pack dibulatkan satuan (ROUNDUP 0).
                     </p>
                   </div>
                 </div>

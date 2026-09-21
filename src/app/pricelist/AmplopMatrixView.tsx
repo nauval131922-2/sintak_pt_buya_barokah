@@ -13,9 +13,12 @@ import {
   calculateAmplopHpp,
   DEFAULT_AMPLOP_PARAMS,
   AmplopMasterParams,
-  AmplopUkuranType,
+  AmplopUkuran,
+  AmplopMesin,
+  AMPLOP_MESIN,
   AMPLOP_TIERS,
-  AMPLOP_CONFIG,
+  AMPLOP_PRODUK_LABEL,
+  desainDefaultForSpec,
 } from '@/lib/amplop-calculator';
 
 interface AmplopMatrixViewProps {
@@ -24,74 +27,82 @@ interface AmplopMatrixViewProps {
   setViewMode?: (mode: 'matrix' | 'table') => void;
 }
 
-const VARIAN_LIST: AmplopUkuranType[] = ['Kecil (11 x 22 cm)', 'Sedang (16 x 23 cm)', 'Besar (24 x 35 cm)'];
+type Warna = 1 | 2 | 3 | 4;
 
 export default function AmplopMatrixView({
   customParams = DEFAULT_AMPLOP_PARAMS,
   viewMode: propViewMode,
   setViewMode: propSetViewMode,
 }: AmplopMatrixViewProps) {
+  const params: AmplopMasterParams = { ...DEFAULT_AMPLOP_PARAMS, ...(customParams || {}) };
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedVarianFilter, setSelectedVarianFilter] = useState<AmplopUkuranType | 'ALL'>('ALL');
+  const [selectedUkuran, setSelectedUkuran] = useState<AmplopUkuran>('11 x 23');
+  const [selectedWarna, setSelectedWarna] = useState<Warna>(1);
   const [localViewMode, setLocalViewMode] = useState<'matrix' | 'table'>('matrix');
 
   const viewMode = propViewMode ?? localViewMode;
   const setViewMode = propSetViewMode ?? setLocalViewMode;
-  const calc = (oplah: number, varian: AmplopUkuranType) =>
+
+  // Spesifikasi baku matriks: insheet default file, desain default file, laba master
+  const calc = (oplahPcs: number, mesin: AmplopMesin) =>
     calculateAmplopHpp(
-      { oplah, varian, marginPct: 30, negoDiskonPct: 4 },
-      customParams
+      {
+        oplahPcs,
+        ukuran: selectedUkuran,
+        nWarna: selectedWarna,
+        mesin,
+        insheetLembar: params.insheetLembar ?? 0,
+        desain: desainDefaultForSpec(selectedUkuran, mesin, params),
+        marginPct: params.labaPct ?? 30,
+      },
+      params
     );
 
-  // Matrix: baris = oplah, kolom = varian
+  // Matrix: baris = pcs, kolom = mesin
   const matrixData = useMemo(() => {
-    const varians = selectedVarianFilter === 'ALL' ? VARIAN_LIST : [selectedVarianFilter];
-    return AMPLOP_TIERS.map((oplah) => {
+    return AMPLOP_TIERS.map((pcs) => {
       const q = searchTerm.trim();
-      if (q && !oplah.toString().includes(q)) return null;
+      if (q && !pcs.toString().includes(q)) return null;
       return {
-        oplah,
-        cols: varians.map((varian) => {
-          const r = calc(oplah, varian);
-          return { varian, hpp: r.hppPerPcs, jual: r.hargaJualPerPcs, nego: r.hargaNegoPerPcs, totalJual: r.totalHargaJual };
+        pcs,
+        cols: AMPLOP_MESIN.map((mesin) => {
+          const r = calc(pcs, mesin);
+          return { mesin, hpp: r.hppPerPack, final: r.hargaFinalPerPack, total: r.totalHarga };
         }),
       };
-    }).filter(Boolean) as { oplah: number; cols: { varian: AmplopUkuranType; hpp: number; jual: number; nego: number; totalJual: number }[] }[];
-  }, [customParams, searchTerm, selectedVarianFilter]);
+    }).filter(Boolean) as { pcs: number; cols: { mesin: AmplopMesin; hpp: number; final: number; total: number }[] }[];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customParams, searchTerm, selectedUkuran, selectedWarna]);
 
   // Flat table
   const flatTableRows = useMemo(() => {
     const list: {
-      oplah: number; varian: AmplopUkuranType; hpp: number; jual: number; nego: number; totalJual: number; margin: number;
+      pcs: number; mesin: AmplopMesin; hpp: number; final: number; total: number; margin: number;
     }[] = [];
 
-    const varians = selectedVarianFilter === 'ALL' ? VARIAN_LIST : [selectedVarianFilter];
-
-    varians.forEach((varian) => {
-      AMPLOP_TIERS.forEach((oplah) => {
+    AMPLOP_MESIN.forEach((mesin) => {
+      AMPLOP_TIERS.forEach((pcs) => {
         const q = searchTerm.toLowerCase().trim();
         if (q) {
           const match =
-            oplah.toString().includes(q) ||
-            varian.toLowerCase().includes(q);
+            pcs.toString().includes(q) ||
+            mesin.toLowerCase().includes(q);
           if (!match) return;
         }
-        const r = calc(oplah, varian);
+        const r = calc(pcs, mesin);
         list.push({
-          oplah, varian,
-          hpp: r.hppPerPcs,
-          jual: r.hargaJualPerPcs,
-          nego: r.hargaNegoPerPcs,
-          totalJual: r.totalHargaJual,
+          pcs, mesin,
+          hpp: r.hppPerPack,
+          final: r.hargaFinalPerPack,
+          total: r.totalHarga,
           margin: r.marginPct,
         });
       });
     });
 
     return list;
-  }, [customParams, searchTerm, selectedVarianFilter]);
-
-  const varianCols = selectedVarianFilter === 'ALL' ? VARIAN_LIST : [selectedVarianFilter];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customParams, searchTerm, selectedUkuran, selectedWarna]);
 
   return (
     <div className="space-y-4">
@@ -106,7 +117,7 @@ export default function AmplopMatrixView({
               Pricelist Matriks Amplop
             </h2>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Tabel perbandingan HPP &amp; harga jual Amplop HVS 80 gsm per oplah &amp; ukuran (Kecil/Sedang/Besar, margin 30%, nego 4%, lipat & lem ON).
+              {AMPLOP_PRODUK_LABEL[selectedUkuran]} ({selectedUkuran}) · {selectedWarna} Warna · pack @100 pcs · laba {params.labaPct ?? 30}%.
             </p>
           </div>
         </div>
@@ -118,7 +129,7 @@ export default function AmplopMatrixView({
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Cari oplah, ukuran..."
+            placeholder="Cari pcs, mesin..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-9 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
@@ -133,17 +144,29 @@ export default function AmplopMatrixView({
           )}
         </div>
 
-        {/* Filter Varian */}
+        {/* Filter Ukuran */}
         <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
           <span className="text-slate-500 font-semibold hidden sm:inline">Ukuran:</span>
           <select
-            value={selectedVarianFilter}
-            onChange={(e) => setSelectedVarianFilter(e.target.value as AmplopUkuranType | 'ALL')}
+            value={selectedUkuran}
+            onChange={(e) => setSelectedUkuran(e.target.value as AmplopUkuran)}
             className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-bold focus:bg-white focus:outline-none cursor-pointer"
           >
-            <option value="ALL">Semua Ukuran</option>
-            {VARIAN_LIST.map((v) => (
-              <option key={v} value={v}>{v}</option>
+            <option value="11 x 23">Besar 11 × 23</option>
+            <option value="9,5 x 15,5">Tanggung 9,5 × 15,5</option>
+          </select>
+        </div>
+
+        {/* Filter Warna */}
+        <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
+          <span className="text-slate-500 font-semibold hidden sm:inline">Warna:</span>
+          <select
+            value={selectedWarna}
+            onChange={(e) => setSelectedWarna(Number(e.target.value) as Warna)}
+            className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-bold focus:bg-white focus:outline-none cursor-pointer"
+          >
+            {([1, 2, 3, 4] as Warna[]).map((w) => (
+              <option key={w} value={w}>{w} Warna</option>
             ))}
           </select>
         </div>
@@ -185,55 +208,50 @@ export default function AmplopMatrixView({
             <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between border-b border-gray-200 pb-2">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-pink-500 inline-block"></span>
-                  <h3 className="text-sm font-bold text-gray-800 tracking-tight">Amplop HVS 80 gsm — 3 Ukuran</h3>
+                  <span className="w-2.5 h-2.5 rounded-full bg-sky-500 inline-block"></span>
+                  <h3 className="text-sm font-bold text-gray-800 tracking-tight">Amplop {selectedUkuran} — {selectedWarna} Warna, pack @100</h3>
                 </div>
                 <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
-                  {selectedVarianFilter === 'ALL' ? 'Semua Ukuran (3)' : `${selectedVarianFilter}`}
+                  3 Mesin
                 </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {varianCols.map((varian) => (
-                <div key={varian} className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
-                  <div className="bg-pink-50/70 px-4 py-2 border-b border-pink-100 flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-pink-900 tracking-wider uppercase flex items-center gap-1.5">
-                      <Layers size={13} className="text-pink-600" />
-                      Ukuran: {varian} — {AMPLOP_CONFIG[varian].w}×{AMPLOP_CONFIG[varian].h} cm · {AMPLOP_CONFIG[varian].pcsPerA3} pcs/A3+ · HVS {AMPLOP_CONFIG[varian].gramatur} gsm
+                {AMPLOP_MESIN.map((mesin) => (
+                <div key={mesin} className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
+                  <div className="bg-sky-50/70 px-4 py-2 border-b border-sky-100 flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-sky-900 tracking-wider uppercase flex items-center gap-1.5">
+                      <Layers size={13} className="text-sky-600" />
+                      {mesin}{mesin === 'Ryobi' ? ` — ${selectedWarna} plat` : ''}
                     </span>
                   </div>
                   <div className="overflow-x-auto max-h-[500px]">
                     <table className="w-full text-xs text-left border-collapse">
                       <thead className="sticky top-0 z-10 bg-white shadow-xs">
                         <tr className="bg-gray-100 border-b border-gray-200 text-gray-700 font-bold">
-                          <th className="py-2.5 px-3 border-r border-gray-200 text-center w-20 bg-gray-100" rowSpan={2}>
-                            Oplah
+                          <th className="py-2.5 px-3 border-r border-gray-200 text-center w-20 bg-gray-100">
+                            Pcs
                           </th>
-                          <th colSpan={3} className="py-1.5 px-2 text-center border-r border-gray-200 font-bold text-gray-900 bg-gray-200/80">
-                            {varian}
-                          </th>
-                        </tr>
-                        <tr className="bg-gray-50 border-b border-gray-200 text-[11px] text-gray-600">
-                          <th className="py-1.5 px-2 text-right font-semibold bg-gray-50">HPP</th>
-                          <th className="py-1.5 px-2 text-right font-bold text-emerald-800 bg-emerald-100/50">Harga</th>
-                          <th className="py-1.5 px-2 text-right font-bold text-blue-800 bg-blue-100/50 border-r border-gray-200">Nego</th>
+                          <th className="py-1.5 px-2 text-right font-semibold bg-gray-50">HPP/pack</th>
+                          <th className="py-1.5 px-2 text-right font-bold text-emerald-800 bg-emerald-100/50">Final/pack</th>
+                          <th className="py-1.5 px-2 text-right font-semibold bg-gray-50 border-r border-gray-200">Total</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {matrixData.map((row) => {
-                          const col = row.cols.find((c) => c.varian === varian);
+                          const col = row.cols.find((c) => c.mesin === mesin);
                           if (!col) return null;
                           return (
-                            <tr key={row.oplah} className="hover:bg-pink-50/30 transition-colors">
+                            <tr key={row.pcs} className="hover:bg-sky-50/30 transition-colors">
                               <td className="py-2 px-3 text-center font-bold text-gray-900 border-r border-gray-200 bg-gray-50/30">
-                                {row.oplah.toLocaleString('id-ID')}
+                                {row.pcs.toLocaleString('id-ID')}
                               </td>
                               <td className="py-2 px-2 text-right text-gray-500 font-mono">{Math.round(col.hpp).toLocaleString('id-ID')}</td>
                               <td className="py-2 px-2 text-right font-bold text-emerald-700 font-mono bg-emerald-50/30">
-                                {col.jual.toLocaleString('id-ID')}
+                                {col.final.toLocaleString('id-ID')}
                               </td>
-                              <td className="py-2 px-2 text-right font-bold text-blue-700 font-mono bg-blue-50/30 border-r border-gray-200">
-                                {col.nego.toLocaleString('id-ID')}
+                              <td className="py-2 px-2 text-right text-gray-600 font-mono border-r border-gray-200">
+                                {Math.round(col.total).toLocaleString('id-ID')}
                               </td>
                             </tr>
                           );
@@ -253,33 +271,31 @@ export default function AmplopMatrixView({
             <table className="w-full text-xs text-left border-collapse">
               <thead className="sticky top-0 z-10 bg-slate-100 border-b border-slate-200 text-slate-700 font-bold">
                 <tr>
-                  <th className="py-2.5 px-3">Oplah</th>
-                  <th className="py-2.5 px-3">Ukuran Amplop</th>
-                  <th className="py-2.5 px-3">Ukuran cm</th>
-                  <th className="py-2.5 px-3 text-right">HPP / pcs</th>
-                  <th className="py-2.5 px-3 text-right text-emerald-700">Harga Jual / pcs</th>
-                  <th className="py-2.5 px-3 text-right text-blue-700">Harga Nego / pcs</th>
-                  <th className="py-2.5 px-3 text-right text-emerald-800">Total Omset</th>
+                  <th className="py-2.5 px-3">Pcs</th>
+                  <th className="py-2.5 px-3">Mesin</th>
+                  <th className="py-2.5 px-3">Pack</th>
+                  <th className="py-2.5 px-3 text-right">HPP / pack</th>
+                  <th className="py-2.5 px-3 text-right text-emerald-700">Final / pack</th>
+                  <th className="py-2.5 px-3 text-right text-emerald-800">Total Harga</th>
                   <th className="py-2.5 px-3 text-right text-slate-600">Margin</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
                 {flatTableRows.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="p-8 text-center text-slate-400 font-sans">
+                    <td colSpan={7} className="p-8 text-center text-slate-400 font-sans">
                       Tidak ada data yang sesuai dengan pencarian atau filter.
                     </td>
                   </tr>
                 ) : (
                   flatTableRows.map((row, idx) => (
-                    <tr key={idx} className="hover:bg-pink-50/40 transition-colors">
-                      <td className="py-2 px-3 font-bold text-slate-800 font-sans">{row.oplah.toLocaleString('id-ID')}</td>
-                      <td className="py-2 px-3 text-slate-700 font-sans">{row.varian}</td>
-                      <td className="py-2 px-3 text-slate-500 font-sans">{AMPLOP_CONFIG[row.varian].w}×{AMPLOP_CONFIG[row.varian].h}</td>
+                    <tr key={idx} className="hover:bg-sky-50/40 transition-colors">
+                      <td className="py-2 px-3 font-bold text-slate-800 font-sans">{row.pcs.toLocaleString('id-ID')}</td>
+                      <td className="py-2 px-3 text-slate-700 font-sans">{row.mesin}</td>
+                      <td className="py-2 px-3 text-slate-500 font-sans">@100</td>
                       <td className="py-2 px-3 text-right text-slate-600">Rp {Math.round(row.hpp).toLocaleString('id-ID')}</td>
-                      <td className="py-2 px-3 text-right font-bold text-emerald-700">Rp {row.jual.toLocaleString('id-ID')}</td>
-                      <td className="py-2 px-3 text-right font-bold text-blue-600">Rp {row.nego.toLocaleString('id-ID')}</td>
-                      <td className="py-2 px-3 text-right font-bold text-slate-800">Rp {row.totalJual.toLocaleString('id-ID')}</td>
+                      <td className="py-2 px-3 text-right font-bold text-emerald-700">Rp {row.final.toLocaleString('id-ID')}</td>
+                      <td className="py-2 px-3 text-right font-bold text-slate-800">Rp {Math.round(row.total).toLocaleString('id-ID')}</td>
                       <td className="py-2 px-3 text-right text-slate-500 font-sans">{Math.round(row.margin * 100)}%</td>
                     </tr>
                   ))
