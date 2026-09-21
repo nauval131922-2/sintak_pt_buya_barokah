@@ -2,7 +2,7 @@
 // Referensi: Pricelist Label KHQ JUNI 2026.xlsm & Source single files (Label KHQ 220ml / 330ml / 600ml)
 
 export interface LabelKhqMasterParams {
-  // A. Kertas & Print Digital POD A3+
+  // A. Kertas & Print Digital A3+
   tarifPrintA3: number;          // Rp 2.000 / lembar A3+ (Master!D18)
   insheetWasteLbr: number;       // Master!D13 = 7 lembar insheet waste
 
@@ -142,9 +142,9 @@ export function calculateLabelKhqHpp(
     totalHpp += nominal;
   };
 
-  // 1. Biaya Print Digital POD A3+
+  // 1. Biaya Print Digital A3+
   const biayaPrint = kebutuhanLbrA3 * p.tarifPrintA3;
-  add('Biaya Print Digital POD A3+', biayaPrint,
+  add('Biaya Print Digital A3+', biayaPrint,
     `${kebutuhanLbrA3} lbr A3+ (net ${lbrA3Raw} + ${p.insheetWasteLbr} insheet) × Rp ${p.tarifPrintA3.toLocaleString('id-ID')}`);
 
   // 2. Biaya Desain

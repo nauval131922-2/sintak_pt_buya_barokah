@@ -287,7 +287,7 @@ export default function ManasikMasterParameter({
               • Cetak Cover & Sisipan PT:
             </span>
             <div className="grid grid-cols-1 gap-2">
-              {fieldRow('tarifPrintCoverA3', 'Print Digital Cover A3+', true, false, 'AC 230 POD', 'blue')}
+              {fieldRow('tarifPrintCoverA3', 'Print Digital Cover A3+', true, false, 'AC 230 Digital', 'blue')}
               {fieldRow('tarifPrintSisipanA3', 'Print Sisipan PT A3+', true, false, 'Sisipan PT', 'blue')}
               {fieldRow('tarifDesainCover', 'Jasa Desain Cover', true, false, 'Cover Baru', 'blue')}
               {fieldRow('insheetCover', 'Insheet Print Digital', false, false, 'lbr A3+', 'amber')}

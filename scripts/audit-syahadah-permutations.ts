@@ -100,7 +100,7 @@ for (const sec of sections) {
 // ==================================================================================
 // 2. BENCHMARK MASTER SOURCE BUKU PULUHAN (Pricelist Syahadah - 1 Muka 1 Warna Ryobi.xlsm)
 // ==================================================================================
-console.log('\n--- 2. BENCHMARK MASTER BUKU (Ryobi & POD - Pembulatan Puluhan) ---');
+console.log('\n--- 2. BENCHMARK MASTER BUKU (Ryobi & Print Inter - Pembulatan Puluhan) ---');
 const wbRyobi = XLSX.readFile(
   path.join(parentFolder, 'Source', 'Pricelist Syahadah - 1 Muka 1 Warna Ryobi.xlsm')
 );
@@ -148,14 +148,14 @@ const permutasiCases: {
   opsiFoil: boolean;
   opsiPacking: boolean;
 }[] = [
-  { desc: '1M-FC Oplah 100 - Auto (POD) - Tanpa Lam', oplah: 100, varian: '1 Muka FC', mesin: 'Auto', laminasi: 'Tanpa Laminasi', opsiFoil: false, opsiPacking: false },
-  { desc: '1M-FC Oplah 100 - Auto (POD) - Glossy', oplah: 100, varian: '1 Muka FC', mesin: 'Auto', laminasi: 'Glossy', opsiFoil: false, opsiPacking: false },
-  { desc: '1M-FC Oplah 100 - Auto (POD) - Doff', oplah: 100, varian: '1 Muka FC', mesin: 'Auto', laminasi: 'Doff', opsiFoil: false, opsiPacking: false },
-  { desc: '1M-FC Oplah 100 - Auto (POD) - UV Varnish', oplah: 100, varian: '1 Muka FC', mesin: 'Auto', laminasi: 'UV Varnish', opsiFoil: false, opsiPacking: false },
+  { desc: '1M-FC Oplah 100 - Auto (Print Inter) - Tanpa Lam', oplah: 100, varian: '1 Muka FC', mesin: 'Auto', laminasi: 'Tanpa Laminasi', opsiFoil: false, opsiPacking: false },
+  { desc: '1M-FC Oplah 100 - Auto (Print Inter) - Glossy', oplah: 100, varian: '1 Muka FC', mesin: 'Auto', laminasi: 'Glossy', opsiFoil: false, opsiPacking: false },
+  { desc: '1M-FC Oplah 100 - Auto (Print Inter) - Doff', oplah: 100, varian: '1 Muka FC', mesin: 'Auto', laminasi: 'Doff', opsiFoil: false, opsiPacking: false },
+  { desc: '1M-FC Oplah 100 - Auto (Print Inter) - UV Varnish', oplah: 100, varian: '1 Muka FC', mesin: 'Auto', laminasi: 'UV Varnish', opsiFoil: false, opsiPacking: false },
   { desc: '1M-FC Oplah 100 - Foil Emas Aktif', oplah: 100, varian: '1 Muka FC', mesin: 'Auto', laminasi: 'Tanpa Laminasi', opsiFoil: true, opsiPacking: false },
   { desc: '1M-1W Oplah 500 - Auto (Ryobi) - Packing Aktif', oplah: 500, varian: '1 Muka 1 Warna', mesin: 'Auto', laminasi: 'Tanpa Laminasi', opsiFoil: false, opsiPacking: true },
   { desc: '1M-1W Oplah 500 - Foil Emas Aktif', oplah: 500, varian: '1 Muka 1 Warna', mesin: 'Auto', laminasi: 'Tanpa Laminasi', opsiFoil: true, opsiPacking: true },
-  { desc: '2M-FC Oplah 200 - Auto (POD) - Tanpa Lam', oplah: 200, varian: '2 Muka FC', mesin: 'Auto', laminasi: 'Tanpa Laminasi', opsiFoil: false, opsiPacking: false },
+  { desc: '2M-FC Oplah 200 - Auto (Print Inter) - Tanpa Lam', oplah: 200, varian: '2 Muka FC', mesin: 'Auto', laminasi: 'Tanpa Laminasi', opsiFoil: false, opsiPacking: false },
   { desc: '2M-2W Oplah 1000 - Ryobi - Tanpa Lam', oplah: 100, varian: '2 Muka 2 Warna', mesin: 'Ryobi', laminasi: 'Tanpa Laminasi', opsiFoil: false, opsiPacking: true },
   { desc: '1M-FC Oplah 1000 - Oliver Offset - Tanpa Lam', oplah: 1000, varian: '1 Muka FC', mesin: 'Oliver', laminasi: 'Tanpa Laminasi', opsiFoil: false, opsiPacking: true },
 ];
@@ -187,7 +187,7 @@ for (const c of permutasiCases) {
 // ==================================================================================
 console.log('\n--- 4. UJI REAKTIVITAS PARAMETER (WAJIB DELTA HPP > 0) ---');
 
-// Base case 1: POD Print Inter
+// Base case 1: Print Inter Digital
 const basePod = calculateSyahadahHpp(
   { oplah: 100, varian: '1 Muka FC', mesin: 'Print Inter', laminasi: 'Tanpa Laminasi', opsiFoil: false, opsiKardusLakban: false },
   DEFAULT_SYAHADAH_PARAMS
@@ -220,12 +220,12 @@ const rPrintA3 = calculateSyahadahHpp(
 );
 assertReactivity('Reaktivitas: Tarif Print A3+ Digital', basePod.totalHpp, rPrintA3.totalHpp);
 
-// Test 4: Insheet POD
+// Test 4: Insheet Digital Print Inter
 const rInPod = calculateSyahadahHpp(
   { oplah: 100, varian: '1 Muka FC', mesin: 'Print Inter' },
   { ...DEFAULT_SYAHADAH_PARAMS, insheetPod: 15 }
 );
-assertReactivity('Reaktivitas: Insheet Cetak POD', basePod.totalHpp, rInPod.totalHpp);
+assertReactivity('Reaktivitas: Insheet Cetak Digital', basePod.totalHpp, rInPod.totalHpp);
 
 // Test 5: Insheet Ryobi
 const rInRyobi = calculateSyahadahHpp(

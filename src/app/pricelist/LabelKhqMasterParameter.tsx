@@ -177,14 +177,14 @@ export default function LabelKhqMasterParameter({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Card 1: Kertas & Print Digital POD A3+ */}
+        {/* Card 1: Kertas & Print Digital A3+ */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Printer className="w-4 h-4 text-blue-600" />
             <h3 className="text-xs font-bold text-slate-800">1. Cetak Print Digital A3+</h3>
           </div>
           <div className="grid grid-cols-1 gap-2.5">
-            {fieldRow('tarifPrintA3', 'Print A3+ POD (Rp/lbr)')}
+            {fieldRow('tarifPrintA3', 'Print Digital A3+ (Rp/lbr)')}
             {fieldRow('insheetWasteLbr', 'Insheet Waste (lbr)', false)}
             {fieldRow('tarifDesain', 'Biaya Desain Label (Rp)')}
           </div>
@@ -259,7 +259,7 @@ export default function LabelKhqMasterParameter({
                       <span>1. Bahan &amp; Cetak Print A3+</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Tarif Print A3+</strong>: <span className="font-mono text-emerald-700">Master!D18</span> = Rp 2.000/lbr A3+ (khusus label POD, independen dari tarif A3 umum).</li>
+                      <li>• <strong>Tarif Print A3+</strong>: <span className="font-mono text-emerald-700">Master!D18</span> = Rp 2.000/lbr A3+ (khusus label botol, independen dari tarif A3 umum).</li>
                       <li>• <strong>Insheet Waste</strong>: <span className="font-mono text-emerald-700">Master!D13</span> = 7 lembar/order.</li>
                       <li>• Kapasitas: 220ml 19 pcs/A3+, 330ml 20 pcs/A3+, 600ml 17 pcs/A3+.</li>
                       <li>• Kebutuhan A3+ = <code className="text-[10px] bg-white px-1 py-0.5 rounded border">ceil(lbr / pcsPerA3) + 7</code>.</li>
@@ -275,7 +275,7 @@ export default function LabelKhqMasterParameter({
                       <li>• <strong>Rajang/Potong</strong>: <span className="font-mono text-blue-700">BUKU!AN6</span> = Rp 50/lembar label.</li>
                       <li>• <strong>Laminasi Glossy</strong>: <span className="font-mono text-blue-700">BUKU!AP6</span> = Rp 0,35/cm² (min <span className="font-mono text-blue-700">AQ27</span> Rp 50.000).</li>
                       <li>• <strong>Desain</strong>: <span className="font-mono text-blue-700">Master!D17</span> = Rp 30.000/order.</li>
-                      <li>• Finishing rajang &amp; laminasi via POD A3+ (33,5×49 cm ≈ 1.641 cm²).</li>
+                      <li>• Finishing rajang &amp; laminasi via cetak digital A3+ (33,5×49 cm ≈ 1.641 cm²).</li>
                     </ul>
                   </div>
 

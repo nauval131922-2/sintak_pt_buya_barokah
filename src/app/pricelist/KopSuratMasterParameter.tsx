@@ -242,7 +242,7 @@ export default function KopSuratMasterParameter({
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
                       <li>• <strong>HVS 80/100 gsm</strong>: <span className="font-mono text-emerald-700">HARGA JULI 2026</span> A4 21×29,7 cm, HVS 80 gsm 0,0127 kg/A3+ & HVS 100 gsm 0,0158 kg/A3+.</li>
                       <li>• <strong>Ukuran</strong>: <span className="font-mono text-emerald-700">A4 21×29,7 cm</span> single size, 2 pcs/A3+ (33×48), berat A3+ 80 gsm = 0,0127 kg/lbr.</li>
-                      <li>• <strong>Insheet</strong>: 5 lbr (POD/Offset) + up kertas 5%.</li>
+                      <li>• <strong>Insheet</strong>: 5 lbr (Digital/Offset) + up kertas 5%.</li>
                       <li>• <strong>Varian</strong>: HVS 80 1W, HVS 80 FC, HVS 100 1W, HVS 100 FC (HARGA JULI 2026).</li>
                     </ul>
                   </div>

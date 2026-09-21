@@ -184,11 +184,11 @@ export default function BrosurMasterParameter({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Card 1: Bahan Kertas Art Paper & POD Inter */}
+        {/* Card 1: Bahan Kertas Art Paper & Print Inter */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <FileText className="w-4 h-4 text-emerald-700" />
-            <h3 className="text-xs font-bold text-slate-800">1. Kertas Art Paper &amp; Digital POD</h3>
+            <h3 className="text-xs font-bold text-slate-800">1. Kertas Art Paper &amp; Print Inter</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('tarifArtPaperKg', 'Art Paper (Rp/Kg)')}
@@ -287,7 +287,7 @@ export default function BrosurMasterParameter({
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
                       <li>• <strong>Harga Art Paper/kg</strong>: <span className="font-mono text-emerald-700">Master!D12</span> (Rp 16.900/kg). Plano Oliver: 79×109cm (10,5×21 &amp; 21,5×33) dan 65×100cm (14,5×21, A4, A3).</li>
-                      <li>• <strong>Up Kertas</strong>: <span className="font-mono text-emerald-700">Master!E12</span> default 5%. Insheet POD per order: 5 lembar A3+. Insheet plat Oliver: 100/150 lembar.</li>
+                      <li>• <strong>Up Kertas</strong>: <span className="font-mono text-emerald-700">Master!E12</span> default 5%. Insheet cetak digital per order: 5 lembar A3+. Insheet plat Oliver: 100/150 lembar.</li>
                     </ul>
                   </div>
 
@@ -297,7 +297,7 @@ export default function BrosurMasterParameter({
                       <span>2. Mesin Cetak Print Inter &amp; Oliver</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Print Inter 1 Muka</strong>: <span className="font-mono text-blue-700">Master!D18</span> = Rp 2.000/lbr A3+ (digital POD).</li>
+                      <li>• <strong>Print Inter 1 Muka</strong>: <span className="font-mono text-blue-700">Master!D18</span> = Rp 2.000/lbr A3+ (cetak digital).</li>
                       <li>• <strong>Print Inter 2 Muka</strong>: <span className="font-mono text-blue-700">Master!D18</span> = Rp 3.300/lbr A3+ bolak-balik.</li>
                       <li>• <strong>Plat CTP Oliver</strong>: <span className="font-mono text-blue-700">BUKU!Y6</span> = Rp 45.000/plat (khusus 10,5×21 2 muka = Rp 43.000). Menggunakan 4 plat CMYK work-and-turn (kecuali A3 2 muka = 8 plat).</li>
                       <li>• <strong>Min Order Oliver</strong>: <span className="font-mono text-blue-700">BUKU!AB6</span> = Rp 90.000/plat. Drek over: <span className="font-mono text-blue-700">BUKU!AC6</span> = Rp 40/drek/warna.</li>

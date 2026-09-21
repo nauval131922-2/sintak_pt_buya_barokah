@@ -6,11 +6,11 @@ export type ManasikVarianType =
   | 'Mini TikTok 6,3 x 10,3';
 
 export interface ManasikMasterParams {
-  // 1. Bahan & Kertas Cover & Print POD
+  // 1. Bahan & Kertas Cover & Print Digital
   tarifAc230Kg: number; // 16400 per kg
   tarifAc260Kg: number; // 16400 per kg
   tarifAc310Kg: number; // 33500 per kg (Mini TikTok)
-  tarifPrintCoverA3: number; // 2700 per lembar A3+ (POD)
+  tarifPrintCoverA3: number; // 2700 per lembar A3+ (Print Inter)
   tarifPrintMiniTikTokA3: number; // 2500 per lembar A3+
   insheetCover: number; // 5 lembar
   insheetOffsetCover: number; // 150 lembar
@@ -290,10 +290,10 @@ export function calculateManasikSimulator(
       
       biayaCetakBahan = biayaKertas + biayaPrint + biayaDesain;
       breakdown.push({
-        nama: 'Kertas AC 310, Cetak POD 2 Muka & Desain',
+        nama: 'Kertas AC 310, Cetak Digital 2 Muka & Desain',
         nominal: Math.round(biayaCetakBahan),
         pct: 0,
-        keterangan: `${lbrA3} lbr A3+ AC 310 + ${sisiCetak} sisi cetak POD @ Rp ${params.tarifPrintMiniTikTokA3.toLocaleString('id-ID')} + Desain`,
+        keterangan: `${lbrA3} lbr A3+ AC 310 + ${sisiCetak} sisi cetak digital @ Rp ${params.tarifPrintMiniTikTokA3.toLocaleString('id-ID')} + Desain`,
       });
     } else {
       // Naik Oliver offset sesuai sheet BUKU baris 9:
@@ -604,7 +604,7 @@ export function calculateManasikSimulator(
       metodeCover = 'Offset (Oliver)';
     } else {
       // Master Excel Custom Cover 2026 (Sheet HARGA FILE BARU & Sheet BUKU):
-      // Menggunakan POD Print Inter A3+ @ Rp 2.700 (kecuali jika operator memilih Offset Oliver secara eksplisit)
+      // Menggunakan Print Inter A3+ @ Rp 2.700 (kecuali jika operator memilih Offset Oliver secara eksplisit)
       metodeCover = 'Print Digital (A3+)';
     }
     let biayaCover = 0;

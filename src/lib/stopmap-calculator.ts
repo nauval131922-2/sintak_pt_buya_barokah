@@ -8,7 +8,7 @@ export interface StopmapMasterParams {
   tarifArtCartonKg: number; // Master!D12 default Rp 16.400 /kg
   upArtCartonPct: number; // Master!E12 default 5%
 
-  // B. Cetak Digital POD Print Inter (Master!D13, Master!D18)
+  // B. Cetak Digital Print Inter (Master!D13, Master!D18)
   tarifPrintA3: number; // Master!D18 default Rp 2.500 / lbr A3+
   insheetCoverPrintInter: number; // Master!D13 (A4) default 5 lbr
 
@@ -235,7 +235,7 @@ export function calculateStopmapHpp(
   let kebutuhanPlanoCover = 0;
 
   if (mesinTerpilih === 'PRINT INTER') {
-    // POD Digital Print Inter (BUKU!T7 = Master!D18 * R7)
+    // Cetak Digital Print Inter (BUKU!T7 = Master!D18 * R7)
     // Insheet cover: Master!D13 (A4) = 5 lembar
     const inCover = p.insheetCoverPrintInter;
     const r7 = validOplah + inCover; // BUKU!R7 lembar A3+

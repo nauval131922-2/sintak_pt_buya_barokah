@@ -242,7 +242,7 @@ export default function RaportKalebMasterParameter({
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
                       <li>• <strong>Kaleb Foil Emas</strong>: <span className="font-mono text-emerald-700">HARGA JULI 2026</span> 24×34 cm tertutup, Art Carton 230 gsm + foil emas.</li>
                       <li>• <strong>Ukuran</strong>: <span className="font-mono text-emerald-700">24×34 cm</span> single size, 1 pcs/A3+ (33×48), berat A3+ 230 gsm = 0,0364 kg/lbr.</li>
-                      <li>• <strong>Insheet</strong>: 5 lbr (POD).</li>
+                      <li>• <strong>Insheet</strong>: 5 lbr (Print Digital).</li>
                       <li>• <strong>Varian</strong>: Kosongan &amp; Isi 6 (tiap isi +Rp 1.200/lbr).</li>
                     </ul>
                   </div>

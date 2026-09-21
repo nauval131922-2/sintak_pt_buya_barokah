@@ -19,7 +19,7 @@ function assertCheck(desc: string, actTotal: number, exTotal: number, actJual: n
 }
 
 // 1. FILE 1: 50 - 500 pcs - 15,5 x 21.xlsm (Print Inter + Ryobi)
-console.log('--- 1. TIER OPLAH KECIL (50 - 500 pcs - 15,5 x 21.xlsm): POD Print Inter + Ryobi ---');
+console.log('--- 1. TIER OPLAH KECIL (50 - 500 pcs - 15,5 x 21.xlsm): Print Inter + Ryobi ---');
 const wb1 = XLSX.readFile('E:\\percetakan buya barokah\\backup\\a1\\02__PEMASARAN\\0203_SURAT PENAWARAN HARGA (SPH) out\\020326 2026 SURAT PENAWARAN HARGA (SPH) out\\Pricelist Juli 2026\\06. Pricelist Buku Tulis\\Source\\02020137 Pricelist Buku Tulis Juli 2026  50 - 500 pcs - 15,5 x 21.xlsm');
 const b1 = wb1.Sheets['BUKU'];
 
@@ -38,7 +38,7 @@ for (let r = 7; r <= 18; r++) {
     },
     { ...DEFAULT_BUKU_TULIS_PARAMS, upHvsPct: 3, tarifDesignIsiPerHlm: 2500, insheetIsiRyobi: 30 }
   );
-  assertCheck(`Oplah ${oplah} (Cover: POD | Isi: Ryobi)`, res.totalHpp, exTotal, res.hargaJualPerPcs, exJual);
+  assertCheck(`Oplah ${oplah} (Cover: Print Inter | Isi: Ryobi)`, res.totalHpp, exTotal, res.hargaJualPerPcs, exJual);
 }
 
 // 2. FILE 2: 600 - 2.500 pcs - 16 x 21.xlsm (Oliver 4W + Oliver 1W)

@@ -287,7 +287,7 @@ export default function SyahadahSimulator({
               </span>
             </div>
             <p className="text-[11px] text-emerald-800/80 mt-0.5">
-              Kalkulasi 100% presisi Excel (Linen/Hammer Crem 300 gsm, POD Print Inter vs Offset Ryobi/Oliver, hotprint foil emas, &amp; packing).
+              Kalkulasi 100% presisi Excel (Linen/Hammer Crem 300 gsm, Cetak Digital Print Inter vs Offset Ryobi/Oliver, hotprint foil emas, &amp; packing).
             </p>
           </div>
         </div>
@@ -816,7 +816,7 @@ export default function SyahadahSimulator({
                   2. Pemilihan Mesin Cetak (Auto vs Manual)
                 </h4>
                 <p>
-                  • <strong>Digital POD (Print Inter A3+)</strong>: Pilihan otomatis untuk oplah kecil (≤ 200 pcs) pada varian 1W/2W, dan sampai 500 pcs pada varian Full Colour. Menggunakan kertas A3+ di mana 1 lembar A3+ muat 2 lembar syahadah.
+                  • <strong>Cetak Digital (Print Inter A3+)</strong>: Pilihan otomatis untuk oplah kecil (≤ 200 pcs) pada varian 1W/2W, dan sampai 500 pcs pada varian Full Colour. Menggunakan kertas A3+ di mana 1 lembar A3+ muat 2 lembar syahadah.
                 </p>
                 <p>
                   • <strong>Offset Toko / Ryobi</strong>: Pilihan otomatis untuk oplah ≥ 250 pcs pada varian 1 Warna dan 2 Warna. Biaya plat Rp 10.000/plat dengan ongkos dasar Rp 15.000/plat (s.d. 500 drek) dan drek over Rp 30/drek/warna.

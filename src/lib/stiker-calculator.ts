@@ -235,7 +235,7 @@ export function calculateStikerSimulator(
       biaya: Math.round(totalHpp * 0.65),
     },
     {
-      komponen: 'Cetak Print Digital POD',
+      komponen: 'Cetak Print Digital A3+',
       keterangan: 'Full Colour Resolusi Tinggi',
       biaya: Math.round(totalHpp * 0.25),
     },

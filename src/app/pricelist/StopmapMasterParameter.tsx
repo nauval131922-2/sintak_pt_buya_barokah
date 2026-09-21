@@ -196,7 +196,7 @@ export default function StopmapMasterParameter({
           </div>
           <div className="space-y-2.5">
             {fieldRow('tarifPrintA3', 'Tarif Print A3+ Digital', true, false, undefined, 'Master!D18: Biaya cetak digital 4W per lbr A3+')}
-            {fieldRow('insheetCoverPrintInter', 'Insheet Cetak POD (Lembar)', false, false, 'Lbr', 'Master!D13: Cadangan cetak digital A4 (default 5 lbr)')}
+            {fieldRow('insheetCoverPrintInter', 'Insheet Cetak Digital (Lembar)', false, false, 'Lbr', 'Master!D13: Cadangan cetak digital A4 (default 5 lbr)')}
             {fieldRow('tarifDesainA4', 'Desain Stopmap A4', true, false, undefined, 'Master!D17: Biaya artwork cover A4')}
             {fieldRow('tarifTransportA4', 'Transportasi A4', true, false, undefined, 'BUKU!AK6: Biaya transport A4 (default Rp 0)')}
           </div>
@@ -319,11 +319,11 @@ export default function StopmapMasterParameter({
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                      <span>2. Cetak POD (Print Inter) vs Offset (Oliver)</span>
+                      <span>2. Cetak Digital (Print Inter) vs Offset (Oliver)</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
                       <li>• <strong>Print Inter A3+</strong>: <span className="font-mono text-emerald-700">Master!D18</span> Rp 2.500/lbr A3+ (sudah termasuk kertas dan cetak 4W).</li>
-                      <li>• <strong>Insheet POD</strong>: <span className="font-mono text-emerald-700">Master!D13</span> 5 lbr A3+ (flat).</li>
+                      <li>• <strong>Insheet Digital</strong>: <span className="font-mono text-emerald-700">Master!D13</span> 5 lbr A3+ (flat).</li>
                       <li>• <strong>Insheet Oliver</strong>: <span className="font-mono text-emerald-700">Master!D13</span> 150 lbr plano offset.</li>
                       <li>• <strong>Plat Oliver</strong>: <span className="font-mono text-emerald-700">BUKU!Y6</span> Rp 45.000/plat (4 plat = Rp 180.000).</li>
                       <li>• <strong>Ongkos Cetak Oliver</strong>: <span className="font-mono text-emerald-700">BUKU!AB6</span> Min Rp 90.000/plat (Rp 360.000 dasar) + <span className="font-mono text-emerald-700">BUKU!AC7</span> drek over Rp 40/drek/warna.</li>

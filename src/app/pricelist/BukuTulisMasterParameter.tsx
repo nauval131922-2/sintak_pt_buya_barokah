@@ -207,7 +207,7 @@ export default function BukuTulisMasterParameter({
             {fieldRow('upArtCartonPct', 'Markup AC 230 (%)', false)}
             {fieldRow('tarifHvs70Kg', 'Kertas HVS 70 (Rp/Kg)')}
             {fieldRow('upHvsPct', 'Markup HVS 70 (%)', false)}
-            {fieldRow('insheetCoverPod', 'Insheet Cover POD (lbr)', false)}
+            {fieldRow('insheetCoverPod', 'Insheet Cover Print Inter (lbr)', false)}
             {fieldRow('insheetCoverOffset', 'Insheet Cover Offset (lbr)', false)}
             {fieldRow('insheetIsiRyobi', 'Insheet Isi Ryobi (lbr)', false)}
             {fieldRow('insheetIsiOliver', 'Insheet Isi Oliver (lbr)', false)}
@@ -222,7 +222,7 @@ export default function BukuTulisMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">2. Cetak &amp; Desain</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifPrintCoverA3', 'Print Cover POD (Rp/lbr)')}
+            {fieldRow('tarifPrintCoverA3', 'Print Cover Digital A3+ (Rp/lbr)')}
             {fieldRow('tarifPlatRyobi', 'Plat Ryobi (Rp/plat)')}
             {fieldRow('minOrderRyobi', 'Min Order Ryobi (Rp)')}
             {fieldRow('tarifDrekRyobi', 'Ongkos Drek Ryobi (Rp/drek)')}

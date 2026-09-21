@@ -14,6 +14,9 @@
 3. **Keakuratan Pemetaan Cell Excel di Manual Pengguna (Wajib 100% Valid)**:
    - Setiap variabel di tab Master Parameter wajib memiliki pemetaan letak sheet dan alamat cell Excel yang benar dan terverifikasi nyata (contoh: `Master!D15`, `BUKU!AT6`, `Data_Buku!K4`).
    - Dilarang keras mencantumkan alamat cell fiktif, perkiraan, atau teks template lama yang belum dicocokkan dengan file Excel aslinya. Modal Manual Pengguna adalah jembatan audit antara staf estimator dan sistem web Sintak.
+4. **Prinsip Terminologi 1:1 & Anti-Jargon Asing (DILARANG Menambah Kata yang Tidak Ada di Excel)**:
+   - Gunakan HANYA istilah dan penamaan mesin/proses yang tertulis nyata di dalam file Excel master (contoh: gunakan `Print Inter`, `Ryobi`, `Oliver`, `Heidelberg Speedmaster SM 102`).
+   - **DILARANG KERAS** mengarang, mengasumsikan, atau menambahkan singkatan/jargon asing yang tidak ada di file Excel (seperti kata **"POD"**, **"Print On Demand"**, dll.), baik pada nama variabel kode, label form input UI, kartu rincian breakdown, format salin penawaran WhatsApp, maupun modal manual pengguna. Sampaikan istilah sesuai bahasa asli lembar kerja Excel Buya Barokah.
 
 ---
 
@@ -83,13 +86,13 @@ Setiap workbook kalkulasi percetakan wajib dipetakan ke dalam 4 lapisan:
 ### Tahap 3: Audit Data Validation List, Pilihan Mesin Cetak & Catatan Sel
 1. **Inspeksi Aturan Data Validation & Dropdown Mesin Cetak (WAJIB)**:
    - Ekstrak seluruh sel yang memiliki validasi (`list`, `wholeNumber`, `decimal`).
-   - **Pilihan Mesin Cetak (Cover & Isi) di Sheet Master**: Periksa sel dropdown penentu mesin cetak (contoh: `Master!D16` Cetak Cover & `Master!D25` Cetak Isi). Seluruh opsi mesin cetak di Excel (POD Print Inter, Ryobi, Oliver, Heidelberg Speedmaster SM 102, dll) **WAJIB TERSEDIA DINAMIS** di form simulator Sintak:
+   - **Pilihan Mesin Cetak (Cover & Isi) di Sheet Master**: Periksa sel dropdown penentu mesin cetak (contoh: `Master!D16` Cetak Cover & `Master!D25` Cetak Isi). Seluruh opsi mesin cetak di Excel (Print Inter, Ryobi, Oliver, Heidelberg Speedmaster SM 102, dll) **WAJIB TERSEDIA DINAMIS** di form simulator Sintak:
      - Sediakan opsi **⚙️ Otomatis** (default rekomendasi cerdas yang memilih mesin paling efisien sesuai jenjang oplah Excel).
      - Sediakan tombol pilihan mesin eksplisit agar estimator bebas mengubah mesin cetak secara manual kapan saja.
    - Jadikan daftar dropdown Excel lainnya sebagai acuan opsi form simulator di Sintak (dropdown ukuran, varian isi/halaman, jenis laminasi, dsb.).
 2. **Audit Variasi Antar-File Sejenis (Perbedaan Skala Oplah)**:
    - Jika suatu produk memiliki beberapa file Excel master (misal file rentang 50–500 pcs, 600–2.500 pcs, 3.000–10.000 pcs), **WAJIB MEMERIKSA PERBEDAAN MESIN CETAK & FORMULA ANTAR-FILE**.
-   - **DILARANG KERAS MENGUNCI 1 MESIN SAJA**: Jangan berasumsi produk hanya dicetak di 1 mesin (misal hanya digital POD). Kalkulator backend wajib mendukung transisi mesin sesuai skala oplah dan mendukung *override* pilihan mesin manual dari pengguna.
+   - **DILARANG KERAS MENGUNCI 1 MESIN SAJA**: Jangan berasumsi produk hanya dicetak di 1 mesin (misal hanya digital Print Inter). Kalkulator backend wajib mendukung transisi mesin sesuai skala oplah dan mendukung *override* pilihan mesin manual dari pengguna.
 3. **Inspeksi Cell Comments (`<comment>`)**:
    - Periksa segitiga merah pada pojok sel. Catatan estimator sering menyimpan biaya tersembunyi (contoh temuan: `BUKU!AX6` mencatat *"jika tambah pembatas : 275/pcs"*).
 
@@ -144,7 +147,7 @@ Buat skrip pengujian (via Node / TSX) untuk membandingkan kalkulasi Excel vs Sin
    - File Excel sering kali disimpan dalam 1 kondisi dropdown aktif tertentu (contoh: `Master!D25` tersimpan `SM`).
    - Audit dianggap **TIDAK SAH & GAGAL** jika hanya menguji kondisi statis tersebut.
 2. **Uji Permutasi Seluruh Opsi Dropdown Mesin & Finishing (Dynamic Matrix)**:
-   - Skrip benchmark **WAJIB** mengeksekusi perhitungan untuk SEMUA kemungkinan pilihan dropdown mesin cetak Cover (POD, Oliver, SM) dan Isi (Ryobi, Oliver, SM) yang diizinkan pada tier tersebut.
+   - Skrip benchmark **WAJIB** mengeksekusi perhitungan untuk SEMUA kemungkinan pilihan dropdown mesin cetak Cover (Print Inter, Oliver, SM) dan Isi (Ryobi, Oliver, SM) yang diizinkan pada tier tersebut.
    - Uji opsi finishing aktif vs non-aktif (Laminasi Glossy vs Doff vs Tanpa, Sisir vs Tanpa).
    - Tampilkan log terminal untuk setiap permutasi mesin dengan bukti `PASSED (0 selisih)`.
 3. **Anti-Magic Number & Komentar Alamat Cell Wajib**:

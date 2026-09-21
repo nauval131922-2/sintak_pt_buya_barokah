@@ -201,7 +201,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     version: '2026-09-09-2',
     items: [
       'Sinkronisasi Komprehensif 12 File Master Brosur 2026: Penyesuaian presisi ukuran plano Oliver 14,5x21 ke 65x100 cm (kertas Rp 225.610/rim sehingga HPP 413 dan jual 540 cocok 100% dengan Excel), penyesuaian insheet plat (100/150 lbr), biaya drek over per warna (Rp 40/drek x 4 warna), serta kebutuhan 8 plat cetak khusus pada ukuran 21x29,7 (A3) cetak 2 muka',
-      'Penyelarasan Formula & Master Parameter Label KHQ: Penyesuaian tarif print POD A3+ menjadi Rp 2.000, koreksi pembulatan rupiah pada kardus besar, serta perhitungan HPP per lembar (Rp 191) dan harga jual (Rp 249) yang 100% presisi dengan master Excel',
+      'Penyelarasan Formula & Master Parameter Label KHQ: Penyesuaian tarif print digital A3+ menjadi Rp 2.000, koreksi pembulatan rupiah pada kardus besar, serta perhitungan HPP per lembar (Rp 191) dan harga jual (Rp 249) yang 100% presisi dengan master Excel',
       'Auto-Persist Draft Simulator Label KHQ: Penambahan penyimpanan otomatis draft spesifikasi Label KHQ ke localStorage browser, mencegah hilangnya input saat berpindah tab simulator',
       'Pembaruan Manual Pengguna Interaktif: Pemutakhiran panduan referensi, pemetaan cell master Excel, dan rumus baku untuk simulator Nota, Brosur, dan Label KHQ sesuai acuan standar Juli 2026',
     ],
@@ -306,7 +306,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     date: '29 Agu 2026',
     version: '2026-08-29-1',
     items: [
-      'Fitur Master Parameter Global (Shared Rates): modal pengaturan terpusat untuk tarif mesin offset Oliver, harga kertas dasar per kg, digital print POD A3+, laminasi, dan packing umum lintas seluruh lini produk',
+      'Fitur Master Parameter Global (Shared Rates): modal pengaturan terpusat untuk tarif mesin offset Oliver, harga kertas dasar per kg, digital print A3+, laminasi, dan packing umum lintas seluruh lini produk',
       'Penyederhanaan Master Parameter Produk: pembersihan field bersama menuju Single Source of Truth sehingga tiap master produk hanya mengelola komponen biaya spesifiknya',
       'Restorasi Snapshot & Tombol "Hitung Tarif Master": memuat riwayat kalkulasi dengan parameter asli saat disimpan sekaligus menyediakan opsi hitung ulang dengan tarif Master Global terkini',
       'Sinkronisasi Reaktif Alur Edit: tombol Edit di Daftar Kalkulasi otomatis berpindah ke kategori produk yang sesuai dan langsung mengisi seluruh spesifikasi form input simulator',

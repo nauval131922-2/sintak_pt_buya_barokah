@@ -2,7 +2,7 @@
 // Referensi: Pricelist Syahadah.xlsx sheet HARGA JULI 2026 & 11 File Master Source/*.xlsm sheet BUKU
 // Bahan: Linen / Hammer Crem Tebal 300 gsm (Rp 29.900/kg)
 // Varian: 1 Muka & 2 Muka (FC, 1 Warna, 2 Warna)
-// Mesin: Print Inter (POD A3+), Ryobi (Offset Toko 11-up plano), Oliver (Offset 4W)
+// Mesin: Print Inter (Digital A3+), Ryobi (Offset Toko 11-up plano), Oliver (Offset 4W)
 // Finishing: Potong Sisir, Foil Emas (Opsional), Laminasi (Opsional), Packing Kardus & Lakban
 
 export interface SyahadahMasterParams {
@@ -11,7 +11,7 @@ export interface SyahadahMasterParams {
   tarifKertasLinenKg: number; // Master!D12 default Rp 29.900 /kg (Hammer Crem / Linen 300 gsm)
   upKertasPct: number; // Master!E12 default 0%
 
-  // B. Cetak Digital POD Print Inter (Master!D18, Master!D13)
+  // B. Cetak Digital Print Inter (Master!D18, Master!D13)
   tarifPrintA3: number; // Master!D18 default Rp 3.800 / lbr A3+
   insheetPod: number; // Master!D13 (Print Inter) default 5 lbr A3+
 
@@ -233,8 +233,8 @@ export function calculateSyahadahHpp(
 
   // 1. Penentuan Mesin Cetak (Auto vs Manual)
   // Sesuai Sheet HARGA JULI 2026 & Master Excel:
-  // - FC selalu Print Inter (POD) untuk oplah <= 500, atau Oliver untuk oplah besar.
-  // - 1W & 2W: Oplah <= 200 menggunakan Print Inter (POD), oplah >= 250 menggunakan Ryobi.
+  // - FC selalu Print Inter (Digital) untuk oplah <= 500, atau Oliver untuk oplah besar.
+  // - 1W & 2W: Oplah <= 200 menggunakan Print Inter (Digital), oplah >= 250 menggunakan Ryobi.
   let mesinTerpilih: 'Print Inter' | 'Ryobi' | 'Oliver' = 'Print Inter';
   if (mesin === 'Print Inter') {
     mesinTerpilih = 'Print Inter';
@@ -266,7 +266,7 @@ export function calculateSyahadahHpp(
   // 1. BAHAN KERTAS & ONGKOS CETAK (BUKU!T7, BUKU!Y7, BUKU!AG7)
   // -------------------------------------------------------------
   if (mesinTerpilih === 'Print Inter') {
-    // POD Digital Print Inter (BUKU!T7 = Q7 * T2)
+    // Digital Print Inter (BUKU!T7 = Q7 * T2)
     // 1 lembar A3+ (32.5x48) muat 2 lembar Syahadah folio (BUKU!P7 = 2, BUKU!O7 = 1)
     const r7 = Math.ceil((validOplah / 2) + p.insheetPod); // BUKU!R7 lembar A3+
     const q7 = r7 * 1 * cfg.muka; // BUKU!Q7 drek A3+

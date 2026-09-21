@@ -250,7 +250,7 @@ export default function StopmapSimulator({
       `• *Produk*: Stopmap ${cfg.label}\n` +
       `• *Bahan*: Soft Cover Art Carton 230 gsm (1 Muka Full Colour)\n` +
       `• *Kuantitas*: ${oplah.toLocaleString('id-ID')} pcs\n` +
-      `• *Mesin Cetak*: ${result.mesinTerpilih === 'PRINT INTER' ? 'Digital POD (Print Inter A3+)' : 'Offset Heidelberg Oliver (4 Warna)'}\n` +
+      `• *Mesin Cetak*: ${result.mesinTerpilih === 'PRINT INTER' ? 'Print Inter (Digital A3+)' : 'Offset Heidelberg Oliver (4 Warna)'}\n` +
       `• *Laminasi*: ${laminasi}\n` +
       `• *Finishing*: Sisir + Lipat + Kupingan Smile + Pasang Kupingan + ${opsiKardusLakban ? 'Packing Kardus Lakban' : 'Tanpa Kardus'}\n` +
       `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
@@ -287,7 +287,7 @@ export default function StopmapSimulator({
               </span>
             </div>
             <p className="text-[11px] text-emerald-800/80 mt-0.5">
-              Kalkulasi 100% presisi Excel (A4 &amp; Folio, POD Print Inter vs Offset Oliver 4W, kupingan smile, ponz &amp; lem UMR, laminasi &amp; packing).
+              Kalkulasi 100% presisi Excel (A4 &amp; Folio, Print Inter vs Offset Oliver 4W, kupingan smile, ponz &amp; lem UMR, laminasi &amp; packing).
             </p>
           </div>
         </div>
@@ -448,7 +448,7 @@ export default function StopmapSimulator({
                       ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs cursor-pointer'
                       : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 cursor-pointer'
                   }`}
-                  title={isFolio ? 'Ukuran Folio bentangan 48x35 cm melebihi kapasitas A3+ (32.5 cm)' : 'Digital POD Print Inter'}
+                  title={isFolio ? 'Ukuran Folio bentangan 48x35 cm melebihi kapasitas A3+ (32.5 cm)' : 'Cetak Digital Print Inter'}
                 >
                   <Printer size={13} />
                   <span>Print Inter</span>
@@ -827,7 +827,7 @@ export default function StopmapSimulator({
                   1. Anatomi &amp; Dimensi Fisik Stopmap
                 </h4>
                 <p>
-                  • <strong>Stopmap A4</strong>: Tertutup 22×32 cm (terbuka 44×32 cm). Masuk dalam kertas A3+ (32,5×48 cm) dengan margin 0,5 cm, sehingga bisa dicetak di digital POD <strong>Print Inter</strong> untuk oplah kecil (10–200 pcs) maupun offset <strong>Oliver</strong> untuk oplah besar.
+                  • <strong>Stopmap A4</strong>: Tertutup 22×32 cm (terbuka 44×32 cm). Masuk dalam kertas A3+ (32,5×48 cm) dengan margin 0,5 cm, sehingga bisa dicetak di digital <strong>Print Inter</strong> untuk oplah kecil (10–200 pcs) maupun offset <strong>Oliver</strong> untuk oplah besar.
                 </p>
                 <p>
                   • <strong>Stopmap Folio</strong>: Tertutup 24×35 cm (terbuka 48×35 cm). Tingginya 35 cm melebihi kapasitas cetak A3+ (32,5 cm), sehingga wajib dicetak pada mesin offset <strong>Oliver</strong> menggunakan kertas plano 79×109 cm potong 4.

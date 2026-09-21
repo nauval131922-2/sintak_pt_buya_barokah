@@ -650,7 +650,7 @@ export default function LabelKhqSimulator({
                 </div>
                 <div>
                   <h3 className="text-base font-bold tracking-tight">Panduan Simulator Label KHQ</h3>
-                  <p className="text-xs text-emerald-200/90 mt-0.5">Alur perhitungan berbasis kardus (24 lbr/dus), POD A3+, laminasi &amp; rajang</p>
+                  <p className="text-xs text-emerald-200/90 mt-0.5">Alur perhitungan berbasis kardus (24 lbr/dus), cetak digital A3+, laminasi &amp; rajang</p>
                 </div>
               </div>
               <button
@@ -692,7 +692,7 @@ export default function LabelKhqSimulator({
                   <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
                     <span className="font-bold text-emerald-900 block">Cetak &amp; Bahan:</span>
                     <p className="text-slate-600 leading-snug">
-                      Print POD A3+ Rp 2.000/lbr + insheet 7 lbr. Kapasitas: 220ml 19 pcs/A3+, 330ml 20 pcs/A3+, 600ml 17 pcs/A3+.
+                      Print Digital A3+ Rp 2.000/lbr + insheet 7 lbr. Kapasitas: 220ml 19 pcs/A3+, 330ml 20 pcs/A3+, 600ml 17 pcs/A3+.
                     </p>
                   </div>
                   <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">

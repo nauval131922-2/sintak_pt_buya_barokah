@@ -68,7 +68,10 @@ Dokumen ini adalah **Hukum Tertinggi** bagi asisten AI yang bekerja pada reposit
      - **Pos 3 (Terminal Test)**: Jalankan skrip benchmark terminal yang menguji:
        * Permutasi dropdown (semua kombinasi mesin).
        * Reaktivitas parameter (ubah angka $A \rightarrow B$, buktikan $\Delta\text{HPP} > 0$).
-     - **Pos 4 (Commit & Lapor)**: Commit lokal di terminal, verifikasi `working tree clean`, lalu baru laporkan hasilnya dengan bukti log terminal.
+      - **Pos 4 (Commit & Lapor)**: Commit lokal di terminal, verifikasi `working tree clean`, lalu baru laporkan hasilnya dengan bukti log terminal.
+   9. **Prinsip Terminologi 1:1 (DILARANG Menambah Kata/Jargon Asing yang Tidak Ada di Excel)**:
+      - Gunakan HANYA istilah dan nama mesin yang tertulis nyata di dalam file Excel master (contoh: gunakan `Print Inter`, `Ryobi`, `Oliver`, `Speedmaster SM 102`).
+      - **DILARANG KERAS** menambahkan singkatan atau jargon buatan sendiri yang tidak ada di Excel (seperti kata `POD`, `Print On Demand`, dsb.) baik di nama variabel, label form input UI, teks salin penawaran WhatsApp, maupun manual pengguna. Sampaikan istilah sesuai bahasa asli lembar kerja Excel Buya Barokah.
 
 ---
 

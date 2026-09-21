@@ -1,7 +1,7 @@
 // ponytail: kalkulator dan master parameter buku yasin (02. Pricelist Yasin Softcover & Hardcover)
 
 export interface YasinMasterParams {
-  // 1. Cover (Digital POD A3+ / Offset)
+  // 1. Cover (Digital A3+ / Offset)
   tarifPrintCoverA3: number; // softcover AC 230
   tarifPrintCoverHC: number; // hardcover AP 150 (Excel Master!D15 HC = 2000)
   tarifDesainCover: number; // 25000
@@ -15,7 +15,7 @@ export interface YasinMasterParams {
   hargaIsiYasin144: number; // 3200
   hargaIsiYasin192: number; // 3800
 
-  // 3. Sisipan Halaman Foto & Doa/Keluarga (Cetak POD A3+)
+  // 3. Sisipan Halaman Foto & Doa/Keluarga (Cetak Digital A3+)
   tarifPrintSisipanFotoA3: number; // 1750 (Art Paper 120 FC)
   tarifPrintSisipanTeksA3: number; // 1500 (Art Paper 120 1W / FC)
   insheetSisipan: number; // 2 lembar
@@ -154,7 +154,7 @@ export function calculateYasinSimulator(
   else if (jumlahHalamanIsi <= 160) tebalPunggung = 0.6;
   else tebalPunggung = 1.0;
 
-  // 2. Biaya Cover POD A3+
+  // 2. Biaya Cover Digital A3+
   // Di Excel Cell O7:
   // Ukuran 9.5 x 14 cm = 1 A3+ muat 4 cover (insheet 5)
   // Ukuran 11.7 x 15 cm = 1 A3+ muat 3 cover (insheet 5)
@@ -260,7 +260,7 @@ export function calculateYasinSimulator(
   // Breakdown List
   const breakdown: YasinBreakdownItem[] = [
     {
-      nama: `Cover ${tipeCover} (Print POD + Desain)`,
+      nama: `Cover ${tipeCover} (Print Digital + Desain)`,
       nominal: Math.round(biayaPrintCover),
       pct: totalHpp > 0 ? (biayaPrintCover / totalHpp) * 100 : 0,
       keterangan: `${kebutuhanA3Cover} lbr A3+, ${isHardcover ? 'Art Paper 150' : 'Art Carton 230'}`,

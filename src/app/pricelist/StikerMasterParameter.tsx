@@ -222,7 +222,7 @@ export default function StikerMasterParameter({
             {fieldRow('tarifDesainStiker', 'Desain Stiker (Rp/order)', true)}
           </div>
           <p className="text-[10px] text-slate-500">
-            Sticker Vinyl Glossy 200 gsm / Cromo Full Colour 1 Muka Digital POD.
+            Sticker Vinyl Glossy 200 gsm / Cromo Full Colour 1 Muka Digital A3+.
           </p>
         </div>
 

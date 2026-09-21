@@ -189,15 +189,15 @@ export default function SyahadahMasterParameter({
           </div>
         </div>
 
-        {/* Card 2: Cetak Digital Print Inter (POD) */}
+        {/* Card 2: Cetak Digital Print Inter */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Printer className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Cetak Digital Print Inter (POD)</h3>
+            <h3 className="text-xs font-bold text-slate-800">2. Cetak Digital Print Inter</h3>
           </div>
           <div className="space-y-2.5">
             {fieldRow('tarifPrintA3', 'Tarif Print A3+ Digital', true, false, undefined, 'Master!D18: Biaya cetak per lbr A3+ (muat 2 syahadah)')}
-            {fieldRow('insheetPod', 'Insheet Cetak POD (Lembar A3+)', false, false, 'Lbr', 'Master!D13: Cadangan cetak digital POD (default 5 lbr)')}
+            {fieldRow('insheetPod', 'Insheet Cetak Digital (Lembar A3+)', false, false, 'Lbr', 'Master!D13: Cadangan cetak digital Print Inter (default 5 lbr)')}
           </div>
         </div>
 
@@ -310,11 +310,11 @@ export default function SyahadahMasterParameter({
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                      <span>2. Cetak POD (Print Inter) vs Offset (Ryobi)</span>
+                      <span>2. Cetak Digital (Print Inter) vs Offset (Ryobi)</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
                       <li>• <strong>Print Inter A3+</strong>: <span className="font-mono text-emerald-700">Master!D18</span> Rp 3.800/lbr A3+ (1 lbr A3+ muat 2 lembar folio).</li>
-                      <li>• <strong>Insheet POD</strong>: <span className="font-mono text-emerald-700">Master!D13</span> 5 lbr A3+ (flat).</li>
+                      <li>• <strong>Insheet Digital</strong>: <span className="font-mono text-emerald-700">Master!D13</span> 5 lbr A3+ (flat).</li>
                       <li>• <strong>Insheet Ryobi</strong>: <span className="font-mono text-emerald-700">Master!D13</span> 50 lbr folio offset.</li>
                       <li>• <strong>Plat Ryobi</strong>: <span className="font-mono text-emerald-700">BUKU!Y6</span> Rp 10.000/plat (1W = 1 plat, 2W = 2 plat per muka).</li>
                       <li>• <strong>Ongkos Cetak Ryobi</strong>: <span className="font-mono text-emerald-700">BUKU!AB6</span> Min Rp 15.000/plat + <span className="font-mono text-emerald-700">BUKU!AC7</span> drek over Rp 30/drek/warna (&gt;500 drek).</li>

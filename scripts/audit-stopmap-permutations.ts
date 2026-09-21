@@ -44,7 +44,7 @@ const baseDir =
 // ==================================================================================
 // 1. BENCHMARK MASTER STOPMAP A4 (Pricelist STOPMAP A4.xlsm - 12 TIERS)
 // ==================================================================================
-console.log('--- 1. STOPMAP A4 (Pricelist STOPMAP A4.xlsm - PRINT INTER POD) ---');
+console.log('--- 1. STOPMAP A4 (Pricelist STOPMAP A4.xlsm - PRINT INTER DIGITAL) ---');
 const wbA4 = XLSX.readFile(path.join(baseDir, 'Pricelist STOPMAP A4.xlsm'));
 const bA4 = wbA4.Sheets['BUKU'];
 
@@ -112,10 +112,10 @@ const permutasiCases: {
   opsiPisau: boolean;
   opsiPacking: boolean;
 }[] = [
-  { desc: 'A4 Oplah 100 - Auto (POD) - Glossy', oplah: 100, ukuran: 'A4 (22 x 32 cm)', mesin: 'Auto', laminasi: 'Glossy', opsiPisau: false, opsiPacking: true },
-  { desc: 'A4 Oplah 100 - Auto (POD) - Doff', oplah: 100, ukuran: 'A4 (22 x 32 cm)', mesin: 'Auto', laminasi: 'Doff', opsiPisau: false, opsiPacking: true },
-  { desc: 'A4 Oplah 100 - Auto (POD) - UV Varnish', oplah: 100, ukuran: 'A4 (22 x 32 cm)', mesin: 'Auto', laminasi: 'UV Varnish', opsiPisau: false, opsiPacking: true },
-  { desc: 'A4 Oplah 100 - Auto (POD) - Tanpa Laminasi', oplah: 100, ukuran: 'A4 (22 x 32 cm)', mesin: 'Auto', laminasi: 'Tanpa Laminasi', opsiPisau: false, opsiPacking: true },
+  { desc: 'A4 Oplah 100 - Auto (Print Inter) - Glossy', oplah: 100, ukuran: 'A4 (22 x 32 cm)', mesin: 'Auto', laminasi: 'Glossy', opsiPisau: false, opsiPacking: true },
+  { desc: 'A4 Oplah 100 - Auto (Print Inter) - Doff', oplah: 100, ukuran: 'A4 (22 x 32 cm)', mesin: 'Auto', laminasi: 'Doff', opsiPisau: false, opsiPacking: true },
+  { desc: 'A4 Oplah 100 - Auto (Print Inter) - UV Varnish', oplah: 100, ukuran: 'A4 (22 x 32 cm)', mesin: 'Auto', laminasi: 'UV Varnish', opsiPisau: false, opsiPacking: true },
+  { desc: 'A4 Oplah 100 - Auto (Print Inter) - Tanpa Laminasi', oplah: 100, ukuran: 'A4 (22 x 32 cm)', mesin: 'Auto', laminasi: 'Tanpa Laminasi', opsiPisau: false, opsiPacking: true },
   { desc: 'A4 Oplah 100 - Force Oliver (Offset) - Glossy', oplah: 100, ukuran: 'A4 (22 x 32 cm)', mesin: 'Oliver', laminasi: 'Glossy', opsiPisau: false, opsiPacking: true },
   { desc: 'A4 Oplah 100 - Pisau Ponz Baru Aktif', oplah: 100, ukuran: 'A4 (22 x 32 cm)', mesin: 'Auto', laminasi: 'Glossy', opsiPisau: true, opsiPacking: true },
   { desc: 'A4 Oplah 100 - Tanpa Packing Kardus Lakban', oplah: 100, ukuran: 'A4 (22 x 32 cm)', mesin: 'Auto', laminasi: 'Glossy', opsiPisau: false, opsiPacking: false },
@@ -152,7 +152,7 @@ for (const c of permutasiCases) {
 // ==================================================================================
 console.log('\n--- 4. UJI REAKTIVITAS PARAMETER (WAJIB DELTA HPP > 0) ---');
 
-// Base case A4 (POD)
+// Base case A4 (Print Inter)
 const baseA4 = calculateStopmapHpp(
   { oplah: 100, ukuran: 'A4 (22 x 32 cm)', mesin: 'PRINT INTER', laminasi: 'Glossy', opsiPisauPonzBaru: false, opsiKardusLakban: true },
   DEFAULT_STOPMAP_PARAMS

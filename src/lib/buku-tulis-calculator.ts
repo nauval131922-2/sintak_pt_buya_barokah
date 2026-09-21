@@ -159,7 +159,7 @@ export function calculateBukuTulisHpp(
   const validOplah = Math.max(1, oplah);
 
   // Klasifikasi skala mesin produksi sesuai master Excel 2026:
-  // 1. Oplah <= 500 pcs: Cover Print Inter A3+ (POD) & Isi Ryobi 1W
+  // 1. Oplah <= 500 pcs: Cover Print Inter A3+ & Isi Ryobi 1W
   // 2. Oplah 600 - 2.500 pcs: Cover Oliver 4W & Isi Oliver 1W
   // 3. Oplah >= 3.000 pcs: Cover Oliver 4W & Isi Speedmaster SM 102 1W
   const coverMesin: 'Print Inter' | 'Oliver' | 'SM' =
@@ -201,8 +201,8 @@ export function calculateBukuTulisHpp(
     const rCover = (validOplah / 2) + insheet;
     kebutuhanCover = Math.ceil(rCover);
     biayaKertasCover = rCover * p.tarifPrintCoverA3;
-    add('Cover Print Digital A3+ (POD Inter)', biayaKertasCover,
-      `${rCover.toFixed(1)} lbr A3+ POD (net ${validOplah / 2} + ${insheet} insheet) @ Rp ${p.tarifPrintCoverA3.toLocaleString('id-ID')}`);
+    add('Cover Print Digital A3+ (Print Inter)', biayaKertasCover,
+      `${rCover.toFixed(1)} lbr A3+ (net ${validOplah / 2} + ${insheet} insheet) @ Rp ${p.tarifPrintCoverA3.toLocaleString('id-ID')}`);
   } else if (isCoverSM) {
     // Speedmaster SM 102 (Ukuran 16 x 21 cm, Plano 79 x 109 cm potong 2, muat 8 cover)
     // BUKU!O7 = 2, BUKU!P7 = 8, BUKU!Y6 = 78.000, BUKU!AB6 = 310.000, BUKU!AC7 = 100
