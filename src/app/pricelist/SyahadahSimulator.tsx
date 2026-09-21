@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { saveCalculationToDb } from '@/lib/pricelist-db-sync';
 import {
   FileSpreadsheet,
@@ -8,7 +8,6 @@ import {
   TrendingUp,
   Percent,
   FileText,
-  Copy,
   Check,
   Share2,
   Sliders,
@@ -16,18 +15,24 @@ import {
   BookmarkCheck,
   X,
   Settings2,
-  Calculator,
   Info,
-  Layers,
-  RefreshCw,
   Award,
+  Printer,
+  Sparkles,
+  PackageCheck,
+  Stamp,
+  HelpCircle,
 } from 'lucide-react';
 import {
   calculateSyahadahHpp,
   DEFAULT_SYAHADAH_PARAMS,
   SyahadahMasterParams,
   SyahadahVarianType,
+  SyahadahMesinType,
+  SyahadahLaminasiType,
+  SyahadahUkuranType,
   SYAHADAH_TIERS,
+  SYAHADAH_VARIANTS,
   SavedSyahadahSimulationItem,
   SYAHADAH_CONFIG,
 } from '@/lib/syahadah-calculator';
@@ -35,13 +40,13 @@ import { toast } from '@/lib/toast';
 
 export type { SavedSyahadahSimulationItem };
 
-const VARIAN_OPTIONS: SyahadahVarianType[] = [
-  '1 Muka FC',
-  '1 Muka 1 Warna',
-  '1 Muka 2 Warna',
-  '2 Muka 1 Warna',
-  '2 Muka 2 Warna',
-  '2 Muka FC',
+const UKURAN_OPTIONS: SyahadahUkuranType[] = ['21,5 x 33 cm', '21 x 29,7 cm'];
+
+const LAMINASI_OPTIONS: { id: SyahadahLaminasiType; label: string }[] = [
+  { id: 'Tanpa Laminasi', label: 'Tanpa Laminasi' },
+  { id: 'Glossy', label: 'Laminasi Glossy' },
+  { id: 'Doff', label: 'Laminasi Doff' },
+  { id: 'UV Varnish', label: 'UV Varnish' },
 ];
 
 interface SyahadahSimulatorProps {
@@ -63,18 +68,22 @@ export default function SyahadahSimulator({
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: SyahadahSimulatorProps) {
-  const [oplah, setOplah] = useState<number>(250);
+  const [oplah, setOplah] = useState<number>(100);
   const [varian, setVarian] = useState<SyahadahVarianType>('1 Muka FC');
-  const [opsiFoil, setOpsiFoil] = useState(false);
-  const [marginPct, setMarginPct] = useState(30);
-  const [negoDiskonPct, setNegoDiskonPct] = useState(4);
-  const [copiedQuote, setCopiedQuote] = useState(false);
+  const [ukuran, setUkuran] = useState<SyahadahUkuranType>('21,5 x 33 cm');
+  const [mesin, setMesin] = useState<SyahadahMesinType>('Auto');
+  const [laminasi, setLaminasi] = useState<SyahadahLaminasiType>('Tanpa Laminasi');
+  const [opsiFoil, setOpsiFoil] = useState<boolean>(false);
+  const [opsiKardusLakban, setOpsiKardusLakban] = useState<boolean>(false);
+  const [marginPct, setMarginPct] = useState<number>(30);
+  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(5);
+  const [copiedQuote, setCopiedQuote] = useState<boolean>(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedSyahadahSimulationItem[]>([]);
   const [simulationTitle, setSimulationTitle] = useState('');
   const [internalActiveId, setInternalActiveId] = useState<string | null>(null);
   const [internalActiveTitle, setInternalActiveTitle] = useState<string | null>(null);
-  const [showSimulatorManual, setShowSimulatorManual] = useState(false);
+  const [showSimulatorManual, setShowSimulatorManual] = useState<boolean>(false);
 
   const activeSimulationId = propActiveSimId !== undefined ? propActiveSimId : internalActiveId;
   const setActiveSimulationId = (id: string | null) => {
@@ -88,6 +97,54 @@ export default function SyahadahSimulator({
     else setInternalActiveTitle(title);
   };
 
+  // 1. Auto-restore draft from localStorage
+  const isHydratedRef = useRef(false);
+  useEffect(() => {
+    try {
+      const rawDraft = localStorage.getItem('sintak_syahadah_simulator_draft');
+      if (rawDraft) {
+        const draft = JSON.parse(rawDraft);
+        if (draft.oplah) setOplah(Number(draft.oplah));
+        if (draft.varian) setVarian(draft.varian);
+        if (draft.ukuran) setUkuran(draft.ukuran);
+        if (draft.mesin) setMesin(draft.mesin);
+        if (draft.laminasi) setLaminasi(draft.laminasi);
+        if (draft.opsiFoil !== undefined) setOpsiFoil(Boolean(draft.opsiFoil));
+        if (draft.opsiKardusLakban !== undefined) setOpsiKardusLakban(Boolean(draft.opsiKardusLakban));
+        if (draft.marginPct !== undefined) setMarginPct(Number(draft.marginPct));
+        if (draft.negoDiskonPct !== undefined) setNegoDiskonPct(Number(draft.negoDiskonPct));
+      }
+    } catch (e) {
+      console.error('Gagal memuat draft simulator syahadah:', e);
+    }
+    isHydratedRef.current = true;
+  }, []);
+
+  // 2. Auto-persist draft to localStorage (debounced)
+  useEffect(() => {
+    if (!isHydratedRef.current) return;
+    const timer = setTimeout(() => {
+      try {
+        const draft = {
+          oplah,
+          varian,
+          ukuran,
+          mesin,
+          laminasi,
+          opsiFoil,
+          opsiKardusLakban,
+          marginPct,
+          negoDiskonPct,
+        };
+        localStorage.setItem('sintak_syahadah_simulator_draft', JSON.stringify(draft));
+      } catch (e) {
+        console.error('Gagal menyimpan draft simulator syahadah:', e);
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [oplah, varian, ukuran, mesin, laminasi, opsiFoil, opsiKardusLakban, marginPct, negoDiskonPct]);
+
+  // 3. Load saved simulation list
   useEffect(() => {
     try {
       const raw = localStorage.getItem('sintak_saved_syahadah_simulations');
@@ -101,29 +158,44 @@ export default function SyahadahSimulator({
             const inp = item.data.input;
             setOplah(inp.oplah);
             setVarian(inp.varian);
-            setOpsiFoil(inp.opsiFoil);
-            setMarginPct(inp.marginPct);
-            setNegoDiskonPct(inp.negoDiskonPct);
+            if (inp.ukuran) setUkuran(inp.ukuran);
+            if (inp.mesin) setMesin(inp.mesin);
+            if (inp.laminasi) setLaminasi(inp.laminasi);
+            setOpsiFoil(Boolean(inp.opsiFoil));
+            if (inp.opsiKardusLakban !== undefined) setOpsiKardusLakban(Boolean(inp.opsiKardusLakban));
+            setMarginPct(inp.marginPct ?? 30);
+            setNegoDiskonPct(inp.negoDiskonPct ?? 5);
             setSimulationTitle(item.title);
           }
         }
       }
     } catch (e) {
-      console.error('Failed to load saved syahadah simulations:', e);
+      console.error('Gagal memuat riwayat simulasi syahadah:', e);
     }
   }, [activeSimulationId]);
 
+  // Kalkulasi engine Syahadah murni
   const result = useMemo(
     () =>
       calculateSyahadahHpp(
-        { oplah, varian, opsiFoil, marginPct, negoDiskonPct },
+        {
+          oplah,
+          varian,
+          ukuran,
+          mesin,
+          laminasi,
+          opsiFoil,
+          opsiKardusLakban,
+          marginPct,
+          negoDiskonPct,
+        },
         customParams
       ),
-    [oplah, varian, opsiFoil, marginPct, negoDiskonPct, customParams]
+    [oplah, varian, ukuran, mesin, laminasi, opsiFoil, opsiKardusLakban, marginPct, negoDiskonPct, customParams]
   );
 
   const defaultTitle = () =>
-    `Syahadah ${varian} ${opsiFoil ? '+Foil' : ''} (${oplah} pcs)`;
+    `Syahadah ${varian} ${result.mesinTerpilih} (${oplah.toLocaleString('id-ID')} pcs)`;
 
   const handleSaveSimulation = () => {
     const title = simulationTitle.trim() || defaultTitle();
@@ -138,7 +210,7 @@ export default function SyahadahSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_syahadah_simulations', JSON.stringify(updated));
-    saveCalculationToDb({ ...newItem, category: 'Syahadah' });
+      saveCalculationToDb({ ...newItem, category: 'Syahadah' });
     } catch (e) {
       console.error('Failed to save syahadah simulation:', e);
     }
@@ -146,7 +218,6 @@ export default function SyahadahSimulator({
     toast.success(`Kalkulasi "${title}" berhasil disimpan!`);
     setActiveSimulationId(null);
     if (setActiveSimulationTitle) setActiveSimulationTitle(null);
-    setSimulationTitle('');
   };
 
   const handleUpdateSavedSimulation = () => {
@@ -160,7 +231,7 @@ export default function SyahadahSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_syahadah_simulations', JSON.stringify(updated));
-    const targetItem = updated.find((x) => x.id === activeSimulationId);
+      const targetItem = updated.find((x) => x.id === activeSimulationId);
       if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Syahadah' });
     } catch (e) {
       console.error('Failed to update syahadah simulation:', e);
@@ -174,23 +245,22 @@ export default function SyahadahSimulator({
 
   const handleCopyQuote = () => {
     const fmt = (n: number) => n.toLocaleString('id-ID');
-    const cfg = SYAHADAH_CONFIG[varian];
-    const foilText = opsiFoil ? ' + Foil Emas (+Rp 450/pcs, min Rp 100.000 + master foil)' : ' Tanpa Foil';
+    const cfg = SYAHADAH_CONFIG[varian] || SYAHADAH_CONFIG['1 Muka FC'];
     const text =
-      `*PENAWARAN SYAHADAH*\n` +
+      `*PENAWARAN HARGA SYAHADAH / SERTIFIKAT*\n` +
       `*PT Buya Barokah*\n` +
-      `━━━━━━━━━━━━━━━━━━━━\n` +
-      `• *Produk*: Syahadah ${varian} 21,5×33 cm\n` +
-      `• *Spesifikasi*: ${cfg.description}${foilText}\n` +
-      `• *Kuantitas*: ${oplah} pcs\n` +
-      `• *Bahan*: Linen/Hammer Crem Tebal 260 gsm 1 Muka\n` +
-      `• *Finishing*: Sisir + Packing Kardus${opsiFoil ? ' + Hot Foil Emas' : ''}\n` +
-      `━━━━━━━━━━━━━━━━━━━━\n` +
-      `• *Harga / Pcs*: *Rp ${fmt(result.hargaJualPerPcs)}*\n` +
-      `• *Harga Nego / Pcs*: *Rp ${fmt(result.hargaNegoPerPcs)}*\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `• *Produk*: Syahadah ${varian} (${ukuran})\n` +
+      `• *Bahan*: Linen / Hammer Crem Tebal 300 gsm\n` +
+      `• *Kuantitas*: ${oplah.toLocaleString('id-ID')} pcs\n` +
+      `• *Mesin Cetak*: ${result.mesinTerpilih}\n` +
+      `• *Finishing*: Potong Sisir${laminasi !== 'Tanpa Laminasi' ? ` + ${laminasi}` : ''}${opsiFoil ? ' + Foil Emas (Hotprint)' : ''}${opsiKardusLakban ? ' + Packing Kardus' : ''}\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `• *Harga Satuan*: *Rp ${fmt(result.hargaJualPerPcs)} / pcs*\n` +
+      `• *Harga Nego*: *Rp ${fmt(result.hargaNegoPerPcs)} / pcs* (-${negoDiskonPct}%)\n` +
       `• *Total Penawaran*: *Rp ${fmt(result.totalHargaJual)}*\n` +
-      `━━━━━━━━━━━━━━━━━━━━\n` +
-      `_Harga belum termasuk PPN. Linen/Hammer Crem Tebal 21,5×33 cm, sisir & packing kardus._`;
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `_Catatan: Harga belum termasuk PPN. Penawaran resmi berlaku 14 hari._`;
 
     navigator.clipboard.writeText(text);
     setCopiedQuote(true);
@@ -199,25 +269,29 @@ export default function SyahadahSimulator({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
+    // Struktur dual-scroll mandiri standar Manasik: flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0
+    <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
+      {/* Header Banner */}
+      <div className="p-3.5 sm:p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs shrink-0">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
-            <FileSpreadsheet className="w-5 h-5" />
+          <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200 shrink-0">
+            <Award className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-bold text-sm sm:text-base text-emerald-950 flex items-center gap-2">
-              Simulator &amp; Kalkulator Syahadah
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-sm sm:text-base text-emerald-950 tracking-tight">
+                Simulator &amp; Kalkulator Syahadah
+              </h3>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
                 Katalog 08
               </span>
-            </h3>
-            <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Hitung HPP, harga penawaran, dan estimasi profit Syahadah 21,5×33 cm (Linen/Hammer Crem Tebal, 1/2 Muka FC·1W·2W + foil opsional).
+            </div>
+            <p className="text-[11px] text-emerald-800/80 mt-0.5">
+              Kalkulasi 100% presisi Excel (Linen/Hammer Crem 300 gsm, POD Print Inter vs Offset Ryobi/Oliver, hotprint foil emas, &amp; packing).
             </p>
           </div>
         </div>
+
         <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
@@ -252,22 +326,22 @@ export default function SyahadahSimulator({
         </div>
       </div>
 
-      {/* Banner riwayat aktif */}
+      {/* Banner Mode Riwayat Aktif */}
       {activeSimulationId && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200">
+        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 bg-amber-200 text-amber-900 rounded-lg">
+            <div className="p-1.5 bg-amber-200 text-amber-900 rounded-lg shrink-0">
               <Bookmark className="w-4 h-4 fill-amber-700" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-black uppercase tracking-wider text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded">
+                <span className="text-[10px] font-black uppercase tracking-wider text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded">
                   Mode Riwayat Aktif
                 </span>
                 <h4 className="text-xs font-bold text-amber-950">{activeSimulationTitle}</h4>
               </div>
               <p className="text-[11px] text-amber-800/90 mt-0.5">
-                Anda sedang melihat atau mengedit data dari riwayat simulasi yang dimuat.
+                Menyunting data dari riwayat simulasi yang dimuat.
               </p>
             </div>
           </div>
@@ -296,60 +370,152 @@ export default function SyahadahSimulator({
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Kolom Kiri: Form Input */}
-        <div className="lg:col-span-5 space-y-5">
+      {/* Grid Dual Scroll Mandiri */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-0 pb-1">
+        {/* Kolom Kiri: Input Form (lg:col-span-5) */}
+        <div className="lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
               <Sliders size={15} className="text-emerald-700" />
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Input Spesifikasi Syahadah</h3>
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                Spesifikasi &amp; Parameter Syahadah
+              </h3>
             </div>
 
-            {/* Varian */}
+            {/* 1. Varian Syahadah */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Varian Syahadah (21,5 × 33 cm)
+                1. Varian Cetak Syahadah
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                {SYAHADAH_VARIANTS.map((v) => {
+                  const active = varian === v;
+                  return (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => setVarian(v)}
+                      className={`py-2 px-2 rounded-lg border text-[11px] font-bold text-center transition cursor-pointer flex flex-col items-center gap-0.5 ${
+                        active
+                          ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
+                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span>{v}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[10.5px] text-slate-500 mt-1.5 italic">
+                {SYAHADAH_CONFIG[varian]?.description}
+              </p>
+            </div>
+
+            {/* 2. Pilihan Mesin Cetak */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-bold text-slate-700">
+                  2. Metode Cetak Mesin
+                </label>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
+                  Aktif: <strong className="text-emerald-700">{result.mesinTerpilih}</strong>
+                </span>
+              </div>
+              <div className="grid grid-cols-4 gap-1.5">
+                {(['Auto', 'Print Inter', 'Ryobi', 'Oliver'] as SyahadahMesinType[]).map((m) => {
+                  const active = mesin === m;
+                  return (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => setMesin(m)}
+                      className={`py-2 px-1 rounded-lg border text-[11px] font-bold text-center transition cursor-pointer flex flex-col items-center gap-0.5 ${
+                        active
+                          ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
+                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      {m === 'Auto' ? (
+                        <Sparkles size={13} className={active ? 'text-amber-200' : 'text-amber-500'} />
+                      ) : (
+                        <Printer size={13} />
+                      )}
+                      <span>{m === 'Auto' ? '⚙️ Auto' : m}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] text-slate-500 mt-1">
+                {mesin === 'Auto'
+                  ? 'Auto: Oplah ≤200 Print Inter A3+, Oplah ≥250 Ryobi offset (1W/2W) / Oliver'
+                  : `Dipaksa mesin: ${mesin}`}
+              </p>
+            </div>
+
+            {/* 3. Ukuran Kertas */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                3. Ukuran Cetak
               </label>
               <div className="grid grid-cols-2 gap-2">
-                {VARIAN_OPTIONS.map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => setVarian(v)}
-                    className={`py-2 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer flex flex-col items-center gap-1 ${
-                      varian === v
-                        ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
-                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    <Award size={14} className={varian === v ? 'text-white' : 'text-slate-500'} />
-                    <span className="leading-tight">{v}</span>
-                  </button>
-                ))}
+                {UKURAN_OPTIONS.map((u) => {
+                  const active = ukuran === u;
+                  return (
+                    <button
+                      key={u}
+                      type="button"
+                      onClick={() => setUkuran(u)}
+                      className={`py-1.5 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
+                        active
+                          ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
+                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      {u}
+                    </button>
+                  );
+                })}
               </div>
-              <p className="text-[11px] text-slate-500 mt-1.5 italic">{SYAHADAH_CONFIG[varian].description}</p>
             </div>
 
-            {/* Foil checkbox */}
+            {/* 4. Opsi Foil & Pengemasan */}
             <div>
-              <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:bg-slate-50 cursor-pointer text-xs">
-                <input
-                  type="checkbox"
-                  checked={opsiFoil}
-                  onChange={(e) => setOpsiFoil(e.target.checked)}
-                  className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                />
-                <div>
-                  <span className="font-semibold text-slate-800 block text-[11px]">Tambah Foil Emas (+Rp 450/pcs)</span>
-                  <span className="text-[10px] text-slate-400">Min Rp 100.000 + master foil Rp 150.000 (belum termasuk)</span>
-                </div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                4. Opsi Finishing Khusus &amp; Packing
               </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white transition cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={opsiFoil}
+                    onChange={(e) => setOpsiFoil(e.target.checked)}
+                    className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300"
+                  />
+                  <div className="text-[11px] leading-tight">
+                    <span className="font-bold text-slate-800 block">Foil Emas (Hotprint)</span>
+                    <span className="text-[10px] text-slate-500">+Rp 450/pcs (min 100k + klise)</span>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white transition cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={opsiKardusLakban}
+                    onChange={(e) => setOpsiKardusLakban(e.target.checked)}
+                    className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300"
+                  />
+                  <div className="text-[11px] leading-tight">
+                    <span className="font-bold text-slate-800 block">Kardus &amp; Lakban</span>
+                    <span className="text-[10px] text-slate-500">Box kardus @1.000 pcs</span>
+                  </div>
+                </label>
+              </div>
             </div>
 
-            {/* Oplah */}
+            {/* 5. Kuantitas Oplah */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Kuantitas Oplah (pcs)
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                5. Kuantitas Oplah (Pcs)
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <select
@@ -358,30 +524,36 @@ export default function SyahadahSimulator({
                     const v = e.target.value;
                     if (v !== 'custom') setOplah(Number(v));
                   }}
-                  className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none cursor-pointer"
+                  className="w-full px-2.5 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none cursor-pointer"
                 >
                   {SYAHADAH_TIERS.map((t) => (
-                    <option key={t} value={t}>{t.toLocaleString('id-ID')} pcs</option>
+                    <option key={t} value={t}>
+                      {t.toLocaleString('id-ID')} pcs
+                    </option>
                   ))}
-                  {!SYAHADAH_TIERS.includes(oplah) && <option value="custom">{oplah.toLocaleString('id-ID')} pcs (custom)</option>}
+                  {!SYAHADAH_TIERS.includes(oplah) && (
+                    <option value="custom">{oplah.toLocaleString('id-ID')} pcs (custom)</option>
+                  )}
                 </select>
                 <input
                   type="number"
                   min={1}
-                  max={10000}
-                  step={10}
+                  max={50000}
+                  step={5}
                   value={oplah}
                   onChange={(e) => setOplah(Math.max(1, Number(e.target.value) || 1))}
-                  className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
-                  placeholder="Custom..."
+                  className="w-full px-2.5 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+                  placeholder="Kustom oplah..."
                 />
               </div>
             </div>
 
-            {/* Margin & Nego */}
+            {/* 6. Margin & Nego Diskon */}
             <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Margin Profit (%)</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Margin Profit (%)
+                </label>
                 <div className="relative">
                   <input
                     type="number"
@@ -391,11 +563,15 @@ export default function SyahadahSimulator({
                     onChange={(e) => setMarginPct(Number(e.target.value) || 0)}
                     className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
                   />
-                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
+                    %
+                  </span>
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Batas Nego (%)</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Batas Nego (%)
+                </label>
                 <div className="relative">
                   <input
                     type="number"
@@ -405,20 +581,23 @@ export default function SyahadahSimulator({
                     onChange={(e) => setNegoDiskonPct(Number(e.target.value) || 0)}
                     className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
                   />
-                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
+                    %
+                  </span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Kolom Kanan: Hasil */}
-        <div className="lg:col-span-7 space-y-5">
-          {/* 4 Kartu Finansial */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+        {/* Kolom Kanan: Rincian & Hasil (lg:col-span-7) */}
+        <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
+          {/* 4 Kartu Finansial Utama */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            {/* Card 1: HPP */}
+            <div className="bg-white rounded-xl border border-slate-200 p-3 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">HPP / pcs</span>
+                <span className="text-[11px] font-semibold">HPP / Pcs</span>
                 <DollarSign size={13} className="text-slate-400" />
               </div>
               <div>
@@ -426,12 +605,13 @@ export default function SyahadahSimulator({
                   Rp {Math.round(result.hppPerPcs).toLocaleString('id-ID')}
                 </span>
                 <span className="block text-[10px] text-slate-400 mt-0.5">
-                  Total HPP: Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
+                  Total: Rp {result.totalHpp.toLocaleString('id-ID')}
                 </span>
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
+            {/* Card 2: Harga Jual Pricelist */}
+            <div className="bg-gradient-to-br from-emerald-50 to-teal-50/60 rounded-xl border border-emerald-200 p-3 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-emerald-800 mb-1">
                 <span className="text-[11px] font-bold">Harga Jual (+{marginPct}%)</span>
                 <TrendingUp size={13} className="text-emerald-600" />
@@ -440,11 +620,14 @@ export default function SyahadahSimulator({
                 <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
                   Rp {result.hargaJualPerPcs.toLocaleString('id-ID')}
                 </span>
-                <span className="block text-[10px] text-emerald-700/80 mt-0.5">/ pcs</span>
+                <span className="block text-[10px] text-emerald-700/80 mt-0.5">
+                  Master BUKU: Rp {result.hargaJualTensPerPcs.toLocaleString('id-ID')}
+                </span>
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-xl border border-blue-200 p-3.5 shadow-xs flex flex-col justify-between">
+            {/* Card 3: Harga Nego */}
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50/60 rounded-xl border border-blue-200 p-3 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-blue-800 mb-1">
                 <span className="text-[11px] font-bold">Harga Nego (-{negoDiskonPct}%)</span>
                 <Percent size={13} className="text-blue-600" />
@@ -453,13 +636,16 @@ export default function SyahadahSimulator({
                 <span className="text-base sm:text-lg font-black text-blue-800 font-mono">
                   Rp {result.hargaNegoPerPcs.toLocaleString('id-ID')}
                 </span>
-                <span className="block text-[10px] text-blue-700/80 mt-0.5">/ pcs</span>
+                <span className="block text-[10px] text-blue-700/80 mt-0.5">
+                  Total: Rp {result.totalHargaNego.toLocaleString('id-ID')}
+                </span>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+            {/* Card 4: Total Nilai Order */}
+            <div className="bg-white rounded-xl border border-slate-200 p-3 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">Total Harga Jual</span>
+                <span className="text-[11px] font-semibold">Total Nilai Order</span>
                 <TrendingUp size={13} className="text-emerald-500" />
               </div>
               <div>
@@ -467,67 +653,80 @@ export default function SyahadahSimulator({
                   Rp {result.totalHargaJual.toLocaleString('id-ID')}
                 </span>
                 <span className="block text-[10px] text-slate-500 mt-0.5">
-                  Profit: Rp {Math.round(result.profitTotal).toLocaleString('id-ID')}
+                  Profit: Rp {result.profitTotal.toLocaleString('id-ID')}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Breakdown */}
+          {/* Tabel Rincian Breakdown Biaya Transparan */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="px-4 py-3 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
+            <div className="px-4 py-3 bg-slate-50/80 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
               <div className="flex items-center gap-2">
                 <FileText size={15} className="text-emerald-700" />
                 <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Rincian Estimasi Komponen Biaya Syahadah
+                  Rincian Komponen Biaya HPP Syahadah
                 </h4>
               </div>
-              <span className="text-[11px] font-bold text-slate-500">
-                {oplah.toLocaleString('id-ID')} pcs · {varian} {opsiFoil ? '+Foil' : ''}
-              </span>
+              <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-600">
+                <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold">
+                  {oplah.toLocaleString('id-ID')} pcs
+                </span>
+                <span>• {varian}</span>
+                <span>• {result.mesinTerpilih}</span>
+              </div>
             </div>
+
             <div className="overflow-x-auto">
               <table className="w-full text-xs text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-100/60 border-b border-slate-200 text-slate-600 font-semibold text-[11px]">
                     <th className="py-2 px-3 w-10 text-center">No</th>
                     <th className="py-2 px-3">Komponen Biaya</th>
-                    <th className="py-2 px-3">Keterangan Teknis</th>
-                    <th className="py-2 px-3 text-right">Biaya (Rp)</th>
+                    <th className="py-2 px-3">Spesifikasi &amp; Alamat Cell Excel</th>
+                    <th className="py-2 px-3 text-right">Nominal (Rp)</th>
                     <th className="py-2 px-3 text-right w-16">Porsi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
+                <tbody className="divide-y divide-slate-100 text-slate-700">
                   {result.breakdown.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="py-2 px-3 text-center text-slate-400">{idx + 1}</td>
-                      <td className="py-2 px-3 font-medium text-slate-800 font-sans">{item.nama}</td>
-                      <td className="py-2 px-3 text-slate-500 text-[10.5px] font-sans">{item.keterangan}</td>
-                      <td className="py-2 px-3 text-right font-bold text-slate-800">
+                    <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="py-2 px-3 text-center text-slate-400 font-mono text-[11px]">
+                        {idx + 1}
+                      </td>
+                      <td className="py-2 px-3 font-semibold text-slate-800">
+                        {item.nama}
+                      </td>
+                      <td className="py-2 px-3 text-slate-500 text-[11px]">
+                        {item.keterangan}
+                      </td>
+                      <td className="py-2 px-3 text-right font-mono font-bold text-slate-800">
                         Rp {item.nominal.toLocaleString('id-ID')}
                       </td>
-                      <td className="py-2 px-3 text-right text-slate-500">
+                      <td className="py-2 px-3 text-right font-mono text-slate-500 text-[11px]">
                         {(item.pct * 100).toFixed(1)}%
                       </td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr className="bg-slate-50/90 font-bold border-t border-slate-200 text-xs">
-                    <td colSpan={3} className="py-2.5 px-3 text-slate-800 font-sans">
-                      Total HPP Biaya Produksi ({oplah.toLocaleString('id-ID')} pcs)
+                  <tr className="bg-emerald-50/70 border-t border-emerald-200 font-bold text-emerald-950">
+                    <td colSpan={3} className="py-2.5 px-3 text-right uppercase tracking-wider text-[11px]">
+                      Total HPP Produksi:
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-sm">
-                      Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
+                    <td className="py-2.5 px-3 text-right font-mono text-sm text-emerald-900">
+                      Rp {result.totalHpp.toLocaleString('id-ID')}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-slate-600">100%</td>
+                    <td className="py-2.5 px-3 text-right font-mono text-[11px]">
+                      100.0%
+                    </td>
                   </tr>
                 </tfoot>
               </table>
             </div>
           </div>
 
-          {/* Simpan */}
+          {/* Tombol Aksi Simpan Simulasi (Full Width) */}
           <div className="pt-1">
             {activeSimulationId ? (
               <div className="flex items-center gap-2 w-full">
@@ -564,7 +763,7 @@ export default function SyahadahSimulator({
         </div>
       </div>
 
-      {/* Modal Panduan */}
+      {/* Modal Panduan Penggunaan Simulator */}
       {showSimulatorManual && (
         <div
           onClick={() => setShowSimulatorManual(false)}
@@ -572,17 +771,19 @@ export default function SyahadahSimulator({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden cursor-default"
+            className="bg-white w-full max-w-3xl max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden cursor-default"
           >
             <div className="px-6 py-4 bg-emerald-900 text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-emerald-800/80 rounded-xl border border-emerald-700 text-emerald-200">
-                  <Calculator className="w-5 h-5" />
+                  <HelpCircle className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold tracking-tight">Panduan Simulator Syahadah</h3>
+                  <h3 className="text-base font-bold tracking-tight">
+                    Panduan Penggunaan Kalkulator Syahadah
+                  </h3>
                   <p className="text-xs text-emerald-200/90 mt-0.5">
-                    Alur perhitungan berbasis oplah pcs, Linen/Hammer 260 gsm 21,5×33 cm, 1/2 Muka FC·1W·2W, foil & sisir
+                    Alur pemilihan spek fisik, mesin cetak, dan kalkulasi harga penawaran Syahadah
                   </p>
                 </div>
               </div>
@@ -595,46 +796,54 @@ export default function SyahadahSimulator({
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-700 leading-relaxed">
-              <div className="space-y-3">
+            <div className="p-6 overflow-y-auto space-y-4 text-xs text-slate-700 leading-relaxed">
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1.5">
                 <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                  Langkah Menggunakan Simulator Syahadah
+                  <Award className="w-4 h-4 text-emerald-700" />
+                  1. Anatomi Kertas &amp; Dimensi Syahadah
                 </h4>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                  {[
-                    ['1. Varian & Foil', 'Pilih 1 dari 6 varian (1M-FC/1W/2W atau 2M-1W/2W/FC) 21,5×33 cm. Centang foil jika perlu hot foil emas (+Rp450/pcs min 100k + master).'],
-                    ['2. Oplah', 'Tentukan oplah 20–3000 pcs via dropdown tier atau input custom.'],
-                    ['3. Margin & Nego', 'Atur margin profit (default 30%) & batas nego (default 4%), harga otomatis terhitung per pcs & total.'],
-                    ['4. Salin Penawaran', 'Klik Salin Penawaran untuk teks WA otomatis, atau simpan ke daftar kalkulasi untuk edit ulang.'],
-                  ].map(([title, desc]) => (
-                    <div key={title} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
-                      <span className="font-bold text-emerald-800 text-xs">{title}</span>
-                      <p className="text-[11px] text-slate-600">{desc}</p>
-                    </div>
-                  ))}
-                </div>
+                <p>
+                  • <strong>Bahan Baku</strong>: Kertas Linen / Hammer Crem Tebal 300 gsm (harga acuan Rp 29.900 / kg).
+                </p>
+                <p>
+                  • <strong>Ukuran Standar</strong>: Folio 21,5×33 cm (atau A4 21×29,7 cm). 1 lembar plano 79×109 cm dipotong menjadi 11 lembar folio.
+                </p>
               </div>
 
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5">
-                <h5 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-emerald-700" />
-                  Struktur Biaya Produksi Syahadah
-                </h5>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
-                  <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
-                    <span className="font-bold text-emerald-900 block">Kertas &amp; Cetak:</span>
-                    <p className="text-slate-600 leading-snug">
-                      Linen/Hammer 260 gsm Rp 16.500/kg + up 5%, 1 pcs/A3+, 1/2 muka FC (Print Inter @ Rp 2.500/A3+, 2M 1,8×) atau 1W/2W (Ryobi ≤500 @ Rp 1.900/warna/lbr, Oliver &gt;500 plat Rp 45k + min Rp 90k/plat), insheet 5 lbr, desain Rp 20.000/order.
-                    </p>
-                  </div>
-                  <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">
-                    <span className="font-bold text-blue-900 block">Foil &amp; Finishing:</span>
-                    <p className="text-slate-600 leading-snug">
-                      Foil emas +Rp 450/pcs (min Rp 100k + master Rp 150k), sisir jilid Rp 150/pcs, packing kardus+lakban per order. Margin 30% nego 4%, HPP dibulatkan ke Rp 10.
-                    </p>
-                  </div>
-                </div>
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1.5">
+                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <Printer className="w-4 h-4 text-blue-700" />
+                  2. Pemilihan Mesin Cetak (Auto vs Manual)
+                </h4>
+                <p>
+                  • <strong>Digital POD (Print Inter A3+)</strong>: Pilihan otomatis untuk oplah kecil ($\le 200$ pcs) pada varian 1W/2W, dan sampai 500 pcs pada varian Full Colour. Menggunakan kertas A3+ di mana 1 lembar A3+ muat 2 lembar syahadah.
+                </p>
+                <p>
+                  • <strong>Offset Toko / Ryobi</strong>: Pilihan otomatis untuk oplah $\ge 250$ pcs pada varian 1 Warna dan 2 Warna. Biaya plat Rp 10.000/plat dengan ongkos dasar Rp 15.000/plat (s.d. 500 drek) dan drek over Rp 30/drek/warna.
+                </p>
+              </div>
+
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1.5">
+                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <Stamp className="w-4 h-4 text-amber-700" />
+                  3. Finishing Foil Emas (Hotprint)
+                </h4>
+                <p>
+                  • Penambahan hotprint foil emas dikenakan biaya Rp 450 / pcs (dengan batas order minimum Rp 100.000) ditambah biaya pembuatan klise master foil Rp 53.200 per muka.
+                </p>
+              </div>
+
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1.5">
+                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-emerald-700" />
+                  4. Strategi Penawaran &amp; Pembulatan
+                </h4>
+                <p>
+                  • <strong>Harga Master BUKU</strong>: Menggunakan pembulatan puluhan (<code className="bg-white px-1 py-0.5 rounded border">ROUNDUP(HPP*1.3, -1)</code>).
+                </p>
+                <p>
+                  • <strong>Harga Pricelist Final (HARGA JULI 2026)</strong>: Menggunakan pembulatan ke ratusan terdekat (<code className="bg-white px-1 py-0.5 rounded border">ROUNDUP(HPP*1.3, -2)</code>).
+                </p>
               </div>
             </div>
 

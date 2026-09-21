@@ -28,9 +28,9 @@ const VARIAN_LIST: SyahadahVarianType[] = [
   '1 Muka FC',
   '1 Muka 1 Warna',
   '1 Muka 2 Warna',
+  '2 Muka FC',
   '2 Muka 1 Warna',
   '2 Muka 2 Warna',
-  '2 Muka FC',
 ];
 
 export default function SyahadahMatrixView({
@@ -46,7 +46,7 @@ export default function SyahadahMatrixView({
   const setViewMode = propSetViewMode ?? setLocalViewMode;
   const calc = (oplah: number, varian: SyahadahVarianType) =>
     calculateSyahadahHpp(
-      { oplah, varian, opsiFoil: false, marginPct: 30, negoDiskonPct: 4 },
+      { oplah, varian, opsiFoil: false, marginPct: 30, negoDiskonPct: 5 },
       customParams
     );
 

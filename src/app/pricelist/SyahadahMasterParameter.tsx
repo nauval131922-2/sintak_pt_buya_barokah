@@ -8,6 +8,11 @@ import {
   X,
   Printer,
   Layers,
+  Sparkles,
+  PackageCheck,
+  Scissors,
+  DollarSign,
+  Stamp,
 } from 'lucide-react';
 import {
   DEFAULT_SYAHADAH_PARAMS,
@@ -20,15 +25,6 @@ interface SyahadahMasterParameterProps {
   customParams: SyahadahMasterParams;
   setCustomParams: React.Dispatch<React.SetStateAction<SyahadahMasterParams>>;
 }
-
-const SYAHADAH_VISIBLE_KEYS: (keyof SyahadahMasterParams)[] = [
-  'tarifDesign',
-  'tarifFoilPerPcs',
-  'tarifSisirPerPcs',
-  'tarifKardusBox',
-  'marginDefaultPct',
-  'negoDefaultPct',
-];
 
 export default function SyahadahMasterParameter({
   customParams,
@@ -48,74 +44,88 @@ export default function SyahadahMasterParameter({
     toast.info(`Field dikembalikan ke standar master (${DEFAULT_SYAHADAH_PARAMS[key]}).`);
   };
 
+  const allKeys = Object.keys(DEFAULT_SYAHADAH_PARAMS) as (keyof SyahadahMasterParams)[];
   const isModified = React.useMemo(
-    () => SYAHADAH_VISIBLE_KEYS.some((key) => customParams[key] !== DEFAULT_SYAHADAH_PARAMS[key]),
-    [customParams]
+    () => allKeys.some((key) => customParams[key] !== DEFAULT_SYAHADAH_PARAMS[key]),
+    [customParams, allKeys]
   );
 
   const handleResetAll = () => {
-    setCustomParams((prev) => {
-      const resetObj = { ...prev };
-      SYAHADAH_VISIBLE_KEYS.forEach((k) => {
-        (resetObj as any)[k] = DEFAULT_SYAHADAH_PARAMS[k];
-      });
-      return resetObj;
-    });
+    setCustomParams({ ...DEFAULT_SYAHADAH_PARAMS });
     toast.success('Semua parameter Syahadah dikembalikan ke standar master.');
   };
 
+  // Controlled input guard: fallback ke DEFAULT_SYAHADAH_PARAMS[key] jika undefined
   const fieldRow = (
     key: keyof SyahadahMasterParams,
     label: string,
     isRupiah = true,
-    isDecimal = false
-  ) => (
-    <div
-      className={`p-2.5 rounded-lg border transition-all ${
-        isFieldModified(key)
-          ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-          : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-      }`}
-    >
-      <div className="flex items-center justify-between gap-1 mb-1.5">
-        <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
-          {label}
-        </label>
-        {isFieldModified(key) && (
-          <button
-            type="button"
-            onClick={() => handleResetField(key)}
-            className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-            title="Reset ke default"
-          >
-            <RotateCcw className="w-2.5 h-2.5" /> Def
-          </button>
+    isDecimal = false,
+    suffix?: string,
+    helpText?: string
+  ) => {
+    const rawVal = customParams[key];
+    const val = rawVal ?? DEFAULT_SYAHADAH_PARAMS[key];
+
+    return (
+      <div
+        className={`p-2.5 rounded-lg border transition-all ${
+          isFieldModified(key)
+            ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+            : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
+        }`}
+      >
+        <div className="flex items-center justify-between gap-1 mb-1.5">
+          <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
+            {label}
+          </label>
+          {isFieldModified(key) && (
+            <button
+              type="button"
+              onClick={() => handleResetField(key)}
+              className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+              title="Reset ke default"
+            >
+              <RotateCcw className="w-2.5 h-2.5" /> Def
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5">
+          {isRupiah && !isDecimal ? (
+            <ThousandInput
+              value={val}
+              onValueChange={(v) => handleChange(key, v || 0)}
+              className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+              prefix="Rp"
+              allowDecimals={false}
+            />
+          ) : (
+            <div className="relative w-full">
+              <input
+                type="number"
+                step={isDecimal ? 0.01 : 1}
+                value={val}
+                onChange={(e) => handleChange(key, Number(e.target.value) || 0)}
+                className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+              />
+              {suffix && (
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-slate-400 pointer-events-none">
+                  {suffix}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+        {helpText && (
+          <p className="text-[10px] text-slate-400 mt-1 leading-tight">{helpText}</p>
         )}
       </div>
-      <div className="flex items-center gap-1.5">
-        {isRupiah && !isDecimal ? (
-          <ThousandInput
-            value={customParams[key] as number}
-            onValueChange={(v) => handleChange(key, v || 0)}
-            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-            prefix="Rp"
-            allowDecimals={isDecimal}
-          />
-        ) : (
-          <input
-            type="number"
-            step={isDecimal ? 0.01 : 1}
-            value={customParams[key] as number}
-            onChange={(e) => handleChange(key, Number(e.target.value) || 0)}
-            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-          />
-        )}
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
+      {/* Header Banner */}
       <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
           <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
@@ -124,7 +134,7 @@ export default function SyahadahMasterParameter({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-sm sm:text-base font-bold text-emerald-950 tracking-tight">
-                Master Parameter Syahadah
+                Master Parameter Syahadah (08. Pricelist Syahadah)
               </h2>
               {isModified && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
@@ -134,7 +144,7 @@ export default function SyahadahMasterParameter({
               )}
             </div>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Tarif acuan Linen/Hammer Crem Tebal 260 gsm 21,5×33 cm, cetak FC/1W/2W (Print Inter/Ryobi/Oliver), foil emas, sisir & packing syahadah 1/2 Muka.
+              Sinkronisasi 1:1 terhadap sheet Master &amp; BUKU file Excel: <span className="font-semibold text-emerald-900">Pricelist Syahadah - 1 Muka &amp; 2 Muka FC/1W/2W (Print Inter &amp; Ryobi)</span>.
             </p>
           </div>
         </div>
@@ -163,40 +173,91 @@ export default function SyahadahMasterParameter({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Card 1: Desain & Finishing */}
+      {/* Grid Kartu Master Parameter */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Card 1: Bahan Kertas & Desain */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <DollarSign className="w-4 h-4 text-emerald-600" />
+            <h3 className="text-xs font-bold text-slate-800">1. Bahan Kertas &amp; Desain</h3>
+          </div>
+          <div className="space-y-2.5">
+            {fieldRow('tarifKertasLinenKg', 'Harga Kertas Linen/Hammer /Kg', true, false, undefined, 'Master!D12: Hammer Crem / Linen Tebal 300 gsm')}
+            {fieldRow('upKertasPct', 'Markup Kertas (%)', false, false, '%', 'Master!E12: Kenaikan harga kertas (default 0%)')}
+            {fieldRow('tarifDesign', 'Desain Artwork / Order', true, false, undefined, 'Master!D17: Biaya setting layout syahadah (Rp 20.000)')}
+            {fieldRow('tarifSisirPer500', 'Potong Sisir / 500 Pcs', true, false, undefined, 'BUKU!AS6: Ongkos potong sisir (Rp 5.000 per 500 pcs)')}
+          </div>
+        </div>
+
+        {/* Card 2: Cetak Digital Print Inter (POD) */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Printer className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">1. Desain &amp; Finishing Syahadah</h3>
+            <h3 className="text-xs font-bold text-slate-800">2. Cetak Digital Print Inter (POD)</h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifDesign', 'Desain Artwork / Order (Rp)')}
-            {fieldRow('tarifFoilPerPcs', 'Tambahan Foil / pcs (Rp)')}
-            {fieldRow('tarifSisirPerPcs', 'Ongkos Sisir / pcs (Rp)')}
-            {fieldRow('tarifKardusBox', 'Kardus Packing / Order (Rp)')}
+          <div className="space-y-2.5">
+            {fieldRow('tarifPrintA3', 'Tarif Print A3+ Digital', true, false, undefined, 'Master!D18: Biaya cetak per lbr A3+ (muat 2 syahadah)')}
+            {fieldRow('insheetPod', 'Insheet Cetak POD (Lembar A3+)', false, false, 'Lbr', 'Master!D13: Cadangan cetak digital POD (default 5 lbr)')}
           </div>
-          <p className="text-[10px] text-slate-500">
-            Foil emas +Rp 450/pcs min Rp 100.000 + master foil Rp 150.000 belum termasuk (catatan HARGA JULI 2026).
-          </p>
         </div>
 
-        {/* Card 2: Margin & Nego Standar */}
+        {/* Card 3: Cetak Offset Ryobi (1W / 2W) */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Layers className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Margin &amp; Nego Standar</h3>
+            <Printer className="w-4 h-4 text-indigo-600" />
+            <h3 className="text-xs font-bold text-slate-800">3. Cetak Offset Ryobi</h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('marginDefaultPct', 'Margin Default (%)', false)}
-            {fieldRow('negoDefaultPct', 'Nego Default (%)', false)}
+          <div className="space-y-2.5">
+            {fieldRow('tarifPlatRyobi', 'Tarif Plat Ryobi / Warna', true, false, undefined, 'BUKU!Y6: Biaya plat cetak offset toko (Rp 10.000/plat)')}
+            {fieldRow('minOrderRyobi', 'Min. Order Cetak / Plat', true, false, undefined, 'BUKU!AB6: Ongkos dasar cetak per plat s.d. 500 drek')}
+            {fieldRow('tarifDrekOverRyobi', 'Tarif Drek Over / Warna', true, false, undefined, 'BUKU!AC7: Drek over di atas 500 (Rp 30/drek/warna)')}
+            {fieldRow('insheetRyobi', 'Insheet Cetak Ryobi (Lembar)', false, false, 'Lbr', 'Master!D13: Cadangan cetak offset Ryobi (default 50 lbr)')}
+            {fieldRow('syahadahPerPlanoRyobi', 'Kapasitas Plano (Pcs / Plano)', false, false, 'Pcs', 'BUKU!O15: 1 plano 79×109 cm dipotong jadi 11 lembar folio')}
           </div>
-          <p className="text-[10px] text-slate-500">
-            Margin 30% &amp; nego 4% sesuai HARGA JULI 2026. HPP dihitung per pcs dengan pembulatan ke kelipatan Rp 10.
-          </p>
+        </div>
+
+        {/* Card 4: Cetak Offset Oliver */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Printer className="w-4 h-4 text-purple-600" />
+            <h3 className="text-xs font-bold text-slate-800">4. Cetak Offset Oliver</h3>
+          </div>
+          <div className="space-y-2.5">
+            {fieldRow('tarifPlatOliver', 'Tarif Plat Oliver / Warna', true, false, undefined, 'BUKU!Y6: Biaya plat cetak offset Oliver (Rp 43.000/plat)')}
+            {fieldRow('minOrderOliver', 'Min. Order Cetak / Plat', true, false, undefined, 'BUKU!AB6: Ongkos dasar cetak per plat s.d. 1.000 drek')}
+            {fieldRow('tarifDrekOverOliver', 'Tarif Drek Over / Warna', true, false, undefined, 'BUKU!AC7: Drek over di atas 1.000 (Rp 40/drek/warna)')}
+          </div>
+        </div>
+
+        {/* Card 5: Finishing Foil Emas (Hotprint) */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Stamp className="w-4 h-4 text-amber-600" />
+            <h3 className="text-xs font-bold text-slate-800">5. Finishing Foil Emas</h3>
+          </div>
+          <div className="space-y-2.5">
+            {fieldRow('tarifKliseMasterFoil', 'Biaya Klise Master Foil', true, false, undefined, 'BUKU!AN6: Biaya pembuatan plat/matris foil per muka')}
+            {fieldRow('tarifFoilPerPcs', 'Tarif Hotprint Foil / Pcs', true, false, undefined, 'HARGA JULI 2026: Ongkos hotprint per pcs (Rp 450/pcs)')}
+            {fieldRow('minOrderFoil', 'Min. Order Hotprint Foil', true, false, undefined, 'HARGA JULI 2026: Minimum ongkos foil (Rp 100.000)')}
+          </div>
+        </div>
+
+        {/* Card 6: Packing & Margin */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <PackageCheck className="w-4 h-4 text-rose-600" />
+            <h3 className="text-xs font-bold text-slate-800">6. Packing &amp; Margin</h3>
+          </div>
+          <div className="space-y-2.5">
+            {fieldRow('tarifKardusBox', 'Harga Kardus / Box', true, false, undefined, 'Master!D22: Kardus per box (kapasitas 1.000 pcs)')}
+            {fieldRow('tarifLakbanRoll', 'Harga Lakban / Roll', true, false, undefined, 'Master!D21: Lakban 90 yard per roll')}
+            {fieldRow('marginDefaultPct', 'Margin Laba Default (%)', false, false, '%', 'Master!E24: Standar margin profit 30%')}
+            {fieldRow('negoDefaultPct', 'Nego Diskon Default (%)', false, false, '%', 'HARGA JULI 2026: Batas diskon sales 5%')}
+          </div>
         </div>
       </div>
 
+      {/* Modal Manual Pengguna & Pemetaan Sumber Excel */}
       {showManualModal && (
         <div
           onClick={() => setShowManualModal(false)}
@@ -231,56 +292,56 @@ export default function SyahadahMasterParameter({
               <div className="space-y-3">
                 <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                  Pemetaan Master Parameter ke File Excel (Folder 08. Pricelist Syahadah/*.xlsm)
+                  Pemetaan Cell Excel Asli ke Parameter SINTAK
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                      <span>1. Bahan Kertas &amp; Ukuran</span>
+                      <span>1. Bahan Kertas Linen/Hammer Crem</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Linen/Hammer Crem Tebal 260 gsm</strong>: <span className="font-mono text-emerald-700">Source!E12</span> Rp 16.500/kg + <span className="font-mono text-emerald-700">Source!E13</span> up 5% (global 5%).</li>
-                      <li>• <strong>Ukuran</strong>: <span className="font-mono text-emerald-700">21,5×33 cm</span> single size, 1 pcs/A3+ (33×48), berat A3+ 260 gsm = 0,0412 kg/lbr.</li>
-                      <li>• <strong>Insheet</strong>: <span className="font-mono text-emerald-700">Source!H6</span> 5 lbr (POD/Offset).</li>
-                      <li>• <strong>Varian</strong>: 1M-FC, 1M-1W, 1M-2W, 2M-1W, 2M-2W, 2M-FC (HARGA JULI 2026).</li>
+                      <li>• <strong>Harga Kertas</strong>: <span className="font-mono text-emerald-700">Master!D12</span> Rp 29.900/kg (Hammer Crem / Linen Tebal 300 gsm).</li>
+                      <li>• <strong>Plano 79×109</strong>: <span className="font-mono text-emerald-700">BUKU!W29</span> Berat rim = (79×109×300)/20.000 = 129,165 kg → Rp 3.862.033,5/rim (Rp 7.724,07/lbr plano).</li>
+                      <li>• <strong>Kapasitas Plano Ryobi</strong>: <span className="font-mono text-emerald-700">BUKU!O15/P16</span> 1 plano 79×109 cm menghasilkan 11 lembar folio 21,5×33 cm.</li>
                     </ul>
                   </div>
 
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                      <span>2. Cetak &amp; Foil</span>
+                      <span>2. Cetak POD (Print Inter) vs Offset (Ryobi)</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>FC Print Inter</strong>: 1M Rp 2.500/A3+, 2M Rp 4.500/A3+ (1,8×).</li>
-                      <li>• <strong>1W/2W Ryobi</strong>: ≤500 pcs Rp 1.900/warna/lbr; <strong>Oliver</strong>: &gt;500 pcs plat Rp 45.000 + min Rp 90.000/plat + drek Rp 40.</li>
-                      <li>• <strong>Foil Emas</strong>: +Rp 450/pcs min Rp 100.000 + master foil Rp 150.000 (catatan HARGA JULI 2026 belum termasuk).</li>
-                      <li>• <strong>Desain</strong>: Rp 20.000/order (<span className="font-mono text-blue-700">Source!D17</span>).</li>
+                      <li>• <strong>Print Inter A3+</strong>: <span className="font-mono text-emerald-700">Master!D18</span> Rp 3.800/lbr A3+ (1 lbr A3+ muat 2 lembar folio).</li>
+                      <li>• <strong>Insheet POD</strong>: <span className="font-mono text-emerald-700">Master!D13</span> 5 lbr A3+ (flat).</li>
+                      <li>• <strong>Insheet Ryobi</strong>: <span className="font-mono text-emerald-700">Master!D13</span> 50 lbr folio offset.</li>
+                      <li>• <strong>Plat Ryobi</strong>: <span className="font-mono text-emerald-700">BUKU!Y6</span> Rp 10.000/plat (1W = 1 plat, 2W = 2 plat per muka).</li>
+                      <li>• <strong>Ongkos Cetak Ryobi</strong>: <span className="font-mono text-emerald-700">BUKU!AB6</span> Min Rp 15.000/plat + <span className="font-mono text-emerald-700">BUKU!AC7</span> drek over Rp 30/drek/warna (>500 drek).</li>
                     </ul>
                   </div>
 
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
-                      <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                      <span>3. Finishing &amp; Packing</span>
+                      <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                      <span>3. Finishing Sisir &amp; Foil Emas (Hotprint)</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Sisir</strong>: Rp 150/pcs (jilid tepi sertifikat).</li>
-                      <li>• <strong>Packing</strong>: Kardus Rp 8.500 + Lakban Rp 8.000 per order.</li>
-                      <li>• Bahan: Linen/Hammer 1 muka tanpa laminasi (tekstur kertas premium).</li>
+                      <li>• <strong>Potong Sisir</strong>: <span className="font-mono text-emerald-700">BUKU!AS7</span> ROUNDUP(oplah/500, 0) × Rp 5.000.</li>
+                      <li>• <strong>Klise Master Foil</strong>: <span className="font-mono text-emerald-700">BUKU!AN6</span> Rp 53.200 per muka.</li>
+                      <li>• <strong>Tarif Hotprint</strong>: Catatan <span className="font-mono text-emerald-700">HARGA JULI 2026</span> Rp 450/pcs (min. Rp 100.000).</li>
                     </ul>
                   </div>
 
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
-                      <span className="w-2 h-2 rounded-full bg-violet-500"></span>
-                      <span>4. Margin &amp; Nego</span>
+                      <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                      <span>4. Packing Kardus &amp; Margin Jual</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Margin</strong>: 30% dari HPP, nego 4% dari harga jual.</li>
-                      <li>• Harga jual = <code className="text-[10px] bg-white px-1 py-0.5 rounded border">ceil(HPP/pcs ×1.30 /10)*10</code>.</li>
-                      <li>• Tier global: 20–3000 pcs (union semua varian).</li>
+                      <li>• <strong>Kardus Box</strong>: <span className="font-mono text-emerald-700">Master!D22</span> Rp 8.500/box (kapasitas 1.000 pcs syahadah).</li>
+                      <li>• <strong>Lakban Roll</strong>: <span className="font-mono text-emerald-700">Master!D21</span> Rp 8.000/roll (7.650 cm / 196 cm = 39,03 box/roll).</li>
+                      <li>• <strong>Margin &amp; Nego</strong>: Margin 30% (<span className="font-mono text-emerald-700">Master!E24</span>), Nego 5% (<span className="font-mono text-emerald-700">HARGA JULI 2026</span>).</li>
                     </ul>
                   </div>
                 </div>
