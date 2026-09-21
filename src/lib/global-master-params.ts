@@ -363,19 +363,10 @@ export function applyGlobalParamsToAll(
 
   const nextKopSurat: KopSuratMasterParams = {
     ...currKopSurat,
-    tarifKertasHvsKg: g.tarifHvs70,
-    upKertasPct: g.upKertasPct,
-    tarifPrintA3: g.tarifPrintA3,
-    tarifRyobi: g.ryobiMinOngkos,
-    tarifPlatOliver: g.oliverPlatUnit,
-    minOliver: g.oliverMinOngkos,
-    drekOliver: g.oliverDrekOver,
-    tarifPotongPerPcs: g.tarifSisirPcs,
-    tarifKardusBox: g.tarifKardusBox,
-    tarifLakbanRoll: g.tarifLakbanRoll,
-    tarifDesign: g.tarifDesainStandar,
-    marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
+    hargaPerKg: g.tarifHvs70,
+    upPct: g.upKertasPct,
+    desain: g.tarifDesainStandar,
+    labaPct: g.defaultMarginPct,
   };
 
   const nextAmplop: AmplopMasterParams = {

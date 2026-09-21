@@ -1,14 +1,12 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { saveCalculationToDb } from '@/lib/pricelist-db-sync';
 import {
   FileSpreadsheet,
   DollarSign,
   TrendingUp,
-  Percent,
   FileText,
-  Copy,
   Check,
   Share2,
   Sliders,
@@ -19,23 +17,26 @@ import {
   Calculator,
   Info,
   Layers,
-  RefreshCw,
-  FileStack,
+  Wallet,
 } from 'lucide-react';
 import {
   calculateKopSuratHpp,
   DEFAULT_KOP_SURAT_PARAMS,
   KopSuratMasterParams,
-  KopSuratVarianType,
+  KopSuratJenisKop,
+  KopSuratJenisCetak,
+  KOP_SURAT_JENIS_KOP,
   KOP_SURAT_TIERS,
+  KOP_SURAT_UKURAN_LABEL,
+  insheetDefaultForWarna,
   SavedKopSuratSimulationItem,
-  KOP_SURAT_CONFIG,
 } from '@/lib/kop-surat-calculator';
 import { toast } from '@/lib/toast';
 
 export type { SavedKopSuratSimulationItem };
 
-const VARIAN_OPTIONS: KopSuratVarianType[] = ['HVS 80 - 1 Warna', 'HVS 80 - Full Colour', 'HVS 100 - 1 Warna', 'HVS 100 - Full Colour'];
+const DRAFT_KEY = 'sintak_kop_surat_draft';
+const SAVED_KEY = 'sintak_saved_kop_surat_simulations';
 
 interface KopSuratSimulatorProps {
   customParams?: KopSuratMasterParams;
@@ -56,10 +57,17 @@ export default function KopSuratSimulator({
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: KopSuratSimulatorProps) {
-  const [oplah, setOplah] = useState<number>(500);
-  const [varian, setVarian] = useState<KopSuratVarianType>('HVS 80 - Full Colour');
-  const [marginPct, setMarginPct] = useState(30);
-  const [negoDiskonPct, setNegoDiskonPct] = useState(4);
+  const params: KopSuratMasterParams = { ...DEFAULT_KOP_SURAT_PARAMS, ...(customParams || {}) };
+
+  const [oplahRim, setOplahRim] = useState<number>(1);
+  const [jenisKop, setJenisKop] = useState<KopSuratJenisKop>('FOLIO');
+  const [nWarna, setNWarna] = useState<1 | 2 | 3 | 4>(1);
+  const [muka, setMuka] = useState<1 | 2>(1);
+  const [jenisCetak, setJenisCetak] = useState<KopSuratJenisCetak>('CETAK');
+  const [finishingSisir, setFinishingSisir] = useState(false);
+  const [filmAktif, setFilmAktif] = useState(false);
+  const [insheetLembar, setInsheetLembar] = useState<number>(params.insheet1Warna);
+  const [marginPct, setMarginPct] = useState(params.labaPct);
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedKopSuratSimulationItem[]>([]);
@@ -67,6 +75,7 @@ export default function KopSuratSimulator({
   const [internalActiveId, setInternalActiveId] = useState<string | null>(null);
   const [internalActiveTitle, setInternalActiveTitle] = useState<string | null>(null);
   const [showSimulatorManual, setShowSimulatorManual] = useState(false);
+  const draftLoaded = useRef(false);
 
   const activeSimulationId = propActiveSimId !== undefined ? propActiveSimId : internalActiveId;
   const setActiveSimulationId = (id: string | null) => {
@@ -80,9 +89,43 @@ export default function KopSuratSimulator({
     else setInternalActiveTitle(title);
   };
 
+  // Auto-persist draft agar tidak reset saat pindah tab
+  useEffect(() => {
+    if (!draftLoaded.current) {
+      draftLoaded.current = true;
+      try {
+        const raw = localStorage.getItem(DRAFT_KEY);
+        if (raw) {
+          const d = JSON.parse(raw);
+          if (typeof d.oplahRim === 'number') setOplahRim(d.oplahRim);
+          if (KOP_SURAT_JENIS_KOP.includes(d.jenisKop)) setJenisKop(d.jenisKop);
+          if ([1, 2, 3, 4].includes(d.nWarna)) setNWarna(d.nWarna);
+          if ([1, 2].includes(d.muka)) setMuka(d.muka);
+          if (['CETAK', 'ONGKOS CETAK'].includes(d.jenisCetak)) setJenisCetak(d.jenisCetak);
+          if (typeof d.finishingSisir === 'boolean') setFinishingSisir(d.finishingSisir);
+          if (typeof d.filmAktif === 'boolean') setFilmAktif(d.filmAktif);
+          if (typeof d.insheetLembar === 'number') setInsheetLembar(d.insheetLembar);
+          if (typeof d.marginPct === 'number') setMarginPct(d.marginPct);
+        }
+      } catch (e) {
+        console.error('Failed to load kop surat draft:', e);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!draftLoaded.current) return;
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ oplahRim, jenisKop, nWarna, muka, jenisCetak, finishingSisir, filmAktif, insheetLembar, marginPct }));
+    } catch (e) {
+      console.error('Failed to save kop surat draft:', e);
+    }
+  }, [oplahRim, jenisKop, nWarna, muka, jenisCetak, finishingSisir, filmAktif, insheetLembar, marginPct]);
+
   useEffect(() => {
     try {
-      const raw = localStorage.getItem('sintak_saved_kop_surat_simulations');
+      const raw = localStorage.getItem(SAVED_KEY);
       if (raw) {
         const list: SavedKopSuratSimulationItem[] = JSON.parse(raw);
         setSavedSimulations(list);
@@ -91,10 +134,15 @@ export default function KopSuratSimulator({
           const item = list.find((s) => s.id === activeSimulationId);
           if (item) {
             const inp = item.data.input;
-            setOplah(inp.oplah);
-            setVarian(inp.varian);
+            setOplahRim(inp.oplahRim);
+            setJenisKop(inp.jenisKop);
+            setNWarna(inp.nWarna);
+            setMuka(inp.muka);
+            setJenisCetak(inp.jenisCetak);
+            setFinishingSisir(inp.finishingSisir);
+            setFilmAktif(inp.filmAktif);
+            setInsheetLembar(inp.insheetLembar);
             setMarginPct(inp.marginPct);
-            setNegoDiskonPct(inp.negoDiskonPct);
             setSimulationTitle(item.title);
           }
         }
@@ -104,17 +152,23 @@ export default function KopSuratSimulator({
     }
   }, [activeSimulationId]);
 
+  const handleWarnaChange = (w: 1 | 2 | 3 | 4) => {
+    setNWarna(w);
+    setInsheetLembar(insheetDefaultForWarna(w, params));
+  };
+
   const result = useMemo(
     () =>
       calculateKopSuratHpp(
-        { oplah, varian, marginPct, negoDiskonPct },
-        customParams
+        { oplahRim, jenisKop, nWarna, muka, jenisCetak, finishingSisir, filmAktif, insheetLembar, marginPct },
+        params
       ),
-    [oplah, varian, marginPct, negoDiskonPct, customParams]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [oplahRim, jenisKop, nWarna, muka, jenisCetak, finishingSisir, filmAktif, insheetLembar, marginPct, customParams]
   );
 
   const defaultTitle = () => {
-    return `Kop Surat ${varian} (${oplah} pcs)`;
+    return `Kop Surat ${jenisKop} ${nWarna} Warna (${oplahRim} rim)`;
   };
 
   const handleSaveSimulation = () => {
@@ -124,13 +178,13 @@ export default function KopSuratSimulator({
       title,
       savedAt: new Date().toISOString(),
       data: result,
-      paramsSnapshot: customParams,
+      paramsSnapshot: params,
     };
     const updated = [newItem, ...savedSimulations.slice(0, 49)];
     setSavedSimulations(updated);
     try {
-      localStorage.setItem('sintak_saved_kop_surat_simulations', JSON.stringify(updated));
-    saveCalculationToDb({ ...newItem, category: 'Kop Surat' });
+      localStorage.setItem(SAVED_KEY, JSON.stringify(updated));
+      saveCalculationToDb({ ...newItem, category: 'Kop Surat' });
     } catch (e) {
       console.error('Failed to save kop surat simulation:', e);
     }
@@ -146,13 +200,13 @@ export default function KopSuratSimulator({
     const title = simulationTitle.trim() || activeSimulationTitle || defaultTitle();
     const updated = savedSimulations.map((item) =>
       item.id === activeSimulationId
-        ? { ...item, title, savedAt: new Date().toISOString(), data: result, paramsSnapshot: customParams }
+        ? { ...item, title, savedAt: new Date().toISOString(), data: result, paramsSnapshot: params }
         : item
     );
     setSavedSimulations(updated);
     try {
-      localStorage.setItem('sintak_saved_kop_surat_simulations', JSON.stringify(updated));
-    const targetItem = updated.find((x) => x.id === activeSimulationId);
+      localStorage.setItem(SAVED_KEY, JSON.stringify(updated));
+      const targetItem = updated.find((x) => x.id === activeSimulationId);
       if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Kop Surat' });
     } catch (e) {
       console.error('Failed to update kop surat simulation:', e);
@@ -166,22 +220,19 @@ export default function KopSuratSimulator({
 
   const handleCopyQuote = () => {
     const fmt = (n: number) => n.toLocaleString('id-ID');
-    const cfg = KOP_SURAT_CONFIG[varian];
     const text =
       `*PENAWARAN KOP SURAT*\n` +
       `*PT Buya Barokah*\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
-      `• *Produk*: Kop Surat ${varian} A4 (21×29,7 cm)\n` +
-      `• *Spesifikasi*: ${cfg.description}\n` +
-      `• *Kuantitas*: ${oplah} pcs (2 pcs/A3+)\n` +
-      `• *Bahan*: HVS ${cfg.gramatur} gsm + Cetak ${cfg.isFC ? 'Full Colour' : '1 Warna'} 1 Muka\n` +
-      `• *Finishing*: Potong + Packing Kardus\n` +
+      `• *Produk*: Kop Surat ${jenisKop} (${KOP_SURAT_UKURAN_LABEL[jenisKop]})\n` +
+      `• *Spesifikasi*: ${nWarna} Warna, ${muka} Muka, ${jenisCetak}, ${finishingSisir ? 'SISIR' : 'TANPA SISIR'}\n` +
+      `• *Kuantitas*: ${oplahRim} rim (${result.totalLembarKop.toLocaleString('id-ID')} lbr)\n` +
+      `• *Bahan*: ${params.bahanKop} ${params.gramatur} gsm\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
-      `• *Harga / Pcs*: *Rp ${fmt(result.hargaJualPerPcs)}*\n` +
-      `• *Harga Nego / Pcs*: *Rp ${fmt(result.hargaNegoPerPcs)}*\n` +
-      `• *Total Penawaran*: *Rp ${fmt(result.totalHargaJual)}*\n` +
+      `• *Harga / Rim*: *Rp ${fmt(result.hargaFinalPerRim)}*\n` +
+      `• *Total Penawaran*: *Rp ${fmt(result.totalHarga)}*\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
-      `_Harga belum termasuk PPN. Kop surat A4 HVS, potong & packing kardus._`;
+      `_Harga belum termasuk PPN. Oplah rim @500 lbr._`;
 
     navigator.clipboard.writeText(text);
     setCopiedQuote(true);
@@ -189,10 +240,16 @@ export default function KopSuratSimulator({
     setTimeout(() => setCopiedQuote(false), 2000);
   };
 
+  const specButton = (active: boolean) => `py-2 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
+    active
+      ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
+      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+  }`;
+
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
       {/* Header */}
-      <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
+      <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs shrink-0">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
             <FileSpreadsheet className="w-5 h-5" />
@@ -205,7 +262,7 @@ export default function KopSuratSimulator({
               </span>
             </h3>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Hitung HPP, harga penawaran, dan estimasi profit Kop Surat A4 21×29,7 cm (HVS 80/100 gsm, 1 Warna vs Full Colour, 2 pcs/A3+).
+              Engine BUKU 1:1 file Pricelist KOP SURAT 1–4 Warna — oplah rim @500 lbr, Plate, Min Order, Drek Over, Sisir.
             </p>
           </div>
         </div>
@@ -245,7 +302,7 @@ export default function KopSuratSimulator({
 
       {/* Banner riwayat aktif */}
       {activeSimulationId && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200">
+        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="p-1.5 bg-amber-200 text-amber-900 rounded-lg">
               <Bookmark className="w-4 h-4 fill-amber-700" />
@@ -287,77 +344,156 @@ export default function KopSuratSimulator({
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Kolom Kiri: Form Input */}
-        <div className="lg:col-span-5 space-y-5">
+      {/* Grid Dual Scroll Mandiri */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-0 pb-1">
+        {/* Kolom Kiri: Input Form (lg:col-span-5) */}
+        <div className="lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
               <Sliders size={15} className="text-emerald-700" />
               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Input Spesifikasi Kop Surat</h3>
             </div>
 
-            {/* Varian */}
+            {/* Jenis Kop */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Varian Kop Surat (A4 21 × 29,7 cm)
+                Jenis Kop (Master!D5)
               </label>
               <div className="grid grid-cols-2 gap-2">
-                {VARIAN_OPTIONS.map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => setVarian(v)}
-                    className={`py-2 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer flex flex-col items-center gap-1 ${
-                      varian === v
-                        ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
-                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    <FileStack size={14} className={varian === v ? 'text-white' : 'text-slate-500'} />
-                    <span className="leading-tight text-[11px]">{v}</span>
+                {KOP_SURAT_JENIS_KOP.map((k) => (
+                  <button key={k} type="button" onClick={() => setJenisKop(k)} className={specButton(jenisKop === k)}>
+                    <span className="leading-tight text-[11px]">{k}</span>
+                    <span className={`block text-[10px] font-semibold ${jenisKop === k ? 'text-emerald-100' : 'text-slate-400'}`}>{KOP_SURAT_UKURAN_LABEL[k]}</span>
                   </button>
                 ))}
               </div>
-              <p className="text-[11px] text-slate-500 mt-1.5 italic">{KOP_SURAT_CONFIG[varian].description}</p>
+            </div>
+
+            {/* Jumlah Warna */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Jumlah Warna (Master!D17)
+              </label>
+              <div className="grid grid-cols-4 gap-2">
+                {([1, 2, 3, 4] as const).map((w) => (
+                  <button key={w} type="button" onClick={() => handleWarnaChange(w)} className={specButton(nWarna === w)}>
+                    {w} Warna
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-slate-500 mt-1">Ganti warna = insheet ikut default file ({insheetLembar} lbr).</p>
+            </div>
+
+            {/* Muka + Jenis Cetak */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Muka (D18)</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {([1, 2] as const).map((m) => (
+                    <button key={m} type="button" onClick={() => setMuka(m)} className={specButton(muka === m)}>
+                      {m} Muka
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Jenis Cetak (D10)</label>
+                <div className="grid grid-cols-1 gap-2">
+                  {(['CETAK', 'ONGKOS CETAK'] as const).map((j) => (
+                    <button key={j} type="button" onClick={() => setJenisCetak(j)} className={specButton(jenisCetak === j)}>
+                      <span className="text-[11px]">{j}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Finishing + Film */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Finishing (D20)</label>
+                <div className="grid grid-cols-1 gap-2">
+                  <button type="button" onClick={() => setFinishingSisir(false)} className={specButton(!finishingSisir)}>
+                    <span className="text-[11px]">TANPA SISIR</span>
+                  </button>
+                  <button type="button" onClick={() => setFinishingSisir(true)} className={specButton(finishingSisir)}>
+                    <span className="text-[11px]">SISIR</span>
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Film (T30)</label>
+                <button
+                  type="button"
+                  onClick={() => setFilmAktif(!filmAktif)}
+                  className={`${specButton(filmAktif)} w-full flex items-center justify-center gap-1.5`}
+                >
+                  <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${filmAktif ? 'bg-white border-white' : 'border-slate-300'}`}>
+                    {filmAktif && <Check size={12} className="text-emerald-700" />}
+                  </span>
+                  <span className="text-[11px]">Film √ {filmAktif ? 'Aktif' : 'Mati'}</span>
+                </button>
+                <p className="text-[10px] text-slate-500 mt-1">BUKU!U7 aktif hanya jika T30 = √.</p>
+              </div>
             </div>
 
             {/* Oplah */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                Kuantitas Oplah (pcs)
+                Oplah (rim @500 lbr — Master!D7)
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <select
-                  value={KOP_SURAT_TIERS.includes(oplah) ? oplah : 'custom'}
+                  value={KOP_SURAT_TIERS.includes(oplahRim) ? oplahRim : 'custom'}
                   onChange={(e) => {
                     const v = e.target.value;
-                    if (v !== 'custom') setOplah(Number(v));
+                    if (v !== 'custom') setOplahRim(Number(v));
                   }}
                   className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none cursor-pointer"
                 >
                   {KOP_SURAT_TIERS.map((t) => (
-                    <option key={t} value={t}>{t.toLocaleString('id-ID')} pcs</option>
+                    <option key={t} value={t}>{t} rim ({(t * 500).toLocaleString('id-ID')} lbr)</option>
                   ))}
-                  {!KOP_SURAT_TIERS.includes(oplah) && <option value="custom">{oplah.toLocaleString('id-ID')} pcs (custom)</option>}
+                  {!KOP_SURAT_TIERS.includes(oplahRim) && <option value="custom">{oplahRim} rim (custom)</option>}
                 </select>
                 <input
                   type="number"
                   min={1}
-                  max={20000}
-                  step={10}
-                  value={oplah}
-                  onChange={(e) => setOplah(Math.max(1, Number(e.target.value) || 1))}
+                  max={100}
+                  step={1}
+                  value={oplahRim}
+                  onChange={(e) => setOplahRim(Math.max(1, Number(e.target.value) || 1))}
                   className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
-                  placeholder="Custom..."
+                  placeholder="Custom rim..."
                 />
               </div>
-              <p className="text-[10px] text-slate-500 mt-1">2 pcs/A3+ · Kebutuhan A3+: {result.kebutuhanA3} lbr (inkl. insheet {customParams.insheetWaste})</p>
+              <p className="text-[10px] text-slate-500 mt-1">Kebutuhan plano: {result.kebutuhanPlano.toLocaleString('id-ID')} lbr (inkl. insheet {insheetLembar}).</p>
             </div>
 
-            {/* Margin & Nego */}
+            {/* Insheet + Margin */}
             <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Margin Profit (%)</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Insheet (lbr)</label>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="number"
+                    min={0}
+                    value={insheetLembar}
+                    onChange={(e) => setInsheetLembar(Math.max(0, Number(e.target.value) || 0))}
+                    className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    title="Kembalikan ke default file"
+                    onClick={() => setInsheetLembar(insheetDefaultForWarna(nWarna, params))}
+                    className="px-2 py-1.5 text-[10px] font-bold text-slate-500 hover:text-emerald-700 border border-slate-200 rounded-lg cursor-pointer shrink-0"
+                  >
+                    File
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Margin Laba (%)</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -370,36 +506,22 @@ export default function KopSuratSimulator({
                   <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
                 </div>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Batas Nego (%)</label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={negoDiskonPct}
-                    onChange={(e) => setNegoDiskonPct(Number(e.target.value) || 0)}
-                    className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
-                  />
-                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
 
-        {/* Kolom Kanan: Hasil */}
-        <div className="lg:col-span-7 space-y-5">
+        {/* Kolom Kanan: Hasil & Rincian (lg:col-span-7) */}
+        <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           {/* 4 Kartu Finansial */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">HPP / pcs</span>
+                <span className="text-[11px] font-semibold">HPP / rim</span>
                 <DollarSign size={13} className="text-slate-400" />
               </div>
               <div>
                 <span className="text-base sm:text-lg font-black text-slate-800 font-mono">
-                  Rp {Math.round(result.hppPerPcs).toLocaleString('id-ID')}
+                  Rp {Math.round(result.hppPerRim).toLocaleString('id-ID')}
                 </span>
                 <span className="block text-[10px] text-slate-400 mt-0.5">
                   Total HPP: Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
@@ -409,41 +531,43 @@ export default function KopSuratSimulator({
 
             <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-emerald-800 mb-1">
-                <span className="text-[11px] font-bold">Harga Jual (+{marginPct}%)</span>
+                <span className="text-[11px] font-bold">Harga Final (+{marginPct}%)</span>
                 <TrendingUp size={13} className="text-emerald-600" />
               </div>
               <div>
                 <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
-                  Rp {result.hargaJualPerPcs.toLocaleString('id-ID')}
+                  Rp {result.hargaFinalPerRim.toLocaleString('id-ID')}
                 </span>
-                <span className="block text-[10px] text-emerald-700/80 mt-0.5">/ pcs</span>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-xl border border-blue-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-blue-800 mb-1">
-                <span className="text-[11px] font-bold">Harga Nego (-{negoDiskonPct}%)</span>
-                <Percent size={13} className="text-blue-600" />
-              </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-blue-800 font-mono">
-                  Rp {result.hargaNegoPerPcs.toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-blue-700/80 mt-0.5">/ pcs</span>
+                <span className="block text-[10px] text-emerald-700/80 mt-0.5">/ rim (ROUNDUP puluhan)</span>
               </div>
             </div>
 
             <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">Total Harga Jual</span>
-                <TrendingUp size={13} className="text-emerald-500" />
+                <span className="text-[11px] font-semibold">Total Harga</span>
+                <Wallet size={13} className="text-slate-400" />
               </div>
               <div>
                 <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">
-                  Rp {result.totalHargaJual.toLocaleString('id-ID')}
+                  Rp {Math.round(result.totalHarga).toLocaleString('id-ID')}
                 </span>
                 <span className="block text-[10px] text-slate-500 mt-0.5">
-                  Profit: Rp {Math.round(result.profitTotal).toLocaleString('id-ID')}
+                  {oplahRim} rim · {result.totalLembarKop.toLocaleString('id-ID')} lbr
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-slate-500 mb-1">
+                <span className="text-[11px] font-semibold">Laba Total</span>
+                <TrendingUp size={13} className="text-emerald-500" />
+              </div>
+              <div>
+                <span className="text-base sm:text-lg font-black text-slate-800 font-mono">
+                  Rp {Math.round(result.labaTotal).toLocaleString('id-ID')}
+                </span>
+                <span className="block text-[10px] text-slate-500 mt-0.5">
+                  Rp {Math.round(result.labaPerRim).toLocaleString('id-ID')} / rim
                 </span>
               </div>
             </div>
@@ -455,11 +579,11 @@ export default function KopSuratSimulator({
               <div className="flex items-center gap-2">
                 <FileText size={15} className="text-emerald-700" />
                 <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Rincian Estimasi Komponen Biaya Kop Surat
+                  Rincian Biaya (BUKU!R7–AK7 → AM7)
                 </h4>
               </div>
               <span className="text-[11px] font-bold text-slate-500">
-                {oplah.toLocaleString('id-ID')} pcs · {varian}
+                {oplahRim} rim · {jenisKop} {nWarna}W {muka}M
               </span>
             </div>
             <div className="overflow-x-auto">
@@ -491,7 +615,7 @@ export default function KopSuratSimulator({
                 <tfoot>
                   <tr className="bg-slate-50/90 font-bold border-t border-slate-200 text-xs">
                     <td colSpan={3} className="py-2.5 px-3 text-slate-800 font-sans">
-                      Total HPP Biaya Produksi ({oplah.toLocaleString('id-ID')} pcs)
+                      Total HPP ({oplahRim} rim — BUKU!AM7)
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-sm">
                       Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
@@ -558,7 +682,7 @@ export default function KopSuratSimulator({
                 <div>
                   <h3 className="text-base font-bold tracking-tight">Panduan Simulator Kop Surat</h3>
                   <p className="text-xs text-emerald-200/90 mt-0.5">
-                    Alur perhitungan berbasis oplah pcs, A4 21×29,7 cm, HVS 80/100 gsm, 1 Warna vs Full Colour 1 Muka, 2 pcs/A3+
+                    Oplah rim @500 lbr — 4 jenis kop, 1–4 warna, 1–2 muka, CETAK vs ONGKOS CETAK, SISIR opsional
                   </p>
                 </div>
               </div>
@@ -579,10 +703,10 @@ export default function KopSuratSimulator({
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   {[
-                    ['1. Varian', 'Pilih HVS 80 atau HVS 100 gsm, lalu 1 Warna (hitam) atau Full Colour (FC).'],
-                    ['2. Oplah', 'Tentukan oplah 50–10000 pcs via dropdown tier atau custom langsung ketik angka.'],
-                    ['3. Margin & Nego', 'Atur margin profit 30% & batas nego 4% sesuai kebijakan penawaran.'],
-                    ['4. Salin Penawaran', 'Klik Salin Penawaran untuk teks WA otomatis, atau simpan ke daftar kalkulasi.'],
+                    ['1. Jenis & Warna', 'Pilih FOLIO / A4 / Setengah Folio / Setengah A4 lalu 1–4 Warna. Insheet otomatis ikut default file (30/30/40/50).'],
+                    ['2. Cetak & Muka', 'Pilih 1–2 Muka, CETAK (plate Rp 10.000) atau ONGKOS CETAK (plate Rp 0), plus SISIR bila perlu.'],
+                    ['3. Oplah Rim', 'Tentukan 1–10 rim (@500 lbr) via dropdown atau custom. Atur margin laba (default 30%).'],
+                    ['4. Salin / Simpan', 'Klik Salin Penawaran untuk teks WA otomatis, atau simpan ke daftar kalkulasi.'],
                   ].map(([title, desc]) => (
                     <div key={title} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
                       <span className="font-bold text-emerald-800 text-xs">{title}</span>
@@ -595,19 +719,19 @@ export default function KopSuratSimulator({
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5">
                 <h5 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
                   <Layers className="w-4 h-4 text-emerald-700" />
-                  Struktur Biaya Produksi Kop Surat
+                  Struktur Biaya Engine BUKU
                 </h5>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
                   <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
                     <span className="font-bold text-emerald-900 block">Kertas &amp; Cetak:</span>
                     <p className="text-slate-600 leading-snug">
-                      HVS 80 gsm 0,0127 kg/A3+ / HVS 100 gsm 0,0158 kg/A3+ @ Rp 15.700/kg + up 5%, 2 pcs/A3+, insheet 5 lbr, FC Rp 2.500/A3+ (≤500) / 1W Ryobi Rp 1.900/warna → Oliver ＞500 pcs 4 plat.
+                      Plano = ((rim×500)/O7) + insheet; harga/rim = ((dim×gramatur)/20000) × (harga/kg + up). Plate Rp 10.000/plat (jml = warna×muka), min order Rp 15.000/plat, over (P−500) × Rp 30/drek × plat.
                     </p>
                   </div>
                   <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">
-                    <span className="font-bold text-blue-900 block">Finishing &amp; Margin:</span>
+                    <span className="font-bold text-blue-900 block">Finishing &amp; Harga Final:</span>
                     <p className="text-slate-600 leading-snug">
-                      Potong Rp 50/pcs, packing kardus+lakban per order, desain Rp 20.000/order, margin 30% nego 4% pembulatan Rp 10.
+                      Sisir hanya bila SISIR; film hanya bila T30 = √. Total HPP + laba 30% = total harga; harga/rim dibulatkan ke puluhan (ROUNDUP −1).
                     </p>
                   </div>
                 </div>

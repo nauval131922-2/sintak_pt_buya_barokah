@@ -666,18 +666,18 @@ export default function SavedCalculationsList({
         category: 'Kop Surat',
         savedAt: ks.savedAt,
         title: ks.title,
-        oplah: inp.oplah,
-        specSummary: `Kop Surat ${inp.varian} • ${inp.oplah.toLocaleString('id-ID')} pcs`,
+        oplah: (inp.oplahRim ?? 0) * 500,
+        specSummary: `Kop Surat ${inp.jenisKop ?? ''} ${inp.nWarna ?? ''} Warna • ${(inp.oplahRim ?? 0)} rim`,
         detailSpecs: [
-          `Bahan: ${inp.varian} · A4 21×29,7 cm · 2 pcs/A3+`,
-          `Finishing: Potong + Packing Kardus`,
+          `Jenis: ${inp.jenisKop ?? ''} · ${inp.nWarna ?? ''} Warna · ${inp.muka ?? ''} Muka · ${inp.jenisCetak ?? ''}`,
+          `Finishing: ${inp.finishingSisir ? 'SISIR' : 'TANPA SISIR'}${inp.filmAktif ? ' · Film √' : ''} · Insheet ${inp.insheetLembar ?? ''} lbr`,
           `Margin: ${inp.marginPct}%`,
         ],
-        hppUnit: (ks.data?.hppPerPcs ?? ks.hppPerPcs ?? 0),
-        hargaJualUnit: (ks.data?.hargaJualPerPcs ?? ks.hargaJualPerPcs ?? 0),
-        totalOmset: (ks.data?.totalHargaJual ?? ks.totalHargaJual ?? 0),
+        hppUnit: (ks.data?.hppPerRim ?? ks.hppPerRim ?? 0),
+        hargaJualUnit: (ks.data?.hargaFinalPerRim ?? ks.hargaFinalPerRim ?? 0),
+        totalOmset: (ks.data?.totalHarga ?? ks.totalHarga ?? 0),
         marginPct: inp.marginPct,
-        negoDiskonPct: inp.negoDiskonPct,
+        negoDiskonPct: 0,
         rawData: ks,
       });
     });
@@ -1708,7 +1708,7 @@ export default function SavedCalculationsList({
     } else if (item.category === 'Kop Surat') {
       const ks: any = item.rawData;
       const inp = (ks.data && ks.data.input) ? ks.data.input : (ks.input || ks.data || ks || {});
-      text = `*PENAWARAN KOP SURAT*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Kop Surat ${inp.varian} A4 21×29,7 cm\n• *Bahan*: HVS ${(inp.varian.includes('100') ? '100' : '80')} gsm\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs (2 pcs/A3+)\n• *Cetak*: ${inp.varian.includes('Full Colour') ? 'Full Colour 1 Muka' : '1 Warna Hitam 1 Muka'}${inp.oplah > 500 ? ' (Oliver)' : ' (Print Inter/Ryobi)'}\n• *Finishing*: Potong + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${(ks.data?.hargaJualPerPcs ?? ks.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(ks.data?.totalHargaJual ?? ks.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
+        text = `*PENAWARAN KOP SURAT*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Kop Surat ${inp.jenisKop ?? ''}\n• *Spesifikasi*: ${inp.nWarna ?? ''} Warna, ${inp.muka ?? ''} Muka, ${inp.jenisCetak ?? ''}, ${inp.finishingSisir ? 'SISIR' : 'TANPA SISIR'}\n• *Kuantitas*: ${(inp.oplahRim ?? 0).toLocaleString('id-ID')} rim (${((inp.oplahRim ?? 0) * 500).toLocaleString('id-ID')} lbr)\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Rim*: *Rp ${(ks.data?.hargaFinalPerRim ?? ks.hargaFinalPerRim ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${Math.round(ks.data?.totalHarga ?? ks.totalHarga ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN. Oplah rim @500 lbr._`;
     } else if (item.category === 'Amplop') {
       const a: any = item.rawData;
       const inp = (a.data && a.data.input) ? a.data.input : (a.input || a.data || a || {});

@@ -13,9 +13,9 @@ import {
   calculateKopSuratHpp,
   DEFAULT_KOP_SURAT_PARAMS,
   KopSuratMasterParams,
-  KopSuratVarianType,
   KOP_SURAT_TIERS,
-  KOP_SURAT_CONFIG,
+  KOP_SURAT_UKURAN_LABEL,
+  insheetDefaultForWarna,
 } from '@/lib/kop-surat-calculator';
 
 interface KopSuratMatrixViewProps {
@@ -24,74 +24,89 @@ interface KopSuratMatrixViewProps {
   setViewMode?: (mode: 'matrix' | 'table') => void;
 }
 
-const VARIAN_LIST: KopSuratVarianType[] = ['HVS 80 - 1 Warna', 'HVS 80 - Full Colour', 'HVS 100 - 1 Warna', 'HVS 100 - Full Colour'];
+type Warna = 1 | 2 | 3 | 4;
+const WARNA_LIST: Warna[] = [1, 2, 3, 4];
 
 export default function KopSuratMatrixView({
   customParams = DEFAULT_KOP_SURAT_PARAMS,
   viewMode: propViewMode,
   setViewMode: propSetViewMode,
 }: KopSuratMatrixViewProps) {
+  const params: KopSuratMasterParams = { ...DEFAULT_KOP_SURAT_PARAMS, ...(customParams || {}) };
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedVarianFilter, setSelectedVarianFilter] = useState<KopSuratVarianType | 'ALL'>('ALL');
+  const [selectedWarnaFilter, setSelectedWarnaFilter] = useState<Warna | 'ALL'>('ALL');
   const [localViewMode, setLocalViewMode] = useState<'matrix' | 'table'>('matrix');
 
   const viewMode = propViewMode ?? localViewMode;
   const setViewMode = propSetViewMode ?? setLocalViewMode;
-  const calc = (oplah: number, varian: KopSuratVarianType) =>
+
+  // Spesifikasi baku matriks = kondisi file tersimpan: FOLIO, 1 Muka, CETAK, TANPA SISIR
+  const calc = (oplahRim: number, nWarna: Warna) =>
     calculateKopSuratHpp(
-      { oplah, varian, marginPct: 30, negoDiskonPct: 4 },
-      customParams
+      {
+        oplahRim,
+        jenisKop: 'FOLIO',
+        nWarna,
+        muka: 1,
+        jenisCetak: 'CETAK',
+        finishingSisir: false,
+        filmAktif: false,
+        insheetLembar: insheetDefaultForWarna(nWarna, params),
+        marginPct: params.labaPct ?? 30,
+      },
+      params
     );
 
-  // Matrix: baris = oplah, kolom = varian
+  // Matrix: baris = rim, kolom = warna
   const matrixData = useMemo(() => {
-    const varians = selectedVarianFilter === 'ALL' ? VARIAN_LIST : [selectedVarianFilter];
-    return KOP_SURAT_TIERS.map((oplah) => {
+    const warnas = selectedWarnaFilter === 'ALL' ? WARNA_LIST : [selectedWarnaFilter];
+    return KOP_SURAT_TIERS.map((rim) => {
       const q = searchTerm.trim();
-      if (q && !oplah.toString().includes(q)) return null;
+      if (q && !rim.toString().includes(q)) return null;
       return {
-        oplah,
-        cols: varians.map((varian) => {
-          const r = calc(oplah, varian);
-          return { varian, hpp: r.hppPerPcs, jual: r.hargaJualPerPcs, nego: r.hargaNegoPerPcs, totalJual: r.totalHargaJual };
+        rim,
+        cols: warnas.map((nWarna) => {
+          const r = calc(rim, nWarna);
+          return { nWarna, hpp: r.hppPerRim, final: r.hargaFinalPerRim, total: r.totalHarga };
         }),
       };
-    }).filter(Boolean) as { oplah: number; cols: { varian: KopSuratVarianType; hpp: number; jual: number; nego: number; totalJual: number }[] }[];
-  }, [customParams, searchTerm, selectedVarianFilter]);
+    }).filter(Boolean) as { rim: number; cols: { nWarna: Warna; hpp: number; final: number; total: number }[] }[];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customParams, searchTerm, selectedWarnaFilter]);
 
   // Flat table
   const flatTableRows = useMemo(() => {
     const list: {
-      oplah: number; varian: KopSuratVarianType; hpp: number; jual: number; nego: number; totalJual: number; margin: number;
+      rim: number; nWarna: Warna; hpp: number; final: number; total: number; margin: number;
     }[] = [];
 
-    const varians = selectedVarianFilter === 'ALL' ? VARIAN_LIST : [selectedVarianFilter];
+    const warnas = selectedWarnaFilter === 'ALL' ? WARNA_LIST : [selectedWarnaFilter];
 
-    varians.forEach((varian) => {
-      KOP_SURAT_TIERS.forEach((oplah) => {
+    warnas.forEach((nWarna) => {
+      KOP_SURAT_TIERS.forEach((rim) => {
         const q = searchTerm.toLowerCase().trim();
         if (q) {
           const match =
-            oplah.toString().includes(q) ||
-            varian.toLowerCase().includes(q);
+            rim.toString().includes(q) ||
+            `${nWarna} warna`.includes(q);
           if (!match) return;
         }
-        const r = calc(oplah, varian);
+        const r = calc(rim, nWarna);
         list.push({
-          oplah, varian,
-          hpp: r.hppPerPcs,
-          jual: r.hargaJualPerPcs,
-          nego: r.hargaNegoPerPcs,
-          totalJual: r.totalHargaJual,
+          rim, nWarna,
+          hpp: r.hppPerRim,
+          final: r.hargaFinalPerRim,
+          total: r.totalHarga,
           margin: r.marginPct,
         });
       });
     });
 
     return list;
-  }, [customParams, searchTerm, selectedVarianFilter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customParams, searchTerm, selectedWarnaFilter]);
 
-  const varianCols = selectedVarianFilter === 'ALL' ? VARIAN_LIST : [selectedVarianFilter];
+  const warnaCols = selectedWarnaFilter === 'ALL' ? WARNA_LIST : [selectedWarnaFilter];
 
   return (
     <div className="space-y-4">
@@ -106,7 +121,7 @@ export default function KopSuratMatrixView({
               Pricelist Matriks Kop Surat
             </h2>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Tabel perbandingan HPP &amp; harga jual Kop Surat A4 21×29,7 cm HVS 80/100 gsm per oplah &amp; varian (margin 30%, nego 4%, potong ON).
+              FOLIO {KOP_SURAT_UKURAN_LABEL.FOLIO} · 1 Muka · CETAK · TANPA SISIR · rim @500 lbr · laba {params.labaPct ?? 30}% (insheet ikut file: 30/30/40/50).
             </p>
           </div>
         </div>
@@ -118,7 +133,7 @@ export default function KopSuratMatrixView({
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Cari oplah, varian..."
+            placeholder="Cari rim, warna..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-9 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
@@ -133,17 +148,17 @@ export default function KopSuratMatrixView({
           )}
         </div>
 
-        {/* Filter Varian */}
+        {/* Filter Warna */}
         <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
-          <span className="text-slate-500 font-semibold hidden sm:inline">Varian:</span>
+          <span className="text-slate-500 font-semibold hidden sm:inline">Warna:</span>
           <select
-            value={selectedVarianFilter}
-            onChange={(e) => setSelectedVarianFilter(e.target.value as KopSuratVarianType | 'ALL')}
+            value={selectedWarnaFilter}
+            onChange={(e) => setSelectedWarnaFilter(e.target.value === 'ALL' ? 'ALL' : Number(e.target.value) as Warna)}
             className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-bold focus:bg-white focus:outline-none cursor-pointer"
           >
-            <option value="ALL">Semua Varian</option>
-            {VARIAN_LIST.map((v) => (
-              <option key={v} value={v}>{v}</option>
+            <option value="ALL">Semua Warna</option>
+            {WARNA_LIST.map((w) => (
+              <option key={w} value={w}>{w} Warna</option>
             ))}
           </select>
         </div>
@@ -186,54 +201,49 @@ export default function KopSuratMatrixView({
               <div className="flex items-center justify-between border-b border-gray-200 pb-2">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-sky-500 inline-block"></span>
-                  <h3 className="text-sm font-bold text-gray-800 tracking-tight">Kop Surat A4 21×29,7 cm — HVS 80/100 gsm</h3>
+                  <h3 className="text-sm font-bold text-gray-800 tracking-tight">Kop Surat FOLIO 21,5×33 — per rim @500 lbr</h3>
                 </div>
                 <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
-                  {selectedVarianFilter === 'ALL' ? 'Semua Varian (4)' : `${selectedVarianFilter}`}
+                  {selectedWarnaFilter === 'ALL' ? 'Semua Warna (4)' : `${selectedWarnaFilter} Warna`}
                 </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {varianCols.map((varian) => (
-                <div key={varian} className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
+                {warnaCols.map((nWarna) => (
+                <div key={nWarna} className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
                   <div className="bg-sky-50/70 px-4 py-2 border-b border-sky-100 flex items-center justify-between">
                     <span className="text-[11px] font-bold text-sky-900 tracking-wider uppercase flex items-center gap-1.5">
                       <Layers size={13} className="text-sky-600" />
-                      Varian: {varian} — {KOP_SURAT_CONFIG[varian].w}×{KOP_SURAT_CONFIG[varian].h} cm · {KOP_SURAT_CONFIG[varian].pcsPerA3} pcs/A3+ · {KOP_SURAT_CONFIG[varian].gramatur} gsm {KOP_SURAT_CONFIG[varian].isFC ? '· FC' : '· 1W'}
+                      {nWarna} Warna — insheet {insheetDefaultForWarna(nWarna, params)} lbr
                     </span>
                   </div>
                   <div className="overflow-x-auto max-h-[500px]">
                     <table className="w-full text-xs text-left border-collapse">
                       <thead className="sticky top-0 z-10 bg-white shadow-xs">
                         <tr className="bg-gray-100 border-b border-gray-200 text-gray-700 font-bold">
-                          <th className="py-2.5 px-3 border-r border-gray-200 text-center w-20 bg-gray-100" rowSpan={2}>
-                            Oplah
+                          <th className="py-2.5 px-3 border-r border-gray-200 text-center w-20 bg-gray-100">
+                            Rim
                           </th>
-                          <th colSpan={3} className="py-1.5 px-2 text-center border-r border-gray-200 font-bold text-gray-900 bg-gray-200/80">
-                            {varian}
-                          </th>
-                        </tr>
-                        <tr className="bg-gray-50 border-b border-gray-200 text-[11px] text-gray-600">
-                          <th className="py-1.5 px-2 text-right font-semibold bg-gray-50">HPP</th>
-                          <th className="py-1.5 px-2 text-right font-bold text-emerald-800 bg-emerald-100/50">Harga</th>
-                          <th className="py-1.5 px-2 text-right font-bold text-blue-800 bg-blue-100/50 border-r border-gray-200">Nego</th>
+                          <th className="py-1.5 px-2 text-right font-semibold bg-gray-50">HPP/rim</th>
+                          <th className="py-1.5 px-2 text-right font-bold text-emerald-800 bg-emerald-100/50">Final/rim</th>
+                          <th className="py-1.5 px-2 text-right font-semibold bg-gray-50 border-r border-gray-200">Total</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {matrixData.map((row) => {
-                          const col = row.cols.find((c) => c.varian === varian);
+                          const col = row.cols.find((c) => c.nWarna === nWarna);
                           if (!col) return null;
                           return (
-                            <tr key={row.oplah} className="hover:bg-sky-50/30 transition-colors">
+                            <tr key={row.rim} className="hover:bg-sky-50/30 transition-colors">
                               <td className="py-2 px-3 text-center font-bold text-gray-900 border-r border-gray-200 bg-gray-50/30">
-                                {row.oplah.toLocaleString('id-ID')}
+                                {row.rim} <span className="font-normal text-gray-400">({(row.rim * 500).toLocaleString('id-ID')})</span>
                               </td>
                               <td className="py-2 px-2 text-right text-gray-500 font-mono">{Math.round(col.hpp).toLocaleString('id-ID')}</td>
                               <td className="py-2 px-2 text-right font-bold text-emerald-700 font-mono bg-emerald-50/30">
-                                {col.jual.toLocaleString('id-ID')}
+                                {col.final.toLocaleString('id-ID')}
                               </td>
-                              <td className="py-2 px-2 text-right font-bold text-blue-700 font-mono bg-blue-50/30 border-r border-gray-200">
-                                {col.nego.toLocaleString('id-ID')}
+                              <td className="py-2 px-2 text-right text-gray-600 font-mono border-r border-gray-200">
+                                {Math.round(col.total).toLocaleString('id-ID')}
                               </td>
                             </tr>
                           );
@@ -253,33 +263,31 @@ export default function KopSuratMatrixView({
             <table className="w-full text-xs text-left border-collapse">
               <thead className="sticky top-0 z-10 bg-slate-100 border-b border-slate-200 text-slate-700 font-bold">
                 <tr>
-                  <th className="py-2.5 px-3">Oplah</th>
-                  <th className="py-2.5 px-3">Varian</th>
-                  <th className="py-2.5 px-3">Ukuran</th>
-                  <th className="py-2.5 px-3 text-right">HPP / pcs</th>
-                  <th className="py-2.5 px-3 text-right text-emerald-700">Harga Jual / pcs</th>
-                  <th className="py-2.5 px-3 text-right text-blue-700">Harga Nego / pcs</th>
-                  <th className="py-2.5 px-3 text-right text-emerald-800">Total Omset</th>
+                  <th className="py-2.5 px-3">Rim</th>
+                  <th className="py-2.5 px-3">Warna</th>
+                  <th className="py-2.5 px-3">Lembar</th>
+                  <th className="py-2.5 px-3 text-right">HPP / rim</th>
+                  <th className="py-2.5 px-3 text-right text-emerald-700">Final / rim</th>
+                  <th className="py-2.5 px-3 text-right text-emerald-800">Total Harga</th>
                   <th className="py-2.5 px-3 text-right text-slate-600">Margin</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
                 {flatTableRows.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="p-8 text-center text-slate-400 font-sans">
+                    <td colSpan={7} className="p-8 text-center text-slate-400 font-sans">
                       Tidak ada data yang sesuai dengan pencarian atau filter.
                     </td>
                   </tr>
                 ) : (
                   flatTableRows.map((row, idx) => (
                     <tr key={idx} className="hover:bg-sky-50/40 transition-colors">
-                      <td className="py-2 px-3 font-bold text-slate-800 font-sans">{row.oplah.toLocaleString('id-ID')}</td>
-                      <td className="py-2 px-3 text-slate-700 font-sans">{row.varian}</td>
-                      <td className="py-2 px-3 text-slate-500 font-sans">21×29,7</td>
+                      <td className="py-2 px-3 font-bold text-slate-800 font-sans">{row.rim}</td>
+                      <td className="py-2 px-3 text-slate-700 font-sans">{row.nWarna} Warna</td>
+                      <td className="py-2 px-3 text-slate-500 font-sans">{(row.rim * 500).toLocaleString('id-ID')}</td>
                       <td className="py-2 px-3 text-right text-slate-600">Rp {Math.round(row.hpp).toLocaleString('id-ID')}</td>
-                      <td className="py-2 px-3 text-right font-bold text-emerald-700">Rp {row.jual.toLocaleString('id-ID')}</td>
-                      <td className="py-2 px-3 text-right font-bold text-blue-600">Rp {row.nego.toLocaleString('id-ID')}</td>
-                      <td className="py-2 px-3 text-right font-bold text-slate-800">Rp {row.totalJual.toLocaleString('id-ID')}</td>
+                      <td className="py-2 px-3 text-right font-bold text-emerald-700">Rp {row.final.toLocaleString('id-ID')}</td>
+                      <td className="py-2 px-3 text-right font-bold text-slate-800">Rp {Math.round(row.total).toLocaleString('id-ID')}</td>
                       <td className="py-2 px-3 text-right text-slate-500 font-sans">{Math.round(row.margin * 100)}%</td>
                     </tr>
                   ))
