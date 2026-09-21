@@ -24,7 +24,14 @@ interface RaportKalebMatrixViewProps {
   setViewMode?: (mode: 'matrix' | 'table') => void;
 }
 
-const VARIAN_LIST: RaportKalebVarianType[] = ['Kosongan', 'Isi 6'];
+const VARIAN_LIST: RaportKalebVarianType[] = [
+  'Kosongan',
+  'Isi 4',
+  'Isi 6',
+  'Isi 8',
+  'Isi 10',
+  'Isi 12',
+];
 
 export default function RaportKalebMatrixView({
   customParams = DEFAULT_RAPORT_KALEB_PARAMS,
@@ -39,7 +46,14 @@ export default function RaportKalebMatrixView({
   const setViewMode = propSetViewMode ?? setLocalViewMode;
   const calc = (oplah: number, varian: RaportKalebVarianType) =>
     calculateRaportKalebHpp(
-      { oplah, varian, opsiFoil: true, tambahanIsiLbr: 0, marginPct: 30, negoDiskonPct: 4 },
+      {
+        oplah,
+        varian,
+        opsiPacking: false,
+        tambahanIsiLbr: 0,
+        marginPct: customParams.marginDefaultPct || 25,
+        negoDiskonPct: customParams.negoDefaultPct || 4,
+      },
       customParams
     );
 

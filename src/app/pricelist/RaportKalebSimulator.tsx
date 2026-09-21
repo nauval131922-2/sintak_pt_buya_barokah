@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { saveCalculationToDb } from '@/lib/pricelist-db-sync';
 import {
   FileSpreadsheet,
@@ -21,6 +21,8 @@ import {
   Layers,
   RefreshCw,
   BookOpen,
+  Sparkles,
+  Package,
 } from 'lucide-react';
 import {
   calculateRaportKalebHpp,
@@ -28,6 +30,7 @@ import {
   RaportKalebMasterParams,
   RaportKalebVarianType,
   RAPORT_KALEB_TIERS,
+  RAPORT_KALEB_VARIANTS,
   SavedRaportKalebSimulationItem,
   RAPORT_KALEB_CONFIG,
 } from '@/lib/raport-kaleb-calculator';
@@ -35,7 +38,7 @@ import { toast } from '@/lib/toast';
 
 export type { SavedRaportKalebSimulationItem };
 
-const VARIAN_OPTIONS: RaportKalebVarianType[] = ['Kosongan', 'Isi 6'];
+const DRAFT_STORAGE_KEY = 'sintak_raport_kaleb_draft';
 
 interface RaportKalebSimulatorProps {
   customParams?: RaportKalebMasterParams;
@@ -56,14 +59,17 @@ export default function RaportKalebSimulator({
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: RaportKalebSimulatorProps) {
+  // 1. Form Inputs State
   const [oplah, setOplah] = useState<number>(100);
   const [varian, setVarian] = useState<RaportKalebVarianType>('Kosongan');
   const [opsiTambahanIsi, setOpsiTambahanIsi] = useState(false);
   const [jumlahTambahanIsi, setJumlahTambahanIsi] = useState(2);
-  const [marginPct, setMarginPct] = useState(30);
-  const [negoDiskonPct, setNegoDiskonPct] = useState(4);
+  const [opsiPacking, setOpsiPacking] = useState(false);
+  const [marginPct, setMarginPct] = useState<number>(customParams.marginDefaultPct || 25);
+  const [negoDiskonPct, setNegoDiskonPct] = useState<number>(customParams.negoDefaultPct || 4);
   const [copiedQuote, setCopiedQuote] = useState(false);
 
+  // 2. Saved Simulation State
   const [savedSimulations, setSavedSimulations] = useState<SavedRaportKalebSimulationItem[]>([]);
   const [simulationTitle, setSimulationTitle] = useState('');
   const [internalActiveId, setInternalActiveId] = useState<string | null>(null);
@@ -82,11 +88,12 @@ export default function RaportKalebSimulator({
     else setInternalActiveTitle(title);
   };
 
+  // 3. Muat Riwayat & Draft Terakhir
   useEffect(() => {
     try {
-      const raw = localStorage.getItem('sintak_saved_raport_kaleb_simulations');
-      if (raw) {
-        const list: SavedRaportKalebSimulationItem[] = JSON.parse(raw);
+      const rawSaved = localStorage.getItem('sintak_saved_raport_kaleb_simulations');
+      if (rawSaved) {
+        const list: SavedRaportKalebSimulationItem[] = JSON.parse(rawSaved);
         setSavedSimulations(list);
 
         if (activeSimulationId) {
@@ -97,29 +104,80 @@ export default function RaportKalebSimulator({
             setVarian(inp.varian);
             setOpsiTambahanIsi((inp.tambahanIsiLbr || 0) > 0);
             setJumlahTambahanIsi(inp.tambahanIsiLbr || 2);
+            setOpsiPacking(!!inp.opsiPacking);
             setMarginPct(inp.marginPct);
             setNegoDiskonPct(inp.negoDiskonPct);
             setSimulationTitle(item.title);
+            return;
           }
         }
       }
+
+      // Jika tidak sedang mengedit riwayat tertentu, muat draft debounced
+      const rawDraft = localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (rawDraft) {
+        const draft = JSON.parse(rawDraft);
+        if (draft.oplah) setOplah(draft.oplah);
+        if (draft.varian) setVarian(draft.varian);
+        if (draft.opsiTambahanIsi !== undefined) setOpsiTambahanIsi(draft.opsiTambahanIsi);
+        if (draft.jumlahTambahanIsi) setJumlahTambahanIsi(draft.jumlahTambahanIsi);
+        if (draft.opsiPacking !== undefined) setOpsiPacking(draft.opsiPacking);
+        if (draft.marginPct !== undefined) setMarginPct(draft.marginPct);
+        if (draft.negoDiskonPct !== undefined) setNegoDiskonPct(draft.negoDiskonPct);
+      }
     } catch (e) {
-      console.error('Failed to load saved raport kaleb simulations:', e);
+      console.error('Failed to load saved raport kaleb simulations / draft:', e);
     }
   }, [activeSimulationId]);
 
+  // 4. Auto-persist Draft ke localStorage
+  const draftTimerRef = useRef<NodeJS.Timeout | null>(null);
+  useEffect(() => {
+    if (activeSimulationId) return; // Jangan override draft saat mode edit riwayat
+    if (draftTimerRef.current) clearTimeout(draftTimerRef.current);
+    draftTimerRef.current = setTimeout(() => {
+      try {
+        const payload = {
+          oplah,
+          varian,
+          opsiTambahanIsi,
+          jumlahTambahanIsi,
+          opsiPacking,
+          marginPct,
+          negoDiskonPct,
+        };
+        localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(payload));
+      } catch (e) {
+        console.error('Failed to save raport kaleb draft:', e);
+      }
+    }, 400);
+
+    return () => {
+      if (draftTimerRef.current) clearTimeout(draftTimerRef.current);
+    };
+  }, [oplah, varian, opsiTambahanIsi, jumlahTambahanIsi, opsiPacking, marginPct, negoDiskonPct, activeSimulationId]);
+
+  // 5. Kalkulasi HPP Real-time
   const result = useMemo(
     () =>
       calculateRaportKalebHpp(
-        { oplah, varian, opsiFoil: true, tambahanIsiLbr: opsiTambahanIsi ? jumlahTambahanIsi : 0, marginPct, negoDiskonPct },
+        {
+          oplah,
+          varian,
+          tambahanIsiLbr: opsiTambahanIsi ? jumlahTambahanIsi : 0,
+          opsiPacking,
+          marginPct,
+          negoDiskonPct,
+        },
         customParams
       ),
-    [oplah, varian, opsiTambahanIsi, jumlahTambahanIsi, marginPct, negoDiskonPct, customParams]
+    [oplah, varian, opsiTambahanIsi, jumlahTambahanIsi, opsiPacking, marginPct, negoDiskonPct, customParams]
   );
 
   const defaultTitle = () => {
     const extra = opsiTambahanIsi ? ` +${jumlahTambahanIsi} lbr` : '';
-    return `Raport Kaleb ${varian}${extra} (${oplah} pcs)`;
+    const pack = opsiPacking ? ' + Packing' : '';
+    return `Raport Kaleb ${varian}${extra}${pack} (${oplah} pcs)`;
   };
 
   const handleSaveSimulation = () => {
@@ -135,7 +193,7 @@ export default function RaportKalebSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_raport_kaleb_simulations', JSON.stringify(updated));
-    saveCalculationToDb({ ...newItem, category: 'Raport Kaleb' });
+      saveCalculationToDb({ ...newItem, category: 'Raport Kaleb' });
     } catch (e) {
       console.error('Failed to save raport kaleb simulation:', e);
     }
@@ -143,7 +201,6 @@ export default function RaportKalebSimulator({
     toast.success(`Kalkulasi "${title}" berhasil disimpan!`);
     setActiveSimulationId(null);
     if (setActiveSimulationTitle) setActiveSimulationTitle(null);
-    setSimulationTitle('');
   };
 
   const handleUpdateSavedSimulation = () => {
@@ -157,13 +214,13 @@ export default function RaportKalebSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_raport_kaleb_simulations', JSON.stringify(updated));
-    const targetItem = updated.find((x) => x.id === activeSimulationId);
+      const targetItem = updated.find((x) => x.id === activeSimulationId);
       if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Raport Kaleb' });
     } catch (e) {
       console.error('Failed to update raport kaleb simulation:', e);
     }
     setActiveSimulationTitle(title);
-    toast.success(`Perubahan "${title}" berhasil disimpan!`);
+    toast.success(`Perubahan "${title}" berhasil diperbarui!`);
     setActiveSimulationId(null);
     if (setActiveSimulationTitle) setActiveSimulationTitle(null);
     setSimulationTitle('');
@@ -171,39 +228,43 @@ export default function RaportKalebSimulator({
 
   const handleCopyQuote = () => {
     const fmt = (n: number) => n.toLocaleString('id-ID');
-    const cfg = RAPORT_KALEB_CONFIG[varian];
-    const isiText = varian === 'Isi 6'
-      ? `Isi 6 lembar (+Rp ${customParams.tarifIsiPerLbr.toLocaleString('id-ID')}/lbr)`
-      : opsiTambahanIsi
-        ? `Isi tambahan ${jumlahTambahanIsi} lbr (+Rp ${customParams.tarifIsiPerLbr.toLocaleString('id-ID')}/lbr)`
-        : 'Kosongan tanpa isi';
+    const cfg = RAPORT_KALEB_CONFIG[varian] || RAPORT_KALEB_CONFIG['Kosongan'];
+    const totalIsi = cfg.jumlahIsi + (opsiTambahanIsi ? jumlahTambahanIsi : 0);
+    const isiText = totalIsi > 0
+      ? `Kantong mika isi ${totalIsi} lbr`
+      : 'Kosongan tanpa lembar isi';
+    const kliseText = oplah <= (customParams.batasOplahKlise || 120)
+      ? `Termasuk Klise Foil (Oplah ≤${customParams.batasOplahKlise || 120} pcs)`
+      : `Bebas Biaya Klise (Oplah >${customParams.batasOplahKlise || 120} pcs gratis)`;
+    const packText = opsiPacking ? 'Packing Kardus + Lakban' : 'Standard Workshop';
+
     const text =
-      `*PENAWARAN RAPORT KALEB*\n` +
+      `*PENAWARAN MAP RAPORT KALEB*\n` +
       `*PT Buya Barokah*\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
-      `• *Produk*: Raport Kaleb ${varian} 24×34 cm\n` +
-      `• *Spesifikasi*: ${cfg.description}\n` +
-      `• *Isi*: ${isiText}\n` +
-      `• *Kuantitas*: ${oplah} pcs\n` +
-      `• *Bahan*: Kaleb Foil Emas + Cetak 1 Muka FC\n` +
-      `• *Finishing*: Sisir + Packing Kardus + Foil Emas\n` +
+      `• *Produk*: Map Raport Kaleb 24×34 cm\n` +
+      `• *Spesifikasi*: Bahan Kaleb Standar Foil Emas Hotprint\n` +
+      `• *Varian*: ${varian} (${isiText})\n` +
+      `• *Kuantitas*: ${oplah.toLocaleString('id-ID')} pcs\n` +
+      `• *Klise Foil*: ${kliseText}\n` +
+      `• *Finishing*: ${packText}\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
       `• *Harga / Pcs*: *Rp ${fmt(result.hargaJualPerPcs)}*\n` +
       `• *Harga Nego / Pcs*: *Rp ${fmt(result.hargaNegoPerPcs)}*\n` +
       `• *Total Penawaran*: *Rp ${fmt(result.totalHargaJual)}*\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
-      `_Harga belum termasuk PPN. Kaleb Foil Emas 24×34 cm, sisir & packing kardus._`;
+      `_Harga belum termasuk PPN. Penawaran berlaku 14 hari._`;
 
     navigator.clipboard.writeText(text);
     setCopiedQuote(true);
-    toast.success('Penawaran harga Raport Kaleb berhasil disalin ke WhatsApp clipboard!');
+    toast.success('Format penawaran Raport Kaleb berhasil disalin ke WhatsApp clipboard!');
     setTimeout(() => setCopiedQuote(false), 2000);
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
+    <div className="flex flex-col gap-4 h-[calc(100vh-140px)] min-h-0">
+      {/* Header Info */}
+      <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs shrink-0">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
             <FileSpreadsheet className="w-5 h-5" />
@@ -216,7 +277,7 @@ export default function RaportKalebSimulator({
               </span>
             </h3>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Hitung HPP, harga penawaran, dan estimasi profit Raport Kaleb 24×34 cm (Kaleb Foil Emas, Kosongan vs Isi 6 + tambahan isi Rp 1.200/lbr).
+              Kalkulator map raport ijazah kulit imitasi (kaleb) 24×34 cm dengan foil emas hotprint, kantong mika lampiran, dan matres klise.
             </p>
           </div>
         </div>
@@ -254,9 +315,9 @@ export default function RaportKalebSimulator({
         </div>
       </div>
 
-      {/* Banner riwayat aktif */}
+      {/* Banner Riwayat Aktif */}
       {activeSimulationId && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200">
+        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="p-1.5 bg-amber-200 text-amber-900 rounded-lg">
               <Bookmark className="w-4 h-4 fill-amber-700" />
@@ -269,7 +330,7 @@ export default function RaportKalebSimulator({
                 <h4 className="text-xs font-bold text-amber-950">{activeSimulationTitle}</h4>
               </div>
               <p className="text-[11px] text-amber-800/90 mt-0.5">
-                Anda sedang melihat atau mengedit data dari riwayat simulasi yang dimuat.
+                Anda sedang meninjau atau merevisi kalkulasi riwayat yang dimuat.
               </p>
             </div>
           </div>
@@ -280,7 +341,7 @@ export default function RaportKalebSimulator({
               className="px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
             >
               <BookmarkCheck size={14} />
-              <span>Simpan Perubahan</span>
+              <span>Update Perubahan</span>
             </button>
             <button
               type="button"
@@ -298,78 +359,117 @@ export default function RaportKalebSimulator({
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Kolom Kiri: Form Input */}
-        <div className="lg:col-span-5 space-y-5">
+      {/* Layout Dual Scroll Mandiri Standar SINTAK */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0 flex-1">
+        {/* Kolom Kiri: Form Input (Scroll Mandiri) */}
+        <div className="lg:col-span-5 overflow-y-auto pr-1 space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
               <Sliders size={15} className="text-emerald-700" />
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Input Spesifikasi Raport Kaleb</h3>
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                Spesifikasi Map Raport Kaleb
+              </h3>
             </div>
 
-            {/* Varian */}
+            {/* 1. Pilihan Varian Isi Map */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Varian Raport Kaleb (24 × 34 cm)
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {VARIAN_OPTIONS.map((v) => (
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-bold text-slate-700">
+                  Varian Isi Map Mika (24 × 34 cm)
+                </label>
+                <span className="text-[10px] text-slate-400 font-mono">Master!D11</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {RAPORT_KALEB_VARIANTS.map((v) => (
                   <button
                     key={v}
                     type="button"
                     onClick={() => setVarian(v)}
-                    className={`py-2 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer flex flex-col items-center gap-1 ${
+                    className={`py-2 px-1.5 rounded-lg border text-xs font-bold text-center transition cursor-pointer flex flex-col items-center gap-1 ${
                       varian === v
                         ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
                         : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                     }`}
                   >
-                    <BookOpen size={14} className={varian === v ? 'text-white' : 'text-slate-500'} />
-                    <span className="leading-tight">{v}</span>
+                    <BookOpen size={13} className={varian === v ? 'text-white' : 'text-slate-400'} />
+                    <span className="leading-tight text-[11px]">{v}</span>
                   </button>
                 ))}
               </div>
-              <p className="text-[11px] text-slate-500 mt-1.5 italic">{RAPORT_KALEB_CONFIG[varian].description}</p>
+              <p className="text-[10.5px] text-slate-500 mt-1.5 italic leading-tight">
+                {RAPORT_KALEB_CONFIG[varian].description}
+              </p>
             </div>
 
-            {/* Isi Tambahan checkbox/number */}
+            {/* 2. Tambahan Lembar Isi Mika Custom */}
             <div>
-              <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:bg-slate-50 cursor-pointer text-xs">
+              <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-slate-50/60 hover:bg-slate-50 cursor-pointer text-xs transition-colors">
                 <input
                   type="checkbox"
                   checked={opsiTambahanIsi}
                   onChange={(e) => setOpsiTambahanIsi(e.target.checked)}
-                  className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                  className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
                 />
                 <div className="flex-1">
-                  <span className="font-semibold text-slate-800 block text-[11px]">Tambahan Isi Custom (+Rp {customParams.tarifIsiPerLbr.toLocaleString('id-ID')}/lbr)</span>
-                  <span className="text-[10px] text-slate-400">Centang untuk menambah lembar isi di luar varian terpilih</span>
+                  <span className="font-semibold text-slate-800 block text-[11px]">
+                    Tambahan Isi Mika Custom (+Rp {customParams.hargaIsiPerLbr.toLocaleString('id-ID')}/lbr)
+                  </span>
+                  <span className="text-[10px] text-slate-500">
+                    Tambah kantong plastik mika di luar varian standar
+                  </span>
                 </div>
                 {opsiTambahanIsi && (
-                  <input
-                    type="number"
-                    min={1}
-                    max={20}
-                    value={jumlahTambahanIsi}
-                    onChange={(e) => setJumlahTambahanIsi(Math.max(1, Number(e.target.value) || 1))}
-                    onClick={(e) => e.stopPropagation()}
-                    className="w-16 px-2 py-1 text-xs font-bold text-slate-800 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 text-center"
-                  />
+                  <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="number"
+                      min={1}
+                      max={50}
+                      value={jumlahTambahanIsi}
+                      onChange={(e) => setJumlahTambahanIsi(Math.max(1, Number(e.target.value) || 1))}
+                      className="w-16 px-2 py-1 text-xs font-bold text-slate-800 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 text-center shadow-2xs"
+                    />
+                    <span className="text-[10px] font-bold text-slate-400">lbr</span>
+                  </div>
                 )}
               </label>
-              {varian === 'Isi 6' && !opsiTambahanIsi && (
-                <p className="text-[10px] text-emerald-700 mt-1">Isi 6 sudah termasuk 6 lbr × Rp {customParams.tarifIsiPerLbr.toLocaleString('id-ID')} = Rp {(6*customParams.tarifIsiPerLbr).toLocaleString('id-ID')}/pcs</p>
-              )}
               {opsiTambahanIsi && (
-                <p className="text-[10px] text-slate-500 mt-1">Total isi: {RAPORT_KALEB_CONFIG[varian].jumlahIsi + jumlahTambahanIsi} lbr ({RAPORT_KALEB_CONFIG[varian].jumlahIsi} varian + {jumlahTambahanIsi} custom)</p>
+                <p className="text-[10.5px] text-emerald-700 font-medium mt-1">
+                  Total isi: {RAPORT_KALEB_CONFIG[varian].jumlahIsi + jumlahTambahanIsi} lembar mika ({RAPORT_KALEB_CONFIG[varian].jumlahIsi} varian + {jumlahTambahanIsi} custom).
+                </p>
               )}
             </div>
 
-            {/* Oplah */}
+            {/* 3. Opsi Tambahan Packing Kardus & Lakban */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Kuantitas Oplah (pcs)
+              <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-slate-50/60 hover:bg-slate-50 cursor-pointer text-xs transition-colors">
+                <input
+                  type="checkbox"
+                  checked={opsiPacking}
+                  onChange={(e) => setOpsiPacking(e.target.checked)}
+                  className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <Package size={13} className="text-slate-500" />
+                    <span className="font-semibold text-slate-800 block text-[11px]">
+                      Packing Kardus + Lakban Wrapping
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-slate-500">
+                    BUKU!X6: Kardus @ Rp {customParams.tarifKardusBox.toLocaleString('id-ID')} + lakban packing
+                  </span>
+                </div>
               </label>
+            </div>
+
+            {/* 4. Kuantitas Oplah */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-bold text-slate-700">
+                  Kuantitas Oplah Pesanan (pcs)
+                </label>
+                <span className="text-[10px] text-slate-400 font-mono">Master!D7</span>
+              </div>
               <div className="grid grid-cols-2 gap-2">
                 <select
                   value={RAPORT_KALEB_TIERS.includes(oplah) ? oplah : 'custom'}
@@ -382,25 +482,41 @@ export default function RaportKalebSimulator({
                   {RAPORT_KALEB_TIERS.map((t) => (
                     <option key={t} value={t}>{t.toLocaleString('id-ID')} pcs</option>
                   ))}
-                  {!RAPORT_KALEB_TIERS.includes(oplah) && <option value="custom">{oplah.toLocaleString('id-ID')} pcs (custom)</option>}
+                  {!RAPORT_KALEB_TIERS.includes(oplah) && (
+                    <option value="custom">{oplah.toLocaleString('id-ID')} pcs (custom)</option>
+                  )}
                 </select>
                 <input
                   type="number"
                   min={1}
-                  max={10000}
+                  max={50000}
                   step={10}
                   value={oplah}
                   onChange={(e) => setOplah(Math.max(1, Number(e.target.value) || 1))}
-                  className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+                  className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none text-right"
                   placeholder="Custom..."
                 />
               </div>
+              <p className="text-[10px] text-slate-400 mt-1">
+                {oplah <= (customParams.batasOplahKlise || 120) ? (
+                  <span className="text-amber-700 font-semibold">
+                    • Oplah ≤ {customParams.batasOplahKlise || 120} pcs kena biaya klise matres Rp {customParams.tarifKlise.toLocaleString('id-ID')}.
+                  </span>
+                ) : (
+                  <span className="text-emerald-700 font-semibold">
+                    • Oplah &gt; {customParams.batasOplahKlise || 120} pcs otomatis GRATIS biaya klise foil emas.
+                  </span>
+                )}
+              </p>
             </div>
 
-            {/* Margin & Nego */}
+            {/* 5. Margin & Nego Standar */}
             <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Margin Profit (%)</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-slate-700">Margin Laba (%)</label>
+                  <span className="text-[10px] text-slate-400 font-mono">S4</span>
+                </div>
                 <div className="relative">
                   <input
                     type="number"
@@ -408,13 +524,16 @@ export default function RaportKalebSimulator({
                     max={100}
                     value={marginPct}
                     onChange={(e) => setMarginPct(Number(e.target.value) || 0)}
-                    className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+                    className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none text-right"
                   />
                   <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Batas Nego (%)</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-slate-700">Batas Nego (%)</label>
+                  <span className="text-[10px] text-slate-400 font-mono">T4</span>
+                </div>
                 <div className="relative">
                   <input
                     type="number"
@@ -422,7 +541,7 @@ export default function RaportKalebSimulator({
                     max={100}
                     value={negoDiskonPct}
                     onChange={(e) => setNegoDiskonPct(Number(e.target.value) || 0)}
-                    className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+                    className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none text-right"
                   />
                   <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
                 </div>
@@ -431,8 +550,8 @@ export default function RaportKalebSimulator({
           </div>
         </div>
 
-        {/* Kolom Kanan: Hasil */}
-        <div className="lg:col-span-7 space-y-5">
+        {/* Kolom Kanan: Hasil & Rincian (Scroll Mandiri) */}
+        <div className="lg:col-span-7 overflow-y-auto pr-1 space-y-4">
           {/* 4 Kartu Finansial */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
@@ -459,7 +578,7 @@ export default function RaportKalebSimulator({
                 <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
                   Rp {result.hargaJualPerPcs.toLocaleString('id-ID')}
                 </span>
-                <span className="block text-[10px] text-emerald-700/80 mt-0.5">/ pcs</span>
+                <span className="block text-[10px] text-emerald-700/80 mt-0.5">/ pcs (bulat ratusan)</span>
               </div>
             </div>
 
@@ -472,13 +591,13 @@ export default function RaportKalebSimulator({
                 <span className="text-base sm:text-lg font-black text-blue-800 font-mono">
                   Rp {result.hargaNegoPerPcs.toLocaleString('id-ID')}
                 </span>
-                <span className="block text-[10px] text-blue-700/80 mt-0.5">/ pcs</span>
+                <span className="block text-[10px] text-blue-700/80 mt-0.5">/ pcs (batas nego)</span>
               </div>
             </div>
 
             <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">Total Harga Jual</span>
+                <span className="text-[11px] font-semibold">Total Omset Penjualan</span>
                 <TrendingUp size={13} className="text-emerald-500" />
               </div>
               <div>
@@ -492,7 +611,7 @@ export default function RaportKalebSimulator({
             </div>
           </div>
 
-          {/* Breakdown */}
+          {/* Rincian Tabel Breakdown Biaya */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
             <div className="px-4 py-3 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -526,7 +645,7 @@ export default function RaportKalebSimulator({
                         Rp {item.nominal.toLocaleString('id-ID')}
                       </td>
                       <td className="py-2 px-3 text-right text-slate-500">
-                        {(item.pct * 100).toFixed(1)}%
+                        {item.pct.toFixed(1)}%
                       </td>
                     </tr>
                   ))}
@@ -546,26 +665,26 @@ export default function RaportKalebSimulator({
             </div>
           </div>
 
-          {/* Simpan */}
-          <div className="pt-1">
+          {/* Tombol Simpan Standar SINTAK (Full-Width di Bawah Tabel Breakdown) */}
+          <div className="pt-1 pb-4">
             {activeSimulationId ? (
               <div className="flex items-center gap-2 w-full">
                 <button
                   type="button"
                   onClick={handleUpdateSavedSimulation}
-                  className="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="flex-1 py-3 px-4 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
                   title="Perbarui kalkulasi yang sedang diedit"
                 >
-                  <BookmarkCheck size={15} />
+                  <BookmarkCheck size={16} />
                   <span>Update Perubahan</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleSaveSimulation}
-                  className="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="flex-1 py-3 px-4 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
                   title="Simpan sebagai kalkulasi baru & keluar dari mode edit"
                 >
-                  <Bookmark size={14} />
+                  <Bookmark size={16} />
                   <span>Simpan Baru</span>
                 </button>
               </div>
@@ -573,7 +692,7 @@ export default function RaportKalebSimulator({
               <button
                 type="button"
                 onClick={handleSaveSimulation}
-                className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3 px-4 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Bookmark size={16} />
                 <span>Simpan Kalkulasi Ini ke Daftar Kalkulasi</span>
@@ -583,7 +702,7 @@ export default function RaportKalebSimulator({
         </div>
       </div>
 
-      {/* Modal Panduan */}
+      {/* Modal Panduan Simulator */}
       {showSimulatorManual && (
         <div
           onClick={() => setShowSimulatorManual(false)}
@@ -601,7 +720,7 @@ export default function RaportKalebSimulator({
                 <div>
                   <h3 className="text-base font-bold tracking-tight">Panduan Simulator Raport Kaleb</h3>
                   <p className="text-xs text-emerald-200/90 mt-0.5">
-                    Alur perhitungan berbasis oplah pcs, Kaleb Foil Emas 24×34 cm, Kosongan vs Isi 6 + tambah isi custom
+                    Alur perhitungan Map Raport Kaleb 24×34 cm, varian kantong mika isi, klise matres, dan margin resmi
                   </p>
                 </div>
               </div>
@@ -622,10 +741,10 @@ export default function RaportKalebSimulator({
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   {[
-                    ['1. Varian', 'Pilih Kosongan (tanpa isi) atau Isi 6 (sudah termasuk 6 lbr @ Rp 1.200).'],
-                    ['2. Isi Tambahan', 'Centang tambahan isi custom untuk menambah lembar di luar varian (mis. +2 lbr).'],
-                    ['3. Oplah & Margin', 'Tentukan oplah 10–1000 pcs via dropdown tier atau custom, atur margin 30% & nego 4%.'],
-                    ['4. Salin Penawaran', 'Klik Salin Penawaran untuk teks WA otomatis, atau simpan ke daftar kalkulasi.'],
+                    ['1. Varian Isi', 'Pilih varian standar (Kosongan, Isi 4, 6, 8, 10, 12 lbr) atau tambah lembar mika custom.'],
+                    ['2. Opsi Packing', 'Centang packing kardus & lakban jika customer meminta perlindungan ekstra per box.'],
+                    ['3. Oplah & Margin', 'Pilih kuantitas cetak pesanan (10–1.000 pcs) serta sesuaikan target margin laba.'],
+                    ['4. Salin & Simpan', 'Salin penawaran harga siap kirim ke WhatsApp atau simpan ke riwayat kalkulasi.'],
                   ].map(([title, desc]) => (
                     <div key={title} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
                       <span className="font-bold text-emerald-800 text-xs">{title}</span>
@@ -638,19 +757,19 @@ export default function RaportKalebSimulator({
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5">
                 <h5 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
                   <Layers className="w-4 h-4 text-emerald-700" />
-                  Struktur Biaya Produksi Raport Kaleb
+                  Struktur Biaya Produksi Raport Kaleb (Excel Master Buya Barokah)
                 </h5>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
                   <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
-                    <span className="font-bold text-emerald-900 block">Kertas &amp; Cetak:</span>
+                    <span className="font-bold text-emerald-900 block">Bahan Map &amp; Kantong Mika:</span>
                     <p className="text-slate-600 leading-snug">
-                      Kaleb Foil Emas 230 gsm Rp 16.400/kg + up 5%, 1 pcs/A3+, cetak 1 muka FC @ Rp 2.500/A3+, insheet 5 lbr, desain Rp 20.000/order.
+                      Map kosongan 24×34 cm Rp 16.000/pcs + markup kertas. Kantong mika dihitung Rp 900/lbr dikalikan jumlah isi dan oplah. Desain setting Rp 10.000/order.
                     </p>
                   </div>
                   <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">
-                    <span className="font-bold text-blue-900 block">Foil, Isi &amp; Finishing:</span>
+                    <span className="font-bold text-blue-900 block">Matres Klise Foil &amp; Toleransi:</span>
                     <p className="text-slate-600 leading-snug">
-                      Foil emas +Rp 450/pcs (min 100k), isi tambahan Rp 1.200/lbr (Isi 6 = 6×1.200), sisir Rp 150/pcs, packing kardus+lakban per order. Margin 30% nego 4%.
+                      Klise foil emas dibebankan Rp 350.000 untuk pesanan kecil (&le; 120 pcs). Untuk oplah di atas 120 pcs, biaya klise otomatis digratiskan (Rp 0). Margin standar 25% dan batas nego 4%.
                     </p>
                   </div>
                 </div>

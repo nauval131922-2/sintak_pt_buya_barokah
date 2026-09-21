@@ -354,14 +354,9 @@ export function applyGlobalParamsToAll(
 
   const nextRaportKaleb: RaportKalebMasterParams = {
     ...currRaportKaleb,
-    tarifKertasKalebKg: g.tarifAc230Kg,
-    upKertasPct: g.upKertasPct,
-    tarifPrintA3: g.tarifPrintA3,
-    tarifFoilPerPcs: 450,
-    tarifSisir: g.tarifSisirPcs,
-    tarifKardus: g.tarifKardusBox,
+    tarifKardusBox: g.tarifKardusBox,
     tarifLakbanRoll: g.tarifLakbanRoll,
-    tarifDesign: g.tarifDesainStandar,
+    tarifKardus: g.tarifKardusBox,
     marginDefaultPct: g.defaultMarginPct,
     negoDefaultPct: g.defaultNegoPct,
   };
