@@ -262,7 +262,8 @@ export default function RaportKalebSimulator({
   };
 
   return (
-    <div className="flex flex-col gap-4 h-[calc(100vh-140px)] min-h-0">
+    // Struktur dual-scroll mandiri standar Manasik: flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0
+    <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
       {/* Header Info */}
       <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs shrink-0">
         <div className="flex items-center gap-3">
@@ -359,10 +360,10 @@ export default function RaportKalebSimulator({
         </div>
       )}
 
-      {/* Layout Dual Scroll Mandiri Standar SINTAK */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0 flex-1">
-        {/* Kolom Kiri: Form Input (Scroll Mandiri) */}
-        <div className="lg:col-span-5 overflow-y-auto pr-1 space-y-4">
+      {/* Grid Dual Scroll Mandiri */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-0 pb-1">
+        {/* Kolom Kiri: Input Form (lg:col-span-5) */}
+        <div className="lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
               <Sliders size={15} className="text-emerald-700" />
@@ -550,8 +551,8 @@ export default function RaportKalebSimulator({
           </div>
         </div>
 
-        {/* Kolom Kanan: Hasil & Rincian (Scroll Mandiri) */}
-        <div className="lg:col-span-7 overflow-y-auto pr-1 space-y-4">
+        {/* Kolom Kanan: Hasil & Rincian (lg:col-span-7) */}
+        <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           {/* 4 Kartu Finansial */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
