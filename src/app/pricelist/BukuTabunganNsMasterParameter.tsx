@@ -8,6 +8,8 @@ import {
   X,
   Printer,
   Layers,
+  Scissors,
+  Percent,
 } from 'lucide-react';
 import {
   DEFAULT_BUKU_TABUNGAN_NS_PARAMS,
@@ -22,12 +24,14 @@ interface BukuTabunganNsMasterParameterProps {
 }
 
 const BUKU_TABUNGAN_NS_VISIBLE_KEYS: (keyof BukuTabunganNsMasterParams)[] = [
-  'tarifDesignCover',
-  'tarifSusunLipatPerPcs',
-  'tarifJahitPerPcs',
-  'tarifPoundPerPcs',
-  'marginDefaultPct',
-  'negoDefaultPct',
+  'jumlahHalaman', 'umr',
+  'tarifKertasCoverKg', 'upKertasCoverPct', 'insheetCover', 'tarifDesainCover', 'tarifPrintCoverA3', 'tarifFilmBw',
+  'tarifKertasIsiKg', 'upKertasIsiPct', 'insheetIsi', 'tarifDesainIsiPerLbr', 'tarifPrintIsiA3', 'tarifFilmWarna', 'tarifJasaPrintBuya',
+  'tarifKawatStiching', 'tarifTintaSpotUvKg', 'tarifPlastikSringRoll', 'tarifSteplesPack', 'tarifLakbanRoll', 'tarifKardusBox', 'royalty',
+  'targetSusunLipat', 'targetJahit', 'targetPound', 'targetSpotUv', 'targetEmboss', 'targetSring', 'targetLakban',
+  'tarifPisauPound', 'tarifSisirPaket', 'tarifBending', 'tarifLamGlossy', 'tarifLamDoff', 'tarifUvVarnish',
+  'minJahit', 'minPound', 'minBendingKombi', 'minLaminasi',
+  'ukuranPlastikSringCm', 'ukuranLakbanCm', 'acuanSpotUvCm', 'labaPct',
 ];
 
 export default function BukuTabunganNsMasterParameter({
@@ -41,7 +45,7 @@ export default function BukuTabunganNsMasterParameter({
   };
 
   const isFieldModified = (key: keyof BukuTabunganNsMasterParams) =>
-    customParams[key] !== DEFAULT_BUKU_TABUNGAN_NS_PARAMS[key];
+    (customParams[key] ?? DEFAULT_BUKU_TABUNGAN_NS_PARAMS[key]) !== DEFAULT_BUKU_TABUNGAN_NS_PARAMS[key];
 
   const handleResetField = (key: keyof BukuTabunganNsMasterParams) => {
     setCustomParams((prev) => ({ ...prev, [key]: DEFAULT_BUKU_TABUNGAN_NS_PARAMS[key] }));
@@ -49,7 +53,7 @@ export default function BukuTabunganNsMasterParameter({
   };
 
   const isModified = React.useMemo(
-    () => BUKU_TABUNGAN_NS_VISIBLE_KEYS.some((key) => customParams[key] !== DEFAULT_BUKU_TABUNGAN_NS_PARAMS[key]),
+    () => BUKU_TABUNGAN_NS_VISIBLE_KEYS.some((key) => (customParams[key] ?? DEFAULT_BUKU_TABUNGAN_NS_PARAMS[key]) !== DEFAULT_BUKU_TABUNGAN_NS_PARAMS[key]),
     [customParams]
   );
 
@@ -67,50 +71,64 @@ export default function BukuTabunganNsMasterParameter({
   const fieldRow = (
     key: keyof BukuTabunganNsMasterParams,
     label: string,
-    isRupiah = true,
-    isDecimal = false
-  ) => (
-    <div
-      className={`p-2.5 rounded-lg border transition-all ${
-        isFieldModified(key)
-          ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-          : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-      }`}
-    >
-      <div className="flex items-center justify-between gap-1 mb-1.5">
-        <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
-          {label}
-        </label>
-        {isFieldModified(key) && (
-          <button
-            type="button"
-            onClick={() => handleResetField(key)}
-            className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-            title="Reset ke default"
-          >
-            <RotateCcw className="w-2.5 h-2.5" /> Def
-          </button>
-        )}
+    opts?: { rupiah?: boolean; decimal?: boolean; suffix?: string }
+  ) => {
+    const isRupiah = opts?.rupiah ?? true;
+    const isDecimal = opts?.decimal ?? false;
+    return (
+      <div
+        className={`p-2.5 rounded-lg border transition-all ${
+          isFieldModified(key)
+            ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+            : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
+        }`}
+      >
+        <div className="flex items-center justify-between gap-1 mb-1.5">
+          <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
+            {label}
+          </label>
+          {isFieldModified(key) && (
+            <button
+              type="button"
+              onClick={() => handleResetField(key)}
+              className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+              title="Reset ke default"
+            >
+              <RotateCcw className="w-2.5 h-2.5" /> Def
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5">
+          {isRupiah && !isDecimal ? (
+            <ThousandInput
+              value={customParams[key] ?? DEFAULT_BUKU_TABUNGAN_NS_PARAMS[key]}
+              onValueChange={(v) => handleChange(key, v || 0)}
+              className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+              prefix="Rp"
+            />
+          ) : (
+            <input
+              type="number"
+              step={isDecimal ? 0.01 : 1}
+              value={customParams[key] ?? DEFAULT_BUKU_TABUNGAN_NS_PARAMS[key]}
+              onChange={(e) => handleChange(key, Number(e.target.value) || 0)}
+              className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+            />
+          )}
+          {opts?.suffix && <span className="text-[10px] font-bold text-slate-400 shrink-0">{opts.suffix}</span>}
+        </div>
       </div>
-      <div className="flex items-center gap-1.5">
-        {isRupiah && !isDecimal ? (
-          <ThousandInput
-            value={customParams[key] as number}
-            onValueChange={(v) => handleChange(key, v || 0)}
-            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-            prefix="Rp"
-            allowDecimals={isDecimal}
-          />
-        ) : (
-          <input
-            type="number"
-            step={isDecimal ? 0.01 : 1}
-            value={customParams[key] as number}
-            onChange={(e) => handleChange(key, Number(e.target.value) || 0)}
-            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-          />
-        )}
+    );
+  };
+
+  const card = (icon: React.ReactNode, title: string, desc: string, children: React.ReactNode) => (
+    <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+      <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+        {icon}
+        <h3 className="text-xs font-bold text-slate-800">{title}</h3>
       </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">{children}</div>
+      <p className="text-[10px] text-slate-500">{desc}</p>
     </div>
   );
 
@@ -134,7 +152,7 @@ export default function BukuTabunganNsMasterParameter({
               )}
             </div>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Tarif acuan Buku Tabungan 9×14,5 cm Non Security 24/32/48 Hal, cover AC 260 gsm FC + laminasi glossy, isi HVS 70 gsm 1W BB, jahit + pound + susun lipat.
+              Tarif acuan Buku Tabungan 9 × 14,5 cm Non Security (2 file Source: Ryobi oplah besar, Print Buya oplah kecil). Default = file besar (insheet 15/30, desain 15.000).
             </p>
           </div>
         </div>
@@ -164,37 +182,88 @@ export default function BukuTabunganNsMasterParameter({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Card 1: Desain & Finishing */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Printer className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">1. Desain &amp; Finishing Buku Tabungan</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifDesignCover', 'Desain Cover / Order (Rp)')}
-            {fieldRow('tarifSusunLipatPerPcs', 'Susun Lipat / pcs (Rp)')}
-            {fieldRow('tarifJahitPerPcs', 'Jahit / pcs (Rp)')}
-            {fieldRow('tarifPoundPerPcs', 'Pound / pcs (Rp)')}
-          </div>
-          <p className="text-[10px] text-slate-500">
-            Desain cover Rp 15.000 + isi Rp 1.500/lbr (24 hal = 6 lbr = Rp 9.000). Jahit min Rp 250.000 (Excel: 250k flat ≤500 pcs), pound pisau Rp 52.377 + jasa Rp 300/pcs, laminasi glossy Rp 0,35/cm² min Rp 50.000.
-          </p>
-        </div>
+        {card(
+          <Printer className="w-4 h-4 text-blue-600" />,
+          '1. Umum & Kertas Cover',
+          'Master!D6/D8/D12-D13/D17-D18. Cover Print Inter: kertas (R7/500)×W29 diganti jasa T2×R7; Plat/Min/Drek hanya mesin offset (BUKU!Y6/AB6/AC7).',
+          <>
+            {fieldRow('jumlahHalaman', 'Jumlah Halaman (Master!D6)', { rupiah: false })}
+            {fieldRow('umr', 'UMR (Master!D8 → A07.UMR)')}
+            {fieldRow('tarifKertasCoverKg', 'Kertas Cover /kg (Master!D12)')}
+            {fieldRow('upKertasCoverPct', 'Up Kertas Cover % (Master!E12)', { rupiah: false, suffix: '%' })}
+            {fieldRow('insheetCover', 'Insheet Cover lbr (Master!D13)', { rupiah: false })}
+            {fieldRow('tarifDesainCover', 'Desain Cover /order (Master!D17)')}
+            {fieldRow('tarifPrintCoverA3', 'Print Cover A3+ (Master!D18)')}
+            {fieldRow('tarifFilmBw', 'Film BW (BUKU!W6, V30 mati)', { decimal: true })}
+          </>
+        )}
 
-        {/* Card 2: Margin & Nego Standar */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Layers className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Margin &amp; Nego Standar</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('marginDefaultPct', 'Margin Default (%)', false)}
-            {fieldRow('negoDefaultPct', 'Nego Default (%)', false)}
-          </div>
-          <p className="text-[10px] text-slate-500">
-            Margin 30% &amp; nego 5% sesuai HARGA JULI 2026 (O=ROUNDUP(N*130%,-2) , P=ROUNDUP(O*95%,-2)). HPP dihitung per pcs dengan pembulatan ke kelipatan Rp 10.
-          </p>
-        </div>
+        {card(
+          <Layers className="w-4 h-4 text-emerald-600" />,
+          '2. Kertas Isi & Cetak Isi',
+          'Master!D22-D23/D26-D27. Isi Print Buya: kertas (AP7/500)×AU29 diganti jasa 350×AO7; Inter: (AR2×2)×AP7 (BUKU!AR7/BD7).',
+          <>
+            {fieldRow('tarifKertasIsiKg', 'Kertas Isi /kg (Master!D22)')}
+            {fieldRow('upKertasIsiPct', 'Up Kertas Isi % (Master!E22)', { rupiah: false, suffix: '%' })}
+            {fieldRow('insheetIsi', 'Insheet Isi lbr (Master!D23)', { rupiah: false })}
+            {fieldRow('tarifDesainIsiPerLbr', 'Desain Isi /lbr (Master!D26)')}
+            {fieldRow('tarifPrintIsiA3', 'Print Isi A3+ (Master!D27)')}
+            {fieldRow('tarifFilmWarna', 'Film Warna (BUKU!AU6, selalu 0)', { decimal: true })}
+            {fieldRow('tarifJasaPrintBuya', 'Jasa Print Buya (BUKU!AR2)')}
+          </>
+        )}
+
+        {card(
+          <Scissors className="w-4 h-4 text-amber-600" />,
+          '3. Jasa UMR & Finishing Mekanik',
+          'Jasa = (UMR/25)÷target (BUKU!BI6/BJ6/BM6/BV6/BZ6/CV6). Jahit min 250rb & Pound min 50rb tetap jalan saat toggle X (1:1 Excel). Sisir = 3×50 (BUKU!BQ6).',
+          <>
+            {fieldRow('tarifPisauPound', 'Pisau Pound (BUKU!BL6 √)', { decimal: true })}
+            {fieldRow('tarifSisirPaket', 'Sisir /pcs (BUKU!BQ6 √)')}
+            {fieldRow('tarifBending', 'Bending (BUKU!CC6)')}
+            {fieldRow('tarifTintaSpotUvKg', 'Tinta Spot UV /kg (Master!D31)')}
+            {fieldRow('tarifPlastikSringRoll', 'Plastik Sring /roll (Master!D32)')}
+            {fieldRow('tarifLakbanRoll', 'Lakban /roll (Master!D34)')}
+            {fieldRow('tarifKardusBox', 'Kardus /box (Master!D35)')}
+            {fieldRow('royalty', 'Royalty (Master!D36)')}
+            {fieldRow('tarifKawatStiching', 'Kawat Stiching (info, Master!D30)')}
+            {fieldRow('tarifSteplesPack', 'Steples /pack (info, Master!D33)')}
+          </>
+        )}
+
+        {card(
+          <Layers className="w-4 h-4 text-violet-600" />,
+          '4. Laminasi, Target Harian & Batas Min',
+          'Laminasi = luas (D7×2+1)×(F7+1) × tarif, min 50rb (BUKU!CG7/CJ7/CM7). Bending+kombi min 100rb (CE7). Target ÷UMR per ukuran 10 X 15.',
+          <>
+            {fieldRow('tarifLamGlossy', 'Laminasi Glossy /cm² (BUKU!CF6)', { decimal: true })}
+            {fieldRow('tarifLamDoff', 'Laminasi Doff /cm² (BUKU!CI6)', { decimal: true })}
+            {fieldRow('tarifUvVarnish', 'UV Varnish /cm² (BUKU!CL6)', { decimal: true })}
+            {fieldRow('targetSusunLipat', 'Target Susun-Lipat (BUKU!BI28)', { rupiah: false })}
+            {fieldRow('targetJahit', 'Target Jahit (BUKU!BJ28)', { rupiah: false })}
+            {fieldRow('targetPound', 'Target Pound (BUKU!BM28)', { rupiah: false })}
+            {fieldRow('targetSpotUv', 'Target Spot UV (BUKU!BT27)', { rupiah: false })}
+            {fieldRow('targetEmboss', 'Target Emboss (BUKU!BZ27)', { rupiah: false })}
+            {fieldRow('targetSring', 'Target Sring (BUKU!CV28)', { rupiah: false })}
+            {fieldRow('targetLakban', 'Target Lakban (BUKU!CZ28)', { rupiah: false })}
+            {fieldRow('minJahit', 'Min Jahit (BUKU!BJ7)')}
+            {fieldRow('minPound', 'Min Pound (BUKU!BM7)')}
+            {fieldRow('minBendingKombi', 'Min Bending Kombi (BUKU!CE7)')}
+            {fieldRow('minLaminasi', 'Min Laminasi/UV (BUKU!CG7)')}
+          </>
+        )}
+
+        {card(
+          <Percent className="w-4 h-4 text-rose-600" />,
+          '5. Konstanta Roll & Laba',
+          'Acuan roll per ukuran 10 X 15 (BUKU!CT30/CZ30/BT30). Laba Master!E37 → BUKU!DE6; final ROUNDUP puluhan (BUKU!DI7).',
+          <>
+            {fieldRow('ukuranPlastikSringCm', 'Plastik Sring cm/roll (BUKU!CT30)', { rupiah: false })}
+            {fieldRow('ukuranLakbanCm', 'Lakban cm/roll (BUKU!CZ30)', { rupiah: false })}
+            {fieldRow('acuanSpotUvCm', 'Acuan Spot UV cm (BUKU!BT30)', { rupiah: false })}
+            {fieldRow('labaPct', 'Laba % (Master!E37)', { rupiah: false, suffix: '%' })}
+          </>
+        )}
       </div>
 
       {showManualModal && (
@@ -214,7 +283,7 @@ export default function BukuTabunganNsMasterParameter({
                 <div>
                   <h3 className="text-base font-bold tracking-tight">Manual Pengguna &amp; Pemetaan Sumber Excel</h3>
                   <p className="text-xs text-emerald-200/90 mt-0.5">
-                    Dokumentasi referensi letak sheet, cell, dan formula dari master kalkulasi Buku Tabungan NS (14. Pricelist Buku Tabungan Non Security)
+                    14. Pricelist Buku Tabungan Non Security/Source: Ryobi.xlsm (250–1500) + Non Security.xlsm (50–200) · sheet Master + BUKU
                   </p>
                 </div>
               </div>
@@ -231,57 +300,57 @@ export default function BukuTabunganNsMasterParameter({
               <div className="space-y-3">
                 <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                  Pemetaan Master Parameter ke File Excel (Folder 14. Pricelist Buku Tabungan Non Security/*.xlsm)
+                  Alur hitung (1:1 BUKU)
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                      <span>1. Bahan Kertas &amp; Ukuran</span>
+                      <span>1. Cover — plano &amp; cetak (BUKU!O7–AG7)</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Cover AC 260 gsm</strong>: <span className="font-mono text-emerald-700">Master!D12</span> Rp 16.400/kg + up 5%, insheet 15 lbr, 4 cover/A3+ (BUKU!P7).</li>
-                      <li>• <strong>Isi HVS 70 gsm</strong>: <span className="font-mono text-emerald-700">Master!D22</span> Rp 15.700/kg + up 5%, insheet 30 lbr, 6-12 lbr/buku (24/32/48 hal ÷4), 6 lbr/A3+.</li>
-                      <li>• <strong>Ukuran</strong>: <span className="font-mono text-emerald-700">9 × 14,5 cm</span> tertutup, AC 260 0,041 kg/A3+, HVS 70 0,011 kg/A3+.</li>
-                      <li>• <strong>Varian</strong>: 24 Hal (6 lbr), 32 Hal (8 lbr), 48 Hal (12 lbr) — HARGA JULI 2026 hanya 24 Hal, 32/48 ekstrapolasi.</li>
+                      <li>• Plano <span className="font-mono text-emerald-700">R7 = ROUNDUP(H/P7 + insheet/O7)</span>; kapasitas O7/P7 per mesin: Inter 1/4, Ryobi 9/9, Oliver 4/16, SM 2/16.</li>
+                      <li>• Kertas <span className="font-mono text-emerald-700">T7</span>: offset = (R7/500)×W29 (ream <span className="font-mono text-emerald-700">W29 = V27×W27×gramatur/20000 × (harga+up)</span>); Print Inter = <span className="font-mono text-emerald-700">T2×R7</span> (<span className="font-mono text-emerald-700">T2 = Master!D18</span>).</li>
+                      <li>• Plat <span className="font-mono text-emerald-700">Y6×Z7</span> (Ryobi 10rb, Oliver 45rb, SM 78rb; Inter 0) × warna×muka; ongkos <span className="font-mono text-emerald-700">AG7</span> = min/plat + drek×over (Ryobi Q−500, Oliver Q−1000, SM Q−3000).</li>
+                      <li>• Desain <span className="font-mono text-emerald-700">V7 = Master!D17</span> flat 15.000. Film BW <span className="font-mono text-emerald-700">W7</span> selalu 0 (V30 kosong — sel mati).</li>
                     </ul>
                   </div>
 
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                      <span>2. Cetak &amp; Laminasi</span>
+                      <span>2. Isi — naik cetak &amp; cetak (BUKU!AK7–BD7)</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Cover Print Inter</strong>: 1 Muka FC Rp 3.500/A3+ (Master!D18) — BUKU!T7 =T2*R7.</li>
-                      <li>• <strong>Isi Ryobi</strong>: 1 Warna BB ≤500 Rp 1.500/A3+, ＞500 Oliver 0.6× + plat 180k.</li>
-                      <li>• <strong>Laminasi Glossy</strong>: <span className="font-mono text-blue-700">BUKU!CF7</span> Rp 0,35/cm² min Rp 50.000, luas (10×2+1)*(15.5+1)=≈346,5 cm² × oplah.</li>
-                      <li>• <strong>Desain</strong>: Cover Rp 15.000 + Isi Rp 1.500/lbr × 6/8/12 lbr.</li>
+                      <li>• <span className="font-mono text-blue-700">AN7 = halaman/(AM7/AL7)</span>; AK/AL/AM per mesin: Buya 4/1/8, Inter 8/1/16, Ryobi 4/1/8, Oliver 16/2/64, SM 32/1/64.</li>
+                      <li>• Plano <span className="font-mono text-blue-700">AP7 = (H/AL)×AN7 + (insheet/AL)×ceil(AN7)</span>; kertas <span className="font-mono text-blue-700">AR7</span>: offset (AP7/500)×AU29, Inter (AR2×2)×AP7, Buya 350×AO7.</li>
+                      <li>• Desain <span className="font-mono text-blue-700">AT7 = Master!D26 × (halaman/4)</span> = 1.500×6 = 9.000. Film warna <span className="font-mono text-blue-700">AU7</span> selalu 0 (AU6=0 — sel mati).</li>
+                      <li>• Plat &amp; ongkos isi <span className="font-mono text-blue-700">AW7/BD7</span> per mesin (Buya/Inter tanpa plat &amp; drek).</li>
                     </ul>
                   </div>
 
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                      <span>3. Finishing &amp; Packing</span>
+                      <span>3. Jasa UMR &amp; finishing (BUKU!BI7–DA7)</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Susun Lipat</strong>: Rp 125/pcs (BUKU!BI: UMR/25/…).</li>
-                      <li>• <strong>Jahit</strong>: Rp 500/pcs min Rp 250.000 (BUKU!BJ ≤250 pcs flat).</li>
-                      <li>• <strong>Pound</strong>: Pisau Rp 52.377 + Jasa Rp 300/pcs (BUKU!BL+BM→BN).</li>
-                      <li>• <strong>Plastik Sring &amp; Kardus</strong>: Sring Rp 150/pcs + Kardus Rp 8.500 + Lakban Rp 8.000 per order.</li>
+                      <li>• Jasa = (UMR/25)÷target: Susun-Lipat ÷900, Jahit ÷250 (min 250rb), Pound ÷450 (min 50rb), SpotUV ÷500, Emboss ÷1000, Sring 2×UMR÷500.</li>
+                      <li>• Toggle √/X: Jahit <span className="font-mono text-amber-700">BJ26</span>, Pisau Pound <span className="font-mono text-amber-700">BL26</span> (299,3), Jasa Pound <span className="font-mono text-amber-700">BM26</span>, Sisir <span className="font-mono text-amber-700">BQ26</span> (150), Kardus <span className="font-mono text-amber-700">DA28</span>.</li>
+                      <li>• Finishing <span className="font-mono text-amber-700">Master!D29</span> menggerakkan SpotUV/Emboss/Bending/Laminasi/kombo/Sring otomatis (BUKU!BW27/CA27/CC27/CG27/CJ27/CM27/CO27/CP27/CQ27/CW28).</li>
+                      <li>• Quirk 1:1: <span className="font-mono text-amber-700">DC7</span> menjumlah BN7+BM7+BL7 sekaligus (Pound triple-count, bukan bug SINTAK).</li>
                     </ul>
                   </div>
 
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-slate-900">
                       <span className="w-2 h-2 rounded-full bg-violet-500"></span>
-                      <span>4. Margin &amp; Nego</span>
+                      <span>4. Total &amp; harga (BUKU!DC7–DI7)</span>
                     </div>
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Margin</strong>: 30% dari HPP, nego 5% dari harga jual (O=ROUNDUP(N*130%,-2), P=ROUNDUP(O*95%,-2)).</li>
-                      <li>• Harga jual = <code className="text-[10px] bg-white px-1 py-0.5 rounded border">ceil(HPP/pcs ×1.30 /10)*10</code>.</li>
-                      <li>• Tier global: 50–1500 pcs (15 tier HARGA JULI 2026).</li>
+                      <li>• Total HPP <span className="font-mono text-violet-700">DC7</span> (28 komponen, tanpa Film BW/Warna); HPP/pcs <span className="font-mono text-violet-700">DD7 = DC7/H</span>.</li>
+                      <li>• Laba <span className="font-mono text-violet-700">DE7 = DD7×30%</span> (<span className="font-mono text-violet-700">Master!E37</span>); final <span className="font-mono text-violet-700">DI7 = ROUNDUP(DH7,−1)</span> puluhan → <span className="font-mono text-violet-700">Master!D39</span>.</li>
+                      <li>• Tier: kecil 50–200 (isi Print Buya), besar 250–1500 (isi Ryobi); simulator menggabung 15 tier, mesin isi Otomatis (&lt;250 Buya, ≥250 Ryobi).</li>
                     </ul>
                   </div>
                 </div>
