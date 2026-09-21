@@ -36,6 +36,8 @@ import { toast } from '@/lib/toast';
 
 export type { SavedBukuTabunganSecuritySimulationItem };
 
+const DRAFT_KEY = 'sintak_buku_tabungan_security_draft';
+
 const VARIAN_OPTIONS: BukuTabunganSecurityVarianType[] = ['24 Hal', '32 Hal', '48 Hal'];
 
 interface BukuTabunganSecuritySimulatorProps {
@@ -100,10 +102,31 @@ export default function BukuTabunganSecuritySimulator({
           }
         }
       }
+      if (!activeSimulationId) {
+        // Restore draft settingan (persist saat pindah tab)
+          try {
+            const rawDraft = localStorage.getItem(DRAFT_KEY);
+            if (rawDraft) {
+              const d = JSON.parse(rawDraft);
+              if (d.oplah) setOplah(Number(d.oplah));
+              if (d.varian) setVarian(d.varian);
+              if (d.marginPct !== undefined) setMarginPct(Number(d.marginPct));
+              if (d.negoDiskonPct !== undefined) setNegoDiskonPct(Number(d.negoDiskonPct));
+            }
+          } catch { /* abaikan draft rusak */ }
+      }
     } catch (e) {
       console.error('Failed to load saved buku tabungan security simulations:', e);
     }
   }, [activeSimulationId]);
+
+  // Auto-persist draft settingan simulator (tidak reset saat pindah tab)
+  useEffect(() => {
+    if (activeSimulationId) return;
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ oplah, varian, marginPct, negoDiskonPct }));
+    } catch { /* abaikan */ }
+  }, [oplah, varian, marginPct, negoDiskonPct, activeSimulationId]);
 
   const result = useMemo(
     () =>

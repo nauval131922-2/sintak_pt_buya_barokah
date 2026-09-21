@@ -20,6 +20,8 @@ import {
   Scissors,
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
+
+const DRAFT_KEY = 'sintak_buku_soft_cover_105x148_draft';
 import {
   BukuSoftCover105x148MasterParams,
   BukuSoftCover105x148SimulatorInput,
@@ -116,8 +118,29 @@ export default function BukuSoftCover105x148Simulator({
       } catch (e) {
         console.error(e);
       }
+    } else {
+      // Restore draft settingan (persist saat pindah tab)
+      try {
+        const rawDraft = localStorage.getItem(DRAFT_KEY);
+        if (rawDraft) {
+          const d = JSON.parse(rawDraft);
+          if (d.oplah) setOplah(Number(d.oplah));
+          if (d.finishing) setFinishing(d.finishing);
+          if (d.jilid) setJilid(d.jilid);
+          if (d.marginPct !== undefined) setMarginPct(Number(d.marginPct));
+          if (d.negoDiskonPct !== undefined) setNegoDiskonPct(Number(d.negoDiskonPct));
+        }
+      } catch { /* abaikan draft rusak */ }
     }
   }, [activeSimulationId]);
+
+  // Auto-persist draft settingan simulator (tidak reset saat pindah tab)
+  useEffect(() => {
+    if (activeSimulationId) return;
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ oplah, finishing, jilid, marginPct, negoDiskonPct }));
+    } catch { /* abaikan */ }
+  }, [oplah, finishing, jilid, marginPct, negoDiskonPct, activeSimulationId]);
 
   const handleSaveSimulation = () => {
     try {

@@ -34,6 +34,8 @@ import {
 } from '@/lib/lebel-kartu-obat-calculator';
 import { toast } from '@/lib/toast';
 
+const DRAFT_KEY = 'sintak_lebel_kartu_obat_draft';
+
 export type { SavedLebelKartuObatSimulationItem };
 
 const VARIAN_OPTIONS: LebelKartuObatVarianType[] = ['3,5 x 7 cm', '4 x 6 cm', '5 x 6,7 cm'];
@@ -100,10 +102,31 @@ export default function LebelKartuObatSimulator({
           }
         }
       }
+      if (!activeSimulationId) {
+        // Restore draft settingan (persist saat pindah tab)
+          try {
+            const rawDraft = localStorage.getItem(DRAFT_KEY);
+            if (rawDraft) {
+              const d = JSON.parse(rawDraft);
+              if (d.oplah) setOplah(Number(d.oplah));
+              if (d.varian) setVarian(d.varian);
+              if (d.marginPct !== undefined) setMarginPct(Number(d.marginPct));
+              if (d.negoDiskonPct !== undefined) setNegoDiskonPct(Number(d.negoDiskonPct));
+            }
+          } catch { /* abaikan draft rusak */ }
+      }
     } catch (e) {
       console.error('Failed to load saved lebel kartu obat simulations:', e);
     }
   }, [activeSimulationId]);
+
+  // Auto-persist draft settingan simulator (tidak reset saat pindah tab)
+  useEffect(() => {
+    if (activeSimulationId) return;
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ oplah, varian, marginPct, negoDiskonPct }));
+    } catch { /* abaikan */ }
+  }, [oplah, varian, marginPct, negoDiskonPct, activeSimulationId]);
 
   const result = useMemo(
     () =>

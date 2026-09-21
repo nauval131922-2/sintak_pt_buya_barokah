@@ -38,6 +38,7 @@ import { toast } from '@/lib/toast';
 export type { SavedBukuSoftCoverSimulationItem };
 
 const LS_KEY = 'sintak_saved_buku_soft_cover_simulations';
+const DRAFT_KEY = 'sintak_buku_soft_cover_draft';
 
 interface BukuSoftCoverSimulatorProps {
   customParams?: BukuSoftCoverMasterParams;
@@ -102,10 +103,32 @@ export default function BukuSoftCoverSimulator({
           }
         }
       }
+      if (!activeSimulationId) {
+        // Restore draft settingan (persist saat pindah tab)
+          try {
+            const rawDraft = localStorage.getItem(DRAFT_KEY);
+            if (rawDraft) {
+              const d = JSON.parse(rawDraft);
+              if (d.oplah) setOplah(Number(d.oplah));
+              if (d.varian) setVarian(d.varian);
+              if (d.finishing) setFinishing(d.finishing);
+              if (d.marginPct !== undefined) setMarginPct(Number(d.marginPct));
+              if (d.negoDiskonPct !== undefined) setNegoDiskonPct(Number(d.negoDiskonPct));
+            }
+          } catch { /* abaikan draft rusak */ }
+      }
     } catch (e) {
       console.error('Failed to load saved buku soft cover simulations:', e);
     }
   }, [activeSimulationId]);
+
+  // Auto-persist draft settingan simulator (tidak reset saat pindah tab)
+  useEffect(() => {
+    if (activeSimulationId) return;
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ oplah, varian, finishing, marginPct, negoDiskonPct }));
+    } catch { /* abaikan */ }
+  }, [oplah, varian, finishing, marginPct, negoDiskonPct, activeSimulationId]);
 
   const result = useMemo(
     () =>

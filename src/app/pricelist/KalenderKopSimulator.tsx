@@ -21,6 +21,8 @@ import {
   Calendar,
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
+
+const DRAFT_KEY = 'sintak_kalender_kop_draft';
 import {
   KalenderKopMasterParams,
   KalenderKopSimulatorInput,
@@ -102,8 +104,28 @@ export default function KalenderKopSimulator({
       } catch (e) {
         console.error(e);
       }
+    } else {
+      // Restore draft settingan (persist saat pindah tab)
+      try {
+        const rawDraft = localStorage.getItem(DRAFT_KEY);
+        if (rawDraft) {
+          const d = JSON.parse(rawDraft);
+          if (d.varian) setVarian(d.varian);
+          if (d.oplah) setOplah(Number(d.oplah));
+          if (d.marginPct !== undefined) setMarginPct(Number(d.marginPct));
+          if (d.negoDiskonPct !== undefined) setNegoDiskonPct(Number(d.negoDiskonPct));
+        }
+      } catch { /* abaikan draft rusak */ }
     }
   }, [activeSimulationId]);
+
+  // Auto-persist draft settingan simulator (tidak reset saat pindah tab)
+  useEffect(() => {
+    if (activeSimulationId) return;
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ varian, oplah, marginPct, negoDiskonPct }));
+    } catch { /* abaikan */ }
+  }, [varian, oplah, marginPct, negoDiskonPct, activeSimulationId]);
 
   const handleSaveSimulation = () => {
     try {

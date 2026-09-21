@@ -21,6 +21,8 @@ import {
   Tag,
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
+
+const DRAFT_KEY = 'sintak_stiker_draft';
 import {
   StikerMasterParams,
   StikerSimulatorInput,
@@ -112,8 +114,29 @@ export default function StikerSimulator({
       } catch (e) {
         console.error(e);
       }
+    } else {
+      // Restore draft settingan (persist saat pindah tab)
+      try {
+        const rawDraft = localStorage.getItem(DRAFT_KEY);
+        if (rawDraft) {
+          const d = JSON.parse(rawDraft);
+          if (d.ukuran) setUkuran(d.ukuran);
+          if (d.oplah) setOplah(Number(d.oplah));
+          if (d.finishing) setFinishing(d.finishing);
+          if (d.marginPct !== undefined) setMarginPct(Number(d.marginPct));
+          if (d.negoDiskonPct !== undefined) setNegoDiskonPct(Number(d.negoDiskonPct));
+        }
+      } catch { /* abaikan draft rusak */ }
     }
   }, [activeSimulationId]);
+
+  // Auto-persist draft settingan simulator (tidak reset saat pindah tab)
+  useEffect(() => {
+    if (activeSimulationId) return;
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ ukuran, oplah, finishing, marginPct, negoDiskonPct }));
+    } catch { /* abaikan */ }
+  }, [ukuran, oplah, finishing, marginPct, negoDiskonPct, activeSimulationId]);
 
   const handleSaveSimulation = () => {
     try {

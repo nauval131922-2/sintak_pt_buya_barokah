@@ -33,6 +33,8 @@ import {
   PackagingSimulatorResult,
 } from '@/lib/packaging-calculator';
 
+const DRAFT_KEY = 'sintak_packaging_draft';
+
 export type SavedPackagingSimulationItem = {
   id: string;
   savedAt: string;
@@ -74,6 +76,30 @@ export default function PackagingSimulator({
     setMarginPct(customParams.marginDefaultPct);
     setNegoDiskonPct(customParams.negoDefaultPct);
   }, [customParams.marginDefaultPct, customParams.negoDefaultPct]);
+
+  // Restore draft settingan (persist saat pindah tab)
+  useEffect(() => {
+    try {
+      const rawDraft = localStorage.getItem(DRAFT_KEY);
+      if (rawDraft) {
+        const d = JSON.parse(rawDraft);
+        if (d.ukuran) setUkuran(d.ukuran);
+        if (d.bahan) setBahan(d.bahan);
+        if (d.oplah) setOplah(Number(d.oplah));
+        if (d.finishing) setFinishing(d.finishing);
+        if (d.marginPct !== undefined) setMarginPct(Number(d.marginPct));
+        if (d.negoDiskonPct !== undefined) setNegoDiskonPct(Number(d.negoDiskonPct));
+      }
+    } catch { /* abaikan draft rusak */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto-persist draft settingan simulator (tidak reset saat pindah tab)
+  useEffect(() => {
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ ukuran, bahan, oplah, finishing, marginPct, negoDiskonPct }));
+    } catch { /* abaikan */ }
+  }, [ukuran, bahan, oplah, finishing, marginPct, negoDiskonPct]);
 
   // Main Calculation
   const result: PackagingSimulatorResult = useMemo(() => {

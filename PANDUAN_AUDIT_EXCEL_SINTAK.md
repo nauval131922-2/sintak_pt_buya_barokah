@@ -132,6 +132,7 @@ Setiap workbook kalkulasi percetakan wajib dipetakan ke dalam 4 lapisan:
         * Mode Edit Riwayat (`activeSimulationId`): Dua tombol berdampingan: `Update Perubahan` (amber `bg-amber-600`) dan `Simpan Baru` (emerald `bg-emerald-700`).
         * **DILARANG KERAS** meletakkan form input teks kecil dan tombol simpan mini di kartu form kolom kiri.
       - **Jika ada opsi input atau isi kalkulasi yang perlu diperbarui/ditambahkan, WAJIB LANGSUNG UBAH PADA KODE TANPA PERLU KONFIRMASI**.
+      - **Auto-Persist Draft Simulator (Wajib, Global Semua Produk)**: Seluruh `*Simulator.tsx` **WAJIB** menyimpan settingan form ke `localStorage` (`sintak_<produk>_draft`) setiap ada perubahan input dan me-restore-nya saat komponen mount / pindah tab, sehingga settingan tidak reset. Wajib di-skip saat Mode Edit Riwayat (`activeSimulationId` terisi) agar draft tidak menimpa data riwayat. Pola baku: `const DRAFT_KEY`, restore di effect load (`if (!activeSimulationId)`), save effect ber-guard sama. Kasus asal: 16 simulator lama (Buku Hard/SoftCover, Tabungan Security, Kalender, Kartu Koperasi, Label Obat, Majalah, Packaging, Paperbag, Poster, Pricelist, Stiker) reset saat pindah tab — diperbaiki global 2026-09-21.
 
 ### Tahap 6: Uji Komparasi Parity Otomatis (Full Matrix Benchmark)
 Buat skrip pengujian (via Node / TSX) untuk membandingkan kalkulasi Excel vs Sintak baris per baris:
@@ -187,6 +188,7 @@ Setiap kali ada audit atau perubahan parameter/rumus, **WAJIB** mengaudit dan me
 | 8 | Formula Excel sudah dicek bebas dari salah drag / typo antar-baris | [ ] |
 | 9 | UI Master Parameter sudah memunculkan semua variabel dinamis (per jenis atau global) | [ ] |
 | 10 | Tab Kalkulasi/Simulator sudah menerapkan dual scroll independen standar Manasik | [ ] |
+| 10b | Settingan form Simulator persist (auto-save/restore `localStorage` draft, tidak reset saat pindah tab, skip saat Mode Edit Riwayat) | [ ] |
 | 11 | Isi opsi form input spesifikasi & breakdown biaya di Tab Kalkulasi sudah lengkap sesuai Excel | [ ] |
 | 12 | Benchmark otomatis seluruh tier oplah menghasilkan selisih Rp 0 | [ ] |
 | 13 | Uji stres perubahan parameter dinamis menghasilkan angka yang identik | [ ] |

@@ -39,6 +39,8 @@ import {
 } from '@/lib/pricelist-simulator';
 import ThousandInput from '@/components/ThousandInput';
 import { toast } from '@/lib/toast';
+
+const DRAFT_KEY = 'sintak_pricelist_kalender_draft';
 export interface SavedSimulationItem {
   id: string;
   savedAt: string;
@@ -251,10 +253,34 @@ export default function PricelistSimulator({
           }
         }
       }
+      if (!activeSimulationId) {
+        // Restore draft settingan (persist saat pindah tab)
+          try {
+            const rawDraft = localStorage.getItem(DRAFT_KEY);
+            if (rawDraft) {
+              const d = JSON.parse(rawDraft);
+              if (d.modelKalender) setModelKalender(d.modelKalender);
+              if (d.bahan) setBahan(d.bahan);
+              if (d.ukuran) setUkuran(d.ukuran);
+              if (d.oplah) setOplah(Number(d.oplah));
+              if (d.pilihanMesin) setPilihanMesin(d.pilihanMesin);
+              if (d.marginPct !== undefined) setMarginPct(Number(d.marginPct));
+              if (d.negoDiskonPct !== undefined) setNegoDiskonPct(Number(d.negoDiskonPct));
+            }
+          } catch { /* abaikan draft rusak */ }
+      }
     } catch (e) {
       console.error('Failed to load saved simulations:', e);
     }
   }, [activeSimulationId]);
+
+  // Auto-persist draft settingan simulator (tidak reset saat pindah tab)
+  useEffect(() => {
+    if (activeSimulationId) return;
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ modelKalender, bahan, ukuran, oplah, pilihanMesin, marginPct, negoDiskonPct }));
+    } catch { /* abaikan */ }
+  }, [modelKalender, bahan, ukuran, oplah, pilihanMesin, marginPct, negoDiskonPct, activeSimulationId]);
 
   const handleSaveSimulation = () => {
     const defaultTitle = `${modelKalender.split(' ')[0]} - ${ukuran} cm (${oplah.toLocaleString('id-ID')} pcs - ${finishingJilid})`;

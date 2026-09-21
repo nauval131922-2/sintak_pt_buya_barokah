@@ -34,6 +34,8 @@ import {
 } from '@/lib/kartu-koperasi-promise-calculator';
 import { toast } from '@/lib/toast';
 
+const DRAFT_KEY = 'sintak_kartu_koperasi_promise_draft';
+
 export type { SavedKartuKoperasiPromiseSimulationItem };
 
 const VARIAN_OPTIONS: KartuKoperasiPromiseVarianType[] = ['10,5 x 16,5', '10,5 x 21,5', '12,7 x 16,3'];
@@ -100,10 +102,31 @@ export default function KartuKoperasiPromiseSimulator({
           }
         }
       }
+      if (!activeSimulationId) {
+        // Restore draft settingan (persist saat pindah tab)
+          try {
+            const rawDraft = localStorage.getItem(DRAFT_KEY);
+            if (rawDraft) {
+              const d = JSON.parse(rawDraft);
+              if (d.oplah) setOplah(Number(d.oplah));
+              if (d.varian) setVarian(d.varian);
+              if (d.marginPct !== undefined) setMarginPct(Number(d.marginPct));
+              if (d.negoDiskonPct !== undefined) setNegoDiskonPct(Number(d.negoDiskonPct));
+            }
+          } catch { /* abaikan draft rusak */ }
+      }
     } catch (e) {
       console.error('Failed to load saved kartu koperasi promise simulations:', e);
     }
   }, [activeSimulationId]);
+
+  // Auto-persist draft settingan simulator (tidak reset saat pindah tab)
+  useEffect(() => {
+    if (activeSimulationId) return;
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ oplah, varian, marginPct, negoDiskonPct }));
+    } catch { /* abaikan */ }
+  }, [oplah, varian, marginPct, negoDiskonPct, activeSimulationId]);
 
   const result = useMemo(
     () =>
