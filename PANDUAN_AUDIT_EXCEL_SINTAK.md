@@ -120,10 +120,14 @@ Setiap workbook kalkulasi percetakan wajib dipetakan ke dalam 4 lapisan:
      - Kolom Kiri (Input Form): `lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4`
      - Kolom Kanan (Breakdown & Hasil): `lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4`
      - Dilarang keras membiarkan simulator terpotong tanpa scrollbar atau terjebak dalam `overflow-hidden`.
-   - **Pembaruan Isi Form & Fitur di Tab Kalkulasi (Langsung Ubah)**:
-     - Evaluasi apakah seluruh opsi spesifikasi di Excel (dropdown ukuran, variasi gramatur kertas, pilihan mesin cetak, opsi finishing opsional seperti porporasi, nomorator, laminasi, kardus) sudah ada di form input simulator.
-     - Evaluasi apakah tabel rincian (breakdown) biaya HPP dan kartu ringkasan harga jual sudah transparan dan lengkap mencerminkan seluruh komponen biaya di Excel.
-     - **Jika ada opsi input atau isi kalkulasi yang perlu diperbarui/ditambahkan, WAJIB LANGSUNG UBAH PADA KODE TANPA PERLU KONFIRMASI**.
+    - **Pembaruan Isi Form & Fitur di Tab Kalkulasi (Langsung Ubah)**:
+      - Evaluasi apakah seluruh opsi spesifikasi di Excel (dropdown ukuran, variasi gramatur kertas, pilihan mesin cetak, opsi finishing opsional seperti porporasi, nomorator, laminasi, kardus) sudah ada di form input simulator.
+      - Evaluasi apakah tabel rincian (breakdown) biaya HPP dan kartu ringkasan harga jual sudah transparan dan lengkap mencerminkan seluruh komponen biaya di Excel.
+      - **Tombol Simpan Simulasi Standar (Wajib Konsisten)**: Tombol simpan simulasi **WAJIB** berada di bagian bawah kolom kanan (`lg:col-span-7`) di bawah tabel breakdown HPP, berupa tombol full-width:
+        * Normal: Tombol penuh `w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs flex items-center justify-center gap-2 cursor-pointer` berlabel `Simpan Kalkulasi Ini ke Daftar Kalkulasi` dengan ikon `<Bookmark size={16} />`.
+        * Mode Edit Riwayat (`activeSimulationId`): Dua tombol berdampingan: `Update Perubahan` (amber `bg-amber-600`) dan `Simpan Baru` (emerald `bg-emerald-700`).
+        * **DILARANG KERAS** meletakkan form input teks kecil dan tombol simpan mini di kartu form kolom kiri.
+      - **Jika ada opsi input atau isi kalkulasi yang perlu diperbarui/ditambahkan, WAJIB LANGSUNG UBAH PADA KODE TANPA PERLU KONFIRMASI**.
 
 ### Tahap 6: Uji Komparasi Parity Otomatis (Full Matrix Benchmark)
 Buat skrip pengujian (via Node / TSX) untuk membandingkan kalkulasi Excel vs Sintak baris per baris:

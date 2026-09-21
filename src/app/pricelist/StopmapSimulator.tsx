@@ -610,25 +610,6 @@ export default function StopmapSimulator({
                 </div>
               </div>
             </div>
-
-            {/* Simpan Perhitungan Form */}
-            <div className="pt-2 border-t border-slate-100 flex items-center gap-2">
-              <input
-                type="text"
-                placeholder={defaultTitle()}
-                value={simulationTitle}
-                onChange={(e) => setSimulationTitle(e.target.value)}
-                className="flex-1 px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none placeholder:text-slate-400"
-              />
-              <button
-                type="button"
-                onClick={handleSaveSimulation}
-                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white transition-all shadow-2xs cursor-pointer flex items-center gap-1.5 shrink-0"
-              >
-                <Bookmark size={13} />
-                <span>Simpan</span>
-              </button>
-            </div>
           </div>
         </div>
 
@@ -767,6 +748,41 @@ export default function StopmapSimulator({
                 </tfoot>
               </table>
             </div>
+          </div>
+
+          {/* Tombol Aksi Simpan Simulasi (Full Width) */}
+          <div className="pt-1">
+            {activeSimulationId ? (
+              <div className="flex items-center gap-2 w-full">
+                <button
+                  type="button"
+                  onClick={handleUpdateSavedSimulation}
+                  className="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                  title="Perbarui kalkulasi yang sedang diedit"
+                >
+                  <BookmarkCheck size={15} />
+                  <span>Update Perubahan</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveSimulation}
+                  className="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                  title="Simpan sebagai kalkulasi baru & keluar dari mode edit"
+                >
+                  <Bookmark size={14} />
+                  <span>Simpan Baru</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSaveSimulation}
+                className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Bookmark size={16} />
+                <span>Simpan Kalkulasi Ini ke Daftar Kalkulasi</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
