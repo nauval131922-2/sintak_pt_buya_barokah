@@ -122,7 +122,8 @@ Setiap workbook kalkulasi percetakan wajib dipetakan ke dalam 4 lapisan:
      - Grid: `grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-0 pb-1`
      - Kolom Kiri (Input Form): `lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4`
      - Kolom Kanan (Breakdown & Hasil): `lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4`
-     - Dilarang keras membiarkan simulator terpotong tanpa scrollbar atau terjebak dalam `overflow-hidden`.
+      - Dilarang keras membiarkan simulator terpotong tanpa scrollbar atau terjebak dalam `overflow-hidden`.
+      - **Cek Otomatis Anti-Drift (wajib setelah ubah layout simulator)**: jalankan `npm run check:simulator-layout`. File `*Simulator.tsx` yang memakai `h-[calc(100vh-140px)]` wajib memuat persis ke-4 pola di atas (exit 1 = ada pola hilang, mis. kurang `flex-1` / `h-full` / `items-stretch` seperti kasus scrollbar kiri Raport Kaleb). Skrip: `scripts/check-simulator-layout.mjs`.
     - **Pembaruan Isi Form & Fitur di Tab Kalkulasi (Langsung Ubah)**:
       - Evaluasi apakah seluruh opsi spesifikasi di Excel (dropdown ukuran, variasi gramatur kertas, pilihan mesin cetak, opsi finishing opsional seperti porporasi, nomorator, laminasi, kardus) sudah ada di form input simulator.
       - Evaluasi apakah tabel rincian (breakdown) biaya HPP dan kartu ringkasan harga jual sudah transparan dan lengkap mencerminkan seluruh komponen biaya di Excel.
