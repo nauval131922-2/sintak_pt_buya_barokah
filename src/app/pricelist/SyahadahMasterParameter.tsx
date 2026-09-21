@@ -317,7 +317,7 @@ export default function SyahadahMasterParameter({
                       <li>• <strong>Insheet POD</strong>: <span className="font-mono text-emerald-700">Master!D13</span> 5 lbr A3+ (flat).</li>
                       <li>• <strong>Insheet Ryobi</strong>: <span className="font-mono text-emerald-700">Master!D13</span> 50 lbr folio offset.</li>
                       <li>• <strong>Plat Ryobi</strong>: <span className="font-mono text-emerald-700">BUKU!Y6</span> Rp 10.000/plat (1W = 1 plat, 2W = 2 plat per muka).</li>
-                      <li>• <strong>Ongkos Cetak Ryobi</strong>: <span className="font-mono text-emerald-700">BUKU!AB6</span> Min Rp 15.000/plat + <span className="font-mono text-emerald-700">BUKU!AC7</span> drek over Rp 30/drek/warna (>500 drek).</li>
+                      <li>• <strong>Ongkos Cetak Ryobi</strong>: <span className="font-mono text-emerald-700">BUKU!AB6</span> Min Rp 15.000/plat + <span className="font-mono text-emerald-700">BUKU!AC7</span> drek over Rp 30/drek/warna (&gt;500 drek).</li>
                     </ul>
                   </div>
 
