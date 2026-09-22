@@ -414,7 +414,7 @@ export default function BukuSoftCoverUnifiedSimulator({
             {/* 1. Ukuran */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                1. Ukuran jadi (cm)
+                Ukuran jadi (cm)
               </label>
               <div className="grid grid-cols-3 gap-2">
                 {SOFT_COVER_UKURANS.map((u) => (
@@ -429,7 +429,7 @@ export default function BukuSoftCoverUnifiedSimulator({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  2. Mesin Cover — D16
+                  Mesin Cover — D16
                 </label>
                 <div className="grid grid-cols-1 gap-2">
                   {SOFT_COVER_COVER_OPTIONS[ukuran].map((m) => (
@@ -441,7 +441,7 @@ export default function BukuSoftCoverUnifiedSimulator({
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  3. Mesin Isi — D25
+                  Mesin Isi — D25
                 </label>
                 <div className="grid grid-cols-1 gap-2">
                   {SOFT_COVER_ISI_OPTIONS[ukuran].map((m) => (
@@ -456,7 +456,7 @@ export default function BukuSoftCoverUnifiedSimulator({
             {/* 4. Sumber file hasil cascade */}
             <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-3 space-y-2">
               <label className="block text-xs font-bold text-emerald-900">
-                4. File sumber: {SOFT_COVER_LINI_LABEL[lini]} <span className="font-normal text-emerald-700">(tier {tiers[0]}–{tiers[tiers.length - 1]} pcs)</span>
+                File sumber: {SOFT_COVER_LINI_LABEL[lini]} <span className="font-normal text-emerald-700">(tier {tiers[0]}–{tiers[tiers.length - 1]} pcs)</span>
               </label>
               {candidates.length > 1 ? (
                 <div className="grid grid-cols-1 gap-2">
