@@ -99,23 +99,14 @@ export default function BukuTabunganNsMasterParameter({
           )}
         </div>
         <div className="flex items-center gap-1.5">
-          {isRupiah && !isDecimal ? (
-            <ThousandInput
-              value={customParams[key] ?? DEFAULT_BUKU_TABUNGAN_NS_PARAMS[key]}
-              onValueChange={(v) => handleChange(key, v || 0)}
-              className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-              prefix="Rp"
-            />
-          ) : (
-            <input
-              type="number"
-              step={isDecimal ? 0.01 : 1}
-              value={customParams[key] ?? DEFAULT_BUKU_TABUNGAN_NS_PARAMS[key]}
-              onChange={(e) => handleChange(key, Number(e.target.value) || 0)}
-              className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-            />
-          )}
-          {opts?.suffix && <span className="text-[10px] font-bold text-slate-400 shrink-0">{opts.suffix}</span>}
+          <ThousandInput
+            value={customParams[key] ?? DEFAULT_BUKU_TABUNGAN_NS_PARAMS[key]}
+            onValueChange={(v) => handleChange(key, v || 0)}
+            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+            prefix={isRupiah ? 'Rp' : undefined}
+            suffix={opts?.suffix}
+            allowDecimals={isDecimal}
+          />
         </div>
       </div>
     );

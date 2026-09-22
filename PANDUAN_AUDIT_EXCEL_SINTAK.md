@@ -116,6 +116,7 @@ Setiap workbook kalkulasi percetakan wajib dipetakan ke dalam 4 lapisan:
 3. **Keputusan Desain Master Parameter (Langsung Eksekusi Tanpa Konfirmasi)**:
    - Evaluasi apakah produk bertipe **homogen** (cukup 1 tampilan terpadu global seperti Nota) atau memiliki **varian fisik/lini manufaktur berbeda** (dikelompokkan per jenis/sub-komponen seperti Yasin Softcover vs Hardcover, atau Manasik Cocard vs Buku).
    - Terapkan struktur kartu/grup yang paling efisien, **langsung eksekusi pada kode tanpa perlu konfirmasi**.
+   - **Pemisah Ribuan Wajib (kasus 106700/7650/5393320)**: SEMUA input angka di Master Parameter **WAJIB** memakai `ThousandInput` (pemisah ribuan id-ID otomatis). DILARANG input `type="number"` polos tanpa pemisah — berlaku untuk tarif Rp (prefix `Rp`), hitungan/cacah (tanpa prefix), persen (suffix `%`), dan desimal (allowDecimals). Review audit wajib menyapu seluruh field dan mengganti yang masih polos.
 4. **Desain, Perilaku Scroll & Pembaruan Isi Tab Kalkulasi (Simulator) — Langsung Ubah Tanpa Konfirmasi**:
    - **Perilaku Scroll Standar Buku Manasik**: Tab Simulator **WAJIB** mengadopsi struktur dual scroll independen:
      - Outer container: `flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2`
@@ -132,6 +133,7 @@ Setiap workbook kalkulasi percetakan wajib dipetakan ke dalam 4 lapisan:
         * Mode Edit Riwayat (`activeSimulationId`): Dua tombol berdampingan: `Update Perubahan` (amber `bg-amber-600`) dan `Simpan Baru` (emerald `bg-emerald-700`).
         * **DILARANG KERAS** meletakkan form input teks kecil dan tombol simpan mini di kartu form kolom kiri.
       - **Jika ada opsi input atau isi kalkulasi yang perlu diperbarui/ditambahkan, WAJIB LANGSUNG UBAH PADA KODE TANPA PERLU KONFIRMASI**.
+      - **Aksen Grup Spesifikasi (Cover vs Isi)**: Kelompok input komponen fisik berbeda dalam 1 form **WAJIB** dibedakan visual: bungkus tiap grup dalam kontainer tint (`Cover`: `border-sky-200 bg-sky-50/50` + badge `COVER` sky; `Isi`: `border-violet-200 bg-violet-50/50` + badge `ISI` violet). Bahasa seleksi (tombol aktif emerald) tetap konsisten — yang beda hanya aksen grup. Berlaku untuk produk 2-komponen lain (Cover/Isi, Depan/Belakang, dsb.).
       - **Auto-Persist Draft Simulator (Wajib, Global Semua Produk)**: Seluruh `*Simulator.tsx` **WAJIB** menyimpan settingan form ke `localStorage` (`sintak_<produk>_draft`) setiap ada perubahan input dan me-restore-nya saat komponen mount / pindah tab, sehingga settingan tidak reset. Wajib di-skip saat Mode Edit Riwayat (`activeSimulationId` terisi) agar draft tidak menimpa data riwayat. Pola baku: `const DRAFT_KEY`, restore di effect load (`if (!activeSimulationId)`), save effect ber-guard sama. Kasus asal: 16 simulator lama (Buku Hard/SoftCover, Tabungan Security, Kalender, Kartu Koperasi, Label Obat, Majalah, Packaging, Paperbag, Poster, Pricelist, Stiker) reset saat pindah tab — diperbaiki global 2026-09-21.
 
 ### Tahap 6: Uji Komparasi Parity Otomatis (Full Matrix Benchmark)
@@ -187,8 +189,10 @@ Setiap kali ada audit atau perubahan parameter/rumus, **WAJIB** mengaudit dan me
 | 7 | *Magic numbers* (insheet, kapasitas lembar, pembulatan) sudah teridentifikasi | [ ] |
 | 8 | Formula Excel sudah dicek bebas dari salah drag / typo antar-baris | [ ] |
 | 9 | UI Master Parameter sudah memunculkan semua variabel dinamis (per jenis atau global) | [ ] |
+| 9b | Semua input angka Master Parameter memakai `ThousandInput` (pemisah ribuan, tanpa `type="number"` polos) | [ ] |
 | 10 | Tab Kalkulasi/Simulator sudah menerapkan dual scroll independen standar Manasik | [ ] |
 | 10b | Settingan form Simulator persist (auto-save/restore `localStorage` draft, tidak reset saat pindah tab, skip saat Mode Edit Riwayat) | [ ] |
+| 10c | Grup spesifikasi multi-komponen (Cover/Isi) punya aksen visual berbeda (badge + tint) | [ ] |
 | 11 | Isi opsi form input spesifikasi & breakdown biaya di Tab Kalkulasi sudah lengkap sesuai Excel | [ ] |
 | 12 | Benchmark otomatis seluruh tier oplah menghasilkan selisih Rp 0 | [ ] |
 | 13 | Uji stres perubahan parameter dinamis menghasilkan angka yang identik | [ ] |

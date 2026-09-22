@@ -340,8 +340,11 @@ export default function BukuTabunganNsSimulator({
               </div>
             </div>
 
-            <div>
-              <label className={lbl}>Cetak Cover — Master!D16 {mesinCover === 'Otomatis' ? '(otomatis: Print Inter)' : ''}</label>
+            <div className="rounded-xl border border-sky-200 bg-sky-50/50 p-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-sky-900 bg-sky-200/80 px-2 py-0.5 rounded">Cover</span>
+                <label className="text-xs font-bold text-sky-900">Cetak Cover — Master!D16 {mesinCover === 'Otomatis' ? '(otomatis: Print Inter)' : ''}</label>
+              </div>
               <div className="grid grid-cols-5 gap-1.5">
                 {TABUNGAN_NS_MESIN_COVER.map((m) => (
                   <button key={m} type="button" onClick={() => setMesinCover(m)} className={optBtn(mesinCover === m)}>
@@ -363,8 +366,11 @@ export default function BukuTabunganNsSimulator({
               </div>
             </div>
 
-            <div>
-              <label className={lbl}>Cetak Isi — Master!D25 {mesinIsi === 'Otomatis' ? `(otomatis: ${oplahPcs < 250 ? 'Print Buya' : 'Ryobi'})` : ''}</label>
+            <div className="rounded-xl border border-violet-200 bg-violet-50/50 p-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-violet-900 bg-violet-200/80 px-2 py-0.5 rounded">Isi</span>
+                <label className="text-xs font-bold text-violet-900">Cetak Isi — Master!D25 {mesinIsi === 'Otomatis' ? `(otomatis: ${oplahPcs < 250 ? 'Print Buya' : 'Ryobi'})` : ''}</label>
+              </div>
               <div className="grid grid-cols-3 gap-1.5">
                 {TABUNGAN_NS_MESIN_ISI.map((m) => (
                   <button key={m} type="button" onClick={() => setMesinIsi(m)} className={optBtn(mesinIsi === m)}>
