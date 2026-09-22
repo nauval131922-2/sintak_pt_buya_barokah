@@ -10,18 +10,20 @@ import {
   BookCopy,
 } from 'lucide-react';
 import {
-  calculateSoftCoverOffsetHpp,
-  SoftCoverOffsetMasterParams,
-  SoftCoverOffsetComboId,
-  SoftCoverOffsetFinishingType,
-  SOFT_COVER_OFFSET_COMBOS,
-  SOFT_COVER_OFFSET_FINISHING_OPTIONS,
-  defaultSoftCoverOffsetParams,
-} from '@/lib/buku-soft-cover-offset-calculator';
+  calculateSoftCoverUnified,
+  DEFAULT_SOFT_COVER_UNIFIED,
+  SoftCoverUnifiedParams,
+  SoftCoverLini,
+  SoftCoverFinishing,
+  SOFT_COVER_LINI_LABEL,
+  SOFT_COVER_LINIS_21,
+  SOFT_COVER_LINIS_14,
+  softCoverTiers,
+  softCoverFinishingOptions,
+} from '@/lib/buku-soft-cover-unified';
 
-interface SoftCoverOffsetMatrixViewProps {
-  combo: SoftCoverOffsetComboId;
-  customParams?: SoftCoverOffsetMasterParams;
+interface BukuSoftCoverUnifiedMatrixViewProps {
+  customParams?: SoftCoverUnifiedParams;
   viewMode?: 'matrix' | 'table';
   setViewMode?: (mode: 'matrix' | 'table') => void;
 }
@@ -38,51 +40,52 @@ const FINISHING_SHORT: Record<string, string> = {
   'Laminasi Doff + Spot UV + Emboss + Lem Bending + Shrink,': 'Full Paket',
 };
 
-export default function SoftCoverOffsetMatrixView({
-  combo,
-  customParams,
+export default function BukuSoftCoverUnifiedMatrixView({
+  customParams = DEFAULT_SOFT_COVER_UNIFIED,
   viewMode: propViewMode,
   setViewMode: propSetViewMode,
-}: SoftCoverOffsetMatrixViewProps) {
-  const cfg = SOFT_COVER_OFFSET_COMBOS[combo];
-  const params = customParams ?? defaultSoftCoverOffsetParams(combo);
+}: BukuSoftCoverUnifiedMatrixViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedFinishingFilter, setSelectedFinishingFilter] = useState<SoftCoverOffsetFinishingType>('None,');
+  const [lini, setLini] = useState<SoftCoverLini>('Klasik');
+  const [selectedFinishingFilter, setSelectedFinishingFilter] = useState<SoftCoverFinishing>('None,');
   const [localViewMode, setLocalViewMode] = useState<'matrix' | 'table'>('matrix');
 
   const viewMode = propViewMode ?? localViewMode;
   const setViewMode = propSetViewMode ?? setLocalViewMode;
-  // Spek default sesuai file tersimpan: 32 hal, 1 Muka, 4 Warna cover, 1 Warna isi, margin 30%.
-  const calc = (oplah: number, finishing: SoftCoverOffsetFinishingType) =>
-    calculateSoftCoverOffsetHpp(
-      { oplah, jumlahHalaman: 32, mukaCover: '1 Muka', warnaCover: '4 Warna', warnaIsi: '1 Warna', finishing, marginPct: 30 },
-      params,
-      combo
+  const tiers = softCoverTiers(lini);
+  const finishingOptions = softCoverFinishingOptions(lini);
+  // Spek default file tersimpan: 32 hal, 1 Muka, 4 Warna cover, 1 Warna isi, margin 30%.
+  const calc = (oplah: number, finishing: SoftCoverFinishing) =>
+    calculateSoftCoverUnified(
+      { lini, oplah, jumlahHalaman: 32, mukaCover: '1 Muka', warnaCover: '4 Warna', warnaIsi: '1 Warna', finishing, marginPct: 30 },
+      customParams
     );
 
   const matrixData = useMemo(() => {
-    return cfg.tiers
+    const fin = finishingOptions.includes(selectedFinishingFilter) ? selectedFinishingFilter : 'None,';
+    return tiers
       .map((oplah) => {
         const q = searchTerm.trim();
         if (q && !oplah.toString().includes(q)) return null;
-        const r = calc(oplah, selectedFinishingFilter);
+        const r = calc(oplah, fin);
         return { oplah, hpp: r.hppPerPcs, jual: r.hargaJualPerPcs, totalJual: r.totalHargaJual };
       })
       .filter(Boolean) as { oplah: number; hpp: number; jual: number; totalJual: number }[];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params, searchTerm, selectedFinishingFilter, combo]);
+  }, [customParams, searchTerm, selectedFinishingFilter, lini]);
 
   const flatTableRows = useMemo(() => {
-    return cfg.tiers
+    const fin = finishingOptions.includes(selectedFinishingFilter) ? selectedFinishingFilter : 'None,';
+    return tiers
       .map((oplah) => {
         const q = searchTerm.toLowerCase().trim();
         if (q && !oplah.toString().includes(q)) return null;
-        const r = calc(oplah, selectedFinishingFilter);
-        return { oplah, finishing: selectedFinishingFilter, hpp: r.hppPerPcs, jual: r.hargaJualPerPcs, totalJual: r.totalHargaJual };
+        const r = calc(oplah, fin);
+        return { oplah, finishing: fin, hpp: r.hppPerPcs, jual: r.hargaJualPerPcs, totalJual: r.totalHargaJual };
       })
       .filter(Boolean) as { oplah: number; finishing: string; hpp: number; jual: number; totalJual: number }[];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params, searchTerm, selectedFinishingFilter, combo]);
+  }, [customParams, searchTerm, selectedFinishingFilter, lini]);
 
   return (
     <div className="space-y-4">
@@ -94,10 +97,10 @@ export default function SoftCoverOffsetMatrixView({
           </div>
           <div>
             <h2 className="text-sm sm:text-base font-bold text-emerald-950 tracking-tight">
-              Pricelist Matriks {cfg.label} — Katalog 17
+              Pricelist Matriks Buku Soft Cover — Katalog 17–18
             </h2>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              {cfg.description} — 32 hal · margin 30%.
+              1 produk · 2 ukuran · 8 lini — 32 hal · margin 30%.
             </p>
           </div>
         </div>
@@ -124,15 +127,36 @@ export default function SoftCoverOffsetMatrixView({
           )}
         </div>
 
+        {/* Filter Lini */}
+        <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
+          <span className="text-slate-500 font-semibold hidden sm:inline">Lini:</span>
+          <select
+            value={lini}
+            onChange={(e) => setLini(e.target.value as SoftCoverLini)}
+            className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-bold focus:bg-white focus:outline-none cursor-pointer"
+          >
+            <optgroup label="21 × 29,7 cm">
+              {SOFT_COVER_LINIS_21.map((l) => (
+                <option key={l} value={l}>{SOFT_COVER_LINI_LABEL[l]}</option>
+              ))}
+            </optgroup>
+            <optgroup label="14,5 × 20,25 cm">
+              {SOFT_COVER_LINIS_14.map((l) => (
+                <option key={l} value={l}>{SOFT_COVER_LINI_LABEL[l]}</option>
+              ))}
+            </optgroup>
+          </select>
+        </div>
+
         {/* Filter Finishing */}
         <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
           <span className="text-slate-500 font-semibold hidden sm:inline">Finishing:</span>
           <select
-            value={selectedFinishingFilter}
-            onChange={(e) => setSelectedFinishingFilter(e.target.value as SoftCoverOffsetFinishingType)}
+            value={finishingOptions.includes(selectedFinishingFilter) ? selectedFinishingFilter : 'None,'}
+            onChange={(e) => setSelectedFinishingFilter(e.target.value as SoftCoverFinishing)}
             className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-bold focus:bg-white focus:outline-none cursor-pointer"
           >
-            {SOFT_COVER_OFFSET_FINISHING_OPTIONS.map((f) => (
+            {finishingOptions.map((f) => (
               <option key={f} value={f}>{FINISHING_SHORT[f]}</option>
             ))}
           </select>
@@ -177,11 +201,11 @@ export default function SoftCoverOffsetMatrixView({
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
                   <h3 className="text-sm font-bold text-gray-800 tracking-tight">
-                    {cfg.label} 21×29,7 — 32 Hal · {FINISHING_SHORT[selectedFinishingFilter]}
+                    Buku Soft Cover — {SOFT_COVER_LINI_LABEL[lini]} · 32 Hal
                   </h3>
                 </div>
                 <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
-                  {cfg.tiers.length} tier
+                  {tiers.length} tier
                 </span>
               </div>
 
@@ -189,7 +213,7 @@ export default function SoftCoverOffsetMatrixView({
                 <div className="bg-emerald-50/70 px-4 py-2 border-b border-emerald-100 flex items-center justify-between">
                   <span className="text-[11px] font-bold text-emerald-900 tracking-wider uppercase flex items-center gap-1.5">
                     <Layers size={13} className="text-emerald-600" />
-                    {cfg.label} · Cover {cfg.coverMesin} + Isi {cfg.isiMesin}
+                    {SOFT_COVER_LINI_LABEL[lini]} · 32 Hal
                   </span>
                 </div>
                 <div className="overflow-x-auto max-h-[500px]">
@@ -257,7 +281,7 @@ export default function SoftCoverOffsetMatrixView({
             </table>
           </div>
           <div className="px-4 py-2 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 font-medium">
-            Menampilkan {flatTableRows.length} kombinasi tarif {cfg.label}
+            Menampilkan {flatTableRows.length} kombinasi tarif {SOFT_COVER_LINI_LABEL[lini]}
           </div>
         </div>
       )}

@@ -56,9 +56,8 @@ import { SavedBukuTabunganNsSimulationItem } from './BukuTabunganNsSimulator';
 import { SavedBukuTabunganSecuritySimulationItem } from './BukuTabunganSecuritySimulator';
 import { SavedKartuKoperasiPromiseSimulationItem } from './KartuKoperasiPromiseSimulator';
 import { SavedLebelKartuObatSimulationItem } from './LebelKartuObatSimulator';
-import { SavedBukuSoftCoverSimulationItem } from './BukuSoftCoverSimulator';
-import { SavedSoftCoverOffsetSimulationItem } from './SoftCoverOffsetSimulator';
-import { SavedBukuSoftCover145x2025SimulationItem } from './BukuSoftCover145x2025Simulator';
+import { SavedSoftCoverUnifiedItem } from '@/lib/buku-soft-cover-unified';
+// Tipe legacy (file triad lama sudah dihapus saat unifikasi — state dibaca sebagai any):
 import { SavedBukuHardCover105x148SimulationItem } from './BukuHardCover105x148Simulator';
 import { SavedPosterSimulationItem } from './PosterSimulator';
 import { SavedMajalahSimulationItem } from './MajalahSimulator';
@@ -103,8 +102,7 @@ export type UnifiedCalculationItem = {
     | SavedBukuTabunganSecuritySimulationItem
     | SavedKartuKoperasiPromiseSimulationItem
     | SavedLebelKartuObatSimulationItem
-    | SavedBukuSoftCoverSimulationItem
-    | SavedBukuSoftCover145x2025SimulationItem
+    | SavedSoftCoverUnifiedItem
     | SavedBukuHardCover105x148SimulationItem
     | SavedPosterSimulationItem
     | SavedMajalahSimulationItem
@@ -191,11 +189,11 @@ export default function SavedCalculationsList({
   const [bukuTabunganSecurityList, setBukuTabunganSecurityList] = useState<SavedBukuTabunganSecuritySimulationItem[]>([]);
   const [kartuKoperasiPromiseList, setKartuKoperasiPromiseList] = useState<SavedKartuKoperasiPromiseSimulationItem[]>([]);
   const [lebelKartuObatList, setLebelKartuObatList] = useState<SavedLebelKartuObatSimulationItem[]>([]);
-  const [bukuSoftCoverList, setBukuSoftCoverList] = useState<SavedBukuSoftCoverSimulationItem[]>([]);
-  const [softCoverOOList, setSoftCoverOOList] = useState<SavedSoftCoverOffsetSimulationItem[]>([]);
-  const [softCoverPOList, setSoftCoverPOList] = useState<SavedSoftCoverOffsetSimulationItem[]>([]);
-  const [softCoverPPList, setSoftCoverPPList] = useState<SavedSoftCoverOffsetSimulationItem[]>([]);
-  const [bukuSoftCover145x2025List, setBukuSoftCover145x2025List] = useState<SavedBukuSoftCover145x2025SimulationItem[]>([]);
+  const [bukuSoftCoverList, setBukuSoftCoverList] = useState<SavedSoftCoverUnifiedItem[]>([]);
+  const [softCoverOOList, setSoftCoverOOList] = useState<any[]>([]);
+  const [softCoverPOList, setSoftCoverPOList] = useState<any[]>([]);
+  const [softCoverPPList, setSoftCoverPPList] = useState<any[]>([]);
+  const [bukuSoftCover145x2025List, setBukuSoftCover145x2025List] = useState<any[]>([]);
   const [bukuHardCover105x148List, setBukuHardCover105x148List] = useState<SavedBukuHardCover105x148SimulationItem[]>([]);
   const [posterList, setPosterList] = useState<SavedPosterSimulationItem[]>([]);
   const [majalahList, setMajalahList] = useState<SavedMajalahSimulationItem[]>([]);
@@ -879,80 +877,50 @@ export default function SavedCalculationsList({
       });
     });
 
-    // 19. Buku Soft Cover
-    bukuSoftCoverList.forEach((b: any) => {
-      const inp = (b.data && b.data.input) ? b.data.input : (b.input || b.data || b || {});
-      const bscHal = inp.jumlahHalaman ?? 32;
-      const bscFin = String(inp.finishing ?? 'Laminasi Glossy,').replace(/,$/, '');
-      items.push({
-        id: b.id,
-        category: 'Buku Soft Cover',
-        savedAt: b.savedAt,
-        title: b.title,
-        oplah: inp.oplah,
-        specSummary: `Buku Soft Cover ${inp.varian ?? '21 x 29,7 cm'} ${bscHal} Hal • ${inp.oplah.toLocaleString('id-ID')} pcs`,
-        detailSpecs: [
-          `Cover: AC 230 (Print Inter) ${inp.mukaCover ?? '1 Muka'} ${inp.warnaCover ?? '4 Warna'} · ${b.data.kebutuhanKertasCover ?? b.data.kebutuhanCoverA3} lbr`,
-          `Isi: HVS 70 Oliver ${inp.warnaIsi ?? '1 Warna'} · ${b.data.kebutuhanPlanoIsi} plano · Finishing: ${bscFin}`,
-          `Margin: ${inp.marginPct}%`,
-        ],
-        hppUnit: (b.data?.hppPerPcs ?? b.hppPerPcs ?? 0),
-        hargaJualUnit: (b.data?.hargaJualPerPcs ?? b.hargaJualPerPcs ?? 0),
-        totalOmset: (b.data?.totalHargaJual ?? b.totalHargaJual ?? 0),
-        marginPct: inp.marginPct,
-        negoDiskonPct: inp.negoDiskonPct ?? 0,
-        rawData: b,
-      });
-    });
-
-    // 19b-d. Soft Cover Offset (3 lini combo)
-    ([[softCoverOOList, 'Buku Soft Cover Oliver-Oliver'], [softCoverPOList, 'Buku Soft Cover Print-Oliver'], [softCoverPPList, 'Buku Soft Cover Print-Print']] as const).forEach(([list, cat]) => {
+    // 19. Buku Soft Cover UNIFIKASI (1 lini: Klasik + 7 offset; migrasi 5 key lama)
+    // Key lama yang ikut dibaca: offset OO/PO/PP (3 key, combo di item.combo) + 145x2025 heuristic (tier → lini).
+    const softCoverLegacy: Array<{ list: any[]; liniOf: (s: any, inp: any) => string }> = [
+      { list: bukuSoftCoverList, liniOf: (s: any, inp: any) => (inp.lini ?? s.combo ?? 'Klasik') },
+      { list: softCoverOOList, liniOf: () => 'Oliver-Oliver' },
+      { list: softCoverPOList, liniOf: () => 'Print-Oliver' },
+      { list: softCoverPPList, liniOf: () => 'Print-Print' },
+      {
+        list: bukuSoftCover145x2025List,
+        liniOf: (_s: any, inp: any) => {
+          const h = Number(inp.oplah) || 0;
+          if (h >= 1000) return 'OO-14';
+          if (h >= 650) return 'OR-14';
+          if (h >= 250) return 'PR-14';
+          return 'PP-14';
+        },
+      },
+    ];
+    softCoverLegacy.forEach(({ list, liniOf }) => {
       list.forEach((s: any) => {
         const inp = (s.data && s.data.input) ? s.data.input : (s.input || s.data || s || {});
-        const fin = String(inp.finishing ?? 'None,').replace(/,$/, '');
+        const lini = liniOf(s, inp);
+        const hal = inp.jumlahHalaman ?? 32;
+        const fin = String(inp.finishing ?? (lini === 'Klasik' ? 'Laminasi Glossy,' : 'None,')).replace(/,$/, '');
+        const ukuran = lini === 'Klasik' || lini === 'Oliver-Oliver' || lini === 'Print-Oliver' || lini === 'Print-Print' ? '21 × 29,7' : '14,5 × 20,25';
         items.push({
           id: s.id,
-          category: cat,
+          category: 'Buku Soft Cover',
           savedAt: s.savedAt,
           title: s.title,
           oplah: inp.oplah,
-          specSummary: `${cat} ${inp.jumlahHalaman ?? 32} Hal • ${inp.oplah.toLocaleString('id-ID')} pcs`,
+          specSummary: `Buku Soft Cover ${ukuran} ${lini} ${hal} Hal • ${Number(inp.oplah).toLocaleString('id-ID')} pcs`,
           detailSpecs: [
-            `Cover: ${inp.mukaCover ?? '1 Muka'} ${inp.warnaCover ?? '4 Warna'} · Isi: ${inp.warnaIsi ?? '1 Warna'} · ${s.data.kebutuhanPlanoIsi} lbr plano`,
+            `Cover: ${inp.mukaCover ?? '1 Muka'} ${inp.warnaCover ?? '4 Warna'} · Isi: ${inp.warnaIsi ?? '1 Warna'} · ${s.data?.kebutuhanPlanoIsi ?? '?'} lbr plano`,
             `Finishing: ${fin}`,
-            `Margin: ${inp.marginPct}%`,
+            `Margin: ${inp.marginPct ?? 30}%`,
           ],
           hppUnit: (s.data?.hppPerPcs ?? s.hppPerPcs ?? 0),
           hargaJualUnit: (s.data?.hargaJualPerPcs ?? s.hargaJualPerPcs ?? 0),
           totalOmset: (s.data?.totalHargaJual ?? s.totalHargaJual ?? 0),
-          marginPct: inp.marginPct,
+          marginPct: inp.marginPct ?? 30,
           negoDiskonPct: 0,
           rawData: s,
         });
-      });
-    });
-
-    // 20. Buku Soft Cover 14,5×20,25
-    bukuSoftCover145x2025List.forEach((b: any) => {
-      const inp = (b.data && b.data.input) ? b.data.input : (b.input || b.data || b || {});
-      items.push({
-        id: b.id,
-        category: 'Buku Soft Cover 14,5×20,25',
-        savedAt: b.savedAt,
-        title: b.title,
-        oplah: inp.oplah,
-        specSummary: `Buku Soft Cover 14,5×20,25 cm • ${inp.oplah.toLocaleString('id-ID')} pcs (${b.data.prosesCetak})`,
-        detailSpecs: [
-          `Cover: AC 230 (${inp.finishing}) · Isi: HVS 70 32 Hal`,
-          `Proses: ${b.data.prosesCetak} · Jilid: ${inp.jilid}`,
-          `Margin: ${inp.marginPct}% · Nego: ${inp.negoDiskonPct}%`,
-        ],
-        hppUnit: (b.data?.hppPerPcs ?? b.hppPerPcs ?? 0),
-        hargaJualUnit: (b.data?.hargaJualPerPcs ?? b.hargaJualPerPcs ?? 0),
-        totalOmset: (b.data?.totalHargaJual ?? b.totalHargaJual ?? 0),
-        marginPct: inp.marginPct,
-        negoDiskonPct: inp.negoDiskonPct,
-        rawData: b,
       });
     });
 
@@ -1819,15 +1787,9 @@ export default function SavedCalculationsList({
     } else if (item.category === 'Buku Soft Cover') {
       const bsc: any = item.rawData;
       const inp = (bsc.data && bsc.data.input) ? bsc.data.input : (bsc.input || bsc.data || bsc || {});
-      text = `*PENAWARAN BUKU SOFT COVER*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Soft Cover ${inp.varian ?? '21 x 29,7 cm'} ${inp.jumlahHalaman ?? 32} Hal\n• *Spesifikasi*: Cover AC 230 ${inp.mukaCover ?? '1 Muka'} ${inp.warnaCover ?? '4 Warna'} (Print Inter) + Isi HVS 70 ${inp.warnaIsi ?? '1 Warna'} (Oliver)\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Finishing*: ${String(inp.finishing ?? 'Laminasi Glossy,').replace(/,$/, '')} + Staples + Sisir\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${(bsc.data?.hargaJualPerPcs ?? bsc.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(bsc.data?.totalHargaJual ?? bsc.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
-    } else if (item.category === 'Buku Soft Cover Oliver-Oliver' || item.category === 'Buku Soft Cover Print-Oliver' || item.category === 'Buku Soft Cover Print-Print') {
-      const s: any = item.rawData;
-      const inp = (s.data && s.data.input) ? s.data.input : (s.input || s.data || s || {});
-      text = `*PENAWARAN ${item.category.toUpperCase()}*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: ${item.category} 21 × 29,7 cm ${inp.jumlahHalaman ?? 32} Hal\n• *Cover*: Art Carton 230 gsm ${inp.mukaCover ?? '1 Muka'} ${inp.warnaCover ?? '4 Warna'}\n• *Isi*: HVS 70 gsm ${inp.warnaIsi ?? '1 Warna'}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Finishing*: ${String(inp.finishing ?? 'None,').replace(/,$/, '')} + Sisir\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${(s.data?.hargaJualPerPcs ?? s.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(s.data?.totalHargaJual ?? s.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
-    } else if (item.category === 'Buku Soft Cover 14,5×20,25') {
-      const bsc: any = item.rawData;
-      const inp = (bsc.data && bsc.data.input) ? bsc.data.input : (bsc.input || bsc.data || bsc || {});
-      text = `*PENAWARAN BUKU SOFT COVER 14,5×20,25 CM*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Soft Cover 14,5 × 20,25 cm 32 Hal\n• *Spesifikasi*: Cover AC 230 (${inp.finishing}) + Isi HVS 70 1W BB\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Proses Cetak*: ${bsc.data.prosesCetak}\n• *Finishing*: ${inp.jilid} + Sisir + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${(bsc.data?.hargaJualPerPcs ?? bsc.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Harga Nego / pcs*: *Rp ${bsc.data.negoPerPcs.toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(bsc.data?.totalHargaJual ?? bsc.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
+      const lini = inp.lini ?? (bsc.combo ?? 'Klasik');
+      const ukuran = lini === 'Klasik' || lini === 'Oliver-Oliver' || lini === 'Print-Oliver' || lini === 'Print-Print' ? '21 × 29,7' : '14,5 × 20,25';
+      text = `*PENAWARAN BUKU SOFT COVER*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Soft Cover ${ukuran} cm ${inp.jumlahHalaman ?? 32} Hal (${lini})\n• *Spesifikasi*: Cover AC 230 ${inp.mukaCover ?? '1 Muka'} ${inp.warnaCover ?? '4 Warna'} + Isi HVS 70 ${inp.warnaIsi ?? '1 Warna'}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs\n• *Finishing*: ${String(inp.finishing ?? 'None,').replace(/,$/, '')} + Sisir\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / pcs*: *Rp ${(bsc.data?.hargaJualPerPcs ?? bsc.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(bsc.data?.totalHargaJual ?? bsc.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Buku Hard Cover 10,5×14,8') {
       const bhc: any = item.rawData;
       const inp = (bhc.data && bhc.data.input) ? bhc.data.input : (bhc.input || bhc.data || bhc || {});
@@ -1969,11 +1931,7 @@ export default function SavedCalculationsList({
                 { value: 'Buku Tabungan Security', label: '🔒 Buku Tabungan Security', count: bukuTabunganSecurityList.length },
                 { value: 'Kartu Koperasi Promise', label: '🪪 Kartu Koperasi', count: kartuKoperasiPromiseList.length },
                 { value: 'Lebel Kartu Obat', label: '💊 Lebel Kartu Obat', count: lebelKartuObatList.length },
-                { value: 'Buku Soft Cover', label: '📗 Buku Soft Cover', count: bukuSoftCoverList.length },
-                { value: 'Buku Soft Cover Oliver-Oliver', label: '📗 SC Oliver–Oliver', count: softCoverOOList.length },
-                { value: 'Buku Soft Cover Print-Oliver', label: '📗 SC Print–Oliver', count: softCoverPOList.length },
-                { value: 'Buku Soft Cover Print-Print', label: '📗 SC Print–Print', count: softCoverPPList.length },
-                { value: 'Buku Soft Cover 14,5×20,25', label: '📗 Buku Soft Cover 14,5×20,25', count: bukuSoftCover145x2025List.length },
+                { value: 'Buku Soft Cover', label: '📗 Buku Soft Cover', count: bukuSoftCoverList.length + softCoverOOList.length + softCoverPOList.length + softCoverPPList.length + bukuSoftCover145x2025List.length },
                 { value: 'Buku Hard Cover 10,5×14,8', label: '📕 Buku Hard Cover 10,5×14,8', count: bukuHardCover105x148List.length },
                 { value: 'Poster', label: '🖼️ Poster', count: posterList.length },
                 { value: 'Majalah 14,5×20,25', label: '📰 Majalah 14,5×20,25', count: majalahList.length },

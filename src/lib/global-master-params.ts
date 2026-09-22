@@ -17,10 +17,9 @@ import { UndanganMasterParams, DEFAULT_UNDANGAN_PARAMS } from './undangan-calcul
 import { BukuTabunganNsMasterParams, DEFAULT_BUKU_TABUNGAN_NS_PARAMS } from './buku-tabungan-ns-calculator';
 import { BukuTabunganSecurityMasterParams, DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS } from './buku-tabungan-security-calculator';
 import { KartuKoperasiPromiseMasterParams, DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS } from './kartu-koperasi-promise-calculator';
-import { SoftCoverOffsetMasterParams, DEFAULT_SOFT_COVER_OFFSET_PARAMS } from './buku-soft-cover-offset-calculator';
+import { SoftCoverUnifiedParams, DEFAULT_SOFT_COVER_UNIFIED } from './buku-soft-cover-unified';
 import { LebelKartuObatMasterParams, DEFAULT_LEBEL_KARTU_OBAT_PARAMS } from './lebel-kartu-obat-calculator';
-import { BukuSoftCoverMasterParams, DEFAULT_BUKU_SOFT_COVER_PARAMS } from './buku-soft-cover-calculator';
-import { BukuSoftCover145x2025MasterParams, DEFAULT_BUKU_SOFT_COVER_145X2025_PARAMS } from './buku-soft-cover-145x2025-calculator';
+
 import { BukuHardCover105x148MasterParams, DEFAULT_BUKU_HARD_COVER_105X148_PARAMS } from './buku-hard-cover-105x148-calculator';
 import { PosterMasterParams, DEFAULT_POSTER_PARAMS } from './poster-calculator';
 import { MajalahMasterParams, DEFAULT_MAJALAH_PARAMS } from './majalah-calculator';
@@ -179,8 +178,7 @@ export function applyGlobalParamsToAll(
   currBukuTabunganSecurity: BukuTabunganSecurityMasterParams = DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS,
   currKartuKoperasiPromise: KartuKoperasiPromiseMasterParams = DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS,
   currLebelKartuObat: LebelKartuObatMasterParams = DEFAULT_LEBEL_KARTU_OBAT_PARAMS,
-  currBukuSoftCover: BukuSoftCoverMasterParams = DEFAULT_BUKU_SOFT_COVER_PARAMS,
-  currBukuSoftCover145x2025: BukuSoftCover145x2025MasterParams = DEFAULT_BUKU_SOFT_COVER_145X2025_PARAMS,
+  currBukuSoftCover: SoftCoverUnifiedParams = DEFAULT_SOFT_COVER_UNIFIED,
   currBukuHardCover105x148: BukuHardCover105x148MasterParams = DEFAULT_BUKU_HARD_COVER_105X148_PARAMS,
   currPoster: PosterMasterParams = DEFAULT_POSTER_PARAMS,
   currMajalah: MajalahMasterParams = DEFAULT_MAJALAH_PARAMS,
@@ -191,9 +189,6 @@ export function applyGlobalParamsToAll(
   currKalenderKop: KalenderKopMasterParams = DEFAULT_KALENDER_KOP_PARAMS,
   currPackaging: PackagingMasterParams = DEFAULT_PACKAGING_PARAMS,
   currPaperbag: PaperbagMasterParams = DEFAULT_PAPERBAG_PARAMS,
-  currSoftCoverOO: SoftCoverOffsetMasterParams = DEFAULT_SOFT_COVER_OFFSET_PARAMS,
-  currSoftCoverPO: SoftCoverOffsetMasterParams = DEFAULT_SOFT_COVER_OFFSET_PARAMS,
-  currSoftCoverPP: SoftCoverOffsetMasterParams = DEFAULT_SOFT_COVER_OFFSET_PARAMS
 ) {
   const nextSpiral: SimulatorMasterParams = {
     ...currSpiral,
@@ -466,45 +461,24 @@ export function applyGlobalParamsToAll(
     marginDefaultPct: g.defaultMarginPct,
   };
 
-  const nextBukuSoftCover: BukuSoftCoverMasterParams = {
+  const nextBukuSoftCover: SoftCoverUnifiedParams = {
     ...currBukuSoftCover,
     tarifKertasIsiKg: g.tarifHvs70,
     upIsiPct: g.upKertasPct,
     tarifPlateIsi: g.oliverPlatUnit,
     tarifCetakMinIsi: g.oliverMinOngkos,
+    tarifPrintCoverA3: g.tarifPrintA3,
     tarifLaminasiGlossy: g.tarifLaminasiGlossyCm2,
     tarifLaminasiDoff: g.tarifLaminasiDoffCm2,
     tarifUvVarnish: g.tarifUvVarnishCm2,
     minFinishing: g.minLaminasi,
     tarifSisirPerPcs: g.tarifSisirPcs,
-    tarifDesainCover: g.tarifDesainStandar,
-    marginDefaultPct: g.defaultMarginPct,
-  };
-
-  const nextBukuSoftCover145x2025: BukuSoftCover145x2025MasterParams = {
-    ...currBukuSoftCover145x2025,
-    tarifPrintCoverA3: g.tarifPrintA3,
-    tarifKertasAc230Kg: g.tarifAc230Kg,
-    tarifPlateCoverOliver: g.oliverPlatUnit,
-    minOngkosCoverOliver: g.oliverMinOngkos,
-    drekCoverOliver: g.oliverDrekOver,
-    tarifKertasHvs70Kg: g.tarifHvs70,
-    tarifPlateIsiOliver: g.oliverPlatUnit,
-    minOngkosIsiOliver: g.oliverMinOngkos,
-    drekIsiOliver: g.oliverDrekOver,
-    tarifPlateIsiRyobi: g.ryobiPlatUnit,
-    minOngkosIsiRyobi: g.ryobiMinOngkos,
-    drekIsiRyobi: g.ryobiDrekOver,
-    tarifSisirPerPcs: g.tarifSisirPcs,
     tarifKardusBox: g.tarifKardusBox,
     tarifLakbanRoll: g.tarifLakbanRoll,
-    tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
-    tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
-    tarifUvVarnishCm2: g.tarifUvVarnishCm2,
-    minLaminasi: g.minLaminasi,
     tarifDesainCover: g.tarifDesainStandar,
+    tarifDesainIsiPerUnit: g.tarifDesainStandar,
+    tarifDesainIsiPerHlm: g.tarifDesainStandar,
     marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextBukuHardCover105x148: BukuHardCover105x148MasterParams = {
@@ -701,24 +675,6 @@ export function applyGlobalParamsToAll(
     negoDefaultPct: g.defaultNegoPct,
   };
 
-  const syncSoftCoverOffset = (curr: SoftCoverOffsetMasterParams): SoftCoverOffsetMasterParams => ({
-    ...curr,
-    tarifKertasIsiKg: g.tarifHvs70,
-    upIsiPct: g.upKertasPct,
-    tarifPlateIsi: g.oliverPlatUnit,
-    tarifCetakMinIsi: g.oliverMinOngkos,
-    tarifDrekIsi: g.oliverDrekOver,
-    tarifPrintCoverA3: g.tarifPrintA3,
-    tarifLaminasiGlossy: g.tarifLaminasiGlossyCm2,
-    tarifLaminasiDoff: g.tarifLaminasiDoffCm2,
-    tarifUvVarnish: g.tarifUvVarnishCm2,
-    minFinishing: g.minLaminasi,
-    tarifKardusBox: g.tarifKardusBox,
-    tarifLakbanRoll: g.tarifLakbanRoll,
-    tarifDesainCover: g.tarifDesainStandar,
-    marginDefaultPct: g.defaultMarginPct,
-  });
-
   return {
     nextSpiral,
     nextKlem,
@@ -740,7 +696,6 @@ export function applyGlobalParamsToAll(
     nextKartuKoperasiPromise,
     nextLebelKartuObat,
     nextBukuSoftCover,
-    nextBukuSoftCover145x2025,
     nextBukuHardCover105x148,
     nextPoster,
     nextMajalah,
@@ -751,8 +706,5 @@ export function applyGlobalParamsToAll(
     nextKalenderKop,
     nextPackaging,
     nextPaperbag,
-    nextSoftCoverOO: syncSoftCoverOffset(currSoftCoverOO),
-    nextSoftCoverPO: syncSoftCoverOffset(currSoftCoverPO),
-    nextSoftCoverPP: syncSoftCoverOffset(currSoftCoverPP),
   };
 }

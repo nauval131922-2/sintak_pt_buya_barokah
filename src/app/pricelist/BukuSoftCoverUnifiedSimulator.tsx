@@ -19,24 +19,39 @@ import {
   BookCopy,
 } from 'lucide-react';
 import {
-  calculateSoftCoverOffsetHpp,
-  defaultSoftCoverOffsetParams,
-  SoftCoverOffsetMasterParams,
-  SoftCoverOffsetComboId,
-  SoftCoverOffsetMukaType,
-  SoftCoverOffsetWarnaType,
-  SoftCoverOffsetFinishingType,
-  SavedSoftCoverOffsetSimulationItem,
-  SOFT_COVER_OFFSET_COMBOS,
-  SOFT_COVER_OFFSET_MUKA_OPTIONS,
-  SOFT_COVER_OFFSET_WARNA_OPTIONS,
-  SOFT_COVER_OFFSET_FINISHING_OPTIONS,
-} from '@/lib/buku-soft-cover-offset-calculator';
+  calculateSoftCoverUnified,
+  DEFAULT_SOFT_COVER_UNIFIED,
+  SoftCoverUnifiedParams,
+  SoftCoverUnifiedInput,
+  SoftCoverLini,
+  SoftCoverMukaType,
+  SoftCoverWarnaType,
+  SoftCoverFinishing,
+  SavedSoftCoverUnifiedItem,
+  SOFT_COVER_LINI_LABEL,
+  SOFT_COVER_LINIS_21,
+  SOFT_COVER_LINIS_14,
+  softCoverTiers,
+  softCoverFinishingOptions,
+} from '@/lib/buku-soft-cover-unified';
 import { toast } from '@/lib/toast';
 
-export type { SavedSoftCoverOffsetSimulationItem };
+export type { SavedSoftCoverUnifiedItem };
 
-const FINISHING_LABEL: Record<SoftCoverOffsetFinishingType, string> = {
+const DRAFT_KEY = 'sintak_buku_soft_cover_draft';
+const LS_KEY = 'sintak_saved_buku_soft_cover_simulations';
+
+const draftVal = (key: string, fallback: any) => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return fallback;
+    const v = JSON.parse(raw)[key];
+    return v === undefined || v === null ? fallback : v;
+  } catch { return fallback; }
+};
+
+const FINISHING_LABEL: Record<string, string> = {
   'None,': 'Tanpa Finishing',
   'UV Varnish,': 'UV Varnish',
   'Laminasi Glossy,': 'Laminasi Glossy',
@@ -48,10 +63,9 @@ const FINISHING_LABEL: Record<SoftCoverOffsetFinishingType, string> = {
   'Laminasi Doff + Spot UV + Emboss + Lem Bending + Shrink,': 'Full Paket',
 };
 
-interface SoftCoverOffsetSimulatorProps {
-  combo: SoftCoverOffsetComboId;
-  customParams?: SoftCoverOffsetMasterParams;
-  setCustomParams?: React.Dispatch<React.SetStateAction<SoftCoverOffsetMasterParams>>;
+interface BukuSoftCoverUnifiedSimulatorProps {
+  customParams?: SoftCoverUnifiedParams;
+  setCustomParams?: React.Dispatch<React.SetStateAction<SoftCoverUnifiedParams>>;
   onOpenMasterParam?: () => void;
   activeSimulationId?: string | null;
   setActiveSimulationId?: (id: string | null) => void;
@@ -59,46 +73,33 @@ interface SoftCoverOffsetSimulatorProps {
   setActiveSimulationTitle?: (title: string | null) => void;
 }
 
-export default function SoftCoverOffsetSimulator({
-  combo,
-  customParams,
+export default function BukuSoftCoverUnifiedSimulator({
+  customParams = DEFAULT_SOFT_COVER_UNIFIED,
   setCustomParams,
   onOpenMasterParam,
   activeSimulationId: propActiveSimId,
   setActiveSimulationId: propSetActiveSimId,
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
-}: SoftCoverOffsetSimulatorProps) {
-  const cfg = SOFT_COVER_OFFSET_COMBOS[combo];
-  const COMBO_DEFAULT = defaultSoftCoverOffsetParams(combo);
-  const params = customParams ?? COMBO_DEFAULT;
-  const DRAFT_KEY = `sintak_soft_cover_offset_${combo}_draft`;
-  const LS_KEY = `sintak_saved_soft_cover_offset_${combo}_simulations`;
-
-  const draftVal = (key: string, fallback: any) => {
-    try {
-      if (typeof window === 'undefined') return fallback;
-      const raw = localStorage.getItem(DRAFT_KEY);
-      if (!raw) return fallback;
-      const v = JSON.parse(raw)[key];
-      return v === undefined || v === null ? fallback : v;
-    } catch { return fallback; }
-  };
-
-  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', cfg.tiers[0]));
+}: BukuSoftCoverUnifiedSimulatorProps) {
+  const [lini, setLini] = useState<SoftCoverLini>(() => draftVal('lini', 'Klasik'));
+  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 20));
   const [jumlahHalaman, setJumlahHalaman] = useState<number>(() => draftVal('jumlahHalaman', 32));
-  const [mukaCover, setMukaCover] = useState<SoftCoverOffsetMukaType>(() => draftVal('mukaCover', '1 Muka'));
-  const [warnaCover, setWarnaCover] = useState<SoftCoverOffsetWarnaType>(() => draftVal('warnaCover', '4 Warna'));
-  const [warnaIsi, setWarnaIsi] = useState<SoftCoverOffsetWarnaType>(() => draftVal('warnaIsi', '1 Warna'));
-  const [finishing, setFinishing] = useState<SoftCoverOffsetFinishingType>(() => draftVal('finishing', 'None,'));
-  const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', params.marginDefaultPct ?? 30));
+  const [mukaCover, setMukaCover] = useState<SoftCoverMukaType>(() => draftVal('mukaCover', '1 Muka'));
+  const [warnaCover, setWarnaCover] = useState<SoftCoverWarnaType>(() => draftVal('warnaCover', '4 Warna'));
+  const [warnaIsi, setWarnaIsi] = useState<SoftCoverWarnaType>(() => draftVal('warnaIsi', '1 Warna'));
+  const [finishing, setFinishing] = useState<SoftCoverFinishing>(() => draftVal('finishing', 'None,'));
+  const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', customParams.marginDefaultPct ?? 30));
   const [copiedQuote, setCopiedQuote] = useState(false);
 
-  const [savedSimulations, setSavedSimulations] = useState<SavedSoftCoverOffsetSimulationItem[]>([]);
+  const [savedSimulations, setSavedSimulations] = useState<SavedSoftCoverUnifiedItem[]>([]);
   const [simulationTitle, setSimulationTitle] = useState('');
   const [internalActiveId, setInternalActiveId] = useState<string | null>(null);
   const [internalActiveTitle, setInternalActiveTitle] = useState<string | null>(null);
   const [showSimulatorManual, setShowSimulatorManual] = useState(false);
+
+  const tiers = softCoverTiers(lini);
+  const finishingOptions = softCoverFinishingOptions(lini);
 
   const activeSimulationId = propActiveSimId !== undefined ? propActiveSimId : internalActiveId;
   const setActiveSimulationId = (id: string | null) => {
@@ -115,19 +116,20 @@ export default function SoftCoverOffsetSimulator({
     try {
       const raw = localStorage.getItem(LS_KEY);
       if (raw) {
-        const list: SavedSoftCoverOffsetSimulationItem[] = JSON.parse(raw);
-        setSavedSimulations(list.filter((s) => !s.combo || s.combo === combo));
+        const list: SavedSoftCoverUnifiedItem[] = JSON.parse(raw);
+        setSavedSimulations(list);
 
         if (activeSimulationId) {
           const item = list.find((s) => s.id === activeSimulationId);
-          if (item && (!item.combo || item.combo === combo)) {
-            const inp = item.data.input;
+          if (item) {
+            const inp = item.data.input as SoftCoverUnifiedInput;
+            if (inp.lini) setLini(inp.lini);
             setOplah(inp.oplah);
             setJumlahHalaman(inp.jumlahHalaman ?? 32);
-            setMukaCover(inp.mukaCover ?? '1 Muka');
-            setWarnaCover(inp.warnaCover ?? '4 Warna');
-            setWarnaIsi(inp.warnaIsi ?? '1 Warna');
-            setFinishing(inp.finishing ?? 'None,');
+            setMukaCover((inp as any).mukaCover ?? '1 Muka');
+            setWarnaCover((inp as any).warnaCover ?? '4 Warna');
+            setWarnaIsi((inp as any).warnaIsi ?? '1 Warna');
+            setFinishing((inp.finishing ?? 'None,') as SoftCoverFinishing);
             setMarginPct(inp.marginPct);
             setSimulationTitle(item.title);
           }
@@ -139,6 +141,7 @@ export default function SoftCoverOffsetSimulator({
           const rawDraft = localStorage.getItem(DRAFT_KEY);
           if (rawDraft) {
             const d = JSON.parse(rawDraft);
+            if (d.lini) setLini(d.lini);
             if (d.oplah) setOplah(Number(d.oplah));
             if (d.jumlahHalaman) setJumlahHalaman(Number(d.jumlahHalaman));
             if (d.mukaCover) setMukaCover(d.mukaCover);
@@ -150,48 +153,50 @@ export default function SoftCoverOffsetSimulator({
         } catch { /* abaikan draft rusak */ }
       }
     } catch (e) {
-      console.error('Failed to load soft cover offset simulations:', e);
+      console.error('Failed to load buku soft cover simulations:', e);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeSimulationId, combo]);
+  }, [activeSimulationId]);
 
   // Auto-persist draft settingan simulator (tidak reset saat pindah tab)
   useEffect(() => {
     if (activeSimulationId) return;
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify({ oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct }));
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ lini, oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct }));
     } catch { /* abaikan */ }
-  }, [oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct, activeSimulationId, DRAFT_KEY]);
+  }, [lini, oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct, activeSimulationId]);
 
+  // Ganti finishing tak-valid saat pindah lini (Klasik tak kenal 2 opsi offset)
+  useEffect(() => {
+    if (!softCoverFinishingOptions(lini).includes(finishing)) setFinishing('None,');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lini]);
+
+  const input: SoftCoverUnifiedInput = { lini, oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct };
   const result = useMemo(
-    () =>
-      calculateSoftCoverOffsetHpp(
-        { oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct },
-        params,
-        combo
-      ),
-    [oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct, params, combo]
+    () => calculateSoftCoverUnified(input, customParams),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [lini, oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct, customParams]
   );
 
-  const defaultTitle = () => `${cfg.label} 21x29,7 ${jumlahHalaman} Hal (${oplah} pcs)`;
+  const defaultTitle = () => `Buku Soft Cover ${SOFT_COVER_LINI_LABEL[lini]} ${jumlahHalaman} Hal (${oplah} pcs)`;
 
   const handleSaveSimulation = () => {
     const title = simulationTitle.trim() || defaultTitle();
-    const newItem: SavedSoftCoverOffsetSimulationItem = {
-      id: `soft_cover_offset_${combo}_` + Date.now(),
+    const newItem: SavedSoftCoverUnifiedItem = {
+      id: 'buku_soft_cover_' + Date.now(),
       title,
       savedAt: new Date().toISOString(),
-      combo,
       data: result,
-      paramsSnapshot: params,
+      paramsSnapshot: customParams,
     };
     const updated = [newItem, ...savedSimulations.slice(0, 49)];
     setSavedSimulations(updated);
     try {
       localStorage.setItem(LS_KEY, JSON.stringify(updated));
-      saveCalculationToDb({ ...newItem, category: cfg.category });
+      saveCalculationToDb({ ...newItem, category: 'Buku Soft Cover' });
     } catch (e) {
-      console.error('Failed to save soft cover offset simulation:', e);
+      console.error('Failed to save buku soft cover simulation:', e);
     }
     setSimulationTitle('');
     toast.success(`Kalkulasi "${title}" berhasil disimpan!`);
@@ -205,16 +210,16 @@ export default function SoftCoverOffsetSimulator({
     const title = simulationTitle.trim() || activeSimulationTitle || defaultTitle();
     const updated = savedSimulations.map((item) =>
       item.id === activeSimulationId
-        ? { ...item, title, savedAt: new Date().toISOString(), data: result, paramsSnapshot: params }
+        ? { ...item, title, savedAt: new Date().toISOString(), data: result, paramsSnapshot: customParams }
         : item
     );
     setSavedSimulations(updated);
     try {
       localStorage.setItem(LS_KEY, JSON.stringify(updated));
       const targetItem = updated.find((x) => x.id === activeSimulationId);
-      if (targetItem) saveCalculationToDb({ ...targetItem, category: cfg.category });
+      if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Buku Soft Cover' });
     } catch (e) {
-      console.error('Failed to update soft cover offset simulation:', e);
+      console.error('Failed to update buku soft cover simulation:', e);
     }
     setActiveSimulationTitle(title);
     toast.success(`Perubahan "${title}" berhasil disimpan!`);
@@ -223,15 +228,16 @@ export default function SoftCoverOffsetSimulator({
     setSimulationTitle('');
   };
 
+  const ukuranLabel = lini === 'Klasik' || lini === 'Oliver-Oliver' || lini === 'Print-Oliver' || lini === 'Print-Print' ? '21 × 29,7' : '14,5 × 20,25';
+
   const handleCopyQuote = () => {
     const fmt = (n: number) => n.toLocaleString('id-ID');
     const text =
-      `*PENAWARAN BUKU SOFT COVER ${cfg.label.toUpperCase()}*\n` +
+      `*PENAWARAN BUKU SOFT COVER*\n` +
       `*PT Buya Barokah*\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
-      `• *Produk*: Buku Soft Cover 21 × 29,7 cm ${jumlahHalaman} Hal\n` +
-      `• *Cover*: Art Carton 230 gsm ${mukaCover} ${warnaCover} (${cfg.coverMesin})\n` +
-      `• *Isi*: HVS 70 gsm ${warnaIsi} (${cfg.isiMesin})\n` +
+      `• *Produk*: Buku Soft Cover ${ukuranLabel} cm ${jumlahHalaman} Hal\n` +
+      `• *Lini*: ${SOFT_COVER_LINI_LABEL[lini]} — Cover ${mukaCover} ${warnaCover}, Isi ${warnaIsi}\n` +
       `• *Finishing*: ${FINISHING_LABEL[finishing]} + Sisir\n` +
       `• *Kuantitas*: ${oplah} pcs\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
@@ -242,7 +248,7 @@ export default function SoftCoverOffsetSimulator({
 
     navigator.clipboard.writeText(text);
     setCopiedQuote(true);
-    toast.success('Penawaran harga berhasil disalin ke WhatsApp clipboard!');
+    toast.success('Penawaran harga Buku Soft Cover berhasil disalin ke WhatsApp clipboard!');
     setTimeout(() => setCopiedQuote(false), 2000);
   };
 
@@ -263,13 +269,13 @@ export default function SoftCoverOffsetSimulator({
           </div>
           <div>
             <h3 className="font-bold text-sm sm:text-base text-emerald-950 flex items-center gap-2">
-              Simulator {cfg.label} 21×29,7
+              Simulator &amp; Kalkulator Buku Soft Cover
               <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
-                Katalog 17
+                Katalog 17–18
               </span>
             </h3>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              {cfg.description} — HPP, harga, dan profit per pcs.
+              1 produk · 2 ukuran · 8 lini mesin (21×29,7 &amp; 14,5×20,25) — HPP, harga, dan profit per pcs.
             </p>
           </div>
         </div>
@@ -357,32 +363,58 @@ export default function SoftCoverOffsetSimulator({
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
               <Sliders size={15} className="text-emerald-700" />
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Input Spesifikasi {cfg.label}</h3>
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Input Spesifikasi Buku Soft Cover</h3>
+            </div>
+
+            {/* Lini Mesin */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Lini Mesin (terkunci per file Excel)
+              </label>
+              <select
+                value={lini}
+                onChange={(e) => setLini(e.target.value as SoftCoverLini)}
+                className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none cursor-pointer"
+              >
+                <optgroup label="21 × 29,7 cm">
+                  {SOFT_COVER_LINIS_21.map((l) => (
+                    <option key={l} value={l}>{SOFT_COVER_LINI_LABEL[l]}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="14,5 × 20,25 cm">
+                  {SOFT_COVER_LINIS_14.map((l) => (
+                    <option key={l} value={l}>{SOFT_COVER_LINI_LABEL[l]}</option>
+                  ))}
+                </optgroup>
+              </select>
+              <p className="text-[10px] text-slate-500 mt-1 italic">
+                {ukuranLabel} · tier {tiers[0]}–{tiers[tiers.length - 1]} pcs · di luar lini ini Excel #DIV/0!
+              </p>
             </div>
 
             {/* Oplah + Halaman */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Oplah (pcs) — Master!D7
+                  Oplah (pcs)
                 </label>
                 <select
-                  value={cfg.tiers.includes(oplah) ? oplah : 'custom'}
+                  value={tiers.includes(oplah) ? oplah : 'custom'}
                   onChange={(e) => {
                     const v = e.target.value;
                     if (v !== 'custom') setOplah(Number(v));
                   }}
                   className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none cursor-pointer"
                 >
-                  {cfg.tiers.map((t) => (
+                  {tiers.map((t) => (
                     <option key={t} value={t}>{t.toLocaleString('id-ID')} pcs</option>
                   ))}
-                  {!cfg.tiers.includes(oplah) && <option value="custom">{oplah.toLocaleString('id-ID')} pcs (custom)</option>}
+                  {!tiers.includes(oplah) && <option value="custom">{oplah.toLocaleString('id-ID')} pcs (custom)</option>}
                 </select>
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Halaman — Master!D6
+                  Halaman — D6
                 </label>
                 <input
                   type="number"
@@ -396,20 +428,20 @@ export default function SoftCoverOffsetSimulator({
               </div>
             </div>
             <p className="text-[10px] text-slate-500 -mt-2">
-              Cover {result.kebutuhanKertasCover} lbr plano · Isi {result.kebutuhanPlanoIsi} lbr plano · Cover {cfg.coverMesin} + Isi {cfg.isiMesin} (dikunci)
+              Cover {result.kebutuhanKertasCover} lbr plano · Isi {result.kebutuhanPlanoIsi} lbr plano
             </p>
 
             {/* Grup Cover */}
             <div className="rounded-xl border border-sky-200 bg-sky-50/50 p-3 space-y-3">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-sky-900 bg-sky-200/80 px-2 py-0.5 rounded">Cover</span>
-                <label className="text-xs font-bold text-sky-900">{cfg.coverMesin} — Master!D14/D15</label>
+                <label className="text-xs font-bold text-sky-900">Muka &amp; Warna — D14/D15</label>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-600 mb-1">Muka Cover</label>
                   <div className="grid grid-cols-2 gap-2">
-                    {SOFT_COVER_OFFSET_MUKA_OPTIONS.map((m) => (
+                    {(['1 Muka', '2 Muka'] as const).map((m) => (
                       <button key={m} type="button" onClick={() => setMukaCover(m)} className={optBtn(mukaCover === m)}>
                         {m}
                       </button>
@@ -419,7 +451,7 @@ export default function SoftCoverOffsetSimulator({
                 <div>
                   <label className="block text-[11px] font-bold text-slate-600 mb-1">Warna Cover</label>
                   <div className="grid grid-cols-2 gap-2">
-                    {SOFT_COVER_OFFSET_WARNA_OPTIONS.map((w) => (
+                    {(['1 Warna', '2 Warna', '3 Warna', '4 Warna'] as const).map((w) => (
                       <button key={w} type="button" onClick={() => setWarnaCover(w)} className={optBtn(warnaCover === w)}>
                         {w}
                       </button>
@@ -433,11 +465,10 @@ export default function SoftCoverOffsetSimulator({
             <div className="rounded-xl border border-violet-200 bg-violet-50/50 p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-violet-900 bg-violet-200/80 px-2 py-0.5 rounded">Isi</span>
-                <label className="text-xs font-bold text-violet-900">{cfg.isiMesin} — Master!D24</label>
+                <label className="text-xs font-bold text-violet-900">Warna Isi — D24</label>
               </div>
-              <label className="block text-[11px] font-bold text-slate-600 mb-1">Warna Isi</label>
               <div className="grid grid-cols-4 gap-2">
-                {SOFT_COVER_OFFSET_WARNA_OPTIONS.map((w) => (
+                {(['1 Warna', '2 Warna', '3 Warna', '4 Warna'] as const).map((w) => (
                   <button key={w} type="button" onClick={() => setWarnaIsi(w)} className={optBtn(warnaIsi === w)}>
                     {w.replace(' Warna', 'W')}
                   </button>
@@ -449,21 +480,25 @@ export default function SoftCoverOffsetSimulator({
             <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded">Finishing</span>
-                <label className="text-xs font-bold text-amber-900">Catatan — Master!D29</label>
+                <label className="text-xs font-bold text-amber-900">Catatan — D29</label>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                {SOFT_COVER_OFFSET_FINISHING_OPTIONS.map((f) => (
+                {finishingOptions.map((f) => (
                   <button key={f} type="button" onClick={() => setFinishing(f)} className={optBtn(finishing === f)}>
                     {FINISHING_LABEL[f]}
                   </button>
                 ))}
               </div>
-              <p className="text-[10px] text-slate-500 italic">9 opsi terkomputasi (SpotUV/Emboss/Shrink/Packing hidup untuk 21×29,7).</p>
+              <p className="text-[10px] text-slate-500 italic">
+                {lini === 'Klasik'
+                  ? 'Klasik: 7 opsi (Glossy+Bending & full-paket #DIV/0! di file Klasik).'
+                  : 'Offset: 9 opsi terkomputasi penuh.'}
+              </p>
             </div>
 
             {/* Margin */}
             <div className="pt-2 border-t border-slate-100">
-              <label className="block text-xs font-bold text-slate-700 mb-1">Margin Profit (%) — Master!E37</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Margin Profit (%)</label>
               <div className="relative">
                 <input
                   type="number"
@@ -533,7 +568,7 @@ export default function SoftCoverOffsetSimulator({
               <div className="flex items-center gap-2">
                 <FileText size={15} className="text-emerald-700" />
                 <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Rincian Biaya {cfg.label}
+                  Rincian Biaya {SOFT_COVER_LINI_LABEL[lini]}
                 </h4>
               </div>
               <span className="text-[11px] font-bold text-slate-500">
@@ -634,9 +669,9 @@ export default function SoftCoverOffsetSimulator({
                   <Calculator className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold tracking-tight">Panduan Simulator {cfg.label} 21×29,7</h3>
+                  <h3 className="text-base font-bold tracking-tight">Panduan Simulator Buku Soft Cover</h3>
                   <p className="text-xs text-emerald-200/90 mt-0.5">
-                    Cover {cfg.coverMesin} + Isi {cfg.isiMesin} — 9 finishing terkomputasi
+                    1 produk · 2 ukuran · 8 lini mesin — pilih lini sesuai file Excel sumbernya
                   </p>
                 </div>
               </div>
@@ -653,13 +688,13 @@ export default function SoftCoverOffsetSimulator({
               <div className="space-y-3">
                 <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                  Langkah Menggunakan Simulator {cfg.label}
+                  Langkah Menggunakan Simulator Buku Soft Cover
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   {[
-                    ['1. Oplah & Halaman', `Tier file ${cfg.tiers[0]}–${cfg.tiers[cfg.tiers.length - 1]} pcs atau custom. Halaman bebas (tersimpan 32).`],
-                    ['2. Cover & Isi', `Cover ${cfg.coverMesin} (muka/warna), Isi ${cfg.isiMesin} (warna). Mesin dikunci sesuai file.`],
-                    ['3. Finishing & Margin', 'Sembilan finishing Master!D29 termasuk full paket (SpotUV+Emboss+Bending+Shrink). Margin 30%, harga ke puluhan.'],
+                    ['1. Lini & Oplah', 'Pilih 1 dari 8 lini (21×29,7: Klasik/OO/PO/PP; 14,5×20,25: OO/OR/PP/PR). Tier oplah mengikuti file tiap lini.'],
+                    ['2. Spesifikasi', 'Atur halaman, muka & warna cover, warna isi. Mesin dikunci per lini (di luar lini = #DIV/0! di Excel).'],
+                    ['3. Finishing & Margin', 'Pilih finishing D29 (Klasik 7 opsi, offset 9 opsi). Margin 30% — harga ke puluhan, tanpa nego.'],
                     ['4. Salin Penawaran', 'Klik Salin Penawaran untuk teks WA otomatis, atau Simpan Kalkulasi Ini ke Daftar Kalkulasi di bawah tabel rincian.'],
                   ].map(([title, desc]) => (
                     <div key={title} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
@@ -673,19 +708,19 @@ export default function SoftCoverOffsetSimulator({
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5">
                 <h5 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
                   <Layers className="w-4 h-4 text-emerald-700" />
-                  Struktur Biaya {cfg.label}
+                  Struktur Biaya per Generasi Engine
                 </h5>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
                   <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
-                    <span className="font-bold text-emerald-900 block">Cover &amp; Isi:</span>
+                    <span className="font-bold text-emerald-900 block">Klasik PI–Oliver (folder 17):</span>
                     <p className="text-slate-600 leading-snug">
-                      {cfg.description}. Total 30 suku BUKU!DC7: kertas, desain, plate, cetak, jasa UMR, SpotUV/Emboss/Shrink/Packing.
+                      Cover Rp 2.700×(oplah+5), desain isi Rp 15.000×halaman, plate/min/drek Oliver, susun/steples-9/sisir-150, laminasi floor 50rb. Total 25 suku (CX).
                     </p>
                   </div>
                   <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">
-                    <span className="font-bold text-blue-900 block">Finishing &amp; Margin:</span>
+                    <span className="font-bold text-blue-900 block">Offset 7 lini (folder 17-21 &amp; 18):</span>
                     <p className="text-slate-600 leading-snug">
-                      Laminasi 1.320 cm²×rate×oplah×muka floor Rp 50.000; bending floor Rp 100.000. Margin 30%, tanpa nego (sesuai Excel).
+                      5 jasa UMR atau BN/steples, SpotUV/Emboss/Shrink/Packing hidup, desain Rp 2.500×hal/4, packing kardus bracket halaman. Total 30 suku (DC).
                     </p>
                   </div>
                 </div>
