@@ -105,19 +105,7 @@ export default function BukuSoftCoverUnifiedMasterParameter({
   ) => {
     const isRupiah = opts?.rupiah ?? true;
     const isDecimal = opts?.decimal ?? false;
-  const subGroup = (
-    borderCls: string,
-    labelCls: string,
-    title: string,
-    children: React.ReactNode
-  ) => (
-    <div className={`rounded-lg border ${borderCls} bg-white/70 p-2.5 space-y-2`}>
-      <span className={`block text-[10px] font-black uppercase tracking-wider ${labelCls}`}>{title}</span>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">{children}</div>
-    </div>
-  );
-
-  return (
+    return (
       <div
         className={`p-2.5 rounded-lg border transition-all ${
           isFieldModified(key)
@@ -153,6 +141,18 @@ export default function BukuSoftCoverUnifiedMasterParameter({
       </div>
     );
   };
+
+  const subGroup = (
+    borderCls: string,
+    labelCls: string,
+    title: string,
+    children: React.ReactNode
+  ) => (
+    <div className={`rounded-lg border ${borderCls} bg-white/70 p-2.5 space-y-2`}>
+      <span className={`block text-[10px] font-black uppercase tracking-wider ${labelCls}`}>{title}</span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">{children}</div>
+    </div>
+  );
 
   return (
     <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
