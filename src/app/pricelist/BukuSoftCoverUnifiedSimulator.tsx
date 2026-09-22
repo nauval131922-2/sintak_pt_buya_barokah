@@ -579,8 +579,8 @@ export default function BukuSoftCoverUnifiedSimulator({
             {/* Grup Saklar Komponen */}
             <div className="rounded-xl border border-slate-300 bg-slate-50/70 p-3 space-y-2">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-800 bg-slate-200 px-2 py-0.5 rounded">Saklar</span>
-                <label className="text-xs font-bold text-slate-800">Komponen Bebas (rumus tetap Excel)</label>
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-800 bg-slate-200 px-2 py-0.5 rounded">Opsional</span>
+                <label className="text-xs font-bold text-slate-800">Komponen Tambahan</label>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {(lini === 'Klasik'
