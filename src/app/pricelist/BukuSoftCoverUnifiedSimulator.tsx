@@ -425,34 +425,6 @@ export default function BukuSoftCoverUnifiedSimulator({
               </div>
             </div>
 
-            {/* 2. Mesin Cover & 3. Mesin Isi */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Mesin Cover — D16
-                </label>
-                <div className="grid grid-cols-1 gap-2">
-                  {SOFT_COVER_COVER_OPTIONS[ukuran].map((m) => (
-                    <button key={m} type="button" onClick={() => pickCascade(ukuran, m, SOFT_COVER_ISI_OPTIONS[ukuran].includes(mesinIsi) ? mesinIsi : SOFT_COVER_ISI_OPTIONS[ukuran][0])} className={optBtn(mesinCover === m)}>
-                      {m}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Mesin Isi — D25
-                </label>
-                <div className="grid grid-cols-1 gap-2">
-                  {SOFT_COVER_ISI_OPTIONS[ukuran].map((m) => (
-                    <button key={m} type="button" onClick={() => pickCascade(ukuran, mesinCover, m)} className={optBtn(mesinIsi === m)}>
-                      {m}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
             {/* File sumber hasil cascade */}
             <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 space-y-2">
               <label className="block text-xs font-bold text-slate-800">
@@ -528,6 +500,16 @@ export default function BukuSoftCoverUnifiedSimulator({
                 <span className="text-[10px] font-black uppercase tracking-wider text-sky-900 bg-sky-200/80 px-2 py-0.5 rounded">Cover</span>
                 <label className="text-xs font-bold text-sky-900">Muka &amp; Warna — D14/D15</label>
               </div>
+              <div>
+                <label className="block text-[11px] font-bold text-sky-900/80 mb-1">Mesin Cover — D16</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {SOFT_COVER_COVER_OPTIONS[ukuran].map((m) => (
+                    <button key={m} type="button" onClick={() => pickCascade(ukuran, m, SOFT_COVER_ISI_OPTIONS[ukuran].includes(mesinIsi) ? mesinIsi : SOFT_COVER_ISI_OPTIONS[ukuran][0])} className={optBtn(mesinCover === m)}>
+                      {m}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-600 mb-1">Muka Cover</label>
@@ -557,6 +539,16 @@ export default function BukuSoftCoverUnifiedSimulator({
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-violet-900 bg-violet-200/80 px-2 py-0.5 rounded">Isi</span>
                 <label className="text-xs font-bold text-violet-900">Warna Isi — D24</label>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-violet-900/80 mb-1">Mesin Isi — D25</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {SOFT_COVER_ISI_OPTIONS[ukuran].map((m) => (
+                    <button key={m} type="button" onClick={() => pickCascade(ukuran, mesinCover, m)} className={optBtn(mesinIsi === m)}>
+                      {m}
+                    </button>
+                  ))}
+                </div>
               </div>
               <div className="grid grid-cols-4 gap-2">
                 {(['1 Warna', '2 Warna', '3 Warna', '4 Warna'] as const).map((w) => (
