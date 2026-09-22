@@ -646,7 +646,7 @@ export default function BukuSoftCoverUnifiedSimulator({
 
             <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-emerald-800 mb-1">
-                <span className="text-[11px] font-bold">Harga Jual (+{result.marginPct}%)</span>
+                <span className="text-[11px] font-bold">Harga Jual (+{custom ? result.marginPct : marginPct}%)</span>
                 <TrendingUp size={13} className="text-emerald-600" />
               </div>
               <div>
