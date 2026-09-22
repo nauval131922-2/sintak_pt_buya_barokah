@@ -300,7 +300,7 @@ export default function BukuSoftCoverUnifiedSimulator({
   const optBtn = (active: boolean) =>
     `py-2 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
       active
-        ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
+        ? 'border-slate-800 bg-slate-800 text-white shadow-xs'
         : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
     }`;
 
@@ -453,10 +453,10 @@ export default function BukuSoftCoverUnifiedSimulator({
               </div>
             </div>
 
-            {/* 4. Sumber file hasil cascade */}
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-3 space-y-2">
-              <label className="block text-xs font-bold text-emerald-900">
-                File sumber: {SOFT_COVER_LINI_LABEL[lini]} <span className="font-normal text-emerald-700">(tier {tiers[0]}–{tiers[tiers.length - 1]} pcs)</span>
+            {/* File sumber hasil cascade */}
+            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 space-y-2">
+              <label className="block text-xs font-bold text-slate-800">
+                File sumber: {SOFT_COVER_LINI_LABEL[lini]} <span className="font-normal text-slate-500">(tier {tiers[0]}–{tiers[tiers.length - 1]} pcs)</span>
               </label>
               {candidates.length > 1 ? (
                 <div className="grid grid-cols-1 gap-2">
@@ -467,7 +467,7 @@ export default function BukuSoftCoverUnifiedSimulator({
                   ))}
                 </div>
               ) : (
-                <p className="text-[10px] text-emerald-700 italic">
+                <p className="text-[10px] text-slate-500 italic">
                   Otomatis ketemu 1 file Excel untuk kombinasi ini.
                 </p>
               )}
@@ -494,7 +494,7 @@ export default function BukuSoftCoverUnifiedSimulator({
                       onClick={() => setOplah(t)}
                       className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition cursor-pointer ${
                         oplah === t
-                          ? 'border-emerald-600 bg-emerald-600 text-white'
+                          ? 'border-slate-800 bg-slate-800 text-white'
                           : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
                       }`}
                     >
