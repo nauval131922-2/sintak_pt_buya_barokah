@@ -415,23 +415,20 @@ export function applyGlobalParamsToAll(
 
   const nextBukuTabunganSecurity: BukuTabunganSecurityMasterParams = {
     ...currBukuTabunganSecurity,
+    umr: g.umr,
     tarifKertasCoverKg: g.tarifAc260Kg,
     upKertasCoverPct: g.upKertasPct,
     tarifKertasIsiKg: g.tarifHvs70,
     upKertasIsiPct: g.upKertasPct,
     tarifPrintCoverA3: g.tarifPrintA3,
     tarifPrintIsiA3: g.tarifPrintInter1Muka,
-    tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
-    minLaminasi: g.minLaminasi,
-    tarifSusunLipatPerPcs: g.tarifSisirPcs,
-    tarifJahitPerPcs: g.tarifStaplesPcs * 5,
-    tarifPoundPerPcs: g.tarifSisirPcs * 2,
-    tarifPlastikSringPerPcs: g.tarifPlastikOppPcs,
+    tarifDesainCover: g.tarifDesainStandar,
+    tarifLamGlossy: g.tarifLaminasiGlossyCm2,
+    tarifLamDoff: g.tarifLaminasiDoffCm2,
     tarifKardusBox: g.tarifKardusBox,
     tarifLakbanRoll: g.tarifLakbanRoll,
-    tarifDesignCover: g.tarifDesainStandar,
-    marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
+    minLaminasi: g.minLaminasi,
+    labaPct: g.defaultMarginPct,
   };
 
   const nextKartuKoperasiPromise: KartuKoperasiPromiseMasterParams = {

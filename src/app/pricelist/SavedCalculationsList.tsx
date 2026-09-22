@@ -791,23 +791,24 @@ export default function SavedCalculationsList({
     // 16. Buku Tabungan Security
     bukuTabunganSecurityList.forEach((b: any) => {
       const inp = (b.data && b.data.input) ? b.data.input : (b.input || b.data || b || {});
+      const finLabel = (inp.finishing ?? 'Laminasi Glossy,').replace(/,$/, '');
       items.push({
         id: b.id,
         category: 'Buku Tabungan Security',
         savedAt: b.savedAt,
         title: b.title,
-        oplah: inp.oplah,
-        specSummary: `Buku Tabungan Security ${inp.varian} • ${inp.oplah.toLocaleString('id-ID')} pcs`,
+        oplah: inp.oplahPcs,
+        specSummary: `Buku Tabungan Security ${inp.jumlahHalaman ?? ''} Hal ${(inp.oplahPcs ?? 0).toLocaleString('id-ID')} pcs`,
         detailSpecs: [
-          `Bahan: Cover Ivory 260 Security 1 Muka FC + HVS 70 1W BB · ${b.data.kebutuhanCoverA3 + b.data.kebutuhanIsiA3} lbr A3+`,
-          `Finishing: Laminasi Glossy + Foil Emas + Numbering + Susun Lipat + Jahit + Pound + Sring + Packing Kardus`,
+          `Cover: ${inp.bahanCover ?? ''} ${inp.gramaturCover ?? ''} ${inp.warnaCover ?? ''}W${inp.mukaCover ?? ''}M ${inp.mesinCover ?? ''} · Isi: ${inp.bahanIsi ?? ''} ${inp.gramaturIsi ?? ''} ${inp.warnaIsi ?? ''}W ${inp.mesinIsi ?? ''} · ${b.data?.kebutuhanCoverPlano ?? ''}+${b.data?.kebutuhanIsiPlano ?? ''} plano`,
+          `Finishing: ${finLabel}${inp.jahitAktif ? ' + Jahit' : ''}${inp.kardusAktif ? ' + Kardus' : ''}`,
           `Margin: ${inp.marginPct}%`,
         ],
         hppUnit: (b.data?.hppPerPcs ?? b.hppPerPcs ?? 0),
-        hargaJualUnit: (b.data?.hargaJualPerPcs ?? b.hargaJualPerPcs ?? 0),
-        totalOmset: (b.data?.totalHargaJual ?? b.totalHargaJual ?? 0),
+        hargaJualUnit: (b.data?.hargaFinalPerPcs ?? b.hargaFinalPerPcs ?? 0),
+        totalOmset: (b.data?.totalHarga ?? b.totalHarga ?? 0),
         marginPct: inp.marginPct,
-        negoDiskonPct: inp.negoDiskonPct,
+        negoDiskonPct: 0,
         rawData: b,
       });
     });
@@ -1735,7 +1736,7 @@ export default function SavedCalculationsList({
     } else if (item.category === 'Buku Tabungan Security') {
       const b: any = item.rawData;
       const inp = (b.data && b.data.input) ? b.data.input : (b.input || b.data || b || {});
-      text = `*PENAWARAN BUKU TABUNGAN SECURITY*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Tabungan Security ${inp.varian} 9×14,5 cm\n• *Bahan*: Cover Ivory 260 gsm Security 1 Muka FC + Laminasi Glossy + Foil Emas, Isi HVS 70 gsm 1W BB\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs (${b.data.kebutuhanCoverA3 + b.data.kebutuhanIsiA3} lbr A3+)\n• *Finishing*: Susun Lipat + Jahit + Pound + Foil Emas + Numbering Seri + Plastik Sring + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${(b.data?.hargaJualPerPcs ?? b.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(b.data?.totalHargaJual ?? b.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
+      text = `*PENAWARAN BUKU TABUNGAN SECURITY*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Buku Tabungan Security ${inp.jumlahHalaman ?? ''} Hal 9×14,5 cm\n• *Spesifikasi*: Cover ${inp.bahanCover ?? ''} ${inp.gramaturCover ?? ''} gsm ${inp.warnaCover ?? ''}W${inp.mukaCover ?? ''}M (${inp.mesinCover ?? ''}), Isi ${inp.bahanIsi ?? ''} ${inp.gramaturIsi ?? ''} gsm ${inp.warnaIsi ?? ''}W (${inp.mesinIsi ?? ''}), ${((inp.finishing ?? 'Laminasi Glossy,').replace(/,$/, ''))}${inp.jahitAktif ? ', Jahit' : ''}${inp.kardusAktif ? ', Kardus' : ''}\n• *Kuantitas*: ${(inp.oplahPcs ?? 0).toLocaleString('id-ID')} pcs\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${(b.data?.hargaFinalPerPcs ?? b.hargaFinalPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${Math.round(b.data?.totalHarga ?? b.totalHarga ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Kartu Koperasi Promise') {
       const k: any = item.rawData;
       const inp = (k.data && k.data.input) ? k.data.input : (k.input || k.data || k || {});
