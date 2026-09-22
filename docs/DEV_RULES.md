@@ -107,7 +107,7 @@ Sebelum menyatakan fitur selesai, pastikan:
 - [ ] Warna tema konsisten (hijau, bukan biru)
 - [ ] Tidak ada `alert()` atau `window.confirm()` — ganti dengan Toast atau modal proper
 - [ ] Dropdown dalam modal → z-index panel sudah lebih tinggi dari modal
-- [ ] Ubah UI/perilaku halaman → entry baru di `PAGE_CHANGELOGS` (`src/lib/page-changelogs.ts`) — **jangan hapus entry lama** (history rilis wajib dipertahankan, lihat aturan Page Changelog di `AGENTS.md`), lalu jalankan `npm run check:changelog`
+- [ ] Ubah UI/perilaku halaman → entry baru di `PAGE_CHANGELOGS` (`src/lib/page-changelogs.ts`) **hanya jika user memerintahkan eksplisit** — jangan hapus entry lama bila menambah (lihat aturan Page Changelog di `AGENTS.md`)
 - [ ] Panel popup via `<Portal>` → koordinat sudah dibagi `getZoomScale()` (lihat 3.1)
 
 ---
