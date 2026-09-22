@@ -425,26 +425,6 @@ export default function BukuSoftCoverUnifiedSimulator({
               </div>
             </div>
 
-            {/* File sumber hasil cascade */}
-            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 space-y-2">
-              <label className="block text-xs font-bold text-slate-800">
-                File sumber: {SOFT_COVER_LINI_LABEL[lini]} <span className="font-normal text-slate-500">(tier {tiers[0]}–{tiers[tiers.length - 1]} pcs)</span>
-              </label>
-              {candidates.length > 1 ? (
-                <div className="grid grid-cols-1 gap-2">
-                  {candidates.map((c) => (
-                    <button key={c} type="button" onClick={() => setSumberLini(c)} className={optBtn(lini === c)}>
-                      {SOFT_COVER_LINI_LABEL[c]}
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-[10px] text-slate-500 italic">
-                  Otomatis ketemu 1 file Excel untuk kombinasi ini.
-                </p>
-              )}
-            </div>
-
             {/* Oplah ketik + Halaman */}
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -557,6 +537,26 @@ export default function BukuSoftCoverUnifiedSimulator({
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* File sumber hasil cascade */}
+            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 space-y-2">
+              <label className="block text-xs font-bold text-slate-800">
+                File sumber: {SOFT_COVER_LINI_LABEL[lini]} <span className="font-normal text-slate-500">(tier {tiers[0]}–{tiers[tiers.length - 1]} pcs)</span>
+              </label>
+              {candidates.length > 1 ? (
+                <div className="grid grid-cols-1 gap-2">
+                  {candidates.map((c) => (
+                    <button key={c} type="button" onClick={() => setSumberLini(c)} className={optBtn(lini === c)}>
+                      {SOFT_COVER_LINI_LABEL[c]}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[10px] text-slate-500 italic">
+                  Otomatis ketemu 1 file Excel untuk kombinasi ini.
+                </p>
+              )}
             </div>
 
             {/* Grup Finishing */}
