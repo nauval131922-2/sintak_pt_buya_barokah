@@ -45,6 +45,61 @@ export type SoftCoverLini =
   | SoftCoverOffsetComboId
   | SoftCoverCustomLini;
 
+export type SoftCoverUkuran = '21 × 29,7' | '14,5 × 20,25' | '10,5 × 14,8';
+export const SOFT_COVER_UKURANS: SoftCoverUkuran[] = ['21 × 29,7', '14,5 × 20,25', '10,5 × 14,8'];
+
+// Opsi mesin sesuai cabang yang hidup di file Excel (di luar ini = #DIV/0!/0).
+export const SOFT_COVER_COVER_OPTIONS: Record<SoftCoverUkuran, string[]> = {
+  '21 × 29,7': ['Print Inter', 'Oliver'],
+  '14,5 × 20,25': ['Print Inter', 'Oliver'],
+  '10,5 × 14,8': ['Print Inter', 'Oliver'],
+};
+export const SOFT_COVER_ISI_OPTIONS: Record<SoftCoverUkuran, string[]> = {
+  '21 × 29,7': ['Oliver', 'Print'],
+  '14,5 × 20,25': ['Oliver', 'Ryobi', 'Print', 'Print Buya'],
+  '10,5 × 14,8': ['Oliver', 'Ryobi', 'Print Buya'],
+};
+
+// (ukuran, cover, isi) → kandidat lini berurutan (pertama = default).
+// Klasik tetap default untuk (21, PI, Oliver); F21 diutamakan di custom; offset jadi alternatif.
+const CASCADE_MAP: Record<string, SoftCoverLini[]> = {
+  '21 × 29,7|Print Inter|Oliver': ['Klasik', 'Print-Oliver'],
+  '21 × 29,7|Oliver|Oliver': ['Oliver-Oliver'],
+  '21 × 29,7|Print Inter|Print': ['Print-Print'],
+  '14,5 × 20,25|Oliver|Oliver': ['OO-14', 'custom-oo145-21'],
+  '14,5 × 20,25|Oliver|Ryobi': ['OR-14', 'custom-or145-21'],
+  '14,5 × 20,25|Print Inter|Print': ['PP-14'],
+  '14,5 × 20,25|Print Inter|Print Buya': ['custom-pp145-21', 'custom-pp145-19'],
+  '14,5 × 20,25|Print Inter|Ryobi': ['custom-pr145-21', 'PR-14', 'custom-pr145-19'],
+  '10,5 × 14,8|Oliver|Oliver': ['custom-oo105-24'],
+  '10,5 × 14,8|Print Inter|Oliver': ['custom-po105-24'],
+  '10,5 × 14,8|Print Inter|Print Buya': ['custom-pp105-24'],
+  '10,5 × 14,8|Print Inter|Ryobi': ['custom-pr105-24'],
+};
+
+export function resolveLiniCandidates(ukuran: SoftCoverUkuran, mesinCover: string, mesinIsi: string): SoftCoverLini[] {
+  return CASCADE_MAP[`${ukuran}|${mesinCover}|${mesinIsi}`] ?? [];
+}
+
+// Balikan untuk restore riwayat/draft: lini → (ukuran, cover, isi).
+export function liniToSelectors(lini: SoftCoverLini): { ukuran: SoftCoverUkuran; mesinCover: string; mesinIsi: string } {
+  switch (lini) {
+    case 'Klasik': return { ukuran: '21 × 29,7', mesinCover: 'Print Inter', mesinIsi: 'Oliver' };
+    case 'Oliver-Oliver': return { ukuran: '21 × 29,7', mesinCover: 'Oliver', mesinIsi: 'Oliver' };
+    case 'Print-Oliver': return { ukuran: '21 × 29,7', mesinCover: 'Print Inter', mesinIsi: 'Oliver' };
+    case 'Print-Print': return { ukuran: '21 × 29,7', mesinCover: 'Print Inter', mesinIsi: 'Print' };
+    case 'OO-14': return { ukuran: '14,5 × 20,25', mesinCover: 'Oliver', mesinIsi: 'Oliver' };
+    case 'OR-14': return { ukuran: '14,5 × 20,25', mesinCover: 'Oliver', mesinIsi: 'Ryobi' };
+    case 'PP-14': return { ukuran: '14,5 × 20,25', mesinCover: 'Print Inter', mesinIsi: 'Print' };
+    case 'PR-14': return { ukuran: '14,5 × 20,25', mesinCover: 'Print Inter', mesinIsi: 'Ryobi' };
+    default: {
+      const cfg = SOFT_COVER_CUSTOM_CONFIGS[lini as SoftCoverCustomLini];
+      const ukuran = (cfg.ukuran === '10,5 X 14,8' ? '10,5 × 14,8' : '14,5 × 20,25') as SoftCoverUkuran;
+      return { ukuran, mesinCover: cfg.defaultMesinCover, mesinIsi: cfg.defaultMesinIsi };
+    }
+  }
+}
+
 export const isCustomLini = (l: SoftCoverLini): l is SoftCoverCustomLini =>
   typeof l === 'string' && l.startsWith('custom-');
 

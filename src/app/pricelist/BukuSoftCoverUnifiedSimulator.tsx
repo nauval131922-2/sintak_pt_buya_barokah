@@ -29,15 +29,15 @@ import {
   SoftCoverFinishing,
   SavedSoftCoverUnifiedItem,
   SOFT_COVER_LINI_LABEL,
-  SOFT_COVER_LINIS_21,
-  SOFT_COVER_LINIS_14,
-  SOFT_COVER_LINIS_14_CUSTOM,
-  SOFT_COVER_LINIS_105_CUSTOM,
+  SOFT_COVER_UKURANS,
+  SoftCoverUkuran,
+  SOFT_COVER_COVER_OPTIONS,
+  SOFT_COVER_ISI_OPTIONS,
+  resolveLiniCandidates,
+  liniToSelectors,
   isCustomLini,
   defaultFinCustom,
   SoftCoverFinCustom,
-  softCoverMesinCoverOptions,
-  softCoverMesinIsiOptions,
   softCoverTiers,
   softCoverFinishingOptions,
 } from '@/lib/buku-soft-cover-unified';
@@ -90,7 +90,10 @@ export default function BukuSoftCoverUnifiedSimulator({
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: BukuSoftCoverUnifiedSimulatorProps) {
-  const [lini, setLini] = useState<SoftCoverLini>(() => draftVal('lini', 'Klasik'));
+  const [ukuran, setUkuran] = useState<SoftCoverUkuran>(() => draftVal('ukuran', '21 × 29,7'));
+  const [mesinCover, setMesinCover] = useState<string>(() => draftVal('mesinCover', 'Print Inter'));
+  const [mesinIsi, setMesinIsi] = useState<string>(() => draftVal('mesinIsi', 'Oliver'));
+  const [sumberLini, setSumberLini] = useState<SoftCoverLini | null>(() => draftVal('sumberLini', null) ?? draftVal('lini', null));
   const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 20));
   const [jumlahHalaman, setJumlahHalaman] = useState<number>(() => draftVal('jumlahHalaman', 32));
   const [mukaCover, setMukaCover] = useState<SoftCoverMukaType>(() => draftVal('mukaCover', '1 Muka'));
@@ -98,9 +101,7 @@ export default function BukuSoftCoverUnifiedSimulator({
   const [warnaIsi, setWarnaIsi] = useState<SoftCoverWarnaType>(() => draftVal('warnaIsi', '1 Warna'));
   const [finishing, setFinishing] = useState<SoftCoverFinishing>(() => draftVal('finishing', 'None,'));
   const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', customParams.marginDefaultPct ?? 30));
-  const [finCustom, setFinCustom] = useState<SoftCoverFinCustom>(() => draftVal('finCustom', null) ?? defaultFinCustom(draftVal('lini', 'Klasik')));
-  const [mesinCover, setMesinCover] = useState<string | null>(() => draftVal('mesinCover', null));
-  const [mesinIsi, setMesinIsi] = useState<string | null>(() => draftVal('mesinIsi', null));
+  const [finCustom, setFinCustom] = useState<SoftCoverFinCustom>(() => draftVal('finCustom', null) ?? defaultFinCustom('Klasik'));
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedSoftCoverUnifiedItem[]>([]);
@@ -109,6 +110,8 @@ export default function BukuSoftCoverUnifiedSimulator({
   const [internalActiveTitle, setInternalActiveTitle] = useState<string | null>(null);
   const [showSimulatorManual, setShowSimulatorManual] = useState(false);
 
+  const candidates = resolveLiniCandidates(ukuran, mesinCover, mesinIsi);
+  const lini: SoftCoverLini = (sumberLini && (candidates as SoftCoverLini[]).includes(sumberLini) ? sumberLini : candidates[0]) ?? 'Klasik';
   const tiers = softCoverTiers(lini);
   const finishingOptions = softCoverFinishingOptions(lini);
 
@@ -134,7 +137,13 @@ export default function BukuSoftCoverUnifiedSimulator({
           const item = list.find((s) => s.id === activeSimulationId);
           if (item) {
             const inp = item.data.input as SoftCoverUnifiedInput;
-            if (inp.lini) setLini(inp.lini);
+            const sel = inp.lini ? liniToSelectors(inp.lini) : null;
+            if (sel) {
+              setUkuran(sel.ukuran);
+              setMesinCover((inp as any).mesinCover ?? sel.mesinCover);
+              setMesinIsi((inp as any).mesinIsi ?? sel.mesinIsi);
+            }
+            if (inp.lini) setSumberLini(inp.lini);
             setOplah(inp.oplah);
             setJumlahHalaman(inp.jumlahHalaman ?? 32);
             setMukaCover((inp as any).mukaCover ?? '1 Muka');
@@ -143,8 +152,6 @@ export default function BukuSoftCoverUnifiedSimulator({
             setFinishing((inp.finishing ?? 'None,') as SoftCoverFinishing);
             setMarginPct(inp.marginPct);
             if ((inp as any).finCustom) setFinCustom((inp as any).finCustom);
-            setMesinCover((inp as any).mesinCover ?? null);
-            setMesinIsi((inp as any).mesinIsi ?? null);
             setSimulationTitle(item.title);
           }
         }
@@ -155,7 +162,16 @@ export default function BukuSoftCoverUnifiedSimulator({
           const rawDraft = localStorage.getItem(DRAFT_KEY);
           if (rawDraft) {
             const d = JSON.parse(rawDraft);
-            if (d.lini) setLini(d.lini);
+            if (d.ukuran) setUkuran(d.ukuran);
+            else if (d.lini) {
+              // Migrasi draft lama (era dropdown lini) → cascade.
+              const sel = liniToSelectors(d.lini as SoftCoverLini);
+              setUkuran(sel.ukuran); setMesinCover(sel.mesinCover); setMesinIsi(sel.mesinIsi);
+              setSumberLini(d.lini);
+            }
+            if (d.mesinCover) setMesinCover(d.mesinCover);
+            if (d.mesinIsi) setMesinIsi(d.mesinIsi);
+            if (d.sumberLini) setSumberLini(d.sumberLini);
             if (d.oplah) setOplah(Number(d.oplah));
             if (d.jumlahHalaman) setJumlahHalaman(Number(d.jumlahHalaman));
             if (d.mukaCover) setMukaCover(d.mukaCover);
@@ -179,28 +195,26 @@ export default function BukuSoftCoverUnifiedSimulator({
   useEffect(() => {
     if (activeSimulationId) return;
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify({ lini, oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct, finCustom, mesinCover, mesinIsi }));
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ ukuran, mesinCover, mesinIsi, sumberLini, oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct, finCustom }));
     } catch { /* abaikan */ }
-  }, [lini, oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct, finCustom, mesinCover, mesinIsi, activeSimulationId]);
+  }, [ukuran, mesinCover, mesinIsi, sumberLini, oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct, finCustom, activeSimulationId]);
 
-  // Ganti finishing tak-valid saat pindah lini (Klasik tak kenal 2 opsi offset)
+  // Ganti finishing tak-valid & reset toggle jasa saat lini hasil cascade berubah
   useEffect(() => {
     if (activeSimulationId) return; // jangan timpa restore riwayat
     if (!softCoverFinishingOptions(lini).includes(finishing)) setFinishing('None,');
-    if (isCustomLini(lini)) {
-      setFinCustom(defaultFinCustom(lini));
-      setMesinCover(null);
-      setMesinIsi(null);
-    }
+    if (isCustomLini(lini)) setFinCustom(defaultFinCustom(lini));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lini]);
 
+  const pickCascade = (u: SoftCoverUkuran, mc: string, mi: string) => {
+    setUkuran(u); setMesinCover(mc); setMesinIsi(mi); setSumberLini(null);
+  };
+
   const custom = isCustomLini(lini);
   const customCfg = custom ? SOFT_COVER_CUSTOM_CONFIGS[lini] : null;
-  const mcAktif = custom && customCfg ? (mesinCover ?? customCfg.defaultMesinCover) : '';
-  const miAktif = custom && customCfg ? (mesinIsi ?? customCfg.defaultMesinIsi) : '';
   const input: SoftCoverUnifiedInput = custom
-    ? { lini, oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct, finCustom, ...(mesinCover ? { mesinCover } : {}), ...(mesinIsi ? { mesinIsi } : {}) }
+    ? { lini, oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct, finCustom, mesinCover, mesinIsi }
     : { lini, oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct };
   const result = useMemo(
     () => calculateSoftCoverUnified(input, customParams),
@@ -268,7 +282,7 @@ export default function BukuSoftCoverUnifiedSimulator({
       `━━━━━━━━━━━━━━━━━━━━\n` +
       `• *Produk*: Buku Soft Cover ${ukuranLabel} cm ${jumlahHalaman} Hal\n` +
       `• *Lini*: ${SOFT_COVER_LINI_LABEL[lini]} — Cover ${mukaCover} ${warnaCover}, Isi ${warnaIsi}\n` +
-      (custom ? `• *Mesin*: Cover ${mcAktif}, Isi ${miAktif}\n` : '') +
+      (custom ? `• *Mesin*: Cover ${mesinCover}, Isi ${mesinIsi}\n` : '') +
       `• *Finishing*: ${FINISHING_LABEL[finishing]} + Sisir\n` +
       `• *Kuantitas*: ${oplah} pcs\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
@@ -397,61 +411,97 @@ export default function BukuSoftCoverUnifiedSimulator({
               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Input Spesifikasi Buku Soft Cover</h3>
             </div>
 
-            {/* Lini Mesin */}
+            {/* 1. Ukuran */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Lini Mesin (terkunci per file Excel)
+                1. Ukuran jadi (cm)
               </label>
-              <select
-                value={lini}
-                onChange={(e) => setLini(e.target.value as SoftCoverLini)}
-                className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none cursor-pointer"
-              >
-                <optgroup label="21 × 29,7 cm">
-                  {SOFT_COVER_LINIS_21.map((l) => (
-                    <option key={l} value={l}>{SOFT_COVER_LINI_LABEL[l]}</option>
-                  ))}
-                </optgroup>
-                <optgroup label="14,5 × 20,25 cm">
-                  {SOFT_COVER_LINIS_14.map((l) => (
-                    <option key={l} value={l}>{SOFT_COVER_LINI_LABEL[l]}</option>
-                  ))}
-                </optgroup>
-                <optgroup label="14,5 × 20,25 cm Custom (F19/F21)">
-                  {SOFT_COVER_LINIS_14_CUSTOM.map((l) => (
-                    <option key={l} value={l}>{SOFT_COVER_LINI_LABEL[l]}</option>
-                  ))}
-                </optgroup>
-                <optgroup label="10,5 × 14,8 cm Custom (F24)">
-                  {SOFT_COVER_LINIS_105_CUSTOM.map((l) => (
-                    <option key={l} value={l}>{SOFT_COVER_LINI_LABEL[l]}</option>
-                  ))}
-                </optgroup>
-              </select>
-              <p className="text-[10px] text-slate-500 mt-1 italic">
-                {ukuranLabel} · tier {tiers[0]}–{tiers[tiers.length - 1]} pcs · di luar lini ini Excel #DIV/0!
-              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {SOFT_COVER_UKURANS.map((u) => (
+                  <button key={u} type="button" onClick={() => pickCascade(u, SOFT_COVER_COVER_OPTIONS[u].includes(mesinCover) ? mesinCover : SOFT_COVER_COVER_OPTIONS[u][0], SOFT_COVER_ISI_OPTIONS[u].includes(mesinIsi) ? mesinIsi : SOFT_COVER_ISI_OPTIONS[u][0])} className={optBtn(ukuran === u)}>
+                    {u}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Oplah + Halaman */}
+            {/* 2. Mesin Cover & 3. Mesin Isi */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  2. Mesin Cover — D16
+                </label>
+                <div className="grid grid-cols-1 gap-2">
+                  {SOFT_COVER_COVER_OPTIONS[ukuran].map((m) => (
+                    <button key={m} type="button" onClick={() => pickCascade(ukuran, m, SOFT_COVER_ISI_OPTIONS[ukuran].includes(mesinIsi) ? mesinIsi : SOFT_COVER_ISI_OPTIONS[ukuran][0])} className={optBtn(mesinCover === m)}>
+                      {m}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  3. Mesin Isi — D25
+                </label>
+                <div className="grid grid-cols-1 gap-2">
+                  {SOFT_COVER_ISI_OPTIONS[ukuran].map((m) => (
+                    <button key={m} type="button" onClick={() => pickCascade(ukuran, mesinCover, m)} className={optBtn(mesinIsi === m)}>
+                      {m}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* 4. Sumber file hasil cascade */}
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-3 space-y-2">
+              <label className="block text-xs font-bold text-emerald-900">
+                4. File sumber: {SOFT_COVER_LINI_LABEL[lini]} <span className="font-normal text-emerald-700">(tier {tiers[0]}–{tiers[tiers.length - 1]} pcs)</span>
+              </label>
+              {candidates.length > 1 ? (
+                <div className="grid grid-cols-1 gap-2">
+                  {candidates.map((c) => (
+                    <button key={c} type="button" onClick={() => setSumberLini(c)} className={optBtn(lini === c)}>
+                      {SOFT_COVER_LINI_LABEL[c]}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[10px] text-emerald-700 italic">
+                  Otomatis ketemu 1 file Excel untuk kombinasi ini.
+                </p>
+              )}
+            </div>
+
+            {/* Oplah ketik + Halaman */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Oplah (pcs)
+                  Oplah (pcs) — ketik bebas
                 </label>
-                <select
-                  value={tiers.includes(oplah) ? oplah : 'custom'}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    if (v !== 'custom') setOplah(Number(v));
-                  }}
-                  className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none cursor-pointer"
-                >
+                <input
+                  type="number"
+                  min={1}
+                  value={oplah}
+                  onChange={(e) => setOplah(Math.max(1, Number(e.target.value) || 1))}
+                  className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+                />
+                <div className="flex flex-wrap gap-1 mt-1.5">
                   {tiers.map((t) => (
-                    <option key={t} value={t}>{t.toLocaleString('id-ID')} pcs</option>
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setOplah(t)}
+                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition cursor-pointer ${
+                        oplah === t
+                          ? 'border-emerald-600 bg-emerald-600 text-white'
+                          : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
+                      }`}
+                    >
+                      {t.toLocaleString('id-ID')}
+                    </button>
                   ))}
-                  {!tiers.includes(oplah) && <option value="custom">{oplah.toLocaleString('id-ID')} pcs (custom)</option>}
-                </select>
+                </div>
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
@@ -478,18 +528,6 @@ export default function BukuSoftCoverUnifiedSimulator({
                 <span className="text-[10px] font-black uppercase tracking-wider text-sky-900 bg-sky-200/80 px-2 py-0.5 rounded">Cover</span>
                 <label className="text-xs font-bold text-sky-900">Muka &amp; Warna — D14/D15</label>
               </div>
-              {custom && customCfg && (
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Mesin Cover — D16 (file: {customCfg.defaultMesinCover})</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {softCoverMesinCoverOptions(lini).map((m) => (
-                      <button key={m} type="button" onClick={() => setMesinCover(m === customCfg.defaultMesinCover ? null : m)} className={optBtn(mcAktif === m)}>
-                        {m}{m === customCfg.defaultMesinCover ? ' (file)' : ''}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-600 mb-1">Muka Cover</label>
@@ -520,18 +558,6 @@ export default function BukuSoftCoverUnifiedSimulator({
                 <span className="text-[10px] font-black uppercase tracking-wider text-violet-900 bg-violet-200/80 px-2 py-0.5 rounded">Isi</span>
                 <label className="text-xs font-bold text-violet-900">Warna Isi — D24</label>
               </div>
-              {custom && customCfg && (
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Mesin Isi — D25 (file: {customCfg.defaultMesinIsi})</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {softCoverMesinIsiOptions().map((m) => (
-                      <button key={m} type="button" onClick={() => setMesinIsi(m === customCfg.defaultMesinIsi ? null : m)} className={optBtn(miAktif === m)}>
-                        {m}{m === customCfg.defaultMesinIsi ? ' (file)' : ''}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
               <div className="grid grid-cols-4 gap-2">
                 {(['1 Warna', '2 Warna', '3 Warna', '4 Warna'] as const).map((w) => (
                   <button key={w} type="button" onClick={() => setWarnaIsi(w)} className={optBtn(warnaIsi === w)}>
@@ -785,9 +811,9 @@ export default function BukuSoftCoverUnifiedSimulator({
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   {[
-                    ['1. Lini & Oplah', 'Pilih 1 dari 18 lini (21×29,7: Klasik/OO/PO/PP; 14,5 offset: OO/OR/PP/PR; 14,5 Custom F19/F21: 6 lini; 10,5 Custom F24: 4 lini). Tier oplah mengikuti file tiap lini.'],
-                    ['2. Spesifikasi', 'Atur halaman, muka & warna cover, warna isi. Lini Klasik/offset mengunci mesin; lini Custom bisa override mesin cover/isi + toggle jasa baris-26.'],
-                    ['3. Finishing & Laba', 'Pilih finishing D29 (Klasik 7 opsi, offset & custom 9 opsi). Laba 30% (E37) — harga ke puluhan, tanpa nego.'],
+                    ['1. Ukuran & Mesin', 'Pilih ukuran (21×29,7 / 14,5×20,25 / 10,5×14,8), mesin cover (D16) & mesin isi (D25). File sumber ketemu otomatis; kalau 1 kombinasi ada di beberapa file, pilih sumbernya.'],
+                    ['2. Oplah & Spesifikasi', 'Ketik oplah bebas (chip = tier file) + halaman, muka & warna cover, warna isi. Oplah di luar tier = ekstrapolasi rumus file.'],
+                    ['3. Finishing & Laba', 'Pilih finishing D29 (Klasik 7 opsi, offset & custom 9 opsi + toggle jasa UMR baris-26 di custom). Laba 30% (E37) — harga ke puluhan, tanpa nego.'],
                     ['4. Salin Penawaran', 'Klik Salin Penawaran untuk teks WA otomatis, atau Simpan Kalkulasi Ini ke Daftar Kalkulasi di bawah tabel rincian.'],
                   ].map(([title, desc]) => (
                     <div key={title} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
