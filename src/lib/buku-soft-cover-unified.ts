@@ -109,7 +109,7 @@ export const SOFT_COVER_LINIS_14_CUSTOM: SoftCoverCustomLini[] = SOFT_COVER_CUST
 export const SOFT_COVER_LINIS_105_CUSTOM: SoftCoverCustomLini[] = SOFT_COVER_CUSTOM_LINIS.filter((l) => l.id.includes('105')).map((l) => l.id);
 
 export const SOFT_COVER_LINI_LABEL: Record<SoftCoverLini, string> = {
-  'Klasik': 'Klasik PI–Oliver (20–500)',
+  'Klasik': 'Klasik Print Inter–Oliver (20–500)',
   'Oliver-Oliver': 'Cover Oliver – Isi Oliver (550–3000)',
   'Print-Oliver': 'Cover Print – Isi Oliver (300–500)',
   'Print-Print': 'Cover Print – Isi Print (20–250)',

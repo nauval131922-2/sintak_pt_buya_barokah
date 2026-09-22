@@ -823,7 +823,7 @@ export default function BukuSoftCoverUnifiedSimulator({
                 </h5>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-[11px]">
                     <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
-                      <span className="font-bold text-emerald-900 block">Klasik PI–Oliver (folder 17):</span>
+                      <span className="font-bold text-emerald-900 block">Klasik Print Inter–Oliver (folder 17):</span>
                       <p className="text-slate-600 leading-snug">
                         Cover per lembar Rp 2.700, desain isi per halaman, ongkos plate dan cetak mengikuti mesin, biaya susun, staples, sisir, dan laminasi sesuai opsi.
                       </p>

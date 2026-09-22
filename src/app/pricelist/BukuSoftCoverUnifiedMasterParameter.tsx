@@ -329,7 +329,7 @@ export default function BukuSoftCoverUnifiedMasterParameter({
                   18 Lini dalam 1 Produk
                 </h4>
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-[11px] text-slate-600 space-y-1.5">
-                  <p>• <strong>21×29,7 Klasik PI–Oliver</strong> (folder 17): tier 20–500, engine CX 25 suku, UMR 2818585, up isi 3%, desain isi Rp 15.000/hlm, SpotUV/Emboss/Shrink/Packing mati.</p>
+                  <p>• <strong>21×29,7 Klasik Print Inter–Oliver</strong> (folder 17): tier 20–500, engine CX 25 suku, UMR 2818585, up isi 3%, desain isi Rp 15.000/hlm, SpotUV/Emboss/Shrink/Packing mati.</p>
                   <p>• <strong>21×29,7 Oliver–Oliver</strong>: tier 550–3000 · <strong>Print–Oliver</strong>: 300–500 · <strong>Print–Print</strong>: 20–250 (engine DC 30 suku, UMR 2818850, up 0%, desain Rp 2.500×hal/4).</p>
                   <p>• <strong>14,5×20,25 OO/OR/PP/PR</strong> (folder 18): tier 1000–3000 / 650–900 / 20–200 / 250–600, engine DC + ROUNDUP R7, shrink Rp 1.162.500, AR2 Buya 350.</p>
                   <p>• <strong>14,5×20,25 Custom F19</strong>: Print–Print (20–200, insheet 10/7) &amp; Print–Ryobi (250–600, insheet 10/30).</p>
