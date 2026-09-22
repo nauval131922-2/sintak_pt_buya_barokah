@@ -464,20 +464,17 @@ export function applyGlobalParamsToAll(
 
   const nextBukuSoftCover: BukuSoftCoverMasterParams = {
     ...currBukuSoftCover,
-    tarifKertasHvs70Kg: g.tarifHvs70,
-    upKertasIsiPct: g.upKertasPct,
-    tarifOliverPlatUnit: g.oliverPlatUnit,
-    tarifOliverMinIsi: g.oliverMinOngkos,
-    tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
-    tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
-    tarifUvVarnishCm2: g.tarifUvVarnishCm2,
-    minLaminasi: g.minLaminasi,
+    tarifKertasIsiKg: g.tarifHvs70,
+    upIsiPct: g.upKertasPct,
+    tarifPlateIsi: g.oliverPlatUnit,
+    tarifCetakMinIsi: g.oliverMinOngkos,
+    tarifLaminasiGlossy: g.tarifLaminasiGlossyCm2,
+    tarifLaminasiDoff: g.tarifLaminasiDoffCm2,
+    tarifUvVarnish: g.tarifUvVarnishCm2,
+    minFinishing: g.minLaminasi,
     tarifSisirPerPcs: g.tarifSisirPcs,
-    tarifKardusBox: g.tarifKardusBox,
-    tarifLakbanRoll: g.tarifLakbanRoll,
     tarifDesainCover: g.tarifDesainStandar,
     marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextBukuSoftCover145x2025: BukuSoftCover145x2025MasterParams = {

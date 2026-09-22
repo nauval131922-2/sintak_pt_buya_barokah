@@ -3,12 +3,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { saveCalculationToDb } from '@/lib/pricelist-db-sync';
 import {
-  FileSpreadsheet,
   DollarSign,
   TrendingUp,
-  Percent,
   FileText,
-  Copy,
   Check,
   Share2,
   Sliders,
@@ -19,7 +16,6 @@ import {
   Calculator,
   Info,
   Layers,
-  RefreshCw,
   BookCopy,
 } from 'lucide-react';
 import {
@@ -27,11 +23,16 @@ import {
   DEFAULT_BUKU_SOFT_COVER_PARAMS,
   BukuSoftCoverMasterParams,
   BukuSoftCoverVarianType,
+  BukuSoftCoverMukaCoverType,
+  BukuSoftCoverWarnaCoverType,
+  BukuSoftCoverWarnaIsiType,
   BukuSoftCoverFinishingType,
   BUKU_SOFT_COVER_TIERS,
-  BUKU_SOFT_COVER_VARIANTS,
-  BUKU_SOFT_COVER_FINISHING_OPTIONS,
   SavedBukuSoftCoverSimulationItem,
+  BUKU_SOFT_COVER_MUKA_COVER_OPTIONS,
+  BUKU_SOFT_COVER_WARNA_COVER_OPTIONS,
+  BUKU_SOFT_COVER_WARNA_ISI_OPTIONS,
+  BUKU_SOFT_COVER_FINISHING_OPTIONS,
 } from '@/lib/buku-soft-cover-calculator';
 import { toast } from '@/lib/toast';
 
@@ -48,6 +49,16 @@ const draftVal = (key: string, fallback: any) => {
     const v = JSON.parse(raw)[key];
     return v === undefined || v === null ? fallback : v;
   } catch { return fallback; }
+};
+
+const FINISHING_LABEL: Record<BukuSoftCoverFinishingType, string> = {
+  'None,': 'Tanpa Finishing',
+  'UV Varnish,': 'UV Varnish',
+  'Laminasi Glossy,': 'Laminasi Glossy',
+  'Laminasi Doff,': 'Laminasi Doff',
+  'Lem Bending,': 'Lem Bending',
+  'UV Varnish + Bending,': 'UV Varnish + Bending',
+  'Laminasi Doff + Bending,': 'Laminasi Doff + Bending',
 };
 
 interface BukuSoftCoverSimulatorProps {
@@ -69,11 +80,14 @@ export default function BukuSoftCoverSimulator({
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: BukuSoftCoverSimulatorProps) {
-  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 100));
-  const [varian, setVarian] = useState<BukuSoftCoverVarianType>(() => draftVal('varian', '21 x 29,7 cm'));
-  const [finishing, setFinishing] = useState<BukuSoftCoverFinishingType>(() => draftVal('finishing', 'Laminasi Glossy'));
-  const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', customParams.marginDefaultPct));
-  const [negoDiskonPct, setNegoDiskonPct] = useState(() => draftVal('negoDiskonPct', customParams.negoDefaultPct));
+  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 20));
+  const [varian] = useState<BukuSoftCoverVarianType>('21 x 29,7 cm');
+  const [jumlahHalaman, setJumlahHalaman] = useState<number>(() => draftVal('jumlahHalaman', 32));
+  const [mukaCover, setMukaCover] = useState<BukuSoftCoverMukaCoverType>(() => draftVal('mukaCover', '1 Muka'));
+  const [warnaCover, setWarnaCover] = useState<BukuSoftCoverWarnaCoverType>(() => draftVal('warnaCover', '4 Warna'));
+  const [warnaIsi, setWarnaIsi] = useState<BukuSoftCoverWarnaIsiType>(() => draftVal('warnaIsi', '1 Warna'));
+  const [finishing, setFinishing] = useState<BukuSoftCoverFinishingType>(() => draftVal('finishing', 'Laminasi Glossy,'));
+  const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', customParams.marginDefaultPct ?? 30));
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedBukuSoftCoverSimulationItem[]>([]);
@@ -105,27 +119,31 @@ export default function BukuSoftCoverSimulator({
           if (item) {
             const inp = item.data.input;
             setOplah(inp.oplah);
-            setVarian(inp.varian);
-            setFinishing(inp.finishing);
+            setJumlahHalaman(inp.jumlahHalaman ?? 32);
+            setMukaCover(inp.mukaCover ?? '1 Muka');
+            setWarnaCover(inp.warnaCover ?? '4 Warna');
+            setWarnaIsi(inp.warnaIsi ?? '1 Warna');
+            setFinishing(inp.finishing ?? 'Laminasi Glossy,');
             setMarginPct(inp.marginPct);
-            setNegoDiskonPct(inp.negoDiskonPct);
             setSimulationTitle(item.title);
           }
         }
       }
       if (!activeSimulationId) {
         // Restore draft settingan (persist saat pindah tab)
-          try {
-            const rawDraft = localStorage.getItem(DRAFT_KEY);
-            if (rawDraft) {
-              const d = JSON.parse(rawDraft);
-              if (d.oplah) setOplah(Number(d.oplah));
-              if (d.varian) setVarian(d.varian);
-              if (d.finishing) setFinishing(d.finishing);
-              if (d.marginPct !== undefined) setMarginPct(Number(d.marginPct));
-              if (d.negoDiskonPct !== undefined) setNegoDiskonPct(Number(d.negoDiskonPct));
-            }
-          } catch { /* abaikan draft rusak */ }
+        try {
+          const rawDraft = localStorage.getItem(DRAFT_KEY);
+          if (rawDraft) {
+            const d = JSON.parse(rawDraft);
+            if (d.oplah) setOplah(Number(d.oplah));
+            if (d.jumlahHalaman) setJumlahHalaman(Number(d.jumlahHalaman));
+            if (d.mukaCover) setMukaCover(d.mukaCover);
+            if (d.warnaCover) setWarnaCover(d.warnaCover);
+            if (d.warnaIsi) setWarnaIsi(d.warnaIsi);
+            if (d.finishing) setFinishing(d.finishing);
+            if (d.marginPct !== undefined) setMarginPct(Number(d.marginPct));
+          }
+        } catch { /* abaikan draft rusak */ }
       }
     } catch (e) {
       console.error('Failed to load saved buku soft cover simulations:', e);
@@ -136,21 +154,22 @@ export default function BukuSoftCoverSimulator({
   useEffect(() => {
     if (activeSimulationId) return;
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify({ oplah, varian, finishing, marginPct, negoDiskonPct }));
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct }));
     } catch { /* abaikan */ }
-  }, [oplah, varian, finishing, marginPct, negoDiskonPct, activeSimulationId]);
+  }, [oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct, activeSimulationId]);
 
   const result = useMemo(
     () =>
       calculateBukuSoftCoverHpp(
-        { oplah, varian, jumlahHalaman: 32, finishing, marginPct, negoDiskonPct },
+        { oplah, varian, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct },
         customParams
       ),
-    [oplah, varian, finishing, marginPct, negoDiskonPct, customParams]
+    [oplah, varian, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct, customParams]
   );
 
-  const defaultTitle = () =>
-    `Buku Soft Cover ${varian} 32 Hal (${oplah} pcs) ${finishing}`;
+  const defaultTitle = () => {
+    return `Buku Soft Cover 21x29,7 ${jumlahHalaman} Hal (${oplah} pcs)`;
+  };
 
   const handleSaveSimulation = () => {
     const title = simulationTitle.trim() || defaultTitle();
@@ -158,7 +177,6 @@ export default function BukuSoftCoverSimulator({
       id: 'buku_soft_cover_' + Date.now(),
       title,
       savedAt: new Date().toISOString(),
-      oplah,
       data: result,
       paramsSnapshot: customParams,
     };
@@ -199,34 +217,39 @@ export default function BukuSoftCoverSimulator({
     if (setActiveSimulationTitle) setActiveSimulationTitle(null);
     setSimulationTitle('');
   };
+
   const handleCopyQuote = () => {
     const fmt = (n: number) => n.toLocaleString('id-ID');
     const text =
-      `*PENAWARAN BUKU SOFT COVER*\n` +
+      `*PENAWARAN BUKU SOFT COVER 21×29,7*\n` +
       `*PT Buya Barokah*\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
-      `• *Produk*: Buku Soft Cover ${varian}\n` +
-      `• *Spesifikasi*: 32 halaman · Cover AC 230 FC + Isi HVS 70 1 Warna\n` +
-      `• *Ukuran*: ${varian} · Finishing: ${finishing}\n` +
-      `• *Cetak Cover*: Print Inter A3+ All-In (${result.kebutuhanCoverA3} lbr)\n` +
-      `• *Cetak Isi*: Oliver Offset (${result.kebutuhanPlanoIsi} plano)\n` +
-      `• *Finishing*: ${finishing} + Staples + Sisir Binding\n` +
-      `• *Kuantitas*: ${fmt(oplah)} pcs\n` +
+      `• *Produk*: Buku Soft Cover 21 × 29,7 cm ${jumlahHalaman} Hal\n` +
+      `• *Cover*: Art Carton 230 gsm ${mukaCover} ${warnaCover} (Print Inter)\n` +
+      `• *Isi*: HVS 70 gsm ${warnaIsi} (Oliver)\n` +
+      `• *Finishing*: ${FINISHING_LABEL[finishing]} + Staples + Sisir\n` +
+      `• *Kuantitas*: ${oplah} pcs\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
       `• *Harga / pcs*: *Rp ${fmt(result.hargaJualPerPcs)}*\n` +
-      `• *Harga Nego / pcs*: *Rp ${fmt(result.negoPerPcs)}*\n` +
       `• *Total Penawaran*: *Rp ${fmt(result.totalHargaJual)}*\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
-      `_Harga belum termasuk PPN. Buku Soft Cover ${varian} 32 Hal, AC 230 Cover + HVS 70 Isi, ${finishing} + Sisir._`;
+      `_Harga belum termasuk PPN._`;
 
     navigator.clipboard.writeText(text);
     setCopiedQuote(true);
-    toast.success('Penawaran Buku Soft Cover berhasil disalin ke clipboard!');
+    toast.success('Penawaran harga Buku Soft Cover berhasil disalin ke WhatsApp clipboard!');
     setTimeout(() => setCopiedQuote(false), 2000);
   };
 
+  const optBtn = (active: boolean) =>
+    `py-2 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
+      active
+        ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
+        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+    }`;
+
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
       {/* Header */}
       <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
         <div className="flex items-center gap-3">
@@ -235,13 +258,13 @@ export default function BukuSoftCoverSimulator({
           </div>
           <div>
             <h3 className="font-bold text-sm sm:text-base text-emerald-950 flex items-center gap-2">
-              Simulator &amp; Kalkulator Buku Soft Cover — Katalog 17
+              Simulator &amp; Kalkulator Buku Soft Cover 21×29,7
               <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
                 Katalog 17
               </span>
             </h3>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Hitung HPP, harga penawaran, dan estimasi profit Buku Soft Cover 21×29,7 / 14,8×21 cm · 32 hal · Cover AC 230 (Print Inter) + Isi HVS 70 (Oliver) · Laminasi + Sisir.
+              Cover Art Carton 230 (Print Inter) + Isi HVS 70 (Oliver) — hitung HPP, harga, dan profit per pcs.
             </p>
           </div>
         </div>
@@ -314,162 +337,147 @@ export default function BukuSoftCoverSimulator({
                 setActiveSimulationTitle(null);
                 setSimulationTitle('');
               }}
-              className="p-1.5 bg-white border border-amber-300 text-amber-700 rounded-lg hover:bg-amber-100 transition-colors cursor-pointer"
-              title="Tutup mode riwayat"
+              className="px-3 py-1.5 bg-white hover:bg-amber-100/50 text-amber-900 border border-amber-300 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center gap-1"
             >
               <X size={14} />
+              <span>Keluar</span>
             </button>
           </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-0 pb-1">
         {/* Kolom Kiri: Form Input */}
-        <div className="lg:col-span-5 space-y-5">
+        <div className="lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
               <Sliders size={15} className="text-emerald-700" />
               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Input Spesifikasi Buku Soft Cover</h3>
             </div>
 
-            {/* Varian Ukuran */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Varian Ukuran Buku
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {BUKU_SOFT_COVER_VARIANTS.map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => setVarian(v)}
-                    className={`py-2.5 px-3 rounded-lg border text-xs font-bold text-center transition cursor-pointer flex flex-col items-center gap-1 ${
-                      varian === v
-                        ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
-                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    <BookCopy size={14} className={varian === v ? 'text-white' : 'text-slate-500'} />
-                    <span className="leading-tight text-[11px]">{v}</span>
-                    <span className={`text-[10px] leading-tight font-normal ${varian === v ? 'text-emerald-100' : 'text-slate-400'}`}>
-                      {v === '21 x 29,7 cm' ? 'A4 · 1.320 cm²' : 'A5 · 660 cm²'}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Finishing Laminasi */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Finishing Laminasi Cover
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {BUKU_SOFT_COVER_FINISHING_OPTIONS.map((f) => (
-                  <button
-                    key={f}
-                    type="button"
-                    onClick={() => setFinishing(f)}
-                    className={`py-2 px-2.5 rounded-lg border text-[11px] font-bold text-center transition cursor-pointer ${
-                      finishing === f
-                        ? 'border-blue-600 bg-blue-600 text-white shadow-xs'
-                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    {f}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Oplah */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Kuantitas Oplah (pcs)
-              </label>
-              <div className="grid grid-cols-2 gap-2">
+            {/* Oplah + Halaman */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Oplah (pcs) — Master!D7
+                </label>
                 <select
                   value={BUKU_SOFT_COVER_TIERS.includes(oplah) ? oplah : 'custom'}
                   onChange={(e) => {
-                    if (e.target.value !== 'custom') setOplah(Number(e.target.value));
+                    const v = e.target.value;
+                    if (v !== 'custom') setOplah(Number(v));
                   }}
                   className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none cursor-pointer"
                 >
                   {BUKU_SOFT_COVER_TIERS.map((t) => (
                     <option key={t} value={t}>{t.toLocaleString('id-ID')} pcs</option>
                   ))}
-                  {!BUKU_SOFT_COVER_TIERS.includes(oplah) && (
-                    <option value="custom">{oplah.toLocaleString('id-ID')} pcs (custom)</option>
-                  )}
+                  {!BUKU_SOFT_COVER_TIERS.includes(oplah) && <option value="custom">{oplah.toLocaleString('id-ID')} pcs (custom)</option>}
                 </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Halaman — Master!D6
+                </label>
                 <input
                   type="number"
                   min={1}
-                  max={10000}
+                  max={600}
                   step={1}
-                  value={oplah}
-                  onChange={(e) => setOplah(Math.max(1, Number(e.target.value) || 1))}
+                  value={jumlahHalaman}
+                  onChange={(e) => setJumlahHalaman(Math.max(1, Number(e.target.value) || 1))}
                   className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
-                  placeholder="Custom..."
                 />
               </div>
-              <p className="text-[10px] text-slate-500 mt-1">
-                Cover: {result.kebutuhanCoverA3} lbr A3+ · Plano isi: {result.kebutuhanPlanoIsi} · Insirt: {result.insirtIsi}
-              </p>
             </div>
+            <p className="text-[10px] text-slate-500 -mt-2">
+              Cover {result.kebutuhanKertasCover} lbr plano · Isi {result.kebutuhanPlanoIsi} lbr plano · 21×29,7 cm (dikunci, satu-satunya yang terkomputasi)
+            </p>
 
-            {/* Margin & Nego */}
-            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Margin Profit (%)</label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={marginPct}
-                    onChange={(e) => setMarginPct(Number(e.target.value) || 0)}
-                    className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
-                  />
-                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
+            {/* Grup Cover */}
+            <div className="rounded-xl border border-sky-200 bg-sky-50/50 p-3 space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-sky-900 bg-sky-200/80 px-2 py-0.5 rounded">Cover</span>
+                <label className="text-xs font-bold text-sky-900">Print Inter — Master!D14/D15</label>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Muka Cover</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {BUKU_SOFT_COVER_MUKA_COVER_OPTIONS.map((m) => (
+                      <button key={m} type="button" onClick={() => setMukaCover(m)} className={optBtn(mukaCover === m)}>
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Warna Cover</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {BUKU_SOFT_COVER_WARNA_COVER_OPTIONS.map((w) => (
+                      <button key={w} type="button" onClick={() => setWarnaCover(w)} className={optBtn(warnaCover === w)}>
+                        {w}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Batas Nego (%)</label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={negoDiskonPct}
-                    onChange={(e) => setNegoDiskonPct(Number(e.target.value) || 0)}
-                    className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
-                  />
-                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
-                </div>
+            </div>
+
+            {/* Grup Isi */}
+            <div className="rounded-xl border border-violet-200 bg-violet-50/50 p-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-violet-900 bg-violet-200/80 px-2 py-0.5 rounded">Isi</span>
+                <label className="text-xs font-bold text-violet-900">Oliver — Master!D24</label>
+              </div>
+              <label className="block text-[11px] font-bold text-slate-600 mb-1">Warna Isi</label>
+              <div className="grid grid-cols-4 gap-2">
+                {BUKU_SOFT_COVER_WARNA_ISI_OPTIONS.map((w) => (
+                  <button key={w} type="button" onClick={() => setWarnaIsi(w)} className={optBtn(warnaIsi === w)}>
+                    {w.replace(' Warna', 'W')}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Judul Simpan */}
+            {/* Grup Finishing */}
+            <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded">Finishing</span>
+                <label className="text-xs font-bold text-amber-900">Catatan — Master!D29</label>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {BUKU_SOFT_COVER_FINISHING_OPTIONS.map((f) => (
+                  <button key={f} type="button" onClick={() => setFinishing(f)} className={optBtn(finishing === f)}>
+                    {FINISHING_LABEL[f]}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-slate-500 italic">Laminasi/UV floor Rp 50.000 (BUKU!CB/CE/CH). Glossy+Bending &amp; full-combo tidak ditawarkan (Excel #DIV/0!).</p>
+            </div>
+
+            {/* Margin */}
             <div className="pt-2 border-t border-slate-100">
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Judul Kalkulasi (opsional)
-              </label>
-              <input
-                type="text"
-                value={simulationTitle}
-                onChange={(e) => setSimulationTitle(e.target.value)}
-                placeholder={defaultTitle()}
-                className="w-full px-3 py-1.5 text-xs text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
-              />
+              <label className="block text-xs font-bold text-slate-700 mb-1">Margin Profit (%) — Master!E36</label>
+              <div className="relative">
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={marginPct}
+                  onChange={(e) => setMarginPct(Number(e.target.value) || 0)}
+                  className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+                />
+                <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Kolom Kanan: Hasil */}
-        <div className="lg:col-span-7 space-y-5">
-          {/* 4 Kartu Finansial */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
+          {/* 3 Kartu Finansial */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-500 mb-1">
                 <span className="text-[11px] font-semibold">HPP / pcs</span>
@@ -480,7 +488,7 @@ export default function BukuSoftCoverSimulator({
                   Rp {Math.round(result.hppPerPcs).toLocaleString('id-ID')}
                 </span>
                 <span className="block text-[10px] text-slate-400 mt-0.5">
-                  Total HPP: Rp {result.totalHpp.toLocaleString('id-ID')}
+                  Total HPP: Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
                 </span>
               </div>
             </div>
@@ -498,19 +506,6 @@ export default function BukuSoftCoverSimulator({
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-xl border border-blue-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-blue-800 mb-1">
-                <span className="text-[11px] font-bold">Harga Nego (-{negoDiskonPct}%)</span>
-                <Percent size={13} className="text-blue-600" />
-              </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-blue-800 font-mono">
-                  Rp {result.negoPerPcs.toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-blue-700/80 mt-0.5">/ pcs</span>
-              </div>
-            </div>
-
             <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-500 mb-1">
                 <span className="text-[11px] font-semibold">Total Harga Jual</span>
@@ -521,7 +516,7 @@ export default function BukuSoftCoverSimulator({
                   Rp {result.totalHargaJual.toLocaleString('id-ID')}
                 </span>
                 <span className="block text-[10px] text-slate-500 mt-0.5">
-                  {oplah.toLocaleString('id-ID')} pcs
+                  Profit: Rp {Math.round(result.profitTotal).toLocaleString('id-ID')}
                 </span>
               </div>
             </div>
@@ -537,7 +532,7 @@ export default function BukuSoftCoverSimulator({
                 </h4>
               </div>
               <span className="text-[11px] font-bold text-slate-500">
-                {oplah.toLocaleString('id-ID')} pcs · {varian} · {finishing}
+                {oplah.toLocaleString('id-ID')} pcs · {jumlahHalaman} hal · {mukaCover} {warnaCover}/{warnaIsi}
               </span>
             </div>
             <div className="overflow-x-auto">
@@ -554,14 +549,14 @@ export default function BukuSoftCoverSimulator({
                 <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
                   {result.breakdown.map((item, idx) => (
                     <tr key={idx} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="py-2 px-3 text-center text-slate-400">{item.no}</td>
-                      <td className="py-2 px-3 font-medium text-slate-800 font-sans">{item.komponen}</td>
+                      <td className="py-2 px-3 text-center text-slate-400">{idx + 1}</td>
+                      <td className="py-2 px-3 font-medium text-slate-800 font-sans">{item.nama}</td>
                       <td className="py-2 px-3 text-slate-500 text-[10.5px] font-sans">{item.keterangan}</td>
                       <td className="py-2 px-3 text-right font-bold text-slate-800">
-                        Rp {Math.round(item.biaya).toLocaleString('id-ID')}
+                        Rp {item.nominal.toLocaleString('id-ID')}
                       </td>
                       <td className="py-2 px-3 text-right text-slate-500">
-                        {item.porsiPct.toFixed(1)}%
+                        {(item.pct * 100).toFixed(1)}%
                       </td>
                     </tr>
                   ))}
@@ -572,7 +567,7 @@ export default function BukuSoftCoverSimulator({
                       Total HPP Biaya Produksi ({oplah.toLocaleString('id-ID')} pcs)
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-sm">
-                      Rp {result.totalHpp.toLocaleString('id-ID')}
+                      Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono text-slate-600">100%</td>
                   </tr>
@@ -634,9 +629,9 @@ export default function BukuSoftCoverSimulator({
                   <Calculator className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold tracking-tight">Panduan Simulator Buku Soft Cover</h3>
+                  <h3 className="text-base font-bold tracking-tight">Panduan Simulator Buku Soft Cover 21×29,7</h3>
                   <p className="text-xs text-emerald-200/90 mt-0.5">
-                    Alur perhitungan HPP berbasis oplah pcs, cover AC 230 (Print Inter A3+), isi HVS 70 (Oliver offset)
+                    Cover Print Inter + Isi Oliver — Staples, Sisir, Laminasi/Bending
                   </p>
                 </div>
               </div>
@@ -657,12 +652,12 @@ export default function BukuSoftCoverSimulator({
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   {[
-                    ['1. Varian', 'Pilih 21×29,7 cm (A4) atau 14,8×21 cm (A5). Area laminasi: A4=1.320 cm², A5=660 cm².'],
-                    ['2. Finishing', 'Pilih Laminasi Glossy (0,35/cm²), Doff (0,40/cm²), UV Varnish (0,11/cm²), atau Tanpa Laminasi.'],
-                    ['3. Oplah', 'Tentukan oplah 20–500 pcs via dropdown tier atau custom. Formula empiris terverifikasi dari Excel.'],
-                    ['4. Salin / Simpan', 'Klik Salin Penawaran untuk teks WA otomatis, atau simpan ke daftar kalkulasi.'],
+                    ['1. Oplah & Halaman', 'Pilih tier Excel 20–500 pcs atau custom. Isi jumlah halaman (bebas, tersimpan 32) — memengaruhi punggung, kebutuhan isi, desain, dan target susun.'],
+                    ['2. Cover & Isi', 'Atur muka (1/2) & warna cover (1–4), warna isi (1–4). Mesin dikunci Print Inter (cover) + Oliver (isi) — satu-satunya yang terkomputasi Excel.'],
+                    ['3. Finishing & Margin', 'Pilih 7 finishing terkomputasi (None/UV/Glossy/Doff/Bending/UV+Bending/Doff+Bending, floor Rp 50.000). Atur margin 30% — harga ke puluhan.'],
+                    ['4. Salin Penawaran', 'Klik Salin Penawaran untuk teks WA otomatis, atau Simpan Kalkulasi Ini ke Daftar Kalkulasi di bawah tabel rincian.'],
                   ].map(([title, desc]) => (
-                    <div key={title as string} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                    <div key={title} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
                       <span className="font-bold text-emerald-800 text-xs">{title}</span>
                       <p className="text-[11px] text-slate-600">{desc}</p>
                     </div>
@@ -675,32 +670,20 @@ export default function BukuSoftCoverSimulator({
                   <Layers className="w-4 h-4 text-emerald-700" />
                   Struktur Biaya Produksi Buku Soft Cover
                 </h5>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-[11px]">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
                   <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
-                    <span className="font-bold text-emerald-900 block">Cover (Print Inter A3+):</span>
+                    <span className="font-bold text-emerald-900 block">Cover &amp; Isi:</span>
                     <p className="text-slate-600 leading-snug">
-                      (oplah+5) lbr × Rp 2.700 all-in (bahan AC 230 + cetak FC). Desain Rp 20.000.
+                      Cover Rp 2.700×(oplah+5) all-in + desain Rp 20.000. Isi: kertas (plano/500)×Rp 367.890, desain Rp 15.000×halaman, plate Rp 45.000, min Rp 90.000 + over Rp 40 (dari oplah+100−1000), tambahan (2·AO−1000)·Rp 40 (negatif di oplah kecil).
                     </p>
                   </div>
                   <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">
-                    <span className="font-bold text-blue-900 block">Isi (Oliver Offset):</span>
+                    <span className="font-bold text-blue-900 block">Jasa &amp; Finishing:</span>
                     <p className="text-slate-600 leading-snug">
-                      Plano = 2×oplah+200. Kertas: plano × 0,04549 kg × Rp 15.700/kg +3%. Plate 1×45.000, min 90.000, over-drek (insirt-500)×80.
-                    </p>
-                  </div>
-                  <div className="p-2.5 bg-white rounded border border-purple-100 space-y-1">
-                    <span className="font-bold text-purple-900 block">Laminasi + Jasa:</span>
-                    <p className="text-slate-600 leading-snug">
-                      Laminasi: area_cm² × tarif × oplah (min 50.000). Jasa susun: UMR/20.000/pcs. Staples: 9/pcs. Sisir: 150/pcs.
+                      Susun (UMR/25)/target, steples Rp 9/pcs, sisir Rp 150/pcs, laminasi 1.320 cm²×rate×oplah floor Rp 50.000. Margin 30%, tanpa nego (sesuai Excel).
                     </p>
                   </div>
                 </div>
-              </div>
-
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-[11.5px] text-amber-900">
-                <strong>Catatan:</strong> Formula ini terverifikasi dari Pricelist Buku Soft Cover 21×29,7.xlsm (diff=0 untuk semua tier 20–500 pcs).
-                Staples 9/pcs dari pack 3.000 per 369 pcs (internal, tidak di master parameter).
-                Desain isi dihitung per halaman × 32 halaman.
               </div>
             </div>
 

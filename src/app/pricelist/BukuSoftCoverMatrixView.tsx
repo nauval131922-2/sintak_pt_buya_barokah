@@ -26,6 +26,16 @@ interface BukuSoftCoverMatrixViewProps {
   setViewMode?: (mode: 'matrix' | 'table') => void;
 }
 
+const FINISHING_SHORT: Record<BukuSoftCoverFinishingType, string> = {
+  'None,': 'Tanpa',
+  'UV Varnish,': 'UV Varnish',
+  'Laminasi Glossy,': 'Glossy',
+  'Laminasi Doff,': 'Doff',
+  'Lem Bending,': 'Bending',
+  'UV Varnish + Bending,': 'UV+Bending',
+  'Laminasi Doff + Bending,': 'Doff+Bending',
+};
+
 export default function BukuSoftCoverMatrixView({
   customParams = DEFAULT_BUKU_SOFT_COVER_PARAMS,
   viewMode: propViewMode,
@@ -33,14 +43,15 @@ export default function BukuSoftCoverMatrixView({
 }: BukuSoftCoverMatrixViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedVarianFilter, setSelectedVarianFilter] = useState<BukuSoftCoverVarianType | 'ALL'>('ALL');
-  const [selectedFinishingFilter, setSelectedFinishingFilter] = useState<BukuSoftCoverFinishingType>('Laminasi Glossy');
+  const [selectedFinishingFilter, setSelectedFinishingFilter] = useState<BukuSoftCoverFinishingType>('Laminasi Glossy,');
   const [localViewMode, setLocalViewMode] = useState<'matrix' | 'table'>('matrix');
 
   const viewMode = propViewMode ?? localViewMode;
   const setViewMode = propSetViewMode ?? setLocalViewMode;
+  // Spek default sesuai file Excel tersimpan: 32 hal, 1 Muka, 4 Warna cover, 1 Warna isi, margin 30%.
   const calc = (oplah: number, varian: BukuSoftCoverVarianType, finishing: BukuSoftCoverFinishingType) =>
     calculateBukuSoftCoverHpp(
-      { oplah, varian, jumlahHalaman: 32, finishing, marginPct: 25, negoDiskonPct: 4 },
+      { oplah, varian, jumlahHalaman: 32, mukaCover: '1 Muka', warnaCover: '4 Warna', warnaIsi: '1 Warna', finishing, marginPct: 30 },
       customParams
     );
 
@@ -56,11 +67,11 @@ export default function BukuSoftCoverMatrixView({
           oplah,
           cols: varians.map((varian) => {
             const r = calc(oplah, varian, selectedFinishingFilter);
-            return { varian, hpp: r.hppPerPcs, jual: r.hargaJualPerPcs, nego: r.negoPerPcs, totalJual: r.totalHargaJual };
+            return { varian, hpp: r.hppPerPcs, jual: r.hargaJualPerPcs, totalJual: r.totalHargaJual };
           }),
         };
       })
-      .filter(Boolean) as { oplah: number; cols: { varian: BukuSoftCoverVarianType; hpp: number; jual: number; nego: number; totalJual: number }[] }[];
+      .filter(Boolean) as { oplah: number; cols: { varian: BukuSoftCoverVarianType; hpp: number; jual: number; totalJual: number }[] }[];
   }, [customParams, searchTerm, selectedVarianFilter, selectedFinishingFilter]);
 
   const flatTableRows = useMemo(() => {
@@ -70,7 +81,6 @@ export default function BukuSoftCoverMatrixView({
       finishing: BukuSoftCoverFinishingType;
       hpp: number;
       jual: number;
-      nego: number;
       totalJual: number;
     }[] = [];
 
@@ -85,7 +95,6 @@ export default function BukuSoftCoverMatrixView({
           oplah, varian, finishing: selectedFinishingFilter,
           hpp: r.hppPerPcs,
           jual: r.hargaJualPerPcs,
-          nego: r.negoPerPcs,
           totalJual: r.totalHargaJual,
         });
       });
@@ -107,7 +116,7 @@ export default function BukuSoftCoverMatrixView({
               Pricelist Matriks Buku Soft Cover — Katalog 17
             </h2>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Perbandingan HPP &amp; harga jual per pcs — 32 hal · Cover AC 230 (Print Inter) + Isi HVS 70 (Oliver) · margin 25% nego 4%.
+              Perbandingan HPP &amp; harga jual per pcs 21×29,7 cm — 32 hal · Cover Print Inter + Isi Oliver · margin 30%.
             </p>
           </div>
         </div>
@@ -151,14 +160,14 @@ export default function BukuSoftCoverMatrixView({
 
         {/* Filter Finishing */}
         <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
-          <span className="text-slate-500 font-semibold hidden sm:inline">Laminasi:</span>
+          <span className="text-slate-500 font-semibold hidden sm:inline">Finishing:</span>
           <select
             value={selectedFinishingFilter}
             onChange={(e) => setSelectedFinishingFilter(e.target.value as BukuSoftCoverFinishingType)}
             className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-bold focus:bg-white focus:outline-none cursor-pointer"
           >
             {BUKU_SOFT_COVER_FINISHING_OPTIONS.map((f) => (
-              <option key={f} value={f}>{f}</option>
+              <option key={f} value={f}>{FINISHING_SHORT[f]}</option>
             ))}
           </select>
         </div>
@@ -202,11 +211,11 @@ export default function BukuSoftCoverMatrixView({
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
                   <h3 className="text-sm font-bold text-gray-800 tracking-tight">
-                    Buku Soft Cover — 32 Hal · {selectedFinishingFilter}
+                    Buku Soft Cover 21×29,7 — 32 Hal · {FINISHING_SHORT[selectedFinishingFilter]}
                   </h3>
                 </div>
                 <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
-                  {selectedVarianFilter === 'ALL' ? 'Semua Varian (2)' : selectedVarianFilter}
+                  {selectedVarianFilter === 'ALL' ? 'Semua Varian (1)' : selectedVarianFilter}
                 </span>
               </div>
 
@@ -226,14 +235,13 @@ export default function BukuSoftCoverMatrixView({
                             <th className="py-2.5 px-3 border-r border-gray-200 text-center w-20 bg-gray-100" rowSpan={2}>
                               Oplah
                             </th>
-                            <th colSpan={3} className="py-1.5 px-2 text-center border-r border-gray-200 font-bold text-gray-900 bg-gray-200/80">
+                            <th colSpan={2} className="py-1.5 px-2 text-center border-r border-gray-200 font-bold text-gray-900 bg-gray-200/80">
                               {varian}
                             </th>
                           </tr>
                           <tr className="bg-gray-50 border-b border-gray-200 text-[11px] text-gray-600">
                             <th className="py-1.5 px-2 text-right font-semibold bg-gray-50">HPP/pcs</th>
-                            <th className="py-1.5 px-2 text-right font-bold text-emerald-800 bg-emerald-100/50">Harga</th>
-                            <th className="py-1.5 px-2 text-right font-bold text-blue-800 bg-blue-100/50 border-r border-gray-200">Nego</th>
+                            <th className="py-1.5 px-2 text-right font-bold text-emerald-800 bg-emerald-100/50 border-r border-gray-200">Harga</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
@@ -246,11 +254,8 @@ export default function BukuSoftCoverMatrixView({
                                   {row.oplah.toLocaleString('id-ID')} pcs
                                 </td>
                                 <td className="py-2 px-2 text-right text-gray-500 font-mono">{Math.round(col.hpp).toLocaleString('id-ID')}</td>
-                                <td className="py-2 px-2 text-right font-bold text-emerald-700 font-mono bg-emerald-50/30">
+                                <td className="py-2 px-2 text-right font-bold text-emerald-700 font-mono bg-emerald-50/30 border-r border-gray-200">
                                   {col.jual.toLocaleString('id-ID')}
-                                </td>
-                                <td className="py-2 px-2 text-right font-bold text-blue-700 font-mono bg-blue-50/30 border-r border-gray-200">
-                                  {col.nego.toLocaleString('id-ID')}
                                 </td>
                               </tr>
                             );
@@ -275,14 +280,13 @@ export default function BukuSoftCoverMatrixView({
                   <th className="py-2.5 px-3">Finishing</th>
                   <th className="py-2.5 px-3 text-right">HPP / pcs</th>
                   <th className="py-2.5 px-3 text-right text-emerald-700">Harga Jual / pcs</th>
-                  <th className="py-2.5 px-3 text-right text-blue-700">Harga Nego / pcs</th>
                   <th className="py-2.5 px-3 text-right text-emerald-800">Total Omset</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
                 {flatTableRows.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="p-8 text-center text-slate-400 font-sans">
+                    <td colSpan={6} className="p-8 text-center text-slate-400 font-sans">
                       Tidak ada data yang sesuai dengan pencarian atau filter.
                     </td>
                   </tr>
@@ -291,10 +295,9 @@ export default function BukuSoftCoverMatrixView({
                     <tr key={idx} className="hover:bg-emerald-50/40 transition-colors">
                       <td className="py-2 px-3 font-bold text-slate-800 font-sans">{row.oplah.toLocaleString('id-ID')} pcs</td>
                       <td className="py-2 px-3 text-slate-700 font-sans">{row.varian}</td>
-                      <td className="py-2 px-3 text-slate-600 font-sans">{row.finishing}</td>
+                      <td className="py-2 px-3 text-slate-600 font-sans">{FINISHING_SHORT[row.finishing]}</td>
                       <td className="py-2 px-3 text-right text-slate-600">Rp {Math.round(row.hpp).toLocaleString('id-ID')}</td>
                       <td className="py-2 px-3 text-right font-bold text-emerald-700">Rp {row.jual.toLocaleString('id-ID')}</td>
-                      <td className="py-2 px-3 text-right font-bold text-blue-600">Rp {row.nego.toLocaleString('id-ID')}</td>
                       <td className="py-2 px-3 text-right font-bold text-slate-800">Rp {row.totalJual.toLocaleString('id-ID')}</td>
                     </tr>
                   ))

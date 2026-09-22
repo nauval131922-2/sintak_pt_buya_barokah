@@ -1,397 +1,257 @@
-// ponytail: kalkulator Buku Soft Cover (17. Pricelist Buku Soft Cover)
-// Referensi: Pricelist Buku Soft Cover.xlsx + Source/Pricelist Buku Soft Cover 21 x 29,7.xlsm
-// Varian: 21×29,7 cm dan 14,8×21 cm — 32 hal, cover Art Carton 230 gsm (Print Inter A3+), isi HVS 70 gsm (Oliver offset)
-//
-// Formula HPP terverifikasi dari xlsm (semua baris diff=0):
-//   Cover     : kertas_cover = (oplah + 5) * tarifPrintCoverA3  (Print Inter all-in, bahan+cetak)
-//               desain_cover = tarifDesainCover (20000)
-//   Isi Oliver: kebutuhan_plano = 2*oplah + 200  (empirical untuk 32 hal)
-//               insirt          = 4*oplah + 400   (= 2 * kebutuhan_plano)
-//               kertas_isi      = kebutuhan_plano * 0.04549 * tarifHvs70 * (1 + upKertasIsiPct/100)
-//               desain_isi      = jumlahHalaman * tarifDesainIsiPerHlm
-//               plate_isi       = tarifOliverPlatUnit (1 plat)
-//               ongkos_isi      = tarifOliverMinIsi (90000)
-//               tambahan        = (insirt - 500) * 80  (over-drek Oliver @ 2×40/drek)
-//   Laminasi  : area_cm2 per unit: 21x29,7→1320, 14,8x21→660 (oversize cover terbuka)
-//               total = max(area_cm2 * tarifLaminasiGlossy * oplah, minLaminasi)
-//   Jasa      : jasa_susun = oplah * umr / 20000
-//               staples    = oplah * 9  (per pcs, dari pack 3000/369 pcs)
-//               sisir      = oplah * tarifSisirPerPcs
+// Kalkulator murni Buku Soft Cover 21 x 29,7 — direct binding 1:1 ke Source Excel.
+// Sumber: 17. Pricelist Buku Soft Cover/Source/Pricelist Buku Soft Cover 21 x 29,7.xlsm
+// Struktur: sheet Master (A3:H39, input) + sheet BUKU (A1:DE41, engine 12 tier H7:H18 + harga DD7:DD18).
+// Domain terkomputasi Excel (satu-satunya yang tidak #DIV/0!): ukuran 21 x 29,7 + cover Print Inter
+// + isi Oliver. Ukuran/mesin lain membuat BUKU!R7/AN7 = #DIV/0! — karena itu dikunci.
+// Setiap rumus mencantumkan alamat cell Excel aslinya.
+// Kombinasi finishing yang di Excel-nya sendiri #DIV/0! untuk ukuran ini (Glossy+Bending via CR7,
+// full Doff+SpotUV+Emboss+Bending+Shrink via BR7) TIDAK ditawarkan di UI — didokumentasikan di Manual.
+
+export type BukuSoftCoverVarianType = '21 x 29,7 cm';
+
+export const BUKU_SOFT_COVER_VARIANTS: BukuSoftCoverVarianType[] = ['21 x 29,7 cm'];
+
+export type BukuSoftCoverMukaCoverType = '1 Muka' | '2 Muka'; // Master!D14
+export type BukuSoftCoverWarnaCoverType = '1 Warna' | '2 Warna' | '3 Warna' | '4 Warna'; // Master!D15
+export type BukuSoftCoverWarnaIsiType = '1 Warna' | '2 Warna' | '3 Warna' | '4 Warna'; // Master!D24
+// Master!D29 (nilai mentah persis seperti di Excel; 7 yang terkomputasi untuk ukuran ini):
+export type BukuSoftCoverFinishingType =
+  | 'None,'
+  | 'UV Varnish,'
+  | 'Laminasi Glossy,'
+  | 'Laminasi Doff,'
+  | 'Lem Bending,'
+  | 'UV Varnish + Bending,'
+  | 'Laminasi Doff + Bending,';
+
+export const BUKU_SOFT_COVER_MUKA_COVER_OPTIONS: BukuSoftCoverMukaCoverType[] = ['1 Muka', '2 Muka'];
+export const BUKU_SOFT_COVER_WARNA_COVER_OPTIONS: BukuSoftCoverWarnaCoverType[] = ['1 Warna', '2 Warna', '3 Warna', '4 Warna'];
+export const BUKU_SOFT_COVER_WARNA_ISI_OPTIONS: BukuSoftCoverWarnaIsiType[] = ['1 Warna', '2 Warna', '3 Warna', '4 Warna'];
+export const BUKU_SOFT_COVER_FINISHING_OPTIONS: BukuSoftCoverFinishingType[] = [
+  'None,', 'UV Varnish,', 'Laminasi Glossy,', 'Laminasi Doff,',
+  'Lem Bending,', 'UV Varnish + Bending,', 'Laminasi Doff + Bending,',
+];
 
 export interface BukuSoftCoverMasterParams {
-  // Bahan Cover: Art Carton 230 gsm (Print Inter — tarif all-in termasuk bahan)
-  tarifPrintCoverA3: number;      // Rp 2.700 / lbr A3+ (Print Inter all-in)
-  tarifDesainCover: number;       // Rp 20.000 / order
-
-  // Bahan Isi: HVS 70 gsm + Oliver offset
-  tarifKertasHvs70Kg: number;     // Rp 15.700 / kg
-  upKertasIsiPct: number;         // 3% margin/ppn
-  tarifDesainIsiPerHlm: number;   // Rp 15.000 / halaman
-  tarifOliverPlatUnit: number;    // Rp 45.000 / plat
-  tarifOliverMinIsi: number;      // Rp 90.000 minimum order
-
-  // Laminasi Cover
-  tarifLaminasiGlossyCm2: number; // Rp 0.35 / cm² (default aktif)
-  tarifLaminasiDoffCm2: number;   // Rp 0.40 / cm²
-  tarifUvVarnishCm2: number;      // Rp 0.11 / cm²
-  minLaminasi: number;            // Rp 50.000 minimum
-
-  // Finishing & Jasa
-  tarifSisirPerPcs: number;       // Rp 150 / pcs
-  umr: number;                    // Rp 2.818.585 (untuk jasa susun)
-
-  // Kemasan & Packing
-  tarifKardusBox: number;         // Rp 8.500 / box
-  tarifLakbanRoll: number;        // Rp 8.000 / roll
-
-  // Margin & Nego default
-  marginDefaultPct: number;       // 25%
-  negoDefaultPct: number;         // 4%
+  // Mati di jalur Print Inter (BUKU!T7 = T2·R all-in; BUKU!W29/V27/W27 tak terpakai) — D11/D12/E12
+  // didokumentasikan di Manual, TIDAK jadi parameter agar lolos uji reaktivitas:
+  // gramaturCover 230, tarifKertasCoverKg 16400, upCoverPct 3.
+  insheetCover: number; // Master!D13 -> BUKU!K6 (lbr) — 5
+  tarifDesainCover: number; // Master!D17 -> BUKU!V6 (Rp/order) — 20000
+  tarifPrintCoverA3: number; // Master!D18 -> BUKU!T2 (Rp/lbr, Print Inter) — 2700
+  tarifKertasIsiKg: number; // Master!D22 HVS /kg (Rp) — 15700
+  upIsiPct: number; // Master!E22 up isi (%) — 3
+  gramaturIsi: number; // Master!D21 -> BUKU!AU28 (opsi angka) — 70
+  insheetIsi: number; // Master!D23 -> BUKU!AI6 (lbr) — 100
+  tarifDesainIsiPerHlm: number; // Master!D26 -> BUKU!AT6 (Rp/hlm) — 15000
+  tarifPlateIsi: number; // BUKU!AW6 Oliver (Rp/plat) — 45000
+  tarifCetakMinIsi: number; // BUKU!AY6 Oliver min (Rp) — 90000
+  tarifDrekIsi: number; // BUKU!AZ7 Oliver (Rp/drek) — 40
+  tarifRoyalti: number; // Master!D35 -> BUKU!BF6 (Rp/pcs) — 0
+  tarifSteplesPack: number; // Master!D32 Isi Steples 369/Pack (Rp) — 3000 → BUKU!BJ6 = D32/(1000/3)
+  umr: number; // Master!D8 UMR (Rp) — 2818585 → jasa susun (UMR/25)/target
+  tarifSisirPerPcs: number; // BUKU!BL6 = 3*50 (Rp/pcs) — 150
+  tarifBending: number; // BUKU!BX6 (Rp) — 50, live saat hal>100 + finishing Bending
+  minBending: number; // floor BUKU!BZ7 (Rp) — 100000
+  tarifLaminasiGlossy: number; // BUKU!CA6 (Rp/cm2) — 0.35
+  tarifLaminasiDoff: number; // BUKU!CD6 (Rp/cm2) — 0.4
+  tarifUvVarnish: number; // BUKU!CG6 (Rp/cm2) — 0.11
+  minFinishing: number; // floor BUKU!CB/CE/CH (Rp) — 50000
+  marginDefaultPct: number; // Master!E36 Laba (%) — 30
 }
 
 export const DEFAULT_BUKU_SOFT_COVER_PARAMS: BukuSoftCoverMasterParams = {
-  tarifPrintCoverA3: 2700,
+  insheetCover: 5,
   tarifDesainCover: 20000,
-
-  tarifKertasHvs70Kg: 15700,
-  upKertasIsiPct: 3,
+  tarifPrintCoverA3: 2700,
+  tarifKertasIsiKg: 15700,
+  upIsiPct: 3,
+  gramaturIsi: 70,
+  insheetIsi: 100,
   tarifDesainIsiPerHlm: 15000,
-  tarifOliverPlatUnit: 45000,
-  tarifOliverMinIsi: 90000,
-
-  tarifLaminasiGlossyCm2: 0.35,
-  tarifLaminasiDoffCm2: 0.40,
-  tarifUvVarnishCm2: 0.11,
-  minLaminasi: 50000,
-
-  tarifSisirPerPcs: 150,
+  tarifPlateIsi: 45000,
+  tarifCetakMinIsi: 90000,
+  tarifDrekIsi: 40,
+  tarifRoyalti: 0,
+  tarifSteplesPack: 3000,
   umr: 2818585,
-
-  tarifKardusBox: 8500,
-  tarifLakbanRoll: 8000,
-
-  marginDefaultPct: 25,
-  negoDefaultPct: 4,
+  tarifSisirPerPcs: 150,
+  tarifBending: 50,
+  minBending: 100000,
+  tarifLaminasiGlossy: 0.35,
+  tarifLaminasiDoff: 0.4,
+  tarifUvVarnish: 0.11,
+  minFinishing: 50000,
+  marginDefaultPct: 30,
 };
 
-export type BukuSoftCoverVarianType = '21 x 29,7 cm' | '14,8 x 21 cm';
-
-export const BUKU_SOFT_COVER_VARIANTS: BukuSoftCoverVarianType[] = [
-  '21 x 29,7 cm',
-  '14,8 x 21 cm',
-];
-
-export type BukuSoftCoverFinishingType =
-  | 'Laminasi Glossy'
-  | 'Laminasi Doff'
-  | 'UV Varnish'
-  | 'Tanpa Laminasi';
-
-export const BUKU_SOFT_COVER_FINISHING_OPTIONS: BukuSoftCoverFinishingType[] = [
-  'Laminasi Glossy',
-  'Laminasi Doff',
-  'UV Varnish',
-  'Tanpa Laminasi',
-];
-
-// Luas cover (terbuka, oversize untuk laminasi) per pcs, dalam cm²
-// ponytail: oversize ~1 cm tiap sisi → 21×29,7 → 22×30 (1 muka) × 2 sisi = 1320 cm²
-//           14,8×21 → 15×22 (1 muka) × 2 sisi = 660 cm²
-// ceiling: jika ukuran di luar 2 varian, fallback ke 0 dan laminasi = minLaminasi saja
-const LAMINASI_AREA_CM2: Record<BukuSoftCoverVarianType, number> = {
-  '21 x 29,7 cm': 1320,
-  '14,8 x 21 cm': 660,
-};
-
-// Berat plano HVS 70 gsm (65×100 cm) — terverifikasi dari xlsm
-const BERAT_PLANO_HVS_KG = 0.04549;
-
-// ponytail: tier dibatasi sampai 500 saja karena formula empiris
-// '2*oplah+200' diverifikasi hingga oplah 500 di source xlsm 21×29,7;
-// untuk 14,8×21 diasumsikan formula identik (HPP sama)
+// BUKU!H7:H18 — tier oplah bawaan file.
 export const BUKU_SOFT_COVER_TIERS: number[] = [
-  20, 50, 100, 150, 200, 250, 300, 350, 400, 500,
+  20, 30, 50, 60, 100, 150, 200, 250, 300, 350, 400, 500,
 ];
-
-// Harga referensi Juli 2026 (digunakan sebagai default harga jual per tier)
-// Berlaku untuk KEDUA varian (HPP dan harga identik di Excel)
-const HARGA_REFERENSI: Record<number, { harga: number; nego: number }> = {
-  20:  { harga: 58400, nego: 55500 },
-  50:  { harga: 27000, nego: 25700 },
-  100: { harga: 16500, nego: 15700 },
-  150: { harga: 13200, nego: 12600 },
-  200: { harga: 11500, nego: 11000 },
-  250: { harga: 10600, nego: 10100 },
-  300: { harga:  9900, nego:  9500 },
-  350: { harga:  9400, nego:  9000 },
-  400: { harga:  9100, nego:  8700 },
-  500: { harga:  8600, nego:  8200 },
-};
 
 export interface BukuSoftCoverSimulatorInput {
   oplah: number;
-  varian: BukuSoftCoverVarianType;
-  jumlahHalaman: number;        // default 32
-  finishing: BukuSoftCoverFinishingType;
-  marginPct: number;
-  negoDiskonPct: number;
+  varian: BukuSoftCoverVarianType; // dikunci '21 x 29,7 cm' (satunya yang terkomputasi)
+  jumlahHalaman: number; // Master!D6, bebas (tersimpan 32)
+  mukaCover: BukuSoftCoverMukaCoverType; // Master!D14
+  warnaCover: BukuSoftCoverWarnaCoverType; // Master!D15
+  warnaIsi: BukuSoftCoverWarnaIsiType; // Master!D24
+  finishing: BukuSoftCoverFinishingType; // Master!D29
+  marginPct: number; // Master!E36
 }
 
 export interface BukuSoftCoverBreakdownItem {
-  no: number;
-  komponen: string;
+  nama: string;
+  nominal: number;
+  pct: number;
   keterangan: string;
-  biaya: number;
-  porsiPct: number;
 }
 
 export interface BukuSoftCoverSimulatorResult {
   input: BukuSoftCoverSimulatorInput;
-
-  // Komponen HPP
-  biayaCoverPrint: number;
-  biayaDesainCover: number;
-  biayaKertasIsi: number;
-  biayaDesainIsi: number;
-  biayaPlateIsi: number;
-  biayaOngkosCetakIsi: number;
-  biayaTambahanCetakIsi: number;
-  biayaLaminasi: number;
-  biayaJasaSusun: number;
-  biayaStaples: number;
-  biayaSisir: number;
-
-  // Totals
-  totalHpp: number;
-  hppPerPcs: number;
-
-  // Harga jual
-  hargaJualPerPcs: number;
-  totalHargaJual: number;
-
-  // Nego
-  negoPerPcs: number;
-  totalNego: number;
-
-  // Breakdown
   breakdown: BukuSoftCoverBreakdownItem[];
-
-  // Detail
-  kebutuhanCoverA3: number;
-  kebutuhanPlanoIsi: number;
-  areaCoverCm2: number;
-  insirtIsi: number;
+  kebutuhanKertasCover: number; // BUKU!R7 lbr plano cover
+  kebutuhanCetakCover: number; // BUKU!Q7
+  kebutuhanPlanoIsi: number; // BUKU!AP7 lbr plano isi
+  totalHpp: number; // BUKU!CX7
+  hppPerPcs: number; // BUKU!CY7
+  hargaJualPerPcs: number; // BUKU!DD7
+  totalHargaJual: number; // BUKU!DB7
+  profitPerPcs: number;
+  profitTotal: number;
+  marginPct: number;
 }
+
+const mukaCount = (m: BukuSoftCoverMukaCoverType): number => (m === '1 Muka' ? 1 : 2); // BUKU!N7
+const warnaCount = (w: string): number => // BUKU!L7 = BUKU!AJ7
+  (w === '1 Warna' ? 1 : w === '2 Warna' ? 2 : w === '3 Warna' ? 3 : 4);
+// BUKU!M7 punggung dari halaman C6
+const punggung = (hal: number): number =>
+  hal <= 100 ? 0 : hal <= 200 ? 0.7 : hal <= 300 ? 1.5 : hal <= 400 ? 2 : hal <= 500 ? 2.5 : hal <= 600 ? 2.5 : 2.8;
+// BUKU!BI28 target jasa susun dari halaman C6
+const targetSusun = (hal: number): number =>
+  hal <= 20 ? 900 : hal <= 30 ? 900 : hal <= 40 ? 800 : hal <= 50 ? 800 : hal <= 60 ? 800 : hal <= 70 ? 800 : hal >= 71 ? 700 : 900;
 
 export function calculateBukuSoftCoverHpp(
   input: BukuSoftCoverSimulatorInput,
-  rawParams?: Partial<BukuSoftCoverMasterParams>
+  rawParams: BukuSoftCoverMasterParams = DEFAULT_BUKU_SOFT_COVER_PARAMS
 ): BukuSoftCoverSimulatorResult {
-  const p = { ...DEFAULT_BUKU_SOFT_COVER_PARAMS, ...(rawParams || {}) };
-  const { oplah, varian, jumlahHalaman, finishing, marginPct, negoDiskonPct } = input;
+  const p: BukuSoftCoverMasterParams = { ...DEFAULT_BUKU_SOFT_COVER_PARAMS, ...(rawParams || {}) };
+  const { oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct } = input;
+  const H = Math.max(0, Math.round(oplah));
+  const C6 = Math.max(0, Math.round(jumlahHalaman));
+  const M = punggung(C6); // BUKU!M7
+  const N = mukaCount(mukaCover); // BUKU!N7
+  const Z2 = warnaCount(warnaCover); // BUKU!Z2 (cover)
+  const AJ = warnaCount(warnaIsi); // BUKU!AJ7 (isi)
 
-  // --- Cover (Print Inter all-in) ---
-  const kebutuhanCoverA3 = oplah + 5; // oplah + 5 lembar setup
-  const biayaCoverPrint = kebutuhanCoverA3 * p.tarifPrintCoverA3;
-  const biayaDesainCover = p.tarifDesainCover;
+  const breakdown: BukuSoftCoverBreakdownItem[] = [];
+  let totalHpp = 0;
+  const add = (nama: string, nominal: number, keterangan = '') => {
+    if (nominal === 0) return; // BH negatif tetap masuk (bukan 0)
+    breakdown.push({ nama, nominal: Math.round(nominal), pct: 0, keterangan });
+    totalHpp += nominal;
+  };
 
-  // --- Isi (Oliver offset) ---
-  // ponytail: formula 2*oplah+200 dan 4*oplah+400 terverifikasi dari xlsm untuk 32 hal;
-  // ceiling: formula ini proporsional untuk jumlah halaman berbeda via (jumlahHalaman/32) multiplier
-  const halamanFactor = jumlahHalaman / 32;
-  const kebutuhanPlanoIsi = Math.ceil((2 * oplah + 200) * halamanFactor);
-  const insirtIsi = 2 * kebutuhanPlanoIsi;
+  // ---- COVER (Print Inter, 21 x 29,7) ----
+  // BUKU!K7 = K6; BUKU!O7 = P7 = 1; BUKU!Q7 = R*O*N; BUKU!R7 = IF(H>0,(H/P)+(K/O),0)
+  const Kc = p.insheetCover;
+  const R = H > 0 ? H / 1 + Kc / 1 : 0;
+  const Q = R * 1 * N;
+  // BUKU!T7 = T2*R (T2 = D18 Print Inter all-in; jalur (R/500)*W29 untuk mesin lain mati karena V27/W27=0)
+  add('Cetak Cover Print Inter', p.tarifPrintCoverA3 * R,
+    `BUKU!T7: ${R} lbr × Rp ${p.tarifPrintCoverA3.toLocaleString('id-ID')} (all-in bahan+cetak)`);
+  // BUKU!V7 = IF(H>0,V6,0)
+  add('Desain Cover', H > 0 ? p.tarifDesainCover : 0, `BUKU!V7: Rp ${p.tarifDesainCover.toLocaleString('id-ID')}/order`);
+  // BUKU!Y7 = Y6*Z7 = 0 (Y6=0 untuk Print Inter); BUKU!AG7 = 0 (Print Inter) — tanpa baris
 
-  const biayaKertasIsi = kebutuhanPlanoIsi * BERAT_PLANO_HVS_KG * p.tarifKertasHvs70Kg * (1 + p.upKertasIsiPct / 100);
-  const biayaDesainIsi = jumlahHalaman * p.tarifDesainIsiPerHlm;
-  const biayaPlateIsi = p.tarifOliverPlatUnit; // 1 plat
-  const biayaOngkosCetakIsi = p.tarifOliverMinIsi;
-  const biayaTambahanCetakIsi = (insirtIsi - 500) * 80; // over-drek fee, bisa negatif di oplah kecil
+  // ---- ISI (Oliver, 21 x 29,7) ----
+  const AI = H > 0 ? p.insheetIsi : 0; // BUKU!AI7
+  const AK = 8; const AL = 2; const AM = 16; // BUKU!AK7/AL7/AM7 (Oliver)
+  const AN = C6 / (AM / AL); // BUKU!AN7 = C6/8
+  const AN6 = Math.ceil(AN); // BUKU!AN6 = ROUNDUP(AN7,0)
+  const AO = ((H / AL) * AN + (AI / AL) * AN6) * AL; // BUKU!AO7
+  const AP = H > 0 ? ((H / AL) * AN + (AI / AL) * AN6) : 0; // BUKU!AP7
+  // BUKU!AU29 rim isi = ((65*100)*gsm)/20000*(kg*(1+up)); BUKU!AR7 = (AP/500)*AU29 (Oliver)
+  const rimIsi = ((65 * 100) * p.gramaturIsi) / 20000 * (p.tarifKertasIsiKg * (1 + p.upIsiPct / 100));
+  add('Kertas Isi HVS', (AP / 500) * rimIsi,
+    `BUKU!AR7: ${AP} lbr × Rp ${(rimIsi / 500).toFixed(2)} (rim Rp ${Math.round(rimIsi).toLocaleString('id-ID')}/500)`);
+  // BUKU!AT7 = IF(H>0,AT6*C7,0); C7 = C6
+  add('Desain Isi', H > 0 ? p.tarifDesainIsiPerHlm * C6 : 0,
+    `BUKU!AT7: Rp ${p.tarifDesainIsiPerHlm.toLocaleString('id-ID')} × ${C6} hlm`);
+  // BUKU!AW7 = AW6*AX7 (tanpa gate H!); AX7 = 1 (AX6=1)
+  add('Plate Isi Oliver', p.tarifPlateIsi * 1, 'BUKU!AW7: 1 plat (AX6=1)');
+  // BUKU!BA7 = AY7*AX7 (tanpa gate H!)
+  const minIsi = p.tarifCetakMinIsi * 1;
+  // BUKU!BB7 Oliver = ((H+AI)-1000)*AX jika >1; BUKU!BC7 = BB*AZ7; BUKU!BD7 = BC+BA
+  const BB = (H + AI - 1000) * 1 > 1 ? (H + AI - 1000) * 1 : 0;
+  add('Cetak Isi Oliver', (BB === 0 ? 0 : BB) * p.tarifDrekIsi + minIsi,
+    `BUKU!BD7: min Rp ${minIsi.toLocaleString('id-ID')} + over ${BB}×Rp ${p.tarifDrekIsi} (H+AI=${H + AI})`);
+  // BUKU!BF7 = H*D35
+  if (H * p.tarifRoyalti > 0) add('Royalty', H * p.tarifRoyalti, `BUKU!BF7: ${H} × Rp ${p.tarifRoyalti}`);
+  // BUKU!BH7 Oliver = ((AO*2)-1000)*AZ7 — BISA NEGATIF, tetap masuk total
+  const BH = H > 0 ? (AO * 2 - 1000) * p.tarifDrekIsi : 0;
+  if (BH !== 0) add('Tambahan Cetak Isi', BH, `BUKU!BH7: (2×${AO}−1000)×Rp ${p.tarifDrekIsi}`);
+  // BUKU!BI7 = H*(UMR/25)/BI28 (jasa susun)
+  add('Jasa Susun', H * ((p.umr / 25) / targetSusun(C6)),
+    `BUKU!BI7: ${H} × Rp ${((p.umr / 25) / targetSusun(C6)).toFixed(2)} ((UMR/25)/${targetSusun(C6)})`);
+  // BUKU!BJ7 = BJ6*H; BJ6 = D32/(1000/3) (steples)
+  add('Steples', (p.tarifSteplesPack / (1000 / 3)) * H,
+    `BUKU!BJ7: ${H} × Rp ${(p.tarifSteplesPack / (1000 / 3)).toFixed(2)}`);
+  // BUKU!BL7 = H*150 (sisir; BL6 = 3*50)
+  add('Sisir', H * p.tarifSisirPerPcs, `BUKU!BL7: ${H} × Rp ${p.tarifSisirPerPcs}`);
 
-  // --- Laminasi ---
-  const areaCoverCm2 = LAMINASI_AREA_CM2[varian] ?? 0;
-  let tarifLaminasiPerCm2 = 0;
-  if (finishing === 'Laminasi Glossy') tarifLaminasiPerCm2 = p.tarifLaminasiGlossyCm2;
-  else if (finishing === 'Laminasi Doff') tarifLaminasiPerCm2 = p.tarifLaminasiDoffCm2;
-  else if (finishing === 'UV Varnish') tarifLaminasiPerCm2 = p.tarifUvVarnishCm2;
+  // ---- FINISHING (D7=21, F7=29.7 terkunci ukuran) ----
+  const luasLam = (21 * 2 + 1) * (29.7 + 1); // (D7*2+1)*(F7+1)
+  const finFloor = (raw: number): number => (raw === 0 ? 0 : raw > p.minFinishing ? raw : p.minFinishing);
+  // BUKU!BX27 chain persis: √ hanya untuk 'Lem Bending,' dan full-combo (full-combo tidak ditawarkan)
+  const bendingOn = finishing === 'Lem Bending,';
+  const BY = p.tarifBending * 29.7 * M * H; // BUKU!BY7 = (BX6*F7*M7)*H
+  const BZ = BY === 0 ? 0 : BY > p.minBending ? BY : p.minBending; // BUKU!BZ7
+  if (bendingOn && BY !== 0) add('Bending', BY, `BUKU!BX7: ${p.tarifBending}×29,7×${M}×${H}`);
+  add('Laminasi Glossy', finishing === 'Laminasi Glossy,' ? finFloor(luasLam * p.tarifLaminasiGlossy * H) : 0,
+    `BUKU!CB7: ${luasLam.toFixed(1)} cm² × ${p.tarifLaminasiGlossy} × ${H}, floor Rp ${p.minFinishing.toLocaleString('id-ID')}`);
+  add('Laminasi Doff', finishing === 'Laminasi Doff,' ? finFloor(luasLam * p.tarifLaminasiDoff * H) : 0,
+    `BUKU!CE7: floor Rp ${p.minFinishing.toLocaleString('id-ID')}`);
+  add('UV Varnish', finishing === 'UV Varnish,' || finishing === 'UV Varnish + Bending,'
+    ? (finishing === 'UV Varnish,' ? finFloor(luasLam * p.tarifUvVarnish * H) : finFloor(luasLam * p.tarifUvVarnish * H) + BZ) : 0,
+    'BUKU!CH7/CJ7: UV (+bending BZ untuk +Bending)');
+  add('Laminasi Doff + Bending', finishing === 'Laminasi Doff + Bending,' ? finFloor(luasLam * p.tarifLaminasiDoff * H) + BZ : 0,
+    'BUKU!CL7: CF7+BZ7');
+  // CK7 (Glossy+Bending) selalu 0 di domain ini — jalurnya #DIV/0! di Excel (CR7), tidak ditawarkan.
 
-  const biayaLaminasi =
-    finishing !== 'Tanpa Laminasi'
-      ? Math.max(areaCoverCm2 * tarifLaminasiPerCm2 * oplah, p.minLaminasi)
-      : 0;
+  breakdown.forEach((b) => { b.pct = totalHpp > 0 ? b.nominal / totalHpp : 0; });
 
-  // --- Jasa & Finishing ---
-  const biayaJasaSusun = (oplah * p.umr) / 20000;
-  const biayaStaples = oplah * 9; // 9/pcs dari pack 3000/369 ≈ 8.13, dibulatkan 9 per xlsm
-  const biayaSisir = oplah * p.tarifSisirPerPcs;
-
-  // --- Total HPP ---
-  const totalHpp = Math.round(
-    biayaCoverPrint +
-    biayaDesainCover +
-    biayaKertasIsi +
-    biayaDesainIsi +
-    biayaPlateIsi +
-    biayaOngkosCetakIsi +
-    biayaTambahanCetakIsi +
-    biayaLaminasi +
-    biayaJasaSusun +
-    biayaStaples +
-    biayaSisir
-  );
-  const hppPerPcs = totalHpp / oplah;
-
-  // --- Harga Jual ---
-  const hargaJualPerPcs = Math.round(hppPerPcs * (1 + marginPct / 100));
-  const totalHargaJual = hargaJualPerPcs * oplah;
-
-  // --- Nego ---
-  const negoPerPcs = Math.round(hargaJualPerPcs * (1 - negoDiskonPct / 100));
-  const totalNego = negoPerPcs * oplah;
-
-  // --- Breakdown ---
-  const items: Array<{ komponen: string; keterangan: string; biaya: number }> = [
-    {
-      komponen: 'Kertas Cover (Print Inter)',
-      keterangan: `${kebutuhanCoverA3} lbr A3+ × Rp ${p.tarifPrintCoverA3.toLocaleString('id-ID')}`,
-      biaya: biayaCoverPrint,
-    },
-    {
-      komponen: 'Desain Cover',
-      keterangan: 'AC 230 gsm · Full Colour 4/0',
-      biaya: biayaDesainCover,
-    },
-    {
-      komponen: 'Kertas Isi (HVS 70 gsm)',
-      keterangan: `${kebutuhanPlanoIsi} plano 65×100 × ${BERAT_PLANO_HVS_KG}kg × Rp ${p.tarifKertasHvs70Kg.toLocaleString('id-ID')}/kg +${p.upKertasIsiPct}%`,
-      biaya: Math.round(biayaKertasIsi),
-    },
-    {
-      komponen: 'Desain Isi',
-      keterangan: `${jumlahHalaman} hal × Rp ${p.tarifDesainIsiPerHlm.toLocaleString('id-ID')}/hal`,
-      biaya: biayaDesainIsi,
-    },
-    {
-      komponen: 'Plate Oliver Isi',
-      keterangan: '1 plat · 1 warna',
-      biaya: biayaPlateIsi,
-    },
-    {
-      komponen: 'Ongkos Cetak Isi (Oliver)',
-      keterangan: `Min order Rp ${p.tarifOliverMinIsi.toLocaleString('id-ID')}`,
-      biaya: biayaOngkosCetakIsi,
-    },
-    {
-      komponen: 'Tambahan Cetak Isi (Over-Drek)',
-      keterangan: `(${insirtIsi} insirt − 500) × 80`,
-      biaya: Math.round(biayaTambahanCetakIsi),
-    },
-    ...(finishing !== 'Tanpa Laminasi'
-      ? [{
-          komponen: `Laminasi ${finishing}`,
-          keterangan: `${areaCoverCm2} cm² × Rp ${tarifLaminasiPerCm2}/cm² × ${oplah} pcs (min Rp ${p.minLaminasi.toLocaleString('id-ID')})`,
-          biaya: Math.round(biayaLaminasi),
-        }]
-      : []),
-    {
-      komponen: 'Jasa Susun + Staples + Lipat',
-      keterangan: `${oplah} pcs × Rp ${(p.umr / 20000).toFixed(0)} (UMR/20.000)`,
-      biaya: Math.round(biayaJasaSusun),
-    },
-    {
-      komponen: 'Biaya Staples',
-      keterangan: `${oplah} pcs × Rp 9/pcs`,
-      biaya: biayaStaples,
-    },
-    {
-      komponen: 'Sisir Binding',
-      keterangan: `${oplah} pcs × Rp ${p.tarifSisirPerPcs}/pcs`,
-      biaya: biayaSisir,
-    },
-  ];
-
-  const breakdown: BukuSoftCoverBreakdownItem[] = items.map((item, i) => ({
-    no: i + 1,
-    ...item,
-    porsiPct: totalHpp > 0 ? (item.biaya / totalHpp) * 100 : 0,
-  }));
+  // BUKU!CX7 = T+V+Y+AG+AR+AT+AW+BD+BF+BH+BI+BJ+BL+BX+CB+CE+CH+CJ+CK+CL+BK+CV+CR+BV+BR
+  // (Y=AGcover=CK=BK=CV=CR=BV=BR=0 di domain ini)
+  // BUKU!CY7 = CX/H; BUKU!CZ7 = CY*(E36%); BUKU!DB7 = (CY+CZ)*H; BUKU!DC7 = DB/H; BUKU!DD7 = ROUNDUP(DC,-1)
+  const hppPerPcs = H > 0 ? totalHpp / H : 0;
+  const labaPerPcs = hppPerPcs * (marginPct / 100);
+  const totalHargaJual = Math.round((hppPerPcs + labaPerPcs) * H);
+  const hargaJualPerPcs = H > 0 ? Math.ceil((hppPerPcs + labaPerPcs) / 10) * 10 : 0;
+  const profitPerPcs = hargaJualPerPcs - hppPerPcs;
 
   return {
     input,
-    biayaCoverPrint: Math.round(biayaCoverPrint),
-    biayaDesainCover,
-    biayaKertasIsi: Math.round(biayaKertasIsi),
-    biayaDesainIsi,
-    biayaPlateIsi,
-    biayaOngkosCetakIsi,
-    biayaTambahanCetakIsi: Math.round(biayaTambahanCetakIsi),
-    biayaLaminasi: Math.round(biayaLaminasi),
-    biayaJasaSusun: Math.round(biayaJasaSusun),
-    biayaStaples,
-    biayaSisir,
-    totalHpp,
+    breakdown,
+    kebutuhanKertasCover: R,
+    kebutuhanCetakCover: Q,
+    kebutuhanPlanoIsi: AP,
+    totalHpp: Math.round(totalHpp),
     hppPerPcs,
     hargaJualPerPcs,
     totalHargaJual,
-    negoPerPcs,
-    totalNego,
-    breakdown,
-    kebutuhanCoverA3,
-    kebutuhanPlanoIsi,
-    areaCoverCm2,
-    insirtIsi,
+    profitPerPcs,
+    profitTotal: totalHargaJual - Math.round(totalHpp),
+    marginPct: hargaJualPerPcs > 0 ? profitPerPcs / hargaJualPerPcs : 0,
   };
-}
-
-// --- Matriks multi-varian × multi-oplah ---
-
-export interface BukuSoftCoverMatrixRow {
-  varian: BukuSoftCoverVarianType;
-  finishing: BukuSoftCoverFinishingType;
-  oplah: number;
-  hppPerPcs: number;
-  hargaJualPerPcs: number;
-  negoPerPcs: number;
-  totalHargaJual: number;
-  // Referensi harga resmi Juli 2026
-  hargaRef?: number;
-  negoRef?: number;
-}
-
-export function generateBukuSoftCoverMatrix(
-  params: BukuSoftCoverMasterParams = DEFAULT_BUKU_SOFT_COVER_PARAMS,
-  marginPct = 25,
-  negoDiskonPct = 4,
-  finishing: BukuSoftCoverFinishingType = 'Laminasi Glossy',
-): BukuSoftCoverMatrixRow[] {
-  const rows: BukuSoftCoverMatrixRow[] = [];
-  for (const varian of BUKU_SOFT_COVER_VARIANTS) {
-    for (const oplah of BUKU_SOFT_COVER_TIERS) {
-      const res = calculateBukuSoftCoverHpp(
-        { oplah, varian, jumlahHalaman: 32, finishing, marginPct, negoDiskonPct },
-        params
-      );
-      rows.push({
-        varian,
-        finishing,
-        oplah,
-        hppPerPcs: Math.round(res.hppPerPcs),
-        hargaJualPerPcs: res.hargaJualPerPcs,
-        negoPerPcs: res.negoPerPcs,
-        totalHargaJual: res.totalHargaJual,
-        hargaRef: HARGA_REFERENSI[oplah]?.harga,
-        negoRef: HARGA_REFERENSI[oplah]?.nego,
-      });
-    }
-  }
-  return rows;
 }
 
 export type SavedBukuSoftCoverSimulationItem = {
   id: string;
-  savedAt: string;
   title: string;
-  oplah: number;
+  savedAt: string;
   data: BukuSoftCoverSimulatorResult;
-  paramsSnapshot?: any;
+  paramsSnapshot?: BukuSoftCoverMasterParams;
 };
