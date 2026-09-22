@@ -83,6 +83,25 @@ for (const lini of LINI) {
   }
 }
 
+// ---------- 4. Saklar komponen: default = file, toggle menggerakkan HPP ----------
+{
+  const mk = (lini: SoftCoverLini, feat: any, H = 0) => {
+    const tiers = softCoverTiers(lini);
+    return calculateSoftCoverUnified({ lini, oplah: H || tiers[0], jumlahHalaman: 32, mukaCover: '1 Muka', warnaCover: '4 Warna', warnaIsi: '1 Warna', finishing: 'None,', marginPct: 30, feat }, { ...D });
+  };
+  const d0 = (lini: SoftCoverLini, H = 0) => mk(lini, undefined, H).totalHpp;
+  // Klasik: default mati → nyalakan menaikkan; jasa default nyala → matikan menurunkan.
+  check('klasik spotUV on naik', mk('Klasik', { spotUVEmboss: true }).totalHpp > d0('Klasik') ? 1 : 0, 1);
+  check('klasik shrink on naik', mk('Klasik', { shrinkPacking: true }).totalHpp > d0('Klasik') ? 1 : 0, 1);
+  check('klasik packing on naik', mk('Klasik', { packingKardus: true }).totalHpp > d0('Klasik') ? 1 : 0, 1);
+  check('klasik jasaSusun off turun', mk('Klasik', { jasa: { susun: false } }).totalHpp < d0('Klasik') ? 1 : 0, 1);
+  // Offset: jasa default nyala → matikan menurunkan; packing default nyala.
+  check('offset jasaLipat off turun', mk('Oliver-Oliver', { jasa: { lipat: false } }).totalHpp < d0('Oliver-Oliver') ? 1 : 0, 1);
+  check('offset packing off turun', mk('Oliver-Oliver', { packingKardus: false }).totalHpp < d0('Oliver-Oliver') ? 1 : 0, 1);
+  check('offset-PP jasaSusunStaples off turun', mk('Print-Print', { jasa: { susunStaples: false } }).totalHpp < d0('Print-Print') ? 1 : 0, 1);
+  // Custom: packing default nyala → matikan menurunkan.
+  check('custom packing off turun', mk('custom-pp105-24', { packingKardus: false }).totalHpp < d0('custom-pp105-24') ? 1 : 0, 1);
+}
 // ---------- 3. Resolusi default per lini ----------
 {
   const a = calculateSoftCoverUnified({ lini: 'Klasik', oplah: 20, jumlahHalaman: 32, mukaCover: '1 Muka', warnaCover: '4 Warna', warnaIsi: '1 Warna', finishing: 'Laminasi Glossy,', marginPct: 30 }, { ...D });

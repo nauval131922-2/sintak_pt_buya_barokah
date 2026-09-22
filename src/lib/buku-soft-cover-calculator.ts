@@ -56,6 +56,10 @@ export interface BukuSoftCoverMasterParams {
   tarifLaminasiGlossy: number; // BUKU!CA6 (Rp/cm2) — 0.35
   tarifLaminasiDoff: number; // BUKU!CD6 (Rp/cm2) — 0.4
   tarifUvVarnish: number; // BUKU!CG6 (Rp/cm2) — 0.11
+  tarifTintaSpotUV: number; // setara D31 generasi 21 (Rp/kg) — 279625 (mati di file Klasik)
+  tarifShrinkRoll: number; // setara D32 generasi 21 (Rp/roll) — 832500 (mati di file Klasik)
+  tarifLakbanRoll: number; // setara D34 (Rp/roll) — 8000 (mati di file Klasik)
+  tarifKardusBox: number; // setara D35 (Rp/box) — 8500 (mati di file Klasik)
   minFinishing: number; // floor BUKU!CB/CE/CH (Rp) — 50000
   marginDefaultPct: number; // Master!E36 Laba (%) — 30
 }
@@ -81,6 +85,10 @@ export const DEFAULT_BUKU_SOFT_COVER_PARAMS: BukuSoftCoverMasterParams = {
   tarifLaminasiGlossy: 0.35,
   tarifLaminasiDoff: 0.4,
   tarifUvVarnish: 0.11,
+  tarifTintaSpotUV: 279625,
+  tarifShrinkRoll: 832500,
+  tarifLakbanRoll: 8000,
+  tarifKardusBox: 8500,
   minFinishing: 50000,
   marginDefaultPct: 30,
 };
@@ -99,6 +107,15 @@ export interface BukuSoftCoverSimulatorInput {
   warnaIsi: BukuSoftCoverWarnaIsiType; // Master!D24
   finishing: BukuSoftCoverFinishingType; // Master!D29
   marginPct: number; // Master!E36
+  // Saklar komponen bebas (default = keadaan file: jasa on, paket full off).
+  // Rumus tiap komponen tetap 1:1 Excel (setara offset generasi 21×29,7).
+  feat?: {
+    jasaSusun?: boolean;
+    jasaSteples?: boolean;
+    spotUVEmboss?: boolean;
+    shrinkPacking?: boolean;
+    packingKardus?: boolean;
+  };
 }
 
 export interface BukuSoftCoverBreakdownItem {
@@ -193,11 +210,17 @@ export function calculateBukuSoftCoverHpp(
   // BUKU!BH7 Oliver = ((AO*2)-1000)*AZ7 — BISA NEGATIF, tetap masuk total
   const BH = H > 0 ? (AO * 2 - 1000) * p.tarifDrekIsi : 0;
   if (BH !== 0) add('Tambahan Cetak Isi', BH, `(2×${AO}−1000)×Rp ${p.tarifDrekIsi}`);
+  const feat = input.feat ?? {};
+  const fJasaSusun = feat.jasaSusun ?? true;
+  const fJasaSteples = feat.jasaSteples ?? true;
+  const fSpotUVEmboss = feat.spotUVEmboss ?? false;
+  const fShrinkPacking = feat.shrinkPacking ?? false;
+  const fPackingKardus = feat.packingKardus ?? false;
   // BUKU!BI7 = H*(UMR/25)/BI28 (jasa susun)
-  add('Jasa Susun', H * ((p.umr / 25) / targetSusun(C6)),
+  if (fJasaSusun) add('Jasa Susun', H * ((p.umr / 25) / targetSusun(C6)),
     `${H} × Rp ${((p.umr / 25) / targetSusun(C6)).toFixed(2)} (upah harian dibagi target)`);
   // BUKU!BJ7 = BJ6*H; BJ6 = D32/(1000/3) (steples)
-  add('Steples', (p.tarifSteplesPack / (1000 / 3)) * H,
+  if (fJasaSteples) add('Steples', (p.tarifSteplesPack / (1000 / 3)) * H,
     `${H} × Rp ${(p.tarifSteplesPack / (1000 / 3)).toFixed(2)}`);
   // BUKU!BL7 = H*150 (sisir; BL6 = 3*50)
   add('Sisir', H * p.tarifSisirPerPcs, `${H} × Rp ${p.tarifSisirPerPcs}`);
@@ -220,6 +243,27 @@ export function calculateBukuSoftCoverHpp(
   add('Laminasi Doff + Bending', finishing === 'Laminasi Doff + Bending,' ? finFloor(luasLam * p.tarifLaminasiDoff * H) + BZ : 0,
     'Doff + ongkos bending');
   // CK7 (Glossy+Bending) selalu 0 di domain ini — jalurnya #DIV/0! di Excel (CR7), tidak ditawarkan.
+
+  // ---- SAKLAR KOMPONEN (mati di file Klasik; rumus setara offset 21×29,7) ----
+  const uh = p.umr / 25;
+  if (fSpotUVEmboss) {
+    const bs6 = 5393320 / 4 / (((21 * 2) + M) * 29.7);
+    add('Tinta Spot UV', (H / bs6) * p.tarifTintaSpotUV, 'Paket full');
+    add('Jasa Spot UV', (uh / 500) * H, 'Paket full');
+    if (H > 0) add('Klise Emboss', ((21 + 4) * (29.7 + 4)) * 500 * 2, 'Paket full');
+    add('Jasa Emboss', (uh / 1000) * H, 'Paket full');
+  }
+  if (fShrinkPacking) {
+    const cs6 = 106700 / (29.7 + 8);
+    add('Plastik Shrink', (H / cs6) * p.tarifShrinkRoll, 'Paket shrink');
+    add('Jasa Shrink + Packing', ((uh * 2) / 500) * H, 'Jasa packing');
+  }
+  if (fPackingKardus) {
+    const isiKardus = C6 <= 100 ? 200 : C6 <= 200 ? 150 : C6 <= 300 ? 100 : C6 <= 400 ? 90 : C6 <= 500 ? 80 : C6 <= 600 ? 70 : 50;
+    const lakban = H > 0 ? p.tarifLakbanRoll * ((H / isiKardus) / (7650 / 196)) : 0;
+    add('Packing Kardus & Lakban', (H > 0 ? Math.ceil(H / isiKardus) * p.tarifKardusBox : 0) + lakban,
+      `${H > 0 ? Math.ceil(H / isiKardus) : 0} kardus × Rp ${p.tarifKardusBox.toLocaleString('id-ID')} + lakban`);
+  }
 
   breakdown.forEach((b) => { b.pct = totalHpp > 0 ? b.nominal / totalHpp : 0; });
 

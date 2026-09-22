@@ -79,6 +79,7 @@ export interface SoftCoverCustomParams {
   kawatPerRoll: number; staplesPerPack: number;
   tintaSpotUVkg: number; plastikShrinkRoll: number; lakbanRoll: number; kardus: number; royalty: number;
   labaPct: number;
+  packingKardus?: boolean; // saklar bebas (default = file: on, DA28=√)
 }
 
 export interface SoftCoverCustomLiniConfig {
@@ -221,8 +222,9 @@ export function calcSoftCoverCustomTier(cfg: SoftCoverCustomLiniConfig, p: SoftC
   const CS6 = 106700 / (cfg.panjang + 8); // BUKU!CS6 (CT30=106700)
   const shrink = t.shrink ? ((uh * 2) / 500) * H + (H / CS6) * p.plastikShrinkRoll : 0; // BUKU!CW7 (CV6*H + CT7)
   const kardusIsi = C6 === 0 ? 0 : C6 <= 100 ? 200 : C6 <= 200 ? 150 : C6 <= 300 ? 100 : C6 <= 400 ? 90 : C6 <= 500 ? 80 : C6 <= 600 ? 70 : 50; // BUKU!CY35
-  const lakban = H > 0 && kardusIsi > 0 ? p.lakbanRoll * ((H / kardusIsi) / (7650 / 196)) : 0; // BUKU!CZ7 (CY6=CZ30/196)
-  const kardus = H > 0 && kardusIsi > 0 ? rUp0(H / kardusIsi) * p.kardus + lakban : 0; // BUKU!DA7 (DA28=√)
+  const fPacking = p.packingKardus ?? true;
+  const lakban = fPacking && H > 0 && kardusIsi > 0 ? p.lakbanRoll * ((H / kardusIsi) / (7650 / 196)) : 0; // BUKU!CZ7 (CY6=CZ30/196)
+  const kardus = fPacking && H > 0 && kardusIsi > 0 ? rUp0(H / kardusIsi) * p.kardus + lakban : 0; // BUKU!DA7 (DA28=√)
   const finishing = finUMR + BQ + spotUV + emboss + bending + lam + shrink + kardus + H * p.royalty; // BUKU!BH7+BF7=0
   const desainCover = H > 0 ? p.desainCover : 0; // BUKU!V7
   const totalHpp = kertasCover + desainCover + platCover + ongkosCover + kertasIsi + desainIsi + platIsi + ongkosIsi + finishing; // BUKU!DC7

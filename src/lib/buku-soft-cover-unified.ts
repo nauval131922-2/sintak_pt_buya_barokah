@@ -211,6 +211,34 @@ export interface SoftCoverFinCustom {
   susunStaples: boolean; biayaStaples: boolean;
 }
 
+// Saklar komponen bebas — rumus tiap komponen tetap 1:1 Excel, kombinasinya bebas (persetujuan user).
+export interface SoftCoverFeat {
+  jasa?: Partial<Record<'lipat' | 'sisir' | 'susun' | 'kawat' | 'stiching' | 'susunStaples' | 'steples', boolean>>;
+  spotUVEmboss?: boolean; // khusus Klasik (offset/custom lewat D29)
+  shrinkPacking?: boolean; // khusus Klasik
+  packingKardus?: boolean; // semua engine (default file: Klasik off, offset/custom on)
+}
+
+export function defaultFeat(lini: SoftCoverLini): SoftCoverFeat {
+  if (lini === 'Klasik') {
+    return { jasa: { susun: true, steples: true }, spotUVEmboss: false, shrinkPacking: false, packingKardus: false };
+  }
+  if (isCustomLini(lini)) {
+    const f = defaultFinCustom(lini);
+    return {
+      jasa: { lipat: f.lipat, sisir: f.sisir, susun: f.susunKomplit, kawat: f.kawat, stiching: f.stiching, susunStaples: f.susunStaples, steples: f.biayaStaples },
+      packingKardus: true,
+    };
+  }
+  const bnbo = (SOFT_COVER_OFFSET_COMBOS[lini as SoftCoverOffsetComboId].jasaModel !== 'UMR5');
+  return {
+    jasa: bnbo
+      ? { lipat: false, sisir: false, susun: false, kawat: false, stiching: false, susunStaples: true, steples: true }
+      : { lipat: true, sisir: true, susun: true, kawat: true, stiching: true, susunStaples: false, steples: false },
+    packingKardus: true,
+  };
+}
+
 export function defaultFinCustom(lini: SoftCoverLini): SoftCoverFinCustom {
   const oo = isCustomLini(lini) && SOFT_COVER_CUSTOM_CONFIGS[lini].finOO;
   return { lipat: oo, sisir: oo, susunKomplit: oo, kawat: oo, stiching: oo, susunStaples: !oo, biayaStaples: !oo };
@@ -225,7 +253,8 @@ export interface SoftCoverUnifiedInput {
   warnaIsi: SoftCoverWarnaType;
   finishing: SoftCoverFinishing;
   marginPct: number;
-  finCustom?: SoftCoverFinCustom; // toggle jasa baris-26, khusus lini custom
+  finCustom?: SoftCoverFinCustom; // legacy (sebelum saklar) — dipetakan ke feat.jasa
+  feat?: SoftCoverFeat; // saklar komponen bebas
   mesinCover?: string; // override mesin cover custom (default = file lini); di luar cabang = 0
   mesinIsi?: string; // override mesin isi custom (default = file lini)
 }
@@ -301,7 +330,16 @@ export function calculateSoftCoverUnified(
   const p = resolveParams(input.lini, { ...DEFAULT_SOFT_COVER_UNIFIED, ...(rawParams || {}) });
   if (isCustomLini(input.lini)) {
     const cfg = SOFT_COVER_CUSTOM_CONFIGS[input.lini];
-    const fin = input.finCustom ?? defaultFinCustom(input.lini);
+    const leg = input.finCustom;
+    const j = input.feat?.jasa ?? (leg ? { lipat: leg.lipat, sisir: leg.sisir, susun: leg.susunKomplit, kawat: leg.kawat, stiching: leg.stiching, susunStaples: leg.susunStaples, steples: leg.biayaStaples } : undefined);
+    const fin = { ...defaultFinCustom(input.lini) };
+    if (j) {
+      const map = { lipat: 'lipat', sisir: 'sisir', susun: 'susunKomplit', kawat: 'kawat', stiching: 'stiching', susunStaples: 'susunStaples', steples: 'biayaStaples' } as const;
+      (Object.keys(map) as (keyof typeof map)[]).forEach((k) => {
+        const v = (j as any)[k];
+        if (v !== undefined) (fin as any)[map[k]] = v;
+      });
+    }
     const mc = input.mesinCover ?? cfg.defaultMesinCover;
     const mi = input.mesinIsi ?? cfg.defaultMesinIsi;
     const cp: SoftCoverCustomParams = {
@@ -324,6 +362,7 @@ export function calculateSoftCoverUnified(
       tintaSpotUVkg: p.tarifTintaSpotUV, plastikShrinkRoll: p.tarifShrinkRoll,
       lakbanRoll: p.tarifLakbanRoll, kardus: p.tarifKardusBox, royalty: p.tarifRoyalti,
       labaPct: p.marginDefaultPct, // custom: laba E37, bukan margin input
+      packingKardus: input.feat?.packingKardus ?? true,
     };
     const r = calcSoftCoverCustomTier(cfg, cp, input.oplah);
     const profitPerPcs = r.hargaJualPerPcs - r.hppPerPcs;
@@ -364,9 +403,14 @@ export function calculateSoftCoverUnified(
       tarifLaminasiGlossy: p.tarifLaminasiGlossy,
       tarifLaminasiDoff: p.tarifLaminasiDoff,
       tarifUvVarnish: p.tarifUvVarnish,
+      tarifTintaSpotUV: p.tarifTintaSpotUV,
       minFinishing: p.minFinishing,
       marginDefaultPct: p.marginDefaultPct,
+      tarifShrinkRoll: p.tarifShrinkRoll,
+      tarifLakbanRoll: p.tarifLakbanRoll,
+      tarifKardusBox: p.tarifKardusBox,
     };
+    const f = input.feat ?? {};
     const r = calcKlasik(
       {
         oplah: input.oplah,
@@ -377,6 +421,13 @@ export function calculateSoftCoverUnified(
         warnaIsi: input.warnaIsi,
         finishing: input.finishing as KlasikFinishing,
         marginPct: input.marginPct,
+        feat: {
+          jasaSusun: f.jasa?.susun ?? true,
+          jasaSteples: f.jasa?.steples ?? true,
+          spotUVEmboss: f.spotUVEmboss ?? false,
+          shrinkPacking: f.shrinkPacking ?? false,
+          packingKardus: f.packingKardus ?? false,
+        },
       },
       kp
     );
@@ -395,6 +446,7 @@ export function calculateSoftCoverUnified(
       marginPct: r.marginPct,
     };
   }
+  const f = input.feat ?? {};
   const r = calcOffset(
     {
       oplah: input.oplah,
@@ -404,6 +456,16 @@ export function calculateSoftCoverUnified(
       warnaIsi: input.warnaIsi,
       finishing: input.finishing,
       marginPct: input.marginPct,
+      feat: {
+        jasaLipat: f.jasa?.lipat,
+        jasaSisir: f.jasa?.sisir,
+        jasaSusun: f.jasa?.susun,
+        jasaKawat: f.jasa?.kawat,
+        jasaStiching: f.jasa?.stiching,
+        jasaSusunStaples: f.jasa?.susunStaples,
+        jasaSteples: f.jasa?.steples,
+        packingKardus: f.packingKardus,
+      },
     },
     p,
     input.lini as SoftCoverOffsetComboId

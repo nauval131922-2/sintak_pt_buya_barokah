@@ -212,6 +212,12 @@ export interface SoftCoverOffsetSimulatorInput {
   warnaIsi: SoftCoverOffsetWarnaType; // Master!D24
   finishing: SoftCoverOffsetFinishingType; // Master!D29
   marginPct: number; // Master!E37
+  // Saklar komponen bebas (default = keadaan file per jasaModel).
+  feat?: {
+    jasaLipat?: boolean; jasaSisir?: boolean; jasaSusun?: boolean; jasaKawat?: boolean;
+    jasaStiching?: boolean; jasaSusunStaples?: boolean; jasaSteples?: boolean;
+    packingKardus?: boolean;
+  };
 }
 
 export interface SoftCoverOffsetBreakdownItem {
@@ -371,6 +377,9 @@ export function calculateSoftCoverOffsetHpp(
   // BUKU!BH7 = IF(H>0,BH6,0) = 0 (BH6=0 konstanta generasi combo) — tanpa baris
 
   // ---- JASA (model per combo) ----
+  const feat = input.feat ?? {};
+  const fJ = (k: 'jasaLipat' | 'jasaSisir' | 'jasaSusun' | 'jasaKawat' | 'jasaStiching' | 'jasaSusunStaples' | 'jasaSteples', fileOn: boolean) =>
+    feat[k] ?? fileOn;
   if (cfg.jasaModel === 'UMR5') {
     // BI26–BM26=√: BI=(BI6*AN6)*H; BJ=BJ6*H; BK=(BK6*AN6)*H; BL=BL6*H; BM=BM6*H
     const BI6 = umrHarian / 10000; // BUKU!BI28 (A02 21x29,7)
@@ -378,17 +387,17 @@ export function calculateSoftCoverOffsetHpp(
     const BK6 = umrHarian / (500 * 19); // BUKU!BK28
     const BL6 = p.tarifKawatRoll / (30000 * (1 - 15 / 100)); // BUKU!BL28 = 30000-15%
     const BM6 = (umrHarian * 2) / 10000; // BUKU!BM28
-    add('Jasa Lipat', BI6 * AN6 * H, `Rp ${BI6.toFixed(2)}×${AN6}×${H}`);
-    add('Jasa Sisir', BJ6 * H, `Rp ${BJ6.toFixed(2)}×${H}`);
-    add('Jasa Susun', BK6 * AN6 * H, `Rp ${BK6.toFixed(2)}×${AN6}×${H}`);
-    add('Kawat Stiching', BL6 * H, `Rp ${BL6.toFixed(2)}×${H}`);
-    add('Jasa Stiching', BM6 * H, `Rp ${BM6.toFixed(2)}×${H}`);
+    if (fJ('jasaLipat', true)) add('Jasa Lipat', BI6 * AN6 * H, `Rp ${BI6.toFixed(2)}×${AN6}×${H}`);
+    if (fJ('jasaSisir', true)) add('Jasa Sisir', BJ6 * H, `Rp ${BJ6.toFixed(2)}×${H}`);
+    if (fJ('jasaSusun', true)) add('Jasa Susun', BK6 * AN6 * H, `Rp ${BK6.toFixed(2)}×${AN6}×${H}`);
+    if (fJ('jasaKawat', true)) add('Kawat Stiching', BL6 * H, `Rp ${BL6.toFixed(2)}×${H}`);
+    if (fJ('jasaStiching', true)) add('Jasa Stiching', BM6 * H, `Rp ${BM6.toFixed(2)}×${H}`);
   } else {
     // BN26/BO26=√ (combo Print-Print): BN = H*BN6; BO = BO6*H
     const BN6 = umrHarian / targetBN(C6, comboId); // BUKU!BN28
     const BO6 = p.tarifSteplesPack / (1000 / 3); // BUKU!BO6 = D33/(1000/3)
-    add('Jasa Susun Staples', H * BN6, `${H} × Rp ${BN6.toFixed(2)}`);
-    add('Steples', BO6 * H, `${H} × Rp ${BO6.toFixed(2)}`);
+    if (fJ('jasaSusunStaples', true)) add('Jasa Susun Staples', H * BN6, `${H} × Rp ${BN6.toFixed(2)}`);
+    if (fJ('jasaSteples', true)) add('Steples', BO6 * H, `${H} × Rp ${BO6.toFixed(2)}`);
   }
   // BQ7 = H*150 (sisir flat; BUKU!BQ6 = 3*50)
   add('Sisir', H * p.tarifSisirPerPcs, `${H} × Rp ${p.tarifSisirPerPcs}`);
@@ -447,7 +456,7 @@ export function calculateSoftCoverOffsetHpp(
   // BUKU!DA7 = gate (A02 ∧ DA28=√) → ROUNDUP(H/CY35)*DA6 + CZ (DA6 = D35)
   const CY = (H / kardusIsi(C6)) / (7650 / 196);
   const CZ = p.tarifLakbanRoll * CY;
-  add('Packing Kardus & Lakban', Math.ceil(H / kardusIsi(C6)) * p.tarifKardusBox + CZ,
+  if (feat.packingKardus ?? true) add('Packing Kardus & Lakban', Math.ceil(H / kardusIsi(C6)) * p.tarifKardusBox + CZ,
     `${H > 0 ? Math.ceil(H / kardusIsi(C6)) : 0} kardus × Rp ${p.tarifKardusBox.toLocaleString('id-ID')} + ${CY.toFixed(4)} roll lakban`);
 
   breakdown.forEach((b) => { b.pct = totalHpp > 0 ? b.nominal / totalHpp : 0; });
