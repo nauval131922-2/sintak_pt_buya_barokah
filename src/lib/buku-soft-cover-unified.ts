@@ -109,24 +109,24 @@ export const SOFT_COVER_LINIS_14_CUSTOM: SoftCoverCustomLini[] = SOFT_COVER_CUST
 export const SOFT_COVER_LINIS_105_CUSTOM: SoftCoverCustomLini[] = SOFT_COVER_CUSTOM_LINIS.filter((l) => l.id.includes('105')).map((l) => l.id);
 
 export const SOFT_COVER_LINI_LABEL: Record<SoftCoverLini, string> = {
-  'Klasik': 'Klasik Print Inter–Oliver (20–500)',
+  'Klasik': 'Klasik Cover Print Inter – Isi Oliver (20–500)',
   'Oliver-Oliver': 'Cover Oliver – Isi Oliver (550–3000)',
-  'Print-Oliver': 'Cover Print – Isi Oliver (300–500)',
-  'Print-Print': 'Cover Print – Isi Print (20–250)',
+  'Print-Oliver': 'Cover Print Inter – Isi Oliver (300–500)',
+  'Print-Print': 'Cover Print Inter – Isi Print Buya (20–250)',
   'OO-14': '14,5 Cover Oliver – Isi Oliver (1000–3000)',
   'OR-14': '14,5 Cover Oliver – Isi Ryobi (650–900)',
-  'PP-14': '14,5 Cover Print – Isi Print (20–200)',
-  'PR-14': '14,5 Cover Print – Isi Ryobi (250–600)',
-  'custom-pp145-19': '14,5 Custom Print–Print F19 (20–200)',
-  'custom-pr145-19': '14,5 Custom Print–Ryobi F19 (250–600)',
+  'PP-14': '14,5 Cover Print Inter – Isi Print Buya (20–200)',
+  'PR-14': '14,5 Cover Print Inter – Isi Ryobi (250–600)',
+  'custom-pp145-19': '14,5 Custom Print Inter–Print Buya F19 (20–200)',
+  'custom-pr145-19': '14,5 Custom Print Inter–Ryobi F19 (250–600)',
   'custom-oo145-21': '14,5 Custom Oliver–Oliver F21 (1000–3000)',
   'custom-or145-21': '14,5 Custom Oliver–Ryobi F21 (650–900)',
-  'custom-pp145-21': '14,5 Custom Print–Print F21 (20–200)',
-  'custom-pr145-21': '14,5 Custom Print–Ryobi F21 (250–600)',
+  'custom-pp145-21': '14,5 Custom Print Inter–Print Buya F21 (20–200)',
+  'custom-pr145-21': '14,5 Custom Print Inter–Ryobi F21 (250–600)',
   'custom-oo105-24': '10,5 Custom Oliver–Oliver F24 (1500–5000)',
-  'custom-po105-24': '10,5 Custom Print–Oliver F24 (700–1000)',
-  'custom-pp105-24': '10,5 Custom Print–Print F24 (20–200)',
-  'custom-pr105-24': '10,5 Custom Print–Ryobi F24 (250–600)',
+  'custom-po105-24': '10,5 Custom Print Inter–Oliver F24 (700–1000)',
+  'custom-pp105-24': '10,5 Custom Print Inter–Print Buya F24 (20–200)',
+  'custom-pr105-24': '10,5 Custom Print Inter–Ryobi F24 (250–600)',
 };
 
 export type SoftCoverMukaType = '1 Muka' | '2 Muka';
