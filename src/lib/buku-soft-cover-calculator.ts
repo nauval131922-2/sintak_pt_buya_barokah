@@ -161,9 +161,9 @@ export function calculateBukuSoftCoverHpp(
   const Q = R * 1 * N;
   // BUKU!T7 = T2*R (T2 = D18 Print Inter all-in; jalur (R/500)*W29 untuk mesin lain mati karena V27/W27=0)
   add('Cetak Cover Print Inter', p.tarifPrintCoverA3 * R,
-    `BUKU!T7: ${R} lbr × Rp ${p.tarifPrintCoverA3.toLocaleString('id-ID')} (all-in bahan+cetak)`);
+    `${R} lbr × Rp ${p.tarifPrintCoverA3.toLocaleString('id-ID')} (all-in bahan+cetak)`);
   // BUKU!V7 = IF(H>0,V6,0)
-  add('Desain Cover', H > 0 ? p.tarifDesainCover : 0, `BUKU!V7: Rp ${p.tarifDesainCover.toLocaleString('id-ID')}/order`);
+  add('Desain Cover', H > 0 ? p.tarifDesainCover : 0, `Rp ${p.tarifDesainCover.toLocaleString('id-ID')}/order`);
   // BUKU!Y7 = Y6*Z7 = 0 (Y6=0 untuk Print Inter); BUKU!AG7 = 0 (Print Inter) — tanpa baris
 
   // ---- ISI (Oliver, 21 x 29,7) ----
@@ -176,31 +176,31 @@ export function calculateBukuSoftCoverHpp(
   // BUKU!AU29 rim isi = ((65*100)*gsm)/20000*(kg*(1+up)); BUKU!AR7 = (AP/500)*AU29 (Oliver)
   const rimIsi = ((65 * 100) * p.gramaturIsi) / 20000 * (p.tarifKertasIsiKg * (1 + p.upIsiPct / 100));
   add('Kertas Isi HVS', (AP / 500) * rimIsi,
-    `BUKU!AR7: ${AP} lbr × Rp ${(rimIsi / 500).toFixed(2)} (rim Rp ${Math.round(rimIsi).toLocaleString('id-ID')}/500)`);
+    `${AP} lbr × Rp ${(rimIsi / 500).toFixed(2)} (rim Rp ${Math.round(rimIsi).toLocaleString('id-ID')}/500)`);
   // BUKU!AT7 = IF(H>0,AT6*C7,0); C7 = C6
   add('Desain Isi', H > 0 ? p.tarifDesainIsiPerHlm * C6 : 0,
-    `BUKU!AT7: Rp ${p.tarifDesainIsiPerHlm.toLocaleString('id-ID')} × ${C6} hlm`);
+    `Rp ${p.tarifDesainIsiPerHlm.toLocaleString('id-ID')} × ${C6} hlm`);
   // BUKU!AW7 = AW6*AX7 (tanpa gate H!); AX7 = 1 (AX6=1)
-  add('Plate Isi Oliver', p.tarifPlateIsi * 1, 'BUKU!AW7: 1 plat (AX6=1)');
+  add('Plate Isi Oliver', p.tarifPlateIsi * 1, '1 plat');
   // BUKU!BA7 = AY7*AX7 (tanpa gate H!)
   const minIsi = p.tarifCetakMinIsi * 1;
   // BUKU!BB7 Oliver = ((H+AI)-1000)*AX jika >1; BUKU!BC7 = BB*AZ7; BUKU!BD7 = BC+BA
   const BB = (H + AI - 1000) * 1 > 1 ? (H + AI - 1000) * 1 : 0;
   add('Cetak Isi Oliver', (BB === 0 ? 0 : BB) * p.tarifDrekIsi + minIsi,
-    `BUKU!BD7: min Rp ${minIsi.toLocaleString('id-ID')} + over ${BB}×Rp ${p.tarifDrekIsi} (H+AI=${H + AI})`);
+    `Cetak minimal Rp ${minIsi.toLocaleString('id-ID')} + lebihan ${BB}×Rp ${p.tarifDrekIsi}`);
   // BUKU!BF7 = H*D35
-  if (H * p.tarifRoyalti > 0) add('Royalty', H * p.tarifRoyalti, `BUKU!BF7: ${H} × Rp ${p.tarifRoyalti}`);
+  if (H * p.tarifRoyalti > 0) add('Royalty', H * p.tarifRoyalti, `${H} × Rp ${p.tarifRoyalti}`);
   // BUKU!BH7 Oliver = ((AO*2)-1000)*AZ7 — BISA NEGATIF, tetap masuk total
   const BH = H > 0 ? (AO * 2 - 1000) * p.tarifDrekIsi : 0;
-  if (BH !== 0) add('Tambahan Cetak Isi', BH, `BUKU!BH7: (2×${AO}−1000)×Rp ${p.tarifDrekIsi}`);
+  if (BH !== 0) add('Tambahan Cetak Isi', BH, `(2×${AO}−1000)×Rp ${p.tarifDrekIsi}`);
   // BUKU!BI7 = H*(UMR/25)/BI28 (jasa susun)
   add('Jasa Susun', H * ((p.umr / 25) / targetSusun(C6)),
-    `BUKU!BI7: ${H} × Rp ${((p.umr / 25) / targetSusun(C6)).toFixed(2)} ((UMR/25)/${targetSusun(C6)})`);
+    `${H} × Rp ${((p.umr / 25) / targetSusun(C6)).toFixed(2)} (upah harian dibagi target)`);
   // BUKU!BJ7 = BJ6*H; BJ6 = D32/(1000/3) (steples)
   add('Steples', (p.tarifSteplesPack / (1000 / 3)) * H,
-    `BUKU!BJ7: ${H} × Rp ${(p.tarifSteplesPack / (1000 / 3)).toFixed(2)}`);
+    `${H} × Rp ${(p.tarifSteplesPack / (1000 / 3)).toFixed(2)}`);
   // BUKU!BL7 = H*150 (sisir; BL6 = 3*50)
-  add('Sisir', H * p.tarifSisirPerPcs, `BUKU!BL7: ${H} × Rp ${p.tarifSisirPerPcs}`);
+  add('Sisir', H * p.tarifSisirPerPcs, `${H} × Rp ${p.tarifSisirPerPcs}`);
 
   // ---- FINISHING (D7=21, F7=29.7 terkunci ukuran) ----
   const luasLam = (21 * 2 + 1) * (29.7 + 1); // (D7*2+1)*(F7+1)
@@ -209,16 +209,16 @@ export function calculateBukuSoftCoverHpp(
   const bendingOn = finishing === 'Lem Bending,';
   const BY = p.tarifBending * 29.7 * M * H; // BUKU!BY7 = (BX6*F7*M7)*H
   const BZ = BY === 0 ? 0 : BY > p.minBending ? BY : p.minBending; // BUKU!BZ7
-  if (bendingOn && BY !== 0) add('Bending', BY, `BUKU!BX7: ${p.tarifBending}×29,7×${M}×${H}`);
+  if (bendingOn && BY !== 0) add('Bending', BY, `${p.tarifBending}×29,7×${M}×${H}`);
   add('Laminasi Glossy', finishing === 'Laminasi Glossy,' ? finFloor(luasLam * p.tarifLaminasiGlossy * H) : 0,
-    `BUKU!CB7: ${luasLam.toFixed(1)} cm² × ${p.tarifLaminasiGlossy} × ${H}, floor Rp ${p.minFinishing.toLocaleString('id-ID')}`);
+    `${luasLam.toFixed(1)} cm² × ${p.tarifLaminasiGlossy} × ${H}, minimal Rp ${p.minFinishing.toLocaleString('id-ID')}`);
   add('Laminasi Doff', finishing === 'Laminasi Doff,' ? finFloor(luasLam * p.tarifLaminasiDoff * H) : 0,
-    `BUKU!CE7: floor Rp ${p.minFinishing.toLocaleString('id-ID')}`);
+    `Minimal Rp ${p.minFinishing.toLocaleString('id-ID')}`);
   add('UV Varnish', finishing === 'UV Varnish,' || finishing === 'UV Varnish + Bending,'
     ? (finishing === 'UV Varnish,' ? finFloor(luasLam * p.tarifUvVarnish * H) : finFloor(luasLam * p.tarifUvVarnish * H) + BZ) : 0,
-    'BUKU!CH7/CJ7: UV (+bending BZ untuk +Bending)');
+    'UV (+ongkos bending untuk varian +Bending)');
   add('Laminasi Doff + Bending', finishing === 'Laminasi Doff + Bending,' ? finFloor(luasLam * p.tarifLaminasiDoff * H) + BZ : 0,
-    'BUKU!CL7: CF7+BZ7');
+    'Doff + ongkos bending');
   // CK7 (Glossy+Bending) selalu 0 di domain ini — jalurnya #DIV/0! di Excel (CR7), tidak ditawarkan.
 
   breakdown.forEach((b) => { b.pct = totalHpp > 0 ? b.nominal / totalHpp : 0; });

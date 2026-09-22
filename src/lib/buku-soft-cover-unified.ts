@@ -284,13 +284,13 @@ function customBreakdown(
   const item = (nama: string, nominal: number, keterangan: string): SoftCoverUnifiedBreakdownItem =>
     ({ nama, nominal, pct: nominal / t, keterangan });
   return [
-    item('Kertas Cover', r.kertasCover, `${mesinCover}: R ${d.R} plano (O${d.O}/P${d.P})`),
-    item('Desain Cover', r.desainCover, 'BUKU!V7 = D17 flat'),
-    item('Plat + Min Cover', r.platCover + r.ongkosCover, `Y6/AB6 × ${d.Z} plat + drek/over`),
-    item('Kertas Isi', r.kertasIsi, `${mesinIsi}: AP ${d.AP} (AK${d.AK}/AL${d.AL}/AM${d.AM})`),
-    item('Desain Isi', r.desainIsi, 'BUKU!AT7 = D26 × lbr'),
-    item('Plat + Min Isi', r.platIsi + r.ongkosIsi, `AW6/AY6 × ${d.AX} plat + drek/over`),
-    item('Finishing + Kemas', r.finishing, 'Jasa UMR baris-26 + Sisir + D29 + Shrink + Kardus'),
+    item('Kertas Cover', r.kertasCover, `${mesinCover}: kebutuhan ${d.R} lembar plano`),
+    item('Desain Cover', r.desainCover, 'Biaya desain cover per order'),
+    item('Plat + Min Cover', r.platCover + r.ongkosCover, `Ongkos plate ${d.Z} warna + cetak minimal dan lebihan`),
+    item('Kertas Isi', r.kertasIsi, `${mesinIsi}: kebutuhan ${d.AP} lembar plano`),
+    item('Desain Isi', r.desainIsi, 'Biaya desain isi per lembar'),
+    item('Plat + Min Isi', r.platIsi + r.ongkosIsi, `Ongkos plate ${d.AX} keping + cetak minimal dan lebihan`),
+    item('Finishing + Kemas', r.finishing, 'Jasa lipat, sisir, susun, laminasi, shrink, dan kardus'),
   ];
 }
 
