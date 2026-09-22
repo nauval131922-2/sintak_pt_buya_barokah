@@ -300,7 +300,7 @@ export default function BukuSoftCoverUnifiedSimulator({
   const optBtn = (active: boolean) =>
     `py-2 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
       active
-        ? 'border-slate-400 bg-slate-100 text-slate-900 shadow-xs'
+        ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs'
         : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
     }`;
 
@@ -494,7 +494,7 @@ export default function BukuSoftCoverUnifiedSimulator({
                       onClick={() => setOplah(t)}
                       className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition cursor-pointer ${
                         oplah === t
-                          ? 'border-slate-400 bg-slate-100 text-slate-900'
+                          ? 'border-slate-500 bg-slate-200 text-slate-900'
                           : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
                       }`}
                     >
