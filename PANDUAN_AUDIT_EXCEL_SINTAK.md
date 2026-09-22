@@ -133,7 +133,7 @@ Setiap workbook kalkulasi percetakan wajib dipetakan ke dalam 4 lapisan:
         * Mode Edit Riwayat (`activeSimulationId`): Dua tombol berdampingan: `Update Perubahan` (amber `bg-amber-600`) dan `Simpan Baru` (emerald `bg-emerald-700`).
         * **DILARANG KERAS** meletakkan form input teks kecil dan tombol simpan mini di kartu form kolom kiri.
       - **Jika ada opsi input atau isi kalkulasi yang perlu diperbarui/ditambahkan, WAJIB LANGSUNG UBAH PADA KODE TANPA PERLU KONFIRMASI**.
-      - **Aksen Grup Spesifikasi (Cover vs Isi)**: Kelompok input komponen fisik berbeda dalam 1 form **WAJIB** dibedakan visual: bungkus tiap grup dalam kontainer tint (`Cover`: `border-sky-200 bg-sky-50/50` + badge `COVER` sky; `Isi`: `border-violet-200 bg-violet-50/50` + badge `ISI` violet). Bahasa seleksi (tombol aktif emerald) tetap konsisten — yang beda hanya aksen grup. Berlaku untuk produk 2-komponen lain (Cover/Isi, Depan/Belakang, dsb.).
+      - **Aksen Grup Spesifikasi (Berlaku Umum, Semua Part)**: Setiap kelompok input part/komponen fisik berbeda dalam 1 form **WAJIB** dibedakan visual — masing-masing grup dibungkus kontainer tint + badge label dengan warna aksen sendiri (contoh: Cover sky `border-sky-200 bg-sky-50/50`, Isi violet `border-violet-200 bg-violet-50/50`). Bahasa seleksi (tombol aktif emerald) tetap konsisten — yang beda hanya aksen grup. Berlaku untuk PART APA PUN (bahan, ukuran, mesin, finishing, jasa, packing, dsb.) dan TIDAK terbatas pada Cover/Isi — tidak perlu didaftar satu per satu, auditor menilai sendiri pengelompokan part di tiap produk.
       - **Auto-Persist Draft Simulator (Wajib, Global Semua Produk)**: Seluruh `*Simulator.tsx` **WAJIB** menyimpan settingan form ke `localStorage` (`sintak_<produk>_draft`) setiap ada perubahan input dan me-restore-nya saat komponen mount / pindah tab, sehingga settingan tidak reset. Wajib di-skip saat Mode Edit Riwayat (`activeSimulationId` terisi) agar draft tidak menimpa data riwayat. Pola baku: `const DRAFT_KEY`, restore di effect load (`if (!activeSimulationId)`), save effect ber-guard sama. Kasus asal: 16 simulator lama (Buku Hard/SoftCover, Tabungan Security, Kalender, Kartu Koperasi, Label Obat, Majalah, Packaging, Paperbag, Poster, Pricelist, Stiker) reset saat pindah tab — diperbaiki global 2026-09-21.
 
 ### Tahap 6: Uji Komparasi Parity Otomatis (Full Matrix Benchmark)
@@ -192,7 +192,7 @@ Setiap kali ada audit atau perubahan parameter/rumus, **WAJIB** mengaudit dan me
 | 9b | Semua input angka Master Parameter memakai `ThousandInput` (pemisah ribuan, tanpa `type="number"` polos) | [ ] |
 | 10 | Tab Kalkulasi/Simulator sudah menerapkan dual scroll independen standar Manasik | [ ] |
 | 10b | Settingan form Simulator persist (auto-save/restore `localStorage` draft, tidak reset saat pindah tab, skip saat Mode Edit Riwayat) | [ ] |
-| 10c | Grup spesifikasi multi-komponen (Cover/Isi) punya aksen visual berbeda (badge + tint) | [ ] |
+| 10c | Setiap grup part/komponen berbeda punya aksen visual sendiri (badge + tint, berlaku umum semua part) | [ ] |
 | 11 | Isi opsi form input spesifikasi & breakdown biaya di Tab Kalkulasi sudah lengkap sesuai Excel | [ ] |
 | 12 | Benchmark otomatis seluruh tier oplah menghasilkan selisih Rp 0 | [ ] |
 | 13 | Uji stres perubahan parameter dinamis menghasilkan angka yang identik | [ ] |
