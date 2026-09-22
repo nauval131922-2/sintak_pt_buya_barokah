@@ -105,7 +105,19 @@ export default function BukuSoftCoverUnifiedMasterParameter({
   ) => {
     const isRupiah = opts?.rupiah ?? true;
     const isDecimal = opts?.decimal ?? false;
-    return (
+  const subGroup = (
+    borderCls: string,
+    labelCls: string,
+    title: string,
+    children: React.ReactNode
+  ) => (
+    <div className={`rounded-lg border ${borderCls} bg-white/70 p-2.5 space-y-2`}>
+      <span className={`block text-[10px] font-black uppercase tracking-wider ${labelCls}`}>{title}</span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">{children}</div>
+    </div>
+  );
+
+  return (
       <div
         className={`p-2.5 rounded-lg border transition-all ${
           isFieldModified(key)
@@ -199,12 +211,16 @@ export default function BukuSoftCoverUnifiedMasterParameter({
             <Printer className="w-4 h-4 text-sky-600" />
             <h3 className="text-xs font-bold text-slate-800">1. Cover (semua lini)</h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('insheetCover', 'Insheet Cover (lbr) — Klasik 5, offset per file')}
-            {fieldRow('tarifKertasCoverKg', 'Kertas Cover / kg (Rp)')}
-            {fieldRow('tarifDesainCover', 'Desain Cover (Rp)')}
-            {fieldRow('tarifPrintCoverA3', 'Print Cover A3+ (Rp)')}
-            {fieldRow('upCoverPct', 'Up Cover (%)', { rupiah: false, suffix: '%' })}
+          <div className="flex flex-col gap-2.5">
+            {subGroup('border-sky-300', 'text-sky-800', 'Kertas', (<>
+              {fieldRow('tarifKertasCoverKg', 'Kertas Cover / kg (Rp)')}
+              {fieldRow('upCoverPct', 'Up Cover (%)', { rupiah: false, suffix: '%' })}
+              {fieldRow('insheetCover', 'Insheet Cover (lbr) — Klasik 5, offset per file')}
+            </>))}
+            {subGroup('border-cyan-300', 'text-cyan-800', 'Cetak', (<>
+              {fieldRow('tarifDesainCover', 'Desain Cover (Rp)')}
+              {fieldRow('tarifPrintCoverA3', 'Print Cover A3+ (Rp)')}
+            </>))}
           </div>
           <p className="text-[10px] text-slate-500">
             Klasik &amp; Print-cover: all-in Rp 2.700/lbr. Oliver-cover: rim-based + plate/min per lini.
@@ -218,16 +234,22 @@ export default function BukuSoftCoverUnifiedMasterParameter({
             <BookCopy className="w-4 h-4 text-blue-600" />
             <h3 className="text-xs font-bold text-slate-800">2. Isi HVS (semua lini)</h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifKertasIsiKg', 'Kertas HVS / kg (Rp)')}
-            {fieldRow('upIsiPct', 'Up Isi (%) — Klasik 3, offset 0', { rupiah: false, suffix: '%' })}
-            {fieldRow('gramaturIsi', 'Gramatur Isi', { rupiah: false })}
-            {fieldRow('insheetIsi', 'Insheet Isi (lbr) — per file')}
-            {fieldRow('tarifDesainIsiPerUnit', 'Desain Isi offset (Rp)')}
-            {fieldRow('tarifDesainIsiPerHlm', 'Desain Isi Klasik /hlm (Rp)')}
-            {fieldRow('tarifPlateIsi', 'Plate Isi Klasik (Rp)')}
-            {fieldRow('tarifCetakMinIsi', 'Min Cetak Klasik (Rp)')}
-            {fieldRow('tarifDrekIsi', 'Drek Isi Klasik (Rp)')}
+          <div className="flex flex-col gap-2.5">
+            {subGroup('border-blue-300', 'text-blue-800', 'Kertas', (<>
+              {fieldRow('tarifKertasIsiKg', 'Kertas HVS / kg (Rp)')}
+              {fieldRow('upIsiPct', 'Up Isi (%) — Klasik 3, offset 0', { rupiah: false, suffix: '%' })}
+              {fieldRow('gramaturIsi', 'Gramatur Isi', { rupiah: false })}
+              {fieldRow('insheetIsi', 'Insheet Isi (lbr) — per file')}
+            </>))}
+            {subGroup('border-indigo-300', 'text-indigo-800', 'Desain', (<>
+              {fieldRow('tarifDesainIsiPerUnit', 'Desain Isi offset (Rp)')}
+              {fieldRow('tarifDesainIsiPerHlm', 'Desain Isi Klasik /hlm (Rp)')}
+            </>))}
+            {subGroup('border-sky-300', 'text-sky-800', 'Plate & Cetak Klasik', (<>
+              {fieldRow('tarifPlateIsi', 'Plate Isi Klasik (Rp)')}
+              {fieldRow('tarifCetakMinIsi', 'Min Cetak Klasik (Rp)')}
+              {fieldRow('tarifDrekIsi', 'Drek Isi Klasik (Rp)')}
+            </>))}
           </div>
           <p className="text-[10px] text-slate-500">
             Offset mengunci tarif plate/min/drek per file (config); 4 field Klasik hanya untuk lini Klasik.
@@ -241,16 +263,22 @@ export default function BukuSoftCoverUnifiedMasterParameter({
             <Scissors className="w-4 h-4 text-violet-600" />
             <h3 className="text-xs font-bold text-slate-800">3. Jasa, Kawat &amp; Kemas</h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('umr', 'UMR (Rp) — Klasik 2818585, offset 2818850')}
-            {fieldRow('tarifRoyalti', 'Royalty / pcs (Rp)')}
-            {fieldRow('tarifKawatRoll', 'Kawat Stiching /roll (Rp) — offset')}
-            {fieldRow('tarifTintaSpotUV', 'Tinta Spot UV /kg (Rp) — offset')}
-            {fieldRow('tarifShrinkRoll', 'Shrink /roll (Rp) — per file')}
-            {fieldRow('tarifSteplesPack', 'Steples 369/Pack (Rp)')}
-            {fieldRow('tarifLakbanRoll', 'Lakban /roll (Rp)')}
-            {fieldRow('tarifKardusBox', 'Kardus /box (Rp)')}
-            {fieldRow('tarifSisirPerPcs', 'Sisir / pcs (Rp) — 150 flat')}
+          <div className="flex flex-col gap-2.5">
+            {subGroup('border-violet-300', 'text-violet-800', 'Tenaga', (<>
+              {fieldRow('umr', 'UMR (Rp) — Klasik 2818585, offset 2818850')}
+              {fieldRow('tarifRoyalti', 'Royalty / pcs (Rp)')}
+            </>))}
+            {subGroup('border-purple-300', 'text-purple-800', 'Habis Pakai', (<>
+              {fieldRow('tarifKawatRoll', 'Kawat Stiching /roll (Rp) — offset')}
+              {fieldRow('tarifTintaSpotUV', 'Tinta Spot UV /kg (Rp) — offset')}
+              {fieldRow('tarifSteplesPack', 'Steples 369/Pack (Rp)')}
+              {fieldRow('tarifSisirPerPcs', 'Sisir / pcs (Rp) — 150 flat')}
+            </>))}
+            {subGroup('border-fuchsia-300', 'text-fuchsia-800', 'Kemas', (<>
+              {fieldRow('tarifShrinkRoll', 'Shrink /roll (Rp) — per file')}
+              {fieldRow('tarifLakbanRoll', 'Lakban /roll (Rp)')}
+              {fieldRow('tarifKardusBox', 'Kardus /box (Rp)')}
+            </>))}
           </div>
           <p className="text-[10px] text-slate-500">
             Klasik: susun/steples-9/sisir. Offset: 5 jasa UMR atau BN/steples + SpotUV/Emboss/Shrink/Packing hidup.
@@ -264,14 +292,20 @@ export default function BukuSoftCoverUnifiedMasterParameter({
             <Layers className="w-4 h-4 text-amber-600" />
             <h3 className="text-xs font-bold text-slate-800">4. Bending, Laminasi &amp; Margin</h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifBending', 'Bending (Rp)')}
-            {fieldRow('minBending', 'Floor Bending (Rp)')}
-            {fieldRow('tarifLaminasiGlossy', 'Glossy /cm²', { decimal: true })}
-            {fieldRow('tarifLaminasiDoff', 'Doff /cm²', { decimal: true })}
-            {fieldRow('tarifUvVarnish', 'UV /cm²', { decimal: true })}
-            {fieldRow('minFinishing', 'Floor Finishing (Rp)')}
-            {fieldRow('marginDefaultPct', 'Margin Default (%)', { rupiah: false, suffix: '%' })}
+          <div className="flex flex-col gap-2.5">
+            {subGroup('border-amber-300', 'text-amber-800', 'Bending', (<>
+              {fieldRow('tarifBending', 'Bending (Rp)')}
+              {fieldRow('minBending', 'Floor Bending (Rp)')}
+            </>))}
+            {subGroup('border-orange-300', 'text-orange-800', 'Laminasi & UV', (<>
+              {fieldRow('tarifLaminasiGlossy', 'Glossy /cm²', { decimal: true })}
+              {fieldRow('tarifLaminasiDoff', 'Doff /cm²', { decimal: true })}
+              {fieldRow('tarifUvVarnish', 'UV /cm²', { decimal: true })}
+              {fieldRow('minFinishing', 'Floor Finishing (Rp)')}
+            </>))}
+            {subGroup('border-yellow-300', 'text-yellow-800', 'Laba', (<>
+              {fieldRow('marginDefaultPct', 'Margin Default (%)', { rupiah: false, suffix: '%' })}
+            </>))}
           </div>
           <p className="text-[10px] text-slate-500">
             Floor finishing Rp 50.000, bending Rp 100.000. Margin 30%, harga ke puluhan. Tanpa nego (3 folder).
@@ -285,14 +319,22 @@ export default function BukuSoftCoverUnifiedMasterParameter({
             <BookCopy className="w-4 h-4 text-emerald-600" />
             <h3 className="text-xs font-bold text-slate-800">5. Engine Custom — tarif print &amp; target jasa (10 lini F19/F21/F24)</h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-            {fieldRow('tarifPrintBuyaIsi', 'Print Isi Buya flat (Rp)')}
-            {fieldRow('tarifPrintIsiA3', 'Print Isi A3+ (Rp) — per lini 350/2000/1750')}
-            {fieldRow('targetLipat', 'Target Lipat /hari')}
-            {fieldRow('targetSisir', 'Target Sisir /hari')}
-            {fieldRow('targetSusunKomplit', 'Target Susun Komplit /hari')}
-            {fieldRow('targetKawatRoll', 'Kawat 1 roll jadi (pcs)')}
-            {fieldRow('targetStiching', 'Target Stiching /hari')}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
+            <div className="lg:col-span-2">
+              {subGroup('border-emerald-300', 'text-emerald-800', 'Tarif Print', (<>
+                {fieldRow('tarifPrintBuyaIsi', 'Print Isi Buya flat (Rp)')}
+                {fieldRow('tarifPrintIsiA3', 'Print Isi A3+ (Rp) — per lini 350/2000/1750')}
+              </>))}
+            </div>
+            <div className="lg:col-span-2">
+              {subGroup('border-teal-300', 'text-teal-800', 'Target Harian', (<>
+                {fieldRow('targetLipat', 'Target Lipat /hari')}
+                {fieldRow('targetSisir', 'Target Sisir /hari')}
+                {fieldRow('targetSusunKomplit', 'Target Susun Komplit /hari')}
+                {fieldRow('targetKawatRoll', 'Kawat 1 roll jadi (pcs)')}
+                {fieldRow('targetStiching', 'Target Stiching /hari')}
+              </>))}
+            </div>
           </div>
           <p className="text-[10px] text-slate-500">
             Laba custom = Margin Default (30%). Toggle jasa (Lipat/Sisir/Susun/Kawat vs Susun-Staples) default per lini di tab Kalkulasi.
