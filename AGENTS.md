@@ -170,11 +170,3 @@ re-read whole files.
 After big code changes, refresh the graph with `graft build` (deterministic,
 no API key, $0).
 <!-- graft:end -->
-
-## Transparansi Pemakaian Graph (Wajib)
-
-- Setiap jawaban yang memakai graph WAJIB menyebut sumbernya: nama node dan
-  rentang `file:line` yang dipakai (contoh: "menurut node `session-cache`,
-  `src/lib/session-cache.ts:L34-L63`").
-- Jika menjawab TANPA graph (baca manual), tulis eksplisit "baca manual" agar
-  user tahu graph tidak dipakai.
