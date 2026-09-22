@@ -26,6 +26,7 @@ interface BukuSoftCoverUnifiedMasterParameterProps {
 
 const VISIBLE_KEYS: (keyof SoftCoverUnifiedParams)[] = [
   'insheetCover',
+  'tarifKertasCoverKg',
   'tarifDesainCover',
   'tarifPrintCoverA3',
   'tarifKertasIsiKg',
@@ -192,15 +193,18 @@ export default function BukuSoftCoverUnifiedMasterParameter({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Card 1: Cover */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+        <div className="bg-sky-50/40 rounded-xl border border-sky-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-sky-100 pb-2">
+            <span className="text-[10px] font-black uppercase tracking-wider text-sky-900 bg-sky-200/80 px-2 py-0.5 rounded">Cover</span>
             <Printer className="w-4 h-4 text-sky-600" />
             <h3 className="text-xs font-bold text-slate-800">1. Cover (semua lini)</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('insheetCover', 'Insheet Cover (lbr) — Klasik 5, offset per file')}
+            {fieldRow('tarifKertasCoverKg', 'Kertas Cover / kg (Rp)')}
             {fieldRow('tarifDesainCover', 'Desain Cover (Rp)')}
             {fieldRow('tarifPrintCoverA3', 'Print Cover A3+ (Rp)')}
+            {fieldRow('upCoverPct', 'Up Cover (%)', { rupiah: false, suffix: '%' })}
           </div>
           <p className="text-[10px] text-slate-500">
             Klasik &amp; Print-cover: all-in Rp 2.700/lbr. Oliver-cover: rim-based + plate/min per lini.
@@ -208,14 +212,14 @@ export default function BukuSoftCoverUnifiedMasterParameter({
         </div>
 
         {/* Card 2: Isi */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+        <div className="bg-blue-50/40 rounded-xl border border-blue-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
+            <span className="text-[10px] font-black uppercase tracking-wider text-blue-900 bg-blue-200/80 px-2 py-0.5 rounded">Isi</span>
             <BookCopy className="w-4 h-4 text-blue-600" />
             <h3 className="text-xs font-bold text-slate-800">2. Isi HVS (semua lini)</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('tarifKertasIsiKg', 'Kertas HVS / kg (Rp)')}
-            {fieldRow('upCoverPct', 'Up Cover (%)', { rupiah: false, suffix: '%' })}
             {fieldRow('upIsiPct', 'Up Isi (%) — Klasik 3, offset 0', { rupiah: false, suffix: '%' })}
             {fieldRow('gramaturIsi', 'Gramatur Isi', { rupiah: false })}
             {fieldRow('insheetIsi', 'Insheet Isi (lbr) — per file')}
@@ -231,8 +235,9 @@ export default function BukuSoftCoverUnifiedMasterParameter({
         </div>
 
         {/* Card 3: Jasa & Kemas */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+        <div className="bg-violet-50/40 rounded-xl border border-violet-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-violet-100 pb-2">
+            <span className="text-[10px] font-black uppercase tracking-wider text-violet-900 bg-violet-200/80 px-2 py-0.5 rounded">Jasa</span>
             <Scissors className="w-4 h-4 text-violet-600" />
             <h3 className="text-xs font-bold text-slate-800">3. Jasa, Kawat &amp; Kemas</h3>
           </div>
@@ -253,8 +258,9 @@ export default function BukuSoftCoverUnifiedMasterParameter({
         </div>
 
         {/* Card 4: Finishing & Margin */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+        <div className="bg-amber-50/40 rounded-xl border border-amber-200 p-4 shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-amber-100 pb-2">
+            <span className="text-[10px] font-black uppercase tracking-wider text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded">Finishing</span>
             <Layers className="w-4 h-4 text-amber-600" />
             <h3 className="text-xs font-bold text-slate-800">4. Bending, Laminasi &amp; Margin</h3>
           </div>
@@ -273,8 +279,9 @@ export default function BukuSoftCoverUnifiedMasterParameter({
         </div>
 
         {/* Card 5: Custom F19/F21/F24 */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3 md:col-span-2">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+        <div className="bg-emerald-50/40 rounded-xl border border-emerald-200 p-4 shadow-2xs flex flex-col gap-3 md:col-span-2">
+          <div className="flex items-center gap-2 border-b border-emerald-100 pb-2">
+            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-900 bg-emerald-200/80 px-2 py-0.5 rounded">Custom</span>
             <BookCopy className="w-4 h-4 text-emerald-600" />
             <h3 className="text-xs font-bold text-slate-800">5. Engine Custom — tarif print &amp; target jasa (10 lini F19/F21/F24)</h3>
           </div>
