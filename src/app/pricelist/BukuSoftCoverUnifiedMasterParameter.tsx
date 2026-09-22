@@ -27,6 +27,7 @@ interface BukuSoftCoverUnifiedMasterParameterProps {
 const VISIBLE_KEYS: (keyof SoftCoverUnifiedParams)[] = [
   'insheetCover',
   'tarifKertasCoverKg',
+  'gramaturCover',
   'tarifDesainCover',
   'tarifPrintCoverA3',
   'tarifKertasIsiKg',
@@ -214,6 +215,7 @@ export default function BukuSoftCoverUnifiedMasterParameter({
           <div className="flex flex-col gap-2.5">
             {subGroup('border-sky-300', 'text-sky-800', 'Kertas', (<>
               {fieldRow('tarifKertasCoverKg', 'Kertas Cover / kg (Rp)')}
+              {fieldRow('gramaturCover', 'Gramatur Cover', { rupiah: false })}
               {fieldRow('upCoverPct', 'Up Cover (%)', { rupiah: false, suffix: '%' })}
               {fieldRow('insheetCover', 'Insheet Cover (lbr) — mengikuti file')}
             </>))}

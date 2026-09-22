@@ -69,6 +69,7 @@ export interface SoftCoverCustomParams {
   jumlahHalaman: number; mukaCover: 1 | 2; warnaCover: number; warnaIsi: number;
   mesinCover: string; mesinIsi: string;
   umr: number; hargaKertasCoverKg: number; hargaKertasIsiKg: number;
+  gramaturCover: number; // BUKU!W28 — 230 di semua file custom
   upCoverPct: number; upIsiPct: number; // Master!E12/E22 (%) — 0 di semua file custom
   insheetCover: number; insheetIsi: number;
   desainCover: number; tarifPrintCover: number; tarifPrintBuyaIsi: number; drekIsi: number; desainIsiPerHlm: number;
@@ -115,7 +116,7 @@ export function defaultSoftCoverCustomParams(lini: SoftCoverCustomLini): SoftCov
   return {
     jumlahHalaman: 32, mukaCover: 1, warnaCover: 4, warnaIsi: 1,
     mesinCover: c.defaultMesinCover, mesinIsi: c.defaultMesinIsi,
-    umr: 2818850, hargaKertasCoverKg: 16400, hargaKertasIsiKg: 15700,
+    umr: 2818850, hargaKertasCoverKg: 16400, hargaKertasIsiKg: 15700, gramaturCover: 230,
     upCoverPct: 0, upIsiPct: 0,
     insheetCover: c.insheetCover, insheetIsi: c.insheetIsi,
     desainCover: 20000, tarifPrintCover: 2700, tarifPrintBuyaIsi: 350, drekIsi: c.drekIsi, desainIsiPerHlm: 2500,
@@ -153,7 +154,7 @@ export function calcSoftCoverCustomTier(cfg: SoftCoverCustomLiniConfig, p: SoftC
   const R = H > 0 && P > 0 && O > 0 ? (cfg.rataR === false ? rawR : rUp0(rawR)) : 0; // BUKU!R7
   const Q = R * O * N; // BUKU!Q7
   const cv = (COVER_PLANO[cfg.ukuran] ?? {})[mc] ?? [0, 0]; // BUKU!V27/W27
-  const W29 = ((cv[0] * cv[1]) * 230) / 20000 * (p.hargaKertasCoverKg * (p.upCoverPct / 100) + p.hargaKertasCoverKg); // BUKU!W29 (W28=230 gsm, Y30=E12)
+  const W29 = ((cv[0] * cv[1]) * p.gramaturCover) / 20000 * (p.hargaKertasCoverKg * (p.upCoverPct / 100) + p.hargaKertasCoverKg); // BUKU!W29 (W28, Y30=E12)
   const T2 = mc === 'print inter' ? p.tarifPrintCover : mc === 'print buya' ? 300 : 0; // BUKU!T2
   const isOffC = mc === 'ryobi' || mc === 'oliver' || mc === 'sm';
   const kertasCover = isOffC ? (R / 500) * W29 : mc === 'print inter' ? T2 * R : 0; // BUKU!T7 (Print Buya ikut (R/500)*W29)
