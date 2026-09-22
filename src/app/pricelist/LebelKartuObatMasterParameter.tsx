@@ -9,6 +9,7 @@ import {
   Printer,
   Layers,
   Scissors,
+  Package,
 } from 'lucide-react';
 import {
   DEFAULT_LEBEL_KARTU_OBAT_PARAMS,
@@ -24,13 +25,17 @@ interface LebelKartuObatMasterParameterProps {
 
 const LEBEL_KARTU_OBAT_VISIBLE_KEYS: (keyof LebelKartuObatMasterParams)[] = [
   'tarifKertasKg',
+  'upKertasPct',
+  'gramaturGsm',
+  'insheetLbr',
   'tarifDesain',
   'tarifPlatePerPlat',
-  'tarifSisirPer500',
-  'tarifDrek',
   'tarifCetakMinPerPlat',
+  'tarifDrekPerWarna',
+  'tarifRoyaltyPerPcs',
+  'biayaTransport',
+  'tarifSisirPer500',
   'marginDefaultPct',
-  'negoDefaultPct',
 ];
 
 export default function LebelKartuObatMasterParameter({
@@ -70,52 +75,46 @@ export default function LebelKartuObatMasterParameter({
   const fieldRow = (
     key: keyof LebelKartuObatMasterParams,
     label: string,
-    isRupiah = true,
-    isDecimal = false
-  ) => (
-    <div
-      className={`p-2.5 rounded-lg border transition-all ${
-        isFieldModified(key)
-          ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-          : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-      }`}
-    >
-      <div className="flex items-center justify-between gap-1 mb-1.5">
-        <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
-          {label}
-        </label>
-        {isFieldModified(key) && (
-          <button
-            type="button"
-            onClick={() => handleResetField(key)}
-            className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-            title="Reset ke default"
-          >
-            <RotateCcw className="w-2.5 h-2.5" /> Def
-          </button>
-        )}
-      </div>
-      <div className="flex items-center gap-1.5">
-        {isRupiah && !isDecimal ? (
+    opts?: { rupiah?: boolean; decimal?: boolean; suffix?: string }
+  ) => {
+    const isRupiah = opts?.rupiah ?? true;
+    const isDecimal = opts?.decimal ?? false;
+    return (
+      <div
+        className={`p-2.5 rounded-lg border transition-all ${
+          isFieldModified(key)
+            ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+            : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
+        }`}
+      >
+        <div className="flex items-center justify-between gap-1 mb-1.5">
+          <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
+            {label}
+          </label>
+          {isFieldModified(key) && (
+            <button
+              type="button"
+              onClick={() => handleResetField(key)}
+              className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+              title="Reset ke default"
+            >
+              <RotateCcw className="w-2.5 h-2.5" /> Def
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5">
           <ThousandInput
-            value={customParams[key] as number}
+            value={customParams[key] ?? DEFAULT_LEBEL_KARTU_OBAT_PARAMS[key]}
             onValueChange={(v) => handleChange(key, v || 0)}
             className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-            prefix="Rp"
+            prefix={isRupiah ? 'Rp' : undefined}
+            suffix={opts?.suffix}
             allowDecimals={isDecimal}
           />
-        ) : (
-          <input
-            type="number"
-            step={isDecimal ? 0.01 : 1}
-            value={customParams[key] as number}
-            onChange={(e) => handleChange(key, Number(e.target.value) || 0)}
-            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-          />
-        )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
@@ -137,7 +136,7 @@ export default function LebelKartuObatMasterParameter({
               )}
             </div>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Tarif acuan Lebel Kartu Obat 3,5×7 / 4×6 / 5×6,7 cm HVS 70 gsm 1 Warna 1 Muka, Rajang + Packing.
+              Tarif acuan Lebel Kartu Obat 3,5×7 / 4×6 / 5×6,7 cm HVS 70 gsm Folio — Cetak / Ongkos Cetak, Sisir + Packing.
             </p>
           </div>
         </div>
@@ -171,46 +170,50 @@ export default function LebelKartuObatMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Printer className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">1. Kertas &amp; Desain</h3>
+            <h3 className="text-xs font-bold text-slate-800">1. Kertas &amp; Desain (Master!D12–D16)</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifKertasKg', 'Kertas HVS 70 / kg (Rp)')}
-            {fieldRow('tarifDesain', 'Desain / Order (Rp)')}
-            {fieldRow('tarifPlatePerPlat', 'Plate / Plat (Rp)')}
-            {fieldRow('tarifCetakMinPerPlat', 'Min Cetak / Plat (Rp)')}
+            {fieldRow('tarifKertasKg', 'Kertas HVS / kg (Rp) — D13')}
+            {fieldRow('upKertasPct', 'Up Kertas (%) — E13', { rupiah: false, suffix: '%' })}
+            {fieldRow('gramaturGsm', 'Gramatur (gsm) — D12', { rupiah: false })}
+            {fieldRow('insheetLbr', 'Insheet (lbr) — D15', { rupiah: false })}
+            {fieldRow('tarifDesain', 'Desain / Order (Rp) — D16')}
           </div>
           <p className="text-[10px] text-slate-500">
-            HVS 70 gsm Folio 21,5×33 cm Rp 15.700/kg +5% → Rp 40.936/rim (500 lbr), insheet 30 lbr, plat Rp 10.000, min cetak Rp 15.000/plat, drek Rp 30, desain Rp 10.000.
+            HVS 70 gsm Folio 21,5×33 cm Rp 15.700/kg +5% (rim Rp 40.936/500), insheet 30 lbr polos (BUKU!K7 tanpa koefisien), desain Rp 10.000/order.
           </p>
         </div>
 
-        {/* Card 2: Finishing Sisir */}
+        {/* Card 2: Cetak */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Scissors className="w-4 h-4 text-violet-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Finishing Rajang &amp; Sisir</h3>
+            <Scissors className="w-4 h-4 text-sky-600" />
+            <h3 className="text-xs font-bold text-slate-800">2. Plate, Cetak &amp; Sisir (BUKU!W6/Z6/AA7/AJ6)</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifSisirPer500', 'Sisir /500 lbr (Rp)')}
-            {fieldRow('tarifDrek', 'Drek Over / lbr (Rp)')}
+            {fieldRow('tarifPlatePerPlat', 'Plate / Plat (Rp) — W6')}
+            {fieldRow('tarifCetakMinPerPlat', 'Min Cetak / Plat (Rp) — Z6')}
+            {fieldRow('tarifDrekPerWarna', 'Drek / Warna (Rp) — AA7')}
+            {fieldRow('tarifSisirPer500', 'Sisir /500 lbr (Rp) — AJ6')}
+            {fieldRow('tarifRoyaltyPerPcs', 'Royalty / rim (Rp) — AG6')}
+            {fieldRow('biayaTransport', 'Transport / order (Rp) — AI6')}
           </div>
           <p className="text-[10px] text-slate-500">
-            Sisir/Rajang (Q/500)×10.000 (10600@1 rim 530 lbr), drek over 30×(P-500) per plat, plate 1 plat untuk 1 Warna 1 Muka.
+            Plate Rp 10.000×(warna×muka) — Rp 0 saat ONGKOS CETAK. Over = P−500 (Rp 30×plat). Sisir (Q/500)×Rp 10.000 hanya saat finishing SISIR.
           </p>
         </div>
 
-        {/* Card 3: Margin & Nego Standar */}
+        {/* Card 3: Margin */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3 md:col-span-2">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Layers className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">3. Margin &amp; Nego Standar</h3>
+            <h3 className="text-xs font-bold text-slate-800">3. Margin Standar (Master!E21)</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-md">
-            {fieldRow('marginDefaultPct', 'Margin Default (%)', false)}
-            {fieldRow('negoDefaultPct', 'Nego Default (%)', false)}
+            {fieldRow('marginDefaultPct', 'Margin Default (%) — E21', { rupiah: false, suffix: '%' })}
           </div>
           <p className="text-[10px] text-slate-500">
-            Margin 30% &amp; nego 4% sesuai HARGA JULI 2026 (N=ROUNDUP(M*130%,-2), O=ROUNDUP(N*96%,-2)). Harga per rim dibulatkan ke kelipatan Rp 100.
+            Margin 30% dari HPP per rim, harga dibulatkan ke puluhan (BUKU!AR7 =ROUNDUP(AQ,−1)). Excel tidak punya kolom nego — nego dihapus.
           </p>
         </div>
       </div>
@@ -232,7 +235,7 @@ export default function LebelKartuObatMasterParameter({
                 <div>
                   <h3 className="text-base font-bold tracking-tight">Manual Pengguna &amp; Pemetaan Sumber Excel</h3>
                   <p className="text-xs text-emerald-200/90 mt-0.5">
-                    Dokumentasi referensi letak sheet, cell, dan formula dari master kalkulasi Lebel Kartu Obat (16. Pricelist Lebel Kartu Obat)
+                    Referensi sheet, cell, dan formula master Lebel Kartu Obat (16. Pricelist Lebel Kartu Obat/Source/*.xlsm)
                   </p>
                 </div>
               </div>
@@ -249,55 +252,41 @@ export default function LebelKartuObatMasterParameter({
               <div className="space-y-3">
                 <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                  Pemetaan Master Parameter ke File Excel (Folder 16. Pricelist Lebel Kartu Obat/*.xlsm)
+                  Dropdown Master (diekstrak programatis via dataValidation)
                 </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
-                    <div className="flex items-center gap-2 font-bold text-slate-900">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                      <span>1. Bahan Kertas &amp; Ukuran</span>
-                    </div>
-                    <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>HVS 70 gsm</strong>: <span className="font-mono text-emerald-700">Master!D13</span> Rp 15.700/kg + up 5% → <span className="font-mono text-emerald-700">BUKU!U28</span> Rp 40.936/rim (500 lbr Folio 21,5×33 cm).</li>
-                      <li>• <strong>Varian</strong>: 3,5×7 / 4×6 / 5×6,7 cm — 1 Warna 1 Muka, 1 plano/potong, semua HVS 70 sama kertas.</li>
-                      <li>• <strong>Kebutuhan Plano</strong>: <span className="font-mono text-emerald-700">BUKU!Q7</span> =H×500+insheet (30), P=Q, H=oplah rim.</li>
-                    </ul>
-                  </div>
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-[11px] text-slate-600 space-y-1.5">
+                  <p>• <strong>Master!D6 Ukuran</strong>: 1 item per file (= varian 3,5×7 / 4×6 / 5×6,7 — tanpa efek biaya, ketiga file klon identik).</p>
+                  <p>• <strong>Master!D7 Oplah</strong>: named range <span className="font-mono text-emerald-700">Oplah</span> → 10 tier rim BUKU!H7:H16 = 1–10 (1 rim = 500 lbr).</p>
+                  <p>• <strong>Master!D10 Jenis Cetak</strong>: <span className="font-mono text-emerald-700">CETAK, ONGKOS CETAK,</span> — ONGKOS CETAK menolkan biaya plate (BUKU!W6), min &amp; drek tetap jalan.</p>
+                  <p>• <strong>Master!D17 Warna</strong> (1–4) &amp; <strong>Master!D18 Muka</strong> (1/2): jumlah plat = warna×muka (BUKU!X7), pengali drek over = plat.</p>
+                  <p>• <strong>Master!D20 Finishing</strong>: <span className="font-mono text-emerald-700">SISIR, TANPA SISIR,</span> → gate biaya sisir BUKU!AJ7.</p>
+                  <p>• <strong>Master!D5/D11/D12</strong>: FOLIO, bahan HVS/BC/CD (label saja), gramatur angka 55–160 → BUKU!U27.</p>
+                </div>
+              </div>
 
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
-                    <div className="flex items-center gap-2 font-bold text-slate-900">
-                      <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                      <span>2. Cetak 1 Warna 1 Muka</span>
-                    </div>
-                    <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Plate</strong>: 1 plat × Rp 10.000 (W6). Min Order Rp 15.000/plat (Z6).</li>
-                      <li>• <strong>Drek Over</strong>: Rp 30 × (P-500) × plat (AA7*X7). AB=X×Z, AD=AC×AA×X, AE=AB+AD.</li>
-                      <li>• <strong>Desain</strong>: Rp 10.000 (T6) per order.</li>
-                    </ul>
-                  </div>
+              <div className="space-y-3">
+                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                  Alur Hitung BUKU (per tier rim H)
+                </h4>
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-[11px] text-slate-600 space-y-1.5">
+                  <p>• <strong>Plano BUKU!Q7</strong>: =(H·500)/O + K/N (K = insheet 30 polos, tanpa koefisien &amp; tanpa ROUNDUP). <strong>Cetak BUKU!P7</strong>: =N·Q.</p>
+                  <p>• <strong>Kertas BUKU!R7</strong>: =(U28/500)·Q dengan <span className="font-mono text-emerald-700">BUKU!U28</span> =((21,5·33)·70)/20000·(15.700·1,05) = Rp 40.936/rim.</p>
+                  <p>• <strong>Plat BUKU!W7</strong>: =W6·(warna×muka). <strong>Cetak BUKU!AE7</strong>: =15.000·plat + over·30·plat, over = P−500 (Rp 0 hanya jika P−500 tepat 0).</p>
+                  <p>• <strong>Sisir BUKU!AJ7</strong>: =(Q/500)·10.000 (saat SISIR). <strong>Total BUKU!AL7</strong>: =SUM(R+T+W+AE+AG+AI+AJ).</p>
+                  <p>• <strong>Harga BUKU!AR7</strong>: =ROUNDUP(AQ,−1) ke puluhan, laba 30% (Master!E21).</p>
+                </div>
+              </div>
 
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
-                    <div className="flex items-center gap-2 font-bold text-slate-900">
-                      <span className="w-2 h-2 rounded-full bg-violet-500"></span>
-                      <span>3. Finishing Sisir / Rajang</span>
-                    </div>
-                    <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Sisir</strong>: <span className="font-mono text-violet-700">BUKU!AJ7</span> (Q/500)×10.000 (10600@530 lbr, 20600@1030 lbr).</li>
-                      <li>• <strong>Finishing</strong>: Rajang + Packing (tidak ada laminasi / pound tambahan).</li>
-                    </ul>
-                  </div>
-
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
-                    <div className="flex items-center gap-2 font-bold text-slate-900">
-                      <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                      <span>4. Margin &amp; Pembulatan</span>
-                    </div>
-                    <ul className="space-y-1.5 text-[11px] text-slate-600">
-                      <li>• <strong>Margin</strong>: 30% dari HPP per rim, nego 4% dari harga jual (N=ROUNDUP(M*130%,-2), O=ROUNDUP(N*96%,-2)).</li>
-                      <li>• Harga per rim = <code className="text-[10px] bg-white px-1 py-0.5 rounded border">ceil(HPP/rim ×1.30 /100)*100</code> (ratusan).</li>
-                      <li>• Tier: 1–10 rim (HARGA JULI 2026), 1 rim = 500 lbr, HPP total = SUM(R+T+W+AE+AJ).</li>
-                    </ul>
-                  </div>
+              <div className="space-y-3">
+                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
+                  Sel Mati di Excel (sengaja tidak jadi parameter)
+                </h4>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-[11px] text-slate-600 space-y-1.5">
+                  <p>• <strong>Master!D8 UMR Rp 2.818.585</strong>: tidak direferensikan rumus BUKU mana pun — engine tidak menghitung upah/jasa.</p>
+                  <p>• <strong>BUKU!U6 Film (=0) + T29, BUKU!X6 (=0), BUKU!C6</strong>: konstanta/sel mati tanpa efek biaya.</p>
+                  <p>• Ketiga file varian klon identik — pemilih varian hanya label ukuran, bukan pembeda biaya.</p>
                 </div>
               </div>
             </div>

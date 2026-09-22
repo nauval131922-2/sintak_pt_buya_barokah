@@ -844,23 +844,27 @@ export default function SavedCalculationsList({
     // 18. Lebel Kartu Obat
     lebelKartuObatList.forEach((l: any) => {
       const inp = (l.data && l.data.input) ? l.data.input : (l.input || l.data || l || {});
+      const lkoJenis = inp.jenisCetak ?? 'CETAK';
+      const lkoMuka = inp.muka ?? '1 Muka';
+      const lkoWarna = inp.warna ?? '1 Warna';
+      const lkoFin = inp.finishing ?? 'SISIR';
       items.push({
         id: l.id,
         category: 'Lebel Kartu Obat',
         savedAt: l.savedAt,
         title: l.title,
         oplah: inp.oplah,
-        specSummary: `Lebel Kartu Obat ${inp.varian} • ${inp.oplah.toLocaleString('id-ID')} rim (${(inp.oplah * 500).toLocaleString('id-ID')} lbr)`,
+        specSummary: `Lebel Kartu Obat ${inp.varian} ${lkoJenis} • ${inp.oplah.toLocaleString('id-ID')} rim (${(inp.oplah * 500).toLocaleString('id-ID')} lbr)`,
         detailSpecs: [
-          `Bahan: HVS 70 gsm 1 Warna 1 Muka · ${l.data.kebutuhanPlano} lbr plano`,
-          `Finishing: Rajang + Packing (Cetak ${l.data.kebutuhanCetak} lbr)`,
+          `Bahan: HVS 70 gsm ${lkoMuka} ${lkoWarna} · ${l.data.kebutuhanPlano} lbr plano`,
+          `Cetak: ${lkoJenis} · Finishing: ${lkoFin} + Packing (Cetak ${l.data.kebutuhanCetak} lbr)`,
           `Margin: ${inp.marginPct}%`,
         ],
         hppUnit: (l.data?.hppPerRim ?? l.hppPerRim ?? 0),
         hargaJualUnit: (l.data?.hargaJualPerRim ?? l.hargaJualPerRim ?? 0),
         totalOmset: (l.data?.totalHargaJual ?? l.totalHargaJual ?? 0),
         marginPct: inp.marginPct,
-        negoDiskonPct: inp.negoDiskonPct,
+        negoDiskonPct: inp.negoDiskonPct ?? 0,
         rawData: l,
       });
     });
@@ -1748,7 +1752,7 @@ export default function SavedCalculationsList({
     } else if (item.category === 'Lebel Kartu Obat') {
       const l: any = item.rawData;
       const inp = (l.data && l.data.input) ? l.data.input : (l.input || l.data || l || {});
-      text = `*PENAWARAN LEBEL KARTU OBAT*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Lebel Kartu Obat ${inp.varian} cm\n• *Bahan*: HVS 70 gsm 1 Warna 1 Muka\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} rim (${(inp.oplah * 500).toLocaleString('id-ID')} lbr, ${l.data.kebutuhanPlano} lbr plano)\n• *Finishing*: Rajang + Packing\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Rim*: *Rp ${(l.data?.hargaJualPerRim ?? l.hargaJualPerRim ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(l.data?.totalHargaJual ?? l.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
+      text = `*PENAWARAN LEBEL KARTU OBAT*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Lebel Kartu Obat ${inp.varian} cm\n• *Bahan*: HVS 70 gsm ${inp.muka ?? '1 Muka'} ${inp.warna ?? '1 Warna'}\n• *Cetak*: ${inp.jenisCetak ?? 'CETAK'}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} rim (${(inp.oplah * 500).toLocaleString('id-ID')} lbr, ${l.data.kebutuhanPlano} lbr plano)\n• *Finishing*: ${inp.finishing ?? 'SISIR'} + Packing\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Rim*: *Rp ${(l.data?.hargaJualPerRim ?? l.hargaJualPerRim ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(l.data?.totalHargaJual ?? l.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Buku Soft Cover') {
       const bsc: any = item.rawData;
       const inp = (bsc.data && bsc.data.input) ? bsc.data.input : (bsc.input || bsc.data || bsc || {});

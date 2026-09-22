@@ -457,10 +457,9 @@ export function applyGlobalParamsToAll(
     tarifDesain: g.tarifDesainStandar,
     tarifPlatePerPlat: g.oliverPlatUnit,
     tarifCetakMinPerPlat: g.oliverMinOngkos,
-    tarifDrek: g.oliverDrekOver,
+    tarifDrekPerWarna: g.oliverDrekOver,
     tarifSisirPer500: g.tarifSisirPcs * 66,
     marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextBukuSoftCover: BukuSoftCoverMasterParams = {

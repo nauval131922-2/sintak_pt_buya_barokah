@@ -38,9 +38,10 @@ export default function LebelKartuObatMatrixView({
 
   const viewMode = propViewMode ?? localViewMode;
   const setViewMode = propSetViewMode ?? setLocalViewMode;
+  // Spek default sesuai file Excel tersimpan: CETAK, 1 Muka, 1 Warna, SISIR, margin 30%.
   const calc = (oplah: number, varian: LebelKartuObatVarianType) =>
     calculateLebelKartuObatHpp(
-      { oplah, varian, marginPct: 30, negoDiskonPct: 4 },
+      { oplah, varian, jenisCetak: 'CETAK', muka: '1 Muka', warna: '1 Warna', finishing: 'SISIR', marginPct: 30 },
       customParams
     );
 
@@ -53,15 +54,15 @@ export default function LebelKartuObatMatrixView({
         oplah,
         cols: varians.map((varian) => {
           const r = calc(oplah, varian);
-          return { varian, hpp: r.hppPerRim, jual: r.hargaJualPerRim, nego: r.hargaNegoPerRim, totalJual: r.totalHargaJual };
+          return { varian, hpp: r.hppPerRim, jual: r.hargaJualPerRim, totalJual: r.totalHargaJual };
         }),
       };
-    }).filter(Boolean) as { oplah: number; cols: { varian: LebelKartuObatVarianType; hpp: number; jual: number; nego: number; totalJual: number }[] }[];
+    }).filter(Boolean) as { oplah: number; cols: { varian: LebelKartuObatVarianType; hpp: number; jual: number; totalJual: number }[] }[];
   }, [customParams, searchTerm, selectedVarianFilter]);
 
   const flatTableRows = useMemo(() => {
     const list: {
-      oplah: number; varian: LebelKartuObatVarianType; hpp: number; jual: number; nego: number; totalJual: number; margin: number;
+      oplah: number; varian: LebelKartuObatVarianType; hpp: number; jual: number; totalJual: number; margin: number;
     }[] = [];
 
     const varians = selectedVarianFilter === 'ALL' ? VARIAN_LIST : [selectedVarianFilter];
@@ -80,7 +81,6 @@ export default function LebelKartuObatMatrixView({
           oplah, varian,
           hpp: r.hppPerRim,
           jual: r.hargaJualPerRim,
-          nego: r.hargaNegoPerRim,
           totalJual: r.totalHargaJual,
           margin: r.marginPct,
         });
@@ -105,7 +105,7 @@ export default function LebelKartuObatMatrixView({
               Pricelist Matriks Lebel Kartu Obat
             </h2>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Tabel perbandingan HPP &amp; harga jual Lebel Kartu Obat HVS 70 1 Warna 1 Muka per rim &amp; varian (margin 30%, nego 4%, rajang + packing).
+              Tabel perbandingan HPP &amp; harga jual HVS 70 1 Warna 1 Muka per rim &amp; varian (margin 30%, sisir + packing).
             </p>
           </div>
         </div>
@@ -185,7 +185,7 @@ export default function LebelKartuObatMatrixView({
               <div className="flex items-center justify-between border-b border-gray-200 pb-2">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 inline-block"></span>
-                  <h3 className="text-sm font-bold text-gray-800 tracking-tight">Lebel Kartu Obat — HVS 70 1 Warna 1 Muka · Rajang + Packing</h3>
+                  <h3 className="text-sm font-bold text-gray-800 tracking-tight">Lebel Kartu Obat — HVS 70 1 Warna 1 Muka · Sisir + Packing</h3>
                 </div>
                 <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
                   {selectedVarianFilter === 'ALL' ? 'Semua Varian (3)' : `${selectedVarianFilter}`}
@@ -198,7 +198,7 @@ export default function LebelKartuObatMatrixView({
                   <div className="bg-cyan-50/70 px-4 py-2 border-b border-cyan-100 flex items-center justify-between">
                     <span className="text-[11px] font-bold text-cyan-900 tracking-wider uppercase flex items-center gap-1.5">
                       <Layers size={13} className="text-cyan-600" />
-                      Varian: {varian} — {LEBEL_KARTU_OBAT_CONFIG[varian].w}×{LEBEL_KARTU_OBAT_CONFIG[varian].h} cm · 1 plat · 1 potong/plano
+                      Varian: {varian} — Folio {LEBEL_KARTU_OBAT_CONFIG[varian].planoW}×{LEBEL_KARTU_OBAT_CONFIG[varian].planoH} cm · 1 potong/plano
                     </span>
                   </div>
                   <div className="overflow-x-auto max-h-[500px]">
@@ -208,14 +208,13 @@ export default function LebelKartuObatMatrixView({
                           <th className="py-2.5 px-3 border-r border-gray-200 text-center w-20 bg-gray-100" rowSpan={2}>
                             Oplah
                           </th>
-                          <th colSpan={3} className="py-1.5 px-2 text-center border-r border-gray-200 font-bold text-gray-900 bg-gray-200/80">
+                          <th colSpan={2} className="py-1.5 px-2 text-center border-r border-gray-200 font-bold text-gray-900 bg-gray-200/80">
                             {varian}
                           </th>
                         </tr>
                         <tr className="bg-gray-50 border-b border-gray-200 text-[11px] text-gray-600">
                           <th className="py-1.5 px-2 text-right font-semibold bg-gray-50">HPP</th>
-                          <th className="py-1.5 px-2 text-right font-bold text-emerald-800 bg-emerald-100/50">Harga</th>
-                          <th className="py-1.5 px-2 text-right font-bold text-blue-800 bg-blue-100/50 border-r border-gray-200">Nego</th>
+                          <th className="py-1.5 px-2 text-right font-bold text-emerald-800 bg-emerald-100/50 border-r border-gray-200">Harga</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
@@ -228,11 +227,8 @@ export default function LebelKartuObatMatrixView({
                                 {row.oplah.toLocaleString('id-ID')} rim
                               </td>
                               <td className="py-2 px-2 text-right text-gray-500 font-mono">{Math.round(col.hpp).toLocaleString('id-ID')}</td>
-                              <td className="py-2 px-2 text-right font-bold text-emerald-700 font-mono bg-emerald-50/30">
+                              <td className="py-2 px-2 text-right font-bold text-emerald-700 font-mono bg-emerald-50/30 border-r border-gray-200">
                                 {col.jual.toLocaleString('id-ID')}
-                              </td>
-                              <td className="py-2 px-2 text-right font-bold text-blue-700 font-mono bg-blue-50/30 border-r border-gray-200">
-                                {col.nego.toLocaleString('id-ID')}
                               </td>
                             </tr>
                           );
@@ -256,7 +252,6 @@ export default function LebelKartuObatMatrixView({
                   <th className="py-2.5 px-3">Varian</th>
                   <th className="py-2.5 px-3 text-right">HPP / rim</th>
                   <th className="py-2.5 px-3 text-right text-emerald-700">Harga Jual / rim</th>
-                  <th className="py-2.5 px-3 text-right text-blue-700">Harga Nego / rim</th>
                   <th className="py-2.5 px-3 text-right text-emerald-800">Total Omset</th>
                   <th className="py-2.5 px-3 text-right text-slate-600">Margin</th>
                 </tr>
@@ -264,7 +259,7 @@ export default function LebelKartuObatMatrixView({
               <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
                 {flatTableRows.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="p-8 text-center text-slate-400 font-sans">
+                    <td colSpan={6} className="p-8 text-center text-slate-400 font-sans">
                       Tidak ada data yang sesuai dengan pencarian atau filter.
                     </td>
                   </tr>
@@ -275,7 +270,6 @@ export default function LebelKartuObatMatrixView({
                       <td className="py-2 px-3 text-slate-700 font-sans">{row.varian}</td>
                       <td className="py-2 px-3 text-right text-slate-600">Rp {Math.round(row.hpp).toLocaleString('id-ID')}</td>
                       <td className="py-2 px-3 text-right font-bold text-emerald-700">Rp {row.jual.toLocaleString('id-ID')}</td>
-                      <td className="py-2 px-3 text-right font-bold text-blue-600">Rp {row.nego.toLocaleString('id-ID')}</td>
                       <td className="py-2 px-3 text-right font-bold text-slate-800">Rp {row.totalJual.toLocaleString('id-ID')}</td>
                       <td className="py-2 px-3 text-right text-slate-500 font-sans">{Math.round(row.margin * 100)}%</td>
                     </tr>

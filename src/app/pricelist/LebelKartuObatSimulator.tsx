@@ -3,12 +3,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { saveCalculationToDb } from '@/lib/pricelist-db-sync';
 import {
-  FileSpreadsheet,
   DollarSign,
   TrendingUp,
-  Percent,
   FileText,
-  Copy,
   Check,
   Share2,
   Sliders,
@@ -19,8 +16,6 @@ import {
   Calculator,
   Info,
   Layers,
-  RefreshCw,
-  Tag,
   Pill,
 } from 'lucide-react';
 import {
@@ -28,9 +23,17 @@ import {
   DEFAULT_LEBEL_KARTU_OBAT_PARAMS,
   LebelKartuObatMasterParams,
   LebelKartuObatVarianType,
+  LebelKartuObatJenisCetakType,
+  LebelKartuObatMukaType,
+  LebelKartuObatWarnaType,
+  LebelKartuObatFinishingType,
   LEBEL_KARTU_OBAT_TIERS,
   SavedLebelKartuObatSimulationItem,
   LEBEL_KARTU_OBAT_CONFIG,
+  LEBEL_KARTU_OBAT_JENIS_CETAK_OPTIONS,
+  LEBEL_KARTU_OBAT_MUKA_OPTIONS,
+  LEBEL_KARTU_OBAT_WARNA_OPTIONS,
+  LEBEL_KARTU_OBAT_FINISHING_OPTIONS,
 } from '@/lib/lebel-kartu-obat-calculator';
 import { toast } from '@/lib/toast';
 
@@ -69,10 +72,13 @@ export default function LebelKartuObatSimulator({
   activeSimulationTitle: propActiveSimTitle,
   setActiveSimulationTitle: propSetActiveSimTitle,
 }: LebelKartuObatSimulatorProps) {
-  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 5));
+  const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 1));
   const [varian, setVarian] = useState<LebelKartuObatVarianType>(() => draftVal('varian', '3,5 x 7 cm'));
-  const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', 30));
-  const [negoDiskonPct, setNegoDiskonPct] = useState(() => draftVal('negoDiskonPct', 4));
+  const [jenisCetak, setJenisCetak] = useState<LebelKartuObatJenisCetakType>(() => draftVal('jenisCetak', 'CETAK'));
+  const [muka, setMuka] = useState<LebelKartuObatMukaType>(() => draftVal('muka', '1 Muka'));
+  const [warna, setWarna] = useState<LebelKartuObatWarnaType>(() => draftVal('warna', '1 Warna'));
+  const [finishing, setFinishing] = useState<LebelKartuObatFinishingType>(() => draftVal('finishing', 'SISIR'));
+  const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', customParams.marginDefaultPct ?? 30));
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedLebelKartuObatSimulationItem[]>([]);
@@ -106,24 +112,30 @@ export default function LebelKartuObatSimulator({
             const inp = item.data.input;
             setOplah(inp.oplah);
             setVarian(inp.varian);
+            setJenisCetak(inp.jenisCetak ?? 'CETAK');
+            setMuka(inp.muka ?? '1 Muka');
+            setWarna(inp.warna ?? '1 Warna');
+            setFinishing(inp.finishing ?? 'SISIR');
             setMarginPct(inp.marginPct);
-            setNegoDiskonPct(inp.negoDiskonPct);
             setSimulationTitle(item.title);
           }
         }
       }
       if (!activeSimulationId) {
         // Restore draft settingan (persist saat pindah tab)
-          try {
-            const rawDraft = localStorage.getItem(DRAFT_KEY);
-            if (rawDraft) {
-              const d = JSON.parse(rawDraft);
-              if (d.oplah) setOplah(Number(d.oplah));
-              if (d.varian) setVarian(d.varian);
-              if (d.marginPct !== undefined) setMarginPct(Number(d.marginPct));
-              if (d.negoDiskonPct !== undefined) setNegoDiskonPct(Number(d.negoDiskonPct));
-            }
-          } catch { /* abaikan draft rusak */ }
+        try {
+          const rawDraft = localStorage.getItem(DRAFT_KEY);
+          if (rawDraft) {
+            const d = JSON.parse(rawDraft);
+            if (d.oplah) setOplah(Number(d.oplah));
+            if (d.varian) setVarian(d.varian);
+            if (d.jenisCetak) setJenisCetak(d.jenisCetak);
+            if (d.muka) setMuka(d.muka);
+            if (d.warna) setWarna(d.warna);
+            if (d.finishing) setFinishing(d.finishing);
+            if (d.marginPct !== undefined) setMarginPct(Number(d.marginPct));
+          }
+        } catch { /* abaikan draft rusak */ }
       }
     } catch (e) {
       console.error('Failed to load saved lebel kartu obat simulations:', e);
@@ -134,21 +146,21 @@ export default function LebelKartuObatSimulator({
   useEffect(() => {
     if (activeSimulationId) return;
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify({ oplah, varian, marginPct, negoDiskonPct }));
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ oplah, varian, jenisCetak, muka, warna, finishing, marginPct }));
     } catch { /* abaikan */ }
-  }, [oplah, varian, marginPct, negoDiskonPct, activeSimulationId]);
+  }, [oplah, varian, jenisCetak, muka, warna, finishing, marginPct, activeSimulationId]);
 
   const result = useMemo(
     () =>
       calculateLebelKartuObatHpp(
-        { oplah, varian, marginPct, negoDiskonPct },
+        { oplah, varian, jenisCetak, muka, warna, finishing, marginPct },
         customParams
       ),
-    [oplah, varian, marginPct, negoDiskonPct, customParams]
+    [oplah, varian, jenisCetak, muka, warna, finishing, marginPct, customParams]
   );
 
   const defaultTitle = () => {
-    return `Lebel Kartu Obat ${varian} (${oplah} rim)`;
+    return `Lebel Kartu Obat ${varian} ${jenisCetak} (${oplah} rim)`;
   };
 
   const handleSaveSimulation = () => {
@@ -164,7 +176,7 @@ export default function LebelKartuObatSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_lebel_kartu_obat_simulations', JSON.stringify(updated));
-    saveCalculationToDb({ ...newItem, category: 'Lebel Kartu Obat' });
+      saveCalculationToDb({ ...newItem, category: 'Lebel Kartu Obat' });
     } catch (e) {
       console.error('Failed to save lebel kartu obat simulation:', e);
     }
@@ -186,7 +198,7 @@ export default function LebelKartuObatSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_lebel_kartu_obat_simulations', JSON.stringify(updated));
-    const targetItem = updated.find((x) => x.id === activeSimulationId);
+      const targetItem = updated.find((x) => x.id === activeSimulationId);
       if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Lebel Kartu Obat' });
     } catch (e) {
       console.error('Failed to update lebel kartu obat simulation:', e);
@@ -207,16 +219,15 @@ export default function LebelKartuObatSimulator({
       `━━━━━━━━━━━━━━━━━━━━\n` +
       `• *Produk*: Lebel Kartu Obat ${varian} cm\n` +
       `• *Spesifikasi*: ${cfg.description}\n` +
-      `• *Ukuran*: ${varian} cm · HVS 70 gsm 1 Warna 1 Muka\n` +
-      `• *Bahan*: HVS 70 gsm Folio 21,5×33 cm\n` +
-      `• *Finishing*: Rajang + Packing\n` +
-      `• *Kuantitas*: ${oplah} rim (${oplah * 500} lbr, ${result.kebutuhanPlano} lbr plano)\n` +
+      `• *Bahan*: HVS 70 gsm Folio ${muka} ${warna}\n` +
+      `• *Cetak*: ${jenisCetak}\n` +
+      `• *Finishing*: ${finishing} + Packing\n` +
+      `• *Kuantitas*: ${oplah} rim (${(oplah * 500).toLocaleString('id-ID')} lbr)\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
       `• *Harga / Rim*: *Rp ${fmt(result.hargaJualPerRim)}*\n` +
-      `• *Harga Nego / Rim*: *Rp ${fmt(result.hargaNegoPerRim)}*\n` +
       `• *Total Penawaran*: *Rp ${fmt(result.totalHargaJual)}*\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
-      `_Harga belum termasuk PPN. Lebel Kartu Obat ${varian} cm, HVS 70 1 Warna 1 Muka, cetak 1 plat, finishing sisir/rajang + packing._`;
+      `_Harga belum termasuk PPN. Lebel Kartu Obat ${varian} cm, HVS 70 ${muka} ${warna}, ${jenisCetak}._`;
 
     navigator.clipboard.writeText(text);
     setCopiedQuote(true);
@@ -224,8 +235,15 @@ export default function LebelKartuObatSimulator({
     setTimeout(() => setCopiedQuote(false), 2000);
   };
 
+  const optBtn = (active: boolean) =>
+    `py-2 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
+      active
+        ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
+        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+    }`;
+
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
       {/* Header */}
       <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
         <div className="flex items-center gap-3">
@@ -240,7 +258,7 @@ export default function LebelKartuObatSimulator({
               </span>
             </h3>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Hitung HPP, harga penawaran, dan estimasi profit Lebel Kartu Obat HVS 70 1 Warna 1 Muka 3,5×7 / 4×6 / 5×6,7 cm, rajang + packing.
+              Hitung HPP per rim, harga penawaran, dan estimasi profit Lebel Kartu Obat HVS 70 Folio 3,5×7 / 4×6 / 5×6,7 cm — Cetak / Ongkos Cetak, sisir + packing.
             </p>
           </div>
         </div>
@@ -322,9 +340,9 @@ export default function LebelKartuObatSimulator({
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-0 pb-1">
         {/* Kolom Kiri: Form Input */}
-        <div className="lg:col-span-5 space-y-5">
+        <div className="lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
               <Sliders size={15} className="text-emerald-700" />
@@ -334,7 +352,7 @@ export default function LebelKartuObatSimulator({
             {/* Varian Ukuran */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Varian Ukuran Lebel Kartu Obat
+                Varian Ukuran (label ukuran, tanpa efek biaya)
               </label>
               <div className="grid grid-cols-3 gap-2">
                 {VARIAN_OPTIONS.map((v) => (
@@ -342,13 +360,9 @@ export default function LebelKartuObatSimulator({
                     key={v}
                     type="button"
                     onClick={() => setVarian(v)}
-                    className={`py-2 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer flex flex-col items-center gap-1 ${
-                      varian === v
-                        ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
-                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
+                    className={`${optBtn(varian === v)} flex flex-col items-center gap-1`}
                   >
-                    <Tag size={14} className={varian === v ? 'text-white' : 'text-slate-500'} />
+                    <Pill size={14} className={varian === v ? 'text-white' : 'text-slate-500'} />
                     <span className="leading-tight text-[11px]">{v}</span>
                   </button>
                 ))}
@@ -356,10 +370,10 @@ export default function LebelKartuObatSimulator({
               <p className="text-[11px] text-slate-500 mt-1.5 italic">{LEBEL_KARTU_OBAT_CONFIG[varian].description}</p>
             </div>
 
-            {/* Oplah */}
+            {/* Oplah rim */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                Kuantitas Oplah (rim) — 1 rim = 500 lbr
+                Kuantitas Oplah (rim = 500 lbr)
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <select
@@ -371,62 +385,105 @@ export default function LebelKartuObatSimulator({
                   className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none cursor-pointer"
                 >
                   {LEBEL_KARTU_OBAT_TIERS.map((t) => (
-                    <option key={t} value={t}>{t.toLocaleString('id-ID')} rim ({(t*500).toLocaleString('id-ID')} lbr)</option>
+                    <option key={t} value={t}>{t} rim</option>
                   ))}
-                  {!LEBEL_KARTU_OBAT_TIERS.includes(oplah) && <option value="custom">{oplah.toLocaleString('id-ID')} rim (custom)</option>}
+                  {!LEBEL_KARTU_OBAT_TIERS.includes(oplah) && <option value="custom">{oplah} rim (custom)</option>}
                 </select>
                 <input
                   type="number"
-                  min={1}
-                  max={50}
+                  min={0}
+                  max={100}
                   step={1}
                   value={oplah}
-                  onChange={(e) => setOplah(Math.max(1, Number(e.target.value) || 1))}
+                  onChange={(e) => setOplah(Math.max(0, Number(e.target.value) || 0))}
                   className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
                   placeholder="Custom..."
                 />
               </div>
-              <p className="text-[10px] text-slate-500 mt-1">{LEBEL_KARTU_OBAT_CONFIG[varian].potongPerPlano} potong/plano · Kebutuhan {result.kebutuhanPlano} lbr plano · Cetak {result.kebutuhanCetak} lbr</p>
+              <p className="text-[10px] text-slate-500 mt-1">
+                Kebutuhan {result.kebutuhanPlano} lbr plano · Cetak {result.kebutuhanCetak} drek · HPP Rp {Math.round(result.hppPerPcs).toLocaleString('id-ID')}/pcs
+              </p>
             </div>
 
-            {/* Margin & Nego */}
-            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Margin Profit (%)</label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={marginPct}
-                    onChange={(e) => setMarginPct(Number(e.target.value) || 0)}
-                    className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
-                  />
-                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
-                </div>
+            {/* Grup Cetak */}
+            <div className="rounded-xl border border-sky-200 bg-sky-50/50 p-3 space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-sky-900 bg-sky-200/80 px-2 py-0.5 rounded">Cetak</span>
+                <label className="text-xs font-bold text-sky-900">Jenis, Muka &amp; Warna — Master!D10/D17/D18</label>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Batas Nego (%)</label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={negoDiskonPct}
-                    onChange={(e) => setNegoDiskonPct(Number(e.target.value) || 0)}
-                    className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
-                  />
-                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
+                <label className="block text-[11px] font-bold text-slate-600 mb-1">Jenis Cetak (D10)</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {LEBEL_KARTU_OBAT_JENIS_CETAK_OPTIONS.map((j) => (
+                    <button key={j} type="button" onClick={() => setJenisCetak(j)} className={optBtn(jenisCetak === j)}>
+                      {j}
+                    </button>
+                  ))}
                 </div>
+                <p className="text-[10px] text-slate-500 mt-1 italic">ONGKOS CETAK menolkan biaya plate (BUKU!W6); min &amp; drek tetap jalan.</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Muka (D18)</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {LEBEL_KARTU_OBAT_MUKA_OPTIONS.map((m) => (
+                      <button key={m} type="button" onClick={() => setMuka(m)} className={optBtn(muka === m)}>
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Warna (D17)</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {LEBEL_KARTU_OBAT_WARNA_OPTIONS.map((w) => (
+                      <button key={w} type="button" onClick={() => setWarna(w)} className={optBtn(warna === w)}>
+                        {w}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Grup Finishing */}
+            <div className="rounded-xl border border-violet-200 bg-violet-50/50 p-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-violet-900 bg-violet-200/80 px-2 py-0.5 rounded">Finishing</span>
+                <label className="text-xs font-bold text-violet-900">Sisir — Master!D20</label>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {LEBEL_KARTU_OBAT_FINISHING_OPTIONS.map((f) => (
+                  <button key={f} type="button" onClick={() => setFinishing(f)} className={optBtn(finishing === f)}>
+                    {f}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-slate-500 italic">Sisir = (Q/500)×Rp 10.000 (BUKU!AJ7).</p>
+            </div>
+
+            {/* Margin */}
+            <div className="pt-2 border-t border-slate-100">
+              <label className="block text-xs font-bold text-slate-700 mb-1">Margin Profit (%) — Master!E21</label>
+              <div className="relative">
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={marginPct}
+                  onChange={(e) => setMarginPct(Number(e.target.value) || 0)}
+                  className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+                />
+                <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Kolom Kanan: Hasil */}
-        <div className="lg:col-span-7 space-y-5">
-          {/* 4 Kartu Finansial */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
+          {/* 3 Kartu Finansial */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-500 mb-1">
                 <span className="text-[11px] font-semibold">HPP / rim</span>
@@ -451,20 +508,7 @@ export default function LebelKartuObatSimulator({
                 <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
                   Rp {result.hargaJualPerRim.toLocaleString('id-ID')}
                 </span>
-                <span className="block text-[10px] text-emerald-700/80 mt-0.5">/ rim (500 lbr)</span>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-xl border border-blue-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-blue-800 mb-1">
-                <span className="text-[11px] font-bold">Harga Nego (-{negoDiskonPct}%)</span>
-                <Percent size={13} className="text-blue-600" />
-              </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-blue-800 font-mono">
-                  Rp {result.hargaNegoPerRim.toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-blue-700/80 mt-0.5">/ rim</span>
+                <span className="block text-[10px] text-emerald-700/80 mt-0.5">/ rim</span>
               </div>
             </div>
 
@@ -494,7 +538,7 @@ export default function LebelKartuObatSimulator({
                 </h4>
               </div>
               <span className="text-[11px] font-bold text-slate-500">
-                {oplah.toLocaleString('id-ID')} rim · {varian} · HVS 70 · Sisir
+                {oplah} rim · {varian} · {jenisCetak} · {muka} {warna}
               </span>
             </div>
             <div className="overflow-x-auto">
@@ -526,7 +570,7 @@ export default function LebelKartuObatSimulator({
                 <tfoot>
                   <tr className="bg-slate-50/90 font-bold border-t border-slate-200 text-xs">
                     <td colSpan={3} className="py-2.5 px-3 text-slate-800 font-sans">
-                      Total HPP Biaya Produksi ({oplah.toLocaleString('id-ID')} rim / {(oplah*500).toLocaleString('id-ID')} lbr)
+                      Total HPP Biaya Produksi ({oplah} rim)
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-sm">
                       Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
@@ -593,7 +637,7 @@ export default function LebelKartuObatSimulator({
                 <div>
                   <h3 className="text-base font-bold tracking-tight">Panduan Simulator Lebel Kartu Obat</h3>
                   <p className="text-xs text-emerald-200/90 mt-0.5">
-                    Alur perhitungan berbasis oplah rim (1 rim = 500 lbr), HVS 70 1 Warna 1 Muka, rajang + packing
+                    Alur perhitungan berbasis oplah rim (1 rim = 500 lbr) — Cetak / Ongkos Cetak, sisir + packing
                   </p>
                 </div>
               </div>
@@ -614,10 +658,10 @@ export default function LebelKartuObatSimulator({
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   {[
-                    ['1. Varian', 'Pilih 3,5×7 (kecil), 4×6 (sedang), atau 5×6,7 cm (besar) — semua HVS 70 Folio 21,5×33.'],
-                    ['2. Oplah', 'Tentukan oplah 1–10 rim via dropdown tier atau custom (max 50 rim = 25.000 lbr). 1 rim = 500 lbr.'],
-                    ['3. Margin & Nego', 'Atur margin 30% & nego 4% (default HARGA JULI 2026) — harga jual ceil(+30%)/100, nego -4%.'],
-                    ['4. Salin Penawaran', 'Klik Salin Penawaran untuk teks WA otomatis (HVS 70 Rajang), atau simpan ke daftar kalkulasi.'],
+                    ['1. Varian & Oplah', 'Pilih ukuran label (3,5×7 / 4×6 / 5×6,7 cm — label ukuran, biaya sama). Oplah dalam rim via tier Excel 1–10 atau custom.'],
+                    ['2. Cetak', 'Pilih CETAK atau ONGKOS CETAK (tanpa biaya plate). Atur muka (1/2) & warna (1–4) — menentukan jumlah plat & drek over.'],
+                    ['3. Finishing & Margin', 'Pilih SISIR atau TANPA SISIR sesuai Master!D20. Atur margin 30% — harga per rim dibulatkan ke puluhan.'],
+                    ['4. Salin Penawaran', 'Klik Salin Penawaran untuk teks WA otomatis, atau Simpan Kalkulasi Ini ke Daftar Kalkulasi di bawah tabel rincian.'],
                   ].map(([title, desc]) => (
                     <div key={title} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
                       <span className="font-bold text-emerald-800 text-xs">{title}</span>
@@ -636,13 +680,13 @@ export default function LebelKartuObatSimulator({
                   <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
                     <span className="font-bold text-emerald-900 block">Kertas &amp; Cetak:</span>
                     <p className="text-slate-600 leading-snug">
-                      HVS 70 gsm Folio Rp 15.700/kg +5% → Rp 40.936/rim (500 lbr 21,5×33), insheet 30 lbr, Q=rim×500+30, harga kertas Q×81,87, desain Rp 10.000, plate 10k×1, cetak min 15k×plat + drek Rp 30×over(P-500).
+                      HVS 70 gsm Folio Rp 15.700/kg +5% (rim Rp 40.936/500), insheet 30 lbr, Q=(rim·500)+30, desain Rp 10.000, plate Rp 10.000×(warna×muka), cetak min Rp 15.000×plat + over Rp 30×plat (over = P−500).
                     </p>
                   </div>
                   <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">
-                    <span className="font-bold text-blue-900 block">Finishing &amp; Packing:</span>
+                    <span className="font-bold text-blue-900 block">Finishing &amp; Margin:</span>
                     <p className="text-slate-600 leading-snug">
-                      Sisir/Rajang (Q/500)×10.000 (10600@530 lbr, 20600@1030 lbr), tanpa laminasi/pound tambahan, packing rajang + packing standar. Margin 30% nego 4% rounding ratusan.
+                      Sisir (Q/500)×Rp 10.000 (saat SISIR). Margin 30% dari HPP per rim, harga dibulatkan ke puluhan. Tanpa nego (sesuai Excel).
                     </p>
                   </div>
                 </div>
