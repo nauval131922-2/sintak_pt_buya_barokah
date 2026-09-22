@@ -31,9 +31,17 @@ import {
   SOFT_COVER_LINI_LABEL,
   SOFT_COVER_LINIS_21,
   SOFT_COVER_LINIS_14,
+  SOFT_COVER_LINIS_14_CUSTOM,
+  SOFT_COVER_LINIS_105_CUSTOM,
+  isCustomLini,
+  defaultFinCustom,
+  SoftCoverFinCustom,
+  softCoverMesinCoverOptions,
+  softCoverMesinIsiOptions,
   softCoverTiers,
   softCoverFinishingOptions,
 } from '@/lib/buku-soft-cover-unified';
+import { SOFT_COVER_CUSTOM_CONFIGS } from '@/lib/buku-soft-cover-custom-calculator';
 import { toast } from '@/lib/toast';
 
 export type { SavedSoftCoverUnifiedItem };
@@ -90,6 +98,9 @@ export default function BukuSoftCoverUnifiedSimulator({
   const [warnaIsi, setWarnaIsi] = useState<SoftCoverWarnaType>(() => draftVal('warnaIsi', '1 Warna'));
   const [finishing, setFinishing] = useState<SoftCoverFinishing>(() => draftVal('finishing', 'None,'));
   const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', customParams.marginDefaultPct ?? 30));
+  const [finCustom, setFinCustom] = useState<SoftCoverFinCustom>(() => draftVal('finCustom', null) ?? defaultFinCustom(draftVal('lini', 'Klasik')));
+  const [mesinCover, setMesinCover] = useState<string | null>(() => draftVal('mesinCover', null));
+  const [mesinIsi, setMesinIsi] = useState<string | null>(() => draftVal('mesinIsi', null));
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedSoftCoverUnifiedItem[]>([]);
@@ -131,6 +142,9 @@ export default function BukuSoftCoverUnifiedSimulator({
             setWarnaIsi((inp as any).warnaIsi ?? '1 Warna');
             setFinishing((inp.finishing ?? 'None,') as SoftCoverFinishing);
             setMarginPct(inp.marginPct);
+            if ((inp as any).finCustom) setFinCustom((inp as any).finCustom);
+            setMesinCover((inp as any).mesinCover ?? null);
+            setMesinIsi((inp as any).mesinIsi ?? null);
             setSimulationTitle(item.title);
           }
         }
@@ -149,6 +163,9 @@ export default function BukuSoftCoverUnifiedSimulator({
             if (d.warnaIsi) setWarnaIsi(d.warnaIsi);
             if (d.finishing) setFinishing(d.finishing);
             if (d.marginPct !== undefined) setMarginPct(Number(d.marginPct));
+            if (d.finCustom) setFinCustom(d.finCustom);
+            if (d.mesinCover !== undefined) setMesinCover(d.mesinCover);
+            if (d.mesinIsi !== undefined) setMesinIsi(d.mesinIsi);
           }
         } catch { /* abaikan draft rusak */ }
       }
@@ -162,21 +179,33 @@ export default function BukuSoftCoverUnifiedSimulator({
   useEffect(() => {
     if (activeSimulationId) return;
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify({ lini, oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct }));
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ lini, oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct, finCustom, mesinCover, mesinIsi }));
     } catch { /* abaikan */ }
-  }, [lini, oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct, activeSimulationId]);
+  }, [lini, oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct, finCustom, mesinCover, mesinIsi, activeSimulationId]);
 
   // Ganti finishing tak-valid saat pindah lini (Klasik tak kenal 2 opsi offset)
   useEffect(() => {
+    if (activeSimulationId) return; // jangan timpa restore riwayat
     if (!softCoverFinishingOptions(lini).includes(finishing)) setFinishing('None,');
+    if (isCustomLini(lini)) {
+      setFinCustom(defaultFinCustom(lini));
+      setMesinCover(null);
+      setMesinIsi(null);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lini]);
 
-  const input: SoftCoverUnifiedInput = { lini, oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct };
+  const custom = isCustomLini(lini);
+  const customCfg = custom ? SOFT_COVER_CUSTOM_CONFIGS[lini] : null;
+  const mcAktif = custom && customCfg ? (mesinCover ?? customCfg.defaultMesinCover) : '';
+  const miAktif = custom && customCfg ? (mesinIsi ?? customCfg.defaultMesinIsi) : '';
+  const input: SoftCoverUnifiedInput = custom
+    ? { lini, oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct, finCustom, ...(mesinCover ? { mesinCover } : {}), ...(mesinIsi ? { mesinIsi } : {}) }
+    : { lini, oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct };
   const result = useMemo(
     () => calculateSoftCoverUnified(input, customParams),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [lini, oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct, customParams]
+    [lini, oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct, finCustom, mesinCover, mesinIsi, customParams]
   );
 
   const defaultTitle = () => `Buku Soft Cover ${SOFT_COVER_LINI_LABEL[lini]} ${jumlahHalaman} Hal (${oplah} pcs)`;
@@ -228,7 +257,8 @@ export default function BukuSoftCoverUnifiedSimulator({
     setSimulationTitle('');
   };
 
-  const ukuranLabel = lini === 'Klasik' || lini === 'Oliver-Oliver' || lini === 'Print-Oliver' || lini === 'Print-Print' ? '21 × 29,7' : '14,5 × 20,25';
+  const ukuranLabel = custom && customCfg ? customCfg.ukuran.replace(' X ', ' × ').replace('x', '×')
+    : lini === 'Klasik' || lini === 'Oliver-Oliver' || lini === 'Print-Oliver' || lini === 'Print-Print' ? '21 × 29,7' : '14,5 × 20,25';
 
   const handleCopyQuote = () => {
     const fmt = (n: number) => n.toLocaleString('id-ID');
@@ -238,6 +268,7 @@ export default function BukuSoftCoverUnifiedSimulator({
       `━━━━━━━━━━━━━━━━━━━━\n` +
       `• *Produk*: Buku Soft Cover ${ukuranLabel} cm ${jumlahHalaman} Hal\n` +
       `• *Lini*: ${SOFT_COVER_LINI_LABEL[lini]} — Cover ${mukaCover} ${warnaCover}, Isi ${warnaIsi}\n` +
+      (custom ? `• *Mesin*: Cover ${mcAktif}, Isi ${miAktif}\n` : '') +
       `• *Finishing*: ${FINISHING_LABEL[finishing]} + Sisir\n` +
       `• *Kuantitas*: ${oplah} pcs\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
@@ -268,15 +299,15 @@ export default function BukuSoftCoverUnifiedSimulator({
             <BookCopy className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-bold text-sm sm:text-base text-emerald-950 flex items-center gap-2">
-              Simulator &amp; Kalkulator Buku Soft Cover
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
-                Katalog 17–18
-              </span>
-            </h3>
-            <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              1 produk · 2 ukuran · 8 lini mesin (21×29,7 &amp; 14,5×20,25) — HPP, harga, dan profit per pcs.
-            </p>
+              <h3 className="font-bold text-sm sm:text-base text-emerald-950 flex items-center gap-2">
+                Simulator &amp; Kalkulator Buku Soft Cover
+                <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
+                  Katalog 17–19–21–24
+                </span>
+              </h3>
+              <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
+                1 produk · 3 ukuran · 18 lini mesin (21×29,7 &amp; 14,5×20,25 &amp; 10,5×14,8) — HPP, harga, dan profit per pcs.
+              </p>
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -386,6 +417,16 @@ export default function BukuSoftCoverUnifiedSimulator({
                     <option key={l} value={l}>{SOFT_COVER_LINI_LABEL[l]}</option>
                   ))}
                 </optgroup>
+                <optgroup label="14,5 × 20,25 cm Custom (F19/F21)">
+                  {SOFT_COVER_LINIS_14_CUSTOM.map((l) => (
+                    <option key={l} value={l}>{SOFT_COVER_LINI_LABEL[l]}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="10,5 × 14,8 cm Custom (F24)">
+                  {SOFT_COVER_LINIS_105_CUSTOM.map((l) => (
+                    <option key={l} value={l}>{SOFT_COVER_LINI_LABEL[l]}</option>
+                  ))}
+                </optgroup>
               </select>
               <p className="text-[10px] text-slate-500 mt-1 italic">
                 {ukuranLabel} · tier {tiers[0]}–{tiers[tiers.length - 1]} pcs · di luar lini ini Excel #DIV/0!
@@ -437,6 +478,18 @@ export default function BukuSoftCoverUnifiedSimulator({
                 <span className="text-[10px] font-black uppercase tracking-wider text-sky-900 bg-sky-200/80 px-2 py-0.5 rounded">Cover</span>
                 <label className="text-xs font-bold text-sky-900">Muka &amp; Warna — D14/D15</label>
               </div>
+              {custom && customCfg && (
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Mesin Cover — D16 (file: {customCfg.defaultMesinCover})</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {softCoverMesinCoverOptions(lini).map((m) => (
+                      <button key={m} type="button" onClick={() => setMesinCover(m === customCfg.defaultMesinCover ? null : m)} className={optBtn(mcAktif === m)}>
+                        {m}{m === customCfg.defaultMesinCover ? ' (file)' : ''}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-600 mb-1">Muka Cover</label>
@@ -467,6 +520,18 @@ export default function BukuSoftCoverUnifiedSimulator({
                 <span className="text-[10px] font-black uppercase tracking-wider text-violet-900 bg-violet-200/80 px-2 py-0.5 rounded">Isi</span>
                 <label className="text-xs font-bold text-violet-900">Warna Isi — D24</label>
               </div>
+              {custom && customCfg && (
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Mesin Isi — D25 (file: {customCfg.defaultMesinIsi})</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {softCoverMesinIsiOptions().map((m) => (
+                      <button key={m} type="button" onClick={() => setMesinIsi(m === customCfg.defaultMesinIsi ? null : m)} className={optBtn(miAktif === m)}>
+                        {m}{m === customCfg.defaultMesinIsi ? ' (file)' : ''}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-4 gap-2">
                 {(['1 Warna', '2 Warna', '3 Warna', '4 Warna'] as const).map((w) => (
                   <button key={w} type="button" onClick={() => setWarnaIsi(w)} className={optBtn(warnaIsi === w)}>
@@ -492,11 +557,38 @@ export default function BukuSoftCoverUnifiedSimulator({
               <p className="text-[10px] text-slate-500 italic">
                 {lini === 'Klasik'
                   ? 'Klasik: 7 opsi (Glossy+Bending & full-paket #DIV/0! di file Klasik).'
-                  : 'Offset: 9 opsi terkomputasi penuh.'}
+                  : custom
+                    ? 'Custom: 9 opsi + toggle jasa UMR baris-26 di bawah.'
+                    : 'Offset: 9 opsi terkomputasi penuh.'}
               </p>
+              {custom && (
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  {([['lipat', 'Lipat'], ['sisir', 'Sisir'], ['susunKomplit', 'Susun Komplit'], ['kawat', 'Kawat Stiching'], ['stiching', 'Stiching'], ['susunStaples', 'Susun+Staples'], ['biayaStaples', 'Biaya Staples']] as [keyof SoftCoverFinCustom, string][]).map(([k, label]) => (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => setFinCustom((prev) => ({ ...prev, [k]: !prev[k] }))}
+                      className={`py-1.5 px-2 rounded-lg border text-[11px] font-bold text-center transition cursor-pointer ${
+                        finCustom[k]
+                          ? 'border-amber-600 bg-amber-600 text-white shadow-xs'
+                          : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
+                      }`}
+                    >
+                      {finCustom[k] ? '✓ ' : ''}{label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Margin */}
+            {/* Margin / Laba */}
+            {custom ? (
+              <div className="pt-2 border-t border-slate-100">
+                <p className="text-[11px] text-slate-600">
+                  Laba <strong>{customParams.marginDefaultPct ?? 30}%</strong> dari file Excel (Master!E37) — harga ke puluhan. Tanpa nego.
+                </p>
+              </div>
+            ) : (
             <div className="pt-2 border-t border-slate-100">
               <label className="block text-xs font-bold text-slate-700 mb-1">Margin Profit (%)</label>
               <div className="relative">
@@ -511,6 +603,7 @@ export default function BukuSoftCoverUnifiedSimulator({
                 <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
               </div>
             </div>
+            )}
           </div>
         </div>
 
@@ -535,7 +628,7 @@ export default function BukuSoftCoverUnifiedSimulator({
 
             <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-emerald-800 mb-1">
-                <span className="text-[11px] font-bold">Harga Jual (+{marginPct}%)</span>
+                <span className="text-[11px] font-bold">Harga Jual (+{result.marginPct}%)</span>
                 <TrendingUp size={13} className="text-emerald-600" />
               </div>
               <div>
@@ -671,7 +764,7 @@ export default function BukuSoftCoverUnifiedSimulator({
                 <div>
                   <h3 className="text-base font-bold tracking-tight">Panduan Simulator Buku Soft Cover</h3>
                   <p className="text-xs text-emerald-200/90 mt-0.5">
-                    1 produk · 2 ukuran · 8 lini mesin — pilih lini sesuai file Excel sumbernya
+                    1 produk · 3 ukuran · 18 lini mesin — pilih lini sesuai file Excel sumbernya
                   </p>
                 </div>
               </div>
@@ -692,9 +785,9 @@ export default function BukuSoftCoverUnifiedSimulator({
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   {[
-                    ['1. Lini & Oplah', 'Pilih 1 dari 8 lini (21×29,7: Klasik/OO/PO/PP; 14,5×20,25: OO/OR/PP/PR). Tier oplah mengikuti file tiap lini.'],
-                    ['2. Spesifikasi', 'Atur halaman, muka & warna cover, warna isi. Mesin dikunci per lini (di luar lini = #DIV/0! di Excel).'],
-                    ['3. Finishing & Margin', 'Pilih finishing D29 (Klasik 7 opsi, offset 9 opsi). Margin 30% — harga ke puluhan, tanpa nego.'],
+                    ['1. Lini & Oplah', 'Pilih 1 dari 18 lini (21×29,7: Klasik/OO/PO/PP; 14,5 offset: OO/OR/PP/PR; 14,5 Custom F19/F21: 6 lini; 10,5 Custom F24: 4 lini). Tier oplah mengikuti file tiap lini.'],
+                    ['2. Spesifikasi', 'Atur halaman, muka & warna cover, warna isi. Lini Klasik/offset mengunci mesin; lini Custom bisa override mesin cover/isi + toggle jasa baris-26.'],
+                    ['3. Finishing & Laba', 'Pilih finishing D29 (Klasik 7 opsi, offset & custom 9 opsi). Laba 30% (E37) — harga ke puluhan, tanpa nego.'],
                     ['4. Salin Penawaran', 'Klik Salin Penawaran untuk teks WA otomatis, atau Simpan Kalkulasi Ini ke Daftar Kalkulasi di bawah tabel rincian.'],
                   ].map(([title, desc]) => (
                     <div key={title} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
@@ -710,20 +803,26 @@ export default function BukuSoftCoverUnifiedSimulator({
                   <Layers className="w-4 h-4 text-emerald-700" />
                   Struktur Biaya per Generasi Engine
                 </h5>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
-                  <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
-                    <span className="font-bold text-emerald-900 block">Klasik PI–Oliver (folder 17):</span>
-                    <p className="text-slate-600 leading-snug">
-                      Cover Rp 2.700×(oplah+5), desain isi Rp 15.000×halaman, plate/min/drek Oliver, susun/steples-9/sisir-150, laminasi floor 50rb. Total 25 suku (CX).
-                    </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-[11px]">
+                    <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
+                      <span className="font-bold text-emerald-900 block">Klasik PI–Oliver (folder 17):</span>
+                      <p className="text-slate-600 leading-snug">
+                        Cover Rp 2.700×(oplah+5), desain isi Rp 15.000×halaman, plate/min/drek Oliver, susun/steples-9/sisir-150, laminasi floor 50rb. Total 25 suku (CX).
+                      </p>
+                    </div>
+                    <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">
+                      <span className="font-bold text-blue-900 block">Offset 7 lini (folder 17-21 &amp; 18):</span>
+                      <p className="text-slate-600 leading-snug">
+                        5 jasa UMR atau BN/steples, SpotUV/Emboss/Shrink/Packing hidup, desain Rp 2.500×hal/4, packing kardus bracket halaman. Total 30 suku (DC).
+                      </p>
+                    </div>
+                    <div className="p-2.5 bg-white rounded border border-amber-100 space-y-1">
+                      <span className="font-bold text-amber-900 block">Custom 10 lini (folder 19/21/24):</span>
+                      <p className="text-slate-600 leading-snug">
+                        C7=hal/4, R=H/P+K/O (24oo tanpa ROUNDUP — temuan audit), kertas rim V27/W27 &amp; AT27/AU27 per mesin, ongkos Buya=350×AO, toggle jasa baris-26, laba E37 30%. Komposisi cabang dari file yang hidup.
+                      </p>
+                    </div>
                   </div>
-                  <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">
-                    <span className="font-bold text-blue-900 block">Offset 7 lini (folder 17-21 &amp; 18):</span>
-                    <p className="text-slate-600 leading-snug">
-                      5 jasa UMR atau BN/steples, SpotUV/Emboss/Shrink/Packing hidup, desain Rp 2.500×hal/4, packing kardus bracket halaman. Total 30 suku (DC).
-                    </p>
-                  </div>
-                </div>
               </div>
             </div>
 

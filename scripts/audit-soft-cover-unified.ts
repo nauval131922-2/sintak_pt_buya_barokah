@@ -1,8 +1,9 @@
-// Benchmark unifikasi "1 Buku Soft Cover": dispatcher (klasik + 7 offset) vs:
+// Benchmark unifikasi "1 Buku Soft Cover": dispatcher (klasik + 7 offset + 10 custom) vs:
 //  (a) engine langsung per lini (identitas dispatcher), seluruh tier & permutasi;
 //  (b) cache Excel untuk lini Klasik (scripts/bsc-expected.json).
 // Parity offset-vs-Excel dibuktikan scripts/audit-soft-cover-offset-permutations.ts;
-// parity klasik-vs-Excel dibuktikan scripts/audit-buku-soft-cover-permutations.ts.
+// parity klasik-vs-Excel dibuktikan scripts/audit-buku-soft-cover-permutations.ts;
+// parity custom-vs-Excel dibuktikan scripts/audit-soft-cover-custom-permutations.ts.
 import { readFileSync } from 'fs';
 import {
   calculateSoftCoverUnified,
@@ -12,6 +13,8 @@ import {
   softCoverFinishingOptions,
   SoftCoverLini,
   SoftCoverFinishing,
+  isCustomLini,
+  defaultFinCustom,
 } from '../src/lib/buku-soft-cover-unified';
 import {
   calculateBukuSoftCoverHpp,
@@ -22,6 +25,11 @@ import {
   defaultSoftCoverOffsetParams,
   SoftCoverOffsetComboId,
 } from '../src/lib/buku-soft-cover-offset-calculator';
+import {
+  calcSoftCoverCustomTier,
+  defaultSoftCoverCustomParams,
+  SOFT_COVER_CUSTOM_CONFIGS,
+} from '../src/lib/buku-soft-cover-custom-calculator';
 
 const D = DEFAULT_SOFT_COVER_UNIFIED;
 const LINI = Object.keys(SOFT_COVER_LINI_LABEL) as SoftCoverLini[];
@@ -47,9 +55,22 @@ for (const t of KLASIK_EXP) {
   check(`klasik@${t.H} DD-excel`, u.hargaJualPerPcs, t.DD);
 }
 
-// ---------- 2. Offset via dispatcher vs langsung (7 combo × tier) ----------
+// ---------- 2. Offset & Custom via dispatcher vs langsung (17 lini × tier) ----------
 for (const lini of LINI) {
   if (lini === 'Klasik') continue;
+  if (isCustomLini(lini)) {
+    const cfg = SOFT_COVER_CUSTOM_CONFIGS[lini];
+    for (const H of softCoverTiers(lini)) {
+      const inp = { lini, oplah: H, jumlahHalaman: 32, mukaCover: '1 Muka' as const, warnaCover: '4 Warna' as const, warnaIsi: '1 Warna' as const, finishing: 'None,' as SoftCoverFinishing, marginPct: 30 };
+      const u = calculateSoftCoverUnified(inp, { ...D });
+      const cp = defaultSoftCoverCustomParams(lini);
+      const fin = defaultFinCustom(lini);
+      const d = calcSoftCoverCustomTier(cfg, { ...cp, finLipat: fin.lipat, finSisir: fin.sisir, finSusunKomplit: fin.susunKomplit, finKawat: fin.kawat, finStiching: fin.stiching, finSusunStaples: fin.susunStaples, finBiayaStaples: fin.biayaStaples, d29: 'None,' }, H);
+      check(`${lini}@${H} DC`, u.totalHpp, d.totalHpp);
+      check(`${lini}@${H} DI`, u.hargaJualPerPcs, d.hargaJualPerPcs);
+    }
+    continue;
+  }
   const combo = lini as SoftCoverOffsetComboId;
   for (const H of softCoverTiers(lini)) {
     const inp = { lini, oplah: H, jumlahHalaman: 32, mukaCover: '1 Muka' as const, warnaCover: '4 Warna' as const, warnaIsi: '1 Warna' as const, finishing: 'None,' as SoftCoverFinishing, marginPct: 30 };

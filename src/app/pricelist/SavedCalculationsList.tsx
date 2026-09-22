@@ -901,7 +901,7 @@ export default function SavedCalculationsList({
         const lini = liniOf(s, inp);
         const hal = inp.jumlahHalaman ?? 32;
         const fin = String(inp.finishing ?? (lini === 'Klasik' ? 'Laminasi Glossy,' : 'None,')).replace(/,$/, '');
-        const ukuran = lini === 'Klasik' || lini === 'Oliver-Oliver' || lini === 'Print-Oliver' || lini === 'Print-Print' ? '21 × 29,7' : '14,5 × 20,25';
+      const ukuran = lini === 'Klasik' || lini === 'Oliver-Oliver' || lini === 'Print-Oliver' || lini === 'Print-Print' ? '21 × 29,7' : String(lini).startsWith('custom-') && String(lini).includes('105') ? '10,5 × 14,8' : '14,5 × 20,25';
         items.push({
           id: s.id,
           category: 'Buku Soft Cover',

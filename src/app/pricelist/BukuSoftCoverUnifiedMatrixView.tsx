@@ -18,6 +18,10 @@ import {
   SOFT_COVER_LINI_LABEL,
   SOFT_COVER_LINIS_21,
   SOFT_COVER_LINIS_14,
+  SOFT_COVER_LINIS_14_CUSTOM,
+  SOFT_COVER_LINIS_105_CUSTOM,
+  isCustomLini,
+  defaultFinCustom,
   softCoverTiers,
   softCoverFinishingOptions,
 } from '@/lib/buku-soft-cover-unified';
@@ -54,10 +58,10 @@ export default function BukuSoftCoverUnifiedMatrixView({
   const setViewMode = propSetViewMode ?? setLocalViewMode;
   const tiers = softCoverTiers(lini);
   const finishingOptions = softCoverFinishingOptions(lini);
-  // Spek default file tersimpan: 32 hal, 1 Muka, 4 Warna cover, 1 Warna isi, margin 30%.
+  // Spek default file tersimpan: 32 hal, 1 Muka, 4 Warna cover, 1 Warna isi, margin/laba 30%.
   const calc = (oplah: number, finishing: SoftCoverFinishing) =>
     calculateSoftCoverUnified(
-      { lini, oplah, jumlahHalaman: 32, mukaCover: '1 Muka', warnaCover: '4 Warna', warnaIsi: '1 Warna', finishing, marginPct: 30 },
+      { lini, oplah, jumlahHalaman: 32, mukaCover: '1 Muka', warnaCover: '4 Warna', warnaIsi: '1 Warna', finishing, marginPct: 30, ...(isCustomLini(lini) ? { finCustom: defaultFinCustom(lini) } : {}) },
       customParams
     );
 
@@ -97,10 +101,10 @@ export default function BukuSoftCoverUnifiedMatrixView({
           </div>
           <div>
             <h2 className="text-sm sm:text-base font-bold text-emerald-950 tracking-tight">
-              Pricelist Matriks Buku Soft Cover — Katalog 17–18
+              Pricelist Matriks Buku Soft Cover — Katalog 17–19–21–24
             </h2>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              1 produk · 2 ukuran · 8 lini — 32 hal · margin 30%.
+              1 produk · 3 ukuran · 18 lini — 32 hal · laba/margin 30%.
             </p>
           </div>
         </div>
@@ -142,6 +146,16 @@ export default function BukuSoftCoverUnifiedMatrixView({
             </optgroup>
             <optgroup label="14,5 × 20,25 cm">
               {SOFT_COVER_LINIS_14.map((l) => (
+                <option key={l} value={l}>{SOFT_COVER_LINI_LABEL[l]}</option>
+              ))}
+            </optgroup>
+            <optgroup label="14,5 × 20,25 cm Custom (F19/F21)">
+              {SOFT_COVER_LINIS_14_CUSTOM.map((l) => (
+                <option key={l} value={l}>{SOFT_COVER_LINI_LABEL[l]}</option>
+              ))}
+            </optgroup>
+            <optgroup label="10,5 × 14,8 cm Custom (F24)">
+              {SOFT_COVER_LINIS_105_CUSTOM.map((l) => (
                 <option key={l} value={l}>{SOFT_COVER_LINI_LABEL[l]}</option>
               ))}
             </optgroup>

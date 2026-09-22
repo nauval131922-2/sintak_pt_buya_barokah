@@ -37,6 +37,13 @@ const VISIBLE_KEYS: (keyof SoftCoverUnifiedParams)[] = [
   'tarifPlateIsi',
   'tarifCetakMinIsi',
   'tarifDrekIsi',
+  'tarifPrintBuyaIsi',
+  'tarifPrintIsiA3',
+  'targetLipat',
+  'targetSisir',
+  'targetSusunKomplit',
+  'targetKawatRoll',
+  'targetStiching',
   'tarifRoyalti',
   'tarifSteplesPack',
   'umr',
@@ -153,7 +160,7 @@ export default function BukuSoftCoverUnifiedMasterParameter({
               )}
             </div>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              1 produk · 2 ukuran · 8 lini mesin (17 + 17-21×29,7 + 18-14,5×20,25) — default per lini resolve otomatis, edit manual selalu menang.
+              1 produk · 3 ukuran · 18 lini mesin (17 + 17-21×29,7 + 18-14,5 + 19/21 Custom + 24-10,5 Custom) — default per lini resolve otomatis, edit manual selalu menang.
             </p>
           </div>
         </div>
@@ -262,6 +269,27 @@ export default function BukuSoftCoverUnifiedMasterParameter({
             Floor finishing Rp 50.000, bending Rp 100.000. Margin 30%, harga ke puluhan. Tanpa nego (3 folder).
           </p>
         </div>
+
+        {/* Card 5: Custom F19/F21/F24 */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3 md:col-span-2">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <BookCopy className="w-4 h-4 text-emerald-600" />
+            <h3 className="text-xs font-bold text-slate-800">5. Engine Custom — tarif print &amp; target jasa (10 lini F19/F21/F24)</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+            {fieldRow('tarifPrintBuyaIsi', 'Print Isi Buya flat (Rp) — AR2 "350"')}
+            {fieldRow('tarifPrintIsiA3', 'Print Isi A3+ (Rp) — D27, per lini 350/2000/1750')}
+            {fieldRow('targetLipat', 'Target Lipat /hari — BI28')}
+            {fieldRow('targetSisir', 'Target Sisir /hari — BJ28')}
+            {fieldRow('targetSusunKomplit', 'Target Susun Komplit /hari — BK28')}
+            {fieldRow('targetKawatRoll', 'Kawat 1 roll jadi (pcs) — BL28')}
+            {fieldRow('targetStiching', 'Target Stiching /hari — BM28')}
+          </div>
+          <p className="text-[10px] text-slate-500">
+            Laba custom = Margin Default E37 (30%). Toggle jasa baris-26 (Lipat/Sisir/Susun/Kawat vs Susun-Staples) default per lini di tab Kalkulasi.
+            Temuan audit: file 24oo R7 tanpa ROUNDUP (9 file lain pakai) — diikat per lini; cabang mesin mati dikomposisi dari file yang hidup.
+          </p>
+        </div>
       </div>
 
       {showManualModal && (
@@ -279,9 +307,9 @@ export default function BukuSoftCoverUnifiedMasterParameter({
                   <Database className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold tracking-tight">Manual Pengguna &amp; Pemetaan 3 Sumber Excel</h3>
+                  <h3 className="text-base font-bold tracking-tight">Manual Pengguna &amp; Pemetaan 6 Sumber Excel</h3>
                   <p className="text-xs text-emerald-200/90 mt-0.5">
-                    Folder 17, 17-21×29,7 &amp; 18-14,5×20,25 · Pricelist Juli 2026 · 8 lini, 2 generasi engine
+                    Folder 17, 17-21×29,7, 18-14,5, 19-14,5, 21-14,5 &amp; 24-10,5 · Pricelist Juli 2026 · 18 lini, 3 generasi engine
                   </p>
                 </div>
               </div>
@@ -298,13 +326,16 @@ export default function BukuSoftCoverUnifiedMasterParameter({
               <div className="space-y-3">
                 <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                  8 Lini dalam 1 Produk
+                  18 Lini dalam 1 Produk
                 </h4>
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-[11px] text-slate-600 space-y-1.5">
                   <p>• <strong>21×29,7 Klasik PI–Oliver</strong> (folder 17): tier 20–500, engine CX 25 suku, UMR 2818585, up isi 3%, desain isi Rp 15.000/hlm, SpotUV/Emboss/Shrink/Packing mati.</p>
                   <p>• <strong>21×29,7 Oliver–Oliver</strong>: tier 550–3000 · <strong>Print–Oliver</strong>: 300–500 · <strong>Print–Print</strong>: 20–250 (engine DC 30 suku, UMR 2818850, up 0%, desain Rp 2.500×hal/4).</p>
                   <p>• <strong>14,5×20,25 OO/OR/PP/PR</strong> (folder 18): tier 1000–3000 / 650–900 / 20–200 / 250–600, engine DC + ROUNDUP R7, shrink Rp 1.162.500, AR2 Buya 350.</p>
-                  <p>• Tiap lini terkunci ke filenya (ukuran/mesin bebas = #DIV/0! di Excel). Default per lini (UMR, up, insheet, shrink) resolve otomatis; edit manual menang global.</p>
+                  <p>• <strong>14,5×20,25 Custom F19</strong>: Print–Print (20–200, insheet 10/7) &amp; Print–Ryobi (250–600, insheet 10/30).</p>
+                  <p>• <strong>14,5×20,25 Custom F21</strong>: Oliver–Oliver (1000–3000) &amp; Oliver–Ryobi (650–900) identik folder 18; Print–Print (20–200, insheet 7/5) &amp; Print–Ryobi (250–600, insheet 7/30) MENANG atas F19 (keputusan user).</p>
+                  <p>• <strong>10,5×14,8 Custom F24</strong>: Oliver–Oliver (1500–5000) · Print–Oliver (700–1000) · Print–Print (20–200) · Print–Ryobi (250–600); shrink Rp 832.500, drek isi 1750.</p>
+                  <p>• Tiap lini terkunci ke filenya (ukuran/mesin bebas = #DIV/0! di Excel). Default per lini (UMR, up, insheet, shrink, D27) resolve otomatis; edit manual menang global.</p>
                 </div>
               </div>
 
@@ -328,7 +359,8 @@ export default function BukuSoftCoverUnifiedMasterParameter({
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-[11px] text-slate-600 space-y-1.5">
                   <p>• Klasik: R=H+5, AP=((H/2)·4+(100/2)·4), BH=(2·AO−1000)·40 (negatif di oplah kecil), DD=ROUNDUP(−1).</p>
                   <p>• Offset: R=H/P+K/O (+ROUNDUP 14,5), AP=((H/AL)·AN+(AI/AL)·AN6), AN=hal/8, BD Buya=AR2·AO, packing ROUNDUP(H/isi)·kardus, DI=ROUNDUP(−1).</p>
-                  <p>• Laba 30% semua file; tanpa nego (D39:H39 / D37:H37 identik).</p>
+                  <p>• Custom: C7=hal/4, R=H/P+K/O (file 24oo TANPA roundup — temuan audit Tahap-4), kertas rim V27/W27 &amp; AT27/AU27 per mesin×warna, ongkos Buya=AR2·AO (AR2=350), toggle jasa BI26:BO26, kardus CY35, DI=ROUNDUP(−1).</p>
+                  <p>• Laba 30% semua file; tanpa nego (D39:H39 / D37:H37 identik). Komposisi cabang mesin-mati dari file yang hidup (disetujui user).</p>
                 </div>
               </div>
             </div>

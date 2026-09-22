@@ -1,4 +1,4 @@
-// Dispatcher unifikasi "1 Buku Soft Cover" — 3 folder sumber, 8 lini, 2 generasi engine.
+// Dispatcher unifikasi "1 Buku Soft Cover" — 6 folder sumber, 18 lini, 3 generasi engine.
 // Sumber:
 //  (A) 17. Pricelist Buku Soft Cover/Source/Pricelist Buku Soft Cover 21 x 29,7.xlsm
 //      → lini 'Klasik' (engine CX: ./buku-soft-cover-calculator, tier 20–500, finishing 7 opsi)
@@ -6,8 +6,12 @@
 //      → lini 'Oliver-Oliver' | 'Print-Oliver' | 'Print-Print' (engine DC offset)
 //  (C) 18. Pricelist Buku Soft Cover - 14,5 x 20,25 cm/Source/BUKU UK. 14,5 x 20,25 - *.xlsm (4 file)
 //      → lini 'OO-14' | 'OR-14' | 'PP-14' | 'PR-14' (engine DC offset)
+//  (D) 19 + 21. Pricelist Buku Soft Cover - 14,5 x 20,25 cm/Source (2+4 file, engine Buku Custom)
+//      → 6 lini 'custom-*145-*' (folder 21 menang untuk PP/PR — keputusan user)
+//  (E) 24. Pricelist Buku Soft Cover - 10,5 x 14,8 cm/Source (4 file, engine Buku Custom)
+//      → 4 lini 'custom-*105-24'
 // Tiap lini terkunci ke filenya (mesin/ukuran tak bisa dipilih bebas — di luar itu Excel #DIV/0!).
-// Pemilih di UI: satu dropdown lini (8 opsi, dikelompokkan per ukuran).
+// Pemilih di UI: satu dropdown lini (18 opsi, dikelompokkan per ukuran).
 
 import {
   calculateBukuSoftCoverHpp as calcKlasik,
@@ -27,13 +31,27 @@ import {
   SoftCoverOffsetFinishingType as OffsetFinishing,
   SOFT_COVER_OFFSET_COMBOS,
 } from './buku-soft-cover-offset-calculator';
+import {
+  calcSoftCoverCustomTier,
+  defaultSoftCoverCustomParams,
+  SOFT_COVER_CUSTOM_CONFIGS,
+  SOFT_COVER_CUSTOM_LINIS,
+  SoftCoverCustomLini,
+  SoftCoverCustomParams,
+} from './buku-soft-cover-custom-calculator';
 
 export type SoftCoverLini =
   | 'Klasik'
-  | SoftCoverOffsetComboId;
+  | SoftCoverOffsetComboId
+  | SoftCoverCustomLini;
+
+export const isCustomLini = (l: SoftCoverLini): l is SoftCoverCustomLini =>
+  typeof l === 'string' && l.startsWith('custom-');
 
 export const SOFT_COVER_LINIS_21: SoftCoverLini[] = ['Klasik', 'Oliver-Oliver', 'Print-Oliver', 'Print-Print'];
 export const SOFT_COVER_LINIS_14: SoftCoverOffsetComboId[] = ['OO-14', 'OR-14', 'PP-14', 'PR-14'];
+export const SOFT_COVER_LINIS_14_CUSTOM: SoftCoverCustomLini[] = SOFT_COVER_CUSTOM_LINIS.filter((l) => l.id.includes('145')).map((l) => l.id);
+export const SOFT_COVER_LINIS_105_CUSTOM: SoftCoverCustomLini[] = SOFT_COVER_CUSTOM_LINIS.filter((l) => l.id.includes('105')).map((l) => l.id);
 
 export const SOFT_COVER_LINI_LABEL: Record<SoftCoverLini, string> = {
   'Klasik': 'Klasik PI–Oliver (20–500)',
@@ -44,6 +62,16 @@ export const SOFT_COVER_LINI_LABEL: Record<SoftCoverLini, string> = {
   'OR-14': '14,5 Cover Oliver – Isi Ryobi (650–900)',
   'PP-14': '14,5 Cover Print – Isi Print (20–200)',
   'PR-14': '14,5 Cover Print – Isi Ryobi (250–600)',
+  'custom-pp145-19': '14,5 Custom Print–Print F19 (20–200)',
+  'custom-pr145-19': '14,5 Custom Print–Ryobi F19 (250–600)',
+  'custom-oo145-21': '14,5 Custom Oliver–Oliver F21 (1000–3000)',
+  'custom-or145-21': '14,5 Custom Oliver–Ryobi F21 (650–900)',
+  'custom-pp145-21': '14,5 Custom Print–Print F21 (20–200)',
+  'custom-pr145-21': '14,5 Custom Print–Ryobi F21 (250–600)',
+  'custom-oo105-24': '10,5 Custom Oliver–Oliver F24 (1500–5000)',
+  'custom-po105-24': '10,5 Custom Print–Oliver F24 (700–1000)',
+  'custom-pp105-24': '10,5 Custom Print–Print F24 (20–200)',
+  'custom-pr105-24': '10,5 Custom Print–Ryobi F24 (250–600)',
 };
 
 export type SoftCoverMukaType = '1 Muka' | '2 Muka';
@@ -61,12 +89,20 @@ export const SOFT_COVER_FINISHING_7: SoftCoverFinishing[] = [
 ];
 
 // Params gabungan = offset (27) + 4 kunci khusus-klasik (plate/min/drek/desain-hlm isi,
-// di offset adalah konstanta BUKU per-combo). Kunci sama-nama dipakai bersama.
+// di offset adalah konstanta BUKU per-combo) + 7 kunci khusus-custom (tarif print isi,
+// target jasa). Kunci sama-nama dipakai bersama.
 export interface SoftCoverUnifiedParams extends OffsetParams {
   tarifDesainIsiPerHlm: number; // klasik: desain isi /hlm (Rp) — 15000
   tarifPlateIsi: number; // klasik: plate isi (Rp/plat) — 45000
   tarifCetakMinIsi: number; // klasik: min isi (Rp) — 90000
   tarifDrekIsi: number; // klasik: drek isi (Rp) — 40
+  tarifPrintBuyaIsi: number; // custom BUKU!AR2 konstanta "350" (Rp) — 350
+  tarifPrintIsiA3: number; // custom Master!D27 tarif print isi Print Inter — per lini 350/2000/1750
+  targetLipat: number; // custom BUKU!BI28 — 10000
+  targetSisir: number; // custom BUKU!BJ28 — 1700
+  targetSusunKomplit: number; // custom BUKU!BK28 = 500*19 — 9500
+  targetKawatRoll: number; // custom BUKU!BL28 = 30000-15% — 25500
+  targetStiching: number; // custom BUKU!BM28 — 10000
 }
 
 export const DEFAULT_SOFT_COVER_UNIFIED: SoftCoverUnifiedParams = {
@@ -75,16 +111,31 @@ export const DEFAULT_SOFT_COVER_UNIFIED: SoftCoverUnifiedParams = {
   tarifPlateIsi: 45000,
   tarifCetakMinIsi: 90000,
   tarifDrekIsi: 40,
+  tarifPrintBuyaIsi: 350,
+  tarifPrintIsiA3: 2000,
+  targetLipat: 10000,
+  targetSisir: 1700,
+  targetSusunKomplit: 9500,
+  targetKawatRoll: 25500,
+  targetStiching: 10000,
 };
 
 // Default per lini untuk kunci yang nilainya beda antar-file (edit user selalu menang):
-// umr 2818585 (klasik) vs 2818850 (offset); insheetCover 5 (klasik) vs per-file offset;
-// insheetIsi & shrink per file offset (lihat defaultSoftCoverOffsetParams).
-function liniDefault(lini: SoftCoverLini, key: 'umr' | 'upIsiPct' | 'insheetCover' | 'insheetIsi' | 'tarifShrinkRoll'): number {
+// umr 2818585 (klasik) vs 2818850 (offset/custom); insheetCover 5 (klasik) vs per-file;
+// insheetIsi, shrink & tarif print-isi-A3 per file (lihat defaultSoftCoverOffsetParams / SOFT_COVER_CUSTOM_CONFIGS).
+function liniDefault(lini: SoftCoverLini, key: 'umr' | 'upIsiPct' | 'insheetCover' | 'insheetIsi' | 'tarifShrinkRoll' | 'tarifPrintIsiA3'): number {
   if (lini === 'Klasik') {
     if (key === 'umr') return DEF_KLASIK.umr;
     if (key === 'upIsiPct') return DEF_KLASIK.upIsiPct; // 3 (unified base = 0 offset)
     if (key === 'insheetCover') return DEF_KLASIK.insheetCover; // 5 (unified base = 100 OO)
+    return (DEFAULT_SOFT_COVER_UNIFIED as any)[key];
+  }
+  if (isCustomLini(lini)) {
+    const c = SOFT_COVER_CUSTOM_CONFIGS[lini];
+    if (key === 'insheetCover') return c.insheetCover;
+    if (key === 'insheetIsi') return c.insheetIsi;
+    if (key === 'tarifShrinkRoll') return c.shrinkRoll;
+    if (key === 'tarifPrintIsiA3') return c.drekIsi;
     return (DEFAULT_SOFT_COVER_UNIFIED as any)[key];
   }
   return (defaultSoftCoverOffsetParams(lini as SoftCoverOffsetComboId) as any)[key]
@@ -93,11 +144,21 @@ function liniDefault(lini: SoftCoverLini, key: 'umr' | 'upIsiPct' | 'insheetCove
 
 function resolveParams(lini: SoftCoverLini, raw: SoftCoverUnifiedParams): SoftCoverUnifiedParams {
   const out = { ...raw };
-  (['umr', 'upIsiPct', 'insheetCover', 'insheetIsi', 'tarifShrinkRoll'] as const).forEach((k) => {
+  (['umr', 'upIsiPct', 'insheetCover', 'insheetIsi', 'tarifShrinkRoll', 'tarifPrintIsiA3'] as const).forEach((k) => {
     const v = (raw as any)[k];
     if (v === undefined || v === (DEFAULT_SOFT_COVER_UNIFIED as any)[k]) (out as any)[k] = liniDefault(lini, k);
   });
   return out;
+}
+
+export interface SoftCoverFinCustom {
+  lipat: boolean; sisir: boolean; susunKomplit: boolean; kawat: boolean; stiching: boolean;
+  susunStaples: boolean; biayaStaples: boolean;
+}
+
+export function defaultFinCustom(lini: SoftCoverLini): SoftCoverFinCustom {
+  const oo = isCustomLini(lini) && SOFT_COVER_CUSTOM_CONFIGS[lini].finOO;
+  return { lipat: oo, sisir: oo, susunKomplit: oo, kawat: oo, stiching: oo, susunStaples: !oo, biayaStaples: !oo };
 }
 
 export interface SoftCoverUnifiedInput {
@@ -109,6 +170,9 @@ export interface SoftCoverUnifiedInput {
   warnaIsi: SoftCoverWarnaType;
   finishing: SoftCoverFinishing;
   marginPct: number;
+  finCustom?: SoftCoverFinCustom; // toggle jasa baris-26, khusus lini custom
+  mesinCover?: string; // override mesin cover custom (default = file lini); di luar cabang = 0
+  mesinIsi?: string; // override mesin isi custom (default = file lini)
 }
 
 export interface SoftCoverUnifiedBreakdownItem {
@@ -135,6 +199,7 @@ export interface SoftCoverUnifiedResult {
 
 export function softCoverTiers(lini: SoftCoverLini): number[] {
   if (lini === 'Klasik') return TIERS_KLASIK;
+  if (isCustomLini(lini)) return SOFT_COVER_CUSTOM_CONFIGS[lini].tiers;
   return SOFT_COVER_OFFSET_COMBOS[lini].tiers;
 }
 
@@ -142,11 +207,85 @@ export function softCoverFinishingOptions(lini: SoftCoverLini): SoftCoverFinishi
   return lini === 'Klasik' ? SOFT_COVER_FINISHING_7 : SOFT_COVER_FINISHING_9;
 }
 
+const MESIN_CUSTOM = ['SM', 'Oliver', 'Ryobi', 'Print Inter', 'Print Buya'];
+
+export function softCoverMesinCoverOptions(lini: SoftCoverLini): string[] {
+  if (!isCustomLini(lini)) return [];
+  const cfg = SOFT_COVER_CUSTOM_CONFIGS[lini];
+  // 10,5 tak punya cabang Ryobi di O7/P7/V27/W27 (0/0 = tak valid) — sembunyikan.
+  return cfg.ukuran === '10,5 X 14,8' ? MESIN_CUSTOM.filter((m) => m !== 'Ryobi') : MESIN_CUSTOM;
+}
+
+export function softCoverMesinIsiOptions(): string[] {
+  return MESIN_CUSTOM;
+}
+
+function customBreakdown(
+  r: ReturnType<typeof calcSoftCoverCustomTier>,
+  mesinCover: string, mesinIsi: string
+): SoftCoverUnifiedBreakdownItem[] {
+  const t = r.totalHpp || 1;
+  const d = r.dbg;
+  const item = (nama: string, nominal: number, keterangan: string): SoftCoverUnifiedBreakdownItem =>
+    ({ nama, nominal, pct: nominal / t, keterangan });
+  return [
+    item('Kertas Cover', r.kertasCover, `${mesinCover}: R ${d.R} plano (O${d.O}/P${d.P})`),
+    item('Desain Cover', r.desainCover, 'BUKU!V7 = D17 flat'),
+    item('Plat + Min Cover', r.platCover + r.ongkosCover, `Y6/AB6 × ${d.Z} plat + drek/over`),
+    item('Kertas Isi', r.kertasIsi, `${mesinIsi}: AP ${d.AP} (AK${d.AK}/AL${d.AL}/AM${d.AM})`),
+    item('Desain Isi', r.desainIsi, 'BUKU!AT7 = D26 × lbr'),
+    item('Plat + Min Isi', r.platIsi + r.ongkosIsi, `AW6/AY6 × ${d.AX} plat + drek/over`),
+    item('Finishing + Kemas', r.finishing, 'Jasa UMR baris-26 + Sisir + D29 + Shrink + Kardus'),
+  ];
+}
+
 export function calculateSoftCoverUnified(
   input: SoftCoverUnifiedInput,
   rawParams: SoftCoverUnifiedParams = DEFAULT_SOFT_COVER_UNIFIED
 ): SoftCoverUnifiedResult {
   const p = resolveParams(input.lini, { ...DEFAULT_SOFT_COVER_UNIFIED, ...(rawParams || {}) });
+  if (isCustomLini(input.lini)) {
+    const cfg = SOFT_COVER_CUSTOM_CONFIGS[input.lini];
+    const fin = input.finCustom ?? defaultFinCustom(input.lini);
+    const mc = input.mesinCover ?? cfg.defaultMesinCover;
+    const mi = input.mesinIsi ?? cfg.defaultMesinIsi;
+    const cp: SoftCoverCustomParams = {
+      jumlahHalaman: input.jumlahHalaman,
+      mukaCover: input.mukaCover === '2 Muka' ? 2 : 1,
+      warnaCover: parseInt(input.warnaCover) || 4,
+      warnaIsi: parseInt(input.warnaIsi) || 1,
+      mesinCover: mc, mesinIsi: mi,
+      umr: p.umr, hargaKertasCoverKg: p.tarifKertasCoverKg, hargaKertasIsiKg: p.tarifKertasIsiKg,
+      insheetCover: p.insheetCover, insheetIsi: p.insheetIsi,
+      desainCover: p.tarifDesainCover, tarifPrintCover: p.tarifPrintCoverA3,
+      tarifPrintBuyaIsi: p.tarifPrintBuyaIsi, drekIsi: p.tarifPrintIsiA3, desainIsiPerHlm: p.tarifDesainIsiPerUnit,
+      d29: input.finishing,
+      finLipat: fin.lipat, finSisir: fin.sisir, finSusunKomplit: fin.susunKomplit, finKawat: fin.kawat,
+      finStiching: fin.stiching, finSusunStaples: fin.susunStaples, finBiayaStaples: fin.biayaStaples,
+      targetLipat: p.targetLipat, targetSisir: p.targetSisir, targetSusunKomplit: p.targetSusunKomplit,
+      targetKawatRoll: p.targetKawatRoll, targetStiching: p.targetStiching,
+      kawatPerRoll: p.tarifKawatRoll, staplesPerPack: p.tarifSteplesPack,
+      tintaSpotUVkg: p.tarifTintaSpotUV, plastikShrinkRoll: p.tarifShrinkRoll,
+      lakbanRoll: p.tarifLakbanRoll, kardus: p.tarifKardusBox, royalty: p.tarifRoyalti,
+      labaPct: p.marginDefaultPct, // custom: laba E37, bukan margin input
+    };
+    const r = calcSoftCoverCustomTier(cfg, cp, input.oplah);
+    const profitPerPcs = r.hargaJualPerPcs - r.hppPerPcs;
+    return {
+      input,
+      breakdown: customBreakdown(r, mc, mi),
+      kebutuhanKertasCover: r.dbg.R,
+      kebutuhanCetakCover: r.dbg.Q,
+      kebutuhanPlanoIsi: r.dbg.AP,
+      totalHpp: r.totalHpp,
+      hppPerPcs: r.hppPerPcs,
+      hargaJualPerPcs: r.hargaJualPerPcs,
+      totalHargaJual: r.hargaJualPerPcs * input.oplah,
+      profitPerPcs,
+      profitTotal: profitPerPcs * input.oplah,
+      marginPct: p.marginDefaultPct,
+    };
+  }
   if (input.lini === 'Klasik') {
     const kp: KlasikParams = {
       insheetCover: p.insheetCover,
