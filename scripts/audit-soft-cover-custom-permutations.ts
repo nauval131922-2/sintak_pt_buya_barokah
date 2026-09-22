@@ -85,6 +85,8 @@ react(PP, (p) => { p.jumlahHalaman += 8; }, 'jumlahHalaman');
 react(OO, (p) => { p.warnaIsi = 4; }, 'warnaIsi(plat)');
 react(PP, (p) => { p.mesinIsi = 'Print Inter'; p.drekIsi += 100; }, 'drekIsi');
 react(OO, (p) => { p.umr += 100000; }, 'umr');
+react(OO, (p) => { p.upCoverPct = 3; }, 'upCoverPct');
+react(OO, (p) => { p.upIsiPct = 3; }, 'upIsiPct');
 react(OO, (p) => { p.mukaCover = 2; }, 'mukaCover');
 const reactAbs = (lini: SoftCoverCustomLini, mut: (p: SoftCoverCustomParams) => void, label: string) => {
   const cfg = SOFT_COVER_CUSTOM_CONFIGS[lini];

@@ -29,6 +29,7 @@ const VISIBLE_KEYS: (keyof SoftCoverUnifiedParams)[] = [
   'tarifDesainCover',
   'tarifPrintCoverA3',
   'tarifKertasIsiKg',
+  'upCoverPct',
   'upIsiPct',
   'gramaturIsi',
   'insheetIsi',
@@ -214,6 +215,7 @@ export default function BukuSoftCoverUnifiedMasterParameter({
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('tarifKertasIsiKg', 'Kertas HVS / kg (Rp)')}
+            {fieldRow('upCoverPct', 'Up Cover (%)', { rupiah: false, suffix: '%' })}
             {fieldRow('upIsiPct', 'Up Isi (%) — Klasik 3, offset 0', { rupiah: false, suffix: '%' })}
             {fieldRow('gramaturIsi', 'Gramatur Isi', { rupiah: false })}
             {fieldRow('insheetIsi', 'Insheet Isi (lbr) — per file')}

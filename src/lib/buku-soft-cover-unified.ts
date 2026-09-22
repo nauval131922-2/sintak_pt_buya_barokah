@@ -311,6 +311,7 @@ export function calculateSoftCoverUnified(
       warnaIsi: parseInt(input.warnaIsi) || 1,
       mesinCover: mc, mesinIsi: mi,
       umr: p.umr, hargaKertasCoverKg: p.tarifKertasCoverKg, hargaKertasIsiKg: p.tarifKertasIsiKg,
+      upCoverPct: p.upCoverPct, upIsiPct: p.upIsiPct,
       insheetCover: p.insheetCover, insheetIsi: p.insheetIsi,
       desainCover: p.tarifDesainCover, tarifPrintCover: p.tarifPrintCoverA3,
       tarifPrintBuyaIsi: p.tarifPrintBuyaIsi, drekIsi: p.tarifPrintIsiA3, desainIsiPerHlm: p.tarifDesainIsiPerUnit,

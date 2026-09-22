@@ -69,6 +69,7 @@ export interface SoftCoverCustomParams {
   jumlahHalaman: number; mukaCover: 1 | 2; warnaCover: number; warnaIsi: number;
   mesinCover: string; mesinIsi: string;
   umr: number; hargaKertasCoverKg: number; hargaKertasIsiKg: number;
+  upCoverPct: number; upIsiPct: number; // Master!E12/E22 (%) — 0 di semua file custom
   insheetCover: number; insheetIsi: number;
   desainCover: number; tarifPrintCover: number; tarifPrintBuyaIsi: number; drekIsi: number; desainIsiPerHlm: number;
   d29: string;
@@ -114,6 +115,7 @@ export function defaultSoftCoverCustomParams(lini: SoftCoverCustomLini): SoftCov
     jumlahHalaman: 32, mukaCover: 1, warnaCover: 4, warnaIsi: 1,
     mesinCover: c.defaultMesinCover, mesinIsi: c.defaultMesinIsi,
     umr: 2818850, hargaKertasCoverKg: 16400, hargaKertasIsiKg: 15700,
+    upCoverPct: 0, upIsiPct: 0,
     insheetCover: c.insheetCover, insheetIsi: c.insheetIsi,
     desainCover: 20000, tarifPrintCover: 2700, tarifPrintBuyaIsi: 350, drekIsi: c.drekIsi, desainIsiPerHlm: 2500,
     d29: 'None,',
@@ -150,7 +152,7 @@ export function calcSoftCoverCustomTier(cfg: SoftCoverCustomLiniConfig, p: SoftC
   const R = H > 0 && P > 0 && O > 0 ? (cfg.rataR === false ? rawR : rUp0(rawR)) : 0; // BUKU!R7
   const Q = R * O * N; // BUKU!Q7
   const cv = (COVER_PLANO[cfg.ukuran] ?? {})[mc] ?? [0, 0]; // BUKU!V27/W27
-  const W29 = ((cv[0] * cv[1]) * 230) / 20000 * (p.hargaKertasCoverKg + 0); // BUKU!W29 (W28=230 gsm, Y30=E12=0)
+  const W29 = ((cv[0] * cv[1]) * 230) / 20000 * (p.hargaKertasCoverKg * (p.upCoverPct / 100) + p.hargaKertasCoverKg); // BUKU!W29 (W28=230 gsm, Y30=E12)
   const T2 = mc === 'print inter' ? p.tarifPrintCover : mc === 'print buya' ? 300 : 0; // BUKU!T2
   const isOffC = mc === 'ryobi' || mc === 'oliver' || mc === 'sm';
   const kertasCover = isOffC ? (R / 500) * W29 : mc === 'print inter' ? T2 * R : 0; // BUKU!T7 (Print Buya ikut (R/500)*W29)
@@ -165,7 +167,7 @@ export function calcSoftCoverCustomTier(cfg: SoftCoverCustomLiniConfig, p: SoftC
   const ongkosCover = mc === 'sm' || mc === 'oliver' || mc === 'ryobi' ? AF + AD : mc === 'print inter' ? 0 : mc === 'print buya' ? T2 * Q : 0; // BUKU!AG7
   const wi = p.warnaIsi <= 1 ? '1 Warna' : p.warnaIsi === 2 ? '2 Warna' : p.warnaIsi === 3 ? '3 Warna' : '4 Warna';
   const au = ((ISI_PLANO[cfg.ukuran] ?? {})[wi] ?? (ISI_PLANO[cfg.ukuran] ?? {})['*'] ?? {})[mi] ?? [0, 0]; // BUKU!AT27/AU27
-  const AU29 = ((au[0] * au[1]) * 70) / 20000 * (p.hargaKertasIsiKg + 0); // BUKU!AU29 (AU28=70, AW30=E22=0)
+  const AU29 = ((au[0] * au[1]) * 70) / 20000 * (p.hargaKertasIsiKg * (p.upIsiPct / 100) + p.hargaKertasIsiKg); // BUKU!AU29 (AU28=70, AW30=E22)
   const AR2 = mi === 'print buya' ? p.tarifPrintBuyaIsi : mi === 'print inter' ? p.drekIsi : 0; // BUKU!AR2
   const AN = AL > 0 ? C6 / (AM / AL) : 0; // BUKU!AN7
   const AN6t = targetSusunFor(C6); // BUKU!BN28
