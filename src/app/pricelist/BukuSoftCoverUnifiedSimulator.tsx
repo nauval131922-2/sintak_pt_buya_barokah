@@ -457,7 +457,7 @@ export default function BukuSoftCoverUnifiedSimulator({
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Halaman — D6
+                  Halaman
                 </label>
                 <input
                   type="number"
@@ -478,10 +478,10 @@ export default function BukuSoftCoverUnifiedSimulator({
             <div className="rounded-xl border border-sky-200 bg-sky-50/50 p-3 space-y-3">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-sky-900 bg-sky-200/80 px-2 py-0.5 rounded">Cover</span>
-                <label className="text-xs font-bold text-sky-900">Muka &amp; Warna — D14/D15</label>
+                <label className="text-xs font-bold text-sky-900">Muka &amp; Warna</label>
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-sky-900/80 mb-1">Mesin Cover — D16</label>
+                <label className="block text-[11px] font-bold text-sky-900/80 mb-1">Mesin Cover</label>
                 <div className="grid grid-cols-2 gap-2">
                   {SOFT_COVER_COVER_OPTIONS[ukuran].map((m) => (
                     <button key={m} type="button" onClick={() => pickCascade(ukuran, m, SOFT_COVER_ISI_OPTIONS[ukuran].includes(mesinIsi) ? mesinIsi : SOFT_COVER_ISI_OPTIONS[ukuran][0])} className={optBtn(mesinCover === m)}>
@@ -518,10 +518,10 @@ export default function BukuSoftCoverUnifiedSimulator({
             <div className="rounded-xl border border-violet-200 bg-violet-50/50 p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-violet-900 bg-violet-200/80 px-2 py-0.5 rounded">Isi</span>
-                <label className="text-xs font-bold text-violet-900">Warna Isi — D24</label>
+                <label className="text-xs font-bold text-violet-900">Warna Isi</label>
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-violet-900/80 mb-1">Mesin Isi — D25</label>
+                <label className="block text-[11px] font-bold text-violet-900/80 mb-1">Mesin Isi</label>
                 <div className="grid grid-cols-2 gap-2">
                   {SOFT_COVER_ISI_OPTIONS[ukuran].map((m) => (
                     <button key={m} type="button" onClick={() => pickCascade(ukuran, mesinCover, m)} className={optBtn(mesinIsi === m)}>
@@ -563,7 +563,7 @@ export default function BukuSoftCoverUnifiedSimulator({
             <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded">Finishing</span>
-                <label className="text-xs font-bold text-amber-900">Catatan — D29</label>
+                <label className="text-xs font-bold text-amber-900">Catatan Finishing</label>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {finishingOptions.map((f) => (
@@ -576,7 +576,7 @@ export default function BukuSoftCoverUnifiedSimulator({
                 {lini === 'Klasik'
                   ? 'Klasik: 7 opsi (Glossy+Bending & full-paket #DIV/0! di file Klasik).'
                   : custom
-                    ? 'Custom: 9 opsi + toggle jasa UMR baris-26 di bawah.'
+                    ? 'Custom: 9 opsi + toggle jasa harian di bawah.'
                     : 'Offset: 9 opsi terkomputasi penuh.'}
               </p>
               {custom && (
@@ -603,7 +603,7 @@ export default function BukuSoftCoverUnifiedSimulator({
             {custom ? (
               <div className="pt-2 border-t border-slate-100">
                 <p className="text-[11px] text-slate-600">
-                  Laba <strong>{customParams.marginDefaultPct ?? 30}%</strong> dari file Excel (Master!E37) — harga ke puluhan. Tanpa nego.
+                  Laba <strong>{customParams.marginDefaultPct ?? 30}%</strong> dari file Excel — harga ke puluhan. Tanpa nego.
                 </p>
               </div>
             ) : (
@@ -803,9 +803,9 @@ export default function BukuSoftCoverUnifiedSimulator({
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   {[
-                    ['1. Ukuran & Mesin', 'Pilih ukuran (21×29,7 / 14,5×20,25 / 10,5×14,8), mesin cover (D16) & mesin isi (D25). File sumber ketemu otomatis; kalau 1 kombinasi ada di beberapa file, pilih sumbernya.'],
+                    ['1. Ukuran & Mesin', 'Pilih ukuran (21×29,7 / 14,5×20,25 / 10,5×14,8), mesin cover & mesin isi. File sumber ketemu otomatis; kalau 1 kombinasi ada di beberapa file, pilih sumbernya.'],
                     ['2. Oplah & Spesifikasi', 'Ketik oplah bebas (chip = tier file) + halaman, muka & warna cover, warna isi. Oplah di luar tier = ekstrapolasi rumus file.'],
-                    ['3. Finishing & Laba', 'Pilih finishing D29 (Klasik 7 opsi, offset & custom 9 opsi + toggle jasa UMR baris-26 di custom). Laba 30% (E37) — harga ke puluhan, tanpa nego.'],
+                    ['3. Finishing & Laba', 'Pilih catatan finishing (Klasik 7 opsi, offset & custom 9 opsi + toggle jasa harian di custom). Laba 30% — harga ke puluhan, tanpa nego.'],
                     ['4. Salin Penawaran', 'Klik Salin Penawaran untuk teks WA otomatis, atau Simpan Kalkulasi Ini ke Daftar Kalkulasi di bawah tabel rincian.'],
                   ].map(([title, desc]) => (
                     <div key={title} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
@@ -825,19 +825,19 @@ export default function BukuSoftCoverUnifiedSimulator({
                     <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
                       <span className="font-bold text-emerald-900 block">Klasik PI–Oliver (folder 17):</span>
                       <p className="text-slate-600 leading-snug">
-                        Cover Rp 2.700×(oplah+5), desain isi Rp 15.000×halaman, plate/min/drek Oliver, susun/steples-9/sisir-150, laminasi floor 50rb. Total 25 suku (CX).
+                        Cover per lembar Rp 2.700, desain isi per halaman, ongkos plate dan cetak mengikuti mesin, biaya susun, staples, sisir, dan laminasi sesuai opsi.
                       </p>
                     </div>
                     <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">
                       <span className="font-bold text-blue-900 block">Offset 7 lini (folder 17-21 &amp; 18):</span>
                       <p className="text-slate-600 leading-snug">
-                        5 jasa UMR atau BN/steples, SpotUV/Emboss/Shrink/Packing hidup, desain Rp 2.500×hal/4, packing kardus bracket halaman. Total 30 suku (DC).
+                        Kebutuhan kertas mengikuti kapasitas mesin, ongkos cetak mengikuti jumlah warna dan muka, finishing dan kemas mengikuti opsi yang dipilih.
                       </p>
                     </div>
                     <div className="p-2.5 bg-white rounded border border-amber-100 space-y-1">
                       <span className="font-bold text-amber-900 block">Custom 10 lini (folder 19/21/24):</span>
                       <p className="text-slate-600 leading-snug">
-                        C7=hal/4, R=H/P+K/O (24oo tanpa ROUNDUP — temuan audit), kertas rim V27/W27 &amp; AT27/AU27 per mesin, ongkos Buya=350×AO, toggle jasa baris-26, laba E37 30%. Komposisi cabang dari file yang hidup.
+                        Alternatif perhitungan dari file lain: jumlah lembar isi seperempat halaman, kebutuhan plano mengikuti mesin, toggle jasa harian, laba 30%. Detail sel per sel ada di Manual Pengguna tab Master Parameter.
                       </p>
                     </div>
                   </div>

@@ -198,8 +198,8 @@ export default function BukuSoftCoverUnifiedMasterParameter({
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('insheetCover', 'Insheet Cover (lbr) — Klasik 5, offset per file')}
-            {fieldRow('tarifDesainCover', 'Desain Cover (Rp) — D17')}
-            {fieldRow('tarifPrintCoverA3', 'Print Cover A3+ (Rp) — D18/T2')}
+            {fieldRow('tarifDesainCover', 'Desain Cover (Rp)')}
+            {fieldRow('tarifPrintCoverA3', 'Print Cover A3+ (Rp)')}
           </div>
           <p className="text-[10px] text-slate-500">
             Klasik &amp; Print-cover: all-in Rp 2.700/lbr. Oliver-cover: rim-based + plate/min per lini.
@@ -213,11 +213,11 @@ export default function BukuSoftCoverUnifiedMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">2. Isi HVS (semua lini)</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifKertasIsiKg', 'Kertas HVS / kg (Rp) — D22')}
+            {fieldRow('tarifKertasIsiKg', 'Kertas HVS / kg (Rp)')}
             {fieldRow('upIsiPct', 'Up Isi (%) — Klasik 3, offset 0', { rupiah: false, suffix: '%' })}
-            {fieldRow('gramaturIsi', 'Gramatur Isi — D21', { rupiah: false })}
+            {fieldRow('gramaturIsi', 'Gramatur Isi', { rupiah: false })}
             {fieldRow('insheetIsi', 'Insheet Isi (lbr) — per file')}
-            {fieldRow('tarifDesainIsiPerUnit', 'Desain Isi offset ×C7 (Rp) — D26')}
+            {fieldRow('tarifDesainIsiPerUnit', 'Desain Isi offset (Rp)')}
             {fieldRow('tarifDesainIsiPerHlm', 'Desain Isi Klasik /hlm (Rp)')}
             {fieldRow('tarifPlateIsi', 'Plate Isi Klasik (Rp)')}
             {fieldRow('tarifCetakMinIsi', 'Min Cetak Klasik (Rp)')}
@@ -277,16 +277,16 @@ export default function BukuSoftCoverUnifiedMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">5. Engine Custom — tarif print &amp; target jasa (10 lini F19/F21/F24)</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-            {fieldRow('tarifPrintBuyaIsi', 'Print Isi Buya flat (Rp) — AR2 "350"')}
-            {fieldRow('tarifPrintIsiA3', 'Print Isi A3+ (Rp) — D27, per lini 350/2000/1750')}
-            {fieldRow('targetLipat', 'Target Lipat /hari — BI28')}
-            {fieldRow('targetSisir', 'Target Sisir /hari — BJ28')}
-            {fieldRow('targetSusunKomplit', 'Target Susun Komplit /hari — BK28')}
-            {fieldRow('targetKawatRoll', 'Kawat 1 roll jadi (pcs) — BL28')}
-            {fieldRow('targetStiching', 'Target Stiching /hari — BM28')}
+            {fieldRow('tarifPrintBuyaIsi', 'Print Isi Buya flat (Rp)')}
+            {fieldRow('tarifPrintIsiA3', 'Print Isi A3+ (Rp) — per lini 350/2000/1750')}
+            {fieldRow('targetLipat', 'Target Lipat /hari')}
+            {fieldRow('targetSisir', 'Target Sisir /hari')}
+            {fieldRow('targetSusunKomplit', 'Target Susun Komplit /hari')}
+            {fieldRow('targetKawatRoll', 'Kawat 1 roll jadi (pcs)')}
+            {fieldRow('targetStiching', 'Target Stiching /hari')}
           </div>
           <p className="text-[10px] text-slate-500">
-            Laba custom = Margin Default E37 (30%). Toggle jasa baris-26 (Lipat/Sisir/Susun/Kawat vs Susun-Staples) default per lini di tab Kalkulasi.
+            Laba custom = Margin Default (30%). Toggle jasa (Lipat/Sisir/Susun/Kawat vs Susun-Staples) default per lini di tab Kalkulasi.
             Temuan audit: file 24oo R7 tanpa ROUNDUP (9 file lain pakai) — diikat per lini; cabang mesin mati dikomposisi dari file yang hidup.
           </p>
         </div>
