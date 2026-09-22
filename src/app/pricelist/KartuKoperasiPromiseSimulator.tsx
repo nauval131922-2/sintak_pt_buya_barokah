@@ -6,7 +6,6 @@ import {
   FileSpreadsheet,
   DollarSign,
   TrendingUp,
-  Percent,
   FileText,
   Copy,
   Check,
@@ -19,18 +18,24 @@ import {
   Calculator,
   Info,
   Layers,
-  RefreshCw,
   CreditCard,
-  IdCard,
 } from 'lucide-react';
 import {
   calculateKartuKoperasiPromiseHpp,
   DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS,
   KartuKoperasiPromiseMasterParams,
   KartuKoperasiPromiseVarianType,
+  KartuKoperasiPromiseMesinType,
+  KartuKoperasiPromiseMukaType,
+  KartuKoperasiPromiseWarnaType,
+  KartuKoperasiPromiseFinishingType,
   KARTU_KOPERASI_PROMISE_TIERS,
   SavedKartuKoperasiPromiseSimulationItem,
   KARTU_KOPERASI_PROMISE_CONFIG,
+  KARTU_KOPERASI_PROMISE_MESIN_OPTIONS,
+  KARTU_KOPERASI_PROMISE_MUKA_OPTIONS,
+  KARTU_KOPERASI_PROMISE_WARNA_OPTIONS,
+  KARTU_KOPERASI_PROMISE_FINISHING_OPTIONS,
 } from '@/lib/kartu-koperasi-promise-calculator';
 import { toast } from '@/lib/toast';
 
@@ -49,6 +54,12 @@ const draftVal = (key: string, fallback: any) => {
 export type { SavedKartuKoperasiPromiseSimulationItem };
 
 const VARIAN_OPTIONS: KartuKoperasiPromiseVarianType[] = ['10,5 x 16,5', '10,5 x 21,5', '12,7 x 16,3'];
+const FINISHING_LABEL: Record<KartuKoperasiPromiseFinishingType, string> = {
+  'None,': 'Tanpa Finishing',
+  'UV Varnish,': 'UV Varnish',
+  'Laminasi Glossy,': 'Laminasi Glossy',
+  'Laminasi Doff,': 'Laminasi Doff',
+};
 
 interface KartuKoperasiPromiseSimulatorProps {
   customParams?: KartuKoperasiPromiseMasterParams;
@@ -71,8 +82,11 @@ export default function KartuKoperasiPromiseSimulator({
 }: KartuKoperasiPromiseSimulatorProps) {
   const [oplah, setOplah] = useState<number>(() => draftVal('oplah', 500));
   const [varian, setVarian] = useState<KartuKoperasiPromiseVarianType>(() => draftVal('varian', '10,5 x 16,5'));
-  const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', 30));
-  const [negoDiskonPct, setNegoDiskonPct] = useState(() => draftVal('negoDiskonPct', 4));
+  const [mesin, setMesin] = useState<KartuKoperasiPromiseMesinType>(() => draftVal('mesin', 'Ryobi'));
+  const [muka, setMuka] = useState<KartuKoperasiPromiseMukaType>(() => draftVal('muka', '2 Muka'));
+  const [warna, setWarna] = useState<KartuKoperasiPromiseWarnaType>(() => draftVal('warna', '1 Warna'));
+  const [finishing, setFinishing] = useState<KartuKoperasiPromiseFinishingType>(() => draftVal('finishing', 'None,'));
+  const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', customParams.marginDefaultPct ?? 30));
   const [copiedQuote, setCopiedQuote] = useState(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedKartuKoperasiPromiseSimulationItem[]>([]);
@@ -106,24 +120,30 @@ export default function KartuKoperasiPromiseSimulator({
             const inp = item.data.input;
             setOplah(inp.oplah);
             setVarian(inp.varian);
+            setMesin(inp.mesin ?? 'Ryobi');
+            setMuka(inp.muka ?? '2 Muka');
+            setWarna(inp.warna ?? '1 Warna');
+            setFinishing(inp.finishing ?? 'None,');
             setMarginPct(inp.marginPct);
-            setNegoDiskonPct(inp.negoDiskonPct);
             setSimulationTitle(item.title);
           }
         }
       }
       if (!activeSimulationId) {
         // Restore draft settingan (persist saat pindah tab)
-          try {
-            const rawDraft = localStorage.getItem(DRAFT_KEY);
-            if (rawDraft) {
-              const d = JSON.parse(rawDraft);
-              if (d.oplah) setOplah(Number(d.oplah));
-              if (d.varian) setVarian(d.varian);
-              if (d.marginPct !== undefined) setMarginPct(Number(d.marginPct));
-              if (d.negoDiskonPct !== undefined) setNegoDiskonPct(Number(d.negoDiskonPct));
-            }
-          } catch { /* abaikan draft rusak */ }
+        try {
+          const rawDraft = localStorage.getItem(DRAFT_KEY);
+          if (rawDraft) {
+            const d = JSON.parse(rawDraft);
+            if (d.oplah) setOplah(Number(d.oplah));
+            if (d.varian) setVarian(d.varian);
+            if (d.mesin) setMesin(d.mesin);
+            if (d.muka) setMuka(d.muka);
+            if (d.warna) setWarna(d.warna);
+            if (d.finishing) setFinishing(d.finishing);
+            if (d.marginPct !== undefined) setMarginPct(Number(d.marginPct));
+          }
+        } catch { /* abaikan draft rusak */ }
       }
     } catch (e) {
       console.error('Failed to load saved kartu koperasi promise simulations:', e);
@@ -134,21 +154,21 @@ export default function KartuKoperasiPromiseSimulator({
   useEffect(() => {
     if (activeSimulationId) return;
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify({ oplah, varian, marginPct, negoDiskonPct }));
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ oplah, varian, mesin, muka, warna, finishing, marginPct }));
     } catch { /* abaikan */ }
-  }, [oplah, varian, marginPct, negoDiskonPct, activeSimulationId]);
+  }, [oplah, varian, mesin, muka, warna, finishing, marginPct, activeSimulationId]);
 
   const result = useMemo(
     () =>
       calculateKartuKoperasiPromiseHpp(
-        { oplah, varian, marginPct, negoDiskonPct },
+        { oplah, varian, mesin, muka, warna, finishing, marginPct },
         customParams
       ),
-    [oplah, varian, marginPct, negoDiskonPct, customParams]
+    [oplah, varian, mesin, muka, warna, finishing, marginPct, customParams]
   );
 
   const defaultTitle = () => {
-    return `Kartu Koperasi Promise ${varian} (${oplah} pcs)`;
+    return `Kartu Koperasi Promise ${varian} ${mesin} (${oplah} pcs)`;
   };
 
   const handleSaveSimulation = () => {
@@ -164,7 +184,7 @@ export default function KartuKoperasiPromiseSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_kartu_koperasi_promise_simulations', JSON.stringify(updated));
-    saveCalculationToDb({ ...newItem, category: 'Kartu Koperasi Promise' });
+      saveCalculationToDb({ ...newItem, category: 'Kartu Koperasi Promise' });
     } catch (e) {
       console.error('Failed to save kartu koperasi promise simulation:', e);
     }
@@ -186,7 +206,7 @@ export default function KartuKoperasiPromiseSimulator({
     setSavedSimulations(updated);
     try {
       localStorage.setItem('sintak_saved_kartu_koperasi_promise_simulations', JSON.stringify(updated));
-    const targetItem = updated.find((x) => x.id === activeSimulationId);
+      const targetItem = updated.find((x) => x.id === activeSimulationId);
       if (targetItem) saveCalculationToDb({ ...targetItem, category: 'Kartu Koperasi Promise' });
     } catch (e) {
       console.error('Failed to update kartu koperasi promise simulation:', e);
@@ -207,16 +227,15 @@ export default function KartuKoperasiPromiseSimulator({
       `━━━━━━━━━━━━━━━━━━━━\n` +
       `• *Produk*: Kartu Koperasi Promise ${varian} cm\n` +
       `• *Spesifikasi*: ${cfg.description}\n` +
-      `• *Ukuran*: ${varian} cm · BC 160 gsm 2 Muka 1 Warna\n` +
-      `• *Bahan*: BC 160 gsm 2 Muka Full Colour 1 Warna\n` +
-      `• *Finishing*: Pound + Sisir + Packing Kardus\n` +
+      `• *Ukuran*: ${varian} cm · BC 160 gsm ${muka} ${warna}\n` +
+      `• *Cetak*: ${mesin}\n` +
+      `• *Finishing*: ${FINISHING_LABEL[finishing]} + Pound + Sisir + Packing Kardus\n` +
       `• *Kuantitas*: ${oplah} pcs\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
       `• *Harga / Pcs*: *Rp ${fmt(result.hargaJualPerPcs)}*\n` +
-      `• *Harga Nego / Pcs*: *Rp ${fmt(result.hargaNegoPerPcs)}*\n` +
       `• *Total Penawaran*: *Rp ${fmt(result.totalHargaJual)}*\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
-      `_Harga belum termasuk PPN. Kartu Koperasi Promise ${varian} cm, BC 160 2 Muka 1 Warna, cetak Ryobi, finishing pound + sisir + packing._`;
+      `_Harga belum termasuk PPN. Kartu Koperasi Promise ${varian} cm, BC 160 ${muka} ${warna}, cetak ${mesin}._`;
 
     navigator.clipboard.writeText(text);
     setCopiedQuote(true);
@@ -224,8 +243,15 @@ export default function KartuKoperasiPromiseSimulator({
     setTimeout(() => setCopiedQuote(false), 2000);
   };
 
+  const optBtn = (active: boolean) =>
+    `py-2 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
+      active
+        ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
+        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+    }`;
+
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
       {/* Header */}
       <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
         <div className="flex items-center gap-3">
@@ -236,11 +262,11 @@ export default function KartuKoperasiPromiseSimulator({
             <h3 className="font-bold text-sm sm:text-base text-emerald-950 flex items-center gap-2">
               Simulator &amp; Kalkulator Kartu Koperasi Promise
               <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
-                Katalog 15b
+                Katalog 15
               </span>
             </h3>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Hitung HPP, harga penawaran, dan estimasi profit Kartu Koperasi BC 160 2 Muka 1 Warna 10,5×16,5 / 10,5×21,5 / 12,7×16,3 cm, pound + sisir + packing.
+              Hitung HPP, harga penawaran, dan estimasi profit Kartu Koperasi BC 160 10,5×16,5 / 10,5×21,5 / 12,7×16,3 cm — Print Inter / Ryobi, pound + sisir + packing.
             </p>
           </div>
         </div>
@@ -322,9 +348,9 @@ export default function KartuKoperasiPromiseSimulator({
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-0 pb-1">
         {/* Kolom Kiri: Form Input */}
-        <div className="lg:col-span-5 space-y-5">
+        <div className="lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
               <Sliders size={15} className="text-emerald-700" />
@@ -342,11 +368,7 @@ export default function KartuKoperasiPromiseSimulator({
                     key={v}
                     type="button"
                     onClick={() => setVarian(v)}
-                    className={`py-2 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer flex flex-col items-center gap-1 ${
-                      varian === v
-                        ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
-                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
+                    className={`${optBtn(varian === v)} flex flex-col items-center gap-1`}
                   >
                     <CreditCard size={14} className={varian === v ? 'text-white' : 'text-slate-500'} />
                     <span className="leading-tight text-[11px]">{v}</span>
@@ -381,52 +403,94 @@ export default function KartuKoperasiPromiseSimulator({
                   max={20000}
                   step={10}
                   value={oplah}
-                  onChange={(e) => setOplah(Math.max(1, Number(e.target.value) || 1))}
+                  onChange={(e) => setOplah(Math.max(0, Number(e.target.value) || 0))}
                   className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
                   placeholder="Custom..."
                 />
               </div>
-              <p className="text-[10px] text-slate-500 mt-1">{KARTU_KOPERASI_PROMISE_CONFIG[varian].kartuPerPlano} kartu/plano · {KARTU_KOPERASI_PROMISE_CONFIG[varian].potongPerPlano} potong/plano · Kebutuhan {result.kebutuhanPlano} lbr plano · Cetak {result.kebutuhanCetak} plat</p>
+              <p className="text-[10px] text-slate-500 mt-1">
+                {mesin === 'Print Inter' ? KARTU_KOPERASI_PROMISE_CONFIG[varian].kartuPrintInter : KARTU_KOPERASI_PROMISE_CONFIG[varian].kartuRyobi} kartu/plano · {mesin === 'Print Inter' ? KARTU_KOPERASI_PROMISE_CONFIG[varian].potongPrintInter : KARTU_KOPERASI_PROMISE_CONFIG[varian].potongRyobi} potong/plano · Kebutuhan {result.kebutuhanPlano} lbr plano · Cetak {result.kebutuhanCetak} drek
+              </p>
             </div>
 
-            {/* Margin & Nego */}
-            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Margin Profit (%)</label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={marginPct}
-                    onChange={(e) => setMarginPct(Number(e.target.value) || 0)}
-                    className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
-                  />
-                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
-                </div>
+            {/* Grup Cetak: Mesin + Muka + Warna */}
+            <div className="rounded-xl border border-sky-200 bg-sky-50/50 p-3 space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-sky-900 bg-sky-200/80 px-2 py-0.5 rounded">Cetak</span>
+                <label className="text-xs font-bold text-sky-900">Mesin, Muka &amp; Warna — Master!D13/D14/D15</label>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Batas Nego (%)</label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={negoDiskonPct}
-                    onChange={(e) => setNegoDiskonPct(Number(e.target.value) || 0)}
-                    className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
-                  />
-                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
+                <label className="block text-[11px] font-bold text-slate-600 mb-1">Mesin Cetak</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {KARTU_KOPERASI_PROMISE_MESIN_OPTIONS.map((m) => (
+                    <button key={m} type="button" onClick={() => setMesin(m)} className={optBtn(mesin === m)}>
+                      {m}
+                    </button>
+                  ))}
                 </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Muka (D13)</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {KARTU_KOPERASI_PROMISE_MUKA_OPTIONS.map((m) => (
+                      <button key={m} type="button" onClick={() => setMuka(m)} className={optBtn(muka === m)}>
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Warna (D14)</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {KARTU_KOPERASI_PROMISE_WARNA_OPTIONS.map((w) => (
+                      <button key={w} type="button" onClick={() => setWarna(w)} className={optBtn(warna === w)}>
+                        {w}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Grup Finishing */}
+            <div className="rounded-xl border border-violet-200 bg-violet-50/50 p-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-violet-900 bg-violet-200/80 px-2 py-0.5 rounded">Finishing</span>
+                <label className="text-xs font-bold text-violet-900">Catatan — Master!D19</label>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {KARTU_KOPERASI_PROMISE_FINISHING_OPTIONS.map((f) => (
+                  <button key={f} type="button" onClick={() => setFinishing(f)} className={optBtn(finishing === f)}>
+                    {FINISHING_LABEL[f]}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-slate-500 italic">Laminasi/UV = luas×rate×oplah, floor Rp 50.000 (BUKU!AQ/AT/AW).</p>
+            </div>
+
+            {/* Margin */}
+            <div className="pt-2 border-t border-slate-100">
+              <label className="block text-xs font-bold text-slate-700 mb-1">Margin Profit (%) — Master!E23</label>
+              <div className="relative">
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={marginPct}
+                  onChange={(e) => setMarginPct(Number(e.target.value) || 0)}
+                  className="w-full pl-3 pr-7 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+                />
+                <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Kolom Kanan: Hasil */}
-        <div className="lg:col-span-7 space-y-5">
-          {/* 4 Kartu Finansial */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
+          {/* 3 Kartu Finansial */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-500 mb-1">
                 <span className="text-[11px] font-semibold">HPP / pcs</span>
@@ -452,19 +516,6 @@ export default function KartuKoperasiPromiseSimulator({
                   Rp {result.hargaJualPerPcs.toLocaleString('id-ID')}
                 </span>
                 <span className="block text-[10px] text-emerald-700/80 mt-0.5">/ pcs</span>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-xl border border-blue-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-blue-800 mb-1">
-                <span className="text-[11px] font-bold">Harga Nego (-{negoDiskonPct}%)</span>
-                <Percent size={13} className="text-blue-600" />
-              </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-blue-800 font-mono">
-                  Rp {result.hargaNegoPerPcs.toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-blue-700/80 mt-0.5">/ pcs</span>
               </div>
             </div>
 
@@ -494,7 +545,7 @@ export default function KartuKoperasiPromiseSimulator({
                 </h4>
               </div>
               <span className="text-[11px] font-bold text-slate-500">
-                {oplah.toLocaleString('id-ID')} pcs · {varian} · BC 160 · Pound
+                {oplah.toLocaleString('id-ID')} pcs · {varian} · {mesin} · {muka} {warna}
               </span>
             </div>
             <div className="overflow-x-auto">
@@ -593,7 +644,7 @@ export default function KartuKoperasiPromiseSimulator({
                 <div>
                   <h3 className="text-base font-bold tracking-tight">Panduan Simulator Kartu Koperasi Promise</h3>
                   <p className="text-xs text-emerald-200/90 mt-0.5">
-                    Alur perhitungan berbasis oplah pcs, BC 160 2 Muka 1 Warna, pound + sisir + packing
+                    Alur perhitungan berbasis oplah pcs — Print Inter / Ryobi, Pound + Sisir + Packing
                   </p>
                 </div>
               </div>
@@ -614,10 +665,10 @@ export default function KartuKoperasiPromiseSimulator({
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   {[
-                    ['1. Varian', 'Pilih 10,5×16,5 (4/plano), 10,5×21,5 (3/plano), atau 12,7×16,3 (22/plano) — beda kartu/plano & kertas.'],
-                    ['2. Oplah', 'Tentukan oplah 100–5.000 pcs via dropdown tier atau custom, max 20000.'],
-                    ['3. Margin & Nego', 'Atur margin 30% & nego 4% (default HARGA JULI 2026) — harga jual ceil(+30%)/10, nego -4%.'],
-                    ['4. Salin Penawaran', 'Klik Salin Penawaran untuk teks WA otomatis (BC 160 Pound+Sisir), atau simpan ke daftar kalkulasi.'],
+                    ['1. Varian & Oplah', 'Pilih 10,5×16,5 (Ryobi 4/plano), 10,5×21,5 (3/plano), atau 12,7×16,3 (22/plano, 11 potong). Oplah via tier Excel 500–10.000 atau custom.'],
+                    ['2. Cetak', 'Pilih mesin Print Inter (A3+ Rp 2.500/plano, kartu lebih banyak per plano) atau Ryobi (kertas rim + plate Rp 10.000). Atur muka (1/2) & warna (1–4) — menentukan jumlah plat & drek over.'],
+                    ['3. Finishing & Margin', 'Pilih Tanpa / UV Varnish / Laminasi Glossy / Doff (sesuai Catatan Master!D19, floor Rp 50.000). Atur margin 30% — harga dibulatkan ke puluhan.'],
+                    ['4. Salin Penawaran', 'Klik Salin Penawaran untuk teks WA otomatis, atau Simpan Kalkulasi Ini ke Daftar Kalkulasi di bawah tabel rincian.'],
                   ].map(([title, desc]) => (
                     <div key={title} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
                       <span className="font-bold text-emerald-800 text-xs">{title}</span>
@@ -636,13 +687,13 @@ export default function KartuKoperasiPromiseSimulator({
                   <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
                     <span className="font-bold text-emerald-900 block">Kertas &amp; Cetak:</span>
                     <p className="text-slate-600 leading-snug">
-                      BC 160 gsm Rp 34.800/kg +5% (12,7 Rp 33.000), insheet 40 (max oplah/40), Q=ceil(oplah/kartuPerPlano+insheet/potong), harga per plano 414/2769, desain Rp 15.000 (12,7=0), plate 10k×1/2, cetak min 15k×plat + drek Rp 40×over(P-500).
+                      BC 160 gsm (Rp 34.800/kg +5% utk 10,5; Rp 33.000 +0% utk 12,7), insheet MAX(40; 0,025×oplah), Q=ceil(oplah/kartuPerPlano+insheet/potong), desain Rp 15.000 (12,7 tanpa desain), plate Rp 10.000×(warna×muka), cetak min Rp 15.000×plat + drek Rp 40/30×over(P−500)×warna.
                     </p>
                   </div>
                   <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">
                     <span className="font-bold text-blue-900 block">Finishing &amp; Packing:</span>
                     <p className="text-slate-600 leading-snug">
-                      Pisau 149.8×luas (677=101k /443=66k), pound max(50k, effective×140,93) effective=oplah×potong/kartu, sisir effective/500×10.000, packing CEIL(oplah/3000)×8.500 + lakban (oplah/3000)/39.03×8.000. Margin 30% nego 4%.
+                      Pisau 149,8×luas, pound MAX(50rb; unit×(UMR/25)/target 800/1.200), sisir unit/500×Rp 10.000, packing CEIL(oplah/3000)×Rp 8.500 + lakban. Margin 30%, tanpa nego (sesuai Excel).
                     </p>
                   </div>
                 </div>

@@ -143,6 +143,21 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   // ─── Pricelist Multi-Produk ───
+  'pricelist-2026-09-22': entry({
+    pageKey: 'pricelist',
+    title: 'Kalkulasi Harga (Audit Penuh Kartu Koperasi Promise: Mesin, Muka, Warna & Finishing)',
+    permissionKeys: ["pricelist_kalkulasi"],
+    sortDate: '2026-09-22',
+    date: '22 Sep 2026',
+    version: '2026-09-22-1',
+    items: [
+      "Hasil kalkulasi Kartu Koperasi Promise kini 100% sama dengan file Excel master (3 varian ukuran, 15 tier oplah 500–10.000 pcs)",
+      "Pilihan mesin cetak Print Inter / Ryobi, muka (1/2), warna (1–4), dan finishing (UV Varnish / Laminasi Glossy / Doff) kini tersedia tombolnya di form simulator",
+      "Kolom harga nego dihapus dari simulator dan matriks karena tidak ada di file Excel; tier matriks diselaraskan ke 500–10.000 pcs",
+      "Master Parameter dilengkapi 25 tarif acuan sesuai cell Excel (kertas, plate, pound, sisir, laminasi, packing, margin) dengan pemisah ribuan otomatis",
+    ],
+  }),
+
   'pricelist-2026-09-10': entry({
     pageKey: 'pricelist',
     title: 'Kalkulasi Harga (Restrukturisasi 3 Varian Manasik, Parameter Yasin 2 Kolom, & Master Global)',

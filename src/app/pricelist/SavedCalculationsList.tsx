@@ -816,23 +816,27 @@ export default function SavedCalculationsList({
     // 17. Kartu Koperasi Promise
     kartuKoperasiPromiseList.forEach((k: any) => {
       const inp = (k.data && k.data.input) ? k.data.input : (k.input || k.data || k || {});
+      const kopMesin = inp.mesin ?? 'Ryobi';
+      const kopMuka = inp.muka ?? '2 Muka';
+      const kopWarna = inp.warna ?? '1 Warna';
+      const kopFin = (inp.finishing ?? 'None,') === 'None,' ? 'Tanpa Finishing' : String(inp.finishing).replace(/,$/, '');
       items.push({
         id: k.id,
         category: 'Kartu Koperasi Promise',
         savedAt: k.savedAt,
         title: k.title,
         oplah: inp.oplah,
-        specSummary: `Kartu Koperasi Promise ${inp.varian} • ${inp.oplah.toLocaleString('id-ID')} pcs`,
+        specSummary: `Kartu Koperasi Promise ${inp.varian} ${kopMesin} • ${inp.oplah.toLocaleString('id-ID')} pcs`,
         detailSpecs: [
-          `Bahan: BC 160 gsm 2 Muka 1 Warna · ${k.data.kebutuhanPlano} lbr plano`,
-          `Finishing: Pound + Sisir + Packing Kardus (Pisau ${k.data.kebutuhanCetak} plat)`,
+          `Bahan: BC 160 gsm ${kopMuka} ${kopWarna} · ${k.data.kebutuhanPlano} lbr plano`,
+          `Cetak: ${kopMesin} · Finishing: ${kopFin} + Pound + Sisir + Packing Kardus`,
           `Margin: ${inp.marginPct}%`,
         ],
         hppUnit: (k.data?.hppPerPcs ?? k.hppPerPcs ?? 0),
         hargaJualUnit: (k.data?.hargaJualPerPcs ?? k.hargaJualPerPcs ?? 0),
         totalOmset: (k.data?.totalHargaJual ?? k.totalHargaJual ?? 0),
         marginPct: inp.marginPct,
-        negoDiskonPct: inp.negoDiskonPct,
+        negoDiskonPct: inp.negoDiskonPct ?? 0,
         rawData: k,
       });
     });
@@ -1740,7 +1744,7 @@ export default function SavedCalculationsList({
     } else if (item.category === 'Kartu Koperasi Promise') {
       const k: any = item.rawData;
       const inp = (k.data && k.data.input) ? k.data.input : (k.input || k.data || k || {});
-      text = `*PENAWARAN KARTU KOPERASI PROMISE*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Kartu Koperasi Promise ${inp.varian} cm\n• *Bahan*: BC 160 gsm 2 Muka 1 Warna\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs (${k.data.kebutuhanPlano} lbr plano)\n• *Finishing*: Pound + Sisir + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${(k.data?.hargaJualPerPcs ?? k.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(k.data?.totalHargaJual ?? k.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
+      text = `*PENAWARAN KARTU KOPERASI PROMISE*\n*PT Buya Barokah*\n━━━━━━━━━━━━━━━━━━━━\n• *Produk*: Kartu Koperasi Promise ${inp.varian} cm\n• *Bahan*: BC 160 gsm ${inp.muka ?? '2 Muka'} ${inp.warna ?? '1 Warna'}\n• *Cetak*: ${inp.mesin ?? 'Ryobi'}\n• *Kuantitas*: ${inp.oplah.toLocaleString('id-ID')} pcs (${k.data.kebutuhanPlano} lbr plano)\n• *Finishing*: ${((inp.finishing ?? 'None,') === 'None,' ? 'Tanpa Finishing' : String(inp.finishing).replace(/,$/, ''))} + Pound + Sisir + Packing Kardus\n━━━━━━━━━━━━━━━━━━━━\n• *Harga / Pcs*: *Rp ${(k.data?.hargaJualPerPcs ?? k.hargaJualPerPcs ?? 0).toLocaleString('id-ID')}*\n• *Total Penawaran*: *Rp ${(k.data?.totalHargaJual ?? k.totalHargaJual ?? 0).toLocaleString('id-ID')}*\n━━━━━━━━━━━━━━━━━━━━\n_Harga belum termasuk PPN._`;
     } else if (item.category === 'Lebel Kartu Obat') {
       const l: any = item.rawData;
       const inp = (l.data && l.data.input) ? l.data.input : (l.input || l.data || l || {});

@@ -436,15 +436,18 @@ export function applyGlobalParamsToAll(
     tarifKertasKg: g.tarifAc260Kg,
     upKertasPct: g.upKertasPct,
     tarifDesign: g.tarifDesainStandar,
+    tarifPrintA3Plus: g.tarifPrintA3,
     tarifPlatePerPlat: g.oliverPlatUnit,
     tarifCetakMinPerPlat: g.oliverMinOngkos,
-    tarifDrek: g.oliverDrekOver,
     tarifPoundPerUnit: g.tarifSisirPcs * 0.94,
     tarifSisirPer500: g.tarifSisirPcs * 66,
+    tarifLaminasiGlossy: g.tarifLaminasiGlossyCm2,
+    tarifLaminasiDoff: g.tarifLaminasiDoffCm2,
+    tarifUvVarnish: g.tarifUvVarnishCm2,
+    minFinishing: g.minLaminasi,
     tarifKardusBox: g.tarifKardusBox,
     tarifLakbanRoll: g.tarifLakbanRoll,
     marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextLebelKartuObat: LebelKartuObatMasterParams = {
