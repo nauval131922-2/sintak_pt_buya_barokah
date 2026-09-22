@@ -17,6 +17,7 @@ import { UndanganMasterParams, DEFAULT_UNDANGAN_PARAMS } from './undangan-calcul
 import { BukuTabunganNsMasterParams, DEFAULT_BUKU_TABUNGAN_NS_PARAMS } from './buku-tabungan-ns-calculator';
 import { BukuTabunganSecurityMasterParams, DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS } from './buku-tabungan-security-calculator';
 import { KartuKoperasiPromiseMasterParams, DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS } from './kartu-koperasi-promise-calculator';
+import { SoftCoverOffsetMasterParams, DEFAULT_SOFT_COVER_OFFSET_PARAMS } from './buku-soft-cover-offset-calculator';
 import { LebelKartuObatMasterParams, DEFAULT_LEBEL_KARTU_OBAT_PARAMS } from './lebel-kartu-obat-calculator';
 import { BukuSoftCoverMasterParams, DEFAULT_BUKU_SOFT_COVER_PARAMS } from './buku-soft-cover-calculator';
 import { BukuSoftCover145x2025MasterParams, DEFAULT_BUKU_SOFT_COVER_145X2025_PARAMS } from './buku-soft-cover-145x2025-calculator';
@@ -189,7 +190,10 @@ export function applyGlobalParamsToAll(
   currBukuHardCover21x297: BukuHardCover21x297MasterParams = DEFAULT_BUKU_HARD_COVER_21X297_PARAMS,
   currKalenderKop: KalenderKopMasterParams = DEFAULT_KALENDER_KOP_PARAMS,
   currPackaging: PackagingMasterParams = DEFAULT_PACKAGING_PARAMS,
-  currPaperbag: PaperbagMasterParams = DEFAULT_PAPERBAG_PARAMS
+  currPaperbag: PaperbagMasterParams = DEFAULT_PAPERBAG_PARAMS,
+  currSoftCoverOO: SoftCoverOffsetMasterParams = DEFAULT_SOFT_COVER_OFFSET_PARAMS,
+  currSoftCoverPO: SoftCoverOffsetMasterParams = DEFAULT_SOFT_COVER_OFFSET_PARAMS,
+  currSoftCoverPP: SoftCoverOffsetMasterParams = DEFAULT_SOFT_COVER_OFFSET_PARAMS
 ) {
   const nextSpiral: SimulatorMasterParams = {
     ...currSpiral,
@@ -697,6 +701,24 @@ export function applyGlobalParamsToAll(
     negoDefaultPct: g.defaultNegoPct,
   };
 
+  const syncSoftCoverOffset = (curr: SoftCoverOffsetMasterParams): SoftCoverOffsetMasterParams => ({
+    ...curr,
+    tarifKertasIsiKg: g.tarifHvs70,
+    upIsiPct: g.upKertasPct,
+    tarifPlateIsi: g.oliverPlatUnit,
+    tarifCetakMinIsi: g.oliverMinOngkos,
+    tarifDrekIsi: g.oliverDrekOver,
+    tarifPrintCoverA3: g.tarifPrintA3,
+    tarifLaminasiGlossy: g.tarifLaminasiGlossyCm2,
+    tarifLaminasiDoff: g.tarifLaminasiDoffCm2,
+    tarifUvVarnish: g.tarifUvVarnishCm2,
+    minFinishing: g.minLaminasi,
+    tarifKardusBox: g.tarifKardusBox,
+    tarifLakbanRoll: g.tarifLakbanRoll,
+    tarifDesainCover: g.tarifDesainStandar,
+    marginDefaultPct: g.defaultMarginPct,
+  });
+
   return {
     nextSpiral,
     nextKlem,
@@ -729,5 +751,8 @@ export function applyGlobalParamsToAll(
     nextKalenderKop,
     nextPackaging,
     nextPaperbag,
+    nextSoftCoverOO: syncSoftCoverOffset(currSoftCoverOO),
+    nextSoftCoverPO: syncSoftCoverOffset(currSoftCoverPO),
+    nextSoftCoverPP: syncSoftCoverOffset(currSoftCoverPP),
   };
 }
