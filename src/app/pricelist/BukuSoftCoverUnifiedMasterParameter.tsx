@@ -1,16 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
-  Database,
   RotateCcw,
-  BookOpen,
-  X,
   Printer,
   Layers,
   Scissors,
   BookCopy,
-  Package,
 } from 'lucide-react';
 import {
   DEFAULT_SOFT_COVER_UNIFIED,
@@ -24,53 +20,10 @@ interface BukuSoftCoverUnifiedMasterParameterProps {
   setCustomParams: React.Dispatch<React.SetStateAction<SoftCoverUnifiedParams>>;
 }
 
-const VISIBLE_KEYS: (keyof SoftCoverUnifiedParams)[] = [
-  'insheetCover',
-  'tarifKertasCoverKg',
-  'gramaturCover',
-  'tarifDesainCover',
-  'tarifPrintCoverA3',
-  'tarifKertasIsiKg',
-  'upCoverPct',
-  'upIsiPct',
-  'gramaturIsi',
-  'insheetIsi',
-  'tarifDesainIsiPerUnit',
-  'tarifDesainIsiPerHlm',
-  'tarifPlateIsi',
-  'tarifCetakMinIsi',
-  'tarifDrekIsi',
-  'tarifPrintBuyaIsi',
-  'tarifPrintIsiA3',
-  'targetLipat',
-  'targetSisir',
-  'targetSusunKomplit',
-  'targetKawatRoll',
-  'targetStiching',
-  'tarifRoyalti',
-  'tarifSteplesPack',
-  'umr',
-  'tarifKawatRoll',
-  'tarifTintaSpotUV',
-  'tarifShrinkRoll',
-  'tarifLakbanRoll',
-  'tarifKardusBox',
-  'tarifSisirPerPcs',
-  'tarifBending',
-  'minBending',
-  'tarifLaminasiGlossy',
-  'tarifLaminasiDoff',
-  'tarifUvVarnish',
-  'minFinishing',
-  'marginDefaultPct',
-];
-
 export default function BukuSoftCoverUnifiedMasterParameter({
   customParams,
   setCustomParams,
 }: BukuSoftCoverUnifiedMasterParameterProps) {
-  const [showManualModal, setShowManualModal] = useState(false);
-
   const handleChange = (key: keyof SoftCoverUnifiedParams, val: number) => {
     setCustomParams((prev) => ({ ...prev, [key]: Math.max(0, val) }));
   };
@@ -81,22 +34,6 @@ export default function BukuSoftCoverUnifiedMasterParameter({
   const handleResetField = (key: keyof SoftCoverUnifiedParams) => {
     setCustomParams((prev) => ({ ...prev, [key]: DEFAULT_SOFT_COVER_UNIFIED[key] }));
     toast.info(`Field dikembalikan ke standar (${DEFAULT_SOFT_COVER_UNIFIED[key]}).`);
-  };
-
-  const isModified = React.useMemo(
-    () => VISIBLE_KEYS.some((key) => customParams[key] !== DEFAULT_SOFT_COVER_UNIFIED[key]),
-    [customParams]
-  );
-
-  const handleResetAll = () => {
-    setCustomParams((prev) => {
-      const resetObj = { ...prev };
-      VISIBLE_KEYS.forEach((k) => {
-        (resetObj as any)[k] = DEFAULT_SOFT_COVER_UNIFIED[k];
-      });
-      return resetObj;
-    });
-    toast.success('Semua parameter Buku Soft Cover dikembalikan ke standar.');
   };
 
   const fieldRow = (
@@ -157,53 +94,6 @@ export default function BukuSoftCoverUnifiedMasterParameter({
 
   return (
     <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
-      <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
-            <Database className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-sm sm:text-base font-bold text-emerald-950 tracking-tight">
-                Master Parameter Buku Soft Cover
-              </h2>
-              {isModified && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
-                  Dimodifikasi
-                </span>
-              )}
-            </div>
-            <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              1 produk · 3 ukuran · 18 lini mesin (folder 17, 17-21cm, 18, 19, 21 & 24) — default per lini resolve otomatis, edit manual selalu menang.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={() => setShowManualModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all cursor-pointer shadow-2xs"
-          >
-            <BookOpen size={13} />
-            <span>Manual Pengguna</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleResetAll}
-            disabled={!isModified}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs shrink-0 ${
-              isModified
-                ? 'bg-amber-600 hover:bg-amber-700 text-white cursor-pointer ring-2 ring-amber-400/40'
-                : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-70'
-            }`}
-          >
-            <RotateCcw size={13} />
-            <span>Reset Standar Master</span>
-          </button>
-        </div>
-      </div>
-
       <div className="columns-1 md:columns-2 gap-4">
         {/* Card 1: Cover */}
         <div className="bg-sky-50/40 rounded-xl border border-sky-200 p-4 shadow-2xs flex flex-col gap-3 break-inside-avoid mb-4">
@@ -341,92 +231,6 @@ export default function BukuSoftCoverUnifiedMasterParameter({
           </p>
         </div>
       </div>
-
-      {showManualModal && (
-        <div
-          onClick={() => setShowManualModal(false)}
-          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden cursor-default"
-          >
-            <div className="px-6 py-4 bg-emerald-900 text-white flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-emerald-800/80 rounded-xl border border-emerald-700 text-emerald-200">
-                  <Database className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold tracking-tight">Manual Pengguna &amp; Pemetaan 6 Sumber Excel</h3>
-                  <p className="text-xs text-emerald-200/90 mt-0.5">
-                    Folder 17, 17-21×29,7, 18-14,5, 19-14,5, 21-14,5 &amp; 24-10,5 · Pricelist Juli 2026 · 18 lini
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowManualModal(false)}
-                className="p-1.5 rounded-lg text-emerald-200 hover:text-white hover:bg-emerald-800/60 transition-all cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-700 leading-relaxed">
-              <div className="space-y-3">
-                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                  18 Lini dalam 1 Produk
-                </h4>
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-[11px] text-slate-600 space-y-1.5">
-                  <p>• <strong>21×29,7 Cover Print Inter – Isi Oliver</strong> (folder 17): tier 20–500, 25 komponen, UMR 2818585, up isi 3%, desain isi Rp 15.000/halaman.</p>
-                  <p>• <strong>21×29,7 Oliver–Oliver</strong>: tier 550–3000 · <strong>Print Inter–Oliver</strong>: 300–500 · <strong>Print Inter–Print Buya</strong>: 20–250 (folder 17-21cm, 30 komponen, UMR 2818850, desain Rp 2.500×lembar).</p>
-                  <p>• <strong>14,5×20,25</strong> (folder 18): tier 1000–3000 / 650–900 / 20–200 / 250–600, 30 komponen, shrink Rp 1.162.500.</p>
-                  <p>• <strong>14,5×20,25</strong> (folder 19): Print Inter–Print Buya (20–200, insheet 10/7) &amp; Print Inter–Ryobi (250–600, insheet 10/30).</p>
-                  <p>• <strong>14,5×20,25</strong> (folder 21): Oliver–Oliver (1000–3000) &amp; Oliver–Ryobi (650–900) identik folder 18; Print Inter–Print Buya (20–200, insheet 7/5) &amp; Print Inter–Ryobi (250–600, insheet 7/30) dipakai (pengganti folder 19).</p>
-                  <p>• <strong>10,5×14,8</strong> (folder 24): Oliver–Oliver (1500–5000) · Print Inter–Oliver (700–1000) · Print Inter–Print Buya (20–200) · Print Inter–Ryobi (250–600); shrink Rp 832.500.</p>
-                  <p>• Tiap pilihan ukuran+mesin mengikuti file yang cocok. Nilai default per file (UMR, up, insheet, shrink) terisi otomatis; edit manual selalu menang.</p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-                  Dropdown per Lini (diekstrak programatis)
-                </h4>
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-[11px] text-slate-600 space-y-1.5">
-                  <p>• Oplah: pilihan tier per file. Halaman: bebas angka. Muka/warna cover &amp; warna isi: tombol penuh.</p>
-                  <p>• Catatan finishing (9 opsi): file 17 menghitung 7 opsi; file lain 9 opsi.</p>
-                  <p>• Gramatur angka → rim; bahan = label. Sel mati (film, X6/C2/M26, D27 isi-PI, kardus/shrink Klasik) tanpa parameter.</p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
-                  Rumus Kunci per File
-                </h4>
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-[11px] text-slate-600 space-y-1.5">
-                  <p>• File 17: R=H+5, tambahan cetak isi bisa negatif di oplah kecil, harga ke puluhan.</p>
-                  <p>• File 17-21cm &amp; 18: R=H/P+K/O, ongkos Buya=tarif×AO, packing mengikuti isi kardus, harga ke puluhan.</p>
-                  <p>• File 19/21/24: lembar isi=hal/4, kertas rim per mesin×warna, toggle jasa harian, harga ke puluhan.</p>
-                  <p>• Laba 30% semua file; tanpa nego (D39:H39 / D37:H37 identik). Komposisi cabang mesin-mati dari file yang hidup (disetujui user).</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setShowManualModal(false)}
-                className="px-4 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition-all cursor-pointer shadow-xs"
-              >
-                Tutup Panduan
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
