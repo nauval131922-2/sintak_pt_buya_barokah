@@ -225,7 +225,7 @@ export default function BukuSoftCoverUnifiedMasterParameter({
             </>))}
           </div>
           <p className="text-[10px] text-slate-500">
-            Cover Print Inter: all-in Rp {params.tarifPrintCoverA3.toLocaleString('id-ID')}/lembar. Cover Oliver: mengikuti harga rim + plate per file.
+            Cover Print Inter: all-in Rp {customParams.tarifPrintCoverA3.toLocaleString('id-ID')}/lembar. Cover Oliver: mengikuti harga rim + plate per file.
           </p>
         </div>
 
