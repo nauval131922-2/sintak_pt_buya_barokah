@@ -252,6 +252,10 @@ export default function BukuSoftCoverUnifiedMasterParameter({
               {fieldRow('tarifCetakMinIsi', 'Min Cetak (Rp)')}
               {fieldRow('tarifDrekIsi', 'Drek Isi (Rp)')}
             </>))}
+            {subGroup('border-teal-300', 'text-teal-800', 'Print Isi', (<>
+              {fieldRow('tarifPrintBuyaIsi', 'Print Isi Buya flat (Rp)')}
+              {fieldRow('tarifPrintIsiA3', 'Print Isi A3+ (Rp) — per lini 350/2000/1750')}
+            </>))}
           </div>
           <p className="text-[10px] text-slate-500">
             Tarif plate/min/drek mengikuti file; 3 field di bawah hanya untuk file 17.
@@ -319,15 +323,9 @@ export default function BukuSoftCoverUnifiedMasterParameter({
           <div className="flex items-center gap-2 border-b border-emerald-100 pb-2">
             <span className="text-[10px] font-black uppercase tracking-wider text-emerald-900 bg-emerald-200/80 px-2 py-0.5 rounded">Target</span>
             <BookCopy className="w-4 h-4 text-emerald-600" />
-            <h3 className="text-xs font-bold text-slate-800">5. Tarif Print Isi &amp; Target Harian</h3>
+            <h3 className="text-xs font-bold text-slate-800">5. Target Harian</h3>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
-            <div className="lg:col-span-2">
-              {subGroup('border-emerald-300', 'text-emerald-800', 'Tarif Print', (<>
-                {fieldRow('tarifPrintBuyaIsi', 'Print Isi Buya flat (Rp)')}
-                {fieldRow('tarifPrintIsiA3', 'Print Isi A3+ (Rp) — per lini 350/2000/1750')}
-              </>))}
-            </div>
             <div className="lg:col-span-2">
               {subGroup('border-teal-300', 'text-teal-800', 'Target Harian', (<>
                 {fieldRow('targetLipat', 'Target Lipat /hari')}
