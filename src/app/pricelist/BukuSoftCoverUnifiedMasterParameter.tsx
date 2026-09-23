@@ -210,7 +210,7 @@ export default function BukuSoftCoverUnifiedMasterParameter({
           <div className="flex items-center gap-2 border-b border-sky-100 pb-2">
             <span className="text-[10px] font-black uppercase tracking-wider text-sky-900 bg-sky-200/80 px-2 py-0.5 rounded">Cover</span>
             <Printer className="w-4 h-4 text-sky-600" />
-            <h3 className="text-xs font-bold text-slate-800">1. Cover (semua lini)</h3>
+            <h3 className="text-xs font-bold text-slate-800">1. Cover</h3>
           </div>
           <div className="flex flex-col gap-2.5">
             {subGroup('border-sky-300', 'text-sky-800', 'Kertas', (<>
@@ -234,7 +234,7 @@ export default function BukuSoftCoverUnifiedMasterParameter({
           <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
             <span className="text-[10px] font-black uppercase tracking-wider text-blue-900 bg-blue-200/80 px-2 py-0.5 rounded">Isi</span>
             <BookCopy className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Isi HVS (semua lini)</h3>
+            <h3 className="text-xs font-bold text-slate-800">2. Isi HVS</h3>
           </div>
           <div className="flex flex-col gap-2.5">
             {subGroup('border-blue-300', 'text-blue-800', 'Kertas', (<>
