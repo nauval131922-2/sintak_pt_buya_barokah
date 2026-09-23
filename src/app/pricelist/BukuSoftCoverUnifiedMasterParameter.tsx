@@ -204,9 +204,9 @@ export default function BukuSoftCoverUnifiedMasterParameter({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+      <div className="columns-1 md:columns-2 gap-4">
         {/* Card 1: Cover */}
-        <div className="bg-sky-50/40 rounded-xl border border-sky-200 p-4 shadow-2xs flex flex-col gap-3">
+        <div className="bg-sky-50/40 rounded-xl border border-sky-200 p-4 shadow-2xs flex flex-col gap-3 break-inside-avoid mb-4">
           <div className="flex items-center gap-2 border-b border-sky-100 pb-2">
             <span className="text-[10px] font-black uppercase tracking-wider text-sky-900 bg-sky-200/80 px-2 py-0.5 rounded">Cover</span>
             <Printer className="w-4 h-4 text-sky-600" />
@@ -230,7 +230,7 @@ export default function BukuSoftCoverUnifiedMasterParameter({
         </div>
 
         {/* Card 2: Isi */}
-        <div className="bg-blue-50/40 rounded-xl border border-blue-200 p-4 shadow-2xs flex flex-col gap-3">
+        <div className="bg-blue-50/40 rounded-xl border border-blue-200 p-4 shadow-2xs flex flex-col gap-3 break-inside-avoid mb-4">
           <div className="flex items-center gap-2 border-b border-blue-100 pb-2">
             <span className="text-[10px] font-black uppercase tracking-wider text-blue-900 bg-blue-200/80 px-2 py-0.5 rounded">Isi</span>
             <BookCopy className="w-4 h-4 text-blue-600" />
@@ -259,7 +259,7 @@ export default function BukuSoftCoverUnifiedMasterParameter({
         </div>
 
         {/* Card 3: Jasa & Kemas */}
-        <div className="bg-violet-50/40 rounded-xl border border-violet-200 p-4 shadow-2xs flex flex-col gap-3">
+        <div className="bg-violet-50/40 rounded-xl border border-violet-200 p-4 shadow-2xs flex flex-col gap-3 break-inside-avoid mb-4">
           <div className="flex items-center gap-2 border-b border-violet-100 pb-2">
             <span className="text-[10px] font-black uppercase tracking-wider text-violet-900 bg-violet-200/80 px-2 py-0.5 rounded">Jasa</span>
             <Scissors className="w-4 h-4 text-violet-600" />
@@ -288,7 +288,7 @@ export default function BukuSoftCoverUnifiedMasterParameter({
         </div>
 
         {/* Card 4: Finishing & Margin */}
-        <div className="bg-amber-50/40 rounded-xl border border-amber-200 p-4 shadow-2xs flex flex-col gap-3">
+        <div className="bg-amber-50/40 rounded-xl border border-amber-200 p-4 shadow-2xs flex flex-col gap-3 break-inside-avoid mb-4">
           <div className="flex items-center gap-2 border-b border-amber-100 pb-2">
             <span className="text-[10px] font-black uppercase tracking-wider text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded">Finishing</span>
             <Layers className="w-4 h-4 text-amber-600" />
@@ -315,7 +315,7 @@ export default function BukuSoftCoverUnifiedMasterParameter({
         </div>
 
         {/* Card 5: Tarif print & target */}
-        <div className="bg-emerald-50/40 rounded-xl border border-emerald-200 p-4 shadow-2xs flex flex-col gap-3 md:col-span-2">
+        <div className="bg-emerald-50/40 rounded-xl border border-emerald-200 p-4 shadow-2xs flex flex-col gap-3 break-inside-avoid mb-4">
           <div className="flex items-center gap-2 border-b border-emerald-100 pb-2">
             <span className="text-[10px] font-black uppercase tracking-wider text-emerald-900 bg-emerald-200/80 px-2 py-0.5 rounded">Target</span>
             <BookCopy className="w-4 h-4 text-emerald-600" />
