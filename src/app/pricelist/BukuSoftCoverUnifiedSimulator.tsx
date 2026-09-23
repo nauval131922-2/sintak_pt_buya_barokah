@@ -6,17 +6,10 @@ import {
   DollarSign,
   TrendingUp,
   FileText,
-  Check,
-  Share2,
   Sliders,
   Bookmark,
   BookmarkCheck,
   X,
-  Settings2,
-  Calculator,
-  Info,
-  Layers,
-  BookCopy,
 } from 'lucide-react';
 import {
   calculateSoftCoverUnified,
@@ -85,7 +78,6 @@ interface BukuSoftCoverUnifiedSimulatorProps {
 export default function BukuSoftCoverUnifiedSimulator({
   customParams = DEFAULT_SOFT_COVER_UNIFIED,
   setCustomParams,
-  onOpenMasterParam,
   activeSimulationId: propActiveSimId,
   setActiveSimulationId: propSetActiveSimId,
   activeSimulationTitle: propActiveSimTitle,
@@ -103,13 +95,11 @@ export default function BukuSoftCoverUnifiedSimulator({
   const [finishing, setFinishing] = useState<SoftCoverFinishing>(() => draftVal('finishing', 'None,'));
   const [marginPct, setMarginPct] = useState(() => draftVal('marginPct', customParams.marginDefaultPct ?? 30));
   const [feat, setFeat] = useState<SoftCoverFeat>(() => draftVal('feat', null) ?? defaultFeat('Klasik'));
-  const [copiedQuote, setCopiedQuote] = useState(false);
 
   const [savedSimulations, setSavedSimulations] = useState<SavedSoftCoverUnifiedItem[]>([]);
   const [simulationTitle, setSimulationTitle] = useState('');
   const [internalActiveId, setInternalActiveId] = useState<string | null>(null);
   const [internalActiveTitle, setInternalActiveTitle] = useState<string | null>(null);
-  const [showSimulatorManual, setShowSimulatorManual] = useState(false);
 
   const candidates = resolveLiniCandidates(ukuran, mesinCover, mesinIsi);
   const lini: SoftCoverLini = (sumberLini && (candidates as SoftCoverLini[]).includes(sumberLini) ? sumberLini : candidates[0]) ?? 'Klasik';
@@ -281,32 +271,6 @@ export default function BukuSoftCoverUnifiedSimulator({
     setSimulationTitle('');
   };
 
-  const ukuranLabel = custom && customCfg ? customCfg.ukuran.replace(' X ', ' × ').replace('x', '×')
-    : lini === 'Klasik' || lini === 'Oliver-Oliver' || lini === 'Print-Oliver' || lini === 'Print-Print' ? '21 × 29,7' : '14,5 × 20,25';
-
-  const handleCopyQuote = () => {
-    const fmt = (n: number) => n.toLocaleString('id-ID');
-    const text =
-      `*PENAWARAN BUKU SOFT COVER*\n` +
-      `*PT Buya Barokah*\n` +
-      `━━━━━━━━━━━━━━━━━━━━\n` +
-      `• *Produk*: Buku Soft Cover ${ukuranLabel} cm ${jumlahHalaman} Hal\n` +
-      `• *Lini*: ${SOFT_COVER_LINI_LABEL[lini]} — Cover ${mukaCover} ${warnaCover}, Isi ${warnaIsi}\n` +
-      (custom ? `• *Mesin*: Cover ${mesinCover}, Isi ${mesinIsi}\n` : '') +
-      `• *Finishing*: ${FINISHING_LABEL[finishing]} + Sisir\n` +
-      `• *Kuantitas*: ${oplah} pcs\n` +
-      `━━━━━━━━━━━━━━━━━━━━\n` +
-      `• *Harga / pcs*: *Rp ${fmt(result.hargaJualPerPcs)}*\n` +
-      `• *Total Penawaran*: *Rp ${fmt(result.totalHargaJual)}*\n` +
-      `━━━━━━━━━━━━━━━━━━━━\n` +
-      `_Harga belum termasuk PPN._`;
-
-    navigator.clipboard.writeText(text);
-    setCopiedQuote(true);
-    toast.success('Penawaran harga Buku Soft Cover berhasil disalin ke WhatsApp clipboard!');
-    setTimeout(() => setCopiedQuote(false), 2000);
-  };
-
   const optBtn = (active: boolean) =>
     `py-2 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
       active
@@ -323,58 +287,6 @@ export default function BukuSoftCoverUnifiedSimulator({
 
   return (
     <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
-      {/* Header */}
-      <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
-            <BookCopy className="w-5 h-5" />
-          </div>
-          <div>
-              <h3 className="font-bold text-sm sm:text-base text-emerald-950 flex items-center gap-2">
-                Simulator &amp; Kalkulator Buku Soft Cover
-                <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
-                  Katalog 17–19–21–24
-                </span>
-              </h3>
-              <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-                1 produk · 3 ukuran · 18 lini mesin (21×29,7 &amp; 14,5×20,25 &amp; 10,5×14,8) — HPP, harga, dan profit per pcs.
-              </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={handleCopyQuote}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer ${
-              copiedQuote
-                ? 'bg-emerald-700 text-white'
-                : 'bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300'
-            }`}
-          >
-            {copiedQuote ? <Check size={14} /> : <Share2 size={14} />}
-            <span>{copiedQuote ? 'Tersalin!' : 'Salin Penawaran'}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowSimulatorManual(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer"
-          >
-            <Info size={14} />
-            <span>Panduan</span>
-          </button>
-          {onOpenMasterParam && (
-            <button
-              type="button"
-              onClick={onOpenMasterParam}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer"
-            >
-              <Settings2 size={14} />
-              <span>Master Parameter</span>
-            </button>
-          )}
-        </div>
-      </div>
-
       {/* Banner riwayat aktif */}
       {activeSimulationId && (
         <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200">
@@ -792,97 +704,6 @@ export default function BukuSoftCoverUnifiedSimulator({
       </div>
 
       {/* Modal Panduan */}
-      {showSimulatorManual && (
-        <div
-          onClick={() => setShowSimulatorManual(false)}
-          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden cursor-default"
-          >
-            <div className="px-6 py-4 bg-emerald-900 text-white flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-emerald-800/80 rounded-xl border border-emerald-700 text-emerald-200">
-                  <Calculator className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold tracking-tight">Panduan Simulator Buku Soft Cover</h3>
-                  <p className="text-xs text-emerald-200/90 mt-0.5">
-                    1 produk · 3 ukuran · 18 lini mesin — pilih lini sesuai file Excel sumbernya
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowSimulatorManual(false)}
-                className="p-1.5 rounded-lg text-emerald-200 hover:text-white hover:bg-emerald-800/60 transition-all cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-700 leading-relaxed">
-              <div className="space-y-3">
-                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                  Langkah Menggunakan Simulator Buku Soft Cover
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                  {[
-                    ['1. Ukuran & Mesin', 'Pilih ukuran, mesin cover & mesin isi. File sumber mengikuti otomatis. Oplah bisa ketik bebas (chip = tier file).'],
-                    ['2. Oplah & Spesifikasi', 'Ketik oplah bebas (chip = tier file) + halaman, muka & warna cover, warna isi. Oplah di luar tier = ekstrapolasi rumus file.'],
-                    ['3. Finishing, Saklar & Laba', 'Pilih catatan finishing + saklar komponen bebas (rumus tetap Excel). Laba 30% — harga ke puluhan, tanpa nego.'],
-                    ['4. Salin Penawaran', 'Klik Salin Penawaran untuk teks WA otomatis, atau Simpan Kalkulasi Ini ke Daftar Kalkulasi di bawah tabel rincian.'],
-                  ].map(([title, desc]) => (
-                    <div key={title} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
-                      <span className="font-bold text-emerald-800 text-xs">{title}</span>
-                      <p className="text-[11px] text-slate-600">{desc}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5">
-                <h5 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-emerald-700" />
-                  Struktur Biaya per Generasi Engine
-                </h5>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-[11px]">
-                    <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
-                      <span className="font-bold text-emerald-900 block">Klasik Print Inter–Oliver (folder 17):</span>
-                      <p className="text-slate-600 leading-snug">
-                        Cover per lembar Rp 2.700, desain isi per halaman, ongkos plate dan cetak mengikuti mesin, biaya susun, staples, sisir, dan laminasi sesuai opsi.
-                      </p>
-                    </div>
-                    <div className="p-2.5 bg-white rounded border border-blue-100 space-y-1">
-                      <span className="font-bold text-blue-900 block">Offset 7 lini (folder 17-21 &amp; 18):</span>
-                      <p className="text-slate-600 leading-snug">
-                        Kebutuhan kertas mengikuti kapasitas mesin, ongkos cetak mengikuti jumlah warna dan muka, finishing dan kemas mengikuti opsi yang dipilih.
-                      </p>
-                    </div>
-                    <div className="p-2.5 bg-white rounded border border-amber-100 space-y-1">
-                      <span className="font-bold text-amber-900 block">Custom 10 lini (folder 19/21/24):</span>
-                      <p className="text-slate-600 leading-snug">
-                        Alternatif perhitungan dari file lain: jumlah lembar isi seperempat halaman, kebutuhan plano mengikuti mesin, toggle jasa harian, laba 30%. Detail sel per sel ada di Manual Pengguna tab Master Parameter.
-                      </p>
-                    </div>
-                  </div>
-              </div>
-            </div>
-
-            <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setShowSimulatorManual(false)}
-                className="px-4 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition-all cursor-pointer shadow-xs"
-              >
-                Tutup Panduan
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
