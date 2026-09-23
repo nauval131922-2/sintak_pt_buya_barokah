@@ -31,126 +31,22 @@ import { PackagingMasterParams, DEFAULT_PACKAGING_PARAMS } from './packaging-cal
 import { PaperbagMasterParams, DEFAULT_PAPERBAG_PARAMS } from './paperbag-calculator';
 
 export interface GlobalMasterParams {
-  // 1. Mesin Cetak Offset Oliver (58 / 52)
-  oliverPlatUnit: number;        // Rp 45.000 / plat
-  oliverMinOngkos: number;       // Rp 90.000 (min 1000 drek)
-  oliverDrekOver: number;        // Rp 40 / drek over
-  oliverTransport: number;       // Rp 100.000
-  oliverOplahMin: number;        // Rentang oplah minimal: default 300 / 500
-  oliverOplahMax: number;        // Rentang oplah maksimal: default 10000
-  insheetOliverOffset: number;   // 200 lbr insheet mesin Oliver
-
-  // 2. Mesin Cetak Offset Skala Besar (Heidelberg SM 52 / 72 / 102)
-  smPlatUnit: number;            // Rp 65.000 / plat SM
-  smMinOngkos: number;           // Rp 150.000 (min 1000 drek)
-  smDrekOver: number;            // Rp 50 / drek over
-  smOplahMin: number;            // Rentang oplah minimal: default 3000
-  smOplahMax: number;            // Rentang oplah maksimal: default 50000
-  insheetSmOffset: number;       // 250 lbr insheet mesin SM
-
-  // 3. Mesin Cetak Offset Kecil (Ryobi / Toko 1 Warna)
-  ryobiPlatUnit: number;         // Rp 25.000 / plat
-  ryobiMinOngkos: number;        // Rp 50.000 (min 500/1000 drek)
-  ryobiDrekOver: number;         // Rp 35 / drek
-  ryobiOplahMin: number;         // Rentang oplah minimal: default 20
-  ryobiOplahMax: number;         // Rentang oplah maksimal: default 500
-  insheetRyobiOffset: number;    // 100 lbr insheet mesin Ryobi
-
-  // 4. Mesin Cetak Isi Buku (Print Buya)
-  tarifPrintBuyaPerLbr: number;  // Rp 350 / lembar Folio
-  buyaOplahMin: number;          // Rentang oplah minimal: default 50
-  buyaOplahMax: number;          // Rentang oplah maksimal: default 5000
-  insheetPrintBuya: number;      // 5 lbr per kuras / order
-
-  // 5. Mesin Digital (Print Inter A3+)
-  tarifPrintA3: number;          // Rp 2.500 / lembar A3+ (1 Muka)
-  tarifPrintInter1Muka: number;  // Rp 1.800 / lembar A3+
-  tarifPrintInter2Muka: number;  // Rp 3.300 / lembar A3+
-  interOplahMin: number;         // Rentang oplah minimal: default 1
-  interOplahMax: number;         // Rentang oplah maksimal: default 300
-  insheetPrintInter: number;     // 5 lbr insheet per order
-  // 5. Kertas Dasar & Bahan Baku
+  // Harga kertas dasar & bahan baku (/kg) + up kertas — satu-satunya isi Global.
   tarifHvs70: number;            // Rp 15.700 / kg (Kalender, Nota, Buku Tulis, Buku Tabungan, dll)
   tarifAp120: number;            // Rp 17.400 / kg (Kalender, Brosur, Majalah isi)
   tarifAp150: number;            // Rp 17.400 / kg (Kalender, Buku Hardcover cover)
   tarifAc230Kg: number;          // Rp 16.400 / kg (Manasik, Stopmap, Buku Tulis, Buku Soft/Hard cover)
   tarifAc260Kg: number;          // Rp 15.500 / kg (Manasik, Syahadah, Sertifikat, Buku Tabungan)
   upKertasPct: number;           // 5% margin/ppn kertas dasar
-
-  // 6. Tarif Laminasi Standar
-  tarifLaminasiGlossyCm2: number; // Rp 0.35 / cm² (Manasik, Yasin, Brosur, Buku, Stopmap, Sertifikat)
-  tarifLaminasiDoffCm2: number;   // Rp 0.40 / cm² (Manasik, Yasin, Brosur, Buku, Sertifikat)
-  tarifUvVarnishCm2: number;      // Rp 0.11 / cm² (Manasik, Brosur, Buku)
-  minLaminasi: number;            // Rp 50.000 (Manasik, Yasin, Brosur, Buku, dll)
-
-  // 7. Finishing & Kemasan Standar
-  tarifKardusBox: number;         // Rp 8.500 / box (Semua produk)
-  tarifLakbanRoll: number;        // Rp 8.000 / roll (Semua produk)
-  tarifPlastikOppPcs: number;     // Rp 90 / pcs (Rp 9.000 / pack 100 pcs)
-  tarifSisirPcs: number;          // Rp 150 / pcs (Semua produk ber-finishing potong/sisir)
-  tarifStaplesPcs: number;        // Rp 100 / pcs (Manasik, Yasin, Buku Tulis)
-
-  // 8. Jasa Desain & Margin Standar Perusahaan
-  tarifDesainStandar: number;     // Rp 50.000 (Amplop, Kop Surat, Raport, Sertifikat, Cover Buku, dll)
-  defaultMarginPct: number;       // 25% (Target margin dasar seluruh 30 produk)
-  defaultNegoPct: number;         // 4% (Batas diskon nego dasar seluruh 30 produk)
 }
 
 export const DEFAULT_GLOBAL_PARAMS: GlobalMasterParams = {
-  oliverPlatUnit: 45000,
-  oliverMinOngkos: 90000,
-  oliverDrekOver: 40,
-  oliverTransport: 100000,
-  oliverOplahMin: 500,
-  oliverOplahMax: 10000,
-  insheetOliverOffset: 200,
-
-  smPlatUnit: 65000,
-  smMinOngkos: 150000,
-  smDrekOver: 50,
-  smOplahMin: 3000,
-  smOplahMax: 50000,
-  insheetSmOffset: 250,
-
-  ryobiPlatUnit: 25000,
-  ryobiMinOngkos: 50000,
-  ryobiDrekOver: 35,
-  ryobiOplahMin: 20,
-  ryobiOplahMax: 500,
-  insheetRyobiOffset: 100,
-
-  tarifPrintBuyaPerLbr: 350,
-  buyaOplahMin: 50,
-  buyaOplahMax: 5000,
-  insheetPrintBuya: 5,
-
-  tarifPrintA3: 2500,
-  tarifPrintInter1Muka: 1800,
-  tarifPrintInter2Muka: 3300,
-  interOplahMin: 1,
-  interOplahMax: 300,
-  insheetPrintInter: 5,
   tarifHvs70: 15700,
   tarifAp120: 17400,
   tarifAp150: 17400,
   tarifAc230Kg: 16400,
   tarifAc260Kg: 15500,
   upKertasPct: 5,
-
-  tarifLaminasiGlossyCm2: 0.35,
-  tarifLaminasiDoffCm2: 0.40,
-  tarifUvVarnishCm2: 0.11,
-  minLaminasi: 50000,
-
-  tarifKardusBox: 8500,
-  tarifLakbanRoll: 8000,
-  tarifPlastikOppPcs: 90,
-  tarifSisirPcs: 150,
-  tarifStaplesPcs: 100,
-
-  tarifDesainStandar: 50000,
-  defaultMarginPct: 25,
-  defaultNegoPct: 4,
 };
 
 /**
@@ -190,10 +86,6 @@ export function applyGlobalParamsToAll(
 ) {
   const nextSpiral: SimulatorMasterParams = {
     ...currSpiral,
-    oliverPlatUnit: g.oliverPlatUnit,
-    oliverMinOngkos: g.oliverMinOngkos,
-    oliverDrekOver: g.oliverDrekOver,
-    oliverTransport: g.oliverTransport,
     tarifHvs70: g.tarifHvs70,
     tarifAp120: g.tarifAp120,
     tarifAp150: g.tarifAp150,
@@ -201,15 +93,10 @@ export function applyGlobalParamsToAll(
     ppnHvs70: 1 + g.upKertasPct / 100,
     ppnAp120: 1 + g.upKertasPct / 100,
     ppnAp150: 1 + g.upKertasPct / 100,
-    tarifLakbanRoll: g.tarifLakbanRoll,
   };
 
   const nextKlem: SimulatorMasterParams = {
     ...currKlem,
-    oliverPlatUnit: g.oliverPlatUnit,
-    oliverMinOngkos: g.oliverMinOngkos,
-    oliverDrekOver: g.oliverDrekOver,
-    oliverTransport: g.oliverTransport,
     tarifHvs70: g.tarifHvs70,
     tarifAp120: g.tarifAp120,
     tarifAp150: g.tarifAp150,
@@ -217,41 +104,16 @@ export function applyGlobalParamsToAll(
     ppnHvs70: 1 + g.upKertasPct / 100,
     ppnAp120: 1 + g.upKertasPct / 100,
     ppnAp150: 1 + g.upKertasPct / 100,
-    tarifLakbanRoll: g.tarifLakbanRoll,
   };
 
   const nextManasik: ManasikMasterParams = {
     ...currManasik,
     tarifAc230Kg: g.tarifAc230Kg,
     tarifAc260Kg: g.tarifAc260Kg,
-    tarifPrintCoverA3: g.tarifPrintA3,
     tarifKertasHvs70Kg: g.tarifHvs70,
-    oliverMinOngkosCover: g.oliverMinOngkos,
-    oliverPlatUnitCover: g.oliverPlatUnit,
-    oliverDrekOverCover: g.oliverDrekOver,
-    ryobiPlatUnitIsi: g.ryobiPlatUnit,
-    ryobiMinOngkosIsi: g.ryobiMinOngkos,
-    ryobiDrekOverIsi: g.ryobiDrekOver,
-    oliverPlatUnitIsi: g.oliverPlatUnit,
-    oliverMinOngkosIsi: g.oliverMinOngkos,
-    oliverDrekOverIsi: g.oliverDrekOver,
-    tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
-    tarifUvVarnishCm2: g.tarifUvVarnishCm2,
-    minLaminasi: g.minLaminasi,
-    tarifDesainCover: g.tarifDesainStandar,
-    tarifSisir: g.tarifSisirPcs,
-    tarifKardusBox: g.tarifKardusBox,
-    tarifPlastikOppPack: 9200, // Manasik Master!D29: Rp 9.200 / pack 100 pcs (Rp 92/pcs)
   };
   const nextYasin: YasinMasterParams = {
     ...currYasin,
-    tarifPrintCoverA3: g.tarifPrintA3,
-    tarifPrintSisipanFotoA3: 1750,
-    tarifPrintSisipanTeksA3: g.tarifPrintInter2Muka,
-    tarifDesainCover: g.tarifDesainStandar,
-    tarifPlastikOppYasin: 90, // Yasin Master!D41: Rp 9.000 / pack 100 pcs (Rp 90/pcs)
-    tarifSisirYasin: g.tarifSisirPcs,
-    tarifStaplesYasin: Math.round(g.tarifStaplesPcs / 2),
   };
 
   const nextNota: NotaMasterParams = {
@@ -259,39 +121,16 @@ export function applyGlobalParamsToAll(
     tarifHvs70Kg: g.tarifHvs70,
     upHvsPct: g.upKertasPct,
     upNcrPct: g.upKertasPct,
-    tarifPlatRyobi: g.ryobiPlatUnit,
-    minOngkosCetakRyobi: g.ryobiMinOngkos,
-    tarifDrekOverRyobi: g.ryobiDrekOver,
-    tarifDesainNota: g.tarifDesainStandar,
   };
 
   const nextBrosur: BrosurMasterParams = {
     ...currBrosur,
     tarifArtPaperKg: g.tarifAp120,
     upKertasPct: g.upKertasPct,
-    tarifPrintInter1Muka: g.tarifPrintInter1Muka,
-    tarifPrintInter2Muka: g.tarifPrintInter2Muka,
-    tarifPlatOliver: g.oliverPlatUnit,
-    minOrderOliver: g.oliverMinOngkos,
-    tarifDrekOliver: g.oliverDrekOver,
-    tarifKardus: g.tarifKardusBox,
-    tarifLakbanRoll: g.tarifLakbanRoll,
-    tarifLaminasiGlossy: g.tarifLaminasiGlossyCm2,
-    tarifLaminasiDoff: g.tarifLaminasiDoffCm2,
-    tarifUvVarnish: g.tarifUvVarnishCm2,
-    tarifDesainBrosur: g.tarifDesainStandar,
-    marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextLabelKhq: LabelKhqMasterParams = {
     ...currLabelKhq,
-    tarifPrintA3: 2000, // Master!D18 Label KHQ cetak digital label selalu Rp 2.000 / lbr A3+
-    tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
-    minLaminasi: g.minLaminasi,
-    tarifDesain: g.tarifDesainStandar,
-    marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextBukuTulis: BukuTulisMasterParams = {
@@ -300,351 +139,125 @@ export function applyGlobalParamsToAll(
     tarifHvs70Kg: g.tarifHvs70,
     upArtCartonPct: g.upKertasPct,
     upHvsPct: g.upKertasPct,
-    tarifPrintCoverA3: g.tarifPrintA3,
-    tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
-    minLaminasi: g.minLaminasi,
-    tarifSisirPerPcs: g.tarifSisirPcs,
-    tarifKardusBox: g.tarifKardusBox,
-    tarifLakbanRoll: g.tarifLakbanRoll,
-    tarifDesignCover: g.tarifDesainStandar,
-    marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextStopmap: StopmapMasterParams = {
     ...currStopmap,
     tarifArtCartonKg: g.tarifAc230Kg,
     upArtCartonPct: g.upKertasPct,
-    tarifPrintA3: g.tarifPrintA3,
-    tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
-    tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
-    tarifUvVarnishCm2: g.tarifUvVarnishCm2,
-    minLaminasi: g.minLaminasi,
-    tarifPlatOliver: g.oliverPlatUnit,
-    minOrderOliver: g.oliverMinOngkos,
-    tarifDrekOverOliver: g.oliverDrekOver,
-    tarifKardusBox: g.tarifKardusBox,
-    tarifLakbanRoll: g.tarifLakbanRoll,
-    tarifDesainA4: g.tarifDesainStandar,
-    marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextSyahadah: SyahadahMasterParams = {
     ...currSyahadah,
     tarifKertasLinenKg: 29900,
     upKertasPct: g.upKertasPct,
-    tarifPrintA3: 3800,
-    tarifPlatRyobi: g.ryobiPlatUnit,
-    minOrderRyobi: g.ryobiMinOngkos,
-    tarifDrekOverRyobi: g.ryobiDrekOver,
-    tarifPlatOliver: g.oliverPlatUnit,
-    minOrderOliver: g.oliverMinOngkos,
-    tarifDrekOverOliver: g.oliverDrekOver,
-    tarifSisirPer500: 5000,
-    tarifKardusBox: g.tarifKardusBox,
-    tarifLakbanRoll: g.tarifLakbanRoll,
-    tarifDesign: g.tarifDesainStandar,
-    marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextRaportKaleb: RaportKalebMasterParams = {
     ...currRaportKaleb,
-    tarifKardusBox: g.tarifKardusBox,
-    tarifLakbanRoll: g.tarifLakbanRoll,
-    tarifKardus: g.tarifKardusBox,
-    marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextKopSurat: KopSuratMasterParams = {
     ...currKopSurat,
     hargaPerKg: g.tarifHvs70,
     upPct: g.upKertasPct,
-    desain: g.tarifDesainStandar,
-    labaPct: g.defaultMarginPct,
   };
 
   const nextAmplop: AmplopMasterParams = {
     ...currAmplop,
-    desainStandar: g.tarifDesainStandar,
-    labaPct: g.defaultMarginPct,
   };
 
   const nextSertifikat: SertifikatMasterParams = {
     ...currSertifikat,
-    tarifLamGlossy: g.tarifLaminasiGlossyCm2,
-    tarifLamDoff: g.tarifLaminasiDoffCm2,
-    tarifKardusBox: g.tarifKardusBox,
-    tarifLakbanRoll: g.tarifLakbanRoll,
-    desain: g.tarifDesainStandar,
-    labaPct: g.defaultMarginPct,
   };
 
   const nextUndangan: UndanganMasterParams = {
     ...currUndangan,
-    tarifLamGlossy: g.tarifLaminasiGlossyCm2,
-    tarifLamDoff: g.tarifLaminasiDoffCm2,
-    tarifKardusBox: g.tarifKardusBox,
-    tarifLakbanRoll: g.tarifLakbanRoll,
-    desain: g.tarifDesainStandar,
-    labaPct: g.defaultMarginPct,
   };
 
   const nextBukuTabunganNs: BukuTabunganNsMasterParams = {
     ...currBukuTabunganNs,
-    umr: g.umr,
     tarifKertasCoverKg: g.tarifAc260Kg,
     upKertasCoverPct: g.upKertasPct,
     tarifKertasIsiKg: g.tarifHvs70,
     upKertasIsiPct: g.upKertasPct,
-    tarifPrintCoverA3: g.tarifPrintA3,
-    tarifPrintIsiA3: g.tarifPrintInter1Muka,
-    tarifDesainCover: g.tarifDesainStandar,
-    tarifLamGlossy: g.tarifLaminasiGlossyCm2,
-    tarifLamDoff: g.tarifLaminasiDoffCm2,
-    tarifKardusBox: g.tarifKardusBox,
-    tarifLakbanRoll: g.tarifLakbanRoll,
-    minLaminasi: g.minLaminasi,
-    labaPct: g.defaultMarginPct,
   };
 
   const nextBukuTabunganSecurity: BukuTabunganSecurityMasterParams = {
     ...currBukuTabunganSecurity,
-    umr: g.umr,
     tarifKertasCoverKg: g.tarifAc260Kg,
     upKertasCoverPct: g.upKertasPct,
     tarifKertasIsiKg: g.tarifHvs70,
     upKertasIsiPct: g.upKertasPct,
-    tarifPrintCoverA3: g.tarifPrintA3,
-    tarifPrintIsiA3: g.tarifPrintInter1Muka,
-    tarifDesainCover: g.tarifDesainStandar,
-    tarifLamGlossy: g.tarifLaminasiGlossyCm2,
-    tarifLamDoff: g.tarifLaminasiDoffCm2,
-    tarifKardusBox: g.tarifKardusBox,
-    tarifLakbanRoll: g.tarifLakbanRoll,
-    minLaminasi: g.minLaminasi,
-    labaPct: g.defaultMarginPct,
   };
 
   const nextKartuKoperasiPromise: KartuKoperasiPromiseMasterParams = {
     ...currKartuKoperasiPromise,
     tarifKertasKg: g.tarifAc260Kg,
     upKertasPct: g.upKertasPct,
-    tarifDesign: g.tarifDesainStandar,
-    tarifPrintA3Plus: g.tarifPrintA3,
-    tarifPlatePerPlat: g.oliverPlatUnit,
-    tarifCetakMinPerPlat: g.oliverMinOngkos,
-    tarifPoundPerUnit: g.tarifSisirPcs * 0.94,
-    tarifSisirPer500: g.tarifSisirPcs * 66,
-    tarifLaminasiGlossy: g.tarifLaminasiGlossyCm2,
-    tarifLaminasiDoff: g.tarifLaminasiDoffCm2,
-    tarifUvVarnish: g.tarifUvVarnishCm2,
-    minFinishing: g.minLaminasi,
-    tarifKardusBox: g.tarifKardusBox,
-    tarifLakbanRoll: g.tarifLakbanRoll,
-    marginDefaultPct: g.defaultMarginPct,
   };
 
   const nextLebelKartuObat: LebelKartuObatMasterParams = {
     ...currLebelKartuObat,
     tarifKertasKg: g.tarifHvs70,
     upKertasPct: g.upKertasPct,
-    tarifDesain: g.tarifDesainStandar,
-    tarifPlatePerPlat: g.oliverPlatUnit,
-    tarifCetakMinPerPlat: g.oliverMinOngkos,
-    tarifDrekPerWarna: g.oliverDrekOver,
-    tarifSisirPer500: g.tarifSisirPcs * 66,
-    marginDefaultPct: g.defaultMarginPct,
   };
 
   const nextBukuSoftCover: SoftCoverUnifiedParams = {
     ...currBukuSoftCover,
+    tarifKertasCoverKg: g.tarifAc230Kg,
+    upCoverPct: g.upKertasPct,
     tarifKertasIsiKg: g.tarifHvs70,
     upIsiPct: g.upKertasPct,
-    tarifPlateIsi: g.oliverPlatUnit,
-    tarifCetakMinIsi: g.oliverMinOngkos,
-    tarifPrintCoverA3: g.tarifPrintA3,
-    tarifLaminasiGlossy: g.tarifLaminasiGlossyCm2,
-    tarifLaminasiDoff: g.tarifLaminasiDoffCm2,
-    tarifUvVarnish: g.tarifUvVarnishCm2,
-    minFinishing: g.minLaminasi,
-    tarifSisirPerPcs: g.tarifSisirPcs,
-    tarifKardusBox: g.tarifKardusBox,
-    tarifLakbanRoll: g.tarifLakbanRoll,
-    tarifDesainCover: g.tarifDesainStandar,
-    tarifDesainIsiPerUnit: g.tarifDesainStandar,
-    tarifDesainIsiPerHlm: g.tarifDesainStandar,
-    marginDefaultPct: g.defaultMarginPct,
   };
 
   const nextBukuHardCover105x148: BukuHardCover105x148MasterParams = {
     ...currBukuHardCover105x148,
-    tarifPrintCoverA3: g.tarifPrintA3,
     tarifKertasAp150Kg: g.tarifAp150,
-    tarifPlateCoverOliver: g.oliverPlatUnit,
-    minOngkosCoverOliver: g.oliverMinOngkos,
-    drekCoverOliver: g.oliverDrekOver,
     tarifKertasAc230Kg: g.tarifAc230Kg,
     tarifKertasHvs70Kg: g.tarifHvs70,
-    tarifPlateIsiOliver: g.oliverPlatUnit,
-    minOngkosIsiOliver: g.oliverMinOngkos,
-    drekIsiOliver: g.oliverDrekOver,
-    tarifPlateIsiRyobi: g.ryobiPlatUnit,
-    minOngkosIsiRyobi: g.ryobiMinOngkos,
-    drekIsiRyobi: g.ryobiDrekOver,
-    tarifSisirPcs: g.tarifSisirPcs,
-    tarifKardusBox: g.tarifKardusBox,
-    tarifLakbanRoll: g.tarifLakbanRoll,
-    tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
-    tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
-    minLaminasi: g.minLaminasi,
-    tarifDesainCover: g.tarifDesainStandar,
-    marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextPoster: PosterMasterParams = {
     ...currPoster,
     tarifArtCarton230Kg: g.tarifAc230Kg,
     upKertasPct: g.upKertasPct,
-    tarifPrintA3: g.tarifPrintA3,
-    oliverPlatUnit: g.oliverPlatUnit,
-    oliverMinOngkos: g.oliverMinOngkos,
-    oliverDrekOver: g.oliverDrekOver,
-    smPlatUnit: 100000,
-    smMinOngkos: 250000,
-    smDrekOver: 100,
-    tarifSisirPcs: g.tarifSisirPcs,
-    tarifKardusBox: g.tarifKardusBox,
-    tarifLakbanRoll: g.tarifLakbanRoll,
-    tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
-    tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
-    tarifUvVarnishCm2: g.tarifUvVarnishCm2,
-    minLaminasi: g.minLaminasi,
-    marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextMajalah: MajalahMasterParams = {
     ...currMajalah,
-    tarifPrintCoverA3: g.tarifPrintA3,
     tarifKertasAc230Kg: g.tarifAc230Kg,
-    tarifPlateCoverOliver: g.oliverPlatUnit,
-    minOngkosCoverOliver: g.oliverMinOngkos,
-    drekCoverOliver: g.oliverDrekOver,
     tarifKertasAp120Kg: g.tarifAp120,
-    tarifPrintIsiA3: g.tarifPrintInter2Muka,
-    tarifPlateIsiOliver: g.oliverPlatUnit,
-    minOngkosIsiOliver: g.oliverMinOngkos,
-    drekIsiOliver: g.oliverDrekOver,
-    tarifSisirPcs: g.tarifSisirPcs,
-    tarifKardusBox: g.tarifKardusBox,
-    tarifLakbanRoll: g.tarifLakbanRoll,
-    tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
-    tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
-    tarifUvVarnishCm2: g.tarifUvVarnishCm2,
-    minLaminasi: g.minLaminasi,
-    tarifDesainCover: g.tarifDesainStandar,
-    marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextStiker: StikerMasterParams = {
     ...currStiker,
-    tarifStikerVinylA3: g.tarifPrintA3,
-    tarifRajangPerLbr: 50,
-    tarifPackingKardus: g.tarifKardusBox,
-    tarifDesainStiker: g.tarifDesainStandar,
-    marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextBukuHardCover145x2025: BukuHardCover145x2025MasterParams = {
     ...currBukuHardCover145x2025,
-    tarifPrintCoverA3: g.tarifPrintA3,
     tarifKertasAp150Kg: g.tarifAp150,
-    tarifPlateCoverOliver: g.oliverPlatUnit,
-    minOngkosCoverOliver: g.oliverMinOngkos,
-    drekCoverOliver: g.oliverDrekOver,
     tarifKertasAc230Kg: g.tarifAc230Kg,
     tarifKertasHvs70Kg: g.tarifHvs70,
-    tarifPlateIsiOliver: g.oliverPlatUnit,
-    minOngkosIsiOliver: g.oliverMinOngkos,
-    drekIsiOliver: g.oliverDrekOver,
-    tarifPlateIsiRyobi: g.ryobiPlatUnit,
-    minOngkosIsiRyobi: g.ryobiMinOngkos,
-    drekIsiRyobi: g.ryobiDrekOver,
-    tarifSisirPcs: g.tarifSisirPcs,
-    tarifKardusBox: g.tarifKardusBox,
-    tarifLakbanRoll: g.tarifLakbanRoll,
-    tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
-    tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
-    minLaminasi: g.minLaminasi,
-    tarifDesainCover: g.tarifDesainStandar,
-    marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextBukuHardCover21x297: BukuHardCover21x297MasterParams = {
     ...currBukuHardCover21x297,
-    tarifPrintCoverA3: g.tarifPrintA3,
     tarifKertasAp150Kg: g.tarifAp150,
-    tarifPlateCoverOliver: g.oliverPlatUnit,
-    minOngkosCoverOliver: g.oliverMinOngkos,
-    drekCoverOliver: g.oliverDrekOver,
     tarifKertasAc230Kg: g.tarifAc230Kg,
     tarifKertasHvs70Kg: g.tarifHvs70,
-    tarifPlateIsiOliver: g.oliverPlatUnit,
-    minOngkosIsiOliver: g.oliverMinOngkos,
-    drekIsiOliver: g.oliverDrekOver,
-    tarifSisirPcs: g.tarifSisirPcs,
-    tarifKardusBox: g.tarifKardusBox,
-    tarifLakbanRoll: g.tarifLakbanRoll,
-    tarifLaminasiGlossyCm2: g.tarifLaminasiGlossyCm2,
-    tarifLaminasiDoffCm2: g.tarifLaminasiDoffCm2,
-    minLaminasi: g.minLaminasi,
-    tarifDesainCover: g.tarifDesainStandar,
-    marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextKalenderKop: KalenderKopMasterParams = {
     ...currKalenderKop,
-    tarifPackingKardus: g.tarifKardusBox,
-    tarifDesainKop: g.tarifDesainStandar,
-    marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextPackaging: PackagingMasterParams = {
     ...currPackaging,
-    tarifPlatOliverPerWarna: g.oliverPlatUnit,
-    oliverMinOngkosPerWarna: g.oliverMinOngkos,
-    oliverDrekOverPerWarna: g.oliverDrekOver,
-    biayaTransport: g.oliverTransport,
-    tarifLakbanPerRoll: g.tarifLakbanRoll,
-    tarifLaminasiGlossyPerCm2: g.tarifLaminasiGlossyCm2,
-    tarifLaminasiDoffPerCm2: g.tarifLaminasiDoffCm2,
-    minBiayaLaminasi: g.minLaminasi,
-    biayaDesain: g.tarifDesainStandar,
-    marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
   };
 
   const nextPaperbag: PaperbagMasterParams = {
     ...currPaperbag,
-    tarifPlatOliverPerWarna: g.oliverPlatUnit,
-    oliverMinOngkosPerWarna: g.oliverMinOngkos,
-    oliverDrekOverPerWarna: g.oliverDrekOver,
-    tarifLakbanPerRoll: g.tarifLakbanRoll,
-    tarifLaminasiGlossyPerCm2: g.tarifLaminasiGlossyCm2,
-    tarifLaminasiDoffPerCm2: g.tarifLaminasiDoffCm2,
-    minBiayaLaminasi: g.minLaminasi,
-    biayaDesain: g.tarifDesainStandar,
-    marginDefaultPct: g.defaultMarginPct,
-    negoDefaultPct: g.defaultNegoPct,
   };
 
   return {

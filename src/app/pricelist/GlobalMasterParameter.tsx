@@ -5,22 +5,14 @@
 import React, { useState, useMemo } from 'react';
 import {
   Database,
-  Printer,
   FileText,
   RotateCcw,
   Sparkles,
-  Layers,
-  Box,
-  Palette,
-  Percent,
-  TrendingUp,
   HelpCircle,
   CheckCircle2,
-  AlertTriangle,
   X,
   FileSpreadsheet,
   Search,
-  FolderOpen,
   ShoppingCart,
 } from 'lucide-react';
 import {
@@ -162,7 +154,7 @@ export default function GlobalMasterParameter({
               </span>
             </div>
             <p className="text-xs text-emerald-100 mt-0.5">
-              Kelola tarif bahan baku, mesin offset, digital print, dan finishing yang dipakai bersama oleh seluruh produk.
+              Kelola harga berbagai jenis kertas yang dipakai bersama oleh seluruh produk.
             </p>
           </div>
         </div>
@@ -194,163 +186,19 @@ export default function GlobalMasterParameter({
       </div>
       {/* Grid Kategori Parameter (2 Kolom) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* 1. Mesin Cetak Offset Oliver (58 / 52) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <div className="flex items-center gap-2">
-              <Printer className="w-4 h-4 text-emerald-700" />
-              <h3 className="text-xs font-bold text-slate-800">1. Mesin Offset Oliver (58 / 52)</h3>
-            </div>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono">
-              Oplah {globalParams.oliverOplahMin} - {globalParams.oliverOplahMax}
-            </span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('oliverOplahMin', 'Oplah Minimal (Mulai)', 'Batas bawah mesin Oliver', false, false, 'eks')}
-            {fieldRow('oliverOplahMax', 'Oplah Maksimal (Sampai)', 'Batas atas mesin Oliver', false, false, 'eks')}
-            {fieldRow('insheetOliverOffset', 'Insheet Mesin Oliver', 'Toleransi Cetak Plano', false, false, 'plano')}
-            {fieldRow('oliverPlatUnit', 'Tarif Plat / Unit', 'Semua Produk Oliver')}
-            {fieldRow('oliverMinOngkos', 'Min. Cetak (≤1000 Drek)', 'Semua Produk Oliver')}
-            {fieldRow('oliverDrekOver', 'Tarif Drek Over / Drek', 'Over 1000 Drek')}
-          </div>
-        </div>
-
-        {/* 2. Mesin Cetak Offset Heidelberg SM (52 / 72 / 102) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <div className="flex items-center gap-2">
-              <Printer className="w-4 h-4 text-blue-700" />
-              <h3 className="text-xs font-bold text-slate-800">2. Mesin Offset Heidelberg SM</h3>
-            </div>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200 font-mono">
-              Oplah {globalParams.smOplahMin} - {globalParams.smOplahMax}
-            </span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('smOplahMin', 'Oplah Minimal (Mulai)', 'Batas bawah mesin SM', false, false, 'eks')}
-            {fieldRow('insheetSmOffset', 'Insheet Mesin SM', 'Toleransi Cetak Plano', false, false, 'plano')}
-            {fieldRow('smPlatUnit', 'Tarif Plat SM', 'Buku HC A4, Poster Plano')}
-            {fieldRow('smMinOngkos', 'Min. Cetak SM (≤1000 Drek)', 'Buku HC A4, Poster Plano')}
-            {fieldRow('smDrekOver', 'Tarif Drek Over SM', 'Over 1000 Drek SM')}
-          </div>
-        </div>
-
-        {/* 3. Mesin Cetak Offset Kecil (Ryobi / Toko 1 Warna) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <div className="flex items-center gap-2">
-              <Printer className="w-4 h-4 text-cyan-700" />
-              <h3 className="text-xs font-bold text-slate-800">3. Mesin Offset Kecil (Ryobi / Toko)</h3>
-            </div>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-50 text-cyan-800 border border-cyan-200 font-mono">
-              Oplah {globalParams.ryobiOplahMin} - {globalParams.ryobiOplahMax}
-            </span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('ryobiOplahMin', 'Oplah Minimal (Mulai)', 'Batas bawah mesin Ryobi', false, false, 'eks')}
-            {fieldRow('ryobiOplahMax', 'Oplah Maksimal (Sampai)', 'Batas atas mesin Ryobi', false, false, 'eks')}
-            {fieldRow('insheetRyobiOffset', 'Insheet Mesin Ryobi', 'Toleransi Cetak Mesin', false, false, 'lbr')}
-            {fieldRow('ryobiPlatUnit', 'Tarif Plat Ryobi / Toko', 'Nota, Buku Tabungan, Buku')}
-            {fieldRow('ryobiMinOngkos', 'Min. Cetak (≤500/1000 Drek)', 'Nota, Buku Tabungan')}
-            {fieldRow('ryobiDrekOver', 'Tarif Drek Over / Drek', 'Over Drek Ryobi')}
-          </div>
-        </div>
-
-        {/* 4. Mesin Cetak Isi Buku (Print Buya) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <div className="flex items-center gap-2">
-              <Printer className="w-4 h-4 text-amber-700" />
-              <h3 className="text-xs font-bold text-slate-800">4. Mesin Cetak Isi (Print Buya)</h3>
-            </div>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 font-mono">
-              Oplah {globalParams.buyaOplahMin} - {globalParams.buyaOplahMax}
-            </span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('buyaOplahMin', 'Oplah Minimal (Mulai)', 'Batas bawah Print Buya', false, false, 'eks')}
-            {fieldRow('buyaOplahMax', 'Oplah Maksimal (Sampai)', 'Batas atas Print Buya', false, false, 'eks')}
-            {fieldRow('insheetPrintBuya', 'Insheet Print Buya', 'Toleransi per kuras', false, false, 'lbr')}
-            {fieldRow('tarifPrintBuyaPerLbr', 'Tarif Cetak Print Buya / Lbr', 'Buku Manasik, Buku Softcover')}
-          </div>
-        </div>
-
-        {/* 5. Mesin Digital (Print Inter A3+) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <div className="flex items-center gap-2">
-              <Printer className="w-4 h-4 text-purple-600" />
-              <h3 className="text-xs font-bold text-slate-800">5. Mesin Digital (Print Inter A3+)</h3>
-            </div>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-50 text-purple-800 border border-purple-200 font-mono">
-              Oplah {globalParams.interOplahMin} - {globalParams.interOplahMax}
-            </span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('interOplahMin', 'Oplah Minimal (Mulai)', 'Batas bawah Print Inter', false, false, 'eks')}
-            {fieldRow('interOplahMax', 'Oplah Maksimal (Sampai)', 'Batas atas Print Inter', false, false, 'eks')}
-            {fieldRow('insheetPrintInter', 'Insheet Print Inter', 'Toleransi Lembar A3+', false, false, 'A3+')}
-            {fieldRow('tarifPrintA3', 'Print Cover A3+ (1 Muka)', 'Manasik, Yasin, Sertifikat')}
-            {fieldRow('tarifPrintInter1Muka', 'Print Inter 1 Muka', 'Brosur 1 Muka, Isi Tabungan')}
-            {fieldRow('tarifPrintInter2Muka', 'Print Inter 2 Muka', 'Brosur 2 Muka, Majalah, Cocard')}
-          </div>
-        </div>
-
-        {/* 6. Bahan Kertas Dasar */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+        {/* Bahan Kertas Dasar */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3 md:col-span-2">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <FileText className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">6. Bahan Kertas Dasar (/Kg)</h3>
+            <h3 className="text-xs font-bold text-slate-800">Bahan Kertas Dasar (/Kg)</h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
             {fieldRow('tarifHvs70', 'HVS 70 gsm / Kg', 'Kalender, Nota, Buku')}
             {fieldRow('tarifAp120', 'Art Paper 120 / Kg', 'Kalender, Brosur, Majalah')}
             {fieldRow('tarifAp150', 'Art Paper 150 / Kg', 'Kalender, Buku Hardcover')}
             {fieldRow('tarifAc230Kg', 'Art Carton 230 / Kg', 'Buku Manasik, Cover Buku')}
             {fieldRow('tarifAc260Kg', 'Art Carton 260 / Kg', 'Manasik, Syahadah, Sertifikat')}
             {fieldRow('upKertasPct', 'Up / PPN Kertas Dasar (%)', 'Seluruh Produk', false)}
-          </div>
-        </div>
-
-        {/* 7. Tarif Laminasi Standar */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Layers className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">7. Jasa Laminasi (/cm²)</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifLaminasiGlossyCm2', 'Laminasi Glossy / cm²', 'Manasik, Yasin, Brosur, Buku', true, true)}
-            {fieldRow('tarifLaminasiDoffCm2', 'Laminasi Doff / cm²', 'Manasik, Yasin, Brosur, Buku', true, true)}
-            {fieldRow('tarifUvVarnishCm2', 'UV Varnish / cm²', 'Manasik, Brosur, Buku', true, true)}
-            {fieldRow('minLaminasi', 'Min. Order Laminasi', 'Manasik, Yasin, Buku')}
-          </div>
-        </div>
-
-        {/* 8. Finishing & Kemasan Standar */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Box className="w-4 h-4 text-rose-600" />
-            <h3 className="text-xs font-bold text-slate-800">8. Packing & Finishing Umum</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifKardusBox', 'Kardus Box / Pcs', 'Semua Produk')}
-            {fieldRow('tarifLakbanRoll', 'Lakban Roll / Pcs', 'Semua Produk')}
-            {fieldRow('tarifPlastikOppPcs', 'Plastik OPP / Pcs', 'Manasik, Yasin, Undangan')}
-            {fieldRow('tarifSisirPcs', 'Ongkos Potong Sisir', 'Manasik, Yasin, Buku, Brosur')}
-            {fieldRow('tarifStaplesPcs', 'Ongkos Staples', 'Manasik, Yasin, Buku Tulis')}
-          </div>
-        </div>
-
-        {/* 9. Jasa Desain & Margin Standar Perusahaan */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Palette className="w-4 h-4 text-indigo-600" />
-            <h3 className="text-xs font-bold text-slate-800">9. Jasa Desain & Margin Standar</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifDesainStandar', 'Tarif Desain Standar', 'Amplop, Kop Surat, Buku, Sertifikat')}
-            {fieldRow('defaultMarginPct', 'Target Margin Standar (%)', 'Seluruh 30 Produk', false)}
-            {fieldRow('defaultNegoPct', 'Batas Diskon Nego (%)', 'Seluruh 30 Produk', false)}
           </div>
         </div>
       </div>
@@ -362,13 +210,13 @@ export default function GlobalMasterParameter({
           <div className="text-xs text-slate-600 space-y-1">
             <span className="font-bold text-slate-800 block">Cara Kerja Parameter Global:</span>
             <p>
-              1. Ubah tarif standar di atas (misal kenaikan harga kertas, tarif plat offset, tarif desain, atau target margin perusahaan).
+              1. Ubah harga kertas di atas (misal kenaikan harga HVS, Art Paper, atau Art Carton).
             </p>
             <p>
-              2. Klik tombol <strong>&ldquo;Terapkan ke Semua Produk&rdquo;</strong> di atas untuk menyinkronkan seluruh parameter di 30 jenis produk sekaligus.
+              2. Klik tombol <strong>&ldquo;Terapkan ke Semua Produk&rdquo;</strong> di atas untuk menyinkronkan harga kertas di 30 jenis produk sekaligus.
             </p>
             <p>
-              3. Jika ingin tarif khusus untuk produk tertentu saja, Anda tetap bisa mengubahnya di tab Parameter produk terkait.
+              3. Tarif selain kertas (mesin, finishing, desain, margin) diatur masing-masing di tab Parameter produk terkait.
             </p>
           </div>
         </div>
@@ -402,9 +250,9 @@ export default function GlobalMasterParameter({
 
             <div className="p-6 overflow-y-auto text-xs text-slate-700 space-y-5 leading-relaxed">
               <div className="p-3.5 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-950 font-medium space-y-1">
-                <p className="font-bold text-emerald-900 text-sm">Prinsip Kerja Sinkronisasi Master Parameter Global:</p>
+                <p className="font-bold text-emerald-900 text-sm">Prinsip Kerja Sinkronisasi Harga Kertas Global:</p>
                 <p>
-                  Parameter Global adalah pusat kendali tarif bersama (shared rates). Setiap kali ada kenaikan harga bahan baku (HVS, Art Paper, Art Carton, NCR, Stiker) atau penyesuaian ongkos cetak mesin Oliver/SM, Anda cukup mengubahnya di halaman ini lalu menekan tombol <strong>&ldquo;Terapkan ke Semua Produk&rdquo;</strong>. Seluruh 30 kalkulator produk di SINTAK akan langsung terbarui secara konsisten.
+                  Parameter Global adalah pusat kendali harga kertas bersama. Setiap kali ada kenaikan harga bahan baku (HVS, Art Paper, Art Carton), Anda cukup mengubahnya di halaman ini lalu menekan tombol <strong>&ldquo;Terapkan ke Semua Produk&rdquo;</strong>. Harga kertas di seluruh 30 kalkulator produk di SINTAK akan langsung terbarui secara konsisten.
                 </p>
               </div>
 

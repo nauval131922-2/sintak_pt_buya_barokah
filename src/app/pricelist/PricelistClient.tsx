@@ -354,7 +354,15 @@ export default function PricelistClient() {
       const savedPaperbag = localStorage.getItem('sintak_pricelist_master_params_paperbag');
       if (savedPaperbag) setParamsPaperbag({ ...DEFAULT_PAPERBAG_PARAMS, ...JSON.parse(savedPaperbag) });
       const savedGlobalParams = localStorage.getItem('sintak_pricelist_master_params_global');
-      if (savedGlobalParams) setParamsGlobal({ ...DEFAULT_GLOBAL_PARAMS, ...JSON.parse(savedGlobalParams) });
+      if (savedGlobalParams) {
+        // Hanya kunci kertas yang diakui (sisa era Global lengkap dibuang).
+        const old = JSON.parse(savedGlobalParams);
+        const clean: any = { ...DEFAULT_GLOBAL_PARAMS };
+        (Object.keys(DEFAULT_GLOBAL_PARAMS) as (keyof GlobalMasterParams)[]).forEach((k) => {
+          if (old[k] !== undefined) clean[k] = old[k];
+        });
+        setParamsGlobal(clean);
+      }
     } catch (e) {
       console.error('Failed to restore master parameters from localStorage:', e);
     }
