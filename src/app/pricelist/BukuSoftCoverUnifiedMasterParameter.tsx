@@ -323,7 +323,7 @@ export default function BukuSoftCoverUnifiedMasterParameter({
             className="bg-slate-50/60 border border-slate-200 rounded-xl p-4 shadow-2xs break-inside-avoid mb-4"
           >
             <summary className="flex items-center gap-2 cursor-pointer list-none">
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-600 bg-slate-200/80 px-2 py-0.5 rounded">Jarang</span>
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-600 bg-slate-200/80 px-2 py-0.5 rounded">Lanjutan</span>
               <h3 className="text-xs font-bold text-slate-700">5. Target Harian & Batas Bawah</h3>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400 ml-auto" />
             </summary>
