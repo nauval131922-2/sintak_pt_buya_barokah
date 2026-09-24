@@ -291,8 +291,6 @@ export default function BukuSoftCoverUnifiedSimulator({
     </span>
   );
 
-  // Saklar tersentuh user = berbeda dari default file (feat direset tiap ganti lini).
-  const saklarTouched = JSON.stringify(feat ?? null) !== JSON.stringify(defFeat ?? null);
   // Oplah di luar tier file = ekstrapolasi rumus, bukan angka tabel Excel.
   const isEkstra = !tiers.includes(oplah);
 
@@ -507,11 +505,11 @@ export default function BukuSoftCoverUnifiedSimulator({
               </p>
             </div>
 
-            {/* Grup Catatan — collapsed, auto-buka bila tersentuh */}
-            <details key={lini} open={saklarTouched ? true : undefined} className="rounded-xl border border-slate-300 bg-slate-50/70 p-3">
-              <summary className="flex items-center gap-2 cursor-pointer list-none">
-                <label className="text-xs font-bold text-slate-800 cursor-pointer">Catatan</label>
-              </summary>
+            {/* Grup Catatan — selalu terbuka */}
+            <div className="rounded-xl border border-slate-300 bg-slate-50/70 p-3">
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-bold text-slate-800">Catatan</label>
+              </div>
               <div className="space-y-2 mt-2">
               <div className="grid grid-cols-2 gap-2">
                 {(lini === 'Klasik'
@@ -555,8 +553,8 @@ export default function BukuSoftCoverUnifiedSimulator({
               <p className="text-[10px] text-slate-500 italic">
                 Mati = tidak dihitung. Mengikuti Master ({SOFT_COVER_LINI_LABEL[lini]}).
               </p>
+              </div>
             </div>
-            </details>
 
             {/* Laba */}
             {custom ? (
