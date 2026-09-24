@@ -192,6 +192,19 @@ export default function JurnalClient({
     const s = sopdList.find(x => x.no_sopd === no);
     return s ? sopdLabel(s) : no;
   };
+  // ponytail: render 3 gaya — faktur tegas, nama redup, qty jadi badge hijau
+  const renderSopdItem = (item: string) => {
+    const [noNama, qty] = item.split(' • ');
+    const [no, ...namaParts] = (noNama || '').split(' — ');
+    const nama = namaParts.join(' — ');
+    return (
+      <span className="flex items-baseline gap-1.5 min-w-0">
+        <span className="font-bold text-gray-800 shrink-0">{no}</span>
+        {nama ? <span className="font-medium text-gray-500 truncate">{nama}</span> : null}
+        {qty ? <span className="ml-auto shrink-0 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md">{qty}</span> : null}
+      </span>
+    );
+  };
   const [jenisPekerjaanList, setJenisPekerjaanList] = useState<string[]>([]);
   const [jenisPekerjaan2List, setJenisPekerjaan2List] = useState<string[]>([]);
   const [isLoadingForm, setIsLoadingForm] = useState(false);
@@ -1784,6 +1797,7 @@ export default function JurnalClient({
                       id="jurnal-no-order"
                       value={noOrderFilter}
                       items={sopdList.map(sopdLabel)}
+                      renderItem={renderSopdItem}
                       allLabel="Semua Order"
                       searchPlaceholder="Cari no. order..."
                       triggerWidth="w-full"
@@ -1897,6 +1911,7 @@ export default function JurnalClient({
                   id="jurnal-no-order"
                   value={noOrderFilter}
                   items={sopdList.map(sopdLabel)}
+                  renderItem={renderSopdItem}
                   allLabel="Semua Order"
                   searchPlaceholder="Cari no. order..."
                   triggerWidth="w-full"
@@ -2479,6 +2494,7 @@ export default function JurnalClient({
                         id="form-no-order"
                         value={sopdLabelByNo(formData.no_order)}
                         items={sopdList.map(sopdLabel)}
+                        renderItem={renderSopdItem}
                         placeholder="-- Pilih No. Order --"
                         allLabel="-- Pilih No. Order --"
                         triggerWidth="w-full"
@@ -2666,6 +2682,7 @@ export default function JurnalClient({
                             id={`form-no-order-2-${rIndex}`}
                             value={sopdLabelByNo(rData.no_order_2)}
                             items={sopdList.map(sopdLabel)}
+                            renderItem={renderSopdItem}
                             placeholder="-- Pilih No. Order --"
                             allLabel="-- Pilih No. Order --"
                             triggerWidth="w-full"

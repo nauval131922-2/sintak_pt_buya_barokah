@@ -39,6 +39,8 @@ interface SearchableDropdownProps {
   onSearchQueryChange?: (query: string) => void;
   /** Use Portal to float panel outside overflow-hidden parents (default: true) */
   usePortal?: boolean;
+  /** Optional custom row rendering (e.g. multi-style label parts). Empty/reset row always uses plain allLabel. */
+  renderItem?: (item: string, isSelected: boolean) => React.ReactNode;
 }
 
 export default function SearchableDropdown({
@@ -59,6 +61,7 @@ export default function SearchableDropdown({
   compact = false,
   onSearchQueryChange,
   usePortal = false,
+  renderItem,
 }: SearchableDropdownProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -339,7 +342,7 @@ export default function SearchableDropdown({
               `}
               title={labelFor(item)}
             >
-              {labelFor(item)}
+              {item === '' || !renderItem ? labelFor(item) : renderItem(item, value === item)}
             </button>
           ))
         )}
