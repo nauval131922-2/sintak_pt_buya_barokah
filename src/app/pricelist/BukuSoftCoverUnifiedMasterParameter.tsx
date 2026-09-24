@@ -8,7 +8,6 @@ import {
   Scissors,
   BookCopy,
   Search,
-  ChevronDown,
 } from 'lucide-react';
 import {
   DEFAULT_SOFT_COVER_UNIFIED,
@@ -316,21 +315,17 @@ export default function BukuSoftCoverUnifiedMasterParameter({
           </p>
         )}
 
-        {/* 5. Jarang diubah — collapsed */}
+        {/* 5. Lanjutan — terbuka seperti kartu lain */}
         {rareVisible && (
-          <details
-            open={q.trim() !== '' ? true : undefined}
-            className="bg-slate-50/60 border border-slate-200 rounded-xl p-4 shadow-2xs break-inside-avoid mb-4"
-          >
-            <summary className="flex items-center gap-2 cursor-pointer list-none">
+          <div className="bg-slate-50/60 border border-slate-200 rounded-xl p-4 shadow-2xs flex flex-col gap-3 break-inside-avoid mb-4">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-600 bg-slate-200/80 px-2 py-0.5 rounded">Lanjutan</span>
               <h3 className="text-xs font-bold text-slate-700">5. Target & Harga Min</h3>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 ml-auto" />
-            </summary>
-            <div className="flex flex-col gap-2.5 mt-3">
+            </div>
+            <div className="flex flex-col gap-2.5">
               {RARE_GROUPS.map(subGroup)}
             </div>
-          </details>
+          </div>
         )}
       </div>
     </div>
