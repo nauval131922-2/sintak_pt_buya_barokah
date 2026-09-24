@@ -180,6 +180,18 @@ export default function JurnalClient({
   // Dropdown data for form
   const [employees, setEmployees] = useState<any[]>([]);
   const [sopdList, setSopdList] = useState<any[]>([]);
+  // ponytail: label dropdown order = "no — nama • qty unit" (qty dari sopd.qty_sopd/orders.qty)
+  const sopdLabel = (s: any) => {
+    const base = s.nama_order ? `${s.no_sopd} — ${s.nama_order}` : String(s.no_sopd || '');
+    const qty = Number(s.qty_sopd);
+    const unit = String(s.unit || '').trim();
+    return qty > 0 ? `${base} • ${qty.toLocaleString('id-ID')}${unit ? ' ' + unit : ''}` : base;
+  };
+  const sopdLabelByNo = (no: string) => {
+    if (!no) return '';
+    const s = sopdList.find(x => x.no_sopd === no);
+    return s ? sopdLabel(s) : no;
+  };
   const [jenisPekerjaanList, setJenisPekerjaanList] = useState<string[]>([]);
   const [jenisPekerjaan2List, setJenisPekerjaan2List] = useState<string[]>([]);
   const [isLoadingForm, setIsLoadingForm] = useState(false);
@@ -1771,14 +1783,14 @@ export default function JurnalClient({
                     <SearchableDropdown
                       id="jurnal-no-order"
                       value={noOrderFilter}
-                      items={sopdList.map(s => s.nama_order ? `${s.no_sopd} — ${s.nama_order}` : s.no_sopd)}
+                      items={sopdList.map(sopdLabel)}
                       allLabel="Semua Order"
                       searchPlaceholder="Cari no. order..."
                       triggerWidth="w-full"
                       panelWidth="w-[300px]"
                       compact
                       icon={<Filter size={14} className={noOrderFilter ? 'text-emerald-600' : 'text-gray-400'} />}
-                      onChange={(val) => { setNoOrderFilter(val.split(' — ')[0]); setPage(1); }}
+                      onChange={(val) => { setNoOrderFilter(val.split(' • ')[0].split(' — ')[0]); setPage(1); }}
                     />
                   </div>
 
@@ -1884,14 +1896,14 @@ export default function JurnalClient({
                 <SearchableDropdown
                   id="jurnal-no-order"
                   value={noOrderFilter}
-                  items={sopdList.map(s => s.nama_order ? `${s.no_sopd} — ${s.nama_order}` : s.no_sopd)}
+                  items={sopdList.map(sopdLabel)}
                   allLabel="Semua Order"
                   searchPlaceholder="Cari no. order..."
                   triggerWidth="w-full"
                   panelWidth="w-[300px]"
                   compact
                   icon={<Filter size={14} className={noOrderFilter ? 'text-emerald-600' : 'text-gray-400'} />}
-                  onChange={(val) => { setNoOrderFilter(val.split(' — ')[0]); setPage(1); }}
+                  onChange={(val) => { setNoOrderFilter(val.split(' • ')[0].split(' — ')[0]); setPage(1); }}
                 />
               </div>
 
@@ -2465,13 +2477,13 @@ export default function JurnalClient({
                       <label className="text-[12px] font-bold text-gray-600">No. Order (PPIC)</label>
                       <SearchableDropdown
                         id="form-no-order"
-                        value={formData.no_order ? `${formData.no_order}${sopdList.find(s => s.no_sopd === formData.no_order)?.nama_order ? ' — ' + sopdList.find(s => s.no_sopd === formData.no_order)?.nama_order : ''}` : ''}
-                        items={sopdList.map(s => s.nama_order ? `${s.no_sopd} — ${s.nama_order}` : s.no_sopd)}
+                        value={sopdLabelByNo(formData.no_order)}
+                        items={sopdList.map(sopdLabel)}
                         placeholder="-- Pilih No. Order --"
                         allLabel="-- Pilih No. Order --"
                         triggerWidth="w-full"
                         onChange={val => {
-                          const noSopd = val.split(' — ')[0];
+                          const noSopd = val.split(' • ')[0].split(' — ')[0];
                           const sopd = sopdList.find(x => x.no_sopd === noSopd);
                           // Pilih dari dropdown → clear nama_order_manual
                           setFormData((prev: any) => ({...prev, no_order: noSopd, nama_order: sopd?.nama_order || '', nama_order_manual: ''}));
@@ -2652,13 +2664,13 @@ export default function JurnalClient({
                           <label className="text-[12px] font-bold text-gray-600">No. Order</label>
                           <SearchableDropdown
                             id={`form-no-order-2-${rIndex}`}
-                            value={rData.no_order_2 ? `${rData.no_order_2}${sopdList.find(s => s.no_sopd === rData.no_order_2)?.nama_order ? ' — ' + sopdList.find(s => s.no_sopd === rData.no_order_2)?.nama_order : ''}` : ''}
-                            items={sopdList.map(s => s.nama_order ? `${s.no_sopd} — ${s.nama_order}` : s.no_sopd)}
+                            value={sopdLabelByNo(rData.no_order_2)}
+                            items={sopdList.map(sopdLabel)}
                             placeholder="-- Pilih No. Order --"
                             allLabel="-- Pilih No. Order --"
                             triggerWidth="w-full"
                             onChange={val => {
-                              const noSopd = val.split(' — ')[0];
+                              const noSopd = val.split(' • ')[0].split(' — ')[0];
                               const sopd = sopdList.find(x => x.no_sopd === noSopd);
                               handleRealisasiChange(rIndex, 'no_order_2', noSopd);
                               handleRealisasiChange(rIndex, 'nama_order_2', sopd?.nama_order || '');

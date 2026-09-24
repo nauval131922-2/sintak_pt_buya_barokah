@@ -94,10 +94,10 @@ export async function GET(request: NextRequest) {
       const whereClause = search ? `WHERE no_sopd LIKE ? OR nama_order LIKE ?` : '';
       const args: any[] = search ? [`%${search}%`, `%${search}%`, limit] : [limit];
       const sql = `
-        SELECT no_sopd, nama_order FROM (
-          SELECT no_sopd, nama_order FROM sopd
+        SELECT no_sopd, nama_order, qty_sopd, unit FROM (
+          SELECT no_sopd, nama_order, qty_sopd, unit FROM sopd
           UNION
-          SELECT faktur as no_sopd, nama_prd as nama_order FROM orders
+          SELECT faktur as no_sopd, nama_prd as nama_order, qty as qty_sopd, satuan as unit FROM orders
         ) ${whereClause} ORDER BY no_sopd DESC LIMIT ?`;
       const result = await db.execute({ sql, args });
       return NextResponse.json({ success: true, data: result.rows, total: result.rows.length });
