@@ -26,7 +26,6 @@ type FieldDef = {
   key: keyof SoftCoverUnifiedParams;
   label: string;
   opts?: { rupiah?: boolean; decimal?: boolean; suffix?: string };
-  badge?: string;
 };
 
 type GroupDef = {
@@ -36,15 +35,14 @@ type GroupDef = {
   fields: FieldDef[];
 };
 
-// Badge = kekhususan lini pemakai (tanpa badge = berlaku umum semua lini).
 const COVER_GROUPS: GroupDef[] = [
   {
     title: 'Kertas', border: 'border-sky-300', labelCls: 'text-sky-800',
     fields: [
       { key: 'tarifKertasCoverKg', label: 'Kertas Cover / kg (Rp)' },
       { key: 'gramaturCover', label: 'Gramatur Cover', opts: { rupiah: false } },
-      { key: 'upCoverPct', label: 'Up Cover (%)', opts: { rupiah: false, suffix: '%' }, badge: 'beda per lini' },
-      { key: 'insheetCover', label: 'Insheet Cover (lbr)', badge: 'per file' },
+      { key: 'upCoverPct', label: 'Up Cover (%)', opts: { rupiah: false, suffix: '%' } },
+      { key: 'insheetCover', label: 'Insheet Cover (lbr)' },
     ],
   },
   {
@@ -61,31 +59,31 @@ const ISI_GROUPS: GroupDef[] = [
     title: 'Kertas', border: 'border-blue-300', labelCls: 'text-blue-800',
     fields: [
       { key: 'tarifKertasIsiKg', label: 'Kertas HVS / kg (Rp)' },
-      { key: 'upIsiPct', label: 'Up Isi (%)', opts: { rupiah: false, suffix: '%' }, badge: 'beda per lini' },
+      { key: 'upIsiPct', label: 'Up Isi (%)', opts: { rupiah: false, suffix: '%' } },
       { key: 'gramaturIsi', label: 'Gramatur Isi', opts: { rupiah: false } },
-      { key: 'insheetIsi', label: 'Insheet Isi (lbr)', badge: 'per file' },
+      { key: 'insheetIsi', label: 'Insheet Isi (lbr)' },
     ],
   },
   {
     title: 'Desain', border: 'border-indigo-300', labelCls: 'text-indigo-800',
     fields: [
-      { key: 'tarifDesainIsiPerUnit', label: 'Desain Isi per Lembar (Rp)', badge: 'beda per lini' },
-      { key: 'tarifDesainIsiPerHlm', label: 'Desain Isi per Halaman (Rp)', badge: 'beda per lini' },
+      { key: 'tarifDesainIsiPerUnit', label: 'Desain Isi per Lembar (Rp)' },
+      { key: 'tarifDesainIsiPerHlm', label: 'Desain Isi per Halaman (Rp)' },
     ],
   },
   {
     title: 'Plate & Cetak', border: 'border-sky-300', labelCls: 'text-sky-800',
     fields: [
-      { key: 'tarifPlateIsi', label: 'Plate Isi (Rp)', badge: 'file 17' },
-      { key: 'tarifCetakMinIsi', label: 'Min Cetak (Rp)', badge: 'file 17' },
-      { key: 'tarifDrekIsi', label: 'Drek Isi (Rp)', badge: 'file 17' },
+      { key: 'tarifPlateIsi', label: 'Plate Isi (Rp)' },
+      { key: 'tarifCetakMinIsi', label: 'Min Cetak (Rp)' },
+      { key: 'tarifDrekIsi', label: 'Drek Isi (Rp)' },
     ],
   },
   {
     title: 'Print Isi', border: 'border-teal-300', labelCls: 'text-teal-800',
     fields: [
       { key: 'tarifPrintBuyaIsi', label: 'Print Isi Buya flat (Rp)' },
-      { key: 'tarifPrintIsiA3', label: 'Print Isi A3+ (Rp)', badge: 'beda per lini' },
+      { key: 'tarifPrintIsiA3', label: 'Print Isi A3+ (Rp)' },
     ],
   },
 ];
@@ -94,7 +92,7 @@ const JASA_GROUPS: GroupDef[] = [
   {
     title: 'Tenaga', border: 'border-violet-300', labelCls: 'text-violet-800',
     fields: [
-      { key: 'umr', label: 'UMR (Rp)', badge: 'beda per lini' },
+      { key: 'umr', label: 'UMR (Rp)' },
       { key: 'tarifRoyalti', label: 'Royalty / pcs (Rp)' },
     ],
   },
@@ -110,7 +108,7 @@ const JASA_GROUPS: GroupDef[] = [
   {
     title: 'Kemas', border: 'border-fuchsia-300', labelCls: 'text-fuchsia-800',
     fields: [
-      { key: 'tarifShrinkRoll', label: 'Shrink /roll (Rp)', badge: 'per file' },
+      { key: 'tarifShrinkRoll', label: 'Shrink /roll (Rp)' },
       { key: 'tarifLakbanRoll', label: 'Lakban /roll (Rp)' },
       { key: 'tarifKardusBox', label: 'Kardus /box (Rp)' },
     ],
@@ -205,11 +203,6 @@ export default function BukuSoftCoverUnifiedMasterParameter({
             {f.label}
           </label>
           <div className="flex items-center gap-1 shrink-0">
-            {f.badge && (
-              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 border border-sky-200 whitespace-nowrap">
-                {f.badge}
-              </span>
-            )}
             {modified && (
               <button
                 type="button"
@@ -274,8 +267,8 @@ export default function BukuSoftCoverUnifiedMasterParameter({
 
   return (
     <div className="flex flex-col gap-4 pb-8 overflow-y-auto">
-      {/* Cari field */}
-      <div className="relative">
+      {/* Cari field — sticky agar tetap terlihat saat scroll */}
+      <div className="sticky top-0 z-10 relative bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
         <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         <input
           type="text"
@@ -343,3 +336,4 @@ export default function BukuSoftCoverUnifiedMasterParameter({
     </div>
   );
 }
+
