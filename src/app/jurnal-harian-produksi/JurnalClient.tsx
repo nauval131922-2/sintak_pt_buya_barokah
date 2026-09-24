@@ -201,7 +201,7 @@ export default function JurnalClient({
       <span className="flex items-baseline gap-1.5 min-w-0">
         <span className="font-bold text-gray-800 shrink-0">{no}</span>
         {nama ? <span className="font-medium text-gray-500 truncate">{nama}</span> : null}
-        {qty ? <span className="ml-auto shrink-0 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md">{qty}</span> : null}
+        {qty ? <span className="shrink-0 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md">{qty}</span> : null}
       </span>
     );
   };
