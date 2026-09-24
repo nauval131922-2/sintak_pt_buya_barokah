@@ -178,7 +178,7 @@ export function calculateBukuSoftCoverHpp(
   const Q = R * 1 * N;
   // BUKU!T7 = T2*R (T2 = D18 Print Inter all-in; jalur (R/500)*W29 untuk mesin lain mati karena V27/W27=0)
   add('Cetak Cover Print Inter', p.tarifPrintCoverA3 * R,
-    `${R} lbr × Rp ${p.tarifPrintCoverA3.toLocaleString('id-ID')} (all-in bahan+cetak)`);
+    `${R} Lbr × Rp ${p.tarifPrintCoverA3.toLocaleString('id-ID')}`);
   // BUKU!V7 = IF(H>0,V6,0)
   add('Desain Cover', H > 0 ? p.tarifDesainCover : 0, `Rp ${p.tarifDesainCover.toLocaleString('id-ID')}/order`);
   // BUKU!Y7 = Y6*Z7 = 0 (Y6=0 untuk Print Inter); BUKU!AG7 = 0 (Print Inter) — tanpa baris
@@ -193,23 +193,23 @@ export function calculateBukuSoftCoverHpp(
   // BUKU!AU29 rim isi = ((65*100)*gsm)/20000*(kg*(1+up)); BUKU!AR7 = (AP/500)*AU29 (Oliver)
   const rimIsi = ((65 * 100) * p.gramaturIsi) / 20000 * (p.tarifKertasIsiKg * (1 + p.upIsiPct / 100));
   add('Kertas Isi HVS', (AP / 500) * rimIsi,
-    `${AP} lbr × Rp ${(rimIsi / 500).toFixed(2)} (rim Rp ${Math.round(rimIsi).toLocaleString('id-ID')}/500)`);
+    `${AP} Lbr × Rp ${(rimIsi / 500).toFixed(2)}`);
   // BUKU!AT7 = IF(H>0,AT6*C7,0); C7 = C6
   add('Desain Isi', H > 0 ? p.tarifDesainIsiPerHlm * C6 : 0,
-    `Rp ${p.tarifDesainIsiPerHlm.toLocaleString('id-ID')} × ${C6} hlm`);
+    `Rp ${p.tarifDesainIsiPerHlm.toLocaleString('id-ID')} × ${C6} Hlm`);
   // BUKU!AW7 = AW6*AX7 (tanpa gate H!); AX7 = 1 (AX6=1)
-  add('Plate Isi Oliver', p.tarifPlateIsi * 1, '1 plat');
+  add('Plate Isi Oliver', p.tarifPlateIsi * 1, '1 Plate');
   // BUKU!BA7 = AY7*AX7 (tanpa gate H!)
   const minIsi = p.tarifCetakMinIsi * 1;
   // BUKU!BB7 Oliver = ((H+AI)-1000)*AX jika >1; BUKU!BC7 = BB*AZ7; BUKU!BD7 = BC+BA
   const BB = (H + AI - 1000) * 1 > 1 ? (H + AI - 1000) * 1 : 0;
   add('Cetak Isi Oliver', (BB === 0 ? 0 : BB) * p.tarifDrekIsi + minIsi,
-    `Cetak minimal Rp ${minIsi.toLocaleString('id-ID')} + lebihan ${BB}×Rp ${p.tarifDrekIsi}`);
+    `Harga Min Order Rp ${minIsi.toLocaleString('id-ID')} + Over ${BB}×Rp ${p.tarifDrekIsi}`);
   // BUKU!BF7 = H*D35
   if (H * p.tarifRoyalti > 0) add('Royalty', H * p.tarifRoyalti, `${H} × Rp ${p.tarifRoyalti}`);
   // BUKU!BH7 Oliver = ((AO*2)-1000)*AZ7 — BISA NEGATIF, tetap masuk total
   const BH = H > 0 ? (AO * 2 - 1000) * p.tarifDrekIsi : 0;
-  if (BH !== 0) add('Tambahan Cetak Isi', BH, `(2×${AO}−1000)×Rp ${p.tarifDrekIsi}`);
+  if (BH !== 0) add('Naik Cetak Isi', BH, `(2×${AO}−1000)×Rp ${p.tarifDrekIsi}`);
   const feat = input.feat ?? {};
   const fJasaSusun = feat.jasaSusun ?? true;
   const fJasaSteples = feat.jasaSteples ?? true;
@@ -217,8 +217,8 @@ export function calculateBukuSoftCoverHpp(
   const fShrinkPacking = feat.shrinkPacking ?? false;
   const fPackingKardus = feat.packingKardus ?? false;
   // BUKU!BI7 = H*(UMR/25)/BI28 (jasa susun)
-  if (fJasaSusun) add('Jasa Susun', H * ((p.umr / 25) / targetSusun(C6)),
-    `${H} × Rp ${((p.umr / 25) / targetSusun(C6)).toFixed(2)} (upah harian dibagi target)`);
+  if (fJasaSusun) add('Susun', H * ((p.umr / 25) / targetSusun(C6)),
+    `${H} × Rp ${((p.umr / 25) / targetSusun(C6)).toFixed(2)}`);
   // BUKU!BJ7 = BJ6*H; BJ6 = D32/(1000/3) (steples)
   if (fJasaSteples) add('Steples', (p.tarifSteplesPack / (1000 / 3)) * H,
     `${H} × Rp ${(p.tarifSteplesPack / (1000 / 3)).toFixed(2)}`);
@@ -234,35 +234,35 @@ export function calculateBukuSoftCoverHpp(
   const BZ = BY === 0 ? 0 : BY > p.minBending ? BY : p.minBending; // BUKU!BZ7
   if (bendingOn && BY !== 0) add('Bending', BY, `${p.tarifBending}×29,7×${M}×${H}`);
   add('Laminasi Glossy', finishing === 'Laminasi Glossy,' ? finFloor(luasLam * p.tarifLaminasiGlossy * H) : 0,
-    `${luasLam.toFixed(1)} cm² × ${p.tarifLaminasiGlossy} × ${H}, minimal Rp ${p.minFinishing.toLocaleString('id-ID')}`);
+    `${luasLam.toFixed(1)} cm² × ${p.tarifLaminasiGlossy} × ${H}, Min Rp ${p.minFinishing.toLocaleString('id-ID')}`);
   add('Laminasi Doff', finishing === 'Laminasi Doff,' ? finFloor(luasLam * p.tarifLaminasiDoff * H) : 0,
-    `Minimal Rp ${p.minFinishing.toLocaleString('id-ID')}`);
+    `Min Rp ${p.minFinishing.toLocaleString('id-ID')}`);
   add('UV Varnish', finishing === 'UV Varnish,' || finishing === 'UV Varnish + Bending,'
     ? (finishing === 'UV Varnish,' ? finFloor(luasLam * p.tarifUvVarnish * H) : finFloor(luasLam * p.tarifUvVarnish * H) + BZ) : 0,
-    'UV (+ongkos bending untuk varian +Bending)');
+    'UV Varnish + Bending');
   add('Laminasi Doff + Bending', finishing === 'Laminasi Doff + Bending,' ? finFloor(luasLam * p.tarifLaminasiDoff * H) + BZ : 0,
-    'Doff + ongkos bending');
+    'Laminasi Doff + Bending');
   // CK7 (Glossy+Bending) selalu 0 di domain ini — jalurnya #DIV/0! di Excel (CR7), tidak ditawarkan.
 
   // ---- SAKLAR KOMPONEN (mati di file Klasik; rumus setara offset 21×29,7) ----
   const uh = p.umr / 25;
   if (fSpotUVEmboss) {
     const bs6 = 5393320 / 4 / (((21 * 2) + M) * 29.7);
-    add('Tinta Spot UV', (H / bs6) * p.tarifTintaSpotUV, 'Paket full');
-    add('Jasa Spot UV', (uh / 500) * H, 'Paket full');
-    if (H > 0) add('Klise Emboss', ((21 + 4) * (29.7 + 4)) * 500 * 2, 'Paket full');
-    add('Jasa Emboss', (uh / 1000) * H, 'Paket full');
+    add('Tinta Spot UV', (H / bs6) * p.tarifTintaSpotUV, 'Mengikuti Catatan');
+    add('Biaya Jasa Spot UV', (uh / 500) * H, 'Mengikuti Catatan');
+    if (H > 0) add('Klise', ((21 + 4) * (29.7 + 4)) * 500 * 2, 'Mengikuti Catatan');
+    add('Biaya Jasa Emboss', (uh / 1000) * H, 'Mengikuti Catatan');
   }
   if (fShrinkPacking) {
     const cs6 = 106700 / (29.7 + 8);
-    add('Plastik Shrink', (H / cs6) * p.tarifShrinkRoll, 'Paket shrink');
-    add('Jasa Shrink + Packing', ((uh * 2) / 500) * H, 'Jasa packing');
+    add('Biaya Plastik Sring', (H / cs6) * p.tarifShrinkRoll, 'Mengikuti Catatan');
+    add('Jasa Plastik Sring + Packing', ((uh * 2) / 500) * H, 'Jasa Packing');
   }
   if (fPackingKardus) {
     const isiKardus = C6 <= 100 ? 200 : C6 <= 200 ? 150 : C6 <= 300 ? 100 : C6 <= 400 ? 90 : C6 <= 500 ? 80 : C6 <= 600 ? 70 : 50;
     const lakban = H > 0 ? p.tarifLakbanRoll * ((H / isiKardus) / (7650 / 196)) : 0;
-    add('Packing Kardus & Lakban', (H > 0 ? Math.ceil(H / isiKardus) * p.tarifKardusBox : 0) + lakban,
-      `${H > 0 ? Math.ceil(H / isiKardus) : 0} kardus × Rp ${p.tarifKardusBox.toLocaleString('id-ID')} + lakban`);
+    add('Kardus + Lakban', (H > 0 ? Math.ceil(H / isiKardus) * p.tarifKardusBox : 0) + lakban,
+      `${H > 0 ? Math.ceil(H / isiKardus) : 0} Kardus × Rp ${p.tarifKardusBox.toLocaleString('id-ID')} + Lakban`);
   }
 
   breakdown.forEach((b) => { b.pct = totalHpp > 0 ? b.nominal / totalHpp : 0; });

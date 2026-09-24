@@ -7,16 +7,16 @@ export type SoftCoverCustomLini =
   | 'custom-oo105-24' | 'custom-po105-24' | 'custom-pp105-24' | 'custom-pr105-24';
 
 export const SOFT_COVER_CUSTOM_LINIS: { id: SoftCoverCustomLini; label: string }[] = [
-  { id: 'custom-pp145-19', label: '14,5 × 20,25 — Print–Print (F19)' },
-  { id: 'custom-pr145-19', label: '14,5 × 20,25 — Print–Ryobi (F19)' },
-  { id: 'custom-oo145-21', label: '14,5 × 20,25 — Oliver–Oliver (F21)' },
-  { id: 'custom-or145-21', label: '14,5 × 20,25 — Oliver–Ryobi (F21)' },
-  { id: 'custom-pp145-21', label: '14,5 × 20,25 — Print–Print (F21)' },
-  { id: 'custom-pr145-21', label: '14,5 × 20,25 — Print–Ryobi (F21)' },
-  { id: 'custom-oo105-24', label: '10,5 × 14,8 — Oliver–Oliver (F24)' },
-  { id: 'custom-po105-24', label: '10,5 × 14,8 — Print–Oliver (F24)' },
-  { id: 'custom-pp105-24', label: '10,5 × 14,8 — Print–Print (F24)' },
-  { id: 'custom-pr105-24', label: '10,5 × 14,8 — Print–Ryobi (F24)' },
+  { id: 'custom-pp145-19', label: '14,5 Cover Print-Isi Print (19 · 20–200)' },
+  { id: 'custom-pr145-19', label: '14,5 Cover Print-Isi Ryobi (19 · 250–600)' },
+  { id: 'custom-oo145-21', label: '14,5 Cover Oliver-Isi Oliver (21 · 1000–3000)' },
+  { id: 'custom-or145-21', label: '14,5 Cover Oliver-Isi Ryobi (21 · 650–900)' },
+  { id: 'custom-pp145-21', label: '14,5 Cover Print-Isi Print (21 · 20–200)' },
+  { id: 'custom-pr145-21', label: '14,5 Cover Print-Isi Ryobi (21 · 250–600)' },
+  { id: 'custom-oo105-24', label: '10,5 Cover Oliver-Isi Oliver (24 · 1500–5000)' },
+  { id: 'custom-po105-24', label: '10,5 Cover Print-Isi Oliver (24 · 700–1000)' },
+  { id: 'custom-pp105-24', label: '10,5 Cover Print-Isi Print (24 · 20–200)' },
+  { id: 'custom-pr105-24', label: '10,5 Cover Print-Isi Ryobi (24 · 250–600)' },
 ];
 
 // BUKU!O7/P7 per (ukuran, mesin cover) — cabang mati dikomposisi dari file yang hidup (disetujui user).

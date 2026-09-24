@@ -39,17 +39,17 @@ const COVER_GROUPS: GroupDef[] = [
   {
     title: 'Kertas', border: 'border-sky-300', labelCls: 'text-sky-800',
     fields: [
-      { key: 'tarifKertasCoverKg', label: 'Kertas Cover / kg (Rp)' },
-      { key: 'gramaturCover', label: 'Gramatur Cover', opts: { rupiah: false } },
+      { key: 'tarifKertasCoverKg', label: 'Harga Cover / kg' },
+      { key: 'gramaturCover', label: 'Gramatur', opts: { rupiah: false } },
       { key: 'upCoverPct', label: 'Up Cover (%)', opts: { rupiah: false, suffix: '%' } },
-      { key: 'insheetCover', label: 'Insheet Cover (lbr)' },
+      { key: 'insheetCover', label: 'Insheet Cover' },
     ],
   },
   {
     title: 'Cetak', border: 'border-cyan-300', labelCls: 'text-cyan-800',
     fields: [
-      { key: 'tarifDesainCover', label: 'Desain Cover (Rp)' },
-      { key: 'tarifPrintCoverA3', label: 'Print Cover A3+ (Rp)' },
+      { key: 'tarifDesainCover', label: 'Desain Cover' },
+      { key: 'tarifPrintCoverA3', label: 'Harga Print Cover A3+' },
     ],
   },
 ];
@@ -58,32 +58,32 @@ const ISI_GROUPS: GroupDef[] = [
   {
     title: 'Kertas', border: 'border-blue-300', labelCls: 'text-blue-800',
     fields: [
-      { key: 'tarifKertasIsiKg', label: 'Kertas HVS / kg (Rp)' },
+      { key: 'tarifKertasIsiKg', label: 'Harga Isi / kg' },
       { key: 'upIsiPct', label: 'Up Isi (%)', opts: { rupiah: false, suffix: '%' } },
-      { key: 'gramaturIsi', label: 'Gramatur Isi', opts: { rupiah: false } },
-      { key: 'insheetIsi', label: 'Insheet Isi (lbr)' },
+      { key: 'gramaturIsi', label: 'Gramatur', opts: { rupiah: false } },
+      { key: 'insheetIsi', label: 'Insheet Isi' },
     ],
   },
   {
     title: 'Desain', border: 'border-indigo-300', labelCls: 'text-indigo-800',
     fields: [
-      { key: 'tarifDesainIsiPerUnit', label: 'Desain Isi per Lembar (Rp)' },
-      { key: 'tarifDesainIsiPerHlm', label: 'Desain Isi per Halaman (Rp)' },
+      { key: 'tarifDesainIsiPerUnit', label: 'Design Isi / Lbr' },
+      { key: 'tarifDesainIsiPerHlm', label: 'Design Isi / Hlm' },
     ],
   },
   {
     title: 'Plate & Cetak', border: 'border-sky-300', labelCls: 'text-sky-800',
     fields: [
-      { key: 'tarifPlateIsi', label: 'Plate Isi (Rp)' },
-      { key: 'tarifCetakMinIsi', label: 'Min Cetak (Rp)' },
-      { key: 'tarifDrekIsi', label: 'Drek Isi (Rp)' },
+      { key: 'tarifPlateIsi', label: 'Plate' },
+      { key: 'tarifCetakMinIsi', label: 'Harga Min Order/plat' },
+      { key: 'tarifDrekIsi', label: 'Per Drek wrn' },
     ],
   },
   {
     title: 'Print Isi', border: 'border-teal-300', labelCls: 'text-teal-800',
     fields: [
-      { key: 'tarifPrintBuyaIsi', label: 'Print Isi Buya flat (Rp)' },
-      { key: 'tarifPrintIsiA3', label: 'Print Isi A3+ (Rp)' },
+      { key: 'tarifPrintBuyaIsi', label: 'Harga Print Isi Buya' },
+      { key: 'tarifPrintIsiA3', label: 'Harga Print Isi A3+' },
     ],
   },
 ];
@@ -92,25 +92,25 @@ const JASA_GROUPS: GroupDef[] = [
   {
     title: 'Tenaga', border: 'border-violet-300', labelCls: 'text-violet-800',
     fields: [
-      { key: 'umr', label: 'UMR (Rp)' },
-      { key: 'tarifRoyalti', label: 'Royalty / pcs (Rp)' },
+      { key: 'umr', label: 'UMR' },
+      { key: 'tarifRoyalti', label: 'Royalty' },
     ],
   },
   {
-    title: 'Habis Pakai', border: 'border-purple-300', labelCls: 'text-purple-800',
+    title: 'Biaya Lain-Lain', border: 'border-purple-300', labelCls: 'text-purple-800',
     fields: [
-      { key: 'tarifKawatRoll', label: 'Kawat Stiching /roll (Rp)' },
-      { key: 'tarifTintaSpotUV', label: 'Tinta Spot UV /kg (Rp)' },
-      { key: 'tarifSteplesPack', label: 'Steples 369/Pack (Rp)' },
-      { key: 'tarifSisirPerPcs', label: 'Sisir / pcs (Rp) — 150 flat' },
+      { key: 'tarifKawatRoll', label: 'Kawat Stiching @Roll' },
+      { key: 'tarifTintaSpotUV', label: 'Tinta Spot UV /Kg' },
+      { key: 'tarifSteplesPack', label: 'Isi Steples 369/Pack' },
+      { key: 'tarifSisirPerPcs', label: 'Sisir' },
     ],
   },
   {
-    title: 'Kemas', border: 'border-fuchsia-300', labelCls: 'text-fuchsia-800',
+    title: 'Packing', border: 'border-fuchsia-300', labelCls: 'text-fuchsia-800',
     fields: [
-      { key: 'tarifShrinkRoll', label: 'Shrink /roll (Rp)' },
-      { key: 'tarifLakbanRoll', label: 'Lakban /roll (Rp)' },
-      { key: 'tarifKardusBox', label: 'Kardus /box (Rp)' },
+      { key: 'tarifShrinkRoll', label: 'Plastik Sring /Roll' },
+      { key: 'tarifLakbanRoll', label: 'Lakban Transparan /Roll' },
+      { key: 'tarifKardusBox', label: 'Kardus @' },
     ],
   },
 ];
@@ -118,19 +118,19 @@ const JASA_GROUPS: GroupDef[] = [
 const FINISH_GROUPS: GroupDef[] = [
   {
     title: 'Bending', border: 'border-amber-300', labelCls: 'text-amber-800',
-    fields: [{ key: 'tarifBending', label: 'Bending (Rp)' }],
+    fields: [{ key: 'tarifBending', label: 'Bending' }],
   },
   {
     title: 'Laminasi & UV', border: 'border-orange-300', labelCls: 'text-orange-800',
     fields: [
-      { key: 'tarifLaminasiGlossy', label: 'Glossy /cm²', opts: { decimal: true } },
-      { key: 'tarifLaminasiDoff', label: 'Doff /cm²', opts: { decimal: true } },
-      { key: 'tarifUvVarnish', label: 'UV /cm²', opts: { decimal: true } },
+      { key: 'tarifLaminasiGlossy', label: 'Laminasi Glossy', opts: { decimal: true } },
+      { key: 'tarifLaminasiDoff', label: 'Laminasi Doff', opts: { decimal: true } },
+      { key: 'tarifUvVarnish', label: 'UV Varnish', opts: { decimal: true } },
     ],
   },
   {
     title: 'Laba', border: 'border-yellow-300', labelCls: 'text-yellow-800',
-    fields: [{ key: 'marginDefaultPct', label: 'Margin Default (%)', opts: { rupiah: false, suffix: '%' } }],
+    fields: [{ key: 'marginDefaultPct', label: 'Laba (%)', opts: { rupiah: false, suffix: '%' } }],
   },
 ];
 
@@ -147,10 +147,10 @@ const RARE_GROUPS: GroupDef[] = [
     ],
   },
   {
-    title: 'Batas Bawah (Floor)', border: 'border-slate-300', labelCls: 'text-slate-600',
+    title: 'Harga Min', border: 'border-slate-300', labelCls: 'text-slate-600',
     fields: [
-      { key: 'minBending', label: 'Floor Bending (Rp)' },
-      { key: 'minFinishing', label: 'Floor Finishing (Rp)' },
+      { key: 'minBending', label: 'Min Bending' },
+      { key: 'minFinishing', label: 'Min Finishing' },
     ],
   },
 ];
@@ -170,7 +170,7 @@ export default function BukuSoftCoverUnifiedMasterParameter({
 
   const handleResetField = (key: keyof SoftCoverUnifiedParams) => {
     setCustomParams((prev) => ({ ...prev, [key]: DEFAULT_SOFT_COVER_UNIFIED[key] }));
-    toast.info(`Field dikembalikan ke standar (${DEFAULT_SOFT_COVER_UNIFIED[key]}).`);
+    toast.info(`Field kembali ke Master (${DEFAULT_SOFT_COVER_UNIFIED[key]}).`);
   };
 
   const fmtStd = (f: FieldDef) => {
@@ -207,10 +207,10 @@ export default function BukuSoftCoverUnifiedMasterParameter({
               <button
                 type="button"
                 onClick={() => handleResetField(key)}
-                className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                title="Reset ke default"
+                className="text-amber-700 hover:text-amber-900 flex items-center bg-amber-100/80 p-1 rounded cursor-pointer shrink-0"
+                title="Master"
               >
-                <RotateCcw className="w-2.5 h-2.5" /> Def
+                <RotateCcw className="w-3 h-3" />
               </button>
             )}
           </div>
@@ -226,7 +226,7 @@ export default function BukuSoftCoverUnifiedMasterParameter({
           />
         </div>
         {modified && (
-          <p className="text-[10px] text-slate-500 mt-1">Standar file: {fmtStd(f)}</p>
+          <p className="text-[10px] text-slate-500 mt-1">Master: {fmtStd(f)}</p>
         )}
       </div>
     );
@@ -274,7 +274,7 @@ export default function BukuSoftCoverUnifiedMasterParameter({
           type="text"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Cari parameter… mis. UMR, laminasi, target"
+          placeholder="Cari…"
           className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
         />
       </div>
@@ -285,7 +285,7 @@ export default function BukuSoftCoverUnifiedMasterParameter({
           cardHeader('text-sky-900 bg-sky-200/80', 'Cover', Printer, 'text-sky-600', '1. Cover'),
           COVER_GROUPS,
           <p className="text-[10px] text-slate-500">
-            Cover Print Inter: all-in Rp {customParams.tarifPrintCoverA3.toLocaleString('id-ID')}/lembar. Cover Oliver: mengikuti harga rim + plate per file.
+            Cover Print Inter: Rp {customParams.tarifPrintCoverA3.toLocaleString('id-ID')}/lbr A3+. Cover Oliver: Harga Per kg + Plate mengikuti Master.
           </p>
         )}
 
@@ -294,25 +294,25 @@ export default function BukuSoftCoverUnifiedMasterParameter({
           cardHeader('text-blue-900 bg-blue-200/80', 'Isi', BookCopy, 'text-blue-600', '2. Isi HVS'),
           ISI_GROUPS,
           <p className="text-[10px] text-slate-500">
-            Tarif plate/min/drek hanya untuk file 17.
+            Plate/Min/Drek hanya untuk 17.
           </p>
         )}
 
         {cardShell(
           'bg-violet-50/40 border-violet-200',
-          cardHeader('text-violet-900 bg-violet-200/80', 'Jasa', Scissors, 'text-violet-600', '3. Jasa, Kawat & Kemas'),
+          cardHeader('text-violet-900 bg-violet-200/80', 'Jasa', Scissors, 'text-violet-600', '3. Jasa, Kawat & Packing'),
           JASA_GROUPS,
           <p className="text-[10px] text-slate-500">
-            Jasa harian, SpotUV/Emboss/Shrink/Packing mengikuti file dan saklar Komponen Tambahan.
+            Lipat, Sisir, Susun, Stiching, Sring & Packing mengikuti Master dan Catatan.
           </p>
         )}
 
         {cardShell(
           'bg-amber-50/40 border-amber-200',
-          cardHeader('text-amber-900 bg-amber-200/80', 'Finishing', Layers, 'text-amber-600', '4. Bending, Laminasi & Margin'),
+          cardHeader('text-amber-900 bg-amber-200/80', 'Finishing', Layers, 'text-amber-600', '4. Bending, Laminasi & Laba'),
           FINISH_GROUPS,
           <p className="text-[10px] text-slate-500">
-            Floor finishing Rp {customParams.minFinishing.toLocaleString('id-ID')}, bending Rp {customParams.minBending.toLocaleString('id-ID')}. Margin {customParams.marginDefaultPct}%, harga ke puluhan.
+            Min Finishing Rp {customParams.minFinishing.toLocaleString('id-ID')}, Min Bending Rp {customParams.minBending.toLocaleString('id-ID')}. Laba {customParams.marginDefaultPct}%, dibulatkan. Tanpa Nego.
           </p>
         )}
 
@@ -324,7 +324,7 @@ export default function BukuSoftCoverUnifiedMasterParameter({
           >
             <summary className="flex items-center gap-2 cursor-pointer list-none">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-600 bg-slate-200/80 px-2 py-0.5 rounded">Lanjutan</span>
-              <h3 className="text-xs font-bold text-slate-700">5. Target Harian & Batas Bawah</h3>
+              <h3 className="text-xs font-bold text-slate-700">5. Target & Harga Min</h3>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400 ml-auto" />
             </summary>
             <div className="flex flex-col gap-2.5 mt-3">

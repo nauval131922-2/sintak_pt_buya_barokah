@@ -33,15 +33,15 @@ interface BukuSoftCoverUnifiedMatrixViewProps {
 }
 
 const FINISHING_SHORT: Record<string, string> = {
-  'None,': 'Tanpa',
-  'UV Varnish,': 'UV',
-  'Laminasi Glossy,': 'Glossy',
-  'Laminasi Doff,': 'Doff',
-  'Lem Bending,': 'Bending',
-  'UV Varnish + Bending,': 'UV+Bending',
-  'Laminasi Glossy + Bending,': 'Glossy+Bending',
-  'Laminasi Doff + Bending,': 'Doff+Bending',
-  'Laminasi Doff + Spot UV + Emboss + Lem Bending + Shrink,': 'Full Paket',
+  'None,': 'Tanpa Laminasi',
+  'UV Varnish,': 'UV Varnish',
+  'Laminasi Glossy,': 'Laminasi Glossy',
+  'Laminasi Doff,': 'Laminasi Doff',
+  'Lem Bending,': 'Lem Bending',
+  'UV Varnish + Bending,': 'UV Varnish + Bending',
+  'Laminasi Glossy + Bending,': 'Laminasi Glossy + Bending',
+  'Laminasi Doff + Bending,': 'Laminasi Doff + Bending',
+  'Laminasi Doff + Spot UV + Emboss + Lem Bending + Shrink,': 'Laminasi Doff + Spot UV + Emboss + Lem Bending + Shrink',
 };
 
 export default function BukuSoftCoverUnifiedMatrixView({
@@ -104,7 +104,7 @@ export default function BukuSoftCoverUnifiedMatrixView({
               Pricelist Matriks Buku Soft Cover — Katalog 17–19–21–24
             </h2>
             <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              1 produk · 3 ukuran · 18 lini — 32 hal · laba/margin 30%.
+              1 produk · 3 ukuran · 18 lini — 32 Hal · Laba 30%.
             </p>
           </div>
         </div>
@@ -116,7 +116,7 @@ export default function BukuSoftCoverUnifiedMatrixView({
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Cari oplah..."
+            placeholder="Cari Oplah…"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-9 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
@@ -149,12 +149,12 @@ export default function BukuSoftCoverUnifiedMatrixView({
                 <option key={l} value={l}>{SOFT_COVER_LINI_LABEL[l]}</option>
               ))}
             </optgroup>
-            <optgroup label="14,5 × 20,25 cm Custom (F19/F21)">
+            <optgroup label="14,5 × 20,25 cm (19/21)">
               {SOFT_COVER_LINIS_14_CUSTOM.map((l) => (
                 <option key={l} value={l}>{SOFT_COVER_LINI_LABEL[l]}</option>
               ))}
             </optgroup>
-            <optgroup label="10,5 × 14,8 cm Custom (F24)">
+            <optgroup label="10,5 × 14,8 cm (24)">
               {SOFT_COVER_LINIS_105_CUSTOM.map((l) => (
                 <option key={l} value={l}>{SOFT_COVER_LINI_LABEL[l]}</option>
               ))}
@@ -219,7 +219,7 @@ export default function BukuSoftCoverUnifiedMatrixView({
                   </h3>
                 </div>
                 <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
-                  {tiers.length} tier
+                  {tiers.length} Oplah
                 </span>
               </div>
 
@@ -237,15 +237,15 @@ export default function BukuSoftCoverUnifiedMatrixView({
                         <th className="py-2.5 px-3 border-r border-gray-200 text-center w-20 bg-gray-100">
                           Oplah
                         </th>
-                        <th className="py-2.5 px-3 text-right font-semibold">HPP/pcs</th>
-                        <th className="py-2.5 px-3 text-right font-bold text-emerald-800 bg-emerald-100/50">Harga</th>
+                        <th className="py-2.5 px-3 text-right font-semibold">HPP Per Exp</th>
+                        <th className="py-2.5 px-3 text-right font-bold text-emerald-800 bg-emerald-100/50">Harga Per Pcs</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                       {matrixData.map((row) => (
                         <tr key={row.oplah} className="hover:bg-emerald-50/30 transition-colors">
                           <td className="py-2 px-3 text-center font-bold text-gray-900 border-r border-gray-200 bg-gray-50/30">
-                            {row.oplah.toLocaleString('id-ID')} pcs
+                            {row.oplah.toLocaleString('id-ID')} Pcs
                           </td>
                           <td className="py-2 px-2 text-right text-gray-500 font-mono">{Math.round(row.hpp).toLocaleString('id-ID')}</td>
                           <td className="py-2 px-2 text-right font-bold text-emerald-700 font-mono bg-emerald-50/30">
@@ -267,10 +267,10 @@ export default function BukuSoftCoverUnifiedMatrixView({
               <thead className="sticky top-0 z-10 bg-slate-100 border-b border-slate-200 text-slate-700 font-bold">
                 <tr>
                   <th className="py-2.5 px-3">Oplah</th>
-                  <th className="py-2.5 px-3">Finishing</th>
-                  <th className="py-2.5 px-3 text-right">HPP / pcs</th>
-                  <th className="py-2.5 px-3 text-right text-emerald-700">Harga Jual / pcs</th>
-                  <th className="py-2.5 px-3 text-right text-emerald-800">Total Omset</th>
+                  <th className="py-2.5 px-3">Catatan</th>
+                  <th className="py-2.5 px-3 text-right">HPP Per Exp</th>
+                  <th className="py-2.5 px-3 text-right text-emerald-700">Harga Per Pcs</th>
+                  <th className="py-2.5 px-3 text-right text-emerald-800">Harga Total</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
@@ -283,7 +283,7 @@ export default function BukuSoftCoverUnifiedMatrixView({
                 ) : (
                   flatTableRows.map((row, idx) => (
                     <tr key={idx} className="hover:bg-emerald-50/40 transition-colors">
-                      <td className="py-2 px-3 font-bold text-slate-800 font-sans">{row.oplah.toLocaleString('id-ID')} pcs</td>
+                      <td className="py-2 px-3 font-bold text-slate-800 font-sans">{row.oplah.toLocaleString('id-ID')} Pcs</td>
                       <td className="py-2 px-3 text-slate-700 font-sans">{FINISHING_SHORT[row.finishing]}</td>
                       <td className="py-2 px-3 text-right text-slate-600">Rp {Math.round(row.hpp).toLocaleString('id-ID')}</td>
                       <td className="py-2 px-3 text-right font-bold text-emerald-700">Rp {row.jual.toLocaleString('id-ID')}</td>

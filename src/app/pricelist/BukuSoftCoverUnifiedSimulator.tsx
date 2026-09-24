@@ -54,7 +54,7 @@ const draftVal = (key: string, fallback: any) => {
 };
 
 const FINISHING_LABEL: Record<string, string> = {
-  'None,': 'Tanpa Finishing',
+  'None,': 'Tanpa Laminasi',
   'UV Varnish,': 'UV Varnish',
   'Laminasi Glossy,': 'Laminasi Glossy',
   'Laminasi Doff,': 'Laminasi Doff',
@@ -62,7 +62,7 @@ const FINISHING_LABEL: Record<string, string> = {
   'UV Varnish + Bending,': 'UV Varnish + Bending',
   'Laminasi Glossy + Bending,': 'Laminasi Glossy + Bending',
   'Laminasi Doff + Bending,': 'Laminasi Doff + Bending',
-  'Laminasi Doff + Spot UV + Emboss + Lem Bending + Shrink,': 'Full Paket',
+  'Laminasi Doff + Spot UV + Emboss + Lem Bending + Shrink,': 'Laminasi Doff + Spot UV + Emboss + Lem Bending + Shrink',
 };
 
 interface BukuSoftCoverUnifiedSimulatorProps {
@@ -222,7 +222,7 @@ export default function BukuSoftCoverUnifiedSimulator({
     [lini, oplah, jumlahHalaman, mukaCover, warnaCover, warnaIsi, finishing, marginPct, feat, mesinCover, mesinIsi, customParams]
   );
 
-  const defaultTitle = () => `Buku Soft Cover ${SOFT_COVER_LINI_LABEL[lini]} ${jumlahHalaman} Hal (${oplah} pcs)`;
+  const defaultTitle = () => `Buku Soft Cover ${SOFT_COVER_LINI_LABEL[lini]} ${jumlahHalaman} Hal (${oplah} Pcs)`;
 
   const handleSaveSimulation = () => {
     const title = simulationTitle.trim() || defaultTitle();
@@ -348,13 +348,13 @@ export default function BukuSoftCoverUnifiedSimulator({
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
               <Sliders size={15} className="text-emerald-700" />
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Input Spesifikasi Buku Soft Cover</h3>
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Spesifikasi Buku Soft Cover</h3>
             </div>
 
             {/* 1. Ukuran */}
             <div>
               <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
-                {stepChip(1)} Ukuran jadi (cm)
+                {stepChip(1)} Ukuran
               </label>
               <div className="grid grid-cols-3 gap-2">
                 {SOFT_COVER_UKURANS.map((u) => (
@@ -373,7 +373,7 @@ export default function BukuSoftCoverUnifiedSimulator({
                 <label className="text-xs font-bold text-sky-900">Muka &amp; Warna</label>
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-sky-900/80 mb-1">Mesin Cover</label>
+                <label className="block text-[11px] font-bold text-sky-900/80 mb-1">Cetak Cover</label>
                 <div className="grid grid-cols-2 gap-2">
                   {SOFT_COVER_COVER_OPTIONS[ukuran].map((m) => (
                     <button key={m} type="button" onClick={() => pickCascade(ukuran, m, SOFT_COVER_ISI_OPTIONS[ukuran].includes(mesinIsi) ? mesinIsi : SOFT_COVER_ISI_OPTIONS[ukuran][0])} className={optBtn(mesinCover === m)}>
@@ -394,7 +394,7 @@ export default function BukuSoftCoverUnifiedSimulator({
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Warna Cover</label>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Jenis Warna</label>
                   <div className="grid grid-cols-2 gap-2">
                     {(['1 Warna', '2 Warna', '3 Warna', '4 Warna'] as const).map((w) => (
                       <button key={w} type="button" onClick={() => setWarnaCover(w)} className={optBtn(warnaCover === w)}>
@@ -411,10 +411,10 @@ export default function BukuSoftCoverUnifiedSimulator({
               <div className="flex items-center gap-2">
                 {stepChip(3)}
                 <span className="text-[10px] font-black uppercase tracking-wider text-violet-900 bg-violet-200/80 px-2 py-0.5 rounded">Isi</span>
-                <label className="text-xs font-bold text-violet-900">Warna Isi</label>
+                <label className="text-xs font-bold text-violet-900">Jenis Warna</label>
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-violet-900/80 mb-1">Mesin Isi</label>
+                <label className="block text-[11px] font-bold text-violet-900/80 mb-1">Cetak Isi</label>
                 <div className="grid grid-cols-2 gap-2">
                   {SOFT_COVER_ISI_OPTIONS[ukuran].map((m) => (
                     <button key={m} type="button" onClick={() => pickCascade(ukuran, mesinCover, m)} className={optBtn(mesinIsi === m)}>
@@ -436,7 +436,7 @@ export default function BukuSoftCoverUnifiedSimulator({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
-                  {stepChip(4)} Oplah (pcs) — ketik bebas
+                  {stepChip(4)} Oplah (pcs)
                 </label>
                 <input
                   type="number"
@@ -463,13 +463,13 @@ export default function BukuSoftCoverUnifiedSimulator({
                 </div>
                 {isEkstra && (
                   <p className="mt-1.5 text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">
-                    Di luar tier file — ekstrapolasi rumus, bukan angka tabel Excel.
+                    Oplah di luar daftar file — Mengikuti rumus.
                   </p>
                 )}
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Halaman
+                  Jumlah Halaman
                 </label>
                 <input
                   type="number"
@@ -491,7 +491,7 @@ export default function BukuSoftCoverUnifiedSimulator({
               <div className="flex items-center gap-2">
                 {stepChip(5)}
                 <span className="text-[10px] font-black uppercase tracking-wider text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded">Finishing</span>
-                <label className="text-xs font-bold text-amber-900">Catatan Finishing</label>
+                <label className="text-xs font-bold text-amber-900">Catatan</label>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {finishingOptions.map((f) => (
@@ -502,29 +502,23 @@ export default function BukuSoftCoverUnifiedSimulator({
               </div>
               <p className="text-[10px] text-slate-500 italic">
                 {lini === 'Klasik'
-                  ? 'Klasik: 7 opsi.'
-                  : 'Offset & Custom: 9 opsi.'}
+                  ? '17: 7. Selain 17: 9.'
+                  : '9 Catatan.'}
               </p>
             </div>
 
-            {/* Grup Saklar Komponen — collapsed, auto-buka bila tersentuh */}
+            {/* Grup Catatan — collapsed, auto-buka bila tersentuh */}
             <details key={lini} open={saklarTouched ? true : undefined} className="rounded-xl border border-slate-300 bg-slate-50/70 p-3">
               <summary className="flex items-center gap-2 cursor-pointer list-none">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-800 bg-slate-200 px-2 py-0.5 rounded">Opsional</span>
-                <label className="text-xs font-bold text-slate-800 cursor-pointer">Komponen Tambahan</label>
-                {saklarTouched && (
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">
-                    diubah
-                  </span>
-                )}
+                <label className="text-xs font-bold text-slate-800 cursor-pointer">Catatan</label>
               </summary>
               <div className="space-y-2 mt-2">
               <div className="grid grid-cols-2 gap-2">
                 {(lini === 'Klasik'
-                  ? [['susun', 'Jasa Susun'], ['steples', 'Steples']] as [string, string][]
+                  ? [['susun', 'Susun'], ['steples', 'Steples']] as [string, string][]
                   : custom || (SOFT_COVER_OFFSET_COMBOS[lini as SoftCoverOffsetComboId]?.jasaModel === 'UMR5')
-                    ? [['lipat', 'Jasa Lipat'], ['sisir', 'Jasa Sisir'], ['susun', 'Jasa Susun'], ['kawat', 'Kawat'], ['stiching', 'Stiching']] as [string, string][]
-                    : [['susunStaples', 'Susun+Staples'], ['steples', 'Steples']] as [string, string][]
+                    ? [['lipat', 'Lipat'], ['sisir', 'Sisir'], ['susun', 'Susun'], ['kawat', 'Kawat Stiching'], ['stiching', 'Stiching']] as [string, string][]
+                    : [['susunStaples', 'Susun + Staples'], ['steples', 'Steples']] as [string, string][]
                 ).map(([k, label]) => {
                   const on = (effJasa as any)[k] ?? false;
                   return (
@@ -550,30 +544,30 @@ export default function BukuSoftCoverUnifiedSimulator({
                       {(feat.spotUVEmboss ?? false) ? '✓ ' : ''}Spot UV + Emboss
                     </button>
                     <button type="button" onClick={() => setFeat((prev) => ({ ...prev, shrinkPacking: !(prev.shrinkPacking ?? false) }))} className={saklarBtn(feat.shrinkPacking ?? false)}>
-                      {(feat.shrinkPacking ?? false) ? '✓ ' : ''}Shrink + Packing
+                      {(feat.shrinkPacking ?? false) ? '✓ ' : ''}Sring + Packing
                     </button>
                   </>
                 )}
                 <button type="button" onClick={() => setFeat((prev) => ({ ...prev, packingKardus: !(prev.packingKardus ?? true) }))} className={saklarBtn(feat.packingKardus ?? true)}>
-                  {(feat.packingKardus ?? true) ? '✓ ' : ''}Packing Kardus
+                  {(feat.packingKardus ?? true) ? '✓ ' : ''}Kardus + Lakban
                 </button>
               </div>
               <p className="text-[10px] text-slate-500 italic">
-                Mati = komponen tidak dihitung. Default mengikuti file ({SOFT_COVER_LINI_LABEL[lini]}).
+                Mati = tidak dihitung. Mengikuti Master ({SOFT_COVER_LINI_LABEL[lini]}).
               </p>
             </div>
             </details>
 
-            {/* Margin / Laba */}
+            {/* Laba */}
             {custom ? (
               <div className="pt-2 border-t border-slate-100">
                 <p className="text-[11px] text-slate-600">
-                  Laba <strong>{customParams.marginDefaultPct ?? 30}%</strong> dari file Excel — harga ke puluhan. Tanpa nego.
+                  Laba <strong>{customParams.marginDefaultPct ?? 30}%</strong> dari Master, dibulatkan. Tanpa Nego.
                 </p>
               </div>
             ) : (
             <div className="pt-2 border-t border-slate-100">
-              <label className="block text-xs font-bold text-slate-700 mb-1">Margin Profit (%)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Laba (%)</label>
               <div className="relative">
                 <input
                   type="number"
@@ -595,12 +589,12 @@ export default function BukuSoftCoverUnifiedSimulator({
           {/* 6. Hasil — sticky agar terlihat saat scroll breakdown */}
           <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
             <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
-              {stepChip(6)} Hasil simulasi
+              {stepChip(6)} Kalkulasi Total
             </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">HPP / pcs</span>
+                <span className="text-[11px] font-semibold">HPP Per Exp</span>
                 <DollarSign size={13} className="text-slate-400" />
               </div>
               <div>
@@ -615,20 +609,20 @@ export default function BukuSoftCoverUnifiedSimulator({
 
             <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-emerald-800 mb-1">
-                <span className="text-[11px] font-bold">Harga Jual (+{custom ? result.marginPct : marginPct}%)</span>
+                <span className="text-[11px] font-bold">Harga Per Pcs (+{custom ? result.marginPct : marginPct}%)</span>
                 <TrendingUp size={13} className="text-emerald-600" />
               </div>
               <div>
                 <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
                   Rp {result.hargaJualPerPcs.toLocaleString('id-ID')}
                 </span>
-                <span className="block text-[10px] text-emerald-700/80 mt-0.5">/ pcs</span>
+                <span className="block text-[10px] text-emerald-700/80 mt-0.5">Laba {custom ? result.marginPct : marginPct}%</span>
               </div>
             </div>
 
             <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">Total Harga Jual</span>
+                <span className="text-[11px] font-semibold">Harga Total</span>
                 <TrendingUp size={13} className="text-emerald-500" />
               </div>
               <div>
@@ -649,23 +643,23 @@ export default function BukuSoftCoverUnifiedSimulator({
               <div className="flex items-center gap-2">
                 <FileText size={15} className="text-emerald-700" />
                 <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Rincian Biaya {SOFT_COVER_LINI_LABEL[lini]}
+                  Keterangan {SOFT_COVER_LINI_LABEL[lini]}
                 </h4>
               </div>
               <span className="text-[11px] font-bold text-slate-500">
-                {oplah.toLocaleString('id-ID')} pcs · {jumlahHalaman} hal · {FINISHING_LABEL[finishing]}
+                {oplah.toLocaleString('id-ID')} Pcs · {jumlahHalaman} Hal · {FINISHING_LABEL[finishing]}
               </span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-xs text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-100/60 border-b border-slate-200 text-slate-600 font-semibold text-[11px]">
-                    <th className="py-2 px-3 w-10 text-center">No</th>
-                    <th className="py-2 px-3">Komponen Biaya</th>
-                    <th className="py-2 px-3">Keterangan Teknis</th>
-                    <th className="py-2 px-3 text-right">Biaya (Rp)</th>
-                    <th className="py-2 px-3 text-right w-16">Porsi</th>
-                  </tr>
+                    <tr className="bg-slate-100/60 border-b border-slate-200 text-slate-600 font-semibold text-[11px]">
+                      <th className="py-2 px-3 w-10 text-center">No.</th>
+                      <th className="py-2 px-3">Jenis</th>
+                      <th className="py-2 px-3">Keterangan</th>
+                      <th className="py-2 px-3 text-right">Harga (Rp)</th>
+                      <th className="py-2 px-3 text-right w-16">Porsi</th>
+                    </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
                   {result.breakdown.map((item, idx) => (

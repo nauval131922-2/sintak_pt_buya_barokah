@@ -322,7 +322,7 @@ export function calculateSoftCoverOffsetHpp(
   const [cvW, cvH] = coverPlano(cfg.ukuran, cfg.coverMesin);
   const rimCover = ((cvW * cvH) * p.gramaturCover) / 20000 * (p.tarifKertasCoverKg * (1 + p.upCoverPct / 100));
   const T = cfg.coverMesin === 'Print Inter' ? p.tarifPrintCoverA3 * R : (R / 500) * rimCover;
-  add(`Kertas Cover ${cfg.coverMesin}`, T, `${R} lbr × Rp ${Math.round(cfg.coverMesin === 'Print Inter' ? p.tarifPrintCoverA3 : rimCover / 500).toLocaleString('id-ID')}`);
+  add(`Kertas Cover ${cfg.coverMesin}`, T, `${R} Lbr × Rp ${Math.round(cfg.coverMesin === 'Print Inter' ? p.tarifPrintCoverA3 : rimCover / 500).toLocaleString('id-ID')}`);
   // BUKU!V7 = IF(H>0,V6,0)
   add('Desain Cover', H > 0 ? p.tarifDesainCover : 0, `Rp ${p.tarifDesainCover.toLocaleString('id-ID')}/order`);
   // BUKU!Y6/AB6 = 0 untuk Print Inter & Print Buya → seluruh blok plate/min/over cover Rp 0.
@@ -331,7 +331,7 @@ export function calculateSoftCoverOffsetHpp(
   // BUKU!Y7 (gate H; file Print-Oliver tanpa gate — nilai sama saat H>0)
   const Z7 = Z2; // BUKU!Z7 (Z6=0 → Z2)
   const Y = coverOffset && (H > 0 || cfg.ungatedCoverCells) ? cfg.plateCoverY6 * Z7 : 0;
-  add('Plate Cover ' + cfg.coverMesin, Y, `Rp ${coverOffset ? cfg.plateCoverY6.toLocaleString('id-ID') : 0} × ${Z7} warna`);
+  add('Plate Cover ' + cfg.coverMesin, Y, `Rp ${coverOffset ? cfg.plateCoverY6.toLocaleString('id-ID') : 0} × ${Z7} Warna`);
   // BUKU!AB7 (gate H; Print-Oliver tanpa gate); BUKU!AD7 = AB*Z7
   const AB = coverOffset && (H > 0 || cfg.ungatedCoverCells) ? cfg.minCoverAB6 : 0;
   const AD = AB * Z7;
@@ -339,7 +339,7 @@ export function calculateSoftCoverOffsetHpp(
   const overCover = coverOffset && Qc - 1000 > 1 ? Qc - 1000 : 0;
   const AF = overCover === 0 ? 0 : overCover > 1 ? overCover * cfg.drekCoverAC6 * Z2 : 0;
   const AG = coverOffset ? AF + AD : 0;
-  if (AG !== 0) add('Ongkos Cetak Cover ' + cfg.coverMesin, AG, `Cetak minimal Rp ${AD.toLocaleString('id-ID')} + lebihan ${overCover}×${cfg.drekCoverAC6}×${Z2}`);
+  if (AG !== 0) add('Ongkos Cetak Cover ' + cfg.coverMesin, AG, `Harga Min Order Rp ${AD.toLocaleString('id-ID')} + Over ${overCover}×${cfg.drekCoverAC6}×${Z2}`);
 
   // ---- ISI ----
   const AI = H > 0 ? p.insheetIsi : 0; // BUKU!AI7 = Master!D23
@@ -353,7 +353,7 @@ export function calculateSoftCoverOffsetHpp(
   const [iaW, iaH] = isiArea(cfg.ukuran, cfg.isiMesin, warnaIsi);
   const rimIsi = ((iaW * iaH) * p.gramaturIsi) / 20000 * (p.tarifKertasIsiKg * (1 + p.upIsiPct / 100));
   const AR = (AP / 500) * rimIsi;
-  add('Kertas Isi HVS', AR, `${AP} lbr × Rp ${(rimIsi / 500).toFixed(2)} (rim Rp ${Math.round(rimIsi).toLocaleString('id-ID')}/500)`);
+  add('Kertas Isi HVS', AR, `${AP} Lbr × Rp ${(rimIsi / 500).toFixed(2)}`);
   // BUKU!AT7 = IF(H>0,AT6*C7,0)
   add('Desain Isi', H > 0 ? p.tarifDesainIsiPerUnit * C7 : 0,
     `Rp ${p.tarifDesainIsiPerUnit.toLocaleString('id-ID')} × ${C7}`);
@@ -371,7 +371,7 @@ export function calculateSoftCoverOffsetHpp(
   const BC = BB === 0 ? 0 : BB * cfg.drekIsiZ;
   const BD = cfg.isiMesin === 'Print Buya' ? cfg.jasaBuyaAR2 * AO : BC + BA;
   add('Cetak Isi ' + cfg.isiMesin, BD,
-    cfg.isiMesin === 'Print Buya' ? `Rp ${cfg.jasaBuyaAR2} × ${AO} (jasa print)` : `Cetak minimal Rp ${Math.round(BA).toLocaleString('id-ID')} + lebihan ${BB}×${cfg.drekIsiZ}`);
+    cfg.isiMesin === 'Print Buya' ? `Rp ${cfg.jasaBuyaAR2} × ${AO}` : `Harga Min Order Rp ${Math.round(BA).toLocaleString('id-ID')} + Over ${BB}×${cfg.drekIsiZ}`);
   // BUKU!BF7 = H*D36
   if (H * p.tarifRoyalti > 0) add('Royalty', H * p.tarifRoyalti, `${H} × Rp ${p.tarifRoyalti}`);
   // BUKU!BH7 = IF(H>0,BH6,0) = 0 (BH6=0 konstanta generasi combo) — tanpa baris
@@ -387,16 +387,16 @@ export function calculateSoftCoverOffsetHpp(
     const BK6 = umrHarian / (500 * 19); // BUKU!BK28
     const BL6 = p.tarifKawatRoll / (30000 * (1 - 15 / 100)); // BUKU!BL28 = 30000-15%
     const BM6 = (umrHarian * 2) / 10000; // BUKU!BM28
-    if (fJ('jasaLipat', true)) add('Jasa Lipat', BI6 * AN6 * H, `Rp ${BI6.toFixed(2)}×${AN6}×${H}`);
-    if (fJ('jasaSisir', true)) add('Jasa Sisir', BJ6 * H, `Rp ${BJ6.toFixed(2)}×${H}`);
-    if (fJ('jasaSusun', true)) add('Jasa Susun', BK6 * AN6 * H, `Rp ${BK6.toFixed(2)}×${AN6}×${H}`);
+    if (fJ('jasaLipat', true)) add('Lipat', BI6 * AN6 * H, `Rp ${BI6.toFixed(2)}×${AN6}×${H}`);
+    if (fJ('jasaSisir', true)) add('Sisir', BJ6 * H, `Rp ${BJ6.toFixed(2)}×${H}`);
+    if (fJ('jasaSusun', true)) add('Susun', BK6 * AN6 * H, `Rp ${BK6.toFixed(2)}×${AN6}×${H}`);
     if (fJ('jasaKawat', true)) add('Kawat Stiching', BL6 * H, `Rp ${BL6.toFixed(2)}×${H}`);
-    if (fJ('jasaStiching', true)) add('Jasa Stiching', BM6 * H, `Rp ${BM6.toFixed(2)}×${H}`);
+    if (fJ('jasaStiching', true)) add('Stiching', BM6 * H, `Rp ${BM6.toFixed(2)}×${H}`);
   } else {
     // BN26/BO26=√ (combo Print-Print): BN = H*BN6; BO = BO6*H
     const BN6 = umrHarian / targetBN(C6, comboId); // BUKU!BN28
     const BO6 = p.tarifSteplesPack / (1000 / 3); // BUKU!BO6 = D33/(1000/3)
-    if (fJ('jasaSusunStaples', true)) add('Jasa Susun Staples', H * BN6, `${H} × Rp ${BN6.toFixed(2)}`);
+    if (fJ('jasaSusunStaples', true)) add('Susun + Staples', H * BN6, `${H} × Rp ${BN6.toFixed(2)}`);
     if (fJ('jasaSteples', true)) add('Steples', BO6 * H, `${H} × Rp ${BO6.toFixed(2)}`);
   }
   // BQ7 = H*150 (sisir flat; BUKU!BQ6 = 3*50)
@@ -410,7 +410,7 @@ export function calculateSoftCoverOffsetHpp(
   // BUKU!BV6 = (UMR/25)/BT27; BT27 = 500; BUKU!BV7 = BV6*H; BUKU!BW7 = gate full → BT+BV
   const BV = (umrHarian / 500) * H;
   const fullCombo = finishing === 'Laminasi Doff + Spot UV + Emboss + Lem Bending + Shrink,';
-  if (fullCombo) { add('Tinta Spot UV', BT, 'Paket full-combo'); add('Jasa Spot UV', BV, 'Paket full-combo'); }
+  if (fullCombo) { add('Tinta Spot UV', BT, 'Mengikuti Catatan'); add('Biaya Jasa Spot UV', BV, 'Mengikuti Catatan'); }
 
   // ---- EMBOSS (hidup untuk 21 x 29,7) ----
   // BUKU!BY6 = ((D7+4)*(F7+4))*500*2; BUKU!BY7 = IF(H>0,BY6,0)
@@ -418,7 +418,7 @@ export function calculateSoftCoverOffsetHpp(
   const BY = H > 0 ? ((D7 + 4) * (F7 + 4)) * 500 * 2 : 0;
   const BZ = H * (umrHarian / 1000);
   // BUKU!CA7 = gate full → BY+BZ
-  if (fullCombo) { add('Klise Emboss', BY, 'Paket full-combo'); add('Jasa Emboss', BZ, 'Paket full-combo'); }
+  if (fullCombo) { add('Klise', BY, 'Mengikuti Catatan'); add('Biaya Jasa Emboss', BZ, 'Mengikuti Catatan'); }
 
   // ---- BENDING ----
   // BUKU!CC27 chain persis (√: Lem Bending, / full-combo); BUKU!CD7 = (50*F7*M)*H; BUKU!CE7 floor 100rb
@@ -434,13 +434,13 @@ export function calculateSoftCoverOffsetHpp(
   const rawD = luasLam * p.tarifLaminasiDoff * H * N;
   const rawU = luasLam * p.tarifUvVarnish * H * N;
   add('Laminasi Glossy', finishing === 'Laminasi Glossy,' ? finFloor(rawG) : 0,
-    `${luasLam.toFixed(1)}×${p.tarifLaminasiGlossy}×${H}×${N}, minimal Rp ${p.minFinishing.toLocaleString('id-ID')}`);
-  add('Laminasi Doff', finishing === 'Laminasi Doff,' || fullCombo ? finFloor(rawD) : 0, 'Paket full-combo bila aktif');
-  add('UV Varnish', finishing === 'UV Varnish,' ? finFloor(rawU) : 0, 'Lapisan UV');
+    `${luasLam.toFixed(1)}×${p.tarifLaminasiGlossy}×${H}×${N}, Min Rp ${p.minFinishing.toLocaleString('id-ID')}`);
+  add('Laminasi Doff', finishing === 'Laminasi Doff,' || fullCombo ? finFloor(rawD) : 0, 'Mengikuti Catatan');
+  add('UV Varnish', finishing === 'UV Varnish,' ? finFloor(rawU) : 0, 'Mengikuti Catatan');
   // Combo +Bending: UV+Bending; Glossy+Bending; Doff+Bending
-  if (finishing === 'UV Varnish + Bending,') add('UV Varnish + Bending', finFloor(rawU) + CE, 'UV + ongkos bending');
-  if (finishing === 'Laminasi Glossy + Bending,') add('Laminasi Glossy + Bending', finFloor(rawG) + CE, 'Glossy + ongkos bending');
-  if (finishing === 'Laminasi Doff + Bending,') add('Laminasi Doff + Bending', finFloor(rawD) + CE, 'Doff + ongkos bending');
+  if (finishing === 'UV Varnish + Bending,') add('UV Varnish + Bending', finFloor(rawU) + CE, 'UV Varnish + Bending');
+  if (finishing === 'Laminasi Glossy + Bending,') add('Laminasi Glossy + Bending', finFloor(rawG) + CE, 'Laminasi Glossy + Bending');
+  if (finishing === 'Laminasi Doff + Bending,') add('Laminasi Doff + Bending', finFloor(rawD) + CE, 'Laminasi Doff + Bending');
 
   // ---- SHRINK ----
   // BUKU!CS6 = CT30/(F7+8); CT30 = 106700; BUKU!CS7 = H/CS6; BUKU!CT7 = CS*D32
@@ -449,15 +449,15 @@ export function calculateSoftCoverOffsetHpp(
   const CT = CS * p.tarifShrinkRoll;
   const CV = ((umrHarian * 2) / 500) * H;
   const shrinkOn = finishing === 'Laminasi Glossy + Bending,' || fullCombo;
-  if (shrinkOn) { add('Plastik Shrink', CT, 'Paket Glossy+Bending/full'); add('Jasa Shrink + Packing', CV, 'Jasa packing'); }
+  if (shrinkOn) { add('Biaya Plastik Sring', CT, 'Mengikuti Catatan'); add('Jasa Plastik Sring + Packing', CV, 'Jasa Packing'); }
 
   // ---- PACKING ----
   // BUKU!CY6 = CZ30/196 = 7650/196; BUKU!CY7 = (H/CY35)/CY6; BUKU!CZ7 = CZ6*CY (CZ6 = D34)
   // BUKU!DA7 = gate (A02 ∧ DA28=√) → ROUNDUP(H/CY35)*DA6 + CZ (DA6 = D35)
   const CY = (H / kardusIsi(C6)) / (7650 / 196);
   const CZ = p.tarifLakbanRoll * CY;
-  if (feat.packingKardus ?? true) add('Packing Kardus & Lakban', Math.ceil(H / kardusIsi(C6)) * p.tarifKardusBox + CZ,
-    `${H > 0 ? Math.ceil(H / kardusIsi(C6)) : 0} kardus × Rp ${p.tarifKardusBox.toLocaleString('id-ID')} + ${CY.toFixed(4)} roll lakban`);
+  if (feat.packingKardus ?? true) add('Kardus + Lakban', Math.ceil(H / kardusIsi(C6)) * p.tarifKardusBox + CZ,
+    `${H > 0 ? Math.ceil(H / kardusIsi(C6)) : 0} Kardus × Rp ${p.tarifKardusBox.toLocaleString('id-ID')} + ${CY.toFixed(4)} Roll Lakban`);
 
   breakdown.forEach((b) => { b.pct = totalHpp > 0 ? b.nominal / totalHpp : 0; });
 
