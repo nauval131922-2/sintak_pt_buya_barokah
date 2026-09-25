@@ -77,14 +77,8 @@ export default function GlobalMasterParameter({
     customUnit?: string
   ) => {
     // Field yang relevan untuk ditarik dari Rekap Pembelian Barang
-    const isLookupEligible =
-      key.startsWith('tarif') ||
-      key === 'oliverPlatUnit' ||
-      key === 'oliverMinOngkos' ||
-      key === 'oliverDrekOver' ||
-      key === 'ryobiPlatUnit' ||
-      key === 'ryobiMinOngkos' ||
-      key === 'ryobiDrekOver';
+    // (pasca-refactor global hanya harga kertas: semua key tarif* eligible)
+    const isLookupEligible = key.startsWith('tarif');
 
     return (
       <div

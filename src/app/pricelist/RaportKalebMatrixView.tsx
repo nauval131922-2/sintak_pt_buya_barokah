@@ -213,7 +213,7 @@ export default function RaportKalebMatrixView({
                   <div className="bg-amber-50/70 px-4 py-2 border-b border-amber-100 flex items-center justify-between">
                     <span className="text-[11px] font-bold text-amber-900 tracking-wider uppercase flex items-center gap-1.5">
                       <Layers size={13} className="text-amber-600" />
-                      Bahan: {varian} — {RAPORT_KALEB_CONFIG[varian].w}×{RAPORT_KALEB_CONFIG[varian].h} cm · {RAPORT_KALEB_CONFIG[varian].pcsPerA3} pcs/A3+ {varian === 'Isi 6' ? '· Isi 6 lbr' : '· Kosongan'}
+                      Bahan: {varian} — {RAPORT_KALEB_CONFIG[varian].w}×{RAPORT_KALEB_CONFIG[varian].h} cm {varian === 'Isi 6' ? '· Isi 6 lbr' : '· Kosongan'}
                     </span>
                   </div>
                   <div className="overflow-x-auto max-h-[500px]">

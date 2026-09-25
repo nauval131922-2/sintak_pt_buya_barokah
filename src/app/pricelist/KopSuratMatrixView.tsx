@@ -50,7 +50,6 @@ export default function KopSuratMatrixView({
         muka: 1,
         jenisCetak: 'CETAK',
         finishingSisir: false,
-        filmAktif: false,
         insheetLembar: insheetDefaultForWarna(nWarna, params),
         marginPct: params.labaPct ?? 30,
       },

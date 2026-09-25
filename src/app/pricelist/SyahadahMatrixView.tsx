@@ -15,7 +15,6 @@ import {
   SyahadahMasterParams,
   SyahadahVarianType,
   SYAHADAH_TIERS,
-  SYAHADAH_CONFIG,
 } from '@/lib/syahadah-calculator';
 
 interface SyahadahMatrixViewProps {
@@ -206,7 +205,8 @@ export default function SyahadahMatrixView({
                   <div className="bg-amber-50/70 px-4 py-2 border-b border-amber-100 flex items-center justify-between">
                     <span className="text-[11px] font-bold text-amber-900 tracking-wider uppercase flex items-center gap-1.5">
                       <Layers size={13} className="text-amber-600" />
-                      Bahan: {varian} — {SYAHADAH_CONFIG[varian].w}×{SYAHADAH_CONFIG[varian].h} cm · {SYAHADAH_CONFIG[varian].pcsPerA3} pcs/A3+
+                      {/* Ukuran tetap 21,5×33 folio; 1 A3+ muat 2 lbr (BUKU!P7=2) — lihat syahadah-calculator.ts:270 */}
+                      Bahan: {varian} — 21,5×33 cm · 2 pcs/A3+
                     </span>
                   </div>
                   <div className="overflow-x-auto max-h-[500px]">

@@ -45,6 +45,20 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
+  'pricelist-2026-09-25': entry({
+    pageKey: 'pricelist',
+    title: 'Kalkulasi Harga (Buku Tulis Mesin Cover SM 102 4W, Auto-Persist, & Parity Benchmark)',
+    permissionKeys: ["pricelist_kalkulasi"],
+    sortDate: '2026-09-25',
+    date: '25 Sep 2026',
+    version: '2026-09-25-1',
+    items: [
+      "Perbaikan error build di halaman Kalkulasi Harga sehingga bisa di-deploy kembali",
+      "Kolom override plat di Master Parameter Sertifikat kini tersimpan dan berfungsi",
+      "Label info ukuran di tabel Stopmap, Syahadah, dan Raport Kaleb dirapikan mengikuti data master",
+    ],
+  }),
+
   'pricelist-2026-09-24': entry({
     pageKey: 'pricelist',
     title: 'Kalkulasi Harga (Buku Tulis Mesin Cover SM 102 4W, Auto-Persist, & Parity Benchmark)',

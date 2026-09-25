@@ -539,15 +539,15 @@ export default function PricelistClient() {
       else if (item.category === 'Kartu Koperasi Promise') setParamsKartuKoperasiPromise(s);
       else if (item.category === 'Lebel Kartu Obat') setParamsLebelKartuObat(s);
       else if (item.category === 'Buku Soft Cover') setParamsBukuSoftCover(s);
-      else if (item.category === 'Buku Soft Cover Oliver-Oliver') setParamsBukuSoftCover({ ...DEFAULT_SOFT_COVER_UNIFIED, ...s });
-      else if (item.category === 'Buku Soft Cover Print-Oliver') setParamsBukuSoftCover({ ...DEFAULT_SOFT_COVER_UNIFIED, ...s });
-      else if (item.category === 'Buku Soft Cover Print-Print') setParamsBukuSoftCover({ ...DEFAULT_SOFT_COVER_UNIFIED, ...s });
-      else if (item.category === 'Buku Soft Cover 14,5×20,25') setParamsBukuSoftCover({ ...DEFAULT_SOFT_COVER_UNIFIED, ...s });
+      else if (item.category === 'Buku Soft Cover Oliver-Oliver') setParamsBukuSoftCover({ ...DEFAULT_SOFT_COVER_UNIFIED, ...(s as SoftCoverUnifiedParams) });
+      else if (item.category === 'Buku Soft Cover Print-Oliver') setParamsBukuSoftCover({ ...DEFAULT_SOFT_COVER_UNIFIED, ...(s as SoftCoverUnifiedParams) });
+      else if (item.category === 'Buku Soft Cover Print-Print') setParamsBukuSoftCover({ ...DEFAULT_SOFT_COVER_UNIFIED, ...(s as SoftCoverUnifiedParams) });
+      else if (item.category === 'Buku Soft Cover 14,5×20,25') setParamsBukuSoftCover({ ...DEFAULT_SOFT_COVER_UNIFIED, ...(s as SoftCoverUnifiedParams) });
       else if (item.category === 'Buku Hard Cover 10,5×14,8') setParamsBukuHardCover105x148(s);
       else if (item.category === 'Poster') setParamsPoster(s);
       else if (item.category === 'Majalah 14,5×20,25') setParamsMajalah(s);
       else if (item.category === 'Stiker') setParamsStiker(s);
-      else if (item.category === 'Buku Soft Cover 10,5×14,8') setParamsBukuSoftCover({ ...DEFAULT_SOFT_COVER_UNIFIED, ...s });
+      else if (item.category === 'Buku Soft Cover 10,5×14,8') setParamsBukuSoftCover({ ...DEFAULT_SOFT_COVER_UNIFIED, ...(s as SoftCoverUnifiedParams) });
       else if (item.category === 'Buku Hard Cover 14,5×20,25') setParamsBukuHardCover145x2025(s);
       else if (item.category === 'Buku Hard Cover 21×29,7') setParamsBukuHardCover21x297(s);
       else if (item.category === 'Kalender Kop') setParamsKalenderKop(s);
@@ -567,9 +567,7 @@ export default function PricelistClient() {
         });
 
         // 2. Pemetaan alias tarif spesifik produk ke field Master Parameter Global
-        if (typeof snapObj.tarifPlatCtpOliver === 'number') nextGlobal.oliverPlatUnit = snapObj.tarifPlatCtpOliver as number;
-        if (typeof snapObj.minOngkosOliver === 'number') nextGlobal.oliverMinOngkos = snapObj.minOngkosOliver as number;
-        if (typeof snapObj.drekOverOliver === 'number') nextGlobal.oliverDrekOver = snapObj.drekOverOliver as number;
+        // (pasca-refactor global hanya harga kertas: alias non-kertas dihapus)
         if (typeof snapObj.tarifKertasHvs70 === 'number') nextGlobal.tarifHvs70 = snapObj.tarifKertasHvs70 as number;
         if (typeof snapObj.hargaKertasHvs70 === 'number') nextGlobal.tarifHvs70 = snapObj.hargaKertasHvs70 as number;
         if (typeof snapObj.tarifKertasAp120 === 'number') nextGlobal.tarifAp120 = snapObj.tarifKertasAp120 as number;
@@ -580,17 +578,6 @@ export default function PricelistClient() {
         if (typeof snapObj.hargaKertasAc230 === 'number') nextGlobal.tarifAc230Kg = snapObj.hargaKertasAc230 as number;
         if (typeof snapObj.tarifKertasAc260 === 'number') nextGlobal.tarifAc260Kg = snapObj.tarifKertasAc260 as number;
         if (typeof snapObj.hargaKertasAc260 === 'number') nextGlobal.tarifAc260Kg = snapObj.hargaKertasAc260 as number;
-        if (typeof snapObj.tarifPrintCoverA3 === 'number') nextGlobal.tarifPrintA3 = snapObj.tarifPrintCoverA3 as number;
-        if (typeof snapObj.tarifPrintCover === 'number') nextGlobal.tarifPrintA3 = snapObj.tarifPrintCover as number;
-        if (typeof snapObj.tarifPrintInter === 'number') nextGlobal.tarifPrintInter1Muka = snapObj.tarifPrintInter as number;
-        if (typeof snapObj.tarifLaminasiGlossy === 'number') nextGlobal.tarifLaminasiGlossyCm2 = snapObj.tarifLaminasiGlossy as number;
-        if (typeof snapObj.tarifLaminasiDoff === 'number') nextGlobal.tarifLaminasiDoffCm2 = snapObj.tarifLaminasiDoff as number;
-        if (typeof snapObj.tarifUvVarnish === 'number') nextGlobal.tarifUvVarnishCm2 = snapObj.tarifUvVarnish as number;
-        if (typeof snapObj.minLaminasiPerOrder === 'number') nextGlobal.minLaminasi = snapObj.minLaminasiPerOrder as number;
-        if (typeof snapObj.tarifKardus === 'number') nextGlobal.tarifKardusBox = snapObj.tarifKardus as number;
-        if (typeof snapObj.tarifLakban === 'number') nextGlobal.tarifLakbanRoll = snapObj.tarifLakban as number;
-        if (typeof snapObj.tarifPlastikOpp === 'number') nextGlobal.tarifPlastikOppPcs = snapObj.tarifPlastikOpp as number;
-        if (typeof snapObj.tarifPlastik === 'number') nextGlobal.tarifPlastikOppPcs = snapObj.tarifPlastik as number;
 
         return nextGlobal;
       });

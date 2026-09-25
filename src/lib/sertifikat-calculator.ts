@@ -34,6 +34,7 @@ export interface SertifikatMasterParams {
   gramaturLinen: number; // Master!D11 file Linen
   insheetOffset: number; // Master!D13 file Oliver (100) — SM/Ryobi ikut pola Oliver
   insheetPrint: number; // Master!D13 file Print Inter (7)
+  platOverride: number; // BUKU!Z6 (0 = otomatis = nWarna × muka)
   desain: number; // Master!D17 (20000 semua file)
   tarifPrintAc: number; // Master!D18 file Ac (2700) → BUKU!T2
   tarifPrintBc: number; // Master!D18 file BC (3800) → BUKU!T2
@@ -66,6 +67,7 @@ export const DEFAULT_SERTIFIKAT_PARAMS: SertifikatMasterParams = {
   gramaturLinen: 300,
   insheetOffset: 100,
   insheetPrint: 7,
+  platOverride: 0,
   desain: 20000,
   tarifPrintAc: 2700,
   tarifPrintBc: 3800,

@@ -63,7 +63,6 @@ import { SavedPosterSimulationItem } from './PosterSimulator';
 import { SavedMajalahSimulationItem } from './MajalahSimulator';
 import { SavedStikerSimulationItem } from './StikerSimulator';
 import { SavedBukuHardCover145x2025SimulationItem } from './BukuHardCover145x2025Simulator';
-import { SavedBukuHardCover145x2025SimulationItem } from './BukuHardCover145x2025Simulator';
 import { SavedBukuHardCover21x297SimulationItem } from './BukuHardCover21x297Simulator';
 import { SavedKalenderKopSimulationItem } from './KalenderKopSimulator';
 import { SavedPackagingSimulationItem } from './PackagingSimulator';

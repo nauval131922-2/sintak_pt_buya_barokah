@@ -245,7 +245,7 @@ export default function RaportKalebMasterParameter({
             {fieldRow('kapasitasKardus', 'Kapasitas Map / Box', false, false, 'map', 'BUKU!V35: 100 map / kardus')}
           </div>
           <p className="text-[10px] text-slate-500">
-            Di sheet BUKU cell X6 default bernilai non-aktif ("X"). Jika diaktifkan, otomatis menghitung jumlah box kardus dan kebutuhan roll lakban.
+            Di sheet BUKU cell X6 default bernilai non-aktif (&quot;X&quot;). Jika diaktifkan, otomatis menghitung jumlah box kardus dan kebutuhan roll lakban.
           </p>
         </div>
 
@@ -336,7 +336,7 @@ export default function RaportKalebMasterParameter({
                     <ul className="space-y-1.5 text-[11px] text-slate-600">
                       <li>• <strong>Kardus Packing</strong>: <span className="font-mono text-blue-700">Master!D18</span> = Rp 8.500 / box (Kapasitas: <span className="font-mono text-blue-700">BUKU!V35</span> = 100 map/box).</li>
                       <li>• <strong>Lakban Transparan</strong>: <span className="font-mono text-blue-700">Master!D17</span> = Rp 8.000 / roll (Ukuran: 7.650 cm/roll, pemakaian: 196 cm/box).</li>
-                      <li>• <strong>Opsi Default Master</strong>: <span className="font-mono text-blue-700">BUKU!X6</span> = "X" (non-aktif).</li>
+                      <li>• <strong>Opsi Default Master</strong>: <span className="font-mono text-blue-700">BUKU!X6</span> = &quot;X&quot; (non-aktif).</li>
                     </ul>
                   </div>
 
