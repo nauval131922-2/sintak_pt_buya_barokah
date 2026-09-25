@@ -45,6 +45,38 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
+  'pricelist-2026-09-25': entry({
+    pageKey: 'pricelist',
+    title: 'Kalkulasi Harga (Buku Tulis Mesin Cover SM 102 4W, Auto-Persist, & Parity Benchmark)',
+    permissionKeys: ["pricelist_kalkulasi"],
+    sortDate: '2026-09-25',
+    date: '25 Sep 2026',
+    version: '2026-09-25-1',
+    items: [
+      "style(softcover): grup catatan terbuka penuh",
+      "style(softcover): kartu lanjutan terbuka penuh",
+      "style(softcover): kata ikut excel master buku",
+      "style(softcover): badge jarang jadi lanjutan",
+      "style(softcover): hapus badge lini cari sticky",
+      "feat(softcover): redesign master kalkulasi Ramah",
+    ],
+  }),
+
+  'jurnal-harian-produksi-2026-09-25': entry({
+    pageKey: 'jurnal-harian-produksi',
+    title: 'Jurnal Harian Produksi',
+    permissionKeys: ['produksi_jhp'],
+    sortDate: '2026-09-25',
+    date: '25 Sep 2026',
+    version: '2026-09-25-1',
+    items: [
+      "Tukar gaya dropdown order JHP: nama order bold, nomor order redup",
+      "Rapatkan badge qty ke nama order di dropdown No. Order JHP",
+      "Bedakan gaya faktur, nama order, dan qty di list dropdown No. Order JHP",
+      "Tampilkan jumlah order dan satuan di dropdown No. Order form JHP",
+    ],
+  }),
+
   'laporan-pekerjaan-2026-09-18': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan',
