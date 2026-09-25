@@ -53,12 +53,12 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     date: '25 Sep 2026',
     version: '2026-09-25-1',
     items: [
-      "style(softcover): grup catatan terbuka penuh",
-      "style(softcover): kartu lanjutan terbuka penuh",
-      "style(softcover): kata ikut excel master buku",
-      "style(softcover): badge jarang jadi lanjutan",
-      "style(softcover): hapus badge lini cari sticky",
-      "feat(softcover): redesign master kalkulasi Ramah",
+      "Panel catatan di Master Parameter kini terbuka penuh agar mudah dibaca",
+      "Kartu lanjutan tidak lagi terpotong dan tampil penuh",
+      "Istilah di form disamakan dengan Excel master buku",
+      "Badge yang jarang dipakai digabung menjadi label Lanjutan",
+      "Badge pencarian lini di header dihapus agar tampilan lebih bersih",
+      "Tampilan Master kalkulasi Softcover dirapikan ulang",
     ],
   }),
 
