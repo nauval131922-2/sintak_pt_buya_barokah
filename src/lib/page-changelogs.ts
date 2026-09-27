@@ -45,6 +45,19 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
+  'dashboard-akunting-2026-09-27': entry({
+    pageKey: 'dashboard-akunting',
+    title: 'Dashboard Akunting',
+    permissionKeys: ['akt_dashboard'],
+    sortDate: '2026-09-27',
+    date: '27 Sep 2026',
+    version: '2026-09-27-1',
+    items: [
+      "Dashboard Akunting dimuat lebih cepat (daftar jurnal terbaru & grafik tren dioptimasi)",
+      "Tombol Tarik Data jurnal kembali normal (perbaikan error koneksi database)",
+    ],
+  }),
+
   'pricelist-2026-09-25': entry({
     pageKey: 'pricelist',
     title: 'Kalkulasi Harga (Buku Tulis Mesin Cover SM 102 4W, Auto-Persist, & Parity Benchmark)',
