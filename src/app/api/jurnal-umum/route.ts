@@ -6,6 +6,25 @@ import type { JurnalUmumExecutor } from '@/lib/jurnal-umum-schema';
 
 export const dynamic = 'force-dynamic';
 
+let cachedKasKodes: Set<string> | null = null;
+let cachedKasExpiresAt = 0;
+
+async function getKasKodes(): Promise<Set<string>> {
+  const now = Date.now();
+  if (cachedKasKodes && now < cachedKasExpiresAt) {
+    return cachedKasKodes;
+  }
+  try {
+    const kasRes = await db.execute("SELECT kode FROM rek_akuntansi WHERE arus_kas = 'Kas'");
+    cachedKasKodes = new Set(kasRes.rows.map(r => String((r as any).kode)));
+    cachedKasExpiresAt = now + 60_000;
+    return cachedKasKodes;
+  } catch (e) {
+    console.error("Failed to fetch rek_akuntansi for is_kas flag", e);
+    return cachedKasKodes || new Set();
+  }
+}
+
 async function ensureTable() {
   // Skema dimiliki modul bersama (lib/jurnal-umum-schema). Dulu definisi
   // CREATE TABLE duplikat di sini dengan versi basi — sumber drift.
@@ -97,24 +116,16 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Determine Kas accounts to attach is_kas flag
-    try {
-      const kasRes = await db.execute("SELECT kode FROM rek_akuntansi WHERE arus_kas = 'Kas'");
-      const kasKodes = new Set(kasRes.rows.map(r => String(r.kode)));
-      
-      const applyKasFlag = (row: any) => {
-        const rekeningCode = String(row.rekening).split(' - ')[0]?.trim(); // Assuming format like "1100-00 - Kas" or just "1100-00"
-        row.is_kas = kasKodes.has(rekeningCode);
-        if (row.children && row.children.length > 0) {
-          row.children.forEach(applyKasFlag);
-        }
-      };
-      
-      parentRows.forEach(applyKasFlag);
-    } catch (e) {
-      // Ignore if rek_akuntansi doesn't exist yet
-      console.error("Failed to fetch rek_akuntansi for is_kas flag", e);
-    }
+    // Determine Kas accounts to attach is_kas flag (cached 60s)
+    const kasKodes = await getKasKodes();
+    const applyKasFlag = (row: any) => {
+      const rekeningCode = String(row.rekening).split(' - ')[0]?.trim();
+      row.is_kas = kasKodes.has(rekeningCode);
+      if (row.children && row.children.length > 0) {
+        row.children.forEach(applyKasFlag);
+      }
+    };
+    parentRows.forEach(applyKasFlag);
 
     // Metadata: lastUpdated murni dari cache scrape. Query MAX(created_at)
     // sebelumnya full scan 27rb baris parent tiap buka halaman.

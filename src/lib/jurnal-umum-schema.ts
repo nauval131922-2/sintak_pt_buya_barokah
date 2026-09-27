@@ -50,9 +50,14 @@ const CREATE_SQL = `CREATE TABLE IF NOT EXISTS jurnal_umum (
   UNIQUE(faktur, child_order, is_child)
 )`;
 
+let schemaEnsured = false;
+
 export async function ensureJurnalUmumSchema(
   executor: JurnalUmumExecutor,
+  force = false,
 ): Promise<void> {
+  if (schemaEnsured && !force) return;
+
   // bind: Sqlite3Client.execute memakai private field (#db) — detach
   // method (const run = executor.execute) bikin `this` undefined dan
   // error "Cannot read properties of undefined (reading 'Sqlite3Client')"
@@ -129,4 +134,12 @@ export async function ensureJurnalUmumSchema(
     `CREATE INDEX IF NOT EXISTS idx_jurnal_umum_terbaru ` +
       `ON jurnal_umum(is_child, create_at DESC, id DESC)`,
   );
+  // Index composite untuk kalkulasi running total pagination (WHERE is_child = 1 AND parent_faktur IN (...))
+  // Mengubah full scan 71rb child menjadi direct index seek.
+  await run(
+    `CREATE INDEX IF NOT EXISTS idx_jurnal_umum_child_parent ` +
+      `ON jurnal_umum(is_child, parent_faktur)`,
+  );
+
+  schemaEnsured = true;
 }
