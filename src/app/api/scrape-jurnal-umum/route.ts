@@ -5,6 +5,8 @@ import { ScrapedRecord, BatchOperation } from "@/lib/scraper-utils";
 import { clearCachedSession, getSession as getScraperSession } from "@/lib/session-cache";
 import { encodeScrapedPeriod, getScrapedPeriodSettingKey } from "@/lib/server-scraped-period";
 import { logActivity } from "@/lib/activity";
+import { ensureJurnalUmumSchema } from "@/lib/jurnal-umum-schema";
+import type { JurnalUmumExecutor } from "@/lib/jurnal-umum-schema";
 
 export const dynamic = 'force-dynamic';
 
@@ -34,41 +36,9 @@ function normalizeDate(raw: string): string {
 }
 
 async function ensureTable() {
-  const executor = (db as any).client || db;
+  const executor = (db as unknown as { client?: JurnalUmumExecutor }).client || db;
   if (!executor.execute) return;
-
-  try {
-    const cols = await executor.execute("PRAGMA table_info(jurnal_umum)");
-    const colNames = (cols.rows || []).map((r: any) => String(r.name || ""));
-    if (colNames.length > 0 && !colNames.includes("child_order")) {
-      await executor.execute("DROP TABLE IF EXISTS jurnal_umum");
-    }
-  } catch (_) {}
-
-  await executor.execute(`CREATE TABLE IF NOT EXISTS jurnal_umum (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    faktur TEXT NOT NULL,
-    tgl TEXT,
-    rekening TEXT,
-    keterangan TEXT,
-    debit REAL,
-    kredit REAL,
-    username TEXT,
-    create_at TEXT,
-    parent_faktur TEXT,
-    is_child INTEGER DEFAULT 0,
-    child_order INTEGER DEFAULT 0,
-    raw_data TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(faktur, child_order, is_child)
-  )`);
-  // Tanpa indeks ini, tiap DELETE/lookup anak per parent_faktur = full scan
-  // (95rb+ baris). Ini yang bikin scrape kemarin 7-10 detik per 100 baris.
-  await executor.execute(`CREATE INDEX IF NOT EXISTS idx_jurnal_umum_parent ON jurnal_umum(parent_faktur)`);
-  // Indeks komposit untuk daftar halaman jurnal umum: filter is_child + tgl,
-  // ORDER BY create_at/faktur/id, dan COUNT(*) total. Tanpa ini tiap ganti
-  // page = SCAN + TEMP B-TREE FOR ORDER BY (~290ms di 95rb baris, page jauh).
-  await executor.execute(`CREATE INDEX IF NOT EXISTS idx_jurnal_umum_list ON jurnal_umum(is_child, tgl, create_at, faktur, id)`);
+  await ensureJurnalUmumSchema(executor as unknown as JurnalUmumExecutor);
 }
 
 export async function GET(req: NextRequest) {

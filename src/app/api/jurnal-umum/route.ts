@@ -1,19 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getScrapedPeriodSettingKey, parseScrapedPeriod } from '@/lib/server-scraped-period';
+import { JURNAL_UMUM_COLS, ensureJurnalUmumSchema } from '@/lib/jurnal-umum-schema';
+import type { JurnalUmumExecutor } from '@/lib/jurnal-umum-schema';
 
 export const dynamic = 'force-dynamic';
 
 async function ensureTable() {
-  // Skema + indeks dikelola scraper (scrape-jurnal-umum/route.ts). Dulu
-  // duplikat di sini dengan definisi basi (tanpa child_order/parent_faktur,
-  // UNIQUE beda) — untungnya no-op karena tabel sudah ada. Jangan
-  // definisikan ulang di sini agar tidak drift lagi.
+  // Skema dimiliki modul bersama (lib/jurnal-umum-schema). Dulu definisi
+  // CREATE TABLE duplikat di sini dengan versi basi — sumber drift.
   try {
-    const executor = (db as unknown as { client?: { execute: (sql: string) => Promise<unknown> } }).client || db;
+    const executor = (db as unknown as { client?: JurnalUmumExecutor }).client || db;
     if (executor.execute) {
-      await executor.execute(`CREATE INDEX IF NOT EXISTS idx_jurnal_umum_list ON jurnal_umum(is_child, tgl, create_at, faktur, id)`);
-      await executor.execute(`CREATE INDEX IF NOT EXISTS idx_jurnal_umum_parent ON jurnal_umum(parent_faktur)`);
+      await ensureJurnalUmumSchema(executor as unknown as JurnalUmumExecutor);
     }
   } catch {
     // Tabel belum ada (belum pernah scrape) — query di bawah gagal wajar
@@ -33,11 +32,10 @@ export async function GET(req: NextRequest) {
     const catTo   = searchParams.get('cat_to');
     const offset  = (page - 1) * limit;
 
-    // Kolom eksplisit tanpa raw_data: JSON mentah Digit ±13x bobot kolom
-    // terpakai (±95KB/halaman) dan tidak pernah dirender klien.
-    const COLS = `id, faktur, tgl, rekening, keterangan, debit, kredit, username, create_at, parent_faktur, is_child, child_order, created_at`;
+    // Tanpa raw_data: JSON mentah Digit ±13x bobot kolom terpakai
+    // (±95KB/halaman) dan tidak pernah dirender klien.
     // Only query parent rows (is_child = 0)
-    let query      = `SELECT ${COLS} FROM jurnal_umum WHERE is_child = 0`;
+    let query      = `SELECT ${JURNAL_UMUM_COLS} FROM jurnal_umum WHERE is_child = 0`;
     let countQuery = `SELECT COUNT(*) as total FROM jurnal_umum WHERE is_child = 0`;
     const params: any[] = [];
 
@@ -58,9 +56,10 @@ export async function GET(req: NextRequest) {
       params.push(from, to);
     }
 
-    // Filter by create_at date range (YYYY-MM-DD prefix match)
+    // Filter by create_at date range via kolom generated create_date
+    // (terindeks; substr() mentah tidak kepakai indeks).
     if (catFrom && catTo) {
-      const clause = ` AND substr(create_at, 1, 10) BETWEEN ? AND ?`;
+      const clause = ` AND create_date BETWEEN ? AND ?`;
       query      += clause;
       countQuery += clause;
       params.push(catFrom, catTo);
@@ -82,7 +81,7 @@ export async function GET(req: NextRequest) {
       const fakturs = parentRows.map(r => r.faktur);
       const placeholders = fakturs.map(() => '?').join(',');
       const childRes = await db.execute({
-        sql: `SELECT ${COLS} FROM jurnal_umum WHERE is_child = 1 AND parent_faktur IN (${placeholders}) ORDER BY id ASC`,
+        sql: `SELECT ${JURNAL_UMUM_COLS} FROM jurnal_umum WHERE is_child = 1 AND parent_faktur IN (${placeholders}) ORDER BY id ASC`,
         args: fakturs
       });
 
@@ -132,13 +131,13 @@ export async function GET(req: NextRequest) {
     let saldoAwalKas = 0;
     if (catFrom) {
       let saldoSql = `SELECT
-                        SUM(CASE WHEN CAST(substr(rekening,1,1) AS INTEGER) BETWEEN 4 AND 9 THEN kredit ELSE 0 END) -
-                        SUM(CASE WHEN CAST(substr(rekening,1,1) AS INTEGER) BETWEEN 4 AND 9 THEN debit  ELSE 0 END) as saldo,
-                        SUM(CASE WHEN trim(substr(rekening, 1, CASE WHEN instr(rekening, ' - ') > 0 THEN instr(rekening, ' - ') - 1 ELSE length(rekening) END)) IN (SELECT kode FROM rek_akuntansi WHERE arus_kas = 'Kas') THEN debit ELSE 0 END) -
-                        SUM(CASE WHEN trim(substr(rekening, 1, CASE WHEN instr(rekening, ' - ') > 0 THEN instr(rekening, ' - ') - 1 ELSE length(rekening) END)) IN (SELECT kode FROM rek_akuntansi WHERE arus_kas = 'Kas') THEN kredit ELSE 0 END) as saldo_kas
+                        SUM(CASE WHEN rek_head BETWEEN '4' AND '9' THEN kredit ELSE 0 END) -
+                        SUM(CASE WHEN rek_head BETWEEN '4' AND '9' THEN debit  ELSE 0 END) as saldo,
+                        SUM(CASE WHEN rek_kode IN (SELECT kode FROM rek_akuntansi WHERE arus_kas = 'Kas') THEN debit ELSE 0 END) -
+                        SUM(CASE WHEN rek_kode IN (SELECT kode FROM rek_akuntansi WHERE arus_kas = 'Kas') THEN kredit ELSE 0 END) as saldo_kas
                       FROM jurnal_umum
                       WHERE is_child = 1
-                        AND substr(create_at, 1, 10) < ?`;
+                        AND create_date < ?`;
       const saldoParams: any[] = [catFrom];
 
       if (from && to) {
@@ -179,7 +178,7 @@ export async function GET(req: NextRequest) {
         prevParentParams.push(from, to);
       }
       if (catFrom && catTo) {
-        prevParentWhere += ` AND substr(create_at, 1, 10) BETWEEN ? AND ?`;
+        prevParentWhere += ` AND create_date BETWEEN ? AND ?`;
         prevParentParams.push(catFrom, catTo);
       }
 
@@ -189,10 +188,10 @@ export async function GET(req: NextRequest) {
 
       const prevRunningSql = `
         SELECT
-          SUM(CASE WHEN CAST(substr(rekening,1,1) AS INTEGER) BETWEEN 4 AND 9 THEN kredit ELSE 0 END) -
-          SUM(CASE WHEN CAST(substr(rekening,1,1) AS INTEGER) BETWEEN 4 AND 9 THEN debit  ELSE 0 END) as lr,
-          SUM(CASE WHEN trim(substr(rekening, 1, CASE WHEN instr(rekening, ' - ') > 0 THEN instr(rekening, ' - ') - 1 ELSE length(rekening) END)) IN (SELECT kode FROM rek_akuntansi WHERE arus_kas = 'Kas') THEN debit ELSE 0 END) -
-          SUM(CASE WHEN trim(substr(rekening, 1, CASE WHEN instr(rekening, ' - ') > 0 THEN instr(rekening, ' - ') - 1 ELSE length(rekening) END)) IN (SELECT kode FROM rek_akuntansi WHERE arus_kas = 'Kas') THEN kredit ELSE 0 END) as ak
+          SUM(CASE WHEN rek_head BETWEEN '4' AND '9' THEN kredit ELSE 0 END) -
+          SUM(CASE WHEN rek_head BETWEEN '4' AND '9' THEN debit  ELSE 0 END) as lr,
+          SUM(CASE WHEN rek_kode IN (SELECT kode FROM rek_akuntansi WHERE arus_kas = 'Kas') THEN debit ELSE 0 END) -
+          SUM(CASE WHEN rek_kode IN (SELECT kode FROM rek_akuntansi WHERE arus_kas = 'Kas') THEN kredit ELSE 0 END) as ak
         FROM jurnal_umum
         WHERE is_child = 1
           AND parent_faktur IN (${prevParentsSql})

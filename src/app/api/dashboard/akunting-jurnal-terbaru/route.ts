@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { ensureJurnalUmumSchema } from '@/lib/jurnal-umum-schema';
+import type { JurnalUmumExecutor } from '@/lib/jurnal-umum-schema';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,29 +11,12 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(_req: NextRequest) {
   try {
-    // Pastikan tabel ada dulu
     try {
-      const executor = (db as any).client || db;
+      const executor = (db as unknown as { client?: JurnalUmumExecutor }).client || db;
       if (executor.execute) {
-        await executor.execute(`CREATE TABLE IF NOT EXISTS jurnal_umum (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          faktur TEXT NOT NULL,
-          tgl TEXT,
-          rekening TEXT,
-          keterangan TEXT,
-          debit REAL,
-          kredit REAL,
-          username TEXT,
-          create_at TEXT,
-          parent_faktur TEXT,
-          is_child INTEGER DEFAULT 0,
-          child_order INTEGER DEFAULT 0,
-          raw_data TEXT,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          UNIQUE(faktur, child_order, is_child)
-        )`);
+        await ensureJurnalUmumSchema(executor as unknown as JurnalUmumExecutor);
       }
-    } catch (_) {}
+    } catch {}
 
     // Ambil 20 child rows terbaru yang rekeningnya terkait LR atau Kas.
     // Username diambil dari parent row karena child rows tidak punya username sendiri.
@@ -47,13 +32,9 @@ export async function GET(_req: NextRequest) {
         COALESCE(NULLIF(j.username, ''), p.username) AS username,
         j.create_at,
         CASE
-          WHEN CAST(substr(trim(j.rekening), 1, 1) AS INTEGER) BETWEEN 4 AND 9
+          WHEN j.rek_head BETWEEN '4' AND '9'
           THEN 'Laba/Rugi'
-          WHEN trim(substr(j.rekening, 1,
-            CASE WHEN instr(j.rekening, ' - ') > 0
-                 THEN instr(j.rekening, ' - ') - 1
-                 ELSE length(j.rekening) END
-          )) IN (SELECT kode FROM rek_akuntansi WHERE arus_kas = 'Kas')
+          WHEN j.rek_kode IN (SELECT kode FROM rek_akuntansi WHERE arus_kas = 'Kas')
           THEN 'Arus Kas'
           ELSE NULL
         END AS jenis_akun
@@ -62,13 +43,9 @@ export async function GET(_req: NextRequest) {
         ON p.faktur = j.parent_faktur AND p.is_child = 0
       WHERE j.is_child = 1
         AND (
-          CAST(substr(trim(j.rekening), 1, 1) AS INTEGER) BETWEEN 4 AND 9
+          j.rek_head BETWEEN '4' AND '9'
           OR
-          trim(substr(j.rekening, 1,
-            CASE WHEN instr(j.rekening, ' - ') > 0
-                 THEN instr(j.rekening, ' - ') - 1
-                 ELSE length(j.rekening) END
-          )) IN (SELECT kode FROM rek_akuntansi WHERE arus_kas = 'Kas')
+          j.rek_kode IN (SELECT kode FROM rek_akuntansi WHERE arus_kas = 'Kas')
         )
       ORDER BY j.create_at DESC, j.id DESC
       LIMIT 20
