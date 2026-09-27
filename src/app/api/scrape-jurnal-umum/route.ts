@@ -157,13 +157,17 @@ export async function GET(req: NextRequest) {
         raw_data=excluded.raw_data
     `;
 
-    const queries: any[] = [];
+    const queries: { sql: string; args: (string | number)[] }[] = [];
+    const seenFaktur = new Set<string>();
+    const resetDone = new Set<string>();
 
     for (const r of rows) {
+      const fakturKey: string = r.faktur || "";
+      seenFaktur.add(fakturKey);
       queries.push({
         sql: insertSql,
         args: [
-          r.faktur || "",
+          fakturKey,
           normalizeDate(r.tgl || ""),
           r.rekening || "",
           r.keterangan || "",
@@ -178,12 +182,24 @@ export async function GET(req: NextRequest) {
         ]
       });
 
-      const children: any[] = r.w2ui?.children || [];
+      // Reset baris anak per faktur sebelum insert ulang. child_order di
+      // Digit itu posisional (ci+1): saat voucher dikoreksi di sumber
+      // (baris berkurang/bergeser), upsert posisional menyisakan ekor yatim.
+      // Kasus nyata: PH00126080800012 sisa 1 baris Kas Besar Rp365rb.
+      if (!resetDone.has(fakturKey)) {
+        resetDone.add(fakturKey);
+        queries.push({
+          sql: `DELETE FROM jurnal_umum WHERE is_child = 1 AND parent_faktur = ?`,
+          args: [fakturKey],
+        });
+      }
+
+      const children: { rekening?: string; keterangan?: string; debit?: string | number; kredit?: string | number; username?: string }[] = r.w2ui?.children || [];
       children.forEach((child, ci) => {
         queries.push({
           sql: insertSql,
           args: [
-            r.faktur || "",
+            fakturKey,
             normalizeDate(r.tgl || ""),
             child.rekening || "",
             child.keterangan || "",
@@ -191,7 +207,7 @@ export async function GET(req: NextRequest) {
             parseFloat(String(child.kredit || "0").replace(/,/g, "")) || 0,
             child.username || "",
             r.create_at || "",
-            r.faktur || "",
+            fakturKey,
             1,
             ci + 1,
             JSON.stringify(child)
@@ -203,6 +219,35 @@ export async function GET(req: NextRequest) {
     const chunkSize = 100;
     for (let i = 0; i < queries.length; i += chunkSize) {
       await db.batch(queries.slice(i, i + chunkSize));
+    }
+
+    // Hapus voucher yang sudah tidak ada di Digit pada rentang ini. Tanpa
+    // ini, faktur yang dihapus di sumber tetap abadi di SINTAK (upsert-only).
+    // Kasus nyata: PD00126083000006 dan PJ00126081800016.
+    // Dilewati bila respons menyentuh limit (data mungkin terpotong).
+    if (rows.length < 5000 && startParam && endParam) {
+      const rangeStart: string = startParam;
+      const rangeEnd: string = endParam;
+      const existingRes = await db.execute({
+        sql: `SELECT DISTINCT faktur FROM jurnal_umum WHERE tgl BETWEEN ? AND ?`,
+        args: [rangeStart, rangeEnd],
+      });
+      const gone: string[] = [];
+      for (const row of existingRes.rows) {
+        if (row && typeof row === "object" && "faktur" in row) {
+          const f = row.faktur;
+          if (typeof f === "string" && f !== "" && !seenFaktur.has(f)) gone.push(f);
+        }
+      }
+      const delSize = 200;
+      for (let i = 0; i < gone.length; i += delSize) {
+        const chunk = gone.slice(i, i + delSize);
+        const placeholders = chunk.map(() => "?").join(",");
+        await db.execute({
+          sql: `DELETE FROM jurnal_umum WHERE faktur IN (${placeholders}) AND tgl BETWEEN ? AND ?`,
+          args: [...chunk, rangeStart, rangeEnd],
+        });
+      }
     }
 
     const lastUpdated = new Date().toISOString();
