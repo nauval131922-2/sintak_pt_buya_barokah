@@ -6,7 +6,7 @@ import CopyButton from '@/components/ui/CopyButton';
 
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { formatLastUpdate, splitDateRangeIntoMonths } from '@/lib/date-utils';
-import { getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod, hydrateDateStore, persistDateStore, persistScraperPeriodFull } from '@/lib/scraper-period';
+import { getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod, hydrateDailyDateStore, persistDailyDateStore, persistScraperPeriodFull } from '@/lib/scraper-period';
 import { DataTable } from '@/components/ui/DataTable';
 import SearchAndReload from '@/components/SearchAndReload';
 import TableFooter from '@/components/TableFooter';
@@ -176,29 +176,30 @@ export default function JurnalUmumClient() {
     setStartDate(hydrated.startDate);
     setEndDate(hydrated.endDate);
 
-    // Sync Filter Tanggal Dibuat logic with JHP "Rentang Tanggal"
+    // Sync Filter Tanggal Dibuat logic with daily date store (preserved on reload; reset on day change)
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const hydratedDates = hydrateDateStore('jurnalUmum_createAt_dates');
-    if (hydratedDates.startDate && hydratedDates.endDate) {
-      setCreateAtFrom(hydratedDates.startDate);
-      setCreateAtTo(hydratedDates.endDate);
-      persistDateStore('jurnalUmum_createAt_dates', hydratedDates.startDate, hydratedDates.endDate);
-    } else {
-      setCreateAtFrom(today);
-      setCreateAtTo(today);
-      persistDateStore('jurnalUmum_createAt_dates', today, today);
-    }
+    const hydratedFilter = hydrateDailyDateStore('jurnalUmum_createAt_dates', () => ({
+      startDate: today,
+      endDate: today,
+    }));
+    setCreateAtFrom(hydratedFilter.startDate);
+    setCreateAtTo(hydratedFilter.endDate);
 
     mountedRef.current = true;
     return () => { mountedRef.current = false; };
   }, []);
 
-  // Persist Filter Tanggal Dibuat changes
+  // Persist Filter Tanggal Dibuat changes (same-day reload preserved, resets on new day)
   useEffect(() => {
     if (!isMounted) return;
-    persistDateStore('jurnalUmum_createAt_dates', createAtFrom, createAtTo);
+    persistDailyDateStore(
+      'jurnalUmum_createAt_dates',
+      createAtFrom,
+      createAtTo,
+      !createAtFrom && !createAtTo
+    );
   }, [createAtFrom, createAtTo, isMounted]);
 
   useEffect(() => {
@@ -631,8 +632,8 @@ export default function JurnalUmumClient() {
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-3 animate-in fade-in duration-500 overflow-hidden">
       {/* Top row: scrape date range + filter tanggal dibuat */}
-      <div className="flex flex-col lg:flex-row items-stretch gap-3 shrink-0">
-        <div className="flex-1">
+      <div className="flex flex-col lg:flex-row items-stretch gap-3 shrink-0 relative z-[60]">
+        <div className="flex-1 relative z-[62]">
           <DateRangeCard
             startDate={startDate}
             endDate={endDate}
@@ -647,7 +648,7 @@ export default function JurnalUmumClient() {
         </div>
 
         {/* Filter Tanggal Dibuat */}
-        <div className="flex-1 bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg shadow-gray-900/5 p-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="flex-1 bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 relative z-[60]">
           <span className="text-[11px] font-bold text-gray-400 shrink-0 hidden sm:block">Filter Dibuat:</span>
           <div className="flex items-center gap-2 flex-1">
             <DatePicker
@@ -660,7 +661,6 @@ export default function JurnalUmumClient() {
               name="createAtTo"
               value={createAtTo}
               onChange={(d) => { setCreateAtTo(d); setPage(1); }}
-              popupAlign="right"
             />
           </div>
 
@@ -668,7 +668,12 @@ export default function JurnalUmumClient() {
             <>
               <div className="hidden sm:block w-px h-8 bg-gray-200/60"></div>
               <button
-                onClick={() => { setCreateAtFrom(null); setCreateAtTo(null); setPage(1); }}
+                onClick={() => {
+                  setCreateAtFrom(null);
+                  setCreateAtTo(null);
+                  setPage(1);
+                  persistDailyDateStore('jurnalUmum_createAt_dates', null, null, true);
+                }}
                 className="flex items-center justify-center gap-2 px-5 h-10 bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold rounded-xl transition-colors shadow-sm shrink-0"
               >
                 <span>&times;</span>

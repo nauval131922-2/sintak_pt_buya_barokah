@@ -18,7 +18,7 @@ type HydrateScraperPeriodOptions = {
   periodKey?: string;
 };
 
-function getTodayStorageDate() {
+export function getTodayStorageDate() {
   return new Date().toLocaleDateString('en-CA');
 }
 
@@ -209,4 +209,62 @@ export function hydrateDateStore(key: string): { startDate: Date | null; endDate
     localStorage.removeItem(key);
     return { startDate: null, endDate: null };
   }
+}
+
+// ---- Daily-scoped filter date store (persists across reloads on the same day; resets on day change) ----
+
+export interface DailyDateStore {
+  startDate: string | null;
+  endDate: string | null;
+  sessionDate: string;
+  isReset?: boolean;
+}
+
+export function hydrateDailyDateStore(
+  key: string,
+  getDefaults: () => { startDate: Date | null; endDate: Date | null }
+): { startDate: Date | null; endDate: Date | null } {
+  if (typeof localStorage === 'undefined') return getDefaults();
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return getDefaults();
+    const parsed: DailyDateStore = JSON.parse(raw);
+    const todayTag = getTodayStorageDate();
+
+    // ponytail: reload pada hari yang sama tetap tersimpan; jika sudah ganti hari kembali ke default
+    if (parsed.sessionDate !== todayTag) {
+      return getDefaults();
+    }
+
+    // ponytail: reset eksplisit pada hari yang sama dihormati (tidak kembali ke default)
+    if (parsed.isReset) {
+      return { startDate: null, endDate: null };
+    }
+
+    const startDate = parsed.startDate ? new Date(parsed.startDate) : null;
+    const endDate = parsed.endDate ? new Date(parsed.endDate) : null;
+
+    return {
+      startDate: startDate && !isNaN(startDate.getTime()) ? startDate : null,
+      endDate: endDate && !isNaN(endDate.getTime()) ? endDate : null,
+    };
+  } catch {
+    return getDefaults();
+  }
+}
+
+export function persistDailyDateStore(
+  key: string,
+  startDate: Date | null,
+  endDate: Date | null,
+  isReset: boolean = false
+) {
+  if (typeof localStorage === 'undefined') return;
+  const store: DailyDateStore = {
+    startDate: startDate ? startDate.toISOString() : null,
+    endDate: endDate ? endDate.toISOString() : null,
+    sessionDate: getTodayStorageDate(),
+    isReset,
+  };
+  localStorage.setItem(key, JSON.stringify(store));
 }
