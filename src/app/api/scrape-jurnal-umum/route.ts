@@ -62,6 +62,9 @@ async function ensureTable() {
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(faktur, child_order, is_child)
   )`);
+  // Tanpa indeks ini, tiap DELETE/lookup anak per parent_faktur = full scan
+  // (95rb+ baris). Ini yang bikin scrape kemarin 7-10 detik per 100 baris.
+  await executor.execute(`CREATE INDEX IF NOT EXISTS idx_jurnal_umum_parent ON jurnal_umum(parent_faktur)`);
 }
 
 export async function GET(req: NextRequest) {
@@ -182,17 +185,8 @@ export async function GET(req: NextRequest) {
         ]
       });
 
-      // Reset baris anak per faktur sebelum insert ulang. child_order di
-      // Digit itu posisional (ci+1): saat voucher dikoreksi di sumber
-      // (baris berkurang/bergeser), upsert posisional menyisakan ekor yatim.
-      // Kasus nyata: PH00126080800012 sisa 1 baris Kas Besar Rp365rb.
-      if (!resetDone.has(fakturKey)) {
-        resetDone.add(fakturKey);
-        queries.push({
-          sql: `DELETE FROM jurnal_umum WHERE is_child = 1 AND parent_faktur = ?`,
-          args: [fakturKey],
-        });
-      }
+      // Kumpulkan faktur unik saja; reset anak di-batch terpisah di bawah.
+      resetDone.add(fakturKey);
 
       const children: { rekening?: string; keterangan?: string; debit?: string | number; kredit?: string | number; username?: string }[] = r.w2ui?.children || [];
       children.forEach((child, ci) => {
@@ -216,7 +210,22 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const chunkSize = 100;
+    // Reset baris anak per faktur SEBELUM upsert. child_order di Digit itu
+    // posisional (ci+1): saat voucher dikoreksi di sumber (baris
+    // berkurang/bergeser), upsert posisional menyisakan ekor yatim. Kasus
+    // nyata: PH00126080800012 sisa 1 baris Kas Besar Rp365rb.
+    const delChildSize = 200;
+    const resetList = [...resetDone];
+    for (let i = 0; i < resetList.length; i += delChildSize) {
+      const chunk = resetList.slice(i, i + delChildSize);
+      const placeholders = chunk.map(() => "?").join(",");
+      await db.execute({
+        sql: `DELETE FROM jurnal_umum WHERE is_child = 1 AND parent_faktur IN (${placeholders})`,
+        args: chunk,
+      });
+    }
+
+    const chunkSize = 500;
     for (let i = 0; i < queries.length; i += chunkSize) {
       await db.batch(queries.slice(i, i + chunkSize));
     }
