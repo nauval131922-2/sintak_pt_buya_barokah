@@ -5,31 +5,20 @@ import { getScrapedPeriodSettingKey, parseScrapedPeriod } from '@/lib/server-scr
 export const dynamic = 'force-dynamic';
 
 async function ensureTable() {
+  // Skema + indeks dikelola scraper (scrape-jurnal-umum/route.ts). Dulu
+  // duplikat di sini dengan definisi basi (tanpa child_order/parent_faktur,
+  // UNIQUE beda) — untungnya no-op karena tabel sudah ada. Jangan
+  // definisikan ulang di sini agar tidak drift lagi.
   try {
-    const executor = (db as any).client || db;
+    const executor = (db as unknown as { client?: { execute: (sql: string) => Promise<unknown> } }).client || db;
     if (executor.execute) {
-      await executor.execute(`CREATE TABLE IF NOT EXISTS jurnal_umum (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        faktur TEXT NOT NULL,
-        tgl TEXT,
-        rekening TEXT,
-        keterangan TEXT,
-        debit REAL,
-        kredit REAL,
-        username TEXT,
-        create_at TEXT,
-        parent_faktur TEXT,
-        is_child INTEGER DEFAULT 0,
-        raw_data TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE(faktur, rekening, tgl, is_child)
-      )`);
+      await executor.execute(`CREATE INDEX IF NOT EXISTS idx_jurnal_umum_list ON jurnal_umum(is_child, tgl, create_at, faktur, id)`);
+      await executor.execute(`CREATE INDEX IF NOT EXISTS idx_jurnal_umum_parent ON jurnal_umum(parent_faktur)`);
     }
-  } catch (e) {
-    // Table already exists
+  } catch {
+    // Tabel belum ada (belum pernah scrape) — query di bawah gagal wajar
   }
 }
-
 export async function GET(req: NextRequest) {
   try {
     await ensureTable();
@@ -44,8 +33,11 @@ export async function GET(req: NextRequest) {
     const catTo   = searchParams.get('cat_to');
     const offset  = (page - 1) * limit;
 
+    // Kolom eksplisit tanpa raw_data: JSON mentah Digit ±13x bobot kolom
+    // terpakai (±95KB/halaman) dan tidak pernah dirender klien.
+    const COLS = `id, faktur, tgl, rekening, keterangan, debit, kredit, username, create_at, parent_faktur, is_child, child_order, created_at`;
     // Only query parent rows (is_child = 0)
-    let query      = `SELECT * FROM jurnal_umum WHERE is_child = 0`;
+    let query      = `SELECT ${COLS} FROM jurnal_umum WHERE is_child = 0`;
     let countQuery = `SELECT COUNT(*) as total FROM jurnal_umum WHERE is_child = 0`;
     const params: any[] = [];
 
@@ -90,7 +82,7 @@ export async function GET(req: NextRequest) {
       const fakturs = parentRows.map(r => r.faktur);
       const placeholders = fakturs.map(() => '?').join(',');
       const childRes = await db.execute({
-        sql: `SELECT * FROM jurnal_umum WHERE is_child = 1 AND parent_faktur IN (${placeholders}) ORDER BY id ASC`,
+        sql: `SELECT ${COLS} FROM jurnal_umum WHERE is_child = 1 AND parent_faktur IN (${placeholders}) ORDER BY id ASC`,
         args: fakturs
       });
 
@@ -125,16 +117,15 @@ export async function GET(req: NextRequest) {
       console.error("Failed to fetch rek_akuntansi for is_kas flag", e);
     }
 
-    // Metadata
+    // Metadata: lastUpdated murni dari cache scrape. Query MAX(created_at)
+    // sebelumnya full scan 27rb baris parent tiap buka halaman.
     const metadataResults = await db.batch([
       { sql: `SELECT value FROM system_settings WHERE key = 'last_scrape_jurnal_umum'`, args: [] },
       { sql: `SELECT value FROM system_settings WHERE key = ?`, args: [getScrapedPeriodSettingKey('last_scrape_jurnal_umum')] },
-      { sql: `SELECT strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) as lastUpdated FROM jurnal_umum WHERE is_child = 0`, args: [] }
     ], 'read');
 
     const lastScrape     = metadataResults[0].rows[0] as any;
-    const lastUpdatedRaw = (metadataResults[2].rows[0] as any)?.lastUpdated;
-    const lastUpdated    = lastScrape?.value || lastUpdatedRaw;
+    const lastUpdated    = lastScrape?.value || null;
 
     // Saldo Awal: cumulative LR before cat_from date (only when create_at filter is active)
     let saldoAwal = 0;

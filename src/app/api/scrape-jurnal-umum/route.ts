@@ -65,6 +65,10 @@ async function ensureTable() {
   // Tanpa indeks ini, tiap DELETE/lookup anak per parent_faktur = full scan
   // (95rb+ baris). Ini yang bikin scrape kemarin 7-10 detik per 100 baris.
   await executor.execute(`CREATE INDEX IF NOT EXISTS idx_jurnal_umum_parent ON jurnal_umum(parent_faktur)`);
+  // Indeks komposit untuk daftar halaman jurnal umum: filter is_child + tgl,
+  // ORDER BY create_at/faktur/id, dan COUNT(*) total. Tanpa ini tiap ganti
+  // page = SCAN + TEMP B-TREE FOR ORDER BY (~290ms di 95rb baris, page jauh).
+  await executor.execute(`CREATE INDEX IF NOT EXISTS idx_jurnal_umum_list ON jurnal_umum(is_child, tgl, create_at, faktur, id)`);
 }
 
 export async function GET(req: NextRequest) {
