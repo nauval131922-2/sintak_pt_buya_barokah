@@ -53,7 +53,11 @@ const CREATE_SQL = `CREATE TABLE IF NOT EXISTS jurnal_umum (
 export async function ensureJurnalUmumSchema(
   executor: JurnalUmumExecutor,
 ): Promise<void> {
-  const run = executor.execute;
+  // bind: Sqlite3Client.execute memakai private field (#db) — detach
+  // method (const run = executor.execute) bikin `this` undefined dan
+  // error "Cannot read properties of undefined (reading 'Sqlite3Client')"
+  // pada build Turbopack. Ini yang merusak Tarik Data 27 Sep.
+  const run = executor.execute?.bind(executor);
   if (!run) return;
   const colsRes = await run(`PRAGMA table_info(jurnal_umum)`);
   const colNames = ((colsRes.rows ?? []) as { name?: unknown }[]).map((r) =>
