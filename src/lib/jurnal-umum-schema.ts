@@ -73,20 +73,31 @@ export async function ensureJurnalUmumSchema(
   if (colNames.length === 0) {
     await run(CREATE_SQL);
   } else {
+    // Tiap ALTER dibungkus try/catch: dua ensure konkuren (scrape
+    // concurrency=2 + page load) bisa sama-sama lolos cek colNames lalu
+    // ALTER bersamaan → "duplicate column name". Abaikan yang itu saja.
+    const tryAdd = async (sql: string) => {
+      try {
+        await run(sql);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        if (!msg.includes("duplicate column name")) throw e;
+      }
+    };
     if (!colNames.includes("create_date")) {
-      await run(
+      await tryAdd(
         `ALTER TABLE jurnal_umum ADD COLUMN create_date TEXT ` +
           `GENERATED ALWAYS AS (substr(create_at, 1, 10)) VIRTUAL`,
       );
     }
     if (!colNames.includes("rek_head")) {
-      await run(
+      await tryAdd(
         `ALTER TABLE jurnal_umum ADD COLUMN rek_head TEXT ` +
           `GENERATED ALWAYS AS (substr(trim(rekening), 1, 1)) VIRTUAL`,
       );
     }
     if (!colNames.includes("rek_kode")) {
-      await run(
+      await tryAdd(
         `ALTER TABLE jurnal_umum ADD COLUMN rek_kode TEXT ` +
           `GENERATED ALWAYS AS (trim(substr(rekening, 1, ` +
           `CASE WHEN instr(rekening, ' - ') > 0 ` +
