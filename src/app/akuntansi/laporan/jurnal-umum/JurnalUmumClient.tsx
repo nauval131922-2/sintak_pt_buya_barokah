@@ -886,6 +886,15 @@ export default function JurnalUmumClient() {
             )}
           </div>
           <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <SearchAndReload
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                onReload={() => setRefreshKey(prev => prev + 1)}
+                loading={loading}
+                placeholder="Cari faktur, rekening, atau keterangan..."
+              />
+            </div>
             <div className="w-64 shrink-0">
               <SearchableDropdown
                 id="jurnal-rekening"
@@ -898,15 +907,6 @@ export default function JurnalUmumClient() {
                 compact
                 icon={<Filter size={14} className={rekFilter ? 'text-emerald-600' : 'text-gray-400'} />}
                 onChange={(val) => { setRekFilter(val); setPage(1); }}
-              />
-            </div>
-            <div className="flex-1">
-              <SearchAndReload
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                onReload={() => setRefreshKey(prev => prev + 1)}
-                loading={loading}
-                placeholder="Cari faktur, rekening, atau keterangan..."
               />
             </div>
             <button
