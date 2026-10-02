@@ -874,22 +874,13 @@ export default function JurnalUmumClient() {
                 className="w-full pl-9 pr-4 h-9 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
               />
             </div>
-            <button
-              onClick={handleExportExcel}
-              disabled={isExporting || !totalCount}
-              className="h-9 px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
-              title="Export Excel"
-            >
-              {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
-              <span className="hidden sm:inline">Export Excel</span>
-            </button>
           </div>
-          {/* Baris 2: Filter tanggal dibuat + rekening */}
+          {/* Baris 2: Filter tanggal dibuat + rekening + export */}
           <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 sm:pt-2 sm:border-t sm:border-slate-100">
             <div className="hidden sm:flex items-center text-xs text-slate-500 font-medium shrink-0">
               <Filter size={14} className="mr-1 text-slate-400" /> Filter:
             </div>
-            <div className="flex items-center justify-between gap-1 bg-slate-50 p-1 sm:p-0.5 rounded-lg border border-slate-200 min-w-0">
+            <div className="flex items-center justify-between gap-1 bg-slate-50 p-1 sm:p-0.5 rounded-lg border border-slate-200 min-w-0" title="Filter berdasarkan tanggal dibuat (kapan dicatat di Digit), bukan tanggal transaksi">
               <div className="flex-1 min-w-0">
                 <DatePicker
                   name="createAtFrom"
@@ -899,11 +890,11 @@ export default function JurnalUmumClient() {
                   customTrigger={() => (
                     <div
                       className="h-7 px-1.5 sm:px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer w-full"
-                      title={createAtFrom ? `Dari Tgl: ${formatDateDisplay(createAtFrom)}` : 'Filter Dari Tgl Dibuat'}
+                      title={createAtFrom ? `Dibuat dari: ${formatDateDisplay(createAtFrom)}` : 'Filter tanggal dibuat — dari'}
                     >
                       <Calendar size={11} className="text-slate-400 shrink-0" />
                       <span className={`truncate ${!createAtFrom ? 'text-slate-400 font-normal' : ''}`}>
-                        {createAtFrom ? formatDateDisplay(createAtFrom) : 'Dari Tgl'}
+                        {createAtFrom ? formatDateDisplay(createAtFrom) : 'Dibuat dari'}
                       </span>
                     </div>
                   )}
@@ -919,11 +910,11 @@ export default function JurnalUmumClient() {
                   customTrigger={() => (
                     <div
                       className="h-7 px-1.5 sm:px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer w-full"
-                      title={createAtTo ? `Sampai Tgl: ${formatDateDisplay(createAtTo)}` : 'Filter Sampai Tgl Dibuat'}
+                      title={createAtTo ? `Dibuat sampai: ${formatDateDisplay(createAtTo)}` : 'Filter tanggal dibuat — sampai'}
                     >
                       <Calendar size={11} className="text-slate-400 shrink-0" />
                       <span className={`truncate ${!createAtTo ? 'text-slate-400 font-normal' : ''}`}>
-                        {createAtTo ? formatDateDisplay(createAtTo) : 'Sampai Tgl'}
+                        {createAtTo ? formatDateDisplay(createAtTo) : 'Dibuat s/d'}
                       </span>
                     </div>
                   )}
@@ -939,6 +930,15 @@ export default function JurnalUmumClient() {
                 widthClass="w-full sm:w-48 md:w-56"
               />
             </div>
+            <button
+              onClick={handleExportExcel}
+              disabled={isExporting || !totalCount}
+              className="flex items-center justify-center gap-1.5 px-3 h-8 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all shrink-0 disabled:opacity-50 cursor-pointer shadow-xs"
+              title="Export hasil filter ke Excel"
+            >
+              {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+              <span>Export Excel</span>
+            </button>
             {(rekFilter || createAtFrom || createAtTo || searchQuery) && (
               <div className="w-full sm:w-auto flex items-center shrink-0">
                 <button
