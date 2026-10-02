@@ -149,12 +149,14 @@ export default function PageChangelogModal({ pageKey }: PageChangelogModalProps)
     });
   };
 
+  const resolvedTitle = active.find((c) => c.title && c.pageKey !== 'global')?.title || active[0]?.title || 'Halaman';
+
   return (
     <BaseModal
       isOpen={open}
       onClose={handleClose}
-      title={active[0].title}
-      subtitle="Log perubahan"
+      title={`Log Perubahan — ${resolvedTitle}`}
+      subtitle="Catatan pembaruan fitur & perbaikan sistem"
       icon={Sparkles}
       maxWidth="max-w-lg"
       closeOnBackdrop={true}

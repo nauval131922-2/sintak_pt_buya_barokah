@@ -542,32 +542,32 @@ export default function AnalisisJurnalModal({
 
                 {/* Custom Date Pickers */}
                 {comparePreset === 'custom' && (
-                  <div className="flex items-center gap-1.5 bg-white p-1 rounded-lg border border-indigo-200">
-                    <div className="w-28 h-7">
+                  <div className="flex items-center gap-1.5 bg-slate-100/90 p-1 rounded-xl border border-indigo-200">
+                    <div className="w-36 h-8">
                       <DatePicker
                         name="compStart"
                         value={compareStart}
                         onChange={(d) => setCompareStart(d)}
                         usePortal
                         customTrigger={() => (
-                          <div className="h-full px-2 bg-slate-50 border border-slate-200 rounded text-[11px] font-bold text-slate-700 flex items-center justify-between cursor-pointer">
-                            <span>{compareStart ? formatDateDisplay(compareStart) : 'Dari Tgl'}</span>
-                            <Calendar size={11} className="text-slate-400 ml-1" />
+                          <div className="h-full px-2.5 bg-white border border-slate-200/90 rounded-lg text-xs font-bold font-mono text-slate-700 hover:border-indigo-500 hover:text-indigo-700 transition-all flex items-center justify-between shadow-2xs cursor-pointer">
+                            <span className="truncate">{compareStart ? formatDateDisplay(compareStart) : 'Dari Tgl'}</span>
+                            <Calendar size={13} className="text-slate-400 shrink-0 ml-1.5" />
                           </div>
                         )}
                       />
                     </div>
-                    <span className="text-slate-400 font-bold">-</span>
-                    <div className="w-28 h-7">
+                    <span className="text-slate-400 font-bold text-xs">-</span>
+                    <div className="w-36 h-8">
                       <DatePicker
                         name="compEnd"
                         value={compareEnd}
                         onChange={(d) => setCompareEnd(d)}
                         usePortal
                         customTrigger={() => (
-                          <div className="h-full px-2 bg-slate-50 border border-slate-200 rounded text-[11px] font-bold text-slate-700 flex items-center justify-between cursor-pointer">
-                            <span>{compareEnd ? formatDateDisplay(compareEnd) : 'S/d Tgl'}</span>
-                            <Calendar size={11} className="text-slate-400 ml-1" />
+                          <div className="h-full px-2.5 bg-white border border-slate-200/90 rounded-lg text-xs font-bold font-mono text-slate-700 hover:border-indigo-500 hover:text-indigo-700 transition-all flex items-center justify-between shadow-2xs cursor-pointer">
+                            <span className="truncate">{compareEnd ? formatDateDisplay(compareEnd) : 'S/d Tgl'}</span>
+                            <Calendar size={13} className="text-slate-400 shrink-0 ml-1.5" />
                           </div>
                         )}
                       />
