@@ -1,6 +1,7 @@
 'use client';
 
 import XLSX from 'xlsx-js-style';
+import JSZip from 'jszip';
 
 export interface JurnalUmumExportRow {
   isSaldoAwal?: boolean;
@@ -413,10 +414,39 @@ export async function exportJurnalUmumExcel(
   XLSX.utils.book_append_sheet(wb, ws, 'Jurnal Umum');
 
   const finalName = filename.endsWith('.xlsx') ? filename : `${filename}.xlsx`;
-  XLSX.writeFile(wb, finalName);
+
+  // Tulis buffer mentah dari XLSX
+  const rawBuffer = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+
+  // Modifikasi sheet XML dengan JSZip agar showGridLines="0" (gridlines off)
+  // dan freeze pane (baris 1-5 beku) terpasang sempurna pada format OpenXML
+  const zip = await JSZip.loadAsync(rawBuffer);
+  const sheetPath = 'xl/worksheets/sheet1.xml';
+  let sheetXml = await zip.file(sheetPath)?.async('string');
+  if (sheetXml) {
+    const customSheetView = `<sheetViews><sheetView workbookViewId="0" showGridLines="0"><pane ySplit="5" topLeftCell="A6" activePane="bottomLeft" state="frozen"/><selection pane="bottomLeft" activeCell="A6" sqref="A6"/></sheetView></sheetViews>`;
+    sheetXml = sheetXml.replace(/<sheetViews>[\s\S]*?<\/sheetViews>/, customSheetView);
+    zip.file(sheetPath, sheetXml);
+  }
+
+  // Unduh berkas di browser
+  if (typeof window !== 'undefined') {
+    const blob = await zip.generateAsync({
+      type: 'blob',
+      mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = finalName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
   return true;
 }
-
 export async function exportRowsToExcel<T extends Record<string, unknown>>(
   rows: T[],
   filename: string,
