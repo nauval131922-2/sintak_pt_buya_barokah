@@ -1070,6 +1070,12 @@ export default function JurnalUmumClient() {
         onClose={() => setShowAnalisis(false)}
         queryParams={analisisQueryParams}
         filterDescription={filterDesc}
+        startDate={startDate}
+        endDate={endDate}
+        createAtFrom={createAtFrom}
+        createAtTo={createAtTo}
+        rekFilter={rekFilter}
+        searchQuery={debouncedQuery}
       />
     </div>
   );

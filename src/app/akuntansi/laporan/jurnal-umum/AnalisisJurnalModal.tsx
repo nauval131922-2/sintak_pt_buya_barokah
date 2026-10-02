@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   BarChart3,
   TrendingUp,
@@ -16,13 +16,17 @@ import {
   X,
   FileSpreadsheet,
   CheckCircle2,
-  AlertTriangle
+  AlertTriangle,
+  ArrowLeftRight,
+  Calendar,
+  Sparkles,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
   ComposedChart,
   Area,
   Bar,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -31,12 +35,19 @@ import {
   ReferenceLine,
 } from 'recharts';
 import BaseModal from '@/components/ui/BaseModal';
+import DatePicker from '@/components/DatePicker';
 
 interface AnalisisJurnalModalProps {
   isOpen: boolean;
   onClose: () => void;
   queryParams: string;
   filterDescription?: string;
+  startDate?: Date;
+  endDate?: Date;
+  createAtFrom?: Date | null;
+  createAtTo?: Date | null;
+  rekFilter?: string;
+  searchQuery?: string;
 }
 
 interface AnalisisSummary {
@@ -140,17 +151,147 @@ function formatShortRp(val: number): string {
   if (abs >= 1_000) return `${sign}Rp ${(abs / 1_000).toFixed(0)}Rb`;
   return `${sign}Rp ${abs.toLocaleString('id-ID')}`;
 }
+const MONTHS_SHORT_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+function formatDateDisplay(val: Date | null): string {
+  if (!val) return '';
+  return `${val.getDate()}-${MONTHS_SHORT_ID[val.getMonth()] ?? ''}-${String(val.getFullYear()).slice(-2)}`;
+}
+
+function formatDateToYYYYMMDD(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function getPreviousMonthRange(start: Date): { start: Date; end: Date } {
+  const prevStart = new Date(start.getFullYear(), start.getMonth() - 1, 1);
+  const prevEnd = new Date(start.getFullYear(), start.getMonth(), 0);
+  return { start: prevStart, end: prevEnd };
+}
+
+function getPreviousYearRange(start: Date, end: Date): { start: Date; end: Date } {
+  const prevStart = new Date(start.getFullYear() - 1, start.getMonth(), start.getDate());
+  const prevEnd = new Date(end.getFullYear() - 1, end.getMonth(), end.getDate());
+  return { start: prevStart, end: prevEnd };
+}
+
+function renderDeltaBadge(current: number, previous?: number | null, isCost = false) {
+  if (previous === null || previous === undefined || previous === 0) return null;
+  const diff = current - previous;
+  const pct = (diff / Math.abs(previous)) * 100;
+  if (isNaN(pct) || Math.abs(pct) < 0.05) {
+    return <span className="text-[10px] font-bold text-slate-400">0.0% (Stabil)</span>;
+  }
+  const isIncrease = diff > 0;
+  const isPositive = isCost ? !isIncrease : isIncrease;
+  const colorClass = isPositive
+    ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+    : 'text-rose-700 bg-rose-50 border-rose-200';
+  const sign = isIncrease ? '+' : '';
+  const arrow = isIncrease ? '▲' : '▼';
+  return (
+    <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded border text-[10px] font-bold font-mono ${colorClass}`}>
+      <span>{arrow}</span>
+      <span>{sign}{pct.toFixed(1)}%</span>
+      <span className="opacity-75">({sign}{formatShortRp(diff)})</span>
+    </span>
+  );
+}
 
 export default function AnalisisJurnalModal({
   isOpen,
   onClose,
   queryParams,
   filterDescription,
+  startDate,
+  endDate,
+  createAtFrom,
+  createAtTo,
+  rekFilter,
+  searchQuery,
 }: AnalisisJurnalModalProps) {
   const [data, setData] = useState<AnalisisData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'profit' | 'cashflow'>('profit');
+
+  // Comparison state
+  const [compareEnabled, setCompareEnabled] = useState(false);
+  const [comparePreset, setComparePreset] = useState<'mom' | 'yoy' | 'custom'>('mom');
+  const [compareStart, setCompareStart] = useState<Date | null>(null);
+  const [compareEnd, setCompareEnd] = useState<Date | null>(null);
+  const [compareData, setCompareData] = useState<AnalisisData | null>(null);
+  const [loadingCompare, setLoadingCompare] = useState(false);
+
+  const effectivePrimaryStart = useMemo(() => {
+    if (startDate) return startDate;
+    if (data?.dailyTrend && data.dailyTrend.length > 0) {
+      const parts = data.dailyTrend[0].date.split('-');
+      if (parts.length === 3) return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    }
+    return new Date();
+  }, [startDate, data?.dailyTrend]);
+
+  const effectivePrimaryEnd = useMemo(() => {
+    if (endDate) return endDate;
+    if (data?.dailyTrend && data.dailyTrend.length > 0) {
+      const parts = data.dailyTrend[data.dailyTrend.length - 1].date.split('-');
+      if (parts.length === 3) return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    }
+    return new Date();
+  }, [endDate, data?.dailyTrend]);
+
+  const applyComparePreset = (preset: 'mom' | 'yoy' | 'custom') => {
+    setComparePreset(preset);
+    if (preset === 'mom') {
+      const range = getPreviousMonthRange(effectivePrimaryStart);
+      setCompareStart(range.start);
+      setCompareEnd(range.end);
+    } else if (preset === 'yoy') {
+      const range = getPreviousYearRange(effectivePrimaryStart, effectivePrimaryEnd);
+      setCompareStart(range.start);
+      setCompareEnd(range.end);
+    }
+  };
+
+  useEffect(() => {
+    if (compareEnabled && !compareStart && !compareEnd) {
+      const range = getPreviousMonthRange(effectivePrimaryStart);
+      setCompareStart(range.start);
+      setCompareEnd(range.end);
+    }
+  }, [compareEnabled, effectivePrimaryStart]);
+
+  const fetchCompareData = useCallback(async (start: Date, end: Date) => {
+    setLoadingCompare(true);
+    try {
+      const p = new URLSearchParams({
+        from: formatDateToYYYYMMDD(start),
+        to: formatDateToYYYYMMDD(end),
+        ...(rekFilter ? { rek: rekFilter } : {}),
+        ...(searchQuery ? { q: searchQuery } : {}),
+        _t: Date.now().toString(),
+      });
+      const res = await fetch(`/api/jurnal-umum/analisis?${p.toString()}`);
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setCompareData(json);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setLoadingCompare(false);
+    }
+  }, [rekFilter, searchQuery]);
+
+  useEffect(() => {
+    if (compareEnabled && compareStart && compareEnd) {
+      fetchCompareData(compareStart, compareEnd);
+    } else if (!compareEnabled) {
+      setCompareData(null);
+    }
+  }, [compareEnabled, compareStart, compareEnd, fetchCompareData]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -176,6 +317,53 @@ export default function AnalisisJurnalModal({
   }, [isOpen, queryParams]);
 
   const summary = data?.summary;
+  const compareSummary = compareData?.summary;
+
+  const chartPoints = useMemo(() => {
+    if (!data?.dailyTrend) return [];
+    if (!compareEnabled || !compareData?.dailyTrend) {
+      return data.dailyTrend.map((d, i) => ({
+        ...d,
+        dayNum: i + 1,
+      }));
+    }
+    const primary = data.dailyTrend;
+    const secondary = compareData.dailyTrend;
+    const maxLen = Math.max(primary.length, secondary.length);
+    const merged: Array<{
+      dayNum: number;
+      date: string;
+      pendapatan: number;
+      beban: number;
+      labaRugi: number;
+      cumLabaRugi?: number;
+      compareCumLabaRugi?: number;
+      kasMasuk: number;
+      kasKeluar: number;
+      cumCashflow?: number;
+      compareCumCashflow?: number;
+      fakturCount: number;
+    }> = [];
+    for (let i = 0; i < maxLen; i++) {
+      const p = primary[i];
+      const s = secondary[i];
+      merged.push({
+        dayNum: i + 1,
+        date: p?.date || (s?.date ? `H+${i + 1}` : ''),
+        pendapatan: p?.pendapatan ?? 0,
+        beban: p?.beban ?? 0,
+        labaRugi: p?.labaRugi ?? 0,
+        cumLabaRugi: p?.cumLabaRugi,
+        compareCumLabaRugi: s?.cumLabaRugi,
+        kasMasuk: p?.kasMasuk ?? 0,
+        kasKeluar: p?.kasKeluar ?? 0,
+        cumCashflow: p?.cumCashflow,
+        compareCumCashflow: s?.cumCashflow,
+        fakturCount: p?.fakturCount ?? 0,
+      });
+    }
+    return merged;
+  }, [data?.dailyTrend, compareData?.dailyTrend, compareEnabled]);
 
   return (
     <BaseModal
@@ -268,85 +456,258 @@ export default function AnalisisJurnalModal({
             </div>
           </div>
 
-          {/* Navigation Tabs: Laba / Rugi & Arus Kas */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200/70 w-fit shrink-0 text-xs font-bold">
-            <button
-              type="button"
-              onClick={() => setActiveTab('profit')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
-                activeTab === 'profit'
-                  ? 'bg-white text-emerald-800 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <TrendingUp size={14} className="text-emerald-600" />
-              <span>Laba / Rugi</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('cashflow')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
-                activeTab === 'cashflow'
-                  ? 'bg-white text-violet-800 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Wallet size={14} className="text-violet-600" />
-              <span>Arus Kas</span>
-            </button>
+          {/* Navigation Tabs: Laba / Rugi & Arus Kas + Compare Toggle */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200/70 w-fit shrink-0 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => setActiveTab('profit')}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+                  activeTab === 'profit'
+                    ? 'bg-white text-emerald-800 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <TrendingUp size={14} className="text-emerald-600" />
+                <span>Laba / Rugi</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('cashflow')}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+                  activeTab === 'cashflow'
+                    ? 'bg-white text-violet-800 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Wallet size={14} className="text-violet-600" />
+                <span>Arus Kas</span>
+              </button>
+            </div>
+
+            {/* Compare Toggle Button */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setCompareEnabled((prev) => !prev)}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs border ${
+                  compareEnabled
+                    ? 'bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-700'
+                    : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'
+                }`}
+              >
+                <ArrowLeftRight size={13} className={compareEnabled ? 'text-indigo-200' : 'text-indigo-600'} />
+                <span>{compareEnabled ? 'Mode Komparasi: Aktif' : 'Bandingkan Periode'}</span>
+              </button>
+            </div>
           </div>
 
+          {/* Comparison Control Bar */}
+          {compareEnabled && (
+            <div className="p-3 bg-indigo-50/50 border border-indigo-100 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs animate-in fade-in slide-in-from-top-1 duration-200">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-bold text-indigo-950 flex items-center gap-1.5 mr-1">
+                  <ArrowLeftRight size={13} className="text-indigo-600" />
+                  Bandingkan dengan:
+                </span>
+                <div className="inline-flex rounded-lg p-0.5 bg-white border border-indigo-200 shadow-2xs font-semibold text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => applyComparePreset('mom')}
+                    className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                      comparePreset === 'mom' ? 'bg-indigo-600 text-white font-bold' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Bulan Sebelumnya (MoM)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyComparePreset('yoy')}
+                    className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                      comparePreset === 'yoy' ? 'bg-indigo-600 text-white font-bold' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Tahun Lalu (YoY)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setComparePreset('custom')}
+                    className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                      comparePreset === 'custom' ? 'bg-indigo-600 text-white font-bold' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Kustom
+                  </button>
+                </div>
+
+                {/* Custom Date Pickers */}
+                {comparePreset === 'custom' && (
+                  <div className="flex items-center gap-1.5 bg-white p-1 rounded-lg border border-indigo-200">
+                    <div className="w-28 h-7">
+                      <DatePicker
+                        name="compStart"
+                        value={compareStart}
+                        onChange={(d) => setCompareStart(d)}
+                        usePortal
+                        customTrigger={() => (
+                          <div className="h-full px-2 bg-slate-50 border border-slate-200 rounded text-[11px] font-bold text-slate-700 flex items-center justify-between cursor-pointer">
+                            <span>{compareStart ? formatDateDisplay(compareStart) : 'Dari Tgl'}</span>
+                            <Calendar size={11} className="text-slate-400 ml-1" />
+                          </div>
+                        )}
+                      />
+                    </div>
+                    <span className="text-slate-400 font-bold">-</span>
+                    <div className="w-28 h-7">
+                      <DatePicker
+                        name="compEnd"
+                        value={compareEnd}
+                        onChange={(d) => setCompareEnd(d)}
+                        usePortal
+                        customTrigger={() => (
+                          <div className="h-full px-2 bg-slate-50 border border-slate-200 rounded text-[11px] font-bold text-slate-700 flex items-center justify-between cursor-pointer">
+                            <span>{compareEnd ? formatDateDisplay(compareEnd) : 'S/d Tgl'}</span>
+                            <Calendar size={11} className="text-slate-400 ml-1" />
+                          </div>
+                        )}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Status info */}
+              <div className="flex items-center gap-2 shrink-0">
+                {loadingCompare ? (
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-700">
+                    <Loader2 size={13} className="animate-spin text-indigo-600" />
+                    <span>Memuat komparasi...</span>
+                  </div>
+                ) : compareStart && compareEnd ? (
+                  <span className="text-[11px] font-bold text-indigo-900 bg-white px-2.5 py-1 rounded-lg border border-indigo-200 shadow-2xs font-mono">
+                    {formatDateDisplay(compareStart)} s/d {formatDateDisplay(compareEnd)}
+                  </span>
+                ) : null}
+              </div>
+            </div>
+          )}
           {/* TAB 1: PROFITABILITY & CONTRIBUTORS */}
           {activeTab === 'profit' && (
             <div className="flex flex-col gap-6 animate-in fade-in duration-200">
               {/* Row 1: KPI Cards */}
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Omset</span>
-                  <p className="text-sm sm:text-base font-black text-slate-800 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalPendapatan)}>
-                    {formatRp(summary.totalPendapatan)}
-                  </p>
-                  <span className="text-[10px] text-emerald-600 font-bold block mt-1">Penjualan &amp; Omset (Rek. 4 &amp; 7)</span>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Omset</span>
+                    <p className="text-sm sm:text-base font-black text-slate-800 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalPendapatan)}>
+                      {formatRp(summary.totalPendapatan)}
+                    </p>
+                    <span className="text-[10px] text-emerald-600 font-bold block mt-1">Penjualan &amp; Omset (Rek. 4 &amp; 7)</span>
+                  </div>
+                  {compareEnabled && compareSummary && (
+                    <div className="mt-2 pt-2 border-t border-slate-100 flex flex-col gap-1">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-slate-400 font-medium">vs Pembanding:</span>
+                        <span className="font-mono font-bold text-slate-600 truncate">{formatShortRp(compareSummary.totalPendapatan)}</span>
+                      </div>
+                      {renderDeltaBadge(summary.totalPendapatan, compareSummary.totalPendapatan, false)}
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total HPP</span>
-                  <p className="text-sm sm:text-base font-black text-rose-700 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalHpp)}>
-                    {formatRp(summary.totalHpp)}
-                  </p>
-                  <span className="text-[10px] text-slate-500 font-bold block mt-1">Harga Pokok Penjualan (Rek. 5)</span>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total HPP</span>
+                    <p className="text-sm sm:text-base font-black text-rose-700 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalHpp)}>
+                      {formatRp(summary.totalHpp)}
+                    </p>
+                    <span className="text-[10px] text-slate-500 font-bold block mt-1">Harga Pokok Penjualan (Rek. 5)</span>
+                  </div>
+                  {compareEnabled && compareSummary && (
+                    <div className="mt-2 pt-2 border-t border-slate-100 flex flex-col gap-1">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-slate-400 font-medium">vs Pembanding:</span>
+                        <span className="font-mono font-bold text-slate-600 truncate">{formatShortRp(compareSummary.totalHpp)}</span>
+                      </div>
+                      {renderDeltaBadge(summary.totalHpp, compareSummary.totalHpp, true)}
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Laba Kotor</span>
-                  <p className={`text-sm sm:text-base font-black tracking-tight mt-1 font-mono truncate ${summary.labaKotor >= 0 ? 'text-emerald-700' : 'text-rose-700'}`} title={formatRp(summary.labaKotor)}>
-                    {formatRp(summary.labaKotor)}
-                  </p>
-                  <span className="text-[10px] text-slate-500 font-bold block mt-1">Gross Profit Margin {summary.grossMarginPct.toFixed(1)}%</span>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Laba Kotor</span>
+                    <p className={`text-sm sm:text-base font-black tracking-tight mt-1 font-mono truncate ${summary.labaKotor >= 0 ? 'text-emerald-700' : 'text-rose-700'}`} title={formatRp(summary.labaKotor)}>
+                      {formatRp(summary.labaKotor)}
+                    </p>
+                    <span className="text-[10px] text-slate-500 font-bold block mt-1">Margin {summary.grossMarginPct.toFixed(1)}%</span>
+                  </div>
+                  {compareEnabled && compareSummary && (
+                    <div className="mt-2 pt-2 border-t border-slate-100 flex flex-col gap-1">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-slate-400 font-medium">vs Pembanding:</span>
+                        <span className="font-mono font-bold text-slate-600 truncate">{formatShortRp(compareSummary.labaKotor)}</span>
+                      </div>
+                      {renderDeltaBadge(summary.labaKotor, compareSummary.labaKotor, false)}
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Beban Operasional</span>
-                  <p className="text-sm sm:text-base font-black text-orange-700 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalBebanOperasional)}>
-                    {formatRp(summary.totalBebanOperasional)}
-                  </p>
-                  <span className="text-[10px] text-slate-500 font-bold block mt-1">Beban Operasional (Rek. 6)</span>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Beban Operasional</span>
+                    <p className="text-sm sm:text-base font-black text-orange-700 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalBebanOperasional)}>
+                      {formatRp(summary.totalBebanOperasional)}
+                    </p>
+                    <span className="text-[10px] text-slate-500 font-bold block mt-1">Beban Operasional (Rek. 6)</span>
+                  </div>
+                  {compareEnabled && compareSummary && (
+                    <div className="mt-2 pt-2 border-t border-slate-100 flex flex-col gap-1">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-slate-400 font-medium">vs Pembanding:</span>
+                        <span className="font-mono font-bold text-slate-600 truncate">{formatShortRp(compareSummary.totalBebanOperasional)}</span>
+                      </div>
+                      {renderDeltaBadge(summary.totalBebanOperasional, compareSummary.totalBebanOperasional, true)}
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Beban Lain &amp; Pajak</span>
-                  <p className="text-sm sm:text-base font-black text-purple-700 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalBebanLain)}>
-                    {formatRp(summary.totalBebanLain)}
-                  </p>
-                  <span className="text-[10px] text-slate-500 font-bold block mt-1">Beban Lain &amp; Pajak (Rek. 8 &amp; 9)</span>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Beban Lain &amp; Pajak</span>
+                    <p className="text-sm sm:text-base font-black text-purple-700 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalBebanLain)}>
+                      {formatRp(summary.totalBebanLain)}
+                    </p>
+                    <span className="text-[10px] text-slate-500 font-bold block mt-1">Beban Lain &amp; Pajak (Rek. 8 &amp; 9)</span>
+                  </div>
+                  {compareEnabled && compareSummary && (
+                    <div className="mt-2 pt-2 border-t border-slate-100 flex flex-col gap-1">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-slate-400 font-medium">vs Pembanding:</span>
+                        <span className="font-mono font-bold text-slate-600 truncate">{formatShortRp(compareSummary.totalBebanLain)}</span>
+                      </div>
+                      {renderDeltaBadge(summary.totalBebanLain, compareSummary.totalBebanLain, true)}
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Pengeluaran</span>
-                  <p className="text-sm sm:text-base font-black text-slate-800 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalBeban)}>
-                    {formatRp(summary.totalBeban)}
-                  </p>
-                  <span className="text-[10px] text-rose-600 font-bold block mt-1">Total Beban Usaha (HPP + Biaya)</span>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Pengeluaran</span>
+                    <p className="text-sm sm:text-base font-black text-slate-800 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalBeban)}>
+                      {formatRp(summary.totalBeban)}
+                    </p>
+                    <span className="text-[10px] text-rose-600 font-bold block mt-1">Total Beban Usaha (HPP + Biaya)</span>
+                  </div>
+                  {compareEnabled && compareSummary && (
+                    <div className="mt-2 pt-2 border-t border-slate-100 flex flex-col gap-1">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-slate-400 font-medium">vs Pembanding:</span>
+                        <span className="font-mono font-bold text-slate-600 truncate">{formatShortRp(compareSummary.totalBeban)}</span>
+                      </div>
+                      {renderDeltaBadge(summary.totalBeban, compareSummary.totalBeban, true)}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -400,7 +761,7 @@ export default function AnalisisJurnalModal({
 
                   <div className="w-full h-[280px]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <ComposedChart data={data.dailyTrend} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
+                      <ComposedChart data={chartPoints} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                         <XAxis
                           dataKey="date"
@@ -422,7 +783,18 @@ export default function AnalisisJurnalModal({
                         <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
                         <Bar dataKey="pendapatan" name="Pendapatan (Omset)" fill="#10B981" radius={[3, 3, 0, 0]} />
                         <Bar dataKey="beban" name="Total Beban / HPP" fill="#F43F5E" radius={[3, 3, 0, 0]} />
-                        <Area type="monotone" dataKey="cumLabaRugi" name="Akumulasi Laba Berjalan" stroke="#059669" strokeWidth={2} fillOpacity={0} />
+                        <Area type="monotone" dataKey="cumLabaRugi" name="Akumulasi Laba Berjalan" stroke="#059669" strokeWidth={2.5} fillOpacity={0} />
+                        {compareEnabled && compareData && (
+                          <Line
+                            type="monotone"
+                            dataKey="compareCumLabaRugi"
+                            name="Akumulasi Laba (Pembanding)"
+                            stroke="#64748B"
+                            strokeWidth={2}
+                            strokeDasharray="4 4"
+                            dot={false}
+                          />
+                        )}
                       </ComposedChart>
                     </ResponsiveContainer>
                   </div>
@@ -560,39 +932,87 @@ export default function AnalisisJurnalModal({
               {/* Cashflow KPI Cards — style 100% konsisten dengan Tab Laba / Rugi */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Kas Masuk (Inflow)</span>
-                  <p className="text-sm sm:text-base font-black text-emerald-700 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalKasMasuk)}>
-                    {formatRp(summary.totalKasMasuk)}
-                  </p>
-                  <span className="text-[10px] text-emerald-600 font-bold block mt-1">Penerimaan Kas &amp; Bank</span>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Kas Masuk (Inflow)</span>
+                    <p className="text-sm sm:text-base font-black text-emerald-700 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalKasMasuk)}>
+                      {formatRp(summary.totalKasMasuk)}
+                    </p>
+                    <span className="text-[10px] text-emerald-600 font-bold block mt-1">Penerimaan Kas &amp; Bank</span>
+                  </div>
+                  {compareEnabled && compareSummary && (
+                    <div className="mt-2 pt-2 border-t border-slate-100 flex flex-col gap-1">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-slate-400 font-medium">vs Pembanding:</span>
+                        <span className="font-mono font-bold text-slate-600 truncate">{formatShortRp(compareSummary.totalKasMasuk)}</span>
+                      </div>
+                      {renderDeltaBadge(summary.totalKasMasuk, compareSummary.totalKasMasuk, false)}
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Kas Keluar (Outflow)</span>
-                  <p className="text-sm sm:text-base font-black text-rose-700 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalKasKeluar)}>
-                    {formatRp(summary.totalKasKeluar)}
-                  </p>
-                  <span className="text-[10px] text-rose-600 font-bold block mt-1">Pengeluaran Kas &amp; Beban Tunai</span>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Kas Keluar (Outflow)</span>
+                    <p className="text-sm sm:text-base font-black text-rose-700 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalKasKeluar)}>
+                      {formatRp(summary.totalKasKeluar)}
+                    </p>
+                    <span className="text-[10px] text-rose-600 font-bold block mt-1">Pengeluaran Kas &amp; Beban Tunai</span>
+                  </div>
+                  {compareEnabled && compareSummary && (
+                    <div className="mt-2 pt-2 border-t border-slate-100 flex flex-col gap-1">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-slate-400 font-medium">vs Pembanding:</span>
+                        <span className="font-mono font-bold text-slate-600 truncate">{formatShortRp(compareSummary.totalKasKeluar)}</span>
+                      </div>
+                      {renderDeltaBadge(summary.totalKasKeluar, compareSummary.totalKasKeluar, true)}
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Net Cashflow</span>
-                  <p className={`text-sm sm:text-base font-black tracking-tight mt-1 font-mono truncate ${summary.netCashflow >= 0 ? 'text-violet-700' : 'text-rose-700'}`} title={formatRp(summary.netCashflow)}>
-                    {summary.netCashflow >= 0 ? '+' : ''}{formatRp(summary.netCashflow)}
-                  </p>
-                  <span className={`text-[10px] font-bold block mt-1 ${summary.netCashflow >= 0 ? 'text-violet-600' : 'text-rose-600'}`}>
-                    {summary.netCashflow >= 0 ? 'Surplus Likuiditas' : 'Defisit Likuiditas'}
-                  </span>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Net Cashflow</span>
+                    <p className={`text-sm sm:text-base font-black tracking-tight mt-1 font-mono truncate ${summary.netCashflow >= 0 ? 'text-violet-700' : 'text-rose-700'}`} title={formatRp(summary.netCashflow)}>
+                      {summary.netCashflow >= 0 ? '+' : ''}{formatRp(summary.netCashflow)}
+                    </p>
+                    <span className={`text-[10px] font-bold block mt-1 ${summary.netCashflow >= 0 ? 'text-violet-600' : 'text-rose-600'}`}>
+                      {summary.netCashflow >= 0 ? 'Surplus Likuiditas' : 'Defisit Likuiditas'}
+                    </span>
+                  </div>
+                  {compareEnabled && compareSummary && (
+                    <div className="mt-2 pt-2 border-t border-slate-100 flex flex-col gap-1">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-slate-400 font-medium">vs Pembanding:</span>
+                        <span className="font-mono font-bold text-slate-600 truncate">{formatShortRp(compareSummary.netCashflow)}</span>
+                      </div>
+                      {renderDeltaBadge(summary.netCashflow, compareSummary.netCashflow, false)}
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Inflow / Outflow Ratio</span>
-                  <p className="text-sm sm:text-base font-black text-slate-800 tracking-tight mt-1 font-mono truncate">
-                    {summary.totalKasKeluar > 0 ? (summary.totalKasMasuk / summary.totalKasKeluar).toFixed(2) + 'x' : '—'}
-                  </p>
-                  <span className="text-[10px] text-slate-500 font-bold block mt-1">
-                    {summary.totalKasMasuk >= summary.totalKasKeluar ? 'Kas Masuk Menutup Pengeluaran' : 'Pengeluaran Melampaui Penerimaan'}
-                  </span>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Inflow / Outflow Ratio</span>
+                    <p className="text-sm sm:text-base font-black text-slate-800 tracking-tight mt-1 font-mono truncate">
+                      {summary.totalKasKeluar > 0 ? (summary.totalKasMasuk / summary.totalKasKeluar).toFixed(2) + 'x' : '—'}
+                    </p>
+                    <span className="text-[10px] text-slate-500 font-bold block mt-1">
+                      {summary.totalKasMasuk >= summary.totalKasKeluar ? 'Kas Masuk Menutup Pengeluaran' : 'Pengeluaran Melampaui Penerimaan'}
+                    </span>
+                  </div>
+                  {compareEnabled && compareSummary && (
+                    <div className="mt-2 pt-2 border-t border-slate-100 flex flex-col gap-1">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-slate-400 font-medium">vs Pembanding:</span>
+                        <span className="font-mono font-bold text-slate-600 truncate">
+                          {compareSummary.totalKasKeluar > 0 ? (compareSummary.totalKasMasuk / compareSummary.totalKasKeluar).toFixed(2) + 'x' : '—'}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-bold text-indigo-700 font-mono">
+                        Rasio Inflow/Outflow
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -647,7 +1067,7 @@ export default function AnalisisJurnalModal({
 
                   <div className="w-full h-[280px]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <ComposedChart data={data.dailyTrend} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
+                      <ComposedChart data={chartPoints} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                         <XAxis
                           dataKey="date"
@@ -670,6 +1090,17 @@ export default function AnalisisJurnalModal({
                         <Bar dataKey="kasMasuk" name="Kas Masuk" fill="#10B981" radius={[3, 3, 0, 0]} />
                         <Bar dataKey="kasKeluar" name="Kas Keluar" fill="#F43F5E" radius={[3, 3, 0, 0]} />
                         <Area type="monotone" dataKey="cumCashflow" name="Akumulasi Kas Berjalan" stroke="#8B5CF6" strokeWidth={2} fillOpacity={0} />
+                        {compareEnabled && compareData && (
+                          <Line
+                            type="monotone"
+                            dataKey="compareCumCashflow"
+                            name="Akumulasi Kas (Pembanding)"
+                            stroke="#64748B"
+                            strokeWidth={2}
+                            strokeDasharray="4 4"
+                            dot={false}
+                          />
+                        )}
                       </ComposedChart>
                     </ResponsiveContainer>
                   </div>
