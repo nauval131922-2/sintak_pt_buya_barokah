@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Loader2, AlertCircle, Download, Search, RefreshCw, Calendar, Filter } from 'lucide-react';
+import { Loader2, AlertCircle, Download, Search, RefreshCw, Calendar } from 'lucide-react';
 import SquareDropdown from '@/components/SquareDropdown';
 import { exportRowsToExcel } from '@/lib/export-excel';
 import { toast } from '@/lib/toast';
@@ -842,8 +842,8 @@ export default function JurnalUmumClient() {
       )}
 
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
-        <div className="flex flex-col gap-4 shrink-0 px-1">
-          <div className="flex items-center justify-between gap-4 min-h-[32px]">
+        <div className="flex flex-col gap-3 shrink-0">
+          <div className="flex items-center justify-between gap-4 min-h-[32px] px-1">
             <ScrapingHeader title="Hasil Scrapping Jurnal Umum" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
             {loading && data && data.length > 0 && (
               <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
@@ -852,13 +852,14 @@ export default function JurnalUmumClient() {
               </div>
             )}
           </div>
-          {/* Baris 1: Search & Reload */}
-          <div className="flex items-center gap-2 w-full">
+          {/* Card Search & Filter — satu baris: reload + search + tanggal dibuat + rekening + export */}
+          <div className="shrink-0 bg-white rounded-xl border border-slate-200/80 shadow-sm p-3">
+          <div className="flex flex-col xl:flex-row xl:items-center gap-2">
             <button
               type="button"
               onClick={() => setRefreshKey(prev => prev + 1)}
               disabled={loading}
-              className="h-9 px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
+              className="h-9 px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-sm self-start xl:self-auto"
               title="Reload Data Jurnal Umum"
             >
               <RefreshCw size={14} className={loading ? 'animate-spin text-emerald-600' : ''} />
@@ -874,13 +875,7 @@ export default function JurnalUmumClient() {
                 className="w-full pl-9 pr-4 h-9 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
               />
             </div>
-          </div>
-          {/* Baris 2: Filter tanggal dibuat + rekening + export */}
-          <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 sm:pt-2 sm:border-t sm:border-slate-100">
-            <div className="hidden sm:flex items-center text-xs text-slate-500 font-medium shrink-0">
-              <Filter size={14} className="mr-1 text-slate-400" /> Filter:
-            </div>
-            <div className="flex items-center justify-between gap-1 bg-slate-50 p-1 sm:p-0.5 rounded-lg border border-slate-200 min-w-0" title="Filter berdasarkan tanggal dibuat (kapan dicatat di Digit), bukan tanggal transaksi">
+            <div className="flex items-center gap-1 bg-slate-50 p-0.5 rounded-lg border border-slate-200 w-full xl:w-[280px] shrink-0" title="Filter berdasarkan tanggal dibuat (kapan dicatat di Digit), bukan tanggal transaksi">
               <div className="flex-1 min-w-0">
                 <DatePicker
                   name="createAtFrom"
@@ -921,43 +916,42 @@ export default function JurnalUmumClient() {
                 />
               </div>
             </div>
-            <div className="w-full sm:w-auto">
+            <div className="w-full xl:w-52 shrink-0">
               <SquareDropdown
                 options={rekDropdownOptions}
                 value={rekFilter}
                 onChange={(val) => { setRekFilter(val); setPage(1); }}
                 searchPlaceholder="Cari kode / nama rekening..."
-                widthClass="w-full sm:w-48 md:w-56"
+                widthClass="w-full"
               />
             </div>
             <button
               onClick={handleExportExcel}
               disabled={isExporting || !totalCount}
-              className="flex items-center justify-center gap-1.5 px-3 h-8 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all shrink-0 disabled:opacity-50 cursor-pointer shadow-xs"
+              className="h-9 px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center justify-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
               title="Export hasil filter ke Excel"
             >
               {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
               <span>Export Excel</span>
             </button>
             {(rekFilter || createAtFrom || createAtTo || searchQuery) && (
-              <div className="w-full sm:w-auto flex items-center shrink-0">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRekFilter('');
-                    setCreateAtFrom(null);
-                    setCreateAtTo(null);
-                    setSearchQuery('');
-                    setPage(1);
-                    persistDailyDateStore('jurnalUmum_createAt_dates', null, null, true);
-                  }}
-                  className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 h-8 text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-200 hover:bg-rose-100 rounded-lg transition-all shrink-0 cursor-pointer shadow-xs"
-                >
-                  <span>&times;</span>
-                  <span>Reset</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setRekFilter('');
+                  setCreateAtFrom(null);
+                  setCreateAtTo(null);
+                  setSearchQuery('');
+                  setPage(1);
+                  persistDailyDateStore('jurnalUmum_createAt_dates', null, null, true);
+                }}
+                className="h-9 px-3 text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-200 hover:bg-rose-100 rounded-lg transition-all shrink-0 cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
+              >
+                <span>&times;</span>
+                <span>Reset</span>
+              </button>
             )}
+          </div>
           </div>
         </div>
 
