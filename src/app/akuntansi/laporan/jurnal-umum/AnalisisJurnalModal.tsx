@@ -319,7 +319,7 @@ export default function AnalisisJurnalModal({
   const summary = data?.summary;
   const compareSummary = compareData?.summary;
 
-  const chartPoints = useMemo(() => {
+  const chartPoints = useMemo<any[]>(() => {
     if (!data?.dailyTrend) return [];
     if (!compareEnabled || !compareData?.dailyTrend) {
       return data.dailyTrend.map((d, i) => ({
@@ -330,20 +330,7 @@ export default function AnalisisJurnalModal({
     const primary = data.dailyTrend;
     const secondary = compareData.dailyTrend;
     const maxLen = Math.max(primary.length, secondary.length);
-    const merged: Array<{
-      dayNum: number;
-      date: string;
-      pendapatan: number;
-      beban: number;
-      labaRugi: number;
-      cumLabaRugi?: number;
-      compareCumLabaRugi?: number;
-      kasMasuk: number;
-      kasKeluar: number;
-      cumCashflow?: number;
-      compareCumCashflow?: number;
-      fakturCount: number;
-    }> = [];
+    const merged: any[] = [];
     for (let i = 0; i < maxLen; i++) {
       const p = primary[i];
       const s = secondary[i];
@@ -353,11 +340,12 @@ export default function AnalisisJurnalModal({
         pendapatan: p?.pendapatan ?? 0,
         beban: p?.beban ?? 0,
         labaRugi: p?.labaRugi ?? 0,
-        cumLabaRugi: p?.cumLabaRugi,
+        cumLabaRugi: p?.cumLabaRugi ?? 0,
         compareCumLabaRugi: s?.cumLabaRugi,
         kasMasuk: p?.kasMasuk ?? 0,
         kasKeluar: p?.kasKeluar ?? 0,
-        cumCashflow: p?.cumCashflow,
+        netKas: p?.netKas ?? ((p?.kasMasuk ?? 0) - (p?.kasKeluar ?? 0)),
+        cumCashflow: p?.cumCashflow ?? 0,
         compareCumCashflow: s?.cumCashflow,
         fakturCount: p?.fakturCount ?? 0,
       });
