@@ -113,12 +113,65 @@ export async function GET(req: NextRequest) {
       GROUP BY p.tgl
       ORDER BY p.tgl ASC
     `;
+    // Query 5: Rincian Sumber Kas Masuk (Lawan rekening yang dikredit saat Kas didebit)
+    const inflowSql = `
+      WITH target_parents AS (
+        SELECT faktur FROM jurnal_umum WHERE ${parentWhere}
+      ),
+      cash_inflow_vouchers AS (
+        SELECT DISTINCT j.parent_faktur
+        FROM jurnal_umum j
+        JOIN rek_akuntansi r ON j.rek_kode = r.kode AND r.arus_kas = 'Kas'
+        WHERE j.is_child = 1 AND j.debit > 0
+          AND j.parent_faktur IN (SELECT faktur FROM target_parents)
+      )
+      SELECT
+        other.rek_kode,
+        other.rekening,
+        other.rek_head,
+        SUM(other.kredit) as total_nominal,
+        COUNT(DISTINCT other.parent_faktur) as frekuensi,
+        EXISTS(SELECT 1 FROM rek_akuntansi r2 WHERE r2.kode = other.rek_kode AND r2.arus_kas = 'Kas') as is_internal_kas
+      FROM cash_inflow_vouchers civ
+      JOIN jurnal_umum other ON other.parent_faktur = civ.parent_faktur AND other.is_child = 1 AND other.kredit > 0
+      GROUP BY other.rek_kode, other.rekening, other.rek_head
+      ORDER BY SUM(other.kredit) DESC
+      LIMIT 12
+    `;
 
-    const [countRes, accRes, kasRes, trendRes] = await Promise.all([
+    // Query 6: Rincian Tujuan Pengeluaran Kas (Lawan rekening yang didebit saat Kas dikredit)
+    const outflowSql = `
+      WITH target_parents AS (
+        SELECT faktur FROM jurnal_umum WHERE ${parentWhere}
+      ),
+      cash_outflow_vouchers AS (
+        SELECT DISTINCT j.parent_faktur
+        FROM jurnal_umum j
+        JOIN rek_akuntansi r ON j.rek_kode = r.kode AND r.arus_kas = 'Kas'
+        WHERE j.is_child = 1 AND j.kredit > 0
+          AND j.parent_faktur IN (SELECT faktur FROM target_parents)
+      )
+      SELECT
+        other.rek_kode,
+        other.rekening,
+        other.rek_head,
+        SUM(other.debit) as total_nominal,
+        COUNT(DISTINCT other.parent_faktur) as frekuensi,
+        EXISTS(SELECT 1 FROM rek_akuntansi r2 WHERE r2.kode = other.rek_kode AND r2.arus_kas = 'Kas') as is_internal_kas
+      FROM cash_outflow_vouchers cov
+      JOIN jurnal_umum other ON other.parent_faktur = cov.parent_faktur AND other.is_child = 1 AND other.debit > 0
+      GROUP BY other.rek_kode, other.rekening, other.rek_head
+      ORDER BY SUM(other.debit) DESC
+      LIMIT 12
+    `;
+
+    const [countRes, accRes, kasRes, trendRes, inflowRes, outflowRes] = await Promise.all([
       db.execute({ sql: countSql, args: parentParams }),
       db.execute({ sql: accSql, args: parentParams }),
       db.execute({ sql: kasSql, args: parentParams }),
       db.execute({ sql: trendSql, args: parentParams }),
+      db.execute({ sql: inflowSql, args: parentParams }),
+      db.execute({ sql: outflowSql, args: parentParams }),
     ]);
 
     const totalVouchers = Number((countRes.rows[0] as { total?: number })?.total ?? 0);
@@ -289,6 +342,64 @@ export async function GET(req: NextRequest) {
         fakturCount: Number(r.total_faktur ?? 0),
       };
     });
+    function classifyCounterpart(head: string, isKas: boolean): string {
+      if (isKas) return 'Mutasi Antar Kas / Bank';
+      if (head === '1') return 'Piutang & Aset Lancar';
+      if (head === '2') return 'Hutang & Kewajiban';
+      if (head === '3') return 'Modal & Ekuitas';
+      if (head === '4') return 'Penjualan / Omset Tunai';
+      if (head === '5') return 'Bahan Baku & HPP Tunai';
+      if (head === '6') return 'Biaya & Beban Operasional';
+      if (head === '7') return 'Pendapatan Non-Operasional';
+      if (head === '8') return 'Beban Non-Operasional';
+      if (head === '9') return 'Pajak Penghasilan';
+      return 'Lainnya';
+    }
+
+    const cashInflows = (inflowRes.rows as Array<{
+      rek_kode?: string;
+      rekening?: string;
+      rek_head?: string;
+      total_nominal?: number | null;
+      frekuensi?: number | null;
+      is_internal_kas?: number | boolean | null;
+    }>).map((r) => {
+      const amount = Number(r.total_nominal ?? 0);
+      const isInternal = Boolean(r.is_internal_kas);
+      const head = String(r.rek_head ?? '');
+      return {
+        kode: String(r.rek_kode ?? ''),
+        rekening: String(r.rekening ?? ''),
+        amount,
+        frekuensi: Number(r.frekuensi ?? 0),
+        isInternalKas: isInternal,
+        kategori: classifyCounterpart(head, isInternal),
+        percentage: totalKasMasuk > 0 ? Number(((amount / totalKasMasuk) * 100).toFixed(2)) : 0,
+      };
+    });
+
+    const cashOutflows = (outflowRes.rows as Array<{
+      rek_kode?: string;
+      rekening?: string;
+      rek_head?: string;
+      total_nominal?: number | null;
+      frekuensi?: number | null;
+      is_internal_kas?: number | boolean | null;
+    }>).map((r) => {
+      const amount = Number(r.total_nominal ?? 0);
+      const isInternal = Boolean(r.is_internal_kas);
+      const head = String(r.rek_head ?? '');
+      return {
+        kode: String(r.rek_kode ?? ''),
+        rekening: String(r.rekening ?? ''),
+        amount,
+        frekuensi: Number(r.frekuensi ?? 0),
+        isInternalKas: isInternal,
+        kategori: classifyCounterpart(head, isInternal),
+        percentage: totalKasKeluar > 0 ? Number(((amount / totalKasKeluar) * 100).toFixed(2)) : 0,
+      };
+    });
+
 
     return NextResponse.json({
       success: true,
@@ -312,6 +423,8 @@ export async function GET(req: NextRequest) {
       topRugi,
       strukturBeban,
       kasBreakdown,
+      cashInflows,
+      cashOutflows,
       dailyTrend,
     });
   } catch (error: unknown) {

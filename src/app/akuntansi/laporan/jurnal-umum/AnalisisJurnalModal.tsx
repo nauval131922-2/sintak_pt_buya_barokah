@@ -93,12 +93,24 @@ interface DailyPoint {
   fakturCount: number;
 }
 
+interface CashCounterpartItem {
+  kode: string;
+  rekening: string;
+  amount: number;
+  frekuensi: number;
+  isInternalKas: boolean;
+  kategori: string;
+  percentage: number;
+}
+
 interface AnalisisData {
   summary: AnalisisSummary;
   topUntung: ItemContributor[];
   topRugi: ItemContributor[];
   strukturBeban: StrukturBebanItem[];
   kasBreakdown: KasItem[];
+  cashInflows: CashCounterpartItem[];
+  cashOutflows: CashCounterpartItem[];
   dailyTrend: DailyPoint[];
 }
 
@@ -159,8 +171,8 @@ export default function AnalisisJurnalModal({
       title="Analisis Finansial & Profitabilitas"
       subtitle={filterDescription || 'Ringkasan performa pendapatan, pemicu biaya, dan mutasi kas'}
       icon={BarChart3}
-      maxWidth="max-w-5xl"
-      bodyClassName="overflow-y-auto max-h-[82vh] p-4 sm:p-6"
+      maxWidth="max-w-7xl"
+      bodyClassName="overflow-y-auto max-h-[88vh] p-4 sm:p-6"
       footer={
         <div className="flex items-center justify-between w-full text-xs">
           <div className="text-gray-500 font-medium">
@@ -572,32 +584,204 @@ export default function AnalisisJurnalModal({
             </div>
           )}
 
-          {/* TAB 3: CASHFLOW BREAKDOWN */}
+          {/* TAB 3: CASHFLOW ANALYSIS (LENGKAP) */}
           {activeTab === 'cashflow' && (
-            <div className="flex flex-col gap-5 animate-in fade-in duration-200">
-              {/* Cashflow Summary Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="p-4 bg-emerald-50/60 border border-emerald-100 rounded-xl">
-                  <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider block">Total Kas Masuk (Debit)</span>
-                  <p className="text-lg font-black text-emerald-800 font-mono mt-1">
+            <div className="flex flex-col gap-6 animate-in fade-in duration-200">
+              {/* Cashflow KPI Cards */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="p-3.5 bg-emerald-50/60 border border-emerald-200/80 rounded-2xl shadow-2xs">
+                  <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block">Total Kas Masuk (Inflow)</span>
+                  <p className="text-base sm:text-lg font-black text-emerald-900 font-mono mt-1">
                     {formatRp(summary.totalKasMasuk)}
                   </p>
+                  <span className="text-[10px] text-emerald-600 font-semibold block mt-0.5">Sisi Debit Akun Kas/Bank</span>
                 </div>
-                <div className="p-4 bg-rose-50/60 border border-rose-100 rounded-xl">
-                  <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wider block">Total Kas Keluar (Kredit)</span>
-                  <p className="text-lg font-black text-rose-800 font-mono mt-1">
+
+                <div className="p-3.5 bg-rose-50/60 border border-rose-200/80 rounded-2xl shadow-2xs">
+                  <span className="text-[10px] font-bold text-rose-700 uppercase tracking-wider block">Total Kas Keluar (Outflow)</span>
+                  <p className="text-base sm:text-lg font-black text-rose-900 font-mono mt-1">
                     {formatRp(summary.totalKasKeluar)}
                   </p>
+                  <span className="text-[10px] text-rose-600 font-semibold block mt-0.5">Sisi Kredit Akun Kas/Bank</span>
                 </div>
-                <div className="p-4 bg-violet-50/60 border border-violet-100 rounded-xl">
-                  <span className="text-[10px] font-bold text-violet-600 uppercase tracking-wider block">Net Mutasi Kas</span>
-                  <p className={`text-lg font-black font-mono mt-1 ${summary.netCashflow >= 0 ? 'text-violet-800' : 'text-rose-700'}`}>
+
+                <div className="p-3.5 bg-violet-50/60 border border-violet-200/80 rounded-2xl shadow-2xs">
+                  <span className="text-[10px] font-bold text-violet-700 uppercase tracking-wider block">Net Cashflow</span>
+                  <p className={`text-base sm:text-lg font-black font-mono mt-1 ${summary.netCashflow >= 0 ? 'text-violet-900' : 'text-rose-700'}`}>
                     {summary.netCashflow >= 0 ? '+' : ''}{formatRp(summary.netCashflow)}
                   </p>
+                  <span className="text-[10px] text-violet-600 font-semibold block mt-0.5">
+                    {summary.netCashflow >= 0 ? 'Surplus Likuiditas' : 'Defisit Likuiditas'}
+                  </span>
+                </div>
+
+                <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl shadow-2xs">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Inflow / Outflow Ratio</span>
+                  <p className="text-base sm:text-lg font-black text-slate-800 font-mono mt-1">
+                    {summary.totalKasKeluar > 0 ? (summary.totalKasMasuk / summary.totalKasKeluar).toFixed(2) + 'x' : '—'}
+                  </p>
+                  <span className="text-[10px] text-slate-500 font-semibold block mt-0.5">
+                    {summary.totalKasMasuk >= summary.totalKasKeluar ? 'Kas Masuk Menutup Pengeluaran' : 'Pengeluaran Melampaui Penerimaan'}
+                  </span>
                 </div>
               </div>
 
-              {/* Cash Accounts Table */}
+              {/* Grafik Tren Arus Kas Harian (Kas Masuk vs Kas Keluar & Kumulatif) */}
+              {data.dailyTrend.length > 0 && (
+                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Wallet size={15} className="text-violet-600" />
+                      <h5 className="text-xs font-bold text-slate-800">Tren Mutasi Kas Harian & Akumulasi Cashflow</h5>
+                    </div>
+                    <span className="text-[11px] font-bold text-slate-400 font-mono">
+                      Net: {summary.netCashflow >= 0 ? '+' : ''}{formatShortRp(summary.netCashflow)}
+                    </span>
+                  </div>
+
+                  <div className="w-full h-[220px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ComposedChart data={data.dailyTrend} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                        <XAxis
+                          dataKey="date"
+                          tick={{ fontSize: 9, fill: '#64748b' }}
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          tick={{ fontSize: 9, fill: '#64748b' }}
+                          axisLine={false}
+                          tickLine={false}
+                          tickFormatter={formatShortRp}
+                        />
+                        <ReferenceLine y={0} stroke="#cbd5e1" strokeWidth={1} />
+                        <Tooltip
+                          formatter={(val: any, name: any) => [formatRp(Number(val)), name]}
+                          contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '11px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                        />
+                        <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
+                        <Bar dataKey="kasMasuk" name="Kas Masuk" fill="#10B981" radius={[3, 3, 0, 0]} />
+                        <Bar dataKey="kasKeluar" name="Kas Keluar" fill="#F43F5E" radius={[3, 3, 0, 0]} />
+                        <Area type="monotone" dataKey="cumCashflow" name="Akumulasi Kas Berjalan" stroke="#8B5CF6" strokeWidth={2} fillOpacity={0} />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
+
+              {/* 2 Kolom Komparasi Kas: DARI MANA KAS MASUK vs KE MANA KAS KELUAR */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* 🟢 SUMBER KAS MASUK */}
+                <div className="bg-white border border-emerald-200/80 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-3 pb-2 border-b border-emerald-100">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                          <ArrowUpRight size={16} />
+                        </div>
+                        <div>
+                          <h5 className="text-xs font-bold text-slate-800">Dari Mana Kas Masuk? (Sumber Inflow)</h5>
+                          <span className="text-[10px] text-emerald-700 font-medium">Pos penerimaan uang tunai & setoran bank</span>
+                        </div>
+                      </div>
+                      <span className="text-xs font-black text-emerald-700 font-mono">{formatShortRp(summary.totalKasMasuk)}</span>
+                    </div>
+
+                    <div className="flex flex-col gap-2.5">
+                      {(!data.cashInflows || data.cashInflows.length === 0) ? (
+                        <p className="text-xs text-gray-400 text-center py-6">Tidak ada transaksi kas masuk</p>
+                      ) : (
+                        data.cashInflows.map((item, idx) => (
+                          <div key={idx} className="p-2.5 rounded-xl bg-emerald-50/40 border border-emerald-100/60 hover:bg-emerald-50/80 transition-colors">
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs font-bold text-slate-800 truncate" title={item.rekening}>
+                                  {item.rekening}
+                                </p>
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                  <span className="text-[10px] font-semibold text-emerald-700 px-1.5 py-0.2 bg-emerald-100/60 rounded">
+                                    {item.kategori}
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 font-medium">
+                                    {item.frekuensi} transaksi
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="text-right shrink-0">
+                                <p className="text-xs font-black text-emerald-800 font-mono">{formatRp(item.amount)}</p>
+                                <span className="text-[10px] font-bold text-slate-400">{item.percentage}% dari total masuk</span>
+                              </div>
+                            </div>
+                            <div className="w-full h-1.5 bg-emerald-100 rounded-full overflow-hidden mt-1">
+                              <div
+                                className="h-full bg-emerald-500 rounded-full"
+                                style={{ width: `${Math.min(100, item.percentage)}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 🔴 TUJUAN PENGELUARAN KAS */}
+                <div className="bg-white border border-rose-200/80 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-3 pb-2 border-b border-rose-100">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center">
+                          <ArrowDownRight size={16} />
+                        </div>
+                        <div>
+                          <h5 className="text-xs font-bold text-slate-800">Ke Mana Kas Dikeluarkan? (Tujuan Outflow)</h5>
+                          <span className="text-[10px] text-rose-700 font-medium">Pembayaran hutang, gaji, belanja & operasional</span>
+                        </div>
+                      </div>
+                      <span className="text-xs font-black text-rose-700 font-mono">{formatShortRp(summary.totalKasKeluar)}</span>
+                    </div>
+
+                    <div className="flex flex-col gap-2.5">
+                      {(!data.cashOutflows || data.cashOutflows.length === 0) ? (
+                        <p className="text-xs text-gray-400 text-center py-6">Tidak ada transaksi kas keluar</p>
+                      ) : (
+                        data.cashOutflows.map((item, idx) => (
+                          <div key={idx} className="p-2.5 rounded-xl bg-rose-50/40 border border-rose-100/60 hover:bg-rose-50/80 transition-colors">
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs font-bold text-slate-800 truncate" title={item.rekening}>
+                                  {item.rekening}
+                                </p>
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                  <span className="text-[10px] font-semibold text-rose-700 px-1.5 py-0.2 bg-rose-100/60 rounded">
+                                    {item.kategori}
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 font-medium">
+                                    {item.frekuensi} transaksi
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="text-right shrink-0">
+                                <p className="text-xs font-black text-rose-800 font-mono">{formatRp(item.amount)}</p>
+                                <span className="text-[10px] font-bold text-slate-400">{item.percentage}% dari total keluar</span>
+                              </div>
+                            </div>
+                            <div className="w-full h-1.5 bg-rose-100 rounded-full overflow-hidden mt-1">
+                              <div
+                                className="h-full bg-rose-500 rounded-full"
+                                style={{ width: `${Math.min(100, item.percentage)}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Cash Accounts Table: Rincian Mutasi Per Rekening Kas & Bank */}
               <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xs">
                 <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
@@ -629,10 +813,10 @@ export default function AnalisisJurnalModal({
                               <span className="text-violet-700 font-mono mr-1.5">[{item.kode}]</span>
                               {item.rekening}
                             </td>
-                            <td className="py-2.5 px-4 text-right font-mono text-emerald-700">
+                            <td className="py-2.5 px-4 text-right font-mono text-emerald-700 font-semibold">
                               {formatRp(item.kasMasuk)}
                             </td>
-                            <td className="py-2.5 px-4 text-right font-mono text-rose-700">
+                            <td className="py-2.5 px-4 text-right font-mono text-rose-700 font-semibold">
                               {formatRp(item.kasKeluar)}
                             </td>
                             <td className={`py-2.5 px-4 text-right font-mono font-bold ${item.net >= 0 ? 'text-violet-700' : 'text-rose-600'}`}>
