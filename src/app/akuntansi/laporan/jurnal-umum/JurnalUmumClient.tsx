@@ -933,13 +933,12 @@ export default function JurnalUmumClient() {
               />
             </div>
             <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-lg border border-slate-200 w-full xl:w-[280px] shrink-0 h-9" title="Filter berdasarkan tanggal dibuat (kapan dicatat di Digit), bukan tanggal transaksi">
-              <div className="flex-1 min-w-0 h-full [&>div]:h-full [&>div>div]:h-full">
+              <div className="flex-1 min-w-0 h-full [&>div]:h-full [&>div>[data-date-picker-trigger]]:h-full">
                 <DatePicker
                   name="createAtFrom"
                   value={createAtFrom}
                   onChange={(d) => { setCreateAtFrom(d); setPage(1); }}
                   popupAlign="left"
-                  usePortal
                   customTrigger={() => (
                     <div
                       className="h-full px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer w-full"
@@ -954,13 +953,12 @@ export default function JurnalUmumClient() {
                 />
               </div>
               <span className="text-[10px] text-slate-400 font-bold px-0.5 shrink-0">-</span>
-              <div className="flex-1 min-w-0 h-full [&>div]:h-full [&>div>div]:h-full">
+              <div className="flex-1 min-w-0 h-full [&>div]:h-full [&>div>[data-date-picker-trigger]]:h-full">
                 <DatePicker
                   name="createAtTo"
                   value={createAtTo}
                   onChange={(d) => { setCreateAtTo(d); setPage(1); }}
                   popupAlign="left"
-                  usePortal
                   customTrigger={() => (
                     <div
                       className="h-full px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer w-full"
