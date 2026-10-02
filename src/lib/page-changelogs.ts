@@ -58,11 +58,11 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   'jurnal-umum-2026-10-02': entry({
-    pageKey: "jurnal-umum",
+    pageKey: 'jurnal-umum',
     permissionKeys: ['akt_jurnal_umum'],
     sortDate: '2026-10-02',
     date: '2 Okt 2026',
-    version: '2026-10-02-6',
+    version: '2026-10-02-7',
     items: [
       "Ekspor Excel Akuntansi Resmi: Dilengkapi judul laporan, tanggal asli Excel (bukan teks string), format mata uang, freeze header, dan tampilan tanpa garis kisi (gridlines off).",
       "Rumus Dinamis Excel: Kolom Laba/Rugi dan Arus Kas di Excel berisi formula aritmatika dinamis (=K5+I6-J6 & =L5+E6-F6) yang otomatis menghitung ulang saat nilai transaksi diubah.",
@@ -73,6 +73,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
       "Dashboard Analisis Finansial & Arus Kas: Modal analisis ekstra lega (max-w-7xl) diringkas menjadi 2 tab fokus yaitu 'Laba / Rugi' (KPI, grafik terpadu pendapatan vs beban & laba berjalan, serta top penyumbang untung vs beban) dan 'Arus Kas' (KPI kas, grafik tren kas harian, 12 sumber inflow vs outflow, dan mutasi per rekening bank).",
       "Konsistensi Kartu KPI & Kontinuitas Kalender: Menyeragamkan desain visual kartu metrik KPI di kedua tab dengan format nominal penuh, serta mengisi lengkap seluruh hari kalender (zero-fill) pada grafik tren harian sehingga periode 30 hari tampil utuh tanpa melompati hari libur/non-transaksi.",
       "Proporsi Pengeluaran Kas & Tampilan Nama Rekening Jelas: Menambahkan diagram horizontal proporsi alokasi pengeluaran kas (Hutang Supplier, Gaji Pabrik, Bahan Baku, Operasional, Bank) pada tab Arus Kas, memperjelas subjudul kartu metrik dengan nama akun akuntansi riil, serta memisahkan badge kode akun dan nama rekening secara tegas di seluruh daftar dan tabel analisis.",
+      "Penyempurnaan Tampilan Analisis: Memperbaiki lebar diagram proporsi pengeluaran kas menjadi lebar penuh (100% full-width), menyertakan nama rekening lengkap setelah kode pada subtitle filter, serta membersihkan angka hitungan pada label tab Arus Kas agar tampil bersih dan serasi.",
     ],
   }),
 
