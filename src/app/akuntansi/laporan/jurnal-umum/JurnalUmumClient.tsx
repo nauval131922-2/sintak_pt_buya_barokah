@@ -182,7 +182,8 @@ export default function JurnalUmumClient() {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [page, setPage] = useState(1);
-  // Filter create_at (server-side, default kosong)
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [createAtFrom, setCreateAtFrom] = useState<Date | null>(null);
   const [createAtTo, setCreateAtTo]     = useState<Date | null>(null);
   // Filter rekening (kode, cth "1101") — dropdown dari rek_akuntansi
@@ -498,8 +499,6 @@ export default function JurnalUmumClient() {
       }
     } finally { setIsBatching(false); setLoading(false); }
   };
-
-  const [totalPages, setTotalPages] = useState(0);
 
   const columns = useMemo<ColumnDef<JurnalFlatRow, unknown>[]>(() => [
     {
