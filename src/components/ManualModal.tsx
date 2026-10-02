@@ -458,7 +458,13 @@ export default function ManualModal() {
         '  • **Format Tanggal Asli**: Kolom Tanggal dan Dibuat diekspor sebagai tipe Date resmi Excel (`dd/mm/yyyy` dan `dd/mm/yyyy hh:mm:ss`), bukan teks string, sehingga siap diolah formula tanggal.',
         '  • **Rumus Dinamis Excel**: Kolom **Laba / Rugi** dan **Arus Kas** berisi formula aritmatika Excel (`=K5+I6-J6` dan `=L5+E6-F6`), **BUKAN angka mati**! Jika Anda mengubah angka transaksi di Excel, seluruh saldo kumulatif akan otomatis terhitung ulang secara dinamis.',
         '  • **Pewarnaan Baris Serupa Web**: Baris di Excel diberi latar warna otomatis sesuai pos akunnya: Ungu (Arus Kas), Hijau (Pendapatan), Merah Muda (Beban/HPP), Kuning (Saldo Awal), dan Abu-abu Tebal (Faktur Induk).',
-        '  • **Freeze Header & Auto-Filter**: Baris 1-5 otomatis terkunci (freeze pane) saat di-scroll dan filter dropdown aktif di seluruh kolom header.'
+        '  • **Freeze Header & Auto-Filter**: Baris 1-5 otomatis terkunci (freeze pane) saat di-scroll dan filter dropdown aktif di seluruh kolom header.',
+        'F. Dashboard Analisis Finansial (Untung & Rugi):',
+        '  • Klik tombol **Analisis** pada toolbar untuk melihat ringkasan performa finansial dari data hasil filter saat ini secara instan.',
+        '  • **Executive KPI**: Memantau Total Omset, HPP, Laba Kotor (Gross Margin), Beban Operasional, Laba Bersih (Net Margin), dan Net Cashflow.',
+        '  • **Penyumbang Keuntungan (Top Untung)**: Mengidentifikasi pos pendapatan dan omset terbesar yang menyumbang surplus keuntungan.',
+        '  • **Pemicu Beban & Kerugian (Top Rugi)**: Mengidentifikasi akun HPP dan beban operasional terbesar yang menjadi faktor pengurang laba.',
+        '  • **Grafik Tren Harian**: Visualisasi interaktif perbandingan pendapatan vs beban per tanggal, akumulasi kurva laba/rugi, serta rincian mutasi per akun Kas/Bank.'
       ],
       tips: 'Kolom Laba/Rugi dan Arus Kas dihitung secara berkesinambungan (running total). Perhatikan warna baris di tabel dan di Excel untuk membedakan transaksi kas (ungu), pendapatan (hijau), dan beban (merah).'
     },

@@ -2,12 +2,13 @@
 
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Loader2, AlertCircle, Download, Search, RefreshCw, Calendar } from 'lucide-react';
+import { Loader2, AlertCircle, Download, Search, RefreshCw, Calendar, BarChart3 } from 'lucide-react';
 import SquareDropdown from '@/components/SquareDropdown';
 import { exportJurnalUmumExcel } from '@/lib/export-excel';
 import type { JurnalUmumExportRow } from '@/lib/export-excel';
 import { toast } from '@/lib/toast';
 import CopyButton from '@/components/ui/CopyButton';
+import AnalisisJurnalModal from './AnalisisJurnalModal';
 
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { formatLastUpdate, splitDateRangeIntoMonths } from '@/lib/date-utils';
@@ -203,7 +204,7 @@ export default function JurnalUmumClient() {
   // Sort global server-side (lintas halaman). Default [] = urutan kronologis create_at.
   const [sorting, setSorting] = useState<SortingState>([]);
   const [isExporting, setIsExporting] = useState(false);
-
+  const [showAnalisis, setShowAnalisis] = useState(false);
   const mountedRef = useRef(true);
 
   const { selectedIds, handleRowClick, clearSelection } = useTableSelection(data || []);
@@ -375,6 +376,36 @@ export default function JurnalUmumClient() {
     ...(sorting.length ? { sort: JSON.stringify(sorting.filter((s) => !s.id.startsWith('_') && s.id !== 'ketepatan_waktu')) } : {}),
     _t: Date.now().toString(),
   }), [debouncedQuery, startDate, endDate, createAtFrom, createAtTo, rekFilter, sorting]);
+  const analisisQueryParams = useMemo(() => {
+    const p = new URLSearchParams({
+      q: debouncedQuery,
+      from: formatDateToYYYYMMDD(startDate),
+      to: formatDateToYYYYMMDD(endDate),
+      ...(createAtFrom ? { cat_from: formatDateToYYYYMMDD(createAtFrom) } : {}),
+      ...(createAtTo   ? { cat_to:   formatDateToYYYYMMDD(createAtTo) } : {}),
+      ...(rekFilter ? { rek: rekFilter } : {}),
+      _t: Date.now().toString(),
+    });
+    return p.toString();
+  }, [debouncedQuery, startDate, endDate, createAtFrom, createAtTo, rekFilter]);
+
+  const filterDesc = useMemo(() => {
+    const parts: string[] = [];
+    if (startDate && endDate) {
+      parts.push(`Transaksi: ${formatDateDisplay(startDate)} s/d ${formatDateDisplay(endDate)}`);
+    }
+    if (createAtFrom && createAtTo) {
+      parts.push(`Dibuat: ${formatDateDisplay(createAtFrom)} s/d ${formatDateDisplay(createAtTo)}`);
+    }
+    if (rekFilter) {
+      parts.push(`Rek: ${rekFilter}`);
+    }
+    if (debouncedQuery) {
+      parts.push(`Cari: "${debouncedQuery}"`);
+    }
+    return parts.join(' • ');
+  }, [startDate, endDate, createAtFrom, createAtTo, rekFilter, debouncedQuery]);
+
 
   // Export Excel: fetch SEMUA halaman hasil filter bertahap (bukan halaman aktif
   // saja), flatten parent+child seperti tabel, running total dibawa antar halaman
@@ -952,6 +983,16 @@ export default function JurnalUmumClient() {
               />
             </div>
             <button
+              type="button"
+              onClick={() => setShowAnalisis(true)}
+              disabled={!totalCount}
+              className="h-9 px-3 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-all flex items-center justify-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-2xs"
+              title="Buka analisis profitabilitas, penyebab untung & rugi dari data hasil filter"
+            >
+              <BarChart3 size={14} className="text-emerald-700" />
+              <span>Analisis</span>
+            </button>
+            <button
               onClick={handleExportExcel}
               disabled={isExporting || !totalCount}
               className="h-9 px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center justify-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
@@ -1020,6 +1061,13 @@ export default function JurnalUmumClient() {
         title={dialog.title}
         message={dialog.message}
         onConfirm={() => setDialog({ ...dialog, isOpen: false })}
+      />
+
+      <AnalisisJurnalModal
+        isOpen={showAnalisis}
+        onClose={() => setShowAnalisis(false)}
+        queryParams={analisisQueryParams}
+        filterDescription={filterDesc}
       />
     </div>
   );
