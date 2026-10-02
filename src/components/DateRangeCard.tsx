@@ -80,9 +80,9 @@ export default function DateRangeCard({
       <div className="flex items-center gap-2 flex-1">
         {hasDates ? (
           <>
-            <DatePicker name="startDate" value={startDate || null} onChange={onStartDateChange} />
+            <DatePicker name="startDate" value={startDate || null} onChange={onStartDateChange} usePortal />
             <div className="w-2 h-px bg-gray-300 shrink-0"></div>
-            <DatePicker name="endDate" value={endDate || null} onChange={onEndDateChange} />
+            <DatePicker name="endDate" value={endDate || null} onChange={onEndDateChange} usePortal />
           </>
         ) : null}
         {children}

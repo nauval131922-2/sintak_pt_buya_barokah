@@ -426,6 +426,42 @@ export default function ManualModal() {
         'Sistem melakukan **Auto Refresh** setiap 2 menit. Klik tombol **Refresh Live** untuk memperbarui data secara manual kapan saja.',
         'Fitur CRUD Lengkap (Tambah/Edit/Hapus) dapat dilakukan langsung di SINTAK.'
       ]
+    },
+    '/akuntansi/laporan/jurnal-umum': {
+      title: 'Jurnal Umum (Akuntansi)',
+      icon: FileSpreadsheet,
+      description: 'Laporan pencatatan transaksi jurnal umum akuntansi (Debit/Kredit), evaluasi ketepatan waktu pencatatan, serta perhitungan otomatis Laba/Rugi berjalan dan Arus Kas yang disinkronkan dari Digit.',
+      steps: [
+        'Panel **Tarik Data (Sinkronisasi Digit)**:',
+        '  • Atur **Rentang Tanggal** (Mulai & Akhir) pada panel atas.',
+        '  • Klik tombol **Tarik Data** untuk memulai sinkronisasi jurnal umum dari server Digit per pecahan bulan.',
+        '  • Pantau indikator **Persentase (%)** dan status proses hingga selesai.',
+        '**Toolbar Pencarian & Filter Cepat**:',
+        '  • **Pencarian Bebas**: Ketik nomor faktur, kode rekening, nama rekening, atau keterangan pada kotak pencarian.',
+        '  • **Filter Tanggal Dibuat (Audit)**: Tentukan rentang **Dibuat dari - Dibuat s/d** untuk menyaring voucher berdasarkan tanggal dibuat/dicatat di Digit. Jika aktif, baris **Saldo Awal** akan otomatis muncul sebagai dasar perhitungan awal periode.',
+        '  • **Filter Rekening**: Pilih rekening akuntansi tertentu dari dropdown untuk menampilkan seluruh transaksi yang melibatkan akun tersebut.',
+        '  • **Tombol Reset (Merah)**: Klik tombol **Reset** untuk membersihkan semua filter pencarian, tanggal dibuat, dan rekening sekaligus.',
+        '**Fitur Tabel Jurnal Interaktif**:',
+        '  • **Hierarki Induk & Anak**: Baris induk menampilkan ringkasan faktur, dan baris berindentasi (↳) merinci pos akun debit/kredit.',
+        '  • **Kolom Ketepatan Waktu**: Menampilkan selisih antara tanggal transaksi dengan tanggal dibuat (**Tepat Waktu**, **Mendahului**, atau **Telat N Hari**).',
+        '  • **Laba / Rugi & Arus Kas Berjalan**: Nilai dihitung secara kumulatif berkelanjutan (running total) dari halaman ke halaman berikutnya sesuai urutan data tampil.',
+        '  • **Pengurutan Kolom (Sort)**: Klik judul kolom apa saja untuk mengurutkan data secara menyeluruh (global sorting).',
+        '  • **Salin Cepat (Copy)**: Klik ikon salin kecil di samping nomor faktur atau tanggal dibuat untuk menyalin teks ke clipboard.',
+        '**Ekspor Excel Resmi**:',
+        '  • Klik tombol **Export Excel** untuk mengunduh seluruh baris hasil filter (semua halaman) ke format `.xlsx`.',
+        '  • Hasil ekspor sudah rapi dengan format tanggal Excel asli (bukan teks string), format mata uang akuntansi (`#,##0.00`), baris header beku (freeze pane), dan filter otomatis.'
+      ],
+      tips: 'Gunakan filter Tanggal Dibuat untuk memverifikasi voucher yang diinput terlambat atau untuk menyusun rekonsiliasi tutup buku bulanan.'
+    },
+    '/akuntansi/data/rek-akuntansi': {
+      title: 'Rekening Akuntansi',
+      icon: Database,
+      description: 'Master data bagan akun (Chart of Accounts) yang menjadi referensi pengelompokan transaksi jurnal umum dan penandaan kategori kas.',
+      steps: [
+        'Klik tombol **Tarik Data** untuk memperbarui daftar rekening akuntansi dari server Digit.',
+        'Gunakan **Kotak Pencarian** untuk menemukan rekening berdasarkan kode akun atau nama rekening.',
+        'Kolom **Arus Kas** menentukan apakah rekening tersebut diperlakukan sebagai Kas dalam kalkulasi mutasi Arus Kas pada Jurnal Umum.'
+      ]
     }
   }), [pathname]);
 

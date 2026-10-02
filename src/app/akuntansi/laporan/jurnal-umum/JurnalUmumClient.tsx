@@ -4,7 +4,8 @@ import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
 import { Loader2, AlertCircle, Download, Search, RefreshCw, Calendar } from 'lucide-react';
 import SquareDropdown from '@/components/SquareDropdown';
-import { exportRowsToExcel } from '@/lib/export-excel';
+import { exportJurnalUmumExcel } from '@/lib/export-excel';
+import type { JurnalUmumExportRow } from '@/lib/export-excel';
 import { toast } from '@/lib/toast';
 import CopyButton from '@/components/ui/CopyButton';
 
@@ -412,38 +413,56 @@ export default function JurnalUmumClient() {
         runningAK = lastArusKas;
         pageNum++;
       } while (pageNum <= totalPages);
-      const toExport = hasCatFilter
-        ? [{ Tanggal: '', 'No. Faktur': '', Rekening: 'Saldo Awal', Keterangan: 'Saldo Awal', Debit: '', Kredit: '', User: '', Dibuat: '', 'Debit (Laba Rugi)': '', 'Kredit (Laba Rugi)': '', 'Laba / Rugi': saldoAwal, 'Arus Kas': saldoAwalKas },
-           ...allFlat.map((r) => ({
-             Tanggal: formatIndoDateStr(r.tgl || ''),
-             'No. Faktur': r._isChild ? (r._parentFaktur || '') : (r.faktur || ''),
-             Rekening: r.rekening || '',
-             Keterangan: r.keterangan || '',
-             Debit: Number(r.debit || 0) || '',
-             Kredit: Number(r.kredit || 0) || '',
-             User: r.username || '',
-             Dibuat: r.create_at || '',
-             'Debit (Laba Rugi)': r._debitLR ?? '',
-             'Kredit (Laba Rugi)': r._kreditLR ?? '',
-             'Laba / Rugi': r._labaRugi ?? '',
-             'Arus Kas': r._arusKas ?? '',
-           }))]
+      const toExport: JurnalUmumExportRow[] = hasCatFilter
+        ? [{
+            isSaldoAwal: true,
+            tgl: '',
+            faktur: '',
+            rekening: 'Saldo Awal',
+            keterangan: 'Saldo Awal Periode',
+            debit: null,
+            kredit: null,
+            username: '',
+            create_at: '',
+            debitLR: null,
+            kreditLR: null,
+            labaRugi: saldoAwal,
+            arusKas: saldoAwalKas,
+          },
+          ...allFlat.map((r) => ({
+            isSaldoAwal: false,
+            isChild: r._isChild,
+            tgl: r.tgl,
+            faktur: r._isChild ? (r._parentFaktur || '') : (r.faktur || ''),
+            rekening: r.rekening || '',
+            keterangan: r.keterangan || '',
+            debit: r.debit ?? 0,
+            kredit: r.kredit ?? 0,
+            username: r.username || '',
+            create_at: r.create_at || '',
+            debitLR: r._debitLR ?? null,
+            kreditLR: r._kreditLR ?? null,
+            labaRugi: r._labaRugi ?? null,
+            arusKas: r._arusKas ?? null,
+          }))]
         : allFlat.map((r) => ({
-            Tanggal: formatIndoDateStr(r.tgl || ''),
-            'No. Faktur': r._isChild ? (r._parentFaktur || '') : (r.faktur || ''),
-            Rekening: r.rekening || '',
-            Keterangan: r.keterangan || '',
-            Debit: Number(r.debit || 0) || '',
-            Kredit: Number(r.kredit || 0) || '',
-            User: r.username || '',
-            Dibuat: r.create_at || '',
-            'Debit (Laba Rugi)': r._debitLR ?? '',
-            'Kredit (Laba Rugi)': r._kreditLR ?? '',
-            'Laba / Rugi': r._labaRugi ?? '',
-            'Arus Kas': r._arusKas ?? '',
+            isSaldoAwal: false,
+            isChild: r._isChild,
+            tgl: r.tgl,
+            faktur: r._isChild ? (r._parentFaktur || '') : (r.faktur || ''),
+            rekening: r.rekening || '',
+            keterangan: r.keterangan || '',
+            debit: r.debit ?? 0,
+            kredit: r.kredit ?? 0,
+            username: r.username || '',
+            create_at: r.create_at || '',
+            debitLR: r._debitLR ?? null,
+            kreditLR: r._kreditLR ?? null,
+            labaRugi: r._labaRugi ?? null,
+            arusKas: r._arusKas ?? null,
           }));
       const fname = `jurnal-umum_${formatDateToYYYYMMDD(startDate)}_sd_${formatDateToYYYYMMDD(endDate)}.xlsx`;
-      const ok = await exportRowsToExcel(toExport, fname);
+      const ok = await exportJurnalUmumExcel(toExport, fname);
       if (!ok) toast.error('Tidak ada data untuk diekspor');
       else toast.success(`${toExport.length} baris berhasil diekspor`);
     } catch {
@@ -820,7 +839,7 @@ export default function JurnalUmumClient() {
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-3 animate-in fade-in duration-500">
       {/* Top row: scrape date range */}
-      <div className="shrink-0 relative z-30">
+      <div className="shrink-0 relative z-[60]">
         <DateRangeCard
           startDate={startDate}
           endDate={endDate}
