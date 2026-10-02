@@ -853,7 +853,7 @@ export default function JurnalUmumClient() {
             )}
           </div>
           {/* Card Search & Filter — satu baris: reload + search + tanggal dibuat + rekening + export */}
-          <div className="shrink-0 bg-white rounded-xl border border-slate-200/80 shadow-sm p-3 relative z-40">
+          <div className="shrink-0 bg-white rounded-xl border border-slate-200/80 shadow-sm p-3 relative z-50">
           <div className="flex flex-col xl:flex-row xl:items-center gap-2">
             <button
               type="button"
