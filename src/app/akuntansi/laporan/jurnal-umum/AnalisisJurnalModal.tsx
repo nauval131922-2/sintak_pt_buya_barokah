@@ -137,7 +137,7 @@ export default function AnalisisJurnalModal({
   const [data, setData] = useState<AnalisisData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'profit' | 'trend' | 'cashflow'>('profit');
+  const [activeTab, setActiveTab] = useState<'profit' | 'cashflow'>('profit');
 
   const fetchData = async () => {
     setLoading(true);
@@ -255,43 +255,31 @@ export default function AnalisisJurnalModal({
             </div>
           </div>
 
-          {/* Navigation Tabs */}
+          {/* Navigation Tabs: Laba / Rugi & Arus Kas */}
           <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200/70 w-fit shrink-0 text-xs font-bold">
             <button
               type="button"
               onClick={() => setActiveTab('profit')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
                 activeTab === 'profit'
                   ? 'bg-white text-emerald-800 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <TrendingUp size={14} className="text-emerald-600" />
-              <span>Penyebab Untung & Rugi</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('trend')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                activeTab === 'trend'
-                  ? 'bg-white text-emerald-800 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <BarChart3 size={14} className="text-emerald-600" />
-              <span>Grafik Tren Finansial</span>
+              <span>Laba / Rugi</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('cashflow')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
                 activeTab === 'cashflow'
-                  ? 'bg-white text-emerald-800 shadow-xs'
+                  ? 'bg-white text-violet-800 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <Wallet size={14} className="text-violet-600" />
-              <span>Mutasi Arus Kas ({data.kasBreakdown.length})</span>
+              <span>Arus Kas ({data.kasBreakdown.length})</span>
             </button>
           </div>
 
@@ -383,6 +371,50 @@ export default function AnalisisJurnalModal({
                   ))}
                 </div>
               </div>
+
+              {/* Row 3: Grafik Tren Finansial Terpadu (Pendapatan vs Beban & Akumulasi Laba Berjalan dalam 1 Grafik) */}
+              {data.dailyTrend.length > 0 && (
+                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <BarChart3 size={15} className="text-emerald-600" />
+                      <h5 className="text-xs font-bold text-slate-800">Tren Pendapatan vs Beban Harian &amp; Akumulasi Laba Berjalan</h5>
+                    </div>
+                    <span className="text-[11px] font-bold text-slate-400 font-mono">
+                      {data.dailyTrend.length} Titik Tanggal
+                    </span>
+                  </div>
+
+                  <div className="w-full h-[220px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ComposedChart data={data.dailyTrend} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                        <XAxis
+                          dataKey="date"
+                          tick={{ fontSize: 9, fill: '#64748b' }}
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          tick={{ fontSize: 9, fill: '#64748b' }}
+                          axisLine={false}
+                          tickLine={false}
+                          tickFormatter={formatShortRp}
+                        />
+                        <ReferenceLine y={0} stroke="#cbd5e1" strokeWidth={1} />
+                        <Tooltip
+                          formatter={(val: any, name: any) => [formatRp(Number(val)), name]}
+                          contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '11px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                        />
+                        <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
+                        <Bar dataKey="pendapatan" name="Pendapatan (Omset)" fill="#10B981" radius={[3, 3, 0, 0]} />
+                        <Bar dataKey="beban" name="Total Beban / HPP" fill="#F43F5E" radius={[3, 3, 0, 0]} />
+                        <Area type="monotone" dataKey="cumLabaRugi" name="Akumulasi Laba Berjalan" stroke="#059669" strokeWidth={2} fillOpacity={0} />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
 
               {/* Row 3: 2 Kolom Komparasi: APA YANG MEMBUAT UNTUNG VS APA YANG MENYEBABKAN RUGI */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -482,105 +514,6 @@ export default function AnalisisJurnalModal({
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* TAB 2: FINANCIAL CHARTS */}
-          {activeTab === 'trend' && (
-            <div className="flex flex-col gap-5 animate-in fade-in duration-200">
-              {data.dailyTrend.length === 0 ? (
-                <div className="text-center py-16 text-gray-400 text-xs">Belum ada data historis harian</div>
-              ) : (
-                <>
-                  {/* Chart 1: Pendapatan vs Beban Harian */}
-                  <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <BarChart3 size={15} className="text-emerald-600" />
-                        <h5 className="text-xs font-bold text-slate-800">Perbandingan Pendapatan vs Beban Per Hari</h5>
-                      </div>
-                      <span className="text-[11px] font-bold text-slate-400">{data.dailyTrend.length} Titik Tanggal</span>
-                    </div>
-
-                    <div className="w-full h-[260px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <ComposedChart data={data.dailyTrend} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                          <XAxis
-                            dataKey="date"
-                            tick={{ fontSize: 9, fill: '#64748b' }}
-                            axisLine={false}
-                            tickLine={false}
-                          />
-                          <YAxis
-                            tick={{ fontSize: 9, fill: '#64748b' }}
-                            axisLine={false}
-                            tickLine={false}
-                            tickFormatter={formatShortRp}
-                          />
-                          <Tooltip
-                            formatter={(val: any, name: any) => [formatRp(Number(val)), name]}
-                            contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '11px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                          />
-                          <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
-                          <Bar dataKey="pendapatan" name="Pendapatan (Omset)" fill="#10B981" radius={[4, 4, 0, 0]} />
-                          <Bar dataKey="beban" name="Total Beban / HPP" fill="#F43F5E" radius={[4, 4, 0, 0]} />
-                        </ComposedChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-
-                  {/* Chart 2: Akumulasi Laba / Rugi Berjalan */}
-                  <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <TrendingUp size={15} className="text-emerald-600" />
-                        <h5 className="text-xs font-bold text-slate-800">Akumulasi Laba / Rugi Berjalan (Kumulatif)</h5>
-                      </div>
-                    </div>
-
-                    <div className="w-full h-[240px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <ComposedChart data={data.dailyTrend} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
-                          <defs>
-                            <linearGradient id="gradCumLR" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#059669" stopOpacity={0.25} />
-                              <stop offset="95%" stopColor="#059669" stopOpacity={0} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                          <XAxis
-                            dataKey="date"
-                            tick={{ fontSize: 9, fill: '#64748b' }}
-                            axisLine={false}
-                            tickLine={false}
-                          />
-                          <YAxis
-                            tick={{ fontSize: 9, fill: '#64748b' }}
-                            axisLine={false}
-                            tickLine={false}
-                            tickFormatter={formatShortRp}
-                          />
-                          <ReferenceLine y={0} stroke="#cbd5e1" strokeWidth={1.5} />
-                          <Tooltip
-                            formatter={(val: any, name: any) => [formatRp(Number(val)), name]}
-                            contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '11px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                          />
-                          <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
-                          <Area
-                            type="monotone"
-                            dataKey="cumLabaRugi"
-                            name="Akumulasi Laba / Rugi"
-                            stroke="#059669"
-                            strokeWidth={2.5}
-                            fill="url(#gradCumLR)"
-                          />
-                        </ComposedChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-                </>
-              )}
             </div>
           )}
 
