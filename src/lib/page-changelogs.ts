@@ -58,12 +58,12 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   'jurnal-umum-2026-10-02': entry({
-    pageKey: 'jurnal-umum',
+    pageKey: "jurnal-umum",
     title: "Jurnal Umum",
     permissionKeys: ['akt_jurnal_umum'],
     sortDate: '2026-10-02',
     date: '2 Okt 2026',
-    version: '2026-10-02-11',
+    version: '2026-10-02-12',
     items: [
       "Ekspor Excel Akuntansi Resmi: Dilengkapi judul laporan, tanggal asli Excel (bukan teks string), format mata uang, freeze header, dan tampilan tanpa garis kisi (gridlines off).",
       "Rumus Dinamis Excel: Kolom Laba/Rugi dan Arus Kas di Excel berisi formula aritmatika dinamis (=K5+I6-J6 & =L5+E6-F6) yang otomatis menghitung ulang saat nilai transaksi diubah.",
