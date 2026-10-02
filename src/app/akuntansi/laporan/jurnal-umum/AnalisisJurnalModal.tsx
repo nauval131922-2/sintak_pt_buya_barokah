@@ -504,7 +504,7 @@ export default function AnalisisJurnalModal({
 
           {/* Comparison Control Bar */}
           {compareEnabled && (
-            <div className="p-3 bg-indigo-50/50 border border-indigo-100 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="p-3 bg-indigo-50/70 border border-indigo-100 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs animate-in fade-in duration-200 relative z-30">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-bold text-indigo-950 flex items-center gap-1.5 mr-1">
                   <ArrowLeftRight size={13} className="text-indigo-600" />
@@ -542,7 +542,7 @@ export default function AnalisisJurnalModal({
 
                 {/* Custom Date Pickers */}
                 {comparePreset === 'custom' && (
-                  <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-indigo-200 w-[270px] shrink-0 h-8">
+                  <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-indigo-200 w-[270px] shrink-0 h-8 relative z-40">
                     <div className="flex-1 min-w-0 h-full [&>div]:h-full [&>div>div]:h-full">
                       <DatePicker
                         name="compStart"
