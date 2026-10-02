@@ -287,53 +287,53 @@ export default function AnalisisJurnalModal({
           {activeTab === 'profit' && (
             <div className="flex flex-col gap-6 animate-in fade-in duration-200">
               {/* Row 1: KPI Cards */}
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
-                <div className="p-3 bg-white border border-slate-200 rounded-xl shadow-2xs">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Omset</span>
-                  <p className="text-sm sm:text-base font-black text-slate-800 tracking-tight mt-1 font-mono">
-                    {formatShortRp(summary.totalPendapatan)}
+                  <p className="text-sm sm:text-base font-black text-slate-800 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalPendapatan)}>
+                    {formatRp(summary.totalPendapatan)}
                   </p>
-                  <span className="text-[10px] text-emerald-600 font-bold block mt-0.5">Kepala 4 & 7</span>
+                  <span className="text-[10px] text-emerald-600 font-bold block mt-1">Kepala 4 &amp; 7</span>
                 </div>
 
-                <div className="p-3 bg-white border border-slate-200 rounded-xl shadow-2xs">
+                <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total HPP</span>
-                  <p className="text-sm sm:text-base font-black text-rose-700 tracking-tight mt-1 font-mono">
-                    {formatShortRp(summary.totalHpp)}
+                  <p className="text-sm sm:text-base font-black text-rose-700 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalHpp)}>
+                    {formatRp(summary.totalHpp)}
                   </p>
-                  <span className="text-[10px] text-slate-500 font-bold block mt-0.5">Kepala 5</span>
+                  <span className="text-[10px] text-slate-500 font-bold block mt-1">Kepala 5</span>
                 </div>
 
-                <div className="p-3 bg-white border border-slate-200 rounded-xl shadow-2xs">
+                <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Laba Kotor</span>
-                  <p className="text-sm sm:text-base font-black text-emerald-700 tracking-tight mt-1 font-mono">
-                    {formatShortRp(summary.labaKotor)}
+                  <p className={`text-sm sm:text-base font-black tracking-tight mt-1 font-mono truncate ${summary.labaKotor >= 0 ? 'text-emerald-700' : 'text-rose-700'}`} title={formatRp(summary.labaKotor)}>
+                    {formatRp(summary.labaKotor)}
                   </p>
-                  <span className="text-[10px] text-slate-500 font-bold block mt-0.5">Margin {summary.grossMarginPct.toFixed(1)}%</span>
+                  <span className="text-[10px] text-slate-500 font-bold block mt-1">Margin {summary.grossMarginPct.toFixed(1)}%</span>
                 </div>
 
-                <div className="p-3 bg-white border border-slate-200 rounded-xl shadow-2xs">
+                <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Beban Operasional</span>
-                  <p className="text-sm sm:text-base font-black text-orange-700 tracking-tight mt-1 font-mono">
-                    {formatShortRp(summary.totalBebanOperasional)}
+                  <p className="text-sm sm:text-base font-black text-orange-700 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalBebanOperasional)}>
+                    {formatRp(summary.totalBebanOperasional)}
                   </p>
-                  <span className="text-[10px] text-slate-500 font-bold block mt-0.5">Kepala 6</span>
+                  <span className="text-[10px] text-slate-500 font-bold block mt-1">Kepala 6</span>
                 </div>
 
-                <div className="p-3 bg-white border border-slate-200 rounded-xl shadow-2xs">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Beban Lain & Pajak</span>
-                  <p className="text-sm sm:text-base font-black text-purple-700 tracking-tight mt-1 font-mono">
-                    {formatShortRp(summary.totalBebanLain)}
+                <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Beban Lain &amp; Pajak</span>
+                  <p className="text-sm sm:text-base font-black text-purple-700 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalBebanLain)}>
+                    {formatRp(summary.totalBebanLain)}
                   </p>
-                  <span className="text-[10px] text-slate-500 font-bold block mt-0.5">Kepala 8 & 9</span>
+                  <span className="text-[10px] text-slate-500 font-bold block mt-1">Kepala 8 &amp; 9</span>
                 </div>
 
-                <div className="p-3 bg-white border border-slate-200 rounded-xl shadow-2xs">
+                <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Pengeluaran</span>
-                  <p className="text-sm sm:text-base font-black text-slate-800 tracking-tight mt-1 font-mono">
-                    {formatShortRp(summary.totalBeban)}
+                  <p className="text-sm sm:text-base font-black text-slate-800 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalBeban)}>
+                    {formatRp(summary.totalBeban)}
                   </p>
-                  <span className="text-[10px] text-rose-600 font-bold block mt-0.5">HPP + Beban</span>
+                  <span className="text-[10px] text-rose-600 font-bold block mt-1">HPP + Beban</span>
                 </div>
               </div>
 
@@ -381,7 +381,7 @@ export default function AnalisisJurnalModal({
                       <h5 className="text-xs font-bold text-slate-800">Tren Pendapatan vs Beban Harian &amp; Akumulasi Laba Berjalan</h5>
                     </div>
                     <span className="text-[11px] font-bold text-slate-400 font-mono">
-                      {data.dailyTrend.length} Titik Tanggal
+                      {data.dailyTrend.length} Hari
                     </span>
                   </div>
 
@@ -520,40 +520,40 @@ export default function AnalisisJurnalModal({
           {/* TAB 3: CASHFLOW ANALYSIS (LENGKAP) */}
           {activeTab === 'cashflow' && (
             <div className="flex flex-col gap-6 animate-in fade-in duration-200">
-              {/* Cashflow KPI Cards */}
+              {/* Cashflow KPI Cards — style 100% konsisten dengan Tab Laba / Rugi */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                <div className="p-3.5 bg-emerald-50/60 border border-emerald-200/80 rounded-2xl shadow-2xs">
-                  <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block">Total Kas Masuk (Inflow)</span>
-                  <p className="text-base sm:text-lg font-black text-emerald-900 font-mono mt-1">
+                <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Kas Masuk (Inflow)</span>
+                  <p className="text-sm sm:text-base font-black text-emerald-700 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalKasMasuk)}>
                     {formatRp(summary.totalKasMasuk)}
                   </p>
-                  <span className="text-[10px] text-emerald-600 font-semibold block mt-0.5">Sisi Debit Akun Kas/Bank</span>
+                  <span className="text-[10px] text-emerald-600 font-bold block mt-1">Sisi Debit Akun Kas/Bank</span>
                 </div>
 
-                <div className="p-3.5 bg-rose-50/60 border border-rose-200/80 rounded-2xl shadow-2xs">
-                  <span className="text-[10px] font-bold text-rose-700 uppercase tracking-wider block">Total Kas Keluar (Outflow)</span>
-                  <p className="text-base sm:text-lg font-black text-rose-900 font-mono mt-1">
+                <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Kas Keluar (Outflow)</span>
+                  <p className="text-sm sm:text-base font-black text-rose-700 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalKasKeluar)}>
                     {formatRp(summary.totalKasKeluar)}
                   </p>
-                  <span className="text-[10px] text-rose-600 font-semibold block mt-0.5">Sisi Kredit Akun Kas/Bank</span>
+                  <span className="text-[10px] text-rose-600 font-bold block mt-1">Sisi Kredit Akun Kas/Bank</span>
                 </div>
 
-                <div className="p-3.5 bg-violet-50/60 border border-violet-200/80 rounded-2xl shadow-2xs">
-                  <span className="text-[10px] font-bold text-violet-700 uppercase tracking-wider block">Net Cashflow</span>
-                  <p className={`text-base sm:text-lg font-black font-mono mt-1 ${summary.netCashflow >= 0 ? 'text-violet-900' : 'text-rose-700'}`}>
+                <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Net Cashflow</span>
+                  <p className={`text-sm sm:text-base font-black tracking-tight mt-1 font-mono truncate ${summary.netCashflow >= 0 ? 'text-violet-700' : 'text-rose-700'}`} title={formatRp(summary.netCashflow)}>
                     {summary.netCashflow >= 0 ? '+' : ''}{formatRp(summary.netCashflow)}
                   </p>
-                  <span className="text-[10px] text-violet-600 font-semibold block mt-0.5">
+                  <span className={`text-[10px] font-bold block mt-1 ${summary.netCashflow >= 0 ? 'text-violet-600' : 'text-rose-600'}`}>
                     {summary.netCashflow >= 0 ? 'Surplus Likuiditas' : 'Defisit Likuiditas'}
                   </span>
                 </div>
 
-                <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl shadow-2xs">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Inflow / Outflow Ratio</span>
-                  <p className="text-base sm:text-lg font-black text-slate-800 font-mono mt-1">
+                <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Inflow / Outflow Ratio</span>
+                  <p className="text-sm sm:text-base font-black text-slate-800 tracking-tight mt-1 font-mono truncate">
                     {summary.totalKasKeluar > 0 ? (summary.totalKasMasuk / summary.totalKasKeluar).toFixed(2) + 'x' : '—'}
                   </p>
-                  <span className="text-[10px] text-slate-500 font-semibold block mt-0.5">
+                  <span className="text-[10px] text-slate-500 font-bold block mt-1">
                     {summary.totalKasMasuk >= summary.totalKasKeluar ? 'Kas Masuk Menutup Pengeluaran' : 'Pengeluaran Melampaui Penerimaan'}
                   </span>
                 </div>
@@ -568,7 +568,7 @@ export default function AnalisisJurnalModal({
                       <h5 className="text-xs font-bold text-slate-800">Tren Mutasi Kas Harian & Akumulasi Cashflow</h5>
                     </div>
                     <span className="text-[11px] font-bold text-slate-400 font-mono">
-                      Net: {summary.netCashflow >= 0 ? '+' : ''}{formatShortRp(summary.netCashflow)}
+                      {data.dailyTrend.length} Hari
                     </span>
                   </div>
 

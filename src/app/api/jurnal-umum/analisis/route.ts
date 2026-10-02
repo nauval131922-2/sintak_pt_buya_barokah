@@ -323,41 +323,115 @@ export async function GET(req: NextRequest) {
     });
     const netCashflow = totalKasMasuk - totalKasKeluar;
 
-    // Daily Trend
+    // Daily Trend — diisi lengkap per tanggal kalender (continuous timeline)
+    // agar hari tanpa transaksi (cth: hari libur/Minggu) tidak membuat grafik bolong/melompat
+    const trendMap = new Map<string, {
+      pend: number;
+      bbn: number;
+      kMasuk: number;
+      kKeluar: number;
+      fakturCount: number;
+    }>();
+
+    for (const raw of trendRes.rows) {
+      const r = raw as {
+        tgl?: string;
+        pendapatan?: number | null;
+        beban?: number | null;
+        kas_masuk?: number | null;
+        kas_keluar?: number | null;
+        total_faktur?: number | null;
+      };
+      const t = String(r.tgl ?? '');
+      if (t) {
+        trendMap.set(t, {
+          pend: Number(r.pendapatan ?? 0),
+          bbn: Number(r.beban ?? 0),
+          kMasuk: Number(r.kas_masuk ?? 0),
+          kKeluar: Number(r.kas_keluar ?? 0),
+          fakturCount: Number(r.total_faktur ?? 0),
+        });
+      }
+    }
+
+    let rangeStart = from || catFrom;
+    let rangeEnd = to || catTo;
+
+    if (!rangeStart && trendRes.rows.length > 0) {
+      rangeStart = String((trendRes.rows[0] as { tgl?: string }).tgl ?? '');
+    }
+    if (!rangeEnd && trendRes.rows.length > 0) {
+      rangeEnd = String((trendRes.rows[trendRes.rows.length - 1] as { tgl?: string }).tgl ?? '');
+    }
+
+    const dailyTrend: Array<{
+      date: string;
+      pendapatan: number;
+      beban: number;
+      labaRugi: number;
+      cumLabaRugi: number;
+      kasMasuk: number;
+      kasKeluar: number;
+      netKas: number;
+      cumCashflow: number;
+      fakturCount: number;
+    }> = [];
+
     let cumLabaRugi = 0;
     let cumCashflow = 0;
-    const dailyTrend = (trendRes.rows as Array<{
-      tgl?: string;
-      pendapatan?: number | null;
-      beban?: number | null;
-      kas_masuk?: number | null;
-      kas_keluar?: number | null;
-      total_faktur?: number | null;
-    }>).map((r) => {
-      const tgl = String(r.tgl ?? '');
-      const pend = Number(r.pendapatan ?? 0);
-      const bbn = Number(r.beban ?? 0);
-      const kMasuk = Number(r.kas_masuk ?? 0);
-      const kKeluar = Number(r.kas_keluar ?? 0);
-      const lrHari = pend - bbn;
-      const akHari = kMasuk - kKeluar;
-      cumLabaRugi += lrHari;
-      cumCashflow += akHari;
 
-      return {
-        date: tgl,
-        pendapatan: pend,
-        beban: bbn,
-        labaRugi: lrHari,
-        cumLabaRugi,
-        kasMasuk: kMasuk,
-        kasKeluar: kKeluar,
-        netKas: akHari,
-        cumCashflow,
-        fakturCount: Number(r.total_faktur ?? 0),
-      };
-    });
+    if (rangeStart && rangeEnd && rangeStart <= rangeEnd) {
+      const dCurr = new Date(rangeStart + 'T12:00:00Z');
+      const dEnd = new Date(rangeEnd + 'T12:00:00Z');
 
+      let safetyLimit = 366;
+      while (dCurr <= dEnd && safetyLimit-- > 0) {
+        const y = dCurr.getUTCFullYear();
+        const m = String(dCurr.getUTCMonth() + 1).padStart(2, '0');
+        const d = String(dCurr.getUTCDate()).padStart(2, '0');
+        const dateStr = `${y}-${m}-${d}`;
+
+        const item = trendMap.get(dateStr) || { pend: 0, bbn: 0, kMasuk: 0, kKeluar: 0, fakturCount: 0 };
+        const lrHari = item.pend - item.bbn;
+        const akHari = item.kMasuk - item.kKeluar;
+        cumLabaRugi += lrHari;
+        cumCashflow += akHari;
+
+        dailyTrend.push({
+          date: dateStr,
+          pendapatan: item.pend,
+          beban: item.bbn,
+          labaRugi: lrHari,
+          cumLabaRugi,
+          kasMasuk: item.kMasuk,
+          kasKeluar: item.kKeluar,
+          netKas: akHari,
+          cumCashflow,
+          fakturCount: item.fakturCount,
+        });
+
+        dCurr.setUTCDate(dCurr.getUTCDate() + 1);
+      }
+    } else {
+      for (const [dateStr, item] of trendMap.entries()) {
+        const lrHari = item.pend - item.bbn;
+        const akHari = item.kMasuk - item.kKeluar;
+        cumLabaRugi += lrHari;
+        cumCashflow += akHari;
+        dailyTrend.push({
+          date: dateStr,
+          pendapatan: item.pend,
+          beban: item.bbn,
+          labaRugi: lrHari,
+          cumLabaRugi,
+          kasMasuk: item.kMasuk,
+          kasKeluar: item.kKeluar,
+          netKas: akHari,
+          cumCashflow,
+          fakturCount: item.fakturCount,
+        });
+      }
+    }
     const cashInflows = (inflowRes.rows as Array<{
       rek_kode?: string;
       rekening?: string;
