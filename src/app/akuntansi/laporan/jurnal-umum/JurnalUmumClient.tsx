@@ -432,6 +432,7 @@ export default function JurnalUmumClient() {
           ...allFlat.map((r) => ({
             isSaldoAwal: false,
             isChild: r._isChild,
+            isKas: Boolean(r.is_kas),
             tgl: r.tgl,
             faktur: r._isChild ? (r._parentFaktur || '') : (r.faktur || ''),
             rekening: r.rekening || '',
@@ -448,6 +449,7 @@ export default function JurnalUmumClient() {
         : allFlat.map((r) => ({
             isSaldoAwal: false,
             isChild: r._isChild,
+            isKas: Boolean(r.is_kas),
             tgl: r.tgl,
             faktur: r._isChild ? (r._parentFaktur || '') : (r.faktur || ''),
             rekening: r.rekening || '',
@@ -462,7 +464,10 @@ export default function JurnalUmumClient() {
             arusKas: r._arusKas ?? null,
           }));
       const fname = `jurnal-umum_${formatDateToYYYYMMDD(startDate)}_sd_${formatDateToYYYYMMDD(endDate)}.xlsx`;
-      const ok = await exportJurnalUmumExcel(toExport, fname);
+      const ok = await exportJurnalUmumExcel(toExport, fname, {
+        startDate: formatDateToYYYYMMDD(startDate),
+        endDate: formatDateToYYYYMMDD(endDate),
+      });
       if (!ok) toast.error('Tidak ada data untuk diekspor');
       else toast.success(`${toExport.length} baris berhasil diekspor`);
     } catch {
