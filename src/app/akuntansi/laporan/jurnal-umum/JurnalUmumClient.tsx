@@ -2,7 +2,8 @@
 
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Loader2, AlertCircle, Download } from 'lucide-react';
+import { Loader2, AlertCircle, Download, Filter } from 'lucide-react';
+import SearchableDropdown from '@/components/SearchableDropdown';
 import { exportRowsToExcel } from '@/lib/export-excel';
 import { toast } from '@/lib/toast';
 import CopyButton from '@/components/ui/CopyButton';
@@ -189,9 +190,10 @@ export default function JurnalUmumClient() {
   // Filter rekening (kode, cth "1101") — dropdown dari rek_akuntansi
   const [rekFilter, setRekFilter] = useState('');
   const [rekOptions, setRekOptions] = useState<{ kode: string; keterangan: string }[]>([]);
+  const rekItems = useMemo(() => rekOptions.map((o) => o.kode), [rekOptions]);
+  const rekLabels = useMemo<Record<string, string>>(() => Object.fromEntries(rekOptions.map((o) => [o.kode, `${o.kode} — ${o.keterangan}`])), [rekOptions]);
   // Sort global server-side (lintas halaman). Default [] = urutan kronologis create_at.
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [isExporting, setIsExporting] = useState(false);
 
   const mountedRef = useRef(true);
 
@@ -862,28 +864,20 @@ export default function JurnalUmumClient() {
             )}
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 border-t border-gray-100 pt-3">
-            <span className="text-[11px] font-bold text-gray-400 shrink-0 hidden sm:block">Rekening:</span>
-            <input
-              list="jurnal-rek-options"
-              value={rekFilter}
-              onChange={(e) => { setRekFilter(e.target.value.trim()); setPage(1); }}
-              placeholder="Ketik kode, cth 1101…"
-              className="flex-1 h-10 px-3 bg-white border border-gray-200 rounded-xl text-[12px] font-semibold text-gray-700 placeholder:text-gray-300 placeholder:font-normal focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all shadow-sm"
-            />
-            <datalist id="jurnal-rek-options">
-              {rekOptions.map((r) => (
-                <option key={r.kode} value={r.kode}>{r.kode} — {r.keterangan}</option>
-              ))}
-            </datalist>
-            {rekFilter && (
-              <button
-                onClick={() => { setRekFilter(''); setPage(1); }}
-                className="flex items-center justify-center gap-2 px-5 h-10 bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold rounded-xl transition-colors shadow-sm shrink-0"
-              >
-                <span>&times;</span>
-                <span>Reset</span>
-              </button>
-            )}
+            <div className="flex-1 min-w-0">
+              <SearchableDropdown
+                id="jurnal-rekening"
+                value={rekFilter}
+                items={rekItems}
+                itemLabels={rekLabels}
+                allLabel="Semua Rekening"
+                searchPlaceholder="Cari kode / nama rekening..."
+                triggerWidth="w-full"
+                compact
+                icon={<Filter size={14} className={rekFilter ? 'text-emerald-600' : 'text-gray-400'} />}
+                onChange={(val) => { setRekFilter(val); setPage(1); }}
+              />
+            </div>
           </div>
         </div>
       </div>
