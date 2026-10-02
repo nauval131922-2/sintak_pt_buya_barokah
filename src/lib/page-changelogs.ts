@@ -45,6 +45,35 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
+  'laporan-pekerjaan-2026-10-02': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-10-02',
+    date: '2 Okt 2026',
+    version: '2026-10-02-1',
+    items: [
+      "Penyelarasan judul tab browser dengan format standar SINTAK | Laporan Pekerjaan.",
+    ],
+  }),
+
+  'jurnal-umum-2026-10-02': entry({
+    pageKey: 'jurnal-umum',
+    title: 'Jurnal Umum',
+    permissionKeys: ['akt_jurnal_umum'],
+    sortDate: '2026-10-02',
+    date: '2 Okt 2026',
+    version: '2026-10-02-1',
+    items: [
+      "Ekspor Excel Akuntansi Resmi: Dilengkapi judul laporan, tanggal asli Excel (bukan teks string), format mata uang, freeze header, dan tampilan tanpa garis kisi (gridlines off).",
+      "Rumus Dinamis Excel: Kolom Laba/Rugi dan Arus Kas di Excel berisi formula aritmatika dinamis (=K5+I6-J6 & =L5+E6-F6) yang otomatis menghitung ulang saat nilai transaksi diubah.",
+      "Pewarnaan Baris Akun di Excel: Selaras dengan tampilan web, baris transaksi Kas (ungu), Pendapatan (hijau), Beban/HPP (merah), Saldo Awal (kuning), dan Faktur Induk (abu tebal) memiliki latar warna berbeda.",
+      "Toolbar & Filter Terpadu: Penataan ulang toolbar dalam satu card rapi setinggi 36px (h-9) mencakup pencarian cepat, filter audit tanggal dibuat, filter rekening via dropdown, tombol reload, dan reset merah.",
+      "Perbaikan Popup Kalender: Pemilihan tanggal pada panel Tarik Data dan filter tanggal dibuat menggunakan fixed portal agar popup kalender tampil utuh di atas tabel.",
+      "Pembaruan Modal Panduan: Penambahan panduan lengkap alur sinkronisasi, logika akun yang mempengaruhi Laba Rugi dan Arus Kas, serta alasan perhitungannya.",
+    ],
+  }),
+
   'dashboard-akunting-2026-09-27': entry({
     pageKey: 'dashboard-akunting',
     title: 'Dashboard Akunting',
