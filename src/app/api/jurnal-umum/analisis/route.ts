@@ -16,6 +16,20 @@ async function ensureTable() {
   }
 }
 
+function classifyCounterpart(head: string, isKas: boolean): string {
+  if (isKas) return 'Mutasi Antar Kas / Bank';
+  if (head === '1') return 'Piutang & Aset Lancar';
+  if (head === '2') return 'Hutang & Kewajiban';
+  if (head === '3') return 'Modal & Ekuitas';
+  if (head === '4') return 'Penjualan / Omset Tunai';
+  if (head === '5') return 'Bahan Baku & HPP Tunai';
+  if (head === '6') return 'Biaya & Beban Operasional';
+  if (head === '7') return 'Pendapatan Non-Operasional';
+  if (head === '8') return 'Beban Non-Operasional';
+  if (head === '9') return 'Pajak Penghasilan';
+  return 'Lainnya';
+}
+
 export async function GET(req: NextRequest) {
   try {
     await ensureTable();
@@ -113,6 +127,7 @@ export async function GET(req: NextRequest) {
       GROUP BY p.tgl
       ORDER BY p.tgl ASC
     `;
+
     // Query 5: Rincian Sumber Kas Masuk (Lawan rekening yang dikredit saat Kas didebit)
     const inflowSql = `
       WITH target_parents AS (
@@ -342,19 +357,6 @@ export async function GET(req: NextRequest) {
         fakturCount: Number(r.total_faktur ?? 0),
       };
     });
-    function classifyCounterpart(head: string, isKas: boolean): string {
-      if (isKas) return 'Mutasi Antar Kas / Bank';
-      if (head === '1') return 'Piutang & Aset Lancar';
-      if (head === '2') return 'Hutang & Kewajiban';
-      if (head === '3') return 'Modal & Ekuitas';
-      if (head === '4') return 'Penjualan / Omset Tunai';
-      if (head === '5') return 'Bahan Baku & HPP Tunai';
-      if (head === '6') return 'Biaya & Beban Operasional';
-      if (head === '7') return 'Pendapatan Non-Operasional';
-      if (head === '8') return 'Beban Non-Operasional';
-      if (head === '9') return 'Pajak Penghasilan';
-      return 'Lainnya';
-    }
 
     const cashInflows = (inflowRes.rows as Array<{
       rek_kode?: string;
@@ -399,7 +401,6 @@ export async function GET(req: NextRequest) {
         percentage: totalKasKeluar > 0 ? Number(((amount / totalKasKeluar) * 100).toFixed(2)) : 0,
       };
     });
-
 
     return NextResponse.json({
       success: true,

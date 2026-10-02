@@ -58,11 +58,11 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
   }),
 
   'jurnal-umum-2026-10-02': entry({
-    pageKey: "jurnal-umum",
+    pageKey: 'jurnal-umum',
     permissionKeys: ['akt_jurnal_umum'],
     sortDate: '2026-10-02',
     date: '2 Okt 2026',
-    version: '2026-10-02-2',
+    version: '2026-10-02-3',
     items: [
       "Ekspor Excel Akuntansi Resmi: Dilengkapi judul laporan, tanggal asli Excel (bukan teks string), format mata uang, freeze header, dan tampilan tanpa garis kisi (gridlines off).",
       "Rumus Dinamis Excel: Kolom Laba/Rugi dan Arus Kas di Excel berisi formula aritmatika dinamis (=K5+I6-J6 & =L5+E6-F6) yang otomatis menghitung ulang saat nilai transaksi diubah.",
@@ -70,7 +70,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
       "Toolbar & Filter Terpadu: Penataan ulang toolbar dalam satu card rapi setinggi 36px (h-9) mencakup pencarian cepat, filter audit tanggal dibuat, filter rekening via dropdown, tombol reload, dan reset merah.",
       "Perbaikan Popup Kalender: Pemilihan tanggal pada panel Tarik Data dan filter tanggal dibuat menggunakan fixed portal agar popup kalender tampil utuh di atas tabel.",
       "Pembaruan Modal Panduan: Penambahan panduan lengkap alur sinkronisasi, logika akun yang mempengaruhi Laba Rugi dan Arus Kas, serta alasan perhitungannya.",
-      "Dashboard Analisis Finansial: Penambahan tombol Analisis interaktif pada toolbar untuk membedah ringkasan eksekutif (Omset, HPP, Laba Kotor, Beban Operasional, Laba Bersih, Net Margin), 10 akun penyumbang keuntungan terbesar, 10 pemicu beban terbesar, grafik tren pendapatan vs beban harian, kurva laba berjalan, serta rincian mutasi kas masuk dan keluar per rekening bank sesuai filter aktif.",
+      "Dashboard Analisis Finansial & Arus Kas Lengkap: Modal analisis diperbesar (lebar ekstra max-w-7xl) menyajikan evaluasi profitabilitas (penyebab untung/rugi), analisis arus kas komprehensif mencakup 12 sumber kas masuk (inflow) vs tujuan pengeluaran kas (outflow), rasio kas, grafik tren kas harian, kurva akumulasi kas berjalan, serta rincian mutasi kas/bank.",
     ],
   }),
 
