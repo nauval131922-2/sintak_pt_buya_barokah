@@ -543,7 +543,7 @@ export default function AnalisisJurnalModal({
                 {/* Custom Date Pickers */}
                 {comparePreset === 'custom' && (
                   <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-indigo-200 w-[270px] shrink-0 h-8 relative z-40">
-                    <div className="flex-1 min-w-0 h-full [&>div]:h-full [&>div>div]:h-full">
+                    <div className="flex-1 min-w-0 h-full [&>div]:h-full [&>div>[data-date-picker-trigger]]:h-full">
                       <DatePicker
                         name="compStart"
                         value={compareStart}
@@ -560,7 +560,7 @@ export default function AnalisisJurnalModal({
                       />
                     </div>
                     <span className="text-[10px] text-slate-400 font-bold px-0.5 shrink-0">-</span>
-                    <div className="flex-1 min-w-0 h-full [&>div]:h-full [&>div>div]:h-full">
+                    <div className="flex-1 min-w-0 h-full [&>div]:h-full [&>div>[data-date-picker-trigger]]:h-full">
                       <DatePicker
                         name="compEnd"
                         value={compareEnd}

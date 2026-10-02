@@ -399,7 +399,7 @@ export default function DatePicker({ name, required, label, onChange, value, cus
         usePortal
           ? 'fixed'
           : `absolute ${openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'}`
-      } bg-white border border-gray-100 rounded-xl shadow-2xl p-4 w-[280px] max-w-[calc(100vw-24px)] z-[10000] animate-in fade-in zoom-in-95 duration-200`}
+      } bg-white !bg-white border border-gray-100 rounded-xl shadow-2xl p-4 w-[280px] !h-auto max-w-[calc(100vw-24px)] z-[10000] animate-in fade-in zoom-in-95 duration-200`}
     >
       {/* HEADER: navigasi bulan/tahun */}
       <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-50">
