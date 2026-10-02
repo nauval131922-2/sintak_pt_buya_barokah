@@ -818,9 +818,9 @@ export default function JurnalUmumClient() {
   if (!isMounted) return null;
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col gap-3 animate-in fade-in duration-500 overflow-hidden">
+    <div className="flex-1 min-h-0 flex flex-col gap-3 animate-in fade-in duration-500">
       {/* Top row: scrape date range */}
-      <div className="shrink-0 relative z-[60]">
+      <div className="shrink-0 relative z-30">
         <DateRangeCard
           startDate={startDate}
           endDate={endDate}
@@ -841,7 +841,7 @@ export default function JurnalUmumClient() {
         </div>
       )}
 
-      <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
+      <div className="flex-1 min-h-0 flex flex-col gap-3">
         <div className="flex flex-col gap-3 shrink-0">
           <div className="flex items-center justify-between gap-4 min-h-[32px] px-1">
             <ScrapingHeader title="Hasil Scrapping Jurnal Umum" lastUpdated={lastUpdated} scrapedPeriod={scrapedPeriod} />
@@ -853,7 +853,7 @@ export default function JurnalUmumClient() {
             )}
           </div>
           {/* Card Search & Filter — satu baris: reload + search + tanggal dibuat + rekening + export */}
-          <div className="shrink-0 bg-white rounded-xl border border-slate-200/80 shadow-sm p-3">
+          <div className="shrink-0 bg-white rounded-xl border border-slate-200/80 shadow-sm p-3 relative z-40">
           <div className="flex flex-col xl:flex-row xl:items-center gap-2">
             <button
               type="button"
