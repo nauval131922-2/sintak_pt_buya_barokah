@@ -951,7 +951,7 @@ export default function JurnalUmumClient() {
                     setPage(1);
                     persistDailyDateStore('jurnalUmum_createAt_dates', null, null, true);
                   }}
-                  className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 h-8 text-[11px] font-bold text-slate-700 hover:text-rose-700 bg-slate-50 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 rounded-lg transition-all shrink-0 cursor-pointer shadow-xs"
+                  className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 h-8 text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-200 hover:bg-rose-100 rounded-lg transition-all shrink-0 cursor-pointer shadow-xs"
                 >
                   <span>&times;</span>
                   <span>Reset</span>
