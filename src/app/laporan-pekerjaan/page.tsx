@@ -6,7 +6,7 @@ import { getSession } from "@/lib/session";
 import { getUserMergedLaporanPekerjaanConfig } from "@/lib/permissions-laporan-pekerjaan";
 
 export const metadata: Metadata = {
-  title: "Laporan Pekerjaan",
+  title: "SINTAK | Laporan Pekerjaan",
 };
 
 export default async function LaporanPekerjaanPage() {

@@ -2,8 +2,8 @@
 
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Loader2, AlertCircle, Download, Filter } from 'lucide-react';
-import SearchableDropdown from '@/components/SearchableDropdown';
+import { Loader2, AlertCircle, Download, Search, RefreshCw, Calendar, Filter } from 'lucide-react';
+import SquareDropdown from '@/components/SquareDropdown';
 import { exportRowsToExcel } from '@/lib/export-excel';
 import { toast } from '@/lib/toast';
 import CopyButton from '@/components/ui/CopyButton';
@@ -12,12 +12,17 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import { formatLastUpdate, splitDateRangeIntoMonths } from '@/lib/date-utils';
 import { getDefaultScraperDateRange, hydrateScraperPeriod, persistScraperPeriod, hydrateDailyDateStore, persistDailyDateStore, persistScraperPeriodFull } from '@/lib/scraper-period';
 import { DataTable } from '@/components/ui/DataTable';
-import SearchAndReload from '@/components/SearchAndReload';
 import TableFooter from '@/components/TableFooter';
 import DateRangeCard from '@/components/DateRangeCard';
 import DatePicker from '@/components/DatePicker';
 import { useTableSelection } from '@/lib/hooks/useTableSelection';
 import ScrapingHeader from '@/components/ScrapingHeader';
+
+const MONTHS_SHORT_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+function formatDateDisplay(val: Date | null): string {
+  if (!val) return '';
+  return `${val.getDate()}-${MONTHS_SHORT_ID[val.getMonth()] ?? ''}-${String(val.getFullYear()).slice(-2)}`;
+}
 
 function formatDateToYYYYMMDD(date: Date) {
   const y = date.getFullYear();
@@ -190,8 +195,10 @@ export default function JurnalUmumClient() {
   // Filter rekening (kode, cth "1101") — dropdown dari rek_akuntansi
   const [rekFilter, setRekFilter] = useState('');
   const [rekOptions, setRekOptions] = useState<{ kode: string; keterangan: string }[]>([]);
-  const rekItems = useMemo(() => rekOptions.map((o) => o.kode), [rekOptions]);
-  const rekLabels = useMemo<Record<string, string>>(() => Object.fromEntries(rekOptions.map((o) => [o.kode, `${o.kode} — ${o.keterangan}`])), [rekOptions]);
+  const rekDropdownOptions = useMemo(() => [
+    { value: '', label: 'Semua Rekening' },
+    ...rekOptions.map((o) => ({ value: o.kode, label: `${o.kode} — ${o.keterangan}` })),
+  ], [rekOptions]);
   // Sort global server-side (lintas halaman). Default [] = urutan kronologis create_at.
   const [sorting, setSorting] = useState<SortingState>([]);
   const [isExporting, setIsExporting] = useState(false);
@@ -812,59 +819,19 @@ export default function JurnalUmumClient() {
 
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-3 animate-in fade-in duration-500 overflow-hidden">
-      {/* Top row: scrape date range + filter tanggal dibuat */}
-      <div className="flex flex-col lg:flex-row items-stretch gap-3 shrink-0 relative z-[60]">
-        <div className="flex-1 relative z-[62]">
-          <DateRangeCard
-            startDate={startDate}
-            endDate={endDate}
-            onStartDateChange={(d) => { setStartDate(d); setPage(1); }}
-            onEndDateChange={(d) => { setEndDate(d); setPage(1); }}
-            onFetch={handleFetch}
-            isFetching={loading || isBatching}
-            progress={isBatching ? batchProgress : undefined}
-            statusText={isBatching ? batchStatus : undefined}
-            fetchText="Tarik Data"
-          />
-        </div>
-
-        {/* Filter Tanggal Dibuat + Rekening */}
-        <div className="flex-1 bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-3 flex flex-col gap-3 shrink-0 relative z-[60]">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <span className="text-[11px] font-bold text-gray-400 shrink-0 hidden sm:block">Filter Dibuat:</span>
-            <div className="flex items-center gap-2 flex-1">
-              <DatePicker
-                name="createAtFrom"
-                value={createAtFrom}
-                onChange={(d) => { setCreateAtFrom(d); setPage(1); }}
-              />
-              <div className="w-2 h-px bg-gray-300 shrink-0"></div>
-              <DatePicker
-                name="createAtTo"
-                value={createAtTo}
-                onChange={(d) => { setCreateAtTo(d); setPage(1); }}
-              />
-            </div>
-
-            {(createAtFrom || createAtTo) && (
-              <>
-                <div className="hidden sm:block w-px h-8 bg-gray-200/60"></div>
-                <button
-                  onClick={() => {
-                    setCreateAtFrom(null);
-                    setCreateAtTo(null);
-                    setPage(1);
-                    persistDailyDateStore('jurnalUmum_createAt_dates', null, null, true);
-                  }}
-                  className="flex items-center justify-center gap-2 px-5 h-10 bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold rounded-xl transition-colors shadow-sm shrink-0"
-                >
-                  <span>&times;</span>
-                  <span>Reset</span>
-                </button>
-              </>
-            )}
-          </div>
-        </div>
+      {/* Top row: scrape date range */}
+      <div className="shrink-0 relative z-[60]">
+        <DateRangeCard
+          startDate={startDate}
+          endDate={endDate}
+          onStartDateChange={(d) => { setStartDate(d); setPage(1); }}
+          onEndDateChange={(d) => { setEndDate(d); setPage(1); }}
+          onFetch={handleFetch}
+          isFetching={loading || isBatching}
+          progress={isBatching ? batchProgress : undefined}
+          statusText={isBatching ? batchStatus : undefined}
+          fetchText="Tarik Data"
+        />
       </div>
 
       {error && (
@@ -885,38 +852,112 @@ export default function JurnalUmumClient() {
               </div>
             )}
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex-1">
-              <SearchAndReload
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                onReload={() => setRefreshKey(prev => prev + 1)}
-                loading={loading}
+          {/* Baris 1: Search & Reload */}
+          <div className="flex items-center gap-2 w-full">
+            <button
+              type="button"
+              onClick={() => setRefreshKey(prev => prev + 1)}
+              disabled={loading}
+              className="h-9 px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
+              title="Reload Data Jurnal Umum"
+            >
+              <RefreshCw size={14} className={loading ? 'animate-spin text-emerald-600' : ''} />
+              <span className="hidden sm:inline">Reload</span>
+            </button>
+            <div className="relative flex-1 min-w-0">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
                 placeholder="Cari faktur, rekening, atau keterangan..."
-              />
-            </div>
-            <div className="w-64 shrink-0">
-              <SearchableDropdown
-                id="jurnal-rekening"
-                value={rekFilter}
-                items={rekItems}
-                itemLabels={rekLabels}
-                allLabel="Semua Rekening"
-                searchPlaceholder="Cari kode / nama rekening..."
-                triggerWidth="w-full"
-                compact
-                icon={<Filter size={14} className={rekFilter ? 'text-emerald-600' : 'text-gray-400'} />}
-                onChange={(val) => { setRekFilter(val); setPage(1); }}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-4 h-9 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
               />
             </div>
             <button
               onClick={handleExportExcel}
               disabled={isExporting || !totalCount}
-              className="flex items-center gap-2 px-4 h-10 rounded-xl border border-emerald-200 bg-emerald-50 text-[12px] font-semibold text-emerald-700 hover:bg-emerald-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0 shadow-sm"
+              className="h-9 px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
+              title="Export Excel"
             >
               {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
-              Export Excel
+              <span className="hidden sm:inline">Export Excel</span>
             </button>
+          </div>
+          {/* Baris 2: Filter tanggal dibuat + rekening */}
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 sm:pt-2 sm:border-t sm:border-slate-100">
+            <div className="hidden sm:flex items-center text-xs text-slate-500 font-medium shrink-0">
+              <Filter size={14} className="mr-1 text-slate-400" /> Filter:
+            </div>
+            <div className="flex items-center justify-between gap-1 bg-slate-50 p-1 sm:p-0.5 rounded-lg border border-slate-200 min-w-0">
+              <div className="flex-1 min-w-0">
+                <DatePicker
+                  name="createAtFrom"
+                  value={createAtFrom}
+                  onChange={(d) => { setCreateAtFrom(d); setPage(1); }}
+                  popupAlign="left"
+                  customTrigger={() => (
+                    <div
+                      className="h-7 px-1.5 sm:px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer w-full"
+                      title={createAtFrom ? `Dari Tgl: ${formatDateDisplay(createAtFrom)}` : 'Filter Dari Tgl Dibuat'}
+                    >
+                      <Calendar size={11} className="text-slate-400 shrink-0" />
+                      <span className={`truncate ${!createAtFrom ? 'text-slate-400 font-normal' : ''}`}>
+                        {createAtFrom ? formatDateDisplay(createAtFrom) : 'Dari Tgl'}
+                      </span>
+                    </div>
+                  )}
+                />
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold px-0.5 shrink-0">-</span>
+              <div className="flex-1 min-w-0">
+                <DatePicker
+                  name="createAtTo"
+                  value={createAtTo}
+                  onChange={(d) => { setCreateAtTo(d); setPage(1); }}
+                  popupAlign="left"
+                  customTrigger={() => (
+                    <div
+                      className="h-7 px-1.5 sm:px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer w-full"
+                      title={createAtTo ? `Sampai Tgl: ${formatDateDisplay(createAtTo)}` : 'Filter Sampai Tgl Dibuat'}
+                    >
+                      <Calendar size={11} className="text-slate-400 shrink-0" />
+                      <span className={`truncate ${!createAtTo ? 'text-slate-400 font-normal' : ''}`}>
+                        {createAtTo ? formatDateDisplay(createAtTo) : 'Sampai Tgl'}
+                      </span>
+                    </div>
+                  )}
+                />
+              </div>
+            </div>
+            <div className="w-full sm:w-auto">
+              <SquareDropdown
+                options={rekDropdownOptions}
+                value={rekFilter}
+                onChange={(val) => { setRekFilter(val); setPage(1); }}
+                searchPlaceholder="Cari kode / nama rekening..."
+                widthClass="w-full sm:w-48 md:w-56"
+              />
+            </div>
+            {(rekFilter || createAtFrom || createAtTo || searchQuery) && (
+              <div className="w-full sm:w-auto flex items-center shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRekFilter('');
+                    setCreateAtFrom(null);
+                    setCreateAtTo(null);
+                    setSearchQuery('');
+                    setPage(1);
+                    persistDailyDateStore('jurnalUmum_createAt_dates', null, null, true);
+                  }}
+                  className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 h-8 text-[11px] font-bold text-slate-700 hover:text-rose-700 bg-slate-50 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 rounded-lg transition-all shrink-0 cursor-pointer shadow-xs"
+                >
+                  <span>&times;</span>
+                  <span>Reset</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
