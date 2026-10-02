@@ -292,7 +292,7 @@ export default function AnalisisJurnalModal({
               }`}
             >
               <Wallet size={14} className="text-violet-600" />
-              <span>Arus Kas ({data.kasBreakdown.length})</span>
+              <span>Arus Kas</span>
             </button>
           </div>
 
@@ -594,8 +594,9 @@ export default function AnalisisJurnalModal({
                     {summary.totalKasMasuk >= summary.totalKasKeluar ? 'Kas Masuk Menutup Pengeluaran' : 'Pengeluaran Melampaui Penerimaan'}
                   </span>
                 </div>
+              </div>
 
-              {/* Row 2: Struktur Alokasi Pengeluaran Kas (Proporsi Kas Keluar) */}
+              {/* Row 2: Struktur Alokasi Pengeluaran Kas (Proporsi Kas Keluar - Full Width) */}
               {data.strukturKasKeluar && data.strukturKasKeluar.length > 0 && (
                 <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5">
                   <div className="flex items-center justify-between mb-2">
@@ -631,8 +632,6 @@ export default function AnalisisJurnalModal({
                   </div>
                 </div>
               )}
-              </div>
-
               {/* Grafik Tren Arus Kas Harian (Kas Masuk vs Kas Keluar & Kumulatif) */}
               {data.dailyTrend.length > 0 && (
                 <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">

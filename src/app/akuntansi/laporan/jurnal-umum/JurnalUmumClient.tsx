@@ -398,13 +398,15 @@ export default function JurnalUmumClient() {
       parts.push(`Dibuat: ${formatDateDisplay(createAtFrom)} s/d ${formatDateDisplay(createAtTo)}`);
     }
     if (rekFilter) {
-      parts.push(`Rek: ${rekFilter}`);
+      const match = rekOptions.find((o) => o.kode === rekFilter);
+      const label = match ? `${match.kode} - ${match.keterangan}` : rekFilter;
+      parts.push(`Rek: ${label}`);
     }
     if (debouncedQuery) {
       parts.push(`Cari: "${debouncedQuery}"`);
     }
     return parts.join(' • ');
-  }, [startDate, endDate, createAtFrom, createAtTo, rekFilter, debouncedQuery]);
+  }, [startDate, endDate, createAtFrom, createAtTo, rekFilter, rekOptions, debouncedQuery]);
 
 
   // Export Excel: fetch SEMUA halaman hasil filter bertahap (bukan halaman aktif
