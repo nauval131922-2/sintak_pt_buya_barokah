@@ -244,11 +244,12 @@ function DataTableInner<TData extends { id: number | string }>({
             <thead className="sticky top-0 z-[40] shadow-sm">
               {table.getHeaderGroups().map((headerGroup) => {
                 let stickyLeft = 6; // starts after the 6px left indicator column
+                const isAnySorted = !hideSorting && activeSorting.length > 0;
                 return (
-                <tr key={headerGroup.id}>
+                <tr key={headerGroup.id} className={isAnySorted ? 'bg-amber-50/90' : undefined}>
                   <th 
                     className="sticky left-0 w-[6px] p-0 z-[45] border-b border-gray-100" 
-                    style={{ backgroundColor: (headerGroup.headers[0]?.column.columnDef.meta as any)?.headerBg || '#f8fafc' }}
+                    style={{ backgroundColor: isAnySorted ? '#fef3c7' : ((headerGroup.headers[0]?.column.columnDef.meta as any)?.headerBg || '#f8fafc') }}
                   />
                   {headerGroup.headers.map((header) => {
                     const sortingState = activeSorting.find((s) => s.id === header.id);
@@ -259,21 +260,35 @@ function DataTableInner<TData extends { id: number | string }>({
                     const isSticky = meta?.sticky;
                     const leftOffset = stickyLeft;
                     if (isSticky) stickyLeft += colWidth;
+                    const isThisSorted = Boolean(sortingState);
+
+                    const headerBg = isThisSorted
+                      ? '#fef3c7' // amber-100/90 (kolom aktif yang disort)
+                      : isAnySorted
+                      ? '#fffbeb' // amber-50/90 (header lain saat mode sort aktif)
+                      : (meta?.headerBg || '#f8fafc');
+
                     return (<th 
                       key={header.id} 
-                      className={`p-0 border-b border-r border-slate-200/90 relative group transition-colors overflow-hidden last:border-r-0 ${
+                      className={`p-0 border-b border-r ${
+                        isAnySorted ? 'border-amber-200/80' : 'border-slate-200/90'
+                      } relative group transition-colors overflow-hidden last:border-r-0 ${
                         isSticky ? 'sticky z-[48]' : ''
                       }`}
                       style={{ 
                         width: colWidth,
                         minWidth: colWidth,
                         maxWidth: colWidth,
-                        backgroundColor: meta?.headerBg || '#f8fafc',
+                        backgroundColor: headerBg,
                         ...(isSticky ? { left: leftOffset } : {})
                       }}
                     >
                         <div
-                          className={`px-4 py-3 flex items-center gap-2 transition-colors select-none ${!hideSorting && canSort ? 'cursor-pointer hover:bg-black/5' : ''} ${meta?.align === 'right' ? 'justify-end flex-row-reverse' : meta?.align === 'center' ? 'justify-center' : 'justify-start'}`}
+                          className={`px-4 py-3 flex items-center gap-2 transition-colors select-none ${
+                            !hideSorting && canSort
+                              ? (isAnySorted ? 'cursor-pointer hover:bg-amber-200/50' : 'cursor-pointer hover:bg-black/5')
+                              : ''
+                          } ${meta?.align === 'right' ? 'justify-end flex-row-reverse' : meta?.align === 'center' ? 'justify-center' : 'justify-start'}`}
                           onClick={!hideSorting && canSort ? () => {
                             const colId = header.id;
                             const existing = activeSorting.find(s => s.id === colId);
@@ -291,20 +306,39 @@ function DataTableInner<TData extends { id: number | string }>({
                             activeOnSortingChange(next);
                           } : undefined}
                         >
-                            <span className="text-[12px] font-bold text-gray-700 whitespace-nowrap overflow-hidden truncate">
+                            <span className={`text-[12px] whitespace-nowrap overflow-hidden truncate transition-colors ${
+                              isThisSorted
+                                ? 'font-black text-amber-950'
+                                : isAnySorted
+                                ? 'font-bold text-amber-800/80 group-hover:text-amber-950'
+                                : 'font-bold text-gray-700'
+                            }`}>
                                 {flexRender(header.column.columnDef.header, header.getContext())}
                             </span>
                             {!hideSorting && canSort && (
                                 <div className="flex-shrink-0 flex items-center gap-0.5">
                                 {sortingState ? (
                                     <>
-                                      {sortingState.desc ? <ArrowDown size={14} className="text-blue-500" /> : <ArrowUp size={14} className="text-blue-500" />}
+                                      {sortingState.desc ? (
+                                        <ArrowDown size={14} className="text-amber-700 shrink-0" />
+                                      ) : (
+                                        <ArrowUp size={14} className="text-amber-700 shrink-0" />
+                                      )}
                                       {activeSorting.length > 1 && (
-                                        <span className="text-[11px] font-bold text-blue-400 leading-none">{sortIndex + 1}</span>
+                                        <span className="text-[10px] font-black text-amber-900 bg-amber-200/90 px-1 rounded leading-tight">
+                                          {sortIndex + 1}
+                                        </span>
                                       )}
                                     </>
                                 ) : (
-                                    <ArrowUpDown size={14} className="text-gray-300 group-hover:text-gray-400 transition-colors" />
+                                    <ArrowUpDown
+                                      size={14}
+                                      className={`${
+                                        isAnySorted
+                                          ? 'text-amber-400/80 group-hover:text-amber-600'
+                                          : 'text-gray-300 group-hover:text-gray-400'
+                                      } transition-colors shrink-0`}
+                                    />
                                 )}
                                 </div>
                             )}
