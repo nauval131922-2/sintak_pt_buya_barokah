@@ -108,10 +108,23 @@ interface AnalisisData {
   topUntung: ItemContributor[];
   topRugi: ItemContributor[];
   strukturBeban: StrukturBebanItem[];
+  strukturKasKeluar?: StrukturBebanItem[];
   kasBreakdown: KasItem[];
   cashInflows: CashCounterpartItem[];
   cashOutflows: CashCounterpartItem[];
   dailyTrend: DailyPoint[];
+}
+
+function parseRekeningDisplay(fullStr?: string) {
+  if (!fullStr) return { kode: '', nama: '' };
+  const idx = fullStr.indexOf(' - ');
+  if (idx !== -1) {
+    return {
+      kode: fullStr.slice(0, idx).trim(),
+      nama: fullStr.slice(idx + 3).trim(),
+    };
+  }
+  return { kode: '', nama: fullStr };
 }
 
 function formatRp(val?: number | null): string {
@@ -293,7 +306,7 @@ export default function AnalisisJurnalModal({
                   <p className="text-sm sm:text-base font-black text-slate-800 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalPendapatan)}>
                     {formatRp(summary.totalPendapatan)}
                   </p>
-                  <span className="text-[10px] text-emerald-600 font-bold block mt-1">Kepala 4 &amp; 7</span>
+                  <span className="text-[10px] text-emerald-600 font-bold block mt-1">Penjualan &amp; Omset (Rek. 4 &amp; 7)</span>
                 </div>
 
                 <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
@@ -301,7 +314,7 @@ export default function AnalisisJurnalModal({
                   <p className="text-sm sm:text-base font-black text-rose-700 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalHpp)}>
                     {formatRp(summary.totalHpp)}
                   </p>
-                  <span className="text-[10px] text-slate-500 font-bold block mt-1">Kepala 5</span>
+                  <span className="text-[10px] text-slate-500 font-bold block mt-1">Harga Pokok Penjualan (Rek. 5)</span>
                 </div>
 
                 <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
@@ -309,7 +322,7 @@ export default function AnalisisJurnalModal({
                   <p className={`text-sm sm:text-base font-black tracking-tight mt-1 font-mono truncate ${summary.labaKotor >= 0 ? 'text-emerald-700' : 'text-rose-700'}`} title={formatRp(summary.labaKotor)}>
                     {formatRp(summary.labaKotor)}
                   </p>
-                  <span className="text-[10px] text-slate-500 font-bold block mt-1">Margin {summary.grossMarginPct.toFixed(1)}%</span>
+                  <span className="text-[10px] text-slate-500 font-bold block mt-1">Gross Profit Margin {summary.grossMarginPct.toFixed(1)}%</span>
                 </div>
 
                 <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
@@ -317,7 +330,7 @@ export default function AnalisisJurnalModal({
                   <p className="text-sm sm:text-base font-black text-orange-700 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalBebanOperasional)}>
                     {formatRp(summary.totalBebanOperasional)}
                   </p>
-                  <span className="text-[10px] text-slate-500 font-bold block mt-1">Kepala 6</span>
+                  <span className="text-[10px] text-slate-500 font-bold block mt-1">Beban Operasional (Rek. 6)</span>
                 </div>
 
                 <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
@@ -325,7 +338,7 @@ export default function AnalisisJurnalModal({
                   <p className="text-sm sm:text-base font-black text-purple-700 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalBebanLain)}>
                     {formatRp(summary.totalBebanLain)}
                   </p>
-                  <span className="text-[10px] text-slate-500 font-bold block mt-1">Kepala 8 &amp; 9</span>
+                  <span className="text-[10px] text-slate-500 font-bold block mt-1">Beban Lain &amp; Pajak (Rek. 8 &amp; 9)</span>
                 </div>
 
                 <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
@@ -333,7 +346,7 @@ export default function AnalisisJurnalModal({
                   <p className="text-sm sm:text-base font-black text-slate-800 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalBeban)}>
                     {formatRp(summary.totalBeban)}
                   </p>
-                  <span className="text-[10px] text-rose-600 font-bold block mt-1">HPP + Beban</span>
+                  <span className="text-[10px] text-rose-600 font-bold block mt-1">Total Beban Usaha (HPP + Biaya)</span>
                 </div>
               </div>
 
@@ -442,10 +455,22 @@ export default function AnalisisJurnalModal({
                           <div key={idx} className="p-2 rounded-xl bg-emerald-50/40 border border-emerald-100/60 hover:bg-emerald-50/80 transition-colors">
                             <div className="flex items-start justify-between gap-2 mb-1">
                               <div className="min-w-0 flex-1">
-                                <p className="text-xs font-bold text-slate-800 truncate" title={item.rekening}>
-                                  {item.rekening}
-                                </p>
-                                <span className="text-[10px] font-semibold text-emerald-700">{item.kategori}</span>
+                                {(() => {
+                                  const { kode, nama } = parseRekeningDisplay(item.rekening);
+                                  return (
+                                    <div className="flex items-center gap-1.5 min-w-0">
+                                      {kode && (
+                                        <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100/70 text-emerald-800 shrink-0">
+                                          {kode}
+                                        </span>
+                                      )}
+                                      <span className="text-xs font-bold text-slate-800 truncate" title={nama || item.rekening}>
+                                        {nama || item.rekening}
+                                      </span>
+                                    </div>
+                                  );
+                                })()}
+                                <span className="text-[10px] font-semibold text-emerald-700 block mt-0.5">{item.kategori}</span>
                               </div>
                               <div className="text-right shrink-0">
                                 <p className="text-xs font-black text-emerald-800 font-mono">{formatRp(item.amount)}</p>
@@ -490,10 +515,22 @@ export default function AnalisisJurnalModal({
                           <div key={idx} className="p-2 rounded-xl bg-rose-50/40 border border-rose-100/60 hover:bg-rose-50/80 transition-colors">
                             <div className="flex items-start justify-between gap-2 mb-1">
                               <div className="min-w-0 flex-1">
-                                <p className="text-xs font-bold text-slate-800 truncate" title={item.rekening}>
-                                  {item.rekening}
-                                </p>
-                                <span className="text-[10px] font-semibold text-rose-700">{item.kategori}</span>
+                                {(() => {
+                                  const { kode, nama } = parseRekeningDisplay(item.rekening);
+                                  return (
+                                    <div className="flex items-center gap-1.5 min-w-0">
+                                      {kode && (
+                                        <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-100/70 text-rose-800 shrink-0">
+                                          {kode}
+                                        </span>
+                                      )}
+                                      <span className="text-xs font-bold text-slate-800 truncate" title={nama || item.rekening}>
+                                        {nama || item.rekening}
+                                      </span>
+                                    </div>
+                                  );
+                                })()}
+                                <span className="text-[10px] font-semibold text-rose-700 block mt-0.5">{item.kategori}</span>
                               </div>
                               <div className="text-right shrink-0">
                                 <p className="text-xs font-black text-rose-800 font-mono">{formatRp(item.amount)}</p>
@@ -527,7 +564,7 @@ export default function AnalisisJurnalModal({
                   <p className="text-sm sm:text-base font-black text-emerald-700 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalKasMasuk)}>
                     {formatRp(summary.totalKasMasuk)}
                   </p>
-                  <span className="text-[10px] text-emerald-600 font-bold block mt-1">Sisi Debit Akun Kas/Bank</span>
+                  <span className="text-[10px] text-emerald-600 font-bold block mt-1">Penerimaan Kas &amp; Bank</span>
                 </div>
 
                 <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
@@ -535,7 +572,7 @@ export default function AnalisisJurnalModal({
                   <p className="text-sm sm:text-base font-black text-rose-700 tracking-tight mt-1 font-mono truncate" title={formatRp(summary.totalKasKeluar)}>
                     {formatRp(summary.totalKasKeluar)}
                   </p>
-                  <span className="text-[10px] text-rose-600 font-bold block mt-1">Sisi Kredit Akun Kas/Bank</span>
+                  <span className="text-[10px] text-rose-600 font-bold block mt-1">Pengeluaran Kas &amp; Beban Tunai</span>
                 </div>
 
                 <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
@@ -557,6 +594,43 @@ export default function AnalisisJurnalModal({
                     {summary.totalKasMasuk >= summary.totalKasKeluar ? 'Kas Masuk Menutup Pengeluaran' : 'Pengeluaran Melampaui Penerimaan'}
                   </span>
                 </div>
+
+              {/* Row 2: Struktur Alokasi Pengeluaran Kas (Proporsi Kas Keluar) */}
+              {data.strukturKasKeluar && data.strukturKasKeluar.length > 0 && (
+                <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                      <PieIcon size={14} className="text-slate-500" />
+                      Proporsi Alokasi Pengeluaran Kas
+                    </span>
+                    <span className="text-[11px] font-bold text-slate-500 font-mono">
+                      Total: {formatRp(summary.totalKasKeluar)}
+                    </span>
+                  </div>
+                  {/* Horizontal Stacked Bar */}
+                  <div className="h-3.5 w-full bg-slate-200 rounded-full overflow-hidden flex shadow-inner">
+                    {data.strukturKasKeluar.map((item, idx) => (
+                      <div
+                        key={idx}
+                        style={{ width: `${item.percentage}%`, backgroundColor: item.color }}
+                        className="h-full transition-all duration-500"
+                        title={`${item.kategori}: ${item.percentage}% (${formatRp(item.amount)})`}
+                      />
+                    ))}
+                  </div>
+                  {/* Legend */}
+                  <div className="flex flex-wrap items-center gap-4 mt-2.5 text-[11px]">
+                    {data.strukturKasKeluar.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: item.color }} />
+                        <span className="font-semibold text-slate-700">{item.kategori}:</span>
+                        <span className="font-bold text-slate-900 font-mono">{item.percentage}%</span>
+                        <span className="text-slate-400 font-mono">({formatShortRp(item.amount)})</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               </div>
 
               {/* Grafik Tren Arus Kas Harian (Kas Masuk vs Kas Keluar & Kumulatif) */}
@@ -629,9 +703,19 @@ export default function AnalisisJurnalModal({
                           <div key={idx} className="p-2.5 rounded-xl bg-emerald-50/40 border border-emerald-100/60 hover:bg-emerald-50/80 transition-colors">
                             <div className="flex items-start justify-between gap-2 mb-1">
                               <div className="min-w-0 flex-1">
-                                <p className="text-xs font-bold text-slate-800 truncate" title={item.rekening}>
-                                  {item.rekening}
-                                </p>
+                                {(() => {
+                                  const { kode, nama } = parseRekeningDisplay(item.rekening);
+                                  return (
+                                    <div className="flex items-center gap-1.5 min-w-0">
+                                      <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100/70 text-emerald-800 shrink-0">
+                                        {kode || item.kode}
+                                      </span>
+                                      <span className="text-xs font-bold text-slate-800 truncate" title={nama || item.rekening}>
+                                        {nama || item.rekening}
+                                      </span>
+                                    </div>
+                                  );
+                                })()}
                                 <div className="flex items-center gap-1.5 mt-0.5">
                                   <span className="text-[10px] font-semibold text-emerald-700 px-1.5 py-0.2 bg-emerald-100/60 rounded">
                                     {item.kategori}
@@ -683,9 +767,19 @@ export default function AnalisisJurnalModal({
                           <div key={idx} className="p-2.5 rounded-xl bg-rose-50/40 border border-rose-100/60 hover:bg-rose-50/80 transition-colors">
                             <div className="flex items-start justify-between gap-2 mb-1">
                               <div className="min-w-0 flex-1">
-                                <p className="text-xs font-bold text-slate-800 truncate" title={item.rekening}>
-                                  {item.rekening}
-                                </p>
+                                {(() => {
+                                  const { kode, nama } = parseRekeningDisplay(item.rekening);
+                                  return (
+                                    <div className="flex items-center gap-1.5 min-w-0">
+                                      <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-100/70 text-rose-800 shrink-0">
+                                        {kode || item.kode}
+                                      </span>
+                                      <span className="text-xs font-bold text-slate-800 truncate" title={nama || item.rekening}>
+                                        {nama || item.rekening}
+                                      </span>
+                                    </div>
+                                  );
+                                })()}
                                 <div className="flex items-center gap-1.5 mt-0.5">
                                   <span className="text-[10px] font-semibold text-rose-700 px-1.5 py-0.2 bg-rose-100/60 rounded">
                                     {item.kategori}
@@ -743,8 +837,19 @@ export default function AnalisisJurnalModal({
                         data.kasBreakdown.map((item, idx) => (
                           <tr key={idx} className="hover:bg-violet-50/30 transition-colors">
                             <td className="py-2.5 px-4 font-bold text-slate-800">
-                              <span className="text-violet-700 font-mono mr-1.5">[{item.kode}]</span>
-                              {item.rekening}
+                              {(() => {
+                                const { kode, nama } = parseRekeningDisplay(item.rekening);
+                                return (
+                                  <div className="flex items-center gap-1.5 min-w-0">
+                                    <span className="text-violet-700 font-mono text-[11px] bg-violet-100/60 px-1.5 py-0.5 rounded font-bold shrink-0">
+                                      [{kode || item.kode}]
+                                    </span>
+                                    <span className="text-slate-800 font-bold truncate">
+                                      {nama || item.rekening}
+                                    </span>
+                                  </div>
+                                );
+                              })()}
                             </td>
                             <td className="py-2.5 px-4 text-right font-mono text-emerald-700 font-semibold">
                               {formatRp(item.kasMasuk)}

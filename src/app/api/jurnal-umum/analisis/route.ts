@@ -180,15 +180,36 @@ export async function GET(req: NextRequest) {
       LIMIT 12
     `;
 
-    const [countRes, accRes, kasRes, trendRes, inflowRes, outflowRes] = await Promise.all([
+    // Query 7: Proporsi Kategori Pengeluaran Kas (Struktur Kas Keluar)
+    const outflowCategoriesSql = `
+      WITH target_parents AS (
+        SELECT faktur FROM jurnal_umum WHERE ${parentWhere}
+      ),
+      cash_outflow_vouchers AS (
+        SELECT DISTINCT j.parent_faktur
+        FROM jurnal_umum j
+        JOIN rek_akuntansi r ON j.rek_kode = r.kode AND r.arus_kas = 'Kas'
+        WHERE j.is_child = 1 AND j.kredit > 0
+          AND j.parent_faktur IN (SELECT faktur FROM target_parents)
+      )
+      SELECT
+        other.rek_head,
+        EXISTS(SELECT 1 FROM rek_akuntansi r2 WHERE r2.kode = other.rek_kode AND r2.arus_kas = 'Kas') as is_internal,
+        SUM(other.debit) as amount
+      FROM cash_outflow_vouchers cov
+      JOIN jurnal_umum other ON other.parent_faktur = cov.parent_faktur AND other.is_child = 1 AND other.debit > 0
+      GROUP BY 1, 2
+    `;
+
+    const [countRes, accRes, kasRes, trendRes, inflowRes, outflowRes, outflowCatRes] = await Promise.all([
       db.execute({ sql: countSql, args: parentParams }),
       db.execute({ sql: accSql, args: parentParams }),
       db.execute({ sql: kasSql, args: parentParams }),
       db.execute({ sql: trendSql, args: parentParams }),
       db.execute({ sql: inflowSql, args: parentParams }),
       db.execute({ sql: outflowSql, args: parentParams }),
+      db.execute({ sql: outflowCategoriesSql, args: parentParams }),
     ]);
-
     const totalVouchers = Number((countRes.rows[0] as { total?: number })?.total ?? 0);
 
     const pendapatanItems: Array<{
@@ -476,6 +497,45 @@ export async function GET(req: NextRequest) {
       };
     });
 
+    // Struktur Proporsi Pengeluaran Kas
+    const kasOutflowGroups = {
+      hutang: { kategori: 'Pembayaran Hutang Supplier', amount: 0, color: '#E11D48' },
+      gaji: { kategori: 'Gaji Pabrik & Tenaga Kerja', amount: 0, color: '#EA580C' },
+      bahan: { kategori: 'Pembelian Bahan & Porsekot', amount: 0, color: '#0284C7' },
+      operasional: { kategori: 'Beban Operasional Kantor', amount: 0, color: '#D97706' },
+      lainnya: { kategori: 'Bunga Bank & Beban Lain', amount: 0, color: '#8B5CF6' },
+      internal: { kategori: 'Mutasi Antar Kas / Bank', amount: 0, color: '#64748B' },
+    };
+
+    let totOutflowCat = 0;
+    for (const raw of outflowCatRes.rows as Array<{ rek_head?: string; is_internal?: number | boolean; amount?: number | null }>) {
+      const amt = Number(raw.amount ?? 0);
+      const isInternal = Boolean(raw.is_internal);
+      const head = String(raw.rek_head ?? '');
+      totOutflowCat += amt;
+
+      if (isInternal) {
+        kasOutflowGroups.internal.amount += amt;
+      } else if (head === '2') {
+        kasOutflowGroups.hutang.amount += amt;
+      } else if (head === '5') {
+        kasOutflowGroups.gaji.amount += amt;
+      } else if (head === '1') {
+        kasOutflowGroups.bahan.amount += amt;
+      } else if (head === '6') {
+        kasOutflowGroups.operasional.amount += amt;
+      } else {
+        kasOutflowGroups.lainnya.amount += amt;
+      }
+    }
+
+    const strukturKasKeluar = Object.values(kasOutflowGroups)
+      .filter((g) => g.amount > 0)
+      .map((g) => ({
+        ...g,
+        percentage: totOutflowCat > 0 ? Number(((g.amount / totOutflowCat) * 100).toFixed(1)) : 0,
+      }));
+
     return NextResponse.json({
       success: true,
       summary: {
@@ -500,6 +560,7 @@ export async function GET(req: NextRequest) {
       kasBreakdown,
       cashInflows,
       cashOutflows,
+      strukturKasKeluar,
       dailyTrend,
     });
   } catch (error: unknown) {
