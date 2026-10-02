@@ -875,8 +875,8 @@ export default function JurnalUmumClient() {
                 className="w-full pl-9 pr-4 h-9 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
               />
             </div>
-            <div className="flex items-center gap-1 bg-slate-50 p-0.5 rounded-lg border border-slate-200 w-full xl:w-[280px] shrink-0" title="Filter berdasarkan tanggal dibuat (kapan dicatat di Digit), bukan tanggal transaksi">
-              <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-lg border border-slate-200 w-full xl:w-[280px] shrink-0 h-9" title="Filter berdasarkan tanggal dibuat (kapan dicatat di Digit), bukan tanggal transaksi">
+              <div className="flex-1 min-w-0 h-full [&>div]:h-full [&>div>div]:h-full">
                 <DatePicker
                   name="createAtFrom"
                   value={createAtFrom}
@@ -884,7 +884,7 @@ export default function JurnalUmumClient() {
                   popupAlign="left"
                   customTrigger={() => (
                     <div
-                      className="h-7 px-1.5 sm:px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer w-full"
+                      className="h-full px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer w-full"
                       title={createAtFrom ? `Dibuat dari: ${formatDateDisplay(createAtFrom)}` : 'Filter tanggal dibuat — dari'}
                     >
                       <Calendar size={11} className="text-slate-400 shrink-0" />
@@ -896,7 +896,7 @@ export default function JurnalUmumClient() {
                 />
               </div>
               <span className="text-[10px] text-slate-400 font-bold px-0.5 shrink-0">-</span>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 h-full [&>div]:h-full [&>div>div]:h-full">
                 <DatePicker
                   name="createAtTo"
                   value={createAtTo}
@@ -904,7 +904,7 @@ export default function JurnalUmumClient() {
                   popupAlign="left"
                   customTrigger={() => (
                     <div
-                      className="h-7 px-1.5 sm:px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer w-full"
+                      className="h-full px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer w-full"
                       title={createAtTo ? `Dibuat sampai: ${formatDateDisplay(createAtTo)}` : 'Filter tanggal dibuat — sampai'}
                     >
                       <Calendar size={11} className="text-slate-400 shrink-0" />
@@ -916,7 +916,7 @@ export default function JurnalUmumClient() {
                 />
               </div>
             </div>
-            <div className="w-full xl:w-52 shrink-0">
+            <div className="w-full xl:w-52 shrink-0 h-9 [&>div]:h-full [&_button]:h-full">
               <SquareDropdown
                 options={rekDropdownOptions}
                 value={rekFilter}
