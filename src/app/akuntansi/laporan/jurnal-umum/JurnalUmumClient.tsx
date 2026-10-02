@@ -194,6 +194,7 @@ export default function JurnalUmumClient() {
   const rekLabels = useMemo<Record<string, string>>(() => Object.fromEntries(rekOptions.map((o) => [o.kode, `${o.kode} — ${o.keterangan}`])), [rekOptions]);
   // Sort global server-side (lintas halaman). Default [] = urutan kronologis create_at.
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [isExporting, setIsExporting] = useState(false);
 
   const mountedRef = useRef(true);
 
