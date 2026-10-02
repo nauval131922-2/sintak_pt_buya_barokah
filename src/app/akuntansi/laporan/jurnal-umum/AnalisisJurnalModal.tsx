@@ -184,8 +184,8 @@ export default function AnalisisJurnalModal({
       title="Analisis Finansial & Profitabilitas"
       subtitle={filterDescription || 'Ringkasan performa pendapatan, pemicu biaya, dan mutasi kas'}
       icon={BarChart3}
-      maxWidth="max-w-7xl"
-      bodyClassName="overflow-y-auto max-h-[88vh] p-4 sm:p-6"
+      maxWidth="w-[96vw] max-w-[1600px] h-[94vh] !max-h-[94vh]"
+      bodyClassName="overflow-y-auto flex-1 p-4 sm:p-6"
       footer={
         <div className="flex items-center justify-between w-full text-xs">
           <div className="text-gray-500 font-medium">
@@ -398,7 +398,7 @@ export default function AnalisisJurnalModal({
                     </span>
                   </div>
 
-                  <div className="w-full h-[220px]">
+                  <div className="w-full h-[280px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <ComposedChart data={data.dailyTrend} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
@@ -645,7 +645,7 @@ export default function AnalisisJurnalModal({
                     </span>
                   </div>
 
-                  <div className="w-full h-[220px]">
+                  <div className="w-full h-[280px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <ComposedChart data={data.dailyTrend} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />

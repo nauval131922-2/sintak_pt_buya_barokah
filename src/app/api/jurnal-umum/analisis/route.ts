@@ -319,7 +319,7 @@ export async function GET(req: NextRequest) {
         percentage: totBeban > 0 ? Number(((Math.max(0, totBebanLain) / totBeban) * 100).toFixed(1)) : 0,
         color: '#8B5CF6', // purple-500
       },
-    ];
+    ].sort((a, b) => b.amount - a.amount);
 
     // Arus Kas Breakdown
     let totalKasMasuk = 0;
@@ -534,7 +534,8 @@ export async function GET(req: NextRequest) {
       .map((g) => ({
         ...g,
         percentage: totOutflowCat > 0 ? Number(((g.amount / totOutflowCat) * 100).toFixed(1)) : 0,
-      }));
+      }))
+      .sort((a, b) => b.amount - a.amount);
 
     return NextResponse.json({
       success: true,
