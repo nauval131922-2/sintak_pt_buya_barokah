@@ -864,22 +864,6 @@ export default function JurnalUmumClient() {
               </>
             )}
           </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 border-t border-gray-100 pt-3">
-            <div className="flex-1 min-w-0">
-              <SearchableDropdown
-                id="jurnal-rekening"
-                value={rekFilter}
-                items={rekItems}
-                itemLabels={rekLabels}
-                allLabel="Semua Rekening"
-                searchPlaceholder="Cari kode / nama rekening..."
-                triggerWidth="w-full"
-                compact
-                icon={<Filter size={14} className={rekFilter ? 'text-emerald-600' : 'text-gray-400'} />}
-                onChange={(val) => { setRekFilter(val); setPage(1); }}
-              />
-            </div>
-          </div>
         </div>
       </div>
 
@@ -902,6 +886,20 @@ export default function JurnalUmumClient() {
             )}
           </div>
           <div className="flex items-center gap-2">
+            <div className="w-64 shrink-0">
+              <SearchableDropdown
+                id="jurnal-rekening"
+                value={rekFilter}
+                items={rekItems}
+                itemLabels={rekLabels}
+                allLabel="Semua Rekening"
+                searchPlaceholder="Cari kode / nama rekening..."
+                triggerWidth="w-full"
+                compact
+                icon={<Filter size={14} className={rekFilter ? 'text-emerald-600' : 'text-gray-400'} />}
+                onChange={(val) => { setRekFilter(val); setPage(1); }}
+              />
+            </div>
             <div className="flex-1">
               <SearchAndReload
                 searchQuery={searchQuery}
