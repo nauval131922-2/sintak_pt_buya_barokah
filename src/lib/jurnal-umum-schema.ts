@@ -140,6 +140,10 @@ export async function ensureJurnalUmumSchema(
     `CREATE INDEX IF NOT EXISTS idx_jurnal_umum_child_parent ` +
       `ON jurnal_umum(is_child, parent_faktur)`,
   );
+  await run(
+    `CREATE INDEX IF NOT EXISTS idx_jurnal_umum_rek_kode ` +
+      `ON jurnal_umum(is_child, rek_kode)`,
+  );
 
   schemaEnsured = true;
 }

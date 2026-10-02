@@ -16,7 +16,14 @@ async function getKasKodes(): Promise<Set<string>> {
   }
   try {
     const kasRes = await db.execute("SELECT kode FROM rek_akuntansi WHERE arus_kas = 'Kas'");
-    cachedKasKodes = new Set(kasRes.rows.map(r => String((r as any).kode)));
+    const codes: string[] = [];
+    for (const r of kasRes.rows) {
+      if (r && typeof r === 'object' && 'kode' in r) {
+        const kode: unknown = r.kode;
+        if (typeof kode === 'string' || typeof kode === 'number') codes.push(String(kode));
+      }
+    }
+    cachedKasKodes = new Set(codes);
     cachedKasExpiresAt = now + 60_000;
     return cachedKasKodes;
   } catch (e) {
@@ -37,18 +44,43 @@ async function ensureTable() {
     // Tabel belum ada (belum pernah scrape) — query di bawah gagal wajar
   }
 }
+const PARENT_SORT_COLS: Record<string, string> = {
+  tgl: 'tgl', faktur: 'faktur', rekening: 'rekening', keterangan: 'keterangan',
+  debit: 'debit', kredit: 'kredit', username: 'username', create_at: 'create_at',
+};
+
+// Sort global (lintas halaman). Kolom turunan (_labaRugi, _arusKas,
+// ketepatan_waktu) tidak masuk whitelist: running total dihitung ulang
+// mengikuti urutan tampil, jadi sort di kolom itu dimatikan di klien.
+function getParentOrderBy(sortParam: string | null): string {
+  let states: { id?: string; desc?: boolean }[] = [];
+  try {
+    const parsed: unknown = JSON.parse(sortParam || '[]');
+    if (Array.isArray(parsed)) states = parsed as { id?: string; desc?: boolean }[];
+  } catch { /* abaikan sort rusak → urutan default */ }
+  const mapped = states
+    .filter((s) => s && s.id && PARENT_SORT_COLS[s.id])
+    .map((s) => `${PARENT_SORT_COLS[s.id as string]} ${s.desc ? 'DESC' : 'ASC'}`);
+  if (mapped.length === 0) return 'create_at ASC, faktur ASC, id ASC';
+  // ponytail: tiebreak faktur+id agar pagination deterministik di semua sort
+  if (!mapped.some((m) => m.startsWith('faktur '))) mapped.push('faktur ASC');
+  mapped.push('id ASC');
+  return mapped.join(', ');
+}
 export async function GET(req: NextRequest) {
   try {
     await ensureTable();
 
     const { searchParams } = new URL(req.url);
-    const page    = parseInt(searchParams.get('page')   || '1');
-    const limit   = parseInt(searchParams.get('limit')  || '50');
+    const page    = Math.max(1, parseInt(searchParams.get('page')   || '1'));
+    const limit   = Math.min(5000, Math.max(1, parseInt(searchParams.get('limit')  || '50')));
     const search  = searchParams.get('q')       || '';
     const from    = searchParams.get('from');
     const to      = searchParams.get('to');
     const catFrom = searchParams.get('cat_from');  // filter by create_at
     const catTo   = searchParams.get('cat_to');
+    const rek     = searchParams.get('rek') || '';   // filter rekening (kode, exact match rek_kode)
+    const orderBy = getParentOrderBy(searchParams.get('sort'));
     const offset  = (page - 1) * limit;
 
     // Tanpa raw_data: JSON mentah Digit ±13x bobot kolom terpakai
@@ -56,7 +88,7 @@ export async function GET(req: NextRequest) {
     // Only query parent rows (is_child = 0)
     let query      = `SELECT ${JURNAL_UMUM_COLS} FROM jurnal_umum WHERE is_child = 0`;
     let countQuery = `SELECT COUNT(*) as total FROM jurnal_umum WHERE is_child = 0`;
-    const params: any[] = [];
+    const params: (string | number)[] = [];
 
     // Search
     if (search) {
@@ -84,7 +116,16 @@ export async function GET(req: NextRequest) {
       params.push(catFrom, catTo);
     }
 
-    query += ` ORDER BY create_at ASC, faktur ASC, id ASC LIMIT ? OFFSET ?`;
+    // Filter rekening: voucher yang punya baris anak dengan kode tsb (exact match
+    // ke kolom generated rek_kode, terindeks idx_jurnal_umum_rek_kode).
+    if (rek) {
+      const clause = ` AND faktur IN (SELECT parent_faktur FROM jurnal_umum WHERE is_child = 1 AND rek_kode = ?)`;
+      query      += clause;
+      countQuery += clause;
+      params.push(rek);
+    }
+
+    query += ` ORDER BY ${orderBy} LIMIT ? OFFSET ?`;
     const queryParams = [...params, limit, offset];
 
     const [dataResults, countResults] = await Promise.all([
@@ -92,34 +133,38 @@ export async function GET(req: NextRequest) {
       db.execute({ sql: countQuery, args: params }),
     ]);
 
-    const total = (countResults.rows[0]?.total as number) || 0;
-    const parentRows = dataResults.rows as any[];
+    const totalRow = countResults.rows[0];
+    const total = (totalRow && typeof totalRow === 'object' && 'total' in totalRow)
+      ? Number(totalRow.total) || 0
+      : 0;
+    interface JurnalRow { faktur?: unknown; parent_faktur?: unknown; rekening?: unknown; children?: JurnalRow[]; is_kas?: boolean; [key: string]: unknown }
+    const parentRows = dataResults.rows as JurnalRow[];
 
     // Fetch children for each parent
     if (parentRows.length > 0) {
-      const fakturs = parentRows.map(r => r.faktur);
+      const fakturs = parentRows.map((r) => String(r.faktur ?? ''));
       const placeholders = fakturs.map(() => '?').join(',');
       const childRes = await db.execute({
         sql: `SELECT ${JURNAL_UMUM_COLS} FROM jurnal_umum WHERE is_child = 1 AND parent_faktur IN (${placeholders}) ORDER BY id ASC`,
         args: fakturs
       });
 
-      const childrenMap: Record<string, any[]> = {};
-      for (const child of childRes.rows as any[]) {
-        const pf = child.parent_faktur || '';
+      const childrenMap: Record<string, JurnalRow[]> = {};
+      for (const child of childRes.rows as JurnalRow[]) {
+        const pf = String(child.parent_faktur ?? '');
         if (!childrenMap[pf]) childrenMap[pf] = [];
-        childrenMap[pf].push(child);
+        childrenMap[pf]?.push(child);
       }
 
       for (const row of parentRows) {
-        (row as any).children = childrenMap[row.faktur] || [];
+        row.children = childrenMap[String(row.faktur ?? '')] || [];
       }
     }
 
     // Determine Kas accounts to attach is_kas flag (cached 60s)
     const kasKodes = await getKasKodes();
-    const applyKasFlag = (row: any) => {
-      const rekeningCode = String(row.rekening).split(' - ')[0]?.trim();
+    const applyKasFlag = (row: JurnalRow): void => {
+      const rekeningCode = String(row.rekening ?? '').split(' - ')[0]?.trim() ?? '';
       row.is_kas = kasKodes.has(rekeningCode);
       if (row.children && row.children.length > 0) {
         row.children.forEach(applyKasFlag);
@@ -134,13 +179,13 @@ export async function GET(req: NextRequest) {
       { sql: `SELECT value FROM system_settings WHERE key = ?`, args: [getScrapedPeriodSettingKey('last_scrape_jurnal_umum')] },
     ], 'read');
 
-    const lastScrape     = metadataResults[0].rows[0] as any;
+    const lastScrape     = metadataResults[0].rows[0] as { value?: string } | undefined;
     const lastUpdated    = lastScrape?.value || null;
 
     // Saldo Awal: cumulative LR before cat_from date (only when create_at filter is active)
     let saldoAwal = 0;
     let saldoAwalKas = 0;
-    if (catFrom) {
+    if (catFrom && catTo) {
       let saldoSql = `SELECT
                         SUM(CASE WHEN rek_head BETWEEN '4' AND '9' THEN kredit ELSE 0 END) -
                         SUM(CASE WHEN rek_head BETWEEN '4' AND '9' THEN debit  ELSE 0 END) as saldo,
@@ -149,7 +194,7 @@ export async function GET(req: NextRequest) {
                       FROM jurnal_umum
                       WHERE is_child = 1
                         AND create_date < ?`;
-      const saldoParams: any[] = [catFrom];
+      const saldoParams: (string | number)[] = [catFrom];
 
       if (from && to) {
         saldoSql += ` AND tgl BETWEEN ? AND ?`;
@@ -158,16 +203,24 @@ export async function GET(req: NextRequest) {
 
       if (search) {
         saldoSql += ` AND parent_faktur IN (
-          SELECT faktur FROM jurnal_umum 
+          SELECT faktur FROM jurnal_umum
           WHERE is_child = 0 AND (faktur LIKE ? OR keterangan LIKE ? OR rekening LIKE ? OR username LIKE ?)
         )`;
         const pat = `%${search}%`;
         saldoParams.push(pat, pat, pat, pat);
       }
 
+      // Filter rekening ikut di saldo, di level voucher (sama seperti data tampil:
+      // voucher yang punya baris anak berkode tsb) agar kumulatif konsisten.
+      if (rek) {
+        saldoSql += ` AND parent_faktur IN (SELECT parent_faktur FROM jurnal_umum WHERE is_child = 1 AND rek_kode = ?)`;
+        saldoParams.push(rek);
+      }
+
       const saldoRes = await db.execute({ sql: saldoSql, args: saldoParams });
-      saldoAwal = Number((saldoRes.rows[0] as any)?.saldo ?? 0) || 0;
-      saldoAwalKas = Number((saldoRes.rows[0] as any)?.saldo_kas ?? 0) || 0;
+      const saldoRow = saldoRes.rows[0] as { saldo?: number | null; saldo_kas?: number | null } | undefined;
+      saldoAwal = Number(saldoRow?.saldo ?? 0) || 0;
+      saldoAwalKas = Number(saldoRow?.saldo_kas ?? 0) || 0;
     }
 
     // prevLabaRugi & prevArusKas: running total from ALL child rows BEFORE this page's offset.
@@ -177,7 +230,7 @@ export async function GET(req: NextRequest) {
     if (offset > 0) {
       // Build the same WHERE clause used for parents, then get children of those parents
       let prevParentWhere = `is_child = 0`;
-      const prevParentParams: any[] = [];
+      const prevParentParams: (string | number)[] = [];
 
       if (search) {
         const pat = `%${search}%`;
@@ -192,9 +245,13 @@ export async function GET(req: NextRequest) {
         prevParentWhere += ` AND create_date BETWEEN ? AND ?`;
         prevParentParams.push(catFrom, catTo);
       }
+      if (rek) {
+        prevParentWhere += ` AND faktur IN (SELECT parent_faktur FROM jurnal_umum WHERE is_child = 1 AND rek_kode = ?)`;
+        prevParentParams.push(rek);
+      }
 
-      // IDs of parents before this page (same ORDER BY, LIMIT offset)
-      const prevParentsSql = `SELECT faktur FROM jurnal_umum WHERE ${prevParentWhere} ORDER BY create_at ASC, faktur ASC, id ASC LIMIT ?`;
+      // Parent sebelum halaman ini (ORDER BY sama dengan query utama: sort global)
+      const prevParentsSql = `SELECT faktur FROM jurnal_umum WHERE ${prevParentWhere} ORDER BY ${orderBy} LIMIT ?`;
       const prevParentsParams = [...prevParentParams, offset];
 
       const prevRunningSql = `
@@ -210,7 +267,7 @@ export async function GET(req: NextRequest) {
 
       try {
         const prevRes = await db.execute({ sql: prevRunningSql, args: prevParentsParams });
-        const row = prevRes.rows[0] as any;
+        const row = prevRes.rows[0] as { lr?: number | null; ak?: number | null } | undefined;
         prevLabaRugi = saldoAwal + (Number(row?.lr ?? 0) || 0);
         prevArusKas  = saldoAwalKas + (Number(row?.ak ?? 0) || 0);
       } catch (e) {
@@ -219,6 +276,10 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    const periodRow = metadataResults[1].rows[0];
+    const periodValue = (periodRow && typeof periodRow === 'object' && 'value' in periodRow)
+      ? String(periodRow.value ?? '')
+      : '';
     return NextResponse.json({
       success: true,
       data: parentRows,
@@ -230,11 +291,12 @@ export async function GET(req: NextRequest) {
       saldoAwalKas,
       prevLabaRugi,
       prevArusKas,
-      scrapedPeriod: parseScrapedPeriod((metadataResults[1].rows[0] as any)?.value),
+      scrapedPeriod: parseScrapedPeriod(periodValue),
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Gagal memuat jurnal umum';
     console.error('API Error (jurnal-umum):', error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

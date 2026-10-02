@@ -254,6 +254,7 @@ function DataTableInner<TData extends { id: number | string }>({
                     const sortingState = activeSorting.find((s) => s.id === header.id);
                     const sortIndex = activeSorting.findIndex((s) => s.id === header.id);
                     const meta = header.column.columnDef.meta as any;
+                    const canSort = header.column.getCanSort();
                     const colWidth = header.getSize();
                     const isSticky = meta?.sticky;
                     const leftOffset = stickyLeft;
@@ -271,9 +272,9 @@ function DataTableInner<TData extends { id: number | string }>({
                         ...(isSticky ? { left: leftOffset } : {})
                       }}
                     >
-                        <div 
-                          className={`px-4 py-3 flex items-center gap-2 transition-colors select-none ${!hideSorting ? 'cursor-pointer hover:bg-black/5' : ''} ${meta?.align === 'right' ? 'justify-end flex-row-reverse' : meta?.align === 'center' ? 'justify-center' : 'justify-start'}`}
-                          onClick={!hideSorting ? () => {
+                        <div
+                          className={`px-4 py-3 flex items-center gap-2 transition-colors select-none ${!hideSorting && canSort ? 'cursor-pointer hover:bg-black/5' : ''} ${meta?.align === 'right' ? 'justify-end flex-row-reverse' : meta?.align === 'center' ? 'justify-center' : 'justify-start'}`}
+                          onClick={!hideSorting && canSort ? () => {
                             const colId = header.id;
                             const existing = activeSorting.find(s => s.id === colId);
                             let next: SortingState;
@@ -293,7 +294,7 @@ function DataTableInner<TData extends { id: number | string }>({
                             <span className="text-[12px] font-bold text-gray-700 whitespace-nowrap overflow-hidden truncate">
                                 {flexRender(header.column.columnDef.header, header.getContext())}
                             </span>
-                            {!hideSorting && (
+                            {!hideSorting && canSort && (
                                 <div className="flex-shrink-0 flex items-center gap-0.5">
                                 {sortingState ? (
                                     <>

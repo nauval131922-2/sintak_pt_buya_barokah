@@ -1,7 +1,10 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import type { ColumnDef, SortingState } from '@tanstack/react-table';
+import { Loader2, AlertCircle, Download } from 'lucide-react';
+import { exportRowsToExcel } from '@/lib/export-excel';
+import { toast } from '@/lib/toast';
 import CopyButton from '@/components/ui/CopyButton';
 
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -52,28 +55,69 @@ function isLabaRugiRekening(rekening: string): boolean {
 // Parent rows: debitLR=0, kreditLR=0  → laba_rugi stays the same as previous row.
 // Child rows rekening 4-9: debitLR = child.kredit, kreditLR = child.debit → updates running total.
 // Child rows lainnya: debitLR=0, kreditLR=0 → laba_rugi stays the same.
-function flattenJurnal(rows: any[], prevLabaRugi = 0, prevArusKas = 0): { flat: any[]; lastLabaRugi: number; lastArusKas: number } {
-  const flat: any[] = [];
+// Running total dihitung ulang mengikuti URUTAN TAMPIL (sort server-side):
+// sort kolom lain → server kirim urutan baru + prevLabaRugi/prevArusKas baru,
+// flatten jalan ulang dari titik nol itu. Bukan nilai mati per halaman.
+interface JurnalParentRow {
+  id?: string | number;
+  faktur?: string;
+  tgl?: string;
+  rekening?: string;
+  keterangan?: string;
+  debit?: number | string | null;
+  kredit?: number | string | null;
+  username?: string;
+  create_at?: string;
+  is_kas?: boolean;
+  children?: JurnalParentRow[];
+}
+interface JurnalFlatRow {
+  id: string | number;
+  _isChild: boolean;
+  _isSaldoAwal?: boolean;
+  _parentFaktur?: string;
+  tgl?: string;
+  faktur?: string;
+  rekening?: string;
+  keterangan?: string;
+  debit?: number;
+  kredit?: number;
+  username?: string;
+  create_at?: string;
+  is_kas?: boolean;
+  _debitLR?: number | null;
+  _kreditLR?: number | null;
+  _labaRugi?: number;
+  _arusKas?: number;
+  _rowBg?: string;
+}
+type JurnalCellCtx = { getValue: () => unknown; row: { original: JurnalFlatRow; getIsSelected: () => boolean } };
+function flattenJurnal(rows: JurnalParentRow[], prevLabaRugi = 0, prevArusKas = 0): { flat: JurnalFlatRow[]; lastLabaRugi: number; lastArusKas: number } {
+  const flat: JurnalFlatRow[] = [];
   let runningLR = prevLabaRugi;
   let runningAK = prevArusKas;
 
+
   for (const row of rows) {
-    const children: any[] = row.children || [];
+    const children: JurnalParentRow[] = row.children || [];
 
     // Parent row: debitLR & kreditLR = 0, so laba_rugi = prev (no change)
+    const { children: _ignored, ...parentFields } = row;
     flat.push({
-      ...row,
-      children:  undefined,
-      _isChild:  false,
-      _debitLR:  null,   // shown as — in column
+      ...parentFields,
+      id: row.id ?? `p_${row.faktur ?? ''}`,
+      debit: Number(row.debit ?? 0) || 0,
+      kredit: Number(row.kredit ?? 0) || 0,
+      _isChild: false,
+      _debitLR: null,   // shown as — in column
       _kreditLR: null,   // shown as — in column
       _labaRugi: runningLR,  // prev + 0 - 0
-      _arusKas:  runningAK,
+      _arusKas: runningAK,
     });
 
     // Child rows
     children.forEach((child, ci) => {
-      const isLR = isLabaRugiRekening(child.rekening);
+      const isLR = isLabaRugiRekening(child.rekening ?? '');
       let rowDebitLR  = 0;
       let rowKreditLR = 0;
       if (isLR) {
@@ -101,18 +145,20 @@ function flattenJurnal(rows: any[], prevLabaRugi = 0, prevArusKas = 0): { flat: 
 
       flat.push({
         ...child,
-        id:            `c_${row.id}_${ci}_${child.rekening}`, // more unique ID
-        _isChild:      true,
+        id: `c_${row.id ?? row.faktur}_${ci}_${child.rekening ?? ''}`, // more unique ID
+        debit: Number(child.debit ?? 0) || 0,
+        kredit: Number(child.kredit ?? 0) || 0,
+        _isChild: true,
         _parentFaktur: row.faktur,
-        tgl:           row.tgl,          // inherit from parent
-        faktur:        '',
-        username:      row.username,     // inherit from parent
-        create_at:     row.create_at,   // inherit from parent
-        _debitLR:      isLR ? rowDebitLR  : null,
-        _kreditLR:     isLR ? rowKreditLR : null,
-        _labaRugi:     runningLR,
-        _arusKas:      runningAK,
-        _rowBg:        rowBg,
+        tgl: row.tgl,          // inherit from parent
+        faktur: '',
+        username: row.username,     // inherit from parent
+        create_at: row.create_at,   // inherit from parent
+        _debitLR: isLR ? rowDebitLR : null,
+        _kreditLR: isLR ? rowKreditLR : null,
+        _labaRugi: runningLR,
+        _arusKas: runningAK,
+        _rowBg: rowBg,
       });
     });
   }
@@ -127,7 +173,7 @@ export default function JurnalUmumClient() {
   const [startDate, setStartDate] = useState<Date>(() => getDefaultScraperDateRange().startDate);
   const [endDate, setEndDate] = useState<Date>(() => getDefaultScraperDateRange().endDate);
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<any[] | null>(null);
+  const [data, setData] = useState<JurnalFlatRow[] | null>(null);
   const [error, setError] = useState('');
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [scrapedPeriod, setScrapedPeriod] = useState<{ start: string; end: string } | null>(null);
@@ -136,10 +182,15 @@ export default function JurnalUmumClient() {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [page, setPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
-  // Filter create_at (server-side)
+  // Filter create_at (server-side, default kosong)
   const [createAtFrom, setCreateAtFrom] = useState<Date | null>(null);
   const [createAtTo, setCreateAtTo]     = useState<Date | null>(null);
+  // Filter rekening (kode, cth "1101") — dropdown dari rek_akuntansi
+  const [rekFilter, setRekFilter] = useState('');
+  const [rekOptions, setRekOptions] = useState<{ kode: string; keterangan: string }[]>([]);
+  // Sort global server-side (lintas halaman). Default [] = urutan kronologis create_at.
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [isExporting, setIsExporting] = useState(false);
 
   const mountedRef = useRef(true);
 
@@ -176,13 +227,11 @@ export default function JurnalUmumClient() {
     setStartDate(hydrated.startDate);
     setEndDate(hydrated.endDate);
 
-    // Sync Filter Tanggal Dibuat logic with daily date store (preserved on reload; reset on day change)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
+    // Filter Tanggal Dibuat: default kosong. Nilai tersimpan hanya dipakai bila
+    // dibuat hari ini (daily store); besok otomatis kosong lagi.
     const hydratedFilter = hydrateDailyDateStore('jurnalUmum_createAt_dates', () => ({
-      startDate: today,
-      endDate: today,
+      startDate: null,
+      endDate: null,
     }));
     setCreateAtFrom(hydratedFilter.startDate);
     setCreateAtTo(hydratedFilter.endDate);
@@ -202,6 +251,33 @@ export default function JurnalUmumClient() {
     );
   }, [createAtFrom, createAtTo, isMounted]);
 
+  // Opsi dropdown rekening dari master (sekali per mount, limit besar)
+  useEffect(() => {
+    if (!isMounted) return;
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/rek-akuntansi?page=1&limit=1000');
+        if (!res.ok) return;
+        const json: unknown = await res.json();
+        if (active && json && typeof json === 'object' && 'data' in json && Array.isArray(json.data)) {
+          const opts: { kode: string; keterangan: string }[] = [];
+          for (const r of json.data) {
+            if (r && typeof r === 'object' && 'kode' in r) {
+              const kode: unknown = r.kode;
+              const ket: unknown = 'keterangan' in r ? r.keterangan : '';
+              if (typeof kode === 'string' || typeof kode === 'number') {
+                opts.push({ kode: String(kode), keterangan: typeof ket === 'string' ? ket : String(ket ?? '') });
+              }
+            }
+          }
+          setRekOptions(opts.filter((o) => o.kode));
+        }
+      } catch { /* dropdown opsional — filter tetap bisa diketik manual */ }
+    })();
+    return () => { active = false; };
+  }, [isMounted]);
+
   useEffect(() => {
     let active = true;
     async function loadData() {
@@ -214,6 +290,11 @@ export default function JurnalUmumClient() {
           from: formatDateToYYYYMMDD(startDate), to: formatDateToYYYYMMDD(endDate),
           ...(createAtFrom ? { cat_from: formatDateToYYYYMMDD(createAtFrom) } : {}),
           ...(createAtTo   ? { cat_to:   formatDateToYYYYMMDD(createAtTo) } : {}),
+          ...(rekFilter ? { rek: rekFilter } : {}),
+          // Sort global server-side: backend hanya kenal kolom parent.
+          // Kolom turunan (_labaRugi dkk) tidak dikirim — running total dihitung
+          // ulang mengikuti urutan tampil, bukan nilai mati per halaman.
+          ...(sorting.length ? { sort: JSON.stringify(sorting.filter((s) => !s.id.startsWith('_') && s.id !== 'ketepatan_waktu')) } : {}),
           _t: Date.now().toString()
         });
         const res = await fetch(`/api/jurnal-umum?${queryParams.toString()}`);
@@ -258,20 +339,113 @@ export default function JurnalUmumClient() {
           if (json.lastUpdated) setLastUpdated(formatLastUpdate(new Date(json.lastUpdated)));
           setLoadTime(Math.round(performance.now() - startTimer));
         }
-      } catch (err: any) {
-        if (active) { setError(err.message || 'Gagal memuat data'); setData([]); }
+      } catch (err: unknown) {
+        if (active) { setError(err instanceof Error ? err.message : 'Gagal memuat data'); setData([]); }
       } finally {
         if (active) { setLoading(false); }
       }
     }
     loadData();
     return () => { active = false; };
-  }, [page, debouncedQuery, refreshKey, startDate, endDate, createAtFrom, createAtTo, isMounted]);
+  }, [page, debouncedQuery, refreshKey, startDate, endDate, createAtFrom, createAtTo, rekFilter, sorting, isMounted]);
+
+  const handleSortingChange = useCallback((updater: SortingState | ((old: SortingState) => SortingState)) => {
+    setSorting((prev) => (typeof updater === 'function' ? updater(prev) : updater));
+    setPage(1);
+  }, []);
+
+  const buildExportParams = useCallback((pageNum: number, limit: number) => new URLSearchParams({
+    page: String(pageNum), limit: String(limit), q: debouncedQuery,
+    from: formatDateToYYYYMMDD(startDate), to: formatDateToYYYYMMDD(endDate),
+    ...(createAtFrom ? { cat_from: formatDateToYYYYMMDD(createAtFrom) } : {}),
+    ...(createAtTo ? { cat_to: formatDateToYYYYMMDD(createAtTo) } : {}),
+    ...(rekFilter ? { rek: rekFilter } : {}),
+    ...(sorting.length ? { sort: JSON.stringify(sorting.filter((s) => !s.id.startsWith('_') && s.id !== 'ketepatan_waktu')) } : {}),
+    _t: Date.now().toString(),
+  }), [debouncedQuery, startDate, endDate, createAtFrom, createAtTo, rekFilter, sorting]);
+
+  // Export Excel: fetch SEMUA halaman hasil filter bertahap (bukan halaman aktif
+  // saja), flatten parent+child seperti tabel, running total dibawa antar halaman
+  // agar kolom Laba/Rugi & Arus Kas konsisten dengan urutan tampil.
+  const handleExportExcel = useCallback(async () => {
+    if (!totalCount) { toast.error('Tidak ada data untuk diekspor'); return; }
+    setIsExporting(true);
+    try {
+      // ponytail: 500 parent/req — satu fetch raksasa rawan timeout & OOM
+      const EXPORT_PAGE_SIZE = 500;
+      const hasCatFilter = !!(createAtFrom && createAtTo);
+      const allFlat: JurnalFlatRow[] = [];
+      let saldoAwal = 0;
+      let saldoAwalKas = 0;
+      let runningLR = 0;
+      let runningAK = 0;
+      let pageNum = 1;
+      let totalPages = 1;
+      do {
+        const res = await fetch(`/api/jurnal-umum?${buildExportParams(pageNum, EXPORT_PAGE_SIZE).toString()}`);
+        if (!res.ok) throw new Error('Gagal memuat data export');
+        const json = await res.json();
+        if (pageNum === 1) {
+          saldoAwal = json.saldoAwal ?? 0;
+          saldoAwalKas = json.saldoAwalKas ?? 0;
+          totalPages = json.totalPages ?? 1;
+          if (hasCatFilter) { runningLR = saldoAwal; runningAK = saldoAwalKas; }
+        }
+        // Server mengirim prevLabaRugi/prevArusKas per halaman — pakai itu agar
+        // kumulatif tetap benar walau urutan sort berubah.
+        const startLR = json.prevLabaRugi ?? runningLR;
+        const startAK = json.prevArusKas ?? runningAK;
+        const { flat, lastLabaRugi, lastArusKas } = flattenJurnal(json.data || [], startLR, startAK);
+        allFlat.push(...flat);
+        runningLR = lastLabaRugi;
+        runningAK = lastArusKas;
+        pageNum++;
+      } while (pageNum <= totalPages);
+      const toExport = hasCatFilter
+        ? [{ Tanggal: '', 'No. Faktur': '', Rekening: 'Saldo Awal', Keterangan: 'Saldo Awal', Debit: '', Kredit: '', User: '', Dibuat: '', 'Debit (Laba Rugi)': '', 'Kredit (Laba Rugi)': '', 'Laba / Rugi': saldoAwal, 'Arus Kas': saldoAwalKas },
+           ...allFlat.map((r) => ({
+             Tanggal: formatIndoDateStr(r.tgl || ''),
+             'No. Faktur': r._isChild ? (r._parentFaktur || '') : (r.faktur || ''),
+             Rekening: r.rekening || '',
+             Keterangan: r.keterangan || '',
+             Debit: Number(r.debit || 0) || '',
+             Kredit: Number(r.kredit || 0) || '',
+             User: r.username || '',
+             Dibuat: r.create_at || '',
+             'Debit (Laba Rugi)': r._debitLR ?? '',
+             'Kredit (Laba Rugi)': r._kreditLR ?? '',
+             'Laba / Rugi': r._labaRugi ?? '',
+             'Arus Kas': r._arusKas ?? '',
+           }))]
+        : allFlat.map((r) => ({
+            Tanggal: formatIndoDateStr(r.tgl || ''),
+            'No. Faktur': r._isChild ? (r._parentFaktur || '') : (r.faktur || ''),
+            Rekening: r.rekening || '',
+            Keterangan: r.keterangan || '',
+            Debit: Number(r.debit || 0) || '',
+            Kredit: Number(r.kredit || 0) || '',
+            User: r.username || '',
+            Dibuat: r.create_at || '',
+            'Debit (Laba Rugi)': r._debitLR ?? '',
+            'Kredit (Laba Rugi)': r._kreditLR ?? '',
+            'Laba / Rugi': r._labaRugi ?? '',
+            'Arus Kas': r._arusKas ?? '',
+          }));
+      const fname = `jurnal-umum_${formatDateToYYYYMMDD(startDate)}_sd_${formatDateToYYYYMMDD(endDate)}.xlsx`;
+      const ok = await exportRowsToExcel(toExport, fname);
+      if (!ok) toast.error('Tidak ada data untuk diekspor');
+      else toast.success(`${toExport.length} baris berhasil diekspor`);
+    } catch {
+      toast.error('Gagal export Excel');
+    } finally {
+      setIsExporting(false);
+    }
+  }, [totalCount, buildExportParams, createAtFrom, createAtTo, startDate, endDate]);
 
   const [isBatching, setIsBatching] = useState(false);
   const [batchProgress, setBatchProgress] = useState(0);
   const [batchStatus, setBatchStatus] = useState('');
-  const [dialog, setDialog] = useState({ isOpen: false, type: 'success' as any, title: '', message: '' });
+  const [dialog, setDialog] = useState({ isOpen: false, type: 'success' as 'success' | 'error', title: '', message: '' });
 
   const handleFetch = async () => {
     if (!startDate || !endDate) return;
@@ -284,7 +458,7 @@ export default function JurnalUmumClient() {
     const chunks = splitDateRangeIntoMonths(startStr, endStr);
     let successCount = 0; let totalScraped = 0; let completedChunks = 0;
 
-    const processChunk = async (chunk: any) => {
+    const processChunk = async (chunk: { start: string; end: string }) => {
       try {
         const res = await fetch(`/api/scrape-jurnal-umum?start=${chunk.start}&end=${chunk.end}&metaStart=${startStr}&metaEnd=${endStr}&silent=true`);
         if (res.ok) {
@@ -295,8 +469,8 @@ export default function JurnalUmumClient() {
           const errJson = await res.json().catch(() => ({}));
           throw new Error(errJson.error || `Error ${res.status}`);
         }
-      } catch (e: any) {
-        setError(e.message);
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : 'Gagal menarik data');
       } finally {
         completedChunks++;
         setBatchProgress(Math.round((completedChunks / chunks.length) * 100));
@@ -327,15 +501,15 @@ export default function JurnalUmumClient() {
 
   const [totalPages, setTotalPages] = useState(0);
 
-  const columns = useMemo(() => [
+  const columns = useMemo<ColumnDef<JurnalFlatRow, unknown>[]>(() => [
     {
       accessorKey: 'tgl',
       header: 'Tanggal',
       size: 130,
       meta: { sticky: true },
-      cell: ({ getValue, row }: any) => {
+      cell: ({ getValue, row }: JurnalCellCtx) => {
         const isChild = row.original._isChild;
-        const val = formatIndoDateStr(getValue() as string);
+        const val = formatIndoDateStr(String(getValue() ?? ''));
         if (isChild) return <span className="text-gray-400 tabular-nums">{val}</span>;
         return (
           <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-blue-700' : 'text-gray-700'}`}>
@@ -349,12 +523,12 @@ export default function JurnalUmumClient() {
       header: 'No. Faktur',
       size: 200,
       meta: { sticky: true },
-      cell: ({ getValue, row }: any) => {
+      cell: ({ getValue, row }: JurnalCellCtx) => {
         const isChild = row.original._isChild;
         if (isChild) return <span className="text-gray-400">{row.original._parentFaktur}</span>;
         return (
           <span className={`font-semibold tracking-tight ${row.getIsSelected() ? 'text-blue-600' : 'text-gray-700'}`}>
-            {String(getValue())}
+            {String(getValue() ?? '')}
           </span>
         );
       }
@@ -364,9 +538,9 @@ export default function JurnalUmumClient() {
       header: 'Rekening',
       size: 220,
       meta: { sticky: true },
-      cell: ({ getValue, row }: any) => {
+      cell: ({ getValue, row }: JurnalCellCtx) => {
         const isChild = row.original._isChild;
-        const raw = String(getValue() || '');
+        const raw = String(getValue() ?? '');
         let display = raw || '–';
         
         // Format YYYY-MM-DD to DD MMM YYYY
@@ -393,7 +567,7 @@ export default function JurnalUmumClient() {
       header: 'Keterangan',
       size: 300,
       meta: { sticky: true },
-      cell: ({ getValue, row }: any) => {
+      cell: ({ getValue, row }: JurnalCellCtx) => {
         const isChild = row.original._isChild;
         const isSaldoAwal = row.original._isSaldoAwal;
         if (isSaldoAwal) return (
@@ -409,7 +583,7 @@ export default function JurnalUmumClient() {
               ? (row.getIsSelected() ? 'text-gray-500' : 'text-gray-400')
               : (row.getIsSelected() ? 'text-blue-800 font-medium' : 'text-gray-700 font-medium')
           }`}>
-            {String(getValue() || '–')}
+            {String(getValue() ?? '–')}
           </span>
         );
       }
@@ -419,9 +593,9 @@ export default function JurnalUmumClient() {
       header: 'Debit (Rp)',
       size: 160,
       meta: { align: 'right' },
-      cell: ({ getValue, row }: any) => {
+      cell: ({ getValue, row }: JurnalCellCtx) => {
         const isChild = row.original._isChild;
-        const val = Number(getValue() || 0);
+        const val = Number(getValue() ?? 0);
         if (isChild && val === 0) return <span className="text-gray-200 tabular-nums text-right w-full block">—</span>;
         return (
           <div className={`flex items-center justify-between tabular-nums w-full ${
@@ -440,9 +614,9 @@ export default function JurnalUmumClient() {
       header: 'Kredit (Rp)',
       size: 160,
       meta: { align: 'right' },
-      cell: ({ getValue, row }: any) => {
+      cell: ({ getValue, row }: JurnalCellCtx) => {
         const isChild = row.original._isChild;
-        const val = Number(getValue() || 0);
+        const val = Number(getValue() ?? 0);
         if (isChild && val === 0) return <span className="text-gray-200 tabular-nums text-right w-full block">—</span>;
         return (
           <div className={`flex items-center justify-between tabular-nums w-full ${
@@ -460,9 +634,9 @@ export default function JurnalUmumClient() {
       accessorKey: 'username',
       header: 'User',
       size: 120,
-      cell: ({ getValue, row }: any) => {
+      cell: ({ getValue, row }: JurnalCellCtx) => {
         const isChild = row.original._isChild;
-        const val = String(getValue() || '');
+        const val = String(getValue() ?? '');
         if (!val || val === 'undefined') return <span className="text-gray-200">—</span>;
         if (isChild) return <span className="text-gray-400 font-medium">{val}</span>;
         return <span className="font-bold text-gray-400">{val}</span>;
@@ -472,9 +646,9 @@ export default function JurnalUmumClient() {
       accessorKey: 'create_at',
       header: 'Dibuat',
       size: 150,
-      cell: ({ getValue, row }: any) => {
+      cell: ({ getValue, row }: JurnalCellCtx) => {
         const isChild = row.original._isChild;
-        const val = String(getValue() || '');
+        const val = String(getValue() ?? '');
         if (!val) return <span className="text-gray-200">—</span>;
         return (
           <span className="group flex items-center gap-1.5">
@@ -488,16 +662,17 @@ export default function JurnalUmumClient() {
       id: 'ketepatan_waktu',
       header: 'Ketepatan Waktu',
       size: 160,
+      enableSorting: false,
       meta: { headerBg: '#f5f3ff' }, // Violet 50 to indicate system-calculated column
-      cell: ({ row }: any) => {
+      cell: ({ row }: { row: { original: JurnalFlatRow } }) => {
         const tgl = row.original.tgl;
         const createAt = row.original.create_at;
-        if (!tgl || !createAt) return <span className="text-gray-200">—</span>;
 
         try {
+          if (!tgl || !createAt) return <span className="text-gray-200">—</span>;
           const d1 = new Date(tgl); // YYYY-MM-DD
           const d2 = new Date(createAt.substring(0, 10)); // YYYY-MM-DD
-          
+
           if (isNaN(d1.getTime()) || isNaN(d2.getTime())) return <span className="text-gray-200">—</span>;
 
           const diffTime = d2.getTime() - d1.getTime();
@@ -523,7 +698,7 @@ export default function JurnalUmumClient() {
               Tepat Waktu
             </span>
           );
-        } catch (e) {
+        } catch {
           return <span className="text-gray-200">—</span>;
         }
       }
@@ -532,8 +707,9 @@ export default function JurnalUmumClient() {
       accessorKey: '_debitLR',
       header: 'Debit (Laba Rugi)',
       size: 155,
+      enableSorting: false,
       meta: { align: 'right', headerBg: '#f0fdf4' },
-      cell: ({ getValue, row }: any) => {
+      cell: ({ getValue, row }: JurnalCellCtx) => {
         const isChild = row.original._isChild;
         // Parent rows: no value here, only child rekening 4-9 rows show this
         if (!isChild) return <span className="text-gray-200 tabular-nums text-right w-full block">—</span>;
@@ -558,8 +734,9 @@ export default function JurnalUmumClient() {
       accessorKey: '_kreditLR',
       header: 'Kredit (Laba Rugi)',
       size: 155,
+      enableSorting: false,
       meta: { align: 'right', headerBg: '#fff1f2' },
-      cell: ({ getValue, row }: any) => {
+      cell: ({ getValue, row }: JurnalCellCtx) => {
         const isChild = row.original._isChild;
         // Parent rows: no value here
         if (!isChild) return <span className="text-gray-200 tabular-nums text-right w-full block">—</span>;
@@ -583,8 +760,9 @@ export default function JurnalUmumClient() {
       accessorKey: '_labaRugi',
       header: 'Laba / Rugi',
       size: 160,
+      enableSorting: false,
       meta: { align: 'right', headerBg: '#fffbeb' },
-      cell: ({ getValue, row }: any) => {
+      cell: ({ getValue, row }: JurnalCellCtx) => {
         const val = Number(getValue() ?? 0);
         const isChild = row.original._isChild;
         const isPositive = val >= 0;
@@ -606,8 +784,9 @@ export default function JurnalUmumClient() {
       accessorKey: '_arusKas',
       header: 'Arus Kas',
       size: 160,
+      enableSorting: false,
       meta: { align: 'right', headerBg: '#f5f3ff' },
-      cell: ({ getValue, row }: any) => {
+      cell: ({ getValue, row }: JurnalCellCtx) => {
         const val = Number(getValue() ?? 0);
         const isChild = row.original._isChild;
         const isPositive = val >= 0;
@@ -647,40 +826,66 @@ export default function JurnalUmumClient() {
           />
         </div>
 
-        {/* Filter Tanggal Dibuat */}
-        <div className="flex-1 bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 relative z-[60]">
-          <span className="text-[11px] font-bold text-gray-400 shrink-0 hidden sm:block">Filter Dibuat:</span>
-          <div className="flex items-center gap-2 flex-1">
-            <DatePicker
-              name="createAtFrom"
-              value={createAtFrom}
-              onChange={(d) => { setCreateAtFrom(d); setPage(1); }}
-            />
-            <div className="w-2 h-px bg-gray-300 shrink-0"></div>
-            <DatePicker
-              name="createAtTo"
-              value={createAtTo}
-              onChange={(d) => { setCreateAtTo(d); setPage(1); }}
-            />
-          </div>
+        {/* Filter Tanggal Dibuat + Rekening */}
+        <div className="flex-1 bg-white/80 backdrop-blur-md border border-white/20 rounded-xl shadow-sm p-3 flex flex-col gap-3 shrink-0 relative z-[60]">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <span className="text-[11px] font-bold text-gray-400 shrink-0 hidden sm:block">Filter Dibuat:</span>
+            <div className="flex items-center gap-2 flex-1">
+              <DatePicker
+                name="createAtFrom"
+                value={createAtFrom}
+                onChange={(d) => { setCreateAtFrom(d); setPage(1); }}
+              />
+              <div className="w-2 h-px bg-gray-300 shrink-0"></div>
+              <DatePicker
+                name="createAtTo"
+                value={createAtTo}
+                onChange={(d) => { setCreateAtTo(d); setPage(1); }}
+              />
+            </div>
 
-          {(createAtFrom || createAtTo) && (
-            <>
-              <div className="hidden sm:block w-px h-8 bg-gray-200/60"></div>
+            {(createAtFrom || createAtTo) && (
+              <>
+                <div className="hidden sm:block w-px h-8 bg-gray-200/60"></div>
+                <button
+                  onClick={() => {
+                    setCreateAtFrom(null);
+                    setCreateAtTo(null);
+                    setPage(1);
+                    persistDailyDateStore('jurnalUmum_createAt_dates', null, null, true);
+                  }}
+                  className="flex items-center justify-center gap-2 px-5 h-10 bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold rounded-xl transition-colors shadow-sm shrink-0"
+                >
+                  <span>&times;</span>
+                  <span>Reset</span>
+                </button>
+              </>
+            )}
+          </div>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 border-t border-gray-100 pt-3">
+            <span className="text-[11px] font-bold text-gray-400 shrink-0 hidden sm:block">Rekening:</span>
+            <input
+              list="jurnal-rek-options"
+              value={rekFilter}
+              onChange={(e) => { setRekFilter(e.target.value.trim()); setPage(1); }}
+              placeholder="Ketik kode, cth 1101…"
+              className="flex-1 h-10 px-3 bg-white border border-gray-200 rounded-xl text-[12px] font-semibold text-gray-700 placeholder:text-gray-300 placeholder:font-normal focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all shadow-sm"
+            />
+            <datalist id="jurnal-rek-options">
+              {rekOptions.map((r) => (
+                <option key={r.kode} value={r.kode}>{r.kode} — {r.keterangan}</option>
+              ))}
+            </datalist>
+            {rekFilter && (
               <button
-                onClick={() => {
-                  setCreateAtFrom(null);
-                  setCreateAtTo(null);
-                  setPage(1);
-                  persistDailyDateStore('jurnalUmum_createAt_dates', null, null, true);
-                }}
+                onClick={() => { setRekFilter(''); setPage(1); }}
                 className="flex items-center justify-center gap-2 px-5 h-10 bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold rounded-xl transition-colors shadow-sm shrink-0"
               >
                 <span>&times;</span>
                 <span>Reset</span>
               </button>
-            </>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
@@ -702,13 +907,25 @@ export default function JurnalUmumClient() {
               </div>
             )}
           </div>
-          <SearchAndReload
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            onReload={() => setRefreshKey(prev => prev + 1)}
-            loading={loading}
-            placeholder="Cari faktur, rekening, atau keterangan..."
-          />
+          <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <SearchAndReload
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                onReload={() => setRefreshKey(prev => prev + 1)}
+                loading={loading}
+                placeholder="Cari faktur, rekening, atau keterangan..."
+              />
+            </div>
+            <button
+              onClick={handleExportExcel}
+              disabled={isExporting || !totalCount}
+              className="flex items-center gap-2 px-4 h-10 rounded-xl border border-emerald-200 bg-emerald-50 text-[12px] font-semibold text-emerald-700 hover:bg-emerald-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0 shadow-sm"
+            >
+              {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+              Export Excel
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden relative">
@@ -721,7 +938,10 @@ export default function JurnalUmumClient() {
             columnWidths={columnWidths}
             onColumnWidthChange={setColumnWidths}
             rowHeight="h-11"
-            getRowClassName={(row: any) => {
+            sorting={sorting}
+            onSortingChange={handleSortingChange}
+            manualSorting
+            getRowClassName={(row: JurnalFlatRow) => {
               if (row._isSaldoAwal) return 'bg-amber-50 border-b-2 border-amber-200 amber';
               if (row.is_kas) return 'bg-violet-50 hover:bg-violet-100/60 violet text-violet-900';
               return row._rowBg || '';
