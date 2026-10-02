@@ -882,6 +882,7 @@ export default function JurnalUmumClient() {
                   value={createAtFrom}
                   onChange={(d) => { setCreateAtFrom(d); setPage(1); }}
                   popupAlign="left"
+                  usePortal
                   customTrigger={() => (
                     <div
                       className="h-full px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer w-full"
@@ -902,6 +903,7 @@ export default function JurnalUmumClient() {
                   value={createAtTo}
                   onChange={(d) => { setCreateAtTo(d); setPage(1); }}
                   popupAlign="left"
+                  usePortal
                   customTrigger={() => (
                     <div
                       className="h-full px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-xs cursor-pointer w-full"
