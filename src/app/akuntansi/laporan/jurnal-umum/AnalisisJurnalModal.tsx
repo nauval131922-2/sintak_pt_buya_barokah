@@ -542,32 +542,36 @@ export default function AnalisisJurnalModal({
 
                 {/* Custom Date Pickers */}
                 {comparePreset === 'custom' && (
-                  <div className="flex items-center gap-1.5 bg-slate-100/90 p-1 rounded-xl border border-indigo-200">
-                    <div className="w-36 h-8">
+                  <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-indigo-200 w-[270px] shrink-0 h-8">
+                    <div className="flex-1 min-w-0 h-full [&>div]:h-full [&>div>div]:h-full">
                       <DatePicker
                         name="compStart"
                         value={compareStart}
                         onChange={(d) => setCompareStart(d)}
-                        usePortal
                         customTrigger={() => (
-                          <div className="h-full px-2.5 bg-white border border-slate-200/90 rounded-lg text-xs font-bold font-mono text-slate-700 hover:border-indigo-500 hover:text-indigo-700 transition-all flex items-center justify-between shadow-2xs cursor-pointer">
+                          <div
+                            className="h-full px-2 bg-slate-50 border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-indigo-700 hover:border-indigo-500 transition-all flex items-center justify-between shadow-2xs cursor-pointer w-full"
+                            title={compareStart ? `Dari: ${formatDateDisplay(compareStart)}` : 'Tanggal awal'}
+                          >
                             <span className="truncate">{compareStart ? formatDateDisplay(compareStart) : 'Dari Tgl'}</span>
-                            <Calendar size={13} className="text-slate-400 shrink-0 ml-1.5" />
+                            <Calendar size={11} className="text-slate-400 shrink-0 ml-1" />
                           </div>
                         )}
                       />
                     </div>
-                    <span className="text-slate-400 font-bold text-xs">-</span>
-                    <div className="w-36 h-8">
+                    <span className="text-[10px] text-slate-400 font-bold px-0.5 shrink-0">-</span>
+                    <div className="flex-1 min-w-0 h-full [&>div]:h-full [&>div>div]:h-full">
                       <DatePicker
                         name="compEnd"
                         value={compareEnd}
                         onChange={(d) => setCompareEnd(d)}
-                        usePortal
                         customTrigger={() => (
-                          <div className="h-full px-2.5 bg-white border border-slate-200/90 rounded-lg text-xs font-bold font-mono text-slate-700 hover:border-indigo-500 hover:text-indigo-700 transition-all flex items-center justify-between shadow-2xs cursor-pointer">
+                          <div
+                            className="h-full px-2 bg-slate-50 border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-indigo-700 hover:border-indigo-500 transition-all flex items-center justify-between shadow-2xs cursor-pointer w-full"
+                            title={compareEnd ? `Sampai: ${formatDateDisplay(compareEnd)}` : 'Tanggal akhir'}
+                          >
                             <span className="truncate">{compareEnd ? formatDateDisplay(compareEnd) : 'S/d Tgl'}</span>
-                            <Calendar size={13} className="text-slate-400 shrink-0 ml-1.5" />
+                            <Calendar size={11} className="text-slate-400 shrink-0 ml-1" />
                           </div>
                         )}
                       />
