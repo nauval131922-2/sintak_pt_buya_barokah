@@ -39,6 +39,16 @@ export default function BaseModal({
     return () => window.removeEventListener('keydown', handleEsc);
   }, [isOpen, onClose]);
 
+  // Lock body scroll when modal is open to prevent background layout & wheel jank
+  useEffect(() => {
+    if (!isOpen) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
@@ -48,7 +58,7 @@ export default function BaseModal({
         onClick={closeOnBackdrop ? onClose : undefined}
       >
         <div
-          className={`w-full ${maxWidth} bg-white rounded-2xl shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]`}
+          className={`w-full ${maxWidth} bg-white rounded-2xl shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] [transform:translateZ(0)]`}
           onClick={e => e.stopPropagation()}
         >
           {/* Modal Header */}
@@ -70,8 +80,8 @@ export default function BaseModal({
             </button>
           </div>
 
-          {/* Modal Body — scrollable */}
-          <div className={`px-6 py-5 flex flex-col gap-5 custom-scrollbar ${bodyClassName || 'overflow-y-auto'}`}>
+          {/* Modal Body — scrollable with isolated compositing layer */}
+          <div className={`px-6 py-5 flex flex-col gap-5 custom-scrollbar overscroll-contain [transform:translateZ(0)] ${bodyClassName || 'overflow-y-auto'}`}>
             {children}
           </div>
 

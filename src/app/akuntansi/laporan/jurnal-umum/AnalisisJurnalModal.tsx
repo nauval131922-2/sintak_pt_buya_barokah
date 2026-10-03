@@ -138,6 +138,32 @@ function parseRekeningDisplay(fullStr?: string) {
   return { kode: '', nama: fullStr };
 }
 
+function RekeningTitle({
+  rekening,
+  fallbackKode,
+  badgeBg = 'bg-emerald-100/70',
+  badgeText = 'text-emerald-800',
+}: {
+  rekening?: string;
+  fallbackKode?: string;
+  badgeBg?: string;
+  badgeText?: string;
+}) {
+  const { kode, nama } = parseRekeningDisplay(rekening);
+  const displayedKode = kode || fallbackKode;
+  return (
+    <div className="flex items-center gap-1.5 min-w-0">
+      {displayedKode && (
+        <span className={`font-mono text-[10px] font-bold px-1.5 py-0.5 rounded ${badgeBg} ${badgeText} shrink-0`}>
+          {displayedKode}
+        </span>
+      )}
+      <span className="text-xs font-bold text-slate-800 truncate" title={nama || rekening}>
+        {nama || rekening}
+      </span>
+    </div>
+  );
+}
 function formatRp(val?: number | null): string {
   if (val === null || val === undefined || isNaN(val)) return 'Rp 0';
   return `Rp ${Math.round(val).toLocaleString('id-ID')}`;
@@ -435,7 +461,7 @@ export default function AnalisisJurnalModal({
             </div>
 
             <div className="flex items-center gap-2 self-start sm:self-auto">
-              <div className="px-3 py-1.5 bg-white/80 backdrop-blur-xs rounded-xl border border-gray-200/80 shadow-2xs text-right">
+              <div className="px-3 py-1.5 bg-white rounded-xl border border-gray-200/80 shadow-2xs text-right">
                 <span className="text-[10px] font-bold text-gray-400 block uppercase">Net Cashflow</span>
                 <span className={`text-xs font-black font-mono ${summary.netCashflow >= 0 ? 'text-violet-700' : 'text-rose-600'}`}>
                   {summary.netCashflow >= 0 ? '+' : ''}{formatShortRp(summary.netCashflow)}
@@ -585,7 +611,7 @@ export default function AnalisisJurnalModal({
           )}
           {/* TAB 1: PROFITABILITY & CONTRIBUTORS */}
           {activeTab === 'profit' && (
-            <div className="flex flex-col gap-6 animate-in fade-in duration-200">
+            <div className="flex flex-col gap-6">
               {/* Row 1: KPI Cards */}
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
@@ -751,8 +777,8 @@ export default function AnalisisJurnalModal({
                     </span>
                   </div>
 
-                  <div className="w-full h-[280px]">
-                    <ResponsiveContainer width="100%" height="100%">
+                  <div className="w-full h-[280px] [transform:translateZ(0)]">
+                    <ResponsiveContainer width="100%" height="100%" debounce={50}>
                       <ComposedChart data={chartPoints} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                         <XAxis
@@ -769,13 +795,14 @@ export default function AnalisisJurnalModal({
                         />
                         <ReferenceLine y={0} stroke="#cbd5e1" strokeWidth={1} />
                         <Tooltip
-                          formatter={(val: any, name: any) => [formatRp(Number(val)), name]}
+                          isAnimationActive={false}
+                          formatter={(val: unknown, name: unknown) => [formatRp(Number(val)), String(name)]}
                           contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '11px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                         />
                         <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
-                        <Bar dataKey="pendapatan" name="Pendapatan (Omset)" fill="#10B981" radius={[3, 3, 0, 0]} />
-                        <Bar dataKey="beban" name="Total Beban / HPP" fill="#F43F5E" radius={[3, 3, 0, 0]} />
-                        <Area type="monotone" dataKey="cumLabaRugi" name="Akumulasi Laba Berjalan" stroke="#059669" strokeWidth={2.5} fillOpacity={0} />
+                        <Bar dataKey="pendapatan" name="Pendapatan (Omset)" fill="#10B981" radius={[3, 3, 0, 0]} isAnimationActive={false} />
+                        <Bar dataKey="beban" name="Total Beban / HPP" fill="#F43F5E" radius={[3, 3, 0, 0]} isAnimationActive={false} />
+                        <Area type="monotone" dataKey="cumLabaRugi" name="Akumulasi Laba Berjalan" stroke="#059669" strokeWidth={2.5} fillOpacity={0} isAnimationActive={false} />
                         {compareEnabled && compareData && (
                           <Line
                             type="monotone"
@@ -785,6 +812,7 @@ export default function AnalisisJurnalModal({
                             strokeWidth={2}
                             strokeDasharray="4 4"
                             dot={false}
+                            isAnimationActive={false}
                           />
                         )}
                       </ComposedChart>
@@ -819,21 +847,7 @@ export default function AnalisisJurnalModal({
                           <div key={idx} className="p-2 rounded-xl bg-emerald-50/40 border border-emerald-100/60 hover:bg-emerald-50/80 transition-colors">
                             <div className="flex items-start justify-between gap-2 mb-1">
                               <div className="min-w-0 flex-1">
-                                {(() => {
-                                  const { kode, nama } = parseRekeningDisplay(item.rekening);
-                                  return (
-                                    <div className="flex items-center gap-1.5 min-w-0">
-                                      {kode && (
-                                        <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100/70 text-emerald-800 shrink-0">
-                                          {kode}
-                                        </span>
-                                      )}
-                                      <span className="text-xs font-bold text-slate-800 truncate" title={nama || item.rekening}>
-                                        {nama || item.rekening}
-                                      </span>
-                                    </div>
-                                  );
-                                })()}
+                                <RekeningTitle rekening={item.rekening} badgeBg="bg-emerald-100/70" badgeText="text-emerald-800" />
                                 <span className="text-[10px] font-semibold text-emerald-700 block mt-0.5">{item.kategori}</span>
                               </div>
                               <div className="text-right shrink-0">
@@ -879,21 +893,7 @@ export default function AnalisisJurnalModal({
                           <div key={idx} className="p-2 rounded-xl bg-rose-50/40 border border-rose-100/60 hover:bg-rose-50/80 transition-colors">
                             <div className="flex items-start justify-between gap-2 mb-1">
                               <div className="min-w-0 flex-1">
-                                {(() => {
-                                  const { kode, nama } = parseRekeningDisplay(item.rekening);
-                                  return (
-                                    <div className="flex items-center gap-1.5 min-w-0">
-                                      {kode && (
-                                        <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-100/70 text-rose-800 shrink-0">
-                                          {kode}
-                                        </span>
-                                      )}
-                                      <span className="text-xs font-bold text-slate-800 truncate" title={nama || item.rekening}>
-                                        {nama || item.rekening}
-                                      </span>
-                                    </div>
-                                  );
-                                })()}
+                                <RekeningTitle rekening={item.rekening} badgeBg="bg-rose-100/70" badgeText="text-rose-800" />
                                 <span className="text-[10px] font-semibold text-rose-700 block mt-0.5">{item.kategori}</span>
                               </div>
                               <div className="text-right shrink-0">
@@ -920,7 +920,7 @@ export default function AnalisisJurnalModal({
 
           {/* TAB 3: CASHFLOW ANALYSIS (LENGKAP) */}
           {activeTab === 'cashflow' && (
-            <div className="flex flex-col gap-6 animate-in fade-in duration-200">
+            <div className="flex flex-col gap-6">
               {/* Cashflow KPI Cards — style 100% konsisten dengan Tab Laba / Rugi */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs flex flex-col justify-between">
@@ -1057,8 +1057,8 @@ export default function AnalisisJurnalModal({
                     </span>
                   </div>
 
-                  <div className="w-full h-[280px]">
-                    <ResponsiveContainer width="100%" height="100%">
+                  <div className="w-full h-[280px] [transform:translateZ(0)]">
+                    <ResponsiveContainer width="100%" height="100%" debounce={50}>
                       <ComposedChart data={chartPoints} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                         <XAxis
@@ -1075,13 +1075,14 @@ export default function AnalisisJurnalModal({
                         />
                         <ReferenceLine y={0} stroke="#cbd5e1" strokeWidth={1} />
                         <Tooltip
-                          formatter={(val: any, name: any) => [formatRp(Number(val)), name]}
+                          isAnimationActive={false}
+                          formatter={(val: unknown, name: unknown) => [formatRp(Number(val)), String(name)]}
                           contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '11px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                         />
                         <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
-                        <Bar dataKey="kasMasuk" name="Kas Masuk" fill="#10B981" radius={[3, 3, 0, 0]} />
-                        <Bar dataKey="kasKeluar" name="Kas Keluar" fill="#F43F5E" radius={[3, 3, 0, 0]} />
-                        <Area type="monotone" dataKey="cumCashflow" name="Akumulasi Kas Berjalan" stroke="#8B5CF6" strokeWidth={2} fillOpacity={0} />
+                        <Bar dataKey="kasMasuk" name="Kas Masuk" fill="#10B981" radius={[3, 3, 0, 0]} isAnimationActive={false} />
+                        <Bar dataKey="kasKeluar" name="Kas Keluar" fill="#F43F5E" radius={[3, 3, 0, 0]} isAnimationActive={false} />
+                        <Area type="monotone" dataKey="cumCashflow" name="Akumulasi Kas Berjalan" stroke="#8B5CF6" strokeWidth={2} fillOpacity={0} isAnimationActive={false} />
                         {compareEnabled && compareData && (
                           <Line
                             type="monotone"
@@ -1091,6 +1092,7 @@ export default function AnalisisJurnalModal({
                             strokeWidth={2}
                             strokeDasharray="4 4"
                             dot={false}
+                            isAnimationActive={false}
                           />
                         )}
                       </ComposedChart>
@@ -1125,19 +1127,7 @@ export default function AnalisisJurnalModal({
                           <div key={idx} className="p-2.5 rounded-xl bg-emerald-50/40 border border-emerald-100/60 hover:bg-emerald-50/80 transition-colors">
                             <div className="flex items-start justify-between gap-2 mb-1">
                               <div className="min-w-0 flex-1">
-                                {(() => {
-                                  const { kode, nama } = parseRekeningDisplay(item.rekening);
-                                  return (
-                                    <div className="flex items-center gap-1.5 min-w-0">
-                                      <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100/70 text-emerald-800 shrink-0">
-                                        {kode || item.kode}
-                                      </span>
-                                      <span className="text-xs font-bold text-slate-800 truncate" title={nama || item.rekening}>
-                                        {nama || item.rekening}
-                                      </span>
-                                    </div>
-                                  );
-                                })()}
+                                <RekeningTitle rekening={item.rekening} fallbackKode={item.kode} badgeBg="bg-emerald-100/70" badgeText="text-emerald-800" />
                                 <div className="flex items-center gap-1.5 mt-0.5">
                                   <span className="text-[10px] font-semibold text-emerald-700 px-1.5 py-0.2 bg-emerald-100/60 rounded">
                                     {item.kategori}
@@ -1189,19 +1179,7 @@ export default function AnalisisJurnalModal({
                           <div key={idx} className="p-2.5 rounded-xl bg-rose-50/40 border border-rose-100/60 hover:bg-rose-50/80 transition-colors">
                             <div className="flex items-start justify-between gap-2 mb-1">
                               <div className="min-w-0 flex-1">
-                                {(() => {
-                                  const { kode, nama } = parseRekeningDisplay(item.rekening);
-                                  return (
-                                    <div className="flex items-center gap-1.5 min-w-0">
-                                      <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-100/70 text-rose-800 shrink-0">
-                                        {kode || item.kode}
-                                      </span>
-                                      <span className="text-xs font-bold text-slate-800 truncate" title={nama || item.rekening}>
-                                        {nama || item.rekening}
-                                      </span>
-                                    </div>
-                                  );
-                                })()}
+                                <RekeningTitle rekening={item.rekening} fallbackKode={item.kode} badgeBg="bg-rose-100/70" badgeText="text-rose-800" />
                                 <div className="flex items-center gap-1.5 mt-0.5">
                                   <span className="text-[10px] font-semibold text-rose-700 px-1.5 py-0.2 bg-rose-100/60 rounded">
                                     {item.kategori}
@@ -1259,19 +1237,7 @@ export default function AnalisisJurnalModal({
                         data.kasBreakdown.map((item, idx) => (
                           <tr key={idx} className="hover:bg-violet-50/30 transition-colors">
                             <td className="py-2.5 px-4 font-bold text-slate-800">
-                              {(() => {
-                                const { kode, nama } = parseRekeningDisplay(item.rekening);
-                                return (
-                                  <div className="flex items-center gap-1.5 min-w-0">
-                                    <span className="text-violet-700 font-mono text-[11px] bg-violet-100/60 px-1.5 py-0.5 rounded font-bold shrink-0">
-                                      [{kode || item.kode}]
-                                    </span>
-                                    <span className="text-slate-800 font-bold truncate">
-                                      {nama || item.rekening}
-                                    </span>
-                                  </div>
-                                );
-                              })()}
+                              <RekeningTitle rekening={item.rekening} fallbackKode={item.kode} badgeBg="bg-violet-100/60" badgeText="text-violet-700" />
                             </td>
                             <td className="py-2.5 px-4 text-right font-mono text-emerald-700 font-semibold">
                               {formatRp(item.kasMasuk)}
