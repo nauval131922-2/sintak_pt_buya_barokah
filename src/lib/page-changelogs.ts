@@ -45,6 +45,19 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
+  'jurnal-umum-2026-10-03': entry({
+    pageKey: 'jurnal-umum',
+    title: "Jurnal Umum",
+    permissionKeys: ['akt_jurnal_umum'],
+    sortDate: '2026-10-03',
+    date: '3 Okt 2026',
+    version: '2026-10-03-1',
+    items: [
+      "Optimasi Responsivitas & Scroll Modal Analisis: Mengunci scroll latar belakang body saat modal terbuka, mengisolasi lapisan rendering GPU ([transform:translateZ(0)]) pada kontainer scroll dan grafik Recharts, serta menonaktifkan loop animasi SVG berat agar perpindahan tab dan scroll modal berjalan halus di 60 FPS tanpa jeda.",
+      "Penyempurnaan Performa Rendering List Rekening: Mengganti eksekusi fungsi anonim berulang dengan komponen terpadu RekeningTitle yang ringan, menghilangkan filter blur dinamis di dalam kontainer scroll modal, dan menstabilkan ukuran grafik dengan proteksi debounce.",
+    ],
+  }),
+
   'laporan-pekerjaan-2026-10-02': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan',
@@ -63,7 +76,7 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
     permissionKeys: ['akt_jurnal_umum'],
     sortDate: '2026-10-02',
     date: '2 Okt 2026',
-    version: '2026-10-02-15',
+    version: '2026-10-02-14',
     items: [
       "Ekspor Excel Akuntansi Resmi: Dilengkapi judul laporan, tanggal asli Excel (bukan teks string), format mata uang, freeze header, dan tampilan tanpa garis kisi (gridlines off).",
       "Rumus Dinamis Excel: Kolom Laba/Rugi dan Arus Kas di Excel berisi formula aritmatika dinamis (=K5+I6-J6 & =L5+E6-F6) yang otomatis menghitung ulang saat nilai transaksi diubah.",
@@ -79,7 +92,6 @@ export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
       "Fitur Bandingkan Periode Finansial: Modal analisis kini dilengkapi mode komparasi interaktif dengan preset Bulan Sebelumnya (MoM), Tahun Lalu (YoY), dan Kustom tanggal; menampilkan perbandingan nominal, badge selisih/pertumbuhan (delta) pada seluruh kartu metrik, serta kurva benchmark pembanding putus-putus pada grafik tren harian.",
       "Styling Header Sort Interaktif: Saat mode sortir aktif, seluruh baris header tabel otomatis berganti tema kuning/amber lembut (bg-amber-50), kolom yang menjadi acuan sort disorot dengan latar amber pekat (bg-amber-100), teks hitam pekat, dan panah arah sort yang kontras serupa tampilan di halaman Hasil Produksi.",
       "Pelepasan Portal & Proteksi Kalender: Melepas ketergantungan portal pada seluruh kontrol tanggal di halaman Jurnal Umum agar kalender menempel presisi saat di-scroll, serta menyematkan proteksi tinggi otomatis dan latar putih solid pada panel kalender.",
-      "Optimasi Responsivitas & Scroll Modal Analisis: Mengunci scroll latar belakang body saat modal terbuka, mengisolasi lapisan rendering GPU ([transform:translateZ(0)]) pada kontainer scroll dan grafik Recharts, serta menonaktifkan loop animasi SVG berat agar perpindahan tab dan scroll modal berjalan halus di 60 FPS tanpa jeda.",
     ],
   }),
 
