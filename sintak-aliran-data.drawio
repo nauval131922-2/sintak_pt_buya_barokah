@@ -1,25 +1,25 @@
 <mxfile host="Electron" modified="2026-10-04T00:00:00.000Z" agent="Mozilla/5.0" version="21.6.8" type="device">
-  <diagram id="sintak-swimlane-clean" name="Aliran Data &amp; Aksi Role SINTAK">
-    <mxGraphModel dx="1600" dy="1000" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2840" pageHeight="1090" math="0" shadow="0">
+  <diagram id="sintak-clean-nonoverlapping" name="Aliran Data &amp; Aksi Role SINTAK">
+    <mxGraphModel dx="1600" dy="1000" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2760" pageHeight="1015" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="banner" value="&lt;b&gt;PETA ARSITEKTUR ALIRAN DATA &amp;amp; INTERAKSI SELURUH ROLE (SINTAK - PT BUYA BAROKAH)&lt;/b&gt;&lt;br/&gt;&lt;span style=&#x27;font-size: 11px; font-weight: normal; color: #475569;&#x27;&gt;Aliran Data Sistem (Garis Tebal) &amp;amp; Aksi Setiap Role Database Dev Diletakkan Berdampingan Tanpa Garis Memotong Kotak&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#cbd5e1;strokeWidth=1.5;fontSize=13;fontColor=#0f172a;align=center;verticalAlign=middle;" vertex="1" parent="1">
-  <mxGeometry x="40" y="20" width="2760" height="55" as="geometry" />
+        <mxCell id="banner" value="&lt;b&gt;PETA ARSITEKTUR ALIRAN DATA &amp;amp; INTERAKSI SELURUH ROLE (SINTAK - PT BUYA BAROKAH)&lt;/b&gt;&lt;br/&gt;&lt;span style=&#x27;font-size: 11px; font-weight: normal; color: #475569;&#x27;&gt;Aliran Data Sistem (Garis Tebal Solid) &amp;amp; Tindakan Seluruh Role Asli (Garis Putus-Putus) Tertata Rapi Bebas Perpotongan Jalur&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#cbd5e1;strokeWidth=1.5;fontSize=13;fontColor=#0f172a;align=center;verticalAlign=middle;" vertex="1" parent="1">
+  <mxGeometry x="40" y="20" width="2680" height="55" as="geometry" />
 </mxCell><mxCell id="bg_col1" value="&lt;b&gt;1. INTEGRASI DIGIT &amp;amp; TRACKING&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=center;spacingTop=10;fontSize=11;fontStyle=1;strokeWidth=1.5;fillColor=#f0f9ff;strokeColor=#bae6fd;fontColor=#0369a1;" vertex="1" parent="1">
-  <mxGeometry x="40" y="90" width="420" height="960" as="geometry" />
+  <mxGeometry x="40" y="95" width="390" height="880" as="geometry" />
 </mxCell><mxCell id="m_digit" value="&lt;b&gt;DIGIT (Sistem Eksternal)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Pusat data transaksi perusahaan:&lt;br/&gt;Order SO, Stok, PR/PO, Hutang, Piutang &amp;amp; Jurnal" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;fillColor=#e0f2fe;strokeColor=#0284c7;fontColor=#0369a1;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
-  <mxGeometry x="60" y="130" width="380" height="80" as="geometry" />
+  <mxGeometry x="60" y="135" width="350" height="75" as="geometry" />
 </mxCell><mxCell id="role_super_sync" value="Role: Super Admin" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;spacing=6;strokeWidth=2;shadow=1;fillColor=#f1f5f9;strokeColor=#475569;fontColor=#1e293b;" vertex="1" parent="1">
-  <mxGeometry x="60" y="235" width="140" height="42" as="geometry" />
-</mxCell><mxCell id="m_sync" value="&lt;b&gt;Sinkronisasi All Data (/sync)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Tarik batch data dari Digit ke SQLite lokal SINTAK" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;fillColor=#ffffff;strokeColor=#0284c7;strokeWidth=2;align=left;" vertex="1" parent="1">
-  <mxGeometry x="220" y="225" width="220" height="65" as="geometry" />
+  <mxGeometry x="60" y="250" width="130" height="42" as="geometry" />
+</mxCell><mxCell id="m_sync" value="&lt;b&gt;Sinkronisasi All Data (/sync)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Tarik batch data dari Digit ke database lokal SQLite SINTAK" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;fillColor=#ffffff;strokeColor=#0284c7;strokeWidth=2;align=left;" vertex="1" parent="1">
+  <mxGeometry x="210" y="240" width="200" height="65" as="geometry" />
 </mxCell><mxCell id="m_digit_tables" value="&lt;b&gt;Data Transaksi Digit di SINTAK:&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Stok:&lt;/b&gt; &lt;code&gt;/data-digit/stok/master-barang&lt;/code&gt;&lt;br/&gt;• &lt;b&gt;Pembelian (7 Menu):&lt;/b&gt; &lt;code&gt;/pr, /spph-out, /sph-in, /purchase-orders, /penerimaan-pembelian, /rekap-pembelian-barang, /pelunasan-hutang&lt;/code&gt;&lt;br/&gt;• &lt;b&gt;Penjualan (5 Menu):&lt;/b&gt; &lt;code&gt;/sph-out, /sales-orders, /sales, /pengiriman, /pelunasan-piutang&lt;/code&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;fillColor=#ffffff;strokeColor=#0284c7;align=left;" vertex="1" parent="1">
-  <mxGeometry x="60" y="315" width="380" height="135" as="geometry" />
+  <mxGeometry x="60" y="340" width="350" height="135" as="geometry" />
 </mxCell><mxCell id="role_demo_sync" value="Role: Demo" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;spacing=6;strokeWidth=2;shadow=1;fillColor=#faf5ff;strokeColor=#a855f7;fontColor=#6b21a8;" vertex="1" parent="1">
-  <mxGeometry x="60" y="490" width="120" height="42" as="geometry" />
+  <mxGeometry x="60" y="525" width="110" height="42" as="geometry" />
 </mxCell><mxCell id="m_tracking" value="&lt;b&gt;Tracking Manufaktur (/tracking-manufaktur)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;&lt;b&gt;Lacak alur siklus hidup dokumen Digit:&lt;/b&gt;&lt;br/&gt;&lt;code&gt;Sales Order (SO) &amp;rarr; Order Produksi (SPK) &amp;rarr; BOM &amp;rarr; PR / PO &amp;rarr; Penerimaan Barang &amp;rarr; BBB &amp;rarr; Barang Jadi &amp;rarr; Pengiriman (SJ) &amp;rarr; Pelunasan Piutang&lt;/code&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;fillColor=#ffffff;strokeColor=#7c3aed;strokeWidth=2;align=left;" vertex="1" parent="1">
-  <mxGeometry x="200" y="470" width="240" height="125" as="geometry" />
+  <mxGeometry x="190" y="505" width="220" height="135" as="geometry" />
 </mxCell><mxCell id="ec1_d_s" value="Tarik Scraper" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0284c7;strokeWidth=2.5;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#0369a1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="m_digit" target="m_sync">
   <mxGeometry relative="1" as="geometry">
   </mxGeometry>
@@ -36,24 +36,22 @@
   <mxGeometry relative="1" as="geometry">
   </mxGeometry>
 </mxCell><mxCell id="bg_col2" value="&lt;b&gt;2. ANTREAN ORDER SOPd&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=center;spacingTop=10;fontSize=11;fontStyle=1;strokeWidth=1.5;fillColor=#fffbeb;strokeColor=#fde68a;fontColor=#b45309;" vertex="1" parent="1">
-  <mxGeometry x="500" y="90" width="380" height="960" as="geometry" />
+  <mxGeometry x="480" y="95" width="390" height="880" as="geometry" />
 </mxCell><mxCell id="role_penjadwalan_c2" value="Role: Admin Penjadwalan" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;spacing=6;strokeWidth=2;shadow=1;fillColor=#fee2e2;strokeColor=#ef4444;fontColor=#991b1b;" vertex="1" parent="1">
-  <mxGeometry x="520" y="130" width="160" height="42" as="geometry" />
+  <mxGeometry x="500" y="135" width="160" height="42" as="geometry" />
 </mxCell><mxCell id="role_kasi_pra_c2" value="Role: Ka. Seksi Pra Cetak" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;spacing=6;strokeWidth=2;shadow=1;fillColor=#ffedd5;strokeColor=#ea580c;fontColor=#9a3412;" vertex="1" parent="1">
-  <mxGeometry x="700" y="130" width="160" height="42" as="geometry" />
+  <mxGeometry x="690" y="135" width="160" height="42" as="geometry" />
 </mxCell><mxCell id="m_sopd" value="&lt;b&gt;Menu: SOPd (/data/excel-sopd)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Sumber Data:&lt;/b&gt; SPK dari Digit (tabel &lt;code&gt;orders&lt;/code&gt;) &amp;amp; upload Excel SOPd (tabel &lt;code&gt;sopd&lt;/code&gt;)&lt;br/&gt;• &lt;b&gt;Antrean Pesanan:&lt;/b&gt; No SOPd, Nama Order, Oplah, Deadline, Harga&lt;br/&gt;• &lt;b&gt;Fitur:&lt;/b&gt; Edit cepat 2x klik cell untuk koreksi deadline &amp;amp; keterangan" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;fillColor=#ffffff;strokeColor=#d97706;strokeWidth=2;align=left;" vertex="1" parent="1">
-  <mxGeometry x="520" y="205" width="340" height="135" as="geometry" />
+  <mxGeometry x="500" y="210" width="350" height="135" as="geometry" />
 </mxCell><mxCell id="m_excel_sopd" value="&lt;b&gt;Upload Excel SOPd&lt;/b&gt;&lt;br/&gt;&lt;i&gt;(/settings/konversi-data/jurnal-harian-produksi)&lt;/i&gt;&lt;br/&gt;&lt;hr/&gt;Upload file Excel SOPd langsung ke tabel &lt;code&gt;sopd&lt;/code&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;fillColor=#ffffff;strokeColor=#d97706;dashed=1;align=left;" vertex="1" parent="1">
-  <mxGeometry x="520" y="370" width="340" height="75" as="geometry" />
+  <mxGeometry x="500" y="375" width="350" height="75" as="geometry" />
 </mxCell><mxCell id="m_master_sopd" value="&lt;b&gt;Master Pendukung Produksi:&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Master Karyawan (/employees):&lt;/b&gt; Operator per divisi&lt;br/&gt;• &lt;b&gt;Master Pekerjaan (/data/master-pekerjaan...):&lt;/b&gt; Standar target lembar per jam/hari" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;fillColor=#ffffff;strokeColor=#b91c1c;dashed=1;align=left;" vertex="1" parent="1">
-  <mxGeometry x="520" y="475" width="340" height="95" as="geometry" />
-</mxCell><mxCell id="ec1_c2_order" value="Order SPK (orders)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d97706;strokeWidth=2.5;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#92400e;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="m_sync" target="m_sopd">
+  <mxGeometry x="500" y="480" width="350" height="95" as="geometry" />
+</mxCell><mxCell id="ec1_c2_order" value="Order Masuk (orders)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d97706;strokeWidth=2.5;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#92400e;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="m_sync" target="m_sopd">
   <mxGeometry relative="1" as="geometry">
     <Array as="points">
-      <mxPoint x="440" y="257" />
-      <mxPoint x="480" y="257" />
-      <mxPoint x="480" y="257" />
-      <mxPoint x="520" y="257" />
+      <mxPoint x="410" y="272" />
+      <mxPoint x="500" y="272" />
     </Array>
   </mxGeometry>
 </mxCell><mxCell id="ec2_ex_sopd" value="Data Excel" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d97706;strokeWidth=2.5;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#92400e;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="m_excel_sopd" target="m_sopd">
@@ -66,160 +64,131 @@
   <mxGeometry relative="1" as="geometry">
   </mxGeometry>
 </mxCell><mxCell id="bg_col3" value="&lt;b&gt;3. OPERASIONAL PRODUKSI (JHP)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=center;spacingTop=10;fontSize=11;fontStyle=1;strokeWidth=1.5;fillColor=#fef2f2;strokeColor=#fecaca;fontColor=#b91c1c;" vertex="1" parent="1">
-  <mxGeometry x="960" y="90" width="480" height="960" as="geometry" />
+  <mxGeometry x="930" y="95" width="450" height="880" as="geometry" />
 </mxCell><mxCell id="role_realisasi_c3" value="Role: Admin Realisasi" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;spacing=6;strokeWidth=2;shadow=1;fillColor=#fee2e2;strokeColor=#ef4444;fontColor=#991b1b;" vertex="1" parent="1">
-  <mxGeometry x="980" y="130" width="200" height="42" as="geometry" />
+  <mxGeometry x="950" y="135" width="190" height="42" as="geometry" />
 </mxCell><mxCell id="role_spv_c3" value="Role: Produksi (Supervisor)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;spacing=6;strokeWidth=2;shadow=1;fillColor=#fee2e2;strokeColor=#ef4444;fontColor=#991b1b;" vertex="1" parent="1">
-  <mxGeometry x="1210" y="130" width="210" height="42" as="geometry" />
+  <mxGeometry x="1170" y="135" width="190" height="42" as="geometry" />
 </mxCell><mxCell id="m_jhp" value="&lt;b&gt;Jurnal Harian Produksi (JHP) (/jurnal-harian-produksi)&lt;/b&gt; [INTI PABRIK]&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;1. Penjadwalan (Target Shift):&lt;/b&gt; Pilih Bagian (Cetak, Finishing, Setting, QC, Gudang, Mesin, Teknisi), Shift (1/2/3), Operator, No SOPd, Target.&lt;br/&gt;  &lt;i&gt;*Tombol &#x27;Copy Jadwal&#x27;: salin susunan target kemarin.&lt;/i&gt;&lt;br/&gt;• &lt;b&gt;2. Input Realisasi Lapangan:&lt;/b&gt; Isi Jam Mulai, Selesai &amp;amp; Lembar Berhasil.&lt;br/&gt;• &lt;b&gt;3. Pencatatan Rijek:&lt;/b&gt; Lembar rusak afdruk setup &amp;amp; jalan, Inscheet, Kendala." style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;fillColor=#ffffff;strokeColor=#dc2626;strokeWidth=2;align=left;" vertex="1" parent="1">
-  <mxGeometry x="980" y="205" width="440" height="205" as="geometry" />
+  <mxGeometry x="950" y="210" width="410" height="205" as="geometry" />
 </mxCell><mxCell id="m_target_harian" value="&lt;b&gt;Target Harian (/jurnal-harian-produksi/target)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Rekap pemenuhan target shift hari ini per bagian dan operator" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;fillColor=#ffffff;strokeColor=#db2777;align=left;" vertex="1" parent="1">
-  <mxGeometry x="980" y="445" width="440" height="65" as="geometry" />
+  <mxGeometry x="950" y="455" width="410" height="65" as="geometry" />
 </mxCell><mxCell id="m_analisa_prod" value="&lt;b&gt;Analisa Produksi (/jurnal-harian-produksi/analisa)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Cari per &lt;b&gt;No Order&lt;/b&gt;: riwayat pengerjaan di JHP, durasi &amp;amp; kendala teknis" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;fillColor=#ffffff;strokeColor=#db2777;align=left;" vertex="1" parent="1">
-  <mxGeometry x="980" y="535" width="440" height="65" as="geometry" />
+  <mxGeometry x="950" y="560" width="410" height="65" as="geometry" />
 </mxCell><mxCell id="m_hasil_prod" value="&lt;b&gt;Hasil Produksi (/hasil-produksi)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Tab Jurnal:&lt;/b&gt; Akumulasi target, realisasi &amp;amp; rijek dari JHP&lt;br/&gt;• &lt;b&gt;Tab Barang Jadi:&lt;/b&gt; Data barang jadi hasil produksi dari Digit" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;fillColor=#ffffff;strokeColor=#db2777;strokeWidth=1.5;align=left;" vertex="1" parent="1">
-  <mxGeometry x="980" y="625" width="440" height="65" as="geometry" />
+  <mxGeometry x="950" y="665" width="410" height="65" as="geometry" />
 </mxCell><mxCell id="ec2_c3_sopd_jhp" value="Dropdown No SOPd (/api/sopd)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d97706;strokeWidth=2.5;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#92400e;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="m_sopd" target="m_jhp">
   <mxGeometry relative="1" as="geometry">
     <mxPoint x="0" y="-10" as="offset" />
     <Array as="points">
-      <mxPoint x="860" y="270" />
-      <mxPoint x="980" y="270" />
+      <mxPoint x="850" y="272" />
+      <mxPoint x="950" y="272" />
     </Array>
   </mxGeometry>
 </mxCell><mxCell id="ec2_c3_master_jhp" value="Operator &amp;amp; Standar Target" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#dc2626;strokeWidth=2.5;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#991b1b;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="m_master_sopd" target="m_jhp">
   <mxGeometry relative="1" as="geometry">
     <mxPoint x="0" y="-10" as="offset" />
     <Array as="points">
-      <mxPoint x="860" y="522" />
-      <mxPoint x="920" y="522" />
-      <mxPoint x="920" y="350" />
-      <mxPoint x="980" y="350" />
+      <mxPoint x="850" y="527" />
+      <mxPoint x="900" y="527" />
+      <mxPoint x="900" y="355" />
+      <mxPoint x="950" y="355" />
     </Array>
   </mxGeometry>
 </mxCell><mxCell id="ec3_jhp_target" value="Rekap Target Shift" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#dc2626;strokeWidth=2.5;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#991b1b;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="m_jhp" target="m_target_harian">
   <mxGeometry relative="1" as="geometry">
-    <Array as="points">
-      <mxPoint x="1080" y="410" />
-      <mxPoint x="1080" y="445" />
-    </Array>
   </mxGeometry>
-</mxCell><mxCell id="ec3_jhp_analisa" value="Pengerjaan per Order" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#dc2626;strokeWidth=2.5;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#991b1b;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="m_jhp" target="m_analisa_prod">
-  <mxGeometry relative="1" as="geometry">
-    <Array as="points">
-      <mxPoint x="1200" y="410" />
-      <mxPoint x="1200" y="535" />
-    </Array>
-  </mxGeometry>
-</mxCell><mxCell id="ec3_jhp_hasil" value="Akumulasi Lembar" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#dc2626;strokeWidth=2.5;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#991b1b;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="m_jhp" target="m_hasil_prod">
-  <mxGeometry relative="1" as="geometry">
-    <Array as="points">
-      <mxPoint x="1320" y="410" />
-      <mxPoint x="1320" y="625" />
-    </Array>
-  </mxGeometry>
-</mxCell><mxCell id="rc3_real_jhp" value="Input Lembar &amp;amp; Rijek" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#ef4444;strokeWidth=2;dashed=1;dashPattern=4 3;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#ef4444;labelBackgroundColor=#ffffff;fontStyle=1;" edge="1" parent="1" source="role_realisasi_c3" target="m_jhp">
+</mxCell><mxCell id="ec3_target_analisa" value="Pengerjaan per No Order" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#dc2626;strokeWidth=2.5;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#991b1b;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="m_target_harian" target="m_analisa_prod">
   <mxGeometry relative="1" as="geometry">
   </mxGeometry>
-</mxCell><mxCell id="rc3_spv_target" value="Evaluasi Target" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#ef4444;strokeWidth=2;dashed=1;dashPattern=4 3;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#ef4444;labelBackgroundColor=#ffffff;fontStyle=1;" edge="1" parent="1" source="role_spv_c3" target="m_target_harian">
+</mxCell><mxCell id="ec3_analisa_hasil" value="Akumulasi Lembar &amp;amp; Barang Jadi" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#dc2626;strokeWidth=2.5;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#991b1b;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="m_analisa_prod" target="m_hasil_prod">
   <mxGeometry relative="1" as="geometry">
-    <Array as="points">
-      <mxPoint x="1315" y="172" />
-      <mxPoint x="1315" y="205" />
-      <mxPoint x="1430" y="205" />
-      <mxPoint x="1430" y="477" />
-      <mxPoint x="1420" y="477" />
-    </Array>
+  </mxGeometry>
+</mxCell><mxCell id="rc3_real_jhp" value="Input Realisasi" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#ef4444;strokeWidth=2;dashed=1;dashPattern=4 3;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#ef4444;labelBackgroundColor=#ffffff;fontStyle=1;" edge="1" parent="1" source="role_realisasi_c3" target="m_jhp">
+  <mxGeometry relative="1" as="geometry">
+  </mxGeometry>
+</mxCell><mxCell id="rc3_spv_target" value="Evaluasi Target" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#ef4444;strokeWidth=2;dashed=1;dashPattern=4 3;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#ef4444;labelBackgroundColor=#ffffff;fontStyle=1;" edge="1" parent="1" source="role_spv_c3" target="m_jhp">
+  <mxGeometry relative="1" as="geometry">
   </mxGeometry>
 </mxCell><mxCell id="bg_col4" value="&lt;b&gt;4. DIVISI TEKNIS LAPANGAN&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=center;spacingTop=10;fontSize=11;fontStyle=1;strokeWidth=1.5;fillColor=#ffedd5;strokeColor=#fed7aa;fontColor=#c2410c;" vertex="1" parent="1">
-  <mxGeometry x="1520" y="90" width="450" height="960" as="geometry" />
-</mxCell><mxCell id="role_setting_c4" value="Setting" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;spacing=6;strokeWidth=2;shadow=1;fillColor=#ffedd5;strokeColor=#f97316;fontColor=#9a3412;" vertex="1" parent="1">
-  <mxGeometry x="1540" y="130" width="75" height="42" as="geometry" />
-</mxCell><mxCell id="role_cetak_c4" value="Cetak" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;spacing=6;strokeWidth=2;shadow=1;fillColor=#ffedd5;strokeColor=#f97316;fontColor=#9a3412;" vertex="1" parent="1">
-  <mxGeometry x="1625" y="130" width="75" height="42" as="geometry" />
-</mxCell><mxCell id="role_finishing_c4" value="Finishing" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;spacing=6;strokeWidth=2;shadow=1;fillColor=#ffedd5;strokeColor=#f97316;fontColor=#9a3412;" vertex="1" parent="1">
-  <mxGeometry x="1710" y="130" width="80" height="42" as="geometry" />
-</mxCell><mxCell id="role_qc_c4" value="QC" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;spacing=6;strokeWidth=2;shadow=1;fillColor=#ffedd5;strokeColor=#f97316;fontColor=#9a3412;" vertex="1" parent="1">
-  <mxGeometry x="1800" y="130" width="65" height="42" as="geometry" />
-</mxCell><mxCell id="role_kasi_pasca_c4" value="Ka. Pasca" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;spacing=6;strokeWidth=2;shadow=1;fillColor=#ffedd5;strokeColor=#ea580c;fontColor=#9a3412;" vertex="1" parent="1">
-  <mxGeometry x="1875" y="130" width="75" height="42" as="geometry" />
+  <mxGeometry x="1440" y="95" width="420" height="880" as="geometry" />
+</mxCell><mxCell id="role_teknis_header" value="&lt;b&gt;Role Divisi Teknis:&lt;/b&gt;&lt;br/&gt;Setting | Cetak | Finishing | Quality Control | Ka. Pasca Cetak" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;spacing=6;strokeWidth=2;shadow=1;fillColor=#ffedd5;strokeColor=#f97316;fontColor=#9a3412;" vertex="1" parent="1">
+  <mxGeometry x="1460" y="135" width="380" height="42" as="geometry" />
 </mxCell><mxCell id="m_laporan_pekerjaan" value="&lt;b&gt;Menu: Laporan Pekerjaan (/laporan-pekerjaan)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Monitoring &amp;amp; pelaporan tugas kerja harian staf divisi teknis:&lt;br/&gt;• &lt;b&gt;Setting:&lt;/b&gt; Cek file, layout desain &amp;amp; keping Plat CTP.&lt;br/&gt;• &lt;b&gt;Cetak:&lt;/b&gt; Rekap pengerjaan lembar mesin cetak harian.&lt;br/&gt;• &lt;b&gt;Finishing:&lt;/b&gt; Potong kertas, lipat, lem, jilid kawat, hardcover &amp;amp; packing.&lt;br/&gt;• &lt;b&gt;QC:&lt;/b&gt; Pemeriksaan mutu cetak, register warna &amp;amp; kerapian jilid.&lt;br/&gt;&lt;i&gt;*Divisi terkunci otomatis di &lt;code&gt;role_laporan_pekerjaan_config&lt;/code&gt;.&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;fillColor=#ffffff;strokeColor=#ea580c;strokeWidth=2;align=left;" vertex="1" parent="1">
-  <mxGeometry x="1540" y="205" width="410" height="205" as="geometry" />
+  <mxGeometry x="1460" y="210" width="380" height="205" as="geometry" />
 </mxCell><mxCell id="m_telegram_bot" value="&lt;b&gt;Chat Bot Telegram (/api/telegram/realisasi)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Operator yang diapprove di &lt;code&gt;/settings/telegram-users&lt;/code&gt; dapat mengirim realisasi kerja via chat bot Telegram langsung dari HP:&lt;br/&gt;&lt;code&gt;Format: tgl, shift, no_order, jenis_kerja, realisasi, rijek&lt;/code&gt;&lt;br/&gt;Data otomatis tersimpan ke tabel &lt;code&gt;jurnal_harian_produksi&lt;/code&gt;." style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;fillColor=#e0f2fe;strokeColor=#0284c7;strokeWidth=1.5;align=left;" vertex="1" parent="1">
-  <mxGeometry x="1540" y="445" width="410" height="115" as="geometry" />
+  <mxGeometry x="1460" y="455" width="380" height="115" as="geometry" />
+</mxCell><mxCell id="rc4_tek_lap" value="Catat Tugas Harian Sesuai Divisi" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f97316;strokeWidth=2;dashed=1;dashPattern=4 3;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#f97316;labelBackgroundColor=#ffffff;fontStyle=1;" edge="1" parent="1" source="role_teknis_header" target="m_laporan_pekerjaan">
+  <mxGeometry relative="1" as="geometry">
+  </mxGeometry>
+</mxCell><mxCell id="ec4_lap_tele" value="Opsi Kirim Chat Bot" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d97706;strokeWidth=2.5;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#92400e;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="m_laporan_pekerjaan" target="m_telegram_bot">
+  <mxGeometry relative="1" as="geometry">
+  </mxGeometry>
 </mxCell><mxCell id="ec4_c3_tele_jhp" value="Insert Realisasi via Bot" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0284c7;strokeWidth=2.5;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#0369a1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="m_telegram_bot" target="m_jhp">
   <mxGeometry relative="1" as="geometry">
     <mxPoint x="0" y="-10" as="offset" />
     <Array as="points">
-      <mxPoint x="1540" y="502" />
-      <mxPoint x="1480" y="502" />
-      <mxPoint x="1480" y="330" />
-      <mxPoint x="1420" y="330" />
+      <mxPoint x="1460" y="512" />
+      <mxPoint x="1400" y="512" />
+      <mxPoint x="1400" y="335" />
+      <mxPoint x="1360" y="335" />
     </Array>
   </mxGeometry>
-</mxCell><mxCell id="rc4_set_lap" value="Catat Plat" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f97316;strokeWidth=2;dashed=1;dashPattern=4 3;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#f97316;labelBackgroundColor=#ffffff;fontStyle=1;" edge="1" parent="1" source="role_setting_c4" target="m_laporan_pekerjaan">
-  <mxGeometry relative="1" as="geometry">
-  </mxGeometry>
-</mxCell><mxCell id="rc4_cet_lap" value="Lapor Mesin" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f97316;strokeWidth=2;dashed=1;dashPattern=4 3;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#f97316;labelBackgroundColor=#ffffff;fontStyle=1;" edge="1" parent="1" source="role_cetak_c4" target="m_laporan_pekerjaan">
-  <mxGeometry relative="1" as="geometry">
-  </mxGeometry>
-</mxCell><mxCell id="rc4_fin_lap" value="Catat Jilid" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f97316;strokeWidth=2;dashed=1;dashPattern=4 3;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#f97316;labelBackgroundColor=#ffffff;fontStyle=1;" edge="1" parent="1" source="role_finishing_c4" target="m_laporan_pekerjaan">
-  <mxGeometry relative="1" as="geometry">
-  </mxGeometry>
-</mxCell><mxCell id="rc4_qc_lap" value="Inspeksi Mutu" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f97316;strokeWidth=2;dashed=1;dashPattern=4 3;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#f97316;labelBackgroundColor=#ffffff;fontStyle=1;" edge="1" parent="1" source="role_qc_c4" target="m_laporan_pekerjaan">
-  <mxGeometry relative="1" as="geometry">
-  </mxGeometry>
 </mxCell><mxCell id="bg_col5" value="&lt;b&gt;5. KALKULASI &amp;amp; AKUNTANSI&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=center;spacingTop=10;fontSize=11;fontStyle=1;strokeWidth=1.5;fillColor=#fefce8;strokeColor=#fef08a;fontColor=#a16207;" vertex="1" parent="1">
-  <mxGeometry x="2040" y="90" width="360" height="960" as="geometry" />
-</mxCell><mxCell id="role_kalkulasi_c5" value="Role: Kalkulasi" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;spacing=6;strokeWidth=2;shadow=1;fillColor=#fef3c7;strokeColor=#f59e0b;fontColor=#92400e;" vertex="1" parent="1">
-  <mxGeometry x="2060" y="130" width="150" height="42" as="geometry" />
-</mxCell><mxCell id="role_kalkulasi2_c5" value="Role: Kalkulasi2" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;spacing=6;strokeWidth=2;shadow=1;fillColor=#fef3c7;strokeColor=#f59e0b;fontColor=#92400e;" vertex="1" parent="1">
-  <mxGeometry x="2230" y="130" width="150" height="42" as="geometry" />
+  <mxGeometry x="1920" y="95" width="360" height="880" as="geometry" />
+</mxCell><mxCell id="role_kalkulasi_c5" value="Role: Kalkulasi &amp;amp; Kalkulasi2" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;spacing=6;strokeWidth=2;shadow=1;fillColor=#fef3c7;strokeColor=#f59e0b;fontColor=#92400e;" vertex="1" parent="1">
+  <mxGeometry x="1940" y="135" width="320" height="42" as="geometry" />
 </mxCell><mxCell id="m_pricelist" value="&lt;b&gt;Menu: Pricelist (/pricelist)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Simulator mandiri 20+ produk cetak (Buku, Dus Packaging, Brosur, Stopmap, Undangan, Kalender, dll.) berdasarkan parameter kertas, plat &amp;amp; mesin di &lt;code&gt;global-master-params.ts&lt;/code&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;fillColor=#ffffff;strokeColor=#d97706;strokeWidth=1.5;align=left;" vertex="1" parent="1">
-  <mxGeometry x="2060" y="205" width="320" height="115" as="geometry" />
+  <mxGeometry x="1940" y="210" width="320" height="115" as="geometry" />
 </mxCell><mxCell id="m_hpp_so" value="&lt;b&gt;HPP &amp;amp; Rekap SO:&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;HPP Kalkulasi (/hpp-kalkulasi):&lt;/b&gt; Input nilai biaya pokok order.&lt;br/&gt;• &lt;b&gt;Rekap SO (/rekap-sales-order):&lt;/b&gt; Analisis rincian baris SO Digit." style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;fillColor=#ffffff;strokeColor=#d97706;align=left;" vertex="1" parent="1">
-  <mxGeometry x="2060" y="350" width="320" height="95" as="geometry" />
+  <mxGeometry x="1940" y="360" width="320" height="95" as="geometry" />
 </mxCell><mxCell id="role_akunting_c5" value="Role: Akunting" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;spacing=6;strokeWidth=2;shadow=1;fillColor=#dcfce7;strokeColor=#22c55e;fontColor=#166534;" vertex="1" parent="1">
-  <mxGeometry x="2060" y="470" width="320" height="42" as="geometry" />
+  <mxGeometry x="1940" y="490" width="320" height="42" as="geometry" />
 </mxCell><mxCell id="m_jurnal_umum_box" value="&lt;b&gt;Jurnal Umum (/akuntansi/laporan/jurnal-umum)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;• Master bagan akun (COA) di &lt;code&gt;/akuntansi/data/rek-akuntansi&lt;/code&gt;&lt;br/&gt;• Audit mutasi Debet/Kredit per tanggal/akun&lt;br/&gt;• Tombol &lt;b&gt;&#x27;Analisis Jurnal&#x27;&lt;/b&gt; untuk kalkulasi laba/rugi" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;fillColor=#ffffff;strokeColor=#16a34a;strokeWidth=2;align=left;" vertex="1" parent="1">
-  <mxGeometry x="2060" y="540" width="320" height="115" as="geometry" />
+  <mxGeometry x="1940" y="565" width="320" height="115" as="geometry" />
 </mxCell><mxCell id="m_dash_akunting" value="&lt;b&gt;Dashboard Akuntansi (/dashboard-akunting)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Grafik tren Debet vs Kredit bulanan &amp;amp; peringatan stok barang jadi" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;fillColor=#ecfdf5;strokeColor=#059669;align=left;" vertex="1" parent="1">
-  <mxGeometry x="2060" y="685" width="320" height="75" as="geometry" />
+  <mxGeometry x="1940" y="715" width="320" height="75" as="geometry" />
+</mxCell><mxCell id="rc5_kal_p" value="Simulasi Harga Cetak" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f59e0b;strokeWidth=2;dashed=1;dashPattern=4 3;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#f59e0b;labelBackgroundColor=#ffffff;fontStyle=1;" edge="1" parent="1" source="role_kalkulasi_c5" target="m_pricelist">
+  <mxGeometry relative="1" as="geometry">
+  </mxGeometry>
+</mxCell><mxCell id="ec5_p_hpp" value="Penetapan HPP &amp;amp; Margin" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d97706;strokeWidth=2.5;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#92400e;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="m_pricelist" target="m_hpp_so">
+  <mxGeometry relative="1" as="geometry">
+  </mxGeometry>
+</mxCell><mxCell id="rc5_akt_ju" value="Audit Mutasi Kas" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#16a34a;strokeWidth=2;dashed=1;dashPattern=4 3;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#16a34a;labelBackgroundColor=#ffffff;fontStyle=1;" edge="1" parent="1" source="role_akunting_c5" target="m_jurnal_umum_box">
+  <mxGeometry relative="1" as="geometry">
+  </mxGeometry>
 </mxCell><mxCell id="ec5_ju_dash" value="Tren Debet/Kredit" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0284c7;strokeWidth=2.5;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#0369a1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="m_jurnal_umum_box" target="m_dash_akunting">
   <mxGeometry relative="1" as="geometry">
   </mxGeometry>
-</mxCell><mxCell id="rc5_akt_ju" value="Audit Transaksi" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#16a34a;strokeWidth=2;dashed=1;dashPattern=4 3;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#16a34a;labelBackgroundColor=#ffffff;fontStyle=1;" edge="1" parent="1" source="role_akunting_c5" target="m_jurnal_umum_box">
-  <mxGeometry relative="1" as="geometry">
-  </mxGeometry>
-</mxCell><mxCell id="rc5_kal_p" value="Simulasi Harga" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f59e0b;strokeWidth=2;dashed=1;dashPattern=4 3;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#f59e0b;labelBackgroundColor=#ffffff;fontStyle=1;" edge="1" parent="1" source="role_kalkulasi_c5" target="m_pricelist">
-  <mxGeometry relative="1" as="geometry">
-  </mxGeometry>
-</mxCell><mxCell id="rc5_kal2_p" value="Simulasi Cepat" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f59e0b;strokeWidth=2;dashed=1;dashPattern=4 3;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#f59e0b;labelBackgroundColor=#ffffff;fontStyle=1;" edge="1" parent="1" source="role_kalkulasi2_c5" target="m_pricelist">
-  <mxGeometry relative="1" as="geometry">
-  </mxGeometry>
 </mxCell><mxCell id="bg_col6" value="&lt;b&gt;6. HRD &amp;amp; ADMINISTRASI&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=center;spacingTop=10;fontSize=11;fontStyle=1;strokeWidth=1.5;fillColor=#fdf2f8;strokeColor=#fbcfe8;fontColor=#9d174d;" vertex="1" parent="1">
-  <mxGeometry x="2460" y="90" width="340" height="960" as="geometry" />
+  <mxGeometry x="2340" y="95" width="360" height="880" as="geometry" />
 </mxCell><mxCell id="role_hrd_c6" value="Role: HRD" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;spacing=6;strokeWidth=2;shadow=1;fillColor=#ffe4e6;strokeColor=#f43f5e;fontColor=#9f1239;" vertex="1" parent="1">
-  <mxGeometry x="2480" y="130" width="300" height="42" as="geometry" />
+  <mxGeometry x="2360" y="135" width="320" height="42" as="geometry" />
 </mxCell><mxCell id="m_hrd_emp" value="&lt;b&gt;Master Karyawan (/employees)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Kelola NIP, nama, jabatan, divisi &amp;amp; status aktif seluruh pegawai" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;fillColor=#ffffff;strokeColor=#e11d48;align=left;" vertex="1" parent="1">
-  <mxGeometry x="2480" y="205" width="300" height="80" as="geometry" />
+  <mxGeometry x="2360" y="210" width="320" height="80" as="geometry" />
 </mxCell><mxCell id="m_hrd_records" value="&lt;b&gt;Catat Kesalahan (/records)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Catat insiden kelalaian kerja operator &amp;amp; beban kerugian finansial (tabel &lt;code&gt;infractions&lt;/code&gt;)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;fillColor=#ffffff;strokeColor=#e11d48;align=left;" vertex="1" parent="1">
-  <mxGeometry x="2480" y="315" width="300" height="95" as="geometry" />
+  <mxGeometry x="2360" y="325" width="320" height="95" as="geometry" />
 </mxCell><mxCell id="m_dash_hrd" value="&lt;b&gt;Dashboard HRD (/dashboard-hrd)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Grafik tren bulanan kesalahan kerja &amp;amp; sebaran staf aktif" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;fillColor=#ecfdf5;strokeColor=#059669;align=left;" vertex="1" parent="1">
-  <mxGeometry x="2480" y="440" width="300" height="75" as="geometry" />
+  <mxGeometry x="2360" y="455" width="320" height="75" as="geometry" />
 </mxCell><mxCell id="role_super_c6" value="Role: Super Admin" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;spacing=6;strokeWidth=2;shadow=1;fillColor=#f1f5f9;strokeColor=#475569;fontColor=#1e293b;" vertex="1" parent="1">
-  <mxGeometry x="2480" y="545" width="300" height="42" as="geometry" />
+  <mxGeometry x="2360" y="565" width="320" height="42" as="geometry" />
 </mxCell><mxCell id="m_super_admin_box" value="&lt;b&gt;Modul Otoritas Super Admin:&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;User (/users) &amp;amp; RBAC (/roles):&lt;/b&gt; Kelola akun &amp;amp; izin modul&lt;br/&gt;• &lt;b&gt;Telegram Users:&lt;/b&gt; Approval bot&lt;br/&gt;• &lt;b&gt;Konversi Data:&lt;/b&gt; Migrasi file Excel&lt;br/&gt;• &lt;b&gt;Log Aktivitas (/log-aktivitas):&lt;/b&gt; Audit trail CRUD sistem" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;fillColor=#ffffff;strokeColor=#475569;strokeWidth=2;align=left;" vertex="1" parent="1">
-  <mxGeometry x="2480" y="615" width="300" height="155" as="geometry" />
+  <mxGeometry x="2360" y="640" width="320" height="155" as="geometry" />
 </mxCell><mxCell id="m_dash_umum" value="&lt;b&gt;Dashboard Umum (/dashboard)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Statistik user sistem &amp;amp; 8 log aktivitas terbaru" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;fillColor=#ecfdf5;strokeColor=#059669;align=left;" vertex="1" parent="1">
-  <mxGeometry x="2480" y="800" width="300" height="65" as="geometry" />
+  <mxGeometry x="2360" y="830" width="320" height="65" as="geometry" />
+</mxCell><mxCell id="rc6_hrd_emp" value="Kelola Pegawai" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f43f5e;strokeWidth=2;dashed=1;dashPattern=4 3;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#f43f5e;labelBackgroundColor=#ffffff;fontStyle=1;" edge="1" parent="1" source="role_hrd_c6" target="m_hrd_emp">
+  <mxGeometry relative="1" as="geometry">
+  </mxGeometry>
+</mxCell><mxCell id="ec6_emp_rec" value="Catat Insiden Kelalaian" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#dc2626;strokeWidth=2.5;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#991b1b;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="m_hrd_emp" target="m_hrd_records">
+  <mxGeometry relative="1" as="geometry">
+  </mxGeometry>
 </mxCell><mxCell id="ec6_rec_dash" value="Tren Kesalahan" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#dc2626;strokeWidth=2.5;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#991b1b;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="m_hrd_records" target="m_dash_hrd">
   <mxGeometry relative="1" as="geometry">
   </mxGeometry>
-</mxCell><mxCell id="rc6_hrd_rec" value="Input Insiden" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f43f5e;strokeWidth=2;dashed=1;dashPattern=4 3;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#f43f5e;labelBackgroundColor=#ffffff;fontStyle=1;" edge="1" parent="1" source="role_hrd_c6" target="m_hrd_records">
+</mxCell><mxCell id="rc6_sa_set" value="Otoritas Sistem RBAC" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=2;dashed=1;dashPattern=4 3;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#475569;labelBackgroundColor=#ffffff;fontStyle=1;" edge="1" parent="1" source="role_super_c6" target="m_super_admin_box">
   <mxGeometry relative="1" as="geometry">
   </mxGeometry>
-</mxCell><mxCell id="rc6_sa_set" value="Kelola Sistem" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=2;dashed=1;dashPattern=4 3;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#475569;labelBackgroundColor=#ffffff;fontStyle=1;" edge="1" parent="1" source="role_super_c6" target="m_super_admin_box">
+</mxCell><mxCell id="ec6_set_dash" value="Monitoring Sistem" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0284c7;strokeWidth=2.5;endArrow=classic;endFill=1;fontSize=8.5;fontColor=#0369a1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="m_super_admin_box" target="m_dash_umum">
   <mxGeometry relative="1" as="geometry">
   </mxGeometry>
 </mxCell>
