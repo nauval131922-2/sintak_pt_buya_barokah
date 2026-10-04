@@ -76,3 +76,20 @@ Role di SINTAK BUKAN sekadar daftar nama teks, melainkan aktor yang menggerakkan
 
 5. **Prinsip Anti-Asumsi Berdasarkan Nama Menu**:
    - DILARANG mengasumsikan alur atau sumber data hanya berdasarkan pengelompokan menu di Sidebar/URL. Selalu verifikasi langsung dengan membaca komponen halaman (`page.tsx` / `Client.tsx`) dan skema database sebelum menarik kesimpulan alur.
+
+6. **Pricelist, HPP Kalkulasi, dan Rekap SO adalah Modul Terpisah (Bukan Pipeline Biaya)**:
+   - `Pricelist` (`/pricelist`): Simulator matematis mandiri 20+ produk cetak (disimpan ke `saved_calculations`), TIDAK mengalir ke `hpp_kalkulasi`.
+   - `HPP Kalkulasi` (`/hpp-kalkulasi`): Ditarik otomatis dari nama pesanan SPK Digit (`SELECT DISTINCT nama_prd FROM orders`) dan file Excel HPP konversi, lalu diisi manual nilai HPP per order.
+   - `Rekap Sales Order` (`/rekap-sales-order`): Scraper dan viewer transaksi pesanan penjualan (`sales_orders`) dari Digit. DILARANG menarik panah fiktif antar ketiga modul ini.
+
+7. **Dashboard Produksi Mengonsolidasi 4 Data Sekaligus**:
+   - Menggabungkan: (1) `jurnal_harian_produksi`, (2) `orders` (SPK aktif), (3) `bahan_baku` (BBB Digit), dan (4) `barang_jadi` (Digit).
+
+8. **Dashboard HRD Memantau Dua Sumber Data**:
+   - Menggabungkan: (1) total staf aktif dari tabel `employees` dan (2) grafik tren insiden & beban finansial dari tabel `infractions`.
+
+9. **Catat Kesalahan Terikat Nomor SPK Orders**:
+   - Form `/records` memanggil `fetchProductionOrders` agar setiap insiden kelalaian operator dapat ditautkan ke nomor SPK pesanan yang rusak.
+
+10. **Telegram Users adalah Gerbang Keamanan Chat Bot**:
+    - Operator yang menggunakan Chat Bot Telegram wajib diapprove (`is_active = 1`) di `/settings/telegram-users`. Jika belum, kiriman data realisasi akan ditolak oleh bot.
