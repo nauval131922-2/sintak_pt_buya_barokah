@@ -18,34 +18,34 @@
   <mxGeometry x="60" y="120" width="190" height="95" as="geometry" />
 </mxCell><mxCell id="n_sync" value="&lt;b&gt;Menu: Sinkronisasi (/sync)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;• SINTAK menarik data dari ERP Digit&lt;br/&gt;• Tarik Order SO, Stok, dan Jurnal&lt;br/&gt;• Data masuk ke database lokal SINTAK" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#0284c7;strokeWidth=2;align=left;" vertex="1" parent="1">
   <mxGeometry x="295" y="120" width="220" height="95" as="geometry" />
-</mxCell><mxCell id="n_price" value="&lt;b&gt;Kalkulasi Harga &amp;amp; HPP&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/pricelist &amp;amp; /hpp-kalkulasi&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;Estimator hitung spek cetak &amp;amp; oplah -&gt;&lt;br/&gt;Menghasilkan acuan HPP &amp;amp; harga" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#0284c7;align=left;" vertex="1" parent="1">
+</mxCell><mxCell id="n_price" value="&lt;b&gt;Kalkulasi Harga &amp;amp; HPP&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/pricelist &amp;amp; /hpp-kalkulasi&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Pricelist:&lt;/b&gt; Simulator mandiri 20+ produk cetak&lt;br/&gt;• &lt;b&gt;HPP Kalkulasi:&lt;/b&gt; Nilai HPP order untuk acuan di /records" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#0284c7;align=left;" vertex="1" parent="1">
   <mxGeometry x="295" y="230" width="220" height="85" as="geometry" />
-</mxCell><mxCell id="n_sopd" value="&lt;b&gt;Menu: SOPd (/data/excel-sopd)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Data Masuk:&lt;/b&gt; Tarikan Order dari Digit &amp;amp; Excel&lt;br/&gt;• Cek No SOPd, nama order, oplah, deadline&lt;br/&gt;• Edit cepat 2x klik cell (harga/keterangan)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#d97706;strokeWidth=2;align=left;" vertex="1" parent="1">
-  <mxGeometry x="565" y="120" width="270" height="95" as="geometry" />
+</mxCell><mxCell id="n_sopd" value="&lt;b&gt;Menu: SOPd (/data/excel-sopd)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Data Masuk:&lt;/b&gt; Tarikan Order dari Digit &amp;amp; Excel SOPd&lt;br/&gt;• Cek No SOPd, nama order, oplah, deadline&lt;br/&gt;• Edit cepat 2x klik cell (harga/keterangan)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#d97706;strokeWidth=2;align=left;" vertex="1" parent="1">
+  <mxGeometry x="565" y="120" width="275" height="95" as="geometry" />
 </mxCell><mxCell id="n_sopd_info" value="&lt;b&gt;Daftar Antrean Order:&lt;/b&gt;&lt;br/&gt;No SOPd otomatis menjadi pilihan order kerja saat input penjadwalan di JHP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#d97706;fontSize=9.5;align=left;spacingLeft=8;dashed=1;" vertex="1" parent="1">
-  <mxGeometry x="885" y="135" width="260" height="65" as="geometry" />
+  <mxGeometry x="895" y="135" width="260" height="65" as="geometry" />
 </mxCell><mxCell id="n_master" value="&lt;b&gt;Master Pendukung:&lt;/b&gt;&lt;br/&gt;• &lt;b&gt;Master Pekerjaan:&lt;/b&gt; Kategori &amp;amp; jenis pekerjaan&lt;br/&gt;• &lt;b&gt;Master Karyawan:&lt;/b&gt; Nama operator per bagian" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#b91c1c;align=left;dashed=1;" vertex="1" parent="1">
   <mxGeometry x="195" y="375" width="240" height="75" as="geometry" />
-</mxCell><mxCell id="n_jhp" value="&lt;b&gt;Menu: Jurnal Harian Produksi (JHP)&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/jurnal-harian-produksi&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;1. Penjadwalan:&lt;/b&gt; Tambah / Copy Jadwal -&gt; Pilih Bagian, Shift (1/2/3), Operator, No SOPd, Target&lt;br/&gt;• &lt;b&gt;2. Input Realisasi:&lt;/b&gt; Jam Mulai/Selesai &amp;amp; Lembar Berhasil&lt;br/&gt;• &lt;b&gt;3. Catat Rijek:&lt;/b&gt; Operator input lembar rusak afdruk" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#dc2626;strokeWidth=2;align=left;" vertex="1" parent="1">
-  <mxGeometry x="515" y="365" width="320" height="135" as="geometry" />
+</mxCell><mxCell id="n_jhp" value="&lt;b&gt;Menu: Jurnal Harian Produksi (JHP)&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/jurnal-harian-produksi&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;1. Penjadwalan:&lt;/b&gt; Tambah / Copy Jadwal -&gt; Pilih Bagian, Shift (1/2/3), Operator, No SOPd, Target&lt;br/&gt;• &lt;b&gt;2. Input Realisasi:&lt;/b&gt; Jam Mulai/Selesai &amp;amp; Lembar Berhasil&lt;br/&gt;• &lt;b&gt;3. Catat Rijek:&lt;/b&gt; Operator input lembar afdruk" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#dc2626;strokeWidth=2;align=left;" vertex="1" parent="1">
+  <mxGeometry x="515" y="365" width="325" height="135" as="geometry" />
 </mxCell><mxCell id="n_telegram" value="&lt;b&gt;Input Realisasi via Bot Telegram&lt;/b&gt;&lt;br/&gt;&lt;code&gt;telegram-bot&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;Operator yang diapprove dapat langsung input Realisasi JHP via chat Bot Telegram" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#e0f2fe;strokeColor=#0284c7;strokeWidth=1.5;align=left;" vertex="1" parent="1">
   <mxGeometry x="195" y="470" width="240" height="70" as="geometry" />
 </mxCell><mxCell id="n_target" value="&lt;b&gt;Menu: Target Harian (/target)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Rekap pemenuhan target shift hari ini" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#db2777;align=left;" vertex="1" parent="1">
-  <mxGeometry x="880" y="360" width="210" height="52" as="geometry" />
+  <mxGeometry x="885" y="360" width="210" height="52" as="geometry" />
 </mxCell><mxCell id="n_analisa" value="&lt;b&gt;Menu: Analisa Produksi (/analisa)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Cari per No Order: rekap entri JHP, durasi &amp;amp; kendala" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#db2777;align=left;" vertex="1" parent="1">
-  <mxGeometry x="880" y="425" width="210" height="52" as="geometry" />
+  <mxGeometry x="885" y="425" width="210" height="52" as="geometry" />
 </mxCell><mxCell id="n_dash_manufaktur" value="&lt;b&gt;Dashboard Produksi&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/dashboard-manufaktur&lt;/code&gt;&lt;br/&gt;Order Produksi, Target vs Realisasi, Tren BBB" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#d1fae5;strokeColor=#059669;align=center;" vertex="1" parent="1">
   <mxGeometry x="1140" y="420" width="195" height="60" as="geometry" />
 </mxCell><mxCell id="n_records" value="&lt;b&gt;Catat Kesalahan Karyawan&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/records&lt;/code&gt; [HRD]&lt;br/&gt;&lt;hr/&gt;Pencatatan insiden kelalaian &amp;amp; rincian beban kerugian" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffe4e6;strokeColor=#e11d48;strokeWidth=1.5;align=left;" vertex="1" parent="1">
-  <mxGeometry x="880" y="490" width="210" height="60" as="geometry" />
+  <mxGeometry x="885" y="490" width="210" height="60" as="geometry" />
 </mxCell><mxCell id="n_dash_hrd" value="&lt;b&gt;Dashboard HRD&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/dashboard-hrd&lt;/code&gt;&lt;br/&gt;Statistik Karyawan &amp;amp; Grafik Tren Kesalahan" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#d1fae5;strokeColor=#059669;align=center;" vertex="1" parent="1">
   <mxGeometry x="1140" y="490" width="195" height="60" as="geometry" />
 </mxCell><mxCell id="n_hasil" value="&lt;b&gt;Menu: Hasil Produksi (/hasil-produksi)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Tab Jurnal: Total target, realisasi &amp;amp; rijek per pekerjaan&lt;br/&gt;Tab Barang Jadi: Stok produk selesai dari Digit" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#dc2626;align=left;" vertex="1" parent="1">
-  <mxGeometry x="515" y="540" width="320" height="65" as="geometry" />
+  <mxGeometry x="515" y="540" width="325" height="65" as="geometry" />
 </mxCell><mxCell id="n_gudang" value="&lt;b&gt;Gudang Barang Jadi (/barang-jadi)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Penerimaan barang hasil produksi (tarikan Digit)&lt;br/&gt;Serah terima fisik &amp;amp; stok siap kirim" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#7c3aed;strokeWidth=2;align=left;" vertex="1" parent="1">
   <mxGeometry x="535" y="675" width="280" height="80" as="geometry" />
 </mxCell><mxCell id="n_track" value="&lt;b&gt;Menu: Tracking Manufaktur (/tracking-manufaktur)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Lacak data manufaktur dari BOM, Order Produksi,&lt;br/&gt;BBB, Barang Jadi hingga Pengiriman &amp;amp; Piutang" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#7c3aed;align=left;" vertex="1" parent="1">
-  <mxGeometry x="880" y="675" width="270" height="80" as="geometry" />
+  <mxGeometry x="885" y="675" width="270" height="80" as="geometry" />
 </mxCell><mxCell id="n_ship" value="&lt;b&gt;Menu: Pengiriman (/pengiriman)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Data Surat Jalan (SJ) pengiriman barang ke customer&lt;br/&gt;(Ditarik dari ERP Digit)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#7c3aed;align=left;" vertex="1" parent="1">
   <mxGeometry x="170" y="675" width="250" height="80" as="geometry" />
 </mxCell><mxCell id="n_sales" value="&lt;b&gt;Penjualan &amp;amp; Pelunasan Piutang&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/sales &amp;amp; /pelunasan-piutang&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;Laporan faktur penjualan &amp;amp; pelunasan piutang customer&lt;br/&gt;(Ditarik dari ERP Digit)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#059669;align=left;" vertex="1" parent="1">
@@ -64,13 +64,16 @@
   <mxGeometry relative="1" as="geometry">
     <mxPoint x="0" y="-12" as="offset" />
   </mxGeometry>
-</mxCell><mxCell id="e3" value="Acuan HPP" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0284c7;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9.5;fontColor=#0369a1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_price" target="n_sopd">
+</mxCell><mxCell id="e3" value="Acuan Nilai HPP Order" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0284c7;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9.5;fontColor=#0369a1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_price" target="n_records">
   <mxGeometry relative="1" as="geometry">
-    <mxPoint x="0" y="-10" as="offset" />
+    <mxPoint x="0" y="-12" as="offset" />
     <Array as="points">
-      <mxPoint x="515" y="272" />
-      <mxPoint x="650" y="272" />
-      <mxPoint x="650" y="215" />
+      <mxPoint x="405" y="320" />
+      <mxPoint x="405" y="340" />
+      <mxPoint x="170" y="340" />
+      <mxPoint x="170" y="560" />
+      <mxPoint x="860" y="560" />
+      <mxPoint x="860" y="520" />
     </Array>
   </mxGeometry>
 </mxCell><mxCell id="e4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d97706;strokeWidth=1.5;dashed=1;endArrow=none;" edge="1" parent="1" source="n_sopd" target="n_sopd_info">
@@ -92,23 +95,30 @@
   <mxGeometry relative="1" as="geometry">
     <mxPoint x="0" y="-10" as="offset" />
     <Array as="points">
-      <mxPoint x="835" y="395" />
-      <mxPoint x="855" y="395" />
-      <mxPoint x="855" y="386" />
+      <mxPoint x="840" y="395" />
+      <mxPoint x="860" y="395" />
+      <mxPoint x="860" y="386" />
     </Array>
   </mxGeometry>
 </mxCell><mxCell id="e9" value="Data Pengerjaan" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#dc2626;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9.5;fontColor=#991b1b;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_jhp" target="n_analisa">
   <mxGeometry relative="1" as="geometry">
     <mxPoint x="0" y="-10" as="offset" />
     <Array as="points">
-      <mxPoint x="835" y="435" />
-      <mxPoint x="855" y="435" />
-      <mxPoint x="855" y="451" />
+      <mxPoint x="840" y="435" />
+      <mxPoint x="860" y="435" />
+      <mxPoint x="860" y="451" />
     </Array>
   </mxGeometry>
-</mxCell><mxCell id="e10" value="Tren Produksi" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#059669;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9.5;fontColor=#065f46;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_analisa" target="n_dash_manufaktur">
+</mxCell><mxCell id="e10" value="Data Jurnal" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#059669;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9.5;fontColor=#065f46;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_jhp" target="n_dash_manufaktur">
   <mxGeometry relative="1" as="geometry">
     <mxPoint x="0" y="-12" as="offset" />
+    <Array as="points">
+      <mxPoint x="840" y="410" />
+      <mxPoint x="860" y="410" />
+      <mxPoint x="860" y="340" />
+      <mxPoint x="1235" y="340" />
+      <mxPoint x="1235" y="420" />
+    </Array>
   </mxGeometry>
 </mxCell><mxCell id="e11" value="Data Kesalahan" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#dc2626;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9.5;fontColor=#991b1b;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_records" target="n_dash_hrd">
   <mxGeometry relative="1" as="geometry">
