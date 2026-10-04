@@ -1,0 +1,588 @@
+[
+  {
+    "id": "dashboard_umum",
+    "kategori": "Dashboard",
+    "sub_kategori": "Monitoring",
+    "label": "Dashboard Umum",
+    "path": "/dashboard",
+    "permission_key": "dashboard",
+    "deskripsi": "Statistik global aktivitas pengguna, total pengguna aktif, dan 8 log aktivitas terbaru sistem.",
+    "sumber_data": [
+      "users",
+      "activity_logs"
+    ]
+  },
+  {
+    "id": "dashboard_hrd",
+    "kategori": "Dashboard",
+    "sub_kategori": "Monitoring",
+    "label": "Dashboard HRD",
+    "path": "/dashboard-hrd",
+    "permission_key": "hrd_dashboard",
+    "deskripsi": "Grafik tren bulanan kesalahan kerja operator, sebaran karyawan aktif, dan statistik HRD.",
+    "sumber_data": [
+      "employees",
+      "infractions"
+    ]
+  },
+  {
+    "id": "dashboard_produksi",
+    "kategori": "Dashboard",
+    "sub_kategori": "Monitoring",
+    "label": "Dashboard Produksi",
+    "path": "/dashboard-manufaktur",
+    "permission_key": "produksi_dashboard",
+    "deskripsi": "Monitoring pesanan aktif manufaktur, tren pengeluaran bahan baku (BBB), dan rasio target vs realisasi.",
+    "sumber_data": [
+      "orders",
+      "jurnal_harian_produksi",
+      "produksi_bahan_baku"
+    ]
+  },
+  {
+    "id": "dashboard_akuntansi",
+    "kategori": "Dashboard",
+    "sub_kategori": "Monitoring",
+    "label": "Dashboard Akuntansi",
+    "path": "/dashboard-akunting",
+    "permission_key": "akt_dashboard",
+    "deskripsi": "Grafik tren pergerakan Debet vs Kredit dari jurnal umum serta indikator stok barang jadi.",
+    "sumber_data": [
+      "jurnal_umum",
+      "produksi_barang_jadi"
+    ]
+  },
+  {
+    "id": "sync_all_data",
+    "kategori": "Data Digit",
+    "sub_kategori": "Sinkronisasi",
+    "label": "Sinkronisasi All Data",
+    "path": "/sync",
+    "permission_key": "sync",
+    "deskripsi": "Menjalankan scraper untuk menarik seluruh transaksi dan master data dari sistem eksternal Digit ke SQLite.",
+    "sumber_data": [
+      "API Scraper DIGIT",
+      "Semua Tabel Digit"
+    ]
+  },
+  {
+    "id": "stok_master_barang",
+    "kategori": "Data Digit",
+    "sub_kategori": "Stok",
+    "label": "Master Barang",
+    "path": "/data-digit/stok/master-barang",
+    "permission_key": "stok_master_barang",
+    "deskripsi": "Daftar inventori barang, barcode, saldo awal, mutasi masuk/keluar, saldo akhir, dan harga jual.",
+    "sumber_data": [
+      "stok_master_barang"
+    ]
+  },
+  {
+    "id": "pembelian_pr",
+    "kategori": "Data Digit",
+    "sub_kategori": "Pembelian",
+    "label": "Purchase Request (PR)",
+    "path": "/pr",
+    "permission_key": "pembelian_pr",
+    "deskripsi": "Daftar pengajuan pembelian barang / kebutuhan operasional yang ditarik dari Digit.",
+    "sumber_data": [
+      "pembelian_pr"
+    ]
+  },
+  {
+    "id": "pembelian_spph_out",
+    "kategori": "Data Digit",
+    "sub_kategori": "Pembelian",
+    "label": "SPPH Keluar",
+    "path": "/spph-out",
+    "permission_key": "pembelian_spph",
+    "deskripsi": "Surat Permintaan Penawaran Harga keluar ke vendor/supplier.",
+    "sumber_data": [
+      "pembelian_spph_out"
+    ]
+  },
+  {
+    "id": "pembelian_sph_in",
+    "kategori": "Data Digit",
+    "sub_kategori": "Pembelian",
+    "label": "SPH Masuk",
+    "path": "/sph-in",
+    "permission_key": "pembelian_sph_in",
+    "deskripsi": "Surat Penawaran Harga masuk dari vendor/supplier penyuplai bahan.",
+    "sumber_data": [
+      "pembelian_sph_in"
+    ]
+  },
+  {
+    "id": "pembelian_po",
+    "kategori": "Data Digit",
+    "sub_kategori": "Pembelian",
+    "label": "Purchase Order (PO)",
+    "path": "/purchase-orders",
+    "permission_key": "pembelian_po",
+    "deskripsi": "Surat pesanan resmi pembelian bahan ke supplier.",
+    "sumber_data": [
+      "purchase_orders"
+    ]
+  },
+  {
+    "id": "pembelian_penerimaan",
+    "kategori": "Data Digit",
+    "sub_kategori": "Pembelian",
+    "label": "Penerimaan Barang",
+    "path": "/penerimaan-pembelian",
+    "permission_key": "pembelian_penerimaan",
+    "deskripsi": "Verifikasi dan pencatatan fisik barang masuk dari vendor di gudang.",
+    "sumber_data": [
+      "pembelian_penerimaan"
+    ]
+  },
+  {
+    "id": "pembelian_rekap",
+    "kategori": "Data Digit",
+    "sub_kategori": "Pembelian",
+    "label": "Laporan Rekap Pembelian Barang",
+    "path": "/rekap-pembelian-barang",
+    "permission_key": "pembelian_rekap",
+    "deskripsi": "Rekapitulasi total tagihan, harga beli, dan kuantitas barang belanja perusahaan.",
+    "sumber_data": [
+      "pembelian_rekap"
+    ]
+  },
+  {
+    "id": "pembelian_hutang",
+    "kategori": "Data Digit",
+    "sub_kategori": "Pembelian",
+    "label": "Pelunasan Hutang",
+    "path": "/pelunasan-hutang",
+    "permission_key": "pembelian_hutang",
+    "deskripsi": "Riwayat pelunasan hutang dagang kepada supplier vendor.",
+    "sumber_data": [
+      "pelunasan_hutang"
+    ]
+  },
+  {
+    "id": "produksi_bom",
+    "kategori": "Data Digit",
+    "sub_kategori": "Produksi",
+    "label": "Bill of Material Produksi (BOM)",
+    "path": "/bom",
+    "permission_key": "produksi_bom",
+    "deskripsi": "Formula rincian bahan baku dan komponen cetak per Surat Perintah Kerja (SPK).",
+    "sumber_data": [
+      "produksi_bom"
+    ]
+  },
+  {
+    "id": "produksi_orders",
+    "kategori": "Data Digit",
+    "sub_kategori": "Produksi",
+    "label": "Order Produksi (SPK)",
+    "path": "/orders",
+    "permission_key": "produksi_orders",
+    "deskripsi": "Daftar antrean SPK order cetak yang masuk dari Digit.",
+    "sumber_data": [
+      "orders"
+    ]
+  },
+  {
+    "id": "produksi_selesai",
+    "kategori": "Data Digit",
+    "sub_kategori": "Produksi",
+    "label": "Produksi Selesai",
+    "path": "/data-digit/produksi/produksi-selesai",
+    "permission_key": "produksi_selesai",
+    "deskripsi": "Daftar faktur SPK yang telah selesai seluruh proses pengerjaannya di Digit.",
+    "sumber_data": [
+      "produksi_selesai"
+    ]
+  },
+  {
+    "id": "produksi_bahan_baku",
+    "kategori": "Data Digit",
+    "sub_kategori": "Produksi",
+    "label": "BBB Produksi (Biaya Bahan Baku)",
+    "path": "/bahan-baku",
+    "permission_key": "produksi_bahan_baku",
+    "deskripsi": "Laporan pengeluaran dan pemakaian bahan baku riil untuk order cetak.",
+    "sumber_data": [
+      "produksi_bahan_baku"
+    ]
+  },
+  {
+    "id": "produksi_barang_jadi",
+    "kategori": "Data Digit",
+    "sub_kategori": "Produksi",
+    "label": "Penerimaan Barang Hasil Produksi",
+    "path": "/barang-jadi",
+    "permission_key": "produksi_barang_jadi",
+    "deskripsi": "Laporan penyerahan barang yang telah selesai dicetak/dijilid ke bagian gudang/pengiriman.",
+    "sumber_data": [
+      "produksi_barang_jadi"
+    ]
+  },
+  {
+    "id": "penjualan_sph_out",
+    "kategori": "Data Digit",
+    "sub_kategori": "Penjualan",
+    "label": "SPH Keluar",
+    "path": "/sph-out",
+    "permission_key": "penjualan_sph_out",
+    "deskripsi": "Surat Penawaran Harga cetak yang diterbitkan untuk calon klien/pemesan.",
+    "sumber_data": [
+      "penjualan_sph_out"
+    ]
+  },
+  {
+    "id": "penjualan_sales_orders",
+    "kategori": "Data Digit",
+    "sub_kategori": "Penjualan",
+    "label": "Sales Order Barang",
+    "path": "/sales-orders",
+    "permission_key": "penjualan_so",
+    "deskripsi": "Daftar pesanan penjualan resmi dari konsumen yang masuk ke Digit.",
+    "sumber_data": [
+      "sales_orders"
+    ]
+  },
+  {
+    "id": "penjualan_laporan",
+    "kategori": "Data Digit",
+    "sub_kategori": "Penjualan",
+    "label": "Laporan Penjualan",
+    "path": "/sales",
+    "permission_key": "penjualan_laporan",
+    "deskripsi": "Laporan omzet, faktur penjualan, dan performa transaksi penjualan barang cetakan.",
+    "sumber_data": [
+      "sales"
+    ]
+  },
+  {
+    "id": "penjualan_pelunasan_piutang",
+    "kategori": "Data Digit",
+    "sub_kategori": "Penjualan",
+    "label": "Pelunasan Piutang Penjualan",
+    "path": "/pelunasan-piutang",
+    "permission_key": "penjualan_piutang",
+    "deskripsi": "Pencatatan pembayaran dan pelunasan tagihan dari pelanggan.",
+    "sumber_data": [
+      "pelunasan_piutang"
+    ]
+  },
+  {
+    "id": "penjualan_pengiriman",
+    "kategori": "Data Digit",
+    "sub_kategori": "Penjualan",
+    "label": "Pengiriman (Surat Jalan)",
+    "path": "/pengiriman",
+    "permission_key": "penjualan_pengiriman",
+    "deskripsi": "Laporan ekspedisi dan pengiriman barang jadi ke alamat pemesan.",
+    "sumber_data": [
+      "pengiriman"
+    ]
+  },
+  {
+    "id": "akuntansi_rek_akuntansi",
+    "kategori": "Data Digit",
+    "sub_kategori": "Akuntansi",
+    "label": "Rek Akuntansi (Bagan Akun / COA)",
+    "path": "/akuntansi/data/rek-akuntansi",
+    "permission_key": "akt_rek_akuntansi",
+    "deskripsi": "Master Chart of Accounts (COA) nomor rekening pembukuan perusahaan.",
+    "sumber_data": [
+      "rek_akuntansi"
+    ]
+  },
+  {
+    "id": "akuntansi_jurnal_umum",
+    "kategori": "Data Digit",
+    "sub_kategori": "Akuntansi",
+    "label": "Jurnal Umum",
+    "path": "/akuntansi/laporan/jurnal-umum",
+    "permission_key": "akt_jurnal_umum",
+    "deskripsi": "Buku jurnal transaksi akuntansi Debet/Kredit serta fitur tombol Analisis Jurnal.",
+    "sumber_data": [
+      "jurnal_umum"
+    ]
+  },
+  {
+    "id": "digit_log_aktivitas_user",
+    "kategori": "Data Digit",
+    "sub_kategori": "Sistem",
+    "label": "Log Aktivitas User Digit",
+    "path": "/data-digit/sistem/log-aktivitas-user",
+    "permission_key": "usr_log_view",
+    "deskripsi": "Audit rekam jejak pengguna pada sistem ERP eksternal Digit.",
+    "sumber_data": [
+      "usr_log"
+    ]
+  },
+  {
+    "id": "sistem_tracking_manufaktur",
+    "kategori": "Sistem",
+    "sub_kategori": "Umum",
+    "label": "Tracking Manufaktur",
+    "path": "/tracking-manufaktur",
+    "permission_key": "tracking_manufaktur",
+    "deskripsi": "Melacak status siklus hidup dokumen manufaktur: SO -> SPK -> BOM -> PR/PO -> Penerimaan -> BBB -> Hasil -> Kirim -> Lunas.",
+    "sumber_data": [
+      "orders",
+      "sales_orders",
+      "produksi_bom",
+      "purchase_orders",
+      "pengiriman",
+      "pelunasan_piutang"
+    ]
+  },
+  {
+    "id": "sistem_log_aktivitas",
+    "kategori": "Sistem",
+    "sub_kategori": "Umum",
+    "label": "Log Aktivitas",
+    "path": "/log-aktivitas",
+    "permission_key": "activity_log_view",
+    "deskripsi": "Audit trail internal SINTAK untuk melihat aksi CREATE, UPDATE, DELETE yang dilakukan tiap pengguna.",
+    "sumber_data": [
+      "activity_logs"
+    ]
+  },
+  {
+    "id": "hrd_karyawan",
+    "kategori": "Sistem",
+    "sub_kategori": "HRD",
+    "label": "Karyawan",
+    "path": "/employees",
+    "permission_key": "karyawan",
+    "deskripsi": "Master data staf & operator percetakan (NIP, Nama, Jabatan, Divisi, Status Aktif).",
+    "sumber_data": [
+      "employees"
+    ]
+  },
+  {
+    "id": "hrd_catat_kesalahan",
+    "kategori": "Sistem",
+    "sub_kategori": "HRD",
+    "label": "Catat Kesalahan Karyawan",
+    "path": "/records",
+    "permission_key": "catat_kesalahan",
+    "deskripsi": "Pencatatan insiden kelalaian kerja operator dan pembebanan ganti rugi finansial.",
+    "sumber_data": [
+      "infractions",
+      "employees"
+    ]
+  },
+  {
+    "id": "kalkulasi_hpp",
+    "kategori": "Sistem",
+    "sub_kategori": "Kalkulasi",
+    "label": "HPP Kalkulasi",
+    "path": "/hpp-kalkulasi",
+    "permission_key": "kalkulasi_hpp",
+    "deskripsi": "Penetapan dan perhitungan Harga Pokok Penjualan (HPP) per produk cetak.",
+    "sumber_data": [
+      "hpp_kalkulasi"
+    ]
+  },
+  {
+    "id": "kalkulasi_pricelist",
+    "kategori": "Sistem",
+    "sub_kategori": "Kalkulasi",
+    "label": "Kalkulasi Harga (Pricelist)",
+    "path": "/pricelist",
+    "permission_key": "pricelist_kalkulasi",
+    "deskripsi": "Simulator biaya percetakan interaktif untuk 20+ produk (Buku, Kemasan, Brosur, Stopmap, Undangan, dll).",
+    "sumber_data": [
+      "global_master_parameters",
+      "saved_calculations"
+    ]
+  },
+  {
+    "id": "produksi_sopd",
+    "kategori": "Sistem",
+    "sub_kategori": "Produksi",
+    "label": "SOPd",
+    "path": "/jurnal-harian-produksi/data/excel-sopd",
+    "permission_key": "produksi_jhp_sopd",
+    "deskripsi": "Monitoring antrean SPK / SOPd (No SOPd, Nama Order, Oplah, Deadline, Harga) serta edit cepat cell.",
+    "sumber_data": [
+      "sopd",
+      "orders"
+    ]
+  },
+  {
+    "id": "produksi_master_pekerjaan",
+    "kategori": "Sistem",
+    "sub_kategori": "Produksi",
+    "label": "Master Pekerjaan",
+    "path": "/jurnal-harian-produksi/data/master-pekerjaan",
+    "permission_key": "produksi_jhp_master_pekerjaan",
+    "deskripsi": "Master target pengerjaan lembar kerja (standar target, target harian, target jam).",
+    "sumber_data": [
+      "master_pekerjaan"
+    ]
+  },
+  {
+    "id": "produksi_master_pekerjaan_jurnal",
+    "kategori": "Sistem",
+    "sub_kategori": "Produksi",
+    "label": "Master Pekerjaan Jurnal Produksi",
+    "path": "/jurnal-harian-produksi/data/master-pekerjaan-jurnal-produksi",
+    "permission_key": "produksi_jhp_master_pekerjaan_jurnal_produksi",
+    "deskripsi": "Pemetaan jenis pekerjaan per divisi operasional percetakan.",
+    "sumber_data": [
+      "master_pekerjaan"
+    ]
+  },
+  {
+    "id": "produksi_jhp",
+    "kategori": "Sistem",
+    "sub_kategori": "Produksi",
+    "label": "Jurnal Harian Produksi",
+    "path": "/jurnal-harian-produksi",
+    "permission_key": "produksi_jhp",
+    "deskripsi": "Inti operasional: input penjadwalan target shift, realisasi jam kerja, lembar cetak sukses, dan rijek afdruk/jalan.",
+    "sumber_data": [
+      "jurnal_harian_produksi",
+      "sopd",
+      "employees"
+    ]
+  },
+  {
+    "id": "produksi_target_harian",
+    "kategori": "Sistem",
+    "sub_kategori": "Produksi",
+    "label": "Target Harian",
+    "path": "/jurnal-harian-produksi/target",
+    "permission_key": "produksi_jhp_target",
+    "deskripsi": "Rekapitulasi pencapaian target shift produksi hari ini per bagian dan nama operator.",
+    "sumber_data": [
+      "jurnal_harian_produksi"
+    ]
+  },
+  {
+    "id": "produksi_analisa",
+    "kategori": "Sistem",
+    "sub_kategori": "Produksi",
+    "label": "Analisa Produksi",
+    "path": "/jurnal-harian-produksi/analisa",
+    "permission_key": "produksi_jhp_analisa",
+    "deskripsi": "Pencarian riwayat pengerjaan berdasarkan Nomor Order untuk melihat durasi proses dan kendala teknis.",
+    "sumber_data": [
+      "jurnal_harian_produksi"
+    ]
+  },
+  {
+    "id": "produksi_hasil_rekap",
+    "kategori": "Sistem",
+    "sub_kategori": "Produksi",
+    "label": "Hasil Produksi",
+    "path": "/hasil-produksi",
+    "permission_key": "produksi_hasil",
+    "deskripsi": "Rekapitulasi akumulasi lembar cetak, target vs realisasi, rijek, dan barang jadi.",
+    "sumber_data": [
+      "jurnal_harian_produksi",
+      "produksi_barang_jadi"
+    ]
+  },
+  {
+    "id": "produksi_laporan_pekerjaan",
+    "kategori": "Sistem",
+    "sub_kategori": "Produksi",
+    "label": "Laporan Pekerjaan",
+    "path": "/laporan-pekerjaan",
+    "permission_key": "produksi_laporan_pekerjaan",
+    "deskripsi": "Pelaporan kerja harian divisi Setting, Cetak, Finishing, dan Quality Control.",
+    "sumber_data": [
+      "laporan_pekerjaan",
+      "role_laporan_pekerjaan_config"
+    ]
+  },
+  {
+    "id": "penjualan_rekap_so",
+    "kategori": "Sistem",
+    "sub_kategori": "Penjualan",
+    "label": "Rekap Sales Order Barang",
+    "path": "/rekap-sales-order",
+    "permission_key": "kalkulasi_rekap_so",
+    "deskripsi": "Analisis rincian item Sales Order dari Digit untuk perbandingan harga jual terhadap biaya pokok HPP.",
+    "sumber_data": [
+      "sales_orders"
+    ]
+  },
+  {
+    "id": "telegram_users",
+    "kategori": "Sistem",
+    "sub_kategori": "Telegram",
+    "label": "Telegram Users",
+    "path": "/settings/telegram-users",
+    "permission_key": "telegram_users",
+    "deskripsi": "Manajemen otorisasi dan persetujuan (Approve/Reject) operator yang menggunakan Chat Bot Telegram.",
+    "sumber_data": [
+      "telegram_users"
+    ]
+  },
+  {
+    "id": "admin_roles",
+    "kategori": "Sistem",
+    "sub_kategori": "User & Otoritas",
+    "label": "Hak Akses",
+    "path": "/roles",
+    "permission_key": "super_admin_only",
+    "deskripsi": "Matriks hak akses RBAC (Role-Based Access Control) untuk 16 role terhadap seluruh modul sistem.",
+    "sumber_data": [
+      "app_roles",
+      "role_permissions",
+      "role_laporan_pekerjaan_config"
+    ]
+  },
+  {
+    "id": "admin_users",
+    "kategori": "Sistem",
+    "sub_kategori": "User & Otoritas",
+    "label": "Kelola User",
+    "path": "/users",
+    "permission_key": "super_admin_only",
+    "deskripsi": "Manajemen akun pengguna sistem SINTAK (tambah akun, password bcrypt, penugasan role, tautan employee_id).",
+    "sumber_data": [
+      "users",
+      "employees"
+    ]
+  },
+  {
+    "id": "konversi_hpp",
+    "kategori": "Sistem",
+    "sub_kategori": "Pengaturan (Konversi Data)",
+    "label": "Konversi Data HPP Kalkulasi",
+    "path": "/settings/konversi-data/kalkulasi/hpp-kalkulasi",
+    "permission_key": "settings_konversi_data_hpp",
+    "deskripsi": "Upload file Excel HPP Kalkulasi lama/warisan untuk migrasi data ke sistem.",
+    "sumber_data": [
+      "hpp_kalkulasi"
+    ]
+  },
+  {
+    "id": "konversi_jhp",
+    "kategori": "Sistem",
+    "sub_kategori": "Pengaturan (Konversi Data)",
+    "label": "Konversi Data SOPd & Jurnal Harian",
+    "path": "/settings/konversi-data/jurnal-harian-produksi",
+    "permission_key": "settings_konversi_data",
+    "deskripsi": "Upload file Excel SOPd dan arsip Jurnal Harian Produksi ke database.",
+    "sumber_data": [
+      "sopd",
+      "jurnal_harian_produksi"
+    ]
+  },
+  {
+    "id": "konversi_laporan_pekerjaan",
+    "kategori": "Sistem",
+    "sub_kategori": "Pengaturan (Konversi Data)",
+    "label": "Konversi Data Laporan Pekerjaan",
+    "path": "/settings/konversi-data/laporan-pekerjaan",
+    "permission_key": "settings_konversi_data",
+    "deskripsi": "Upload file Excel Laporan Pekerjaan teknis ke database.",
+    "sumber_data": [
+      "laporan_pekerjaan"
+    ]
+  }
+]
