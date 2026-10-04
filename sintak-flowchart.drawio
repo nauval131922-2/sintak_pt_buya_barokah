@@ -95,18 +95,23 @@
   </mxGeometry>
 </mxCell><mxCell id="bg_col4" value="&lt;b&gt;4. SDM (HRD) &amp;amp; TATA KELOLA SISTEM&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=center;spacingTop=12;fontSize=11.5;fontStyle=1;strokeWidth=1.5;fillColor=#fdf2f8;strokeColor=#fbcfe8;fontColor=#9d174d;" vertex="1" parent="1">
   <mxGeometry x="1640" y="95" width="500" height="920" as="geometry" />
+</mxCell><mxCell id="b_excel_karyawan" value="&lt;b&gt;Upload Excel Karyawan&lt;/b&gt; (&lt;code&gt;/employees&lt;/code&gt;)&lt;br/&gt;Upload file Excel daftar pegawai (NIP, Nama, Jabatan, Divisi)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;align=left;fillColor=#ffffff;strokeColor=#e11d48;dashed=1;fontSize=8.5;align=center;" vertex="1" parent="1">
+  <mxGeometry x="1670" y="130" width="440" height="50" as="geometry" />
 </mxCell><mxCell id="b_employees" value="&lt;b&gt;Master Karyawan (/employees)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Kelola NIP, nama, jabatan, divisi operasional &amp;amp; status aktif seluruh pegawai percetakan." style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;align=left;fillColor=#ffffff;strokeColor=#e11d48;strokeWidth=1.5;" vertex="1" parent="1">
-  <mxGeometry x="1670" y="135" width="440" height="80" as="geometry" />
+  <mxGeometry x="1670" y="225" width="440" height="75" as="geometry" />
 </mxCell><mxCell id="b_records" value="&lt;b&gt;Catat Kesalahan Karyawan (/records)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Pencatatan insiden kelalaian kerja operator dan pembebanan ganti rugi finansial (tabel &lt;code&gt;infractions&lt;/code&gt;)." style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;align=left;fillColor=#ffffff;strokeColor=#e11d48;strokeWidth=2;" vertex="1" parent="1">
-  <mxGeometry x="1670" y="265" width="440" height="85" as="geometry" />
+  <mxGeometry x="1670" y="345" width="440" height="80" as="geometry" />
 </mxCell><mxCell id="b_dash_hrd" value="&lt;b&gt;Dashboard HRD (/dashboard-hrd)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Grafik tren bulanan kesalahan kerja operator &amp;amp; sebaran karyawan aktif per divisi" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;align=left;fillColor=#ecfdf5;strokeColor=#059669;strokeWidth=2;" vertex="1" parent="1">
-  <mxGeometry x="1670" y="400" width="440" height="75" as="geometry" />
+  <mxGeometry x="1670" y="470" width="440" height="65" as="geometry" />
 </mxCell><mxCell id="b_admin_rbac" value="&lt;b&gt;Manajemen User &amp;amp; Otoritas (RBAC):&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Kelola User (/users):&lt;/b&gt; Akun login, password hash bcrypt, status aktif&lt;br/&gt;• &lt;b&gt;Hak Akses (/roles):&lt;/b&gt; Matriks izin modul untuk 16 role&lt;br/&gt;• &lt;b&gt;Telegram Users:&lt;/b&gt; Approval bot operator" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;align=left;fillColor=#ffffff;strokeColor=#475569;strokeWidth=2;" vertex="1" parent="1">
-  <mxGeometry x="1670" y="535" width="440" height="115" as="geometry" />
+  <mxGeometry x="1670" y="575" width="440" height="115" as="geometry" />
 </mxCell><mxCell id="b_activity_log" value="&lt;b&gt;Log Aktivitas (/log-aktivitas)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Audit trail internal SINTAK untuk merekam aksi CREATE, UPDATE, DELETE seluruh user." style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;align=left;fillColor=#ffffff;strokeColor=#475569;strokeWidth=1.5;" vertex="1" parent="1">
-  <mxGeometry x="1670" y="700" width="440" height="75" as="geometry" />
+  <mxGeometry x="1670" y="730" width="440" height="70" as="geometry" />
 </mxCell><mxCell id="b_dash_umum" value="&lt;b&gt;Dashboard Umum (/dashboard)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Statistik global pengguna sistem &amp;amp; rekap 8 log aktivitas terbaru" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9.5;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;spacingTop=8;spacingBottom=8;align=left;fillColor=#ecfdf5;strokeColor=#059669;strokeWidth=2;" vertex="1" parent="1">
-  <mxGeometry x="1670" y="825" width="440" height="65" as="geometry" />
+  <mxGeometry x="1670" y="840" width="440" height="60" as="geometry" />
+</mxCell><mxCell id="e_ex_emp" value="Impor File Excel" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e11d48;strokeWidth=2;endArrow=classic;endFill=1;fontSize=8.5;fontStyle=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontColor=#be123c;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="b_excel_karyawan" target="b_employees">
+  <mxGeometry relative="1" as="geometry">
+  </mxGeometry>
 </mxCell><mxCell id="e_emp_rec" value="Tautkan Pegawai" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e11d48;strokeWidth=2;endArrow=classic;endFill=1;fontSize=8.5;fontStyle=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontColor=#be123c;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="b_employees" target="b_records">
   <mxGeometry relative="1" as="geometry">
   </mxGeometry>
