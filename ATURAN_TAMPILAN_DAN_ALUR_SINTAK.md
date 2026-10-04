@@ -130,3 +130,7 @@ Role di SINTAK BUKAN sekadar daftar nama teks, melainkan aktor yang menggerakkan
       - `orders.faktur` $\xrightarrow{Key:\ no\_sopd}$ `sopd.no_sopd` $\xrightarrow{Key:\ no\_order}$ `jurnal_harian_produksi.no_order`.
       - `employees.name` $\xrightarrow{Ref}$ `jurnal_harian_produksi.nama_karyawan`.
       - `rekap_pembelian_barang` $\xrightarrow{diintip}$ fitur Rekap Lookup `Pricelist`.
+
+16. **Konfigurasi File Draw.io Wajib Matikan Grid (`grid="0"`)**:
+    - Setiap kali membuat atau memodifikasi diagram Draw.io (`.drawio`), tag `<mxGraphModel>` wajib memiliki atribut `grid="0"` di seluruh halaman diagram (multi-page).
+    - Dilarang membiarkan `grid="1"` agar tampilan kanvas di aplikasi Draw.io Desktop selalu bersih, bebas dari kisi-kisi/grid bawaan.
