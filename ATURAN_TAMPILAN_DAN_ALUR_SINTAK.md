@@ -102,3 +102,16 @@ Role di SINTAK BUKAN sekadar daftar nama teks, melainkan aktor yang menggerakkan
     - **Laporan Pekerjaan** (`/laporan-pekerjaan`): Dual Source $\rightarrow$ (1) Input tugas harian web staf teknis dan (2) Live Sync CSV Google Spreadsheet (`DATABASE_REPORT`).
     - **Hasil Produksi** (`/hasil-produksi`): Dual Tab / Dual Source $\rightarrow$ (1) Tab Jurnal: Akumulasi internal JHP dan (2) Tab Barang Jadi: Serah terima fisik dari Digit.
     - **Pricelist Parameter**: Terhubung ke `rekap_pembelian_barang` Digit via fitur **Rekap Lookup** untuk mengintip harga beli riil kertas/plat dari vendor.
+
+12. **Target Harian, Analisa Produksi, dan Hasil Produksi adalah Cabang Paralel (Bukan Waterfall)**:
+    - Ketiganya membaca langsung tabel `jurnal_harian_produksi` (198k baris) secara paralel dengan filter query berbeda:
+      - **Target Harian**: Filter `WHERE tgl = ?` untuk rekap target vs capaian shift & operator.
+      - **Analisa Produksi**: Filter `WHERE no_order = ?` untuk melacak timeline riwayat pengerjaan order SPK dari awal sampai akhir.
+      - **Hasil Produksi**: `GROUP BY no_order` untuk akumulasi lembar cetak sukses & rijek + disandingkan dengan `barang_jadi` Digit.
+    - **DILARANG**: Menyusun ketiganya dalam garis sekuensial air terjun (waterfall). Wajib digambarkan bercabang sejajar langsung dari JHP.
+
+13. **Tautan Akun Pengguna ke Pegawai Fisik (`users.employee_id`)**:
+    - Tabel `users` memiliki kolom foreign key `employee_id` yang menunjuk ke `employees.id`.
+
+14. **Relasi Master-Transaksi Akuntansi (`rek_akuntansi` ke `jurnal_umum`)**:
+    - Sebanyak 100.400 baris transaksi di `jurnal_umum` bergantung pada 203 master akun di `rek_akuntansi` untuk klasifikasi Kas/Arus Kas dan Laba/Rugi di Dashboard Akuntansi.
