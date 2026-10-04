@@ -1,164 +1,141 @@
 <mxfile host="Electron" modified="2026-10-04T00:00:00.000Z" agent="Mozilla/5.0" version="21.6.8" type="device">
-  <diagram id="diag-alur-jhp" name="1. Alur Operasional JHP">
-    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1340" pageHeight="800" math="0" shadow="0">
+  <diagram id="sintak-keseluruhan" name="Keseluruhan SINTAK">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1640" pageHeight="960" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="p1_banner" value="&lt;b&gt;ALUR OPERASIONAL NYATA JURNAL HARIAN PRODUKSI (JHP) - SINTAK&lt;/b&gt;&lt;br/&gt;&lt;span style=&#x27;font-size: 11px; font-weight: normal; color: #475569;&#x27;&gt;Aliran Data dari Tarik Order Digit / Excel -&gt; Masuk SOPd -&gt; Diambil ke JHP (Web &amp;amp; Bot Telegram) -&gt; Target Harian, Analisa &amp;amp; Hasil Produksi&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#cbd5e1;strokeWidth=1.5;fontSize=13;fontColor=#0f172a;align=center;verticalAlign=middle;" vertex="1" parent="1">
-  <mxGeometry x="40" y="20" width="1260" height="50" as="geometry" />
-</mxCell><mxCell id="p1_bg_step1" value="&lt;b&gt;1. SUMBER DATA ORDER PRODUKSI (DIGIT &amp;amp; EXCEL)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0f9ff;strokeColor=#bae6fd;strokeWidth=1;dashed=1;verticalAlign=top;align=left;spacingLeft=15;spacingTop=8;fontColor=#0369a1;fontSize=11;" vertex="1" parent="1">
-  <mxGeometry x="40" y="85" width="1260" height="220" as="geometry" />
-</mxCell><mxCell id="p1_erp" value="&lt;b&gt;ERP DIGIT&lt;/b&gt;&lt;br/&gt;&lt;i&gt;(Sistem Eksternal)&lt;/i&gt;&lt;br/&gt;&lt;hr/&gt;Menyimpan data Order Produksi (orders)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;fillColor=#e0f2fe;strokeColor=#0284c7;fontColor=#0369a1;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
-  <mxGeometry x="60" y="115" width="190" height="85" as="geometry" />
-</mxCell><mxCell id="p1_sync" value="&lt;b&gt;Menu: Sinkronisasi (/sync)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;• SINTAK menarik data Order Produksi dari ERP Digit&lt;br/&gt;• Tersimpan ke database tabel &lt;code&gt;orders&lt;/code&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#0284c7;strokeWidth=2;align=left;" vertex="1" parent="1">
-  <mxGeometry x="300" y="115" width="260" height="85" as="geometry" />
-</mxCell><mxCell id="p1_excel" value="&lt;b&gt;Upload Excel SOPd&lt;/b&gt;&lt;br/&gt;&lt;i&gt;(/settings/konversi-data/jurnal-harian-produksi)&lt;/i&gt;&lt;br/&gt;&lt;hr/&gt;Import file Excel data SOPd (tabel &lt;code&gt;sopd&lt;/code&gt;)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#d97706;dashed=1;align=left;" vertex="1" parent="1">
-  <mxGeometry x="300" y="215" width="260" height="75" as="geometry" />
-</mxCell><mxCell id="p1_sopd" value="&lt;b&gt;Menu: SOPd (/jurnal-harian-produksi/data/excel-sopd)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Sumber Data:&lt;/b&gt; Menggabungkan data dari tabel &lt;code&gt;orders&lt;/code&gt; (Digit) &amp;amp; &lt;code&gt;sopd&lt;/code&gt; (Excel)&lt;br/&gt;• &lt;b&gt;Fungsi:&lt;/b&gt; Memuat antrean pesanan (No SOPd, Nama Order, Oplah, Deadline)&lt;br/&gt;• &lt;b&gt;Fitur:&lt;/b&gt; Inline edit cepat 2x klik cell untuk estimasi harga, deadline, dan keterangan" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#d97706;strokeWidth=2;align=left;" vertex="1" parent="1">
-  <mxGeometry x="640" y="115" width="360" height="100" as="geometry" />
-</mxCell><mxCell id="p1_sopd_info" value="&lt;b&gt;Daftar Antrean Order:&lt;/b&gt;&lt;br/&gt;No SOPd otomatis menjadi pilihan order kerja saat input penjadwalan di JHP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#d97706;fontSize=9.5;align=left;spacingLeft=8;dashed=1;" vertex="1" parent="1">
-  <mxGeometry x="1040" y="125" width="240" height="75" as="geometry" />
-</mxCell><mxCell id="p1_bg_step2" value="&lt;b&gt;2. HALAMAN KERJA: JURNAL HARIAN PRODUKSI (/jurnal-harian-produksi)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef2f2;strokeColor=#fecaca;strokeWidth=1;dashed=1;verticalAlign=top;align=left;spacingLeft=15;spacingTop=8;fontColor=#b91c1c;fontSize=11;" vertex="1" parent="1">
-  <mxGeometry x="40" y="320" width="1260" height="270" as="geometry" />
-</mxCell><mxCell id="p1_master" value="&lt;b&gt;Master Pendukung:&lt;/b&gt;&lt;br/&gt;• &lt;b&gt;Master Karyawan:&lt;/b&gt; Nama operator per bagian (/employees)&lt;br/&gt;• &lt;b&gt;Master Pekerjaan:&lt;/b&gt; Kategori &amp;amp; jenis pekerjaan (/data/master-pekerjaan-jurnal-produksi)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#b91c1c;align=left;dashed=1;" vertex="1" parent="1">
-  <mxGeometry x="60" y="365" width="300" height="75" as="geometry" />
-</mxCell><mxCell id="p1_telegram" value="&lt;b&gt;Jalur Alternatif: Bot Telegram&lt;/b&gt;&lt;br/&gt;&lt;code&gt;telegram-bot (/api/telegram/realisasi)&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;Operator yang sudah di-approve di /settings/telegram-users dapat langsung mengirim realisasi via chat bot" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#e0f2fe;strokeColor=#0284c7;strokeWidth=1.5;align=left;" vertex="1" parent="1">
-  <mxGeometry x="60" y="460" width="300" height="80" as="geometry" />
-</mxCell><mxCell id="p1_jhp" value="&lt;b&gt;Menu: Jurnal Harian Produksi (JHP)&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/jurnal-harian-produksi&lt;/code&gt; [INTI OPERASIONAL]&lt;br/&gt;&lt;hr/&gt;&lt;b&gt;CARA PAKAI DI HALAMAN INI:&lt;/b&gt;&lt;br/&gt;• &lt;b&gt;1. Penjadwalan (Target):&lt;/b&gt; Pilih Bagian (Cetak, Finishing, Setting, QC, Gudang, Teknisi, Mesin), Shift (1/2/3), Operator, No SOPd, Target&lt;br/&gt;   &lt;i&gt;(Tersedia tombol &#x27;Copy Jadwal&#x27; untuk menyalin susunan target dari hari sebelumnya)&lt;/i&gt;&lt;br/&gt;• &lt;b&gt;2. Input Realisasi:&lt;/b&gt; Operator isi Jam Mulai/Selesai &amp;amp; Lembar Berhasil&lt;br/&gt;• &lt;b&gt;3. Catat Rijek:&lt;/b&gt; Operator isi jumlah lembar rusak afdruk setup &amp;amp; jalan" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#dc2626;strokeWidth=2;align=left;" vertex="1" parent="1">
-  <mxGeometry x="470" y="355" width="460" height="195" as="geometry" />
-</mxCell><mxCell id="p1_bg_step3" value="&lt;b&gt;3. MENU ANALISIS &amp;amp; REKAP HASIL (MENERIMA DATA DARI JHP)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fdf2f8;strokeColor=#fbcfe8;strokeWidth=1;dashed=1;verticalAlign=top;align=left;spacingLeft=15;spacingTop=8;fontColor=#9d174d;fontSize=11;" vertex="1" parent="1">
-  <mxGeometry x="40" y="605" width="1260" height="160" as="geometry" />
-</mxCell><mxCell id="p1_target" value="&lt;b&gt;Menu: Target Harian&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/jurnal-harian-produksi/target&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• Membaca data JHP per tanggal&lt;br/&gt;• Rekap pemenuhan target shift hari ini per bagian dan operator" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#db2777;align=left;" vertex="1" parent="1">
-  <mxGeometry x="60" y="640" width="360" height="85" as="geometry" />
-</mxCell><mxCell id="p1_analisa" value="&lt;b&gt;Menu: Analisa Produksi&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/jurnal-harian-produksi/analisa&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• Cari per &lt;b&gt;No Order / Faktur&lt;/b&gt;&lt;br/&gt;• Menampilkan seluruh riwayat entri pengerjaan di JHP, durasi jam, dan kendala yang tercatat" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#db2777;align=left;" vertex="1" parent="1">
-  <mxGeometry x="470" y="640" width="380" height="85" as="geometry" />
-</mxCell><mxCell id="p1_hasil" value="&lt;b&gt;Menu: Hasil Produksi&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/hasil-produksi&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Tab Jurnal Produksi:&lt;/b&gt; Rekap total target, realisasi lembar &amp;amp; rijek per jenis pekerjaan dari JHP&lt;br/&gt;• &lt;b&gt;Tab Barang Jadi:&lt;/b&gt; Data barang jadi dari Digit" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#db2777;strokeWidth=2;align=left;" vertex="1" parent="1">
-  <mxGeometry x="900" y="640" width="380" height="85" as="geometry" />
-</mxCell><mxCell id="p1_e1" value="Tarik Order Produksi" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0284c7;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9.5;fontColor=#0369a1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="p1_erp" target="p1_sync">
+        <mxCell id="banner" value="&lt;b&gt;ALIRAN DATA &amp;amp; ARSITEKTUR KESELURUHAN SINTAK (PT BUYA BAROKAH)&lt;/b&gt;&lt;br/&gt;&lt;span style=&#x27;font-size: 11px; font-weight: normal; color: #475569;&#x27;&gt;Peta Alur Kerja &amp;amp; Seluruh Modul Berdasarkan Kode Sumber Asli: Data Digit, Produksi, HRD, Kalkulasi, dan 4 Dashboard&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#cbd5e1;strokeWidth=1.5;fontSize=13;fontColor=#0f172a;align=center;verticalAlign=middle;" vertex="1" parent="1">
+  <mxGeometry x="40" y="20" width="1560" height="50" as="geometry" />
+</mxCell><mxCell id="bg1" value="&lt;b&gt;1. DATA DIGIT (TARIKAN DATA DARI DIGIT VIA /sync)&lt;/b&gt;&lt;br/&gt;&lt;span style=&#x27;font-weight: normal; font-size: 10px; color: #0369a1;&#x27;&gt;Di SINTAK, kelompok ini murni menampilkan data hasil tarikan dari Digit, bukan tempat input transaksi baru:&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0f9ff;strokeColor=#bae6fd;strokeWidth=1.5;verticalAlign=top;align=left;spacingLeft=15;spacingTop=8;fontColor=#0369a1;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="40" y="85" width="1560" height="160" as="geometry" />
+</mxCell><mxCell id="n_digit" value="&lt;b&gt;DIGIT&lt;/b&gt;&lt;br/&gt;&lt;i&gt;(Sistem Eksternal)&lt;/i&gt;&lt;br/&gt;&lt;hr/&gt;Sumber data Order SO, Stok Barang,&lt;br/&gt;Pembelian, Hutang/Piutang &amp;amp; Jurnal" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;fillColor=#e0f2fe;strokeColor=#0284c7;fontColor=#0369a1;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+  <mxGeometry x="60" y="130" width="185" height="95" as="geometry" />
+</mxCell><mxCell id="n_sync" value="&lt;b&gt;Sinkronisasi All Data&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/sync&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;Modul SINTAK untuk menarik batch data dari Digit ke database lokal SQLite" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#0284c7;strokeWidth=2;align=left;" vertex="1" parent="1">
+  <mxGeometry x="290" y="130" width="210" height="95" as="geometry" />
+</mxCell><mxCell id="n_d_stok" value="&lt;b&gt;Stok: Master Barang&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/data-digit/stok/master-barang&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;Data barang, barcode, saldo awal, masuk, keluar, saldo akhir, harga beli &amp;amp; jual dari Digit" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#0284c7;align=left;" vertex="1" parent="1">
+  <mxGeometry x="530" y="130" width="240" height="95" as="geometry" />
+</mxCell><mxCell id="n_d_beli" value="&lt;b&gt;Pembelian (7 Menu)&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/pr, /spph-out, /sph-in, /purchase-orders, /penerimaan-pembelian, /rekap-pembelian-barang, /pelunasan-hutang&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;Data PR, penawaran harga, PO supplier, bukti terima barang, rekap pembelian &amp;amp; pelunasan hutang" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#0284c7;align=left;" vertex="1" parent="1">
+  <mxGeometry x="790" y="130" width="260" height="95" as="geometry" />
+</mxCell><mxCell id="n_d_jual" value="&lt;b&gt;Penjualan (5 Menu)&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/sph-out, /sales-orders, /sales, /pengiriman, /pelunasan-piutang&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;Data penawaran SPH, Sales Order (SO), faktur penjualan, Surat Jalan pengiriman &amp;amp; pelunasan piutang" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#0284c7;align=left;" vertex="1" parent="1">
+  <mxGeometry x="1070" y="130" width="255" height="95" as="geometry" />
+</mxCell><mxCell id="n_d_akt" value="&lt;b&gt;Akuntansi (2 Menu)&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/akuntansi/data/rek-akuntansi&lt;/code&gt;&lt;br/&gt;&lt;code&gt;/akuntansi/laporan/jurnal-umum&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;Master bagan akun (COA) dan transaksi Jurnal Umum (Debet, Kredit, Laba Rugi). Terdapat tombol &#x27;Analisis Jurnal&#x27;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#0284c7;align=left;" vertex="1" parent="1">
+  <mxGeometry x="1345" y="130" width="235" height="95" as="geometry" />
+</mxCell><mxCell id="bg2" value="&lt;b&gt;2. OPERASIONAL PRODUKSI SINTAK (SOPd, JURNAL HARIAN PRODUKSI, TARGET, ANALISA, HASIL &amp;amp; LAPORAN)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef2f2;strokeColor=#fecaca;strokeWidth=1.5;verticalAlign=top;align=left;spacingLeft=15;spacingTop=8;fontColor=#b91c1c;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="40" y="260" width="1560" height="315" as="geometry" />
+</mxCell><mxCell id="n_sopd" value="&lt;b&gt;Menu: SOPd (/data/excel-sopd)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Sumber Data:&lt;/b&gt; Menggabungkan Order dari Digit (tabel &lt;code&gt;orders&lt;/code&gt;) &amp;amp; upload Excel SOPd (tabel &lt;code&gt;sopd&lt;/code&gt;)&lt;br/&gt;• &lt;b&gt;Fungsi:&lt;/b&gt; Memuat antrean pesanan (No SOPd, Nama Order, Oplah, Deadline, Harga)&lt;br/&gt;• &lt;b&gt;Fitur:&lt;/b&gt; Edit cepat 2x klik cell untuk estimasi harga, deadline, dan keterangan" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#d97706;strokeWidth=2;align=left;" vertex="1" parent="1">
+  <mxGeometry x="60" y="305" width="330" height="115" as="geometry" />
+</mxCell><mxCell id="n_excel_sopd" value="&lt;b&gt;Upload Excel SOPd&lt;/b&gt;&lt;br/&gt;&lt;i&gt;(/settings/konversi-data/jurnal-harian-produksi)&lt;/i&gt;&lt;br/&gt;&lt;hr/&gt;Fasilitas upload file Excel data SOPd" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#d97706;dashed=1;align=left;" vertex="1" parent="1">
+  <mxGeometry x="60" y="440" width="330" height="65" as="geometry" />
+</mxCell><mxCell id="n_master" value="&lt;b&gt;Master Pendukung:&lt;/b&gt;&lt;br/&gt;• &lt;b&gt;Master Karyawan:&lt;/b&gt; Nama operator per bagian (/employees)&lt;br/&gt;• &lt;b&gt;Master Pekerjaan:&lt;/b&gt; Kategori &amp;amp; jenis pekerjaan (/data/master-pekerjaan-jurnal-produksi)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#b91c1c;align=left;dashed=1;" vertex="1" parent="1">
+  <mxGeometry x="420" y="305" width="240" height="80" as="geometry" />
+</mxCell><mxCell id="n_telegram" value="&lt;b&gt;Input Realisasi via Bot Telegram&lt;/b&gt;&lt;br/&gt;&lt;code&gt;telegram-bot (/api/telegram/realisasi)&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;Operator yang sudah disetujui di /settings/telegram-users dapat langsung mengirim realisasi kerja via chat bot Telegram" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#e0f2fe;strokeColor=#0284c7;strokeWidth=1.5;align=left;" vertex="1" parent="1">
+  <mxGeometry x="420" y="400" width="240" height="80" as="geometry" />
+</mxCell><mxCell id="n_jhp" value="&lt;b&gt;Menu: Jurnal Harian Produksi (JHP)&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/jurnal-harian-produksi&lt;/code&gt; [INTI OPERASIONAL PRODUKSI]&lt;br/&gt;&lt;hr/&gt;&lt;b&gt;CARA PAKAI DI HALAMAN INI:&lt;/b&gt;&lt;br/&gt;• &lt;b&gt;1. Penjadwalan (Target):&lt;/b&gt; Pilih Bagian (Cetak, Finishing, Setting, QC, Gudang, Teknisi, Mesin), Shift (1/2/3), Operator, No SOPd, Target&lt;br/&gt;   &lt;i&gt;(Tersedia tombol &#x27;Copy Jadwal&#x27; untuk menyalin susunan target dari hari sebelumnya)&lt;/i&gt;&lt;br/&gt;• &lt;b&gt;2. Input Realisasi:&lt;/b&gt; Operator isi Jam Mulai/Selesai &amp;amp; Lembar Berhasil&lt;br/&gt;• &lt;b&gt;3. Catat Rijek:&lt;/b&gt; Operator isi jumlah lembar rusak afdruk setup &amp;amp; jalan" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#dc2626;strokeWidth=2;align=left;" vertex="1" parent="1">
+  <mxGeometry x="740" y="300" width="450" height="185" as="geometry" />
+</mxCell><mxCell id="n_target" value="&lt;b&gt;Menu: Target Harian&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/jurnal-harian-produksi/target&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;Rekap pemenuhan target shift hari ini per bagian dan operator" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#db2777;align=left;" vertex="1" parent="1">
+  <mxGeometry x="1260" y="290" width="320" height="60" as="geometry" />
+</mxCell><mxCell id="n_analisa" value="&lt;b&gt;Menu: Analisa Produksi&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/jurnal-harian-produksi/analisa&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;Cari per &lt;b&gt;No Order / Faktur&lt;/b&gt;: rekap seluruh entri pengerjaan di JHP, durasi jam, dan kendala yang tercatat" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#db2777;align=left;" vertex="1" parent="1">
+  <mxGeometry x="1260" y="360" width="320" height="65" as="geometry" />
+</mxCell><mxCell id="n_hasil" value="&lt;b&gt;Menu: Hasil Produksi&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/hasil-produksi&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Tab Jurnal:&lt;/b&gt; Total target, realisasi &amp;amp; rijek per jenis pekerjaan dari JHP&lt;br/&gt;• &lt;b&gt;Tab Barang Jadi:&lt;/b&gt; Data barang jadi hasil produksi dari Digit" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#db2777;strokeWidth=1.5;align=left;" vertex="1" parent="1">
+  <mxGeometry x="1260" y="435" width="320" height="65" as="geometry" />
+</mxCell><mxCell id="n_lap_pek" value="&lt;b&gt;Menu: Laporan Pekerjaan&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/laporan-pekerjaan&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;Monitoring &amp;amp; pelaporan tugas kerja harian per karyawan dan bagian (Setting, QC, Cetak, Finishing, Gudang, Teknisi, Mesin)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#db2777;align=left;" vertex="1" parent="1">
+  <mxGeometry x="1260" y="510" width="320" height="55" as="geometry" />
+</mxCell><mxCell id="bg3" value="&lt;b&gt;3. KALKULASI, HRD, TRACKING MANUFAKTUR &amp;amp; PENGATURAN SISTEM (MODUL-MODUL OPERASIONAL MANDIRI)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fdf4ff;strokeColor=#f0abfc;strokeWidth=1.5;verticalAlign=top;align=left;spacingLeft=15;spacingTop=8;fontColor=#86198f;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="40" y="590" width="1560" height="155" as="geometry" />
+</mxCell><mxCell id="n_calc" value="&lt;b&gt;Kalkulasi: Pricelist &amp;amp; HPP&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/pricelist&lt;/code&gt; &amp;amp; &lt;code&gt;/hpp-kalkulasi&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Pricelist:&lt;/b&gt; Simulator mandiri 20+ produk cetak (Buku, Dus, Stopmap, Brosur, Undangan, dll.)&lt;br/&gt;• &lt;b&gt;HPP Kalkulasi:&lt;/b&gt; Input nilai HPP per nama order&lt;br/&gt;• &lt;b&gt;Rekap SO:&lt;/b&gt; Rekap detail baris Sales Order dari Digit" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#a855f7;align=left;" vertex="1" parent="1">
+  <mxGeometry x="60" y="630" width="350" height="100" as="geometry" />
+</mxCell><mxCell id="n_hrd" value="&lt;b&gt;HRD: Karyawan &amp;amp; Catat Kesalahan&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/employees&lt;/code&gt; &amp;amp; &lt;code&gt;/records&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Karyawan:&lt;/b&gt; Master NIP, Nama, Jabatan, Bagian, Status Aktif&lt;br/&gt;• &lt;b&gt;Catat Kesalahan:&lt;/b&gt; Pencatatan insiden kelalaian kerja &amp;amp; rincian beban kerugian finansial (mengalir ke Dashboard HRD)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#e11d48;align=left;" vertex="1" parent="1">
+  <mxGeometry x="435" y="630" width="350" height="100" as="geometry" />
+</mxCell><mxCell id="n_tracking" value="&lt;b&gt;Umum: Tracking Manufaktur &amp;amp; Log&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/tracking-manufaktur&lt;/code&gt; &amp;amp; &lt;code&gt;/log-aktivitas&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Tracking Manufaktur:&lt;/b&gt; Melacak aliran dokumen dari Digit (SO -&gt; Order Produksi -&gt; BOM -&gt; PO -&gt; BBB -&gt; Barang Jadi -&gt; Kirim -&gt; Piutang)&lt;br/&gt;• &lt;b&gt;Log Aktivitas:&lt;/b&gt; Audit trail catatan aksi user di sistem" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#7c3aed;align=left;" vertex="1" parent="1">
+  <mxGeometry x="810" y="630" width="375" height="100" as="geometry" />
+</mxCell><mxCell id="n_settings" value="&lt;b&gt;Pengaturan: User, Roles &amp;amp; Konversi&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/users&lt;/code&gt;, &lt;code&gt;/roles&lt;/code&gt;, &lt;code&gt;/settings/...&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Kelola User &amp;amp; Hak Akses:&lt;/b&gt; Manajemen akun login &amp;amp; permission RBAC&lt;br/&gt;• &lt;b&gt;Telegram Users:&lt;/b&gt; Approval akun operator untuk Bot Telegram&lt;br/&gt;• &lt;b&gt;Konversi Data:&lt;/b&gt; Fasilitas migrasi file Excel HPP, JHP, dan Laporan" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#475569;align=left;" vertex="1" parent="1">
+  <mxGeometry x="1210" y="630" width="370" height="100" as="geometry" />
+</mxCell><mxCell id="bg4" value="&lt;b&gt;4. KELOMPOK DASHBOARD (4 DASHBOARD EKSEKUTIF)&lt;/b&gt;&lt;br/&gt;&lt;span style=&#x27;font-weight: normal; font-size: 10px; color: #047857;&#x27;&gt;Masing-masing dashboard membaca query database secara mandiri untuk menyajikan grafik dan kartu statistik:&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#a7f3d0;strokeWidth=1.5;verticalAlign=top;align=left;spacingLeft=15;spacingTop=8;fontColor=#047857;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="40" y="760" width="1560" height="145" as="geometry" />
+</mxCell><mxCell id="n_dash_umum" value="&lt;b&gt;Dashboard Umum&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/dashboard&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;UsersStatCard:&lt;/b&gt; Statistik jumlah user sistem &amp;amp; role&lt;br/&gt;• &lt;b&gt;Akses Cepat:&lt;/b&gt; Pintasan ke menu administrasi&lt;br/&gt;• &lt;b&gt;AktivitasTerbaruCard:&lt;/b&gt; Log 8 aktivitas sistem terbaru dari tabel &lt;code&gt;activity_logs&lt;/code&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#059669;align=left;" vertex="1" parent="1">
+  <mxGeometry x="60" y="800" width="350" height="90" as="geometry" />
+</mxCell><mxCell id="n_dash_manufaktur" value="&lt;b&gt;Dashboard Produksi&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/dashboard-manufaktur&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;OrdersStatCard:&lt;/b&gt; Statistik total order produksi dari Digit&lt;br/&gt;• &lt;b&gt;JurnalStatCard:&lt;/b&gt; Target vs Realisasi lembar cetak JHP&lt;br/&gt;• &lt;b&gt;ProduksiTrendChart:&lt;/b&gt; Grafik tren BBB &amp;amp; Hasil Produksi&lt;br/&gt;• &lt;b&gt;JurnalTerbaruCard:&lt;/b&gt; Daftar jurnal produksi terbaru" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#059669;align=left;" vertex="1" parent="1">
+  <mxGeometry x="435" y="800" width="360" height="90" as="geometry" />
+</mxCell><mxCell id="n_dash_hrd" value="&lt;b&gt;Dashboard HRD&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/dashboard-hrd&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;KaryawanStatCard:&lt;/b&gt; Statistik total karyawan aktif per bagian&lt;br/&gt;• &lt;b&gt;InfractionsTrendChart:&lt;/b&gt; Grafik tren kesalahan karyawan per bulan dari modul &lt;code&gt;/records&lt;/code&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#059669;align=left;" vertex="1" parent="1">
+  <mxGeometry x="820" y="800" width="350" height="90" as="geometry" />
+</mxCell><mxCell id="n_dash_akt" value="&lt;b&gt;Dashboard Akuntansi&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/dashboard-akunting&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;AkuntingTrendChart:&lt;/b&gt; Grafik tren Jurnal Umum (Debet vs Kredit)&lt;br/&gt;• &lt;b&gt;WarningBarangJadiCard:&lt;/b&gt; Peringatan barang jadi&lt;br/&gt;• &lt;b&gt;JurnalAkuntansiTerbaru:&lt;/b&gt; Rincian transaksi jurnal terbaru" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#059669;align=left;" vertex="1" parent="1">
+  <mxGeometry x="1195" y="800" width="385" height="90" as="geometry" />
+</mxCell><mxCell id="e1" value="Tarik Data via Scraper" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0284c7;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9;fontColor=#0369a1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_digit" target="n_sync">
   <mxGeometry relative="1" as="geometry">
     <mxPoint x="0" y="-12" as="offset" />
   </mxGeometry>
-</mxCell><mxCell id="p1_e2" value="Order Masuk" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0284c7;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9.5;fontColor=#0369a1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="p1_sync" target="p1_sopd">
-  <mxGeometry relative="1" as="geometry">
-    <mxPoint x="0" y="-12" as="offset" />
-  </mxGeometry>
-</mxCell><mxCell id="p1_e3" value="Data SOPd" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d97706;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9.5;fontColor=#92400e;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="p1_excel" target="p1_sopd">
-  <mxGeometry relative="1" as="geometry">
-    <mxPoint x="0" y="-12" as="offset" />
-    <Array as="points">
-      <mxPoint x="590" y="252" />
-      <mxPoint x="590" y="185" />
-    </Array>
-  </mxGeometry>
-</mxCell><mxCell id="p1_e4_info" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d97706;strokeWidth=1.5;dashed=1;endArrow=none;" edge="1" parent="1" source="p1_sopd" target="p1_sopd_info">
-  <mxGeometry relative="1" as="geometry">
-  </mxGeometry>
-</mxCell><mxCell id="p1_e4" value="Dropdown Order (/api/sopd)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d97706;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9.5;fontColor=#92400e;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="p1_sopd" target="p1_jhp">
-  <mxGeometry relative="1" as="geometry">
-    <mxPoint x="0" y="-12" as="offset" />
-    <Array as="points">
-      <mxPoint x="820" y="215" />
-      <mxPoint x="820" y="270" />
-      <mxPoint x="700" y="270" />
-      <mxPoint x="700" y="355" />
-    </Array>
-  </mxGeometry>
-</mxCell><mxCell id="p1_e5" value="Dropdown Operator &amp;amp; Pekerjaan" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#dc2626;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9.5;fontColor=#991b1b;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="p1_master" target="p1_jhp">
-  <mxGeometry relative="1" as="geometry">
-    <mxPoint x="-50" y="-12" as="offset" />
-  </mxGeometry>
-</mxCell><mxCell id="p1_e6" value="Kirim Realisasi via Bot" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0284c7;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9.5;fontColor=#0369a1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="p1_telegram" target="p1_jhp">
-  <mxGeometry relative="1" as="geometry">
-    <mxPoint x="-40" y="-12" as="offset" />
-    <Array as="points">
-      <mxPoint x="400" y="500" />
-      <mxPoint x="400" y="470" />
-      <mxPoint x="470" y="470" />
-    </Array>
-  </mxGeometry>
-</mxCell><mxCell id="p1_e7" value="Rekap Target Harian" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#dc2626;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9.5;fontColor=#991b1b;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="p1_jhp" target="p1_target">
+</mxCell><mxCell id="e2" value="Order Produksi Masuk (tabel orders)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0284c7;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9;fontColor=#0369a1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_sync" target="n_sopd">
   <mxGeometry relative="1" as="geometry">
     <mxPoint x="0" y="-12" as="offset" />
     <Array as="points">
-      <mxPoint x="540" y="550" />
-      <mxPoint x="540" y="580" />
-      <mxPoint x="240" y="580" />
-      <mxPoint x="240" y="640" />
+      <mxPoint x="395" y="225" />
+      <mxPoint x="395" y="270" />
+      <mxPoint x="225" y="270" />
+      <mxPoint x="225" y="305" />
     </Array>
   </mxGeometry>
-</mxCell><mxCell id="p1_e8" value="Data Pengerjaan per Order" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#dc2626;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9.5;fontColor=#991b1b;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="p1_jhp" target="p1_analisa">
+</mxCell><mxCell id="e3" value="Data SOPd (tabel sopd)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d97706;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9;fontColor=#92400e;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_excel_sopd" target="n_sopd">
+  <mxGeometry relative="1" as="geometry">
+    <mxPoint x="0" y="-12" as="offset" />
+  </mxGeometry>
+</mxCell><mxCell id="e4" value="Dropdown No SOPd (/api/sopd)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d97706;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9;fontColor=#92400e;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_sopd" target="n_jhp">
   <mxGeometry relative="1" as="geometry">
     <mxPoint x="0" y="-12" as="offset" />
     <Array as="points">
-      <mxPoint x="700" y="550" />
-      <mxPoint x="700" y="640" />
+      <mxPoint x="390" y="360" />
+      <mxPoint x="405" y="360" />
+      <mxPoint x="405" y="500" />
+      <mxPoint x="965" y="500" />
     </Array>
   </mxGeometry>
-</mxCell><mxCell id="p1_e9" value="Rekap Lembar &amp;amp; Rijek" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#dc2626;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9.5;fontColor=#991b1b;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="p1_jhp" target="p1_hasil">
+</mxCell><mxCell id="e5" value="Operator &amp;amp; Pekerjaan" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#dc2626;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9;fontColor=#991b1b;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_master" target="n_jhp">
+  <mxGeometry relative="1" as="geometry">
+    <mxPoint x="0" y="-12" as="offset" />
+  </mxGeometry>
+</mxCell><mxCell id="e6" value="Realisasi via Bot" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0284c7;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9;fontColor=#0369a1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_telegram" target="n_jhp">
   <mxGeometry relative="1" as="geometry">
     <mxPoint x="0" y="-12" as="offset" />
     <Array as="points">
-      <mxPoint x="860" y="550" />
-      <mxPoint x="860" y="580" />
-      <mxPoint x="1090" y="580" />
-      <mxPoint x="1090" y="640" />
+      <mxPoint x="660" y="440" />
+      <mxPoint x="700" y="440" />
+      <mxPoint x="700" y="420" />
+      <mxPoint x="740" y="420" />
     </Array>
   </mxGeometry>
-</mxCell>
-      </root>
-    </mxGraphModel>
-  </diagram>
-  <diagram id="diag-peta-menu" name="2. Peta Menu &amp; Fungsi SINTAK">
-    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1520" pageHeight="780" math="0" shadow="0">
-      <root>
-        <mxCell id="0" />
-        <mxCell id="1" parent="0" />
-        <mxCell id="p2_banner" value="&lt;b&gt;PETA STRUKTUR MENU, ASAL DATA &amp;amp; FUNGSI NYATA SELURUH SINTAK&lt;/b&gt;&lt;br/&gt;&lt;span style=&#x27;font-size: 11px; font-weight: normal; color: #475569;&#x27;&gt;Arsitektur Lengkap Sesuai Sidebar &amp;amp; Kode Sumber (Tanpa Panah Hubungan Buatan Antar Modul Independen)&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#cbd5e1;strokeWidth=1.5;fontSize=13;fontColor=#0f172a;align=center;verticalAlign=middle;" vertex="1" parent="1">
-  <mxGeometry x="40" y="20" width="1440" height="50" as="geometry" />
-</mxCell><mxCell id="p2_g_dash" value="&lt;b&gt;1. KELOMPOK DASHBOARD (4 DASHBOARD EKSEKUTIF)&lt;/b&gt;&lt;br/&gt;&lt;span style=&#x27;font-weight: normal; font-size: 10px; color: #047857;&#x27;&gt;Masing-masing dashboard membaca query database secara mandiri untuk menyajikan grafik dan kartu statistik:&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#a7f3d0;strokeWidth=1.5;verticalAlign=top;align=left;spacingLeft=15;spacingTop=8;fontColor=#047857;fontSize=11;" vertex="1" parent="1">
-  <mxGeometry x="40" y="85" width="1440" height="145" as="geometry" />
-</mxCell><mxCell id="p2_d_umum" value="&lt;b&gt;Dashboard Umum&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/dashboard&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;UsersStatCard:&lt;/b&gt; Statistik jumlah user sistem &amp;amp; role&lt;br/&gt;• &lt;b&gt;Akses Cepat:&lt;/b&gt; Pintasan ke menu administrasi&lt;br/&gt;• &lt;b&gt;AktivitasTerbaruCard:&lt;/b&gt; Log 8 aktivitas sistem terbaru dari tabel &lt;code&gt;activity_logs&lt;/code&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#059669;align=left;" vertex="1" parent="1">
-  <mxGeometry x="60" y="125" width="330" height="90" as="geometry" />
-</mxCell><mxCell id="p2_d_manufaktur" value="&lt;b&gt;Dashboard Produksi&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/dashboard-manufaktur&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;OrdersStatCard:&lt;/b&gt; Statistik total order produksi dari Digit&lt;br/&gt;• &lt;b&gt;JurnalStatCard:&lt;/b&gt; Target vs Realisasi lembar cetak JHP&lt;br/&gt;• &lt;b&gt;ProduksiTrendChart:&lt;/b&gt; Grafik tren BBB &amp;amp; Hasil Produksi&lt;br/&gt;• &lt;b&gt;JurnalTerbaruCard:&lt;/b&gt; Daftar jurnal produksi terbaru" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#059669;align=left;" vertex="1" parent="1">
-  <mxGeometry x="410" y="125" width="340" height="90" as="geometry" />
-</mxCell><mxCell id="p2_d_hrd" value="&lt;b&gt;Dashboard HRD&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/dashboard-hrd&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;KaryawanStatCard:&lt;/b&gt; Statistik total karyawan aktif per bagian&lt;br/&gt;• &lt;b&gt;InfractionsTrendChart:&lt;/b&gt; Grafik tren kesalahan karyawan per bulan dari modul &lt;code&gt;/records&lt;/code&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#059669;align=left;" vertex="1" parent="1">
-  <mxGeometry x="770" y="125" width="330" height="90" as="geometry" />
-</mxCell><mxCell id="p2_d_akt" value="&lt;b&gt;Dashboard Akuntansi&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/dashboard-akunting&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;AkuntingTrendChart:&lt;/b&gt; Grafik tren Jurnal Umum (Debet vs Kredit)&lt;br/&gt;• &lt;b&gt;WarningBarangJadiCard:&lt;/b&gt; Peringatan barang jadi&lt;br/&gt;• &lt;b&gt;JurnalAkuntansiTerbaru:&lt;/b&gt; Rincian transaksi jurnal terbaru" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#059669;align=left;" vertex="1" parent="1">
-  <mxGeometry x="1120" y="125" width="340" height="90" as="geometry" />
-</mxCell><mxCell id="p2_g_digit" value="&lt;b&gt;2. KELOMPOK DATA DIGIT (TARIKAN DATA DARI ERP DIGIT VIA /sync)&lt;/b&gt;&lt;br/&gt;&lt;span style=&#x27;font-weight: normal; font-size: 10px; color: #0369a1;&#x27;&gt;Di SINTAK, seluruh menu ini murni menampilkan data hasil tarikan (scraping) dari ERP Digit, bukan tempat menginput transaksi baru:&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0f9ff;strokeColor=#bae6fd;strokeWidth=1.5;verticalAlign=top;align=left;spacingLeft=15;spacingTop=8;fontColor=#0369a1;fontSize=11;" vertex="1" parent="1">
-  <mxGeometry x="40" y="245" width="1440" height="155" as="geometry" />
-</mxCell><mxCell id="p2_digit_sync" value="&lt;b&gt;Sinkronisasi All Data (/sync)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Modul pusat untuk menarik batch data dari ERP Digit per periode tanggal/bulan ke database lokal SQLite SINTAK." style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#0284c7;strokeWidth=2;align=left;" vertex="1" parent="1">
-  <mxGeometry x="60" y="290" width="255" height="95" as="geometry" />
-</mxCell><mxCell id="p2_digit_stok" value="&lt;b&gt;Stok: Master Barang&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/data-digit/stok/master-barang&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;Menampilkan data master barang, barcode, saldo awal, masuk, keluar, saldo akhir, harga beli &amp;amp; jual dari Digit." style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#0284c7;align=left;" vertex="1" parent="1">
-  <mxGeometry x="330" y="290" width="265" height="95" as="geometry" />
-</mxCell><mxCell id="p2_digit_beli" value="&lt;b&gt;Pembelian (7 Menu Digit)&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/pr, /spph-out, /sph-in, /purchase-orders, /penerimaan-pembelian, /rekap-pembelian-barang, /pelunasan-hutang&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;Menampilkan data pengadaan bahan baku, PO supplier, bukti penerimaan barang, faktur pembelian, dan pelunasan hutang dari Digit." style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#0284c7;align=left;" vertex="1" parent="1">
-  <mxGeometry x="610" y="290" width="280" height="95" as="geometry" />
-</mxCell><mxCell id="p2_digit_jual" value="&lt;b&gt;Penjualan (5 Menu Digit)&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/sph-out, /sales-orders, /sales, /pengiriman, /pelunasan-piutang&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;Menampilkan data SPH penawaran, pesanan Sales Order barang, faktur penjualan, Surat Jalan pengiriman, dan pelunasan piutang customer dari Digit." style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#0284c7;align=left;" vertex="1" parent="1">
-  <mxGeometry x="905" y="290" width="280" height="95" as="geometry" />
-</mxCell><mxCell id="p2_digit_akt" value="&lt;b&gt;Akuntansi (2 Menu Digit)&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/akuntansi/data/rek-akuntansi&lt;/code&gt;&lt;br/&gt;&lt;code&gt;/akuntansi/laporan/jurnal-umum&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;Menampilkan master bagan akun (COA) dan transaksi Jurnal Umum (Debet, Kredit, Laba Rugi). Terdapat tombol &#x27;Analisis Jurnal&#x27; cek neraca." style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#0284c7;align=left;" vertex="1" parent="1">
-  <mxGeometry x="1200" y="290" width="260" height="95" as="geometry" />
-</mxCell><mxCell id="p2_g_prod" value="&lt;b&gt;3. KELOMPOK OPERASIONAL PRODUKSI SINTAK (JHP, TARGET, ANALISA, HASIL &amp;amp; LAPORAN PEKERJAAN)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef2f2;strokeColor=#fecaca;strokeWidth=1.5;verticalAlign=top;align=left;spacingLeft=15;spacingTop=8;fontColor=#b91c1c;fontSize=11;" vertex="1" parent="1">
-  <mxGeometry x="40" y="415" width="1440" height="160" as="geometry" />
-</mxCell><mxCell id="p2_prod_sopd" value="&lt;b&gt;SOPd (/data/excel-sopd)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Daftar antrean order gabungan dari Digit (orders) &amp;amp; upload Excel SOPd. Inline edit cell 2x klik untuk harga, deadline, keterangan." style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#dc2626;align=left;" vertex="1" parent="1">
-  <mxGeometry x="60" y="455" width="265" height="105" as="geometry" />
-</mxCell><mxCell id="p2_prod_jhp" value="&lt;b&gt;Jurnal Harian Produksi (/jurnal-harian-produksi)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;• Input Target: Bagian, Shift, Operator, No SOPd, Target (fitur Copy Jadwal)&lt;br/&gt;• Input Realisasi: Jam kerja, Lembar Berhasil, Rijek&lt;br/&gt;• Jalur Alternatif: Input Realisasi via Bot Telegram (/api/telegram/realisasi)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#dc2626;strokeWidth=2;align=left;" vertex="1" parent="1">
-  <mxGeometry x="340" y="455" width="335" height="105" as="geometry" />
-</mxCell><mxCell id="p2_prod_sub" value="&lt;b&gt;Target &amp;amp; Analisa&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/target&lt;/code&gt; &amp;amp; &lt;code&gt;/analisa&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Target Harian:&lt;/b&gt; Rekap pemenuhan target shift hari ini per bagian&lt;br/&gt;• &lt;b&gt;Analisa:&lt;/b&gt; Cari per No Order untuk melihat riwayat seluruh pengerjaan JHP &amp;amp; kendala" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#dc2626;align=left;" vertex="1" parent="1">
-  <mxGeometry x="690" y="455" width="255" height="105" as="geometry" />
-</mxCell><mxCell id="p2_prod_hasil" value="&lt;b&gt;Hasil Produksi (/hasil-produksi)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Tab Jurnal:&lt;/b&gt; Rekap total target, realisasi &amp;amp; rijek per jenis pekerjaan dari JHP&lt;br/&gt;• &lt;b&gt;Tab Barang Jadi:&lt;/b&gt; Data barang jadi dari Digit" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#dc2626;align=left;" vertex="1" parent="1">
-  <mxGeometry x="960" y="455" width="250" height="105" as="geometry" />
-</mxCell><mxCell id="p2_prod_lap" value="&lt;b&gt;Laporan Pekerjaan (/laporan-pekerjaan)&lt;/b&gt;&lt;br/&gt;&lt;hr/&gt;Monitoring &amp;amp; pelaporan tugas kerja harian per karyawan dan bagian (Setting, QC, Cetak, Finishing, Gudang, Teknisi, Mesin)." style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#dc2626;align=left;" vertex="1" parent="1">
-  <mxGeometry x="1225" y="455" width="235" height="105" as="geometry" />
-</mxCell><mxCell id="p2_g_support" value="&lt;b&gt;4. KELOMPOK KALKULASI, HRD &amp;amp; PENGATURAN SISTEM (MODUL-MODUL MANDIRI)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fdf4ff;strokeColor=#f0abfc;strokeWidth=1.5;verticalAlign=top;align=left;spacingLeft=15;spacingTop=8;fontColor=#86198f;fontSize=11;" vertex="1" parent="1">
-  <mxGeometry x="40" y="590" width="1440" height="160" as="geometry" />
-</mxCell><mxCell id="p2_calc" value="&lt;b&gt;Kalkulasi: Pricelist &amp;amp; HPP&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/pricelist&lt;/code&gt; &amp;amp; &lt;code&gt;/hpp-kalkulasi&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Pricelist:&lt;/b&gt; Simulator mandiri 20+ produk cetak (Buku, Dus, Stopmap, Brosur, dll.)&lt;br/&gt;• &lt;b&gt;HPP Kalkulasi:&lt;/b&gt; Input nilai HPP per nama order&lt;br/&gt;• &lt;b&gt;Rekap SO:&lt;/b&gt; Rekap baris Sales Order dari Digit" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#a855f7;align=left;" vertex="1" parent="1">
-  <mxGeometry x="60" y="630" width="335" height="105" as="geometry" />
-</mxCell><mxCell id="p2_hrd" value="&lt;b&gt;HRD: Karyawan &amp;amp; Catat Kesalahan&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/employees&lt;/code&gt; &amp;amp; &lt;code&gt;/records&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Karyawan:&lt;/b&gt; Master NIP, Nama, Jabatan, Bagian, Status&lt;br/&gt;• &lt;b&gt;Catat Kesalahan:&lt;/b&gt; Pencatatan insiden kelalaian kerja &amp;amp; rincian beban kerugian finansial (mengalir ke Dashboard HRD)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#e11d48;align=left;" vertex="1" parent="1">
-  <mxGeometry x="410" y="630" width="330" height="105" as="geometry" />
-</mxCell><mxCell id="p2_tracking" value="&lt;b&gt;Umum: Tracking Manufaktur &amp;amp; Log&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/tracking-manufaktur&lt;/code&gt; &amp;amp; &lt;code&gt;/log-aktivitas&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Tracking:&lt;/b&gt; Melacak aliran dokumen manufaktur dari Digit (SO -&gt; BOM -&gt; PO -&gt; BBB -&gt; Kirim -&gt; Piutang)&lt;br/&gt;• &lt;b&gt;Log Aktivitas:&lt;/b&gt; Audit trail riwayat aksi user di sistem" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#7c3aed;align=left;" vertex="1" parent="1">
-  <mxGeometry x="755" y="630" width="345" height="105" as="geometry" />
-</mxCell><mxCell id="p2_settings" value="&lt;b&gt;Pengaturan: User, Roles &amp;amp; Konversi&lt;/b&gt;&lt;br/&gt;&lt;code&gt;/users&lt;/code&gt;, &lt;code&gt;/roles&lt;/code&gt;, &lt;code&gt;/settings/...&lt;/code&gt;&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Kelola User &amp;amp; Hak Akses:&lt;/b&gt; Manajemen akun login &amp;amp; permission RBAC&lt;br/&gt;• &lt;b&gt;Telegram Users:&lt;/b&gt; Approval akun operator untuk Bot Telegram&lt;br/&gt;• &lt;b&gt;Konversi Data:&lt;/b&gt; Migrasi file Excel HPP, JHP, dan Laporan" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;verticalAlign=middle;spacing=6;spacingLeft=10;spacingRight=10;fillColor=#ffffff;strokeColor=#475569;align=left;" vertex="1" parent="1">
-  <mxGeometry x="1115" y="630" width="345" height="105" as="geometry" />
+</mxCell><mxCell id="e7" value="Rekap Target" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#dc2626;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9;fontColor=#991b1b;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_jhp" target="n_target">
+  <mxGeometry relative="1" as="geometry">
+    <mxPoint x="0" y="-10" as="offset" />
+    <Array as="points">
+      <mxPoint x="1190" y="320" />
+      <mxPoint x="1260" y="320" />
+    </Array>
+  </mxGeometry>
+</mxCell><mxCell id="e8" value="Pengerjaan per Order" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#dc2626;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9;fontColor=#991b1b;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_jhp" target="n_analisa">
+  <mxGeometry relative="1" as="geometry">
+    <mxPoint x="0" y="-10" as="offset" />
+    <Array as="points">
+      <mxPoint x="1190" y="392" />
+      <mxPoint x="1260" y="392" />
+    </Array>
+  </mxGeometry>
+</mxCell><mxCell id="e9" value="Lembar &amp;amp; Rijek" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#dc2626;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9;fontColor=#991b1b;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_jhp" target="n_hasil">
+  <mxGeometry relative="1" as="geometry">
+    <mxPoint x="0" y="-10" as="offset" />
+    <Array as="points">
+      <mxPoint x="1190" y="467" />
+      <mxPoint x="1260" y="467" />
+    </Array>
+  </mxGeometry>
+</mxCell><mxCell id="e10" value="Grafik Tren Kesalahan" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#dc2626;strokeWidth=2;endArrow=classic;endFill=1;fontSize=9;fontColor=#991b1b;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_hrd" target="n_dash_hrd">
+  <mxGeometry relative="1" as="geometry">
+    <mxPoint x="0" y="-12" as="offset" />
+    <Array as="points">
+      <mxPoint x="610" y="730" />
+      <mxPoint x="610" y="750" />
+      <mxPoint x="995" y="750" />
+      <mxPoint x="995" y="800" />
+    </Array>
+  </mxGeometry>
 </mxCell>
       </root>
     </mxGraphModel>
