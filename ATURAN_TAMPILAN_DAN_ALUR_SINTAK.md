@@ -92,4 +92,13 @@ Role di SINTAK BUKAN sekadar daftar nama teks, melainkan aktor yang menggerakkan
    - Form `/records` memanggil `fetchProductionOrders` agar setiap insiden kelalaian operator dapat ditautkan ke nomor SPK pesanan yang rusak.
 
 10. **Telegram Users adalah Gerbang Keamanan Chat Bot**:
-    - Operator yang menggunakan Chat Bot Telegram wajib diapprove (`is_active = 1`) di `/settings/telegram-users`. Jika belum, kiriman data realisasi akan ditolak oleh bot.
+    - Operator yang menggunakan Chat Bot Telegram wajib diapprove (`is_active = 1`) di `/settings/telegram-users`. Jika belum, kiriman data realisasi akan otomatis ditolak oleh bot.
+
+11. **Daftar Modul Bersumber Ganda (Multi-Source) di SINTAK**:
+    - **SOPd** (`/data/excel-sopd`): Triple Source $\rightarrow$ (1) SPK Digit `orders` (2025+), (2) Upload Excel arsip `sopd` ($\le$2024), dan (3) Edit manual 2x klik cell web (`sopd_harga`).
+    - **JHP** (`/jurnal-harian-produksi`): Multi-Source $\rightarrow$ (1) Form web harian, (2) Bot Telegram HP, (3) Fitur Copy Jadwal, dan (4) Upload Excel konversi arsip JHP.
+    - **Master Target / Pekerjaan**: Dual Source $\rightarrow$ (1) Upload File Excel dan (2) Input Form Tambah/Edit/Hapus web manual.
+    - **HPP Kalkulasi** (`/hpp-kalkulasi`): Dual Source $\rightarrow$ (1) Sync nama pesanan dari SPK Digit `orders` dan (2) Upload File Excel arsip HPP lama.
+    - **Laporan Pekerjaan** (`/laporan-pekerjaan`): Dual Source $\rightarrow$ (1) Input tugas harian web staf teknis dan (2) Live Sync CSV Google Spreadsheet (`DATABASE_REPORT`).
+    - **Hasil Produksi** (`/hasil-produksi`): Dual Tab / Dual Source $\rightarrow$ (1) Tab Jurnal: Akumulasi internal JHP dan (2) Tab Barang Jadi: Serah terima fisik dari Digit.
+    - **Pricelist Parameter**: Terhubung ke `rekap_pembelian_barang` Digit via fitur **Rekap Lookup** untuk mengintip harga beli riil kertas/plat dari vendor.
