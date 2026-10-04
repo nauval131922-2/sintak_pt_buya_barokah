@@ -52,3 +52,27 @@ Role di SINTAK BUKAN sekadar daftar nama teks, melainkan aktor yang menggerakkan
 7. **Akunting**:
    - Rute: `/akuntansi/data/rek-akuntansi`, `/akuntansi/laporan/jurnal-umum`, `/dashboard-akunting`, `/sync`.
    - Aksi: Sinkronisasi data keuangan dari Digit, memantau bagan akun, menganalisis Debet/Kredit Jurnal Umum, dan memantau tren finansial di Dashboard Akuntansi.
+
+---
+
+## 4. LOG KESALAHAN & LESSONS LEARNED (CATATAN PENGINGAT ANTI-MISS)
+*Wajib dibaca dan dipatuhi setiap kali memetakan atau memodifikasi diagram alur SINTAK:*
+
+1. **Master Target / Pekerjaan Memiliki Form Upload Excel**:
+   - Modul `Master Pekerjaan` (`/jurnal-harian-produksi/data/master-pekerjaan`) dan `Master Pekerjaan Jurnal Produksi` memiliki modul `MasterPekerjaanUpload.tsx` dan `MasterPekerjaanJurnalProduksiUpload.tsx` yang membaca file Excel (`.xls`, `.xlsx`, `.xlsm`).
+   - **Wajib**: Selalu sertakan node sumber **Upload File Excel** di atas Master Target/Pekerjaan.
+
+2. **Laporan Pekerjaan Menggunakan Google Spreadsheet API, BUKAN Upload Excel**:
+   - Menu `/settings/konversi-data/laporan-pekerjaan` (`KonversiLaporanPekerjaanClient.tsx`) berfungsi mendownload live CSV dari tab `DATABASE_REPORT` Google Spreadsheet pusat, bukan upload file Excel lokal.
+   - **Wajib**: Sumber data Laporan Pekerjaan harus diberi label **Google Spreadsheet Live Sync API**, bukan Upload Excel.
+
+3. **Laporan Pekerjaan dan JHP 100% Terpisah (Decoupled / Paralel)**:
+   - Tabel `laporan_pekerjaan` (tugas teknis staf divisi Setting, Cetak, Finishing, QC) dan `jurnal_harian_produksi` (rekap mesin & shift cetak) tidak saling terhubung di database.
+   - **DILARANG**: Menarik panah ketergantungan dari Laporan Pekerjaan ke JHP atau sebaliknya. Keduanya adalah dua aliran pelaporan paralel.
+
+4. **Master Karyawan adalah Feeder Utama JHP (Bukan Hanya HRD)**:
+   - Halaman JHP (`TargetClient.tsx:251`, `JurnalClient.tsx:153`) memanggil `fetch('/api/employees')` untuk dropdown operator Shift 1, Shift 2, Shift 3, koordinator, dan validasi absensi harian ("Cek Karyawan").
+   - **Wajib**: Master Karyawan harus memiliki relasi data langsung ke JHP sebagai penyedia data operator.
+
+5. **Prinsip Anti-Asumsi Berdasarkan Nama Menu**:
+   - DILARANG mengasumsikan alur atau sumber data hanya berdasarkan pengelompokan menu di Sidebar/URL. Selalu verifikasi langsung dengan membaca komponen halaman (`page.tsx` / `Client.tsx`) dan skema database sebelum menarik kesimpulan alur.
