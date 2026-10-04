@@ -32,13 +32,13 @@
     "jszip": "^3.10.1",
     "lucide-react": "^0.575.0",
     "modern-screenshot": "^4.7.0",
-    "next": "16.1.6",
-    "pdfjs-dist": "^6.1.200",
+    "next": "^16.3.8",
+    "pdfjs-dist": "^6.4.299",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "recharts": "^3.8.1",
     "web-push": "^3.6.7",
-    "xlsx": "^0.18.5",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "xlsx-js-style": "^1.2.0"
   },
   "devDependencies": {
@@ -50,10 +50,25 @@
     "@types/react-dom": "^19",
     "@types/web-push": "^3.6.4",
     "eslint": "^9",
-    "eslint-config-next": "16.1.6",
+    "eslint-config-next": "^16.3.8",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5",
     "vitest": "^4.1.10"
+  },
+  "overrides": {
+    "nanoid": "^3.3.19",
+    "tmp": "^0.2.7",
+    "dompurify": "^3.4.16",
+    "baseline-browser-mapping": "^2.11.27",
+    "jspdf": {
+      "fflate": "^0.8.3"
+    },
+    "minimatch": {
+      "brace-expansion": "^1.1.21"
+    },
+    "readdir-glob": {
+      "brace-expansion": "^2.1.7"
+    }
   }
 }
