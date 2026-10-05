@@ -74,17 +74,17 @@
 </mxCell><mxCell id="bg_col3" value="&lt;b&gt;3. MANUFAKTUR &amp;amp; OPERASIONAL PABRIK (DIGIT &amp;amp; SINTAK)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=center;spacingTop=12;fontSize=11.5;fontStyle=1;strokeWidth=1.5;fillColor=#fffbeb;strokeColor=#fde68a;fontColor=#b45309;" vertex="1" parent="1">
   <mxGeometry x="1000" y="125" width="680" height="840" as="geometry" />
 </mxCell><mxCell id="t_bom" value="&lt;b&gt;bill_of_materials (BOM)&lt;/b&gt; (6.959 baris)&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;PK:&lt;/b&gt; &lt;code&gt;faktur&lt;/code&gt; (BM...) | &lt;b&gt;FK:&lt;/b&gt; &lt;code&gt;faktur_prd&lt;/code&gt;, &lt;code&gt;faktur_sph&lt;/code&gt;&lt;br/&gt;• Formula resep kebutuhan kertas, plat &amp;amp; ongkos cetak" style="rounded=1;whiteSpace=wrap;html=1;fontSize=8;verticalAlign=middle;spacing=4;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;align=left;fillColor=#ffffff;strokeColor=#d97706;" vertex="1" parent="1">
-  <mxGeometry x="1020" y="165" width="310" height="55" as="geometry" />
+  <mxGeometry x="1020" y="165" width="295" height="55" as="geometry" />
 </mxCell><mxCell id="t_bahan_baku" value="&lt;b&gt;bahan_baku (BBB Produksi)&lt;/b&gt; (19.145 baris)&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;FK:&lt;/b&gt; &lt;code&gt;faktur_prd&lt;/code&gt; (ke orders), &lt;code&gt;faktur_pb&lt;/code&gt; (ke pembelian)&lt;br/&gt;• Pemakaian riil kertas &amp;amp; bahan untuk Order Produksi" style="rounded=1;whiteSpace=wrap;html=1;fontSize=8;verticalAlign=middle;spacing=4;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;align=left;fillColor=#ffffff;strokeColor=#d97706;" vertex="1" parent="1">
-  <mxGeometry x="1350" y="165" width="310" height="55" as="geometry" />
+  <mxGeometry x="1365" y="165" width="295" height="55" as="geometry" />
 </mxCell><mxCell id="t_orders" value="&lt;b&gt;orders (Order Produksi)&lt;/b&gt; (2.673 baris) [INTI ORDER]&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;PK:&lt;/b&gt; &lt;code&gt;faktur&lt;/code&gt; (PR...) | &lt;b&gt;FK:&lt;/b&gt; &lt;code&gt;faktur_bom&lt;/code&gt;, &lt;code&gt;faktur_so&lt;/code&gt;&lt;br/&gt;• Data Order Produksi dari Digit" style="rounded=1;whiteSpace=wrap;html=1;fontSize=8;verticalAlign=middle;spacing=4;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;align=left;fillColor=#ffffff;strokeColor=#dc2626;strokeWidth=2;" vertex="1" parent="1">
-  <mxGeometry x="1020" y="255" width="310" height="60" as="geometry" />
+  <mxGeometry x="1020" y="255" width="295" height="60" as="geometry" />
 </mxCell><mxCell id="t_barang_jadi" value="&lt;b&gt;barang_jadi (Hasil Produksi Digit)&lt;/b&gt; (4.984 baris)&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;FK:&lt;/b&gt; &lt;code&gt;faktur_prd&lt;/code&gt; (ke orders), &lt;code&gt;faktur_so&lt;/code&gt; (ke SO)&lt;br/&gt;• Serah terima fisik barang jadi ke gudang/pengiriman" style="rounded=1;whiteSpace=wrap;html=1;fontSize=8;verticalAlign=middle;spacing=4;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;align=left;fillColor=#ffffff;strokeColor=#d97706;" vertex="1" parent="1">
-  <mxGeometry x="1350" y="255" width="310" height="60" as="geometry" />
+  <mxGeometry x="1365" y="255" width="295" height="60" as="geometry" />
 </mxCell><mxCell id="t_produksi_selesai" value="&lt;b&gt;produksi_selesai&lt;/b&gt; (2.486 baris)&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;PK:&lt;/b&gt; &lt;code&gt;faktur&lt;/code&gt; | &lt;b&gt;FK:&lt;/b&gt; &lt;code&gt;faktur_bom&lt;/code&gt;, &lt;code&gt;faktur_so&lt;/code&gt;, &lt;code&gt;faktur_pb&lt;/code&gt;&lt;br/&gt;• Status Order Produksi selesai di Digit (dicek query SOPd: &lt;code&gt;EXISTS produksi_selesai&lt;/code&gt;)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=8;verticalAlign=middle;spacing=4;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;align=left;fillColor=#ffffff;strokeColor=#d97706;" vertex="1" parent="1">
-  <mxGeometry x="1350" y="340" width="310" height="65" as="geometry" />
+  <mxGeometry x="1365" y="340" width="295" height="65" as="geometry" />
 </mxCell><mxCell id="m_sopd" value="&lt;b&gt;Menu SOPd (/data/excel-sopd)&lt;/b&gt; (6.603 baris)&lt;br/&gt;&lt;hr/&gt;• &lt;b&gt;Key:&lt;/b&gt; &lt;code&gt;orders.faktur = sopd.no_sopd&lt;/code&gt;&lt;br/&gt;• Union data orders (2025+) + upload Excel sopd (&amp;le;2024)&lt;br/&gt;• &lt;b&gt;Status Selesai:&lt;/b&gt; &lt;code&gt;sopd_harga.finished_date&lt;/code&gt; (6.041 baris)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=8;verticalAlign=middle;spacing=4;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;align=left;fillColor=#ffffff;strokeColor=#d97706;strokeWidth=1.5;" vertex="1" parent="1">
-  <mxGeometry x="1020" y="340" width="310" height="75" as="geometry" />
+  <mxGeometry x="1020" y="340" width="295" height="75" as="geometry" />
 </mxCell><mxCell id="m_master_pekerjaan" value="&lt;b&gt;Master Pekerjaan&lt;/b&gt; (1.436 baris)&lt;br/&gt;&lt;hr/&gt;Referensi nama bagian &amp;amp; jenis pekerjaan untuk JHP (Upload Excel + Web Form)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=8;verticalAlign=middle;spacing=4;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;align=left;fillColor=#ffffff;strokeColor=#b91c1c;strokeWidth=1.5;fontSize=7.5;" vertex="1" parent="1">
   <mxGeometry x="1020" y="435" width="150" height="50" as="geometry" />
 </mxCell><mxCell id="m_telegram_feeder" value="&lt;b&gt;Bot Telegram&lt;/b&gt; (/api/telegram/realisasi)&lt;br/&gt;&lt;hr/&gt;Input realisasi lapangan" style="rounded=1;whiteSpace=wrap;html=1;fontSize=8;verticalAlign=middle;spacing=4;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;align=left;fillColor=#e0f2fe;strokeColor=#0284c7;fontSize=7.5;" vertex="1" parent="1">
@@ -108,10 +108,10 @@
 </mxCell><mxCell id="e_so_ord" value="FK: faktur_so" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#dc2626;strokeWidth=2;endArrow=classic;endFill=1;fontSize=7.5;fontStyle=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontColor=#991b1b;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_sales_orders" target="t_orders">
   <mxGeometry relative="1" as="geometry">
   </mxGeometry>
-</mxCell><mxCell id="e_ord_bb" value="FK: faktur_prd" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d97706;strokeWidth=2;endArrow=classic;endFill=1;fontSize=7.5;fontStyle=1;exitX=1;exitY=0.3;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontColor=#92400e;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_orders" target="t_bahan_baku">
+</mxCell><mxCell id="e_ord_bb" value="FK: faktur_prd" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#ea580c;strokeWidth=1.5;endArrow=classic;endFill=1;fontSize=7.5;fontStyle=1;exitX=1;exitY=0.25;entryX=0;entryY=0.5;fontColor=#c2410c;labelBackgroundColor=#ffffff;verticalAlign=bottom;verticalLabelPosition=top;" edge="1" parent="1" source="t_orders" target="t_bahan_baku">
   <mxGeometry relative="1" as="geometry">
   </mxGeometry>
-</mxCell><mxCell id="e_ord_bj" value="FK: faktur_prd" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d97706;strokeWidth=2;endArrow=classic;endFill=1;fontSize=7.5;fontStyle=1;exitX=1;exitY=0.7;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontColor=#92400e;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_orders" target="t_barang_jadi">
+</mxCell><mxCell id="e_ord_bj" value="FK: faktur_prd" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#ea580c;strokeWidth=1.5;endArrow=classic;endFill=1;fontSize=7.5;fontStyle=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontColor=#c2410c;labelBackgroundColor=#ffffff;verticalAlign=bottom;verticalLabelPosition=top;" edge="1" parent="1" source="t_orders" target="t_barang_jadi">
   <mxGeometry relative="1" as="geometry">
   </mxGeometry>
 </mxCell><mxCell id="e_ord_sopd" value="Key: no_sopd" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d97706;strokeWidth=2;endArrow=classic;endFill=1;fontSize=7.5;fontStyle=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontColor=#92400e;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_orders" target="m_sopd">
@@ -152,7 +152,7 @@
 </mxCell><mxCell id="e_piut_track" value="Alur Penjualan" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#a855f7;strokeWidth=2;endArrow=classic;endFill=1;fontSize=7.5;fontStyle=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.42;entryY=0;entryDx=0;entryDy=0;fontColor=#6b21a8;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_pelunasan_piutang" target="b_tracking">
   <mxGeometry relative="1" as="geometry">
   </mxGeometry>
-</mxCell><mxCell id="e_dp_track" value="Alur Produksi" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#a855f7;strokeWidth=2;endArrow=classic;endFill=1;fontSize=7.5;fontStyle=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.78;entryY=0;entryDx=0;entryDy=0;fontColor=#6b21a8;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_barang_jadi" target="b_tracking">
+</mxCell><mxCell id="e_dp_track" value="Alur Produksi" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#a855f7;strokeWidth=2;endArrow=classic;endFill=1;fontSize=8;fontStyle=1;exitX=0.5;exitY=1;entryX=0.78;entryY=0;fontColor=#6b21a8;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="b_dash_prod" target="b_tracking">
   <mxGeometry relative="1" as="geometry">
   </mxGeometry>
 </mxCell><mxCell id="bg_col4" value="&lt;b&gt;4. PELAPORAN KERJA &amp;amp; KALKULASI HARGA&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=center;spacingTop=12;fontSize=11.5;fontStyle=1;strokeWidth=1.5;fillColor=#fff1f2;strokeColor=#fecdd3;fontColor=#9f1239;" vertex="1" parent="1">
@@ -220,12 +220,12 @@
     <Array as="points">
       <mxPoint x="2175" y="495" />
       <mxPoint x="2175" y="98" />
-      <mxPoint x="1680" y="98" />
-      <mxPoint x="1680" y="537" />
+      <mxPoint x="1695" y="98" />
+      <mxPoint x="1695" y="537" />
     </Array>
   </mxGeometry>
 </mxCell>
-      </root>
+      <mxCell id="e_bj_ps" value="Verifikasi Selesai" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#ea580c;strokeWidth=1.5;endArrow=classic;endFill=1;fontSize=7.5;fontStyle=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;fontColor=#c2410c;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_barang_jadi" target="t_produksi_selesai"><mxGeometry relative="1" as="geometry" /></mxCell></root>
     </mxGraphModel>
   </diagram>
 
