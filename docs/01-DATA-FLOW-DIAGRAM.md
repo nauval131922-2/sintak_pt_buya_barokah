@@ -6,7 +6,7 @@
 ## 1. PENDAHULUAN & RUANG LINGKUP
 Dokumen ini mendefinisikan arsitektur aliran data sistem **SINTAK** secara struktural berbasis **kode sumber dan database sistem**, menggunakan standar **Data Flow Diagram (DFD)**:
 1. **DFD Level 0 (Diagram Konteks / Context Diagram)**: Memetakan batasan sistem (*system boundary*), entitas eksternal, dan seluruh aktor pengguna resmi (berdasarkan hak akses riil di tabel `role_permissions`), serta aliran data masuk (*inflow*) dan informasi keluar (*outflow*).
-2. **DFD Level 1 (Dekomposisi Sub-Proses & Data Store)**: Membedah SINTAK menjadi 5 proses bisnis utama, 9 penyimpanan data (*Data Store D1 – D9*), serta 1 proses rekonsiliasi audit lintas tabel (*Engine Tracking Manufaktur 14 Tabel*).
+2. **DFD Level 1 (Dekomposisi Sub-Proses & Data Store)**: Membedah SINTAK menjadi sub-proses bisnis, penyimpanan data (*Data Store D1 – D9*), serta modul pelacakan alur dokumen (*Tracking Manufaktur*).
 
 ---
 
@@ -24,7 +24,7 @@ Berinteraksi dengan **9 Entitas Eksternal & Peran Pengguna Asli**:
 | **2** | **Bot Telegram** | Kanal Input Mobile | Kanal mobile untuk operator lapangan dalam input realisasi pengerjaan order (`/input`), pencarian order (`/search`, `/searchorder`), dan cek riwayat (`/history`). |
 | **3** | **Role Kalkulasi** | Role SINTAK | Pengguna yang mengelola modul Kalkulasi Biaya Produksi: simulasi 20+ produk di `/pricelist`, kalkulasi `/hpp-kalkulasi`, serta referensi tarif bahan dari riwayat Pembelian. |
 | **4** | **Role Admin Realisasi** | Role SINTAK | Admin verifikator JHP: menginput dan memverifikasi data realisasi Jurnal Harian Produksi (**JHP**) harian di web (jam mulai-selesai, kuantitas realisasi, lembar **inscheet**, lembar **rijek**, dan kendala). |
-| **5** | **Role Divisi Teknis & Kepala Seksi** | Role SINTAK | Staf teknis lapangan (`Setting`, `Cetak`, `Finishing`, `Quality Control`) dan pimpinan seksi (`Kepala Seksi Pra Cetak`, `Kepala Seksi Pasca Cetak`): menginput & memperbarui tugas di **Laporan Pekerjaan** (`/laporan-pekerjaan`), serta memantau progres di **Hasil Produksi** (`/hasil-produksi`). |
+| **5** | **Role Operator Lapangan & Kepala Seksi** | Role SINTAK | Staf operasional lapangan dan pimpinan seksi percetakan:<br/>• **Setting**: Operator pra cetak & pembuatan plat CTP.<br/>• **Cetak**: Operator mesin cetak (Offset & Web).<br/>• **Finishing**: Operator pasca cetak (lipat, lem, jilid/binding, potong, & packing).<br/>• **Quality Control (QC)**: Staf pemeriksa standar mutu hasil cetak.<br/>• **Kepala Seksi**: Pimpinan teknis (`Kepala Seksi Pra Cetak` & `Kepala Seksi Pasca Cetak`).<br/>Semua peran ini berinteraksi di SINTAK untuk menginput/memperbarui tugas di **Laporan Pekerjaan** (`/laporan-pekerjaan`) dan memantau **Hasil Produksi** (`/hasil-produksi`). |
 | **6** | **Role Admin Penjadwalan** | Role SINTAK | Penjadwal operasional pabrik: mengelola data **SOPd** (`/data/excel-sopd`), melakukan **Input Target (Penjadwalan)** di JHP, memantau **Target Harian** (`/target`), dan mengelola referensi **Master Pekerjaan**. |
 | **7** | **Role Akunting** | Role SINTAK | Pengguna bagian keuangan yang menjalankan sinkronisasi/scraping data Jurnal Umum dan Rek Akuntansi dari Digit, melihat **Dashboard Akunting** (visualisasi kas, tren laba-rugi), modal Analisis Jurnal, dan ekspor Excel. |
 | **8** | **Role HRD** | Role SINTAK | Pengguna personalia: mengunggah/mengelola data master Karyawan di `/karyawan`, mencatat kesalahan kerja di **Catat Kesalahan** (`/records` / `infractions`), dan memantau **Dashboard HRD** (total karyawan & grafik tren kesalahan). |
@@ -39,7 +39,7 @@ Berinteraksi dengan **9 Entitas Eksternal & Peran Pengguna Asli**:
 2. **Dari Bot Telegram**: Input Realisasi Order Lapangan.
 3. **Dari Role Kalkulasi**: Input Parameter Oplah, Bahan Kertas, & Finishing.
 4. **Dari Role Admin Realisasi**: Input & Verifikasi JHP Harian (Jam Kerja, Realisasi, Inscheet, Rijek).
-5. **Dari Role Divisi Teknis & Kasi**: Input Tugas Laporan Pekerjaan (`/laporan-pekerjaan`).
+5. **Dari Role Operator Lapangan & Kepala Seksi**: Input & Pembaruan Tugas Laporan Pekerjaan (`/laporan-pekerjaan`).
 6. **Dari Role Admin Penjadwalan**: Input SOPd, Target & Master Pekerjaan.
 7. **Dari Role Akunting**: Trigger Scrape Jurnal & Rek Akuntansi dari Digit.
 8. **Dari Role HRD**: Upload Karyawan (Excel) & Catat Kesalahan (`/records`).
@@ -50,7 +50,7 @@ Berinteraksi dengan **9 Entitas Eksternal & Peran Pengguna Asli**:
 2. **Ke Bot Telegram**: Respon Status Simpan & Validasi Order.
 3. **Ke Role Kalkulasi**: Hasil Simulasi Matriks Harga Jual & HPP.
 4. **Ke Role Admin Realisasi**: Referensi Data SOPd & Target Kerja.
-5. **Ke Role Divisi Teknis & Kasi**: Monitoring Laporan & Hasil Produksi.
+5. **Ke Role Operator Lapangan & Kepala Seksi**: Monitoring Laporan Pekerjaan & Hasil Produksi.
 6. **Ke Role Admin Penjadwalan**: Dashboard Produksi, Analisa & Target Harian.
 7. **Ke Role Akunting**: Dashboard Akunting & Analisis Jurnal.
 8. **Ke Role HRD**: Dashboard HRD (Total Karyawan & Grafik Tren Kesalahan).
@@ -67,7 +67,7 @@ Modul Google Spreadsheet di SINTAK berlokasi di `Settings > Konversi Data > Lapo
 
 ## 3. DFD LEVEL 1: DEKOMPOSISI SUB-PROSES & DATA STORE
 
-Pada DFD Level 1, sistem SINTAK didekomposisi menjadi **5 Sub-Proses Utama**, **9 Data Store (D1 – D9)**, dan **1 Sub-Proses Rekonsiliasi Audit Lintas Dokumen**:
+Pada DFD Level 1, sistem SINTAK didekomposisi menjadi **Sub-Proses Bisnis**, **9 Data Store (D1 – D9)**, dan **Modul Tracking Manufaktur**:
 
 ### 3.1 Sub-Proses Utama (Level 1)
 1. **Proses 1.0: Pembelian & Stok**
@@ -90,23 +90,23 @@ Pada DFD Level 1, sistem SINTAK didekomposisi menjadi **5 Sub-Proses Utama**, **
 
 ### 3.2 Katalog Data Store (Penyimpanan Data D1 – D9)
 
-| Kode | Nama Data Store | Tabel-Tabel di Database SQLite SINTAK | Deskripsi & Volume |
-| :---: | :--- | :--- | :---: |
-| **D1** | **Data Pembelian Digit** | `purchase_requests`, `spph_out`, `sph_in`, `purchase_orders`, `penerimaan_pembelian`, `rekap_pembelian_barang`, `pelunasan_hutang` | ~44.500 baris |
-| **D2** | **Data Master Stok Barang** | `stok_master_barang` | 12.958 baris |
-| **D3** | **Data Penjualan Digit** | `sph_out`, `sales_orders`, `sales_reports`, `pengiriman`, `pelunasan_piutang` | ~21.800 baris |
-| **D4** | **Data Produksi Digit** | `bill_of_materials`, `orders`, `bahan_baku`, `barang_jadi`, `produksi_selesai` | ~35.700 baris |
-| **D5** | **Data Operasional SINTAK** | `sopd`, `sopd_harga`, `jurnal_harian_produksi`, `master_pekerjaan` | ~200.000 baris |
-| **D6** | **Data Laporan Pekerjaan** | `laporan_pekerjaan` | 5.194 baris |
-| **D7** | **Data Kalkulasi Biaya & Simulasi** | `hpp_kalkulasi`, `saved_calculations`, `global_master_params` | ~2.500 baris |
-| **D8** | **Data Jurnal Akuntansi** | `rek_akuntansi`, `jurnal_umum` | 100.603 baris |
-| **D9** | **Data SDM, Pelanggaran & Tata Kelola** | `employees`, `infractions`, `users`, `app_roles`, `telegram_users`, `activity_logs` | ~17.500 baris |
+| Kode | Nama Data Store | Tabel-Tabel di Database SINTAK |
+| :---: | :--- | :--- |
+| **D1** | **Data Pembelian Digit** | `purchase_requests`, `spph_out`, `sph_in`, `purchase_orders`, `penerimaan_pembelian`, `rekap_pembelian_barang`, `pelunasan_hutang` |
+| **D2** | **Data Master Stok Barang** | `stok_master_barang` |
+| **D3** | **Data Penjualan Digit** | `sph_out`, `sales_orders`, `sales_reports`, `pengiriman`, `pelunasan_piutang` |
+| **D4** | **Data Produksi Digit** | `bill_of_materials`, `orders`, `bahan_baku`, `barang_jadi`, `produksi_selesai` |
+| **D5** | **Data Operasional SINTAK** | `sopd`, `sopd_harga`, `jurnal_harian_produksi`, `master_pekerjaan` |
+| **D6** | **Data Laporan Pekerjaan** | `laporan_pekerjaan` |
+| **D7** | **Data Kalkulasi Biaya & Simulasi** | `hpp_kalkulasi`, `saved_calculations`, `global_master_params` |
+| **D8** | **Data Jurnal Akuntansi** | `rek_akuntansi`, `jurnal_umum` |
+| **D9** | **Data SDM & Tata Kelola** | `employees`, `infractions`, `users`, `app_roles`, `telegram_users`, `activity_logs` |
 
 ---
 
-### 3.3 Sub-Proses 6.0: Engine Rekonsiliasi & Tracking Manufaktur
-Engine pelacakan terpadu 14 tabel dokumen operasional pabrik:
-Pengguna memasukkan satu nomor dokumen acuan (Faktur BOM / Order Produksi / PO / PB / SO), lalu engine secara otomatis merekonstruksi riwayat siklus hidup dokumen lintas departemen:
+### 3.3 Sub-Proses 6.0: Tracking Manufaktur
+Modul pelacakan terpadu alur dokumen operasional:
+Pengguna memasukkan satu nomor dokumen acuan (BOM / Order Produksi / PO / PB / SO), lalu sistem menelusuri riwayat alur dokumen lintas departemen:
 $$\begin{aligned}
 \text{Pembelian} &\longrightarrow \text{PR} \rightarrow \text{SPPH} \rightarrow \text{SPH} \rightarrow \text{PO} \rightarrow \text{Penerimaan} \rightarrow \text{Rekap PB} \rightarrow \text{Hutang} \\
 \text{Penjualan} &\longrightarrow \text{SPH Out} \rightarrow \text{Sales Order} \rightarrow \text{Laporan Penjualan} \rightarrow \text{Pengiriman (SJ)} \rightarrow \text{Piutang} \\
@@ -122,4 +122,4 @@ Diagram grafis multi-halaman resmi tanpa grid (`grid="0"`) tersimpan di:
 
 Tab halaman di Draw.io Desktop:
 - **Tab 1**: `DFD Level 0 - Diagram Konteks` (Pemetaan 9 Sektor Peran Murni)
-- **Tab 2**: `DFD Level 1 - Rincian Sub-Proses` (5 Sub-proses Bisnis + Engine Rekonsiliasi)
+- **Tab 2**: `DFD Level 1 - Rincian Sub-Proses` (Sub-proses Bisnis, Data Store & Tracking Manufaktur)
