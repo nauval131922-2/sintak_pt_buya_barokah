@@ -162,7 +162,27 @@ Dekomposisi alur dokumen pengadaan barang dan katalog master stok:
 
 ---
 
-## 6. AKSES FILE DIAGRAM RESMI (DRAW.IO)
+## 6. DFD LEVEL 2: PROSES 2.0 PENJUALAN & PIUTANG
+Dekomposisi alur transaksi penjualan dari penawaran harga hingga pelunasan piutang:
+
+### 6.1 Sub-Proses Level 2
+1. **2.1 Penawaran & Pemesanan Penjualan**
+   - Scraping berkala Surat Penawaran Harga Keluar (**SPH Out**) dan Surat Pesanan Pelanggan (**Sales Order Barang / SO**).
+   - Menyimpan ke Data Store **D3.1 Penawaran & Sales Order** (`sph_out`, `sales_orders`).
+2. **2.2 Analisis Detail Sales Order Barang**
+   - Membaca baris data detail pesanan dari tabel `sales_orders`.
+   - Menyediakan fitur filter rentang harga satuan dan pencarian faktur/produk untuk tim Kalkulasi & Penjualan (izin `kalkulasi_rekap_so`) di menu **Rekap Sales Order Barang** (`/rekap-sales-order`).
+   - Berfungsi sebagai proses analitik murni (*query dinamis tanpa tabel database tambahan*).
+3. **2.3 Realisasi Penjualan (Faktur SI)**
+   - Scraping invoice faktur penjualan resmi (**Laporan Penjualan**) yang terikat langsung ke nomor Sales Order (`FK: faktur_so`).
+   - Menyimpan ke Data Store **D3.2 Laporan Penjualan** (`sales_reports`).
+4. **2.4 Pengiriman Logistik & Pelunasan Piutang**
+   - Scraping Surat Jalan pengiriman barang (**Pengiriman SJ**: no resi, supir, armada) dan bukti pembayaran tagihan pelanggan (**Pelunasan Piutang**).
+   - Menyimpan ke Data Store **D3.3 Pengiriman & Piutang** (`pengiriman`, `pelunasan_piutang`).
+
+---
+
+## 7. AKSES FILE DIAGRAM RESMI (DRAW.IO)
 Diagram grafis multi-halaman resmi tanpa grid (`grid="0"`) tersimpan di:
 - **Lokal Proyek**: `D:\Projects\sintak_pt_buya_barokah\sintak-dfd.drawio`
 - **Desktop Komputer**: `C:\Users\nauval\Desktop\sintak-dfd.drawio`
@@ -172,3 +192,4 @@ Tab halaman di Draw.io Desktop:
 - **Tab 2**: `DFD Level 1 - Rincian Sub-Proses` (Sub-proses Bisnis, Data Store & Tracking Manufaktur)
 - **Tab 3**: `DFD Level 2 - 3.0 Operasional Produksi` (Dekomposisi 5 Sub-Proses Operasional Pabrik)
 - **Tab 4**: `DFD Level 2 - 1.0 Pembelian & Stok` (Dekomposisi 4 Sub-Proses Pengadaan & Stok)
+- **Tab 5**: `DFD Level 2 - 2.0 Penjualan & Piutang` (Dekomposisi 4 Sub-Proses Penjualan & Piutang)
