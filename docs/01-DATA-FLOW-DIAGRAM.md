@@ -141,7 +141,28 @@ Dekomposisi mendalam atas proses inti operasional percetakan:
 
 ---
 
-## 5. AKSES FILE DIAGRAM RESMI (DRAW.IO)
+## 5. DFD LEVEL 2: PROSES 1.0 PEMBELIAN & STOK
+Dekomposisi alur dokumen pengadaan barang dan katalog master stok:
+
+### 5.1 Sub-Proses Level 2
+1. **1.1 Pengadaan Awal (Permintaan & Penawaran)**
+   - Scraping berkala dokumen kebutuhan pengadaan dari sistem Digit: Purchase Request (**PR**), Surat Permintaan Penawaran Harga (**SPPH**), dan Surat Penawaran Harga Masuk dari supplier (**SPH Masuk**).
+   - Menyimpan ke Data Store **D1.1 Dokumen Pengadaan Awal** (`purchase_requests`, `spph_out`, `sph_in`).
+2. **1.2 Pemesanan & Penerimaan Fisik**
+   - Scraping dokumen Purchase Order resmi (**PO**) dan Surat Jalan Penerimaan Barang Fisik di gudang (**Penerimaan Pembelian**).
+   - Menyimpan ke Data Store **D1.2 Dokumen Order & Penerimaan** (`purchase_orders`, `penerimaan_pembelian`).
+3. **1.3 Rekap Pembelian Barang & Pelunasan Hutang**
+   - Scraping rincian baris barang masuk (**Rekap PB**: nama barang, kuantitas, harga beli satuan) dan riwayat pembayaran tagihan (**Pelunasan Hutang**).
+   - Menyimpan ke Data Store **D1.3 Rekap Tagihan & Pelunasan Hutang** (`rekap_pembelian_barang`, `pelunasan_hutang`).
+   - Mengalirkan riwayat harga beli bahan baku ke modul **Kalkulasi (Rekap Lookup)** untuk dasar kalkulasi tarif di `/pricelist`.
+4. **1.4 Pengelolaan Katalog Master Stok**
+   - Scraping data master barang (kode barang, nama barang, barcode, satuan, kelompok barang) dari Digit.
+   - Menyimpan ke Data Store **D2 Master Stok Barang** (`stok_master_barang`).
+   - Berfungsi murni sebagai *read-only mirror* (SINTAK tidak menghitung mutasi stok fisik).
+
+---
+
+## 6. AKSES FILE DIAGRAM RESMI (DRAW.IO)
 Diagram grafis multi-halaman resmi tanpa grid (`grid="0"`) tersimpan di:
 - **Lokal Proyek**: `D:\Projects\sintak_pt_buya_barokah\sintak-dfd.drawio`
 - **Desktop Komputer**: `C:\Users\nauval\Desktop\sintak-dfd.drawio`
@@ -150,3 +171,4 @@ Tab halaman di Draw.io Desktop:
 - **Tab 1**: `DFD Level 0 - Diagram Konteks` (Pemetaan 9 Sektor Peran Murni)
 - **Tab 2**: `DFD Level 1 - Rincian Sub-Proses` (Sub-proses Bisnis, Data Store & Tracking Manufaktur)
 - **Tab 3**: `DFD Level 2 - 3.0 Operasional Produksi` (Dekomposisi 5 Sub-Proses Operasional Pabrik)
+- **Tab 4**: `DFD Level 2 - 1.0 Pembelian & Stok` (Dekomposisi 4 Sub-Proses Pengadaan & Stok)
