@@ -1,6 +1,6 @@
 # DOKUMEN SISTEM SINTAK: ALUR DATABASE & ARSITEKTUR API
 > **Sistem Informasi Cetak (SINTAK) — PT Buya Barokah**  
-> Status Dokumen: *Resmi, Terverifikasi Sumber Kode & Disertai Diagram Alur*  
+> Status Dokumen: *Resmi, Terverifikasi Sumber Kode & Disertai Diagram Visual Box-Drawing*  
 > Komponen: `Next.js 16 API Routes (132 Endpoints) | libSQL/SQLite 3 (WAL / MMAP) | Telegram Bot Daemon | Scraper Digit`
 
 ---
@@ -20,45 +20,70 @@
 
 Setiap permintaan HTTP dari klien (Browser, Bot Telegram, atau Crontab) diproses melalui rantai penyaringan gateway sebelum mencapai Route Handler dan Database.
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Client as Klien (Browser / Cron / Bot)
-    participant Nginx as Nginx Reverse Proxy (:80/:443)
-    participant Proxy as Next.js Gateway (src/proxy.ts)
-    participant Route as Route Handler (src/app/api/*/route.ts)
-    participant DB as Database Wrapper (src/lib/db.ts)
-    participant SQLite as SQLite 3 (WAL Mode)
-    participant Trg as Triggers (schema.ts)
-
-    Client->>Nginx: HTTP/HTTPS Request
-    Nginx->>Proxy: Forward ke Node.js (:3000)
-    
-    alt Rute Publik (PUBLIC_PATHS: /login, /api/auth/me, /api/telegram, /api/cron)
-        Proxy->>Route: Lolos Langsung (NextResponse.next())
-    else Ada Header Authorization: Bearer ${CRON_SECRET}
-        Proxy->>Route: Lolos sebagai Worker Terpercaya
-    else Membawa Cookie 'sintak_session'
-        Proxy->>Proxy: Verifikasi JWT HS256 via jose
-        alt Token Valid
-            Proxy->>Route: Lolos ke Route Handler
-        else Token Expired / Invalid
-            Proxy-->>Client: 401 Unauthorized (JSON) / Redirect /login
-        end
-    end
-
-    Route->>DB: db.execute(sql, args) / db.batch()
-    alt Operasi Tulis (INSERT / UPDATE / DELETE)
-        DB->>SQLite: injectContext() -> INSERT INTO session_context (id=1, username, last_menu)
-        DB->>SQLite: Eksekusi Query Mutasi
-        SQLite->>Trg: AFTER INSERT / UPDATE / DELETE
-        Trg->>SQLite: Baca session_context (id=1) -> Simpan ke activity_logs
-    else Operasi Baca (SELECT)
-        DB->>SQLite: Eksekusi Query Pembacaan (Tanpa injectContext)
-    end
-    SQLite-->>DB: Query Result (Rows / Changes)
-    DB-->>Route: Data Object
-    Route-->>Client: JSON Response (Status 200/400/500)
+```text
+┌───────────────────────┐     ┌───────────────────────┐     ┌───────────────────────┐     ┌───────────────────────┐     ┌───────────────────────┐     ┌───────────────────────┐
+│ Browser/Telegram/Cron │     │ Gateway Proxy         │     │ Route Handler         │     │ DB Client Wrapper     │     │ SQLite 3 (WAL Mode)   │     │ Database Triggers     │
+│                       │     │ (src/proxy.ts)        │     │ (src/app/api/*/route) │     │ (src/lib/db.ts)       │     │ (Local / Turso)       │     │ (src/lib/schema.ts)   │
+└───────────┬───────────┘     └───────────┬───────────┘     └───────────┬───────────┘     └───────────┬───────────┘     └───────────┬───────────┘     └───────────┬───────────┘
+            │                             │                             │                             │                             │                             │
+            │ HTTP Request (Cookie/Bearer)│                             │                             │                             │                             │
+            │────────────────────────────►│                             │                             │                             │                             │
+            │                             │                             │                             │                             │                             │
+      ┌─alt │ [1. Rute Publik (PUBLIC_PATHS)]                           │                             │                             │                             │
+      │     │                             │ Lolos tanpa token           │                             │                             │                             │
+      │     │                             │────────────────────────────►│                             │                             │                             │
+      │     │                             │                             │                             │                             │                             │
+      ├─────┼─────────────────────────────┼─────────────────────────────┤                             │                             │                             │
+      │     │ [2. Header Authorization: Bearer ${CRON_SECRET}]          │                             │                             │                             │
+      │     │                             │ Lolos sebagai Worker        │                             │                             │                             │
+      │     │                             │────────────────────────────►│                             │                             │                             │
+      │     │                             │                             │                             │                             │                             │
+      ├─────┼─────────────────────────────┼─────────────────────────────┤                             │                             │                             │
+      │     │ [3. Cookie 'sintak_session']│                             │                             │                             │                             │
+      │     │                             │──┐                          │                             │                             │                             │
+      │     │                             │  │ Verifikasi JWT HS256     │                             │                             │                             │
+      │     │                             │◄─┘                          │                             │                             │                             │
+      │     │                             │                             │                             │                             │                             │
+      │     │ [Token Valid]               │ Lolos ke Route Handler      │                             │                             │                             │
+      │     │                             │────────────────────────────►│                             │                             │                             │
+      │     │                             │                             │                             │                             │                             │
+      │     │ [Token Invalid / Expired]   │                             │                             │                             │                             │
+      │     │ 401 Unauthorized / Redirect │                             │                             │                             │                             │
+      │     │◄────────────────────────────│                             │                             │                             │                             │
+      └─────┴─────────────────────────────┴─────────────────────────────┴─────────────────────────────┴─────────────────────────────┴─────────────────────────────┘
+            │                             │                             │                             │                             │                             │
+            │                             │                             │ db.execute() / db.batch()   │                             │                             │
+            │                             │                             │────────────────────────────►│                             │                             │
+            │                             │                             │                             │                             │                             │
+      ┌─alt │ [A. Operasi Tulis (INSERT / UPDATE / DELETE)]             │                             │                             │                             │
+      │     │                             │                             │                             │ injectContext()             │                             │
+      │     │                             │                             │                             │ (INSERT session_context)    │                             │
+      │     │                             │                             │                             │────────────────────────────►│                             │
+      │     │                             │                             │                             │                             │                             │
+      │     │                             │                             │                             │                             │ Eksekusi SQL Mutasi         │
+      │     │                             │                             │                             │────────────────────────────►│                             │
+      │     │                             │                             │                             │                             │ Pemicuan Trigger            │
+      │     │                             │                             │                             │                             │────────────────────────────►│
+      │     │                             │                             │                             │                             │                             │
+      │     │                             │                             │                             │                             │ Tulis ke activity_logs      │
+      │     │                             │                             │                             │                             │◄────────────────────────────│
+      │     │                             │                             │                             │                             │                             │
+      ├─────┼─────────────────────────────┼─────────────────────────────┼─────────────────────────────┼─────────────────────────────┼─────────────────────────────┤
+      │     │ [B. Operasi Baca (SELECT)]  │                             │                             │                             │                             │
+      │     │                             │                             │                             │ Eksekusi Query Langsung     │                             │
+      │     │                             │                             │                             │ (Bypass injectContext)      │                             │
+      │     │                             │                             │                             │────────────────────────────►│                             │
+      └─────┴─────────────────────────────┴─────────────────────────────┴─────────────────────────────┴─────────────────────────────┴─────────────────────────────┘
+            │                             │                             │                             │                             │                             │
+            │                             │                             │                             │ Query Results / Rows Data   │                             │
+            │                             │                             │                             │◄────────────────────────────│                             │
+            │                             │                             │                             │                             │                             │
+            │                             │                             │ Formatted Data / Record     │                             │                             │
+            │                             │                             │◄────────────────────────────│                             │                             │
+            │                             │                             │                             │                             │                             │
+            │ HTTP Response JSON (200 OK) │                             │                             │                             │                             │
+            │◄──────────────────────────────────────────────────────────│                             │                             │                             │
+            │                             │                             │                             │                             │                             │
 ```
 
 ### Rincian Komponen Otorisasi:
@@ -72,44 +97,51 @@ sequenceDiagram
 
 SINTAK menggunakan SQLite lokal yang dioptimalkan untuk konkurensi tinggi dan *read throughput* maksimal menggunakan konfigurasi level PRAGMA.
 
-```mermaid
-graph TD
-    subgraph AppProcess ["Aplikasi Next.js (Node.js Port 3000)"]
-        W1["Thread Web UI (User Admin)"]
-        W2["Thread API Route (Scraper Ingestion)"]
-    end
-
-    subgraph BotProcess ["Proses Terpisah (Telegram Bot Daemon)"]
-        B1["Telegram Handler Worker"]
-    end
-
-    subgraph MemoryBuffer ["Alokasi Memori Kernel & Engine"]
-        CACHE["RAM Cache 64MB<br>(PRAGMA cache_size = -64000)"]
-        MMAP["Memory-Mapped I/O 256MB<br>(PRAGMA mmap_size = 268435456)"]
-    end
-
-    subgraph LockQueue ["Single-Writer Concurrency Gate"]
-        QUEUE["Write Lock Mutex<br>(PRAGMA busy_timeout = 5000ms)<br>Antre maks 5 detik sebelum SQLITE_BUSY"]
-    end
-
-    subgraph DiskStorage ["Penyimpanan Berkas Disk (NVMe SSD)"]
-        DBFILE[("database.sqlite / database_dev.sqlite<br>(Data Utama)")]
-        WALFILE[("database.sqlite-wal<br>(Write-Ahead Log)")]
-        SHMFILE[("database.sqlite-shm<br>(Shared Memory Index)")]
-    end
-
-    W1 -->|Read Query| MMAP
-    W2 -->|Read Query| MMAP
-    B1 -->|Read Query| MMAP
-    MMAP --> CACHE
-    CACHE --> DBFILE
-
-    W1 -->|Write Query| QUEUE
-    W2 -->|Batch Write| QUEUE
-    B1 -->|Direct Write| QUEUE
-
-    QUEUE -->|Append Changes| WALFILE
-    WALFILE -.->|01:00 WIB Maintenance Checkpoint| DBFILE
+```text
++---------------------------------------------------------------------------------------------------------+
+|                                    PROSES APLIKASI & KONEKSI RUNTIME                                    |
+|                                                                                                         |
+|   +---------------------------------------+             +-------------------------------------------+   |
+|   |   Node.js Server App (Port 3000)      |             |   Telegram Bot Daemon (Background)        |   |
+|   |   • Next.js Web UI Thread             |             |   • Polling / Webhook Worker              |   |
+|   |   • Scraper Ingestion Thread          |             |   • Direct @libsql/client (src/db.ts)     |   |
+|   +-------------------+-------------------+             +---------------------+---------------------+   |
++-----------------------│───────────────────────────────────────────────────────│────────────────---------+
+                        │ (Read / Write)                                        │ (Read / Write)
+                        ▼                                                       ▼
++---------------------------------------------------------------------------------------------------------+
+|                                      BUFFER MEMORI KERNEL OS & CACHE                                    |
+|                                                                                                         |
+|       +------------------------------------+             +------------------------------------+         |
+|       |  RAM Cache SQLite: 64 MB           |             |  Memory-Mapped (MMAP): 256 MB      |         |
+|       |  (PRAGMA cache_size = -64000)      |             |  (PRAGMA mmap_size = 268435456)    |         |
+|       |  Query in-memory hotspot data      |             |  Zero-copy fast disk seek paging   |         |
+|       +-----------------+------------------+             +-----------------+------------------+         |
++-------------------------│──────────────────────────────────────────────────│----------------------------+
+                          │                                                  │
+                          │                 [JALUR PENULISAN]                │
+                          │                                                  │
+                          ▼                                                  │
++----------------------------------------------------------------------------│----------------------------+
+|                                  SINGLE-WRITER CONCURRENCY GATE            │                            |
+|                                                                            │                            |
+|   +---------------------------------------------------------------------+  │                            |
+|   |  Write Lock Mutex (PRAGMA busy_timeout = 5000 ms)                   |  │                            |
+|   |  Antrean penulisan berurutan; toleransi tunggu 5 detik              |  │                            |
+|   +----------------------------------+----------------------------------+  │                            |
++--------------------------------------│-------------------------------------│----------------------------+
+                                       │                                     │
+                                       │ Write Stream                        │ Read Paging
+                                       ▼                                     ▼
++---------------------------------------------------------------------------------------------------------+
+|                                       PENYIMPANAN BERKAS FISIK DISK                                     |
+|                                                                                                         |
+|   +-------------------------------+   +-------------------------------+   +-------------------------+   |
+|   |  database.sqlite-wal          |   |  database.sqlite-shm          |   |  database.sqlite        |   |
+|   |  (Write-Ahead Log Transaksi)  |──►|  (Shared Memory Index Index)  |──►|  (Berkas Utama Database)|   |
+|   |  Perubahan di-append di sini  |   |  Peta frame buffer WAL        |   |  Checkpoint 01:00 WIB   |   |
+|   +-------------------------------+   +-------------------------------+   +-------------------------+   |
++---------------------------------------------------------------------------------------------------------+
 ```
 
 ### Konfigurasi PRAGMA Utama (`src/lib/schema.ts:9-13`):
@@ -124,32 +156,75 @@ graph TD
 
 Untuk melacak siapa yang melakukan perubahan data tanpa menulis kode audit manual di setiap fungsi, sistem menggunakan kombinasi **DB Wrapper Interception** dan **SQLite Triggers**.
 
-```mermaid
-flowchart TD
-    START(["Panggilan db.execute(sql) / db.batch()"]) --> CHECK{Apakah Query Mutasi?<br>INSERT / UPDATE / DELETE}
-    
-    CHECK -- Tidak (SELECT) --> EXEC_DIRECT["Langsung Eksekusi SQL<br>Tanpa Overhead Konteks"]
-    
-    CHECK -- Ya (Mutasi) --> INJECT["injectContext(menuContext)<br>Ambil username dari cookies()"]
-    
-    INJECT --> SAVE_CTX["Tulis ke Tabel Satu-Baris:<br>INSERT OR REPLACE INTO session_context<br>(id=1, username, last_menu)"]
-    
-    SAVE_CTX --> RUN_SQL["Eksekusi SQL Mutasi Pengguna"]
-    
-    RUN_SQL --> CHK_EXCLUDE{Apakah Tabel Masuk<br>EXCLUDED_TABLES?}
-    
-    CHK_EXCLUDE -- Ya (orders, jurnal, dll) --> SKIP_TRG["Bypass Trigger Otomatis<br>(Mencegah DB Lock)"]
-    SKIP_TRG --> MANUAL_LOG["Scraper memanggil logActivity()<br>agregat 1 baris setelah selesai"]
-    
-    CHK_EXCLUDE -- Tidak (users, roles, dll) --> FIRE_TRG["Trigger Database Berjalan:<br>trg_table_insert / update / delete"]
-    
-    FIRE_TRG --> READ_CTX["Sub-query:<br>(SELECT username FROM session_context WHERE id = 1)"]
-    
-    READ_CTX --> INSERT_AUDIT["INSERT INTO activity_logs<br>• action_type (INSERT/UPDATE/DELETE)<br>• before & after (JSON object snapshot)<br>• recorded_by (Username aktif)"]
-    
-    INSERT_AUDIT --> FINISH(["Selesai"])
-    MANUAL_LOG --> FINISH
-    EXEC_DIRECT --> FINISH
+```text
+               +------------------------------------------------------------+
+               | Panggilan db.execute(sql, args) atau db.batch(statements)  |
+               +-----------------------------+------------------------------+
+                                             │
+                                             ▼
+                             /───────────────────────────────\
+                            <   Apakah Query Mutasi?          >
+                            <   (INSERT / UPDATE / DELETE)    >
+                             \───────────────────────────────/
+                                      │             │
+                          TIDAK (SELECT)             YA (Mutasi)
+                                      │             │
+                                      │             ▼
+                                      │  +----------------------------------------------------+
+                                      │  | injectContext(menuContext)                         |
+                                      │  | Ambil username dari session cookies()              |
+                                      │  +------------------+---------------------------------+
+                                      │                     │
+                                      │                     ▼
+                                      │  +----------------------------------------------------+
+                                      │  | Tulis ke Tabel Satu-Baris Konteks:                 |
+                                      │  | INSERT OR REPLACE INTO session_context             |
+                                      │  | (id, username, last_menu) VALUES (1, ?, ?)         |
+                                      │  +------------------+---------------------------------+
+                                      │                     │
+                                      ▼                     ▼
+                       +──────────────────────────────────────────────────────+
+                       | Eksekusi Statement SQL Mutasi / Pembacaan Pengguna   |
+                       +────────────────────────────+─────────────────────────+
+                                                    │
+                                                    ▼
+                                    /───────────────────────────────\
+                                   <   Tabel Masuk EXCLUDED_TABLES?  >
+                                   <   (orders, jurnal, bahan, dll)  >
+                                    \───────────────────────────────/
+                                             │             │
+                                    YA (Excluded)           TIDAK (Normal Table)
+                                             │             │
+                                             │             ▼
+                                             │  +---------------------------------------------+
+                                             │  | Trigger Database Aktif:                     |
+                                             │  | trg_table_insert / update / delete          |
+                                             │  +------------------+--------------------------+
+                                             │                     │
+                                             │                     ▼
+                                             │  +---------------------------------------------+
+                                             │  | Subquery Pembaca Konteks:                   |
+                                             │  | (SELECT username FROM session_context id=1) |
+                                             │  +------------------+--------------------------+
+                                             │                     │
+                                             │                     ▼
+                                             │  +---------------------------------------------+
+                                             │  | INSERT INTO activity_logs                   |
+                                             │  | • action_type: INSERT/UPDATE/DELETE         |
+                                             │  | • before & after: json_object snapshot      |
+                                             │  | • recorded_by: username dari session        |
+                                             │  +------------------+--------------------------+
+                                             │                     │
+                                             ▼                     │
+                      +─────────────────────────────────────────+  │
+                      | Manual Agregasi: logActivity()          |  │
+                      | 1 Baris Log Setelah Impor Batch Selesai |  │
+                      +──────────────────────+──────────────────+  │
+                                             │                     │
+                                             ▼                     ▼
+                               +─────────────────────────────────────────+
+                               |     Mutasi Berhasil Disimpan (200 OK)   |
+                               +-----------------------------------------+
 ```
 
 ### Implementasi Teknis:
@@ -163,34 +238,57 @@ flowchart TD
 
 Scraper bertugas menarik data transaksi dari sistem Digit secara periodik atau manual tanpa memicu deadlock pada sistem operasional harian.
 
-```mermaid
-flowchart TD
-    TRIGGER(["Trigger Scraper<br>(Web UI / Cron Tab)"]) --> AUTH_CHECK["Autentikasi Session Scraper<br>getScraperSession() via Memory Cache"]
-    
-    AUTH_CHECK --> DIGIT_REQ["HTTP POST Login ke Digit ERP<br>Headers: X-Bismillah-Api-Key<br>Origin: buyapercetakan.mdthoster.com"]
-    
-    DIGIT_REQ --> FETCH_DATA["HTTP GET Tarik Data Periode<br>Format: DD-MM-YYYY (Rentang Tanggal)"]
-    
-    FETCH_DATA --> PARSE["Parsing & Normalisasi Data<br>• Tanggal DD/MM/YYYY ke YYYY-MM-DD<br>• String sanitization<br>• Ekstraksi raw JSON payload"]
-    
-    PARSE --> DEDUP["Cek Faktur Duplikat<br>SELECT faktur FROM table WHERE faktur IN (...)"]
-    
-    DEDUP --> CHUNK["Bagi Mutasi Menjadi Chunks<br>chunkSize = 100 baris"]
-    
-    subgraph BatchLoop ["Batch Execution (db.batch)"]
-        CHUNK --> UPSERT["INSERT INTO table (...)<br>ON CONFLICT(faktur) DO UPDATE SET ..."]
-    end
-    
-    UPSERT --> SYNC_SOPD{"Tahun >= 2026 &<br>Ada Hubungan SOPd?"}
-    SYNC_SOPD -- Ya --> UPSERT_SOPD["Upsert ke tabel sopd (no_sopd)"]
-    SYNC_SOPD -- Tidak --> META_UPD
-    UPSERT_SOPD --> META_UPD
-    
-    META_UPD["Update Metadata di system_settings<br>• last_scrape_table<br>• last_scraped_period"]
-    
-    META_UPD --> LOG_SUMMARY["logActivity()<br>Tulis 1 baris ringkasan audit log:<br>'Scraped N records, updated M'"]
-    
-    LOG_SUMMARY --> SUCCESS(["Kirim Response JSON 200 OK"])
+```text
++---------------------------------------------------------------------------------------------------------+
+|                                    1. INISIASI & AUTENTIKASI SESI                                       |
+|                                                                                                         |
+|   [Trigger Scraper] ──► [getScraperSession()] ──► [POST v1/auth/login ke Digit] ──► [Cookie Caching]    |
+|   (Web UI / Cron)        Cek memory cache          Headers: X-Bismillah-Api-Key      Simpan ke RAM      |
++---------------------------------------------------│-----------------------------------------------------+
+                                                    │
+                                                    ▼
++---------------------------------------------------------------------------------------------------------+
+|                                    2. PENARIKAN & NORMALISASI DATA                                      |
+|                                                                                                         |
+|   [HTTP GET Data Periode] ───────────────► [Parser & Sanitasi] ─────────────► [Cek Faktur Duplikat]     |
+|   Rentang: DD-MM-YYYY                      • Konversi DD/MM/YYYY ke ISO        SELECT faktur FROM table |
+|   Format JSON Array Transaksi              • Parse format desimal/angka        WHERE faktur IN (...)    |
++---------------------------------------------------│-----------------------------------------------------+
+                                                    │
+                                                    ▼
++---------------------------------------------------------------------------------------------------------+
+|                                    3. CHUNKED BATCH INGESTION (SQLITE)                                  |
+|                                                                                                         |
+|   +-------------------------------------------------------------------------------------------------+   |
+|   |  Perulangan Chunk: 100 baris per eksekusi batch                                                 |   |
+|   |                                                                                                 |   |
+|   |  INSERT INTO table (faktur, tgl, nama_prd, qty, ..., raw_data) VALUES (?, ?, ?, ...)            |   |
+|   |  ON CONFLICT(faktur) DO UPDATE SET                                                              |   |
+|   |     qty = excluded.qty, harga = excluded.harga, raw_data = excluded.raw_data                    |   |
+|   +-----------------------------------------------+-------------------------------------------------+   |
++---------------------------------------------------│-----------------------------------------------------+
+                                                    │
+                                                    ▼
++---------------------------------------------------------------------------------------------------------+
+|                                    4. SINKRONISASI RELASI & METADATA                                    |
+|                                                                                                         |
+|   +───────────────────────────────+               +─────────────────────────────────────────────────+   |
+|   | Apakah Tahun >= 2026?         |──(Ya)────────►| Upsert ke tabel 'sopd' (no_sopd = faktur)       |   |
+|   +───────────────────────────────+               +────────────────────────┬────────────────────────+   |
+|                   │ (Tidak)                                                │                            |
+|                   ▼                                                        ▼                            |
+|   +─────────────────────────────────────────────────────────────────────────────────────────────────+   |
+|   | Update system_settings:                                                                         |   |
+|   | • last_scrape_orders = CURRENT_TIMESTAMP                                                        |   |
+|   | • last_scrape_orders_period = {"start": "...", "end": "..."}                                     |   |
+|   +───────────────────────────────────────────────┬─────────────────────────────────────────────────+   |
+|                                                   │                                                     |
+|                                                   ▼                                                     |
+|   +─────────────────────────────────────────────────────────────────────────────────────────────────+   |
+|   | logActivity(): Rekam 1 ringkasan agregat ke activity_logs:                                      |   |
+|   | "Scraped 150 records (12 new, 138 updated) for range 2026-10-01 to 2026-10-05"                  |   |
+|   +-------------------------------------------------------------------------------------------------+   |
++---------------------------------------------------------------------------------------------------------+
 ```
 
 ### Poin Kritis Ingestion (`src/app/api/scrape-orders/route.ts:154-250`):
@@ -204,28 +302,47 @@ flowchart TD
 
 Telegram Bot (`telegram-bot/`) tidak memanggil API Next.js melalui HTTP, melainkan terhubung langsung ke berkas database SQLite lokal.
 
-```mermaid
-flowchart TD
-    OPERATOR(["Operator Lapangan (HP)"]) -->|Kirim Pesan /input| TG_SERVER["Telegram Cloud Server"]
-    
-    TG_SERVER -->|Long-Polling / Webhook| BOT_DAEMON["Telegram Bot Daemon<br>(telegram-bot/src/bot.ts)"]
-    
-    BOT_DAEMON --> HANDLER["Handler Realisasi (input.ts)"]
-    
-    HANDLER --> V1{"1. Validasi Operator<br>telegram_users & employees"}
-    V1 -- Tidak Terdaftar / Nonaktif --> REJECT_1["Balas: User belum diapprove"]
-    
-    V1 -- Valid --> V2{"2. Validasi Nomor Order<br>SELECT no_sopd FROM sopd"}
-    V2 -- Order Tidak Ada --> REJECT_2["Balas: Nomor SOPd tidak ditemukan"]
-    
-    V2 -- Valid --> V3{"3. Validasi Pekerjaan<br>master_pekerjaan_jurnal_produksi"}
-    V3 -- Pekerjaan Salah --> REJECT_3["Balas: Jenis pekerjaan tidak valid"]
-    
-    V3 -- Valid --> WRITE_DB["INSERT INTO jurnal_harian_produksi<br>(posisi, absensi, no_order, target, realisasi, rijek, kendala)"]
-    
-    WRITE_DB --> WRITE_AUDIT["INSERT INTO activity_logs<br>recorded_by: 'Nama Operator (via Telegram Bot)'"]
-    
-    WRITE_AUDIT --> REPLY_OK["Kirim Pesan Sukses ke Operator<br>Lengkap dengan ringkasan data yang tersimpan"]
+```text
+ [Operator Mesin di Lantai Pabrik]
+               │
+               │ Kirim Pesan: /input (Nomor Order, Realisasi, Inscheet, Rijek, Jam)
+               ▼
+ [Telegram Cloud Server (Bot API)]
+               │
+               │ Long-Polling / Webhook Event
+               ▼
+ [Telegram Bot Daemon: telegram-bot/src/bot.ts]
+               │
+               │ Teruskan ke Handler
+               ▼
+ [Validation Pipeline: telegram-bot/src/utils/api.ts]
+               │
+               ├─► [1. Validasi Operator] ──► SELECT FROM telegram_users WHERE is_active = 1
+               │   (Jika belum diapprove: Tolak pengerjaan)
+               │
+               ├─► [2. Validasi Order]   ──► SELECT FROM sopd WHERE no_sopd = ?
+               │   (Jika nomor order fiktif: Beri peringatan order tidak ada)
+               │
+               └─► [3. Validasi Job]     ──► SELECT FROM master_pekerjaan_jurnal_produksi
+                   (Pastikan jenis pekerjaan cetak/finishing sesuai divisi)
+               │
+               │ Seluruh Validasi Lulus (Data Valid)
+               ▼
+ [Direct LibSQL Execution: @libsql/client file:../database.sqlite]
+               │
+               ├─► 1. INSERT INTO jurnal_harian_produksi
+               │      (posisi, absensi, tgl, shift, nama_karyawan, bagian,
+               │       no_order, nama_order, jenis_pekerjaan, target, realisasi, rijek, kendala)
+               │
+               └─► 2. INSERT INTO activity_logs (Audit Trail Mandiri)
+                      (action_type: 'INSERT', table_name: 'jurnal_harian_produksi',
+                       message: 'Input JHP: No Order ... (via Telegram Bot)',
+                       recorded_by: '<Nama Operator> (via Telegram Bot)')
+               │
+               │ Selesai Tulis Disk
+               ▼
+ [Balas Pesan Telegram ke Operator]
+ "Data Realisasi Berhasil Disimpan! ID JHP: #4829 - Order: BUKU YASIN 128 HAL - Realisasi: 2.500 pcs"
 ```
 
 ### Keuntungan & Karakteristik Desain:
@@ -238,24 +355,55 @@ flowchart TD
 
 Untuk menjaga kecepatan respons pencarian faktur dan nama barang di antara ratusan ribu baris data, sistem menggunakan virtual table **SQLite FTS5** dengan *graceful fallback*.
 
-```mermaid
-flowchart TD
-    SEARCH_REQ(["Request API Search (?search=keyword)"]) --> BUILD_FTS["buildFtsQuery(search)<br>Sanitasi token FTS5 & wildcard"]
-    
-    BUILD_FTS --> RUN_FTS["Query Virtual Table FTS5:<br>SELECT o.* FROM orders o<br>JOIN orders_fts fts ON o.id = fts.rowid<br>WHERE orders_fts MATCH ?"]
-    
-    RUN_FTS --> COUNT_CHECK{"Apakah Hasil FTS > 0?"}
-    
-    COUNT_CHECK -- Ya (Ditemukan) --> RETURN_DATA["Kembalikan Data FTS<br>(Diurutkan Tanggal & Limit/Offset)"]
-    
-    COUNT_CHECK -- Tidak (0 Hasil) --> RUN_LIKE["Graceful Fallback ke LIKE:<br>SELECT * FROM orders WHERE<br>(faktur LIKE ? OR nama_prd LIKE ? OR raw_data LIKE ?)"]
-    
-    RUN_LIKE --> RETURN_LIKE["Kembalikan Data Hasil LIKE"]
-    
-    RETURN_DATA --> CLEAN["stripRawData()<br>Buang field internal mentah sebelum dikirim ke UI"]
-    RETURN_LIKE --> CLEAN
-    
-    CLEAN --> RESP(["JSON Response 200 OK"])
+```text
+                  [Request API: GET /api/orders?search=al-fath&page=1&limit=10]
+                                                │
+                                                ▼
+                            [buildFtsQuery(search) di src/lib/fts.ts]
+                            • Buang karakter spesial / operator SQL berbahaya
+                            • Bentuk FTS token: '"al" * "fath" *'
+                                                │
+                                                ▼
+                         /─────────────────────────────────────────────\
+                        <  Eksekusi Query Virtual Table FTS5:           >
+                        <  SELECT o.* FROM orders o JOIN orders_fts fts >
+                        <  ON o.id = fts.rowid WHERE orders_fts MATCH ? >
+                         \─────────────────────────────────────────────/
+                                                │
+                                                ▼
+                                    /───────────────────────\
+                                   <   Apakah Total Data > 0 >
+                                    \───────────────────────/
+                                           │         │
+                                   YA (Ada)           TIDAK (0 Hasil)
+                                           │         │
+                                           │         ▼
+                                           │  +───────────────────────────────────────────────+
+                                           │  | Graceful Fallback ke Standard LIKE:           |
+                                           │  | SELECT * FROM orders WHERE                    |
+                                           │  | (id LIKE ? OR faktur LIKE ? OR                |
+                                           │  |  nama_prd LIKE ? OR raw_data LIKE ?)          |
+                                           │  | args: ['%al-fath%', '%al-fath%', ...]         |
+                                           │  +──────────────────────+────────────────────────+
+                                           │                         │
+                                           ▼                         ▼
+                         +─────────────────────────────────────────────────────────────+
+                         | Pagination, Date Filter & Sorting:                          |
+                         | ORDER BY substr(tgl, 7, 4) DESC, substr(tgl, 4, 2) DESC...  |
+                         | LIMIT ? OFFSET ?                                            |
+                         +──────────────────────────────+──────────────────────────────+
+                                                        │
+                                                        ▼
+                         +─────────────────────────────────────────────────────────────+
+                         | stripRawData(records, ORDERS_LIST_RAW_KEYS):                |
+                         | Bersihkan field raw_data mentah agar payload JSON ringan    |
+                         +──────────────────────────────+──────────────────────────────+
+                                                        │
+                                                        ▼
+                         +─────────────────────────────────────────────────────────────+
+                         | Kirim Response JSON:                                        |
+                         | { success: true, data: [...], total: 42, page: 1, limit: 10}|
+                         +─────────────────────────────────────────────────────────────+
 ```
 
 ### Mekanisme Resiliensi (`src/app/api/orders/route.ts:27-74`):

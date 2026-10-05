@@ -34,92 +34,83 @@ Sistem ini mengonsolidasikan seluruh siklus operasional pabrik dalam satu ekosis
 5. **Akuntansi Terpadu**: Mengelola pencatatan kas, buku besar, neraca lajur, dan analisis jurnal umum berbasis ribuan transaksi harian.
 
 ### Diagram Aliran 3 Rantai Dokumen Manufaktur (Tracking Manufaktur)
-```mermaid
-graph LR
-    subgraph RantaiBeli ["1. RANTAI PENGADAAN & PEMBELIAN"]
-        PR["PR (Permintaan)"] --> SPPH_OUT["SPPH Out"]
-        SPPH_OUT --> SPH_IN["SPH In"]
-        SPH_IN --> PO["Purchase Order (PO)"]
-        PO --> PENERIMAAN["Penerimaan Barang"]
-        PENERIMAAN --> REKAP_BELI["Rekap Pembelian"]
-        REKAP_BELI --> LUNAS_HUTANG["Pelunasan Hutang"]
-    end
-
-    subgraph RantaiProduksi ["2. RANTAI MANUFAKTUR & PRODUKSI"]
-        ORDERS["Order Digit (orders)"] --> BOM["Bill of Materials (BOM)"]
-        BOM --> SOPD["Surat Perintah Kerja (SOPd)"]
-        SOPD --> JHP["Jurnal Harian Produksi (JHP)"]
-        JHP --> PRD_SELESAI["Produksi Selesai"]
-    end
-
-    subgraph RantaiJual ["3. RANTAI PENJUALAN & DISTRIBUSI"]
-        SPH_OUT["SPH Out (Penawaran)"] --> SO["Sales Order (SO)"]
-        SO --> PENGIRIMAN["Surat Jalan / Pengiriman"]
-        PENGIRIMAN --> SALES["Faktur Penjualan (Sales)"]
-        SALES --> LUNAS_PIUTANG["Pelunasan Piutang"]
-    end
-
-    PRD_SELESAI -.->|Barang Jadi Masuk| SO
-    PENERIMAAN -.->|Bahan Baku Siap| BOM
+```text
++-------------------------------------------------------------------------------------------------------------------------+
+|                                    1. RANTAI PENGADAAN & PEMBELIAN BAHAN BAKU                                           |
+|                                                                                                                         |
+|   [PR (Permintaan)] ──► [SPPH Out] ──► [SPH In] ──► [Purchase Order (PO)] ──► [Penerimaan] ──► [Rekap Beli] ──► [Hutang]|
++-------------------------------------------------------------------------------------│-----------------------------------+
+                                                                                      │ (Bahan Baku Siap)
+                                                                                      ▼
++-------------------------------------------------------------------------------------------------------------------------+
+|                                    2. RANTAI MANUFAKTUR & PRODUKSI CETAK                                                |
+|                                                                                                                         |
+|   [Order Digit] ─────────► [BOM (Bill of Materials)] ──► [SOPd (Perintah Kerja)] ──► [JHP Harian] ──► [Produksi Selesai]│
++---------------------------------------------------------------------------------------------------------------│---------+
+                                                                                                                │ (Barang Jadi)
+                                                                                                                ▼
++-------------------------------------------------------------------------------------------------------------------------+
+|                                    3. RANTAI PENJUALAN & DISTRIBUSI BARANG                                              |
+|                                                                                                                         |
+|   [SPH Out (Penawaran)] ───────────────────────────────► [Sales Order (SO)] ──► [Surat Jalan/Kirim] ──► [Sales Faktur] │
+|                                                                                                               │         |
+|                                                                                                               ▼         |
+|                                                                                                       [Pelunasan Piutang]
++-------------------------------------------------------------------------------------------------------------------------+
 ```
 ---
 
 ## 2. DIAGRAM TOPOLOGI ARSITEKTUR END-TO-END
-
-```mermaid
-graph TD
-    subgraph Clients ["1. CLIENT & OPERATOR LAYER"]
-        C1["Desktop Browser<br>(Admin, Sales, Akunting, HRD)"]
-        C2["Mobile Smartphone<br>(Operator Lapangan / Mandor)"]
-        C3["Web Push Service Worker<br>(Notifikasi Real-time)"]
-    end
-
-    subgraph Gateway ["2. REVERSE PROXY & GATEWAY"]
-        NGX["Nginx Web Server (Port 80/443)<br>• SSL Let's Encrypt Termination<br>• Gzip Comp Level 6<br>• Buffer 500MB (Upload Excel)<br>• Static Cache (/_next/static)"]
-    end
-
-    subgraph AppCore ["3. SINTAK APPLICATION CORE (Next.js 16 App Router)"]
-        AUTH["Auth & RBAC Guard<br>(jose JWT Cookie + 9 Role Matrix)"]
-        ROUTES["API Gateway (132 Route Handlers)<br>CRUD, Reports, Scrapers, Webhook"]
-        PAGES["UI Engine (52 Pages)<br>React 19, Tailwind v4, Portal Zoom"]
-        CALC_ENGINE["Calculation Engine<br>HPP Simulator & Excel Parity Engine"]
-    end
-
-    subgraph Subsystems ["4. DEDICATED SERVICES"]
-        TELE_BOT["Telegram Bot Daemon<br>(Node.js Service / Polling & Webhook)"]
-        SCRAPERS["Scraper Engine (20+ Endpoints)<br>Automated Ingestion Workers"]
-    end
-
-    subgraph External ["5. EXTERNAL SYSTEMS"]
-        DIGIT[("Digit ERP Eksternal<br>(Transaksi Hulu & Jurnal)")]
-        TELE_API["Telegram Bot API Cloud"]
-    end
-
-    subgraph Storage ["6. DATA PERSISTENCE & STORAGE"]
-        SQLITE[("SQLite 3 Database<br>• WAL Mode (Write-Ahead Logging)<br>• 256MB MMAP I/O<br>• 64MB In-Memory Cache<br>• Fallback: Turso libSQL Cloud")]
-        LOGS["Activity Logs & Session Context<br>(Audit Trail per User & Action)"]
-    end
-
-    subgraph Automation ["7. AUTOMATION & OS CRON"]
-        CRON["Linux System Crontab<br>• 01:00 VACUUM Maintenance<br>• 02:00 Cloud Backup (Rclone)<br>• 02:00 Arsip Log Aktivitas<br>• 03:00 Batch Scrape Harian"]
-    end
-
-    C1 -->|HTTPS Request| NGX
-    C2 -->|Chat / Audio / Input| TELE_API
-    C3 <-->|Web Push RFC 8291| ROUTES
-    TELE_API <-->|Webhook / Polling| TELE_BOT
-    NGX -->|Reverse Proxy :3000| AppCore
-    AUTH --> ROUTES
-    AUTH --> PAGES
-    ROUTES --> CALC_ENGINE
-    ROUTES --> SQLITE
-    ROUTES --> LOGS
-    TELE_BOT -->|Internal Query / Mutasi| SQLITE
-    SCRAPERS <-->|HTTP Pull| DIGIT
-    SCRAPERS -->|Batch Transaction| SQLITE
-    CRON -->|Bearer CRON_SECRET| ROUTES
+```text
++---------------------------------------------------------------------------------------------------------+
+|                                        1. CLIENT & OPERATOR LAYER                                       |
+|                                                                                                         |
+|   [Desktop Browser] (Admin, Akunting, HRD)        [Mobile Smartphone] (Operator Lapangan via Telegram)  |
+|   [Web Push Service Worker] (Real-time Alert)                                                           |
++---------------------------------------------------│-----------------------------------------------------+
+                                                    │ HTTPS Request / Port 80 & 443
+                                                    ▼
++---------------------------------------------------------------------------------------------------------+
+|                                      2. REVERSE PROXY & GATEWAY (NGINX)                                 |
+|                                                                                                         |
+|   • SSL Termination (Let's Encrypt HTTPS)             • Gzip Compression Level 6                        |
+|   • Client Max Body Size 500 MB (Upload Master Excel) • Static Caching (/_next/static)                  |
++---------------------------------------------------│-----------------------------------------------------+
+                                                    │ Upstream Proxy Loopback :3000
+                                                    ▼
++---------------------------------------------------------------------------------------------------------+
+|                               3. CORE APLIKASI SINTAK (Next.js 16 App Router)                           |
+|                                                                                                         |
+|   +───────────────────────────────+               +─────────────────────────────────────────────────+   |
+|   | Auth & RBAC Security Guard    |               | API Gateway Layer (132 Endpoints)               |   |
+|   | (Stateless JWT jose HS256)    |               | (CRUD, Scrapers, Cron, Webhook, Analytics)       |   |
+|   +───────────────┬───────────────+               +────────────────────────┬────────────────────────+   |
+|                   │                                                        │                            |
+|                   ▼                                                        ▼                            |
+|   +───────────────────────────────+               +─────────────────────────────────────────────────+   |
+|   | UI Engine & Portal Zoom (52 p)|               | Core Domain & HPP Calculation Engine            |   |
+|   | (React 19, Tailwind v4, TanSt)|               | (Buku Soft Cover, Tabungan, Parity Benchmark)   |   |
+|   +───────────────────────────────+               +─────────────────────────────────────────────────+   |
++---------------------------------------------------│-----------------------------------------------------+
+                                                    │
+                   ┌────────────────────────────────┴───────────────────────────────┐
+                   ▼                                                                ▼
++-------------------------------------------------------+   +---------------------------------------------+
+|               4. SUBSISTEM OPERASIONAL                |   |        5. PERSISTENSI DATA & PENYIMPANAN    |
+|                                                       |   |                                             |
+|   +-----------------------------------------------+   |   |   +-------------------------------------+   |
+|   | Telegram Bot Daemon (telegram-bot/src/bot.ts) |   |   |   | SQLite 3 Database (WAL Mode)        |   |
+|   | Long-running process, field input & voice     |   |   |   | • 256MB MMAP I/O & 64MB Cache       |   |
+|   +-----------------------┬-----------------------+   |   |   | • Fallback: Turso libSQL Cloud      |   |
+|                           │ Direct LibSQL Access  |   |   |   +------------------┬------------------+   |
+|                           └───────────────────────┼───┼──►|                      │                      |
+|                                                   │   |   |   +------------------▼------------------+   |
+|   +-----------------------------------------------+   |   |   | Activity Logs & Context Triggers    |   |
+|   | Scraper Engine (20+ Modul Ingestion Digit)    |   |   |   | Audit trail mutasi per user & menu  |   |
+|   | Periodic pull & chunked batch upsert          |───┼──►|   +-------------------------------------+   |
+|   +-----------------------------------------------+   |   +---------------------------------------------+
++-------------------------------------------------------+
 ```
-
 ---
 
 ## 3. DEKOMPOSISI 6 LAPISAN ARSITEKTUR (LAYER BREAKDOWN)
@@ -170,22 +161,56 @@ graph TD
   * **Reaktivitas Parameter**: Setiap input wajib menghasilkan perubahan HPP nyata ($\Delta HPP > 0$) saat nilainya diubah (`AGENTS.md:27`).
 
 #### Diagram Alur Audit & Benchmark Parity Kalkulator HPP
-```mermaid
-flowchart TD
-    EXCEL["1. Master File Excel Pabrik<br>(Folder Pricelist / Master Harga)"] --> EXTRACT["2. Ekstraksi Programatis Nilai & Dropdown<br>(Scripts Ekstraksi Pos 1)"]
-    EXTRACT --> CALC["3. Engine Kalkulator TypeScript<br>(src/lib/*-calculator.ts)"]
-    CALC --> BENCHMARK["4. Automated Parity Test (scripts/audit-*-permutations.ts)<br>Uji Seluruh Tier Oplah & Kombinasi Dropdown"]
-    
-    BENCHMARK --> CHECK_DIFF{"Selisih == 0 Rupiah<br>pada 100% Permutasi?"}
-    CHECK_DIFF -- Tidak --> FIX["Audit Gagal: Dilarang Rilis / Kompromi<br>Periksa Anti-Conditional Hijacking"]
-    FIX --> CALC
-    
-    CHECK_DIFF -- Ya --> REACT_CHECK{"Reaktivitas Input:<br>Delta HPP > 0 Saat Input Diubah?"}
-    REACT_CHECK -- Tidak --> REJECT["Audit Gagal: Input Mati (Dead Variable)"]
-    REJECT --> CALC
-    
-    REACT_CHECK -- Ya --> PASS["5. Audit PASSED (0 Selisih)<br>Tercatat di Terminal Log"]
-    PASS --> UI_BUILD["6. Pembangunan Antarmuka UI<br>(Simulator & Matrix Table View)"]
+```text
+   +----------------------------------------------------------+
+   | 1. Master File Excel Pabrik (Pricelist / Master Harga)   |
+   +----------------------------+-----------------------------+
+                                │
+                                ▼
+   +----------------------------------------------------------+
+   | 2. Ekstraksi Programatis Aturan Dropdown & Matriks Nilai |
+   |    (Skrip Ekstraksi Pos 1: dataValidation scanner)       |
+   +----------------------------+-----------------------------+
+                                │
+                                ▼
+   +----------------------------------------------------------+
+   | 3. Engine Kalkulator TypeScript (src/lib/*-calculator.ts)|
+   |    Implementasi formula, parameter & anti-hijacking      |
+   +----------------------------+-----------------------------+
+                                │
+                                ▼
+   +----------------------------------------------------------+
+   | 4. Automated Benchmark Test (scripts/audit-*-permutations|
+   |    Uji simulasi 100% tier oplah & permutasi dropdown     |
+   +----------------------------+-----------------------------+
+                                │
+                                ▼
+                 /─────────────────────────────\
+                <  Selisih == 0 Rupiah pada     >
+                <  100% Permutasi dan Oplah?    >
+                 \─────────────────────────────/
+                            │         │
+                    TIDAK (Gagal)      YA (Lolos)
+                            │         │
+                            │         ▼
+                            │  /─────────────────────────────\
+                            │ <  Uji Reaktivitas Input:       >
+                            │ <  Delta HPP > 0 saat diubah?   >
+                            │  \─────────────────────────────/
+                            │             │         │
+                            │     TIDAK (Gagal)      YA (Lolos)
+                            │             │         │
+                            ▼             ▼         ▼
+             +──────────────────────────────+   +───────────────────────────────────+
+             | AUDIT DITOLAK (REJECT)       |   | 5. AUDIT PASSED (0 Selisih)       |
+             | • Dilarang membuat kompromi  |   |    Tercatat di log terminal resmi |
+             | • Perbaiki formula kalkulator|   +-----------------+-----------------+
+             +──────────────┬───────────────+                     │
+                            │                                     ▼
+                            │                   +───────────────────────────────────+
+                            └──────────────────►| 6. Bangun Tampilan UI Simulator   |
+                                (Looping Fix)   |    (Dual Scroll & Matrix View)    |
+                                                +───────────────────────────────────+
 ```
 ### 3.5 Ingestion & Automated Scraper Pipeline
 * **20+ Endpoint Scraper**: Mengambil data transaksi dari ERP Digit (`src/app/api/scrape-*/`).
@@ -227,17 +252,30 @@ Sistem SINTAK menyertakan service terdedikasi di direktori `telegram-bot/` yang 
   * Operator baru wajib melalui proses registrasi dan disetujui oleh Super Admin di web `/settings/telegram-users` sebelum bot dapat menerima input data operasional.
 
 #### Diagram Alur Operasional Lapangan (Telegram Bot ke Laporan Produksi)
-```mermaid
-flowchart LR
-    OP["Operator Mesin<br>(Lantai Pabrik)"] -->|/input chat & voice| BOT["Telegram Bot Daemon<br>(telegram-bot/)"]
-    BOT -->|Direct Write LibSQL| JHP[("jurnal_harian_produksi<br>(Real-time Draft)")]
-    
-    JHP --> ADM["Admin Verifikator<br>(Web SINTAK /jurnal-harian-produksi)"]
-    ADM -->|Verifikasi Jam Kerja & Rijek| VERIFIED["Data JHP Terverifikasi"]
-    
-    VERIFIED --> ANALISA["Modul Analisa Produksi<br>(/jurnal-harian-produksi/analisa)"]
-    VERIFIED --> HASIL["Dashboard Hasil Produksi<br>(/hasil-produksi)"]
-    VERIFIED --> LAP_KERJA["Laporan Pekerjaan 7 Divisi<br>(/laporan-pekerjaan)"]
+```text
+ [Operator Mesin di Lantai Pabrik]
+               │
+               │ Kirim Chat /input atau Voice Note Kendala
+               ▼
+ [Telegram Bot Daemon: telegram-bot/src/bot.ts]
+               │
+               │ Akses Langsung LibSQL (@libsql/client)
+               ▼
+ [Tabel: jurnal_harian_produksi] (Draft Real-time)
+               │
+               │ Tinjau Jam Kerja, Realisasi, Inscheet & Rijek
+               ▼
+ [Admin Verifikator: Web SINTAK /jurnal-harian-produksi]
+               │
+               │ Verifikasi & Validasi
+               ▼
+ +───────────────────────────────────────────────────────────────────+
+ │                    DATA TERVERIFIKASI & TERINTEGRASI              │
+ │                                                                   │
+ │   ├─► Modul Analisa Produksi (/jurnal-harian-produksi/analisa)    │
+ │   ├─► Dashboard Hasil Produksi (/hasil-produksi)                  │
+ │   └─► Laporan Pekerjaan 7 Divisi (/laporan-pekerjaan)             │
+ +───────────────────────────────────────────────────────────────────+
 ```
 ---
 
