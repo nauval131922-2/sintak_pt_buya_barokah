@@ -124,20 +124,20 @@ Dekomposisi mendalam atas proses inti operasional percetakan:
    - Menyimpan ke Data Store **D4** (`bill_of_materials`, `orders`, `bahan_baku`, `barang_jadi`, `produksi_selesai`).
    - Mengalirkan sinkronisasi nomor order baru ke Referensi Order.
 2. **3.2 Pengelolaan Data Referensi Produksi**
-   - Menerima sinkronisasi otomatis order $\ge$ 2025 dari Digit dan unggah file Excel arsip lampau ($\le$ 2024).
-   - Menerima unggah Excel Master Pekerjaan & Mesin oleh Admin Penjadwalan.
-   - Menyimpan ke Data Store **Referensi Produksi** (`sopd`, `sopd_harga`, `master_pekerjaan`) yang dibaca sebagai pilihan dropdown formulir JHP.
+   - Referensi nomor order SOPd mengalir otomatis dari tabel `orders` hasil scraping Digit (unggah Excel hanya untuk arsip lampau $\le$ 2024).
+   - Admin Penjadwalan mengelola **Master Pekerjaan** (kode standar & target per jam) dan **Master Pekerjaan Jurnal Produksi** (opsi dropdown pilihan mesin untuk 7 divisi).
+   - Menyimpan ke Data Store **Referensi Produksi** (`orders/sopd`, `master_pekerjaan`, `master_pekerjaan_jurnal_produksi`).
 3. **3.3 Penjadwalan & Pencatatan Realisasi JHP**
-   - **Admin Penjadwalan**: Mengisi shift, nama karyawan, nomor order, target lembar/buku, dan alokasi jam.
-   - **Admin Realisasi & Bot Telegram**: Mengisi dan memverifikasi realisasi hasil cetak, inscheet, rijek, kendala, dan bahan kertas.
+   - **Admin Penjadwalan**: Membuat jadwal target harian (shift, nama operator, nomor order dari referensi, target, dan jam kerja).
+   - **Admin Realisasi & Bot Telegram**: Mengisi dan memverifikasi realisasi hasil cetak, lembar inscheet, lembar rijek, kendala mesin, dan bahan kertas.
    - Menyimpan ke Data Store **D5** (`jurnal_harian_produksi`).
 4. **3.4 Analisa & Monitoring Hasil Produksi**
-   - Membaca data log harian dari **D5** dan rekonsiliasi fisik barang jadi dari **D4**.
-   - Menyajikan metrik evaluasi pencapaian target per shift (**Target Harian**), riwayat pengerjaan order spesifik (**Analisa Order**), akumulasi kuantitas lembar (**Hasil Produksi**), dan grafik tren pabrik (**Dashboard Manufaktur**).
+   - Membaca data log harian dari **D5** dan data barang jadi dari **D4**.
+   - Menyajikan lembar cetak jadwal shift harian (**Jadwal Produksi Harian** di `/target`), pelacakan kronologi pengerjaan per nomor pesanan (**Analisa Produksi** di `/analisa`), rekapitulasi dual tab hasil lembar cetak vs data Digit (**Hasil Produksi** di `/hasil-produksi`), dan grafik tren pabrik (**Dashboard Manufaktur** di `/dashboard-manufaktur`).
 5. **3.5 Pelaporan Tugas Lapangan (Laporan Pekerjaan)**
-   - Modul pelaporan tugas teknis mandiri staf operasional (Divisi Setting, Cetak, Finishing, QC).
-   - Merujuk nama proyek dari referensi order (`sopd` / `orders`).
-   - Menyimpan ke Data Store **D6** (`laporan_pekerjaan`) dan menyajikan status pengerjaan (Belum, Sedang, Selesai) serta grafik beban divisi.
+   - Modul pelaporan tugas teknis mandiri staf operasional untuk 7 divisi: Setting, QC, Cetak, Finishing, Gudang, Teknisi, dan Mesin.
+   - Merujuk nama proyek dari referensi order (`orders` / `sopd`).
+   - Menyimpan ke Data Store **D6** (`laporan_pekerjaan`, `role_laporan_pekerjaan_config`) dan menyajikan status pengerjaan (Belum Dikerjakan, In Progress, Selesai, Cancel) serta grafik beban kerja divisi.
 
 ---
 
