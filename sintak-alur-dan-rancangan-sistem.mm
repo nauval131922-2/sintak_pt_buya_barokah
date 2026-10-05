@@ -1,115 +1,400 @@
 <?xml version="1.0" encoding="utf-8"?>
 <map version="1.0.1">
-  <node ID="ID_1" TEXT="SINTAK - PETA LENGKAP ALUR KERJA SELURUH ROLE (PT BUYA BAROKAH)" COLOR="#0f172a">
-    <font NAME="SansSerif" BOLD="true" SIZE="15"/>
-    <icon BUILTIN="bookmark"/>
-    <node ID="ID_2" TEXT="SUPER ADMIN &amp; TIM OPERASIONAL PRODUKSI" POSITION="right" COLOR="#b91c1c">
-      <edge COLOR="#b91c1c" WIDTH="2"/>
-      <font NAME="SansSerif" BOLD="true" SIZE="13"/>
-      <icon BUILTIN="1"/>
-      <node ID="ID_3" TEXT="ROLE: SUPER ADMIN (Pilar Tata Kelola, Integrasi &amp; Supervisi)" COLOR="#1e293b">
-        <font NAME="SansSerif" BOLD="true"/>
-        <icon BUILTIN="wizard"/>
-        <node ID="ID_4" TEXT="• Hak Akses Menu: Akses penuh ke seluruh 45 modul (Bypass RBAC)"/>
-        <node ID="ID_5" TEXT="1. Tata Kelola RBAC, User &amp; Keamanan">
-          <font NAME="SansSerif" BOLD="true"/>
-          <node ID="ID_6" TEXT="   - /users: Tambah/edit user, reset password bcrypt, tautkan ke NIP employees, status aktif"/>
-          <node ID="ID_7" TEXT="   - /roles: Konfigurasi checklist 45 modul di role_permissions &amp; batasan divisi di role_laporan_pekerjaan_config"/>
-          <node ID="ID_8" TEXT="   - /settings/telegram-users: Otorisasi/Approve akun operator untuk input via bot Telegram"/>
-          <node ID="ID_9" TEXT="   - /log-aktivitas: Audit trail pemantauan histori seluruh aksi CRUD pengguna sistem"/>
-        </node>
-        <node ID="ID_10" TEXT="2. Integrasi Sinkronisasi Data Digit (/sync)">
-          <font NAME="SansSerif" BOLD="true"/>
-          <node ID="ID_11" TEXT="   - Tarik batch data Digit ke SQLite lokal: Stok Barang, Pembelian (7 menu), Penjualan (5 menu), Akuntansi, BBB &amp; Barang Jadi"/>
-          <node ID="ID_12" TEXT="   - Data SPK masuk ke tabel orders (antrean SOPd), data stok masuk ke stok_master_barang"/>
-        </node>
-        <node ID="ID_13" TEXT="3. Migrasi Excel &amp; Master Operasional">
-          <font NAME="SansSerif" BOLD="true"/>
-          <node ID="ID_14" TEXT="   - /settings/konversi-data: Upload Excel HPP, Excel SOPd, dan Excel Laporan Pekerjaan"/>
-          <node ID="ID_15" TEXT="   - /employees: Master data seluruh pegawai (NIP, Nama, Posisi, Bagian, Status)"/>
-          <node ID="ID_16" TEXT="   - /data/master-pekerjaan-jurnal-produksi: Master jenis pekerjaan dan standar target"/>
-        </node>
-        <node ID="ID_17" TEXT="4. Supervisi Tracking Manufaktur &amp; 4 Dashboard">
-          <font NAME="SansSerif" BOLD="true"/>
-          <node ID="ID_18" TEXT="   - /tracking-manufaktur: Lacak rantai fisik SO -&gt; SPK -&gt; BOM -&gt; PR/PO -&gt; Penerimaan -&gt; BBB -&gt; Barang Jadi -&gt; Kirim (SJ) -&gt; Piutang"/>
-          <node ID="ID_19" TEXT="   - Monitoring 4 Dashboard Eksekutif: Dashboard Umum, Dashboard Produksi, Dashboard HRD, dan Dashboard Akuntansi"/>
-        </node>
-      </node>
-      <node ID="ID_20" TEXT="ROLE: Admin Penjadwalan (8 Modul)" COLOR="#ef4444">
-        <font NAME="SansSerif" BOLD="true"/>
-        <node ID="ID_21" TEXT="• Hak Akses Menu: /data/excel-sopd, /jurnal-harian-produksi, /target, /hasil-produksi, /laporan-pekerjaan, /dashboard-manufaktur, master pekerjaan"/>
-        <node ID="ID_22" TEXT="• Sumber Data: Tabel orders (Digit via /sync), Tabel sopd (Excel), Tabel employees (operator), Tabel master_pekerjaan"/>
-        <node ID="ID_23" TEXT="• Step 1 (/data/excel-sopd): Buka antrean pesanan masuk, cek oplah &amp; deadline, inline edit estimasi jika perlu"/>
-        <node ID="ID_24" TEXT="• Step 2 (/jurnal-harian-produksi): Susun target shift (Bagian, Shift 1/2/3, Operator, No SOPd, Target). Tombol 'Copy Jadwal' untuk salin susunan kemarin"/>
-        <node ID="ID_25" TEXT="• Step 3 (/target): Evaluasi sebaran beban kerja harian antar operator di menu Target Harian"/>
-        <node ID="ID_26" TEXT="• Output: Tabel jurnal_harian_produksi terisi target -&gt; Menjadi acuan kerja shift di lapangan"/>
-      </node>
-      <node ID="ID_27" TEXT="ROLE: Admin Realisasi (7 Modul)" COLOR="#ef4444">
-        <font NAME="SansSerif" BOLD="true"/>
-        <node ID="ID_28" TEXT="• Hak Akses Menu: /jurnal-harian-produksi (Realisasi), /data/excel-sopd, /hasil-produksi, /laporan-pekerjaan, /dashboard-manufaktur, master pekerjaan"/>
-        <node ID="ID_29" TEXT="• Sumber Data: Tabel jurnal_harian_produksi (jadwal target) &amp; Laporan fisik operator lapangan"/>
-        <node ID="ID_30" TEXT="• Step 1: Buka tab realisasi JHP hari ini, validasi No SOPd &amp; nama operator"/>
-        <node ID="ID_31" TEXT="• Step 2: Input Jam Mulai, Jam Selesai &amp; jumlah lembar Realisasi yang berhasil diselesaikan"/>
-        <node ID="ID_32" TEXT="• Step 3: Input lembar Rijek (rusak afdruk setup &amp; jalan), Inscheet kertas, dan catat kendala lapangan"/>
-        <node ID="ID_33" TEXT="• Output: Update kolom realisasi, rijek, inscheet, jam, kendala di jurnal_harian_produksi -&gt; Mengalir ke Hasil Produksi"/>
-      </node>
-      <node ID="ID_34" TEXT="ROLE: Produksi (Supervisor) (5 Modul)" COLOR="#ef4444">
-        <font NAME="SansSerif" BOLD="true"/>
-        <node ID="ID_35" TEXT="• Hak Akses Menu: /dashboard-manufaktur, /jurnal-harian-produksi, /target, /hasil-produksi, /laporan-pekerjaan"/>
-        <node ID="ID_36" TEXT="• Sumber Data: Tabel orders (Digit), Tabel jurnal_harian_produksi, Tabel produksi_barang_jadi"/>
-        <node ID="ID_37" TEXT="• Step 1: Pantau Dashboard Produksi (OrdersStatCard, JurnalStatCard, tren BBB vs Hasil Produksi)"/>
-        <node ID="ID_38" TEXT="• Step 2: Evaluasi menu /target untuk shift/operator yang tertinggal target"/>
-        <node ID="ID_39" TEXT="• Step 3: Cek menu /hasil-produksi untuk akumulasi lembar dan barang jadi"/>
-        <node ID="ID_40" TEXT="• Output: Stabilitas ritme kerja pabrik dan mitigasi bottleneck pengerjaan mesin"/>
-      </node>
-      <node ID="ID_41" TEXT="ROLE: Kepala Seksi Pra Cetak &amp; Pasca Cetak (3 Modul Masing-Masing)" COLOR="#ea580c">
-        <font NAME="SansSerif" BOLD="true"/>
-        <node ID="ID_42" TEXT="• Hak Akses Menu: /data/excel-sopd, /laporan-pekerjaan, /hasil-produksi (Terkunci divisi SETTING atau FINISHING)"/>
-        <node ID="ID_43" TEXT="• Step 1 (/data/excel-sopd): Kontrol antrean order mendekati deadline (Pra: cek file setting/plat; Pasca: cek jilid/finishing)"/>
-        <node ID="ID_44" TEXT="• Step 2 (/laporan-pekerjaan): Supervisi kendala tim, durasi jam kerja, dan kecepatan output"/>
-        <node ID="ID_45" TEXT="• Step 3 (/hasil-produksi): Verifikasi kesiapan plat CTP (Pra) atau validasi fisik barang jadi (Pasca)"/>
-        <node ID="ID_46" TEXT="• Output: Menjamin kesiapan pra-cetak dan ketepatan serah terima produk finishing"/>
-      </node>
-    </node>
-    <node ID="ID_47" TEXT="TEKNISI LAPANGAN, KALKULASI, HRD &amp; KEUANGAN" POSITION="left" COLOR="#047857">
-      <edge COLOR="#047857" WIDTH="2"/>
-      <font NAME="SansSerif" BOLD="true" SIZE="13"/>
-      <icon BUILTIN="2"/>
-      <node ID="ID_48" TEXT="DIVISI TEKNIS: Setting, Cetak, Finishing, Quality Control" COLOR="#f97316">
-        <font NAME="SansSerif" BOLD="true"/>
-        <node ID="ID_49" TEXT="• Setting (1 Modul): Akses /laporan-pekerjaan (terkunci SETTING). Catat desain, layout, cek file, output Plat CTP, dan jumlah keping plat"/>
-        <node ID="ID_50" TEXT="• Cetak (2 Modul): Akses /laporan-pekerjaan &amp; /hasil-produksi. Input lembar cetak harian via Web ATAU chat Bot Telegram (/api/telegram/realisasi)"/>
-        <node ID="ID_51" TEXT="• Finishing (2 Modul): Akses /laporan-pekerjaan &amp; /hasil-produksi. Catat potong, lipat, jilid lem panas, jahit kawat, laminasi, hardcover via Web/Bot Telegram"/>
-        <node ID="ID_52" TEXT="• Quality Control (2 Modul): Akses /laporan-pekerjaan &amp; /hasil-produksi. Inspeksi register cetak, ketepatan warna, kerapian potong/jilid, input lembar lolos/rijek, eskalasi ke HRD jika cacat fatal"/>
-      </node>
-      <node ID="ID_53" TEXT="KALKULASI &amp; KALKULASI2" COLOR="#d97706">
-        <font NAME="SansSerif" BOLD="true"/>
-        <node ID="ID_54" TEXT="• Kalkulasi (3 Modul): /pricelist, /hpp-kalkulasi, /rekap-sales-order"/>
-        <node ID="ID_55" TEXT="   - Step 1: Simulasi hitung harga 20+ produk cetak di /pricelist (Buku, Dus, Brosur, Stopmap, Undangan, dll.)"/>
-        <node ID="ID_56" TEXT="   - Step 2: Masukkan biaya pokok acuan di /hpp-kalkulasi (tabel hpp_kalkulasi)"/>
-        <node ID="ID_57" TEXT="   - Step 3: Analisa rincian Sales Order Digit di /rekap-sales-order untuk evaluasi margin keuntungan"/>
-        <node ID="ID_58" TEXT="• Kalkulasi2 (1 Modul): Akses simulator /pricelist untuk hitung cepat estimasi harga jual penawaran Sales"/>
-      </node>
-      <node ID="ID_59" TEXT="ROLE: HRD (Personalia &amp; Kedisiplinan) (10 Modul)" COLOR="#e11d48">
-        <font NAME="SansSerif" BOLD="true"/>
-        <node ID="ID_60" TEXT="• Hak Akses Menu: /employees, /records, /dashboard-hrd, /sync, /hpp-kalkulasi, data digit"/>
-        <node ID="ID_61" TEXT="• Step 1 (/employees): Kelola master pegawai (NIP, Nama, Jabatan, Bagian, Status Aktif) -&gt; sumber dropdown operator"/>
-        <node ID="ID_62" TEXT="• Step 2 (/records): Buka formulir catat kesalahan, pilih karyawan, tanggal, kronologi kesalahan, dan rincian beban ganti rugi finansial (tabel infractions)"/>
-        <node ID="ID_63" TEXT="• Step 3 (/dashboard-hrd): Pantau grafik bulanan tren insiden kesalahan kerja (InfractionsTrendChart) &amp; sebaran karyawan (KaryawanStatCard)"/>
-      </node>
-      <node ID="ID_64" TEXT="ROLE: Akunting (Keuangan &amp; Buku Besar) (7 Modul)" COLOR="#16a34a">
-        <font NAME="SansSerif" BOLD="true"/>
-        <node ID="ID_65" TEXT="• Hak Akses Menu: /sync, /akuntansi/data/rek-akuntansi, /akuntansi/laporan/jurnal-umum, /dashboard-akunting, /sales, /sales-orders, barang jadi"/>
-        <node ID="ID_66" TEXT="• Step 1 (/sync): Sinkronisasi transaksi penjualan, pelunasan piutang, dan kas Digit ke database lokal"/>
-        <node ID="ID_67" TEXT="• Step 2 (/akuntansi/laporan/jurnal-umum): Audit mutasi Debet/Kredit per tanggal/akun, klik 'Analisis Jurnal' untuk laba/rugi"/>
-        <node ID="ID_68" TEXT="• Step 3 (/dashboard-akunting): Pantau grafik tren Debet vs Kredit bulanan (AkuntingTrendChart) &amp; warning barang jadi"/>
-      </node>
-      <node ID="ID_69" TEXT="ROLE: Demo &amp; Demo 2 (Akun Peninjauan / Tamu)" COLOR="#7c3aed">
-        <font NAME="SansSerif" BOLD="true"/>
-        <node ID="ID_70" TEXT="• Demo (6 Modul): Stok Barang, PO Pembelian, Penerimaan, dan Tracking Manufaktur (presentasi alur Digit)"/>
-        <node ID="ID_71" TEXT="• Demo 2 (2 Modul): Hasil Produksi dan Laporan Pekerjaan (demonstrasi monitoring kerja)"/>
-        <node ID="ID_72" TEXT="• Output: Peninjauan fitur tanpa risiko merusak data riil operasional"/>
-      </node>
-    </node>
-  </node>
+<node ID="ID_152" TEXT="SINTAK - SISTEM INFORMASI &amp; MANAJEMEN TERPADU (PT BUYA BAROKAH)" COLOR="#0f172a" BACKGROUND_COLOR="#f1f5f9">
+  <font NAME="SansSerif" BOLD="true" SIZE="15"/>
+  <icon BUILTIN="bookmark"/>
+<node ID="ID_20" TEXT="1.0 PEMBELIAN &amp; STOK (Pengadaan Bahan Baku &amp; Logistik Pabrik)" POSITION="right" COLOR="#15803d">
+  <edge COLOR="#16a34a" WIDTH="2"/>
+  <font NAME="SansSerif" BOLD="true" SIZE="13"/>
+  <icon BUILTIN="1"/>
+<node ID="ID_8" TEXT="Alur Transaksi Pembelian (Rantai 7 Dokumen Pengadaan)" COLOR="#166534">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="list"/>
+<node ID="ID_1" TEXT="1. Purchase Request (PR): Permintaan pengadaan bahan baku dari divisi lapangan">
+</node>
+<node ID="ID_2" TEXT="2. SPPH: Surat Permintaan Penawaran Harga ke rekanan supplier / vendor">
+</node>
+<node ID="ID_3" TEXT="3. SPH Masuk: Surat Penawaran Harga masuk dan komparasi penawaran vendor">
+</node>
+<node ID="ID_4" TEXT="4. Purchase Order (PO): Dokumen pemesanan pembelian resmi kepada vendor terpilih">
+</node>
+<node ID="ID_5" TEXT="5. Penerimaan Pembelian: Verifikasi kedatangan fisik barang di gudang">
+</node>
+<node ID="ID_6" TEXT="6. Rekap Pembelian Barang (PB): Pencatatan detail barang masuk &amp; pengakuan hutang usaha">
+</node>
+<node ID="ID_7" TEXT="7. Pelunasan Hutang: Pembayaran faktur pembelian bahan baku ke supplier">
+</node>
+</node>
+<node ID="ID_12" TEXT="Katalog Master Stok Barang (stok_master_barang)" COLOR="#166534">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="folder"/>
+<node ID="ID_9" TEXT="Kategori Barang: Kertas Plano, Tinta &amp; Kimia, Bahan Finishing, Barang Jadi">
+</node>
+<node ID="ID_10" TEXT="Data Atribut: Kode Barang, Barcode, Nama Barang, Satuan, Stok Akhir, Harga Beli Terakhir">
+</node>
+<node ID="ID_11" TEXT="Fungsi: Monitoring ketersediaan bahan baku untuk kelancaran jadwal cetak">
+</node>
+</node>
+<node ID="ID_16" TEXT="Integrasi Sinkronisasi Digit &amp; Database" COLOR="#166534">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="refresh"/>
+<node ID="ID_13" TEXT="Endpoint /api/sync: Penarikan otomatis seluruh batch transaksi pembelian &amp; saldo stok dari ERP Digit">
+</node>
+<node ID="ID_14" TEXT="Data Store D1: Data Pembelian (7 tabel: purchase_requests s/d pelunasan_hutang)">
+</node>
+<node ID="ID_15" TEXT="Data Store D2: Stok Barang (stok_master_barang)">
+</node>
+</node>
+<node ID="ID_19" TEXT="Hak Akses &amp; Pengguna Terkait" COLOR="#166534">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="kaddressbook"/>
+<node ID="ID_17" TEXT="Role Pembelian &amp; Logistik Gudang: Monitoring stok bahan baku &amp; verifikasi kedatangan">
+</node>
+<node ID="ID_18" TEXT="Role Super Admin: Sinkronisasi data pengadaan &amp; pengawasan audit">
+</node>
+</node>
+</node>
+<node ID="ID_39" TEXT="2.0 PENJUALAN &amp; PIUTANG (Komersial, Pelanggan &amp; Distribusi)" POSITION="right" COLOR="#b45309">
+  <edge COLOR="#d97706" WIDTH="2"/>
+  <font NAME="SansSerif" BOLD="true" SIZE="13"/>
+  <icon BUILTIN="2"/>
+<node ID="ID_26" TEXT="Alur Transaksi Penjualan (Rantai 5 Dokumen Komersial)" COLOR="#92400e">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="list"/>
+<node ID="ID_21" TEXT="1. SPH Keluar: Surat Penawaran Harga resmi kepada pelanggan (merujuk ke nomor BOM)">
+</node>
+<node ID="ID_22" TEXT="2. Sales Order (SO): Surat pesanan resmi dari pelanggan (sales_orders)">
+</node>
+<node ID="ID_23" TEXT="3. Rekap Sales Order: Detail spesifikasi produk, oplah, dan analisis pesanan">
+</node>
+<node ID="ID_24" TEXT="4. Laporan Penjualan (SI): Faktur realisasi penjualan resmi dari ERP Digit (sales_reports)">
+</node>
+<node ID="ID_25" TEXT="5. Pengiriman (SJ) &amp; Pelunasan Piutang: Surat Jalan pengiriman barang &amp; bukti pelunasan piutang">
+</node>
+</node>
+<node ID="ID_30" TEXT="Analisis &amp; Monitoring Pesanan" COLOR="#92400e">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="folder"/>
+<node ID="ID_27" TEXT="Menu Rekap Sales Order (/rekap-sales-order): Analisis detail pesanan &amp; margin keuntungan">
+</node>
+<node ID="ID_28" TEXT="Menu Laporan Penjualan (/sales): Pemantauan realisasi faktur penjualan dan status tagihan">
+</node>
+<node ID="ID_29" TEXT="Menu Pengiriman (/pengiriman): Pelacakan status ekspedisi, supir, armada, dan bukti tanda terima">
+</node>
+</node>
+<node ID="ID_33" TEXT="Integrasi Sinkronisasi Digit &amp; Database" COLOR="#92400e">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="refresh"/>
+<node ID="ID_31" TEXT="Endpoint /api/sync: Penarikan otomatis transaksi penjualan dan pelunasan piutang dari Digit">
+</node>
+<node ID="ID_32" TEXT="Data Store D3: Data Penjualan Digit (sph_out, sales_orders, sales_reports, pengiriman, pelunasan_piutang)">
+</node>
+</node>
+<node ID="ID_38" TEXT="Hak Akses &amp; Pengguna Terkait" COLOR="#92400e">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="kaddressbook"/>
+<node ID="ID_34" TEXT="Role Penjualan / Sales: Pemantauan pesanan &amp; koordinasi pengiriman produk">
+</node>
+<node ID="ID_35" TEXT="Role Kalkulasi: Analisis detail sales order untuk evaluasi harga dan HPP">
+</node>
+<node ID="ID_36" TEXT="Role Akunting: Verifikasi pembayaran pelunasan piutang pelanggan">
+</node>
+<node ID="ID_37" TEXT="Role Super Admin: Supervisi data komersial &amp; sinkronisasi">
+</node>
+</node>
+</node>
+<node ID="ID_77" TEXT="3.0 OPERASIONAL PRODUKSI PERCETAKAN (Pabrik &amp; Manufaktur)" POSITION="right" COLOR="#b91c1c">
+  <edge COLOR="#ef4444" WIDTH="2"/>
+  <font NAME="SansSerif" BOLD="true" SIZE="13"/>
+  <icon BUILTIN="3"/>
+<node ID="ID_45" TEXT="3.1 Sinkronisasi Dokumen Manufaktur Digit" COLOR="#991b1b">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="refresh"/>
+<node ID="ID_40" TEXT="Bill of Materials (BOM): Formula dan kebutuhan bahan baku per jenis cetakan (bill_of_materials)">
+</node>
+<node ID="ID_41" TEXT="Order Produksi: Surat Perintah Kerja pesanan cetak dari Digit (orders)">
+</node>
+<node ID="ID_42" TEXT="Pemakaian Bahan Baku: Alokasi dan konsumsi kertas/tinta riil di pabrik (bahan_baku)">
+</node>
+<node ID="ID_43" TEXT="Barang Jadi &amp; Produksi Selesai: Realisasi fisik produk jadi keluaran pabrik (barang_jadi, produksi_selesai)">
+</node>
+<node ID="ID_44" TEXT="Data Store D4: Produksi Digit (5 tabel terintegrasi)">
+</node>
+</node>
+<node ID="ID_49" TEXT="3.2 Penjadwalan &amp; Master Kerja" COLOR="#991b1b">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="clock"/>
+<node ID="ID_46" TEXT="Antrean Order SOPd (/data/excel-sopd): Import Excel antrean cetak, tanggal deadline, dan estimasi pengerjaan">
+</node>
+<node ID="ID_47" TEXT="Master Target Pekerjaan (/data/master-pekerjaan-jurnal-produksi): Standar target lembar per jam &amp; per hari">
+</node>
+<node ID="ID_48" TEXT="Data Store D5: Referensi Produksi (sopd, master_pekerjaan)">
+</node>
+</node>
+<node ID="ID_55" TEXT="3.3 Penjadwalan Shift &amp; Realisasi Lapangan (Jurnal Harian Produksi)" COLOR="#991b1b">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="pencil"/>
+<node ID="ID_50" TEXT="Penyusunan Jadwal Target Shift: Penugasan operator, mesin cetak, shift 1/2/3, nomor SOPd, target lembar">
+</node>
+<node ID="ID_51" TEXT="Fitur Copy Jadwal: Duplikasi susunan jadwal kemarin untuk efisiensi input staf penjadwalan">
+</node>
+<node ID="ID_52" TEXT="Pencatatan Realisasi Kerja: Jam mulai, jam selesai, dan jumlah lembar cetak selesai">
+</node>
+<node ID="ID_53" TEXT="Pencatatan Masalah &amp; Afkir: Lembar rijek (rusak setup/jalan), inscheet kertas, dan kendala mesin">
+</node>
+<node ID="ID_54" TEXT="Data Store D5: Tabel jurnal_harian_produksi">
+</node>
+</node>
+<node ID="ID_59" TEXT="3.4 Monitoring &amp; Analisis Output Produksi" COLOR="#991b1b">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="idea"/>
+<node ID="ID_56" TEXT="Hasil Produksi (/hasil-produksi): Akumulasi lembar cetak per operator, mesin, dan status pengerjaan">
+</node>
+<node ID="ID_57" TEXT="Dashboard Manufaktur (/dashboard-manufaktur): Grafik tren bulanan, evaluasi efisiensi dan bottleneck pabrik">
+</node>
+<node ID="ID_58" TEXT="Target Harian (/target): Evaluasi sebaran beban kerja dan pencapaian target antar operator">
+</node>
+</node>
+<node ID="ID_70" TEXT="3.5 Pelaporan Lapangan Mandiri (Laporan Pekerjaan)" COLOR="#991b1b">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="list"/>
+<node ID="ID_60" TEXT="Sistem Lembar Kerja Tugas Mandiri untuk 7 Divisi Pabrik:">
+</node>
+<node ID="ID_61" TEXT="• Divisi Setting: Desain, layout, pemeriksaan file, dan pembuatan Plat CTP">
+</node>
+<node ID="ID_62" TEXT="• Divisi QC: Pemeriksaan register cetak, akurasi warna, kerapian potong/jilid, lembar lolos/rijek">
+</node>
+<node ID="ID_63" TEXT="• Divisi Cetak: Lembar cetak naik mesin, sirkulasi tinta, dan kecepatan mesin cetak">
+</node>
+<node ID="ID_64" TEXT="• Divisi Finishing: Potong kertas, lipat, jilid lem panas, jahit kawat, laminasi doff/glossy">
+</node>
+<node ID="ID_65" TEXT="• Divisi Gudang: Pengendalian material kertas dan serah terima produk jadi">
+</node>
+<node ID="ID_66" TEXT="• Divisi Teknisi: Perawatan mesin berkala dan perbaikan kendala mekanis/kelistrikan">
+</node>
+<node ID="ID_67" TEXT="• Divisi Mesin: Pencatatan utilisasi jam jalan mesin dan kapasitas produksi">
+</node>
+<node ID="ID_68" TEXT="Kanal Input Fleksibel: Antarmuka Web Data Table &amp; Bot Telegram (/api/telegram/realisasi)">
+</node>
+<node ID="ID_69" TEXT="Data Store D6: Tabel laporan_pekerjaan &amp; role_laporan_pekerjaan_config">
+</node>
+</node>
+<node ID="ID_76" TEXT="Hak Akses &amp; Pengguna Terkait" COLOR="#991b1b">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="kaddressbook"/>
+<node ID="ID_71" TEXT="Admin Penjadwalan: Penyusunan target shift &amp; distribusi beban kerja">
+</node>
+<node ID="ID_72" TEXT="Admin Realisasi: Verifikasi jam kerja, lembar hasil, rijek, dan inscheet">
+</node>
+<node ID="ID_73" TEXT="Supervisor Produksi: Evaluasi dashboard manufaktur, kendala mesin, dan bottleneck">
+</node>
+<node ID="ID_74" TEXT="Kepala Seksi (Pra &amp; Pasca Cetak): Kontrol kesiapan plat CTP dan hasil jilid finishing">
+</node>
+<node ID="ID_75" TEXT="Teknisi Lapangan (7 Divisi): Pelaporan tugas kerja mandiri via Web dan Bot Telegram">
+</node>
+</node>
+</node>
+<node ID="ID_96" TEXT="4.0 KALKULASI BIAYA &amp; PRICELIST (Estimasi HPP &amp; Simulasi Harga Jual)" POSITION="left" COLOR="#7c3aed">
+  <edge COLOR="#8b5cf6" WIDTH="2"/>
+  <font NAME="SansSerif" BOLD="true" SIZE="13"/>
+  <icon BUILTIN="4"/>
+<node ID="ID_82" TEXT="4.1 Lookup Riwayat Harga Beli Kertas" COLOR="#6d28d9">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="refresh"/>
+<node ID="ID_78" TEXT="Menarik histori harga beli faktur pembelian dari tabel rekap_pembelian_barang">
+</node>
+<node ID="ID_79" TEXT="Deteksi otomatis gramatur kertas (HVS, Art Paper, Art Carton) dan dimensi plano">
+</node>
+<node ID="ID_80" TEXT="Konversi cerdas: Menghitung harga dasar per Kg dari satuan rim/lembar">
+</node>
+<node ID="ID_81" TEXT="Menjadi referensi biaya material real-time untuk mesin kalkulator cetak">
+</node>
+</node>
+<node ID="ID_88" TEXT="4.2 Simulator Pricelist Percetakan (20+ Kategori Produk)" COLOR="#6d28d9">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="wizard"/>
+<node ID="ID_83" TEXT="Kategori Produk: Buku Soft/Hard Cover, Kalender Kop, Nota, Majalah, Undangan, Paperbag, Packaging, dll.">
+</node>
+<node ID="ID_84" TEXT="Perhitungan 4 Komponen Biaya: Kertas + Plat/Cetak Mesin + Finishing + Markup Margin">
+</node>
+<node ID="ID_85" TEXT="Penyimpanan Matriks Harga Standar: Tabel pricelist_items">
+</node>
+<node ID="ID_86" TEXT="Penyimpanan Riwayat Simulasi Kustom: Tabel pricelist_saved_calculations">
+</node>
+<node ID="ID_87" TEXT="Data Store D7.1: Master Pricelist">
+</node>
+</node>
+<node ID="ID_92" TEXT="4.3 Master Nilai HPP Per Order" COLOR="#6d28d9">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="pencil"/>
+<node ID="ID_89" TEXT="Sinkronisasi otomatis nama produk pesanan dari tabel orders Digit">
+</node>
+<node ID="ID_90" TEXT="Pencatatan nilai rupiah HPP per pesanan produksi via web inline edit maupun impor Excel">
+</node>
+<node ID="ID_91" TEXT="Data Store D7.2: Master Nilai HPP Kalkulasi (hpp_kalkulasi)">
+</node>
+</node>
+<node ID="ID_95" TEXT="Hak Akses &amp; Pengguna Terkait" COLOR="#6d28d9">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="kaddressbook"/>
+<node ID="ID_93" TEXT="Role Kalkulasi &amp; Kalkulasi2: Simulasi harga penawaran sales, audit HPP, dan analisis margin pesanan">
+</node>
+<node ID="ID_94" TEXT="Role Akunting &amp; Super Admin: Verifikasi HPP acuan untuk evaluasi laba kotor">
+</node>
+</node>
+</node>
+<node ID="ID_117" TEXT="5.0 AKUNTANSI, SDM &amp; TATA KELOLA (Keuangan, Personalia, Hak Akses &amp; Audit)" POSITION="left" COLOR="#1d4ed8">
+  <edge COLOR="#2563eb" WIDTH="2"/>
+  <font NAME="SansSerif" BOLD="true" SIZE="13"/>
+  <icon BUILTIN="5"/>
+<node ID="ID_101" TEXT="5.1 Pengelolaan Akuntansi &amp; Pembukuan" COLOR="#1e40af">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="folder"/>
+<node ID="ID_97" TEXT="Scraping otomatis transaksi Jurnal Umum dan Rekening Akuntansi (COA) dari ERP Digit">
+</node>
+<node ID="ID_98" TEXT="Modal Analisis Jurnal: Filter mutasi debit/kredit per rekening dan ekspor Excel">
+</node>
+<node ID="ID_99" TEXT="Dashboard Akunting (/dashboard-akunting): Visualisasi tren bulanan debit vs kredit">
+</node>
+<node ID="ID_100" TEXT="Data Store D8: Akuntansi (rek_akuntansi, jurnal_umum)">
+</node>
+</node>
+<node ID="ID_106" TEXT="5.2 Pengelolaan SDM &amp; Catat Kesalahan" COLOR="#1e40af">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="kaddressbook"/>
+<node ID="ID_102" TEXT="Master Pegawai (/karyawan): NIP, nama, jabatan, divisi, dan status aktif">
+</node>
+<node ID="ID_103" TEXT="Catat Kesalahan (/records): Pencatatan insiden kerja, kronologi, dan beban ganti rugi finansial">
+</node>
+<node ID="ID_104" TEXT="Dashboard HRD (/dashboard-hrd): Grafik tren insiden kesalahan kerja bulanan dan statistik staf">
+</node>
+<node ID="ID_105" TEXT="Data Store D9: SDM &amp; Catat Kesalahan (employees, infractions)">
+</node>
+</node>
+<node ID="ID_112" TEXT="5.3 Tata Kelola Pengguna, Hak Akses &amp; Audit Log" COLOR="#1e40af">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="wizard"/>
+<node ID="ID_107" TEXT="Manajemen Pengguna (/users): Akun login, tautan NIP karyawan, reset password bcrypt">
+</node>
+<node ID="ID_108" TEXT="Pengaturan Hak Akses RBAC (/roles): Konfigurasi matriks izin modul dan batasan divisi">
+</node>
+<node ID="ID_109" TEXT="Otorisasi Bot Telegram (/settings/telegram-users): Verifikasi dan aktivasi akun bot operator">
+</node>
+<node ID="ID_110" TEXT="Audit Jejak Sistem: Local activity logs (activity_logs) &amp; Digit user log (usr_log)">
+</node>
+<node ID="ID_111" TEXT="Data Store D10: Tata Kelola Sistem (users, app_roles, role_permissions, telegram_users, activity_logs, usr_log)">
+</node>
+</node>
+<node ID="ID_116" TEXT="Hak Akses &amp; Pengguna Terkait" COLOR="#1e40af">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="kaddressbook"/>
+<node ID="ID_113" TEXT="Role Akunting: Audit jurnal umum, analisa mutasi kas/bank, pantau Dashboard Akunting">
+</node>
+<node ID="ID_114" TEXT="Role HRD: Master karyawan, formulir catat kesalahan, analisis tren di Dashboard HRD">
+</node>
+<node ID="ID_115" TEXT="Role Super Admin: Manajemen pengguna, konfigurasi hak akses, otorisasi bot, dan audit log">
+</node>
+</node>
+</node>
+<node ID="ID_132" TEXT="6.0 TRACKING MANUFAKTUR (Mesin Penelusuran Terpadu 3 Rantai Dokumen)" POSITION="left" COLOR="#4338ca">
+  <edge COLOR="#4f46e5" WIDTH="2"/>
+  <font NAME="SansSerif" BOLD="true" SIZE="13"/>
+  <icon BUILTIN="6"/>
+<node ID="ID_121" TEXT="Logika Relasi Multi-Arah (Pivot Search Engine)" COLOR="#3730a3">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="launch"/>
+<node ID="ID_118" TEXT="Titik Awal Bebas: Input nomor BOM, Order Produksi, PO, Rekap PB, atau Sales Order">
+</node>
+<node ID="ID_119" TEXT="Penelusuran Maju &amp; Mundur (Bidirectional Traversal): Query SQL terindeks tanpa full-scan">
+</node>
+<node ID="ID_120" TEXT="Penyelarasan nomor dokumen lintas entitas (pembersihan ikon &amp; format faktur)">
+</node>
+</node>
+<node ID="ID_125" TEXT="Rekonsiliasi 3 Rantai Departemen Terpadu" COLOR="#3730a3">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="list"/>
+<node ID="ID_122" TEXT="Rantai Pembelian: PR → SPPH → SPH Masuk → PO → Penerimaan → Rekap PB → Pelunasan Hutang">
+</node>
+<node ID="ID_123" TEXT="Rantai Produksi: BOM (Formula) → Order Produksi → Pemakaian Bahan Baku → Barang Jadi">
+</node>
+<node ID="ID_124" TEXT="Rantai Penjualan: SPH Keluar → Sales Order → Laporan Penjualan (SI) → Pengiriman (SJ) → Pelunasan Piutang">
+</node>
+</node>
+<node ID="ID_129" TEXT="Antarmuka Visualisasi Interaktif (/tracking-manufaktur)" COLOR="#3730a3">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="idea"/>
+<node ID="ID_126" TEXT="Visualisasi Bagan Alur Dokumen (Pohon Relasi Dokumen 3 Departemen)">
+</node>
+<node ID="ID_127" TEXT="Status Kelengkapan Transaksi: Indikator keselarasan rantai pengadaan, pabrik, dan penjualan">
+</node>
+<node ID="ID_128" TEXT="Modal Pop-Up Rincian Faktur: Tanggal, nilai rupiah, kuantitas barang, dan keterangan status">
+</node>
+</node>
+<node ID="ID_131" TEXT="Hak Akses &amp; Pengguna Terkait" COLOR="#3730a3">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="kaddressbook"/>
+<node ID="ID_130" TEXT="Seluruh Manajemen, Auditor Internal &amp; Staf Operasional untuk pelacakan status pesanan">
+</node>
+</node>
+</node>
+<node ID="ID_151" TEXT="STRUKTUR HAK AKSES &amp; 9 PERAN PENGGUNA (RBAC SINTAK)" POSITION="left" COLOR="#0284c7">
+  <edge COLOR="#0369a1" WIDTH="2"/>
+  <font NAME="SansSerif" BOLD="true" SIZE="13"/>
+  <icon BUILTIN="bookmark"/>
+<node ID="ID_134" TEXT="Super Admin (Akses Penuh Seluruh Modul)" COLOR="#0369a1">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="wizard"/>
+<node ID="ID_133" TEXT="Bypass pemeriksaan RBAC, mengelola pengguna, izin role, sinkronisasi Digit, dan audit sistem">
+</node>
+</node>
+<node ID="ID_136" TEXT="Admin Penjadwalan (Operasional Produksi)" COLOR="#0369a1">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="clock"/>
+<node ID="ID_135" TEXT="Kelola antrean SOPd, menyusun target shift di Jurnal Harian Produksi, evaluasi target harian">
+</node>
+</node>
+<node ID="ID_138" TEXT="Admin Realisasi (Operasional Produksi)" COLOR="#0369a1">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="pencil"/>
+<node ID="ID_137" TEXT="Input realisasi jam kerja, lembar jadi, rijek, inscheet kertas, dan kendala operator lapangan">
+</node>
+</node>
+<node ID="ID_140" TEXT="Supervisor Produksi (Operasional Pabrik)" COLOR="#0369a1">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="idea"/>
+<node ID="ID_139" TEXT="Monitoring ritme pabrik di Dashboard Manufaktur, evaluasi pencapaian target dan bottleneck">
+</node>
+</node>
+<node ID="ID_142" TEXT="Kepala Seksi Pra Cetak &amp; Pasca Cetak" COLOR="#0369a1">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="folder"/>
+<node ID="ID_141" TEXT="Supervisi kesiapan teknis divisi spesifik: Pra Cetak (Setting/Plat CTP) atau Pasca Cetak (Jilid/Finishing)">
+</node>
+</node>
+<node ID="ID_144" TEXT="Teknisi Lapangan (7 Divisi Mandiri)" COLOR="#0369a1">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="list"/>
+<node ID="ID_143" TEXT="Divisi Setting, QC, Cetak, Finishing, Gudang, Teknisi, Mesin (Input Laporan Pekerjaan via Web / Bot Telegram)">
+</node>
+</node>
+<node ID="ID_146" TEXT="Kalkulasi &amp; Estimasi Biaya" COLOR="#0369a1">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="calculator"/>
+<node ID="ID_145" TEXT="Simulasi harga jual penawaran di Pricelist, pencatatan HPP pesanan, analisis margin Sales Order">
+</node>
+</node>
+<node ID="ID_148" TEXT="HRD (Personalia &amp; Kedisiplinan)" COLOR="#0369a1">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="kaddressbook"/>
+<node ID="ID_147" TEXT="Master karyawan, formulir catat kesalahan kerja, pemantauan tren di Dashboard HRD">
+</node>
+</node>
+<node ID="ID_150" TEXT="Akunting (Keuangan &amp; Pembukuan)" COLOR="#0369a1">
+  <font NAME="SansSerif" BOLD="true"/>
+  <icon BUILTIN="folder"/>
+<node ID="ID_149" TEXT="Audit transaksi jurnal umum, analisis mutasi kas/bank, pemantauan tren di Dashboard Akunting">
+</node>
+</node>
+</node>
+</node>
 </map>
