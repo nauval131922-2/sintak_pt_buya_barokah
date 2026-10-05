@@ -70,11 +70,13 @@ Modul Google Spreadsheet di SINTAK berlokasi di `Settings > Konversi Data > Lapo
 Pada DFD Level 1, sistem SINTAK didekomposisi menjadi **Sub-Proses Bisnis**, **9 Data Store (D1 – D9)**, dan **Modul Tracking Manufaktur**:
 
 ### 3.1 Sub-Proses Utama (Level 1)
-1. **Proses 1.0: Pembelian & Stok**
-   - Menangani rantai transaksi pembelian bahan baku percetakan (kertas plano, plat CTP, tinta, lem jilid).
+1. **Proses 1.0: Pencerminan Pengadaan & Stok Digit (Read-Only Viewer & Tracking)**
+   - Menarik dan menyinkronkan data pengadaan bahan baku dari Digit ERP (PR, SPPH, SPH Masuk, PO, Penerimaan, Rekap PB, Hutang) dan katalog stok barang.
+   - SINTAK bertindak sebagai pencerminan *read-only* untuk kebutuhan peninjauan staf pabrik, referensi lookup harga kertas di simulator Pricelist, dan penelusuran audit di Tracking Manufaktur.
    - Menyimpan ke Data Store **D1** (`purchase_*`, `spph_*`, `sph_in`, `penerimaan_pembelian`, `rekap_pembelian_barang`, `pelunasan_hutang`) dan **D2** (`stok_master_barang`).
-2. **Proses 2.0: Penjualan & Piutang**
-   - Menangani siklus pesanan pelanggan dari penawaran harga keluar hingga penagihan piutang.
+2. **Proses 2.0: Pencerminan Penjualan & Piutang Digit (Read-Only Viewer & Tracking)**
+   - Menarik dan menyinkronkan dokumen komersial dari Digit ERP (SPH Keluar, Sales Order, Faktur Laporan Penjualan SI, Surat Jalan Pengiriman SJ, dan Bukti Pelunasan Piutang).
+   - SINTAK bertindak sebagai viewer pemantauan realisasi faktur, analisis detail sales order di `/rekap-sales-order`, dan penelusuran status pesanan di Tracking Manufaktur.
    - Menyimpan ke Data Store **D3** (`sph_out`, `sales_orders`, `sales_reports`, `pengiriman`, `pelunasan_piutang`).
 3. **Proses 3.0: Operasional Manufaktur & Jurnal Produksi (JHP)**
    - Jantung operasional percetakan: menghubungkan Order Produksi dari Digit (`orders`, `bill_of_materials`, `bahan_baku`, `barang_jadi`, `produksi_selesai`) dengan referensi **SOPd** (`/data/excel-sopd`), penetapan target rencana (**Input Target Penjadwalan** & **Target Harian**), pencatatan realisasi (**JHP** harian web & Bot Telegram), serta log divisi teknis (**Laporan Pekerjaan**).
@@ -141,9 +143,8 @@ Dekomposisi mendalam atas proses inti operasional percetakan:
 
 ---
 
-## 5. DFD LEVEL 2: PROSES 1.0 PEMBELIAN & STOK
-Dekomposisi alur dokumen pengadaan barang dan katalog master stok:
-
+## 5. DFD LEVEL 2: PROSES 1.0 PENCERMINAN PENGADAAN & STOK DIGIT (READ-ONLY)
+Dekomposisi proses sinkronisasi, validasi, dan penyajian data pengadaan bahan baku serta katalog master stok dari Digit ERP:
 ### 5.1 Sub-Proses Level 2
 1. **1.1 Pengadaan Awal (Permintaan & Penawaran)**
    - Scraping berkala dokumen kebutuhan pengadaan dari sistem Digit: Purchase Request (**PR**), Surat Permintaan Penawaran Harga (**SPPH**), dan Surat Penawaran Harga Masuk dari supplier (**SPH Masuk**).
@@ -162,9 +163,8 @@ Dekomposisi alur dokumen pengadaan barang dan katalog master stok:
 
 ---
 
-## 6. DFD LEVEL 2: PROSES 2.0 PENJUALAN & PIUTANG
-Dekomposisi alur transaksi penjualan dari penawaran harga hingga pelunasan piutang:
-
+## 6. DFD LEVEL 2: PROSES 2.0 PENCERMINAN PENJUALAN & PIUTANG DIGIT (READ-ONLY)
+Dekomposisi proses sinkronisasi, analisis, dan penyajian dokumen komersial penjualan serta pengiriman dari Digit ERP:
 ### 6.1 Sub-Proses Level 2
 1. **2.1 Penawaran & Pemesanan Penjualan**
    - Scraping berkala Surat Penawaran Harga Keluar (**SPH Out**) dan Surat Pesanan Pelanggan (**Sales Order Barang / SO**).
