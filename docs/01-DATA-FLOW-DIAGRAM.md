@@ -176,7 +176,7 @@ Dekomposisi alur transaksi penjualan dari penawaran harga hingga pelunasan piuta
 3. **2.3 Realisasi Penjualan (Faktur SI)**
    - Scraping invoice faktur penjualan resmi (**Laporan Penjualan**) yang terikat langsung ke nomor Sales Order (`FK: faktur_so`).
    - Menyimpan ke Data Store **D3.2 Laporan Penjualan** (`sales_reports`).
-4. **2.4 Pengiriman Logistik & Pelunasan Piutang**
+4. **2.4 Pengiriman Barang (SJ) & Pelunasan Piutang**
    - Scraping Surat Jalan pengiriman barang (**Pengiriman SJ**: no resi, supir, armada) dan bukti pembayaran tagihan pelanggan (**Pelunasan Piutang**).
    - Menyimpan ke Data Store **D3.3 Pengiriman & Piutang** (`pengiriman`, `pelunasan_piutang`).
 
