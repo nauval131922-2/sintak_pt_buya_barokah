@@ -96,7 +96,7 @@ Pada DFD Level 1, sistem SINTAK didekomposisi menjadi **Sub-Proses Bisnis**, **9
 | **D2** | **Data Master Stok Barang** | `stok_master_barang` |
 | **D3** | **Data Penjualan Digit** | `sph_out`, `sales_orders`, `sales_reports`, `pengiriman`, `pelunasan_piutang` |
 | **D4** | **Data Produksi Digit** | `bill_of_materials`, `orders`, `bahan_baku`, `barang_jadi`, `produksi_selesai` |
-| **D5** | **Data Operasional SINTAK** | `sopd`, `sopd_harga`, `jurnal_harian_produksi`, `master_pekerjaan` |
+| **D5** | **Data Jurnal Harian Produksi (JHP)** | `jurnal_harian_produksi` *(Referensi: `sopd`, `master_pekerjaan`)* |
 | **D6** | **Data Laporan Pekerjaan** | `laporan_pekerjaan` |
 | **D7** | **Data Kalkulasi Biaya & Simulasi** | `hpp_kalkulasi`, `saved_calculations`, `global_master_params` |
 | **D8** | **Data Jurnal Akuntansi** | `rek_akuntansi`, `jurnal_umum` |
@@ -115,7 +115,33 @@ $$\begin{aligned}
 
 ---
 
-## 4. AKSES FILE DIAGRAM RESMI (DRAW.IO)
+## 4. DFD LEVEL 2: PROSES 3.0 OPERASIONAL PRODUKSI
+Dekomposisi mendalam atas proses inti operasional percetakan:
+
+### 4.1 Sub-Proses Level 2
+1. **3.1 Sinkronisasi Data Produksi Digit**
+   - Scraping berkala dokumen manufaktur dari sistem Digit: BOM, Order Produksi, Pemakaian Bahan Baku, Hasil Barang Jadi, dan Produksi Selesai.
+   - Menyimpan ke Data Store **D4** (`bill_of_materials`, `orders`, `bahan_baku`, `barang_jadi`, `produksi_selesai`).
+   - Mengalirkan sinkronisasi nomor order baru ke Referensi Order.
+2. **3.2 Pengelolaan Data Referensi Produksi**
+   - Menerima sinkronisasi otomatis order $\ge$ 2025 dari Digit dan unggah file Excel arsip lampau ($\le$ 2024).
+   - Menerima unggah Excel Master Pekerjaan & Mesin oleh Admin Penjadwalan.
+   - Menyimpan ke Data Store **Referensi Produksi** (`sopd`, `sopd_harga`, `master_pekerjaan`) yang dibaca sebagai pilihan dropdown formulir JHP.
+3. **3.3 Penjadwalan & Pencatatan Realisasi JHP**
+   - **Admin Penjadwalan**: Mengisi shift, nama karyawan, nomor order, target lembar/buku, dan alokasi jam.
+   - **Admin Realisasi & Bot Telegram**: Mengisi dan memverifikasi realisasi hasil cetak, inscheet, rijek, kendala, dan bahan kertas.
+   - Menyimpan ke Data Store **D5** (`jurnal_harian_produksi`).
+4. **3.4 Analisa & Monitoring Hasil Produksi**
+   - Membaca data log harian dari **D5** dan rekonsiliasi fisik barang jadi dari **D4**.
+   - Menyajikan metrik evaluasi pencapaian target per shift (**Target Harian**), riwayat pengerjaan order spesifik (**Analisa Order**), akumulasi kuantitas lembar (**Hasil Produksi**), dan grafik tren pabrik (**Dashboard Manufaktur**).
+5. **3.5 Pelaporan Tugas Lapangan (Laporan Pekerjaan)**
+   - Modul pelaporan tugas teknis mandiri staf operasional (Divisi Setting, Cetak, Finishing, QC).
+   - Merujuk nama proyek dari referensi order (`sopd` / `orders`).
+   - Menyimpan ke Data Store **D6** (`laporan_pekerjaan`) dan menyajikan status pengerjaan (Belum, Sedang, Selesai) serta grafik beban divisi.
+
+---
+
+## 5. AKSES FILE DIAGRAM RESMI (DRAW.IO)
 Diagram grafis multi-halaman resmi tanpa grid (`grid="0"`) tersimpan di:
 - **Lokal Proyek**: `D:\Projects\sintak_pt_buya_barokah\sintak-dfd.drawio`
 - **Desktop Komputer**: `C:\Users\nauval\Desktop\sintak-dfd.drawio`
@@ -123,3 +149,4 @@ Diagram grafis multi-halaman resmi tanpa grid (`grid="0"`) tersimpan di:
 Tab halaman di Draw.io Desktop:
 - **Tab 1**: `DFD Level 0 - Diagram Konteks` (Pemetaan 9 Sektor Peran Murni)
 - **Tab 2**: `DFD Level 1 - Rincian Sub-Proses` (Sub-proses Bisnis, Data Store & Tracking Manufaktur)
+- **Tab 3**: `DFD Level 2 - 3.0 Operasional Produksi` (Dekomposisi 5 Sub-Proses Operasional Pabrik)
