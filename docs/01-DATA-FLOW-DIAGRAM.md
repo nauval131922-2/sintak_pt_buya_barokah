@@ -80,15 +80,15 @@ Pada DFD Level 1, sistem SINTAK didekomposisi menjadi **Sub-Proses Bisnis**, **9
    - Jantung operasional percetakan: menghubungkan Order Produksi dari Digit (`orders`, `bill_of_materials`, `bahan_baku`, `barang_jadi`, `produksi_selesai`) dengan referensi **SOPd** (`/data/excel-sopd`), penetapan target rencana (**Input Target Penjadwalan** & **Target Harian**), pencatatan realisasi (**JHP** harian web & Bot Telegram), serta log divisi teknis (**Laporan Pekerjaan**).
    - Menyimpan ke Data Store **D4** (`Data Produksi Digit`), **D5** (`Data Operasional SINTAK`), dan **D6** (`Data Laporan Pekerjaan`).
 4. **Proses 4.0: Kalkulasi Biaya & Simulasi Pricelist**
-   - Menangani simulasi harga cetak 20+ kategori buku/kemasan (`/pricelist`), kalkulasi `/hpp-kalkulasi`, sinkronisasi bahan baku dari order produksi, serta cek riwayat harga beli vendor (*Rekap Lookup*).
+   - Menangani simulasi harga cetak 20+ produk (`/pricelist`), pencatatan nilai HPP per order (`/hpp-kalkulasi`), sinkronisasi nama order dari Digit `orders`, serta referensi tarif bahan dari riwayat Rekap Pembelian Barang.
    - Menyimpan ke Data Store **D7** (`hpp_kalkulasi`, `saved_calculations`, `global_master_params`).
 5. **Proses 5.0: Akuntansi, SDM & Tata Kelola Sistem**
-   - Menangani penyajian data pembukuan Jurnal Umum & Rek Akuntansi (COA), administrasi Karyawan & Catat Kesalahan (`infractions`), serta hak akses peran (RBAC) dan audit log.
-   - Menyimpan ke Data Store **D8** (`rek_akuntansi`, `jurnal_umum`) dan **D9** (`employees`, `infractions`, `users`, `app_roles`, `telegram_users`, `activity_logs`).
+   - Menangani penyajian data pembukuan Jurnal Umum & Rek Akuntansi (COA), administrasi Karyawan & Catat Kesalahan (`infractions`), serta hak akses peran (RBAC) dan log aktivitas sistem.
+   - Menyimpan ke Data Store **D8** (`rek_akuntansi`, `jurnal_umum`), **D9** (`employees`, `infractions`), dan **D10** (`users`, `app_roles`, `telegram_users`, `activity_logs`).
 
 ---
 
-### 3.2 Katalog Data Store (Penyimpanan Data D1 – D9)
+### 3.2 Katalog Data Store (Penyimpanan Data D1 – D10)
 
 | Kode | Nama Data Store | Tabel-Tabel di Database SINTAK |
 | :---: | :--- | :--- |
@@ -100,8 +100,8 @@ Pada DFD Level 1, sistem SINTAK didekomposisi menjadi **Sub-Proses Bisnis**, **9
 | **D6** | **Data Laporan Pekerjaan** | `laporan_pekerjaan` |
 | **D7** | **Data Kalkulasi Biaya & Simulasi** | `hpp_kalkulasi`, `saved_calculations`, `global_master_params` |
 | **D8** | **Data Jurnal Akuntansi** | `rek_akuntansi`, `jurnal_umum` |
-| **D9** | **Data SDM & Tata Kelola** | `employees`, `infractions`, `users`, `app_roles`, `telegram_users`, `activity_logs` |
-
+| **D9** | **Data SDM & Catat Kesalahan** | `employees`, `infractions` |
+| **D10** | **Data Tata Kelola Sistem** | `users`, `app_roles`, `telegram_users`, `activity_logs` |
 ---
 
 ### 3.3 Sub-Proses 6.0: Tracking Manufaktur
