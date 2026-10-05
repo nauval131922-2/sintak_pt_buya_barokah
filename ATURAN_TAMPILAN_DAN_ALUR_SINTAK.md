@@ -119,7 +119,7 @@ Role di SINTAK BUKAN sekadar daftar nama teks, melainkan aktor yang menggerakkan
 15. **Peta Arsitektur Relasi Database & Aliran Sistem (Struktur 5 Kolom Berbasis Kunci Relasi)**:
     - **Tabel Digit Dipisah Mandiri**: Seluruh tabel transaksi Digit tidak disatukan dalam satu kotak ringkasan, melainkan digambarkan sebagai entitas individual lengkap dengan `PK` (Primary Key), `FK` (Foreign Key), dan jumlah baris data riil dari `database_dev.sqlite`.
     - **5 Kolom Fungsional**:
-      1. **Kolom 1: Pengadaan & Stok (Pembelian Digit)**: `stok_master_barang`, `purchase_requests` $\xrightarrow{faktur\_pr}$ `spph_out` $\xrightarrow{faktur\_spph}$ `sph_in` $\xrightarrow{faktur\_sph}$ `purchase_orders` $\xrightarrow{faktur\_po}$ `penerimaan_pembelian` & `rekap_pembelian_barang` $\xrightarrow{faktur\_pb}$ `pelunasan_hutang`.
+      1. **Kolom 1: Pembelian & Stok (Data Digit)**: `stok_master_barang`, `purchase_requests` $\xrightarrow{faktur\_pr}$ `spph_out` $\xrightarrow{faktur\_spph}$ `sph_in` $\xrightarrow{faktur\_sph}$ `purchase_orders` $\xrightarrow{faktur\_po}$ `penerimaan_pembelian` & `rekap_pembelian_barang` $\xrightarrow{faktur\_pb}$ `pelunasan_hutang`.
       2. **Kolom 2: Penjualan (Sales & Piutang Digit)**: `sph_out` $\xrightarrow{faktur\_sph}$ `sales_orders` $\rightarrow$ `rekap_sales_order` $\rightarrow$ `sales_reports` $\xrightarrow{status\_faktur}$ `pengiriman` $\xrightarrow{fkt}$ `pelunasan_piutang`.
       3. **Kolom 3: Manufaktur & Operasional Pabrik**: `bill_of_materials` $\xrightarrow{faktur\_bom}$ `orders` (SPK) $\rightarrow$ `bahan_baku` & `barang_jadi`, `produksi_selesai`, `sopd`, `master_pekerjaan`, `telegram_feeder`, `jurnal_harian_produksi` (198k baris) $\rightarrow$ 3 cabang paralel (`Target Harian`, `Analisa Produksi`, `Hasil Produksi`) $\rightarrow$ `Dashboard Produksi`, serta `Tracking Manufaktur`.
       4. **Kolom 4: Pelaporan Kerja & Kalkulasi Harga**: `Google Spreadsheet API` $\rightarrow$ `laporan_pekerjaan` (5.1k baris), `Pricelist Simulator`, `hpp_kalkulasi` (2.4k baris).
@@ -134,3 +134,7 @@ Role di SINTAK BUKAN sekadar daftar nama teks, melainkan aktor yang menggerakkan
 16. **Konfigurasi File Draw.io Wajib Matikan Grid (`grid="0"`)**:
     - Setiap kali membuat atau memodifikasi diagram Draw.io (`.drawio`), tag `<mxGraphModel>` wajib memiliki atribut `grid="0"` di seluruh halaman diagram (multi-page).
     - Dilarang membiarkan `grid="1"` agar tampilan kanvas di aplikasi Draw.io Desktop selalu bersih, bebas dari kisi-kisi/grid bawaan.
+
+17. **Kepanjangan Resmi SINTAK adalah Sistem Informasi Cetak**:
+    - SINTAK merupakan singkatan dari **Sistem Informasi Cetak** (bukan "sistem informasi & manajemen percetakan" atau "manufaktur percetakan").
+    - Seluruh judul, lingkaran proses pusat, diagram, dan dokumen wajib mencantumkan **Sistem Informasi Cetak (SINTAK)**.

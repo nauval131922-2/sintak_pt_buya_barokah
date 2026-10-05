@@ -1,5 +1,5 @@
 # DOKUMEN SISTEM SINTAK: DATA FLOW DIAGRAM (DFD) LEVEL 0 & LEVEL 1
-**Sistem Informasi & Manajemen Manufaktur Percetakan PT Buya Barokah**
+**Sistem Informasi Cetak (SINTAK) PT Buya Barokah**
 
 ---
 
@@ -14,7 +14,7 @@ Dokumen ini mendefinisikan arsitektur aliran data sistem **SINTAK** secara struk
 
 ### 2.1 Entitas Eksternal & Aktor Pengguna Resmi SINTAK
 Pada diagram konteks, lingkaran tengah merepresentasikan inti sistem:
-`0.0 SISTEM INFORMASI & MANAJEMEN PERCETAKAN (SINTAK)`
+`0.0 SISTEM INFORMASI CETAK (SINTAK)`
 
 Berinteraksi dengan **9 Entitas Eksternal & Peran Pengguna Asli**:
 
