@@ -182,7 +182,26 @@ Dekomposisi alur transaksi penjualan dari penawaran harga hingga pelunasan piuta
 
 ---
 
-## 7. AKSES FILE DIAGRAM RESMI (DRAW.IO)
+## 7. DFD LEVEL 2: PROSES 4.0 KALKULASI BIAYA & PRICELIST
+Dekomposisi modul perhitungan biaya cetak, referensi tarif bahan, dan master HPP:
+
+### 7.1 Sub-Proses Level 2
+1. **4.1 Lookup Riwayat Harga Beli Bahan**
+   - Membaca data historis pembelian bahan kertas secara dinamis dari tabel `rekap_pembelian_barang` (**D1.3**).
+   - Otomatis mendeteksi gramatur kertas (HVS, Art Paper, Art Carton) dan ukuran plano (cm), lalu mengonversi nilai rupiah ke estimasi harga per kg, per rim, atau per lembar.
+   - Menyajikan modal pop-up pencarian cepat (**Rekap Lookup** di `/pricelist/rekap-lookup`) untuk diakses langsung dari form simulator pricelist tanpa membuat tabel baru.
+2. **4.2 Simulasi Perhitungan Biaya Cetak**
+   - Mesin kalkulator untuk 20+ kategori produk percetakan: Buku Soft/Hard Cover, Kalender Kop, Nota, Majalah, Undangan, Paperbag, Packaging, dll.
+   - Menghitung 4 komponen biaya: Bahan Kertas + Plat/Ongkos Cetak Mesin + Ongkos Finishing + Persentase Markup Profit.
+   - Menyimpan matriks harga standar ke tabel **`pricelist_items`** dan menyimpan riwayat kalkulasi kustom pengguna ke tabel **`pricelist_saved_calculations`** (**D7.1**).
+3. **4.3 Pencatatan Nilai HPP per Order**
+   - Menarik nama-nama produk pesanan baru secara otomatis dari tabel `orders` Digit (`nama_prd`).
+   - Menyediakan tabel master untuk input nilai rupiah HPP per pesanan produksi via web inline edit maupun impor file Excel.
+   - Menyimpan ke Data Store **D7.2 Master Nilai HPP Kalkulasi** (`hpp_kalkulasi`).
+
+---
+
+## 8. AKSES FILE DIAGRAM RESMI (DRAW.IO)
 Diagram grafis multi-halaman resmi tanpa grid (`grid="0"`) tersimpan di:
 - **Lokal Proyek**: `D:\Projects\sintak_pt_buya_barokah\sintak-dfd.drawio`
 - **Desktop Komputer**: `C:\Users\nauval\Desktop\sintak-dfd.drawio`
@@ -193,3 +212,4 @@ Tab halaman di Draw.io Desktop:
 - **Tab 3**: `DFD Level 2 - 3.0 Operasional Produksi` (Dekomposisi 5 Sub-Proses Operasional Pabrik)
 - **Tab 4**: `DFD Level 2 - 1.0 Pembelian & Stok` (Dekomposisi 4 Sub-Proses Pengadaan & Stok)
 - **Tab 5**: `DFD Level 2 - 2.0 Penjualan & Piutang` (Dekomposisi 4 Sub-Proses Penjualan & Piutang)
+- **Tab 6**: `DFD Level 2 - 4.0 Kalkulasi & Pricelist` (Dekomposisi 3 Sub-Proses Biaya & HPP)
