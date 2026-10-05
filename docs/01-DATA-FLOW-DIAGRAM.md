@@ -201,7 +201,28 @@ Dekomposisi modul perhitungan biaya cetak, referensi tarif bahan, dan master HPP
 
 ---
 
-## 8. AKSES FILE DIAGRAM RESMI (DRAW.IO)
+## 8. DFD LEVEL 2: PROSES 5.0 AKUNTANSI, SDM & TATA KELOLA
+Dekomposisi rincian pengelolaan keuangan, personalia, hak akses, dan audit sistem:
+
+### 8.1 Sub-Proses Level 2
+1. **5.1 Pengelolaan Akuntansi & Jurnal Umum**
+   - Scraping transaksi pembukuan Jurnal Umum dan Rekening Akuntansi (COA) dari Digit.
+   - Menyediakan modal Analisis Jurnal untuk filter mutasi debit/kredit per rekening dan ekspor Excel.
+   - Menyimpan ke Data Store **D8 Akuntansi** (`rek_akuntansi`, `jurnal_umum`) serta menyajikan visualisasi di **Dashboard Akunting** (`/dashboard-akunting`).
+2. **5.2 Pengelolaan SDM & Catat Kesalahan**
+   - Mengelola master data personalia karyawan (unggah Excel data karyawan di `/karyawan`).
+   - Mencatat poin kesalahan dan insiden kerja karyawan di menu **Catat Kesalahan** (`/records`).
+   - Menyimpan ke Data Store **D9 SDM & Catat Kesalahan** (`employees`, `infractions`) serta menyajikan visualisasi di **Dashboard HRD** (`/dashboard-hrd`).
+3. **5.3 Tata Kelola Pengguna, Hak Akses & Audit Log**
+   - Mengelola akun login pengguna sistem di menu **Pengguna** (`/users`).
+   - Mengonfigurasi matriks izin modul per peran di menu **Hak Akses** (`/roles`).
+   - Memverifikasi dan menyetujui akun bot di menu **Telegram Users** (`/settings/telegram-users`).
+   - Scraping log aktivitas user dari Digit (`usr_log`) dan merekam otomatis seluruh audit jejak aktivitas sistem lokal (`activity_logs`).
+   - Menyimpan ke Data Store **D10 Tata Kelola** (`users`, `app_roles`, `role_permissions`, `telegram_users`, `activity_logs`, `usr_log`, `push_subscriptions`).
+
+---
+
+## 9. AKSES FILE DIAGRAM RESMI (DRAW.IO)
 Diagram grafis multi-halaman resmi tanpa grid (`grid="0"`) tersimpan di:
 - **Lokal Proyek**: `D:\Projects\sintak_pt_buya_barokah\sintak-dfd.drawio`
 - **Desktop Komputer**: `C:\Users\nauval\Desktop\sintak-dfd.drawio`
@@ -213,3 +234,4 @@ Tab halaman di Draw.io Desktop:
 - **Tab 4**: `DFD Level 2 - 1.0 Pembelian & Stok` (Dekomposisi 4 Sub-Proses Pengadaan & Stok)
 - **Tab 5**: `DFD Level 2 - 2.0 Penjualan & Piutang` (Dekomposisi 4 Sub-Proses Penjualan & Piutang)
 - **Tab 6**: `DFD Level 2 - 4.0 Kalkulasi & Pricelist` (Dekomposisi 3 Sub-Proses Biaya & HPP)
+- **Tab 7**: `DFD Level 2 - 5.0 Akuntansi, SDM & Tata Kelola` (Dekomposisi 3 Domain Manajemen Sistem)
