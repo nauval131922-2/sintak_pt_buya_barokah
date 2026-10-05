@@ -22,10 +22,10 @@ Berinteraksi dengan **9 Entitas Eksternal & Peran Pengguna Asli**:
 | :---: | :--- | :---: | :--- |
 | **1** | **Digit** | Sistem Eksternal | Sumber data hulu yang ditarik via scraper SINTAK: mencakup transaksi Pembelian, Penjualan, Order Produksi (BOM, Bahan Baku, Barang Jadi), Rekening Akuntansi, dan Jurnal Umum. |
 | **2** | **Bot Telegram** | Kanal Input Mobile | Kanal mobile untuk operator lapangan dalam input realisasi pengerjaan order (`/input`), pencarian order (`/search`, `/searchorder`), dan cek riwayat (`/history`). |
-| **3** | **Role Kalkulasi** | Role SINTAK | Pengguna yang mengelola modul Kalkulasi Biaya Produksi: simulasi 20+ produk di `/pricelist`, kalkulasi `/hpp-kalkulasi`, serta referensi tarif bahan dari riwayat Pembelian. |
+| **3** | **Role Kalkulasi** | Role SINTAK | Pengguna yang mengelola modul Kalkulasi Biaya Produksi: simulasi 20+ produk di `/pricelist`, pencatatan nilai HPP di `/hpp-kalkulasi`, riwayat harga beli bahan di modal Rekap Lookup, serta analisis riwayat pesanan di **Rekap Sales Order Barang** (`/rekap-sales-order`). |
 | **4** | **Role Admin Realisasi** | Role SINTAK | Admin verifikator JHP: menginput dan memverifikasi data realisasi Jurnal Harian Produksi (**JHP**) harian di web (jam mulai-selesai, kuantitas realisasi, lembar **inscheet**, lembar **rijek**, dan kendala). |
-| **5** | **Role Operator Lapangan & Kepala Seksi** | Role SINTAK | Staf operasional lapangan dan pimpinan seksi percetakan:<br/>• **Setting**: Operator pra cetak & pembuatan plat CTP.<br/>• **Cetak**: Operator mesin cetak (Offset & Web).<br/>• **Finishing**: Operator pasca cetak (lipat, lem, jilid/binding, potong, & packing).<br/>• **Quality Control (QC)**: Staf pemeriksa standar mutu hasil cetak.<br/>• **Kepala Seksi**: Pimpinan teknis (`Kepala Seksi Pra Cetak` & `Kepala Seksi Pasca Cetak`).<br/>Semua peran ini berinteraksi di SINTAK untuk menginput/memperbarui tugas di **Laporan Pekerjaan** (`/laporan-pekerjaan`) dan memantau **Hasil Produksi** (`/hasil-produksi`). |
-| **6** | **Role Admin Penjadwalan** | Role SINTAK | Penjadwal operasional pabrik: mengelola data **SOPd** (`/data/excel-sopd`), melakukan **Input Target (Penjadwalan)** di JHP, memantau **Target Harian** (`/target`), dan mengelola referensi **Master Pekerjaan**. |
+| **5** | **Role Operator Lapangan & Kepala Seksi** | Role SINTAK | Staf operasional lapangan dan pimpinan seksi dari 7 divisi teknis: **Setting**, **Quality Control (QC)**, **Cetak**, **Finishing**, **Gudang**, **Teknisi**, dan **Mesin**. Menginput/memperbarui tugas di **Laporan Pekerjaan** (`/laporan-pekerjaan`) dan memantau **Hasil Produksi** (`/hasil-produksi`). |
+| **6** | **Role Admin Penjadwalan** | Role SINTAK | Penjadwal operasional pabrik: membuat **Jadwal Target Harian** di form JHP (dengan nomor order yang otomatis bersumber dari `orders` Digit), memantau **Target Harian** (`/target`), dan mengelola referensi **Master Pekerjaan** & mesin. |
 | **7** | **Role Akunting** | Role SINTAK | Pengguna bagian keuangan yang menjalankan sinkronisasi/scraping data Jurnal Umum dan Rek Akuntansi dari Digit, melihat **Dashboard Akunting** (visualisasi kas, tren laba-rugi), modal Analisis Jurnal, dan ekspor Excel. |
 | **8** | **Role HRD** | Role SINTAK | Pengguna personalia: mengunggah/mengelola data master Karyawan di `/karyawan`, mencatat kesalahan kerja di **Catat Kesalahan** (`/records` / `infractions`), dan memantau **Dashboard HRD** (total karyawan & grafik tren kesalahan). |
 | **9** | **Role Super Admin** | Role SINTAK | Administrator sistem tertinggi: mengelola akun login pengguna (`/users`), matriks hak akses (`/roles`), persetujuan registrasi Bot Telegram (`/settings/telegram-users`), menjalankan modul konversi data migrasi lama, dan memantau **Log Aktivitas** sistem (`/activity-log`). |
@@ -40,7 +40,7 @@ Berinteraksi dengan **9 Entitas Eksternal & Peran Pengguna Asli**:
 3. **Dari Role Kalkulasi**: Input Parameter Oplah, Bahan Kertas, & Finishing.
 4. **Dari Role Admin Realisasi**: Input & Verifikasi JHP Harian (Jam Kerja, Realisasi, Inscheet, Rijek).
 5. **Dari Role Operator Lapangan & Kepala Seksi**: Input & Pembaruan Tugas Laporan Pekerjaan (`/laporan-pekerjaan`).
-6. **Dari Role Admin Penjadwalan**: Input SOPd, Target & Master Pekerjaan.
+6. **Dari Role Admin Penjadwalan**: Input Jadwal Target Harian & Master Pekerjaan.
 7. **Dari Role Akunting**: Trigger Scrape Jurnal & Rek Akuntansi dari Digit.
 8. **Dari Role HRD**: Upload Karyawan (Excel) & Catat Kesalahan (`/records`).
 9. **Dari Role Super Admin**: Kelola Pengguna, Role & Approval Bot Telegram.
@@ -48,7 +48,7 @@ Berinteraksi dengan **9 Entitas Eksternal & Peran Pengguna Asli**:
 #### B. Aliran Informasi Keluar (Outflow dari SINTAK — Panah Ungu):
 1. **Ke Digit**: Trigger Sinkronisasi / Scraping Periode.
 2. **Ke Bot Telegram**: Respon Status Simpan & Validasi Order.
-3. **Ke Role Kalkulasi**: Hasil Simulasi Matriks Harga Jual & HPP.
+3. **Ke Role Kalkulasi**: Hasil Simulasi Matriks Harga Jual, HPP, Lookup Harga Bahan & Rekap Detail Sales Order Barang.
 4. **Ke Role Admin Realisasi**: Referensi Data SOPd & Target Kerja.
 5. **Ke Role Operator Lapangan & Kepala Seksi**: Monitoring Laporan Pekerjaan & Hasil Produksi.
 6. **Ke Role Admin Penjadwalan**: Dashboard Produksi, Analisa & Target Harian.
