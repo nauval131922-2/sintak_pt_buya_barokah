@@ -83,7 +83,7 @@ Pada DFD Level 1, sistem SINTAK didekomposisi menjadi **Sub-Proses Bisnis**, **9
    - Menangani simulasi harga cetak 20+ produk (`/pricelist`), pencatatan nilai HPP per order (`/hpp-kalkulasi`), sinkronisasi nama order dari Digit `orders`, serta referensi tarif bahan dari riwayat Rekap Pembelian Barang.
    - Menyimpan ke Data Store **D7** (`hpp_kalkulasi`, `saved_calculations`, `global_master_params`).
 5. **Proses 5.0: Akuntansi, SDM & Tata Kelola Sistem**
-   - Menangani penyajian data pembukuan Jurnal Umum & Rek Akuntansi (COA), administrasi Karyawan & Catat Kesalahan (`infractions`), serta hak akses peran (RBAC) dan log aktivitas sistem.
+   - Menangani penyajian data pembukuan Jurnal Umum & Rek Akuntansi (COA), administrasi Karyawan & Catat Kesalahan (`infractions`), serta konfigurasi Hak Akses (`/roles`) dan log aktivitas sistem.
    - Menyimpan ke Data Store **D8** (`rek_akuntansi`, `jurnal_umum`), **D9** (`employees`, `infractions`), dan **D10** (`users`, `app_roles`, `telegram_users`, `activity_logs`).
 
 ---
