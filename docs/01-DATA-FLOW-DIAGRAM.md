@@ -22,9 +22,9 @@ Berinteraksi dengan **8 Entitas / Aktor Pengguna Asli**:
 | :---: | :--- | :---: | :--- |
 | **1** | **Digit ERP** | Sistem Eksternal | Sumber data hulu yang ditarik via engine scraper SINTAK: mencakup Pembelian, Penjualan, Order Produksi (BOM, Bahan Baku, Barang Jadi), Rekening Akuntansi, dan Jurnal Umum. |
 | **2** | **Bot Telegram (`@SintakSettingBot`)** | Kanal Input Mobile | Bot Telegram khusus staf/operator bagian **Setting** untuk input realisasi kerja (`/input`, `/input_target`, pesan suara), pencarian order (`/search`, `/searchorder`), dan riwayat (`/history`). Tidak ada fungsi broadcast alert/kelalaian. |
-| **3** | **Role Kalkulasi (Estimasi)** | Role SINTAK | Pengguna yang mengelola modul Kalkulasi Biaya Produksi: simulasi 20+ produk di `/pricelist`, perhitungan `/hpp-kalkulasi`, serta menggunakan fitur **Rekap Lookup** untuk mengintip riwayat harga beli riil kertas/plat dari vendor di Digit. |
-| **4** | **Role Admin Realisasi & Operator** | Role SINTAK | Staf lapangan divisi operasional (`Setting`, `Cetak`, `Finishing`, `Quality Control`) dan admin verifikator: menginput dan memeriksa data Jurnal Harian Produksi (**JHP**) harian (jam mulai-selesai, kuantitas realisasi, lembar **inscheet**, lembar **rijek**, dan kendala mesin). |
-| **5** | **Role Admin Penjadwalan & Kepala Seksi** | Role SINTAK | `Admin Penjadwalan`, `Kepala Seksi Pra Cetak`, dan `Kepala Seksi Pasca Cetak`: menjadwalkan antrean pengerjaan mesin di **SOPd** (`/data/excel-sopd`), mengelola standar target pekerjaan per jam/shift (`/master-pekerjaan-jurnal-produksi`), dan memantau progres produksi. |
+| **3** | **Role Kalkulasi** | Role SINTAK | Pengguna yang mengelola modul Kalkulasi Biaya Produksi: simulasi 20+ produk di `/pricelist`, perhitungan `/hpp-kalkulasi`, serta menggunakan fitur **Rekap Lookup** untuk mengintip riwayat harga beli riil kertas/plat dari vendor di Digit. |
+| **4** | **Role Admin Realisasi & Operator** | Role SINTAK | Staf lapangan divisi operasional (`Setting`, `Cetak`, `Finishing`, `Quality Control`) dan admin verifikator: menginput dan memeriksa data Jurnal Harian Produksi (**JHP**) harian (jam mulai-selesai, kuantitas realisasi, lembar **inscheet**, lembar **rijek**, dan kendala). |
+| **5** | **Role Admin Penjadwalan & Kepala Seksi** | Role SINTAK | `Admin Penjadwalan`, `Kepala Seksi Pra Cetak`, dan `Kepala Seksi Pasca Cetak`: mengelola data **SOPd** (`/data/excel-sopd`), melakukan **Input Target (Penjadwalan)**, memantau **Target Harian**, dan mengelola referensi **Master Pekerjaan**. |
 | **6** | **Role Akunting** | Role SINTAK | Pengguna bagian keuangan yang menjalankan sinkronisasi/scraping data Jurnal Umum dan Rek Akuntansi dari Digit ERP, melihat Dashboard Akunting (visualisasi arus kas, rasio keuangan, tren debet-kredit), Analisis Jurnal, dan ekspor Excel. *(Catatan: Tidak ada form penyesuaian COA manual di SINTAK; data murni hasil scraping Digit)*. |
 | **7** | **Role HRD** | Role SINTAK | Pengguna divisi personalia: mengunggah/mengelola data master Karyawan (154 staf aktif di `/karyawan`), mencatat pelanggaran/kesalahan kerja staf terkait order di `/infractions` (Catat Kesalahan), dan memantau Dashboard HRD. |
 | **8** | **Role Super Admin** | Role SINTAK | Administrator sistem tertinggi: mengelola akun pengguna (`/users`), matriks hak akses (`/roles`), persetujuan registrasi akun Bot Telegram (`/settings/telegram-users`), menjalankan modul konversi data migrasi lama, dan memantau Log Aktivitas sistem (`/activity-log`). |
@@ -37,20 +37,20 @@ Berinteraksi dengan **8 Entitas / Aktor Pengguna Asli**:
 1. **Dari Digit ERP**: Tarik data scraping Pembelian (`PR`, `SPPH`, `SPH In`, `PO`, `Penerimaan`, `Rekap PB`, `Hutang`), Penjualan (`SPH Out`, `SO`, `Laporan Penjualan`, `SJ Pengiriman`, `Piutang`), Order Produksi (`BOM`, `orders`, `bahan_baku`, `barang_jadi`, `produksi_selesai`), dan Akuntansi (`rek_akuntansi`, `jurnal_umum`).
 2. **Dari Bot Telegram (`@SintakSettingBot`)**: Input realisasi shift dan nomor order pekerjaan khusus bagian Setting (`/input`, `/input_target`, pesan suara/audio).
 3. **Dari Role Kalkulasi**: Input parameter spesifikasi order (oplah, jenis bahan kertas, gramatur, jilid/finishing, toleransi susut) pada kalkulator `/pricelist` dan `/hpp-kalkulasi`.
-4. **Dari Role Admin Realisasi & Operator**: Input Jurnal Harian Produksi harian (nomor order, jam pengerjaan, kuantitas hasil cetak, lembar **inscheet** / toleransi, lembar **rijek** / rusak, kendala mesin).
-5. **Dari Role Admin Penjadwalan & Kepala Seksi**: Input/edit antrean mesin di SOPd (`/data/excel-sopd`) dan penetapan standar target kerja per jam/shift (`/master-pekerjaan-jurnal-produksi`).
+4. **Dari Role Admin Realisasi & Operator**: Input Jurnal Harian Produksi harian (nomor order, jam pengerjaan, kuantitas realisasi, lembar **inscheet** / toleransi, lembar **rijek** / rusak, kendala).
+5. **Dari Role Admin Penjadwalan & Kepala Seksi**: Input data SOPd (`/data/excel-sopd`), Input Target (Penjadwalan), dan referensi Master Pekerjaan.
 6. **Dari Role Akunting**: Trigger scraping Jurnal Umum dan Rek Akuntansi untuk menarik pembaruan pembukuan dari Digit ERP.
 7. **Dari Role HRD**: Unggah berkas Excel master Karyawan dan pencatatan poin pelanggaran/kesalahan kerja operator di `/infractions`.
 8. **Dari Role Super Admin**: Manajemen akun login pengguna, konfigurasi izin akses per modul, persetujuan user bot telegram, dan eksekusi konversi data migrasi.
 
 #### B. Aliran Informasi Keluar (Outflow dari SINTAK — Panah Ungu):
 1. **Ke Digit ERP**: Trigger sinkronisasi dan parameter rentang tanggal/periode scraper.
-2. **Ke Bot Telegram**: Respon status simpan realisasi, notifikasi format input, dan hasil validasi nomor order.
+2. **Ke Bot Telegram**: Respon status simpan realisasi dan hasil validasi nomor order.
 3. **Ke Role Kalkulasi**: Hasil kalkulasi HPP per eksemplar, matriks harga jual berjenjang, dan riwayat harga beli vendor nyata (*Rekap Lookup*).
-4. **Ke Role Admin Realisasi & Operator**: Tampilan antrean jadwal mesin SOPd dan target standar kuantitas jam kerja.
-5. **Ke Role Admin Penjadwalan & Kepala Seksi**: Dashboard Produksi, analisa progres pengerjaan SPK, dan rekapitulasi akumulasi hasil cetak.
+4. **Ke Role Admin Realisasi & Operator**: Referensi data SOPd dan target kerja.
+5. **Ke Role Admin Penjadwalan & Kepala Seksi**: Dashboard Produksi, Analisa Produksi, dan Hasil Produksi.
 6. **Ke Role Akunting**: Dashboard Akunting (grafik tren kas, laba-rugi, pendapatan vs beban), modal Analisis Jurnal, dan berkas unduhan Excel.
-7. **Ke Role HRD**: Dashboard HRD (grafik tren pelanggaran per divisi, rekapitulasi poin SP staf, dan jam lemur).
+7. **Ke Role HRD**: Dashboard HRD (grafik tren pelanggaran per divisi, rekapitulasi poin SP staf, dan jam lembur).
 8. **Ke Role Super Admin**: Tabel Audit Trail Log Aktivitas (`/activity-log`) yang mencatat seluruh aksi Create, Update, Delete oleh seluruh user.
 
 ---
@@ -59,8 +59,6 @@ Berinteraksi dengan **8 Entitas / Aktor Pengguna Asli**:
 Modul Google Spreadsheet di SINTAK berlokasi di `Settings > Konversi Data > Laporan Pekerjaan` (`/settings/konversi-data/laporan-pekerjaan`).
 - **Fungsi Sebenarnya**: Digunakan untuk **keperluan migrasi/konversi data awal** dari spreadsheet lama (`DATABASE_REPORT`) ke database lokal SINTAK.
 - **Operasional Berjalan**: Setelah konversi selesai, penambahan tugas teknis baru, pengubahan status, dan pengaturan urutan tugas dilakukan langsung di dalam aplikasi SINTAK pada halaman **Laporan Pekerjaan** (`/laporan-pekerjaan`). Oleh karena itu, Google Spreadsheet tidak digambarkan sebagai entitas eksternal operasional harian yang aktif bolak-balik.
-
----
 
 ## 3. DFD LEVEL 1: DEKOMPOSISI SUB-PROSES & DATA STORE
 
@@ -74,7 +72,7 @@ Pada DFD Level 1, sistem SINTAK didekomposisi menjadi **5 Sub-Proses Utama**, **
    - Menangani siklus pesanan pelanggan dari penawaran harga keluar hingga penagihan piutang.
    - Menyimpan ke Data Store **D3** (`sph_out`, `sales_orders`, `sales_reports`, `pengiriman`, `pelunasan_piutang`).
 3. **Proses 3.0: Operasional Manufaktur & Jurnal Harian Produksi (JHP)**
-   - Jantung operasional percetakan: menghubungkan Order Produksi dari Digit (`orders`, `bill_of_materials`, `bahan_baku`, `barang_jadi`, `produksi_selesai`) dengan antrean mesin (`sopd`), standar target jam (`master_pekerjaan`), dan realisasi harian (`jurnal_harian_produksi` - 198.270 baris).
+   - Jantung operasional percetakan: menghubungkan Order Produksi dari Digit (`orders`, `bill_of_materials`, `bahan_baku`, `barang_jadi`, `produksi_selesai`) dengan referensi **SOPd** (`/data/excel-sopd`), referensi dropdown **Master Pekerjaan**, penetapan **Target Harian**, dan realisasi harian (**JHP** - 198.270 baris).
    - Menyimpan ke Data Store **D4** (Data Produksi Digit) dan **D5** (Data Operasional SINTAK).
 4. **Proses 4.0: Kalkulasi Biaya & Laporan Tugas**
    - Menangani simulasi harga cetak 20+ kategori buku/kemasan (`/pricelist`), kalkulasi `/hpp-kalkulasi`, serta pencatatan tugas teknis staf divisi di `/laporan-pekerjaan`.
@@ -82,7 +80,6 @@ Pada DFD Level 1, sistem SINTAK didekomposisi menjadi **5 Sub-Proses Utama**, **
 5. **Proses 5.0: Akuntansi, SDM & Tata Kelola Sistem**
    - Menangani penyajian data pembukuan Jurnal Umum (100.4k baris) & Rek Akuntansi (203 COA), administrasi Karyawan (154 staf) & Catat Kesalahan (`infractions`), serta hak akses peran (RBAC) dan audit log.
    - Menyimpan ke Data Store **D8** (`rek_akuntansi`, `jurnal_umum`) dan **D9** (`employees`, `infractions`, `users`, `app_roles`, `telegram_users`, `activity_logs`).
-
 ---
 
 ### 3.2 Katalog Data Store (Penyimpanan Data D1 – D9)
