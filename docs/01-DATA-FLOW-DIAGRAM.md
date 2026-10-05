@@ -96,12 +96,12 @@ Pada DFD Level 1, sistem SINTAK didekomposisi menjadi **Sub-Proses Bisnis**, **9
 | **D2** | **Data Master Stok Barang** | `stok_master_barang` |
 | **D3** | **Data Penjualan Digit** | `sph_out`, `sales_orders`, `sales_reports`, `pengiriman`, `pelunasan_piutang` |
 | **D4** | **Data Produksi Digit** | `bill_of_materials`, `orders`, `bahan_baku`, `barang_jadi`, `produksi_selesai` |
-| **D5** | **Data Jurnal Harian Produksi (JHP)** | `jurnal_harian_produksi` *(Referensi: `sopd`, `master_pekerjaan`)* |
-| **D6** | **Data Laporan Pekerjaan** | `laporan_pekerjaan` |
-| **D7** | **Data Kalkulasi Biaya & Simulasi** | `hpp_kalkulasi`, `saved_calculations`, `global_master_params` |
+| **D5** | **Data Jurnal Harian Produksi (JHP)** | `jurnal_harian_produksi` *(Referensi: `orders/sopd`, `master_pekerjaan`, `master_pekerjaan_jurnal_produksi`)* |
+| **D6** | **Data Laporan Pekerjaan** | `laporan_pekerjaan`, `role_laporan_pekerjaan_config` |
+| **D7** | **Data Kalkulasi Biaya & Simulasi** | `hpp_kalkulasi`, `pricelist_items`, `pricelist_saved_calculations` |
 | **D8** | **Data Jurnal Akuntansi** | `rek_akuntansi`, `jurnal_umum` |
 | **D9** | **Data SDM & Catat Kesalahan** | `employees`, `infractions` |
-| **D10** | **Data Tata Kelola Sistem** | `users`, `app_roles`, `telegram_users`, `activity_logs` |
+| **D10** | **Data Tata Kelola Sistem** | `users`, `app_roles`, `role_permissions`, `telegram_users`, `activity_logs`, `usr_log`, `push_subscriptions` |
 ---
 
 ### 3.3 Sub-Proses 6.0: Tracking Manufaktur
