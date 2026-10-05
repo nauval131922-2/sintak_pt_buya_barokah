@@ -222,7 +222,33 @@ Dekomposisi rincian pengelolaan keuangan, personalia, hak akses, dan audit siste
 
 ---
 
-## 9. AKSES FILE DIAGRAM RESMI (DRAW.IO)
+## 9. DFD LEVEL 2: PROSES 6.0 TRACKING MANUFAKTUR
+Dekomposisi mesin pelacakan alur dokumen terintegrasi lintas rantai Pembelian, Produksi, dan Penjualan:
+
+### 9.1 Sub-Proses Level 2
+1. **6.1 Identifikasi Nomor Faktur Acuan**
+   - Menerima input nomor faktur dari pengguna (bisa berupa nomor BOM, Order Produksi, PO, Rekap PB, atau Sales Order).
+   - Mengidentifikasi jenis dokumen dan menentukan titik awal penelusuran (*root/pivot search*).
+   - Mengirimkan kunci relasi ke mesin penelusur dokumen Pembelian, Produksi, dan Penjualan.
+2. **6.2 Penelusuran Alur Pembelian**
+   - Menelusuri seluruh riwayat pengadaan bahan baku yang terkait dengan order produksi:
+     $$\text{PR} \longrightarrow \text{SPPH} \longrightarrow \text{SPH Masuk} \longrightarrow \text{PO} \longrightarrow \text{Penerimaan Pembelian} \longrightarrow \text{Rekap PB} \longrightarrow \text{Pelunasan Hutang}$$
+   - Mengaitkan pemakaian bahan baku (`faktur_pb`) ke dokumen pembelian terkait dari Data Store **D1** (`purchase_requests`, `spph_out`, `sph_in`, `purchase_orders`, `penerimaan_pembelian`, `rekap_pembelian_barang`, `pelunasan_hutang`).
+3. **6.3 Penelusuran Alur Produksi**
+   - Menelusuri siklus operasional manufaktur percetakan:
+     $$\text{BOM (Formula)} \longrightarrow \text{Order Produksi (orders)} \longrightarrow \text{Bahan Baku} \longrightarrow \text{Barang Jadi \& Produksi Selesai}$$
+   - Membaca Data Store **D4** (`bill_of_materials`, `orders`, `bahan_baku`, `barang_jadi`, `produksi_selesai`).
+4. **6.4 Penelusuran Alur Penjualan**
+   - Menelusuri siklus komersial dan penagihan ke pelanggan:
+     $$\text{SPH Keluar} \longrightarrow \text{Sales Order} \longrightarrow \text{Laporan Penjualan (SI)} \longrightarrow \text{Pengiriman (SJ)} \longrightarrow \text{Pelunasan Piutang}$$
+   - Membaca Data Store **D3** (`sph_out`, `sales_orders`, `sales_reports`, `pengiriman`, `pelunasan_piutang`).
+5. **Penyajian Antarmuka Tracking Manufaktur (`/tracking-manufaktur`)**
+   - Menyatukan ketiga rantai dokumen ke dalam satu tampilan visual pohon relasi interaktif.
+   - Menampilkan status kelengkapan transaksi per departemen dan modal pop-up rincian tanggal, kuantitas, nilai rupiah, dan status faktur.
+
+---
+
+## 10. AKSES FILE DIAGRAM RESMI (DRAW.IO)
 Diagram grafis multi-halaman resmi tanpa grid (`grid="0"`) tersimpan di:
 - **Lokal Proyek**: `D:\Projects\sintak_pt_buya_barokah\sintak-dfd.drawio`
 - **Desktop Komputer**: `C:\Users\nauval\Desktop\sintak-dfd.drawio`
@@ -235,3 +261,4 @@ Tab halaman di Draw.io Desktop:
 - **Tab 5**: `DFD Level 2 - 2.0 Penjualan & Piutang` (Dekomposisi 4 Sub-Proses Penjualan & Piutang)
 - **Tab 6**: `DFD Level 2 - 4.0 Kalkulasi & Pricelist` (Dekomposisi 3 Sub-Proses Biaya & HPP)
 - **Tab 7**: `DFD Level 2 - 5.0 Akuntansi, SDM & Tata Kelola` (Dekomposisi 3 Domain Manajemen Sistem)
+- **Tab 8**: `DFD Level 2 - 6.0 Tracking Manufaktur` (Dekomposisi Penelusuran Terpadu 3 Rantai Dokumen)
