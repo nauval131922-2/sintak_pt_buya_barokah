@@ -238,59 +238,92 @@ export default function BukuHardCoverUnifiedSimulator({
     setSimulationTitle('');
     toast.info('Keluar dari mode edit riwayat');
   };
+  const optBtn = (active: boolean) =>
+    `py-2 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
+      active
+        ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs'
+        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+    }`;
+
+  const saklarBtn = (on: boolean) =>
+    `py-1.5 px-2 rounded-lg border text-[11px] font-bold text-center transition cursor-pointer ${
+      on
+        ? 'border-slate-500 bg-slate-200 text-slate-900'
+        : 'border-slate-200 bg-white text-slate-400 hover:bg-slate-50'
+    }`;
+
+  const stepChip = (n: number | string) => (
+    <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-emerald-700 text-white text-[10px] font-black shrink-0">
+      {n}
+    </span>
+  );
+
+  const isEkstra = !OPLAH_TIERS_HC.includes(oplah);
 
   return (
     <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
-      {/* Banner Mode Edit Riwayat */}
+      {/* Banner riwayat aktif */}
       {activeSimulationId && (
-        <div className="shrink-0 bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-2 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 min-w-0">
-            <BookmarkCheck className="w-4 h-4 text-amber-600 shrink-0" />
-            <span className="text-xs font-bold text-amber-800 truncate">
-              Sedang Mengedit Riwayat: <span className="underline">{activeSimulationTitle || activeSimulationId}</span>
-            </span>
+        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 bg-amber-200 text-amber-900 rounded-lg">
+              <Bookmark className="w-4 h-4 fill-amber-700" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-black uppercase tracking-wider text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded">
+                  Mode Riwayat Aktif
+                </span>
+                <h4 className="text-xs font-bold text-amber-950">{activeSimulationTitle || activeSimulationId}</h4>
+              </div>
+              <p className="text-[11px] text-amber-800/90 mt-0.5">
+                Anda sedang melihat atau mengedit data dari riwayat simulasi yang dimuat.
+              </p>
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={handleExitEdit}
-            className="flex items-center gap-1 text-xs font-semibold text-amber-700 hover:text-amber-900 bg-white/80 hover:bg-white px-2.5 py-1 rounded-lg border border-amber-300 shadow-2xs cursor-pointer"
-          >
-            <X className="w-3.5 h-3.5" />
-            <span>Tutup</span>
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => handleSaveCalculation(false)}
+              className="px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
+            >
+              <BookmarkCheck size={14} />
+              <span>Simpan Perubahan</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleExitEdit}
+              className="px-3 py-1.5 bg-white hover:bg-amber-100/50 text-amber-900 border border-amber-300 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center gap-1"
+            >
+              <X size={14} />
+              <span>Keluar</span>
+            </button>
+          </div>
         </div>
       )}
 
       {/* Grid Dual Scroll Baku Standar SINTAK */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-0 pb-1">
-        {/* KOLOM KIRI: FORM INPUT SIMULATOR */}
+        {/* Kolom Kiri: Form Input */}
         <div className="lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
-          {/* Card 1: Spesifikasi Ukuran, Oplah, & Halaman */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-4 space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-emerald-600" />
-                <h3 className="text-xs font-bold text-slate-800">1. Spesifikasi Buku</h3>
-              </div>
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
-                Hard Cover
-              </span>
+          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <Sliders size={15} className="text-emerald-700" />
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Spesifikasi Buku Hard Cover</h3>
             </div>
 
-            {/* Pilihan Ukuran Buku */}
+            {/* 1. Ukuran */}
             <div>
-              <label className="block text-[11px] font-semibold text-slate-600 mb-1.5">Ukuran Buku</label>
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(1)} Ukuran
+              </label>
               <div className="grid grid-cols-3 gap-2">
                 {(['10,5×14,8', '14,5×20,25', '21×29,7'] as HardCoverUkuran[]).map((u) => (
                   <button
                     key={u}
                     type="button"
                     onClick={() => setUkuran(u)}
-                    className={`py-2 px-2 text-xs font-bold rounded-lg border transition-all cursor-pointer text-center ${
-                      ukuran === u
-                        ? 'bg-slate-800 text-white border-slate-800 shadow-xs'
-                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                    }`}
+                    className={optBtn(ukuran === u)}
                   >
                     {u} cm
                   </button>
@@ -298,293 +331,314 @@ export default function BukuHardCoverUnifiedSimulator({
               </div>
             </div>
 
-            {/* Oplah & Halaman */}
+            {/* Grup Cover — 2. Mesin & Warna Cover */}
+            <div className="rounded-xl border border-sky-200 bg-sky-50/50 p-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {stepChip(2)}
+                  <span className="text-[10px] font-black uppercase tracking-wider text-sky-900 bg-sky-200/80 px-2 py-0.5 rounded">Cover</span>
+                  <label className="text-xs font-bold text-sky-900">Mesin Cover (4 Warna Fullcolor)</label>
+                </div>
+                <span className="text-[10px] font-bold text-sky-700 bg-sky-100/80 px-2 py-0.5 rounded border border-sky-200">
+                  Aktif: {calcResult.mesinCoverTerpilih}
+                </span>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-sky-900/80 mb-1">Cetak Cover</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {(['OTOMATIS', 'PRINT INTER', 'OLIVER', 'SM'] as MesinCoverHC[]).map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => setMesinCover(m)}
+                      className={optBtn(mesinCover === m)}
+                    >
+                      {m === 'OTOMATIS' ? '⚙️ Auto' : m}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Grup Isi — 3. Mesin Cetak Isi */}
+            <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {stepChip(3)}
+                  <span className="text-[10px] font-black uppercase tracking-wider text-blue-900 bg-blue-200/80 px-2 py-0.5 rounded">Isi</span>
+                  <label className="text-xs font-bold text-blue-900">Mesin Isi (1 Warna HVS 70)</label>
+                </div>
+                <span className="text-[10px] font-bold text-blue-700 bg-blue-100/80 px-2 py-0.5 rounded border border-blue-200">
+                  Aktif: {calcResult.mesinIsiTerpilih}
+                </span>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-blue-900/80 mb-1">Cetak Isi</label>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {(['OTOMATIS', 'PRINT BUYA', 'RYOBI', 'OLIVER', 'SM'] as MesinIsiHC[]).map((m) => {
+                    const disabled = ukuran === '21×29,7' && m === 'RYOBI';
+                    return (
+                      <button
+                        key={m}
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => setMesinIsi(m)}
+                        title={disabled ? 'Ryobi tidak muat ukuran A4 21x29,7' : undefined}
+                        className={`py-1.5 px-1 rounded-lg border text-[11px] font-bold text-center transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed ${
+                          mesinIsi === m
+                            ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs'
+                            : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        {m === 'OTOMATIS' ? '⚙️ Auto' : m.replace('PRINT BUYA', 'Print')}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* 4. Oplah & Halaman */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-1">Oplah (Eksemplar)</label>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                  {stepChip(4)} Oplah (pcs)
+                </label>
                 <input
                   type="number"
                   min={1}
                   value={oplah}
-                  onChange={(e) => setOplah(Math.max(1, parseInt(e.target.value) || 0))}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                  onChange={(e) => setOplah(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
                 />
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {OPLAH_TIERS_HC.map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setOplah(t)}
+                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition cursor-pointer ${
+                        oplah === t
+                          ? 'border-slate-500 bg-slate-200 text-slate-900'
+                          : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
+                      }`}
+                    >
+                      {t.toLocaleString('id-ID')}
+                    </button>
+                  ))}
+                </div>
+                {isEkstra && (
+                  <p className="mt-1.5 text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">
+                    Oplah di luar daftar tier — Mengikuti rumus.
+                  </p>
+                )}
               </div>
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-1">Jumlah Halaman Isi</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Jumlah Halaman Isi
+                </label>
                 <input
                   type="number"
                   min={4}
                   step={4}
                   value={halaman}
                   onChange={(e) => setHalaman(Math.max(4, parseInt(e.target.value) || 4))}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                  className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
                 />
               </div>
             </div>
 
-            {/* Pilihan Cepat Oplah Standar */}
-            <div>
-              <span className="block text-[10px] font-semibold text-slate-400 mb-1">Tier Oplah Cepat:</span>
-              <div className="flex flex-wrap gap-1">
-                {[50, 100, 200, 300, 500, 600, 1000, 1500, 2000, 2500].map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setOplah(t)}
-                    className={`px-2 py-0.5 text-[10px] font-semibold rounded border cursor-pointer ${
-                      oplah === t
-                        ? 'bg-slate-700 text-white border-slate-700'
-                        : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-                    }`}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Card 2: Mesin Cetak Cover & Mesin Cetak Isi */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-4 space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            {/* Grup Finishing — 5. Finishing Khusus & Packing */}
+            <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-3 space-y-3">
               <div className="flex items-center gap-2">
-                <Printer className="w-4 h-4 text-sky-600" />
-                <h3 className="text-xs font-bold text-slate-800">2. Mesin Cetak Cover & Isi</h3>
+                {stepChip(5)}
+                <span className="text-[10px] font-black uppercase tracking-wider text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded">Finishing</span>
+                <label className="text-xs font-bold text-amber-900">Khusus Cover &amp; Packing</label>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-amber-900/80 mb-1">Pilihan Finishing Cover</label>
+                <select
+                  value={finishingCover}
+                  onChange={(e) => setFinishingCover(e.target.value as FinishingCoverHC)}
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 shadow-2xs cursor-pointer"
+                >
+                  {FINISHING_COVER_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt === 'None' ? 'Tanpa Finishing Tambahan (Polos)' : opt}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={() => setSertakanShrink(!sertakanShrink)}
+                  className={saklarBtn(sertakanShrink)}
+                >
+                  {sertakanShrink ? '✓ ' : ''}Bungkus Plastik Shrink Per Buku (Wrap Segel)
+                </button>
               </div>
             </div>
 
-            {/* Mesin Cetak Cover */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-[11px] font-semibold text-slate-600">Mesin Cover (4 Warna Fullcolor)</label>
-                <span className="text-[10px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-200">
-                  Aktif: {calcResult.mesinCoverTerpilih}
-                </span>
-              </div>
-              <div className="grid grid-cols-4 gap-1.5">
-                {(['OTOMATIS', 'PRINT INTER', 'OLIVER', 'SM'] as MesinCoverHC[]).map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => setMesinCover(m)}
-                    className={`py-1.5 px-1 text-[11px] font-bold rounded-lg border text-center transition-all cursor-pointer ${
-                      mesinCover === m
-                        ? 'bg-sky-600 text-white border-sky-600 shadow-xs'
-                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    {m === 'OTOMATIS' ? '⚙️ Auto' : m}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Mesin Cetak Isi */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-[11px] font-semibold text-slate-600">Mesin Isi (1 Warna HVS 70)</label>
-                <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-                  Aktif: {calcResult.mesinIsiTerpilih}
-                </span>
-              </div>
-              <div className="grid grid-cols-5 gap-1">
-                {(['OTOMATIS', 'PRINT BUYA', 'RYOBI', 'OLIVER', 'SM'] as MesinIsiHC[]).map((m) => {
-                  const disabled = ukuran === '21×29,7' && m === 'RYOBI';
-                  return (
-                    <button
-                      key={m}
-                      type="button"
-                      disabled={disabled}
-                      onClick={() => setMesinIsi(m)}
-                      title={disabled ? 'Ryobi tidak muat ukuran A4 21x29,7' : undefined}
-                      className={`py-1.5 px-1 text-[10px] font-bold rounded-lg border text-center transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed ${
-                        mesinIsi === m
-                          ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                          : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                      }`}
-                    >
-                      {m === 'OTOMATIS' ? '⚙️ Auto' : m.replace('PRINT BUYA', 'Print')}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* Card 3: Finishing Khusus Cover & Packing */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-4 space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            {/* Standar Konstruksi Hard Cover — Selalu Terbuka */}
+            <div className="rounded-xl border border-slate-300 bg-slate-50/70 p-3 space-y-2">
               <div className="flex items-center gap-2">
-                <Layers className="w-4 h-4 text-violet-600" />
-                <h3 className="text-xs font-bold text-slate-800">3. Finishing Khusus & Packing</h3>
+                <label className="text-xs font-bold text-slate-800">Standar Konstruksi Hard Cover</label>
               </div>
+              <ul className="list-disc list-inside space-y-1 text-[11px] text-slate-600 leading-relaxed">
+                <li>Cover Art Paper 150 gsm fullcolor + Yellow Board No. 30 (tebal kokoh).</li>
+                <li>Blok buku: jahit benang + lem press punggung + pita pembatas + headband kain + backing craft.</li>
+                <li>Skiblat: Art Carton 230 gsm polos gantung cover (casing-in).</li>
+                <li>Packing rapi dus isi 120 buku + segel lakban keliling.</li>
+              </ul>
             </div>
 
-            <div>
-              <label className="block text-[11px] font-semibold text-slate-600 mb-1.5">Finishing Cover</label>
-              <select
-                value={finishingCover}
-                onChange={(e) => setFinishingCover(e.target.value as FinishingCoverHC)}
-                className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 shadow-2xs cursor-pointer"
-              >
-                {FINISHING_COVER_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt === 'None' ? 'Tanpa Finishing Tambahan (Polos)' : opt}
-                  </option>
-                ))}
-              </select>
+            {/* Laba / Margin Master */}
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
+              <span>Laba Master Hard Cover: <strong>{customParams.marginPersen}%</strong></span>
+              {onOpenMasterParam && (
+                <button
+                  type="button"
+                  onClick={onOpenMasterParam}
+                  className="text-emerald-700 hover:text-emerald-800 font-bold hover:underline cursor-pointer"
+                >
+                  Atur di Master Parameter
+                </button>
+              )}
             </div>
-
-            <div className="pt-1">
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={sertakanShrink}
-                  onChange={(e) => setSertakanShrink(e.target.checked)}
-                  className="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500"
-                />
-                <span className="text-xs font-semibold text-slate-700">
-                  Bungkus Plastik Shrink Per Buku (Wrap Segel)
-                </span>
-              </label>
-            </div>
-          </div>
-
-          {/* Card 4: Catatan Standar Master Buku Hard Cover (Terbuka Penuh) */}
-          <div className="bg-slate-50/70 rounded-xl border border-slate-200 shadow-2xs p-4 space-y-2 text-xs text-slate-600">
-            <div className="flex items-center gap-2 border-b border-slate-200/80 pb-1.5">
-              <FileText className="w-4 h-4 text-slate-500" />
-              <h4 className="font-bold text-slate-700">Standar Konstruksi Hard Cover</h4>
-            </div>
-            <ul className="list-disc list-inside space-y-1 text-[11px] text-slate-600 leading-relaxed">
-              <li>Cover Art Paper 150 gsm fullcolor + Yellow Board No. 30 (tebal kokoh).</li>
-              <li>Blok buku: jahit benang + lem press punggung + pita pembatas + headband kain + backing craft.</li>
-              <li>Skiblat: Art Carton 230 gsm polos gantung cover (casing-in).</li>
-              <li>Packing rapi dus isi 120 buku + segel lakban keliling.</li>
-            </ul>
           </div>
         </div>
 
-        {/* KOLOM KANAN: TABEL RINCIAN BIAYA & SIMPAN KALKULASI */}
+        {/* Kolom Kanan: Hasil */}
         <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
-          {/* Card Header Ringkasan Harga Final */}
-          <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-xl shadow-xs p-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">
-                  Pricelist Hard Cover {ukuran} cm
-                </span>
-                <div className="flex items-baseline gap-2 mt-0.5">
-                  <span className="text-2xl sm:text-3xl font-black text-white">
-                    Rp {calcResult.hargaFinal.toLocaleString('id-ID')}
-                  </span>
-                  <span className="text-xs text-slate-300">/ eksemplar</span>
+          {/* 6. Hasil — sticky agar terlihat saat scroll breakdown */}
+          <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
+            <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
+              {stepChip(6)} Kalkulasi Total
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {/* Card 1: HPP Per Exp */}
+              <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-500 mb-1">
+                  <span className="text-[11px] font-semibold">HPP Per Exp</span>
+                  <DollarSign size={13} className="text-slate-400" />
                 </div>
-                <p className="text-[11px] text-slate-400 mt-0.5">
-                  Total Order: Rp {calcResult.totalHargaJual.toLocaleString('id-ID', { maximumFractionDigits: 0 })} ({oplah} exp, {halaman} hlm)
-                </p>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-slate-800 font-mono">
+                    Rp {Math.round(calcResult.hppPerExp).toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-slate-400 mt-0.5">
+                    Total HPP: Rp {Math.round(calcResult.hppTotal).toLocaleString('id-ID')}
+                  </span>
+                </div>
               </div>
 
-              <div className="flex flex-col sm:items-end gap-1 border-t sm:border-t-0 border-slate-700/60 pt-2 sm:pt-0">
-                <div className="flex items-center gap-1.5 text-xs text-slate-300">
-                  <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>HPP / Exp: Rp {calcResult.hppPerExp.toLocaleString('id-ID', { maximumFractionDigits: 0 })}</span>
+              {/* Card 2: Harga Per Pcs */}
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-emerald-800 mb-1">
+                  <span className="text-[11px] font-bold">Harga Per Pcs (+{customParams.marginPersen}%)</span>
+                  <TrendingUp size={13} className="text-emerald-600" />
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-slate-300">
-                  <TrendingUp className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Margin Profit: {customParams.marginPersen}%</span>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
+                    Rp {calcResult.hargaFinal.toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-emerald-700/80 mt-0.5">Laba {customParams.marginPersen}%</span>
                 </div>
-                {onOpenMasterParam && (
-                  <button
-                    type="button"
-                    onClick={onOpenMasterParam}
-                    className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 underline cursor-pointer"
-                  >
-                    <Sliders className="w-3 h-3" />
-                    <span>Ubah Master Parameter</span>
-                  </button>
-                )}
+              </div>
+
+              {/* Card 3: Harga Total */}
+              <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-500 mb-1">
+                  <span className="text-[11px] font-semibold">Harga Total</span>
+                  <TrendingUp size={13} className="text-emerald-500" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">
+                    Rp {calcResult.totalHargaJual.toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-slate-500 mt-0.5">
+                    Profit: Rp {Math.round(calcResult.totalHargaJual - calcResult.hppTotal).toLocaleString('id-ID')}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Tabel Rincian Breakdown Biaya Transparan */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
-            <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-              <h4 className="text-xs font-bold text-slate-800">Rincian Komponen Biaya (HPP)</h4>
-              <span className="text-[10px] font-bold text-slate-500">
-                Total HPP: Rp {calcResult.hppTotal.toLocaleString('id-ID', { maximumFractionDigits: 0 })}
+          {/* Breakdown */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="px-4 py-3 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText size={15} className="text-emerald-700" />
+                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                  Keterangan Rincian Biaya Hard Cover
+                </h4>
+              </div>
+              <span className="text-[11px] font-bold text-slate-500">
+                {oplah.toLocaleString('id-ID')} Pcs · {halaman} Hal · {ukuran} cm
               </span>
             </div>
-
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-xs text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50/50 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                    <th className="py-2 px-3">Kategori</th>
-                    <th className="py-2 px-3">Komponen</th>
-                    <th className="py-2 px-3">Spesifikasi Fisik</th>
-                    <th className="py-2 px-3 text-right">Biaya (Rp)</th>
-                    <th className="py-2 px-3 text-right">Porsi</th>
+                  <tr className="bg-slate-100/60 border-b border-slate-200 text-slate-600 font-semibold text-[11px]">
+                    <th className="py-2 px-3 w-10 text-center">No.</th>
+                    <th className="py-2 px-3">Jenis</th>
+                    <th className="py-2 px-3">Keterangan</th>
+                    <th className="py-2 px-3 text-right">Harga (Rp)</th>
+                    <th className="py-2 px-3 text-right w-16">Porsi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
                   {calcResult.breakdown.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-2 px-3 text-[11px] font-semibold text-slate-500">{item.kategori}</td>
-                      <td className="py-2 px-3 text-xs font-bold text-slate-800">{item.item}</td>
-                      <td className="py-2 px-3 text-[11px] text-slate-500">{item.spekTeknis}</td>
-                      <td className="py-2 px-3 text-xs font-bold text-slate-900 text-right">
-                        {item.biaya.toLocaleString('id-ID', { maximumFractionDigits: 0 })}
+                    <tr key={idx} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="py-2 px-3 text-center text-slate-400">{idx + 1}</td>
+                      <td className="py-2 px-3 font-medium text-slate-800 font-sans">{item.item}</td>
+                      <td className="py-2 px-3 text-slate-500 text-[10.5px] font-sans">{item.spekTeknis}</td>
+                      <td className="py-2 px-3 text-right font-bold text-slate-800">
+                        Rp {item.biaya.toLocaleString('id-ID')}
                       </td>
-                      <td className="py-2 px-3 text-[11px] font-mono text-slate-500 text-right">
+                      <td className="py-2 px-3 text-right text-slate-500">
                         {item.persen.toFixed(1)}%
                       </td>
                     </tr>
                   ))}
                 </tbody>
+                <tfoot>
+                  <tr className="bg-slate-50/90 font-bold border-t border-slate-200 text-xs">
+                    <td colSpan={3} className="py-2.5 px-3 text-slate-800 font-sans">
+                      Total HPP Biaya Produksi ({oplah.toLocaleString('id-ID')} pcs)
+                    </td>
+                    <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-sm">
+                      Rp {Math.round(calcResult.hppTotal).toLocaleString('id-ID')}
+                    </td>
+                    <td className="py-2.5 px-3 text-right font-mono text-slate-600">100%</td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
           </div>
 
-          {/* Panel Simpan Kalkulasi Full-Width (Baku Standar SINTAK) */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-4 space-y-3">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-              <Bookmark className="w-4 h-4 text-emerald-600" />
-              <h4 className="text-xs font-bold text-slate-800">Simpan Kalkulasi ke Database</h4>
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-                Judul / Keterangan Order (Opsional)
-              </label>
-              <input
-                type="text"
-                value={simulationTitle}
-                onChange={(e) => setSimulationTitle(e.target.value)}
-                placeholder={`Hard Cover ${ukuran} - ${oplah} exp (${halaman} hlm)`}
-                className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 shadow-2xs"
-              />
-            </div>
-
-            {/* Tombol Simpan Full-Width */}
+          {/* Simpan */}
+          <div className="pt-1">
             {activeSimulationId ? (
-              <div className="grid grid-cols-2 gap-3 pt-1">
+              <div className="flex items-center gap-2 w-full">
                 <button
                   type="button"
                   onClick={() => handleSaveCalculation(false)}
-                  className="w-full py-2.5 px-4 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                  title="Perbarui kalkulasi yang sedang diedit"
                 >
-                  <BookmarkCheck className="w-4 h-4" />
+                  <BookmarkCheck size={15} />
                   <span>Update Perubahan</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleSaveCalculation(true)}
-                  className="w-full py-2.5 px-4 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                  title="Simpan sebagai kalkulasi baru & keluar dari mode edit"
                 >
-                  <Bookmark className="w-4 h-4" />
+                  <Bookmark size={14} />
                   <span>Simpan Baru</span>
                 </button>
               </div>
@@ -592,9 +646,9 @@ export default function BukuHardCoverUnifiedSimulator({
               <button
                 type="button"
                 onClick={() => handleSaveCalculation(false)}
-                className="w-full py-2.5 px-4 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
               >
-                <Bookmark className="w-4 h-4" />
+                <Bookmark size={16} />
                 <span>Simpan Kalkulasi Ini ke Daftar Kalkulasi</span>
               </button>
             )}
