@@ -156,14 +156,17 @@ Setiap workbook kalkulasi percetakan wajib dipetakan ke dalam 4 lapisan:
 
 ### Tahap 6: Uji Komparasi Parity Otomatis (Full Matrix Benchmark)
 Buat skrip pengujian (via Node / TSX) untuk membandingkan kalkulasi Excel vs Sintak baris per baris:
-1. Jalankan simulator Sintak untuk setiap tier oplah yang ada di Excel.
-2. Cocokkan:
+1. **Multi-Workbook Source Extraction Wajib (Anti-Single File Snapshot)**:
+   - Dilarang keras hanya mengekstrak 1 file workbook jika di direktori `Source/` terdapat beberapa workbook untuk varian mesin yang berbeda (contoh: `Print-Ryobi.xlsm`, `Print-Print.xlsm`, `Print-Oliver.xlsm`, `Oliver-SM.xlsm`).
+   - Skrip ekstraksi tolok ukur (`expected.json`) **WAJIB me-loop seluruh file workbook `*.xlsm`** yang ada di direktori `Source/` tersebut agar seluruh kombinasi mesin terserap lengkap ke data benchmark.
+   - **Coverage Gate**: Seluruh pilihan mesin di UI simulator wajib teruji terhadap file Excel acuannya masing-masing. Jika ada tombol mesin di UI yang belum memiliki bukti benchmark hijau `PASSED (0 selisih)` di terminal, audit **DILARANG KERAS** dilaporkan selesai.
+2. Jalankan simulator Sintak untuk setiap tier oplah yang ada di seluruh file Excel tersebut.
+3. Cocokkan:
    - Komponen Biaya Cetak Cover & Isi
    - Komponen Biaya Finishing & Jilid
    - Total HPP (Kolom Total HPP Excel vs `summary.totalHpp` Sintak)
    - Harga Jual Final Bulat (Kolom Harga Jual Excel vs `summary.hargaJualPerPcs` Sintak)
-3. **Kriteria Kelulusan**: Selisih wajib **Rp 0** di seluruh tier oplah standar.
-
+4. **Kriteria Kelulusan**: Selisih wajib **Rp 0** di seluruh tier oplah standar dan seluruh varian mesin.
 ### Tahap 7: Uji Stres Permutasi Dropdown Dinamis (Wajib - Dilarang Snapshot Statis Saja)
 1. **Dilarang Keras Hanya Menguji Kondisi File yang Tersimpan (Snapshot Disk)**:
    - File Excel sering kali disimpan dalam 1 kondisi dropdown aktif tertentu (contoh: `Master!D25` tersimpan `SM`).
