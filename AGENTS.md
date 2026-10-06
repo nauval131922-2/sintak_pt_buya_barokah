@@ -20,16 +20,13 @@ Project ERP/internal web Next.js 16 App Router (TypeScript, Tailwind v4, SQLite/
 - **Lakukan commit local setelah melakukan perubahan**.
 - **JANGAN jalankan `npx tsc` (kecuali hanya untuk cek internal lokal), jangan update changelog, dan jangan push sampai diinstruksikan oleh user.**
 - **Aturan Wajib Audit Excel Pricelist (PANDUAN_AUDIT_EXCEL_SINTAK.md & AI_RULES.md)**:
-  1. **Urutan Wajib (Test-Driven Alignment)**: DILARANG menyentuh UI, form, scroll, atau manual pengguna sebelum Tahap 6 (Parity Benchmark Otomatis) dieksekusi dan terbukti lulus di terminal.
-  2. **Ekstraksi Programatis di Awal (Pos 1)**: Wajib menjalankan skrip untuk mengekstrak seluruh aturan `dataValidation` (dropdown) dari sheet Master sebelum menulis kode apa pun. Dilarang melihat manual atau berasumsi.
-  3. **Bukti Terminal Nyata (No Log = Not Done)**: Dilarang mengklaim audit selesai hanya dengan narasi/kata-kata. Wajib menjalankan skrip pengujian kalkulator terhadap seluruh tier oplah Excel via `npx tsx` dan menyertakan bukti log terminal `PASSED (0 selisih)` pada 100% tier dan seluruh permutasi dropdown/opsi.
-  4. **Anti-Conditional Hijacking & Direct Binding 1:1**: Semua sel manual Excel wajib jadi parameter dinamis di `MasterParams` & UI. Dilarang membelokkan variabel antar-opsi atau antar-tier oplah.
-  5. **Uji Reaktivitas Parameter Wajib**: Skrip benchmark wajib meng-assert bahwa perubahan nilai parameter form input menghasilkan perubahan HPP nyata (Delta HPP > 0). Jika Delta = 0, audit otomatis GAGAL/REJECT.
-  6. **Aturan Stop & Tanya**: Jika ditemukan inkonsistensi nilai/parameter antar file master sejenis, dilarang membuat rumus kompromi sendiri atau mematikan variabel. Wajib berhenti dan tanyakan kepada pengguna.
-  7. **Perilaku Scroll Simulator**: Seluruh tab Simulator wajib mengadopsi dual scroll independen standar Buku Manasik (`h-[calc(100vh-140px)] min-h-0` dengan `overflow-y-auto` mandiri pada kolom input kiri dan kolom breakdown kanan).
-  8. **Ketentuan Sumber Folder File Excel & Anti-Scanning Liar**: Lokasi file sumber resmi terdaftar lengkap di `daftar_source_pricelist.txt` di root repository. Wajib baca file tersebut untuk menemukan path workbook di drive `E:`. Dilarang keras melakukan glob/search acak di direktori `C:\` atau `D:\`. HANYA Buku Manasik yang mengambil sumber dari folder `020201 MASTER HARGA` (`02020107 BUKU, KITAB, MAJALAH`), sedangkan seluruh produk lainnya wajib mengambil sumber dari folder `Pricelist Juli 2026`.
-  9. **Multi-Workbook Extraction & Coverage Gate (Exhaustive Sweep)**: Wajib menjalankan Pos 0 (inventarisasi & ekstraksi 100% file `*.xlsm` di subfolder `Source/` tanpa cherry-picking). Skrip benchmark terminal dilarang menyaring hanya sebagian file/mesin. Seluruh kombinasi mesin dan tier wajib dieksekusi di terminal (`Jumlah Tier Terminal == Total Tier Folder`) sebelum pekerjaan dilaporkan selesai.
-
+  1. **Pos 0 (Exhaustive Sweep)**: Wajib inventarisasi dan ekstraksi 100% file `.xlsm` di subfolder `Source/` ke `*-expected.json`.
+  2. **Pos 1 (Stop Gate Wajib)**: Ekstrak seluruh aturan `dataValidation` dan sel manual non-rumus sheet Master di terminal. **WAJIB STOP & LAPORKAN ke user SEBELUM menulis kode atau menyentuh file di `src/`**.
+  3. **Pos 2 & 3 (Direct Binding & Terminal Benchmark)**: Rumus fisik 1:1, tanpa conditional hijacking, benchmark 100% tier (0 selisih), dan uji reaktivitas ($\Delta\text{HPP} > 0$).
+  4. **Pos 4 (Master Parameter)**: Kartu 2 kolom seimbang, sticky search bar, `ThousandInput`, badge warna, inline reset.
+  5. **Pos 5 (Simulator)**: Layout dual-scroll (`h-[calc(100vh-140px)] min-h-0`), tombol simpan full-width di bawah tabel breakdown kanan (**DILARANG form mini di kiri**), opsi mesin Cover & Isi (Otomatis + Manual), anti-jargon, semua grup input terbuka penuh.
+  6. **Pos 6 (Verifikasi & Commit)**: Jalankan import check + layout check, commit lokal segera setelah lolos.
+  7. **Stop & Tanya**: Jika ada inkonsistensi nilai/parameter antar file sejenis, WAJIB STOP dan tanyakan ke user (dilarang kompromi sendiri).
 ## Arsitektur & Kebiasaan
 
 - **DB auto-init saat startup**: `src/lib/db.ts` auto-import `initSchema` dari `schema.ts` tiap kali modul di-load (termasuk Hot Reload). Schema migration (rename kolom, tambah kolom) jalan otomatis di situ.

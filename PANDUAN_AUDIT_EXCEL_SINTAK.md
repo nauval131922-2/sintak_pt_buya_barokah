@@ -20,20 +20,44 @@
 
 ---
 
-## 1.1 Rem Prosedural: 5 Pos Pemeriksaan Bertahap (Anti Asal Jalan & Exhaustive Sweep)
-Pengerjaan audit **DILARANG KERAS** dilakukan secara borongan, memilih-milih sebagian file (cherry-picking), atau terburu-buru. Wajib melewati 5 pos pemeriksaan bertahap:
+## 1.1 Rem Prosedural: 6 Pos Pemeriksaan Bertahap (Anti Asal Jalan & Strict Stop Gates)
+Pengerjaan audit **DILARANG KERAS** dilakukan secara borongan, langsung loncat ke koding, atau terburu-buru. Wajib melewati 6 pos pemeriksaan bertahap:
+
 1. **Pos 0 (Inventarisasi & Ekstraksi Sapu Bersih - Exhaustive Sweep)**:
    - Jalankan skrip ekstraksi untuk membaca **100% file `*.xlsm` di seluruh subfolder `Source/`** (merujuk `daftar_source_pricelist.txt`).
-   - Cetak inventaris lengkap: daftar nama file, kombinasi mesin (Cover + Isi), dan total tier oplah yang ditemukan.
-   - Simpan seluruh baris acuan ke `*-expected.json` (dilarang hanya mengambil 1 file per ukuran).
-2. **Pos 1 (Bedah Cell & Formula Binding)**: Buka file Excel via script/parser, kutip rumus formula aslinya (`BUKU!xxx = ...`). Jangan tulis kode sebelum rumus cell dipaparkan.
-3. **Pos 2 (Direct Binding 1:1)**: Tulis kode kalkulator murni 1:1 terhubung ke `params.xxx` lengkap dengan komentar alamat cell Excel. DILARANG membuat *conditional hijacking* (seperti `isOplahBesar ? sm : oliver`).
+   - Simpan seluruh baris acuan ke `scripts/*-expected.json` (dilarang hanya mengambil 1 file per ukuran).
+2. **Pos 1 (Bedah Cell & Ekstraksi Programatis - STOP GATE WAJIB)**:
+   - Jalankan skrip terminal untuk mengekstrak SEMUA aturan `dataValidation` (dropdown ukuran, bahan, mesin cetak, finishing) dari sheet Master.
+   - Ekstrak seluruh sel manual non-rumus (biaya bahan, tarif mesin, insheet, upah finishing).
+   - Jika produk memiliki beberapa file ukuran berbeda, satukan spesifikasinya ke dalam 1 kalkulator & 1 simulator terpadu.
+   - **STOP GATE**: Laporkan daftar ekstraksi ini secara tertulis kepada pengguna dan **BERHENTI**. DILARANG menulis kode kalkulator atau menyentuh file di `src/` sebelum Pos 1 dilaporkan dan disetujui pengguna.
+3. **Pos 2 (Direct Binding 1:1 & Anti-Hijacking)**:
+   - Tulis kode kalkulator murni 1:1 terhubung ke `params.xxx` lengkap dengan komentar alamat cell Excel asli (`// BUKU!xxx`).
+   - DILARANG membuat *conditional hijacking* (seperti `isOplahBesar ? sm : oliver`).
+   - Jika ada inkonsistensi nilai antar-file sejenis, **STOP & TANYA** kepada pengguna (dilarang kompromi sendiri).
 4. **Pos 3 (Terminal Benchmark Menyeluruh & Reaktivitas - No Filter)**:
    - Jalankan benchmark terhadap **100% tier dari seluruh file workbook tanpa penyaring (`.filter()`)**.
-   - **Syarat Mutlak Lolos**: Jumlah baris uji terminal WAJIB sama dengan jumlah seluruh tier di folder sumber (`Jumlah Tier Terminal == Total Tier Folder`).
-   - Wajib menyertakan **Uji Reaktivitas Parameter** (mengubah nilai input form A ke B membuktikan $\Delta\text{HPP} > 0$).
-5. **Pos 4 (Commit & Lapor)**: Lakukan commit lokal di terminal segera setelah berkas selesai diubah, pastikan `working tree clean`, lalu baru laporkan ke pengguna dengan bukti log terminal lengkap.
-## 1.2 Aturan Stop & Tanya (Inkonsistensi Antar-File)
+   - Syarat Mutlak Lolos: `Jumlah Tier Terminal == Total Tier Folder` (100% selisih Rp 0).
+   - Wajib menyertakan **Uji Reaktivitas Parameter** (mengubah nilai input membuktikan $\Delta\text{HPP} > 0$).
+5. **Pos 4 (Audit & Sinkronisasi UI Master Parameter)**:
+   - Layout kartu 2 kolom seimbang dengan sticky search bar di bagian atas.
+   - Input dibungkus ke dalam sub-grup ber-border dan ber-badge warna (sky, blue, violet, amber).
+   - Semua input angka WAJIB format `ThousandInput` (pemisah ribuan `id-ID`).
+   - Sediakan indikator perubahan & reset per field inline. Controlled input guard anti-error.
+6. **Pos 5 (Audit & Sinkronisasi UI Kalkulasi / Simulator)**:
+   - Layout dual scroll mandiri standar Manasik persis 4 class baku (`h-[calc(100vh-140px)] min-h-0`).
+   - Warna form kiri lembut/netral per grup; warna hijau Emerald tegas dikhususkan untuk tombol simpan.
+   - Pilihan opsi (ukuran, mesin cover, mesin isi, finishing) tersedia lengkap (Otomatis + Manual).
+   - Pasang auto-persist draft ke localStorage (skip saat mode edit riwayat).
+   - Tabel breakdown transparan (spek teknis, nominal Rp, dan porsi %).
+   - Tombol simpan full-width standar di bawah tabel breakdown kanan: "Simpan Kalkulasi Ini ke Daftar Kalkulasi" (dual tombol Update/Simpan Baru saat edit riwayat). **DILARANG form mini di kiri**.
+   - Anti-jargon: Bersih dari istilah asing buatan (Hapus POD, CTP, Artwork, dll.) dan DILARANG menampilkan alamat sel Excel di UI.
+7. **Pos 6 (Verifikasi & Commit Lokal)**:
+   - Jalankan import check: `npx tsx -e "import('./src/app/pricelist/[Nama]Simulator.tsx')"`
+   - Jalankan layout check: `node scripts/check-simulator-layout.mjs`
+   - Lakukan git commit lokal segera setelah lolos (`working tree clean`).
+   - Dilarang menjalankan `npm run build`, `npx tsc`, update changelog, atau `git push` tanpa perintah eksplisit.
+   - Laporkan bukti log terminal benchmark dan commit hash.
 Jika ditemukan perbedaan angka master antar-file sejenis (misal file oplah kecil insheet 30/desain 2.500, sedangkan oplah besar insheet 300/desain 0):
 - **DILARANG MEMBUAT RUMUS KOMPROMI SENDIRI** atau mematikan/membajak variabel di kode backend.
 - **WAJIB BERHENTI** dan paparkan perbedaannya kepada pengguna untuk konfirmasi nilai default yang dikehendaki.
