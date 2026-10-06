@@ -19,7 +19,7 @@ import { BukuTabunganSecurityMasterParams, DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS
 import { KartuKoperasiPromiseMasterParams, DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS } from './kartu-koperasi-promise-calculator';
 import { SoftCoverUnifiedParams, DEFAULT_SOFT_COVER_UNIFIED } from './buku-soft-cover-unified';
 import { LebelKartuObatMasterParams, DEFAULT_LEBEL_KARTU_OBAT_PARAMS } from './lebel-kartu-obat-calculator';
-
+import { BukuHardCoverUnifiedParams, DEFAULT_BUKU_HARD_COVER_UNIFIED_PARAMS } from './buku-hard-cover-unified';
 import { BukuHardCover105x148MasterParams, DEFAULT_BUKU_HARD_COVER_105X148_PARAMS } from './buku-hard-cover-105x148-calculator';
 import { PosterMasterParams, DEFAULT_POSTER_PARAMS } from './poster-calculator';
 import { MajalahMasterParams, DEFAULT_MAJALAH_PARAMS } from './majalah-calculator';
@@ -83,6 +83,7 @@ export function applyGlobalParamsToAll(
   currKalenderKop: KalenderKopMasterParams = DEFAULT_KALENDER_KOP_PARAMS,
   currPackaging: PackagingMasterParams = DEFAULT_PACKAGING_PARAMS,
   currPaperbag: PaperbagMasterParams = DEFAULT_PAPERBAG_PARAMS,
+  currBukuHardCover: BukuHardCoverUnifiedParams = DEFAULT_BUKU_HARD_COVER_UNIFIED_PARAMS,
 ) {
   const nextSpiral: SimulatorMasterParams = {
     ...currSpiral,
@@ -248,6 +249,13 @@ export function applyGlobalParamsToAll(
     tarifKertasHvs70Kg: g.tarifHvs70,
   };
 
+  const nextBukuHardCover: BukuHardCoverUnifiedParams = {
+    ...currBukuHardCover,
+    hargaKertasCoverPerKg: g.tarifAp150,
+    hargaKertasSkiblatPerKg: g.tarifAc230Kg,
+    hargaKertasIsiPerKg: g.tarifHvs70,
+  };
+
   const nextKalenderKop: KalenderKopMasterParams = {
     ...currKalenderKop,
   };
@@ -290,5 +298,6 @@ export function applyGlobalParamsToAll(
     nextKalenderKop,
     nextPackaging,
     nextPaperbag,
+    nextBukuHardCover,
   };
 }
