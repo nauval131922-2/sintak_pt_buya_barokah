@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, Fragment } from 'react';
 import { ChevronDown, Search } from 'lucide-react';
 import Portal, { getZoomScale } from './Portal';
 
@@ -8,6 +8,7 @@ export interface SquareDropdownOption {
   value: string;
   label: string;
   count?: number;
+  group?: string;
 }
 
 export interface SquareDropdownProps {
@@ -45,7 +46,8 @@ export default function SquareDropdown({
 
   const filtered = search.trim()
     ? options.filter((o) =>
-        o.label.toLowerCase().includes(search.toLowerCase())
+        o.label.toLowerCase().includes(search.toLowerCase()) ||
+        (o.group && o.group.toLowerCase().includes(search.toLowerCase()))
       )
     : options;
 
@@ -162,36 +164,47 @@ export default function SquareDropdown({
         </div>
       </div>
 
-      <div className="max-h-52 overflow-y-auto custom-scrollbar divide-y divide-slate-50 flex flex-col">
+      <div className="max-h-64 overflow-y-auto custom-scrollbar divide-y divide-slate-50 flex flex-col">
         {filtered.length === 0 ? (
           <p className="px-3 py-3 text-[11px] text-slate-400 font-medium text-center">
             Tidak ditemukan
           </p>
         ) : (
-          filtered.map((opt, idx) => (
-            <button
-              key={`${opt.value}-${idx}`}
-              type="button"
-              onClick={() => {
-                onChange(opt.value);
-                setOpen(false);
-                setSearch('');
-              }}
-              className={`w-full min-w-full flex items-center justify-between px-3 py-2 text-xs font-semibold transition-colors gap-3 whitespace-nowrap ${
-                value === opt.value
-                  ? 'bg-emerald-50 text-emerald-700'
-                  : 'text-slate-700 hover:bg-slate-50'
-              }`}
-              title={opt.label}
-            >
-              <span className="whitespace-nowrap">{opt.label}</span>
-              {opt.count !== undefined && (
-                <span className="text-[10px] text-slate-400 font-mono ml-2 shrink-0">
-                  {opt.count}
-                </span>
-              )}
-            </button>
-          ))
+          filtered.map((opt, idx) => {
+            const showGroupHeader = Boolean(
+              opt.group && (idx === 0 || filtered[idx - 1].group !== opt.group)
+            );
+            return (
+              <Fragment key={`${opt.value}-${idx}`}>
+                {showGroupHeader && (
+                  <div className="px-3 py-1 text-[9.5px] font-black uppercase tracking-wider text-slate-500 bg-slate-100/95 sticky top-0 z-10 border-b border-slate-200/80 backdrop-blur-xs select-none shadow-2xs">
+                    {opt.group}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange(opt.value);
+                    setOpen(false);
+                    setSearch('');
+                  }}
+                  className={`w-full min-w-full flex items-center justify-between px-3 py-2 text-xs font-semibold transition-colors gap-3 whitespace-nowrap ${
+                    value === opt.value
+                      ? 'bg-emerald-50 text-emerald-700'
+                      : 'text-slate-700 hover:bg-slate-50'
+                  }`}
+                  title={opt.label}
+                >
+                  <span className="whitespace-nowrap">{opt.label}</span>
+                  {opt.count !== undefined && (
+                    <span className="text-[10px] text-slate-400 font-mono ml-2 shrink-0">
+                      {opt.count}
+                    </span>
+                  )}
+                </button>
+              </Fragment>
+            );
+          })
         )}
       </div>
     </div>

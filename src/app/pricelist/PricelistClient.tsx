@@ -954,34 +954,75 @@ export default function PricelistClient() {
           <SquareDropdown
             usePortal
             options={[
-              { value: 'Buku Manasik', label: '📖 Buku Manasik Haji' },
-              { value: 'Buku Yasin', label: '📗 Buku Surat Yasin' },
-              { value: 'Nota 1 Warna', label: '📋 Nota 1 Warna' },
-              { value: 'Brosur 2026', label: '🗞️ Brosur 2026' },
-              { value: 'Label KHQ', label: '🏷️ Label KHQ' },
-              { value: 'Buku Tulis', label: '📓 Buku Tulis' },
-              { value: 'Stopmap', label: '📁 Stopmap' },
-              { value: 'Syahadah', label: '🕌 Syahadah' },
-              { value: 'Raport Kaleb', label: '📒 Raport Kaleb' },
-              { value: 'Kop Surat', label: '📄 Kop Surat' },
-              { value: 'Amplop', label: '✉️ Amplop' },
-              { value: 'Sertifikat', label: '📜 Sertifikat' },
-              { value: 'Undangan', label: '💌 Undangan' },
-              { value: 'Buku Tabungan NS', label: '📒 Buku Tabungan NS' },
-              { value: 'Buku Tabungan Security', label: '🔒 Buku Tabungan Security' },
-              { value: 'Kartu Koperasi Promise', label: '🪪 Kartu Koperasi' },
-              { value: 'Lebel Kartu Obat', label: '💊 Lebel Kartu Obat' },
-              { value: 'Buku Soft Cover', label: '📗 Buku Soft Cover' },
-              { value: 'Buku Hard Cover 10,5×14,8', label: '📕 Buku Hard Cover 10,5×14,8' },
-              { value: 'Poster', label: '🖼️ Poster' },
-              { value: 'Majalah 14,5×20,25', label: '📰 Majalah 14,5×20,25' },
-              { value: 'Kalender', label: '🗓️ Kalender 2027' },
-              { value: 'Stiker', label: '🏷️ Stiker' },
-              { value: 'Buku Hard Cover 14,5×20,25', label: '📕 Buku Hard Cover 14,5×20,25' },
-              { value: 'Buku Hard Cover 21×29,7', label: '📕 Buku Hard Cover 21×29,7' },
-              { value: 'Kalender Kop', label: '🗓️ Kalender Kop' },
-              { value: 'Packaging', label: '📦 Packaging' },
-              { value: 'Paperbag', label: '🛍️ Paperbag' },
+              // 1. Buku Manasik
+              { value: 'Buku Manasik', label: '📖 Buku Manasik Haji', group: 'Buku Manasik' },
+
+              // 2. Buku Yasin
+              { value: 'Buku Yasin', label: '📗 Buku Surat Yasin', group: 'Buku Yasin' },
+
+              // 3. Buku Tulis
+              { value: 'Buku Tulis', label: '📓 Buku Tulis', group: 'Buku Tulis' },
+
+              // 4. Buku Soft Cover
+              { value: 'Buku Soft Cover', label: '📗 Buku Soft Cover', group: 'Buku Soft Cover' },
+
+              // 5. Buku Hard Cover (terpisah dari Soft Cover & Majalah)
+              { value: 'Buku Hard Cover 10,5×14,8', label: '📕 Buku Hard Cover 10,5×14,8', group: 'Buku Hard Cover' },
+              { value: 'Buku Hard Cover 14,5×20,25', label: '📕 Buku Hard Cover 14,5×20,25', group: 'Buku Hard Cover' },
+              { value: 'Buku Hard Cover 21×29,7', label: '📕 Buku Hard Cover 21×29,7', group: 'Buku Hard Cover' },
+
+              // 6. Majalah (terpisah dari Buku)
+              { value: 'Majalah 14,5×20,25', label: '📰 Majalah 14,5×20,25', group: 'Majalah' },
+
+              // 7. Nota
+              { value: 'Nota 1 Warna', label: '📋 Nota 1 Warna', group: 'Nota' },
+
+              // 8. Brosur
+              { value: 'Brosur 2026', label: '🗞️ Brosur 2026', group: 'Brosur' },
+
+              // 9. Poster
+              { value: 'Poster', label: '🖼️ Poster', group: 'Poster' },
+
+              // 10. Label & Stiker
+              { value: 'Label KHQ', label: '🏷️ Label KHQ', group: 'Label & Stiker' },
+              { value: 'Lebel Kartu Obat', label: '💊 Lebel Kartu Obat', group: 'Label & Stiker' },
+              { value: 'Stiker', label: '🏷️ Stiker', group: 'Label & Stiker' },
+
+              // 11. Stopmap
+              { value: 'Stopmap', label: '📁 Stopmap', group: 'Stopmap' },
+
+              // 12. Raport Kaleb
+              { value: 'Raport Kaleb', label: '📒 Raport Kaleb', group: 'Raport Kaleb' },
+
+              // 13. Kop Surat (terpisah dari Amplop)
+              { value: 'Kop Surat', label: '📄 Kop Surat', group: 'Kop Surat' },
+
+              // 14. Amplop (terpisah dari Kop Surat)
+              { value: 'Amplop', label: '✉️ Amplop', group: 'Amplop' },
+
+              // 15. Syahadah (terpisah dari Sertifikat & Undangan)
+              { value: 'Syahadah', label: '🕌 Syahadah', group: 'Syahadah' },
+
+              // 16. Sertifikat (terpisah dari Syahadah & Undangan)
+              { value: 'Sertifikat', label: '📜 Sertifikat', group: 'Sertifikat' },
+
+              // 17. Undangan (terpisah dari Syahadah & Sertifikat)
+              { value: 'Undangan', label: '💌 Undangan', group: 'Undangan' },
+
+              // 18. Buku Tabungan (terpisah dari Kartu Koperasi)
+              { value: 'Buku Tabungan NS', label: '📒 Buku Tabungan NS', group: 'Buku Tabungan' },
+              { value: 'Buku Tabungan Security', label: '🔒 Buku Tabungan Security', group: 'Buku Tabungan' },
+
+              // 19. Kartu Koperasi (terpisah dari Buku Tabungan)
+              { value: 'Kartu Koperasi Promise', label: '🪪 Kartu Koperasi', group: 'Kartu Koperasi' },
+
+              // 20. Kalender
+              { value: 'Kalender', label: '🗓️ Kalender 2027', group: 'Kalender' },
+              { value: 'Kalender Kop', label: '🗓️ Kalender Kop', group: 'Kalender' },
+
+              // 21. Packaging & Paperbag
+              { value: 'Packaging', label: '📦 Packaging', group: 'Kemasan / Packaging' },
+              { value: 'Paperbag', label: '🛍️ Paperbag', group: 'Kemasan / Packaging' },
             ]}
             value={selectedProductCategory}
             onChange={(val) => handleProductCategoryChange(val as any)}
