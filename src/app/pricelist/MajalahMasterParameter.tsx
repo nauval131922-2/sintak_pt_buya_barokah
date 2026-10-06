@@ -25,9 +25,9 @@ interface Props {
 }
 
 const MAJALAH_VISIBLE_KEYS: (keyof MajalahMasterParams)[] = [
+  'umr',
   'drekCoverOliver',
   'drekIsiOliver',
-  'jasaFinishingStandar',
   'marginDefaultPct',
   'minLaminasi',
   'minOngkosCoverOliver',
@@ -277,8 +277,8 @@ export default function MajalahMasterParameter({
             </h4>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {fieldRow('umr', 'UMR Acuan Upah (Rp)', true)}
             {fieldRow('jasaFinishingStandar', 'Finishing Susun/Lipat (Rp/pcs)', true, true)}
-            {fieldRow('tarifStaplesPcs', 'Isi Staples (Rp/pcs)', true)}
             {fieldRow('tarifSisirPcs', 'Sisir (Rp/pcs)', true)}
             {fieldRow('tarifKardusBox', 'Kardus Box (Rp/box)', true)}
             {fieldRow('tarifLakbanRoll', 'Lakban Roll (Rp/roll)', true)}

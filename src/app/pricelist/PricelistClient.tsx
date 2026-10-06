@@ -627,7 +627,9 @@ export default function PricelistClient() {
       else if (item.category === 'Kalender Kop') setParamsKalenderKop(s);
       else if (item.category === 'Packaging') setParamsPackaging(s);
       else if (item.category === 'Paperbag') setParamsPaperbag(s);
-
+      else if (item.category === 'Poster') setParamsPoster(s);
+      else if (item.category === 'Majalah 14,5×20,25') setParamsMajalah(s);
+      else if (item.category === 'Stiker') setParamsStiker(s);
       // Ekstrak dan sinkronkan juga ke Master Parameter Global selama mode edit aktif
       setParamsGlobal((prevGlobal) => {
         const nextGlobal = { ...prevGlobal };
@@ -1210,6 +1212,21 @@ export default function PricelistClient() {
               customParams={paramsPaperbag}
               setCustomParams={setParamsPaperbag}
             />
+          ) : selectedProductCategory === 'Poster' ? (
+            <PosterMasterParameter
+              customParams={paramsPoster}
+              setCustomParams={setParamsPoster}
+            />
+          ) : selectedProductCategory === 'Majalah 14,5×20,25' ? (
+            <MajalahMasterParameter
+              customParams={paramsMajalah}
+              setCustomParams={setParamsMajalah}
+            />
+          ) : selectedProductCategory === 'Stiker' ? (
+            <StikerMasterParameter
+              customParams={paramsStiker}
+              setCustomParams={setParamsStiker}
+            />
           ) : (
             <div className="flex flex-col gap-2">
               {kalenderVarianSelector}
@@ -1443,6 +1460,36 @@ export default function PricelistClient() {
               viewMode={viewMode}
               setActiveSimulationTitle={setActiveSimulationTitle}
             />
+          ) : selectedProductCategory === 'Poster' ? (
+            <PosterSimulator
+              customParams={paramsPoster}
+              setCustomParams={setParamsPoster}
+              onOpenMasterParam={() => setActiveTab('parameter')}
+              activeSimulationId={activeSimulationId}
+              setActiveSimulationId={setActiveSimulationId}
+              activeSimulationTitle={activeSimulationTitle}
+              setActiveSimulationTitle={setActiveSimulationTitle}
+            />
+          ) : selectedProductCategory === 'Majalah 14,5×20,25' ? (
+            <MajalahSimulator
+              customParams={paramsMajalah}
+              setCustomParams={setParamsMajalah}
+              onOpenMasterParam={() => setActiveTab('parameter')}
+              activeSimulationId={activeSimulationId}
+              setActiveSimulationId={setActiveSimulationId}
+              activeSimulationTitle={activeSimulationTitle}
+              setActiveSimulationTitle={setActiveSimulationTitle}
+            />
+          ) : selectedProductCategory === 'Stiker' ? (
+            <StikerSimulator
+              customParams={paramsStiker}
+              setCustomParams={setParamsStiker}
+              onOpenMasterParam={() => setActiveTab('parameter')}
+              activeSimulationId={activeSimulationId}
+              setActiveSimulationId={setActiveSimulationId}
+              activeSimulationTitle={activeSimulationTitle}
+              setActiveSimulationTitle={setActiveSimulationTitle}
+            />
           ) : (
             <div className="flex-1 flex flex-col min-h-0">
               {kalenderVarianSelector}
@@ -1611,6 +1658,24 @@ export default function PricelistClient() {
           ) : selectedProductCategory === 'Paperbag' ? (
             <PaperbagMatrixView
               customParams={paramsPaperbag}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+            />
+          ) : selectedProductCategory === 'Poster' ? (
+            <PosterMatrixView
+              customParams={paramsPoster}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+            />
+          ) : selectedProductCategory === 'Majalah 14,5×20,25' ? (
+            <MajalahMatrixView
+              customParams={paramsMajalah}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+            />
+          ) : selectedProductCategory === 'Stiker' ? (
+            <StikerMatrixView
+              customParams={paramsStiker}
               viewMode={viewMode}
               setViewMode={setViewMode}
             />
