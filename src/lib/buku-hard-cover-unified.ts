@@ -336,7 +336,7 @@ export function calculateBukuHardCoverUnified(
   let dn = 32;
   let craftPerPlano = 36;
   let insheetCover = params.insheetCoverOffset;
-  let insheetBoard = params.insheetBoardMin;
+  let insheetBoardBahan = params.insheetBoardMin;
 
   const cleanUkuran = String(ukuran).replace(/\s+/g, '').replace(/x/gi, '×');
   if (cleanUkuran.startsWith('10,5')) {
@@ -346,14 +346,14 @@ export function calculateBukuHardCoverUnified(
     planoCoverO = mesinCover === 'PRINT INTER' ? 2 : 16;
     bk = 12;
     bl = 12;
-    ce = mesinCover === 'SM' ? 2 : mesinCover === 'PRINT INTER' ? 1 : 4;
-    cf = mesinCover === 'PRINT INTER' ? 4 : 16;
+    ce = 4;
+    cf = 16;
     dm = mesinIsi === 'OLIVER' ? 2 : 1;
     dl = mesinIsi === 'SM' ? 32 : mesinIsi === 'OLIVER' ? 16 : 4;
     dn = mesinIsi === 'SM' || mesinIsi === 'OLIVER' ? 64 : 8;
     craftPerPlano = 81;
     insheetCover = mesinCover === 'PRINT INTER' ? params.insheetCoverPrint : 100;
-    insheetBoard = Math.max(params.insheetBoardMin, oplah * 0.05);
+    insheetBoardBahan = Math.max(params.insheetBoardMin, oplah * 0.05);
   } else if (cleanUkuran.startsWith('14,5')) {
     lebar = 14.5;
     panjang = 20.25;
@@ -361,14 +361,14 @@ export function calculateBukuHardCoverUnified(
     planoCoverO = mesinCover === 'PRINT INTER' ? 1 : 8;
     bk = 7;
     bl = 7;
-    ce = mesinCover === 'SM' ? 2 : mesinCover === 'PRINT INTER' ? 1 : 4;
-    cf = mesinCover === 'PRINT INTER' ? 2 : 8;
+    ce = 4;
+    cf = 8;
     dm = mesinIsi === 'OLIVER' ? 2 : 1;
     dl = mesinIsi === 'SM' ? 16 : mesinIsi === 'OLIVER' ? 8 : 2;
     dn = mesinIsi === 'SM' || mesinIsi === 'OLIVER' ? 32 : 4;
     craftPerPlano = 36;
     insheetCover = mesinCover === 'PRINT INTER' ? params.insheetCoverPrint : params.insheetCoverOffset;
-    insheetBoard = params.insheetBoardMin;
+    insheetBoardBahan = params.insheetBoardMin;
   } else {
     // 21×29,7
     lebar = 21.0;
@@ -377,14 +377,14 @@ export function calculateBukuHardCoverUnified(
     planoCoverO = mesinCover === 'PRINT INTER' ? 1 : 4;
     bk = 3;
     bl = 3;
-    ce = mesinCover === 'SM' ? 1 : mesinCover === 'PRINT INTER' ? 1 : 2;
-    cf = mesinCover === 'PRINT INTER' ? 1 : 4;
+    ce = 2;
+    cf = 4;
     dm = mesinIsi === 'OLIVER' ? 2 : 1;
     dl = mesinIsi === 'SM' ? 8 : mesinIsi === 'OLIVER' ? 4 : 2;
     dn = mesinIsi === 'SM' || mesinIsi === 'OLIVER' ? 16 : 4;
     craftPerPlano = 28;
     insheetCover = mesinCover === 'PRINT INTER' ? params.insheetCoverPrint : params.insheetCoverOffset;
-    insheetBoard = Math.max(params.insheetBoardMin, oplah * 0.10);
+    insheetBoardBahan = Math.max(params.insheetBoardMin, oplah * 0.10);
   }
 
   const upahHarian = params.umr / 25; // A05.UMR / 25
@@ -489,7 +489,7 @@ export function calculateBukuHardCoverUnified(
 
   // ─── 3. BIAYA BOARD & POUNCE ───
   // BUKU!BM7: ROUNDUP((oplah / BL) + (insheetBoard / BL))
-  const lbrPlanoBoard = Math.ceil(oplah / bl + insheetBoard / bl);
+  const lbrPlanoBoard = Math.ceil(oplah / bl + insheetBoardBahan / bl);
   const hargaPerLbrBoard = params.hargaBoardPerPack / params.lembarPerPackBoard;
   const biayaBoard = lbrPlanoBoard * hargaPerLbrBoard; // BUKU!BO7
 
@@ -520,7 +520,7 @@ export function calculateBukuHardCoverUnified(
   // BUKU!DO7: halaman / (DN / DM)
   const cuttern = halaman / (dn / dm);
   const do6 = Math.ceil(cuttern);
-  const insheetIsi = mesinIsi === 'PRINT BUYA' ? params.insheetIsiPrint : params.insheetIsiOffset;
+  const insheetIsi = (mesinIsi === 'PRINT BUYA' || mesinIsi === 'RYOBI') ? 30 : mesinIsi === 'OLIVER' ? 100 : 300;
   const lbrPlanoIsi = (oplah / dm) * cuttern + (insheetIsi / dm) * do6; // BUKU!DR7
 
   let biayaKertasIsi = 0;
@@ -531,6 +531,15 @@ export function calculateBukuHardCoverUnified(
   if (mesinIsi === 'PRINT BUYA') {
     const tarifPrint = ukuran === '21×29,7' ? params.tarifPrintIsiA3 : params.tarifPrintIsiA4;
     biayaKertasIsi = lbrPlanoIsi * tarifPrint; // BUKU!DS7
+  } else if (mesinIsi === 'RYOBI') {
+    // Potong Folio 21.5 x 33 cm HVS 70 (BUKU!DR28, DS28, DS31)
+    const hrgReamFolio = ((21.5 * 33 * params.gramaturIsi) / 20000) * params.hargaKertasIsiPerKg;
+    biayaKertasIsi = (lbrPlanoIsi / 500) * hrgReamFolio; // BUKU!DS7
+
+    const jmlPlatIsi = Math.ceil(halaman / dl); // BUKU!DY7
+    biayaPlatIsi = params.tarifPlateIsiRyobi * jmlPlatIsi; // BUKU!DX7
+    const overIsi = oplah + insheetIsi > 500 ? (oplah + insheetIsi - 500) * jmlPlatIsi : 0;
+    biayaCetakIsi = (params.minOngkosIsiRyobi * jmlPlatIsi) + (overIsi * params.drekIsiRyobi); // BUKU!EE7
   } else {
     // Plano 61 x 86 cm HVS 70 (BUKU!DS28, DS31)
     const hrgReamIsi = ((61 * 86 * params.gramaturIsi) / 20000) * params.hargaKertasIsiPerKg;
@@ -542,12 +551,7 @@ export function calculateBukuHardCoverUnified(
     let drekThreshold = 1000;
     let drekRate = params.drekIsiOliver;
 
-    if (mesinIsi === 'RYOBI') {
-      tarifPlatIsi = params.tarifPlateIsiRyobi;
-      minOngkosIsi = params.minOngkosIsiRyobi;
-      drekThreshold = 500;
-      drekRate = params.drekIsiRyobi;
-    } else if (mesinIsi === 'SM') {
+    if (mesinIsi === 'SM') {
       tarifPlatIsi = params.tarifPlateIsiSM;
       minOngkosIsi = params.minOngkosIsiSM;
       drekThreshold = 3000;

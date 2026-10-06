@@ -57,6 +57,58 @@
   {
     "ukuran": "10,5 x 14,8",
     "mesin_cover": "PRINT INTER",
+    "mesin_isi": "RYOBI",
+    "tiers": [
+      {
+        "row": 7,
+        "oplah": 300,
+        "hpp_total": 3060637.608647678,
+        "hpp_per_exp": 10202.125362158928,
+        "total_harga_jual": 3978828.8912419816,
+        "harga_per_exp": 13262.762970806605,
+        "harga_final": 13270.0
+      },
+      {
+        "row": 8,
+        "oplah": 350,
+        "hpp_total": 3425309.253685418,
+        "hpp_per_exp": 9786.597867672623,
+        "total_harga_jual": 4452902.029791043,
+        "harga_per_exp": 12722.57722797441,
+        "harga_final": 12730.0
+      },
+      {
+        "row": 9,
+        "oplah": 400,
+        "hpp_total": 3796029.09033324,
+        "hpp_per_exp": 9490.0727258331,
+        "total_harga_jual": 4934837.817433212,
+        "harga_per_exp": 12337.09454358303,
+        "harga_final": 12340.0
+      },
+      {
+        "row": 10,
+        "oplah": 450,
+        "hpp_total": 4162615.5950866933,
+        "hpp_per_exp": 9250.25687797043,
+        "total_harga_jual": 5411400.273612701,
+        "harga_per_exp": 12025.333941361559,
+        "harga_final": 12030.0
+      },
+      {
+        "row": 11,
+        "oplah": 500,
+        "hpp_total": 4555835.437937402,
+        "hpp_per_exp": 9111.670875874803,
+        "total_harga_jual": 5922586.069318622,
+        "harga_per_exp": 11845.172138637245,
+        "harga_final": 11850.0
+      }
+    ]
+  },
+  {
+    "ukuran": "10,5 x 14,8",
+    "mesin_cover": "PRINT INTER",
     "mesin_isi": "PRINT BUYA",
     "tiers": [
       {

@@ -43,10 +43,12 @@ let totalPassed = 0;
 let totalFailed = 0;
 
 // 1. BENCHMARK TIERS EXCEL
-// Kita uji grup Oliver-Oliver yang menjadi patokan matriks 1:1 di Excel
-const oliverGroups = benchmarkData.filter((g) => g.mesin_cover === 'OLIVER' && g.mesin_isi === 'OLIVER');
+const groupsToTest = benchmarkData.filter((g) =>
+  (g.mesin_cover === 'OLIVER' && g.mesin_isi === 'OLIVER') ||
+  (g.mesin_cover === 'PRINT INTER' && g.mesin_isi === 'RYOBI')
+);
 
-for (const grp of oliverGroups) {
+for (const grp of groupsToTest) {
   const ukuran = grp.ukuran.replace('x', '×').trim() as HardCoverUkuran;
   console.log(`\n▶ Menguji Ukuran: ${grp.ukuran} [${grp.mesin_cover} - ${grp.mesin_isi}] (${grp.tiers.length} Tiers)`);
   console.log('-'.repeat(75));
@@ -58,8 +60,8 @@ for (const grp of oliverGroups) {
       ukuran,
       oplah: tier.oplah,
       halaman: 100,
-      mesinCover: 'OLIVER',
-      mesinIsi: 'OLIVER',
+      mesinCover: grp.mesin_cover as any,
+      mesinIsi: grp.mesin_isi as any,
       finishingCover: 'None',
     });
 
