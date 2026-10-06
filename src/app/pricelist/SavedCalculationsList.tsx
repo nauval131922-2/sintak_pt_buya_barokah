@@ -125,9 +125,9 @@ export default function SavedCalculationsList({
   activeSimulationId,
 }: SavedCalculationsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Soft Cover Oliver-Oliver' | 'Buku Soft Cover Print-Oliver' | 'Buku Soft Cover Print-Print' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag'>('ALL');
+  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Soft Cover Oliver-Oliver' | 'Buku Soft Cover Print-Oliver' | 'Buku Soft Cover Print-Print' | 'Buku Hard Cover' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag'>('ALL');
   
-  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Soft Cover Oliver-Oliver' | 'Buku Soft Cover Print-Oliver' | 'Buku Soft Cover Print-Print' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag') => {
+  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Soft Cover Oliver-Oliver' | 'Buku Soft Cover Print-Oliver' | 'Buku Soft Cover Print-Print' | 'Buku Hard Cover' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag') => {
     setFilterCategory(val);
     try {
       localStorage.setItem('sintak_pricelist_saved_list_filter', val);
@@ -233,6 +233,7 @@ export default function SavedCalculationsList({
         savedFilter === 'Buku Soft Cover Oliver-Oliver' ||
         savedFilter === 'Buku Soft Cover Print-Oliver' ||
         savedFilter === 'Buku Soft Cover Print-Print' ||
+        savedFilter === 'Buku Hard Cover' ||
         savedFilter === 'Buku Hard Cover 10,5×14,8' ||
         savedFilter === 'Poster' ||
         savedFilter === 'Majalah 14,5×20,25' ||
@@ -1156,8 +1157,12 @@ export default function SavedCalculationsList({
   const filteredList = useMemo(() => {
     return unifiedList.filter((item) => {
       // Filter kategori
-      if (filterCategory !== 'ALL' && item.category !== filterCategory) {
-        return false;
+      if (filterCategory !== 'ALL') {
+        if (filterCategory === 'Buku Hard Cover') {
+          if (!item.category.startsWith('Buku Hard Cover')) return false;
+        } else if (item.category !== filterCategory) {
+          return false;
+        }
       }
       // Filter search term
       if (!searchTerm.trim()) return true;
@@ -1911,13 +1916,16 @@ export default function SavedCalculationsList({
                 // 4. Buku Soft Cover
                 { value: 'Buku Soft Cover', label: '📗 Buku Soft Cover', count: bukuSoftCoverList.length + softCoverOOList.length + softCoverPOList.length + softCoverPPList.length + bukuSoftCover145x2025List.length + bukuSoftCover105x148List.length, group: 'Buku Soft Cover' },
 
-                // 5. Buku Hard Cover (terpisah dari Soft Cover & Majalah)
-                { value: 'Buku Hard Cover 10,5×14,8', label: '📕 Buku Hard Cover 10,5×14,8', count: bukuHardCover105x148List.length, group: 'Buku Hard Cover' },
-                { value: 'Buku Hard Cover 14,5×20,25', label: '📕 Buku Hard Cover 14,5×20,25', count: bukuHardCover145x2025List.length, group: 'Buku Hard Cover' },
-                { value: 'Buku Hard Cover 21×29,7', label: '📕 Buku Hard Cover 21×29,7', count: bukuHardCover21x297List.length, group: 'Buku Hard Cover' },
+                // 5. Buku Hard Cover (terpadu 1 entri)
+                {
+                  value: 'Buku Hard Cover',
+                  label: '📕 Buku Hard Cover',
+                  count: bukuHardCover105x148List.length + bukuHardCover145x2025List.length + bukuHardCover21x297List.length,
+                  group: 'Buku Hard Cover',
+                },
 
                 // 6. Majalah (terpisah dari Buku)
-                { value: 'Majalah 14,5×20,25', label: '📰 Majalah 14,5×20,25', count: majalahList.length, group: 'Majalah' },
+                { value: 'Majalah 14,5×20,25', label: '📰 Majalah', count: majalahList.length, group: 'Majalah' },
 
                 // 7. Nota
                 { value: 'Nota 1 Warna', label: '📋 Nota 1 Warna', count: notaList.length, group: 'Nota' },

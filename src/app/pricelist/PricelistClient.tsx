@@ -198,10 +198,30 @@ export default function PricelistClient() {
   const [paramsKalenderKop, setParamsKalenderKop] = useState<KalenderKopMasterParams>(DEFAULT_KALENDER_KOP_PARAMS);
   const [paramsPackaging, setParamsPackaging] = useState<PackagingMasterParams>(DEFAULT_PACKAGING_PARAMS);
   const [paramsPaperbag, setParamsPaperbag] = useState<PaperbagMasterParams>(DEFAULT_PAPERBAG_PARAMS);
-  const [selectedProductCategory, setSelectedProductCategory] = useState<'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Soft Cover Oliver-Oliver' | 'Buku Soft Cover Print-Oliver' | 'Buku Soft Cover Print-Print' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag'>('Kalender');
+  const [selectedProductCategory, setSelectedProductCategory] = useState<'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Soft Cover Oliver-Oliver' | 'Buku Soft Cover Print-Oliver' | 'Buku Soft Cover Print-Print' | 'Buku Hard Cover' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag'>('Kalender');
+  const [hardCoverUkuran, setHardCoverUkuran] = useState<'10,5×14,8' | '14,5×20,25' | '21×29,7'>('10,5×14,8');
   const [paramsSpiral, setParamsSpiral] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS);
   const [paramsKlem, setParamsKlem] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS_KLEM);
 
+  useEffect(() => {
+    try {
+      const savedUkuran = localStorage.getItem('sintak_buku_hard_cover_selected_ukuran');
+      if (savedUkuran === '10,5×14,8' || savedUkuran === '14,5×20,25' || savedUkuran === '21×29,7') {
+        setHardCoverUkuran(savedUkuran);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
+  const handleHardCoverUkuranChange = (uk: '10,5×14,8' | '14,5×20,25' | '21×29,7') => {
+    setHardCoverUkuran(uk);
+    try {
+      localStorage.setItem('sintak_buku_hard_cover_selected_ukuran', uk);
+    } catch (e) {
+      console.error(e);
+    }
+  };
   // Active loaded simulation state (persisted across tabs)
   const [activeSimulationId, setActiveSimulationId] = useState<string | null>(null);
   const [activeSimulationTitle, setActiveSimulationTitle] = useState<string | null>(null);
@@ -416,17 +436,24 @@ export default function PricelistClient() {
         savedCategory === 'Lebel Kartu Obat' ||
         savedCategory === 'Buku Soft Cover' ||
         savedCategory === 'Buku Soft Cover 14,5×20,25' ||
-        savedCategory === 'Buku Hard Cover 10,5×14,8' ||
+        savedCategory === 'Buku Hard Cover' ||
         savedCategory === 'Poster' ||
         savedCategory === 'Majalah 14,5×20,25' ||
         savedCategory === 'Stiker' ||
-        savedCategory === 'Buku Hard Cover 14,5×20,25' ||
-        savedCategory === 'Buku Hard Cover 21×29,7' ||
         savedCategory === 'Kalender Kop' ||
         savedCategory === 'Packaging' ||
         savedCategory === 'Paperbag'
       ) {
         setSelectedProductCategory(savedCategory);
+      } else if (
+        savedCategory === 'Buku Hard Cover 10,5×14,8' ||
+        savedCategory === 'Buku Hard Cover 14,5×20,25' ||
+        savedCategory === 'Buku Hard Cover 21×29,7'
+      ) {
+        setSelectedProductCategory('Buku Hard Cover');
+        if (savedCategory.includes('14,5')) setHardCoverUkuran('14,5×20,25');
+        else if (savedCategory.includes('21')) setHardCoverUkuran('21×29,7');
+        else setHardCoverUkuran('10,5×14,8');
       }
 
       restoreAllMasterParamsFromLocalStorage();
@@ -454,7 +481,7 @@ export default function PricelistClient() {
 
   // Sync selectedProductCategory across tabs
   const handleProductCategoryChange = (
-    category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Soft Cover Oliver-Oliver' | 'Buku Soft Cover Print-Oliver' | 'Buku Soft Cover Print-Print' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag'
+    category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Soft Cover Oliver-Oliver' | 'Buku Soft Cover Print-Oliver' | 'Buku Soft Cover Print-Print' | 'Buku Hard Cover' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag'
   ) => {
     setSelectedProductCategory(category);
     if (activeSimulationId) {
@@ -499,7 +526,18 @@ export default function PricelistClient() {
 
   const handleLoadSimulationFromList = (item: UnifiedCalculationItem) => {
     const cat = item.category as typeof selectedProductCategory;
-    setSelectedProductCategory(cat);
+    if (
+      cat === 'Buku Hard Cover 10,5×14,8' ||
+      cat === 'Buku Hard Cover 14,5×20,25' ||
+      cat === 'Buku Hard Cover 21×29,7'
+    ) {
+      setSelectedProductCategory('Buku Hard Cover');
+      if (cat.includes('14,5')) setHardCoverUkuran('14,5×20,25');
+      else if (cat.includes('21')) setHardCoverUkuran('21×29,7');
+      else setHardCoverUkuran('10,5×14,8');
+    } else {
+      setSelectedProductCategory(cat);
+    }
     try {
       localStorage.setItem('sintak_pricelist_selected_category', cat);
     } catch (e) {
@@ -543,13 +581,31 @@ export default function PricelistClient() {
       else if (item.category === 'Buku Soft Cover Print-Oliver') setParamsBukuSoftCover({ ...DEFAULT_SOFT_COVER_UNIFIED, ...(s as SoftCoverUnifiedParams) });
       else if (item.category === 'Buku Soft Cover Print-Print') setParamsBukuSoftCover({ ...DEFAULT_SOFT_COVER_UNIFIED, ...(s as SoftCoverUnifiedParams) });
       else if (item.category === 'Buku Soft Cover 14,5×20,25') setParamsBukuSoftCover({ ...DEFAULT_SOFT_COVER_UNIFIED, ...(s as SoftCoverUnifiedParams) });
-      else if (item.category === 'Buku Hard Cover 10,5×14,8') setParamsBukuHardCover105x148(s);
-      else if (item.category === 'Poster') setParamsPoster(s);
-      else if (item.category === 'Majalah 14,5×20,25') setParamsMajalah(s);
-      else if (item.category === 'Stiker') setParamsStiker(s);
-      else if (item.category === 'Buku Soft Cover 10,5×14,8') setParamsBukuSoftCover({ ...DEFAULT_SOFT_COVER_UNIFIED, ...(s as SoftCoverUnifiedParams) });
-      else if (item.category === 'Buku Hard Cover 14,5×20,25') setParamsBukuHardCover145x2025(s);
-      else if (item.category === 'Buku Hard Cover 21×29,7') setParamsBukuHardCover21x297(s);
+      else if (item.category === 'Buku Hard Cover 10,5×14,8') {
+        setParamsBukuHardCover105x148(s);
+        setHardCoverUkuran('10,5×14,8');
+      }
+      else if (item.category === 'Buku Hard Cover 14,5×20,25') {
+        setParamsBukuHardCover145x2025(s);
+        setHardCoverUkuran('14,5×20,25');
+      }
+      else if (item.category === 'Buku Hard Cover 21×29,7') {
+        setParamsBukuHardCover21x297(s);
+        setHardCoverUkuran('21×29,7');
+      }
+      else if (item.category === 'Buku Hard Cover') {
+        const rawUk = (item.rawData as any)?.input?.ukuran || (item.rawData as any)?.ukuran;
+        if (rawUk === '21×29,7' || rawUk === '21 x 29,7') {
+          setParamsBukuHardCover21x297(s);
+          setHardCoverUkuran('21×29,7');
+        } else if (rawUk === '14,5×20,25' || rawUk === '14,5 x 20,25') {
+          setParamsBukuHardCover145x2025(s);
+          setHardCoverUkuran('14,5×20,25');
+        } else {
+          setParamsBukuHardCover105x148(s);
+          setHardCoverUkuran('10,5×14,8');
+        }
+      }
       else if (item.category === 'Kalender Kop') setParamsKalenderKop(s);
       else if (item.category === 'Packaging') setParamsPackaging(s);
       else if (item.category === 'Paperbag') setParamsPaperbag(s);
@@ -841,6 +897,25 @@ export default function PricelistClient() {
 
   const isFiltered = selectedJenis !== 'ALL' || selectedBahan !== 'ALL' || searchTerm !== '';
 
+  const hardCoverUkuranSelector = (
+    <div className="flex items-center gap-1.5 bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 w-fit shrink-0 mb-3 shadow-2xs">
+      <span className="text-[11px] font-bold text-slate-500 pl-2 pr-1 select-none">Ukuran Hard Cover:</span>
+      {(['10,5×14,8', '14,5×20,25', '21×29,7'] as const).map((uk) => (
+        <button
+          key={uk}
+          type="button"
+          onClick={() => handleHardCoverUkuranChange(uk)}
+          className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+            hardCoverUkuran === uk
+              ? 'bg-emerald-700 text-white shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+          }`}
+        >
+          {uk} cm
+        </button>
+      ))}
+    </div>
+  );
   return (
     <div className="flex flex-col gap-4 flex-1 min-h-0">
       {/* TABS Navigation + Product Category Selector — 1 baris, tab bisa scroll horizontal */}
@@ -966,13 +1041,11 @@ export default function PricelistClient() {
               // 4. Buku Soft Cover
               { value: 'Buku Soft Cover', label: '📗 Buku Soft Cover', group: 'Buku Soft Cover' },
 
-              // 5. Buku Hard Cover (terpisah dari Soft Cover & Majalah)
-              { value: 'Buku Hard Cover 10,5×14,8', label: '📕 Buku Hard Cover 10,5×14,8', group: 'Buku Hard Cover' },
-              { value: 'Buku Hard Cover 14,5×20,25', label: '📕 Buku Hard Cover 14,5×20,25', group: 'Buku Hard Cover' },
-              { value: 'Buku Hard Cover 21×29,7', label: '📕 Buku Hard Cover 21×29,7', group: 'Buku Hard Cover' },
+              // 5. Buku Hard Cover (terpadu 1 entri, ukuran dipilih di tab kalkulasi)
+              { value: 'Buku Hard Cover', label: '📕 Buku Hard Cover', group: 'Buku Hard Cover' },
 
               // 6. Majalah (terpisah dari Buku)
-              { value: 'Majalah 14,5×20,25', label: '📰 Majalah 14,5×20,25', group: 'Majalah' },
+              { value: 'Majalah 14,5×20,25', label: '📰 Majalah', group: 'Majalah' },
 
               // 7. Nota
               { value: 'Nota 1 Warna', label: '📋 Nota 1 Warna', group: 'Nota' },
@@ -1124,36 +1197,26 @@ export default function PricelistClient() {
               customParams={paramsBukuSoftCover}
               setCustomParams={setParamsBukuSoftCover}
             />
-          ) : selectedProductCategory === 'Buku Hard Cover 10,5×14,8' ? (
-            <BukuHardCover105x148MasterParameter
-              customParams={paramsBukuHardCover105x148}
-              setCustomParams={setParamsBukuHardCover105x148}
-            />
-          ) : selectedProductCategory === 'Poster' ? (
-            <PosterMasterParameter
-              customParams={paramsPoster}
-              setCustomParams={setParamsPoster}
-            />
-          ) : selectedProductCategory === 'Majalah 14,5×20,25' ? (
-            <MajalahMasterParameter
-              customParams={paramsMajalah}
-              setCustomParams={setParamsMajalah}
-            />
-          ) : selectedProductCategory === 'Stiker' ? (
-            <StikerMasterParameter
-              customParams={paramsStiker}
-              setCustomParams={setParamsStiker}
-            />
-          ) : selectedProductCategory === 'Buku Hard Cover 14,5×20,25' ? (
-            <BukuHardCover145x2025MasterParameter
-              customParams={paramsBukuHardCover145x2025}
-              setCustomParams={setParamsBukuHardCover145x2025}
-            />
-          ) : selectedProductCategory === 'Buku Hard Cover 21×29,7' ? (
-            <BukuHardCover21x297MasterParameter
-              customParams={paramsBukuHardCover21x297}
-              setCustomParams={setParamsBukuHardCover21x297}
-            />
+          ) : selectedProductCategory === 'Buku Hard Cover' || selectedProductCategory === 'Buku Hard Cover 10,5×14,8' || selectedProductCategory === 'Buku Hard Cover 14,5×20,25' || selectedProductCategory === 'Buku Hard Cover 21×29,7' ? (
+            <div className="flex flex-col gap-2">
+              {hardCoverUkuranSelector}
+              {hardCoverUkuran === '10,5×14,8' ? (
+                <BukuHardCover105x148MasterParameter
+                  customParams={paramsBukuHardCover105x148}
+                  setCustomParams={setParamsBukuHardCover105x148}
+                />
+              ) : hardCoverUkuran === '14,5×20,25' ? (
+                <BukuHardCover145x2025MasterParameter
+                  customParams={paramsBukuHardCover145x2025}
+                  setCustomParams={setParamsBukuHardCover145x2025}
+                />
+              ) : (
+                <BukuHardCover21x297MasterParameter
+                  customParams={paramsBukuHardCover21x297}
+                  setCustomParams={setParamsBukuHardCover21x297}
+                />
+              )}
+            </div>
           ) : selectedProductCategory === 'Kalender Kop' ? (
             <KalenderKopMasterParameter
               customParams={paramsKalenderKop}
@@ -1363,66 +1426,43 @@ export default function PricelistClient() {
               activeSimulationTitle={activeSimulationTitle}
               setActiveSimulationTitle={setActiveSimulationTitle}
             />
-          ) : selectedProductCategory === 'Buku Hard Cover 10,5×14,8' ? (
-            <BukuHardCover105x148Simulator
-              customParams={paramsBukuHardCover105x148}
-              setCustomParams={setParamsBukuHardCover105x148}
-              onOpenMasterParam={() => setActiveTab('parameter')}
-              activeSimulationId={activeSimulationId}
-              setActiveSimulationId={setActiveSimulationId}
-              activeSimulationTitle={activeSimulationTitle}
-              setActiveSimulationTitle={setActiveSimulationTitle}
-            />
-          ) : selectedProductCategory === 'Poster' ? (
-            <PosterSimulator
-              customParams={paramsPoster}
-              setCustomParams={setParamsPoster}
-              onOpenMasterParam={() => setActiveTab('parameter')}
-              activeSimulationId={activeSimulationId}
-              setActiveSimulationId={setActiveSimulationId}
-              activeSimulationTitle={activeSimulationTitle}
-              setActiveSimulationTitle={setActiveSimulationTitle}
-            />
-          ) : selectedProductCategory === 'Majalah 14,5×20,25' ? (
-            <MajalahSimulator
-              customParams={paramsMajalah}
-              setCustomParams={setParamsMajalah}
-              onOpenMasterParam={() => setActiveTab('parameter')}
-              activeSimulationId={activeSimulationId}
-              setActiveSimulationId={setActiveSimulationId}
-              activeSimulationTitle={activeSimulationTitle}
-              setActiveSimulationTitle={setActiveSimulationTitle}
-            />
-          ) : selectedProductCategory === 'Stiker' ? (
-            <StikerSimulator
-              customParams={paramsStiker}
-              setCustomParams={setParamsStiker}
-              onOpenMasterParam={() => setActiveTab('parameter')}
-              activeSimulationId={activeSimulationId}
-              setActiveSimulationId={setActiveSimulationId}
-              activeSimulationTitle={activeSimulationTitle}
-              setActiveSimulationTitle={setActiveSimulationTitle}
-            />
-          ) : selectedProductCategory === 'Buku Hard Cover 14,5×20,25' ? (
-            <BukuHardCover145x2025Simulator
-              customParams={paramsBukuHardCover145x2025}
-              setCustomParams={setParamsBukuHardCover145x2025}
-              onOpenMasterParam={() => setActiveTab('parameter')}
-              activeSimulationId={activeSimulationId}
-              setActiveSimulationId={setActiveSimulationId}
-              activeSimulationTitle={activeSimulationTitle}
-              setActiveSimulationTitle={setActiveSimulationTitle}
-            />
-          ) : selectedProductCategory === 'Buku Hard Cover 21×29,7' ? (
-            <BukuHardCover21x297Simulator
-              customParams={paramsBukuHardCover21x297}
-              setCustomParams={setParamsBukuHardCover21x297}
-              onOpenMasterParam={() => setActiveTab('parameter')}
-              activeSimulationId={activeSimulationId}
-              setActiveSimulationId={setActiveSimulationId}
-              activeSimulationTitle={activeSimulationTitle}
-              setActiveSimulationTitle={setActiveSimulationTitle}
-            />
+          ) : selectedProductCategory === 'Buku Hard Cover' || selectedProductCategory === 'Buku Hard Cover 10,5×14,8' || selectedProductCategory === 'Buku Hard Cover 14,5×20,25' || selectedProductCategory === 'Buku Hard Cover 21×29,7' ? (
+            <div className="flex-1 flex flex-col min-h-0">
+              {hardCoverUkuranSelector}
+              <div className="flex-1 min-h-0">
+                {hardCoverUkuran === '10,5×14,8' ? (
+                  <BukuHardCover105x148Simulator
+                    customParams={paramsBukuHardCover105x148}
+                    setCustomParams={setParamsBukuHardCover105x148}
+                    onOpenMasterParam={() => setActiveTab('parameter')}
+                    activeSimulationId={activeSimulationId}
+                    setActiveSimulationId={setActiveSimulationId}
+                    activeSimulationTitle={activeSimulationTitle}
+                    setActiveSimulationTitle={setActiveSimulationTitle}
+                  />
+                ) : hardCoverUkuran === '14,5×20,25' ? (
+                  <BukuHardCover145x2025Simulator
+                    customParams={paramsBukuHardCover145x2025}
+                    setCustomParams={setParamsBukuHardCover145x2025}
+                    onOpenMasterParam={() => setActiveTab('parameter')}
+                    activeSimulationId={activeSimulationId}
+                    setActiveSimulationId={setActiveSimulationId}
+                    activeSimulationTitle={activeSimulationTitle}
+                    setActiveSimulationTitle={setActiveSimulationTitle}
+                  />
+                ) : (
+                  <BukuHardCover21x297Simulator
+                    customParams={paramsBukuHardCover21x297}
+                    setCustomParams={setParamsBukuHardCover21x297}
+                    onOpenMasterParam={() => setActiveTab('parameter')}
+                    activeSimulationId={activeSimulationId}
+                    setActiveSimulationId={setActiveSimulationId}
+                    activeSimulationTitle={activeSimulationTitle}
+                    setActiveSimulationTitle={setActiveSimulationTitle}
+                  />
+                )}
+              </div>
+            </div>
           ) : selectedProductCategory === 'Kalender Kop' ? (
             <KalenderKopSimulator
               customParams={paramsKalenderKop}
@@ -1576,42 +1616,29 @@ export default function PricelistClient() {
               viewMode={viewMode}
               setViewMode={setViewMode}
             />
-          ) : selectedProductCategory === 'Buku Hard Cover 10,5×14,8' ? (
-            <BukuHardCover105x148MatrixView
-              customParams={paramsBukuHardCover105x148}
-              viewMode={viewMode}
-              setViewMode={setViewMode}
-            />
-          ) : selectedProductCategory === 'Poster' ? (
-            <PosterMatrixView
-              customParams={paramsPoster}
-              viewMode={viewMode}
-              setViewMode={setViewMode}
-            />
-          ) : selectedProductCategory === 'Majalah 14,5×20,25' ? (
-            <MajalahMatrixView
-              customParams={paramsMajalah}
-              viewMode={viewMode}
-              setViewMode={setViewMode}
-            />
-          ) : selectedProductCategory === 'Stiker' ? (
-            <StikerMatrixView
-              customParams={paramsStiker}
-              viewMode={viewMode}
-              setViewMode={setViewMode}
-            />
-          ) : selectedProductCategory === 'Buku Hard Cover 14,5×20,25' ? (
-            <BukuHardCover145x2025MatrixView
-              customParams={paramsBukuHardCover145x2025}
-              viewMode={viewMode}
-              setViewMode={setViewMode}
-            />
-          ) : selectedProductCategory === 'Buku Hard Cover 21×29,7' ? (
-            <BukuHardCover21x297MatrixView
-              customParams={paramsBukuHardCover21x297}
-              viewMode={viewMode}
-              setViewMode={setViewMode}
-            />
+          ) : selectedProductCategory === 'Buku Hard Cover' || selectedProductCategory === 'Buku Hard Cover 10,5×14,8' || selectedProductCategory === 'Buku Hard Cover 14,5×20,25' || selectedProductCategory === 'Buku Hard Cover 21×29,7' ? (
+            <div className="flex flex-col gap-2">
+              {hardCoverUkuranSelector}
+              {hardCoverUkuran === '10,5×14,8' ? (
+                <BukuHardCover105x148MatrixView
+                  customParams={paramsBukuHardCover105x148}
+                  viewMode={viewMode}
+                  setViewMode={setViewMode}
+                />
+              ) : hardCoverUkuran === '14,5×20,25' ? (
+                <BukuHardCover145x2025MatrixView
+                  customParams={paramsBukuHardCover145x2025}
+                  viewMode={viewMode}
+                  setViewMode={setViewMode}
+                />
+              ) : (
+                <BukuHardCover21x297MatrixView
+                  customParams={paramsBukuHardCover21x297}
+                  viewMode={viewMode}
+                  setViewMode={setViewMode}
+                />
+              )}
+            </div>
           ) : selectedProductCategory === 'Kalender Kop' ? (
             <KalenderKopMatrixView
               customParams={paramsKalenderKop}
