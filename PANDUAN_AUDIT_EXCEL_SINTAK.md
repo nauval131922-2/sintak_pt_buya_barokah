@@ -35,12 +35,13 @@ Jika ditemukan perbedaan angka master antar-file sejenis (misal file oplah kecil
 - **WAJIB BERHENTI** dan paparkan perbedaannya kepada pengguna untuk konfirmasi nilai default yang dikehendaki.
 
 ## 1.3 Ketentuan Sumber Folder Master Excel (Baku & Permanen)
+- **Single Source of Truth Lokasi Excel**: Seluruh letak folder dan file sumber kalkulasi percetakan **WAJIB** merujuk ke file `daftar_source_pricelist.txt` di root repository.
+- **DILARANG KERAS** melakukan `glob` liar atau pencarian acak di folder user/desktop (`C:\Users\...` atau `D:\...`). Selalu baca `daftar_source_pricelist.txt` terlebih dahulu untuk mendapatkan path absolut file di drive `E:`.
 - **HANYA Buku Manasik** yang mengambil sumber dari folder **Master Harga**:
   `E:\percetakan buya barokah\backup\a1\02__PEMASARAN\0202_KALKULASI HARGA\020201 MASTER HARGA\02020107 BUKU, KITAB, MAJALAH\`
-- **Seluruh Produk Lainnya** (Buku Yasin, Nota, Brosur, Label KHQ, Buku Tulis, Stopmap, Syahadah, Kalender, Amplop, Kop Surat, Raport, dst.):
+- **Seluruh Produk Lainnya** (Buku Yasin, Nota, Brosur, Label KHQ, Buku Tulis, Stopmap, Syahadah, Kalender, Amplop, Kop Surat, Raport, Buku Soft Cover, Buku Hard Cover, dst.):
   Wajib mengambil sumber dari folder rilis **Pricelist Juli 2026**:
   `E:\percetakan buya barokah\backup\a1\02__PEMASARAN\0203_SURAT PENAWARAN HARGA (SPH) out\020326 2026 SURAT PENAWARAN HARGA (SPH) out\Pricelist Juli 2026\`
-
 ---
 
 ## 2. Pemetaan 4 Lapisan Arsitektur Excel Percetakan
