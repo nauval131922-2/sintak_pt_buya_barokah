@@ -128,12 +128,29 @@ Setiap workbook kalkulasi percetakan wajib dipetakan ke dalam 4 lapisan:
     - **Pembaruan Isi Form & Fitur di Tab Kalkulasi (Langsung Ubah)**:
       - Evaluasi apakah seluruh opsi spesifikasi di Excel (dropdown ukuran, variasi gramatur kertas, pilihan mesin cetak, opsi finishing opsional seperti porporasi, nomorator, laminasi, kardus) sudah ada di form input simulator.
       - Evaluasi apakah tabel rincian (breakdown) biaya HPP dan kartu ringkasan harga jual sudah transparan dan lengkap mencerminkan seluruh komponen biaya di Excel.
+      - **Urutan Standar Form Input (Kolom Kiri - Wajib Seragam)**:
+        1. Ukuran / Dimensi
+        2. Kuantitas (Oplah) & Spesifikasi Utama (mis. Halaman/Rangkap/Isi)
+        3. Cover / Bahan Baku Utama
+        4. Isi / Mesin Cetak
+        5. Finishing & Packing
+        * Seluruh langkah diberi penomoran `{stepChip(n)}` bulat hijau emerald kecil.
+      - **Desain Netral, Flat & Bersih (Anti-Kotakan Warna-Warni)**:
+        * Form kiri berada dalam 1 kontainer kartu utama putih (`bg-white border border-slate-200 rounded-xl p-4`).
+        * **DILARANG** memberi kotakan/background/border dengan warna-warni kontras (seperti `border-sky-200 bg-sky-50`, `border-violet-200`, `border-amber-200`) untuk Cover, Isi, dan Finishing. Tampilan harus netral, tenang, dan flat.
+        * Gaya tombol opsi aktif konsisten menggunakan `optBtn(active)` warna abu netral lembut (`border-slate-500 bg-slate-200 text-slate-900 shadow-xs`), bukan warna hitam pekat atau biru menyala.
+      - **Struktur Kolom Kanan (Hasil Finansial Baku)**:
+        * **Sticky 3-Kartu Metrik Ringkasan Finansial**:
+          1. `HPP Per Exp` (putih, icon DollarSign, subtext Total HPP)
+          2. `Harga Per Pcs (+Laba%)` (gradasi emerald lembut, border emerald, icon TrendingUp)
+          3. `Harga Total` (putih, icon TrendingUp, subtext Profit)
+        * **DILARANG KERAS** membuat box header gelap/hitam pekat (`bg-slate-900`, `from-slate-900`) pada simulator.
+        * **Tabel Breakdown 5 Kolom Baku**: `No. | Jenis | Keterangan | Harga (Rp) | Porsi` dengan baris monospace bersih dan footer total HPP warna hijau emerald tebal `100%`.
       - **Tombol Simpan Simulasi Standar (Wajib Konsisten)**: Tombol simpan simulasi **WAJIB** berada di bagian bawah kolom kanan (`lg:col-span-7`) di bawah tabel breakdown HPP, berupa tombol full-width:
         * Normal: Tombol penuh `w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs flex items-center justify-center gap-2 cursor-pointer` berlabel `Simpan Kalkulasi Ini ke Daftar Kalkulasi` dengan ikon `<Bookmark size={16} />`.
         * Mode Edit Riwayat (`activeSimulationId`): Dua tombol berdampingan: `Update Perubahan` (amber `bg-amber-600`) dan `Simpan Baru` (emerald `bg-emerald-700`).
         * **DILARANG KERAS** meletakkan form input teks kecil dan tombol simpan mini di kartu form kolom kiri.
       - **Jika ada opsi input atau isi kalkulasi yang perlu diperbarui/ditambahkan, WAJIB LANGSUNG UBAH PADA KODE TANPA PERLU KONFIRMASI**.
-      - **Aksen Grup Spesifikasi (Berlaku Umum, Semua Part)**: Setiap kelompok input part/komponen fisik berbeda dalam 1 form **WAJIB** dibedakan visual — masing-masing grup dibungkus kontainer tint + badge label dengan warna aksen sendiri (contoh: Cover sky `border-sky-200 bg-sky-50/50`, Isi violet `border-violet-200 bg-violet-50/50`). Bahasa seleksi (tombol aktif emerald) tetap konsisten — yang beda hanya aksen grup. Berlaku untuk PART APA PUN (bahan, ukuran, mesin, finishing, jasa, packing, dsb.) dan TIDAK terbatas pada Cover/Isi — tidak perlu didaftar satu per satu, auditor menilai sendiri pengelompokan part di tiap produk.
       - **Auto-Persist Draft Simulator (Wajib, Global Semua Produk)**: Seluruh `*Simulator.tsx` **WAJIB** menyimpan settingan form ke `localStorage` (`sintak_<produk>_draft`) setiap ada perubahan input dan me-restore-nya saat komponen mount / pindah tab, sehingga settingan tidak reset. Wajib di-skip saat Mode Edit Riwayat (`activeSimulationId` terisi) agar draft tidak menimpa data riwayat. Pola baku: `const DRAFT_KEY`, restore di effect load (`if (!activeSimulationId)`), save effect ber-guard sama. Kasus asal: 16 simulator lama (Buku Hard/SoftCover, Tabungan Security, Kalender, Kartu Koperasi, Label Obat, Majalah, Packaging, Paperbag, Poster, Pricelist, Stiker) reset saat pindah tab — diperbaiki global 2026-09-21.
 
 ### Tahap 6: Uji Komparasi Parity Otomatis (Full Matrix Benchmark)

@@ -363,15 +363,70 @@ export default function BukuSoftCoverUnifiedSimulator({
               </div>
             </div>
 
-            {/* Grup Cover — 2. Mesin & warna cover */}
-            <div className="rounded-xl border border-sky-200 bg-sky-50/50 p-3 space-y-3">
-              <div className="flex items-center gap-2">
-                {stepChip(2)}
-                <span className="text-[10px] font-black uppercase tracking-wider text-sky-900 bg-sky-200/80 px-2 py-0.5 rounded">Cover</span>
-                <label className="text-xs font-bold text-sky-900">Muka &amp; Warna</label>
+            {/* 2. Oplah & Halaman */}
+            <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                    {stepChip(2)} Oplah (pcs)
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={oplah}
+                    onChange={(e) => setOplah(Math.max(1, Number(e.target.value) || 1))}
+                    className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+                  />
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {tiers.map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setOplah(t)}
+                        className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition cursor-pointer ${
+                          oplah === t
+                            ? 'border-slate-500 bg-slate-200 text-slate-900'
+                            : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
+                        }`}
+                      >
+                        {t.toLocaleString('id-ID')}
+                      </button>
+                    ))}
+                  </div>
+                  {isEkstra && (
+                    <p className="mt-1.5 text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">
+                      Oplah di luar daftar file — Mengikuti rumus.
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Jumlah Halaman
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={600}
+                    step={1}
+                    value={jumlahHalaman}
+                    onChange={(e) => setJumlahHalaman(Math.max(1, Number(e.target.value) || 1))}
+                    className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+              <p className="text-[10px] text-slate-500">
+                Cover {result.kebutuhanKertasCover} lbr plano · Isi {result.kebutuhanPlanoIsi} lbr plano
+              </p>
+            </div>
+
+            {/* 3. Cetak Cover */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  {stepChip(3)} Cetak Cover
+                </label>
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-sky-900/80 mb-1">Cetak Cover</label>
                 <div className="grid grid-cols-2 gap-2">
                   {SOFT_COVER_COVER_OPTIONS[ukuran].map((m) => (
                     <button key={m} type="button" onClick={() => pickCascade(ukuran, m, SOFT_COVER_ISI_OPTIONS[ukuran].includes(mesinIsi) ? mesinIsi : SOFT_COVER_ISI_OPTIONS[ukuran][0])} className={optBtn(mesinCover === m)}>
@@ -404,15 +459,14 @@ export default function BukuSoftCoverUnifiedSimulator({
               </div>
             </div>
 
-            {/* Grup Isi — 3. Mesin & warna isi */}
-            <div className="rounded-xl border border-violet-200 bg-violet-50/50 p-3 space-y-2">
-              <div className="flex items-center gap-2">
-                {stepChip(3)}
-                <span className="text-[10px] font-black uppercase tracking-wider text-violet-900 bg-violet-200/80 px-2 py-0.5 rounded">Isi</span>
-                <label className="text-xs font-bold text-violet-900">Jenis Warna</label>
+            {/* 4. Cetak Isi */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  {stepChip(4)} Cetak Isi
+                </label>
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-violet-900/80 mb-1">Cetak Isi</label>
                 <div className="grid grid-cols-2 gap-2">
                   {SOFT_COVER_ISI_OPTIONS[ukuran].map((m) => (
                     <button key={m} type="button" onClick={() => pickCascade(ukuran, mesinCover, m)} className={optBtn(mesinIsi === m)}>
@@ -430,66 +484,12 @@ export default function BukuSoftCoverUnifiedSimulator({
               </div>
             </div>
 
-            {/* 4. Oplah & Halaman (tier mengikuti mesin terpilih) */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
-                  {stepChip(4)} Oplah (pcs)
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  value={oplah}
-                  onChange={(e) => setOplah(Math.max(1, Number(e.target.value) || 1))}
-                  className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
-                />
-                <div className="flex flex-wrap gap-1 mt-1.5">
-                  {tiers.map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setOplah(t)}
-                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition cursor-pointer ${
-                        oplah === t
-                          ? 'border-slate-500 bg-slate-200 text-slate-900'
-                          : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
-                      }`}
-                    >
-                      {t.toLocaleString('id-ID')}
-                    </button>
-                  ))}
-                </div>
-                {isEkstra && (
-                  <p className="mt-1.5 text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">
-                    Oplah di luar daftar file — Mengikuti rumus.
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Jumlah Halaman
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  max={600}
-                  step={1}
-                  value={jumlahHalaman}
-                  onChange={(e) => setJumlahHalaman(Math.max(1, Number(e.target.value) || 1))}
-                  className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
-                />
-              </div>
-            </div>
-            <p className="text-[10px] text-slate-500 -mt-2">
-              Cover {result.kebutuhanKertasCover} lbr plano · Isi {result.kebutuhanPlanoIsi} lbr plano
-            </p>
-
-            {/* Grup Finishing — 5. Catatan finishing */}
-            <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-3 space-y-2">
+            {/* 5. Finishing */}
+            <div className="space-y-2">
               <div className="flex items-center gap-2">
-                {stepChip(5)}
-                <span className="text-[10px] font-black uppercase tracking-wider text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded">Finishing</span>
-                <label className="text-xs font-bold text-amber-900">Catatan</label>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  {stepChip(5)} Finishing
+                </label>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {finishingOptions.map((f) => (
@@ -504,7 +504,6 @@ export default function BukuSoftCoverUnifiedSimulator({
                   : '9 Catatan.'}
               </p>
             </div>
-
             {/* Grup Catatan — selalu terbuka */}
             <div className="rounded-xl border border-slate-300 bg-slate-50/70 p-3">
               <div className="flex items-center gap-2">

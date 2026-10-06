@@ -24,8 +24,14 @@ const REQUIRED = [
   'lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4',
   'lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4',
 ];
-const TRIGGER = 'h-[calc(100vh-140px)]';
 
+// Dilarang keras card header gelap/hitam pekat di simulator (wajib 3-kartu metrik ringkasan baku)
+const FORBIDDEN_DARK_HEADER = [
+  'from-slate-900',
+  'bg-slate-900 text-white rounded',
+];
+
+const TRIGGER = 'h-[calc(100vh-140px)]';
 const files = fs.readdirSync(DIR).filter((f) => f.endsWith('Simulator.tsx'));
 let failed = 0;
 let checked = 0;
@@ -39,10 +45,15 @@ for (const f of files) {
   }
   checked++;
   const missing = REQUIRED.filter((p) => !content.includes(p));
+  const darkHeader = FORBIDDEN_DARK_HEADER.find((d) => content.includes(d));
+
   if (missing.length > 0) {
     failed++;
-    console.error(`[FAIL] ${f} — pola baku tidak lengkap:`);
+    console.error(`[FAIL] ${f} — pola baku dual-scroll tidak lengkap:`);
     for (const m of missing) console.error(`       hilang: "${m}"`);
+  } else if (darkHeader) {
+    failed++;
+    console.error(`[FAIL] ${f} — terdeteksi box header gelap/hitam pekat ("${darkHeader}"): wajib memakai 3-kartu metrik ringkasan baku.`);
   } else {
     console.log(`[PASS] ${f}`);
   }

@@ -331,132 +331,122 @@ export default function BukuHardCoverUnifiedSimulator({
               </div>
             </div>
 
-            {/* Grup Cover — 2. Mesin & Warna Cover */}
-            <div className="rounded-xl border border-sky-200 bg-sky-50/50 p-3 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {stepChip(2)}
-                  <span className="text-[10px] font-black uppercase tracking-wider text-sky-900 bg-sky-200/80 px-2 py-0.5 rounded">Cover</span>
-                  <label className="text-xs font-bold text-sky-900">Mesin Cover (4 Warna Fullcolor)</label>
+            {/* 2. Oplah & Halaman */}
+            <div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                    {stepChip(2)} Oplah (pcs)
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={oplah}
+                    onChange={(e) => setOplah(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+                  />
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {OPLAH_TIERS_HC.map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setOplah(t)}
+                        className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition cursor-pointer ${
+                          oplah === t
+                            ? 'border-slate-500 bg-slate-200 text-slate-900'
+                            : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
+                        }`}
+                      >
+                        {t.toLocaleString('id-ID')}
+                      </button>
+                    ))}
+                  </div>
+                  {isEkstra && (
+                    <p className="mt-1.5 text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">
+                      Oplah di luar daftar tier — Mengikuti rumus.
+                    </p>
+                  )}
                 </div>
-                <span className="text-[10px] font-bold text-sky-700 bg-sky-100/80 px-2 py-0.5 rounded border border-sky-200">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Jumlah Halaman Isi
+                  </label>
+                  <input
+                    type="number"
+                    min={4}
+                    step={4}
+                    value={halaman}
+                    onChange={(e) => setHalaman(Math.max(4, parseInt(e.target.value) || 4))}
+                    className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 3. Cetak Cover */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  {stepChip(3)} Cetak Cover (4 Warna Fullcolor)
+                </label>
+                <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
                   Aktif: {calcResult.mesinCoverTerpilih}
                 </span>
               </div>
-              <div>
-                <label className="block text-[11px] font-bold text-sky-900/80 mb-1">Cetak Cover</label>
-                <div className="grid grid-cols-4 gap-2">
-                  {(['OTOMATIS', 'PRINT INTER', 'OLIVER', 'SM'] as MesinCoverHC[]).map((m) => (
-                    <button
-                      key={m}
-                      type="button"
-                      onClick={() => setMesinCover(m)}
-                      className={optBtn(mesinCover === m)}
-                    >
-                      {m === 'OTOMATIS' ? '⚙️ Auto' : m}
-                    </button>
-                  ))}
-                </div>
+              <div className="grid grid-cols-4 gap-2">
+                {(['OTOMATIS', 'PRINT INTER', 'OLIVER', 'SM'] as MesinCoverHC[]).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setMesinCover(m)}
+                    className={optBtn(mesinCover === m)}
+                  >
+                    {m === 'OTOMATIS' ? '⚙️ Auto' : m}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Grup Isi — 3. Mesin Cetak Isi */}
-            <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-3 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {stepChip(3)}
-                  <span className="text-[10px] font-black uppercase tracking-wider text-blue-900 bg-blue-200/80 px-2 py-0.5 rounded">Isi</span>
-                  <label className="text-xs font-bold text-blue-900">Mesin Isi (1 Warna HVS 70)</label>
-                </div>
-                <span className="text-[10px] font-bold text-blue-700 bg-blue-100/80 px-2 py-0.5 rounded border border-blue-200">
+            {/* 4. Cetak Isi */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  {stepChip(4)} Cetak Isi (1 Warna HVS 70)
+                </label>
+                <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
                   Aktif: {calcResult.mesinIsiTerpilih}
                 </span>
               </div>
-              <div>
-                <label className="block text-[11px] font-bold text-blue-900/80 mb-1">Cetak Isi</label>
-                <div className="grid grid-cols-5 gap-1.5">
-                  {(['OTOMATIS', 'PRINT BUYA', 'RYOBI', 'OLIVER', 'SM'] as MesinIsiHC[]).map((m) => {
-                    const disabled = ukuran === '21×29,7' && m === 'RYOBI';
-                    return (
-                      <button
-                        key={m}
-                        type="button"
-                        disabled={disabled}
-                        onClick={() => setMesinIsi(m)}
-                        title={disabled ? 'Ryobi tidak muat ukuran A4 21x29,7' : undefined}
-                        className={`py-1.5 px-1 rounded-lg border text-[11px] font-bold text-center transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed ${
-                          mesinIsi === m
-                            ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs'
-                            : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                        }`}
-                      >
-                        {m === 'OTOMATIS' ? '⚙️ Auto' : m.replace('PRINT BUYA', 'Print')}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* 4. Oplah & Halaman */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
-                  {stepChip(4)} Oplah (pcs)
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  value={oplah}
-                  onChange={(e) => setOplah(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
-                />
-                <div className="flex flex-wrap gap-1 mt-1.5">
-                  {OPLAH_TIERS_HC.map((t) => (
+              <div className="grid grid-cols-5 gap-1.5">
+                {(['OTOMATIS', 'PRINT BUYA', 'RYOBI', 'OLIVER', 'SM'] as MesinIsiHC[]).map((m) => {
+                  const disabled = ukuran === '21×29,7' && m === 'RYOBI';
+                  return (
                     <button
-                      key={t}
+                      key={m}
                       type="button"
-                      onClick={() => setOplah(t)}
-                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition cursor-pointer ${
-                        oplah === t
-                          ? 'border-slate-500 bg-slate-200 text-slate-900'
-                          : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
+                      disabled={disabled}
+                      onClick={() => setMesinIsi(m)}
+                      title={disabled ? 'Ryobi tidak muat ukuran A4 21x29,7' : undefined}
+                      className={`py-1.5 px-1 rounded-lg border text-[11px] font-bold text-center transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed ${
+                        mesinIsi === m
+                          ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs'
+                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                       }`}
                     >
-                      {t.toLocaleString('id-ID')}
+                      {m === 'OTOMATIS' ? '⚙️ Auto' : m.replace('PRINT BUYA', 'Print')}
                     </button>
-                  ))}
-                </div>
-                {isEkstra && (
-                  <p className="mt-1.5 text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">
-                    Oplah di luar daftar tier — Mengikuti rumus.
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Jumlah Halaman Isi
-                </label>
-                <input
-                  type="number"
-                  min={4}
-                  step={4}
-                  value={halaman}
-                  onChange={(e) => setHalaman(Math.max(4, parseInt(e.target.value) || 4))}
-                  className="w-full px-3 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
-                />
+                  );
+                })}
               </div>
             </div>
 
-            {/* Grup Finishing — 5. Finishing Khusus & Packing */}
-            <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-3 space-y-3">
-              <div className="flex items-center gap-2">
-                {stepChip(5)}
-                <span className="text-[10px] font-black uppercase tracking-wider text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded">Finishing</span>
-                <label className="text-xs font-bold text-amber-900">Khusus Cover &amp; Packing</label>
-              </div>
+            {/* 5. Finishing Cover & Packing */}
+            <div className="space-y-2">
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                {stepChip(5)} Finishing Cover &amp; Packing
+              </label>
               <div>
-                <label className="block text-[11px] font-bold text-amber-900/80 mb-1">Pilihan Finishing Cover</label>
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1">Pilihan Finishing Cover</label>
                 <select
                   value={finishingCover}
                   onChange={(e) => setFinishingCover(e.target.value as FinishingCoverHC)}
@@ -479,7 +469,6 @@ export default function BukuHardCoverUnifiedSimulator({
                 </button>
               </div>
             </div>
-
             {/* Standar Konstruksi Hard Cover — Selalu Terbuka */}
             <div className="rounded-xl border border-slate-300 bg-slate-50/70 p-3 space-y-2">
               <div className="flex items-center gap-2">
