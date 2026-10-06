@@ -33,11 +33,11 @@ const byName = (r: any, prefix: string) => r.breakdown.filter((x: any) => x.nama
 const COMP: Array<[string, string]> = [
   ['Kertas Cover', 'T'], ['Desain Cover', 'V'], ['Plate Cover', 'Y'], ['Ongkos Cetak Cover', 'AG'],
   ['Kertas Isi HVS', 'AR'], ['Desain Isi', 'AT'], ['Plate Isi', 'AW'], ['Cetak Isi', 'BD'],
-  ['Royalty', 'BF'], ['Jasa Lipat', 'BI'], ['Jasa Sisir', 'BJ'], ['Jasa Susun', 'BK'], ['Kawat Stiching', 'BL'],
-  ['Jasa Stiching', 'BM'], ['Jasa Susun Staples', 'BN'], ['Steples', 'BO'], ['Sisir', 'BQ'],
+  ['Royalty', 'BF'], ['Lipat', 'BI'], ['Sisip', 'BJ'], ['Susun', 'BK'], ['Kawat Stiching', 'BL'],
+  ['Stiching', 'BM'], ['Susun + Staples', 'BN'], ['Steples', 'BO'], ['Sisir', 'BQ'],
   ['Bending', 'CC'], ['Laminasi Glossy', 'CG'], ['Laminasi Doff', 'CJ'], ['UV Varnish', 'CM'],
   ['UV Varnish + Bending', 'CO'], ['Laminasi Glossy + Bending', 'CP'], ['Laminasi Doff + Bending', 'CQ'],
-  ['Packing Kardus & Lakban', 'DA'],
+  ['Kardus + Lakban', 'DA'],
 ];
 // BT/BV/BY/BZ/CT/CV mentah tanpa gate (tidak masuk DC) — yang masuk DC adalah gated BW/CA/CW:
 const COMBO_COMP: Array<[string[], string]> = [

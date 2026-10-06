@@ -388,7 +388,7 @@ export function calculateSoftCoverOffsetHpp(
     const BL6 = p.tarifKawatRoll / (30000 * (1 - 15 / 100)); // BUKU!BL28 = 30000-15%
     const BM6 = (umrHarian * 2) / 10000; // BUKU!BM28
     if (fJ('jasaLipat', true)) add('Lipat', BI6 * AN6 * H, `Rp ${BI6.toFixed(2)}×${AN6}×${H}`);
-    if (fJ('jasaSisir', true)) add('Sisir', BJ6 * H, `Rp ${BJ6.toFixed(2)}×${H}`);
+    if (fJ('jasaSisir', true)) add('Sisip', BJ6 * H, `Rp ${BJ6.toFixed(2)}×${H}`);
     if (fJ('jasaSusun', true)) add('Susun', BK6 * AN6 * H, `Rp ${BK6.toFixed(2)}×${AN6}×${H}`);
     if (fJ('jasaKawat', true)) add('Kawat Stiching', BL6 * H, `Rp ${BL6.toFixed(2)}×${H}`);
     if (fJ('jasaStiching', true)) add('Stiching', BM6 * H, `Rp ${BM6.toFixed(2)}×${H}`);
