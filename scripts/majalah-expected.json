@@ -1,0 +1,166 @@
+[
+  {
+    "file": "BUKU UK. 14,5 x 20,25 - Cover Print - Isi Print.xlsm",
+    "ukuran": "14,5 x 20,25",
+    "mesin_cover": "Print Inter",
+    "mesin_isi": "Print Inter",
+    "tiers": [
+      {
+        "row": 7,
+        "oplah": 20,
+        "hpp_total": 486519.347,
+        "hpp_per_exp": 24325.967,
+        "harga_final": 31630
+      },
+      {
+        "row": 8,
+        "oplah": 30,
+        "hpp_total": 643029.02,
+        "hpp_per_exp": 21434.301,
+        "harga_final": 27870
+      },
+      {
+        "row": 9,
+        "oplah": 50,
+        "hpp_total": 956048.367,
+        "hpp_per_exp": 19120.967,
+        "harga_final": 24860
+      },
+      {
+        "row": 10,
+        "oplah": 60,
+        "hpp_total": 1112558.04,
+        "hpp_per_exp": 18542.634,
+        "harga_final": 24110
+      },
+      {
+        "row": 11,
+        "oplah": 100,
+        "hpp_total": 1738596.734,
+        "hpp_per_exp": 17385.967,
+        "harga_final": 22610
+      },
+      {
+        "row": 12,
+        "oplah": 150,
+        "hpp_total": 2521145.1,
+        "hpp_per_exp": 16807.634,
+        "harga_final": 21850
+      },
+      {
+        "row": 13,
+        "oplah": 200,
+        "hpp_total": 3303693.467,
+        "hpp_per_exp": 16518.467,
+        "harga_final": 21480
+      }
+    ]
+  },
+  {
+    "file": "BUKU UK. 14,5 x 20,25 - Cover Print - Isi Oliver.xlsm",
+    "ukuran": "14,5 x 20,25",
+    "mesin_cover": "Print Inter",
+    "mesin_isi": "Oliver",
+    "tiers": [
+      {
+        "row": 7,
+        "oplah": 250,
+        "hpp_total": 3197103.971,
+        "hpp_per_exp": 12788.416,
+        "harga_final": 16630
+      },
+      {
+        "row": 8,
+        "oplah": 300,
+        "hpp_total": 3347008.766,
+        "hpp_per_exp": 11156.696,
+        "harga_final": 14510
+      },
+      {
+        "row": 9,
+        "oplah": 350,
+        "hpp_total": 3496913.56,
+        "hpp_per_exp": 9991.182,
+        "harga_final": 12990
+      },
+      {
+        "row": 10,
+        "oplah": 400,
+        "hpp_total": 3646818.354,
+        "hpp_per_exp": 9117.046,
+        "harga_final": 11860
+      },
+      {
+        "row": 11,
+        "oplah": 500,
+        "hpp_total": 3955127.943,
+        "hpp_per_exp": 7910.256,
+        "harga_final": 10290
+      }
+    ]
+  },
+  {
+    "file": "BUKU UK. 14,5 x 20,25 - Cover Oliver - Isi Oliver.xlsm",
+    "ukuran": "14,5 x 20,25",
+    "mesin_cover": "Oliver",
+    "mesin_isi": "Oliver",
+    "tiers": [
+      {
+        "row": 7,
+        "oplah": 600,
+        "hpp_total": 4203117.531,
+        "hpp_per_exp": 7005.196,
+        "harga_final": 9110
+      },
+      {
+        "row": 8,
+        "oplah": 700,
+        "hpp_total": 4408300.52,
+        "hpp_per_exp": 6297.572,
+        "harga_final": 8190
+      },
+      {
+        "row": 9,
+        "oplah": 800,
+        "hpp_total": 4602531.708,
+        "hpp_per_exp": 5753.165,
+        "harga_final": 7480
+      },
+      {
+        "row": 10,
+        "oplah": 900,
+        "hpp_total": 4839714.697,
+        "hpp_per_exp": 5377.461,
+        "harga_final": 7000
+      },
+      {
+        "row": 11,
+        "oplah": 1000,
+        "hpp_total": 5097945.886,
+        "hpp_per_exp": 5097.946,
+        "harga_final": 6630
+      },
+      {
+        "row": 12,
+        "oplah": 1500,
+        "hpp_total": 6421957.228,
+        "hpp_per_exp": 4281.305,
+        "harga_final": 5570
+      },
+      {
+        "row": 13,
+        "oplah": 2000,
+        "hpp_total": 7751016.771,
+        "hpp_per_exp": 3875.508,
+        "harga_final": 5040
+      },
+      {
+        "row": 14,
+        "oplah": 3000,
+        "hpp_total": 10468087.657,
+        "hpp_per_exp": 3489.363,
+        "harga_final": 4540
+      }
+    ]
+  }
+]

@@ -261,28 +261,27 @@ _Harga belum termasuk PPN. Hasil cetak tajam, warna akurat & presisi._`;
   };
 
   return (
-    <div className="flex flex-col gap-5 pb-8">
-      {/* Header Info Banner */}
-      <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-emerald-100/80 rounded-xl border border-emerald-200 text-emerald-800 shrink-0">
-            <Newspaper size={20} />
+    <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
+      {/* Header Info Banner Compact */}
+      <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 bg-emerald-100/80 rounded-lg border border-emerald-200 text-emerald-800 shrink-0">
+            <Newspaper size={18} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-black text-slate-800 text-sm sm:text-base">
-                Simulator &amp; Kalkulator Majalah 14,5×20,25 cm
+              <h3 className="font-black text-slate-800 text-sm">
+                Simulator Majalah 14,5×20,25 cm
               </h3>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                Katalog 20
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-200/60 text-emerald-900 border border-emerald-300/60">
+                32 Hal · Full Colour
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Kalkulasi instan HPP, harga jual, dan batas nego untuk Majalah Full Colour 32 Halaman.
+            <p className="text-[11px] text-slate-600 mt-0.5">
+              Katalog 20: Cover AC 230 1M FC + Isi AP 120 2M FC + Finishing Staples/Bending &amp; Kemasan
             </p>
           </div>
         </div>
-
         <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
@@ -325,11 +324,10 @@ _Harga belum termasuk PPN. Hasil cetak tajam, warna akurat & presisi._`;
       </div>
 
       
-
-      {/* Grid Simulator: Kiri Form, Kanan Hasil Finansial & Breakdown */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* Grid Dual Scroll Baku Standar SINTAK */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-0 pb-1">
         {/* Kolom Kiri: Form Input */}
-        <div className="lg:col-span-5 space-y-5">
+        <div className="lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
             <div className="border-b border-slate-100 pb-2.5">
               <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">
@@ -495,8 +493,8 @@ _Harga belum termasuk PPN. Hasil cetak tajam, warna akurat & presisi._`;
         </div>
 
         {/* Kolom Kanan: 4 Kartu Finansial + Breakdown */}
-        <div className="lg:col-span-7 space-y-5">
-          {/* 4 Kartu Finansial */}
+        <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
+          <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-500 mb-1">
@@ -571,6 +569,7 @@ _Harga belum termasuk PPN. Hasil cetak tajam, warna akurat & presisi._`;
             <span className="text-[11px] text-slate-500">
               Cover AC 230 • Isi AP 120 FC (32 Hal)
             </span>
+          </div>
           </div>
 
           {/* Tabel Rincian Breakdown Biaya HPP */}
