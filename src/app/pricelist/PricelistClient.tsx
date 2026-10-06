@@ -198,8 +198,10 @@ export default function PricelistClient() {
   const [paramsKalenderKop, setParamsKalenderKop] = useState<KalenderKopMasterParams>(DEFAULT_KALENDER_KOP_PARAMS);
   const [paramsPackaging, setParamsPackaging] = useState<PackagingMasterParams>(DEFAULT_PACKAGING_PARAMS);
   const [paramsPaperbag, setParamsPaperbag] = useState<PaperbagMasterParams>(DEFAULT_PAPERBAG_PARAMS);
-  const [selectedProductCategory, setSelectedProductCategory] = useState<'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Soft Cover Oliver-Oliver' | 'Buku Soft Cover Print-Oliver' | 'Buku Soft Cover Print-Print' | 'Buku Hard Cover' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag'>('Kalender');
+  const [selectedProductCategory, setSelectedProductCategory] = useState<'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Soft Cover Oliver-Oliver' | 'Buku Soft Cover Print-Oliver' | 'Buku Soft Cover Print-Print' | 'Buku Hard Cover' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag'>('Kalender');
   const [hardCoverUkuran, setHardCoverUkuran] = useState<'10,5×14,8' | '14,5×20,25' | '21×29,7'>('10,5×14,8');
+  const [tabunganVarian, setTabunganVarian] = useState<'NS' | 'Security'>('NS');
+  const [kalenderVarian, setKalenderVarian] = useState<'Dinding' | 'Kop'>('Dinding');
   const [paramsSpiral, setParamsSpiral] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS);
   const [paramsKlem, setParamsKlem] = useState<SimulatorMasterParams>(DEFAULT_MASTER_PARAMS_KLEM);
 
@@ -208,6 +210,14 @@ export default function PricelistClient() {
       const savedUkuran = localStorage.getItem('sintak_buku_hard_cover_selected_ukuran');
       if (savedUkuran === '10,5×14,8' || savedUkuran === '14,5×20,25' || savedUkuran === '21×29,7') {
         setHardCoverUkuran(savedUkuran);
+      }
+      const savedTabungan = localStorage.getItem('sintak_buku_tabungan_selected_varian');
+      if (savedTabungan === 'NS' || savedTabungan === 'Security') {
+        setTabunganVarian(savedTabungan);
+      }
+      const savedKalender = localStorage.getItem('sintak_kalender_selected_varian');
+      if (savedKalender === 'Dinding' || savedKalender === 'Kop') {
+        setKalenderVarian(savedKalender);
       }
     } catch (e) {
       console.error(e);
@@ -218,6 +228,24 @@ export default function PricelistClient() {
     setHardCoverUkuran(uk);
     try {
       localStorage.setItem('sintak_buku_hard_cover_selected_ukuran', uk);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleTabunganVarianChange = (v: 'NS' | 'Security') => {
+    setTabunganVarian(v);
+    try {
+      localStorage.setItem('sintak_buku_tabungan_selected_varian', v);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleKalenderVarianChange = (v: 'Dinding' | 'Kop') => {
+    setKalenderVarian(v);
+    try {
+      localStorage.setItem('sintak_kalender_selected_varian', v);
     } catch (e) {
       console.error(e);
     }
@@ -430,8 +458,7 @@ export default function PricelistClient() {
         savedCategory === 'Amplop' ||
         savedCategory === 'Sertifikat' ||
         savedCategory === 'Undangan' ||
-        savedCategory === 'Buku Tabungan NS' ||
-        savedCategory === 'Buku Tabungan Security' ||
+        savedCategory === 'Buku Tabungan' ||
         savedCategory === 'Kartu Koperasi Promise' ||
         savedCategory === 'Lebel Kartu Obat' ||
         savedCategory === 'Buku Soft Cover' ||
@@ -440,7 +467,6 @@ export default function PricelistClient() {
         savedCategory === 'Poster' ||
         savedCategory === 'Majalah 14,5×20,25' ||
         savedCategory === 'Stiker' ||
-        savedCategory === 'Kalender Kop' ||
         savedCategory === 'Packaging' ||
         savedCategory === 'Paperbag'
       ) {
@@ -454,6 +480,16 @@ export default function PricelistClient() {
         if (savedCategory.includes('14,5')) setHardCoverUkuran('14,5×20,25');
         else if (savedCategory.includes('21')) setHardCoverUkuran('21×29,7');
         else setHardCoverUkuran('10,5×14,8');
+      } else if (
+        savedCategory === 'Buku Tabungan NS' ||
+        savedCategory === 'Buku Tabungan Security'
+      ) {
+        setSelectedProductCategory('Buku Tabungan');
+        if (savedCategory.includes('Security')) setTabunganVarian('Security');
+        else setTabunganVarian('NS');
+      } else if (savedCategory === 'Kalender Kop') {
+        setSelectedProductCategory('Kalender');
+        setKalenderVarian('Kop');
       }
 
       restoreAllMasterParamsFromLocalStorage();
@@ -481,7 +517,7 @@ export default function PricelistClient() {
 
   // Sync selectedProductCategory across tabs
   const handleProductCategoryChange = (
-    category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Soft Cover Oliver-Oliver' | 'Buku Soft Cover Print-Oliver' | 'Buku Soft Cover Print-Print' | 'Buku Hard Cover' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag'
+    category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Soft Cover Oliver-Oliver' | 'Buku Soft Cover Print-Oliver' | 'Buku Soft Cover Print-Print' | 'Buku Hard Cover' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag'
   ) => {
     setSelectedProductCategory(category);
     if (activeSimulationId) {
@@ -535,6 +571,19 @@ export default function PricelistClient() {
       if (cat.includes('14,5')) setHardCoverUkuran('14,5×20,25');
       else if (cat.includes('21')) setHardCoverUkuran('21×29,7');
       else setHardCoverUkuran('10,5×14,8');
+    } else if (
+      cat === 'Buku Tabungan NS' ||
+      cat === 'Buku Tabungan Security'
+    ) {
+      setSelectedProductCategory('Buku Tabungan');
+      if (cat.includes('Security')) setTabunganVarian('Security');
+      else setTabunganVarian('NS');
+    } else if (cat === 'Kalender Kop') {
+      setSelectedProductCategory('Kalender');
+      setKalenderVarian('Kop');
+    } else if (cat === 'Kalender') {
+      setSelectedProductCategory('Kalender');
+      setKalenderVarian('Dinding');
     } else {
       setSelectedProductCategory(cat);
     }
@@ -572,9 +621,27 @@ export default function PricelistClient() {
       else if (item.category === 'Amplop') setParamsAmplop(s);
       else if (item.category === 'Sertifikat') setParamsSertifikat(s);
       else if (item.category === 'Undangan') setParamsUndangan(s);
-      else if (item.category === 'Buku Tabungan NS') setParamsBukuTabunganNs(s);
-      else if (item.category === 'Buku Tabungan Security') setParamsBukuTabunganSecurity(s);
-      else if (item.category === 'Kartu Koperasi Promise') setParamsKartuKoperasiPromise(s);
+      else if (item.category === 'Buku Tabungan NS') {
+        setParamsBukuTabunganNs(s);
+        setTabunganVarian('NS');
+      } else if (item.category === 'Buku Tabungan Security') {
+        setParamsBukuTabunganSecurity(s);
+        setTabunganVarian('Security');
+      } else if (item.category === 'Buku Tabungan') {
+        const rawObj = item.rawData as Record<string, unknown> | undefined;
+        const rawInp = rawObj && typeof rawObj === 'object' && 'input' in rawObj ? (rawObj.input as Record<string, unknown> | undefined) : undefined;
+        const isSec = rawInp?.isSecurity || item.title?.toLowerCase().includes('security');
+        if (isSec) {
+          setParamsBukuTabunganSecurity(s);
+          setTabunganVarian('Security');
+        } else {
+          setParamsBukuTabunganNs(s);
+          setTabunganVarian('NS');
+        }
+      } else if (item.category === 'Kalender Kop') {
+        setParamsKalenderKop(s);
+        setKalenderVarian('Kop');
+      }
       else if (item.category === 'Lebel Kartu Obat') setParamsLebelKartuObat(s);
       else if (item.category === 'Buku Soft Cover') setParamsBukuSoftCover(s);
       else if (item.category === 'Buku Soft Cover Oliver-Oliver') setParamsBukuSoftCover({ ...DEFAULT_SOFT_COVER_UNIFIED, ...(s as SoftCoverUnifiedParams) });
@@ -916,6 +983,46 @@ export default function PricelistClient() {
       ))}
     </div>
   );
+
+  const tabunganVarianSelector = (
+    <div className="flex items-center gap-1.5 bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 w-fit shrink-0 mb-3 shadow-2xs">
+      <span className="text-[11px] font-bold text-slate-500 pl-2 pr-1 select-none">Varian Tabungan:</span>
+      {(['NS', 'Security'] as const).map((v) => (
+        <button
+          key={v}
+          type="button"
+          onClick={() => handleTabunganVarianChange(v)}
+          className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+            tabunganVarian === v
+              ? 'bg-emerald-700 text-white shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+          }`}
+        >
+          {v === 'NS' ? 'Non Security (NS)' : 'Security'}
+        </button>
+      ))}
+    </div>
+  );
+
+  const kalenderVarianSelector = (
+    <div className="flex items-center gap-1.5 bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 w-fit shrink-0 mb-3 shadow-2xs">
+      <span className="text-[11px] font-bold text-slate-500 pl-2 pr-1 select-none">Model Kalender:</span>
+      {(['Dinding', 'Kop'] as const).map((v) => (
+        <button
+          key={v}
+          type="button"
+          onClick={() => handleKalenderVarianChange(v)}
+          className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+            kalenderVarian === v
+              ? 'bg-emerald-700 text-white shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+          }`}
+        >
+          {v === 'Dinding' ? 'Kalender Dinding (Spiral / Klem)' : 'Kalender Kop Angka'}
+        </button>
+      ))}
+    </div>
+  );
   return (
     <div className="flex flex-col gap-4 flex-1 min-h-0">
       {/* TABS Navigation + Product Category Selector — 1 baris, tab bisa scroll horizontal */}
@@ -1029,73 +1136,30 @@ export default function PricelistClient() {
           <SquareDropdown
             usePortal
             options={[
-              // 1. Buku Manasik
-              { value: 'Buku Manasik', label: '📖 Buku Manasik Haji', group: 'Buku Manasik' },
-
-              // 2. Buku Yasin
-              { value: 'Buku Yasin', label: '📗 Buku Surat Yasin', group: 'Buku Yasin' },
-
-              // 3. Buku Tulis
-              { value: 'Buku Tulis', label: '📓 Buku Tulis', group: 'Buku Tulis' },
-
-              // 4. Buku Soft Cover
-              { value: 'Buku Soft Cover', label: '📗 Buku Soft Cover', group: 'Buku Soft Cover' },
-
-              // 5. Buku Hard Cover (terpadu 1 entri, ukuran dipilih di tab kalkulasi)
-              { value: 'Buku Hard Cover', label: '📕 Buku Hard Cover', group: 'Buku Hard Cover' },
-
-              // 6. Majalah (terpisah dari Buku)
-              { value: 'Majalah 14,5×20,25', label: '📰 Majalah', group: 'Majalah' },
-
-              // 7. Nota
-              { value: 'Nota 1 Warna', label: '📋 Nota 1 Warna', group: 'Nota' },
-
-              // 8. Brosur
-              { value: 'Brosur 2026', label: '🗞️ Brosur 2026', group: 'Brosur' },
-
-              // 9. Poster
-              { value: 'Poster', label: '🖼️ Poster', group: 'Poster' },
-
-              // 10. Label & Stiker
-              { value: 'Label KHQ', label: '🏷️ Label KHQ', group: 'Label & Stiker' },
-              { value: 'Lebel Kartu Obat', label: '💊 Lebel Kartu Obat', group: 'Label & Stiker' },
-              { value: 'Stiker', label: '🏷️ Stiker', group: 'Label & Stiker' },
-
-              // 11. Stopmap
-              { value: 'Stopmap', label: '📁 Stopmap', group: 'Stopmap' },
-
-              // 12. Raport Kaleb
-              { value: 'Raport Kaleb', label: '📒 Raport Kaleb', group: 'Raport Kaleb' },
-
-              // 13. Kop Surat (terpisah dari Amplop)
-              { value: 'Kop Surat', label: '📄 Kop Surat', group: 'Kop Surat' },
-
-              // 14. Amplop (terpisah dari Kop Surat)
-              { value: 'Amplop', label: '✉️ Amplop', group: 'Amplop' },
-
-              // 15. Syahadah (terpisah dari Sertifikat & Undangan)
-              { value: 'Syahadah', label: '🕌 Syahadah', group: 'Syahadah' },
-
-              // 16. Sertifikat (terpisah dari Syahadah & Undangan)
-              { value: 'Sertifikat', label: '📜 Sertifikat', group: 'Sertifikat' },
-
-              // 17. Undangan (terpisah dari Syahadah & Sertifikat)
-              { value: 'Undangan', label: '💌 Undangan', group: 'Undangan' },
-
-              // 18. Buku Tabungan (terpisah dari Kartu Koperasi)
-              { value: 'Buku Tabungan NS', label: '📒 Buku Tabungan NS', group: 'Buku Tabungan' },
-              { value: 'Buku Tabungan Security', label: '🔒 Buku Tabungan Security', group: 'Buku Tabungan' },
-
-              // 19. Kartu Koperasi (terpisah dari Buku Tabungan)
-              { value: 'Kartu Koperasi Promise', label: '🪪 Kartu Koperasi', group: 'Kartu Koperasi' },
-
-              // 20. Kalender
-              { value: 'Kalender', label: '🗓️ Kalender 2027', group: 'Kalender' },
-              { value: 'Kalender Kop', label: '🗓️ Kalender Kop', group: 'Kalender' },
-
-              // 21. Packaging & Paperbag
-              { value: 'Packaging', label: '📦 Packaging', group: 'Kemasan / Packaging' },
-              { value: 'Paperbag', label: '🛍️ Paperbag', group: 'Kemasan / Packaging' },
+              { value: 'Buku Manasik', label: '📖 Buku Manasik Haji' },
+              { value: 'Buku Yasin', label: '📗 Buku Surat Yasin' },
+              { value: 'Buku Tulis', label: '📓 Buku Tulis' },
+              { value: 'Buku Soft Cover', label: '📗 Buku Soft Cover' },
+              { value: 'Buku Hard Cover', label: '📕 Buku Hard Cover' },
+              { value: 'Majalah 14,5×20,25', label: '📰 Majalah' },
+              { value: 'Nota 1 Warna', label: '📋 Nota 1 Warna' },
+              { value: 'Brosur 2026', label: '🗞️ Brosur 2026' },
+              { value: 'Poster', label: '🖼️ Poster' },
+              { value: 'Label KHQ', label: '🏷️ Label KHQ' },
+              { value: 'Lebel Kartu Obat', label: '💊 Lebel Kartu Obat' },
+              { value: 'Stiker', label: '🏷️ Stiker' },
+              { value: 'Stopmap', label: '📁 Stopmap' },
+              { value: 'Raport Kaleb', label: '📒 Raport Kaleb' },
+              { value: 'Kop Surat', label: '📄 Kop Surat' },
+              { value: 'Amplop', label: '✉️ Amplop' },
+              { value: 'Syahadah', label: '🕌 Syahadah' },
+              { value: 'Sertifikat', label: '📜 Sertifikat' },
+              { value: 'Undangan', label: '💌 Undangan' },
+              { value: 'Buku Tabungan', label: '📒 Buku Tabungan' },
+              { value: 'Kartu Koperasi Promise', label: '🪪 Kartu Koperasi' },
+              { value: 'Kalender', label: '🗓️ Kalender' },
+              { value: 'Packaging', label: '📦 Packaging' },
+              { value: 'Paperbag', label: '🛍️ Paperbag' },
             ]}
             value={selectedProductCategory}
             onChange={(val) => handleProductCategoryChange(val as any)}
@@ -1172,16 +1236,21 @@ export default function PricelistClient() {
               customParams={paramsUndangan}
               setCustomParams={setParamsUndangan}
             />
-          ) : selectedProductCategory === 'Buku Tabungan NS' ? (
-            <BukuTabunganNsMasterParameter
-              customParams={paramsBukuTabunganNs}
-              setCustomParams={setParamsBukuTabunganNs}
-            />
-          ) : selectedProductCategory === 'Buku Tabungan Security' ? (
-            <BukuTabunganSecurityMasterParameter
-              customParams={paramsBukuTabunganSecurity}
-              setCustomParams={setParamsBukuTabunganSecurity}
-            />
+          ) : selectedProductCategory === 'Buku Tabungan' || selectedProductCategory === 'Buku Tabungan NS' || selectedProductCategory === 'Buku Tabungan Security' ? (
+            <div className="flex flex-col gap-2">
+              {tabunganVarianSelector}
+              {tabunganVarian === 'NS' ? (
+                <BukuTabunganNsMasterParameter
+                  customParams={paramsBukuTabunganNs}
+                  setCustomParams={setParamsBukuTabunganNs}
+                />
+              ) : (
+                <BukuTabunganSecurityMasterParameter
+                  customParams={paramsBukuTabunganSecurity}
+                  setCustomParams={setParamsBukuTabunganSecurity}
+                />
+              )}
+            </div>
           ) : selectedProductCategory === 'Kartu Koperasi Promise' ? (
             <KartuKoperasiPromiseMasterParameter
               customParams={paramsKartuKoperasiPromise}
@@ -1217,11 +1286,6 @@ export default function PricelistClient() {
                 />
               )}
             </div>
-          ) : selectedProductCategory === 'Kalender Kop' ? (
-            <KalenderKopMasterParameter
-              customParams={paramsKalenderKop}
-              setCustomParams={setParamsKalenderKop}
-            />
           ) : selectedProductCategory === 'Packaging' ? (
             <PackagingMasterParameter
               customParams={paramsPackaging}
@@ -1233,15 +1297,25 @@ export default function PricelistClient() {
               setCustomParams={setParamsPaperbag}
             />
           ) : (
-            <PricelistMasterParameter
-              customParams={customParams}
-              setCustomParams={setCustomParams}
-              activeFinishing={selectedFinishing}
-              onChangeFinishing={setSelectedFinishing}
-              activeSimulationId={activeSimulationId}
-              activeSimulationTitle={activeSimulationTitle}
-              onBackToSimulator={() => setActiveTab('simulator')}
-            />
+            <div className="flex flex-col gap-2">
+              {kalenderVarianSelector}
+              {kalenderVarian === 'Kop' ? (
+                <KalenderKopMasterParameter
+                  customParams={paramsKalenderKop}
+                  setCustomParams={setParamsKalenderKop}
+                />
+              ) : (
+                <PricelistMasterParameter
+                  customParams={customParams}
+                  setCustomParams={setCustomParams}
+                  activeFinishing={selectedFinishing}
+                  onChangeFinishing={setSelectedFinishing}
+                  activeSimulationId={activeSimulationId}
+                  activeSimulationTitle={activeSimulationTitle}
+                  onBackToSimulator={() => setActiveTab('simulator')}
+                />
+              )}
+            </div>
           )}
         </div>
       ) : activeTab === 'simulator' ? (
@@ -1376,26 +1450,33 @@ export default function PricelistClient() {
               activeSimulationTitle={activeSimulationTitle}
               setActiveSimulationTitle={setActiveSimulationTitle}
             />
-          ) : selectedProductCategory === 'Buku Tabungan NS' ? (
-            <BukuTabunganNsSimulator
-              customParams={paramsBukuTabunganNs}
-              setCustomParams={setParamsBukuTabunganNs}
-              onOpenMasterParam={() => setActiveTab('parameter')}
-              activeSimulationId={activeSimulationId}
-              setActiveSimulationId={setActiveSimulationId}
-              activeSimulationTitle={activeSimulationTitle}
-              setActiveSimulationTitle={setActiveSimulationTitle}
-            />
-          ) : selectedProductCategory === 'Buku Tabungan Security' ? (
-            <BukuTabunganSecuritySimulator
-              customParams={paramsBukuTabunganSecurity}
-              setCustomParams={setParamsBukuTabunganSecurity}
-              onOpenMasterParam={() => setActiveTab('parameter')}
-              activeSimulationId={activeSimulationId}
-              setActiveSimulationId={setActiveSimulationId}
-              activeSimulationTitle={activeSimulationTitle}
-              setActiveSimulationTitle={setActiveSimulationTitle}
-            />
+          ) : selectedProductCategory === 'Buku Tabungan' || selectedProductCategory === 'Buku Tabungan NS' || selectedProductCategory === 'Buku Tabungan Security' ? (
+            <div className="flex-1 flex flex-col min-h-0">
+              {tabunganVarianSelector}
+              <div className="flex-1 min-h-0">
+                {tabunganVarian === 'NS' ? (
+                  <BukuTabunganNsSimulator
+                    customParams={paramsBukuTabunganNs}
+                    setCustomParams={setParamsBukuTabunganNs}
+                    onOpenMasterParam={() => setActiveTab('parameter')}
+                    activeSimulationId={activeSimulationId}
+                    setActiveSimulationId={setActiveSimulationId}
+                    activeSimulationTitle={activeSimulationTitle}
+                    setActiveSimulationTitle={setActiveSimulationTitle}
+                  />
+                ) : (
+                  <BukuTabunganSecuritySimulator
+                    customParams={paramsBukuTabunganSecurity}
+                    setCustomParams={setParamsBukuTabunganSecurity}
+                    onOpenMasterParam={() => setActiveTab('parameter')}
+                    activeSimulationId={activeSimulationId}
+                    setActiveSimulationId={setActiveSimulationId}
+                    activeSimulationTitle={activeSimulationTitle}
+                    setActiveSimulationTitle={setActiveSimulationTitle}
+                  />
+                )}
+              </div>
+            </div>
           ) : selectedProductCategory === 'Kartu Koperasi Promise' ? (
             <KartuKoperasiPromiseSimulator
               customParams={paramsKartuKoperasiPromise}
@@ -1463,16 +1544,6 @@ export default function PricelistClient() {
                 )}
               </div>
             </div>
-          ) : selectedProductCategory === 'Kalender Kop' ? (
-            <KalenderKopSimulator
-              customParams={paramsKalenderKop}
-              setCustomParams={setParamsKalenderKop}
-              onOpenMasterParam={() => setActiveTab('parameter')}
-              activeSimulationId={activeSimulationId}
-              setActiveSimulationId={setActiveSimulationId}
-              activeSimulationTitle={activeSimulationTitle}
-              setActiveSimulationTitle={setActiveSimulationTitle}
-            />
           ) : selectedProductCategory === 'Packaging' ? (
             <PackagingSimulator
               customParams={paramsPackaging}
@@ -1486,24 +1557,41 @@ export default function PricelistClient() {
               setActiveSimulationTitle={setActiveSimulationTitle}
             />
           ) : (
-            <PricelistSimulator
-              customParams={customParams}
-              setCustomParams={setCustomParams}
-              setParamsForFinishing={setParamsForFinishing}
-              finishingJilid={selectedFinishing}
-              onChangeFinishingJilid={setSelectedFinishing}
-              onOpenMasterParam={() => setActiveTab('parameter')}
-              activeSimulationId={activeSimulationId}
-              setActiveSimulationId={setActiveSimulationId}
-              activeSimulationTitle={activeSimulationTitle}
-              setActiveSimulationTitle={setActiveSimulationTitle}
-              paramsSpiral={paramsSpiral}
-              paramsKlem={paramsKlem}
-              backupParamsSpiral={backupParamsSpiral}
-              setBackupParamsSpiral={setBackupParamsSpiral}
-              backupParamsKlem={backupParamsKlem}
-              setBackupParamsKlem={setBackupParamsKlem}
-            />
+            <div className="flex-1 flex flex-col min-h-0">
+              {kalenderVarianSelector}
+              <div className="flex-1 min-h-0">
+                {kalenderVarian === 'Kop' ? (
+                  <KalenderKopSimulator
+                    customParams={paramsKalenderKop}
+                    setCustomParams={setParamsKalenderKop}
+                    onOpenMasterParam={() => setActiveTab('parameter')}
+                    activeSimulationId={activeSimulationId}
+                    setActiveSimulationId={setActiveSimulationId}
+                    activeSimulationTitle={activeSimulationTitle}
+                    setActiveSimulationTitle={setActiveSimulationTitle}
+                  />
+                ) : (
+                  <PricelistSimulator
+                    customParams={customParams}
+                    setCustomParams={setCustomParams}
+                    setParamsForFinishing={setParamsForFinishing}
+                    finishingJilid={selectedFinishing}
+                    onChangeFinishingJilid={setSelectedFinishing}
+                    onOpenMasterParam={() => setActiveTab('parameter')}
+                    activeSimulationId={activeSimulationId}
+                    setActiveSimulationId={setActiveSimulationId}
+                    activeSimulationTitle={activeSimulationTitle}
+                    setActiveSimulationTitle={setActiveSimulationTitle}
+                    paramsSpiral={paramsSpiral}
+                    paramsKlem={paramsKlem}
+                    backupParamsSpiral={backupParamsSpiral}
+                    setBackupParamsSpiral={setBackupParamsSpiral}
+                    backupParamsKlem={backupParamsKlem}
+                    setBackupParamsKlem={setBackupParamsKlem}
+                  />
+                )}
+              </div>
+            </div>
           )}
         </div>
       ) : activeTab === 'matrix' ? (
@@ -1586,18 +1674,23 @@ export default function PricelistClient() {
               viewMode={viewMode}
               setViewMode={setViewMode}
             />
-          ) : selectedProductCategory === 'Buku Tabungan NS' ? (
-            <BukuTabunganNsMatrixView
-              customParams={paramsBukuTabunganNs}
-              viewMode={viewMode}
-              setViewMode={setViewMode}
-            />
-          ) : selectedProductCategory === 'Buku Tabungan Security' ? (
-            <BukuTabunganSecurityMatrixView
-              customParams={paramsBukuTabunganSecurity}
-              viewMode={viewMode}
-              setViewMode={setViewMode}
-            />
+          ) : selectedProductCategory === 'Buku Tabungan' || selectedProductCategory === 'Buku Tabungan NS' || selectedProductCategory === 'Buku Tabungan Security' ? (
+            <div className="flex flex-col gap-2">
+              {tabunganVarianSelector}
+              {tabunganVarian === 'NS' ? (
+                <BukuTabunganNsMatrixView
+                  customParams={paramsBukuTabunganNs}
+                  viewMode={viewMode}
+                  setViewMode={setViewMode}
+                />
+              ) : (
+                <BukuTabunganSecurityMatrixView
+                  customParams={paramsBukuTabunganSecurity}
+                  viewMode={viewMode}
+                  setViewMode={setViewMode}
+                />
+              )}
+            </div>
           ) : selectedProductCategory === 'Kartu Koperasi Promise' ? (
             <KartuKoperasiPromiseMatrixView
               customParams={paramsKartuKoperasiPromise}
@@ -1639,12 +1732,6 @@ export default function PricelistClient() {
                 />
               )}
             </div>
-          ) : selectedProductCategory === 'Kalender Kop' ? (
-            <KalenderKopMatrixView
-              customParams={paramsKalenderKop}
-              viewMode={viewMode}
-              setViewMode={setViewMode}
-            />
           ) : selectedProductCategory === 'Packaging' ? (
             <PackagingMatrixView
               customParams={paramsPackaging}
@@ -1658,7 +1745,16 @@ export default function PricelistClient() {
               setViewMode={setViewMode}
             />
           ) : (
-            <>
+            <div className="flex flex-col gap-2">
+              {kalenderVarianSelector}
+              {kalenderVarian === 'Kop' ? (
+                <KalenderKopMatrixView
+                  customParams={paramsKalenderKop}
+                  viewMode={viewMode}
+                  setViewMode={setViewMode}
+                />
+              ) : (
+                <>
           {/* Upload card */}
           <PricelistExcelUpload lastExcelUpdate={lastExcelUpdate} fileName={fileName} onUploadSuccess={fetchData} />
 
@@ -1973,7 +2069,9 @@ export default function PricelistClient() {
               </div>
             </div>
           )}
-            </>
+                </>
+              )}
+            </div>
           )}
         </div>
       ) : (
