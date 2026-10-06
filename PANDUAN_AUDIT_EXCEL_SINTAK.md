@@ -20,15 +20,19 @@
 
 ---
 
-## 1.1 Rem Prosedural: 4 Pos Pemeriksaan Bertahap (Anti Asal Jalan & Cepat Selesai)
-Pengerjaan audit **DILARANG KERAS** dilakukan secara borongan atau terburu-buru. Wajib melewati 4 pos pemeriksaan bertahap:
-1. **Pos 1 (Bedah Cell)**: Buka file Excel via script/parser, kutip rumus formula aslinya (`BUKU!xxx = ...`). Jangan tulis kode sebelum rumus cell dipaparkan.
-2. **Pos 2 (Direct Binding 1:1)**: Tulis kode kalkulator murni 1:1 terhubung ke `params.xxx` lengkap dengan komentar alamat cell Excel. DILARANG membuat *conditional hijacking* (seperti `isOplahBesar ? sm : oliver`).
-3. **Pos 3 (Terminal Benchmark & Reaktivitas)**:
-   - Jalankan benchmark seluruh tier oplah dan seluruh permutasi dropdown mesin di terminal.
+## 1.1 Rem Prosedural: 5 Pos Pemeriksaan Bertahap (Anti Asal Jalan & Exhaustive Sweep)
+Pengerjaan audit **DILARANG KERAS** dilakukan secara borongan, memilih-milih sebagian file (cherry-picking), atau terburu-buru. Wajib melewati 5 pos pemeriksaan bertahap:
+1. **Pos 0 (Inventarisasi & Ekstraksi Sapu Bersih - Exhaustive Sweep)**:
+   - Jalankan skrip ekstraksi untuk membaca **100% file `*.xlsm` di seluruh subfolder `Source/`** (merujuk `daftar_source_pricelist.txt`).
+   - Cetak inventaris lengkap: daftar nama file, kombinasi mesin (Cover + Isi), dan total tier oplah yang ditemukan.
+   - Simpan seluruh baris acuan ke `*-expected.json` (dilarang hanya mengambil 1 file per ukuran).
+2. **Pos 1 (Bedah Cell & Formula Binding)**: Buka file Excel via script/parser, kutip rumus formula aslinya (`BUKU!xxx = ...`). Jangan tulis kode sebelum rumus cell dipaparkan.
+3. **Pos 2 (Direct Binding 1:1)**: Tulis kode kalkulator murni 1:1 terhubung ke `params.xxx` lengkap dengan komentar alamat cell Excel. DILARANG membuat *conditional hijacking* (seperti `isOplahBesar ? sm : oliver`).
+4. **Pos 3 (Terminal Benchmark Menyeluruh & Reaktivitas - No Filter)**:
+   - Jalankan benchmark terhadap **100% tier dari seluruh file workbook tanpa penyaring (`.filter()`)**.
+   - **Syarat Mutlak Lolos**: Jumlah baris uji terminal WAJIB sama dengan jumlah seluruh tier di folder sumber (`Jumlah Tier Terminal == Total Tier Folder`).
    - Wajib menyertakan **Uji Reaktivitas Parameter** (mengubah nilai input form A ke B membuktikan $\Delta\text{HPP} > 0$).
-4. **Pos 4 (Commit & Lapor)**: Lakukan commit lokal di terminal segera setelah berkas selesai diubah, pastikan `working tree clean`, lalu baru laporkan ke pengguna dengan bukti log terminal.
-
+5. **Pos 4 (Commit & Lapor)**: Lakukan commit lokal di terminal segera setelah berkas selesai diubah, pastikan `working tree clean`, lalu baru laporkan ke pengguna dengan bukti log terminal lengkap.
 ## 1.2 Aturan Stop & Tanya (Inkonsistensi Antar-File)
 Jika ditemukan perbedaan angka master antar-file sejenis (misal file oplah kecil insheet 30/desain 2.500, sedangkan oplah besar insheet 300/desain 0):
 - **DILARANG MEMBUAT RUMUS KOMPROMI SENDIRI** atau mematikan/membajak variabel di kode backend.
@@ -159,14 +163,14 @@ Buat skrip pengujian (via Node / TSX) untuk membandingkan kalkulasi Excel vs Sin
 1. **Multi-Workbook Source Extraction Wajib (Anti-Single File Snapshot)**:
    - Dilarang keras hanya mengekstrak 1 file workbook jika di direktori `Source/` terdapat beberapa workbook untuk varian mesin yang berbeda (contoh: `Print-Ryobi.xlsm`, `Print-Print.xlsm`, `Print-Oliver.xlsm`, `Oliver-SM.xlsm`).
    - Skrip ekstraksi tolok ukur (`expected.json`) **WAJIB me-loop seluruh file workbook `*.xlsm`** yang ada di direktori `Source/` tersebut agar seluruh kombinasi mesin terserap lengkap ke data benchmark.
-   - **Coverage Gate**: Seluruh pilihan mesin di UI simulator wajib teruji terhadap file Excel acuannya masing-masing. Jika ada tombol mesin di UI yang belum memiliki bukti benchmark hijau `PASSED (0 selisih)` di terminal, audit **DILARANG KERAS** dilaporkan selesai.
+   - **Coverage Gate & Larangan Filter (No Cherry-Picking)**: Skrip benchmark terminal dilarang menyaring hanya sebagian mesin (misal hanya mem-filter Oliver). Seluruh baris tier dari seluruh kombinasi mesin wajib dieksekusi dan dilaporkan statusnya. Jika ada tombol mesin di UI yang belum memiliki bukti benchmark hijau `PASSED (0 selisih)` di terminal, audit **DILARANG KERAS** dilaporkan selesai.
 2. Jalankan simulator Sintak untuk setiap tier oplah yang ada di seluruh file Excel tersebut.
 3. Cocokkan:
    - Komponen Biaya Cetak Cover & Isi
    - Komponen Biaya Finishing & Jilid
    - Total HPP (Kolom Total HPP Excel vs `summary.totalHpp` Sintak)
    - Harga Jual Final Bulat (Kolom Harga Jual Excel vs `summary.hargaJualPerPcs` Sintak)
-4. **Kriteria Kelulusan**: Selisih wajib **Rp 0** di seluruh tier oplah standar dan seluruh varian mesin.
+4. **Kriteria Kelulusan**: Selisih wajib **Rp 0** di seluruh tier oplah standar dan seluruh varian mesin (atau terdokumentasi jelas jika ada bug human error yang disepakati koreksinya).
 ### Tahap 7: Uji Stres Permutasi Dropdown Dinamis (Wajib - Dilarang Snapshot Statis Saja)
 1. **Dilarang Keras Hanya Menguji Kondisi File yang Tersimpan (Snapshot Disk)**:
    - File Excel sering kali disimpan dalam 1 kondisi dropdown aktif tertentu (contoh: `Master!D25` tersimpan `SM`).

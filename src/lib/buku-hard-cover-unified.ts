@@ -520,7 +520,14 @@ export function calculateBukuHardCoverUnified(
   // BUKU!DO7: halaman / (DN / DM)
   const cuttern = halaman / (dn / dm);
   const do6 = Math.ceil(cuttern);
-  const insheetIsi = (mesinIsi === 'PRINT BUYA' || mesinIsi === 'RYOBI') ? 30 : mesinIsi === 'OLIVER' ? 100 : 300;
+  const insheetIsi =
+    mesinIsi === 'PRINT BUYA'
+      ? params.insheetIsiPrint
+      : mesinIsi === 'RYOBI'
+        ? 30
+        : mesinIsi === 'OLIVER'
+          ? params.insheetIsiOffset
+          : 300;
   const lbrPlanoIsi = (oplah / dm) * cuttern + (insheetIsi / dm) * do6; // BUKU!DR7
 
   let biayaKertasIsi = 0;
