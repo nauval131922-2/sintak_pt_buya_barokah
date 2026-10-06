@@ -544,7 +544,7 @@ export default function BukuHardCoverUnifiedSimulator({
                 </div>
                 <div>
                   <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">
-                    Rp {calcResult.totalHargaJual.toLocaleString('id-ID')}
+                    Rp {Math.round(calcResult.totalHargaJual).toLocaleString('id-ID')}
                   </span>
                   <span className="block text-[10px] text-slate-500 mt-0.5">
                     Profit: Rp {Math.round(calcResult.totalHargaJual - calcResult.hppTotal).toLocaleString('id-ID')}
@@ -585,7 +585,7 @@ export default function BukuHardCoverUnifiedSimulator({
                       <td className="py-2 px-3 font-medium text-slate-800 font-sans">{item.item}</td>
                       <td className="py-2 px-3 text-slate-500 text-[10.5px] font-sans">{item.spekTeknis}</td>
                       <td className="py-2 px-3 text-right font-bold text-slate-800">
-                        Rp {item.biaya.toLocaleString('id-ID')}
+                        Rp {Math.round(item.biaya).toLocaleString('id-ID')}
                       </td>
                       <td className="py-2 px-3 text-right text-slate-500">
                         {item.persen.toFixed(1)}%
