@@ -435,23 +435,23 @@ export default function PosterMasterParameter({
 
               <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-2">
                 <span className="font-bold text-slate-800 block text-xs">
-                  2. Rumus Kebutuhan Kertas & Rim Price:
+                  2. Rumus Kebutuhan Kertas &amp; Rim Price:
                 </span>
                 <p className="text-[11px]">
-                  $\text{Rim Price} = \frac{\text{Panjang} \times \text{Lebar} \times \text{Gramatur}}{20.000} \times \text{Tarif Kertas /kg}$
+                  Rim Price = ((Panjang × Lebar × Gramatur) / 20.000) × Tarif Kertas /kg.
                 </p>
                 <p className="text-[11px]">
-                  Kebutuhan plano dihitung dari $\frac{\text{Oplah}}{\text{Dapat Plano}} + \frac{\text{Insheet}}{\text{Potong Mesin}}$. Biaya kertas $= \frac{\text{Kebutuhan Plano}}{500} \times \text{Rim Price}$.
+                  Kebutuhan plano dihitung dari (Oplah / Dapat Plano) + (Insheet / Potong Mesin). Biaya kertas = (Kebutuhan Plano / 500) × Rim Price.
                 </p>
               </div>
 
               <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-2">
                 <span className="font-bold text-slate-800 block text-xs">
-                  3. Ongkos Cetak & Over Drek:
+                  3. Ongkos Cetak &amp; Over Drek:
                 </span>
                 <ul className="list-disc list-inside space-y-1 text-[11px] text-slate-600">
-                  <li><strong>Oliver:</strong> Minimum order 4 warna (4 × Rp 90.000 = Rp 360.000) untuk tarikan s/d 1.000 lembar. Over drek dihitung $(Q - 1.000) \times \text{Rp } 40 \times 4$.</li>
-                  <li><strong>SM:</strong> Minimum order 4 warna (4 × Rp 310.000 = Rp 1.240.000) untuk tarikan s/d 3.000 lembar. Over drek dihitung $(Q - 3.000) \times \text{Rp } 100 \times 4$.</li>
+                  <li><strong>Oliver:</strong> Minimum order 4 warna (4 × Rp 90.000 = Rp 360.000) untuk tarikan s/d 1.000 lembar. Over drek dihitung (Q - 1.000) × Rp 40 × 4.</li>
+                  <li><strong>SM:</strong> Minimum order 4 warna (4 × Rp 310.000 = Rp 1.240.000) untuk tarikan s/d 3.000 lembar. Over drek dihitung (Q - 3.000) × Rp 100 × 4.</li>
                 </ul>
               </div>
 
@@ -460,7 +460,7 @@ export default function PosterMasterParameter({
                   4. Finishing Tambahan (Laminasi / UV Varnish):
                 </span>
                 <p className="text-[11px]">
-                  Dihitung dari luas bidang potong $(D + 1) \times (F + 1)\text{ cm}^2 \times \text{Tarif} \times \text{Oplah}$, dengan batas minimum charge Rp 50.000 per order.
+                  Dihitung dari luas bidang potong (D + 1) × (F + 1) cm² × Tarif × Oplah, dengan batas minimum charge Rp 50.000 per order.
                 </p>
               </div>
             </div>
