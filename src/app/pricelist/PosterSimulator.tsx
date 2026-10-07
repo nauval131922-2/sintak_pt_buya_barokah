@@ -285,39 +285,9 @@ PT Buya Barokah
         {/* Kolom Kiri: Form Input Mandiri (Netral, Flat & Bersih) */}
         <div className="lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
-            <div className="border-b border-slate-100 pb-2.5 flex items-center justify-between">
-              <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-                Parameter Pesanan Poster
-              </h4>
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={handleCopyQuote}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
-                  title="Salin ringkasan penawaran harga"
-                >
-                  {copiedQuote ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} className="text-emerald-600" />}
-                  <span>{copiedQuote ? 'Tersalin' : 'Salin'}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowGuideModal(true)}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
-                >
-                  <BookOpen size={12} className="text-emerald-600" />
-                  <span>Panduan</span>
-                </button>
-                {onOpenMasterParam && (
-                  <button
-                    type="button"
-                    onClick={onOpenMasterParam}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-800 hover:bg-emerald-900 text-white transition-all shadow-2xs cursor-pointer"
-                  >
-                    <Settings2 size={12} />
-                    <span>Master</span>
-                  </button>
-                )}
-              </div>
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <Sliders size={15} className="text-emerald-700" />
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Spesifikasi Poster</h3>
             </div>
 
             {/* 1. Ukuran Poster */}
@@ -467,6 +437,19 @@ PT Buya Barokah
                   />
                 </div>
               </div>
+            </div>
+            {/* Laba Master info */}
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
+              <span>Laba Master Poster: <strong>{marginPct}%</strong></span>
+              {onOpenMasterParam && (
+                <button
+                  type="button"
+                  onClick={onOpenMasterParam}
+                  className="text-emerald-700 hover:text-emerald-800 font-bold hover:underline cursor-pointer"
+                >
+                  Atur di Master Parameter
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -432,42 +432,9 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
         {/* Kolom Kiri: Form Input (Scrollbar Mandiri Mengisi Penuh Layar) */}
         <div className="lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-              <div className="flex items-center gap-2">
-                <Sliders size={15} className="text-emerald-700" />
-                <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Input Spesifikasi Order</h3>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={handleCopyQuote}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
-                  title="Salin ringkasan spesifikasi & penawaran harga"
-                >
-                  {copiedQuote ? <Check size={12} className="text-emerald-600" /> : <Share2 size={12} className="text-emerald-600" />}
-                  <span>{copiedQuote ? 'Tersalin' : 'Salin'}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowSimulatorManual(true)}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
-                  title="Panduan kalkulasi"
-                >
-                  <Info size={12} className="text-slate-500" />
-                  <span>Panduan</span>
-                </button>
-                {onOpenMasterParam && (
-                  <button
-                    type="button"
-                    onClick={onOpenMasterParam}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-800 hover:bg-emerald-900 text-white transition-all shadow-2xs cursor-pointer"
-                    title="Buka Master Parameter"
-                  >
-                    <Settings2 size={12} />
-                    <span>Master</span>
-                  </button>
-                )}
-              </div>
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <Sliders size={15} className="text-emerald-700" />
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Spesifikasi Buku Yasin</h3>
             </div>
 
             {/* Pilihan Softcover vs Hardcover */}
@@ -666,6 +633,19 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
                 </div>
               </div>
             </div>
+            {/* Laba Master info */}
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
+              <span>Laba Master Yasin: <strong>{marginPct}%</strong></span>
+              {onOpenMasterParam && (
+                <button
+                  type="button"
+                  onClick={onOpenMasterParam}
+                  className="text-emerald-700 hover:text-emerald-800 font-bold hover:underline cursor-pointer"
+                >
+                  Atur di Master Parameter
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -718,15 +698,15 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
             {/* Estimasi Profit Card */}
             <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">Total Profit</span>
+                <span className="text-[11px] font-semibold">Harga Total</span>
                 <TrendingUp size={13} className="text-emerald-500" />
               </div>
               <div>
                 <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">
-                  Rp {(negoDiskonPct > 0 ? result.summary.totalProfitNego : result.summary.totalProfit).toLocaleString('id-ID')}
+                  Rp {result.summary.totalHargaJual.toLocaleString('id-ID')}
                 </span>
                 <span className="block text-[10px] text-slate-500 mt-0.5">
-                  Omset: Rp {(negoDiskonPct > 0 ? result.summary.totalHargaNego : result.summary.totalHargaJual).toLocaleString('id-ID')}
+                  Profit: Rp {result.summary.totalProfit.toLocaleString('id-ID')}
                 </span>
               </div>
             </div>
@@ -797,15 +777,14 @@ _Desain foto almarhum & silsilah keluarga dibantu layouting sampai approved._`;
                   })}
                 </tbody>
                 <tfoot>
-                  <tr className="bg-emerald-50/60 border-t-2 border-emerald-200 font-bold text-emerald-950">
-                    <td colSpan={2} className="py-2.5 px-3 uppercase text-emerald-950 font-black text-[11px]">
-                      TOTAL BIAYA PRODUKSI
+                  <tr className="bg-slate-50/90 font-bold border-t border-slate-200 text-xs">
+                    <td colSpan={3} className="py-2.5 px-3 text-slate-800 font-sans">
+                      Total HPP Biaya Produksi ({oplah.toLocaleString('id-ID')} buku)
                     </td>
-                    <td className="hidden sm:table-cell"></td>
-                    <td className="py-2.5 px-3 text-right font-mono text-emerald-900 font-black text-sm whitespace-nowrap">
+                    <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-sm whitespace-nowrap">
                       Rp {result.summary.totalHpp.toLocaleString('id-ID')}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-[11px] text-emerald-800 whitespace-nowrap">
+                    <td className="py-2.5 px-3 text-right font-mono text-[11px] text-slate-500 whitespace-nowrap">
                       100%
                     </td>
                   </tr>

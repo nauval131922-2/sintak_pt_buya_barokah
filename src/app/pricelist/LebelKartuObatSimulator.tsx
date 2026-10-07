@@ -245,56 +245,6 @@ export default function LebelKartuObatSimulator({
   return (
     <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
       {/* Header */}
-      <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
-            <Pill className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="font-bold text-sm sm:text-base text-emerald-950 flex items-center gap-2">
-              Simulator &amp; Kalkulator Lebel Kartu Obat
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
-                Katalog 16
-              </span>
-            </h3>
-            <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Hitung HPP per rim, harga penawaran, dan estimasi profit Lebel Kartu Obat HVS 70 Folio 3,5×7 / 4×6 / 5×6,7 cm — Cetak / Ongkos Cetak, sisir + packing.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={handleCopyQuote}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer ${
-              copiedQuote
-                ? 'bg-emerald-700 text-white'
-                : 'bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300'
-            }`}
-          >
-            {copiedQuote ? <Check size={14} /> : <Share2 size={14} />}
-            <span>{copiedQuote ? 'Tersalin!' : 'Salin Penawaran'}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowSimulatorManual(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer"
-          >
-            <Info size={14} />
-            <span>Panduan</span>
-          </button>
-          {onOpenMasterParam && (
-            <button
-              type="button"
-              onClick={onOpenMasterParam}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer"
-            >
-              <Settings2 size={14} />
-              <span>Master Parameter</span>
-            </button>
-          )}
-        </div>
-      </div>
 
       {/* Banner riwayat aktif */}
       {activeSimulationId && (
@@ -346,7 +296,7 @@ export default function LebelKartuObatSimulator({
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
               <Sliders size={15} className="text-emerald-700" />
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Input Spesifikasi Lebel Kartu Obat</h3>
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Spesifikasi Lebel Kartu Obat</h3>
             </div>
 
             {/* Varian Ukuran */}
@@ -477,6 +427,19 @@ export default function LebelKartuObatSimulator({
                 <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
               </div>
             </div>
+            {/* Laba Master info */}
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
+              <span>Laba Master Lebel Obat: <strong>{marginPct}%</strong></span>
+              {onOpenMasterParam && (
+                <button
+                  type="button"
+                  onClick={onOpenMasterParam}
+                  className="text-emerald-700 hover:text-emerald-800 font-bold hover:underline cursor-pointer"
+                >
+                  Atur di Master Parameter
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -514,7 +477,7 @@ export default function LebelKartuObatSimulator({
 
             <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">Total Harga Jual</span>
+                <span className="text-[11px] font-semibold">Harga Total</span>
                 <TrendingUp size={13} className="text-emerald-500" />
               </div>
               <div>

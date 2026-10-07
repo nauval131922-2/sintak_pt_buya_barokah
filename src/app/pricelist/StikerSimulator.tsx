@@ -579,14 +579,14 @@ _Harga belum termasuk PPN. Hasil cetak tajam, daya rekat kuat & tahan air._`;
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr className="bg-slate-50 font-black border-t-2 border-slate-300 text-slate-900">
-                    <td colSpan={3} className="py-2.5 px-3 text-right uppercase tracking-wider text-[11px] font-sans">
-                      Total HPP ({oplah.toLocaleString('id-ID')} pcs)
+                  <tr className="bg-slate-50/90 font-bold border-t border-slate-200 text-xs">
+                    <td colSpan={3} className="py-2.5 px-3 text-slate-800 font-sans">
+                      Total HPP Biaya Produksi ({oplah.toLocaleString('id-ID')} pcs)
                     </td>
-                    <td className="py-2.5 px-3 text-right text-sm text-emerald-900">
+                    <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-sm">
                       Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
                     </td>
-                    <td className="py-2.5 px-3 text-right text-[11px] text-slate-500">100%</td>
+                    <td className="py-2.5 px-3 text-right font-mono text-slate-600">100%</td>
                   </tr>
                 </tfoot>
               </table>

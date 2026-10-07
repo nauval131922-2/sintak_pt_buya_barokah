@@ -283,61 +283,6 @@ export default function SyahadahSimulator({
   return (
     // Struktur dual-scroll mandiri standar Manasik: flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0
     <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
-      {/* Header Banner */}
-      <div className="p-3.5 sm:p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200 shrink-0">
-            <Award className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-bold text-sm sm:text-base text-emerald-950 tracking-tight">
-                Simulator &amp; Kalkulator Syahadah
-              </h3>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
-                Katalog 08
-              </span>
-            </div>
-            <p className="text-[11px] text-emerald-800/80 mt-0.5">
-              Kalkulasi 100% presisi Excel (Linen/Hammer Crem 300 gsm, Cetak Digital Print Inter vs Offset Ryobi/Oliver, hotprint foil emas, &amp; packing).
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={handleCopyQuote}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer ${
-              copiedQuote
-                ? 'bg-emerald-700 text-white'
-                : 'bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300'
-            }`}
-          >
-            {copiedQuote ? <Check size={14} /> : <Share2 size={14} />}
-            <span>{copiedQuote ? 'Tersalin!' : 'Salin Penawaran'}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowSimulatorManual(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer"
-          >
-            <Info size={14} />
-            <span>Panduan</span>
-          </button>
-          {onOpenMasterParam && (
-            <button
-              type="button"
-              onClick={onOpenMasterParam}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer"
-            >
-              <Settings2 size={14} />
-              <span>Master Parameter</span>
-            </button>
-          )}
-        </div>
-      </div>
-
       {/* Banner Mode Riwayat Aktif */}
       {activeSimulationId && (
         <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200 shrink-0">
@@ -390,7 +335,7 @@ export default function SyahadahSimulator({
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
               <Sliders size={15} className="text-emerald-700" />
               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                Spesifikasi &amp; Parameter Syahadah
+                Spesifikasi Syahadah
               </h3>
             </div>
 
@@ -657,7 +602,7 @@ export default function SyahadahSimulator({
             {/* Card 4: Total Nilai Order */}
             <div className="bg-white rounded-xl border border-slate-200 p-3 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">Total Nilai Order</span>
+                <span className="text-[11px] font-semibold">Harga Total</span>
                 <TrendingUp size={13} className="text-emerald-500" />
               </div>
               <div>
@@ -722,16 +667,14 @@ export default function SyahadahSimulator({
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr className="bg-emerald-50/70 border-t border-emerald-200 font-bold text-emerald-950">
-                    <td colSpan={3} className="py-2.5 px-3 text-right uppercase tracking-wider text-[11px]">
-                      Total HPP Produksi:
+                  <tr className="bg-slate-50/90 font-bold border-t border-slate-200 text-xs">
+                    <td colSpan={3} className="py-2.5 px-3 text-slate-800 font-sans">
+                      Total HPP Biaya Produksi ({oplah.toLocaleString('id-ID')} pcs)
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-sm text-emerald-900">
-                      Rp {result.totalHpp.toLocaleString('id-ID')}
+                    <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-sm">
+                      Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-[11px]">
-                      100.0%
-                    </td>
+                    <td className="py-2.5 px-3 text-right font-mono text-slate-600">100%</td>
                   </tr>
                 </tfoot>
               </table>

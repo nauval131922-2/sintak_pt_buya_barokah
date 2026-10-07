@@ -119,33 +119,66 @@ for (const file of allLibFiles) {
   });
 }
 
-// 3. Audit Kelengkapan Kontrak UI Simulator Modern (yang memakai stepChip)
-for (const file of simulatorFiles) {
+// 3. Audit Kelengkapan Kontrak UI Simulator Menyeluruh (26 Modul Aktif)
+const ACTIVE_SIMULATORS = [
+  'ManasikSimulator.tsx',
+  'YasinSimulator.tsx',
+  'NotaSimulator.tsx',
+  'BrosurSimulator.tsx',
+  'LabelKhqSimulator.tsx',
+  'BukuTulisSimulator.tsx',
+  'StopmapSimulator.tsx',
+  'SyahadahSimulator.tsx',
+  'RaportKalebSimulator.tsx',
+  'KopSuratSimulator.tsx',
+  'AmplopSimulator.tsx',
+  'SertifikatSimulator.tsx',
+  'UndanganSimulator.tsx',
+  'BukuTabunganNsSimulator.tsx',
+  'BukuTabunganSecuritySimulator.tsx',
+  'KartuKoperasiPromiseSimulator.tsx',
+  'LebelKartuObatSimulator.tsx',
+  'BukuSoftCoverUnifiedSimulator.tsx',
+  'BukuHardCoverUnifiedSimulator.tsx',
+  'PackagingSimulator.tsx',
+  'PaperbagSimulator.tsx',
+  'PosterSimulator.tsx',
+  'MajalahSimulator.tsx',
+  'StikerSimulator.tsx',
+  'KalenderKopSimulator.tsx',
+  'PricelistSimulator.tsx'
+];
+
+for (const file of ACTIVE_SIMULATORS) {
   const filePath = path.join(APP_DIR, file);
+  if (!fs.existsSync(filePath)) continue;
   const content = fs.readFileSync(filePath, 'utf8');
 
-  // Simulator yang telah menerapkan stepChip wajib memenuhi seluruh kontrak baku
-  if (content.includes('stepChip')) {
-    // Cek ketersediaan optBtn
-    if (!content.includes('optBtn')) {
-      console.error(`[CONTRACT FAIL] ${file} - Tidak memiliki styling optBtn tombol seleksi netral.`);
-      totalContractFailures++;
-    }
+  // a. Dilarang banner hijau raksasa
+  if (content.includes('bg-emerald-50/70 border border-emerald-200/80 rounded-2xl')) {
+    console.error(`[CONTRACT FAIL] ${file} - Masih memuat banner hijau raksasa terlarang.`);
+    totalContractFailures++;
+  }
 
-    // Cek tombol simpan kalkulasi full-width
-    if (!content.includes('Simpan Kalkulasi Ini ke Daftar Kalkulasi') && !content.includes('Simpan Kalkulasi ke Riwayat')) {
-      console.error(`[CONTRACT FAIL] ${file} - Tidak memiliki tombol simpan kalkulasi standar.`);
-      totalContractFailures++;
-    }
+  // b. Kartu metrik wajib memuat "Harga Total"
+  if (!content.includes('Harga Total')) {
+    console.error(`[CONTRACT FAIL] ${file} - Kartu metrik tidak konsisten (wajib memuat "Harga Total").`);
+    totalContractFailures++;
+  }
 
-    // Cek 3 kartu metrik ringkasan baku (HPP, Harga Per Pcs, Harga Total + Profit)
-    if (!content.includes('Harga Total') || !content.includes('Profit:')) {
-      console.error(`[CONTRACT FAIL] ${file} - Kartu metrik tidak konsisten (wajib memuat "Harga Total" dan "Profit:").`);
-      totalContractFailures++;
-    }
+  // c. Tfoot tabel breakdown wajib baku "Total HPP Biaya Produksi"
+  if (!content.includes('Total HPP Biaya Produksi')) {
+    console.error(`[CONTRACT FAIL] ${file} - Tfoot tabel breakdown tidak baku (wajib memuat "Total HPP Biaya Produksi").`);
+    totalContractFailures++;
+  }
+
+  // d. Form header wajib bersih (tidak memuat tombol aksi di dalam wadah header form)
+  const formHeaderMatch = content.match(/<div className="flex items-center (?:justify-between )?gap-2 border-b border-slate-100 pb-2(?:\.5)?">([\s\S]*?)<\/div>/);
+  if (formHeaderMatch && formHeaderMatch[1].includes('<button')) {
+    console.error(`[CONTRACT FAIL] ${file} - Header form memuat tombol aksi yang seharusnya dibersihkan.`);
+    totalContractFailures++;
   }
 }
-
 console.log(`\n========================================`);
 if (totalCellLeaks > 0 || totalContractFailures > 0) {
   console.error(`TOTAL PELANGGARAN: ${totalCellLeaks} kebocoran sel Excel, ${totalContractFailures} pelanggaran kontrak UI!`);

@@ -252,43 +252,11 @@ _Harga belum termasuk PPN. Hasil cetak kop tajam & jepit kaleng rapi._`;
       {/* Grid Simulator: Kiri Form, Kanan Hasil Finansial & Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Kolom Kiri: Form Input */}
-        <div className="lg:col-span-5 space-y-5">
+        <div className="lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-              <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-                Parameter Pesanan
-              </h4>
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={handleCopyWhatsApp}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
-                  title="Salin penawaran WhatsApp"
-                >
-                  {copiedQuote ? <Check size={12} className="text-emerald-600" /> : <Share2 size={12} className="text-emerald-600" />}
-                  <span>{copiedQuote ? 'Tersalin' : 'Salin'}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowGuideModal(true)}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
-                  title="Panduan kalkulasi"
-                >
-                  <BookOpen size={12} className="text-slate-500" />
-                  <span>Panduan</span>
-                </button>
-                {onOpenMasterParam && (
-                  <button
-                    type="button"
-                    onClick={onOpenMasterParam}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-800 hover:bg-emerald-900 text-white transition-all shadow-2xs cursor-pointer"
-                    title="Buka Master Parameter"
-                  >
-                    <Settings2 size={12} />
-                    <span>Master</span>
-                  </button>
-                )}
-              </div>
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <Sliders size={15} className="text-emerald-700" />
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Spesifikasi Kalender Kop</h3>
             </div>
 
             {/* Varian Warna Kop */}
@@ -390,12 +358,24 @@ _Harga belum termasuk PPN. Hasil cetak kop tajam & jepit kaleng rapi._`;
                 </div>
               </div>
             </div>
-
+            {/* Laba Master info */}
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
+              <span>Laba Master Kalender Kop: <strong>{marginPct}%</strong></span>
+              {onOpenMasterParam && (
+                <button
+                  type="button"
+                  onClick={onOpenMasterParam}
+                  className="text-emerald-700 hover:text-emerald-800 font-bold hover:underline cursor-pointer"
+                >
+                  Atur di Master Parameter
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Kolom Kanan: 4 Kartu Finansial + Breakdown */}
-        <div className="lg:col-span-7 space-y-5">
+        <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           {/* 4 Kartu Finansial */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
@@ -445,15 +425,15 @@ _Harga belum termasuk PPN. Hasil cetak kop tajam & jepit kaleng rapi._`;
 
             <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">Total Omset</span>
-                <Layers size={13} className="text-slate-400" />
+                <span className="text-[11px] font-semibold">Harga Total</span>
+                <TrendingUp size={13} className="text-emerald-500" />
               </div>
               <div>
-                <span className="text-base sm:text-lg font-black text-slate-800">
+                <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">
                   Rp {result.totalHargaJual.toLocaleString('id-ID')}
                 </span>
-                <span className="block text-[10px] text-slate-400 mt-0.5">
-                  {oplah.toLocaleString('id-ID')} eks
+                <span className="block text-[10px] text-slate-500 mt-0.5">
+                  Profit: Rp {Math.max(0, result.totalHargaJual - result.totalHpp).toLocaleString('id-ID')}
                 </span>
               </div>
             </div>
@@ -513,14 +493,14 @@ _Harga belum termasuk PPN. Hasil cetak kop tajam & jepit kaleng rapi._`;
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr className="bg-slate-50 font-black border-t-2 border-slate-300 text-slate-900">
-                    <td colSpan={3} className="py-2.5 px-3 text-right uppercase tracking-wider text-[11px]">
-                      Total HPP ({oplah.toLocaleString('id-ID')} eks)
+                  <tr className="bg-slate-50/90 font-bold border-t border-slate-200 text-xs">
+                    <td colSpan={3} className="py-2.5 px-3 text-slate-800 font-sans">
+                      Total HPP Biaya Produksi ({oplah.toLocaleString('id-ID')} eks)
                     </td>
-                    <td className="py-2.5 px-3 text-right text-sm text-emerald-900">
+                    <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-sm">
                       Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
                     </td>
-                    <td className="py-2.5 px-3 text-right text-[11px] text-slate-500">100%</td>
+                    <td className="py-2.5 px-3 text-right font-mono text-slate-600">100%</td>
                   </tr>
                 </tfoot>
               </table>

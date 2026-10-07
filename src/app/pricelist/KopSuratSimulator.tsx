@@ -247,65 +247,20 @@ export default function KopSuratSimulator({
     setTimeout(() => setCopiedQuote(false), 2000);
   };
 
-  const specButton = (active: boolean) => `py-2 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
-    active
-      ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
-      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-  }`;
+  const optBtn = (active: boolean) =>
+    `py-1.5 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
+      active
+        ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400'
+        : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
+    }`;
 
+  const stepChip = (n: number) => (
+    <span className="w-5 h-5 rounded-full bg-emerald-700 text-white flex items-center justify-center text-[10px] font-black shrink-0">
+      {n}
+    </span>
+  );
   return (
     <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
-      {/* Header */}
-      <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
-            <FileSpreadsheet className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="font-bold text-sm sm:text-base text-emerald-950 flex items-center gap-2">
-              Simulator &amp; Kalkulator Kop Surat
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
-                Katalog 10
-              </span>
-            </h3>
-            <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Engine BUKU 1:1 file Pricelist KOP SURAT 1–4 Warna — oplah rim @500 lbr, Plate, Min Order, Drek Over, Sisir.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={handleCopyQuote}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer ${
-              copiedQuote
-                ? 'bg-emerald-700 text-white'
-                : 'bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300'
-            }`}
-          >
-            {copiedQuote ? <Check size={14} /> : <Share2 size={14} />}
-            <span>{copiedQuote ? 'Tersalin!' : 'Salin Penawaran'}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowSimulatorManual(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer"
-          >
-            <Info size={14} />
-            <span>Panduan</span>
-          </button>
-          {onOpenMasterParam && (
-            <button
-              type="button"
-              onClick={onOpenMasterParam}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer"
-            >
-              <Settings2 size={14} />
-              <span>Master Parameter</span>
-            </button>
-          )}
-        </div>
-      </div>
 
       {/* Banner riwayat aktif */}
       {activeSimulationId && (
@@ -358,19 +313,19 @@ export default function KopSuratSimulator({
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
               <Sliders size={15} className="text-emerald-700" />
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Input Spesifikasi Kop Surat</h3>
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Spesifikasi Kop Surat</h3>
             </div>
-
             {/* Jenis Kop */}
+            {/* 1. Jenis Kop */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Jenis Kop Surat
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(1)} Jenis Kop Surat
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {KOP_SURAT_JENIS_KOP.map((k) => (
-                  <button key={k} type="button" onClick={() => setJenisKop(k)} className={specButton(jenisKop === k)}>
+                  <button key={k} type="button" onClick={() => setJenisKop(k)} className={optBtn(jenisKop === k)}>
                     <span className="leading-tight text-[11px]">{k}</span>
-                    <span className={`block text-[10px] font-semibold ${jenisKop === k ? 'text-emerald-100' : 'text-slate-400'}`}>{KOP_SURAT_UKURAN_LABEL[k]}</span>
+                    <span className={`block text-[10px] font-semibold ${jenisKop === k ? 'text-slate-900' : 'text-slate-400'}`}>{KOP_SURAT_UKURAN_LABEL[k]}</span>
                   </button>
                 ))}
               </div>
@@ -498,68 +453,73 @@ export default function KopSuratSimulator({
                 </div>
               </div>
             </div>
+            {/* Laba Master info */}
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
+              <span>Laba Master Kop Surat: <strong>{marginPct}%</strong></span>
+              {onOpenMasterParam && (
+                <button
+                  type="button"
+                  onClick={onOpenMasterParam}
+                  className="text-emerald-700 hover:text-emerald-800 font-bold hover:underline cursor-pointer"
+                >
+                  Atur di Master Parameter
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Kolom Kanan: Hasil & Rincian (lg:col-span-7) */}
         <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
-          {/* 4 Kartu Finansial */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">HPP / rim</span>
-                <DollarSign size={13} className="text-slate-400" />
+          {/* 3 Kartu Finansial Baku */}
+          <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
+            <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
+              {stepChip(5)} Kalkulasi Total
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-500 mb-1">
+                  <span className="text-[11px] font-semibold">HPP Per Rim</span>
+                  <DollarSign size={13} className="text-slate-400" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-slate-800 font-mono">
+                    Rp {Math.round(result.hppPerRim).toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-slate-400 mt-0.5">
+                    Total HPP: Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
+                  </span>
+                </div>
               </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-slate-800 font-mono">
-                  Rp {Math.round(result.hppPerRim).toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-slate-400 mt-0.5">
-                  Total HPP: Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
-                </span>
-              </div>
-            </div>
 
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-emerald-800 mb-1">
-                <span className="text-[11px] font-bold">Harga Final (+{marginPct}%)</span>
-                <TrendingUp size={13} className="text-emerald-600" />
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-emerald-800 mb-1">
+                  <span className="text-[11px] font-bold">Harga Per Rim (+{marginPct}%)</span>
+                  <TrendingUp size={13} className="text-emerald-600" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
+                    Rp {result.hargaFinalPerRim.toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-emerald-700/80 mt-0.5">
+                    Laba {marginPct}% (@500 lbr)
+                  </span>
+                </div>
               </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
-                  Rp {result.hargaFinalPerRim.toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-emerald-700/80 mt-0.5">/ rim (ROUNDUP puluhan)</span>
-              </div>
-            </div>
 
-            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">Total Harga</span>
-                <Wallet size={13} className="text-slate-400" />
-              </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">
-                  Rp {Math.round(result.totalHarga).toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-slate-500 mt-0.5">
-                  {oplahRim} rim · {result.totalLembarKop.toLocaleString('id-ID')} lbr
-                </span>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">Laba Total</span>
-                <TrendingUp size={13} className="text-emerald-500" />
-              </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-slate-800 font-mono">
-                  Rp {Math.round(result.labaTotal).toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-slate-500 mt-0.5">
-                  Rp {Math.round(result.labaPerRim).toLocaleString('id-ID')} / rim
-                </span>
+              <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-500 mb-1">
+                  <span className="text-[11px] font-semibold">Harga Total</span>
+                  <TrendingUp size={13} className="text-emerald-500" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">
+                    Rp {Math.round(result.totalHarga).toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-slate-500 mt-0.5">
+                    Profit: Rp {Math.round(result.labaTotal).toLocaleString('id-ID')}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -606,7 +566,7 @@ export default function KopSuratSimulator({
                 <tfoot>
                   <tr className="bg-slate-50/90 font-bold border-t border-slate-200 text-xs">
                     <td colSpan={3} className="py-2.5 px-3 text-slate-800 font-sans">
-                      Total HPP ({oplahRim} rim)
+                      Total HPP Biaya Produksi ({oplahRim} rim)
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-sm">
                       Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}

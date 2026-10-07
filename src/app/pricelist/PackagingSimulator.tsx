@@ -298,13 +298,13 @@ export default function PackagingSimulator({
           </div>
         </div>
 
-        {/* Card 4: Total Penawaran */}
+        {/* Card 4: Harga Total */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between text-slate-500 mb-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider">Total Penawaran</span>
-              <span className="p-1 rounded-md bg-slate-100 text-slate-600">
-                <Package size={14} />
+              <span className="text-[11px] font-bold uppercase tracking-wider">Harga Total</span>
+              <span className="p-1 rounded-md bg-slate-100 text-emerald-600">
+                <TrendingUp size={14} />
               </span>
             </div>
             <div className="text-xl sm:text-2xl font-black text-emerald-950 tracking-tight">
@@ -312,8 +312,10 @@ export default function PackagingSimulator({
             </div>
           </div>
           <div className="mt-2 pt-2 border-t border-slate-100 text-[11px] text-slate-500 flex justify-between">
-            <span>Kuantitas:</span>
-            <span className="font-semibold text-slate-700">{oplah.toLocaleString('id-ID')} pcs</span>
+            <span>Profit:</span>
+            <span className="font-semibold text-slate-700">
+              Rp {Math.max(0, result.totalHargaJual - result.totalHpp).toLocaleString('id-ID')}
+            </span>
           </div>
         </div>
       </div>
@@ -323,10 +325,10 @@ export default function PackagingSimulator({
         {/* Kolom Kiri: Form Input (5 Kolom di LG) */}
         <div className="lg:col-span-5 flex flex-col gap-4">
           <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs flex flex-col gap-4">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-              <Settings2 size={16} className="text-emerald-700" />
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <Sliders size={15} className="text-emerald-700" />
               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                Parameter Spesifikasi Dus
+                Spesifikasi Dus / Packaging
               </h3>
             </div>
 
@@ -554,16 +556,14 @@ export default function PackagingSimulator({
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr className="border-t-2 border-slate-200 font-bold text-slate-900 bg-slate-50/60">
-                    <td colSpan={3} className="py-2.5 px-3 text-right">
-                      Total HPP ({oplah.toLocaleString('id-ID')} pcs):
+                  <tr className="bg-slate-50/90 font-bold border-t border-slate-200 text-xs">
+                    <td colSpan={3} className="py-2.5 px-3 text-slate-800 font-sans">
+                      Total HPP Biaya Produksi ({oplah.toLocaleString('id-ID')} pcs)
                     </td>
-                    <td className="py-2.5 px-2 text-right font-mono text-emerald-950 font-black">
+                    <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-sm">
                       Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
                     </td>
-                    <td className="py-2.5 px-2 text-right font-mono text-slate-600 text-[10px]">
-                      100%
-                    </td>
+                    <td className="py-2.5 px-3 text-right font-mono text-slate-600">100%</td>
                   </tr>
                 </tfoot>
               </table>

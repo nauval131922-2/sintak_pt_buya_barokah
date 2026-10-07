@@ -250,68 +250,6 @@ export default function MajalahSimulator({
 
   return (
     <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
-      {/* Header Info Banner Compact */}
-      <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-emerald-100/80 rounded-lg border border-emerald-200 text-emerald-800 shrink-0">
-            <Newspaper size={18} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-black text-slate-800 text-sm">
-                Simulator Majalah 14,5×20,25 cm
-              </h3>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-200/60 text-emerald-900 border border-emerald-300/60">
-                32 Hal · Full Colour
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-600 mt-0.5">
-              Katalog 20: Cover AC 230 1M FC + Isi AP 120 2M FC + Finishing Staples/Bending &amp; Kemasan
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={handleCopyWhatsApp}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
-          >
-            {copiedQuote ? (
-              <>
-                <Check size={14} className="text-emerald-600" />
-                <span className="text-emerald-700">Tersalin!</span>
-              </>
-            ) : (
-              <>
-                <Copy size={14} className="text-emerald-600" />
-                <span>Salin Penawaran</span>
-              </>
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setShowGuideModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
-          >
-            <BookOpen size={14} className="text-emerald-600" />
-            <span>Panduan</span>
-          </button>
-
-          {onOpenMasterParam && (
-            <button
-              type="button"
-              onClick={onOpenMasterParam}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-800 hover:bg-emerald-900 text-white transition-all shadow-2xs cursor-pointer"
-            >
-              <Settings2 size={14} />
-              <span>Master Parameter</span>
-            </button>
-          )}
-        </div>
-      </div>
-
       {/* Banner Riwayat Aktif */}
       {activeSimulationId && (
         <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0 animate-in fade-in duration-200">
@@ -359,9 +297,9 @@ export default function MajalahSimulator({
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
               <Sliders size={15} className="text-emerald-700" />
-              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
                 Spesifikasi Majalah 14,5×20,25 cm
-              </h4>
+              </h3>
             </div>
 
             {/* 1. Ukuran & Oplah */}
@@ -577,6 +515,19 @@ export default function MajalahSimulator({
                   </div>
                 </div>
               </div>
+            </div>
+            {/* Laba Master info */}
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
+              <span>Laba Master Majalah: <strong>{marginPct}%</strong></span>
+              {onOpenMasterParam && (
+                <button
+                  type="button"
+                  onClick={onOpenMasterParam}
+                  className="text-emerald-700 hover:text-emerald-800 font-bold hover:underline cursor-pointer"
+                >
+                  Atur di Master Parameter
+                </button>
+              )}
             </div>
           </div>
         </div>

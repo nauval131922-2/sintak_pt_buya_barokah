@@ -153,6 +153,31 @@
 
 ---
 
+### 15. Runtime ReferenceError Variabel Tidak Terdefinisi Pasca-Refactoring
+- **Kesalahan Nyata**: Muncul console runtime error `cellRef is not defined at fieldRow (RaportKalebMasterParameter.tsx:115:10)`.
+- **Alasan Kesalahan Terjadi**: Parameter `cellRef` dihapus dari signature helper function `fieldRow`, namun blok render kondisional `{cellRef && (<p>{cellRef}</p>)}` di dalam JSX fungsi tersebut lupa dibersihkan.
+- **Dampak**: Layar tab Master Parameter Raport Kaleb crash putih di browser pengguna.
+- **Solusi Permanen**:
+  - Setiap kali menghapus parameter fungsi atau prop, wajib melakukan verifikasi compiler statis (`grep` nama variabel di seluruh file) dan verifikasi import runtime via Node/TSX (`npx tsx -e "import('...')"`).
+  - Bersihkan seluruh sisa panggilan variabel yang sudah dihapus tanpa terkecuali.
+- **Penerapan Nyata**: Dibersihkan tuntas di `RaportKalebMasterParameter.tsx`.
+
+---
+
+### 16. Inkonsistensi Visual Lintas 26 Simulator (Banner Raksasa, Variasi Label Kartu, dan Tfoot)
+- **Kesalahan Nyata**: Masih ada sisa simulator generasi awal yang memiliki banner hijau raksasa (`LebelKartuObat`, `PricelistSimulator`), label kartu metrik bervariasi (`Total Omset`, `Total Penawaran`, `Total Nilai Order`, `Total Profit`), form header berisi deretan tombol aksi di kanan, dan format tfoot breakdown tidak seragam.
+- **Alasan Kesalahan Terjadi**: Pengerjaan simulator dilakukan bertahap di masa lalu tanpa ada linter otomatis yang menyapu ke-26 modul secara serentak.
+- **Solusi Permanen**:
+  - Seluruh 26 modul aktif diseragamkan 100% ke kiblat tunggal `BukuSoftCoverUnifiedSimulator.tsx`:
+    1. Bebas banner hijau raksasa.
+    2. Header form kiri bersih: `<Sliders /> Spesifikasi <Produk>` tanpa tombol di kanan.
+    3. Tiga kartu metrik finansial seragam: Card 1 (HPP), Card 2 (Harga Jual), Card 3 (`Harga Total` + subtext `Profit: Rp ...`).
+    4. Tfoot tabel breakdown seragam: `Total HPP Biaya Produksi (<oplah> pcs/eks/rim/buku)` rata kiri `font-sans font-bold`.
+  - Mengintegrasikan pengecekan seluruh 26 simulator ke dalam `scripts/check-clean-ui.mjs` sebagai guardrail otomatis permanen.
+- **Penerapan Nyata**: 26 modul aktif lulus audit 100% konsisten pada `node scripts/check-clean-ui.mjs` dan `node scripts/check-simulator-layout.mjs`.
+
+---
+
 ## 2. Checklist Wajib Setiap Kali Mengerjakan Modul Kalkulasi (10-Point Gate)
 
 Setiap kali user memerintahkan untuk mengerjakan atau mengaudit modul kalkulasi harga, AI **WAJIB MENAMPILKAN DAN MEMERIKSA CHECKLIST INI SATU PER SATU**:
