@@ -179,7 +179,34 @@ for (const file of ACTIVE_SIMULATORS) {
     totalContractFailures++;
   }
 }
-console.log(`\n========================================`);
+
+// 4. Audit Kontrak Sticky Action Bar Master Parameter (30 file)
+// Dikecualikan: GlobalMasterParameter (parameter global) + 3 varian HardCover
+// lama nonaktif (105x148/145x2025/21x297, digantikan BukuHardCoverUnified).
+const INACTIVE_MASTER_PARAMS = new Set([
+  'GlobalMasterParameter.tsx',
+  'BukuHardCover105x148MasterParameter.tsx',
+  'BukuHardCover145x2025MasterParameter.tsx',
+  'BukuHardCover21x297MasterParameter.tsx',
+]);
+for (const file of masterParamFiles) {
+  if (INACTIVE_MASTER_PARAMS.has(file)) continue;
+  const filePath = path.join(APP_DIR, file);
+  const content = fs.readFileSync(filePath, 'utf8');
+
+  // a. Dilarang banner hijau raksasa (kecuali kartu panduan di modal/bawah)
+  //    Banner terlarang = div pembuka tepat setelah return dengan pola emerald besar
+  if (/return \(\s*\n?\s*<div className="flex flex-col[^>]*">\s*\n?\s*(\{[^{}]*\}\s*)?<div className="bg-emerald-50\/70 border border-emerald-200\/80 rounded-2xl/.test(content)) {
+    console.error(`[CONTRACT FAIL] ${file} - Masih memuat banner hijau raksasa sebagai header. Ganti ke Sticky Action Bar.`);
+    totalContractFailures++;
+  }
+
+  // b. Wajib sticky bar (Sticky Action Bar ATAU Sticky Search Bar & Actions)
+  if (!content.includes('sticky top-0 z-10')) {
+    console.error(`[CONTRACT FAIL] ${file} - Tidak ada sticky bar baku (Action Bar / Search Bar).`);
+    totalContractFailures++;
+  }
+}
 if (totalCellLeaks > 0 || totalContractFailures > 0) {
   console.error(`TOTAL PELANGGARAN: ${totalCellLeaks} kebocoran sel Excel, ${totalContractFailures} pelanggaran kontrak UI!`);
   console.error(`Pindahkan referensi sel ke modal panduan dan selaraskan kontrak.`);

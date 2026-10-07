@@ -174,9 +174,20 @@
     3. Tiga kartu metrik finansial seragam: Card 1 (HPP), Card 2 (Harga Jual), Card 3 (`Harga Total` + subtext `Profit: Rp ...`).
     4. Tfoot tabel breakdown seragam: `Total HPP Biaya Produksi (<oplah> pcs/eks/rim/buku)` rata kiri `font-sans font-bold`.
   - Mengintegrasikan pengecekan seluruh 26 simulator ke dalam `scripts/check-clean-ui.mjs` sebagai guardrail otomatis permanen.
-- **Penerapan Nyata**: 26 modul aktif lulus audit 100% konsisten pada `node scripts/check-clean-ui.mjs` dan `node scripts/check-simulator-layout.mjs`.
+ - **Penerapan Nyata**: 26 modul aktif lulus audit 100% konsisten pada `node scripts/check-clean-ui.mjs` dan `node scripts/check-simulator-layout.mjs`.
 
 ---
+
+### 17. Inkonsistensi Header Tab Master Parameter (Banner Raksasa vs Sticky Action Bar)
+- **Kesalahan Nyata**: 13 file Master Parameter generasi awal memakai banner hijau raksasa (`bg-emerald-50/70 ... rounded-2xl p-4 sm:p-5`) sebagai header — menghabiskan ~120px vertikal, tidak sticky, tombol Reset selalu terlihat walau belum ada perubahan. Sementara 13 file lain sudah memakai Sticky Action Bar tipis (Brosur dkk.) dan 4 file memakai Sticky Search Bar (Majalah/Poster/Stiker/Buku).
+- **Solusi Permanen**:
+  - Seluruh 26 file Master Parameter aktif diseragamkan ke sticky bar tipis (`sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1.5 ... border-b`):
+    1. Ikon `Database w-4` + judul uppercase `text-xs font-black tracking-wider`.
+    2. Badge `Dimodifikasi` (amber pulse) hanya saat `isModified`.
+    3. Tombol `Panduan` (netral) + tombol `Reset Standar` (amber) hanya saat `isModified` — tidak ada tombol disabled abu-abu.
+    4. Toggle profil khusus (Spiral/Klem di Pricelist) dipertahankan di dalam sticky bar.
+  - Guardrail `scripts/check-clean-ui.mjs` seksi 4 menolak banner hijau sebagai header + mewajibkan `sticky top-0 z-10` di semua file aktif (kecuali Global + 3 varian HardCover lama nonaktif).
+- **Penerapan Nyata**: Gelombang 1 (Amplop, KopSurat, Stopmap, Syahadah, RaportKaleb), Gelombang 2 (Sertifikat, Undangan, LabelKhq, KartuKoperasi, LebelObat), Gelombang 4 (Packaging, Paperbag, Pricelist); Gelombang 3 sudah baku. Linter `node scripts/check-clean-ui.mjs` hijau (exit 0).
 
 ## 2. Checklist Wajib Setiap Kali Mengerjakan Modul Kalkulasi (10-Point Gate)
 
