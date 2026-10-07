@@ -112,11 +112,6 @@ export default function RaportKalebMasterParameter({
             </button>
           )}
         </div>
-        {cellRef && (
-          <p className="text-[10px] text-slate-400 font-mono mb-1.5 truncate">
-            {cellRef}
-          </p>
-        )}
         <div className="flex items-center gap-1.5">
           {isRupiah && !isDecimal ? (
             <ThousandInput
