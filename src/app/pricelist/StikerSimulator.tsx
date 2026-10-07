@@ -254,80 +254,47 @@ _Harga belum termasuk PPN. Hasil cetak tajam, daya rekat kuat & tahan air._`;
   };
 
   return (
-    <div className="flex flex-col gap-5 pb-8">
-      {/* Header Info Banner */}
-      <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-emerald-100/80 rounded-xl border border-emerald-200 text-emerald-800 shrink-0">
-            <Tag size={20} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-black text-slate-800 text-sm sm:text-base">
-                Simulator &amp; Kalkulator Stiker
-              </h3>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                Katalog 23
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Kalkulasi instan HPP, harga jual, dan batas nego untuk 5 ukuran Stiker Vinyl Glossy.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={handleCopyWhatsApp}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
-          >
-            {copiedQuote ? (
-              <>
-                <Check size={14} className="text-emerald-600" />
-                <span className="text-emerald-700">Tersalin!</span>
-              </>
-            ) : (
-              <>
-                <Copy size={14} className="text-emerald-600" />
-                <span>Salin Penawaran</span>
-              </>
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setShowGuideModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
-          >
-            <BookOpen size={14} className="text-emerald-600" />
-            <span>Panduan</span>
-          </button>
-
-          {onOpenMasterParam && (
-            <button
-              type="button"
-              onClick={onOpenMasterParam}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-800 hover:bg-emerald-900 text-white transition-all shadow-2xs cursor-pointer"
-            >
-              <Settings2 size={14} />
-              <span>Master Parameter</span>
-            </button>
-          )}
-        </div>
-      </div>
-
-      
-
-      {/* Grid Simulator: Kiri Form, Kanan Hasil Finansial & Breakdown */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
+      {/* Grid Simulator: 4 Class Baku Manasik */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-0 pb-1">
         {/* Kolom Kiri: Form Input */}
-        <div className="lg:col-span-5 space-y-5">
+        <div className="lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
-            <div className="border-b border-slate-100 pb-2.5">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
               <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-                Parameter Pesanan
+                Parameter Pesanan Stiker
               </h4>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={handleCopyWhatsApp}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
+                  title="Salin penawaran WhatsApp"
+                >
+                  {copiedQuote ? <Check size={12} className="text-emerald-600" /> : <Share2 size={12} className="text-emerald-600" />}
+                  <span>{copiedQuote ? 'Tersalin' : 'Salin'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowGuideModal(true)}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
+                  title="Panduan kalkulasi"
+                >
+                  <BookOpen size={12} className="text-slate-500" />
+                  <span>Panduan</span>
+                </button>
+                {onOpenMasterParam && (
+                  <button
+                    type="button"
+                    onClick={onOpenMasterParam}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-800 hover:bg-emerald-900 text-white transition-all shadow-2xs cursor-pointer"
+                    title="Buka Master Parameter"
+                  >
+                    <Settings2 size={12} />
+                    <span>Master</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Ukuran Stiker */}
@@ -458,7 +425,7 @@ _Harga belum termasuk PPN. Hasil cetak tajam, daya rekat kuat & tahan air._`;
         </div>
 
         {/* Kolom Kanan: 4 Kartu Finansial + Breakdown */}
-        <div className="lg:col-span-7 space-y-5">
+        <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           {/* 4 Kartu Finansial */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">

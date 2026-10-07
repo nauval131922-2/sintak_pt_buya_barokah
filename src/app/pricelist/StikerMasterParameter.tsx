@@ -1,7 +1,5 @@
 'use client';
 
-import { toast } from '@/lib/toast';
-
 import React, { useState } from 'react';
 import {
   RotateCcw,
@@ -12,11 +10,15 @@ import {
   X,
   FileText,
   Tag,
+  CheckCircle2,
+  Sparkles,
 } from 'lucide-react';
 import {
   StikerMasterParams,
   DEFAULT_STIKER_PARAMS,
 } from '@/lib/stiker-calculator';
+import ThousandInput from '@/components/ThousandInput';
+import { toast } from '@/lib/toast';
 
 interface Props {
   customParams: StikerMasterParams;
@@ -24,14 +26,12 @@ interface Props {
 }
 
 const STIKER_VISIBLE_KEYS: (keyof StikerMasterParams)[] = [
+  'tarifPrintNonCuttingA3',
+  'tarifPrintCuttingA3',
+  'tarifDesain',
+  'tarifSisirPer500',
   'marginDefaultPct',
   'negoDefaultPct',
-  'tarifDesainStiker',
-  'tarifDieCutPerPcs',
-  'tarifKissCutPerLbr',
-  'tarifPackingKardus',
-  'tarifRajangPerLbr',
-  'tarifStikerVinylA3',
 ];
 
 export default function StikerMasterParameter({
@@ -64,24 +64,20 @@ export default function StikerMasterParameter({
       });
       return resetObj;
     });
-    toast.success('Semua parameter dikembalikan ke nilai default.');
+    toast.success('Semua parameter Stiker dikembalikan ke nilai default.');
   };
 
-  const handleChange = (
-    key: keyof StikerMasterParams,
-    value: string,
-    isFloat = false
-  ) => {
-    const parsed = isFloat ? parseFloat(value) : parseInt(value, 10);
+  const handleValueChange = (key: keyof StikerMasterParams, val: number) => {
     setCustomParams((prev) => ({
       ...prev,
-      [key]: isNaN(parsed) ? 0 : parsed,
+      [key]: val,
     }));
   };
 
   const fieldRow = (
     key: keyof StikerMasterParams,
     label: string,
+    cellRef: string,
     isCurrency = true,
     isFloat = false
   ) => {
@@ -97,8 +93,13 @@ export default function StikerMasterParameter({
         }`}
       >
         <div className="flex flex-col min-w-0 pr-2">
-          <span className="text-xs font-semibold text-slate-700 truncate">{label}</span>
-          <span className="text-[10px] text-slate-400">
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-semibold text-slate-700 truncate">{label}</span>
+            <span className="text-[10px] font-mono px-1 py-0.2 bg-slate-200 text-slate-600 rounded">
+              {cellRef}
+            </span>
+          </div>
+          <span className="text-[10px] text-slate-400 mt-0.5">
             Def:{' '}
             {isCurrency
               ? `Rp ${DEFAULT_STIKER_PARAMS[key].toLocaleString('id-ID')}`
@@ -109,26 +110,24 @@ export default function StikerMasterParameter({
         <div className="flex items-center gap-1.5 shrink-0">
           <div className="relative">
             {isCurrency && (
-              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-medium">
+              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-medium z-10">
                 Rp
               </span>
             )}
-            <input
-              type="number"
-              step={isFloat ? '0.01' : '1'}
-              value={val === 0 ? '' : val}
-              placeholder="0"
-              onChange={(e) => handleChange(key, e.target.value, isFloat)}
+            <ThousandInput
+              value={val}
+              allowDecimals={isFloat}
+              onValueChange={(newVal) => handleValueChange(key, newVal)}
               className={`w-28 text-right text-xs font-bold py-1.5 rounded-lg border outline-hidden transition-all ${
                 isCurrency ? 'pl-7 pr-2' : 'px-2'
               } ${
                 modified
-                  ? 'border-amber-400 bg-white text-amber-900 focus:ring-2 focus:ring-amber-400'
-                  : 'border-slate-300 bg-white text-slate-800 focus:ring-2 focus:ring-emerald-500'
+                  ? 'border-amber-400 bg-white text-amber-950 font-black shadow-2xs'
+                  : 'border-slate-300 bg-white text-slate-800 focus:border-emerald-500'
               }`}
             />
             {!isCurrency && key.includes('Pct') && (
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold pointer-events-none">
                 %
               </span>
             )}
@@ -151,190 +150,150 @@ export default function StikerMasterParameter({
 
   return (
     <div className="flex flex-col gap-4 pb-8">
-      {/* Header Info Banner */}
-      <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-emerald-100/80 rounded-xl border border-emerald-200 text-emerald-800 shrink-0">
-            <Tag size={20} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-black text-slate-800 text-sm sm:text-base">
-                Master Parameter Stiker
-              </h3>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                Katalog 23
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Tarif bahan Sticker Vinyl Glossy 200 gsm, print digital, rajang, dan cutting.
-            </p>
-          </div>
+      {/* Sticky Action Bar */}
+      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1.5 flex items-center justify-between gap-3 border-b border-slate-200/80 -mt-1 mb-1">
+        <div className="flex items-center gap-2">
+          <Tag className="w-4 h-4 text-emerald-700" />
+          <h2 className="text-xs font-black text-slate-800 uppercase tracking-wider">
+            Master Parameter Stiker
+          </h2>
+          {isModified && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
+              Dimodifikasi
+            </span>
+          )}
         </div>
-
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setShowManualModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all cursor-pointer shadow-2xs"
           >
-            <HelpCircle size={14} className="text-emerald-600" />
-            <span>Panduan Parameter</span>
+            <HelpCircle size={13} className="text-emerald-600" />
+            <span>Panduan</span>
           </button>
-
-          <button
-            type="button"
-            onClick={handleResetAll}
-            disabled={!isModified}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs shrink-0 ${
-              isModified
-                ? 'bg-amber-600 hover:bg-amber-700 text-white cursor-pointer ring-2 ring-amber-400/40'
-                : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-70'
-            }`}
-          >
-            <RotateCcw size={13} />
-            <span>Reset Standar Master</span>
-          </button>
+          {isModified && (
+            <button
+              type="button"
+              onClick={handleResetAll}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs cursor-pointer"
+            >
+              <RotateCcw size={13} />
+              <span>Reset Standar</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {isModified && (
-        <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900">
-          <Database size={15} className="text-amber-600 shrink-0 mt-0.5" />
-          <span>
-            <strong>Ada parameter yang dimodifikasi</strong> dari nilai default. Baris berwarna oranye menunjukkan perubahan aktif.
-          </span>
-        </div>
-      )}
-
       {/* Grid 2 Kolom Standar */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Card 1: Bahan & Cetak Print Digital */}
+        {/* Card 1: Tarif Cetak Print A3+ & Desain */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Printer size={15} className="text-emerald-700" />
             <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              1. Bahan &amp; Cetak Digital
+              1. Cetak Print Digital A3+ &amp; Desain
             </h4>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifStikerVinylA3', 'Print Stiker Vinyl A3+ (Rp/lbr)', true)}
-            {fieldRow('tarifDesainStiker', 'Desain Stiker (Rp/order)', true)}
+          <div className="flex flex-col gap-2.5">
+            {fieldRow('tarifPrintNonCuttingA3', 'Print Non Cutting A3+', 'Master!D19', true)}
+            {fieldRow('tarifPrintCuttingA3', 'Print Cutting (Kiss-Cut) A3+', 'Master!D19', true)}
+            {fieldRow('tarifDesain', 'Jasa Desain Stiker', 'Master!D16', true)}
           </div>
           <p className="text-[10px] text-slate-500">
-            Sticker Vinyl Glossy 200 gsm / Cromo Full Colour 1 Muka Digital A3+.
+            Tarif cetak digital A3+ mesin Print Inter (Non Cutting Rp 7.500 vs Cutting Rp 20.000 mencakup ongkos pisau cutting).
           </p>
         </div>
 
-        {/* Card 2: Finishing Cutting & Packing */}
+        {/* Card 2: Finishing Sisir & Margin */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Scissors size={15} className="text-emerald-700" />
             <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              2. Finishing Rajang &amp; Cutting
+              2. Finishing Sisir &amp; Margin Laba
             </h4>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifRajangPerLbr', 'Rajang Potong (Rp/lbr)', true)}
-            {fieldRow('tarifKissCutPerLbr', 'Kiss Cutting A3+ (Rp/lbr)', true)}
-            {fieldRow('tarifDieCutPerPcs', 'Die Cut (Rp/pcs)', true)}
-            {fieldRow('tarifPackingKardus', 'Packing Kardus (Rp/box)', true)}
+          <div className="flex flex-col gap-2.5">
+            {fieldRow('tarifSisirPer500', 'Tarif Sisir per 500 Lembar', 'BUKU!AJ6', true)}
+            {fieldRow('marginDefaultPct', 'Margin Laba Standar', 'Master!E22', false, false)}
+            {fieldRow('negoDefaultPct', 'Batas Nego Standar', 'Kebijakan', false, false)}
           </div>
           <p className="text-[10px] text-slate-500">
-            Non Cutting (Rajang Potong lurus) atau Kiss Cutting setengah putus per lembar A3+.
-          </p>
-        </div>
-
-        {/* Card 3: Margin & Nego Standar */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3 md:col-span-2">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Database size={15} className="text-emerald-700" />
-            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              3. Margin &amp; Nego Standar
-            </h4>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-md">
-            {fieldRow('marginDefaultPct', 'Margin Default (%)', false)}
-            {fieldRow('negoDefaultPct', 'Nego Default (%)', false)}
-          </div>
-          <p className="text-[10px] text-slate-500">
-            Harga Jual = ROUNDUP(HPP × 130%, -2), Nego = ROUNDUP(Harga × 96%, -1).
+            Tarif sisir dihitung per 500 lembar A3+ saat opsi sisir diaktifkan. Margin standar 30% dari total HPP.
           </p>
         </div>
       </div>
 
-      {/* Manual Modal */}
+      {/* Modal Manual Pengguna */}
       {showManualModal && (
         <div
           onClick={() => setShowManualModal(false)}
-          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer"
+          className="fixed inset-0 z-300 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer"
         >
           <div
             onClick={(e) => e.stopPropagation()}
             className="bg-white w-full max-w-2xl max-h-[85vh] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden cursor-default"
           >
-            <div className="px-6 py-4 bg-emerald-900 text-white flex items-center justify-between">
+            <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-emerald-800/80 rounded-xl border border-emerald-700">
-                  <Database size={18} className="text-emerald-200" />
+                <div className="p-2 bg-emerald-600/30 rounded-xl border border-emerald-500/40">
+                  <FileText size={18} className="text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base">Panduan Parameter Stiker</h3>
-                  <p className="text-xs text-emerald-200">Referensi: Pricelist Stiker.xlsx</p>
+                  <h3 className="font-bold text-base">Panduan Master Parameter Stiker</h3>
+                  <p className="text-xs text-slate-400">Pricelist Juli 2026 — 23. Stiker</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowManualModal(false)}
-                className="p-1 rounded-lg text-emerald-300 hover:text-white hover:bg-emerald-800/60 transition-all cursor-pointer"
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
               >
                 <X size={18} />
               </button>
             </div>
 
             <div className="p-6 overflow-y-auto space-y-4 text-xs text-slate-600 leading-relaxed">
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                <h5 className="font-bold text-slate-800 flex items-center gap-1.5">
-                  <FileText size={14} className="text-emerald-600" />
-                  Spesifikasi Standar Stiker
+              <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-950">
+                <h5 className="font-bold mb-1 flex items-center gap-1.5 text-xs text-emerald-900">
+                  <CheckCircle2 size={14} className="text-emerald-700" />
+                  Struktur Perhitungan Excel Master (10 File Source .xlsm)
                 </h5>
                 <p>
-                  Bahan: Sticker Vinyl Glossy 200 gsm 1 Muka Full Colour resolusi tinggi.
-                  Tersedia 5 varian ukuran: 8×5 cm, 7,5×6 cm, 9,5×6,5 cm, 10×12 cm, dan 21×29,7 cm (A4).
+                  Perhitungan stiker berbasis lembar A3+ digital printing. Kebutuhan lembar A3+ dihitung dari{' '}
+                  <code className="font-mono font-bold text-emerald-900">ROUNDUP(Oplah / Isi per A3+)</code>.
                 </p>
               </div>
 
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                <h5 className="font-bold text-slate-800 flex items-center gap-1.5">
-                  <Scissors size={14} className="text-emerald-600" />
-                  Pilihan Finishing Cutting
-                </h5>
-                <ul className="list-disc list-inside space-y-1 pl-1">
-                  <li><strong>Non Cutting (Rajang)</strong>: Potong lurus per lembar stiker.</li>
-                  <li><strong>Kiss Cutting</strong>: Setengah putus pada lembar A3+, mudah dikelupas.</li>
-                  <li><strong>Die Cut</strong>: Potong putus sesuai bentuk pola stiker.</li>
-                </ul>
-              </div>
-
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                <h5 className="font-bold text-slate-800 flex items-center gap-1.5">
-                  <Database size={14} className="text-emerald-600" />
-                  Kebijakan Margin &amp; Nego
-                </h5>
-                <p>
-                  Formula harga jual resmi: <code>Harga = ROUNDUP(HPP × 130%, -2)</code> (Margin 30%).
-                  Batas nego marketing: <code>Nego = ROUNDUP(Harga × 96%, -1)</code> (Diskon 4%).
-                </p>
+              <div>
+                <h5 className="font-bold text-slate-800 mb-2">Tabel Kapasitas Isi per Lembar A3+:</h5>
+                <table className="w-full text-left border-collapse border border-slate-200 text-xs">
+                  <thead>
+                    <tr className="bg-slate-100 text-slate-700 font-bold">
+                      <th className="p-2 border border-slate-200">Ukuran</th>
+                      <th className="p-2 border border-slate-200 text-center">Isi Non Cutting</th>
+                      <th className="p-2 border border-slate-200 text-center">Isi Cutting (Kiss-Cut)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td className="p-2 border border-slate-200 font-bold">7,5 × 6 cm</td><td className="p-2 border border-slate-200 text-center">30 pcs</td><td className="p-2 border border-slate-200 text-center">20 pcs</td></tr>
+                    <tr><td className="p-2 border border-slate-200 font-bold">8 × 5 cm</td><td className="p-2 border border-slate-200 text-center">33 pcs</td><td className="p-2 border border-slate-200 text-center">29 pcs</td></tr>
+                    <tr><td className="p-2 border border-slate-200 font-bold">9,5 × 6,5 cm</td><td className="p-2 border border-slate-200 text-center">21 pcs</td><td className="p-2 border border-slate-200 text-center">16 pcs</td></tr>
+                    <tr><td className="p-2 border border-slate-200 font-bold">10 × 12 cm</td><td className="p-2 border border-slate-200 text-center">11 pcs</td><td className="p-2 border border-slate-200 text-center">8 pcs</td></tr>
+                    <tr><td className="p-2 border border-slate-200 font-bold">21 × 29,7 cm (A4)</td><td className="p-2 border border-slate-200 text-center">2 pcs</td><td className="p-2 border border-slate-200 text-center">1 pcs</td></tr>
+                  </tbody>
+                </table>
               </div>
             </div>
 
-            <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex justify-end">
+            <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
               <button
                 type="button"
                 onClick={() => setShowManualModal(false)}
-                className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl text-xs transition-all cursor-pointer shadow-xs"
+                className="px-4 py-1.5 bg-slate-800 text-white rounded-lg text-xs font-bold hover:bg-slate-900 transition cursor-pointer"
               >
-                Tutup Panduan
+                Tutup
               </button>
             </div>
           </div>
