@@ -125,51 +125,39 @@ export default function SyahadahMasterParameter({
 
   return (
     <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
-      {/* Header Banner */}
-      <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
-            <Database className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-sm sm:text-base font-bold text-emerald-950 tracking-tight">
-                Master Parameter Syahadah (08. Pricelist Syahadah)
-              </h2>
-              {isModified && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
-                  Dimodifikasi
-                </span>
-              )}
-            </div>
-            <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Sinkronisasi 1:1 terhadap sheet Master &amp; BUKU file Excel: <span className="font-semibold text-emerald-900">Pricelist Syahadah - 1 Muka &amp; 2 Muka FC/1W/2W (Print Inter &amp; Ryobi)</span>.
-            </p>
-          </div>
+      {/* Sticky Action Bar */}
+      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1.5 flex items-center justify-between gap-3 border-b border-slate-200/80 -mt-1 mb-1">
+        <div className="flex items-center gap-2">
+          <Database className="w-4 h-4 text-emerald-700" />
+          <h2 className="text-xs font-black text-slate-800 uppercase tracking-wider">
+            Master Parameter Syahadah
+          </h2>
+          {isModified && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
+              Dimodifikasi
+            </span>
+          )}
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setShowManualModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all cursor-pointer shadow-2xs"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all cursor-pointer shadow-2xs"
           >
             <BookOpen size={13} />
-            <span>Manual Pengguna</span>
+            <span>Panduan</span>
           </button>
-          <button
-            type="button"
-            onClick={handleResetAll}
-            disabled={!isModified}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs shrink-0 ${
-              isModified
-                ? 'bg-amber-600 hover:bg-amber-700 text-white cursor-pointer ring-2 ring-amber-400/40'
-                : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-70'
-            }`}
-          >
-            <RotateCcw size={13} />
-            <span>Reset Standar Master</span>
-          </button>
+          {isModified && (
+            <button
+              type="button"
+              onClick={handleResetAll}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs cursor-pointer"
+            >
+              <RotateCcw size={13} />
+              <span>Reset Standar</span>
+            </button>
+          )}
         </div>
       </div>
 
