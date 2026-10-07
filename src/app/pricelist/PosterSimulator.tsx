@@ -15,8 +15,9 @@ import {
   X,
   Printer,
   Layers,
-  ArrowRight,
   TrendingUp,
+  DollarSign,
+  FileText,
   Image as ImageIcon,
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
@@ -59,7 +60,7 @@ interface PosterSimulatorProps {
 }
 
 const DRAFT_KEY = 'sintak_poster_draft';
-const draftVal = (key: string, fallback: any) => {
+const draftVal = <T,>(key: string, fallback: T): T => {
   try {
     if (typeof window === 'undefined') return fallback;
     const item = localStorage.getItem(DRAFT_KEY);
@@ -172,6 +173,10 @@ export default function PosterSimulator({
     );
   }, [ukuran, oplah, mesin, finishing, marginPct, negoDiskonPct, customParams]);
 
+  const profitTotal = useMemo(() => {
+    return Math.max(0, calcResult.totalHargaJual - calcResult.totalHpp);
+  }, [calcResult.totalHargaJual, calcResult.totalHpp]);
+
   const handleUkuranChange = (newUkuran: PosterUkuran) => {
     setUkuran(newUkuran);
     const tiers = POSTER_TIERS_MAP[newUkuran];
@@ -258,6 +263,21 @@ PT Buya Barokah
     setTimeout(() => setCopiedQuote(false), 2500);
   };
 
+  // Helper stepChip bulat hijau emerald
+  const stepChip = (n: number | string) => (
+    <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-emerald-700 text-white text-[10px] font-black shrink-0">
+      {n}
+    </span>
+  );
+
+  // Helper tombol opsi netral (abu netral lembut)
+  const optBtn = (active: boolean) =>
+    `py-2 px-2.5 rounded-lg border text-xs font-bold transition-all text-center cursor-pointer ${
+      active
+        ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs'
+        : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
+    }`;
+
   return (
     <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
       {/* Header Banner */}
@@ -324,7 +344,7 @@ PT Buya Barokah
 
       {/* Grid Simulator: 4 Class Baku Manasik */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-0 pb-1">
-        {/* Kolom Kiri: Form Input Mandiri */}
+        {/* Kolom Kiri: Form Input Mandiri (Netral, Flat & Bersih) */}
         <div className="lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
             <div className="border-b border-slate-100 pb-2.5">
@@ -335,8 +355,8 @@ PT Buya Barokah
 
             {/* 1. Ukuran Poster */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Ukuran Poster
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(1)} Ukuran Poster
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {POSTER_UKURAN_OPTIONS.map((u) => (
@@ -344,11 +364,7 @@ PT Buya Barokah
                     key={u}
                     type="button"
                     onClick={() => handleUkuranChange(u)}
-                    className={`py-2 px-2.5 rounded-lg border text-xs font-bold transition-all text-center cursor-pointer ${
-                      ukuran === u
-                        ? 'bg-emerald-800 text-white border-emerald-900 shadow-2xs ring-2 ring-emerald-500/30'
-                        : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
-                    }`}
+                    className={optBtn(ukuran === u)}
                   >
                     {u}
                   </button>
@@ -357,12 +373,12 @@ PT Buya Barokah
             </div>
 
             {/* 2. Oplah Pesanan */}
-            <div>
+            <div className="pt-2 border-t border-slate-100">
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-bold text-slate-700">
-                  Jumlah Pesanan / Oplah (pcs)
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  {stepChip(2)} Jumlah Pesanan / Oplah (pcs)
                 </label>
-                <span className="text-[10px] text-slate-400 font-medium">
+                <span className="text-[10px] text-slate-500 font-medium">
                   {oplah.toLocaleString('id-ID')} pcs
                 </span>
               </div>
@@ -376,8 +392,8 @@ PT Buya Barokah
                     onClick={() => setOplah(t)}
                     className={`px-2.5 py-1 text-[11px] font-bold rounded-lg border transition-all cursor-pointer ${
                       oplah === t
-                        ? 'bg-emerald-800 text-white border-emerald-900 shadow-2xs'
-                        : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border-slate-200'
+                        ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs'
+                        : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600'
                     }`}
                   >
                     {t >= 1000 ? `${t / 1000}k` : t}
@@ -395,42 +411,50 @@ PT Buya Barokah
               </div>
             </div>
 
-            {/* 3. Selektor Mesin Cetak */}
-            <div>
+            {/* 3. Bahan Baku */}
+            <div className="pt-2 border-t border-slate-100">
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(3)} Bahan Baku Utama
+              </label>
+              <div className="py-2 px-3 rounded-lg border border-slate-200 bg-slate-50 text-xs font-bold text-slate-700 flex items-center justify-between">
+                <span>Art Carton 230 gsm (1 Muka Full Colour)</span>
+                <span className="text-[10px] font-mono text-slate-500">
+                  Rp {customParams.tarifArtCarton230Kg.toLocaleString('id-ID')} /kg
+                </span>
+              </div>
+            </div>
+
+            {/* 4. Selektor Mesin Cetak */}
+            <div className="pt-2 border-t border-slate-100">
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-bold text-slate-700">
-                  Pilihan Mesin Cetak
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  {stepChip(4)} Mesin Cetak
                 </label>
-                <span className="text-[10px] text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                <span className="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 font-medium">
                   Rekomendasi: {getProsesCetakPosterLabel(defaultMesin)}
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {(['Otomatis', 'Print Inter', 'Oliver', 'SM'] as PosterMesinOption[]).map((m) => {
                   const isAuto = m === 'Otomatis';
-                  const isSelected = mesin === m;
                   return (
                     <button
                       key={m}
                       type="button"
                       onClick={() => setMesin(m)}
-                      className={`py-2 px-2 rounded-lg border text-xs font-bold transition-all text-center cursor-pointer ${
-                        isSelected
-                          ? 'bg-emerald-800 text-white border-emerald-900 shadow-2xs ring-2 ring-emerald-500/30'
-                          : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
-                      }`}
+                      className={optBtn(mesin === m)}
                     >
-                      {isAuto ? 'Otomatis' : m}
+                      {isAuto ? 'Otomatis (Rekomendasi)' : m}
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* 4. Finishing Tambahan (Laminasi / UV) */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Finishing Permukaan
+            {/* 5. Finishing Tambahan (Laminasi / UV) */}
+            <div className="pt-2 border-t border-slate-100">
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(5)} Finishing Permukaan (Laminasi)
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {FINISHING_OPTIONS.map((f) => (
@@ -438,11 +462,7 @@ PT Buya Barokah
                     key={f}
                     type="button"
                     onClick={() => setFinishing(f)}
-                    className={`py-2 px-2.5 rounded-lg border text-xs font-bold transition-all text-center cursor-pointer ${
-                      finishing === f
-                        ? 'bg-emerald-800 text-white border-emerald-900 shadow-2xs ring-2 ring-emerald-500/30'
-                        : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
-                    }`}
+                    className={optBtn(finishing === f)}
                   >
                     {f}
                   </button>
@@ -450,91 +470,106 @@ PT Buya Barokah
               </div>
             </div>
 
-            {/* 5. Margin & Batas Nego */}
-            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Target Margin
-                </label>
-                <ThousandInput
-                  value={marginPct}
-                  onValueChange={(val) => setMarginPct(val ?? 30)}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                  suffix="%"
-                />
-              </div>
+            {/* 6. Target Margin & Batas Nego */}
+            <div className="pt-2 border-t border-slate-100">
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(6)} Target Margin &amp; Batas Nego
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                    Target Margin (%)
+                  </label>
+                  <ThousandInput
+                    value={marginPct}
+                    onValueChange={(val) => setMarginPct(val ?? 30)}
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                    suffix="%"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Batas Nego
-                </label>
-                <ThousandInput
-                  value={negoDiskonPct}
-                  onValueChange={(val) => setNegoDiskonPct(val ?? 5)}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                  suffix="%"
-                />
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                    Batas Nego (%)
+                  </label>
+                  <ThousandInput
+                    value={negoDiskonPct}
+                    onValueChange={(val) => setNegoDiskonPct(val ?? 5)}
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+                    suffix="%"
+                  />
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Kolom Kanan: Hasil Finansial & Breakdown Tabel Mandiri */}
+        {/* Kolom Kanan: Hasil Finansial Baku & Breakdown Tabel Mandiri */}
         <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
-          {/* 4 Kartu Finansial Sticky */}
+          {/* Sticky 3-Kartu Metrik Ringkasan Finansial Baku */}
           <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {/* HPP per pcs */}
-              <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs flex flex-col">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                  HPP / pcs
-                </span>
-                <span className="text-base sm:text-lg font-black text-slate-800 font-mono mt-0.5">
-                  Rp {Math.round(calcResult.hppPerPcs).toLocaleString('id-ID')}
-                </span>
-                <span className="text-[9px] text-slate-400 mt-auto pt-1 truncate">
-                  Total Rp {Math.round(calcResult.totalHpp).toLocaleString('id-ID')}
-                </span>
+            <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
+              {stepChip(7)} Kalkulasi Total
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {/* Card 1: HPP Per Exp */}
+              <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-500 mb-1">
+                  <span className="text-[11px] font-semibold">HPP Per Exp</span>
+                  <DollarSign size={13} className="text-slate-400" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-slate-800 font-mono">
+                    Rp {Math.round(calcResult.hppPerPcs).toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-slate-400 mt-0.5">
+                    Total HPP: Rp {Math.round(calcResult.totalHpp).toLocaleString('id-ID')}
+                  </span>
+                </div>
               </div>
 
-              {/* Harga Jual per pcs */}
-              <div className="bg-emerald-50/70 p-3 rounded-xl border border-emerald-200/80 shadow-2xs flex flex-col">
-                <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">
-                  Harga Jual / pcs
-                </span>
-                <span className="text-base sm:text-lg font-black text-emerald-900 font-mono mt-0.5">
-                  Rp {calcResult.hargaJualPerPcs.toLocaleString('id-ID')}
-                </span>
-                <span className="text-[9px] text-emerald-700/80 mt-auto pt-1">
-                  Margin {marginPct}%
-                </span>
+              {/* Card 2: Harga Per Pcs (+Laba%) */}
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-emerald-800 mb-1">
+                  <span className="text-[11px] font-bold">Harga Per Pcs (+{marginPct}%)</span>
+                  <TrendingUp size={13} className="text-emerald-600" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
+                    Rp {calcResult.hargaJualPerPcs.toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-emerald-700/80 mt-0.5">
+                    Laba {marginPct}%
+                  </span>
+                </div>
               </div>
 
-              {/* Batas Nego */}
-              <div className="bg-amber-50/70 p-3 rounded-xl border border-amber-200/80 shadow-2xs flex flex-col">
-                <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider">
-                  Batas Nego / pcs
-                </span>
-                <span className="text-base sm:text-lg font-black text-amber-900 font-mono mt-0.5">
-                  Rp {calcResult.negoPerPcs.toLocaleString('id-ID')}
-                </span>
-                <span className="text-[9px] text-amber-700/80 mt-auto pt-1">
-                  Diskon {negoDiskonPct}%
-                </span>
+              {/* Card 3: Harga Total & Profit */}
+              <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-500 mb-1">
+                  <span className="text-[11px] font-semibold">Harga Total</span>
+                  <TrendingUp size={13} className="text-emerald-500" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">
+                    Rp {calcResult.totalHargaJual.toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-slate-500 mt-0.5">
+                    Profit: Rp {Math.round(profitTotal).toLocaleString('id-ID')}
+                  </span>
+                </div>
               </div>
+            </div>
 
-              {/* Total Omset */}
-              <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs flex flex-col">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                  Total Omset
-                </span>
-                <span className="text-base sm:text-lg font-black text-slate-800 font-mono mt-0.5 truncate">
-                  Rp {calcResult.totalHargaJual.toLocaleString('id-ID')}
-                </span>
-                <span className="text-[9px] text-slate-400 mt-auto pt-1 truncate">
-                  {oplah.toLocaleString('id-ID')} pcs
-                </span>
-              </div>
+            {/* Sub-Card Info Toleransi Nego Diskon */}
+            <div className="bg-amber-50/70 border border-amber-200/80 rounded-xl px-3.5 py-2 flex items-center justify-between text-xs">
+              <span className="text-amber-800 font-bold flex items-center gap-1.5">
+                <Info size={14} className="text-amber-600 shrink-0" />
+                Batas Toleransi Nego Diskon ({negoDiskonPct}%):
+              </span>
+              <span className="font-mono font-black text-amber-900">
+                Rp {calcResult.negoPerPcs.toLocaleString('id-ID')} / pcs
+              </span>
             </div>
           </div>
 
@@ -554,7 +589,7 @@ PT Buya Barokah
             </div>
           </div>
 
-          {/* Tabel Rincian Breakdown Biaya HPP */}
+          {/* Tabel Rincian Breakdown Biaya HPP 5 Kolom Baku */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
             <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <div className="flex items-center gap-2">
@@ -573,9 +608,9 @@ PT Buya Barokah
                 <thead>
                   <tr className="bg-slate-50/70 border-b border-slate-200 text-slate-600 font-bold">
                     <th className="py-2.5 px-3 w-8 text-center">No</th>
-                    <th className="py-2.5 px-3">Komponen Biaya</th>
-                    <th className="py-2.5 px-3">Keterangan Spesifikasi Teknis</th>
-                    <th className="py-2.5 px-3 text-right">Biaya (Rp)</th>
+                    <th className="py-2.5 px-3">Jenis</th>
+                    <th className="py-2.5 px-3">Keterangan</th>
+                    <th className="py-2.5 px-3 text-right">Harga (Rp)</th>
                     <th className="py-2.5 px-3 text-right w-16">Porsi</th>
                   </tr>
                 </thead>
@@ -608,7 +643,7 @@ PT Buya Barokah
                     <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-sm">
                       Rp {Math.round(calcResult.totalHpp).toLocaleString('id-ID')}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-slate-500 text-[11px]">
+                    <td className="py-2.5 px-3 text-right font-mono text-emerald-800 font-bold text-[11px]">
                       100%
                     </td>
                   </tr>
