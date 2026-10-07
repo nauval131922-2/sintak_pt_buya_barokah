@@ -256,6 +256,19 @@ export default function LabelKhqSimulator({
     setTimeout(() => setCopiedQuote(false), 2500);
   };
 
+  const optBtn = (active: boolean) =>
+    `py-2 px-2.5 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
+      active
+        ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400'
+        : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
+    }`;
+
+  const stepChip = (n: number | string) => (
+    <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-emerald-700 text-white text-[10px] font-black shrink-0">
+      {n}
+    </span>
+  );
+
   return (
     <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
 
@@ -312,20 +325,18 @@ export default function LabelKhqSimulator({
               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Spesifikasi Label KHQ</h3>
             </div>
 
-            {/* Varian Botol */}
+            {/* 1. Varian Botol */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Varian Botol Label KHQ</label>
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(1)} Varian Botol Label KHQ
+              </label>
               <div className="grid grid-cols-3 gap-2">
                 {VARIAN_LIST.map((v) => (
                   <button
                     key={v}
                     type="button"
                     onClick={() => setVarian(v)}
-                    className={`py-2 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer flex flex-col items-center gap-1 ${
-                      varian === v
-                        ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
-                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
+                    className={optBtn(varian === v)}
                   >
                     <Wine size={14} className={varian === v ? 'text-white' : 'text-slate-500'} />
                     <span>{v}</span>
@@ -335,10 +346,11 @@ export default function LabelKhqSimulator({
               <p className="text-[11px] text-slate-500 mt-1.5 italic">{LABEL_KHQ_CONFIG[varian].description}</p>
             </div>
 
-            {/* Kuantitas Order */}
+            {/* 2. Kuantitas Order */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Kuantitas Order (Kardus)</label>
-              <div className="flex items-center gap-2">
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                {stepChip(2)} Kuantitas Order (Kardus)
+              </label>
                 <select
                   value={jumlahKardus}
                   onChange={(e) => {
@@ -353,7 +365,6 @@ export default function LabelKhqSimulator({
                     </option>
                   ))}
                 </select>
-              </div>
               <div className="mt-1.5 grid grid-cols-2 gap-2">
                 <input
                   type="number"
@@ -451,63 +462,59 @@ export default function LabelKhqSimulator({
         {/* Kolom Kanan: Hasil (Scrollbar Mandiri) */}
         <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           {/* 4 Kartu Finansial — style identik Brosur */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">HPP / lbr</span>
-                <DollarSign size={13} className="text-slate-400" />
+          {/* Sticky 3-Kartu Metrik Ringkasan Finansial Baku */}
+          <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
+            <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
+              {stepChip(5)} Kalkulasi Total
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {/* Card 1: HPP / Lbr */}
+              <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-500 mb-1">
+                  <span className="text-[11px] font-semibold">HPP Per Lbr</span>
+                  <DollarSign size={13} className="text-slate-400" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-slate-800 font-mono">
+                    Rp {result.hppPerLbr.toFixed(2)}
+                  </span>
+                  <span className="block text-[10px] text-slate-400 mt-0.5">
+                    Total HPP: Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
+                  </span>
+                </div>
               </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-slate-800 font-mono">
-                  Rp {result.hppPerLbr.toFixed(2)}
-                </span>
-                <span className="block text-[10px] text-slate-400 mt-0.5">
-                  Total HPP: Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
-                </span>
-              </div>
-            </div>
 
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-emerald-800 mb-1">
-                <span className="text-[11px] font-bold">Harga Jual (+{marginPct}%)</span>
-                <TrendingUp size={13} className="text-emerald-600" />
+              {/* Card 2: Harga Jual */}
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-emerald-800 mb-1">
+                  <span className="text-[11px] font-bold">Harga Per Lbr (+{marginPct}%)</span>
+                  <TrendingUp size={13} className="text-emerald-600" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
+                    Rp {result.hargaJualPerLbr.toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-emerald-700/80 mt-0.5">/ lbr</span>
+                </div>
               </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
-                  Rp {result.hargaJualPerLbr.toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-emerald-700/80 mt-0.5">/ lbr</span>
-              </div>
-            </div>
 
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-xl border border-blue-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-blue-800 mb-1">
-                <span className="text-[11px] font-bold">Harga Nego (-{negoDiskonPct}%)</span>
-                <Percent size={13} className="text-blue-600" />
-              </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-blue-800 font-mono">
-                  Rp {result.hargaNegoPerLbr.toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-blue-700/80 mt-0.5">/ lbr</span>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">Harga Total</span>
-              </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">
-                  Rp {result.totalHargaJual.toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-slate-500 mt-0.5">
-                  Profit: Rp {Math.round(result.profitTotal).toLocaleString('id-ID')}
-                </span>
+              {/* Card 3: Harga Total */}
+              <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-500 mb-1">
+                  <span className="text-[11px] font-semibold">Harga Total</span>
+                  <TrendingUp size={13} className="text-emerald-500" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">
+                    Rp {result.totalHargaJual.toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-slate-500 mt-0.5">
+                    Profit: Rp {Math.round(result.profitTotal).toLocaleString('id-ID')}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-
           {/* Breakdown */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
             <div className="px-4 py-3 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">

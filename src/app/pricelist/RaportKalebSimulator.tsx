@@ -271,8 +271,20 @@ export default function RaportKalebSimulator({
     setTimeout(() => setCopiedQuote(false), 2000);
   };
 
+  const optBtn = (active: boolean) =>
+    `py-2 px-2.5 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
+      active
+        ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400'
+        : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
+    }`;
+
+  const stepChip = (n: number | string) => (
+    <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-emerald-700 text-white text-[10px] font-black shrink-0">
+      {n}
+    </span>
+  );
+
   return (
-    // Struktur dual-scroll mandiri standar Manasik: flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0
     <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
       {/* Header Info */}
 
@@ -335,8 +347,8 @@ export default function RaportKalebSimulator({
             {/* 1. Pilihan Varian Isi Map */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold text-slate-700">
-                  Varian Isi Map Mika (24 × 34 cm)
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  {stepChip(1)} Varian Isi Map Mika (24 × 34 cm)
                 </label>
               </div>
               <div className="grid grid-cols-3 gap-2">
@@ -345,11 +357,7 @@ export default function RaportKalebSimulator({
                     key={v}
                     type="button"
                     onClick={() => setVarian(v)}
-                    className={`py-2 px-1.5 rounded-lg border text-xs font-bold text-center transition cursor-pointer flex flex-col items-center gap-1 ${
-                      varian === v
-                        ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
-                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
+                    className={optBtn(varian === v)}
                   >
                     <BookOpen size={13} className={varian === v ? 'text-white' : 'text-slate-400'} />
                     <span className="leading-tight text-[11px]">{v}</span>
@@ -509,60 +517,58 @@ export default function RaportKalebSimulator({
         {/* Kolom Kanan: Hasil & Rincian (lg:col-span-7) */}
         <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           {/* 4 Kartu Finansial */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">HPP / pcs</span>
-                <DollarSign size={13} className="text-slate-400" />
+          {/* Sticky 3-Kartu Metrik Ringkasan Finansial Baku */}
+          <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
+            <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
+              {stepChip(5)} Kalkulasi Total
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {/* Card 1: HPP Per Pcs */}
+              <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-500 mb-1">
+                  <span className="text-[11px] font-semibold">HPP Per Pcs</span>
+                  <DollarSign size={13} className="text-slate-400" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-slate-800 font-mono">
+                    Rp {Math.round(result.hppPerPcs).toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-slate-400 mt-0.5">
+                    Total: Rp {result.totalHpp.toLocaleString('id-ID')}
+                  </span>
+                </div>
               </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-slate-800 font-mono">
-                  Rp {Math.round(result.hppPerPcs).toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-slate-400 mt-0.5">
-                  Total HPP: Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
-                </span>
-              </div>
-            </div>
 
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-emerald-800 mb-1">
-                <span className="text-[11px] font-bold">Harga Jual (+{marginPct}%)</span>
-                <TrendingUp size={13} className="text-emerald-600" />
+              {/* Card 2: Harga Jual */}
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-emerald-800 mb-1">
+                  <span className="text-[11px] font-bold">Harga Per Pcs (+{marginPct}%)</span>
+                  <TrendingUp size={13} className="text-emerald-600" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
+                    Rp {result.hargaJualPerPcs.toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-emerald-700/80 mt-0.5">
+                    Laba {marginPct}%
+                  </span>
+                </div>
               </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
-                  Rp {result.hargaJualPerPcs.toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-emerald-700/80 mt-0.5">/ pcs (bulat ratusan)</span>
-              </div>
-            </div>
 
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-xl border border-blue-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-blue-800 mb-1">
-                <span className="text-[11px] font-bold">Harga Nego (-{negoDiskonPct}%)</span>
-                <Percent size={13} className="text-blue-600" />
-              </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-blue-800 font-mono">
-                  Rp {result.hargaNegoPerPcs.toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-blue-700/80 mt-0.5">/ pcs (batas nego)</span>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">Harga Total</span>
-                <TrendingUp size={13} className="text-emerald-500" />
-              </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">
-                  Rp {result.totalHargaJual.toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-slate-500 mt-0.5">
-                  Profit: Rp {Math.round(result.profitTotal).toLocaleString('id-ID')}
-                </span>
+              {/* Card 3: Harga Total */}
+              <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-500 mb-1">
+                  <span className="text-[11px] font-semibold">Harga Total</span>
+                  <TrendingUp size={13} className="text-emerald-500" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">
+                    Rp {result.totalHargaJual.toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-slate-500 mt-0.5">
+                    Profit: Rp {Math.round(result.profitTotal).toLocaleString('id-ID')}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
