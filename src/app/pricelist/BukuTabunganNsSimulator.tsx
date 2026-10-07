@@ -232,12 +232,18 @@ export default function BukuTabunganNsSimulator({
 
   const optBtn = (active: boolean) =>
     `py-1.5 px-2 rounded-lg border text-[11px] font-bold text-center transition cursor-pointer ${
-      active ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+      active ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
     }`;
   const toggleBtn = (on: boolean) =>
     `flex-1 py-1.5 px-2 rounded-lg border text-[11px] font-bold transition cursor-pointer ${
-      on ? 'border-emerald-600 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-white text-slate-400'
+      on ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400' : 'border-slate-200 bg-white text-slate-400'
     }`;
+
+  const stepChip = (n: number | string) => (
+    <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-emerald-700 text-white text-[10px] font-black shrink-0">
+      {n}
+    </span>
+  );
   const numInput = 'w-full px-2.5 py-1.5 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none';
   const lbl = 'block text-xs font-bold text-slate-700 mb-1';
   void Layers;
@@ -274,14 +280,24 @@ export default function BukuTabunganNsSimulator({
               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Spesifikasi Buku Tabungan NS</h3>
             </div>
 
+            {/* 1. Kuantitas */}
             <div>
-              <label className={lbl}>Kuantitas Oplah (pcs)</label>
+              <label className={lbl}>{stepChip(1)} Kuantitas Oplah (pcs)</label>
               <div className="grid grid-cols-2 gap-2">
-                <select value={BUKU_TABUNGAN_NS_TIERS.includes(oplahPcs) ? oplahPcs : 'custom'}
-                  onChange={(e) => { const v = e.target.value; if (v !== 'custom') setOplahPcs(Number(v)); }}
-                  className={`${numInput} cursor-pointer`}>
-                  {BUKU_TABUNGAN_NS_TIERS.map((t) => <option key={t} value={t}>{t.toLocaleString('id-ID')} pcs</option>)}
-                  {!BUKU_TABUNGAN_NS_TIERS.includes(oplahPcs) && <option value="custom">{oplahPcs.toLocaleString('id-ID')} pcs (custom)</option>}
+                <select
+                  value={BUKU_TABUNGAN_NS_TIERS.includes(oplahPcs) ? oplahPcs : 'custom'}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (v !== 'custom') setOplahPcs(Number(v));
+                  }}
+                  className={`${numInput} cursor-pointer`}
+                >
+                  {BUKU_TABUNGAN_NS_TIERS.map((t) => (
+                    <option key={t} value={t}>{t.toLocaleString('id-ID')} pcs</option>
+                  ))}
+                  {!BUKU_TABUNGAN_NS_TIERS.includes(oplahPcs) && (
+                    <option value="custom">{oplahPcs.toLocaleString('id-ID')} pcs (custom)</option>
+                  )}
                 </select>
                 <input type="number" min={1} max={20000} step={10} value={oplahPcs}
                   onChange={(e) => setOplahPcs(Math.max(1, Number(e.target.value) || 1))} className={numInput} placeholder="Custom..." />
@@ -289,9 +305,10 @@ export default function BukuTabunganNsSimulator({
               <p className="text-[10px] text-slate-500 mt-1">Plano cover {result.kebutuhanCoverPlano} lbr · Plano isi {result.kebutuhanIsiPlano} lbr</p>
             </div>
 
+            {/* 2. Halaman & Insheet */}
             <div className="grid grid-cols-3 gap-2">
               <div>
-                <label className={lbl}>Halaman</label>
+                <label className={lbl}>{stepChip(2)} Halaman</label>
                 <input type="number" min={4} step={4} value={jumlahHalaman}
                   onChange={(e) => setJumlahHalaman(Math.max(4, Number(e.target.value) || 24))} className={numInput} />
               </div>
@@ -307,10 +324,11 @@ export default function BukuTabunganNsSimulator({
               </div>
             </div>
 
-            <div className="rounded-xl border border-sky-200 bg-sky-50/50 p-3 space-y-2">
+            {/* 3. Cover */}
+            <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-3 space-y-2">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black uppercase tracking-wider text-sky-900 bg-sky-200/80 px-2 py-0.5 rounded">Cover</span>
-                <label className="text-xs font-bold text-sky-900">Cetak Cover {mesinCover === 'Otomatis' ? '(otomatis: Print Inter)' : ''}</label>
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-800 bg-slate-200 px-2 py-0.5 rounded">Cover</span>
+                <label className="text-xs font-bold text-slate-800">{stepChip(3)} Cetak Cover {mesinCover === 'Otomatis' ? '(otomatis: Print Inter)' : ''}</label>
               </div>
               <div className="grid grid-cols-5 gap-1.5">
                 {TABUNGAN_NS_MESIN_COVER.map((m) => (
@@ -333,10 +351,11 @@ export default function BukuTabunganNsSimulator({
               </div>
             </div>
 
-            <div className="rounded-xl border border-violet-200 bg-violet-50/50 p-3 space-y-2">
+            {/* 4. Isi */}
+            <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-3 space-y-2">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black uppercase tracking-wider text-violet-900 bg-violet-200/80 px-2 py-0.5 rounded">Isi</span>
-                <label className="text-xs font-bold text-violet-900">Cetak Isi {mesinIsi === 'Otomatis' ? `(otomatis: ${oplahPcs < 250 ? 'Print Buya' : 'Ryobi'})` : ''}</label>
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-800 bg-slate-200 px-2 py-0.5 rounded">Isi</span>
+                <label className="text-xs font-bold text-slate-800">{stepChip(4)} Cetak Isi {mesinIsi === 'Otomatis' ? `(otomatis: ${oplahPcs < 250 ? 'Print Buya' : 'Ryobi'})` : ''}</label>
               </div>
               <div className="grid grid-cols-3 gap-1.5">
                 {TABUNGAN_NS_MESIN_ISI.map((m) => (
@@ -391,45 +410,59 @@ export default function BukuTabunganNsSimulator({
 
         {/* Kolom Kanan: Hasil */}
         <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">HPP / pcs</span><DollarSign size={13} className="text-slate-400" />
+          {/* Sticky 3-Kartu Metrik Ringkasan Finansial Baku */}
+          <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
+            <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
+              {stepChip(6)} Kalkulasi Total
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {/* Card 1: HPP / pcs */}
+              <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-500 mb-1">
+                  <span className="text-[11px] font-semibold">HPP Per Pcs</span>
+                  <DollarSign size={13} className="text-slate-400" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-slate-800 font-mono">
+                    Rp {Math.round(result.hppPerPcs).toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-slate-400 mt-0.5">
+                    Total: Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
+                  </span>
+                </div>
               </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-slate-800 font-mono">Rp {Math.round(result.hppPerPcs).toLocaleString('id-ID')}</span>
-                <span className="block text-[10px] text-slate-400 mt-0.5">Total: Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}</span>
+
+              {/* Card 2: Harga Per Pcs */}
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-emerald-800 mb-1">
+                  <span className="text-[11px] font-bold">Harga Per Pcs (+{marginPct}%)</span>
+                  <TrendingUp size={13} className="text-emerald-600" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
+                    Rp {result.hargaFinalPerPcs.toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-emerald-700/80 mt-0.5">Laba {marginPct}%</span>
+                </div>
               </div>
-            </div>
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-emerald-800 mb-1">
-                <span className="text-[11px] font-bold">Final (+{marginPct}%)</span><TrendingUp size={13} className="text-emerald-600" />
-              </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">Rp {result.hargaFinalPerPcs.toLocaleString('id-ID')}</span>
-                <span className="block text-[10px] text-emerald-700/80 mt-0.5">/ pcs (ROUNDUP puluhan)</span>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">Harga Total</span><TrendingUp size={13} className="text-emerald-500" />
-              </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">Rp {Math.round(result.totalHarga).toLocaleString('id-ID')}</span>
-                <span className="block text-[10px] text-slate-500 mt-0.5">Profit: Rp {Math.round(result.totalLaba).toLocaleString('id-ID')}</span>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">Plano Cover/Isi</span><Wallet size={13} className="text-slate-400" />
-              </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-slate-800 font-mono">{result.kebutuhanCoverPlano} / {result.kebutuhanIsiPlano}</span>
-                <span className="block text-[10px] text-slate-400 mt-0.5">lbr plano (R7/AP7)</span>
+
+              {/* Card 3: Harga Total */}
+              <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-500 mb-1">
+                  <span className="text-[11px] font-semibold">Harga Total</span>
+                  <TrendingUp size={13} className="text-emerald-500" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">
+                    Rp {Math.round(result.totalHarga).toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-slate-500 mt-0.5">
+                    Profit: Rp {Math.round(result.totalLaba).toLocaleString('id-ID')}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-
           <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
             <div className="px-4 py-3 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-2">
