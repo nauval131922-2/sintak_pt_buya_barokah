@@ -293,52 +293,9 @@ export default function PosterMasterParameter({
 
   return (
     <div className="flex flex-col gap-4 pb-8 overflow-y-auto">
-      {/* Header Info Banner */}
-      <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-emerald-100/80 rounded-xl border border-emerald-200 text-emerald-800 shrink-0">
-            <ImageIcon className="w-5 h-5 text-emerald-800" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-black text-slate-800 tracking-tight">
-                Master Parameter Poster
-              </h2>
-              <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-full">
-                Katalog 19 / 21
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Tarif bahan kertas Art Carton 230 gsm, mesin Print Inter / Oliver / SM, upah potong sisir, serta finishing tambahan untuk 4 ukuran poster.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowManualModal(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition cursor-pointer"
-          >
-            <HelpCircle size={14} className="text-slate-500" />
-            <span>Panduan & Rumus</span>
-          </button>
-          {isModified && (
-            <button
-              type="button"
-              onClick={handleResetAll}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs transition cursor-pointer"
-            >
-              <RotateCcw size={14} />
-              <span>Reset Semua</span>
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Sticky Search Bar */}
-      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1">
-        <div className="relative">
+      {/* Sticky Search Bar & Actions */}
+      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1 flex items-center gap-2">
+        <div className="relative flex-1">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
@@ -357,6 +314,24 @@ export default function PosterMasterParameter({
             </button>
           )}
         </div>
+        <button
+          type="button"
+          onClick={() => setShowManualModal(true)}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition cursor-pointer shrink-0"
+        >
+          <HelpCircle size={14} className="text-slate-500" />
+          <span>Panduan & Rumus</span>
+        </button>
+        {isModified && (
+          <button
+            type="button"
+            onClick={handleResetAll}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs transition cursor-pointer shrink-0"
+          >
+            <RotateCcw size={14} />
+            <span>Reset Semua</span>
+          </button>
+        )}
       </div>
 
       {/* 2 Kolom Seimbang Masonry */}

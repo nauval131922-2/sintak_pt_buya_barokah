@@ -1884,41 +1884,24 @@ export default function SavedCalculationsList({
 
   return (
     <div className="flex flex-col gap-4 pb-8 overflow-y-auto">
-      {/* Header Info Banner */}
-      <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
-            <Bookmark className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-sm sm:text-base font-bold text-emerald-950 tracking-tight">
-                Daftar Kalkulasi & Riwayat Simulasi
-              </h2>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300">
-                {unifiedList.length} Tersimpan
-              </span>
-            </div>
-            <p className="text-xs text-emerald-800/80 mt-0.5">
-              Arsip simulasi penawaran harga tersinkronisasi otomatis ke Database Server SINTAK & multi-perangkat
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Filter & Search Toolbar — Style Laporan Pekerjaan */}
       <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center gap-3 text-xs">
-        {/* Tombol Reload Data */}
-        <button
-          type="button"
-          onClick={() => refreshData()}
-          disabled={isSyncing}
-          className="h-8 px-2.5 sm:px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-xs"
-          title="Reload Data Riwayat Kalkulasi"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin text-emerald-600" : ""}`} />
-          <span>Reload</span>
-        </button>
+        {/* Tombol Reload Data & Badge Tersimpan */}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => refreshData()}
+            disabled={isSyncing}
+            className="h-8 px-2.5 sm:px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-xs"
+            title="Reload Data Riwayat Kalkulasi"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin text-emerald-600" : ""}`} />
+            <span>Reload</span>
+          </button>
+          <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+            {unifiedList.length} Tersimpan
+          </span>
+        </div>
 
         {/* Search Bar */}
         <div className="relative flex-1 w-full">

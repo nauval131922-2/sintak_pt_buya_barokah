@@ -181,6 +181,10 @@ Setiap workbook kalkulasi percetakan wajib dipetakan ke dalam 4 lapisan:
         * **DILARANG KERAS** meletakkan form input teks kecil dan tombol simpan mini di kartu form kolom kiri.
       - **Jika ada opsi input atau isi kalkulasi yang perlu diperbarui/ditambahkan, WAJIB LANGSUNG UBAH PADA KODE TANPA PERLU KONFIRMASI**.
       - **Auto-Persist Draft Simulator (Wajib, Global Semua Produk)**: Seluruh `*Simulator.tsx` **WAJIB** menyimpan settingan form ke `localStorage` (`sintak_<produk>_draft`) setiap ada perubahan input dan me-restore-nya saat komponen mount / pindah tab, sehingga settingan tidak reset. Wajib di-skip saat Mode Edit Riwayat (`activeSimulationId` terisi) agar draft tidak menimpa data riwayat. Pola baku: `const DRAFT_KEY`, restore di effect load (`if (!activeSimulationId)`), save effect ber-guard sama. Kasus asal: 16 simulator lama (Buku Hard/SoftCover, Tabungan Security, Kalender, Kartu Koperasi, Label Obat, Majalah, Packaging, Paperbag, Poster, Pricelist, Stiker) reset saat pindah tab — diperbaiki global 2026-09-21.
+      - **Clean UI Wajib (Dilarang Banner Header Hijau Raksasa)**:
+        * DILARANG memasang banner/kotak informasi hijau besar (`bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4`) di bagian atas tab Simulator, Master Parameter, Pricelist Matriks, maupun Riwayat. Banner tersebut membuang ~100px ruang layar vertikal dan menimbulkan redundansi visual.
+        * Halaman harus langsung menampilkan form/tabel/toolbar secara bersih (clean flat UI).
+        * Tombol aksi seperti Salin Penawaran, Panduan, atau Reset ditempatkan kompak pada toolbar atau header form.
 
 ### Tahap 6: Uji Komparasi Parity Otomatis (Full Matrix Benchmark)
 Buat skrip pengujian (via Node / TSX) untuk membandingkan kalkulasi Excel vs Sintak baris per baris:

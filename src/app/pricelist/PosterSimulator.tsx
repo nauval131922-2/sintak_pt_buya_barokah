@@ -280,77 +280,44 @@ PT Buya Barokah
 
   return (
     <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
-      {/* Header Banner */}
-      <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-emerald-100/80 rounded-xl border border-emerald-200 text-emerald-800 shrink-0">
-            <ImageIcon className="w-5 h-5 text-emerald-800" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-black text-slate-800 tracking-tight">
-                Simulator Kalkulasi Poster
-              </h2>
-              <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-full">
-                Katalog 19 / 21
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Simulasi interaktif 4 ukuran poster Art Carton 230 gsm dengan opsi mesin Print Inter, Oliver Offset, dan Heidelberg SM.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={handleCopyQuote}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
-          >
-            {copiedQuote ? (
-              <>
-                <Check size={14} className="text-emerald-600" />
-                <span className="text-emerald-700">Tersalin!</span>
-              </>
-            ) : (
-              <>
-                <Copy size={14} className="text-emerald-600" />
-                <span>Salin Penawaran</span>
-              </>
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setShowGuideModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
-          >
-            <BookOpen size={14} className="text-emerald-600" />
-            <span>Panduan</span>
-          </button>
-
-          {onOpenMasterParam && (
-            <button
-              type="button"
-              onClick={onOpenMasterParam}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-800 hover:bg-emerald-900 text-white transition-all shadow-2xs cursor-pointer"
-            >
-              <Settings2 size={14} />
-              <span>Master Parameter</span>
-            </button>
-          )}
-        </div>
-      </div>
-
       {/* Grid Simulator: 4 Class Baku Manasik */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-0 pb-1">
         {/* Kolom Kiri: Form Input Mandiri (Netral, Flat & Bersih) */}
         <div className="lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
-            <div className="border-b border-slate-100 pb-2.5">
+            <div className="border-b border-slate-100 pb-2.5 flex items-center justify-between">
               <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">
                 Parameter Pesanan Poster
               </h4>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={handleCopyQuote}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
+                  title="Salin ringkasan penawaran harga"
+                >
+                  {copiedQuote ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} className="text-emerald-600" />}
+                  <span>{copiedQuote ? 'Tersalin' : 'Salin'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowGuideModal(true)}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
+                >
+                  <BookOpen size={12} className="text-emerald-600" />
+                  <span>Panduan</span>
+                </button>
+                {onOpenMasterParam && (
+                  <button
+                    type="button"
+                    onClick={onOpenMasterParam}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-800 hover:bg-emerald-900 text-white transition-all shadow-2xs cursor-pointer"
+                  >
+                    <Settings2 size={12} />
+                    <span>Master</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* 1. Ukuran Poster */}
