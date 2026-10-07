@@ -248,22 +248,6 @@ export default function ManasikMatrixView({
 
   return (
     <div className="space-y-4">
-      {/* Header Info */}
-      <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
-            <BookOpen className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-sm sm:text-base font-bold text-emerald-950 tracking-tight">
-              Pricelist Matriks Buku Manasik Haji & Umroh 2026
-            </h2>
-            <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Tabel acuan harga jual resmi master Excel 2026: Custom Cover 10×15,5 cm, Kosongan, dan Cocard 6,3×10,3 cm.
-            </p>
-          </div>
-        </div>
-      </div>
 
       {/* Search & Filter Bar */}
       <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center gap-3 text-xs">

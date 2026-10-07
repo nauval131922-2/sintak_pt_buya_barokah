@@ -63,62 +63,36 @@ export default function KalenderKopMatrixView({
 
   return (
     <div className="flex flex-col gap-4 pb-8">
-      {/* Header Banner & Controls */}
-      <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-emerald-100/80 rounded-xl border border-emerald-200 text-emerald-800 shrink-0">
-            <Calendar size={20} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-black text-slate-800 text-sm sm:text-base">
-                Pricelist Matriks Kalender Kop
-              </h3>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                Katalog 27
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Matriks harga 4 varian warna Kalender Kop across tier oplah terhitung instan.
-            </p>
-          </div>
-        </div>
-
-        {/* Mode Switcher */}
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="bg-slate-200/80 p-0.5 rounded-xl flex items-center">
+      {/* Filter Toolbar & Mode Switcher */}
+      <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Mode Switcher */}
+          <div className="bg-slate-100 p-0.5 rounded-lg border border-slate-200 flex items-center">
             <button
               type="button"
               onClick={() => setViewMode('matrix')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
                 viewMode === 'matrix'
                   ? 'bg-white text-emerald-900 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <LayoutGrid size={14} />
-              <span>Matriks Kartu</span>
+              <LayoutGrid size={13} />
+              <span>Matriks</span>
             </button>
-
             <button
               type="button"
               onClick={() => setViewMode('table')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
                 viewMode === 'table'
                   ? 'bg-white text-emerald-900 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <TableProperties size={14} />
-              <span>Tabel Rinci</span>
+              <TableProperties size={13} />
+              <span>Tabel</span>
             </button>
           </div>
-        </div>
-      </div>
-
-      {/* Filter Toolbar */}
-      <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2.5">
           {/* Filter Varian */}
           <div className="flex items-center gap-1.5 bg-slate-50 p-1 rounded-lg border border-slate-200">
             <span className="text-[11px] font-bold text-slate-500 pl-1.5">Varian:</span>

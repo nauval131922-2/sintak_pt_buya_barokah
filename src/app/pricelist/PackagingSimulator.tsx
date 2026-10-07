@@ -496,33 +496,6 @@ export default function PackagingSimulator({
               </div>
             </div>
 
-            {/* Simpan Simulasi & WhatsApp Action Bar */}
-            <div className="flex flex-col gap-2 pt-2 border-t border-slate-100">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={simName}
-                  onChange={(e) => setSimName(e.target.value)}
-                  placeholder="Beri label / nama simulasi..."
-                  className="flex-1 py-1.5 px-3 text-xs text-slate-800 rounded-lg border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:border-emerald-500"
-                />
-                <button
-                  onClick={handleSaveSimulation}
-                  className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-800 text-white hover:bg-emerald-900 transition-all cursor-pointer shrink-0 shadow-2xs flex items-center gap-1.5"
-                >
-                  {savedSuccess ? <Check size={14} /> : <CheckCircle2 size={14} />}
-                  <span>{savedSuccess ? 'Tersimpan!' : 'Simpan'}</span>
-                </button>
-              </div>
-
-              <button
-                onClick={handleCopyWhatsAppQuote}
-                className="w-full py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-black transition-all cursor-pointer flex items-center justify-center gap-2 shadow-2xs"
-              >
-                {copiedQuote ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
-                <span>{copiedQuote ? 'Teks Penawaran Disalin!' : 'Salin Format Penawaran WhatsApp'}</span>
-              </button>
-            </div>
           </div>
         </div>
 
@@ -623,6 +596,32 @@ export default function PackagingSimulator({
                 </span>
               </div>
             </div>
+          </div>
+          {/* Simpan Simulasi & WhatsApp Action Bar */}
+          <div className="flex flex-col sm:flex-row gap-2 pt-1">
+            <div className="flex-1 flex gap-2">
+              <input
+                type="text"
+                value={simName}
+                onChange={(e) => setSimName(e.target.value)}
+                placeholder="Beri label / nama simulasi..."
+                className="flex-1 py-2 px-3 text-xs text-slate-800 rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-emerald-500 shadow-2xs"
+              />
+              <button
+                onClick={handleSaveSimulation}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 transition-all cursor-pointer shrink-0 shadow-xs flex items-center gap-1.5"
+              >
+                {savedSuccess ? <Check size={14} /> : <CheckCircle2 size={14} />}
+                <span>{savedSuccess ? 'Tersimpan!' : 'Simpan Kalkulasi'}</span>
+              </button>
+            </div>
+            <button
+              onClick={handleCopyWhatsAppQuote}
+              className="py-2 px-3 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-black transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs shrink-0"
+            >
+              {copiedQuote ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+              <span>{copiedQuote ? 'Tersalin!' : 'Salin WA'}</span>
+            </button>
           </div>
         </div>
       </div>

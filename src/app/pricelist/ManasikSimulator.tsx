@@ -489,58 +489,6 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
   };
   return (
     <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
-      {/* Header Info */}
-      <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
-            <BookOpen className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="font-bold text-sm sm:text-base text-emerald-950 flex items-center gap-2">
-              Simulator & Kalkulator Buku Manasik Haji / Umroh
-              <span className="text-[10px] font-mono font-normal px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300/80">
-                Katalog 01
-              </span>
-            </h3>
-            <p className="text-[11.5px] text-emerald-800/80 mt-0.5">
-              Kalkulasi HPP & Harga Jual Buku Manasik: Custom Cover (10x15,5), Kosongan (10x15,5), dan Cocard (6,3x10,3 cm).
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={handleCopyQuote}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer ${
-              copiedQuote
-                ? 'bg-emerald-700 text-white'
-                : 'bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300'
-            }`}
-            title="Salin ringkasan spesifikasi & penawaran harga ke WhatsApp / Clipboard"
-          >
-            {copiedQuote ? <Check size={14} /> : <Share2 size={14} />}
-            <span>{copiedQuote ? 'Tersalin!' : 'Salin Penawaran'}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowSimulatorManual(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer"
-          >
-            <Info size={14} />
-            <span>Panduan</span>
-          </button>
-          {onOpenMasterParam && (
-            <button
-              type="button"
-              onClick={onOpenMasterParam}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100/50 text-emerald-800 border border-emerald-300 transition-all shadow-2xs cursor-pointer"
-            >
-              <Settings2 size={14} />
-              <span>Master Parameter</span>
-            </button>
-          )}
-        </div>
-      </div>
 
       
 
@@ -548,9 +496,42 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
         {/* Kolom Kiri: Form Input Spesifikasi (Scrollbar Mandiri Mengisi Penuh Layar ke Bawah) */}
         <div className="lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-              <Sliders size={15} className="text-emerald-700" />
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Input Spesifikasi Order</h3>
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <div className="flex items-center gap-2">
+                <Sliders size={15} className="text-emerald-700" />
+                <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Input Spesifikasi Order</h3>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={handleCopyQuote}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
+                  title="Salin ringkasan spesifikasi & penawaran harga"
+                >
+                  {copiedQuote ? <Check size={12} className="text-emerald-600" /> : <Share2 size={12} className="text-emerald-600" />}
+                  <span>{copiedQuote ? 'Tersalin' : 'Salin'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowSimulatorManual(true)}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
+                  title="Panduan kalkulasi"
+                >
+                  <Info size={12} className="text-slate-500" />
+                  <span>Panduan</span>
+                </button>
+                {onOpenMasterParam && (
+                  <button
+                    type="button"
+                    onClick={onOpenMasterParam}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-800 hover:bg-emerald-900 text-white transition-all shadow-2xs cursor-pointer"
+                    title="Buka Master Parameter"
+                  >
+                    <Settings2 size={12} />
+                    <span>Master</span>
+                  </button>
+                )}
+              </div>
             </div>
             {/* Pilihan Varian Produk */}
             <div>

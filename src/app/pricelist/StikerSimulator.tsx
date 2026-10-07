@@ -454,37 +454,6 @@ _Harga belum termasuk PPN. Hasil cetak tajam, daya rekat kuat & tahan air._`;
               </div>
             </div>
 
-          {activeSimulationId ? (
-            <div className="flex items-center gap-2 w-full mt-2">
-              <button
-                type="button"
-                onClick={handleSaveSimulation}
-                className="flex-1 py-2.5 px-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
-                title="Perbarui kalkulasi yang sedang diedit"
-              >
-                <BookmarkCheck size={15} />
-                <span>Update Perubahan</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleSaveAsNew}
-                className="flex-1 py-2.5 px-3 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
-                title="Simpan sebagai kalkulasi baru & keluar dari mode edit"
-              >
-                <Bookmark size={14} />
-                <span>Simpan Baru</span>
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={handleSaveSimulation}
-              className="w-full mt-2 py-2.5 px-4 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <Save size={15} />
-              <span>Simpan Kalkulasi ke Riwayat</span>
-            </button>
-          )}
           </div>
         </div>
 
@@ -619,6 +588,40 @@ _Harga belum termasuk PPN. Hasil cetak tajam, daya rekat kuat & tahan air._`;
                 </tfoot>
               </table>
             </div>
+          </div>
+          {/* Simpan */}
+          <div className="pt-1">
+            {activeSimulationId ? (
+              <div className="flex items-center gap-2 w-full">
+                <button
+                  type="button"
+                  onClick={handleSaveSimulation}
+                  className="flex-1 py-2.5 px-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                  title="Perbarui kalkulasi yang sedang diedit"
+                >
+                  <BookmarkCheck size={15} />
+                  <span>Update Perubahan</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveAsNew}
+                  className="flex-1 py-2.5 px-3 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                  title="Simpan sebagai kalkulasi baru & keluar dari mode edit"
+                >
+                  <Bookmark size={14} />
+                  <span>Simpan Baru</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSaveSimulation}
+                className="w-full py-2.5 px-4 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Save size={15} />
+                <span>Simpan Kalkulasi ke Riwayat</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

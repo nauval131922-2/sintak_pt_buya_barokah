@@ -153,50 +153,39 @@ export default function KalenderKopMasterParameter({
 
   return (
     <div className="flex flex-col gap-4 pb-8">
-      {/* Header Info Banner */}
-      <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-emerald-100/80 rounded-xl border border-emerald-200 text-emerald-800 shrink-0">
-            <Calendar size={20} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-black text-slate-800 text-sm sm:text-base">
-                Master Parameter Kalender Kop
-              </h3>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                Katalog 27
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Tarif blanko kalender 6 lembar AP 120 gsm, ongkos cetak kop per warna, klem seng, dan batas nego.
-            </p>
-          </div>
+      {/* Sticky Action Bar */}
+      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1.5 flex items-center justify-between gap-3 border-b border-slate-200/80 -mt-1 mb-1">
+        <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-emerald-700" />
+          <h2 className="text-xs font-black text-slate-800 uppercase tracking-wider">
+            Master Parameter Kalender Kop
+          </h2>
+          {isModified && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
+              Dimodifikasi
+            </span>
+          )}
         </div>
-
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setShowManualModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all cursor-pointer shadow-2xs"
           >
-            <HelpCircle size={14} className="text-emerald-600" />
-            <span>Panduan Parameter</span>
+            <HelpCircle size={13} className="text-emerald-600" />
+            <span>Panduan</span>
           </button>
-
-          <button
-            type="button"
-            onClick={handleResetAll}
-            disabled={!isModified}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs shrink-0 ${
-              isModified
-                ? 'bg-amber-600 hover:bg-amber-700 text-white cursor-pointer ring-2 ring-amber-400/40'
-                : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-70'
-            }`}
-          >
-            <RotateCcw size={13} />
-            <span>Reset Standar Master</span>
-          </button>
+          {isModified && (
+            <button
+              type="button"
+              onClick={handleResetAll}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs cursor-pointer"
+            >
+              <RotateCcw size={13} />
+              <span>Reset Standar</span>
+            </button>
+          )}
         </div>
       </div>
 
