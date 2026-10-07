@@ -165,83 +165,83 @@ export default function BukuTabunganNsMasterParameter({
         {card(
           <Printer className="w-4 h-4 text-blue-600" />,
           '1. Umum & Kertas Cover',
-          'Master!D6/D8/D12-D13/D17-D18. Cover Print Inter: kertas (R7/500)×W29 diganti jasa T2×R7; Plat/Min/Drek hanya mesin offset (BUKU!Y6/AB6/AC7).',
+          'Cover Print Inter: kertas diganti jasa; Plat/Min/Drek hanya mesin offset.',
           <>
-            {fieldRow('jumlahHalaman', 'Jumlah Halaman (Master!D6)', { rupiah: false })}
-            {fieldRow('umr', 'UMR (Master!D8 → A07.UMR)')}
-            {fieldRow('tarifKertasCoverKg', 'Kertas Cover /kg (Master!D12)')}
-            {fieldRow('upKertasCoverPct', 'Up Kertas Cover % (Master!E12)', { rupiah: false, suffix: '%' })}
-            {fieldRow('insheetCover', 'Insheet Cover lbr (Master!D13)', { rupiah: false })}
-            {fieldRow('tarifDesainCover', 'Desain Cover /order (Master!D17)')}
-            {fieldRow('tarifPrintCoverA3', 'Print Cover A3+ (Master!D18)')}
-            {fieldRow('tarifFilmBw', 'Film BW (BUKU!W6, V30 mati)', { decimal: true })}
+            {fieldRow('jumlahHalaman', 'Jumlah Halaman', { rupiah: false })}
+            {fieldRow('umr', 'UMR Acuan')}
+            {fieldRow('tarifKertasCoverKg', 'Kertas Cover /kg')}
+            {fieldRow('upKertasCoverPct', 'Up Kertas Cover %', { rupiah: false, suffix: '%' })}
+            {fieldRow('insheetCover', 'Insheet Cover (lbr)', { rupiah: false })}
+            {fieldRow('tarifDesainCover', 'Desain Cover /order')}
+            {fieldRow('tarifPrintCoverA3', 'Print Cover A3+')}
+            {fieldRow('tarifFilmBw', 'Film BW', { decimal: true })}
           </>
         )}
 
         {card(
           <Layers className="w-4 h-4 text-emerald-600" />,
           '2. Kertas Isi & Cetak Isi',
-          'Master!D22-D23/D26-D27. Isi Print Buya: kertas (AP7/500)×AU29 diganti jasa 350×AO7; Inter: (AR2×2)×AP7 (BUKU!AR7/BD7).',
+          'Isi Print Buya: kertas diganti jasa; Inter: proporsional lembar cetak.',
           <>
-            {fieldRow('tarifKertasIsiKg', 'Kertas Isi /kg (Master!D22)')}
-            {fieldRow('upKertasIsiPct', 'Up Kertas Isi % (Master!E22)', { rupiah: false, suffix: '%' })}
-            {fieldRow('insheetIsi', 'Insheet Isi lbr (Master!D23)', { rupiah: false })}
-            {fieldRow('tarifDesainIsiPerLbr', 'Desain Isi /lbr (Master!D26)')}
-            {fieldRow('tarifPrintIsiA3', 'Print Isi A3+ (Master!D27)')}
-            {fieldRow('tarifFilmWarna', 'Film Warna (BUKU!AU6, selalu 0)', { decimal: true })}
-            {fieldRow('tarifJasaPrintBuya', 'Jasa Print Buya (BUKU!AR2)')}
+            {fieldRow('tarifKertasIsiKg', 'Kertas Isi /kg')}
+            {fieldRow('upKertasIsiPct', 'Up Kertas Isi %', { rupiah: false, suffix: '%' })}
+            {fieldRow('insheetIsi', 'Insheet Isi (lbr)', { rupiah: false })}
+            {fieldRow('tarifDesainIsiPerLbr', 'Desain Isi /lbr')}
+            {fieldRow('tarifPrintIsiA3', 'Print Isi A3+')}
+            {fieldRow('tarifFilmWarna', 'Film Warna', { decimal: true })}
+            {fieldRow('tarifJasaPrintBuya', 'Jasa Print Buya')}
           </>
         )}
 
         {card(
           <Scissors className="w-4 h-4 text-amber-600" />,
           '3. Jasa UMR & Finishing Mekanik',
-          'Jasa = (UMR/25)÷target (BUKU!BI6/BJ6/BM6/BV6/BZ6/CV6). Jahit min 250rb & Pound min 50rb tetap jalan saat toggle X (1:1 Excel). Sisir = 3×50 (BUKU!BQ6).',
+          'Jasa berbasis target harian UMR. Jahit & Pound memiliki batas minimum charge.',
           <>
-            {fieldRow('tarifPisauPound', 'Pisau Pound (BUKU!BL6 √)', { decimal: true })}
-            {fieldRow('tarifSisirPaket', 'Sisir /pcs (BUKU!BQ6 √)')}
-            {fieldRow('tarifBending', 'Bending (BUKU!CC6)')}
-            {fieldRow('tarifTintaSpotUvKg', 'Tinta Spot UV /kg (Master!D31)')}
-            {fieldRow('tarifPlastikSringRoll', 'Plastik Sring /roll (Master!D32)')}
-            {fieldRow('tarifLakbanRoll', 'Lakban /roll (Master!D34)')}
-            {fieldRow('tarifKardusBox', 'Kardus /box (Master!D35)')}
-            {fieldRow('royalty', 'Royalty (Master!D36)')}
-            {fieldRow('tarifKawatStiching', 'Kawat Stiching (info, Master!D30)')}
-            {fieldRow('tarifSteplesPack', 'Steples /pack (info, Master!D33)')}
+            {fieldRow('tarifPisauPound', 'Pisau Pound', { decimal: true })}
+            {fieldRow('tarifSisirPaket', 'Sisir /pcs')}
+            {fieldRow('tarifBending', 'Bending')}
+            {fieldRow('tarifTintaSpotUvKg', 'Tinta Spot UV /kg')}
+            {fieldRow('tarifPlastikSringRoll', 'Plastik Sring /roll')}
+            {fieldRow('tarifLakbanRoll', 'Lakban /roll')}
+            {fieldRow('tarifKardusBox', 'Kardus /box')}
+            {fieldRow('royalty', 'Royalty')}
+            {fieldRow('tarifKawatStiching', 'Kawat Stiching (info)')}
+            {fieldRow('tarifSteplesPack', 'Steples /pack (info)')}
           </>
         )}
 
         {card(
           <Layers className="w-4 h-4 text-violet-600" />,
           '4. Laminasi, Target Harian & Batas Min',
-          'Laminasi = luas (D7×2+1)×(F7+1) × tarif, min 50rb (BUKU!CG7/CJ7/CM7). Bending+kombi min 100rb (CE7). Target ÷UMR per ukuran 10 X 15.',
+          'Laminasi dihitung dari luas × tarif. Target UMR per ukuran standar.',
           <>
-            {fieldRow('tarifLamGlossy', 'Laminasi Glossy /cm² (BUKU!CF6)', { decimal: true })}
-            {fieldRow('tarifLamDoff', 'Laminasi Doff /cm² (BUKU!CI6)', { decimal: true })}
-            {fieldRow('tarifUvVarnish', 'UV Varnish /cm² (BUKU!CL6)', { decimal: true })}
-            {fieldRow('targetSusunLipat', 'Target Susun-Lipat (BUKU!BI28)', { rupiah: false })}
-            {fieldRow('targetJahit', 'Target Jahit (BUKU!BJ28)', { rupiah: false })}
-            {fieldRow('targetPound', 'Target Pound (BUKU!BM28)', { rupiah: false })}
-            {fieldRow('targetSpotUv', 'Target Spot UV (BUKU!BT27)', { rupiah: false })}
-            {fieldRow('targetEmboss', 'Target Emboss (BUKU!BZ27)', { rupiah: false })}
-            {fieldRow('targetSring', 'Target Sring (BUKU!CV28)', { rupiah: false })}
-            {fieldRow('targetLakban', 'Target Lakban (BUKU!CZ28)', { rupiah: false })}
-            {fieldRow('minJahit', 'Min Jahit (BUKU!BJ7)')}
-            {fieldRow('minPound', 'Min Pound (BUKU!BM7)')}
-            {fieldRow('minBendingKombi', 'Min Bending Kombi (BUKU!CE7)')}
-            {fieldRow('minLaminasi', 'Min Laminasi/UV (BUKU!CG7)')}
+            {fieldRow('tarifLamGlossy', 'Laminasi Glossy /cm²', { decimal: true })}
+            {fieldRow('tarifLamDoff', 'Laminasi Doff /cm²', { decimal: true })}
+            {fieldRow('tarifUvVarnish', 'UV Varnish /cm²', { decimal: true })}
+            {fieldRow('targetSusunLipat', 'Target Susun-Lipat', { rupiah: false })}
+            {fieldRow('targetJahit', 'Target Jahit', { rupiah: false })}
+            {fieldRow('targetPound', 'Target Pound', { rupiah: false })}
+            {fieldRow('targetSpotUv', 'Target Spot UV', { rupiah: false })}
+            {fieldRow('targetEmboss', 'Target Emboss', { rupiah: false })}
+            {fieldRow('targetSring', 'Target Sring', { rupiah: false })}
+            {fieldRow('targetLakban', 'Target Lakban', { rupiah: false })}
+            {fieldRow('minJahit', 'Min Jahit')}
+            {fieldRow('minPound', 'Min Pound')}
+            {fieldRow('minBendingKombi', 'Min Bending Kombi')}
+            {fieldRow('minLaminasi', 'Min Laminasi/UV')}
           </>
         )}
 
         {card(
           <Percent className="w-4 h-4 text-rose-600" />,
           '5. Konstanta Roll & Laba',
-          'Acuan roll per ukuran 10 X 15 (BUKU!CT30/CZ30/BT30). Laba Master!E37 → BUKU!DE6; final ROUNDUP puluhan (BUKU!DI7).',
+          'Acuan roll per ukuran 10 X 15. Laba standar margin dengan pembulatan puluhan.',
           <>
-            {fieldRow('ukuranPlastikSringCm', 'Plastik Sring cm/roll (BUKU!CT30)', { rupiah: false })}
-            {fieldRow('ukuranLakbanCm', 'Lakban cm/roll (BUKU!CZ30)', { rupiah: false })}
-            {fieldRow('acuanSpotUvCm', 'Acuan Spot UV cm (BUKU!BT30)', { rupiah: false })}
-            {fieldRow('labaPct', 'Laba % (Master!E37)', { rupiah: false, suffix: '%' })}
+            {fieldRow('ukuranPlastikSringCm', 'Plastik Sring cm/roll', { rupiah: false })}
+            {fieldRow('ukuranLakbanCm', 'Lakban cm/roll', { rupiah: false })}
+            {fieldRow('acuanSpotUvCm', 'Acuan Spot UV cm', { rupiah: false })}
+            {fieldRow('labaPct', 'Laba %', { rupiah: false, suffix: '%' })}
           </>
         )}
       </div>

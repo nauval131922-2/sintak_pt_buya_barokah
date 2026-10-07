@@ -189,7 +189,7 @@ export default function SertifikatMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Package className="w-4 h-4 text-emerald-600" />
-            <h3 className="text-xs font-bold text-slate-800">1. Bahan per Jenis (Master!D10–E12)</h3>
+            <h3 className="text-xs font-bold text-slate-800">1. Bahan per Jenis</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('hargaKgAc', 'Ac 230 — Rp/kg')}
@@ -200,7 +200,7 @@ export default function SertifikatMasterParameter({
             {fieldRow('gramaturLinen', 'Linen — gramatur', false)}
           </div>
           <p className="text-[10px] text-slate-500">
-            Harga/rim BUKU!W29 = ((dim×gram)/20000) × (harga/kg + up). Gramatur Excel: {SERTIFIKAT_GRAMATUR_OPTIONS.join(', ')} gsm.
+            Harga per rim dihitung dari dimensi, gramatur, harga per kg, dan persentase up. Gramatur: {SERTIFIKAT_GRAMATUR_OPTIONS.join(', ')} gsm.
           </p>
         </div>
 
@@ -208,7 +208,7 @@ export default function SertifikatMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Layers className="w-4 h-4 text-sky-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Up Harga per Kombinasi (Master!E12)</h3>
+            <h3 className="text-xs font-bold text-slate-800">2. Up Harga per Kombinasi</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('upAcOffset', 'Ac + Offset (%)', false)}
@@ -240,7 +240,7 @@ export default function SertifikatMasterParameter({
             {fieldRow('umr', 'UMR (jasa foil) (Rp)')}
           </div>
           <p className="text-[10px] text-slate-500">
-            Plate BUKU!Y6: Oliver Rp 45.000 / SM Rp 78.000 / Ryobi Rp 10.000 (jml = warna×muka). Min &amp; drek: 90000/40, 310000/100, 15000/30.
+            Plate: Oliver Rp 45.000 / SM Rp 78.000 / Ryobi Rp 10.000 (jml = warna×muka). Min &amp; drek: 90000/40, 310000/100, 15000/30.
           </p>
         </div>
 

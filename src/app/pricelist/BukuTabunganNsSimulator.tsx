@@ -308,7 +308,7 @@ export default function BukuTabunganNsSimulator({
             </div>
 
             <div>
-              <label className={lbl}>Kuantitas Oplah (pcs) — Master!D7</label>
+              <label className={lbl}>Kuantitas Oplah (pcs)</label>
               <div className="grid grid-cols-2 gap-2">
                 <select value={BUKU_TABUNGAN_NS_TIERS.includes(oplahPcs) ? oplahPcs : 'custom'}
                   onChange={(e) => { const v = e.target.value; if (v !== 'custom') setOplahPcs(Number(v)); }}
@@ -343,7 +343,7 @@ export default function BukuTabunganNsSimulator({
             <div className="rounded-xl border border-sky-200 bg-sky-50/50 p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-sky-900 bg-sky-200/80 px-2 py-0.5 rounded">Cover</span>
-                <label className="text-xs font-bold text-sky-900">Cetak Cover — Master!D16 {mesinCover === 'Otomatis' ? '(otomatis: Print Inter)' : ''}</label>
+                <label className="text-xs font-bold text-sky-900">Cetak Cover {mesinCover === 'Otomatis' ? '(otomatis: Print Inter)' : ''}</label>
               </div>
               <div className="grid grid-cols-5 gap-1.5">
                 {TABUNGAN_NS_MESIN_COVER.map((m) => (
@@ -369,7 +369,7 @@ export default function BukuTabunganNsSimulator({
             <div className="rounded-xl border border-violet-200 bg-violet-50/50 p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-violet-900 bg-violet-200/80 px-2 py-0.5 rounded">Isi</span>
-                <label className="text-xs font-bold text-violet-900">Cetak Isi — Master!D25 {mesinIsi === 'Otomatis' ? `(otomatis: ${oplahPcs < 250 ? 'Print Buya' : 'Ryobi'})` : ''}</label>
+                <label className="text-xs font-bold text-violet-900">Cetak Isi {mesinIsi === 'Otomatis' ? `(otomatis: ${oplahPcs < 250 ? 'Print Buya' : 'Ryobi'})` : ''}</label>
               </div>
               <div className="grid grid-cols-3 gap-1.5">
                 {TABUNGAN_NS_MESIN_ISI.map((m) => (
@@ -392,14 +392,14 @@ export default function BukuTabunganNsSimulator({
             </div>
 
             <div>
-              <label className={lbl}>Finishing — Master!D29</label>
+              <label className={lbl}>Pilihan Finishing</label>
               <select value={finishing} onChange={(e) => setFinishing(e.target.value as TabunganNsFinishing)} className={`${numInput} cursor-pointer`}>
                 {TABUNGAN_NS_FINISHING.map((f) => <option key={f} value={f}>{f.replace(/,$/, '')}</option>)}
               </select>
             </div>
 
             <div>
-              <label className={lbl}>Toggle jasa (BUKU!BJ26/BL26/BM26/BQ26/DA28)</label>
+              <label className={lbl}>Opsi Tambahan Jasa Finishing</label>
               <div className="flex gap-1.5">
                 <button type="button" onClick={() => setJahitAktif(!jahitAktif)} className={toggleBtn(jahitAktif)}>Jahit {jahitAktif ? '√' : 'X'}</button>
                 <button type="button" onClick={() => setPisauPoundAktif(!pisauPoundAktif)} className={toggleBtn(pisauPoundAktif)}>Pisau {pisauPoundAktif ? '√' : 'X'}</button>
@@ -412,7 +412,7 @@ export default function BukuTabunganNsSimulator({
             </div>
 
             <div>
-              <label className={lbl}>Margin Profit (%) — Master!E37</label>
+              <label className={lbl}>Margin Profit (%)</label>
               <div className="relative">
                 <input type="number" min={0} max={100} value={marginPct}
                   onChange={(e) => setMarginPct(Number(e.target.value) || 0)} className={`${numInput} pr-7`} />
@@ -467,7 +467,7 @@ export default function BukuTabunganNsSimulator({
             <div className="px-4 py-3 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FileText size={15} className="text-emerald-700" />
-                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Rincian Biaya HPP (BUKU!DC7)</h4>
+            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Rincian Biaya HPP</h4>
               </div>
               <span className="text-[11px] font-bold text-slate-500">
                 {oplahPcs.toLocaleString('id-ID')} pcs · {jumlahHalaman} hal · {result.mesinCoverEfektif}/{result.mesinIsiEfektif}
@@ -553,7 +553,7 @@ export default function BukuTabunganNsSimulator({
                   {[
                     ['1. Oplah & Halaman', 'Pilih tier 50–1500 pcs atau custom; isi jumlah halaman (default 24 = 6 lbr). Oplah <250 otomatis isi Print Buya, ≥250 Ryobi.'],
                     ['2. Mesin & Warna', 'Cover default Print Inter 1 Muka 4 Warna; Isi default 1 Warna. Tombol ⚙️ Otomatis atau pilih mesin offset manual (Plat/Min/Drek berlaku).'],
-                    ['3. Finishing & Toggle', 'Pilih 1 dari 9 opsi Master!D29 (menggerakkan SpotUV/Emboss/Bending/Laminasi/Sring otomatis) + toggle √/X Jahit/Pisau/Pound/Sisir/Kardus.'],
+                    ['3. Finishing & Toggle', 'Pilih 1 dari 9 opsi Finishing (menggerakkan SpotUV/Emboss/Bending/Laminasi/Sring otomatis) + toggle √/X Jahit/Pisau/Pound/Sisir/Kardus.'],
                     ['4. Margin & Simpan', 'Atur laba % (default 30), salin penawaran WA atau simpan kalkulasi ke daftar.'],
                   ].map(([title, desc]) => (
                     <div key={title} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
@@ -564,7 +564,7 @@ export default function BukuTabunganNsSimulator({
                 </div>
               </div>
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5">
-                <h5 className="font-bold text-slate-900 text-xs uppercase tracking-wider">Struktur Rincian HPP (BUKU!DC7)</h5>
+                <h5 className="font-bold text-slate-900 text-xs uppercase tracking-wider">Struktur Rincian HPP</h5>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
                   <div className="p-2.5 bg-white rounded border border-emerald-100 space-y-1">
                     <span className="font-bold text-emerald-900 block">Kertas &amp; Cetak:</span>

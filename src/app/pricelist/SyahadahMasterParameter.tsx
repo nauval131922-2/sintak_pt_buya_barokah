@@ -182,10 +182,10 @@ export default function SyahadahMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">1. Bahan Kertas &amp; Desain</h3>
           </div>
           <div className="space-y-2.5">
-            {fieldRow('tarifKertasLinenKg', 'Harga Kertas Linen/Hammer /Kg', true, false, undefined, 'Master!D12: Hammer Crem / Linen Tebal 300 gsm')}
-            {fieldRow('upKertasPct', 'Markup Kertas (%)', false, false, '%', 'Master!E12: Kenaikan harga kertas (default 0%)')}
-            {fieldRow('tarifDesign', 'Desain / Order', true, false, undefined, 'Master!D17: Biaya setting layout syahadah (Rp 20.000)')}
-            {fieldRow('tarifSisirPer500', 'Potong Sisir / 500 Pcs', true, false, undefined, 'BUKU!AS6: Ongkos potong sisir (Rp 5.000 per 500 pcs)')}
+            {fieldRow('tarifKertasLinenKg', 'Harga Kertas Linen/Hammer /Kg', true, false, undefined, 'Hammer Crem / Linen Tebal 300 gsm')}
+            {fieldRow('upKertasPct', 'Markup Kertas (%)', false, false, '%', 'Kenaikan harga kertas (default 0%)')}
+            {fieldRow('tarifDesign', 'Desain / Order', true, false, undefined, 'Biaya setting layout syahadah (Rp 20.000)')}
+            {fieldRow('tarifSisirPer500', 'Potong Sisir / 500 Pcs', true, false, undefined, 'Ongkos potong sisir (Rp 5.000 per 500 pcs)')}
           </div>
         </div>
 
@@ -196,8 +196,8 @@ export default function SyahadahMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">2. Cetak Digital Print Inter</h3>
           </div>
           <div className="space-y-2.5">
-            {fieldRow('tarifPrintA3', 'Tarif Print A3+ Digital', true, false, undefined, 'Master!D18: Biaya cetak per lbr A3+ (muat 2 syahadah)')}
-            {fieldRow('insheetPod', 'Insheet Cetak Digital (Lembar A3+)', false, false, 'Lbr', 'Master!D13: Cadangan cetak digital Print Inter (default 5 lbr)')}
+            {fieldRow('tarifPrintA3', 'Tarif Print A3+ Digital', true, false, undefined, 'Biaya cetak per lbr A3+ (muat 2 syahadah)')}
+            {fieldRow('insheetPod', 'Insheet Cetak Digital (Lembar A3+)', false, false, 'Lbr', 'Cadangan cetak digital Print Inter (default 5 lbr)')}
           </div>
         </div>
 
@@ -208,11 +208,11 @@ export default function SyahadahMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">3. Cetak Offset Ryobi</h3>
           </div>
           <div className="space-y-2.5">
-            {fieldRow('tarifPlatRyobi', 'Tarif Plat Ryobi / Warna', true, false, undefined, 'BUKU!Y6: Biaya plat cetak offset toko (Rp 10.000/plat)')}
-            {fieldRow('minOrderRyobi', 'Min. Order Cetak / Plat', true, false, undefined, 'BUKU!AB6: Ongkos dasar cetak per plat s.d. 500 drek')}
-            {fieldRow('tarifDrekOverRyobi', 'Tarif Drek Over / Warna', true, false, undefined, 'BUKU!AC7: Drek over di atas 500 (Rp 30/drek/warna)')}
-            {fieldRow('insheetRyobi', 'Insheet Cetak Ryobi (Lembar)', false, false, 'Lbr', 'Master!D13: Cadangan cetak offset Ryobi (default 50 lbr)')}
-            {fieldRow('syahadahPerPlanoRyobi', 'Kapasitas Plano (Pcs / Plano)', false, false, 'Pcs', 'BUKU!O15: 1 plano 79×109 cm dipotong jadi 11 lembar folio')}
+            {fieldRow('tarifPlatRyobi', 'Tarif Plat Ryobi / Warna', true, false, undefined, 'Biaya plat cetak offset toko (Rp 10.000/plat)')}
+            {fieldRow('minOrderRyobi', 'Min. Order Cetak / Plat', true, false, undefined, 'Ongkos dasar cetak per plat s.d. 500 drek')}
+            {fieldRow('tarifDrekOverRyobi', 'Tarif Drek Over / Warna', true, false, undefined, 'Drek over di atas 500 (Rp 30/drek/warna)')}
+            {fieldRow('insheetRyobi', 'Insheet Cetak Ryobi (Lembar)', false, false, 'Lbr', 'Cadangan cetak offset Ryobi (default 50 lbr)')}
+            {fieldRow('syahadahPerPlanoRyobi', 'Kapasitas Plano (Pcs / Plano)', false, false, 'Pcs', '1 plano 79×109 cm dipotong jadi 11 lembar folio')}
           </div>
         </div>
 
@@ -223,9 +223,9 @@ export default function SyahadahMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">4. Cetak Offset Oliver</h3>
           </div>
           <div className="space-y-2.5">
-            {fieldRow('tarifPlatOliver', 'Tarif Plat Oliver / Warna', true, false, undefined, 'BUKU!Y6: Biaya plat cetak offset Oliver (Rp 43.000/plat)')}
-            {fieldRow('minOrderOliver', 'Min. Order Cetak / Plat', true, false, undefined, 'BUKU!AB6: Ongkos dasar cetak per plat s.d. 1.000 drek')}
-            {fieldRow('tarifDrekOverOliver', 'Tarif Drek Over / Warna', true, false, undefined, 'BUKU!AC7: Drek over di atas 1.000 (Rp 40/drek/warna)')}
+            {fieldRow('tarifPlatOliver', 'Tarif Plat Oliver / Warna', true, false, undefined, 'Biaya plat cetak offset Oliver (Rp 43.000/plat)')}
+            {fieldRow('minOrderOliver', 'Min. Order Cetak / Plat', true, false, undefined, 'Ongkos dasar cetak per plat s.d. 1.000 drek')}
+            {fieldRow('tarifDrekOverOliver', 'Tarif Drek Over / Warna', true, false, undefined, 'Drek over di atas 1.000 (Rp 40/drek/warna)')}
           </div>
         </div>
 
@@ -236,9 +236,9 @@ export default function SyahadahMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">5. Finishing Foil Emas</h3>
           </div>
           <div className="space-y-2.5">
-            {fieldRow('tarifKliseMasterFoil', 'Biaya Klise Master Foil', true, false, undefined, 'BUKU!AN6: Biaya pembuatan plat/matris foil per muka')}
-            {fieldRow('tarifFoilPerPcs', 'Tarif Hotprint Foil / Pcs', true, false, undefined, 'HARGA JULI 2026: Ongkos hotprint per pcs (Rp 450/pcs)')}
-            {fieldRow('minOrderFoil', 'Min. Order Hotprint Foil', true, false, undefined, 'HARGA JULI 2026: Minimum ongkos foil (Rp 100.000)')}
+            {fieldRow('tarifKliseMasterFoil', 'Biaya Klise Master Foil', true, false, undefined, 'Biaya pembuatan plat/matris foil per muka')}
+            {fieldRow('tarifFoilPerPcs', 'Tarif Hotprint Foil / Pcs', true, false, undefined, 'Ongkos hotprint per pcs (Rp 450/pcs)')}
+            {fieldRow('minOrderFoil', 'Min. Order Hotprint Foil', true, false, undefined, 'Minimum ongkos foil (Rp 100.000)')}
           </div>
         </div>
 
@@ -249,10 +249,10 @@ export default function SyahadahMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">6. Packing &amp; Margin</h3>
           </div>
           <div className="space-y-2.5">
-            {fieldRow('tarifKardusBox', 'Harga Kardus / Box', true, false, undefined, 'Master!D22: Kardus per box (kapasitas 1.000 pcs)')}
-            {fieldRow('tarifLakbanRoll', 'Harga Lakban / Roll', true, false, undefined, 'Master!D21: Lakban 90 yard per roll')}
-            {fieldRow('marginDefaultPct', 'Margin Laba Default (%)', false, false, '%', 'Master!E24: Standar margin profit 30%')}
-            {fieldRow('negoDefaultPct', 'Nego Diskon Default (%)', false, false, '%', 'HARGA JULI 2026: Batas diskon sales 5%')}
+            {fieldRow('tarifKardusBox', 'Harga Kardus / Box', true, false, undefined, 'Kardus per box (kapasitas 1.000 pcs)')}
+            {fieldRow('tarifLakbanRoll', 'Harga Lakban / Roll', true, false, undefined, 'Lakban 90 yard per roll')}
+            {fieldRow('marginDefaultPct', 'Margin Laba Default (%)', false, false, '%', 'Standar margin profit 30%')}
+            {fieldRow('negoDefaultPct', 'Nego Diskon Default (%)', false, false, '%', 'Batas diskon sales 5%')}
           </div>
         </div>
       </div>

@@ -388,7 +388,6 @@ export default function RaportKalebSimulator({
                 <label className="text-xs font-bold text-slate-700">
                   Varian Isi Map Mika (24 × 34 cm)
                 </label>
-                <span className="text-[10px] text-slate-400 font-mono">Master!D11</span>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 {RAPORT_KALEB_VARIANTS.map((v) => (
@@ -467,7 +466,7 @@ export default function RaportKalebSimulator({
                     </span>
                   </div>
                   <span className="text-[10px] text-slate-500">
-                    BUKU!X6: Kardus @ Rp {customParams.tarifKardusBox.toLocaleString('id-ID')} + lakban packing
+                    Kardus @ Rp {customParams.tarifKardusBox.toLocaleString('id-ID')} + lakban packing
                   </span>
                 </div>
               </label>
@@ -479,7 +478,6 @@ export default function RaportKalebSimulator({
                 <label className="text-xs font-bold text-slate-700">
                   Kuantitas Oplah Pesanan (pcs)
                 </label>
-                <span className="text-[10px] text-slate-400 font-mono">Master!D7</span>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <select

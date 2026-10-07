@@ -367,7 +367,7 @@ export default function AmplopSimulator({
             {/* Ukuran */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Ukuran (Master!D5)
+                Ukuran Amplop
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {AMPLOP_UKURAN.map((u) => (
@@ -382,7 +382,7 @@ export default function AmplopSimulator({
             {/* Mesin cetak */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Mesin Cetak (Master!D15)
+                Mesin Cetak
               </label>
               <div className="grid grid-cols-3 gap-2">
                 {AMPLOP_MESIN.map((m) => (
@@ -397,7 +397,7 @@ export default function AmplopSimulator({
             {/* Jumlah warna */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Jumlah Warna (Master!D14)
+                Jumlah Warna Cetak
               </label>
               <div className="grid grid-cols-4 gap-2">
                 {([1, 2, 3, 4] as const).map((w) => (
@@ -412,7 +412,7 @@ export default function AmplopSimulator({
             {/* Oplah */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                Oplah (pcs — Master!D7)
+                Kuantitas Pesanan (Oplah)
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <select
@@ -566,7 +566,7 @@ export default function AmplopSimulator({
               <div className="flex items-center gap-2">
                 <FileText size={15} className="text-emerald-700" />
                 <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Rincian Biaya (BUKU!P7–AG7 → AI7)
+                  Rincian Komponen Biaya HPP
                 </h4>
               </div>
               <span className="text-[11px] font-bold text-slate-500">
@@ -602,7 +602,7 @@ export default function AmplopSimulator({
                 <tfoot>
                   <tr className="bg-slate-50/90 font-bold border-t border-slate-200 text-xs">
                     <td colSpan={3} className="py-2.5 px-3 text-slate-800 font-sans">
-                      Total HPP ({oplahPcs.toLocaleString('id-ID')} pcs — BUKU!AI7)
+                      Total HPP ({oplahPcs.toLocaleString('id-ID')} pcs)
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-sm">
                       Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}

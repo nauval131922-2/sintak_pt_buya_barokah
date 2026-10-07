@@ -86,8 +86,7 @@ export default function RaportKalebMasterParameter({
     label: string,
     isRupiah = true,
     isDecimal = false,
-    suffix?: string,
-    cellRef?: string
+    suffix?: string
   ) => {
     const val = (customParams[key] ?? DEFAULT_RAPORT_KALEB_PARAMS[key]) as number;
     return (
@@ -207,10 +206,10 @@ export default function RaportKalebMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">1. Bahan Map Kaleb &amp; Kantong Mika</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('hargaMapKosongan', 'Harga Map Kosongan', true, false, undefined, 'Master!D12: Rp 16.000 / pcs')}
-            {fieldRow('upMapKosonganPct', 'Markup Map (%)', false, false, '%', 'Master!E12: Default 0%')}
-            {fieldRow('hargaIsiPerLbr', 'Tarif Kantong Mika /Lbr', true, false, undefined, 'Master!D13: Rp 900 / lbr mika')}
-            {fieldRow('tarifPenambahanIsiPricelist', 'Acuan Tambah Isi Eceran', true, false, undefined, 'HARGA JULI 2026!B11: Rp 1.200 / lbr')}
+            {fieldRow('hargaMapKosongan', 'Harga Map Kosongan', true, false)}
+            {fieldRow('upMapKosonganPct', 'Markup Map (%)', false, false, '%')}
+            {fieldRow('hargaIsiPerLbr', 'Tarif Kantong Mika /Lbr', true, false)}
+            {fieldRow('tarifPenambahanIsiPricelist', 'Acuan Tambah Isi Eceran', true, false)}
           </div>
           <p className="text-[10px] text-slate-500">
             Biaya map kosongan dihitung per order oplah. Kantong plastik mika dihitung berdasarkan varian isi (4, 6, 8, 10, 12 lbr) atau custom.
@@ -224,9 +223,9 @@ export default function RaportKalebMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">2. Desain &amp; Matres Klise Foil Emas</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifDesign', 'Biaya Setting Desain', true, false, undefined, 'Master!D14: Rp 10.000 / order')}
-            {fieldRow('tarifKlise', 'Tarif Klise Foil (≤120 pcs)', true, false, undefined, 'Master!D15: Rp 350.000 / order')}
-            {fieldRow('batasOplahKlise', 'Batas Oplah Klise Gratis', false, false, 'pcs', 'BUKU!P7: > 120 pcs gratis')}
+            {fieldRow('tarifDesign', 'Biaya Setting Desain', true, false)}
+            {fieldRow('tarifKlise', 'Tarif Klise Foil (≤120 pcs)', true, false)}
+            {fieldRow('batasOplahKlise', 'Batas Oplah Klise Gratis', false, false, 'pcs')}
           </div>
           <p className="text-[10px] text-slate-500">
             Klise foil emas dibebankan Rp 350.000 untuk pesanan kecil (≤ 120 pcs). Untuk oplah di atas 120 pcs, biaya klise otomatis digratiskan (Rp 0).
@@ -240,9 +239,9 @@ export default function RaportKalebMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">3. Packing Kardus &amp; Lakban</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifKardusBox', 'Kardus Packing / Box', true, false, undefined, 'Master!D18: Rp 8.500 / box')}
-            {fieldRow('tarifLakbanRoll', 'Lakban / Roll', true, false, undefined, 'Master!D17: Rp 8.000 / roll')}
-            {fieldRow('kapasitasKardus', 'Kapasitas Map / Box', false, false, 'map', 'BUKU!V35: 100 map / kardus')}
+            {fieldRow('tarifKardusBox', 'Kardus Packing / Box', true, false)}
+            {fieldRow('tarifLakbanRoll', 'Lakban / Roll', true, false)}
+            {fieldRow('kapasitasKardus', 'Kapasitas Map / Box', false, false, 'map')}
           </div>
           <p className="text-[10px] text-slate-500">
             Di sheet BUKU cell X6 default bernilai non-aktif (&quot;X&quot;). Jika diaktifkan, otomatis menghitung jumlah box kardus dan kebutuhan roll lakban.

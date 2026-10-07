@@ -170,17 +170,17 @@ export default function LebelKartuObatMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Printer className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">1. Kertas &amp; Desain (Master!D12–D16)</h3>
+            <h3 className="text-xs font-bold text-slate-800">1. Kertas &amp; Desain</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifKertasKg', 'Kertas HVS / kg (Rp) — D13')}
-            {fieldRow('upKertasPct', 'Up Kertas (%) — E13', { rupiah: false, suffix: '%' })}
-            {fieldRow('gramaturGsm', 'Gramatur (gsm) — D12', { rupiah: false })}
-            {fieldRow('insheetLbr', 'Insheet (lbr) — D15', { rupiah: false })}
-            {fieldRow('tarifDesain', 'Desain / Order (Rp) — D16')}
+            {fieldRow('tarifKertasKg', 'Kertas HVS / kg (Rp)')}
+            {fieldRow('upKertasPct', 'Up Kertas (%)', { rupiah: false, suffix: '%' })}
+            {fieldRow('gramaturGsm', 'Gramatur (gsm)', { rupiah: false })}
+            {fieldRow('insheetLbr', 'Insheet (lbr)', { rupiah: false })}
+            {fieldRow('tarifDesain', 'Desain / Order (Rp)')}
           </div>
           <p className="text-[10px] text-slate-500">
-            HVS 70 gsm Folio 21,5×33 cm Rp 15.700/kg +5% (rim Rp 40.936/500), insheet 30 lbr polos (BUKU!K7 tanpa koefisien), desain Rp 10.000/order.
+            HVS 70 gsm Folio 21,5×33 cm Rp 15.700/kg +5% (rim Rp 40.936/500), insheet 30 lbr polos (tanpa koefisien), desain Rp 10.000/order.
           </p>
         </div>
 
@@ -188,15 +188,15 @@ export default function LebelKartuObatMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Scissors className="w-4 h-4 text-sky-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Plate, Cetak &amp; Sisir (BUKU!W6/Z6/AA7/AJ6)</h3>
+            <h3 className="text-xs font-bold text-slate-800">2. Plate, Cetak &amp; Sisir</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifPlatePerPlat', 'Plate / Plat (Rp) — W6')}
-            {fieldRow('tarifCetakMinPerPlat', 'Min Cetak / Plat (Rp) — Z6')}
-            {fieldRow('tarifDrekPerWarna', 'Drek / Warna (Rp) — AA7')}
-            {fieldRow('tarifSisirPer500', 'Sisir /500 lbr (Rp) — AJ6')}
-            {fieldRow('tarifRoyaltyPerPcs', 'Royalty / rim (Rp) — AG6')}
-            {fieldRow('biayaTransport', 'Transport / order (Rp) — AI6')}
+            {fieldRow('tarifPlatePerPlat', 'Plate / Plat (Rp)')}
+            {fieldRow('tarifCetakMinPerPlat', 'Min Cetak / Plat (Rp)')}
+            {fieldRow('tarifDrekPerWarna', 'Drek / Warna (Rp)')}
+            {fieldRow('tarifSisirPer500', 'Sisir / 500 lbr (Rp)')}
+            {fieldRow('tarifRoyaltyPerPcs', 'Royalty / rim (Rp)')}
+            {fieldRow('biayaTransport', 'Transport / order (Rp)')}
           </div>
           <p className="text-[10px] text-slate-500">
             Plate Rp 10.000×(warna×muka) — Rp 0 saat ONGKOS CETAK. Over = P−500 (Rp 30×plat). Sisir (Q/500)×Rp 10.000 hanya saat finishing SISIR.
@@ -207,13 +207,13 @@ export default function LebelKartuObatMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3 md:col-span-2">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Layers className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">3. Margin Standar (Master!E21)</h3>
+            <h3 className="text-xs font-bold text-slate-800">3. Margin Standar</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-md">
-            {fieldRow('marginDefaultPct', 'Margin Default (%) — E21', { rupiah: false, suffix: '%' })}
+            {fieldRow('marginDefaultPct', 'Margin Default (%)', { rupiah: false, suffix: '%' })}
           </div>
           <p className="text-[10px] text-slate-500">
-            Margin 30% dari HPP per rim, harga dibulatkan ke puluhan (BUKU!AR7 =ROUNDUP(AQ,−1)). Excel tidak punya kolom nego — nego dihapus.
+            Margin 30% dari HPP per rim, harga dibulatkan ke puluhan. Excel tidak punya kolom nego — nego dihapus.
           </p>
         </div>
       </div>

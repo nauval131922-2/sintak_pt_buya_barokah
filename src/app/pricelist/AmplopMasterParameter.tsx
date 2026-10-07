@@ -173,7 +173,7 @@ export default function AmplopMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Package className="w-4 h-4 text-emerald-600" />
-            <h3 className="text-xs font-bold text-slate-800">1. Amplop Jadi &amp; Insheet (Master!D12–D13)</h3>
+            <h3 className="text-xs font-bold text-slate-800">1. Amplop Jadi &amp; Insheet</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('hargaPackBesar', 'Harga /pack Besar 11×23 (Rp)')}
@@ -182,7 +182,7 @@ export default function AmplopMasterParameter({
             {fieldRow('umr', 'UMR Acuan (Rp, info)')}
           </div>
           <p className="text-[10px] text-slate-500">
-            Pack @100 pcs (Besar Rp 25.000, Tgg Rp 15.800). Insheet hanya hidup saat Tanggung; ukuran Besar otomatis 3% proporsional (BUKU!K2).
+            Pack @100 pcs (Besar Rp 25.000, Tgg Rp 15.800). Insheet hanya hidup saat Tanggung; ukuran Besar otomatis 3% proporsional.
           </p>
         </div>
 
@@ -190,7 +190,7 @@ export default function AmplopMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Printer className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Tarif Print /pack (BUKU!P2)</h3>
+            <h3 className="text-xs font-bold text-slate-800">2. Tarif Print per Pack</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('tarifPrintUnguBesar', 'Print Ungu Besar (Rp)')}
@@ -207,7 +207,7 @@ export default function AmplopMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Layers className="w-4 h-4 text-sky-600" />
-            <h3 className="text-xs font-bold text-slate-800">3. Desain, Plate &amp; Jasa (BUKU!R6–AE6)</h3>
+            <h3 className="text-xs font-bold text-slate-800">3. Desain, Plate &amp; Jasa</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('desainStandar', 'Desain Standar (Rp)')}
@@ -224,7 +224,7 @@ export default function AmplopMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Info className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">4. BTKL, BOP &amp; Laba (Master!D17–E20)</h3>
+            <h3 className="text-xs font-bold text-slate-800">4. BTKL, BOP &amp; Laba</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('btklPct', 'BTKL (%)', false)}

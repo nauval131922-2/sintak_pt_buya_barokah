@@ -44,17 +44,26 @@ Pengerjaan audit **DILARANG KERAS** dilakukan secara borongan, langsung loncat k
    - Input dibungkus ke dalam sub-grup ber-border dan ber-badge warna (sky, blue, violet, amber).
    - Semua input angka WAJIB format `ThousandInput` (pemisah ribuan `id-ID`).
    - Sediakan indikator perubahan & reset per field inline. Controlled input guard anti-error.
-6. **Pos 5 (Audit & Sinkronisasi UI Kalkulasi / Simulator)**:
-   - Layout dual scroll mandiri standar Manasik persis 4 class baku (`h-[calc(100vh-140px)] min-h-0`).
-   - Warna form kiri lembut/netral per grup; warna hijau Emerald tegas dikhususkan untuk tombol simpan.
-   - Pilihan opsi (ukuran, mesin cover, mesin isi, finishing) tersedia lengkap (Otomatis + Manual).
-   - Pasang auto-persist draft ke localStorage (skip saat mode edit riwayat).
-   - Tabel breakdown transparan (spek teknis, nominal Rp, dan porsi %).
-   - Tombol simpan full-width standar di bawah tabel breakdown kanan: "Simpan Kalkulasi Ini ke Daftar Kalkulasi" (dual tombol Update/Simpan Baru saat edit riwayat). **DILARANG form mini di kiri**.
-   - Anti-jargon: Bersih dari istilah asing buatan (Hapus POD, CTP, Artwork, dll.) dan DILARANG menampilkan alamat sel Excel di UI.
+6. **Pos 5 (Audit & Sinkronisasi UI Kalkulasi / Simulator - Wajib 4 Sub-Gate Baku)**:
+   - **Pos 5a (Form Input Kolom Kiri)**:
+     * Urutan langkah ber-`{stepChip(1..N)}` bulat emerald kecil: (1) Ukuran, (2) Oplah, (3) Bahan, (4) Mesin, (5) Finishing/Packing.
+     * Tombol opsi aktif memakai styling netral `optBtn(active)` warna abu lembut (`border-slate-500 bg-slate-200 text-slate-900 shadow-xs`), DILARANG warna hitam pekat atau biru menyala.
+     * Seluruh opsi spesifikasi dari Excel (dropdown ukuran, variasi gramatur, pilihan mesin Cover/Isi, finishing opsional) tersedia lengkap.
+     * Form dibungkus dalam 1 kontainer kartu putih flat tanpa kotakan warna-warni kontras di dalamnya.
+     * Toolbar kanan atas form wajib memiliki 3 tombol aksi: **[Salin Penawaran]**, **[Panduan]**, dan **[Master]**.
+   - **Pos 5b (Hasil Finansial Kolom Kanan)**:
+     * Sticky **3 kartu metrik ringkasan baku**: `HPP / pcs` (putih, icon DollarSign), `Harga Jual / pcs (+Laba%)` (gradasi emerald lembut, border emerald, icon TrendingUp), dan `Total Omset` (putih, icon TrendingUp).
+     * **Tabel Rincian Breakdown 5 Kolom Baku**: `No | Komponen Biaya | Keterangan / Kuantitas | Subtotal (Rp) | Porsi (%)` dengan angka monospace bersih dan footer total HPP emerald tebal 100%.
+   - **Pos 5c (Tombol Simpan Standar)**:
+     * Tombol simpan simulasi **WAJIB** berada di bawah tabel breakdown kolom kanan (`lg:col-span-7`), full-width `w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs flex items-center justify-center gap-2 cursor-pointer` berlabel *"Simpan Kalkulasi Ini ke Daftar Kalkulasi"*. Mode edit riwayat: dual tombol *Update Perubahan* (amber) dan *Simpan Baru* (emerald). **DILARANG form mini di kiri**.
+   - **Pos 5d (Modal Panduan Pengguna & Kebersihan Teks)**:
+     * Modal panduan pengguna wajib memuat tabel kapasitas lembar/plano, tarif mesin, dan formula pembulatan harga jual.
+     * **Clean UI Mutlak**: DILARANG KERAS menampilkan nama/alamat sel Excel (`Master!Dxx`, `BUKU!xxx`) di UI publik (label, kartu parameter, badge, tabel breakdown). Referensi sel HANYA boleh ada di komentar kode atau modal panduan internal.
+     * Bebas jargon: Bersih dari istilah asing buatan (Hapus POD, CTP, Artwork, dll.).
 7. **Pos 6 (Verifikasi & Commit Lokal)**:
    - Jalankan import check: `npx tsx -e "import('./src/app/pricelist/[Nama]Simulator.tsx')"`
    - Jalankan layout check: `node scripts/check-simulator-layout.mjs`
+   - Jalankan clean UI check: `node scripts/check-clean-ui.mjs` (Wajib 0 kebocoran sel di UI)
    - Lakukan git commit lokal segera setelah lolos (`working tree clean`).
    - Dilarang menjalankan `npm run build`, `npx tsc`, update changelog, atau `git push` tanpa perintah eksplisit.
    - Laporkan bukti log terminal benchmark dan commit hash.
@@ -252,3 +261,22 @@ Setiap kali ada audit atau perubahan parameter/rumus, **WAJIB** mengaudit dan me
 | 14 | Uji reaktivitas parameter membuktikan semua input form berdampak nyata pada kalkulasi (tidak ada variabel mati / conditional hijacking) | [ ] |
 | 15 | Pemetaan cell Excel pada Manual Pengguna di Tab Master Parameter akurat 100% | [ ] |
 | 16 | Panduan Penggunaan di Tab Kalkulasi sudah sinkron dengan fitur simulator | [ ] |
+
+---
+
+## 5. Checklist Wajib Setiap Penugasan Modul Kalkulasi (10-Point Gate)
+> **Wajib dipatuhi dan diperiksa satu per satu setiap kali ada instruksi pengerjaan/audit modul kalkulasi.**
+> Referensi histori kesalahan: `docs/HISTORI_KESALAHAN_DAN_SOLUSI_PRICELIST.md`.
+
+| No | Gerbang Pemeriksaan (Gate) | Kriteria Kelulusan Mutlak | Status |
+| :---: | :--- | :--- | :---: |
+| 1 | **Backend Parity Rp 0** | 100% baris tier lolos selisih Rp 0 di terminal (multi-file tanpa filter) | [ ] |
+| 2 | **Reaktivitas Parameter** | Nilai input diubah ($A \to B$) membuktikan $\Delta\text{HPP} > 0$ nyata (anti-hijacking) | [ ] |
+| 3 | **Kloning Gold Standard** | Arsitektur disalin murni dari `PosterSimulator` / `PosterMasterParameter` (bukan ad-hoc) | [ ] |
+| 4 | **Form Kiri Bersih (Pos 5a)** | Urutan ber-`stepChip(1..N)`, tombol opsi `optBtn(active)` netral, tanpa kotakan warna kontras | [ ] |
+| 5 | **Toolbar Header Lengkap (Pos 5a)** | 3 tombol aksi wajib: **[Salin Penawaran]**, **[Panduan]**, dan **[Master]** | [ ] |
+| 6 | **Hasil Kanan Terpadu (Pos 5b)** | Sticky 3 kartu metrik ringkasan + tabel rincian 5 kolom ber-footer emerald 100% | [ ] |
+| 7 | **Tombol Simpan Standar (Pos 5c)** | Full-width di bawah tabel breakdown kolom kanan (bukan form mini di kiri) | [ ] |
+| 8 | **Auto-Persist Draft** | Draft form otomatis tersimpan & ter-restore dari `localStorage` (skip saat edit riwayat) | [ ] |
+| 9 | **Clean UI (No Cell Leak)** | 0 nama sel Excel di tampilan publik; lolos mutlak `npm run check:clean-ui` | [ ] |
+| 10 | **Layout & Header Check** | Lolos mutlak `npm run check:simulator-layout` (bebas banner hijau & box gelap) | [ ] |

@@ -364,7 +364,7 @@ export default function KopSuratSimulator({
             {/* Jenis Kop */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Jenis Kop (Master!D5)
+                Jenis Kop Surat
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {KOP_SURAT_JENIS_KOP.map((k) => (
@@ -379,7 +379,7 @@ export default function KopSuratSimulator({
             {/* Jumlah Warna */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Jumlah Warna (Master!D17)
+                Jumlah Warna Cetak
               </label>
               <div className="grid grid-cols-4 gap-2">
                 {([1, 2, 3, 4] as const).map((w) => (
@@ -394,7 +394,7 @@ export default function KopSuratSimulator({
             {/* Muka + Jenis Cetak */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">Muka (D18)</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Sisi Muka Cetak</label>
                 <div className="grid grid-cols-2 gap-2">
                   {([1, 2] as const).map((m) => (
                     <button key={m} type="button" onClick={() => setMuka(m)} className={specButton(muka === m)}>
@@ -404,7 +404,7 @@ export default function KopSuratSimulator({
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">Jenis Cetak (D10)</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Jenis Cetak</label>
                 <div className="grid grid-cols-1 gap-2">
                   {(['CETAK', 'ONGKOS CETAK'] as const).map((j) => (
                     <button key={j} type="button" onClick={() => setJenisCetak(j)} className={specButton(jenisCetak === j)}>
@@ -417,7 +417,7 @@ export default function KopSuratSimulator({
 
             {/* Finishing */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Finishing (D20)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Pilihan Finishing</label>
               <div className="grid grid-cols-2 gap-2">
                 <button type="button" onClick={() => setFinishingSisir(false)} className={specButton(!finishingSisir)}>
                   <span className="text-[11px]">TANPA SISIR</span>
@@ -431,7 +431,7 @@ export default function KopSuratSimulator({
             {/* Oplah */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                Oplah (rim @500 lbr — Master!D7)
+                Kuantitas Pesanan (rim @500 lbr)
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <select
@@ -570,7 +570,7 @@ export default function KopSuratSimulator({
               <div className="flex items-center gap-2">
                 <FileText size={15} className="text-emerald-700" />
                 <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Rincian Biaya (BUKU!R7–AK7 → AM7)
+                  Rincian Biaya HPP
                 </h4>
               </div>
               <span className="text-[11px] font-bold text-slate-500">
@@ -606,7 +606,7 @@ export default function KopSuratSimulator({
                 <tfoot>
                   <tr className="bg-slate-50/90 font-bold border-t border-slate-200 text-xs">
                     <td colSpan={3} className="py-2.5 px-3 text-slate-800 font-sans">
-                      Total HPP ({oplahRim} rim — BUKU!AM7)
+                      Total HPP ({oplahRim} rim)
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-sm">
                       Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}

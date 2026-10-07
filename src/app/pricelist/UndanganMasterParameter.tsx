@@ -183,7 +183,7 @@ export default function UndanganMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Package className="w-4 h-4 text-emerald-600" />
-            <h3 className="text-xs font-bold text-slate-800">1. Bahan &amp; Kertas (Master!D10–E12)</h3>
+            <h3 className="text-xs font-bold text-slate-800">1. Bahan &amp; Kertas</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('hargaPerKg', 'Harga / kg (Rp)')}
@@ -203,7 +203,7 @@ export default function UndanganMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Printer className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Cetak: Desain, Print, Plate (BUKU!T2–Y6)</h3>
+            <h3 className="text-xs font-bold text-slate-800">2. Cetak: Desain, Print, Plate</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('desain', 'Desain / Order (Rp)')}
@@ -220,7 +220,7 @@ export default function UndanganMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Layers className="w-4 h-4 text-sky-600" />
-            <h3 className="text-xs font-bold text-slate-800">3. OPP, Label &amp; Jasa (Master!D22–D23)</h3>
+            <h3 className="text-xs font-bold text-slate-800">3. OPP, Label &amp; Jasa</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('tarifPlastikOpp', 'Plastik OPP /100 (Rp)')}

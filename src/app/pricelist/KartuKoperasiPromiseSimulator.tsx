@@ -417,7 +417,7 @@ export default function KartuKoperasiPromiseSimulator({
             <div className="rounded-xl border border-sky-200 bg-sky-50/50 p-3 space-y-3">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-sky-900 bg-sky-200/80 px-2 py-0.5 rounded">Cetak</span>
-                <label className="text-xs font-bold text-sky-900">Mesin, Muka &amp; Warna — Master!D13/D14/D15</label>
+                <label className="text-xs font-bold text-sky-900">Mesin, Muka &amp; Jumlah Warna</label>
               </div>
               <div>
                 <label className="block text-[11px] font-bold text-slate-600 mb-1">Mesin Cetak</label>
@@ -431,7 +431,7 @@ export default function KartuKoperasiPromiseSimulator({
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Muka (D13)</label>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Sisi Muka Cetak</label>
                   <div className="grid grid-cols-2 gap-2">
                     {KARTU_KOPERASI_PROMISE_MUKA_OPTIONS.map((m) => (
                       <button key={m} type="button" onClick={() => setMuka(m)} className={optBtn(muka === m)}>
@@ -441,7 +441,7 @@ export default function KartuKoperasiPromiseSimulator({
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Warna (D14)</label>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Jumlah Warna</label>
                   <div className="grid grid-cols-2 gap-2">
                     {KARTU_KOPERASI_PROMISE_WARNA_OPTIONS.map((w) => (
                       <button key={w} type="button" onClick={() => setWarna(w)} className={optBtn(warna === w)}>
@@ -457,7 +457,7 @@ export default function KartuKoperasiPromiseSimulator({
             <div className="rounded-xl border border-violet-200 bg-violet-50/50 p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-violet-900 bg-violet-200/80 px-2 py-0.5 rounded">Finishing</span>
-                <label className="text-xs font-bold text-violet-900">Catatan — Master!D19</label>
+                <label className="text-xs font-bold text-violet-900">Pilihan Finishing</label>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {KARTU_KOPERASI_PROMISE_FINISHING_OPTIONS.map((f) => (
@@ -466,12 +466,12 @@ export default function KartuKoperasiPromiseSimulator({
                   </button>
                 ))}
               </div>
-              <p className="text-[10px] text-slate-500 italic">Laminasi/UV = luas×rate×oplah, floor Rp 50.000 (BUKU!AQ/AT/AW).</p>
+              <p className="text-[10px] text-slate-500 italic">Laminasi/UV = luas × tarif × oplah, batas minimum Rp 50.000.</p>
             </div>
 
             {/* Margin */}
             <div className="pt-2 border-t border-slate-100">
-              <label className="block text-xs font-bold text-slate-700 mb-1">Margin Profit (%) — Master!E23</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Margin Profit (%)</label>
               <div className="relative">
                 <input
                   type="number"
@@ -667,7 +667,7 @@ export default function KartuKoperasiPromiseSimulator({
                   {[
                     ['1. Varian & Oplah', 'Pilih 10,5×16,5 (Ryobi 4/plano), 10,5×21,5 (3/plano), atau 12,7×16,3 (22/plano, 11 potong). Oplah via tier Excel 500–10.000 atau custom.'],
                     ['2. Cetak', 'Pilih mesin Print Inter (A3+ Rp 2.500/plano, kartu lebih banyak per plano) atau Ryobi (kertas rim + plate Rp 10.000). Atur muka (1/2) & warna (1–4) — menentukan jumlah plat & drek over.'],
-                    ['3. Finishing & Margin', 'Pilih Tanpa / UV Varnish / Laminasi Glossy / Doff (sesuai Catatan Master!D19, floor Rp 50.000). Atur margin 30% — harga dibulatkan ke puluhan.'],
+                    ['3. Finishing & Margin', 'Pilih Tanpa / UV Varnish / Laminasi Glossy / Doff (batas minimum Rp 50.000). Atur margin 30% — harga dibulatkan ke puluhan.'],
                     ['4. Salin Penawaran', 'Klik Salin Penawaran untuk teks WA otomatis, atau Simpan Kalkulasi Ini ke Daftar Kalkulasi di bawah tabel rincian.'],
                   ].map(([title, desc]) => (
                     <div key={title} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">

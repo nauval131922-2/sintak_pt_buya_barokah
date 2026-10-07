@@ -182,9 +182,9 @@ export default function StopmapMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">1. Standar Upah &amp; Bahan Kertas</h3>
           </div>
           <div className="space-y-2.5">
-            {fieldRow('standarUMR', 'Standar UMR / Bulan (Rp)', true, false, undefined, 'Master!D8: Basis hitungan upah per hari (UMR / 25)')}
-            {fieldRow('tarifArtCartonKg', 'Harga Art Carton 230 /Kg', true, false, undefined, 'Master!D12: Harga dasar bahan kertas per kg')}
-            {fieldRow('upArtCartonPct', 'Markup Kertas (%)', false, false, '%', 'Master!E12: Kenaikan harga kertas (default 5%)')}
+            {fieldRow('standarUMR', 'Standar UMR / Bulan (Rp)', true, false, undefined, 'Basis hitungan upah per hari (UMR / 25)')}
+            {fieldRow('tarifArtCartonKg', 'Harga Art Carton 230 /Kg', true, false, undefined, 'Harga dasar bahan kertas per kg')}
+            {fieldRow('upArtCartonPct', 'Markup Kertas (%)', false, false, '%', 'Kenaikan harga kertas (default 5%)')}
           </div>
         </div>
 
@@ -195,10 +195,10 @@ export default function StopmapMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">2. Cetak Digital Print Inter (A4)</h3>
           </div>
           <div className="space-y-2.5">
-            {fieldRow('tarifPrintA3', 'Tarif Print A3+ Digital', true, false, undefined, 'Master!D18: Biaya cetak digital 4W per lbr A3+')}
-            {fieldRow('insheetCoverPrintInter', 'Insheet Cetak Digital (Lembar)', false, false, 'Lbr', 'Master!D13: Cadangan cetak digital A4 (default 5 lbr)')}
-            {fieldRow('tarifDesainA4', 'Desain Stopmap A4', true, false, undefined, 'Master!D17: Biaya artwork cover A4')}
-            {fieldRow('tarifTransportA4', 'Transportasi A4', true, false, undefined, 'BUKU!AK6: Biaya transport A4 (default Rp 0)')}
+            {fieldRow('tarifPrintA3', 'Tarif Print A3+ Digital', true, false, undefined, 'Biaya cetak digital 4W per lbr A3+')}
+            {fieldRow('insheetCoverPrintInter', 'Insheet Cetak Digital (Lembar)', false, false, 'Lbr', 'Cadangan cetak digital A4 (default 5 lbr)')}
+            {fieldRow('tarifDesainA4', 'Desain Stopmap A4', true, false, undefined, 'Biaya artwork cover A4')}
+            {fieldRow('tarifTransportA4', 'Transportasi A4', true, false, undefined, 'Biaya transport A4 (default Rp 0)')}
           </div>
         </div>
 
@@ -209,12 +209,12 @@ export default function StopmapMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">3. Cetak Offset Oliver 4W</h3>
           </div>
           <div className="space-y-2.5">
-            {fieldRow('tarifPlatOliver', 'Tarif Plat Oliver / Warna', true, false, undefined, 'BUKU!Y6: Biaya plat cetak offset per warna')}
-            {fieldRow('minOrderOliver', 'Min. Order Cetak / Plat', true, false, undefined, 'BUKU!AB6: Ongkos dasar cetak per plat s.d 1.000 drek')}
-            {fieldRow('tarifDrekOverOliver', 'Tarif Drek Over / Warna', true, false, undefined, 'BUKU!AC7: Drek over di atas 1.000 (per warna)')}
-            {fieldRow('insheetCoverOliver', 'Insheet Cetak Oliver (Lembar)', false, false, 'Lbr', 'Master!D13: Cadangan cetak offset Folio (default 150 lbr)')}
-            {fieldRow('tarifDesainFolio', 'Desain Stopmap Folio', true, false, undefined, 'Master!D17: Biaya artwork cover Folio')}
-            {fieldRow('tarifTransportFolio', 'Transportasi Folio', true, false, undefined, 'BUKU!AK6: Biaya transport Folio (default Rp 30.000)')}
+            {fieldRow('tarifPlatOliver', 'Tarif Plat Oliver / Warna', true, false, undefined, 'Biaya plat cetak offset per warna')}
+            {fieldRow('minOrderOliver', 'Min. Order Cetak / Plat', true, false, undefined, 'Ongkos dasar cetak per plat s.d 1.000 drek')}
+            {fieldRow('tarifDrekOverOliver', 'Tarif Drek Over / Warna', true, false, undefined, 'Drek over di atas 1.000 (per warna)')}
+            {fieldRow('insheetCoverOliver', 'Insheet Cetak Oliver (Lembar)', false, false, 'Lbr', 'Cadangan cetak offset Folio (default 150 lbr)')}
+            {fieldRow('tarifDesainFolio', 'Desain Stopmap Folio', true, false, undefined, 'Biaya artwork cover Folio')}
+            {fieldRow('tarifTransportFolio', 'Transportasi Folio', true, false, undefined, 'Biaya transport Folio (default Rp 30.000)')}
           </div>
         </div>
 
@@ -225,10 +225,10 @@ export default function StopmapMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">4. Bahan Kupingan / Kantong</h3>
           </div>
           <div className="space-y-2.5">
-            {fieldRow('kupinganPerPlano', 'Isi Kupingan / Lembar Plano', false, false, 'Pcs', 'BUKU!AN6: 1 plano 79×109 cm menghasilkan 15 kupingan')}
-            {fieldRow('insheetPlanoKupinganA4', 'Insheet Kupingan A4 (Plano)', false, false, 'Plano', 'BUKU!AN7: Cadangan bahan kupingan A4 (default 3 plano)')}
-            {fieldRow('insheetPlanoKupinganFolio', 'Insheet Kupingan Folio (Plano)', false, false, 'Plano', 'BUKU!AN7: Cadangan bahan kupingan Folio (default 8 plano)')}
-            {fieldRow('biayaPisauPonzBaru', 'Biaya Pisau Ponz Baru', true, false, undefined, 'BUKU!AQ6: Biaya pisau ponz jika buat cetakan baru')}
+            {fieldRow('kupinganPerPlano', 'Isi Kupingan / Lembar Plano', false, false, 'Pcs', '1 plano 79×109 cm menghasilkan 15 kupingan')}
+            {fieldRow('insheetPlanoKupinganA4', 'Insheet Kupingan A4 (Plano)', false, false, 'Plano', 'Cadangan bahan kupingan A4 (default 3 plano)')}
+            {fieldRow('insheetPlanoKupinganFolio', 'Insheet Kupingan Folio (Plano)', false, false, 'Plano', 'Cadangan bahan kupingan Folio (default 8 plano)')}
+            {fieldRow('biayaPisauPonzBaru', 'Biaya Pisau Ponz Baru', true, false, undefined, 'Biaya pisau ponz jika buat cetakan baru')}
           </div>
         </div>
 
@@ -239,10 +239,10 @@ export default function StopmapMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">5. Jasa Finishing Tenaga UMR</h3>
           </div>
           <div className="space-y-2.5">
-            {fieldRow('targetLipatPerHari', 'Target Harian Lipat (Pcs)', false, false, 'Pcs', 'BUKU!AL28: Target harian lipat (UMR/25/Target)')}
-            {fieldRow('targetPonzPerHari', 'Target Harian Ponz (Pcs)', false, false, 'Pcs', 'BUKU!AR28: Target harian ponz kupingan')}
-            {fieldRow('biayaLemKupinganPerPcs', 'Biaya Lem Kupingan / Pcs', true, false, undefined, 'BUKU!AR6: Ongkos bahan lem perekat per pcs')}
-            {fieldRow('targetPasangPerHari', 'Target Pasang Kupingan (Pcs)', false, false, 'Pcs', 'BUKU!AU28: Target harian tempel kantong ke map')}
+            {fieldRow('targetLipatPerHari', 'Target Harian Lipat (Pcs)', false, false, 'Pcs', 'Target harian lipat (UMR/25/Target)')}
+            {fieldRow('targetPonzPerHari', 'Target Harian Ponz (Pcs)', false, false, 'Pcs', 'Target harian ponz kupingan')}
+            {fieldRow('biayaLemKupinganPerPcs', 'Biaya Lem Kupingan / Pcs', true, false, undefined, 'Ongkos bahan lem perekat per pcs')}
+            {fieldRow('targetPasangPerHari', 'Target Pasang Kupingan (Pcs)', false, false, 'Pcs', 'Target harian tempel kantong ke map')}
           </div>
         </div>
 
@@ -253,14 +253,14 @@ export default function StopmapMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">6. Laminasi &amp; Pengemasan</h3>
           </div>
           <div className="space-y-2.5">
-            {fieldRow('tarifLaminasiGlossyCm2', 'Tarif Laminasi Glossy / cm²', false, true, 'Rp', 'BUKU!AW6: Tarif glossy per cm² (default 0.35)')}
-            {fieldRow('tarifLaminasiDoffCm2', 'Tarif Laminasi Doff / cm²', false, true, 'Rp', 'BUKU!AZ6: Tarif doff per cm² (default 0.40)')}
-            {fieldRow('tarifUvVarnishCm2', 'Tarif UV Varnish / cm²', false, true, 'Rp', 'BUKU!BC6: Tarif UV per cm² (default 0.12)')}
-            {fieldRow('minLaminasi', 'Min. Order Laminasi', true, false, undefined, 'BUKU!AW7..BE7: Minimum biaya finishing')}
-            {fieldRow('tarifKardusBox', 'Harga Kardus / Box', true, false, undefined, 'Master!D22: Kardus per box (isi 300 pcs)')}
-            {fieldRow('tarifLakbanRoll', 'Harga Lakban / Roll', true, false, undefined, 'Master!D21: Lakban 90 yard per roll')}
-            {fieldRow('marginDefaultPct', 'Margin Laba Default (%)', false, false, '%', 'Master!E24: Standar margin profit 30%')}
-            {fieldRow('negoDefaultPct', 'Nego Diskon Default (%)', false, false, '%', 'HARGA JULI 2026: Batas diskon sales 5%')}
+            {fieldRow('tarifLaminasiGlossyCm2', 'Tarif Laminasi Glossy / cm²', false, true, 'Rp', 'Tarif glossy per cm² (default 0.35)')}
+            {fieldRow('tarifLaminasiDoffCm2', 'Tarif Laminasi Doff / cm²', false, true, 'Rp', 'Tarif doff per cm² (default 0.40)')}
+            {fieldRow('tarifUvVarnishCm2', 'Tarif UV Varnish / cm²', false, true, 'Rp', 'Tarif UV per cm² (default 0.12)')}
+            {fieldRow('minLaminasi', 'Min. Order Laminasi', true, false, undefined, 'Minimum biaya finishing')}
+            {fieldRow('tarifKardusBox', 'Harga Kardus / Box', true, false, undefined, 'Kardus per box (isi 300 pcs)')}
+            {fieldRow('tarifLakbanRoll', 'Harga Lakban / Roll', true, false, undefined, 'Lakban 90 yard per roll')}
+            {fieldRow('marginDefaultPct', 'Margin Laba Default (%)', false, false, '%', 'Standar margin profit 30%')}
+            {fieldRow('negoDefaultPct', 'Nego Diskon Default (%)', false, false, '%', 'Batas diskon sales 5%')}
           </div>
         </div>
       </div>

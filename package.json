@@ -10,6 +10,7 @@
     "lint": "eslint",
     "check:changelog": "node scripts/check-page-changelog.mjs",
     "check:simulator-layout": "node scripts/check-simulator-layout.mjs",
+    "check:clean-ui": "node scripts/check-clean-ui.mjs",
     "test": "vitest run",
     "init-db": "npx tsx scripts/init-db.ts",
     "init-db:dev": "npx tsx -e \"process.env.DB_PATH='database_dev.sqlite'\" scripts/init-db.ts",

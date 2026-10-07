@@ -400,7 +400,7 @@ export default function UndanganSimulator({
             {/* Ukuran */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Ukuran (Master!D5)
+                Ukuran Undangan
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {UNDANGAN_UKURAN.map((u) => (
@@ -414,7 +414,7 @@ export default function UndanganSimulator({
             {/* Mesin */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Mesin Cetak (Master!D16)
+                Mesin Cetak
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {UNDANGAN_MESIN.map((m) => (
@@ -429,7 +429,7 @@ export default function UndanganSimulator({
             {/* Warna + Muka */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">Warna (D15)</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Warna Cetak</label>
                 <div className="grid grid-cols-4 gap-2">
                   {([1, 2, 3, 4] as const).map((w) => (
                     <button key={w} type="button" onClick={() => setNWarna(w)} className={specButton(nWarna === w)}>
@@ -439,7 +439,7 @@ export default function UndanganSimulator({
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">Muka (D14)</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Sisi Muka</label>
                 <div className="grid grid-cols-2 gap-2">
                   {([1, 2] as const).map((m) => (
                     <button key={m} type="button" onClick={() => setMuka(m)} className={specButton(muka === m)}>
@@ -453,7 +453,7 @@ export default function UndanganSimulator({
             {/* Finishing */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Finishing (Master!D20)
+                Pilihan Finishing
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {UNDANGAN_FINISHING.map((f) => (
@@ -467,7 +467,7 @@ export default function UndanganSimulator({
             {/* Toggle jasa */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Opsi Jasa &amp; Packing (checkbox BUKU)
+                Opsi Jasa &amp; Packing
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <button type="button" onClick={() => setLabelAktif(!labelAktif)} className={toggleButton(labelAktif)}>
@@ -492,7 +492,7 @@ export default function UndanganSimulator({
             {/* Oplah */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                Oplah (pcs — Master!D7)
+                Kuantitas Pesanan (Oplah)
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <select
@@ -621,7 +621,7 @@ export default function UndanganSimulator({
               <div className="flex items-center gap-2">
                 <FileText size={15} className="text-emerald-700" />
                 <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Rincian Biaya (BUKU!T7–BK7 → BM7)
+                  Rincian Biaya HPP
                 </h4>
               </div>
               <span className="text-[11px] font-bold text-slate-500">
@@ -657,7 +657,7 @@ export default function UndanganSimulator({
                 <tfoot>
                   <tr className="bg-slate-50/90 font-bold border-t border-slate-200 text-xs">
                     <td colSpan={3} className="py-2.5 px-3 text-slate-800 font-sans">
-                      Total HPP ({oplahPcs.toLocaleString('id-ID')} pcs — BUKU!BM7)
+                      Total HPP ({oplahPcs.toLocaleString('id-ID')} pcs)
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-sm">
                       Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}

@@ -10,7 +10,7 @@ Dokumen ini adalah **Hukum Tertinggi** bagi asisten AI yang bekerja pada reposit
 3. **Changelog**: Tanggal wajib akurat sesuai waktu pengerjaan nyata, tidak menghapus log lama, dan diperbarui per modul terkait saat diinstruksikan.
 4. **Commit**: Selalu commit lokal segera setelah perubahan berkas selesai (meng-override panduan bawaan sistem developer). Respons yang mengubah berkas wajib menyertakan hash commit terminal.
 5. **Konfirmasi & Tanya**: Jika ada hal yang belum jelas atau ragu, wajib bertanya terlebih dahulu sebelum berasumsi atau mengeksekusi.
-
+6. **Disiplin Menjawab vs Mengerjakan**: Jika user bertanya (evaluasi "kenapa", pertanyaan konsep, dsb.), JAWAB DAHULU secara tuntas. DILARANG langsung melakukan perubahan kode atau eksekusi sebelum ada perintah eksplisit dari user. Mengerjakan HANYA jika disuruh.
 ---
 
 ## 🎨 Standar UI/UX (Prioritas Utama)
@@ -72,6 +72,64 @@ Dokumen ini adalah **Hukum Tertinggi** bagi asisten AI yang bekerja pada reposit
    9. **Prinsip Terminologi 1:1 (DILARANG Menambah Kata/Jargon Asing yang Tidak Ada di Excel)**:
       - Gunakan HANYA istilah dan nama mesin yang tertulis nyata di dalam file Excel master (contoh: gunakan `Print Inter`, `Ryobi`, `Oliver`, `Speedmaster SM 102`).
       - **DILARANG KERAS** menambahkan singkatan atau jargon buatan sendiri yang tidak ada di Excel (seperti kata `POD`, `Print On Demand`, dsb.) baik di nama variabel, label form input UI, teks salin penawaran WhatsApp, maupun manual pengguna. Sampaikan istilah sesuai bahasa asli lembar kerja Excel Buya Barokah.
+
+  10. **Larangan Keras Kebocoran Sel Excel di UI Publik**:
+      - DILARANG menampilkan nama/alamat sel Excel (`Master!Dxx`, `BUKU!xxx`, dsb.) pada UI visual (label form, kartu parameter, badge, tabel breakdown).
+      - Referensi sel HANYA boleh ada di komentar kode TypeScript (`// BUKU!Q7: ...`) atau teks modal panduan pengguna internal.
+  11. **Dual Gate Linter Otomatis Wajib Lolos**:
+      - Parity angka terminal 100% Rp 0 baru 50% kelulusan audit. 50% sisanya adalah kepatuhan dan kebersihan UI visual.
+      - Wajib lolos `npm run check:clean-ui` (0 kebocoran sel di UI) dan `npm run check:simulator-layout` sebelum audit dinyatakan selesai.
+  12. **Standar Kloning UI (Gold Standard)**:
+      - DILARANG membuat struktur UI simulator & master parameter secara ad-hoc dari nol.
+      - Wajib mengkloning struktur dari modul Gold Standard (`PosterSimulator.tsx` / `PosterMasterParameter.tsx` / `ManasikSimulator.tsx`): toolbar lengkap [Salin Penawaran][Panduan][Master], `stepChip`, `optBtn`, Search Bar di parameter, dan 3 kartu metrik ringkasan.
+  13. **Checklist Wajib 10 Poin Setiap Penugasan (`docs/HISTORI_KESALAHAN_DAN_SOLUSI_PRICELIST.md`)**:
+      - Setiap kali ada perintah kerja dari pengguna terkait kalkulasi, wajib verifikasi checklist 10 poin secara berurutan agar tidak ada satu pun detail yang terlewat.
+---
+## 🛑 Log Catatan Kesalahan Sesi & Solusi Permanen (Wajib Selalu Diingat)
+
+Bagian ini mencatat kegagalan nyata yang terjadi selama audit sesi sebelumnya agar TIDAK PERNAH diulangi oleh agent mana pun:
+
+### 1. Kesalahan Komunikasi: Langsung Mengerjakan Saat Ditanya
+- **Kejadian**: Saat user bertanya mengenai evaluasi/kekurangan ("kenapa uinya belum konsisten", "solusinya gimana kedepannya"), AI terburu-buru langsung mengedit file tanpa menjawab secara tuntas terlebih dahulu.
+- **Dampak**: User merasa dipotong, kehilangan kendali keputusan, dan rencana belum disepakati tetapi kode sudah disentuh.
+- **Solusi Permanen**:
+  * **Hukum Mutlak #6**: Jika user bertanya (evaluasi, "kenapa", "solusinya gimana", konfirmasi arah), **JAWAB DAHULU** secara faktual dan tuntas.
+  * **DILARANG KERAS** mengedit atau memodifikasi file kode sebelum ada instruksi perintah kerja eksplisit dari user ("kerjakan", "terapkan", "mulai").
+
+### 2. Kesalahan Parity-Myopia: "Parity Matematika Rp 0 = Audit Selesai"
+- **Kejadian**: Begitu skrip kalkulator backend mencetak 160 tier lulus selisih Rp 0 di terminal, AI merasa pekerjaan utama sudah selesai dan melakukan sinkronisasi UI secara tergesa-gesa tanpa menyisir standar tampilan.
+- **Dampak**: UI Simulator & Master Parameter tertinggal dalam kondisi berantakan, tidak lengkap, dan belum layak pakai.
+- **Solusi Permanen**:
+  * Rumus lolos 100% Rp 0 di terminal **HANYA 50% pekerjaan** (fungsi mesin hitung).
+  * 50% sisanya adalah kepatuhan visual UI (posisi tombol, kelengkapan form, tata letak kartu, kebersihan teks).
+  * Audit produk **BARU BOLEH DINYATAKAN SELESAI** jika kedua sisi (kalkulator backend + visual UI browser) sudah lolos audit.
+
+### 3. Kesalahan Kloning: Membuat UI Secara Ad-Hoc dari Nol
+- **Kejadian**: Membuat komponen `StikerSimulator.tsx` dan `StikerMasterParameter.tsx` dari nol tanpa menyalin struktur modul yang sudah matang (Gold Standard).
+- **Dampak**: Toolbar kehilangan tombol penting (`Salin Penawaran`), Master Parameter tidak memiliki `Search Bar`, dan kartu tidak memiliki variasi warna kluster standar (`GroupDef[]`).
+- **Solusi Permanen**:
+  * **DILARANG MERAKIT UI DARI NOL**.
+  * Untuk modul percetakan baru (Packaging, Paperbag, Kalender, dll.), **WAJIB LANGSUNG MENGKLONING** dari Gold Standard:
+    - Simulator: kloning dari `PosterSimulator.tsx` / `ManasikSimulator.tsx`.
+    - Master Parameter: kloning dari `PosterMasterParameter.tsx`.
+
+### 4. Kesalahan Kebocoran Sel Excel: Menampilkan Alamat Sel ke UI Publik
+- **Kejadian**: AI merender alamat sel Excel teknis (`Master!D19`, `Master!D16`, `BUKU!AJ6`, `BUKU!Col O`) sebagai badge atau label langsung di form dan tabel yang dilihat pengguna.
+- **Dampak**: Tampilan sistem internal terlihat tidak profesional dan membingungkan pengguna umum/sales.
+- **Solusi Permanen**:
+  * Alamat sel Excel (`Master!Dxx`, `BUKU!xxx`) **HANYA BOLEH ADA DI DUA TEMPAT**:
+    1. Komentar baris kode TypeScript (`// BUKU!Q7: ...`).
+    2. Di dalam teks modal manual panduan internal estimator.
+  * Pasang linter otomatis `npm run check:clean-ui` yang memindai regex `/(Master|BUKU)![A-Z0-9]+/` di luar modal dan memblokir commit jika ada kebocoran.
+
+### 5. Kesalahan Validasi Semu: Mengandalkan Skrip Pemeriksa yang Dangkal
+- **Kejadian**: Mengandalkan skrip `check-simulator-layout.mjs` versi lama yang hanya memeriksa 4 baris CSS container (`h-[calc(100vh-140px)]`, flex/grid). Karena skrip menampilkan `[PASS]`, AI tertipu menganggap UI sudah sempurna.
+- **Dampak**: Terjadi *false sense of security*, komponen di dalam container tetap rusak/tidak lengkap.
+- **Solusi Permanen**:
+  * Perkuat skrip pemeriksaan otomatis ke tingkat isi komponen:
+    - Deteksi banner hijau raksasa terlarang (`FORBIDDEN_GREEN_BANNER`).
+    - Deteksi header hitam pekat terlarang (`FORBIDDEN_DARK_HEADER`).
+    - Validasi kontrak fungsi wajib (`stepChip`, `optBtn`, tombol salin penawaran, 3 kartu metrik ringkasan).
 
 ---
 

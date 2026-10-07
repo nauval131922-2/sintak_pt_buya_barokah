@@ -409,10 +409,10 @@ export default function LebelKartuObatSimulator({
             <div className="rounded-xl border border-sky-200 bg-sky-50/50 p-3 space-y-3">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-sky-900 bg-sky-200/80 px-2 py-0.5 rounded">Cetak</span>
-                <label className="text-xs font-bold text-sky-900">Jenis, Muka &amp; Warna — Master!D10/D17/D18</label>
+                <label className="text-xs font-bold text-sky-900">Jenis, Muka &amp; Jumlah Warna</label>
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-slate-600 mb-1">Jenis Cetak (D10)</label>
+                <label className="block text-[11px] font-bold text-slate-600 mb-1">Jenis Cetak</label>
                 <div className="grid grid-cols-2 gap-2">
                   {LEBEL_KARTU_OBAT_JENIS_CETAK_OPTIONS.map((j) => (
                     <button key={j} type="button" onClick={() => setJenisCetak(j)} className={optBtn(jenisCetak === j)}>
@@ -420,11 +420,11 @@ export default function LebelKartuObatSimulator({
                     </button>
                   ))}
                 </div>
-                <p className="text-[10px] text-slate-500 mt-1 italic">ONGKOS CETAK menolkan biaya plate (BUKU!W6); min &amp; drek tetap jalan.</p>
+                <p className="text-[10px] text-slate-500 mt-1 italic">ONGKOS CETAK membebaskan biaya plate; batas minimum &amp; drek tetap berlaku.</p>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Muka (D18)</label>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Sisi Muka Cetak</label>
                   <div className="grid grid-cols-2 gap-2">
                     {LEBEL_KARTU_OBAT_MUKA_OPTIONS.map((m) => (
                       <button key={m} type="button" onClick={() => setMuka(m)} className={optBtn(muka === m)}>
@@ -434,7 +434,7 @@ export default function LebelKartuObatSimulator({
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Warna (D17)</label>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Jumlah Warna</label>
                   <div className="grid grid-cols-2 gap-2">
                     {LEBEL_KARTU_OBAT_WARNA_OPTIONS.map((w) => (
                       <button key={w} type="button" onClick={() => setWarna(w)} className={optBtn(warna === w)}>
@@ -450,7 +450,7 @@ export default function LebelKartuObatSimulator({
             <div className="rounded-xl border border-violet-200 bg-violet-50/50 p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-violet-900 bg-violet-200/80 px-2 py-0.5 rounded">Finishing</span>
-                <label className="text-xs font-bold text-violet-900">Sisir — Master!D20</label>
+                <label className="text-xs font-bold text-violet-900">Pilihan Potong Sisir</label>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {LEBEL_KARTU_OBAT_FINISHING_OPTIONS.map((f) => (
@@ -459,12 +459,12 @@ export default function LebelKartuObatSimulator({
                   </button>
                 ))}
               </div>
-              <p className="text-[10px] text-slate-500 italic">Sisir = (Q/500)×Rp 10.000 (BUKU!AJ7).</p>
+              <p className="text-[10px] text-slate-500 italic">Ongkos potong sisir Rp 10.000 per 500 lembar.</p>
             </div>
 
             {/* Margin */}
             <div className="pt-2 border-t border-slate-100">
-              <label className="block text-xs font-bold text-slate-700 mb-1">Margin Profit (%) — Master!E21</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Margin Profit (%)</label>
               <div className="relative">
                 <input
                   type="number"
@@ -660,7 +660,7 @@ export default function LebelKartuObatSimulator({
                   {[
                     ['1. Varian & Oplah', 'Pilih ukuran label (3,5×7 / 4×6 / 5×6,7 cm — label ukuran, biaya sama). Oplah dalam rim via tier Excel 1–10 atau custom.'],
                     ['2. Cetak', 'Pilih CETAK atau ONGKOS CETAK (tanpa biaya plate). Atur muka (1/2) & warna (1–4) — menentukan jumlah plat & drek over.'],
-                    ['3. Finishing & Margin', 'Pilih SISIR atau TANPA SISIR sesuai Master!D20. Atur margin 30% — harga per rim dibulatkan ke puluhan.'],
+                    ['3. Finishing & Margin', 'Pilih SISIR atau TANPA SISIR. Atur margin 30% — harga per rim dibulatkan ke puluhan.'],
                     ['4. Salin Penawaran', 'Klik Salin Penawaran untuk teks WA otomatis, atau Simpan Kalkulasi Ini ke Daftar Kalkulasi di bawah tabel rincian.'],
                   ].map(([title, desc]) => (
                     <div key={title} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">

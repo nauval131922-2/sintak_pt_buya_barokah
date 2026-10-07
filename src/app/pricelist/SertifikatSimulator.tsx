@@ -393,7 +393,7 @@ export default function SertifikatSimulator({
             {/* Bahan */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Bahan (Master!D10)
+                Bahan Kertas
               </label>
               <div className="grid grid-cols-3 gap-2">
                 {SERTIFIKAT_BAHAN.map((b) => (
@@ -407,7 +407,7 @@ export default function SertifikatSimulator({
             {/* Ukuran + Gramatur */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">Ukuran (D5)</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Ukuran</label>
                 <div className="grid grid-cols-1 gap-2">
                   {SERTIFIKAT_UKURAN.map((u) => (
                     <button key={u} type="button" onClick={() => setUkuran(u)} className={specButton(ukuran === u)}>
@@ -417,7 +417,7 @@ export default function SertifikatSimulator({
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">Gramatur (D11)</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Gramatur</label>
                 <input
                   type="number"
                   min={0}
@@ -432,7 +432,7 @@ export default function SertifikatSimulator({
             {/* Mesin */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Mesin Cetak (Master!D16)
+                Mesin Cetak
               </label>
               <div className="grid grid-cols-4 gap-2">
                 {SERTIFIKAT_MESIN.map((m) => (
@@ -447,7 +447,7 @@ export default function SertifikatSimulator({
             {/* Warna + Muka */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">Warna (D15)</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Warna Cetak</label>
                 <div className="grid grid-cols-4 gap-2">
                   {([1, 2, 3, 4] as const).map((w) => (
                     <button key={w} type="button" onClick={() => setNWarna(w)} className={specButton(nWarna === w)}>
@@ -457,7 +457,7 @@ export default function SertifikatSimulator({
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">Muka (D14)</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Sisi Muka</label>
                 <div className="grid grid-cols-2 gap-2">
                   {([1, 2] as const).map((m) => (
                     <button key={m} type="button" onClick={() => setMuka(m)} className={specButton(muka === m)}>
@@ -471,7 +471,7 @@ export default function SertifikatSimulator({
             {/* Finishing */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Finishing (Master!D20)
+                Pilihan Finishing
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {SERTIFIKAT_FINISHING.map((f) => (
@@ -501,7 +501,7 @@ export default function SertifikatSimulator({
             {/* Oplah */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                Oplah (pcs — Master!D7)
+                Kuantitas Pesanan (Oplah)
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <select
@@ -630,7 +630,7 @@ export default function SertifikatSimulator({
               <div className="flex items-center gap-2">
                 <FileText size={15} className="text-emerald-700" />
                 <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Rincian Biaya (BUKU!T7–AK7 → BI7)
+                  Rincian Biaya HPP
                 </h4>
               </div>
               <span className="text-[11px] font-bold text-slate-500">
@@ -666,7 +666,7 @@ export default function SertifikatSimulator({
                 <tfoot>
                   <tr className="bg-slate-50/90 font-bold border-t border-slate-200 text-xs">
                     <td colSpan={3} className="py-2.5 px-3 text-slate-800 font-sans">
-                      Total HPP ({oplahPcs.toLocaleString('id-ID')} pcs — BUKU!BI7)
+                      Total HPP ({oplahPcs.toLocaleString('id-ID')} pcs)
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-sm">
                       Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}

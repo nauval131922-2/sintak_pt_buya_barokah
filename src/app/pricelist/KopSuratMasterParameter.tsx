@@ -215,7 +215,7 @@ export default function KopSuratMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Package className="w-4 h-4 text-emerald-600" />
-            <h3 className="text-xs font-bold text-slate-800">1. Bahan &amp; Harga Kertas (Master!D11–E13)</h3>
+            <h3 className="text-xs font-bold text-slate-800">1. Bahan &amp; Harga Kertas</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('gramatur', 'Gramatur (gsm) [55–160]', false)}
@@ -224,11 +224,11 @@ export default function KopSuratMasterParameter({
             {fieldRow('umr', 'UMR Acuan (Rp, info)', true)}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {selectRow('bahanKop', 'Bahan Kop (Master!D11)', KOP_SURAT_BAHAN_OPTIONS, 'Informatif — tidak dipakai rumus BUKU.')}
-            {selectRow('jenisKertasTambahan', 'Jenis Kertas D9 (Master!D9)', KOP_SURAT_D9_OPTIONS, 'Tersimpan kosong di ke-4 file; tidak dipakai rumus.')}
+            {selectRow('bahanKop', 'Bahan Kop', KOP_SURAT_BAHAN_OPTIONS, 'Informatif — pilihan opsi bahan kop surat.')}
+            {selectRow('jenisKertasTambahan', 'Jenis Kertas Tambahan', KOP_SURAT_D9_OPTIONS, 'Tersimpan opsional.')}
           </div>
           <p className="text-[10px] text-slate-500">
-            Harga/rim BUKU!U29 = ((T27×U27)×gramatur)/20000 × (harga/kg + up). Gramatur Excel: {KOP_SURAT_GRAMATUR_OPTIONS.join(', ')}.
+            Harga per rim dihitung dari dimensi, gramatur, harga per kg, dan persentase up. Gramatur: {KOP_SURAT_GRAMATUR_OPTIONS.join(', ')}.
           </p>
         </div>
 
@@ -236,7 +236,7 @@ export default function KopSuratMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Layers className="w-4 h-4 text-sky-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Insheet Lbr Cetak (Master!D15 per file)</h3>
+            <h3 className="text-xs font-bold text-slate-800">2. Insheet Lembar Cetak</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('insheet1Warna', 'File 1 Warna (lbr)', false)}
@@ -253,7 +253,7 @@ export default function KopSuratMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Printer className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">3. Desain, Film &amp; Plate (BUKU!T6–X6)</h3>
+            <h3 className="text-xs font-bold text-slate-800">3. Desain, Film &amp; Plate</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('desain', 'Desain / Order (Rp)')}
@@ -262,7 +262,7 @@ export default function KopSuratMasterParameter({
             {fieldRow('transportPerOrder', 'Transport / order (Rp)')}
           </div>
           <p className="text-[10px] text-slate-500">
-            Plate BUKU!W6: CETAK = Rp 10.000/plat, ONGKOS CETAK = Rp 0. Min order Rp 15.000/plat, drek over Rp 30 (tetap di kedua mode). Jml plat auto = warna × muka.
+            Plate: CETAK = Rp 10.000/plat, ONGKOS CETAK = Rp 0. Min order Rp 15.000/plat, drek over Rp 30 (tetap di kedua mode). Jml plat auto = warna × muka.
           </p>
         </div>
 
@@ -270,14 +270,14 @@ export default function KopSuratMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Info className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">4. Laba &amp; Referensi (Master!E21, H14)</h3>
+            <h3 className="text-xs font-bold text-slate-800">4. Laba &amp; Referensi</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {fieldRow('labaPct', 'Laba Default (%)', false)}
             {fieldRow('hargaPembandingPerRim', 'Pembanding / rim (Rp, info)')}
           </div>
           <p className="text-[10px] text-slate-500">
-            Laba BUKU!AO7 = HPP/rim × E21%. Harga final BUKU!AS7 = ROUNDUP(..., -1) ke puluhan. H14 hanya angka pembanding statis.
+            Laba dihitung dari HPP per rim × margin %. Harga final dibulatkan ke puluhan.
           </p>
         </div>
       </div>

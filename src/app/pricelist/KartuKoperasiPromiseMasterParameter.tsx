@@ -183,16 +183,16 @@ export default function KartuKoperasiPromiseMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Printer className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">1. Kertas &amp; Desain (Master!D10–D17)</h3>
+            <h3 className="text-xs font-bold text-slate-800">1. Kertas &amp; Desain</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifKertasKg', 'Kertas / kg (Rp) — D11')}
-            {fieldRow('upKertasPct', 'Up Kertas (%) — E11', { rupiah: false, suffix: '%' })}
-            {fieldRow('gramaturGsm', 'Gramatur (gsm) — D10', { rupiah: false })}
-            {fieldRow('insheet', 'Insheet (lbr) — D12', { rupiah: false })}
-            {fieldRow('koefInsheet', 'Koef. Insheet — BUKU!K2', { rupiah: false, decimal: true })}
-            {fieldRow('tarifDesign', 'Desain / Order (Rp) — D16')}
-            {fieldRow('tarifPrintA3Plus', 'Print A3+ (Rp) — D17')}
+            {fieldRow('tarifKertasKg', 'Kertas / kg (Rp)')}
+            {fieldRow('upKertasPct', 'Up Kertas (%)', { rupiah: false, suffix: '%' })}
+            {fieldRow('gramaturGsm', 'Gramatur (gsm)', { rupiah: false })}
+            {fieldRow('insheet', 'Insheet (lbr)', { rupiah: false })}
+            {fieldRow('koefInsheet', 'Koef. Insheet', { rupiah: false, decimal: true })}
+            {fieldRow('tarifDesign', 'Desain / Order (Rp)')}
+            {fieldRow('tarifPrintA3Plus', 'Print A3+ (Rp)')}
           </div>
           <p className="text-[10px] text-slate-500">
             Default file: kertas Rp 34.800 +5% &amp; desain Rp 15.000 (varian 10,5) vs Rp 33.000 +0% &amp; tanpa desain (12,7×16,3) — simulator otomatis memakai bawaan tiap file kecuali field diubah manual.
@@ -203,14 +203,14 @@ export default function KartuKoperasiPromiseMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <CreditCard className="w-4 h-4 text-sky-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Plate, Cetak &amp; Jasa (BUKU!X6/AA6/AH6/AJ6/AK6)</h3>
+            <h3 className="text-xs font-bold text-slate-800">2. Plate, Cetak &amp; Jasa</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifPlatePerPlat', 'Plate / Plat (Rp) — X6')}
-            {fieldRow('tarifCetakMinPerPlat', 'Min Cetak / Plat (Rp) — AA6')}
-            {fieldRow('tarifRoyaltyPerPcs', 'Royalty / pcs (Rp) — D22')}
-            {fieldRow('biayaTransport', 'Transport / order (Rp) — AJ6')}
-            {fieldRow('biayaLain', 'Biaya Lain-Lain (Rp) — AK6')}
+            {fieldRow('tarifPlatePerPlat', 'Plate / Plat (Rp)')}
+            {fieldRow('tarifCetakMinPerPlat', 'Min Cetak / Plat (Rp)')}
+            {fieldRow('tarifRoyaltyPerPcs', 'Royalty / pcs (Rp)')}
+            {fieldRow('biayaTransport', 'Transport / order (Rp)')}
+            {fieldRow('biayaLain', 'Biaya Lain-Lain (Rp)')}
           </div>
           <p className="text-[10px] text-slate-500">
             Plate Rp 10.000 &amp; min cetak Rp 15.000 per plat hanya untuk Ryobi (Print Inter = Rp 0). Jumlah plat = warna × muka (12,7 override 1 plat). Drek over: Rp 40 (10,5) / Rp 30 (12,7).
@@ -221,20 +221,20 @@ export default function KartuKoperasiPromiseMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Layers className="w-4 h-4 text-violet-600" />
-            <h3 className="text-xs font-bold text-slate-800">3. Finishing Pound, Sisir &amp; Laminasi (BUKU!AL6/AN6/AP6/AS6/AV6)</h3>
+            <h3 className="text-xs font-bold text-slate-800">3. Finishing Pound, Sisir &amp; Laminasi</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('umr', 'UMR (Rp) — D7')}
-            {fieldRow('tarifPisauPerCm2', 'Pisau / cm² (Rp) — AL6', { decimal: true })}
-            {fieldRow('tarifSisirPer500', 'Sisir /500 unit (Rp) — AN6')}
-            {fieldRow('minPound', 'Min Pound (Rp) — AM7')}
-            {fieldRow('tarifLaminasiGlossy', 'Laminasi Glossy /cm² — AP6', { decimal: true })}
-            {fieldRow('tarifLaminasiDoff', 'Laminasi Doff /cm² — AS6', { decimal: true })}
-            {fieldRow('tarifUvVarnish', 'UV Varnish /cm² — AV6', { decimal: true })}
+            {fieldRow('umr', 'UMR (Rp)')}
+            {fieldRow('tarifPisauPerCm2', 'Pisau / cm² (Rp)', { decimal: true })}
+            {fieldRow('tarifSisirPer500', 'Sisir / 500 unit (Rp)')}
+            {fieldRow('minPound', 'Min Pound (Rp)')}
+            {fieldRow('tarifLaminasiGlossy', 'Laminasi Glossy / cm²', { decimal: true })}
+            {fieldRow('tarifLaminasiDoff', 'Laminasi Doff / cm²', { decimal: true })}
+            {fieldRow('tarifUvVarnish', 'UV Varnish / cm²', { decimal: true })}
             {fieldRow('minFinishing', 'Floor Finishing (Rp)')}
           </div>
           <p className="text-[10px] text-slate-500">
-            Pound = (UMR/25)/target (target 800 utk 10,5 / 1.200 utk 12,7), min Rp 50.000. Laminasi/UV = luas×rate×oplah, floor Rp 50.000, aktif sesuai pilihan Catatan Master!D19.
+            Pound = (UMR/25)/target (target 800 utk 10,5 / 1.200 utk 12,7), min Rp 50.000. Laminasi/UV = luas×rate×oplah, floor Rp 50.000, aktif sesuai pilihan finishing.
           </p>
         </div>
 
@@ -242,14 +242,14 @@ export default function KartuKoperasiPromiseMasterParameter({
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
             <Package className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">4. Packing &amp; Margin (Master!D20/D21/E23)</h3>
+            <h3 className="text-xs font-bold text-slate-800">4. Packing &amp; Margin</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifKardusBox', 'Kardus / box (Rp) — D21')}
-            {fieldRow('tarifLakbanRoll', 'Lakban / roll (Rp) — D20')}
-            {fieldRow('lakbanUkuranRoll', 'Ukuran Lakban /Roll — BA30', { rupiah: false })}
-            {fieldRow('kardusIsiPcs', 'Isi Kardus (pcs) — AZ35', { rupiah: false })}
-            {fieldRow('marginDefaultPct', 'Margin Default (%) — E23', { rupiah: false, suffix: '%' })}
+            {fieldRow('tarifKardusBox', 'Kardus / box (Rp)')}
+            {fieldRow('tarifLakbanRoll', 'Lakban / roll (Rp)')}
+            {fieldRow('lakbanUkuranRoll', 'Ukuran Lakban / Roll', { rupiah: false })}
+            {fieldRow('kardusIsiPcs', 'Isi Kardus (pcs)', { rupiah: false })}
+            {fieldRow('marginDefaultPct', 'Margin Default (%)', { rupiah: false, suffix: '%' })}
           </div>
           <p className="text-[10px] text-slate-500">
             Kardus CEIL(oplah/3000)×Rp 8.500 + lakban (oplah/3000)/(7650/196)×Rp 8.000. Margin 30% dari HPP, harga dibulatkan ke puluhan (Excel tidak punya kolom nego — nego dihapus).

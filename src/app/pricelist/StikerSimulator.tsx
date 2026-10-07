@@ -391,8 +391,8 @@ _Harga belum termasuk PPN. Hasil cetak tajam, daya rekat kuat & tahan air._`;
                   <Tag size={13} className="text-emerald-700" />
                   <span>Sticker Vinyl Glossy 200 gsm</span>
                 </div>
-                <span className="text-[10px] font-mono text-slate-500">
-                  Master!D11 (Vinyl/Cromo)
+                <span className="text-[10px] text-slate-500 font-medium">
+                  Vinyl Glossy
                 </span>
               </div>
             </div>
@@ -444,7 +444,7 @@ _Harga belum termasuk PPN. Hasil cetak tajam, daya rekat kuat & tahan air._`;
                 })}
               </div>
 
-              {/* Opsi Sisir (BUKU!AJ) */}
+              {/* Opsi Sisir Potong Rapih */}
               <div className="mt-2.5 pt-2 border-t border-slate-100/80 flex items-center justify-between">
                 <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
                   <input
@@ -572,7 +572,7 @@ _Harga belum termasuk PPN. Hasil cetak tajam, daya rekat kuat & tahan air._`;
           <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
             <div className="px-4 py-3 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
               <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-                Rincian Komponen Biaya HPP (Sheet BUKU)
+                Rincian Komponen Biaya HPP
               </h4>
               <span className="text-[11px] text-slate-500 font-medium">
                 {result.breakdown.length} Komponen
@@ -701,7 +701,7 @@ _Harga belum termasuk PPN. Hasil cetak tajam, daya rekat kuat & tahan air._`;
               </div>
 
               <div className="space-y-2">
-                <h5 className="font-bold text-slate-800">1. Kapasitas Lembar A3+ (Sheet BUKU!Col O):</h5>
+                <h5 className="font-bold text-slate-800">1. Kapasitas Lembar A3+:</h5>
                 <table className="w-full text-left border-collapse border border-slate-200 text-xs">
                   <thead>
                     <tr className="bg-slate-100 text-slate-700 font-bold">
