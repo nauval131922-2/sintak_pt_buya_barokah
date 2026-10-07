@@ -54,7 +54,19 @@ export function formatScrapedPeriodDate(value?: string) {
   return value;
 }
 
-export function getDefaultScraperDateRange() {
+export function getDefaultScraperDateRange(searchParams?: { get: (key: string) => string | null } | null) {
+  if (searchParams) {
+    const fromStr = searchParams.get('from');
+    const toStr = searchParams.get('to');
+    if (fromStr && toStr) {
+      const s = new Date(`${fromStr}T00:00:00`);
+      const e = new Date(`${toStr}T23:59:59.999`);
+      if (!isNaN(s.getTime()) && !isNaN(e.getTime())) {
+        return { startDate: s, endDate: e };
+      }
+    }
+  }
+
   const endDate = new Date();
   endDate.setHours(23, 59, 59, 999);
 
@@ -76,7 +88,22 @@ export function buildScrapedPeriod(startDate: Date, endDate: Date): ScrapedPerio
   };
 }
 
-export function hydrateScraperPeriod({ stateKey, periodKey }: HydrateScraperPeriodOptions) {
+export function hydrateScraperPeriod(
+  { stateKey, periodKey }: HydrateScraperPeriodOptions,
+  searchParams?: { get: (key: string) => string | null } | null
+) {
+  if (searchParams) {
+    const fromStr = searchParams.get('from');
+    const toStr = searchParams.get('to');
+    if (fromStr && toStr) {
+      const s = new Date(`${fromStr}T00:00:00`);
+      const e = new Date(`${toStr}T23:59:59.999`);
+      if (!isNaN(s.getTime()) && !isNaN(e.getTime())) {
+        return { startDate: s, endDate: e, scrapedPeriod: null };
+      }
+    }
+  }
+
   const defaults = getDefaultScraperDateRange();
   let startDate = defaults.startDate;
   let endDate = defaults.endDate;

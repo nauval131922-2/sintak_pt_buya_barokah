@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
 import { Loader2, AlertCircle, Download, Search, RefreshCw, Calendar, BarChart3 } from 'lucide-react';
 import SquareDropdown from '@/components/SquareDropdown';
@@ -177,9 +178,10 @@ function flattenJurnal(rows: JurnalParentRow[], prevLabaRugi = 0, prevArusKas = 
 const PAGE_SIZE = 50;
 
 export default function JurnalUmumClient() {
+  const searchParams = useSearchParams();
   const [isMounted, setIsMounted] = useState(false);
-  const [startDate, setStartDate] = useState<Date>(() => getDefaultScraperDateRange().startDate);
-  const [endDate, setEndDate] = useState<Date>(() => getDefaultScraperDateRange().endDate);
+  const [startDate, setStartDate] = useState<Date>(() => getDefaultScraperDateRange(searchParams).startDate);
+  const [endDate, setEndDate] = useState<Date>(() => getDefaultScraperDateRange(searchParams).endDate);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<JurnalFlatRow[] | null>(null);
   const [error, setError] = useState('');
@@ -187,8 +189,8 @@ export default function JurnalUmumClient() {
   const [scrapedPeriod, setScrapedPeriod] = useState<{ start: string; end: string } | null>(null);
   const [loadTime, setLoadTime] = useState<number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
+  const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || '');
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -234,8 +236,27 @@ export default function JurnalUmumClient() {
   }, [searchQuery]);
 
   useEffect(() => {
+    const urlSearch = searchParams.get('search');
+    const urlFrom = searchParams.get('from');
+    const urlTo = searchParams.get('to');
+    if (urlSearch !== null) {
+      setSearchQuery(urlSearch);
+      setDebouncedQuery(urlSearch);
+      setPage(1);
+    }
+    if (urlFrom && urlTo) {
+      const parsedFrom = new Date(`${urlFrom}T00:00:00`);
+      const parsedTo = new Date(`${urlTo}T23:59:59.999`);
+      if (!isNaN(parsedFrom.getTime()) && !isNaN(parsedTo.getTime())) {
+        setStartDate(parsedFrom);
+        setEndDate(parsedTo);
+      }
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     setIsMounted(true);
-    const hydrated = hydrateScraperPeriod({ stateKey: 'jurnalUmumState', periodKey: 'JurnalUmumClient_scrapedPeriod' });
+    const hydrated = hydrateScraperPeriod({ stateKey: 'jurnalUmumState', periodKey: 'JurnalUmumClient_scrapedPeriod' }, searchParams);
     setScrapedPeriod(hydrated.scrapedPeriod);
     setStartDate(hydrated.startDate);
     setEndDate(hydrated.endDate);

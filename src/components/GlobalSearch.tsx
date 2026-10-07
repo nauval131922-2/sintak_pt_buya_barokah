@@ -12,6 +12,17 @@ interface SearchResult {
   label: string;
   source: string;
   category?: string;
+  date?: string | null;
+}
+
+function getResultBadgeClass(item: SearchResult): string {
+  if (item.source === 'menu') return 'bg-emerald-50 text-emerald-700 border-emerald-100/50';
+  if (item.type === 'PO' || item.type === 'SO' || item.type === 'PR') return 'bg-blue-50 text-blue-700 border-blue-100/50';
+  if (item.type === 'Karyawan') return 'bg-purple-50 text-purple-700 border-purple-100/50';
+  if (item.type === 'JHP' || item.type === 'Order Produksi' || item.type === 'Produksi Selesai') return 'bg-emerald-50 text-emerald-700 border-emerald-100/50';
+  if (item.type === 'Jurnal Umum') return 'bg-violet-50 text-violet-700 border-violet-100/50';
+  if (item.type === 'HPP') return 'bg-amber-50 text-amber-700 border-amber-100/50';
+  return 'bg-slate-50 text-slate-700 border-slate-200/50';
 }
 
 export default function GlobalSearch() {
@@ -55,21 +66,25 @@ export default function GlobalSearch() {
     }
 
     setIsLoading(true);
+    const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
+          signal: controller.signal,
+        });
         if (!res.ok) {
           console.error('Search API error:', res.status);
           setResults([]);
           setIsLoading(false);
           return;
         }
-        const data = await res.json();
+        const data = (await res.json()) as { results?: SearchResult[] };
         setResults(data.results || []);
         setIsOpen(true);
         setSelectedIndex(-1);
         setIsLoading(false);
-      } catch (e) {
+      } catch (e: unknown) {
+        if (e instanceof Error && e.name === 'AbortError') return;
         console.error('Search failed:', e);
         setResults([]);
         setIsOpen(false);
@@ -77,7 +92,10 @@ export default function GlobalSearch() {
       }
     }, 300);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [query]);
 
   // ponytail: handle mobile search overlay
@@ -98,8 +116,19 @@ export default function GlobalSearch() {
   // Trigger search on "/" key press
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+K / Cmd+K global shortcut
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        inputRef.current?.focus();
+        setIsMobileSearchOpen(true);
+        setTimeout(() => mobileInputRef.current?.focus(), 50);
+        return;
+      }
+
+      // Slash "/" shortcut saat tidak sedang mengetik di input lain
       if (e.key === '/' && document.activeElement !== inputRef.current && document.activeElement !== mobileInputRef.current && !/^(INPUT|TEXTAREA)$/i.test(document.activeElement?.tagName || '') && !(document.activeElement as HTMLElement)?.isContentEditable) {
         e.preventDefault();
+        inputRef.current?.focus();
         setIsMobileSearchOpen(true);
         setTimeout(() => mobileInputRef.current?.focus(), 50);
       }
@@ -135,13 +164,13 @@ export default function GlobalSearch() {
     if (item.source === 'menu') {
       router.push(item.id);
     } else {
-      // Route to detail pages with query params for filtering/highlighting
+      const dateParams = item.date ? `&from=${item.date}&to=${item.date}` : '';
       switch (item.source) {
         case 'purchase_orders':
-          router.push(`/purchase-orders?search=${encodeURIComponent(item.id)}&highlight=${encodeURIComponent(query)}`);
+          router.push(`/purchase-orders?search=${encodeURIComponent(item.id)}&highlight=${encodeURIComponent(query)}${dateParams}`);
           break;
         case 'sales_orders':
-          router.push(`/sales-orders?search=${encodeURIComponent(item.id)}&highlight=${encodeURIComponent(query)}`);
+          router.push(`/sales-orders?search=${encodeURIComponent(item.id)}&highlight=${encodeURIComponent(query)}${dateParams}`);
           break;
         case 'bahan_baku':
           router.push(`/data-digit/stok/master-barang?search=${encodeURIComponent(item.label)}&highlight=${encodeURIComponent(query)}`);
@@ -150,22 +179,33 @@ export default function GlobalSearch() {
           router.push(`/employees?search=${encodeURIComponent(item.label)}&highlight=${encodeURIComponent(query)}`);
           break;
         case 'orders':
-          router.push(`/orders?search=${encodeURIComponent(item.id)}&highlight=${encodeURIComponent(query)}`);
+          router.push(`/orders?search=${encodeURIComponent(item.id)}&highlight=${encodeURIComponent(query)}${dateParams}`);
           break;
         case 'purchase_requests':
-          router.push(`/pr?search=${encodeURIComponent(item.id)}&highlight=${encodeURIComponent(query)}`);
+          router.push(`/pr?search=${encodeURIComponent(item.id)}&highlight=${encodeURIComponent(query)}${dateParams}`);
           break;
         case 'produksi_selesai':
-          router.push(`/data-digit/produksi/produksi-selesai?search=${encodeURIComponent(item.id)}&highlight=${encodeURIComponent(query)}`);
+          router.push(`/data-digit/produksi/produksi-selesai?search=${encodeURIComponent(item.id)}&highlight=${encodeURIComponent(query)}${dateParams}`);
           break;
         case 'sph_out':
-          router.push(`/sph-out?search=${encodeURIComponent(item.id)}&highlight=${encodeURIComponent(query)}`);
+          router.push(`/sph-out?search=${encodeURIComponent(item.id)}&highlight=${encodeURIComponent(query)}${dateParams}`);
           break;
         case 'jurnal_harian_produksi':
-          router.push(`/jurnal-harian-produksi?search=${encodeURIComponent(item.label)}&highlight=${encodeURIComponent(query)}`);
+          router.push(`/jurnal-harian-produksi?search=${encodeURIComponent(item.label)}&highlight=${encodeURIComponent(query)}${dateParams}`);
+          break;
+        case 'jurnal_umum':
+          router.push(`/akuntansi/laporan/jurnal-umum?search=${encodeURIComponent(item.id)}&highlight=${encodeURIComponent(query)}${dateParams}`);
+          break;
+        case 'hpp_kalkulasi':
+          router.push(`/hpp-kalkulasi?search=${encodeURIComponent(item.label)}&highlight=${encodeURIComponent(query)}`);
+          break;
+        case 'barang_jadi':
+          router.push(`/barang-jadi?search=${encodeURIComponent(item.id)}&highlight=${encodeURIComponent(query)}${dateParams}`);
+          break;
+        case 'sales_reports':
+          router.push(`/sales?search=${encodeURIComponent(item.id)}&highlight=${encodeURIComponent(query)}${dateParams}`);
           break;
         default:
-          // Fallback untuk source yang belum di-handle
           toast.info(`Detail ${item.type}: ${item.label}`);
       }
     }
@@ -230,8 +270,8 @@ export default function GlobalSearch() {
               </svg>
             </button>
           ) : (
-            <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[11px] font-bold text-slate-400 bg-white border border-slate-200 rounded-lg shadow-sm pointer-events-none">
-              /
+            <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-bold text-slate-400 bg-white border border-slate-200 rounded-md shadow-xs pointer-events-none">
+              <span>Ctrl</span><span>K</span>
             </kbd>
           )}
         </div>
@@ -300,14 +340,7 @@ export default function GlobalSearch() {
                     .map((item, idx) => {
                       const actualIndex = results.indexOf(item);
                       const isSelected = selectedIndex === actualIndex;
-                      const isPoOrSo = item.type === 'PO' || item.type === 'SO';
-                      const badgeBg = isPoOrSo 
-                        ? 'bg-blue-50 text-blue-700 border-blue-100/50' 
-                        : item.type === 'Karyawan' 
-                        ? 'bg-purple-50 text-purple-700 border-purple-100/50' 
-                        : item.type === 'JHP'
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100/50'
-                        : 'bg-amber-50 text-amber-700 border-amber-100/50';
+                      const badgeBg = getResultBadgeClass(item);
 
                       return (
                         <div
@@ -423,16 +456,7 @@ export default function GlobalSearch() {
                   {results.map((item, idx) => {
                     const isSelected = selectedIndex === idx;
                     const isMenu = item.source === 'menu';
-                    const isPoOrSo = item.type === 'PO' || item.type === 'SO';
-                    const badgeBg = isMenu 
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-100/50'
-                      : isPoOrSo 
-                      ? 'bg-blue-50 text-blue-700 border-blue-100/50' 
-                      : item.type === 'Karyawan' 
-                      ? 'bg-purple-50 text-purple-700 border-purple-100/50' 
-                      : item.type === 'JHP'
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-100/50'
-                      : 'bg-amber-50 text-amber-700 border-amber-100/50';
+                    const badgeBg = getResultBadgeClass(item);
 
                     return (
                       <div

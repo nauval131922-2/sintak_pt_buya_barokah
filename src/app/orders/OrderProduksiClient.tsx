@@ -46,8 +46,8 @@ export default function OrderProduksiClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isMounted, setIsMounted] = useState(false);
-  const [startDate, setStartDate] = useState<Date>(() => getDefaultScraperDateRange().startDate);
-  const [endDate, setEndDate] = useState<Date>(() => getDefaultScraperDateRange().endDate);
+  const [startDate, setStartDate] = useState<Date>(() => getDefaultScraperDateRange(searchParams).startDate);
+  const [endDate, setEndDate] = useState<Date>(() => getDefaultScraperDateRange(searchParams).endDate);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any[] | null>(null);
   const [error, setError] = useState('');
@@ -86,12 +86,22 @@ export default function OrderProduksiClient() {
     // If URL search parameter changes, sync it to state
     const urlSearch = searchParams.get('search');
     const urlHighlight = searchParams.get('highlight');
+    const urlFrom = searchParams.get('from');
+    const urlTo = searchParams.get('to');
     if (urlSearch !== null) {
       urlSearchRef.current = urlSearch;
       setSearchQuery(urlSearch);
       setDebouncedQuery(urlSearch);
       setHighlightQuery(urlHighlight || urlSearch);
       setPage(1);
+    }
+    if (urlFrom && urlTo) {
+      const parsedFrom = new Date(`${urlFrom}T00:00:00`);
+      const parsedTo = new Date(`${urlTo}T23:59:59.999`);
+      if (!isNaN(parsedFrom.getTime()) && !isNaN(parsedTo.getTime())) {
+        setStartDate(parsedFrom);
+        setEndDate(parsedTo);
+      }
     }
   }, [searchParams]);
 
@@ -106,7 +116,7 @@ export default function OrderProduksiClient() {
 
   useEffect(() => {
     setIsMounted(true);
-    const hydratedPeriod = hydrateScraperPeriod({ stateKey: 'orderProduksiState', periodKey: 'OrderProduksiClient_scrapedPeriod' });
+    const hydratedPeriod = hydrateScraperPeriod({ stateKey: 'orderProduksiState', periodKey: 'OrderProduksiClient_scrapedPeriod' }, searchParams);
     setScrapedPeriod(hydratedPeriod.scrapedPeriod);
     setStartDate(hydratedPeriod.startDate);
     setEndDate(hydratedPeriod.endDate);

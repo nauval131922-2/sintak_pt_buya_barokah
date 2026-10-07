@@ -267,12 +267,22 @@ export default function JurnalClient({
     // If URL search parameter changes, sync it to state
     const urlSearch = searchParams.get('search');
     const urlHighlight = searchParams.get('highlight');
+    const urlFrom = searchParams.get('from');
+    const urlTo = searchParams.get('to');
     if (urlSearch !== null) {
       urlSearchRef.current = urlSearch;
       setSearchQuery(urlSearch);
       setDebouncedQuery(urlSearch);
       setHighlightQuery(urlHighlight || urlSearch);
       setPage(1);
+    }
+    if (urlFrom && urlTo) {
+      const parsedFrom = new Date(`${urlFrom}T00:00:00`);
+      const parsedTo = new Date(`${urlTo}T23:59:59.999`);
+      if (!isNaN(parsedFrom.getTime()) && !isNaN(parsedTo.getTime())) {
+        setStartDate(parsedFrom);
+        setEndDate(parsedTo);
+      }
     }
   }, [searchParams]);
 
@@ -291,6 +301,19 @@ export default function JurnalClient({
     setIsMounted(true);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+
+    const urlFrom = searchParams.get('from');
+    const urlTo = searchParams.get('to');
+    if (urlFrom && urlTo) {
+      const parsedFrom = new Date(`${urlFrom}T00:00:00`);
+      const parsedTo = new Date(`${urlTo}T23:59:59.999`);
+      if (!isNaN(parsedFrom.getTime()) && !isNaN(parsedTo.getTime())) {
+        setStartDate(parsedFrom);
+        setEndDate(parsedTo);
+        persistDateStore('jurnal_dates', parsedFrom, parsedTo);
+        return;
+      }
+    }
 
     const hydrated = hydrateDateStore('jurnal_dates');
     if (hydrated.startDate && hydrated.endDate) {

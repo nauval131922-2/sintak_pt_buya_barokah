@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Loader2, Search, AlertCircle, Clock, RefreshCw, Copy, Check } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ColumnDef } from '@tanstack/react-table';
 
 import DatePicker from '@/components/DatePicker';
@@ -42,9 +42,10 @@ const PAGE_SIZE = 50;
 
 export default function BarangJadiClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isMounted, setIsMounted] = useState(false);
-  const [startDate, setStartDate] = useState<Date>(() => getDefaultScraperDateRange().startDate);
-  const [endDate, setEndDate] = useState<Date>(() => getDefaultScraperDateRange().endDate);
+  const [startDate, setStartDate] = useState<Date>(() => getDefaultScraperDateRange(searchParams).startDate);
+  const [endDate, setEndDate] = useState<Date>(() => getDefaultScraperDateRange(searchParams).endDate);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any[]>([]);
   const [error, setError] = useState('');
@@ -54,8 +55,8 @@ export default function BarangJadiClient() {
   const [refreshKey, setRefreshKey] = useState(0);
   const mountedRef = useRef(true);
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
+  const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || '');
   const [warningOnly, setWarningOnly] = useState(false);
   const [soOnly, setSoOnly] = useState(false);
   const [page, setPage] = useState(1);
@@ -85,6 +86,24 @@ export default function BarangJadiClient() {
   }, [searchQuery]);
 
   useEffect(() => {
+    const urlSearch = searchParams.get('search');
+    const urlFrom = searchParams.get('from');
+    const urlTo = searchParams.get('to');
+    if (urlSearch !== null) {
+      setSearchQuery(urlSearch);
+      setDebouncedQuery(urlSearch);
+      setPage(1);
+    }
+    if (urlFrom && urlTo) {
+      const parsedFrom = new Date(`${urlFrom}T00:00:00`);
+      const parsedTo = new Date(`${urlTo}T23:59:59.999`);
+      if (!isNaN(parsedFrom.getTime()) && !isNaN(parsedTo.getTime())) {
+        setStartDate(parsedFrom);
+        setEndDate(parsedTo);
+      }
+    }
+  }, [searchParams]);
+  useEffect(() => {
     setPage(1);
   }, [warningOnly, soOnly]);
 
@@ -94,7 +113,7 @@ export default function BarangJadiClient() {
 
   useEffect(() => {
     setIsMounted(true);
-    const hydratedPeriod = hydrateScraperPeriod({ stateKey: 'barangJadiState', periodKey: 'BarangJadiClient_scrapedPeriod' });
+    const hydratedPeriod = hydrateScraperPeriod({ stateKey: 'barangJadiState', periodKey: 'BarangJadiClient_scrapedPeriod' }, searchParams);
     setScrapedPeriod(hydratedPeriod.scrapedPeriod);
     setStartDate(hydratedPeriod.startDate);
     setEndDate(hydratedPeriod.endDate);
