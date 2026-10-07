@@ -1186,6 +1186,8 @@ export default function SavedCalculationsList({
       if (filterCategory !== 'ALL') {
         if (filterCategory === 'Buku Hard Cover') {
           if (!item.category.startsWith('Buku Hard Cover')) return false;
+        } else if (filterCategory === 'Buku Soft Cover') {
+          if (!item.category.startsWith('Buku Soft Cover')) return false;
         } else if (filterCategory === 'Buku Tabungan') {
           if (!item.category.startsWith('Buku Tabungan')) return false;
         } else if (filterCategory === 'Kalender') {

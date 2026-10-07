@@ -915,45 +915,6 @@ export default function PricelistClient() {
   const isFiltered = selectedJenis !== 'ALL' || selectedBahan !== 'ALL' || searchTerm !== '';
 
 
-  const tabunganVarianSelector = (
-    <div className="flex items-center gap-1.5 bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 w-fit shrink-0 mb-3 shadow-2xs">
-      <span className="text-[11px] font-bold text-slate-500 pl-2 pr-1 select-none">Varian Tabungan:</span>
-      {(['NS', 'Security'] as const).map((v) => (
-        <button
-          key={v}
-          type="button"
-          onClick={() => handleTabunganVarianChange(v)}
-          className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-            tabunganVarian === v
-              ? 'bg-emerald-700 text-white shadow-xs'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-          }`}
-        >
-          {v === 'NS' ? 'Non Security (NS)' : 'Security'}
-        </button>
-      ))}
-    </div>
-  );
-
-  const kalenderVarianSelector = (
-    <div className="flex items-center gap-1.5 bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 w-fit shrink-0 mb-3 shadow-2xs">
-      <span className="text-[11px] font-bold text-slate-500 pl-2 pr-1 select-none">Model Kalender:</span>
-      {(['Dinding', 'Kop'] as const).map((v) => (
-        <button
-          key={v}
-          type="button"
-          onClick={() => handleKalenderVarianChange(v)}
-          className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-            kalenderVarian === v
-              ? 'bg-emerald-700 text-white shadow-xs'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-          }`}
-        >
-          {v === 'Dinding' ? 'Kalender Dinding (Spiral / Klem)' : 'Kalender Kop Angka'}
-        </button>
-      ))}
-    </div>
-  );
   return (
     <div className="flex flex-col gap-4 flex-1 min-h-0">
       {/* TABS Navigation + Product Category Selector — 1 baris, tab bisa scroll horizontal */}
@@ -1061,47 +1022,89 @@ export default function PricelistClient() {
           </div>
         </div>
 
-        {/* Filter Jenis Produk — nempel kanan, tidak ikut scroll, pakai portal agar tidak tertutup card di bawah */}
-        <div className="flex items-center gap-1.5 pl-2 border-l border-slate-100 shrink-0 pb-2">
-          <span className="text-[11px] font-semibold text-slate-400 hidden sm:inline whitespace-nowrap">Produk:</span>
-          <SquareDropdown
-            usePortal
-            options={[
-              { value: 'Buku Manasik', label: '📖 Buku Manasik Haji' },
-              { value: 'Buku Yasin', label: '📗 Buku Surat Yasin' },
-              { value: 'Buku Tulis', label: '📓 Buku Tulis' },
-              { value: 'Buku Soft Cover', label: '📗 Buku Soft Cover' },
-              { value: 'Buku Hard Cover', label: '📕 Buku Hard Cover' },
-              { value: 'Majalah 14,5×20,25', label: '📰 Majalah' },
-              { value: 'Nota 1 Warna', label: '📋 Nota 1 Warna' },
-              { value: 'Brosur 2026', label: '🗞️ Brosur 2026' },
-              { value: 'Poster', label: '🖼️ Poster' },
-              { value: 'Label KHQ', label: '🏷️ Label KHQ' },
-              { value: 'Lebel Kartu Obat', label: '💊 Lebel Kartu Obat' },
-              { value: 'Stiker', label: '🏷️ Stiker' },
-              { value: 'Stopmap', label: '📁 Stopmap' },
-              { value: 'Raport Kaleb', label: '📒 Raport Kaleb' },
-              { value: 'Kop Surat', label: '📄 Kop Surat' },
-              { value: 'Amplop', label: '✉️ Amplop' },
-              { value: 'Syahadah', label: '🕌 Syahadah' },
-              { value: 'Sertifikat', label: '📜 Sertifikat' },
-              { value: 'Undangan', label: '💌 Undangan' },
-              { value: 'Buku Tabungan', label: '📒 Buku Tabungan' },
-              { value: 'Kartu Koperasi Promise', label: '🪪 Kartu Koperasi' },
-              { value: 'Kalender', label: '🗓️ Kalender' },
-              { value: 'Packaging', label: '📦 Packaging' },
-              { value: 'Paperbag', label: '🛍️ Paperbag' },
-            ]}
-            value={selectedProductCategory}
-            onChange={(val) => handleProductCategoryChange(val as any)}
-            searchPlaceholder="Cari jenis produk..."
-            widthClass="w-44"
-          />
-        </div>
+        {/* Filter Jenis Produk — hanya tampil di tab Parameter, Simulator, dan Matrix */}
+        {activeTab !== 'saved' && (
+          <div className="flex items-center gap-1.5 pl-2 border-l border-slate-100 shrink-0 pb-2">
+            {(selectedProductCategory === 'Buku Tabungan' ||
+              selectedProductCategory === 'Buku Tabungan NS' ||
+              selectedProductCategory === 'Buku Tabungan Security') && (
+              <div className="flex items-center gap-1 bg-slate-100/90 p-0.5 rounded-lg border border-slate-200/80 shrink-0 shadow-2xs mr-1">
+                {(['NS', 'Security'] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => handleTabunganVarianChange(v)}
+                    className={`px-2 py-0.5 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                      tabunganVarian === v
+                        ? 'bg-emerald-700 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                    }`}
+                  >
+                    {v === 'NS' ? 'NS' : 'Security'}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {selectedProductCategory === 'Kalender' && (
+              <div className="flex items-center gap-1 bg-slate-100/90 p-0.5 rounded-lg border border-slate-200/80 shrink-0 shadow-2xs mr-1">
+                {(['Dinding', 'Kop'] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => handleKalenderVarianChange(v)}
+                    className={`px-2 py-0.5 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                      kalenderVarian === v
+                        ? 'bg-emerald-700 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                    }`}
+                  >
+                    {v === 'Dinding' ? 'Dinding' : 'Kop'}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <span className="text-[11px] font-semibold text-slate-400 hidden sm:inline whitespace-nowrap">Produk:</span>
+            <SquareDropdown
+              usePortal
+              options={[
+                { value: 'Buku Manasik', label: '📖 Buku Manasik Haji' },
+                { value: 'Buku Yasin', label: '📗 Buku Surat Yasin' },
+                { value: 'Buku Tulis', label: '📓 Buku Tulis' },
+                { value: 'Buku Soft Cover', label: '📗 Buku Soft Cover' },
+                { value: 'Buku Hard Cover', label: '📕 Buku Hard Cover' },
+                { value: 'Majalah 14,5×20,25', label: '📰 Majalah' },
+                { value: 'Nota 1 Warna', label: '📋 Nota 1 Warna' },
+                { value: 'Brosur 2026', label: '🗞️ Brosur 2026' },
+                { value: 'Poster', label: '🖼️ Poster' },
+                { value: 'Label KHQ', label: '🏷️ Label KHQ' },
+                { value: 'Lebel Kartu Obat', label: '💊 Lebel Kartu Obat' },
+                { value: 'Stiker', label: '🏷️ Stiker' },
+                { value: 'Stopmap', label: '📁 Stopmap' },
+                { value: 'Raport Kaleb', label: '📒 Raport Kaleb' },
+                { value: 'Kop Surat', label: '📄 Kop Surat' },
+                { value: 'Amplop', label: '✉️ Amplop' },
+                { value: 'Syahadah', label: '🕌 Syahadah' },
+                { value: 'Sertifikat', label: '📜 Sertifikat' },
+                { value: 'Undangan', label: '💌 Undangan' },
+                { value: 'Buku Tabungan', label: '📒 Buku Tabungan' },
+                { value: 'Kartu Koperasi Promise', label: '🪪 Kartu Koperasi' },
+                { value: 'Kalender', label: '🗓️ Kalender' },
+                { value: 'Packaging', label: '📦 Packaging' },
+                { value: 'Paperbag', label: '🛍️ Paperbag' },
+              ]}
+              value={selectedProductCategory}
+              onChange={(val) => handleProductCategoryChange(val as any)}
+              searchPlaceholder="Cari jenis produk..."
+              widthClass="w-44"
+            />
+          </div>
+        )}
       </div>
 
       {activeTab === 'parameter' ? (
-        <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-4">
+        <div className="flex-1 min-h-0 flex flex-col">
           {selectedProductCategory === 'Buku Manasik' ? (
             <ManasikMasterParameter
               customParams={paramsManasik}
@@ -1168,20 +1171,17 @@ export default function PricelistClient() {
               setCustomParams={setParamsUndangan}
             />
           ) : selectedProductCategory === 'Buku Tabungan' || selectedProductCategory === 'Buku Tabungan NS' || selectedProductCategory === 'Buku Tabungan Security' ? (
-            <div className="flex flex-col gap-2">
-              {tabunganVarianSelector}
-              {tabunganVarian === 'NS' ? (
-                <BukuTabunganNsMasterParameter
-                  customParams={paramsBukuTabunganNs}
-                  setCustomParams={setParamsBukuTabunganNs}
-                />
-              ) : (
-                <BukuTabunganSecurityMasterParameter
-                  customParams={paramsBukuTabunganSecurity}
-                  setCustomParams={setParamsBukuTabunganSecurity}
-                />
-              )}
-            </div>
+            tabunganVarian === 'NS' ? (
+              <BukuTabunganNsMasterParameter
+                customParams={paramsBukuTabunganNs}
+                setCustomParams={setParamsBukuTabunganNs}
+              />
+            ) : (
+              <BukuTabunganSecurityMasterParameter
+                customParams={paramsBukuTabunganSecurity}
+                setCustomParams={setParamsBukuTabunganSecurity}
+              />
+            )
           ) : selectedProductCategory === 'Kartu Koperasi Promise' ? (
             <KartuKoperasiPromiseMasterParameter
               customParams={paramsKartuKoperasiPromise}
@@ -1228,25 +1228,22 @@ export default function PricelistClient() {
               setCustomParams={setParamsStiker}
             />
           ) : (
-            <div className="flex flex-col gap-2">
-              {kalenderVarianSelector}
-              {kalenderVarian === 'Kop' ? (
-                <KalenderKopMasterParameter
-                  customParams={paramsKalenderKop}
-                  setCustomParams={setParamsKalenderKop}
-                />
-              ) : (
-                <PricelistMasterParameter
-                  customParams={customParams}
-                  setCustomParams={setCustomParams}
-                  activeFinishing={selectedFinishing}
-                  onChangeFinishing={setSelectedFinishing}
-                  activeSimulationId={activeSimulationId}
-                  activeSimulationTitle={activeSimulationTitle}
-                  onBackToSimulator={() => setActiveTab('simulator')}
-                />
-              )}
-            </div>
+            kalenderVarian === 'Kop' ? (
+              <KalenderKopMasterParameter
+                customParams={paramsKalenderKop}
+                setCustomParams={setParamsKalenderKop}
+              />
+            ) : (
+              <PricelistMasterParameter
+                customParams={customParams}
+                setCustomParams={setCustomParams}
+                activeFinishing={selectedFinishing}
+                onChangeFinishing={setSelectedFinishing}
+                activeSimulationId={activeSimulationId}
+                activeSimulationTitle={activeSimulationTitle}
+                onBackToSimulator={() => handleTabChange('simulator')}
+              />
+            )
           )}
         </div>
       ) : activeTab === 'simulator' ? (
@@ -1255,7 +1252,7 @@ export default function PricelistClient() {
             <ManasikSimulator
               customParams={paramsManasik}
               setCustomParams={setParamsManasik}
-              onOpenMasterParam={() => setActiveTab('parameter')}
+              onOpenMasterParam={() => handleTabChange('parameter')}
               activeSimulationId={activeSimulationId}
               setActiveSimulationId={setActiveSimulationId}
               activeSimulationTitle={activeSimulationTitle}
@@ -1265,7 +1262,7 @@ export default function PricelistClient() {
             <YasinSimulator
               customParams={paramsYasin}
               setCustomParams={setParamsYasin}
-              onOpenMasterParam={() => setActiveTab('parameter')}
+              onOpenMasterParam={() => handleTabChange('parameter')}
               activeSimulationId={activeSimulationId}
               setActiveSimulationId={setActiveSimulationId}
               activeSimulationTitle={activeSimulationTitle}
@@ -1275,7 +1272,7 @@ export default function PricelistClient() {
             <NotaSimulator
               customParams={paramsNota}
               setCustomParams={setParamsNota}
-              onOpenMasterParam={() => setActiveTab('parameter')}
+              onOpenMasterParam={() => handleTabChange('parameter')}
               activeSimulationId={activeSimulationId}
               setActiveSimulationId={setActiveSimulationId}
               activeSimulationTitle={activeSimulationTitle}
@@ -1285,7 +1282,7 @@ export default function PricelistClient() {
             <BrosurSimulator
               customParams={paramsBrosur}
               setCustomParams={setParamsBrosur}
-              onOpenMasterParam={() => setActiveTab('parameter')}
+              onOpenMasterParam={() => handleTabChange('parameter')}
               activeSimulationId={activeSimulationId}
               setActiveSimulationId={setActiveSimulationId}
               activeSimulationTitle={activeSimulationTitle}
@@ -1295,7 +1292,7 @@ export default function PricelistClient() {
             <LabelKhqSimulator
               customParams={paramsLabelKhq}
               setCustomParams={setParamsLabelKhq}
-              onOpenMasterParam={() => setActiveTab('parameter')}
+              onOpenMasterParam={() => handleTabChange('parameter')}
               activeSimulationId={activeSimulationId}
               setActiveSimulationId={setActiveSimulationId}
               activeSimulationTitle={activeSimulationTitle}
@@ -1305,7 +1302,7 @@ export default function PricelistClient() {
             <BukuTulisSimulator
               customParams={paramsBukuTulis}
               setCustomParams={setParamsBukuTulis}
-              onOpenMasterParam={() => setActiveTab('parameter')}
+              onOpenMasterParam={() => handleTabChange('parameter')}
               activeSimulationId={activeSimulationId}
               setActiveSimulationId={setActiveSimulationId}
               activeSimulationTitle={activeSimulationTitle}
@@ -1315,7 +1312,7 @@ export default function PricelistClient() {
             <StopmapSimulator
               customParams={paramsStopmap}
               setCustomParams={setParamsStopmap}
-              onOpenMasterParam={() => setActiveTab('parameter')}
+              onOpenMasterParam={() => handleTabChange('parameter')}
               activeSimulationId={activeSimulationId}
               setActiveSimulationId={setActiveSimulationId}
               activeSimulationTitle={activeSimulationTitle}
@@ -1325,7 +1322,7 @@ export default function PricelistClient() {
             <SyahadahSimulator
               customParams={paramsSyahadah}
               setCustomParams={setParamsSyahadah}
-              onOpenMasterParam={() => setActiveTab('parameter')}
+              onOpenMasterParam={() => handleTabChange('parameter')}
               activeSimulationId={activeSimulationId}
               setActiveSimulationId={setActiveSimulationId}
               activeSimulationTitle={activeSimulationTitle}
@@ -1335,7 +1332,7 @@ export default function PricelistClient() {
             <RaportKalebSimulator
               customParams={paramsRaportKaleb}
               setCustomParams={setParamsRaportKaleb}
-              onOpenMasterParam={() => setActiveTab('parameter')}
+              onOpenMasterParam={() => handleTabChange('parameter')}
               activeSimulationId={activeSimulationId}
               setActiveSimulationId={setActiveSimulationId}
               activeSimulationTitle={activeSimulationTitle}
@@ -1345,7 +1342,7 @@ export default function PricelistClient() {
             <KopSuratSimulator
               customParams={paramsKopSurat}
               setCustomParams={setParamsKopSurat}
-              onOpenMasterParam={() => setActiveTab('parameter')}
+              onOpenMasterParam={() => handleTabChange('parameter')}
               activeSimulationId={activeSimulationId}
               setActiveSimulationId={setActiveSimulationId}
               activeSimulationTitle={activeSimulationTitle}
@@ -1355,7 +1352,7 @@ export default function PricelistClient() {
             <AmplopSimulator
               customParams={paramsAmplop}
               setCustomParams={setParamsAmplop}
-              onOpenMasterParam={() => setActiveTab('parameter')}
+              onOpenMasterParam={() => handleTabChange('parameter')}
               activeSimulationId={activeSimulationId}
               setActiveSimulationId={setActiveSimulationId}
               activeSimulationTitle={activeSimulationTitle}
@@ -1365,7 +1362,7 @@ export default function PricelistClient() {
             <SertifikatSimulator
               customParams={paramsSertifikat}
               setCustomParams={setParamsSertifikat}
-              onOpenMasterParam={() => setActiveTab('parameter')}
+              onOpenMasterParam={() => handleTabChange('parameter')}
               activeSimulationId={activeSimulationId}
               setActiveSimulationId={setActiveSimulationId}
               activeSimulationTitle={activeSimulationTitle}
@@ -1375,44 +1372,39 @@ export default function PricelistClient() {
             <UndanganSimulator
               customParams={paramsUndangan}
               setCustomParams={setParamsUndangan}
-              onOpenMasterParam={() => setActiveTab('parameter')}
+              onOpenMasterParam={() => handleTabChange('parameter')}
               activeSimulationId={activeSimulationId}
               setActiveSimulationId={setActiveSimulationId}
               activeSimulationTitle={activeSimulationTitle}
               setActiveSimulationTitle={setActiveSimulationTitle}
             />
           ) : selectedProductCategory === 'Buku Tabungan' || selectedProductCategory === 'Buku Tabungan NS' || selectedProductCategory === 'Buku Tabungan Security' ? (
-            <div className="flex-1 flex flex-col min-h-0">
-              {tabunganVarianSelector}
-              <div className="flex-1 min-h-0">
-                {tabunganVarian === 'NS' ? (
-                  <BukuTabunganNsSimulator
-                    customParams={paramsBukuTabunganNs}
-                    setCustomParams={setParamsBukuTabunganNs}
-                    onOpenMasterParam={() => setActiveTab('parameter')}
-                    activeSimulationId={activeSimulationId}
-                    setActiveSimulationId={setActiveSimulationId}
-                    activeSimulationTitle={activeSimulationTitle}
-                    setActiveSimulationTitle={setActiveSimulationTitle}
-                  />
-                ) : (
-                  <BukuTabunganSecuritySimulator
-                    customParams={paramsBukuTabunganSecurity}
-                    setCustomParams={setParamsBukuTabunganSecurity}
-                    onOpenMasterParam={() => setActiveTab('parameter')}
-                    activeSimulationId={activeSimulationId}
-                    setActiveSimulationId={setActiveSimulationId}
-                    activeSimulationTitle={activeSimulationTitle}
-                    setActiveSimulationTitle={setActiveSimulationTitle}
-                  />
-                )}
-              </div>
-            </div>
+            tabunganVarian === 'NS' ? (
+              <BukuTabunganNsSimulator
+                customParams={paramsBukuTabunganNs}
+                setCustomParams={setParamsBukuTabunganNs}
+                onOpenMasterParam={() => handleTabChange('parameter')}
+                activeSimulationId={activeSimulationId}
+                setActiveSimulationId={setActiveSimulationId}
+                activeSimulationTitle={activeSimulationTitle}
+                setActiveSimulationTitle={setActiveSimulationTitle}
+              />
+            ) : (
+              <BukuTabunganSecuritySimulator
+                customParams={paramsBukuTabunganSecurity}
+                setCustomParams={setParamsBukuTabunganSecurity}
+                onOpenMasterParam={() => handleTabChange('parameter')}
+                activeSimulationId={activeSimulationId}
+                setActiveSimulationId={setActiveSimulationId}
+                activeSimulationTitle={activeSimulationTitle}
+                setActiveSimulationTitle={setActiveSimulationTitle}
+              />
+            )
           ) : selectedProductCategory === 'Kartu Koperasi Promise' ? (
             <KartuKoperasiPromiseSimulator
               customParams={paramsKartuKoperasiPromise}
               setCustomParams={setParamsKartuKoperasiPromise}
-              onOpenMasterParam={() => setActiveTab('parameter')}
+              onOpenMasterParam={() => handleTabChange('parameter')}
               activeSimulationId={activeSimulationId}
               setActiveSimulationId={setActiveSimulationId}
               activeSimulationTitle={activeSimulationTitle}
@@ -1422,7 +1414,7 @@ export default function PricelistClient() {
             <LebelKartuObatSimulator
               customParams={paramsLebelKartuObat}
               setCustomParams={setParamsLebelKartuObat}
-              onOpenMasterParam={() => setActiveTab('parameter')}
+              onOpenMasterParam={() => handleTabChange('parameter')}
               activeSimulationId={activeSimulationId}
               setActiveSimulationId={setActiveSimulationId}
               activeSimulationTitle={activeSimulationTitle}
@@ -1432,7 +1424,7 @@ export default function PricelistClient() {
             <BukuSoftCoverUnifiedSimulator
               customParams={paramsBukuSoftCover}
               setCustomParams={setParamsBukuSoftCover}
-              onOpenMasterParam={() => setActiveTab('parameter')}
+              onOpenMasterParam={() => handleTabChange('parameter')}
               activeSimulationId={activeSimulationId}
               setActiveSimulationId={setActiveSimulationId}
               activeSimulationTitle={activeSimulationTitle}
@@ -1442,7 +1434,7 @@ export default function PricelistClient() {
             <BukuHardCoverUnifiedSimulator
               customParams={paramsBukuHardCover}
               setCustomParams={setParamsBukuHardCover}
-              onOpenMasterParam={() => setActiveTab('parameter')}
+              onOpenMasterParam={() => handleTabChange('parameter')}
               activeSimulationId={activeSimulationId}
               setActiveSimulationId={setActiveSimulationId}
               activeSimulationTitle={activeSimulationTitle}
@@ -1464,7 +1456,7 @@ export default function PricelistClient() {
             <PosterSimulator
               customParams={paramsPoster}
               setCustomParams={setParamsPoster}
-              onOpenMasterParam={() => setActiveTab('parameter')}
+              onOpenMasterParam={() => handleTabChange('parameter')}
               activeSimulationId={activeSimulationId}
               setActiveSimulationId={setActiveSimulationId}
               activeSimulationTitle={activeSimulationTitle}
@@ -1474,7 +1466,7 @@ export default function PricelistClient() {
             <MajalahSimulator
               customParams={paramsMajalah}
               setCustomParams={setParamsMajalah}
-              onOpenMasterParam={() => setActiveTab('parameter')}
+              onOpenMasterParam={() => handleTabChange('parameter')}
               activeSimulationId={activeSimulationId}
               setActiveSimulationId={setActiveSimulationId}
               activeSimulationTitle={activeSimulationTitle}
@@ -1484,48 +1476,43 @@ export default function PricelistClient() {
             <StikerSimulator
               customParams={paramsStiker}
               setCustomParams={setParamsStiker}
-              onOpenMasterParam={() => setActiveTab('parameter')}
+              onOpenMasterParam={() => handleTabChange('parameter')}
               activeSimulationId={activeSimulationId}
               setActiveSimulationId={setActiveSimulationId}
               activeSimulationTitle={activeSimulationTitle}
               setActiveSimulationTitle={setActiveSimulationTitle}
             />
           ) : (
-            <div className="flex-1 flex flex-col min-h-0">
-              {kalenderVarianSelector}
-              <div className="flex-1 min-h-0">
-                {kalenderVarian === 'Kop' ? (
-                  <KalenderKopSimulator
-                    customParams={paramsKalenderKop}
-                    setCustomParams={setParamsKalenderKop}
-                    onOpenMasterParam={() => setActiveTab('parameter')}
-                    activeSimulationId={activeSimulationId}
-                    setActiveSimulationId={setActiveSimulationId}
-                    activeSimulationTitle={activeSimulationTitle}
-                    setActiveSimulationTitle={setActiveSimulationTitle}
-                  />
-                ) : (
-                  <PricelistSimulator
-                    customParams={customParams}
-                    setCustomParams={setCustomParams}
-                    setParamsForFinishing={setParamsForFinishing}
-                    finishingJilid={selectedFinishing}
-                    onChangeFinishingJilid={setSelectedFinishing}
-                    onOpenMasterParam={() => setActiveTab('parameter')}
-                    activeSimulationId={activeSimulationId}
-                    setActiveSimulationId={setActiveSimulationId}
-                    activeSimulationTitle={activeSimulationTitle}
-                    setActiveSimulationTitle={setActiveSimulationTitle}
-                    paramsSpiral={paramsSpiral}
-                    paramsKlem={paramsKlem}
-                    backupParamsSpiral={backupParamsSpiral}
-                    setBackupParamsSpiral={setBackupParamsSpiral}
-                    backupParamsKlem={backupParamsKlem}
-                    setBackupParamsKlem={setBackupParamsKlem}
-                  />
-                )}
-              </div>
-            </div>
+            kalenderVarian === 'Kop' ? (
+              <KalenderKopSimulator
+                customParams={paramsKalenderKop}
+                setCustomParams={setParamsKalenderKop}
+                onOpenMasterParam={() => handleTabChange('parameter')}
+                activeSimulationId={activeSimulationId}
+                setActiveSimulationId={setActiveSimulationId}
+                activeSimulationTitle={activeSimulationTitle}
+                setActiveSimulationTitle={setActiveSimulationTitle}
+              />
+            ) : (
+              <PricelistSimulator
+                customParams={customParams}
+                setCustomParams={setCustomParams}
+                setParamsForFinishing={setParamsForFinishing}
+                finishingJilid={selectedFinishing}
+                onChangeFinishingJilid={setSelectedFinishing}
+                onOpenMasterParam={() => handleTabChange('parameter')}
+                activeSimulationId={activeSimulationId}
+                setActiveSimulationId={setActiveSimulationId}
+                activeSimulationTitle={activeSimulationTitle}
+                setActiveSimulationTitle={setActiveSimulationTitle}
+                paramsSpiral={paramsSpiral}
+                paramsKlem={paramsKlem}
+                backupParamsSpiral={backupParamsSpiral}
+                setBackupParamsSpiral={setBackupParamsSpiral}
+                backupParamsKlem={backupParamsKlem}
+                setBackupParamsKlem={setBackupParamsKlem}
+              />
+            )
           )}
         </div>
       ) : activeTab === 'matrix' ? (
@@ -1609,22 +1596,19 @@ export default function PricelistClient() {
               setViewMode={setViewMode}
             />
           ) : selectedProductCategory === 'Buku Tabungan' || selectedProductCategory === 'Buku Tabungan NS' || selectedProductCategory === 'Buku Tabungan Security' ? (
-            <div className="flex flex-col gap-2">
-              {tabunganVarianSelector}
-              {tabunganVarian === 'NS' ? (
-                <BukuTabunganNsMatrixView
-                  customParams={paramsBukuTabunganNs}
-                  viewMode={viewMode}
-                  setViewMode={setViewMode}
-                />
-              ) : (
-                <BukuTabunganSecurityMatrixView
-                  customParams={paramsBukuTabunganSecurity}
-                  viewMode={viewMode}
-                  setViewMode={setViewMode}
-                />
-              )}
-            </div>
+            tabunganVarian === 'NS' ? (
+              <BukuTabunganNsMatrixView
+                customParams={paramsBukuTabunganNs}
+                viewMode={viewMode}
+                setViewMode={setViewMode}
+              />
+            ) : (
+              <BukuTabunganSecurityMatrixView
+                customParams={paramsBukuTabunganSecurity}
+                viewMode={viewMode}
+                setViewMode={setViewMode}
+              />
+            )
           ) : selectedProductCategory === 'Kartu Koperasi Promise' ? (
             <KartuKoperasiPromiseMatrixView
               customParams={paramsKartuKoperasiPromise}
@@ -1680,9 +1664,7 @@ export default function PricelistClient() {
               setViewMode={setViewMode}
             />
           ) : (
-            <div className="flex flex-col gap-2">
-              {kalenderVarianSelector}
-              {kalenderVarian === 'Kop' ? (
+            kalenderVarian === 'Kop' ? (
                 <KalenderKopMatrixView
                   customParams={paramsKalenderKop}
                   viewMode={viewMode}
@@ -2005,8 +1987,7 @@ export default function PricelistClient() {
             </div>
           )}
                 </>
-              )}
-            </div>
+              )
           )}
         </div>
       ) : (
