@@ -7,19 +7,25 @@
  * 1. Tidak boleh ada alamat sel Excel (Master!Dxx, BUKU!xxx, dll.) yang bocor
  *    ke tampilan UI utama (form label, card header, badge, breakdown table).
  *    Referensi sel HANYA diizinkan di modal panduan/manual pengguna atau komentar kode.
- * 2. Simulator berstandar modern (memakai stepChip) wajib memiliki kelengkapan UI baku:
+ * 2. Tidak boleh ada alamat sel Excel yang bocor di file backend (src/lib/*.ts)
+ *    dalam string literal yang dikembalikan ke tabel breakdown UI.
+ * 3. Simulator berstandar modern (memakai stepChip) wajib memiliki kelengkapan UI baku:
  *    - optBtn untuk tombol seleksi netral
- *    - 3 kartu metrik ringkasan baku di kolom kanan (HPP, Harga Jual, Omset)
+ *    - 3 kartu metrik ringkasan baku di kolom kanan (HPP Per Pcs/Exp, Harga Per Pcs, Harga Total + Profit)
  *    - Tombol simpan kalkulasi standar full-width
  */
 import fs from 'fs';
 import path from 'path';
 
-const DIR = 'src/app/pricelist';
-const allFiles = fs.readdirSync(DIR);
-const simulatorFiles = allFiles.filter((f) => f.endsWith('Simulator.tsx'));
-const masterParamFiles = allFiles.filter((f) => f.endsWith('MasterParameter.tsx'));
-const targetFiles = [...simulatorFiles, ...masterParamFiles];
+const APP_DIR = 'src/app/pricelist';
+const LIB_DIR = 'src/lib';
+
+const allAppFiles = fs.readdirSync(APP_DIR);
+const simulatorFiles = allAppFiles.filter((f) => f.endsWith('Simulator.tsx'));
+const masterParamFiles = allAppFiles.filter((f) => f.endsWith('MasterParameter.tsx'));
+const targetAppFiles = [...simulatorFiles, ...masterParamFiles];
+
+const allLibFiles = fs.readdirSync(LIB_DIR).filter((f) => f.endsWith('.ts'));
 
 let totalCellLeaks = 0;
 let totalContractFailures = 0;
@@ -27,9 +33,9 @@ let totalContractFailures = 0;
 // Regex untuk mendeteksi nama sel Excel (Master!D19, BUKU!AJ6, Sheet1!A1, dll)
 const CELL_LEAK_REGEX = /\b(Master|BUKU|Sheet\d*)![A-Za-z0-9_:-]+/g;
 
-// 1. Audit Kebocoran Sel Excel (Menyapu 100% Berkas UI Pricelist)
-for (const file of targetFiles) {
-  const filePath = path.join(DIR, file);
+// 1. Audit Kebocoran Sel Excel di UI (src/app/pricelist)
+for (const file of targetAppFiles) {
+  const filePath = path.join(APP_DIR, file);
   const content = fs.readFileSync(filePath, 'utf8');
   const lines = content.split('\n');
 
@@ -67,8 +73,8 @@ for (const file of targetFiles) {
       if (matches) {
         const isInlineComment = trimmed.includes('//') && trimmed.indexOf('//') < trimmed.indexOf(matches[0]);
         if (!isInlineComment) {
-          console.error(`[LEAK] ${file}:${lineNum} - Teks sel Excel di UI: "${matches.join(', ')}"`);
-          console.error(`       ${trimmed}`);
+          console.error(`[LEAK UI] ${file}:${lineNum} - Teks sel Excel di UI: "${matches.join(', ')}"`);
+          console.error(`          ${trimmed}`);
           totalCellLeaks++;
         }
       }
@@ -76,9 +82,46 @@ for (const file of targetFiles) {
   });
 }
 
-// 2. Audit Kelengkapan Kontrak UI Simulator Modern (yang memakai stepChip)
+// 2. Audit Kebocoran Sel Excel di Backend Return Strings (src/lib/*.ts)
+for (const file of allLibFiles) {
+  const filePath = path.join(LIB_DIR, file);
+  const content = fs.readFileSync(filePath, 'utf8');
+  const lines = content.split('\n');
+
+  let inMultiComment = false;
+
+  lines.forEach((line, index) => {
+    const lineNum = index + 1;
+    const trimmed = line.trim();
+
+    if (trimmed.startsWith('//') || (trimmed.startsWith('/*') && trimmed.endsWith('*/'))) return;
+    if (trimmed.startsWith('/*')) {
+      inMultiComment = true;
+      return;
+    }
+    if (inMultiComment) {
+      if (trimmed.includes('*/')) inMultiComment = false;
+      return;
+    }
+
+    // Hapus inline comment
+    const codePart = trimmed.split('//')[0].trim();
+    if (!codePart) return;
+
+    // Cek string literal yang mengandung Master! atau BUKU!
+    const stringLiteralRegex = /(?:'|"`)[^'"`]*(?:Master|BUKU)![^'"`]*(?:'|"`)/g;
+    const matches = codePart.match(stringLiteralRegex);
+    if (matches) {
+      console.error(`[LEAK LIB] ${file}:${lineNum} - String literal backend memuat referensi sel:`);
+      console.error(`           ${matches.join(', ')}`);
+      totalCellLeaks++;
+    }
+  });
+}
+
+// 3. Audit Kelengkapan Kontrak UI Simulator Modern (yang memakai stepChip)
 for (const file of simulatorFiles) {
-  const filePath = path.join(DIR, file);
+  const filePath = path.join(APP_DIR, file);
   const content = fs.readFileSync(filePath, 'utf8');
 
   // Simulator yang telah menerapkan stepChip wajib memenuhi seluruh kontrak baku
@@ -94,15 +137,21 @@ for (const file of simulatorFiles) {
       console.error(`[CONTRACT FAIL] ${file} - Tidak memiliki tombol simpan kalkulasi standar.`);
       totalContractFailures++;
     }
+
+    // Cek 3 kartu metrik ringkasan baku (HPP, Harga Per Pcs, Harga Total + Profit)
+    if (!content.includes('Harga Total') || !content.includes('Profit:')) {
+      console.error(`[CONTRACT FAIL] ${file} - Kartu metrik tidak konsisten (wajib memuat "Harga Total" dan "Profit:").`);
+      totalContractFailures++;
+    }
   }
 }
 
 console.log(`\n========================================`);
 if (totalCellLeaks > 0 || totalContractFailures > 0) {
   console.error(`TOTAL PELANGGARAN: ${totalCellLeaks} kebocoran sel Excel, ${totalContractFailures} pelanggaran kontrak UI!`);
-  console.error(`Pindahkan referensi sel ke modal panduan dan lengkapi standar kontrak.`);
+  console.error(`Pindahkan referensi sel ke modal panduan dan selaraskan kontrak.`);
   process.exit(1);
 } else {
-  console.log(`SEMUA BERSIH: 0 kebocoran sel Excel & semua kontrak simulator modern terpenuhi.`);
+  console.log(`SEMUA BERSIH: 0 kebocoran sel Excel di UI & backend, dan seluruh kontrak UI terpenuhi.`);
   console.log(`========================================\n`);
 }

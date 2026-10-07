@@ -130,7 +130,7 @@ export function calculateAmplopHpp(
     `(${N7.toLocaleString('id-ID')}/100) × Rp ${(isRyobi ? tarifPackRyobi : tarifPackPrint).toLocaleString('id-ID')} (${mesin})`);
   // BUKU!R7 = IF(H>=1000, 0, IF(H<1000, R6=D16, 0))
   const R7 = H >= 1000 ? 0 : desain; // BUKU!R7 (H>0 selalu benar untuk H≥1)
-  add('Desain', R7, H < 1000 ? `Master!D16 Rp ${desain.toLocaleString('id-ID')}` : 'H ≥ 1000 → 0');
+  add('Desain', R7, H < 1000 ? `Rp ${desain.toLocaleString('id-ID')} (flat per order)` : 'H ≥ 1000 → Bebas Biaya');
   // BUKU!V7 = IF(V6>0, V6, V2=nWarna) — BUKU!U7 = U6*V7, U6 = 10000 (Ryobi) else 0
   const V7 = p.platOverride > 0 ? p.platOverride : nWarna; // BUKU!V7
   const U6 = isRyobi ? 10000 : 0; // BUKU!U6 = IF(D15 Ryobi, 10000, 0)

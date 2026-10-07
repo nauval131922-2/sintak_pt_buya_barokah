@@ -275,7 +275,7 @@ export function calculateSyahadahHpp(
     add(
       `Cetak Digital Print Inter A3+ (${cfg.muka} Muka ${cfg.isFC ? 'FC' : cfg.warna + ' Warna'})`,
       biayaKertasCetak,
-      `BUKU!T7: ${r7} lbr A3+ (${validOplah}/2 + ${p.insheetPod} insh) × ${cfg.muka} muka × Rp ${p.tarifPrintA3.toLocaleString('id-ID')}`
+      `${r7} lbr A3+ (${validOplah}/2 + ${p.insheetPod} insh) × ${cfg.muka} muka × Rp ${p.tarifPrintA3.toLocaleString('id-ID')}`
     );
   } else if (mesinTerpilih === 'Ryobi') {
     // Offset Toko / Ryobi (BUKU!T7, BUKU!Y7, BUKU!AG7)
@@ -291,7 +291,7 @@ export function calculateSyahadahHpp(
     add(
       'Bahan Kertas Linen/Hammer Crem 300 gsm',
       biayaKertas,
-      `BUKU!T7: ${r7} lbr plano 79×109 (${validOplah}/${p.syahadahPerPlanoRyobi} + ${p.insheetRyobi}/${p.syahadahPerPlanoRyobi} insh) × Rp ${Math.round(hargaPlanoLbr).toLocaleString('id-ID')}`
+      `${r7} lbr plano 79×109 (${validOplah}/${p.syahadahPerPlanoRyobi} + ${p.insheetRyobi}/${p.syahadahPerPlanoRyobi} insh) × Rp ${Math.round(hargaPlanoLbr).toLocaleString('id-ID')}`
     );
 
     // BUKU!Y7: Plate Cetak Ryobi (Rp 10.000 / plat)
@@ -300,7 +300,7 @@ export function calculateSyahadahHpp(
     add(
       `Plat Cetak Ryobi (${jmlPlat} Plat)`,
       biayaPlat,
-      `BUKU!Y7: ${jmlPlat} plat (${cfg.warna}W × ${cfg.muka} muka) × Rp ${p.tarifPlatRyobi.toLocaleString('id-ID')}`
+      `${jmlPlat} plat (${cfg.warna}W × ${cfg.muka} muka) × Rp ${p.tarifPlatRyobi.toLocaleString('id-ID')}`
     );
 
     // BUKU!AG7: Ongkos Cetak Ryobi (Min Order Rp 15.000/plat + drek over Rp 30/drek/warna)
@@ -310,8 +310,8 @@ export function calculateSyahadahHpp(
     const ongkosOver = drekOver * p.tarifDrekOverRyobi * cfg.warna; // BUKU!AF7
     const totalOngkosCetak = ongkosDasar + ongkosOver; // BUKU!AG7
     const ketCetak = drekOver > 0
-      ? `BUKU!AG7: Dasar Rp ${ongkosDasar.toLocaleString('id-ID')} + ${drekOver} drek over × Rp ${p.tarifDrekOverRyobi} × ${cfg.warna}W (Rp ${Math.round(ongkosOver).toLocaleString('id-ID')})`
-      : `BUKU!AG7: Min Order ${jmlPlat} plat × Rp ${p.minOrderRyobi.toLocaleString('id-ID')}`;
+      ? `Dasar Rp ${ongkosDasar.toLocaleString('id-ID')} + ${drekOver} drek over × Rp ${p.tarifDrekOverRyobi} × ${cfg.warna}W`
+      : `Min Order ${jmlPlat} plat × Rp ${p.minOrderRyobi.toLocaleString('id-ID')}`;
     add('Ongkos Cetak Ryobi', totalOngkosCetak, ketCetak);
   } else {
     // Offset Oliver (BUKU!T7, BUKU!Y7, BUKU!AG7)
@@ -327,7 +327,7 @@ export function calculateSyahadahHpp(
     add(
       'Bahan Kertas Linen/Hammer Crem 300 gsm',
       biayaKertas,
-      `BUKU!T7: ${r7} lbr plano 79×109 × Rp ${Math.round(hargaPlanoLbr).toLocaleString('id-ID')}`
+      `${r7} lbr plano 79×109 × Rp ${Math.round(hargaPlanoLbr).toLocaleString('id-ID')}`
     );
 
     const jmlPlat = cfg.warna * cfg.muka;
@@ -335,7 +335,7 @@ export function calculateSyahadahHpp(
     add(
       `Plat Cetak Oliver (${jmlPlat} Plat)`,
       biayaPlat,
-      `BUKU!Y7: ${jmlPlat} plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`
+      `${jmlPlat} plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`
     );
 
     const q7 = r7 * 5 * cfg.muka;
@@ -343,14 +343,14 @@ export function calculateSyahadahHpp(
     const drekOver = Math.max(0, q7 - 1000);
     const ongkosOver = drekOver * p.tarifDrekOverOliver * cfg.warna;
     const totalOngkosCetak = ongkosDasar + ongkosOver;
-    add('Ongkos Cetak Oliver', totalOngkosCetak, `BUKU!AG7: Min Order Dasar + Over Cetak`);
+    add('Ongkos Cetak Oliver', totalOngkosCetak, `Min Order Dasar + Over Cetak`);
   }
 
   // -------------------------------------------------------------
   // 2. DESAIN & POTONG SISIR (BUKU!V7, BUKU!AS7)
   // -------------------------------------------------------------
   if (p.tarifDesign > 0) {
-    add('Desain Syahadah', p.tarifDesign, 'BUKU!V7: Biaya setting layout desain sertifikat/syahadah');
+    add('Desain Syahadah', p.tarifDesign, 'Biaya setting layout desain sertifikat/syahadah');
   }
 
   // BUKU!AS7: Ongkos Potong Sisir = ROUNDUP(oplah / 500, 0) * 5.000
@@ -358,7 +358,7 @@ export function calculateSyahadahHpp(
   add(
     'Potong Sisir',
     biayaSisir,
-    `BUKU!AS7: ${Math.ceil(validOplah / 500)} paket (per 500 pcs) × Rp ${p.tarifSisirPer500.toLocaleString('id-ID')}`
+    `${Math.ceil(validOplah / 500)} paket (per 500 pcs) × Rp ${p.tarifSisirPer500.toLocaleString('id-ID')}`
   );
 
   // -------------------------------------------------------------
@@ -373,7 +373,7 @@ export function calculateSyahadahHpp(
     add(
       'Finishing Foil Emas (Hotprint)',
       totalFoil,
-      `HARGA JULI 2026: Hotprint Rp ${p.tarifFoilPerPcs}/pcs (min. Rp ${p.minOrderFoil.toLocaleString('id-ID')}) + Klise Foil Rp ${kliseFoil.toLocaleString('id-ID')}`
+      `Hotprint Rp ${p.tarifFoilPerPcs}/pcs (min. Rp ${p.minOrderFoil.toLocaleString('id-ID')}) + Klise Foil Rp ${kliseFoil.toLocaleString('id-ID')}`
     );
   }
 
@@ -391,8 +391,8 @@ export function calculateSyahadahHpp(
       'Laminasi Glossy 1 Muka',
       biayaLam,
       rawLam < p.minLaminasi
-        ? `BUKU!AW7: Tarif Minimum Order Rp ${p.minLaminasi.toLocaleString('id-ID')}`
-        : `BUKU!AW7: ${validOplah} pcs × ${luasCm2.toFixed(1)} cm² × Rp ${p.tarifLaminasiGlossyCm2}/cm²`
+        ? `Tarif Minimum Order Rp ${p.minLaminasi.toLocaleString('id-ID')}`
+        : `${validOplah} pcs × ${luasCm2.toFixed(1)} cm² × Rp ${p.tarifLaminasiGlossyCm2}/cm²`
     );
   } else if (laminasi === 'Doff') {
     const rawLam = luasCm2 * p.tarifLaminasiDoffCm2 * validOplah;
@@ -401,8 +401,8 @@ export function calculateSyahadahHpp(
       'Laminasi Doff 1 Muka',
       biayaLam,
       rawLam < p.minLaminasi
-        ? `BUKU!AZ7: Tarif Minimum Order Rp ${p.minLaminasi.toLocaleString('id-ID')}`
-        : `BUKU!AZ7: ${validOplah} pcs × ${luasCm2.toFixed(1)} cm² × Rp ${p.tarifLaminasiDoffCm2}/cm²`
+        ? `Tarif Minimum Order Rp ${p.minLaminasi.toLocaleString('id-ID')}`
+        : `${validOplah} pcs × ${luasCm2.toFixed(1)} cm² × Rp ${p.tarifLaminasiDoffCm2}/cm²`
     );
   } else if (laminasi === 'UV Varnish') {
     const rawLam = luasCm2 * p.tarifUvVarnishCm2 * validOplah;
@@ -411,8 +411,8 @@ export function calculateSyahadahHpp(
       'Finishing UV Varnish',
       biayaLam,
       rawLam < p.minLaminasi
-        ? `BUKU!BC7: Tarif Minimum Order Rp ${p.minLaminasi.toLocaleString('id-ID')}`
-        : `BUKU!BC7: ${validOplah} pcs × ${luasCm2.toFixed(1)} cm² × Rp ${p.tarifUvVarnishCm2}/cm²`
+        ? `Tarif Minimum Order Rp ${p.minLaminasi.toLocaleString('id-ID')}`
+        : `${validOplah} pcs × ${luasCm2.toFixed(1)} cm² × Rp ${p.tarifUvVarnishCm2}/cm²`
     );
   }
 
@@ -429,7 +429,7 @@ export function calculateSyahadahHpp(
     add(
       'Packing Kardus & Lakban',
       totalPacking,
-      `BUKU!BG7: ${jmlKardus} box (isi ${p.kapasitasKardusBox} pcs) × Rp ${p.tarifKardusBox.toLocaleString('id-ID')} + lakban Rp ${Math.round(bLakban).toLocaleString('id-ID')}`
+      `${jmlKardus} box (isi ${p.kapasitasKardusBox} pcs) × Rp ${p.tarifKardusBox.toLocaleString('id-ID')} + lakban Rp ${Math.round(bLakban).toLocaleString('id-ID')}`
     );
   }
 

@@ -143,17 +143,14 @@ export function calculateLebelKartuObatHpp(
   // BUKU!U28 harga/rim =((T26*U26)*U27)/20000*((U29*W29)+U29); BUKU!R7 =(U28/500)*Q
   const hargaRim = ((cfg.planoW * cfg.planoH) * p.gramaturGsm) / 20000 * (p.tarifKertasKg * (1 + p.upKertasPct / 100));
   add('Kertas HVS 70 gsm Folio', (hargaRim / 500) * Q,
-    `BUKU!R7: ${Q} lbr × Rp ${(hargaRim / 500).toFixed(2)} (rim Rp ${Math.round(hargaRim).toLocaleString('id-ID')}/500)`);
-
+    `${Q} lbr × Rp ${(hargaRim / 500).toFixed(2)} (rim Rp ${Math.round(hargaRim).toLocaleString('id-ID')}/500)`);
   // BUKU!T7 =IF(H>0,T6,0); BUKU!T6 =Master!D16
-  add('Desain', H > 0 ? p.tarifDesain : 0, `BUKU!T7: Rp ${p.tarifDesain.toLocaleString('id-ID')}/order`);
-
+  add('Desain', H > 0 ? p.tarifDesain : 0, `Rp ${p.tarifDesain.toLocaleString('id-ID')}/order`);
   // BUKU!X7 =IF(X6>0,X6,IF(X6<=0,L6*M6,0)) — X6=0 konstanta mati → X7 = warna×muka
   const jmlPlat = L * M;
   // BUKU!W7 =IF(H>0,W6*X7,0); W6 = 0 saat ONGKOS CETAK, 10000 saat CETAK
   add('Plate Cetak', H > 0 ? (ongkosOnly ? 0 : p.tarifPlatePerPlat) * jmlPlat : 0,
-    `BUKU!W7: ${jmlPlat} plat × Rp ${(ongkosOnly ? 0 : p.tarifPlatePerPlat).toLocaleString('id-ID')} (${jenisCetak})`);
-
+    `${jmlPlat} plat × Rp ${(ongkosOnly ? 0 : p.tarifPlatePerPlat).toLocaleString('id-ID')} (${jenisCetak})`);
   // BUKU!Z7 =IF(H>0,Z6,0); BUKU!AB7 =X7*Z7; Z6 = 15000 untuk CETAK & ONGKOS CETAK
   const minOrder = H > 0 ? p.tarifCetakMinPerPlat * jmlPlat : 0;
   // BUKU!AC7 =IF(P-500=0,0,IF(P-500>=1,P-500,0))
@@ -162,16 +159,13 @@ export function calculateLebelKartuObatHpp(
   const overRp = overDrek === 0 ? 0 : overDrek >= 1 ? overDrek * p.tarifDrekPerWarna * jmlPlat : 0;
   // BUKU!AE7 =AD7+AB7
   add('Cetak ' + jenisCetak, minOrder + overRp,
-    `BUKU!AE7: min Rp ${Math.round(minOrder).toLocaleString('id-ID')} + over ${overDrek}×Rp ${p.tarifDrekPerWarna}×${jmlPlat} plat (P=${P})`);
-
+    `min Rp ${Math.round(minOrder).toLocaleString('id-ID')} + over ${overDrek} drek × Rp ${p.tarifDrekPerWarna} × ${jmlPlat} plat`);
   // BUKU!AG7 =H*AG6 (royalty); BUKU!AI7 =AI6 tanpa gate H (transport)
-  if (H * p.tarifRoyaltyPerPcs > 0) add('Royalty', H * p.tarifRoyaltyPerPcs, `BUKU!AG7: ${H} × Rp ${p.tarifRoyaltyPerPcs}`);
-  if (p.biayaTransport > 0) add('Transport', p.biayaTransport, 'BUKU!AI7 = AI6');
-
+  if (H * p.tarifRoyaltyPerPcs > 0) add('Royalty', H * p.tarifRoyaltyPerPcs, `${H} × Rp ${p.tarifRoyaltyPerPcs}`);
+  if (p.biayaTransport > 0) add('Transport', p.biayaTransport, 'Biaya transportasi');
   // BUKU!AJ7 =IF(D20=SISIR,(Q/500)*AJ6,0)
   add('Sisir', finishing === 'SISIR' ? (Q / 500) * p.tarifSisirPer500 : 0,
-    `BUKU!AJ7: ${Q}/500 × Rp ${p.tarifSisirPer500.toLocaleString('id-ID')} (${finishing})`);
-
+    `${Q}/500 × Rp ${p.tarifSisirPer500.toLocaleString('id-ID')} (${finishing})`);
   breakdown.forEach((b) => { b.pct = totalHpp > 0 ? b.nominal / totalHpp : 0; });
 
   // BUKU!AL7 =SUM(R+T+W+AE+AG+AI+AJ) — dijumlah via add() di atas (urutan sama)

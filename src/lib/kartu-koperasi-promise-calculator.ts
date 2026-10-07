@@ -209,16 +209,13 @@ export function calculateKartuKoperasiPromiseHpp(
   // BUKU!S7 =IF(Print Inter,S2*Q,IF(Ryobi,(V29/500)*Q,0)); BUKU!S2 =IF(D15=Print Inter,D17,0)
   const biayaKertas = H > 0 ? (isPI ? p.tarifPrintA3Plus * Q : hargaLembar * Q) : 0;
   add('Kertas BC 160 gsm', biayaKertas,
-    `BUKU!S7: ${Q} lbr plano × Rp ${Math.round(isPI ? p.tarifPrintA3Plus : hargaLembar).toLocaleString('id-ID')} (${isPI ? 'Print Inter A3+' : `rim Rp ${Math.round(hargaRim).toLocaleString('id-ID')}/500`})`);
-
+    `${Q} lbr plano × Rp ${Math.round(isPI ? p.tarifPrintA3Plus : hargaLembar).toLocaleString('id-ID')} (${isPI ? 'Print Inter A3+' : `rim Rp ${Math.round(hargaRim).toLocaleString('id-ID')}/500`})`);
   // BUKU!U7 =IF(H>0,U6,0); BUKU!U6 =Master!D16
-  add('Desain', H > 0 ? effDesain : 0, `BUKU!U7: Rp ${effDesain.toLocaleString('id-ID')}/order`);
-
+  add('Desain', H > 0 ? effDesain : 0, `Rp ${effDesain.toLocaleString('id-ID')}/order`);
   // BUKU!Y7 =IF(Y6>0,Y6,IF(Y6<=0,Y2*M7,0)); BUKU!X7 =IF(H>0,X6*Y7,0); X6=0 saat Print Inter
   const jmlPlat = cfg.platOverride > 0 ? cfg.platOverride : Y2 * M;
   add('Plate Cetak', H > 0 ? (isPI ? 0 : p.tarifPlatePerPlat) * jmlPlat : 0,
-    `BUKU!X7: ${jmlPlat} plat × Rp ${(isPI ? 0 : p.tarifPlatePerPlat).toLocaleString('id-ID')}${cfg.platOverride > 0 ? ' (override BUKU!Y6)' : ' (BUKU!Y2×M7)'} — ${mesin}`);
-
+    `${jmlPlat} plat × Rp ${(isPI ? 0 : p.tarifPlatePerPlat).toLocaleString('id-ID')} — ${mesin}`);
   // BUKU!AA7 =IF(H>0,AA6,0); BUKU!AC7 =AA7*Y7; AA6=0 saat Print Inter
   const minOrder = H > 0 ? (isPI ? 0 : p.tarifCetakMinPerPlat) * jmlPlat : 0;
   // BUKU!AD7 =IF(AND(PI,P-500>1),0,IF(AND(Ryobi,P-500>1),P-500,0))
@@ -227,39 +224,33 @@ export function calculateKartuKoperasiPromiseHpp(
   const overRp = (overDrek === 0 ? 0 : overDrek > 1 ? overDrek : 0) * (isPI ? 0 : cfg.tarifDrek) * Y2;
   // BUKU!AF7 =AE7+AC7
   add('Cetak ' + mesin, minOrder + overRp,
-    `BUKU!AF7: min Rp ${Math.round(minOrder).toLocaleString('id-ID')} + over ${overDrek} drek × Rp ${isPI ? 0 : cfg.tarifDrek} × ${Y2} warna (P=${P})`);
-
+    `min Rp ${Math.round(minOrder).toLocaleString('id-ID')} + over ${overDrek} drek × Rp ${isPI ? 0 : cfg.tarifDrek} × ${Y2} warna`);
   // BUKU!AH7 =H*AH6 (royalty); BUKU!AJ7 =AJ6; BUKU!AK7 =AK6 (tanpa gate H)
-  if (H * p.tarifRoyaltyPerPcs > 0) add('Royalty', H * p.tarifRoyaltyPerPcs, `BUKU!AH7: ${H} × Rp ${p.tarifRoyaltyPerPcs}`);
-  if (p.biayaTransport > 0) add('Transport', p.biayaTransport, 'BUKU!AJ7 = AJ6');
-  if (p.biayaLain > 0) add('Biaya Lain-Lain', p.biayaLain, 'BUKU!AK7 = AK6');
-
+  if (H * p.tarifRoyaltyPerPcs > 0) add('Royalty', H * p.tarifRoyaltyPerPcs, `${H} × Rp ${p.tarifRoyaltyPerPcs}`);
+  if (p.biayaTransport > 0) add('Transport', p.biayaTransport, 'Biaya transportasi');
+  if (p.biayaLain > 0) add('Biaya Lain-Lain', p.biayaLain, 'Biaya operasional lain');
   // BUKU!AL7 =IF(H>0,AL6*(AL30*AM30),0); AL6 = 299.6/2 (AL26=√ konstanta)
   add('Pisau Pound', H > 0 ? p.tarifPisauPerCm2 * (cfg.pisauW * cfg.pisauH) : 0,
-    `BUKU!AL7: ${p.tarifPisauPerCm2} × ${cfg.pisauW}×${cfg.pisauH} cm²`);
-  // BUKU!AM6 =(UMR/25)/AM28; BUKU!AM7 =IF(AND(H>0,eff*AM6<=50000),50000,IF(AND(H>0,eff*AM6>50000),eff*AM6,0)); eff = H/(O/N)
+    `${p.tarifPisauPerCm2} × ${cfg.pisauW}×${cfg.pisauH} cm²`);
   const tarifPoundUnit = (p.umr / 25) / cfg.targetPound;
   const effUnit = O / N > 0 ? H / (O / N) : 0;
   const rawPound = effUnit * tarifPoundUnit;
   const biayaPound = H > 0 && rawPound <= p.minPound ? p.minPound : H > 0 && rawPound > p.minPound ? rawPound : 0;
   add('Pound', biayaPound,
-    `BUKU!AM7: ${effUnit.toFixed(1)} unit × Rp ${tarifPoundUnit.toFixed(2)} (UMR/25/${cfg.targetPound})${rawPound <= p.minPound ? ` → min Rp ${p.minPound.toLocaleString('id-ID')}` : ''}`);
-  // BUKU!AN7 =((H/(O/N))/500)*AN6 (tanpa gate H; AN26=√ konstanta)
+    `${effUnit.toFixed(1)} unit × Rp ${tarifPoundUnit.toFixed(2)} (UMR/25/${cfg.targetPound})${rawPound <= p.minPound ? ` → min Rp ${p.minPound.toLocaleString('id-ID')}` : ''}`);
   add('Sisir', (effUnit / 500) * p.tarifSisirPer500,
-    `BUKU!AN7: ${effUnit.toFixed(1)}/500 × Rp ${p.tarifSisirPer500.toLocaleString('id-ID')}`);
-
+    `${effUnit.toFixed(1)}/500 × Rp ${p.tarifSisirPer500.toLocaleString('id-ID')}`);
   // Finishing mentah: BUKU!AP7/AS7/AV7 =((D+1)*(F+1)*rate)*H; gate √ dari Master!D19:
   // AQ27 Glossy √ saat D19=Laminasi Glossy,; AT27 Doff √ saat D19=Laminasi Doff,; AW27 UV √ saat D19=UV Varnish,
   const luasFin = (cfg.kartuW + 1) * (cfg.kartuH + 1);
   const finGated = (raw: number, gate: boolean): number =>
     (gate ? (raw === 0 ? 0 : raw > p.minFinishing ? raw : p.minFinishing) : 0);
   add('Laminasi Glossy', finGated(luasFin * p.tarifLaminasiGlossy * H, finishing === 'Laminasi Glossy,'),
-    `BUKU!AQ7: ${luasFin.toFixed(2)} cm² × ${p.tarifLaminasiGlossy} × ${H}, floor Rp ${p.minFinishing.toLocaleString('id-ID')}`);
+    `${luasFin.toFixed(2)} cm² × ${p.tarifLaminasiGlossy} × ${H}, floor Rp ${p.minFinishing.toLocaleString('id-ID')}`);
   add('Laminasi Doff', finGated(luasFin * p.tarifLaminasiDoff * H, finishing === 'Laminasi Doff,'),
-    `BUKU!AT7: ${luasFin.toFixed(2)} cm² × ${p.tarifLaminasiDoff} × ${H}, floor Rp ${p.minFinishing.toLocaleString('id-ID')}`);
+    `${luasFin.toFixed(2)} cm² × ${p.tarifLaminasiDoff} × ${H}, floor Rp ${p.minFinishing.toLocaleString('id-ID')}`);
   add('UV Varnish', finGated(luasFin * p.tarifUvVarnish * H, finishing === 'UV Varnish,'),
-    `BUKU!AW7: ${luasFin.toFixed(2)} cm² × ${p.tarifUvVarnish} × ${H}, floor Rp ${p.minFinishing.toLocaleString('id-ID')}`);
-
+    `${luasFin.toFixed(2)} cm² × ${p.tarifUvVarnish} × ${H}, floor Rp ${p.minFinishing.toLocaleString('id-ID')}`);
   // BUKU!AZ6 =BA30/196; BUKU!AZ7 =(H/AZ35)/AZ6; BUKU!BA7 =BA32*AZ7 (BA32 = Master!D20)
   const boxPerRoll = p.lakbanUkuranRoll / 196;
   const needRoll = H > 0 && boxPerRoll > 0 ? H / p.kardusIsiPcs / boxPerRoll : 0;
@@ -267,8 +258,7 @@ export function calculateKartuKoperasiPromiseHpp(
   // BUKU!BB7 =(ROUNDUP(H/AZ35,0)*BB6)+BA7 (AND ukuran, BB28=√ selalu benar per konstruksi varian=file)
   const biayaPacking = (H > 0 ? Math.ceil(H / p.kardusIsiPcs) * p.tarifKardusBox : 0) + biayaLakban;
   add('Packing Kardus & Lakban', biayaPacking,
-    `BUKU!BB7: ${H > 0 ? Math.ceil(H / p.kardusIsiPcs) : 0} kardus × Rp ${p.tarifKardusBox.toLocaleString('id-ID')} + ${needRoll.toFixed(4)} roll × Rp ${p.tarifLakbanRoll.toLocaleString('id-ID')}`);
-
+    `${H > 0 ? Math.ceil(H / p.kardusIsiPcs) : 0} kardus × Rp ${p.tarifKardusBox.toLocaleString('id-ID')} + ${needRoll.toFixed(4)} roll × Rp ${p.tarifLakbanRoll.toLocaleString('id-ID')}`);
   breakdown.forEach((b) => { b.pct = totalHpp > 0 ? b.nominal / totalHpp : 0; });
 
   // BUKU!BD7 =S+U+X+AF+AH+AJ+AN+AQ+AT+AW+AK+BB+AM+AL — dijumlah via add() di atas (urutan sama)

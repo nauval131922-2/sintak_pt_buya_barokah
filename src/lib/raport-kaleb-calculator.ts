@@ -235,7 +235,7 @@ export function calculateRaportKalebHpp(
   // BUKU!N7: =N6 = Master!D14 (Rp 10.000 per order)
   // -------------------------------------------------------------
   if (p.tarifDesign > 0) {
-    add('Biaya Setting Desain Raport', p.tarifDesign, 'Master!D14: Biaya setting layout & teks map raport');
+    add('Biaya Setting Desain Raport', p.tarifDesign, 'Biaya setting layout & teks map raport');
   }
 
   // -------------------------------------------------------------
@@ -248,7 +248,7 @@ export function calculateRaportKalebHpp(
     add(
       'Klise Foil Emas (≤120 pcs)',
       p.tarifKlise,
-      `BUKU!P7: Oplah ${validOplah} ≤ ${batasKlise} pcs kena biaya klise matres Rp ${p.tarifKlise.toLocaleString('id-ID')} (> ${batasKlise} pcs gratis)`
+      `Oplah ${validOplah} ≤ ${batasKlise} pcs kena biaya klise matres Rp ${p.tarifKlise.toLocaleString('id-ID')} (> ${batasKlise} pcs gratis)`
     );
   }
 
@@ -273,7 +273,7 @@ export function calculateRaportKalebHpp(
     add(
       'Packing Kardus & Lakban',
       biayaPackingTotal,
-      `BUKU!X7: ${jmlBox} box kardus (@ Rp ${tarifKardus.toLocaleString('id-ID')}) + ${kebutuhanLakbanRoll.toFixed(3)} roll lakban`
+      `${jmlBox} box kardus (@ Rp ${tarifKardus.toLocaleString('id-ID')}) + ${kebutuhanLakbanRoll.toFixed(3)} roll lakban`
     );
   }
 

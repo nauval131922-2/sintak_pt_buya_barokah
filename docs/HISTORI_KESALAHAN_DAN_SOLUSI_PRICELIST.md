@@ -100,6 +100,59 @@
 
 ---
 
+### 11. Kebocoran Teks Sel Excel dari Return Object Kalkulator Backend (src/lib)
+- **Kesalahan Nyata**: Alamat sel Excel teknis (`Master!D16`, `BUKU!AJ`, `BUKU!T7`, `Master!D17`, `BUKU!P7`) disisipkan ke properti `komponen` atau `keterangan` objek array breakdown di file kalkulator backend (`src/lib/*-calculator.ts`). Saat frontend merender `{row.komponen}` atau `{row.keterangan}`, teks teknis seperti `- 2 Jasa Desain Stiker (Master!D16)` atau `BUKU!T7: 15 lbr A3+...` langsung tercetak ke layar browser pengguna.
+- **Alasan Kesalahan Terjadi**: Skrip linter `check-clean-ui.mjs` awal hanya memeriksa file di `src/app/pricelist/`, sehingga kebocoran pada file backend di `src/lib/` lolos tanpa terdeteksi sama sekali.
+- **Solusi Permanen**: 
+  - Seluruh string literal pada return object di `src/lib/*-calculator.ts` wajib bersih dari nama sel Excel teknis dan menggunakan deskripsi bisnis yang ramah (`Tarif flat per order`, `Biaya setting desain`, `Tarif flat per pesanan`, dll.).
+  - Skrip linter `check-clean-ui.mjs` diperluas untuk menyapu seluruh file `src/lib/*.ts` (0 kebocoran pada string literal).
+- **Penerapan Nyata**: Dibersihkan tuntas di 11 file backend (`stiker`, `amplop`, `buku-tabungan-ns`, `kartu-koperasi`, `kop-surat`, `lebel-kartu-obat`, `raport-kaleb`, `sertifikat`, `stopmap`, `syahadah`, `undangan`).
+
+---
+
+### 12. Deviasi Kiblat Master Parameter (Improvisasi Tata Letak Sendiri)
+- **Kesalahan Nyata**: Pada `StikerMasterParameter.tsx`, alih-alih meniru modul acuan utama (`BukuHardCoverUnifiedMasterParameter.tsx` - Image #4 & #6), AI mengimprovisasi layout sendiri:
+  - Search bar dibuat kecil (`w-56`) di pojok kanan atas sejajar judul (Image #3), alih-alih search bar lebar penuh `w-full` sticky di bawah judul (Image #4).
+  - Kartu parameter dibuat dengan baris vertikal 1 kolom, label di kiri dengan teks `Def: Rp ...` dan input di kanan (Image #5), alih-alih arsitektur baku grid 2 kolom (`grid-cols-1 sm:grid-cols-2`) dengan label di atas, input box di bawah, dan badge kategori di header (Image #6).
+- **Alasan Kesalahan Terjadi**: Kurangnya kepatuhan pada kiblat tunggal; AI mengambil contoh acuan yang keliru atau merakit komponen ad-hoc saat membuat modul baru.
+- **Solusi Permanen**:
+  - Mengunci mati kiblat Master Parameter ke **`BukuHardCoverUnifiedMasterParameter.tsx`**:
+    1. Search bar wajib lebar penuh `w-full` sticky dengan placeholder `"Cari parameter tarif, kertas, plat, atau upah…"`.
+    2. Header kartu wajib memiliki badge kategori tegas (`text-sky-900 bg-sky-200/80 [Cetak]`, `text-amber-900 bg-amber-200/80 [Finishing]`) + Icon Lucide + Judul Kartu.
+    3. Sub-group wajib berupa box ber-border warna dengan judul huruf kapital (`g.title`).
+    4. Input wajib tersusun dalam grid 2 kolom (`grid grid-cols-1 sm:grid-cols-2 gap-2.5`), label di atas, `<ThousandInput>` di bawah dengan prefix `Rp` atau suffix `%`/`lbr` di dalam box secara proporsional.
+- **Penerapan Nyata**: `StikerMasterParameter.tsx` ditulis ulang 100% mengikuti cetakan `BukuHardCoverUnifiedMasterParameter.tsx`.
+
+---
+
+### 13. Inkonsistensi Nomenklatur 3 Kartu Metrik Finansial pada Simulator
+- **Kesalahan Nyata**: Pada `StikerSimulator.tsx` (dan `MajalahSimulator.tsx`), 3 kartu metrik ringkasan di kolom kanan menggunakan penamaan non-standar:
+  - Kartu 1 tertulis `HPP / pcs` (bukan `HPP Per Pcs` / `HPP Per Exp`).
+  - Kartu 2 tertulis `Harga Jual / pcs` tanpa persentase laba di label (bukan `Harga Per Pcs (+30%)`).
+  - Kartu 3 tertulis `Total Omset` dengan subtext kuantitas (bukan `Harga Total` dengan subtext `Profit: Rp ...`).
+- **Alasan Kesalahan Terjadi**: AI tidak memperhatikan detail mikro penamaan pada modul referensi `BukuSoftCoverUnifiedSimulator.tsx` (Image #2), sehingga menciptakan bahasa finansial yang tidak seragam antar-halaman.
+- **Solusi Permanen**:
+  - Mengunci mati kiblat 3 kartu metrik ke **`BukuSoftCoverUnifiedSimulator.tsx`**:
+    1. Kartu 1: Label `HPP Per Pcs` (atau `HPP Per Exp`), icon `DollarSign size={13}`, subtext `Total HPP: Rp ...`.
+    2. Kartu 2: Label `Harga Per Pcs (+{marginPct}%)`, icon `TrendingUp size={13}`, style hijau gradient `bg-gradient-to-br from-emerald-50 to-teal-50/50 border-emerald-200`, subtext `Laba {marginPct}%`.
+    3. Kartu 3: Label `Harga Total`, icon `TrendingUp size={13}`, value text-emerald-700 font-mono, subtext `Profit: Rp ...`.
+    4. Kontainer wajib sticky: `sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1` dengan penomoran `{stepChip(N)} Kalkulasi Total`.
+- **Penerapan Nyata**:
+  - Diperbaiki di `StikerSimulator.tsx` dan `MajalahSimulator.tsx`.
+  - Skrip `check-clean-ui.mjs` diperbarui untuk secara otomatis menolak simulator yang tidak memuat `"Harga Total"` dan `"Profit:"`.
+
+---
+
+### 14. Inkonsistensi Header Form Simulator: Menaruh Toolbar Tombol di Header Kartu Form
+- **Kesalahan Nyata**: Menaruh 3 tombol aksi (`[Salin]`, `[Panduan]`, `[Master]`) di header kartu form input kiri simulator (`PARAMETER PESANAN STIKER` - Image #1), padahal standar acuan utama (`BukuHardCoverUnifiedSimulator.tsx` / `BukuSoftCoverUnifiedSimulator.tsx` - Image #2) memiliki header kartu yang bersih murni (`Sliders` + `SPESIFIKASI ...`), tanpa tombol apa pun di sebelah kanan.
+- **Alasan Kesalahan Terjadi**: AI keliru mengadopsi checklist lama dari modul `Poster`, sehingga merusak keseragaman header form dengan Buku Hard Cover dan Buku Soft Cover.
+- **Solusi Permanen**:
+  - Header kartu form input kiri simulator **WAJIB BERSIH 100%**: hanya memuat icon `Sliders size={15}` dan judul teks kapital `SPESIFIKASI <PRODUK>`, tanpa tombol aksi di sebelah kanan (persis seperti Image #2).
+  - Tautan ke Master Parameter diposisikan pada baris info Laba/Margin di bagian bawah form jika dibutuhkan, dan form langsung menyambung dari header ke `{stepChip(1)} Ukuran`.
+- **Penerapan Nyata**: Diterapkan langsung pada `StikerSimulator.tsx`.
+
+---
+
 ## 2. Checklist Wajib Setiap Kali Mengerjakan Modul Kalkulasi (10-Point Gate)
 
 Setiap kali user memerintahkan untuk mengerjakan atau mengaudit modul kalkulasi harga, AI **WAJIB MENAMPILKAN DAN MEMERIKSA CHECKLIST INI SATU PER SATU**:
@@ -107,12 +160,12 @@ Setiap kali user memerintahkan untuk mengerjakan atau mengaudit modul kalkulasi 
 ```markdown
 [ ] 1. BACKEND PARITY: 100% tier lolos selisih Rp 0 di terminal (tanpa .filter(), multi-file).
 [ ] 2. REAKTIVITAS: Semua opsi input form diuji dan berdampak nyata (delta HPP > 0).
-[ ] 3. CLONING GOLD STANDARD: Struktur dikloning dari Poster/Manasik, bukan dirakit ad-hoc.
+[ ] 3. CLONING GOLD STANDARD: Master Param wajib kloning BukuHardCoverUnifiedMasterParameter.tsx, Simulator wajib kloning BukuSoftCoverUnifiedSimulator.tsx.
 [ ] 4. FORM KIRI (Pos 5a): Urutan ber-stepChip(1..N), tombol netral optBtn(active), tanpa kotakan warna-warni kontras.
-[ ] 5. TOOLBAR HEADER (Pos 5a): Memuat 3 tombol lengkap [Salin Penawaran], [Panduan], dan [Master].
-[ ] 6. HASIL KANAN (Pos 5b): Sticky 3 kartu metrik ringkasan + tabel breakdown 5 kolom baku ber-footer emerald 100%.
+[ ] 5. HEADER FORM BERSIH (Pos 5a): Hanya icon Sliders + judul uppercase, tanpa deretan tombol aksi di kanan (mengikuti Buku Hard Cover).
+[ ] 6. HASIL KANAN (Pos 5b): Sticky 3 kartu metrik ringkasan (HPP, Harga Per Pcs (+Laba%), Harga Total + Profit) + tabel breakdown 5 kolom baku.
 [ ] 7. TOMBOL SIMPAN (Pos 5c): Full-width di bawah tabel breakdown kolom kanan (bukan form mini di kiri).
 [ ] 8. DRAFT PERSIST: Form auto-save & auto-restore dari localStorage (skip saat edit riwayat).
-[ ] 9. CLEAN UI (NO CELL LEAK): 0 nama sel Excel di tampilan publik (lulus npm run check:clean-ui).
-[ ] 10. LAYOUT CHECK: Lolos npm run check:simulator-layout (bebas banner hijau & bebas box gelap).
+[ ] 9. CLEAN UI (NO CELL LEAK): 0 nama sel Excel di UI dan string return backend (lulus mutlak node scripts/check-clean-ui.mjs).
+[ ] 10. LAYOUT CHECK: Lolos node scripts/check-simulator-layout.mjs (bebas banner hijau & bebas box gelap).
 ```

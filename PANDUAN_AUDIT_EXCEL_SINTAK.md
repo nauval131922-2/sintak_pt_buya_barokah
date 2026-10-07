@@ -175,6 +175,7 @@ Setiap workbook kalkulasi percetakan wajib dipetakan ke dalam 4 lapisan:
         * Seluruh langkah diberi penomoran `{stepChip(n)}` bulat hijau emerald kecil.
       - **Desain Netral, Flat & Bersih (Anti-Kotakan Warna-Warni)**:
         * Form kiri berada dalam 1 kontainer kartu utama putih (`bg-white border border-slate-200 rounded-xl p-4`).
+        * **Header Form Kiri Bersih (Mengikuti Buku Hard Cover)**: Header kartu form input kiri hanya memuat icon `Sliders size={15}` dan judul teks kapital `SPESIFIKASI <PRODUK>`, tanpa deretan tombol aksi di sebelah kanan (mengikuti pola Buku Hard Cover di Image #2).
         * **DILARANG** memberi kotakan/background/border dengan warna-warni kontras (seperti `border-sky-200 bg-sky-50`, `border-violet-200`, `border-amber-200`) untuk Cover, Isi, dan Finishing. Tampilan harus netral, tenang, dan flat.
         * Gaya tombol opsi aktif konsisten menggunakan `optBtn(active)` warna abu netral lembut (`border-slate-500 bg-slate-200 text-slate-900 shadow-xs`), bukan warna hitam pekat atau biru menyala.
       - **Struktur Kolom Kanan (Hasil Finansial Baku)**:

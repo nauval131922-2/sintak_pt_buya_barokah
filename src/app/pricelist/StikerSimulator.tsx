@@ -278,44 +278,11 @@ _Harga belum termasuk PPN. Hasil cetak tajam, daya rekat kuat & tahan air._`;
         {/* Kolom Kiri: Form Input Spesifikasi */}
         <div className="lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-              <div className="flex items-center gap-2">
-                <Sliders size={15} className="text-emerald-700" />
-                <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-                  Parameter Pesanan Stiker
-                </h4>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={handleCopyWhatsApp}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
-                  title="Salin penawaran WhatsApp"
-                >
-                  {copiedQuote ? <Check size={12} className="text-emerald-600" /> : <Share2 size={12} className="text-emerald-600" />}
-                  <span>{copiedQuote ? 'Tersalin' : 'Salin'}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowGuideModal(true)}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
-                  title="Panduan kalkulasi"
-                >
-                  <BookOpen size={12} className="text-slate-500" />
-                  <span>Panduan</span>
-                </button>
-                {onOpenMasterParam && (
-                  <button
-                    type="button"
-                    onClick={onOpenMasterParam}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-800 hover:bg-emerald-900 text-white transition-all shadow-2xs cursor-pointer"
-                    title="Buka Master Parameter"
-                  >
-                    <Settings2 size={12} />
-                    <span>Master</span>
-                  </button>
-                )}
-              </div>
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <Sliders size={15} className="text-emerald-700" />
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                Spesifikasi Stiker
+              </h3>
             </div>
 
             {/* 1. Ukuran Stiker */}
@@ -507,54 +474,58 @@ _Harga belum termasuk PPN. Hasil cetak tajam, daya rekat kuat & tahan air._`;
 
         {/* Kolom Kanan: 3 Kartu Finansial Baku + Tabel Breakdown HPP */}
         <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
-          {/* Sticky 3 Kartu Metrik Baku */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">HPP / pcs</span>
-                <DollarSign size={14} className="text-slate-400" />
+          {/* 6. Hasil — sticky agar terlihat saat scroll breakdown */}
+          <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
+            <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
+              {stepChip(6)} Kalkulasi Total
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-500 mb-1">
+                  <span className="text-[11px] font-semibold">HPP Per Pcs</span>
+                  <DollarSign size={13} className="text-slate-400" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-slate-800 font-mono">
+                    Rp {Math.round(result.hppPerPcs).toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-slate-400 mt-0.5">
+                    Total HPP: Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
+                  </span>
+                </div>
               </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-slate-800">
-                  Rp {Math.round(result.hppPerPcs).toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-slate-400 mt-0.5">
-                  Total HPP: Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
-                </span>
-              </div>
-            </div>
 
-            <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-emerald-800 mb-1">
-                <span className="text-[11px] font-bold">Harga Jual / pcs</span>
-                <TrendingUp size={14} className="text-emerald-700" />
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-emerald-800 mb-1">
+                  <span className="text-[11px] font-bold">Harga Per Pcs (+{marginPct}%)</span>
+                  <TrendingUp size={13} className="text-emerald-600" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
+                    Rp {result.hargaJualPerPcs.toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-emerald-700/80 mt-0.5">
+                    Laba {marginPct}%{negoDiskonPct > 0 ? ` • Nego Rp ${result.negoPerPcs.toLocaleString('id-ID')}` : ''}
+                  </span>
+                </div>
               </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-emerald-950">
-                  Rp {result.hargaJualPerPcs.toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-emerald-700 mt-0.5">
-                  Laba +{marginPct}% • Nego Rp {result.negoPerPcs.toLocaleString('id-ID')}
-                </span>
-              </div>
-            </div>
 
-            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">Total Omset</span>
-                <TrendingUp size={14} className="text-slate-400" />
-              </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-slate-800">
-                  Rp {result.totalHargaJual.toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-slate-400 mt-0.5">
-                  Kuantitas: {oplah.toLocaleString('id-ID')} pcs
-                </span>
+              <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-500 mb-1">
+                  <span className="text-[11px] font-semibold">Harga Total</span>
+                  <TrendingUp size={13} className="text-emerald-500" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">
+                    Rp {result.totalHargaJual.toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-slate-500 mt-0.5">
+                    Profit: Rp {Math.round(result.totalHargaJual - result.totalHpp).toLocaleString('id-ID')}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-
           {/* Baris Ringkasan Spek Teknis */}
           <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs text-slate-700">
             <div className="flex items-center gap-2">

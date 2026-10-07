@@ -168,7 +168,7 @@ export function calculateStikerSimulator(
       biaya: biayaPrint,
     },
     {
-      komponen: 'Jasa Desain Stiker (Master!D16)',
+      komponen: 'Jasa Desain Stiker',
       keterangan: 'Tarif flat per order',
       biaya: biayaDesain,
     },
@@ -176,7 +176,7 @@ export function calculateStikerSimulator(
 
   if (biayaSisir > 0) {
     breakdownList.push({
-      komponen: 'Finishing Sisir (BUKU!AJ)',
+      komponen: 'Finishing Sisir',
       keterangan: `${Math.ceil(lembarA3 / 500)} paket @ Rp ${p.tarifSisirPer500.toLocaleString('id-ID')}`,
       biaya: biayaSisir,
     });

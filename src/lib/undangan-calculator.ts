@@ -169,7 +169,7 @@ export function calculateUndanganHpp(
   add(isOliver ? 'Kertas' : 'Cetak Print Inter', T7,
     isOliver ? `${R7} lbr plano × Rp ${(W29 / 500).toLocaleString('id-ID')}` : `${R7} × Rp ${p.tarifPrintA3.toLocaleString('id-ID')}`);
   // BUKU!V7 = V6 = D17
-  add('Desain', p.desain, `Master!D17 Rp ${p.desain.toLocaleString('id-ID')}`);
+  add('Desain', p.desain, `Rp ${p.desain.toLocaleString('id-ID')} (flat per order)`);
   // BUKU!Z7 = Z2*N7 (Z6 = 0) — BUKU!Y7 = Y6*Z7 (Y6 = 45000 Oliver else 0)
   const Z7 = nWarna * N7; // BUKU!Z7
   const Y6 = isOliver ? 45000 : 0; // BUKU!Y6

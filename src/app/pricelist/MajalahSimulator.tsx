@@ -633,15 +633,15 @@ export default function MajalahSimulator({
 
               <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between text-slate-500 mb-1">
-                  <span className="text-[11px] font-semibold">Total Omset</span>
+                  <span className="text-[11px] font-semibold">Harga Total</span>
                   <Layers size={13} className="text-slate-400" />
                 </div>
                 <div>
                   <span className="text-base sm:text-lg font-black text-slate-800">
                     Rp {result.totalHargaJual.toLocaleString('id-ID')}
                   </span>
-                  <span className="block text-[10px] text-slate-400 mt-0.5">
-                    {oplah.toLocaleString('id-ID')} pcs
+                  <span className="block text-[10px] text-slate-500 mt-0.5">
+                    Profit: Rp {Math.round(result.totalHargaJual - result.totalHpp).toLocaleString('id-ID')}
                   </span>
                 </div>
               </div>

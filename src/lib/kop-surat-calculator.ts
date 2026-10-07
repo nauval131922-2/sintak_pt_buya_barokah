@@ -151,7 +151,7 @@ export function calculateKopSuratHpp(
   add('Kertas', (U29 / 500) * Q7,
     `${Q7.toLocaleString('id-ID')} lbr plano (${H} rim × 500${O7 > 1 ? ` / ${O7}` : ''} + ${insheetLembar} insheet) × Rp ${(U29 / 500).toLocaleString('id-ID')}/lbr`);
   // BUKU!T7 = T6 = Master!D16
-  add('Desain', p.desain, `Master!D16 Rp ${p.desain.toLocaleString('id-ID')}`);
+  add('Desain', p.desain, `Rp ${p.desain.toLocaleString('id-ID')} (flat per order)`);
   // BUKU!U7 (Film) ≡ 0: T30 kosong + AM7 tak mencakup U7 — tidak ditampilkan.
   // BUKU!X7 = IF(X6>0,X6,L7*M7) — BUKU!W7 = $W$6*X7, W6 = IF(D10 ONGKOS CETAK,0,CETAK,10000)
   const X7 = p.platOverride > 0 ? p.platOverride : L7 * M7;

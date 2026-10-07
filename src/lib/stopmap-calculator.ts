@@ -244,7 +244,7 @@ export function calculateStopmapHpp(
     add(
       'Cetak Cover Print Inter A3+ (4W)',
       biayaKertasCover,
-      `BUKU!T7: ${r7} lbr A3+ (${validOplah} + ${inCover} insheet) × Rp ${p.tarifPrintA3.toLocaleString('id-ID')}`
+      `${r7} lbr A3+ (${validOplah} + ${inCover} insheet) × Rp ${p.tarifPrintA3.toLocaleString('id-ID')}`
     );
   } else {
     // Offset Heidelberg Oliver 4 Warna (BUKU!T7, BUKU!Y7, BUKU!AG7)
@@ -256,7 +256,7 @@ export function calculateStopmapHpp(
     add(
       'Bahan Kertas Cover Art Carton 230 gsm',
       biayaKertasCover,
-      `BUKU!T7: ${r7.toFixed(2)} lbr plano 79×109 (${validOplah}/4 + ${inCover}/4 insheet) × Rp ${Math.round(hargaLembarPlano79x109).toLocaleString('id-ID')}`
+      `${r7.toFixed(2)} lbr plano 79×109 (${validOplah}/4 + ${inCover}/4 insheet) × Rp ${Math.round(hargaLembarPlano79x109).toLocaleString('id-ID')}`
     );
 
     // BUKU!Y7: Plate Cetak 4 Warna
@@ -264,7 +264,7 @@ export function calculateStopmapHpp(
     add(
       'Plat Cetak Oliver (4 Warna)',
       biayaPlat,
-      `BUKU!Y7: 4 plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`
+      `4 plat × Rp ${p.tarifPlatOliver.toLocaleString('id-ID')}`
     );
 
     // BUKU!AG7: Ongkos Cetak Oliver (Min Order 1.000 drek + Drek Over)
@@ -274,8 +274,8 @@ export function calculateStopmapHpp(
     const ongkosDasar = 4 * p.minOrderOliver; // BUKU!AD7
     const totalOngkosCetak = ongkosDasar + ongkosOver;
     const ketCetak = drekOver > 0
-      ? `BUKU!AG7: Min Order Rp ${ongkosDasar.toLocaleString('id-ID')} + ${drekOver.toFixed(0)} drek over × Rp ${p.tarifDrekOverOliver} × 4W (Rp ${Math.round(ongkosOver).toLocaleString('id-ID')})`
-      : `BUKU!AG7: Min Order 4 plat × Rp ${p.minOrderOliver.toLocaleString('id-ID')}`;
+      ? `Min Order Rp ${ongkosDasar.toLocaleString('id-ID')} + ${drekOver.toFixed(0)} drek over × Rp ${p.tarifDrekOverOliver} × 4W`
+      : `Min Order 4 plat × Rp ${p.minOrderOliver.toLocaleString('id-ID')}`;
     add('Ongkos Cetak Oliver 4 Warna', totalOngkosCetak, ketCetak);
   }
 
@@ -284,12 +284,12 @@ export function calculateStopmapHpp(
   // -------------------------------------------------------------
   const tarifDesain = isFolio ? p.tarifDesainFolio : p.tarifDesainA4; // Master!D17
   if (tarifDesain > 0) {
-    add('Desain Cover', tarifDesain, `BUKU!V7: Biaya setting desain ${cfg.label}`);
+    add('Desain Cover', tarifDesain, `Biaya setting desain ${cfg.label}`);
   }
 
   const tarifTransport = isFolio ? p.tarifTransportFolio : p.tarifTransportA4; // BUKU!AK6
   if (tarifTransport > 0) {
-    add('Ongkos Transportasi', tarifTransport, `BUKU!AK7: Biaya kirim/transport ${cfg.label}`);
+    add('Ongkos Transportasi', tarifTransport, `Biaya kirim/transport ${cfg.label}`);
   }
 
   // -------------------------------------------------------------
@@ -304,7 +304,7 @@ export function calculateStopmapHpp(
   add(
     'Bahan Kupingan (Art Carton 230 gsm)',
     biayaKupingan,
-    `BUKU!AO7: ${an7} lbr plano 79×109 (isi ${p.kupinganPerPlano}/plano + ${inKupinganPlano} plano insheet) × Rp ${Math.round(hargaLembarPlano79x109).toLocaleString('id-ID')}`
+    `${an7} lbr plano 79×109 (isi ${p.kupinganPerPlano}/plano + ${inKupinganPlano} plano insheet) × Rp ${Math.round(hargaLembarPlano79x109).toLocaleString('id-ID')}`
   );
 
   // -------------------------------------------------------------
@@ -316,7 +316,7 @@ export function calculateStopmapHpp(
   add(
     'Jasa Lipat Stopmap',
     biayaLipat,
-    `BUKU!AL7: ${validOplah} pcs × Rp ${tarifLipatPerPcs.toFixed(2)} (UMR/25/${p.targetLipatPerHari.toLocaleString('id-ID')} target)`
+    `${validOplah} pcs × Rp ${tarifLipatPerPcs.toFixed(2)} (UMR/25/${p.targetLipatPerHari.toLocaleString('id-ID')} target)`
   );
 
   // BUKU!AQ7: Pisau Ponz Kupingan (Jika buat pisau baru BUKU!AQ26 = '√')
@@ -324,7 +324,7 @@ export function calculateStopmapHpp(
     add(
       'Pembuatan Pisau Ponz Kupingan',
       p.biayaPisauPonzBaru,
-      `BUKU!AQ7: Pembuatan pisau ponz bentuk baru`
+      `Pembuatan pisau ponz bentuk baru`
     );
   }
 
@@ -334,7 +334,7 @@ export function calculateStopmapHpp(
   add(
     'Ponz Kupingan & Biaya Lem',
     biayaPonzLem,
-    `BUKU!AR7: ${validOplah} pcs × Rp ${tarifPonzLemPerPcs.toFixed(2)} (Ponz UMR + Lem Rp ${p.biayaLemKupinganPerPcs})`
+    `${validOplah} pcs × Rp ${tarifPonzLemPerPcs.toFixed(2)} (Ponz UMR + Lem Rp ${p.biayaLemKupinganPerPcs})`
   );
 
   // BUKU!AU7: Pasang Kupingan ke Map = (UMR / 25 / targetPasang) * oplah
@@ -343,7 +343,7 @@ export function calculateStopmapHpp(
   add(
     'Pasang Kupingan ke Stopmap',
     biayaPasang,
-    `BUKU!AU7: ${validOplah} pcs × Rp ${tarifPasangPerPcs.toFixed(2)} (UMR/25/${p.targetPasangPerHari} target)`
+    `${validOplah} pcs × Rp ${tarifPasangPerPcs.toFixed(2)} (UMR/25/${p.targetPasangPerHari} target)`
   );
 
   // -------------------------------------------------------------
@@ -360,8 +360,8 @@ export function calculateStopmapHpp(
     biayaLaminasi = Math.max(p.minLaminasi, rawLam); // BUKU!AX7
     labelLaminasi = 'Laminasi Glossy 1 Muka';
     ketLaminasi = rawLam < p.minLaminasi
-      ? `BUKU!AX7: Tarif Minimum Order Rp ${p.minLaminasi.toLocaleString('id-ID')}`
-      : `BUKU!AX7: ${validOplah} pcs × ${luasCm2} cm² × Rp ${p.tarifLaminasiGlossyCm2}/cm²`;
+      ? `Tarif Minimum Order Rp ${p.minLaminasi.toLocaleString('id-ID')}`
+      : `${validOplah} pcs × ${luasCm2} cm² × Rp ${p.tarifLaminasiGlossyCm2}/cm²`;
   } else if (laminasi === 'Doff') {
     // BUKU!AZ7: Luas bentangan dengan bleed ((w * 2) + 1) * (h + 1) cm²
     const luasCm2 = ((cfg.w * 2) + 1) * (cfg.h + 1); // A4: 45x33=1485, Folio: 49x36=1764
@@ -369,8 +369,8 @@ export function calculateStopmapHpp(
     biayaLaminasi = Math.max(p.minLaminasi, rawLam); // BUKU!BA7
     labelLaminasi = 'Laminasi Doff 1 Muka';
     ketLaminasi = rawLam < p.minLaminasi
-      ? `BUKU!BA7: Tarif Minimum Order Rp ${p.minLaminasi.toLocaleString('id-ID')}`
-      : `BUKU!BA7: ${validOplah} pcs × ${luasCm2} cm² × Rp ${p.tarifLaminasiDoffCm2}/cm²`;
+      ? `Tarif Minimum Order Rp ${p.minLaminasi.toLocaleString('id-ID')}`
+      : `${validOplah} pcs × ${luasCm2} cm² × Rp ${p.tarifLaminasiDoffCm2}/cm²`;
   } else if (laminasi === 'UV Varnish') {
     // BUKU!BC7: Luas bentangan dengan bleed ((w * 2) + 1) * (h + 1) cm²
     const luasCm2 = ((cfg.w * 2) + 1) * (cfg.h + 1);
@@ -378,8 +378,8 @@ export function calculateStopmapHpp(
     biayaLaminasi = Math.max(p.minLaminasi, rawLam); // BUKU!BD7
     labelLaminasi = 'Finishing UV Varnish';
     ketLaminasi = rawLam < p.minLaminasi
-      ? `BUKU!BD7: Tarif Minimum Order Rp ${p.minLaminasi.toLocaleString('id-ID')}`
-      : `BUKU!BD7: ${validOplah} pcs × ${luasCm2} cm² × Rp ${p.tarifUvVarnishCm2}/cm²`;
+      ? `Tarif Minimum Order Rp ${p.minLaminasi.toLocaleString('id-ID')}`
+      : `${validOplah} pcs × ${luasCm2} cm² × Rp ${p.tarifUvVarnishCm2}/cm²`;
   }
 
   if (biayaLaminasi > 0) {
@@ -403,7 +403,7 @@ export function calculateStopmapHpp(
     add(
       'Packing Kardus & Lakban',
       totalPacking,
-      `BUKU!BI7: ${jumlahKardus} box kardus (isi ${p.kapasitasKardusBox} pcs) × Rp ${p.tarifKardusBox.toLocaleString('id-ID')} + lakban Rp ${Math.round(biayaLakban).toLocaleString('id-ID')}`
+      `${jumlahKardus} box kardus (isi ${p.kapasitasKardusBox} pcs) × Rp ${p.tarifKardusBox.toLocaleString('id-ID')} + lakban Rp ${Math.round(biayaLakban).toLocaleString('id-ID')}`
     );
   }
 

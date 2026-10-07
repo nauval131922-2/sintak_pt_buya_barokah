@@ -201,7 +201,7 @@ export function calculateSertifikatHpp(
   add(isPrint ? 'Cetak Print Inter' : 'Kertas', T7,
     isPrint ? `${Q7} × Rp ${tarifPrintForBahan(bahan, p).toLocaleString('id-ID')}` : `${R7} lbr plano × Rp ${(W29 / 500).toLocaleString('id-ID')}`);
   // BUKU!V7 = V6 = D17
-  add('Desain', p.desain, `Master!D17 Rp ${p.desain.toLocaleString('id-ID')}`);
+  add('Desain', p.desain, `Rp ${p.desain.toLocaleString('id-ID')} (flat per order)`);
   // BUKU!Z7 = IF(Z6>0, Z6, Z2*N7)
   const Z7 = p.platOverride > 0 ? p.platOverride : nWarna * N7; // BUKU!Z7
   add('Plate', spec.plate * Z7, `${Z7} plat × Rp ${spec.plate.toLocaleString('id-ID')} (${mesin})`);
