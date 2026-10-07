@@ -51,9 +51,10 @@ async function setUserRoles(userId: number, roles: string[]): Promise<void> {
   const primaryRole = uniqueRoles.includes('Super Admin')
     ? 'Super Admin'
     : (uniqueRoles[0] || '');
+  // ponytail: hanya update users.role jika berbeda agar tidak memicu log duplikat dari trg_users_update
   await db.execute({
-    sql: 'UPDATE users SET role = ? WHERE id = ?',
-    args: [primaryRole, userId],
+    sql: 'UPDATE users SET role = ? WHERE id = ? AND (role IS NULL OR role != ?)',
+    args: [primaryRole, userId, primaryRole],
   });
 }
 
