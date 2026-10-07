@@ -487,6 +487,19 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
     toast.success('Penawaran format WhatsApp berhasil disalin!');
     setTimeout(() => setCopiedQuote(false), 2500);
   };
+
+  const optBtn = (active: boolean) =>
+    `py-2 px-2.5 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
+      active
+        ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400'
+        : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
+    }`;
+
+  const stepChip = (n: number | string) => (
+    <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-emerald-700 text-white text-[10px] font-black shrink-0">
+      {n}
+    </span>
+  );
   return (
     <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
 
@@ -500,10 +513,10 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
               <Sliders size={15} className="text-emerald-700" />
               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Spesifikasi Buku Manasik</h3>
             </div>
-            {/* Pilihan Varian Produk */}
+            {/* 1. Pilihan Varian Produk */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Model / Varian Buku Manasik
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(1)} Model / Varian Buku Manasik
               </label>
               <div className="grid grid-cols-1 gap-2">
                 {VARIAN_OPTIONS.map((v) => (
@@ -513,8 +526,8 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                     onClick={() => handleVarianChange(v.value)}
                     className={`p-2 px-2.5 rounded-lg border text-left flex flex-col justify-between transition-all cursor-pointer ${
                       varian === v.value
-                        ? 'border-emerald-600 bg-emerald-50/80 text-emerald-950 font-bold ring-1 ring-emerald-500'
-                        : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 text-slate-700'
+                        ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400'
+                        : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
                     }`}
                   >
                     <span className="text-xs font-bold">{v.label}</span>
@@ -524,10 +537,12 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
               </div>
             </div>
 
-            {/* Oplah */}
+            {/* 2. Oplah */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold text-slate-700">Kuantitas Order (Oplah)</label>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  {stepChip(2)} Kuantitas Order (Oplah)
+                </label>
                 <span className="text-[11px] font-mono font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                   {oplah.toLocaleString('id-ID')} Eks
                 </span>
@@ -541,10 +556,12 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
               />
             </div>
 
-            {/* Varian Isi / Halaman */}
+            {/* 3. Varian Isi / Halaman */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold text-slate-700">Varian Isi Buku Manasik</label>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  {stepChip(3)} Varian Isi Buku Manasik
+                </label>
                 {varian !== 'Mini TikTok 6,3 x 10,3' && (
                   <button
                     type="button"
@@ -789,84 +806,59 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
         </div>
         {/* Kolom Kanan: Rincian Kalkulasi & Breakdown (Scrollbar Mandiri Mengisi Penuh Layar ke Bawah) */}
         <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
-          {/* Card Hasil Ringkasan - Soft Style Presisi */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">HPP Modal</span>
-                <DollarSign size={13} className="text-slate-400" />
+          {/* Sticky 3-Kartu Metrik Ringkasan Finansial Baku */}
+          <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
+            <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
+              {stepChip(6)} Kalkulasi Total
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {/* Card 1: HPP Per Eks */}
+              <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-500 mb-1">
+                  <span className="text-[11px] font-semibold">HPP Per Eks</span>
+                  <DollarSign size={13} className="text-slate-400" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-slate-800 font-mono">
+                    Rp {result.summary.hppPerPcs.toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-slate-400 mt-0.5">
+                    Total HPP: Rp {result.summary.totalHpp.toLocaleString('id-ID')}
+                  </span>
+                </div>
               </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-slate-800 font-mono">
-                  Rp {result.summary.hppPerPcs.toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-slate-400 mt-0.5">Biaya modal per unit</span>
-              </div>
-            </div>
 
-            {/* Harga Jual Card */}
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-emerald-800 mb-1">
-                <span className="text-[11px] font-bold">Harga Jual (+{marginPct}%)</span>
-                <TrendingUp size={13} className="text-emerald-600" />
+              {/* Card 2: Harga Per Eks */}
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-emerald-800 mb-1">
+                  <span className="text-[11px] font-bold">Harga Per Eks (+{marginPct}%)</span>
+                  <TrendingUp size={13} className="text-emerald-600" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
+                    Rp {result.summary.hargaJualPerPcs.toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-emerald-700/80 mt-0.5">Laba {marginPct}%</span>
+                </div>
               </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
-                  Rp {result.summary.hargaJualPerPcs.toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-emerald-700/80 mt-0.5">Rekomendasi harga</span>
-              </div>
-            </div>
 
-            {/* Harga Nego Card */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-xl border border-blue-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-blue-800 mb-1">
-                <span className="text-[11px] font-bold">Harga Nego (-{negoDiskonPct}%)</span>
-                <Percent size={13} className="text-blue-600" />
-              </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-blue-800 font-mono">
-                  Rp {result.summary.hargaNegoPerPcs.toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-blue-700/80 mt-0.5">Batas aman diskon</span>
-              </div>
-            </div>
-
-            {/* Estimasi Profit Card */}
-            <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="text-[11px] font-semibold">Harga Total</span>
-                <TrendingUp size={13} className="text-emerald-500" />
-              </div>
-              <div>
-                <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">
-                  Rp {result.summary.totalHargaJual.toLocaleString('id-ID')}
-                </span>
-                <span className="block text-[10px] text-slate-500 mt-0.5">
-                  Profit: Rp {result.summary.totalProfit.toLocaleString('id-ID')}
-                </span>
+              {/* Card 3: Harga Total */}
+              <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-500 mb-1">
+                  <span className="text-[11px] font-semibold">Harga Total</span>
+                  <TrendingUp size={13} className="text-emerald-500" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">
+                    Rp {result.summary.totalHargaJual.toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-slate-500 mt-0.5">
+                    Profit: Rp {result.summary.totalProfit.toLocaleString('id-ID')}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-
-          {/* Info Teknis Bar */}
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-wrap items-center justify-between text-xs text-slate-600 gap-2">
-            <div>
-              <span className="text-slate-400">Metode Cover: </span>
-              <span className="font-semibold text-slate-800">{result.metodeCoverTerpilih}</span>
-            </div>
-            <div>
-              <span className="text-slate-400">Punggung: </span>
-              <span className="font-semibold text-slate-800">{result.tebalPunggungCm} cm</span>
-            </div>
-            <div>
-              <span className="text-slate-400">Kebutuhan Cover: </span>
-              <span className="font-semibold text-slate-800">
-                {result.kebutuhanA3Cover > 0 ? `${result.kebutuhanA3Cover} Lbr A3+` : `${result.kebutuhanPlanoCover} Lbr Plano`}
-              </span>
-            </div>
-          </div>
-
           {/* Breakdown Komponen Biaya */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col">
             <div className="px-4 py-3 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
@@ -877,7 +869,7 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                 </h4>
               </div>
               <span className="text-[11px] font-bold text-slate-500">
-                Oplah: {oplah.toLocaleString('id-ID')} Eks
+                Oplah: {oplah.toLocaleString('id-ID')} Eks · {varian} · {result.metodeCoverTerpilih}
               </span>
             </div>
 
@@ -959,8 +951,8 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
               onClick={handleSaveSimulation}
               className="w-full flex items-center justify-center gap-1.5 px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg transition-all shadow-xs cursor-pointer"
             >
-              <BookmarkCheck size={15} />
-              <span>Simpan Hasil Simulasi</span>
+              <BookmarkCheck size={16} />
+              <span>Simpan Kalkulasi Ini ke Daftar Kalkulasi</span>
             </button>
           )}
         </div>
