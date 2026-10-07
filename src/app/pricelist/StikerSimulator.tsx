@@ -11,6 +11,7 @@ import {
   BookOpen,
   Info,
   Check,
+  Share2,
   CheckCircle2,
   HelpCircle,
   X,
