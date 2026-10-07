@@ -61,7 +61,7 @@ function getParentOrderBy(sortParam: string | null): string {
   const mapped = states
     .filter((s) => s && s.id && PARENT_SORT_COLS[s.id])
     .map((s) => `${PARENT_SORT_COLS[s.id as string]} ${s.desc ? 'DESC' : 'ASC'}`);
-  if (mapped.length === 0) return 'create_at ASC, faktur ASC, id ASC';
+  if (mapped.length === 0) return 'tgl ASC, create_at ASC, faktur ASC, id ASC';
   // ponytail: tiebreak faktur+id agar pagination deterministik di semua sort
   if (!mapped.some((m) => m.startsWith('faktur '))) mapped.push('faktur ASC');
   mapped.push('id ASC');

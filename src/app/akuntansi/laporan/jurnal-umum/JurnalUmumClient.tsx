@@ -201,7 +201,7 @@ export default function JurnalUmumClient() {
     { value: '', label: 'Semua Rekening' },
     ...rekOptions.map((o) => ({ value: o.kode, label: `${o.kode} — ${o.keterangan}` })),
   ], [rekOptions]);
-  // Sort global server-side (lintas halaman). Default [] = urutan kronologis create_at.
+  // Sort global server-side (lintas halaman). Default [] = urutan kronologis tgl ASC.
   const [sorting, setSorting] = useState<SortingState>([]);
   const [isExporting, setIsExporting] = useState(false);
   const [showAnalisis, setShowAnalisis] = useState(false);
