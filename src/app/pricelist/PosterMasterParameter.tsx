@@ -1,8 +1,6 @@
 'use client';
 
-import { toast } from '@/lib/toast';
-
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   RotateCcw,
   Printer,
@@ -12,51 +10,161 @@ import {
   HelpCircle,
   X,
   FileText,
-  Image,
+  Search,
+  Image as ImageIcon,
 } from 'lucide-react';
 import {
   PosterMasterParams,
   DEFAULT_POSTER_PARAMS,
 } from '@/lib/poster-calculator';
+import { ThousandInput } from '@/components/ThousandInput';
+import { toast } from '@/lib/toast';
 
-interface Props {
+interface PosterMasterParameterProps {
   customParams: PosterMasterParams;
   setCustomParams: React.Dispatch<React.SetStateAction<PosterMasterParams>>;
 }
 
-const POSTER_VISIBLE_KEYS: (keyof PosterMasterParams)[] = [
-  'marginDefaultPct',
-  'minLaminasi',
-  'negoDefaultPct',
-  'oliverDrekOver',
-  'oliverMinOngkos',
-  'oliverPlatUnit',
-  'smDrekOver',
-  'smMinOngkos',
-  'smPlatUnit',
+interface FieldDef {
+  key: keyof PosterMasterParams;
+  label: string;
+  opts?: {
+    rupiah?: boolean;
+    suffix?: string;
+    decimal?: boolean;
+  };
+}
+
+interface GroupDef {
+  title: string;
+  border: string;
+  labelCls: string;
+  fields: FieldDef[];
+}
+
+const GROUPS_KERTAS: GroupDef[] = [
+  {
+    title: 'Kertas & Bahan Dasar',
+    border: 'border-sky-300',
+    labelCls: 'text-sky-800',
+    fields: [
+      { key: 'tarifArtCarton230Kg', label: 'Tarif Kertas Art Carton 230 /kg' },
+      { key: 'upKertasPct', label: 'Mark-up Kertas', opts: { rupiah: false, suffix: '%' } },
+    ],
+  },
+];
+
+const GROUPS_MESIN: GroupDef[] = [
+  {
+    title: 'Setting & Desain Poster',
+    border: 'border-blue-300',
+    labelCls: 'text-blue-800',
+    fields: [
+      { key: 'tarifDesain', label: 'Biaya Desain Poster (per order)' },
+      { key: 'tarifPrintA3', label: 'Tarif Print Inter Digital A3+ (per lembar)' },
+    ],
+  },
+  {
+    title: 'Mesin Oliver Offset 4 Warna',
+    border: 'border-blue-300',
+    labelCls: 'text-blue-800',
+    fields: [
+      { key: 'oliverPlatUnit', label: 'Tarif Plat Oliver (per plat)' },
+      { key: 'oliverMinOngkos', label: 'Min Ongkos Cetak Oliver (per warna / 1.000 drek)' },
+      { key: 'oliverDrekOver', label: 'Tarif Over Drek Oliver (per drek/warna)' },
+    ],
+  },
+  {
+    title: 'Mesin Heidelberg SM (Full Colour)',
+    border: 'border-blue-300',
+    labelCls: 'text-blue-800',
+    fields: [
+      { key: 'smPlatUnit', label: 'Tarif Plat SM (per plat)' },
+      { key: 'smMinOngkos', label: 'Min Ongkos Cetak SM (per warna / 3.000 drek)' },
+      { key: 'smDrekOver', label: 'Tarif Over Drek SM (per drek/warna)' },
+    ],
+  },
+];
+
+const GROUPS_OPERASIONAL: GroupDef[] = [
+  {
+    title: 'Finishing & Operasional Cetak',
+    border: 'border-violet-300',
+    labelCls: 'text-violet-800',
+    fields: [
+      { key: 'tarifTransp', label: 'Biaya Transport (per order)' },
+      { key: 'tarifSisirPer100Plano', label: 'Upah Potong / Sisir (per 100 plano)' },
+    ],
+  },
+  {
+    title: 'Standar Kemasan',
+    border: 'border-violet-300',
+    labelCls: 'text-violet-800',
+    fields: [
+      { key: 'tarifKardusBox', label: 'Harga Kardus Box' },
+      { key: 'tarifLakbanRoll', label: 'Harga Lakban Transparan /roll' },
+    ],
+  },
+];
+
+const GROUPS_FINISHING_MARGIN: GroupDef[] = [
+  {
+    title: 'Finishing Tambahan (Laminasi / Vernis)',
+    border: 'border-amber-300',
+    labelCls: 'text-amber-800',
+    fields: [
+      { key: 'tarifLaminasiGlossyCm2', label: 'Tarif Laminasi Glossy /cm²', opts: { rupiah: true, decimal: true } },
+      { key: 'tarifLaminasiDoffCm2', label: 'Tarif Laminasi Doff /cm²', opts: { rupiah: true, decimal: true } },
+      { key: 'tarifUvVarnishCm2', label: 'Tarif UV Varnish /cm²', opts: { rupiah: true, decimal: true } },
+      { key: 'minLaminasi', label: 'Min Charge Laminasi / Order' },
+    ],
+  },
+  {
+    title: 'Margin & Nego Standar',
+    border: 'border-amber-300',
+    labelCls: 'text-amber-800',
+    fields: [
+      { key: 'marginDefaultPct', label: 'Margin Standar Penjualan', opts: { rupiah: false, suffix: '%' } },
+      { key: 'negoDefaultPct', label: 'Batas Toleransi Nego Diskon', opts: { rupiah: false, suffix: '%' } },
+    ],
+  },
+];
+
+const ALL_KEYS: (keyof PosterMasterParams)[] = [
   'tarifArtCarton230Kg',
+  'upKertasPct',
+  'tarifDesain',
+  'tarifPrintA3',
+  'oliverPlatUnit',
+  'oliverMinOngkos',
+  'oliverDrekOver',
+  'smPlatUnit',
+  'smMinOngkos',
+  'smDrekOver',
+  'tarifTransp',
+  'tarifSisirPer100Plano',
   'tarifKardusBox',
   'tarifLakbanRoll',
-  'tarifLaminasiDoffCm2',
   'tarifLaminasiGlossyCm2',
-  'tarifPrintA3',
-  'tarifSisirPcs',
+  'tarifLaminasiDoffCm2',
   'tarifUvVarnishCm2',
-  'upKertasPct',
+  'minLaminasi',
+  'marginDefaultPct',
+  'negoDefaultPct',
 ];
 
 export default function PosterMasterParameter({
   customParams,
   setCustomParams,
-}: Props) {
+}: PosterMasterParameterProps) {
+  const [q, setQ] = useState('');
   const [showManualModal, setShowManualModal] = useState(false);
 
-  const isFieldModified = (key: keyof PosterMasterParams) => {
-    return customParams[key] !== DEFAULT_POSTER_PARAMS[key];
-  };
+  const isFieldModified = (key: keyof PosterMasterParams) =>
+    (customParams[key] ?? DEFAULT_POSTER_PARAMS[key]) !== DEFAULT_POSTER_PARAMS[key];
 
-  const isModified = React.useMemo(
-    () => POSTER_VISIBLE_KEYS.some((k) => customParams[k] !== DEFAULT_POSTER_PARAMS[k]),
+  const isModified = useMemo(
+    () => ALL_KEYS.some((k) => isFieldModified(k)),
     [customParams]
   );
 
@@ -65,311 +173,303 @@ export default function PosterMasterParameter({
       ...prev,
       [key]: DEFAULT_POSTER_PARAMS[key],
     }));
+    toast.info(`Field ${key} dikembalikan ke nilai Master.`);
   };
 
   const handleResetAll = () => {
-    setCustomParams((prev) => {
-      const resetObj = { ...prev };
-      POSTER_VISIBLE_KEYS.forEach((k) => {
-        (resetObj as any)[k] = DEFAULT_POSTER_PARAMS[k];
-      });
-      return resetObj;
-    });
-    toast.success('Semua parameter dikembalikan ke nilai default.');
+    setCustomParams(DEFAULT_POSTER_PARAMS);
+    toast.success('Semua parameter Poster berhasil dikembalikan ke standar Master.');
   };
 
-  const handleChange = (
-    key: keyof PosterMasterParams,
-    value: string,
-    isFloat = false
-  ) => {
-    const parsed = isFloat ? parseFloat(value) : parseInt(value, 10);
+  const handleChange = (key: keyof PosterMasterParams, value: number) => {
     setCustomParams((prev) => ({
       ...prev,
-      [key]: isNaN(parsed) ? 0 : parsed,
+      [key]: value,
     }));
   };
 
-  const fieldRow = (
-    key: keyof PosterMasterParams,
-    label: string,
-    isCurrency = true,
-    isFloat = false
-  ) => {
+  const fmtStd = (f: FieldDef) => {
+    const def = DEFAULT_POSTER_PARAMS[f.key];
+    if (f.opts?.suffix === '%') return `${def}%`;
+    if (f.opts?.rupiah === false && !f.opts?.decimal) return Number(def).toLocaleString('id-ID');
+    if (f.opts?.decimal) return `Rp ${def}`;
+    return `Rp ${Number(def).toLocaleString('id-ID')}`;
+  };
+
+  const matchQ = (label: string) =>
+    q.trim() === '' || label.toLowerCase().includes(q.trim().toLowerCase());
+
+  const fieldRow = (f: FieldDef) => {
+    const key = f.key;
+    const isRupiah = f.opts?.rupiah ?? true;
+    const isDecimal = f.opts?.decimal ?? false;
     const modified = isFieldModified(key);
-    const val = customParams[key];
+    const val = customParams[key] ?? DEFAULT_POSTER_PARAMS[key];
 
     return (
       <div
-        className={`p-2.5 rounded-lg border flex items-center justify-between transition-all ${
+        key={key}
+        className={`p-2.5 rounded-lg border transition-all ${
           modified
             ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
             : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
         }`}
       >
-        <div className="flex flex-col min-w-0 pr-2">
-          <span className="text-xs font-semibold text-slate-700 truncate">{label}</span>
-          <span className="text-[10px] text-slate-400">
-            Def:{' '}
-            {isCurrency
-              ? `Rp ${DEFAULT_POSTER_PARAMS[key].toLocaleString('id-ID')}`
-              : `${DEFAULT_POSTER_PARAMS[key]}${key.includes('Pct') ? '%' : ''}`}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-1.5 shrink-0">
-          <div className="relative">
-            {isCurrency && (
-              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-medium">
-                Rp
-              </span>
-            )}
-            <input
-              type="number"
-              step={isFloat ? '0.01' : '1'}
-              value={val === 0 ? '' : val}
-              placeholder="0"
-              onChange={(e) => handleChange(key, e.target.value, isFloat)}
-              className={`w-28 text-right text-xs font-bold py-1.5 rounded-lg border outline-hidden transition-all ${
-                isCurrency ? 'pl-7 pr-2' : 'px-2'
-              } ${
-                modified
-                  ? 'border-amber-400 bg-white text-amber-900 focus:ring-2 focus:ring-amber-400'
-                  : 'border-slate-300 bg-white text-slate-800 focus:ring-2 focus:ring-emerald-500'
-              }`}
-            />
-            {!isCurrency && key.includes('Pct') && (
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">
-                %
-              </span>
-            )}
-          </div>
-
+        <div className="flex items-center justify-between gap-1 mb-1">
+          <label className="text-[11px] font-bold text-slate-700 truncate">{f.label}</label>
           {modified && (
             <button
               type="button"
               onClick={() => handleResetField(key)}
-              title="Reset ke default"
-              className="p-1.5 rounded-lg text-amber-700 hover:bg-amber-100 transition-all cursor-pointer"
+              title="Reset ke nilai Master"
+              className="text-amber-600 hover:text-amber-800 p-0.5 rounded cursor-pointer"
             >
-              <RotateCcw size={13} />
+              <RotateCcw size={12} />
             </button>
           )}
         </div>
+        <div className="relative">
+          <ThousandInput
+            value={val}
+            onValueChange={(v) => handleChange(key, v || 0)}
+            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+            prefix={isRupiah ? 'Rp' : undefined}
+            suffix={f.opts?.suffix}
+            allowDecimals={isDecimal}
+          />
+        </div>
+        {modified && (
+          <p className="text-[10px] text-slate-500 mt-1">Master: {fmtStd(f)}</p>
+        )}
       </div>
     );
   };
 
+  const subGroup = (g: GroupDef) => {
+    const visible = g.fields.filter((f) => matchQ(f.label));
+    if (visible.length === 0) return null;
+    return (
+      <div key={g.title} className={`rounded-lg border ${g.border} bg-white/70 p-2.5 space-y-2`}>
+        <span className={`block text-[10px] font-black uppercase tracking-wider ${g.labelCls}`}>
+          {g.title}
+        </span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">{visible.map(fieldRow)}</div>
+      </div>
+    );
+  };
+
+  const cardShell = (
+    cls: string,
+    header: React.ReactNode,
+    groups: GroupDef[],
+    note?: React.ReactNode
+  ) => {
+    const hasVisible = groups.some((g) => g.fields.some((f) => matchQ(f.label)));
+    if (!hasVisible) return null;
+    return (
+      <div className={`${cls} rounded-xl border p-4 shadow-2xs flex flex-col gap-3 break-inside-avoid mb-4`}>
+        {header}
+        <div className="flex flex-col gap-2.5">{groups.map(subGroup)}</div>
+        {note}
+      </div>
+    );
+  };
+
+  const cardHeader = (
+    badgeCls: string,
+    badge: string,
+    Icon: React.ComponentType<{ className?: string }>,
+    iconCls: string,
+    title: string
+  ) => (
+    <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+      <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${badgeCls}`}>
+        {badge}
+      </span>
+      <Icon className={`w-4 h-4 ${iconCls}`} />
+      <h3 className="text-xs font-bold text-slate-800">{title}</h3>
+    </div>
+  );
+
   return (
-    <div className="flex flex-col gap-4 pb-8">
+    <div className="flex flex-col gap-4 pb-8 overflow-y-auto">
       {/* Header Info Banner */}
       <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-emerald-100/80 rounded-xl border border-emerald-200 text-emerald-800 shrink-0">
-            <Image size={20} />
+            <ImageIcon className="w-5 h-5 text-emerald-800" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-black text-slate-800 text-sm sm:text-base">
+              <h2 className="text-base sm:text-lg font-black text-slate-800 tracking-tight">
                 Master Parameter Poster
-              </h3>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-200">
+              </h2>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-full">
                 Katalog 19 / 21
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Tarif bahan Art Carton 230, mesin bertingkat (Print, Oliver, Heidelberg SM), dan laminasi.
+              Tarif bahan kertas Art Carton 230 gsm, mesin Print Inter / Oliver / SM, upah potong sisir, serta finishing tambahan untuk 4 ukuran poster.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setShowManualModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition cursor-pointer"
           >
-            <HelpCircle size={14} className="text-emerald-600" />
-            <span>Panduan Parameter</span>
+            <HelpCircle size={14} className="text-slate-500" />
+            <span>Panduan & Rumus</span>
           </button>
-
-          <button
-            type="button"
-            onClick={handleResetAll}
-            disabled={!isModified}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-2xs shrink-0 ${
-              isModified
-                ? 'bg-amber-600 hover:bg-amber-700 text-white cursor-pointer ring-2 ring-amber-400/40'
-                : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-70'
-            }`}
-          >
-            <RotateCcw size={13} />
-            <span>Reset Standar Master</span>
-          </button>
+          {isModified && (
+            <button
+              type="button"
+              onClick={handleResetAll}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs transition cursor-pointer"
+            >
+              <RotateCcw size={14} />
+              <span>Reset Semua</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {isModified && (
-        <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900">
-          <Database size={15} className="text-amber-600 shrink-0 mt-0.5" />
-          <span>
-            <strong>Ada parameter yang dimodifikasi</strong> dari nilai default. Baris berwarna oranye menunjukkan perubahan aktif.
-          </span>
-        </div>
-      )}
-
-      {/* Grid 2 Kolom Standar */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Card 1: Bahan Kertas & Print Digital */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <FileText size={15} className="text-emerald-700" />
-            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              1. Kertas &amp; Print Digital (A3+)
-            </h4>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifArtCarton230Kg', 'Kertas AC 230 / kg (Rp)', true)}
-            {fieldRow('upKertasPct', 'Up/PPN Kertas (%)', false)}
-            {fieldRow('tarifPrintA3', 'Print Inter A3+ (Rp/lbr)', true)}
-            {fieldRow('tarifSisirPcs', 'Ongkos Potong/Sisir (Rp/pcs)', true)}
-            {fieldRow('tarifKardusBox', 'Kardus Box (Rp/box)', true)}
-            {fieldRow('tarifLakbanRoll', 'Lakban Roll (Rp/roll)', true)}
-          </div>
-          <p className="text-[10px] text-slate-500">
-            Kertas dasar Art Carton 230 gsm 1 Muka Full Colour.
-          </p>
-        </div>
-
-        {/* Card 2: Mesin Cetak Offset (Oliver & SM) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Printer size={15} className="text-emerald-700" />
-            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              2. Mesin Offset (Oliver &amp; SM 52/72)
-            </h4>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('oliverPlatUnit', 'Plat Oliver (Rp/plat)', true)}
-            {fieldRow('oliverMinOngkos', 'Min Cetak Oliver (Rp/plat)', true)}
-            {fieldRow('oliverDrekOver', 'Drek Over Oliver (Rp/drek)', true)}
-            {fieldRow('smPlatUnit', 'Plat SM 52 (Rp/plat)', true)}
-            {fieldRow('smMinOngkos', 'Min Cetak SM 52 (Rp/plat)', true)}
-            {fieldRow('smDrekOver', 'Drek Over SM 52 (Rp/drek)', true)}
-          </div>
-          <p className="text-[10px] text-slate-500">
-            Oliver 4W untuk ukuran 32×48 &amp; 48×64 cm. Heidelberg SM untuk ukuran besar / oplah tinggi.
-          </p>
-        </div>
-
-        {/* Card 3: Finishing Laminasi & UV */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Layers size={15} className="text-blue-700" />
-            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              3. Finishing Laminasi &amp; UV
-            </h4>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifLaminasiGlossyCm2', 'Laminasi Glossy (Rp/cm²)', false, true)}
-            {fieldRow('tarifLaminasiDoffCm2', 'Laminasi Doff (Rp/cm²)', false, true)}
-            {fieldRow('tarifUvVarnishCm2', 'UV Varnish (Rp/cm²)', false, true)}
-            {fieldRow('minLaminasi', 'Min Laminasi (Rp/order)', true)}
-          </div>
-          <p className="text-[10px] text-slate-500">
-            Laminasi dihitung berdasarkan luas poster terbuka (cm²).
-          </p>
-        </div>
-
-        {/* Card 4: Margin & Nego Standar */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Database size={15} className="text-emerald-700" />
-            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              4. Margin &amp; Nego Standar
-            </h4>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('marginDefaultPct', 'Margin Default (%)', false)}
-            {fieldRow('negoDefaultPct', 'Nego Default (%)', false)}
-          </div>
-          <p className="text-[10px] text-slate-500">
-            Harga Jual = ROUNDUP(HPP × 130%, -2), Nego = ROUNDUP(Harga × 95%, -2).
-          </p>
+      {/* Sticky Search Bar */}
+      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1">
+        <div className="relative">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Cari parameter poster (misal: kertas, oliver, plat, sm, laminasi, drek)..."
+            className="w-full pl-8.5 pr-8 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs text-slate-800 font-medium"
+          />
+          {q && (
+            <button
+              type="button"
+              onClick={() => setQ('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
+            >
+              <X size={13} />
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Manual Modal */}
+      {/* 2 Kolom Seimbang Masonry */}
+      <div className="columns-1 lg:columns-2 gap-4 space-y-0">
+        {/* 1. Kertas & Bahan Dasar */}
+        {cardShell(
+          'bg-sky-50/40 border-sky-200/80',
+          cardHeader('bg-sky-100 text-sky-800 border border-sky-300', '1. Kertas', Database, 'text-sky-600', 'Bahan Baku Poster (Art Carton 230 gsm)'),
+          GROUPS_KERTAS,
+          <p className="text-[10px] text-slate-500 italic">
+            * Ukuran plano standar: 79×109 cm (untuk 32×48 cm, 50×70 cm, 70×100 cm) dan 65×100 cm (untuk 48×64 cm).
+          </p>
+        )}
+
+        {/* 2. Desain & Mesin Cetak */}
+        {cardShell(
+          'bg-blue-50/40 border-blue-200/80',
+          cardHeader('bg-blue-100 text-blue-800 border border-blue-300', '2. Mesin', Printer, 'text-blue-600', 'Setting Desain & Mesin Cetak'),
+          GROUPS_MESIN
+        )}
+
+        {/* 3. Finishing & Operasional */}
+        {cardShell(
+          'bg-violet-50/40 border-violet-200/80',
+          cardHeader('bg-violet-100 text-violet-800 border border-violet-300', '3. Operasional', Scissors, 'text-violet-600', 'Upah Sisir, Transport & Kemasan'),
+          GROUPS_OPERASIONAL
+        )}
+
+        {/* 4. Finishing Tambahan & Margin */}
+        {cardShell(
+          'bg-amber-50/40 border-amber-200/80',
+          cardHeader('bg-amber-100 text-amber-800 border border-amber-300', '4. Finishing & Laba', Layers, 'text-amber-600', 'Laminasi, UV Varnish & Target Penjualan'),
+          GROUPS_FINISHING_MARGIN
+        )}
+      </div>
+
+      {/* Modal Panduan & Rumus */}
       {showManualModal && (
-        <div
-          onClick={() => setShowManualModal(false)}
-          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white w-full max-w-2xl max-h-[85vh] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden cursor-default"
-          >
-            <div className="px-6 py-4 bg-emerald-900 text-white flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-emerald-800/80 rounded-xl border border-emerald-700">
-                  <Database size={18} className="text-emerald-200" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl max-w-2xl w-full border border-slate-200 shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-emerald-50/50">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-emerald-100 text-emerald-800 rounded-lg">
+                  <FileText size={18} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base">Panduan Parameter Poster</h3>
-                  <p className="text-xs text-emerald-200">Referensi: Pricelist Poster.xlsx</p>
+                  <h3 className="text-sm font-black text-slate-800">
+                    Panduan Rumus Kalkulasi Poster (Katalog 19 / 21)
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Spesifikasi baku & alur hitung harga pokok produksi
+                  </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowManualModal(false)}
-                className="p-1 rounded-lg text-emerald-300 hover:text-white hover:bg-emerald-800/60 transition-all cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition cursor-pointer"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto space-y-4 text-xs text-slate-600 leading-relaxed">
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                <h5 className="font-bold text-slate-800 flex items-center gap-1.5">
-                  <FileText size={14} className="text-emerald-600" />
-                  Spesifikasi Standar Poster
-                </h5>
-                <p>
-                  Bahan: Art Carton 230 gsm 1 Muka Full Colour. Tersedia 4 ukuran: 32×48 cm, 48×64 cm, 50×70 cm, dan 70×100 cm.
-                  Finishing potong lurus / sisir + packing kardus tebal.
-                </p>
-              </div>
-
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                <h5 className="font-bold text-slate-800 flex items-center gap-1.5">
-                  <Printer size={14} className="text-emerald-600" />
-                  Alur Mesin Cetak Berdasarkan Ukuran &amp; Oplah
-                </h5>
-                <ul className="list-disc list-inside space-y-1 pl-1">
-                  <li><strong>32 × 48 cm</strong>: Print Inter A3+ (100–500 pcs) / Oliver Offset 4W (600–2000 pcs)</li>
-                  <li><strong>48 × 64 cm</strong>: Oliver Offset 4W (300–3000 pcs) / Heidelberg SM 52 (3500–5000 pcs)</li>
-                  <li><strong>50 × 70 cm</strong>: Heidelberg SM 52 (1000–10000 pcs)</li>
-                  <li><strong>70 × 100 cm</strong>: Heidelberg SM 72/102 (1000–10000 pcs)</li>
+            <div className="p-5 overflow-y-auto space-y-4 text-xs text-slate-600 leading-relaxed">
+              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-2">
+                <span className="font-bold text-slate-800 block text-xs">
+                  1. Alur Mesin Cetak per Ukuran:
+                </span>
+                <ul className="list-disc list-inside space-y-1 text-[11px] text-slate-600">
+                  <li><strong>32 × 48 cm:</strong> Oplah 100–500 pcs via Print Inter A3+ (digital); Oplah 600–2.000 pcs via Oliver Offset 4 Warna.</li>
+                  <li><strong>48 × 64 cm:</strong> Oplah 300–3.000 pcs via Oliver Offset 4 Warna; Oplah 3.500–5.000 pcs via Heidelberg SM 52.</li>
+                  <li><strong>50 × 70 cm:</strong> Oplah 1.000–10.000 pcs via Heidelberg SM 52 (potong 2 mesin).</li>
+                  <li><strong>70 × 100 cm:</strong> Oplah 1.000–10.000 pcs via Heidelberg SM 72 / 102 (masuk plano utuh).</li>
                 </ul>
               </div>
 
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                <h5 className="font-bold text-slate-800 flex items-center gap-1.5">
-                  <Database size={14} className="text-emerald-600" />
-                  Kebijakan Margin &amp; Nego
-                </h5>
-                <p>
-                  Formula harga jual resmi: <code>Harga = ROUNDUP(HPP × 130%, -2)</code> (Margin 30%).
-                  Batas nego marketing: <code>Nego = ROUNDUP(Harga × 95%, -2)</code> (Diskon 5%).
+              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-2">
+                <span className="font-bold text-slate-800 block text-xs">
+                  2. Rumus Kebutuhan Kertas & Rim Price:
+                </span>
+                <p className="text-[11px]">
+                  $\text{Rim Price} = \frac{\text{Panjang} \times \text{Lebar} \times \text{Gramatur}}{20.000} \times \text{Tarif Kertas /kg}$
+                </p>
+                <p className="text-[11px]">
+                  Kebutuhan plano dihitung dari $\frac{\text{Oplah}}{\text{Dapat Plano}} + \frac{\text{Insheet}}{\text{Potong Mesin}}$. Biaya kertas $= \frac{\text{Kebutuhan Plano}}{500} \times \text{Rim Price}$.
+                </p>
+              </div>
+
+              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-2">
+                <span className="font-bold text-slate-800 block text-xs">
+                  3. Ongkos Cetak & Over Drek:
+                </span>
+                <ul className="list-disc list-inside space-y-1 text-[11px] text-slate-600">
+                  <li><strong>Oliver:</strong> Minimum order 4 warna (4 × Rp 90.000 = Rp 360.000) untuk tarikan s/d 1.000 lembar. Over drek dihitung $(Q - 1.000) \times \text{Rp } 40 \times 4$.</li>
+                  <li><strong>SM:</strong> Minimum order 4 warna (4 × Rp 310.000 = Rp 1.240.000) untuk tarikan s/d 3.000 lembar. Over drek dihitung $(Q - 3.000) \times \text{Rp } 100 \times 4$.</li>
+                </ul>
+              </div>
+
+              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-2">
+                <span className="font-bold text-slate-800 block text-xs">
+                  4. Finishing Tambahan (Laminasi / UV Varnish):
+                </span>
+                <p className="text-[11px]">
+                  Dihitung dari luas bidang potong $(D + 1) \times (F + 1)\text{ cm}^2 \times \text{Tarif} \times \text{Oplah}$, dengan batas minimum charge Rp 50.000 per order.
                 </p>
               </div>
             </div>
 
-            <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex justify-end">
+            <div className="px-5 py-3 border-t border-slate-100 bg-slate-50 flex justify-end">
               <button
                 type="button"
                 onClick={() => setShowManualModal(false)}
-                className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl text-xs transition-all cursor-pointer shadow-xs"
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition cursor-pointer"
               >
                 Tutup Panduan
               </button>

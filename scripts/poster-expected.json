@@ -1,0 +1,660 @@
+{
+  "32 x 48 cm_Oliver": {
+    "file": "02020120 POSTER - 32 x 48 cm - Oliver.xlsm",
+    "ukuran": "32 x 48 cm",
+    "mesin": "Oliver",
+    "tiers": [
+      {
+        "oplah": 600,
+        "hppPerPcs": 2091.0230666666666,
+        "totalHpp": 1254613.84,
+        "hargaJualBuku": 2720,
+        "komponen": {
+          "kertas": 649613.8400000001,
+          "desain": 30000.0,
+          "plat": 180000.0,
+          "ongkosCetak": 360000.0,
+          "transp": 25000.0,
+          "sisir": 10000.0
+        }
+      },
+      {
+        "oplah": 700,
+        "hppPerPcs": 1910.0936714285715,
+        "totalHpp": 1337065.57,
+        "hargaJualBuku": 2490,
+        "komponen": {
+          "kertas": 730815.5700000001,
+          "desain": 30000.0,
+          "plat": 180000.0,
+          "ongkosCetak": 360000.0,
+          "transp": 25000.0,
+          "sisir": 11250.0
+        }
+      },
+      {
+        "oplah": 1000,
+        "hppPerPcs": 1584.4207600000002,
+        "totalHpp": 1584420.7600000002,
+        "hargaJualBuku": 2060,
+        "komponen": {
+          "kertas": 974420.7600000001,
+          "desain": 30000.0,
+          "plat": 180000.0,
+          "ongkosCetak": 360000.0,
+          "transp": 25000.0,
+          "sisir": 15000.0
+        }
+      },
+      {
+        "oplah": 1500,
+        "hppPerPcs": 1331.1196066666669,
+        "totalHpp": 1996679.4100000001,
+        "hargaJualBuku": 1740,
+        "komponen": {
+          "kertas": 1380429.4100000001,
+          "desain": 30000.0,
+          "plat": 180000.0,
+          "ongkosCetak": 360000.0,
+          "transp": 25000.0,
+          "sisir": 21250.0
+        }
+      },
+      {
+        "oplah": 2000,
+        "hppPerPcs": 1212.4690300000002,
+        "totalHpp": 2424938.0600000005,
+        "hargaJualBuku": 1580,
+        "komponen": {
+          "kertas": 1786438.0600000003,
+          "desain": 30000.0,
+          "plat": 180000.0,
+          "ongkosCetak": 376000.0,
+          "transp": 25000.0,
+          "sisir": 27500.0
+        }
+      }
+    ]
+  },
+  "32 x 48 cm_Print Inter": {
+    "file": "02020120 POSTER - 32 x 48 cm - Print.xlsm",
+    "ukuran": "32 x 48 cm",
+    "mesin": "Print Inter",
+    "tiers": [
+      {
+        "oplah": 100,
+        "hppPerPcs": 3355.0,
+        "totalHpp": 335500.0,
+        "hargaJualBuku": 4370,
+        "komponen": {
+          "kertas": 275000.0,
+          "desain": 30000.0,
+          "plat": 0.0,
+          "ongkosCetak": 0.0,
+          "transp": 25000.0,
+          "sisir": 5500.0
+        }
+      },
+      {
+        "oplah": 200,
+        "hppPerPcs": 2952.5,
+        "totalHpp": 590500.0,
+        "hargaJualBuku": 3840,
+        "komponen": {
+          "kertas": 525000.0,
+          "desain": 30000.0,
+          "plat": 0.0,
+          "ongkosCetak": 0.0,
+          "transp": 25000.0,
+          "sisir": 10500.0
+        }
+      },
+      {
+        "oplah": 300,
+        "hppPerPcs": 2818.3333333333335,
+        "totalHpp": 845500.0,
+        "hargaJualBuku": 3670,
+        "komponen": {
+          "kertas": 775000.0,
+          "desain": 30000.0,
+          "plat": 0.0,
+          "ongkosCetak": 0.0,
+          "transp": 25000.0,
+          "sisir": 15500.0
+        }
+      },
+      {
+        "oplah": 400,
+        "hppPerPcs": 2751.25,
+        "totalHpp": 1100500.0,
+        "hargaJualBuku": 3580,
+        "komponen": {
+          "kertas": 1025000.0,
+          "desain": 30000.0,
+          "plat": 0.0,
+          "ongkosCetak": 0.0,
+          "transp": 25000.0,
+          "sisir": 20500.0
+        }
+      },
+      {
+        "oplah": 500,
+        "hppPerPcs": 2711.0,
+        "totalHpp": 1355500.0,
+        "hargaJualBuku": 3530,
+        "komponen": {
+          "kertas": 1275000.0,
+          "desain": 30000.0,
+          "plat": 0.0,
+          "ongkosCetak": 0.0,
+          "transp": 25000.0,
+          "sisir": 25500.0
+        }
+      }
+    ]
+  },
+  "48 x 64 cm_Oliver": {
+    "file": "02020120 POSTER - 48 x 64 cm - Oliver.xlsm",
+    "ukuran": "48 x 64 cm",
+    "mesin": "Oliver",
+    "tiers": [
+      {
+        "oplah": 300,
+        "hppPerPcs": 3651.2,
+        "totalHpp": 1095360.0,
+        "hargaJualBuku": 4750,
+        "komponen": {
+          "kertas": 490360.00000000006,
+          "desain": 30000.0,
+          "plat": 180000.0,
+          "ongkosCetak": 360000.0,
+          "transp": 25000.0,
+          "sisir": 10000.0
+        }
+      },
+      {
+        "oplah": 400,
+        "hppPerPcs": 3051.125,
+        "totalHpp": 1220450.0,
+        "hargaJualBuku": 3970,
+        "komponen": {
+          "kertas": 612950.0,
+          "desain": 30000.0,
+          "plat": 180000.0,
+          "ongkosCetak": 360000.0,
+          "transp": 25000.0,
+          "sisir": 12500.0
+        }
+      },
+      {
+        "oplah": 500,
+        "hppPerPcs": 2691.08,
+        "totalHpp": 1345540.0,
+        "hargaJualBuku": 3500,
+        "komponen": {
+          "kertas": 735540.0,
+          "desain": 30000.0,
+          "plat": 180000.0,
+          "ongkosCetak": 360000.0,
+          "transp": 25000.0,
+          "sisir": 15000.0
+        }
+      },
+      {
+        "oplah": 600,
+        "hppPerPcs": 2451.05,
+        "totalHpp": 1470630.0,
+        "hargaJualBuku": 3190,
+        "komponen": {
+          "kertas": 858130.0000000001,
+          "desain": 30000.0,
+          "plat": 180000.0,
+          "ongkosCetak": 360000.0,
+          "transp": 25000.0,
+          "sisir": 17500.0
+        }
+      },
+      {
+        "oplah": 700,
+        "hppPerPcs": 2279.6,
+        "totalHpp": 1595720.0,
+        "hargaJualBuku": 2970,
+        "komponen": {
+          "kertas": 980720.0000000001,
+          "desain": 30000.0,
+          "plat": 180000.0,
+          "ongkosCetak": 360000.0,
+          "transp": 25000.0,
+          "sisir": 20000.0
+        }
+      },
+      {
+        "oplah": 800,
+        "hppPerPcs": 2151.0125,
+        "totalHpp": 1720810.0,
+        "hargaJualBuku": 2800,
+        "komponen": {
+          "kertas": 1103310.0,
+          "desain": 30000.0,
+          "plat": 180000.0,
+          "ongkosCetak": 360000.0,
+          "transp": 25000.0,
+          "sisir": 22500.0
+        }
+      },
+      {
+        "oplah": 1000,
+        "hppPerPcs": 1986.99,
+        "totalHpp": 1986990.0,
+        "hargaJualBuku": 2590,
+        "komponen": {
+          "kertas": 1348490.0,
+          "desain": 30000.0,
+          "plat": 180000.0,
+          "ongkosCetak": 376000.0,
+          "transp": 25000.0,
+          "sisir": 27500.0
+        }
+      },
+      {
+        "oplah": 1500,
+        "hppPerPcs": 1794.96,
+        "totalHpp": 2692440.0,
+        "hargaJualBuku": 2340,
+        "komponen": {
+          "kertas": 1961440.0000000002,
+          "desain": 30000.0,
+          "plat": 180000.0,
+          "ongkosCetak": 456000.0,
+          "transp": 25000.0,
+          "sisir": 40000.0
+        }
+      },
+      {
+        "oplah": 2000,
+        "hppPerPcs": 1698.945,
+        "totalHpp": 3397890.0,
+        "hargaJualBuku": 2210,
+        "komponen": {
+          "kertas": 2574390.0,
+          "desain": 30000.0,
+          "plat": 180000.0,
+          "ongkosCetak": 536000.0,
+          "transp": 25000.0,
+          "sisir": 52500.0
+        }
+      },
+      {
+        "oplah": 3000,
+        "hppPerPcs": 1602.93,
+        "totalHpp": 4808790.0,
+        "hargaJualBuku": 2090,
+        "komponen": {
+          "kertas": 3800290.0000000005,
+          "desain": 30000.0,
+          "plat": 180000.0,
+          "ongkosCetak": 696000.0,
+          "transp": 25000.0,
+          "sisir": 77500.0
+        }
+      }
+    ]
+  },
+  "48 x 64 cm_SM": {
+    "file": "02020120 POSTER - 48 x 64 cm - SM.xlsm",
+    "ukuran": "48 x 64 cm",
+    "mesin": "SM",
+    "tiers": [
+      {
+        "oplah": 3500,
+        "hppPerPcs": 1924.4828571428573,
+        "totalHpp": 6735690.0,
+        "hargaJualBuku": 2510,
+        "komponen": {
+          "kertas": 5026190.0,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 1240000.0,
+          "transp": 25000.0,
+          "sisir": 102500.0
+        }
+      },
+      {
+        "oplah": 4000,
+        "hppPerPcs": 1840.285,
+        "totalHpp": 7361140.0,
+        "hargaJualBuku": 2400,
+        "komponen": {
+          "kertas": 5639140.0,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 1240000.0,
+          "transp": 25000.0,
+          "sisir": 115000.0
+        }
+      },
+      {
+        "oplah": 4500,
+        "hppPerPcs": 1774.7977777777778,
+        "totalHpp": 7986590.0,
+        "hargaJualBuku": 2310,
+        "komponen": {
+          "kertas": 6252090.0,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 1240000.0,
+          "transp": 25000.0,
+          "sisir": 127500.0
+        }
+      },
+      {
+        "oplah": 5000,
+        "hppPerPcs": 1722.408,
+        "totalHpp": 8612040.0,
+        "hargaJualBuku": 2240,
+        "komponen": {
+          "kertas": 6865040.000000001,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 1240000.0,
+          "transp": 25000.0,
+          "sisir": 140000.0
+        }
+      }
+    ]
+  },
+  "50 x 70 cm_SM": {
+    "file": "02020120 POSTER - 50 x 70 cm - SM.xlsm",
+    "ukuran": "50 x 70 cm",
+    "mesin": "SM",
+    "tiers": [
+      {
+        "oplah": 1000,
+        "hppPerPcs": 3750.7449800000004,
+        "totalHpp": 3750744.9800000004,
+        "hargaJualBuku": 4880,
+        "komponen": {
+          "kertas": 2111244.9800000004,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 1240000.0,
+          "transp": 25000.0,
+          "sisir": 32500.0
+        }
+      },
+      {
+        "oplah": 2000,
+        "hppPerPcs": 2699.88979,
+        "totalHpp": 5399779.58,
+        "hargaJualBuku": 3510,
+        "komponen": {
+          "kertas": 3735279.5800000005,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 1240000.0,
+          "transp": 25000.0,
+          "sisir": 57500.0
+        }
+      },
+      {
+        "oplah": 3000,
+        "hppPerPcs": 2389.604726666667,
+        "totalHpp": 7168814.180000001,
+        "hargaJualBuku": 3110,
+        "komponen": {
+          "kertas": 5359314.180000001,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 1360000.0,
+          "transp": 25000.0,
+          "sisir": 82500.0
+        }
+      },
+      {
+        "oplah": 4000,
+        "hppPerPcs": 2304.4621950000005,
+        "totalHpp": 9217848.780000001,
+        "hargaJualBuku": 3000,
+        "komponen": {
+          "kertas": 6983348.780000001,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 1760000.0,
+          "transp": 25000.0,
+          "sisir": 107500.0
+        }
+      },
+      {
+        "oplah": 5000,
+        "hppPerPcs": 2253.3766760000003,
+        "totalHpp": 11266883.38,
+        "hargaJualBuku": 2930,
+        "komponen": {
+          "kertas": 8607383.38,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 2160000.0,
+          "transp": 25000.0,
+          "sisir": 132500.0
+        }
+      },
+      {
+        "oplah": 6000,
+        "hppPerPcs": 2219.319663333333,
+        "totalHpp": 13315917.98,
+        "hargaJualBuku": 2890,
+        "komponen": {
+          "kertas": 10231417.98,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 2560000.0,
+          "transp": 25000.0,
+          "sisir": 157500.0
+        }
+      },
+      {
+        "oplah": 7000,
+        "hppPerPcs": 2194.993225714286,
+        "totalHpp": 15364952.580000002,
+        "hargaJualBuku": 2860,
+        "komponen": {
+          "kertas": 11855452.580000002,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 2960000.0,
+          "transp": 25000.0,
+          "sisir": 182500.0
+        }
+      },
+      {
+        "oplah": 8000,
+        "hppPerPcs": 2176.7483975,
+        "totalHpp": 17413987.18,
+        "hargaJualBuku": 2830,
+        "komponen": {
+          "kertas": 13479487.180000002,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 3360000.0,
+          "transp": 25000.0,
+          "sisir": 207500.0
+        }
+      },
+      {
+        "oplah": 9000,
+        "hppPerPcs": 2162.557975555556,
+        "totalHpp": 19463021.78,
+        "hargaJualBuku": 2820,
+        "komponen": {
+          "kertas": 15103521.780000001,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 3760000.0,
+          "transp": 25000.0,
+          "sisir": 232500.0
+        }
+      },
+      {
+        "oplah": 10000,
+        "hppPerPcs": 2151.2056380000004,
+        "totalHpp": 21512056.380000003,
+        "hargaJualBuku": 2800,
+        "komponen": {
+          "kertas": 16727556.380000003,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 4160000.0,
+          "transp": 25000.0,
+          "sisir": 257500.0
+        }
+      }
+    ]
+  },
+  "70 x 100 cm_SM": {
+    "file": "02020120 POSTER - 70 x 100 cm - SM.xlsm",
+    "ukuran": "70 x 100 cm",
+    "mesin": "SM",
+    "tiers": [
+      {
+        "oplah": 1000,
+        "hppPerPcs": 5894.489960000001,
+        "totalHpp": 5894489.960000001,
+        "hargaJualBuku": 7670,
+        "komponen": {
+          "kertas": 4222489.960000001,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 1240000.0,
+          "transp": 25000.0,
+          "sisir": 65000.0
+        }
+      },
+      {
+        "oplah": 2000,
+        "hppPerPcs": 4596.27958,
+        "totalHpp": 9192559.16,
+        "hargaJualBuku": 5980,
+        "komponen": {
+          "kertas": 7470559.160000001,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 1240000.0,
+          "transp": 25000.0,
+          "sisir": 115000.0
+        }
+      },
+      {
+        "oplah": 3000,
+        "hppPerPcs": 4203.542786666667,
+        "totalHpp": 12610628.360000001,
+        "hargaJualBuku": 5470,
+        "komponen": {
+          "kertas": 10718628.360000001,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 1360000.0,
+          "transp": 25000.0,
+          "sisir": 165000.0
+        }
+      },
+      {
+        "oplah": 4000,
+        "hppPerPcs": 4077.1743900000006,
+        "totalHpp": 16308697.560000002,
+        "hargaJualBuku": 5310,
+        "komponen": {
+          "kertas": 13966697.560000002,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 1760000.0,
+          "transp": 25000.0,
+          "sisir": 215000.0
+        }
+      },
+      {
+        "oplah": 5000,
+        "hppPerPcs": 4001.3533520000005,
+        "totalHpp": 20006766.76,
+        "hargaJualBuku": 5210,
+        "komponen": {
+          "kertas": 17214766.76,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 2160000.0,
+          "transp": 25000.0,
+          "sisir": 265000.0
+        }
+      },
+      {
+        "oplah": 6000,
+        "hppPerPcs": 3950.8059933333334,
+        "totalHpp": 23704835.96,
+        "hargaJualBuku": 5140,
+        "komponen": {
+          "kertas": 20462835.96,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 2560000.0,
+          "transp": 25000.0,
+          "sisir": 315000.0
+        }
+      },
+      {
+        "oplah": 7000,
+        "hppPerPcs": 3914.7007371428576,
+        "totalHpp": 27402905.160000004,
+        "hargaJualBuku": 5090,
+        "komponen": {
+          "kertas": 23710905.160000004,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 2960000.0,
+          "transp": 25000.0,
+          "sisir": 365000.0
+        }
+      },
+      {
+        "oplah": 8000,
+        "hppPerPcs": 3887.6217950000005,
+        "totalHpp": 31100974.360000003,
+        "hargaJualBuku": 5060,
+        "komponen": {
+          "kertas": 26958974.360000003,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 3360000.0,
+          "transp": 25000.0,
+          "sisir": 415000.0
+        }
+      },
+      {
+        "oplah": 9000,
+        "hppPerPcs": 3866.5603955555557,
+        "totalHpp": 34799043.56,
+        "hargaJualBuku": 5030,
+        "komponen": {
+          "kertas": 30207043.560000002,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 3760000.0,
+          "transp": 25000.0,
+          "sisir": 465000.0
+        }
+      },
+      {
+        "oplah": 10000,
+        "hppPerPcs": 3849.7112760000005,
+        "totalHpp": 38497112.760000005,
+        "hargaJualBuku": 5010,
+        "komponen": {
+          "kertas": 33455112.760000005,
+          "desain": 30000.0,
+          "plat": 312000.0,
+          "ongkosCetak": 4160000.0,
+          "transp": 25000.0,
+          "sisir": 515000.0
+        }
+      }
+    ]
+  }
+}
