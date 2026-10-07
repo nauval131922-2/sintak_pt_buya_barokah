@@ -139,47 +139,37 @@ export default function PaperbagMasterParameter({
 
   return (
     <div className="flex flex-col gap-4 pb-8">
-      {/* Header Bar */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
-            <ShoppingBag className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
-                Master Parameter Paperbag (Tas Kertas)
-              </h2>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300">
-                Pricelist 29
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Konfigurasi tarif kertas Art Carton 230g, cetak offset (Oliver & SM), pisau pond, double tape, tali kur, lipat, dan packing
-            </p>
-          </div>
+      {/* Sticky Action Bar */}
+      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1.5 flex items-center justify-between gap-3 border-b border-slate-200/80 -mt-1 mb-1">
+        <div className="flex items-center gap-2">
+          <Database className="w-4 h-4 text-emerald-700" />
+          <h2 className="text-xs font-black text-slate-800 uppercase tracking-wider">
+            Master Parameter Paperbag (Tas Kertas)
+          </h2>
+          {isModified && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
+              Dimodifikasi
+            </span>
+          )}
         </div>
-
-        <div className="flex items-center gap-2 self-end md:self-auto">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setShowManualModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 transition-all cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all cursor-pointer shadow-2xs"
           >
-            <HelpCircle size={14} />
-            <span>Panduan Rumus</span>
+            <HelpCircle size={13} />
+            <span>Panduan</span>
           </button>
-          <button
-            onClick={handleReset}
-            disabled={!isModified}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              isModified
-                ? 'bg-amber-600 text-white hover:bg-amber-700 cursor-pointer shadow-2xs'
-                : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-70'
-            }`}
-          >
-            <RotateCcw size={13} />
-            <span>Reset Standar</span>
-          </button>
+          {isModified && (
+            <button
+              onClick={handleReset}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs cursor-pointer"
+            >
+              <RotateCcw size={13} />
+              <span>Reset Standar</span>
+            </button>
+          )}
         </div>
       </div>
 
