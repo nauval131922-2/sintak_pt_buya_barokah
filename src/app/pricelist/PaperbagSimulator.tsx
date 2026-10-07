@@ -19,6 +19,9 @@ import {
   Scissors,
   Wrench,
   Package,
+  TrendingUp,
+  Sliders,
+  DollarSign,
 } from 'lucide-react';
 import {
   PaperbagUkuran,
@@ -192,8 +195,21 @@ export default function PaperbagSimulator({
     setTimeout(() => setCopiedQuote(false), 2500);
   };
 
+  const optBtn = (active: boolean) =>
+    `py-2 px-2.5 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
+      active
+        ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400'
+        : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
+    }`;
+
+  const stepChip = (n: number | string) => (
+    <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-emerald-700 text-white text-[10px] font-black shrink-0">
+      {n}
+    </span>
+  );
+
   return (
-    <div className="flex flex-col gap-5 pb-10">
+    <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
       {/* Header Info */}
       <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -233,88 +249,6 @@ export default function PaperbagSimulator({
         </div>
       </div>
 
-      {/* 4 Kartu Hasil Finansial */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-        {/* Card 1: HPP / pcs */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between text-slate-500 mb-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider">HPP / pcs</span>
-              <span className="p-1 rounded-md bg-slate-100 text-slate-600">
-                <Calculator size={14} />
-              </span>
-            </div>
-            <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-              Rp {Math.round(result.hppPerPcs).toLocaleString('id-ID')}
-            </div>
-          </div>
-          <div className="mt-2 pt-2 border-t border-slate-100 text-[11px] text-slate-500 flex justify-between">
-            <span>Total HPP:</span>
-            <span className="font-semibold text-slate-700">
-              Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
-            </span>
-          </div>
-        </div>
-
-        {/* Card 2: Harga Jual / pcs */}
-        <div className="bg-emerald-900 text-white rounded-2xl p-4 border border-emerald-800 shadow-xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between text-emerald-200 mb-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider">Harga Jual / pcs</span>
-              <span className="p-1 rounded-md bg-emerald-800/80 text-emerald-300">
-                <Sparkles size={14} />
-              </span>
-            </div>
-            <div className="text-xl sm:text-2xl font-black text-emerald-300 tracking-tight">
-              Rp {result.hargaJualPerPcs.toLocaleString('id-ID')}
-            </div>
-          </div>
-          <div className="mt-2 pt-2 border-t border-emerald-800/80 text-[11px] text-emerald-200 flex justify-between">
-            <span>Margin Profit:</span>
-            <span className="font-bold text-emerald-300">{marginPct}%</span>
-          </div>
-        </div>
-
-        {/* Card 3: Harga Nego / pcs */}
-        <div className="bg-white rounded-2xl p-4 border border-amber-200/80 bg-amber-50/20 shadow-2xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between text-amber-800 mb-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider">Harga Nego / pcs</span>
-              <span className="p-1 rounded-md bg-amber-100 text-amber-800">
-                <Info size={14} />
-              </span>
-            </div>
-            <div className="text-xl sm:text-2xl font-black text-amber-950 tracking-tight">
-              Rp {result.negoPerPcs.toLocaleString('id-ID')}
-            </div>
-          </div>
-          <div className="mt-2 pt-2 border-t border-amber-100 text-[11px] text-amber-800 flex justify-between">
-            <span>Batas Diskon:</span>
-            <span className="font-semibold text-amber-900">{negoDiskonPct}%</span>
-          </div>
-        </div>
-
-        {/* Card 4: Harga Total */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between text-slate-500 mb-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider">Harga Total</span>
-              <span className="p-1 rounded-md bg-slate-100 text-emerald-600">
-                <TrendingUp size={14} />
-              </span>
-            </div>
-            <div className="text-xl sm:text-2xl font-black text-emerald-950 tracking-tight">
-              Rp {result.totalHargaJual.toLocaleString('id-ID')}
-            </div>
-          </div>
-          <div className="mt-2 pt-2 border-t border-slate-100 text-[11px] text-slate-500 flex justify-between">
-            <span>Profit:</span>
-            <span className="font-semibold text-slate-700">
-              Rp {Math.max(0, result.totalHargaJual - result.totalHpp).toLocaleString('id-ID')}
-            </span>
-          </div>
-        </div>
-      </div>
 
       {/* Main Grid: Form Input & Breakdown Table */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
@@ -330,8 +264,8 @@ export default function PaperbagSimulator({
 
             {/* 1. Ukuran Paperbag */}
             <div>
-              <label className="text-xs font-bold text-slate-700 mb-1.5 block">
-                1. Ukuran Paperbag (Tas Kertas)
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(1)} Ukuran Paperbag (Tas Kertas)
               </label>
               <div className="flex flex-col gap-2">
                 {PAPERBAG_UKURAN_OPTIONS.map((opt) => {
@@ -374,8 +308,8 @@ export default function PaperbagSimulator({
 
             {/* 2. Bahan Kertas & Finishing */}
             <div>
-              <label className="text-xs font-bold text-slate-700 mb-1.5 block">
-                2. Finishing Tambahan (Opsional)
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(2)} Finishing Tambahan (Opsional)
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {PAPERBAG_FINISHING_OPTIONS.map((opt) => (
@@ -398,8 +332,8 @@ export default function PaperbagSimulator({
             {/* 3. Pilihan Kuantitas (Oplah) */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold text-slate-700">
-                  3. Kuantitas Pesanan (Pcs)
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  {stepChip(3)} Kuantitas Pesanan (Pcs)
                 </label>
                 <span className="text-[10px] text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
                   {result.prosesCetak}
@@ -449,8 +383,8 @@ export default function PaperbagSimulator({
             {/* 4. Margin Profit & Batas Nego */}
             <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
               <div>
-                <label className="text-xs font-bold text-slate-700 mb-1 block">
-                  Margin Profit (%)
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                  {stepChip(4)} Margin Profit (%)
                 </label>
                 <div className="relative">
                   <input
@@ -466,8 +400,8 @@ export default function PaperbagSimulator({
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 mb-1 block">
-                  Batas Nego (%)
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                  {stepChip(4)} Batas Nego (%)
                 </label>
                 <div className="relative">
                   <input
@@ -488,6 +422,59 @@ export default function PaperbagSimulator({
 
         {/* Kolom Kanan: Rincian HPP (7 Kolom di LG) */}
         <div className="lg:col-span-7 flex flex-col gap-4">
+          {/* Sticky 3-Kartu Metrik Ringkasan Finansial Baku */}
+          <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
+            <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
+              {stepChip(6)} Kalkulasi Total
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {/* Card 1: HPP Per Pcs */}
+              <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-500 mb-1">
+                  <span className="text-[11px] font-semibold">HPP Per Pcs</span>
+                  <DollarSign size={13} className="text-slate-400" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-slate-800 font-mono">
+                    Rp {Math.round(result.hppPerPcs).toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-slate-400 mt-0.5">
+                    Total HPP: Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
+                  </span>
+                </div>
+              </div>
+
+              {/* Card 2: Harga Per Pcs */}
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-emerald-800 mb-1">
+                  <span className="text-[11px] font-bold">Harga Per Pcs (+{marginPct}%)</span>
+                  <TrendingUp size={13} className="text-emerald-600" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
+                    Rp {result.hargaJualPerPcs.toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-emerald-700/80 mt-0.5">Laba {marginPct}%</span>
+                </div>
+              </div>
+
+              {/* Card 3: Harga Total */}
+              <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-500 mb-1">
+                  <span className="text-[11px] font-semibold">Harga Total</span>
+                  <TrendingUp size={13} className="text-emerald-500" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">
+                    Rp {result.totalHargaJual.toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-slate-500 mt-0.5">
+                    Profit: Rp {Math.max(0, result.totalHargaJual - result.totalHpp).toLocaleString('id-ID')}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
           <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs flex flex-col">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
               <div className="flex items-center gap-2">

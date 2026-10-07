@@ -19,6 +19,7 @@ import {
   DollarSign,
   FileText,
   Image as ImageIcon,
+  Sliders,
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
 import ThousandInput from '@/components/ThousandInput';

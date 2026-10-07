@@ -19,6 +19,8 @@ import {
   Scissors,
   Newspaper,
   Sliders,
+  DollarSign,
+  TrendingUp,
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
 import ThousandInput from '@/components/ThousandInput';
@@ -238,8 +240,8 @@ export default function MajalahSimulator({
   const optBtn = (active: boolean) =>
     `py-2 px-2.5 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
       active
-        ? 'border-emerald-700 bg-emerald-50 text-emerald-900 shadow-2xs ring-1 ring-emerald-500/30'
-        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+        ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400'
+        : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
     }`;
 
   const stepChip = (n: number) => (
@@ -532,63 +534,49 @@ export default function MajalahSimulator({
           </div>
         </div>
 
-        {/* Kolom Kanan: 4 Kartu Finansial + Breakdown + Tombol Simpan Full-Width */}
+        {/* Kolom Kanan: 3 Kartu Finansial Baku + Breakdown + Tombol Simpan Full-Width */}
         <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
-            {/* 4 Kartu Finansial */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
+              {stepChip(6)} Kalkulasi Total
+            </p>
+            {/* 3 Kartu Finansial Baku */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between text-slate-500 mb-1">
-                  <span className="text-[11px] font-semibold">HPP / pcs</span>
-                  <Calculator size={13} className="text-slate-400" />
+                  <span className="text-[11px] font-semibold">HPP Per Pcs</span>
+                  <DollarSign size={13} className="text-slate-400" />
                 </div>
                 <div>
-                  <span className="text-base sm:text-lg font-black text-slate-800">
+                  <span className="text-base sm:text-lg font-black text-slate-800 font-mono">
                     Rp {Math.round(result.hppPerPcs).toLocaleString('id-ID')}
                   </span>
                   <span className="block text-[10px] text-slate-400 mt-0.5">
-                    Total: Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
+                    Total HPP: Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
                   </span>
                 </div>
               </div>
 
-              <div className="bg-emerald-50/80 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between text-emerald-800 mb-1">
-                  <span className="text-[11px] font-bold">Harga Jual / pcs</span>
-                  <Sparkles size={13} className="text-emerald-600" />
+                  <span className="text-[11px] font-bold">Harga Per Pcs (+{marginPct}%)</span>
+                  <TrendingUp size={13} className="text-emerald-600" />
                 </div>
                 <div>
-                  <span className="text-base sm:text-lg font-black text-emerald-900">
+                  <span className="text-base sm:text-lg font-black text-emerald-800 font-mono">
                     Rp {result.hargaJualPerPcs.toLocaleString('id-ID')}
                   </span>
-                  <span className="block text-[10px] text-emerald-700 mt-0.5">
-                    Margin: {marginPct}%
-                  </span>
-                </div>
-              </div>
-
-              <div className="bg-blue-50/80 rounded-xl border border-blue-200 p-3.5 shadow-xs flex flex-col justify-between">
-                <div className="flex items-center justify-between text-blue-800 mb-1">
-                  <span className="text-[11px] font-bold">Harga Nego / pcs</span>
-                  <Info size={13} className="text-blue-600" />
-                </div>
-                <div>
-                  <span className="text-base sm:text-lg font-black text-blue-900">
-                    Rp {result.negoPerPcs.toLocaleString('id-ID')}
-                  </span>
-                  <span className="block text-[10px] text-blue-700 mt-0.5">
-                    Diskon: {negoDiskonPct}%
-                  </span>
+                  <span className="block text-[10px] text-emerald-700/80 mt-0.5">Laba {marginPct}%</span>
                 </div>
               </div>
 
               <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between text-slate-500 mb-1">
                   <span className="text-[11px] font-semibold">Harga Total</span>
-                  <Layers size={13} className="text-slate-400" />
+                  <TrendingUp size={13} className="text-emerald-500" />
                 </div>
                 <div>
-                  <span className="text-base sm:text-lg font-black text-slate-800">
+                  <span className="text-base sm:text-lg font-black text-emerald-700 font-mono">
                     Rp {result.totalHargaJual.toLocaleString('id-ID')}
                   </span>
                   <span className="block text-[10px] text-slate-500 mt-0.5">

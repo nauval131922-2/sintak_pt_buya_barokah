@@ -278,9 +278,15 @@ export default function SertifikatSimulator({
 
   const specButton = (active: boolean) => `py-2 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
     active
-      ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
-      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+      ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400'
+      : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
   }`;
+
+  const stepChip = (n: number | string) => (
+    <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-emerald-700 text-white text-[10px] font-black shrink-0">
+      {n}
+    </span>
+  );
 
   return (
     <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
@@ -530,7 +536,7 @@ export default function SertifikatSimulator({
           {/* 3 Kartu Finansial Baku */}
           <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
             <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
-              Kalkulasi Total
+              {stepChip(6)} Kalkulasi Total
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
