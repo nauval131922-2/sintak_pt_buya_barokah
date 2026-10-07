@@ -17,7 +17,7 @@ import {
   PosterMasterParams,
   DEFAULT_POSTER_PARAMS,
 } from '@/lib/poster-calculator';
-import { ThousandInput } from '@/components/ThousandInput';
+import ThousandInput from '@/components/ThousandInput';
 import { toast } from '@/lib/toast';
 
 interface PosterMasterParameterProps {

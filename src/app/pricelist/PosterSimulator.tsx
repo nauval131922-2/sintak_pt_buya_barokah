@@ -20,7 +20,7 @@ import {
   Image as ImageIcon,
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
-import { ThousandInput } from '@/components/ThousandInput';
+import ThousandInput from '@/components/ThousandInput';
 import {
   PosterMasterParams,
   PosterUkuran,
