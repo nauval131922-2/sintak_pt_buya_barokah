@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { requireApiPermission } from "@/lib/api-guard";
 
 export async function GET(req: NextRequest) {
+  // Guard: samakan dengan halaman (permission catat_kesalahan)
+  const gate = await requireApiPermission('catat_kesalahan');
+  if (gate.error) return gate.error;
   try {
     const { searchParams } = new URL(req.url);
     const dateQuery = searchParams.get('date');

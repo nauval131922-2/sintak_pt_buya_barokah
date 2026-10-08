@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 export const dynamic = 'force-dynamic';
 import db from "@/lib/db";
+import { requireApiPermission } from "@/lib/api-guard";
 
 export async function GET(request: NextRequest) {
+  // Guard: samakan dengan halaman (permission sync)
+  const gate = await requireApiPermission('sync');
+  if (gate.error) return gate.error;
   try {
     const res = await db.execute("SELECT key, value FROM system_settings WHERE key LIKE 'last_scrape_%'");
     

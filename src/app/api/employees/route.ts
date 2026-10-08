@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
+import { getSession } from '@/lib/session';
 
 export async function GET(request: NextRequest) {
+  // Guard: dipakai lintas modul (JurnalClient produksi + halaman karyawan) — session-only agar tak pecah
+  const session = await getSession();
+  if (!session?.userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get("search")?.trim();

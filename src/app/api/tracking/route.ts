@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
+import { requireApiPermission } from "@/lib/api-guard";
 
 export const dynamic = 'force-dynamic';
 
@@ -10,6 +11,9 @@ function cleanFaktur(v: unknown): string {
 }
 
 export async function GET(request: NextRequest) {
+  // Guard: samakan dengan halaman (permission tracking_manufaktur)
+  const gate = await requireApiPermission('tracking_manufaktur');
+  if (gate.error) return gate.error;
   try {
     const searchParams = request.nextUrl.searchParams;
     const fakturBom = searchParams.get("faktur");

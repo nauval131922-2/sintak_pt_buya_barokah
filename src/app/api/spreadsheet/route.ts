@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSession } from '@/lib/session';
 import { getSpreadsheetTasks } from "@/lib/google-sheets";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
+  // Guard: rute yatim tanpa konsumen jelas — minimal session login
+  const session = await getSession();
+  if (!session?.userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const { searchParams } = new URL(request.url);
     const gid = searchParams.get("gid") || "DATABASE_REPORT";
