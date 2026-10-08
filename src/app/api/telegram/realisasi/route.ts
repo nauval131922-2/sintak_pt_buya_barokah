@@ -15,9 +15,10 @@ const cleanNumberOrText = (val: any) => {
 
 export async function POST(req: NextRequest) {
   try {
-    // Auth check
-    const apiKey = req.headers.get('X-API-Key');
-    if (apiKey !== process.env.SCRAPER_API_KEY) {
+    // Auth check — fail-closed bila env belum diset (pola sama seperti check-status)
+    const apiKey = req.headers.get('X-API-Key') || req.headers.get('x-api-key');
+    const expected = process.env.SCRAPER_API_KEY;
+    if (!expected || !apiKey || apiKey !== expected) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
