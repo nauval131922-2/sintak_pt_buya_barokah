@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { requireApiPermission } from "@/lib/api-guard";
 
 export const dynamic = 'force-dynamic';
 
@@ -23,6 +24,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'startDate dan endDate wajib diisi' }, { status: 400 });
   }
 
+  // Guard: samakan dengan halaman (permission produksi_jhp)
+  const gate = await requireApiPermission('produksi_jhp');
+  if (gate.error) return gate.error;
   try {
     const bagianClause = bagian ? `AND UPPER(e.department) = UPPER(?)` : '';
 

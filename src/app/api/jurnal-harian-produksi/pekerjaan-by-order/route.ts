@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { requireApiPermission } from "@/lib/api-guard";
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +14,9 @@ const cleanNumberOrText = (val: any) => {
 };
 
 export async function GET(request: NextRequest) {
+  // Guard: samakan dengan halaman (permission produksi_jhp)
+  const gate = await requireApiPermission('produksi_jhp');
+  if (gate.error) return gate.error;
   try {
     const searchParams = request.nextUrl.searchParams;
     const noOrder = searchParams.get('noOrder');

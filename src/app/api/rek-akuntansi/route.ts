@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
+import { requireApiPermission } from "@/lib/api-guard";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
+  // Guard: samakan dengan halaman (permission akt_mrek)
+  const gate = await requireApiPermission('akt_mrek');
+  if (gate.error) return gate.error;
   try {
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get('page') || '1', 10);

@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { requireApiPermission } from "@/lib/api-guard";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  // Guard: samakan dengan halaman (permission produksi_jhp_analisa)
+  const gate = await requireApiPermission('produksi_jhp_analisa');
+  if (gate.error) return gate.error;
   try {
     const searchParams = request.nextUrl.searchParams;
     const q = searchParams.get('q');

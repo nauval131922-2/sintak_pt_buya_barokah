@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { requireApiPermission } from "@/lib/api-guard";
 
 export const dynamic = 'force-dynamic';
 
@@ -7,6 +8,9 @@ const cache = new Map<string, { data: unknown; expiry: number }>();
 const CACHE_TTL = 600_000; // ponytail: 10 mnt — mapping GROUP BY 180rb baris (~282ms), options jarang berubah
 
 export async function GET() {
+  // Guard: samakan dengan halaman (permission produksi_jhp)
+  const gate = await requireApiPermission('produksi_jhp');
+  if (gate.error) return gate.error;
   try {
     const cacheKey = 'jurnal-options';
     const now = Date.now();

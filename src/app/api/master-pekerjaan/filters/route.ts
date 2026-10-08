@@ -1,8 +1,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { requireApiPermission } from "@/lib/api-guard";
 
 export async function GET(request: NextRequest) {
+  // Guard: samakan dengan halaman (permission produksi_jhp_master_pekerjaan)
+  const gate = await requireApiPermission('produksi_jhp_master_pekerjaan');
+  if (gate.error) return gate.error;
   try {
     const category = request.nextUrl.searchParams.get('category') || '';
     const subCategory = request.nextUrl.searchParams.get('sub_category') || '';

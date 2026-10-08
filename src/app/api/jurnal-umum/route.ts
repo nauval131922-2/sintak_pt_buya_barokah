@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { requireApiPermission } from "@/lib/api-guard";
 import { getScrapedPeriodSettingKey, parseScrapedPeriod } from '@/lib/server-scraped-period';
 import { JURNAL_UMUM_COLS, ensureJurnalUmumSchema } from '@/lib/jurnal-umum-schema';
 import type { JurnalUmumExecutor } from '@/lib/jurnal-umum-schema';
@@ -68,6 +69,9 @@ function getParentOrderBy(sortParam: string | null): string {
   return mapped.join(', ');
 }
 export async function GET(req: NextRequest) {
+  // Guard: samakan dengan halaman (permission akt_jurnal_umum)
+  const gate = await requireApiPermission('akt_jurnal_umum');
+  if (gate.error) return gate.error;
   try {
     await ensureTable();
 

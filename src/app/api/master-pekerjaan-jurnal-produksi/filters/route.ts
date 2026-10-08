@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { requireApiPermission } from "@/lib/api-guard";
 
 export async function GET() {
+  // Guard: samakan dengan halaman (permission produksi_jhp_master_pekerjaan_jurnal_produksi)
+  const gate = await requireApiPermission('produksi_jhp_master_pekerjaan_jurnal_produksi');
+  if (gate.error) return gate.error;
   try {
     const result = await db.execute(
       `SELECT DISTINCT category FROM master_pekerjaan_jurnal_produksi 
