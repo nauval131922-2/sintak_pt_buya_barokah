@@ -10,6 +10,7 @@ import {
   Layers,
   CreditCard,
   Package,
+  Search,
 } from 'lucide-react';
 import {
   DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS,
@@ -22,6 +23,79 @@ interface KartuKoperasiPromiseMasterParameterProps {
   customParams: KartuKoperasiPromiseMasterParams;
   setCustomParams: React.Dispatch<React.SetStateAction<KartuKoperasiPromiseMasterParams>>;
 }
+
+interface FieldDef {
+  key: keyof KartuKoperasiPromiseMasterParams;
+  label: string;
+  opts?: {
+    rupiah?: boolean;
+    decimal?: boolean;
+    suffix?: string;
+  };
+}
+
+interface GroupDef {
+  title: string;
+  border: string;
+  labelCls: string;
+  fields: FieldDef[];
+}
+
+const KARTU_KOPERASI_PROMISE_GROUPS: GroupDef[] = [
+  {
+    title: '1. Kertas & Desain',
+    border: 'border-blue-300',
+    labelCls: 'text-blue-800',
+    fields: [
+      { key: 'tarifKertasKg', label: 'Kertas / kg (Rp)' },
+      { key: 'upKertasPct', label: 'Up Kertas (%)', opts: { rupiah: false, suffix: '%' } },
+      { key: 'gramaturGsm', label: 'Gramatur (gsm)', opts: { rupiah: false } },
+      { key: 'insheet', label: 'Insheet (lbr)', opts: { rupiah: false } },
+      { key: 'koefInsheet', label: 'Koef. Insheet', opts: { rupiah: false, decimal: true } },
+      { key: 'tarifDesign', label: 'Desain / Order (Rp)' },
+      { key: 'tarifPrintA3Plus', label: 'Print A3+ (Rp)' },
+    ],
+  },
+  {
+    title: '2. Plate, Cetak & Jasa',
+    border: 'border-sky-300',
+    labelCls: 'text-sky-800',
+    fields: [
+      { key: 'tarifPlatePerPlat', label: 'Plate / Plat (Rp)' },
+      { key: 'tarifCetakMinPerPlat', label: 'Min Cetak / Plat (Rp)' },
+      { key: 'tarifRoyaltyPerPcs', label: 'Royalty / pcs (Rp)' },
+      { key: 'biayaTransport', label: 'Transport / order (Rp)' },
+      { key: 'biayaLain', label: 'Biaya Lain-Lain (Rp)' },
+    ],
+  },
+  {
+    title: '3. Finishing Pound, Sisir & Laminasi',
+    border: 'border-violet-300',
+    labelCls: 'text-violet-800',
+    fields: [
+      { key: 'umr', label: 'UMR (Rp)' },
+      { key: 'tarifPisauPerCm2', label: 'Pisau / cm² (Rp)', opts: { decimal: true } },
+      { key: 'tarifSisirPer500', label: 'Sisir / 500 unit (Rp)' },
+      { key: 'minPound', label: 'Min Pound (Rp)' },
+      { key: 'tarifLaminasiGlossy', label: 'Laminasi Glossy / cm²', opts: { decimal: true } },
+      { key: 'tarifLaminasiDoff', label: 'Laminasi Doff / cm²', opts: { decimal: true } },
+      { key: 'tarifUvVarnish', label: 'UV Varnish / cm²', opts: { decimal: true } },
+      { key: 'minFinishing', label: 'Floor Finishing (Rp)' },
+    ],
+  },
+  {
+    title: '4. Packing & Margin',
+    border: 'border-amber-300',
+    labelCls: 'text-amber-800',
+    fields: [
+      { key: 'tarifKardusBox', label: 'Kardus / box (Rp)' },
+      { key: 'tarifLakbanRoll', label: 'Lakban / roll (Rp)' },
+      { key: 'lakbanUkuranRoll', label: 'Ukuran Lakban / Roll', opts: { rupiah: false } },
+      { key: 'kardusIsiPcs', label: 'Isi Kardus (pcs)', opts: { rupiah: false } },
+      { key: 'marginDefaultPct', label: 'Margin Default (%)', opts: { rupiah: false, suffix: '%' } },
+    ],
+  },
+];
 
 const KARTU_KOPERASI_PROMISE_VISIBLE_KEYS: (keyof KartuKoperasiPromiseMasterParams)[] = [
   'umr',
@@ -55,6 +129,7 @@ export default function KartuKoperasiPromiseMasterParameter({
   customParams,
   setCustomParams,
 }: KartuKoperasiPromiseMasterParameterProps) {
+  const [q, setQ] = useState('');
   const [showManualModal, setShowManualModal] = useState(false);
 
   const handleChange = (key: keyof KartuKoperasiPromiseMasterParams, val: number) => {
@@ -78,172 +153,189 @@ export default function KartuKoperasiPromiseMasterParameter({
     setCustomParams((prev) => {
       const resetObj = { ...prev };
       KARTU_KOPERASI_PROMISE_VISIBLE_KEYS.forEach((k) => {
-        (resetObj as any)[k] = DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS[k];
+        (resetObj as Record<string, unknown>)[k] = DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS[k];
       });
       return resetObj;
     });
     toast.success('Semua parameter Kartu Koperasi Promise dikembalikan ke standar master.');
   };
 
-  const fieldRow = (
-    key: keyof KartuKoperasiPromiseMasterParams,
-    label: string,
-    opts?: { rupiah?: boolean; decimal?: boolean; suffix?: string }
-  ) => {
-    const isRupiah = opts?.rupiah ?? true;
-    const isDecimal = opts?.decimal ?? false;
+  const fmtStd = (f: FieldDef) => {
+    const def = DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS[f.key];
+    if (f.opts?.suffix === '%') return `${def}%`;
+    if (f.opts?.rupiah === false && !f.opts?.decimal) return Number(def).toLocaleString('id-ID');
+    if (f.opts?.rupiah === false) return String(def);
+    return `Rp ${Number(def).toLocaleString('id-ID')}`;
+  };
+
+  const matchQ = (label: string) =>
+    q.trim() === '' || label.toLowerCase().includes(q.trim().toLowerCase());
+
+  const fieldRow = (f: FieldDef) => {
+    const key = f.key;
+    const isRupiah = f.opts?.rupiah ?? true;
+    const isDecimal = f.opts?.decimal ?? false;
+    const modified = isFieldModified(key);
+    const val = customParams[key] ?? DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS[key];
+
     return (
       <div
+        key={key}
         className={`p-2.5 rounded-lg border transition-all ${
-          isFieldModified(key)
+          modified
             ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
             : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
         }`}
       >
         <div className="flex items-center justify-between gap-1 mb-1.5">
-          <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
-            {label}
+          <label className="text-xs font-semibold text-slate-700 truncate" title={f.label}>
+            {f.label}
           </label>
-          {isFieldModified(key) && (
-            <button
-              type="button"
-              onClick={() => handleResetField(key)}
-              className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-              title="Reset ke default"
-            >
-              <RotateCcw className="w-2.5 h-2.5" /> Def
-            </button>
-          )}
+          <div className="flex items-center gap-1 shrink-0">
+            {modified && (
+              <button
+                type="button"
+                onClick={() => handleResetField(key)}
+                className="text-amber-700 hover:text-amber-900 flex items-center bg-amber-100/80 p-1 rounded cursor-pointer shrink-0"
+                title="Reset ke standar master"
+              >
+                <RotateCcw className="w-3 h-3" />
+              </button>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-1.5">
           <ThousandInput
-            value={customParams[key] ?? DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS[key]}
+            value={val}
             onValueChange={(v) => handleChange(key, v || 0)}
             className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
             prefix={isRupiah ? 'Rp' : undefined}
-            suffix={opts?.suffix}
+            suffix={f.opts?.suffix}
             allowDecimals={isDecimal}
           />
         </div>
+        {modified && (
+          <p className="text-[10px] text-slate-500 mt-1">Master: {fmtStd(f)}</p>
+        )}
       </div>
     );
   };
 
+  const subGroup = (g: GroupDef) => {
+    const visible = g.fields.filter((f) => matchQ(f.label));
+    if (visible.length === 0) return null;
+    return (
+      <div key={g.title} className={`rounded-lg border ${g.border} bg-white/70 p-2.5 space-y-2`}>
+        <span className={`block text-[10px] font-black uppercase tracking-wider ${g.labelCls}`}>{g.title}</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">{visible.map(fieldRow)}</div>
+      </div>
+    );
+  };
+
+  const cardShell = (cls: string, header: React.ReactNode, groups: GroupDef[], note?: React.ReactNode) => {
+    const hasVisible = groups.some((g) => g.fields.some((f) => matchQ(f.label)));
+    if (!hasVisible) return null;
+    return (
+      <div className={`${cls} rounded-xl border p-4 shadow-2xs flex flex-col gap-3 break-inside-avoid mb-4`}>
+        {header}
+        <div className="flex flex-col gap-2.5">{groups.map(subGroup)}</div>
+        {note}
+      </div>
+    );
+  };
+
+  const cardHeader = (badgeCls: string, badge: string, Icon: React.ComponentType<{ className?: string }>, iconCls: string, title: string) => (
+    <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+      <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${badgeCls}`}>{badge}</span>
+      <Icon className={`w-4 h-4 ${iconCls}`} />
+      <h3 className="text-xs font-bold text-slate-800">{title}</h3>
+    </div>
+  );
+
   return (
-    <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
-      {/* Sticky Action Bar */}
-      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1.5 flex items-center justify-between gap-3 border-b border-slate-200/80 -mt-1 mb-1">
-        <div className="flex items-center gap-2">
-          <Database className="w-4 h-4 text-emerald-700" />
-          <h2 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-            Master Parameter Kartu Koperasi Promise
-          </h2>
-          {isModified && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
-              Dimodifikasi
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowManualModal(true)}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all cursor-pointer shadow-2xs"
-          >
-            <BookOpen size={13} />
-            <span>Panduan</span>
-          </button>
-          {isModified && (
+    <div className="flex flex-col gap-4 pb-8 overflow-y-auto">
+      {/* Sticky Search Bar & Actions */}
+      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1 flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Cari nama parameter ..."
+            className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs font-medium"
+          />
+          {q && (
             <button
               type="button"
-              onClick={handleResetAll}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs cursor-pointer"
+              onClick={() => setQ('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
             >
-              <RotateCcw size={13} />
-              <span>Reset Standar</span>
+              <X size={13} />
             </button>
           )}
         </div>
+        <button
+          type="button"
+          onClick={() => setShowManualModal(true)}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition cursor-pointer shrink-0"
+        >
+          <BookOpen size={14} className="text-slate-500" />
+          <span>Panduan & Rumus</span>
+        </button>
+        {isModified && (
+          <button
+            type="button"
+            onClick={handleResetAll}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs transition cursor-pointer shrink-0"
+          >
+            <RotateCcw size={14} />
+            <span>Reset Semua</span>
+          </button>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Grid 2 Kolom Seimbang */}
+      <div className="columns-1 md:columns-2 gap-4">
         {/* Card 1: Kertas & Desain */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Printer className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">1. Kertas &amp; Desain</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifKertasKg', 'Kertas / kg (Rp)')}
-            {fieldRow('upKertasPct', 'Up Kertas (%)', { rupiah: false, suffix: '%' })}
-            {fieldRow('gramaturGsm', 'Gramatur (gsm)', { rupiah: false })}
-            {fieldRow('insheet', 'Insheet (lbr)', { rupiah: false })}
-            {fieldRow('koefInsheet', 'Koef. Insheet', { rupiah: false, decimal: true })}
-            {fieldRow('tarifDesign', 'Desain / Order (Rp)')}
-            {fieldRow('tarifPrintA3Plus', 'Print A3+ (Rp)')}
-          </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('bg-blue-100 text-blue-800', 'Kertas & Desain', Printer, 'text-blue-600', '1. Kertas & Desain'),
+          [KARTU_KOPERASI_PROMISE_GROUPS[0]],
           <p className="text-[10px] text-slate-500">
             Default file: kertas Rp 34.800 +5% &amp; desain Rp 15.000 (varian 10,5) vs Rp 33.000 +0% &amp; tanpa desain (12,7×16,3) — simulator otomatis memakai bawaan tiap file kecuali field diubah manual.
           </p>
-        </div>
+        )}
 
         {/* Card 2: Cetak */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <CreditCard className="w-4 h-4 text-sky-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Plate, Cetak &amp; Jasa</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifPlatePerPlat', 'Plate / Plat (Rp)')}
-            {fieldRow('tarifCetakMinPerPlat', 'Min Cetak / Plat (Rp)')}
-            {fieldRow('tarifRoyaltyPerPcs', 'Royalty / pcs (Rp)')}
-            {fieldRow('biayaTransport', 'Transport / order (Rp)')}
-            {fieldRow('biayaLain', 'Biaya Lain-Lain (Rp)')}
-          </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('bg-sky-100 text-sky-800', 'Plate & Cetak', CreditCard, 'text-sky-600', '2. Plate, Cetak & Jasa'),
+          [KARTU_KOPERASI_PROMISE_GROUPS[1]],
           <p className="text-[10px] text-slate-500">
             Plate Rp 10.000 &amp; min cetak Rp 15.000 per plat hanya untuk Ryobi (Print Inter = Rp 0). Jumlah plat = warna × muka (12,7 override 1 plat). Drek over: Rp 40 (10,5) / Rp 30 (12,7).
           </p>
-        </div>
+        )}
 
         {/* Card 3: Finishing */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Layers className="w-4 h-4 text-violet-600" />
-            <h3 className="text-xs font-bold text-slate-800">3. Finishing Pound, Sisir &amp; Laminasi</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('umr', 'UMR (Rp)')}
-            {fieldRow('tarifPisauPerCm2', 'Pisau / cm² (Rp)', { decimal: true })}
-            {fieldRow('tarifSisirPer500', 'Sisir / 500 unit (Rp)')}
-            {fieldRow('minPound', 'Min Pound (Rp)')}
-            {fieldRow('tarifLaminasiGlossy', 'Laminasi Glossy / cm²', { decimal: true })}
-            {fieldRow('tarifLaminasiDoff', 'Laminasi Doff / cm²', { decimal: true })}
-            {fieldRow('tarifUvVarnish', 'UV Varnish / cm²', { decimal: true })}
-            {fieldRow('minFinishing', 'Floor Finishing (Rp)')}
-          </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('bg-violet-100 text-violet-800', 'Finishing', Layers, 'text-violet-600', '3. Finishing Pound, Sisir & Laminasi'),
+          [KARTU_KOPERASI_PROMISE_GROUPS[2]],
           <p className="text-[10px] text-slate-500">
             Pound = (UMR/25)/target (target 800 utk 10,5 / 1.200 utk 12,7), min Rp 50.000. Laminasi/UV = luas×rate×oplah, floor Rp 50.000, aktif sesuai pilihan finishing.
           </p>
-        </div>
+        )}
 
         {/* Card 4: Packing & Margin */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Package className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">4. Packing &amp; Margin</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifKardusBox', 'Kardus / box (Rp)')}
-            {fieldRow('tarifLakbanRoll', 'Lakban / roll (Rp)')}
-            {fieldRow('lakbanUkuranRoll', 'Ukuran Lakban / Roll', { rupiah: false })}
-            {fieldRow('kardusIsiPcs', 'Isi Kardus (pcs)', { rupiah: false })}
-            {fieldRow('marginDefaultPct', 'Margin Default (%)', { rupiah: false, suffix: '%' })}
-          </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('bg-amber-100 text-amber-800', 'Packing & Margin', Package, 'text-amber-600', '4. Packing & Margin'),
+          [KARTU_KOPERASI_PROMISE_GROUPS[3]],
           <p className="text-[10px] text-slate-500">
             Kardus CEIL(oplah/3000)×Rp 8.500 + lakban (oplah/3000)/(7650/196)×Rp 8.000. Margin 30% dari HPP, harga dibulatkan ke puluhan (Excel tidak punya kolom nego — nego dihapus).
           </p>
-        </div>
+        )}
       </div>
 
       {showManualModal && (

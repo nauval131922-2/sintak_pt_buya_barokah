@@ -10,6 +10,7 @@ import {
   Layers,
   Package,
   Info,
+  Search,
 } from 'lucide-react';
 import {
   DEFAULT_UNDANGAN_PARAMS,
@@ -25,43 +26,86 @@ interface UndanganMasterParameterProps {
   setCustomParams: React.Dispatch<React.SetStateAction<UndanganMasterParams>>;
 }
 
-type NumKey = {
-  [K in keyof UndanganMasterParams]: UndanganMasterParams[K] extends number ? K : never;
-}[keyof UndanganMasterParams];
+interface FieldDef {
+  key: keyof UndanganMasterParams;
+  label: string;
+  opts?: {
+    rupiah?: boolean;
+    decimal?: boolean;
+    suffix?: string;
+  };
+}
 
-const UNDANGAN_VISIBLE_KEYS: NumKey[] = [
-  'hargaPerKg',
-  'upOffsetPct',
-  'upPrintPct',
-  'gramatur',
-  'insheetOliver',
-  'insheetPrint',
-  'desain',
-  'tarifPrintA3',
-  'tarifLakbanRoll',
-  'tarifPlastikOpp',
-  'tarifLabel',
-  'royaltyPerPcs',
-  'transportOliver',
-  'transportPrint',
-  'tarifPrintLabel',
-  'tarifSisirBase',
-  'tarifLamGlossy',
-  'tarifLamDoff',
-  'tarifUv',
-  'tarifKardusBox',
-  'labaPct',
+interface GroupDef {
+  title: string;
+  border: string;
+  labelCls: string;
+  fields: FieldDef[];
+}
+
+const UNDANGAN_GROUPS: GroupDef[] = [
+  {
+    title: '1. Bahan & Kertas',
+    border: 'border-emerald-300',
+    labelCls: 'text-emerald-800',
+    fields: [
+      { key: 'hargaPerKg', label: 'Harga / kg (Rp)' },
+      { key: 'gramatur', label: 'Gramatur (gsm)', opts: { rupiah: false } },
+      { key: 'upOffsetPct', label: 'Up Oliver (%)', opts: { rupiah: false, suffix: '%' } },
+      { key: 'upPrintPct', label: 'Up Print (%)', opts: { rupiah: false, suffix: '%' } },
+      { key: 'insheetOliver', label: 'Insheet Oliver (lbr)', opts: { rupiah: false } },
+      { key: 'insheetPrint', label: 'Insheet Print (lbr)', opts: { rupiah: false } },
+      { key: 'umr', label: 'UMR (lipat/pasang) (Rp)' },
+    ],
+  },
+  {
+    title: '2. Cetak: Desain, Print, Plate',
+    border: 'border-blue-300',
+    labelCls: 'text-blue-800',
+    fields: [
+      { key: 'desain', label: 'Desain / Order (Rp)' },
+      { key: 'tarifPrintA3', label: 'Print A3+ / lbr (Rp)' },
+      { key: 'transportOliver', label: 'Transport Oliver (Rp)' },
+      { key: 'transportPrint', label: 'Transport Print (Rp)' },
+    ],
+  },
+  {
+    title: '3. OPP, Label & Jasa',
+    border: 'border-sky-300',
+    labelCls: 'text-sky-800',
+    fields: [
+      { key: 'tarifPlastikOpp', label: 'Plastik OPP /100 (Rp)' },
+      { key: 'tarifLabel', label: 'Label /84 (Rp)' },
+      { key: 'tarifPrintLabel', label: 'Print Label /12 (Rp)' },
+      { key: 'royaltyPerPcs', label: 'Royalty /pcs (Rp)' },
+    ],
+  },
+  {
+    title: '4. Sisir, Laminasi, Kardus & Laba',
+    border: 'border-amber-300',
+    labelCls: 'text-amber-800',
+    fields: [
+      { key: 'tarifSisirBase', label: 'Sisir base (Rp)' },
+      { key: 'tarifLamGlossy', label: 'Laminasi Glossy (Rp/cm²)', opts: { rupiah: false, decimal: true } },
+      { key: 'tarifLamDoff', label: 'Laminasi Doff (Rp/cm²)', opts: { rupiah: false, decimal: true } },
+      { key: 'tarifUv', label: 'UV Varnish (Rp/cm²)', opts: { rupiah: false, decimal: true } },
+      { key: 'tarifLakbanRoll', label: 'Lakban /roll (Rp)' },
+      { key: 'tarifKardusBox', label: 'Kardus /box (Rp)' },
+      { key: 'labaPct', label: 'Laba Default (%)', opts: { rupiah: false, suffix: '%' } },
+    ],
+  },
 ];
 
 export default function UndanganMasterParameter({
   customParams,
   setCustomParams,
 }: UndanganMasterParameterProps) {
+  const [q, setQ] = useState('');
   const [showManualModal, setShowManualModal] = useState(false);
 
   const safe: UndanganMasterParams = { ...DEFAULT_UNDANGAN_PARAMS, ...(customParams || {}) };
 
-  const handleChange = (key: NumKey, val: number) => {
+  const handleChange = (key: keyof UndanganMasterParams, val: number) => {
     setCustomParams((prev) => ({ ...prev, [key]: Math.max(0, val) }));
   };
 
@@ -84,163 +128,182 @@ export default function UndanganMasterParameter({
     toast.success('Semua parameter Undangan dikembalikan ke standar master.');
   };
 
-  const fieldRow = (key: NumKey, label: string, isRupiah = true) => (
-    <div
-      className={`p-2.5 rounded-lg border transition-all ${
-        isFieldModified(key)
-          ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-          : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-      }`}
-    >
-      <div className="flex items-center justify-between gap-1 mb-1.5">
-        <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
-          {label}
-        </label>
-        {isFieldModified(key) && (
-          <button
-            type="button"
-            onClick={() => handleResetField(key)}
-            className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-            title="Reset ke default"
-          >
-            <RotateCcw className="w-2.5 h-2.5" /> Def
-          </button>
-        )}
-      </div>
-      <div className="flex items-center gap-1.5">
-        {isRupiah ? (
+  const fmtStd = (f: FieldDef) => {
+    const def = DEFAULT_UNDANGAN_PARAMS[f.key];
+    if (f.opts?.suffix === '%') return `${def}%`;
+    if (f.opts?.rupiah === false && !f.opts?.decimal) return Number(def).toLocaleString('id-ID');
+    if (f.opts?.rupiah === false) return String(def);
+    return `Rp ${Number(def).toLocaleString('id-ID')}`;
+  };
+
+  const matchQ = (label: string) =>
+    q.trim() === '' || label.toLowerCase().includes(q.trim().toLowerCase());
+
+  const fieldRow = (f: FieldDef) => {
+    const key = f.key;
+    const isRupiah = f.opts?.rupiah ?? true;
+    const isDecimal = f.opts?.decimal ?? false;
+    const modified = isFieldModified(key);
+    const val = safe[key] ?? DEFAULT_UNDANGAN_PARAMS[key];
+
+    return (
+      <div
+        key={key}
+        className={`p-2.5 rounded-lg border transition-all ${
+          modified
+            ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+            : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
+        }`}
+      >
+        <div className="flex items-center justify-between gap-1 mb-1.5">
+          <label className="text-xs font-semibold text-slate-700 truncate" title={f.label}>
+            {f.label}
+          </label>
+          <div className="flex items-center gap-1 shrink-0">
+            {modified && (
+              <button
+                type="button"
+                onClick={() => handleResetField(key)}
+                className="text-amber-700 hover:text-amber-900 flex items-center bg-amber-100/80 p-1 rounded cursor-pointer shrink-0"
+                title="Reset ke standar master"
+              >
+                <RotateCcw className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5">
           <ThousandInput
-            value={safe[key] as number}
+            value={val as number}
             onValueChange={(v) => handleChange(key, v || 0)}
             className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-            prefix="Rp"
+            prefix={isRupiah ? 'Rp' : undefined}
+            suffix={f.opts?.suffix}
+            allowDecimals={isDecimal}
           />
-        ) : (
-          <input
-            type="number"
-            min={0}
-            step={key.startsWith('tarifLam') || key.startsWith('tarifUv') ? 0.01 : 1}
-            value={safe[key] as number}
-            onChange={(e) => handleChange(key, Number(e.target.value) || 0)}
-            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-          />
+        </div>
+        {modified && (
+          <p className="text-[10px] text-slate-500 mt-1">Master: {fmtStd(f)}</p>
         )}
       </div>
+    );
+  };
+
+  const subGroup = (g: GroupDef) => {
+    const visible = g.fields.filter((f) => matchQ(f.label));
+    if (visible.length === 0) return null;
+    return (
+      <div key={g.title} className={`rounded-lg border ${g.border} bg-white/70 p-2.5 space-y-2`}>
+        <span className={`block text-[10px] font-black uppercase tracking-wider ${g.labelCls}`}>{g.title}</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">{visible.map(fieldRow)}</div>
+      </div>
+    );
+  };
+
+  const cardShell = (cls: string, header: React.ReactNode, groups: GroupDef[], note?: React.ReactNode) => {
+    const hasVisible = groups.some((g) => g.fields.some((f) => matchQ(f.label)));
+    if (!hasVisible) return null;
+    return (
+      <div className={`${cls} rounded-xl border p-4 shadow-2xs flex flex-col gap-3 break-inside-avoid mb-4`}>
+        {header}
+        <div className="flex flex-col gap-2.5">{groups.map(subGroup)}</div>
+        {note}
+      </div>
+    );
+  };
+
+  const cardHeader = (badgeCls: string, badge: string, Icon: React.ComponentType<{ className?: string }>, iconCls: string, title: string) => (
+    <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+      <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${badgeCls}`}>{badge}</span>
+      <Icon className={`w-4 h-4 ${iconCls}`} />
+      <h3 className="text-xs font-bold text-slate-800">{title}</h3>
     </div>
   );
 
   return (
-    <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
-      {/* Sticky Action Bar */}
-      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1.5 flex items-center justify-between gap-3 border-b border-slate-200/80 -mt-1 mb-1">
-        <div className="flex items-center gap-2">
-          <Database className="w-4 h-4 text-emerald-700" />
-          <h2 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-            Master Parameter Undangan
-          </h2>
-          {isModified && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
-              Dimodifikasi
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowManualModal(true)}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all cursor-pointer shadow-2xs"
-          >
-            <BookOpen size={13} />
-            <span>Panduan</span>
-          </button>
-          {isModified && (
+    <div className="flex flex-col gap-4 pb-8 overflow-y-auto">
+      {/* Sticky Search Bar & Actions */}
+      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1 flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Cari nama parameter ..."
+            className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs font-medium"
+          />
+          {q && (
             <button
               type="button"
-              onClick={handleResetAll}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs cursor-pointer"
+              onClick={() => setQ('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
             >
-              <RotateCcw size={13} />
-              <span>Reset Standar</span>
+              <X size={13} />
             </button>
           )}
         </div>
+        <button
+          type="button"
+          onClick={() => setShowManualModal(true)}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition cursor-pointer shrink-0"
+        >
+          <BookOpen size={14} className="text-slate-500" />
+          <span>Panduan & Rumus</span>
+        </button>
+        {isModified && (
+          <button
+            type="button"
+            onClick={handleResetAll}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs transition cursor-pointer shrink-0"
+          >
+            <RotateCcw size={14} />
+            <span>Reset Semua</span>
+          </button>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Grid 2 Kolom Seimbang */}
+      <div className="columns-1 md:columns-2 gap-4">
         {/* Card 1: Bahan & kertas */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Package className="w-4 h-4 text-emerald-600" />
-            <h3 className="text-xs font-bold text-slate-800">1. Bahan &amp; Kertas</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('hargaPerKg', 'Harga / kg (Rp)')}
-            {fieldRow('gramatur', 'Gramatur (gsm)', false)}
-            {fieldRow('upOffsetPct', 'Up Oliver (%)', false)}
-            {fieldRow('upPrintPct', 'Up Print (%)', false)}
-            {fieldRow('insheetOliver', 'Insheet Oliver (lbr)', false)}
-            {fieldRow('insheetPrint', 'Insheet Print (lbr)', false)}
-            {fieldRow('umr', 'UMR (lipat/pasang) (Rp)')}
-          </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('bg-emerald-100 text-emerald-800', 'Bahan', Package, 'text-emerald-600', '1. Bahan & Kertas'),
+          [UNDANGAN_GROUPS[0]],
           <p className="text-[10px] text-slate-500">
             Bahan file: Art Carton 230 gsm (opsi: {UNDANGAN_BAHAN_OPTIONS.join(', ')}; gramatur {UNDANGAN_GRAMATUR_OPTIONS.join(', ')}). Up: Oliver 5%, Print 0%.
           </p>
-        </div>
+        )}
 
         {/* Card 2: Cetak */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Printer className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Cetak: Desain, Print, Plate</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('desain', 'Desain / Order (Rp)')}
-            {fieldRow('tarifPrintA3', 'Print A3+ / lbr (Rp)')}
-            {fieldRow('transportOliver', 'Transport Oliver (Rp)')}
-            {fieldRow('transportPrint', 'Transport Print (Rp)')}
-          </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('bg-blue-100 text-blue-800', 'Cetak', Printer, 'text-blue-600', '2. Cetak: Desain, Print, Plate'),
+          [UNDANGAN_GROUPS[1]],
           <p className="text-[10px] text-slate-500">
             Plate Oliver Rp 45.000/plat (jml = warna×muka), min Rp 90.000/plat, drek over Rp 40 (Q−1000). Print Inter: tanpa plate, R×tarif.
           </p>
-        </div>
+        )}
 
         {/* Card 3: OPP, label & jasa */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Layers className="w-4 h-4 text-sky-600" />
-            <h3 className="text-xs font-bold text-slate-800">3. OPP, Label &amp; Jasa</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifPlastikOpp', 'Plastik OPP /100 (Rp)')}
-            {fieldRow('tarifLabel', 'Label /84 (Rp)')}
-            {fieldRow('tarifPrintLabel', 'Print Label /12 (Rp)')}
-            {fieldRow('royaltyPerPcs', 'Royalty /pcs (Rp)')}
-          </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('bg-sky-100 text-sky-800', 'Jasa & OPP', Layers, 'text-sky-600', '3. OPP, Label & Jasa'),
+          [UNDANGAN_GROUPS[2]],
           <p className="text-[10px] text-slate-500">
             Label + print label masuk total hanya bila AT26=√. Lipat &amp; pasang plastik ikut UMR (nunggu toggle di simulator, default X=0).
           </p>
-        </div>
+        )}
 
         {/* Card 4: Finishing & laba */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Info className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">4. Sisir, Laminasi, Kardus &amp; Laba</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifSisirBase', 'Sisir base (Rp)')}
-            {fieldRow('tarifLamGlossy', 'Laminasi Glossy (Rp/cm²)', false)}
-            {fieldRow('tarifLamDoff', 'Laminasi Doff (Rp/cm²)', false)}
-            {fieldRow('tarifUv', 'UV Varnish (Rp/cm²)', false)}
-            {fieldRow('tarifLakbanRoll', 'Lakban /roll (Rp)')}
-            {fieldRow('tarifKardusBox', 'Kardus /box (Rp)')}
-            {fieldRow('labaPct', 'Laba Default (%)', false)}
-          </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('bg-amber-100 text-amber-800', 'Finishing & Laba', Info, 'text-amber-600', '4. Sisir, Laminasi, Kardus & Laba'),
+          [UNDANGAN_GROUPS[3]],
           <p className="text-[10px] text-slate-500">
             Sisir min Rp 7.000. Laminasi/UV bila dipilih (min Rp 50.000). Laba 30% → final ROUNDUP puluhan.
           </p>
-        </div>
+        )}
       </div>
 
       {showManualModal && (
