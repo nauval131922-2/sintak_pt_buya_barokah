@@ -205,6 +205,14 @@
   5. **Tradeoff material wajib tanya**: beda beban kerja (tempel vs refactor) = keputusan user, bukan agent.
  - **Penerapan Nyata**: `scripts/check-clean-ui.mjs` seksi 4c mewajibkan `setQ + placeholder="Cari"` (2026-10-08: 21 file merah, jujur). Audit total 26 MP × 9 dimensi + 26 Simulator × 9 dimensi via subagen sebelum refactor lanjutan.
 
+---
+
+### 19. Refactor Total 26 Master Parameter ke Kiblat Majalah + Sisa Simulator (2026-10-08)
+- **Keputusan**: Kiblat MP = Majalah (paling lengkap: search+X, grup-filter, badge, modal, ThousandInput penuh). Scope sekaligus 26 file. Simulator ikut dibuka (c1).
+- **Master Parameter**: 20 file inline → `FieldDef/GroupDef + matchQ + subGroup/cardShell + sticky search bar` (batch A/B/C/D paralel, commit `043dcb66`, `1980fcf3`, `d4d0a3c9`, `4ae6f108`). KalenderKop/Packaging/Paperbag input mentah dipertahankan (terpisah). Pricelist toggle Spiral/Klem + banner simulasi dipertahankan. Panduan "4 kartu" Pricelist benar (UI 4 kartu HPP/Jual/Nego/Profit, bukan stale).
+- **Simulator**: Undangan 0→8 chip; Pricelist label manual→stepChip 1-6; Stopmap/Syahadah/Brosur/Nota solid→netral (race SimFixC menimpa Brosur/Nota, diperbaiki ulang `e91c4b61`); chip loncat 12 file diluruskan; grid mobile 5 file → 2 kolom; komen stale dibersihkan. Emerald kartu-deskriptif + badge info dipertahankan (fungsional).
+ - **Hasil**: Linter `check-clean-ui.mjs` hijau penuh (exit 0). Aturan 18 berlaku untuk refactor berikutnya.
+
 ## 2. Checklist Wajib Setiap Kali Mengerjakan Modul Kalkulasi (10-Point Gate)
 
 Setiap kali user memerintahkan untuk mengerjakan atau mengaudit modul kalkulasi harga, AI **WAJIB MENAMPILKAN DAN MEMERIKSA CHECKLIST INI SATU PER SATU**:
