@@ -538,7 +538,7 @@ export default function MajalahSimulator({
         <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
             <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
-              {stepChip(6)} Kalkulasi Total
+              {stepChip(8)} Kalkulasi Total
             </p>
             {/* 3 Kartu Finansial Baku */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">

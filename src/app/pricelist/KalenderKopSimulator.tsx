@@ -386,7 +386,7 @@ _Harga belum termasuk PPN. Hasil cetak kop tajam & jepit kaleng rapi._`;
           </div>
         </div>
 
-        {/* Kolom Kanan: 4 Kartu Finansial + Breakdown */}
+        {/* Kolom Kanan: 3 Kartu Finansial Baku + Breakdown */}
         <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           {/* Sticky 3-Kartu Metrik Ringkasan Finansial Baku */}
           <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">

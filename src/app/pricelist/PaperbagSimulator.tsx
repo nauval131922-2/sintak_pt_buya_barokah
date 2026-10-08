@@ -401,7 +401,7 @@ export default function PaperbagSimulator({
 
               <div>
                 <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
-                  {stepChip(4)} Batas Nego (%)
+                  {stepChip(5)} Batas Nego (%)
                 </label>
                 <div className="relative">
                   <input

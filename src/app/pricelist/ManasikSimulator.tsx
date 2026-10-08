@@ -620,8 +620,8 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
             {/* Tipe Jilid & Finishing (Hanya ditampilkan untuk Custom Cover karena Kosongan & Cocard memiliki jilid paten) */}
             {varian === 'Custom Cover 10 x 15,5' && (
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Model Jilid &amp; Binding
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                  {stepChip(4)} Model Jilid &amp; Binding
                 </label>
                 <div className="grid grid-cols-1 gap-2">
                   {JILID_OPTIONS.filter((opt) => opt.value !== 'Ring Binder (TikTok)').map((opt) => (
@@ -644,8 +644,8 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
             )}
             {/* Laminasi Cover */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Laminasi Cover
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(5)} Laminasi Cover
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {LAMINASI_OPTIONS.map((opt) => (
@@ -671,7 +671,7 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
                     <Printer size={13} className="text-emerald-700" />
-                    Mesin Cetak Isi Kosongan
+                    {stepChip(6)} Mesin Cetak Isi Kosongan
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-1.5">
@@ -696,7 +696,7 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
                     <Printer size={13} className="text-emerald-700" />
-                    {varian === 'Mini TikTok 6,3 x 10,3' ? 'Mesin Cetak Cocard' : 'Mesin Cetak Cover'}
+                    {stepChip(6)} {varian === 'Mini TikTok 6,3 x 10,3' ? 'Mesin Cetak Cocard' : 'Mesin Cetak Cover'}
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -759,7 +759,7 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
             {/* Margin & Nego */}
             <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">Target Margin (%)</label>
+                <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-700 mb-1">{stepChip(7)} Target Margin (%)</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -774,7 +774,7 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
                 </div>
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">Diskon Nego (%)</label>
+                <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-700 mb-1">{stepChip(7)} Diskon Nego (%)</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -809,7 +809,7 @@ _Harga belum termasuk PPN. Spesifikasi & desain dapat dikonsultasikan lebih lanj
           {/* Sticky 3-Kartu Metrik Ringkasan Finansial Baku */}
           <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
             <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
-              {stepChip(6)} Kalkulasi Total
+              {stepChip(8)} Kalkulasi Total
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {/* Card 1: HPP Per Eks */}

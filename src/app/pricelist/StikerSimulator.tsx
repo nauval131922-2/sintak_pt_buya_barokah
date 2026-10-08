@@ -479,7 +479,7 @@ _Harga belum termasuk PPN. Hasil cetak tajam, daya rekat kuat & tahan air._`;
             <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
               {stepChip(6)} Kalkulasi Total
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between text-slate-500 mb-1">
                   <span className="text-[11px] font-semibold">HPP Per Pcs</span>

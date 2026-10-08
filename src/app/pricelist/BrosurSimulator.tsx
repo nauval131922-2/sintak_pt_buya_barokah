@@ -408,8 +408,8 @@ export default function BrosurSimulator({
 
             {/* Jenis Cetak */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Jenis Cetak
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                {stepChip(4)} Jenis Cetak
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {(['1 Muka', '2 Muka'] as BrosurMukaType[]).map((m) => (
@@ -419,7 +419,7 @@ export default function BrosurSimulator({
                     onClick={() => setMuka(m)}
                     className={`py-1.5 px-3 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
                       muka === m
-                        ? 'border-emerald-600 bg-emerald-600 text-white'
+                        ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400'
                         : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                     }`}
                   >
@@ -431,8 +431,8 @@ export default function BrosurSimulator({
 
             {/* Mesin */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Mesin Cetak
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                {stepChip(5)} Mesin Cetak
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {(['Print Inter', 'Oliver'] as BrosurMesinType[]).map((m) => (
@@ -442,7 +442,7 @@ export default function BrosurSimulator({
                     onClick={() => setMesin(m)}
                     className={`py-1.5 px-3 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
                       mesin === m
-                        ? 'border-emerald-600 bg-emerald-600 text-white'
+                        ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400'
                         : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                     }`}
                   >
@@ -454,8 +454,8 @@ export default function BrosurSimulator({
 
             {/* Laminasi */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Laminasi
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(6)} Laminasi
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {LAMINASI_OPTIONS.map((l) => (
@@ -477,8 +477,8 @@ export default function BrosurSimulator({
 
             {/* Finishing */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Finishing
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(7)} Finishing
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:bg-slate-50 cursor-pointer text-xs">
@@ -511,7 +511,7 @@ export default function BrosurSimulator({
             {/* Margin & Nego */}
             <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Margin Profit (%)</label>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">{stepChip(8)} Margin Profit (%)</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -525,7 +525,7 @@ export default function BrosurSimulator({
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Batas Nego (%)</label>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">{stepChip(8)} Batas Nego (%)</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -559,7 +559,7 @@ export default function BrosurSimulator({
           {/* Sticky 3-Kartu Metrik Ringkasan Finansial Baku */}
           <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
             <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
-              {stepChip(7)} Kalkulasi Total
+              {stepChip(9)} Kalkulasi Total
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {/* Card 1: HPP Per Pcs */}

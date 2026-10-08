@@ -378,7 +378,7 @@ export default function BukuTabunganNsSimulator({
             </div>
 
             <div>
-              <label className={lbl}>Pilihan Finishing</label>
+              <label className={`flex items-center gap-1.5 ${lbl}`}>{stepChip(5)} Pilihan Finishing</label>
               <select value={finishing} onChange={(e) => setFinishing(e.target.value as TabunganNsFinishing)} className={`${numInput} cursor-pointer`}>
                 {TABUNGAN_NS_FINISHING.map((f) => <option key={f} value={f}>{f.replace(/,$/, '')}</option>)}
               </select>

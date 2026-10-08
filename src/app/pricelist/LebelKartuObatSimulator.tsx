@@ -364,7 +364,7 @@ export default function LebelKartuObatSimulator({
             <div className="rounded-xl border border-sky-200 bg-sky-50/50 p-3 space-y-3">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-sky-900 bg-sky-200/80 px-2 py-0.5 rounded">Cetak</span>
-                <label className="text-xs font-bold text-sky-900">Jenis, Muka &amp; Jumlah Warna</label>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-sky-900">{stepChip(3)} Jenis, Muka &amp; Jumlah Warna</label>
               </div>
               <div>
                 <label className="block text-[11px] font-bold text-slate-600 mb-1">Jenis Cetak</label>
@@ -405,7 +405,7 @@ export default function LebelKartuObatSimulator({
             <div className="rounded-xl border border-violet-200 bg-violet-50/50 p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-violet-900 bg-violet-200/80 px-2 py-0.5 rounded">Finishing</span>
-                <label className="text-xs font-bold text-violet-900">Pilihan Potong Sisir</label>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-violet-900">{stepChip(4)} Pilihan Potong Sisir</label>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {LEBEL_KARTU_OBAT_FINISHING_OPTIONS.map((f) => (

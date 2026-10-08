@@ -379,8 +379,8 @@ export default function SyahadahSimulator({
             {/* 2. Pilihan Mesin Cetak */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold text-slate-700">
-                  2. Metode Cetak Mesin
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  {stepChip(2)} Metode Cetak Mesin
                 </label>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
                   Aktif: <strong className="text-emerald-700">{result.mesinTerpilih}</strong>
@@ -396,7 +396,7 @@ export default function SyahadahSimulator({
                       onClick={() => setMesin(m)}
                       className={`py-2 px-1 rounded-lg border text-[11px] font-bold text-center transition cursor-pointer flex flex-col items-center gap-0.5 ${
                         active
-                          ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
+                          ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400'
                           : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                       }`}
                     >
@@ -419,8 +419,8 @@ export default function SyahadahSimulator({
 
             {/* 3. Ukuran Kertas */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                3. Ukuran Cetak
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(3)} Ukuran Cetak
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {UKURAN_OPTIONS.map((u) => {
@@ -432,7 +432,7 @@ export default function SyahadahSimulator({
                       onClick={() => setUkuran(u)}
                       className={`py-1.5 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
                         active
-                          ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
+                          ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400'
                           : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                       }`}
                     >
@@ -445,8 +445,8 @@ export default function SyahadahSimulator({
 
             {/* 4. Opsi Foil & Pengemasan */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                4. Opsi Finishing Khusus &amp; Packing
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(4)} Opsi Finishing Khusus &amp; Packing
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white transition cursor-pointer select-none">
@@ -479,8 +479,8 @@ export default function SyahadahSimulator({
 
             {/* 5. Kuantitas Oplah */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                5. Kuantitas Oplah (Pcs)
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(5)} Kuantitas Oplah (Pcs)
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <select

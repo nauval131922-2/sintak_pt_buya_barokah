@@ -371,6 +371,11 @@ export default function RaportKalebSimulator({
 
             {/* 2. Tambahan Lembar Isi Mika Custom */}
             <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  {stepChip(2)} Opsi Tambahan Isi Mika
+                </label>
+              </div>
               <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-slate-50/60 hover:bg-slate-50 cursor-pointer text-xs transition-colors">
                 <input
                   type="checkbox"
@@ -409,6 +414,11 @@ export default function RaportKalebSimulator({
 
             {/* 3. Opsi Tambahan Packing Kardus & Lakban */}
             <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  {stepChip(3)} Opsi Pengemasan
+                </label>
+              </div>
               <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-slate-50/60 hover:bg-slate-50 cursor-pointer text-xs transition-colors">
                 <input
                   type="checkbox"
@@ -433,8 +443,8 @@ export default function RaportKalebSimulator({
             {/* 4. Kuantitas Oplah */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-bold text-slate-700">
-                  Kuantitas Oplah Pesanan (pcs)
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  {stepChip(4)} Kuantitas Oplah Pesanan (pcs)
                 </label>
               </div>
               <div className="grid grid-cols-2 gap-2">
@@ -516,8 +526,7 @@ export default function RaportKalebSimulator({
 
         {/* Kolom Kanan: Hasil & Rincian (lg:col-span-7) */}
         <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
-          {/* 4 Kartu Finansial */}
-          {/* Sticky 3-Kartu Metrik Ringkasan Finansial Baku */}
+          {/* 3 Kartu Finansial Baku */}
           <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
             <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
               {stepChip(5)} Kalkulasi Total

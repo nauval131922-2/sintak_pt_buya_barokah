@@ -412,8 +412,8 @@ _Kualitas cetak tajam & tembusan NCR pekat. Desain dibantu layouting standar._`;
 
             {/* Jumlah Warna */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Warna Tinta Cetak
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                {stepChip(4)} Warna Tinta Cetak
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <button
@@ -421,7 +421,7 @@ _Kualitas cetak tajam & tembusan NCR pekat. Desain dibantu layouting standar._`;
                   onClick={() => setJumlahWarna(1)}
                   className={`py-1.5 px-3 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
                     jumlahWarna === 1
-                      ? 'border-emerald-600 bg-emerald-600 text-white'
+                      ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400'
                       : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                   }`}
                 >
@@ -432,7 +432,7 @@ _Kualitas cetak tajam & tembusan NCR pekat. Desain dibantu layouting standar._`;
                   onClick={() => setJumlahWarna(2)}
                   className={`py-1.5 px-3 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
                     jumlahWarna === 2
-                      ? 'border-emerald-600 bg-emerald-600 text-white'
+                      ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400'
                       : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                   }`}
                 >
@@ -443,8 +443,8 @@ _Kualitas cetak tajam & tembusan NCR pekat. Desain dibantu layouting standar._`;
 
             {/* Opsi Tambahan Finishing */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Finishing Tambahan
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(5)} Finishing Tambahan
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:bg-slate-50 cursor-pointer text-xs">
@@ -478,8 +478,8 @@ _Kualitas cetak tajam & tembusan NCR pekat. Desain dibantu layouting standar._`;
             {/* Target Margin & Nego */}
             <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Margin Profit (%)
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                  {stepChip(6)} Margin Profit (%)
                 </label>
                 <div className="relative">
                   <input
@@ -494,8 +494,8 @@ _Kualitas cetak tajam & tembusan NCR pekat. Desain dibantu layouting standar._`;
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Batas Nego (%)
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                  {stepChip(6)} Batas Nego (%)
                 </label>
                 <div className="relative">
                   <input
@@ -531,7 +531,7 @@ _Kualitas cetak tajam & tembusan NCR pekat. Desain dibantu layouting standar._`;
           {/* Sticky 3-Kartu Metrik Ringkasan Finansial Baku */}
           <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
             <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
-              {stepChip(6)} Kalkulasi Total
+              {stepChip(7)} Kalkulasi Total
              </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {/* Card 1: HPP Per Rim */}

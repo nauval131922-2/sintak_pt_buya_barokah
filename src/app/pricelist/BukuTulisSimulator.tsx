@@ -380,7 +380,9 @@ export default function BukuTulisSimulator({
             {/* Mesin Cetak Cover */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold text-slate-700">Mesin Cetak Cover (4W)</label>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  {stepChip(3)} Mesin Cetak Cover (4W)
+                </label>
                 <span className="text-[10.5px] font-mono text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                   Aktif: {result.metodeCoverTerpilih}
                 </span>
@@ -411,7 +413,9 @@ export default function BukuTulisSimulator({
             {/* Mesin Cetak Isi */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold text-slate-700">Mesin Cetak Isi HVS 70 (1W)</label>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  {stepChip(4)} Mesin Cetak Isi HVS 70 (1W)
+                </label>
                 <span className="text-[10.5px] font-mono text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                   Aktif: {result.metodeIsiTerpilih}
                 </span>
@@ -441,8 +445,8 @@ export default function BukuTulisSimulator({
 
             {/* Finishing */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Finishing
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(5)} Finishing
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:bg-slate-50 cursor-pointer text-xs">
@@ -524,7 +528,7 @@ export default function BukuTulisSimulator({
           {/* Sticky 3-Kartu Metrik Ringkasan Finansial Baku */}
           <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
             <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
-              {stepChip(5)} Kalkulasi Total
+              {stepChip(6)} Kalkulasi Total
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {/* Card 1: HPP Per Pcs */}

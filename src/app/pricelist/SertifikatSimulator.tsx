@@ -348,8 +348,8 @@ export default function SertifikatSimulator({
 
             {/* Bahan */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Bahan Kertas
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(1)} Bahan Kertas
               </label>
               <div className="grid grid-cols-3 gap-2">
                 {SERTIFIKAT_BAHAN.map((b) => (
@@ -363,7 +363,7 @@ export default function SertifikatSimulator({
             {/* Ukuran + Gramatur */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">Ukuran</label>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">{stepChip(2)} Ukuran</label>
                 <div className="grid grid-cols-1 gap-2">
                   {SERTIFIKAT_UKURAN.map((u) => (
                     <button key={u} type="button" onClick={() => setUkuran(u)} className={specButton(ukuran === u)}>
@@ -387,8 +387,8 @@ export default function SertifikatSimulator({
 
             {/* Mesin */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Mesin Cetak
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(3)} Mesin Cetak
               </label>
               <div className="grid grid-cols-4 gap-2">
                 {SERTIFIKAT_MESIN.map((m) => (
@@ -426,8 +426,8 @@ export default function SertifikatSimulator({
 
             {/* Finishing */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Pilihan Finishing
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(4)} Pilihan Finishing
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {SERTIFIKAT_FINISHING.map((f) => (
@@ -456,8 +456,8 @@ export default function SertifikatSimulator({
 
             {/* Oplah */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Kuantitas Pesanan (Oplah)
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                {stepChip(5)} Kuantitas Pesanan (Oplah)
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <select
@@ -532,13 +532,12 @@ export default function SertifikatSimulator({
 
         {/* Kolom Kanan: Hasil & Rincian (lg:col-span-7) */}
         <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
-          {/* 4 Kartu Finansial */}
           {/* 3 Kartu Finansial Baku */}
           <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
             <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
               {stepChip(6)} Kalkulasi Total
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between text-slate-500 mb-1">
                   <span className="text-[11px] font-semibold">HPP Per Pcs</span>

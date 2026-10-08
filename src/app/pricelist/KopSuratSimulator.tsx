@@ -333,8 +333,8 @@ export default function KopSuratSimulator({
 
             {/* Jumlah Warna */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Jumlah Warna Cetak
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(2)} Jumlah Warna Cetak
               </label>
               <div className="grid grid-cols-4 gap-2">
                 {([1, 2, 3, 4] as const).map((w) => (
@@ -372,7 +372,9 @@ export default function KopSuratSimulator({
 
             {/* Finishing */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Pilihan Finishing</label>
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(3)} Pilihan Finishing
+              </label>
               <div className="grid grid-cols-2 gap-2">
                 <button type="button" onClick={() => setFinishingSisir(false)} className={specButton(!finishingSisir)}>
                   <span className="text-[11px]">TANPA SISIR</span>
@@ -385,8 +387,8 @@ export default function KopSuratSimulator({
 
             {/* Oplah */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Kuantitas Pesanan (rim @500 lbr)
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                {stepChip(4)} Kuantitas Pesanan (rim @500 lbr)
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <select
@@ -476,7 +478,7 @@ export default function KopSuratSimulator({
             <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
               {stepChip(5)} Kalkulasi Total
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between text-slate-500 mb-1">
                   <span className="text-[11px] font-semibold">HPP Per Rim</span>

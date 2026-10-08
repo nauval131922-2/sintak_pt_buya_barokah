@@ -392,7 +392,7 @@ export default function StopmapSimulator({
                   onClick={() => setMesin('Auto')}
                   className={`py-2 px-1.5 rounded-lg border text-[11px] font-bold text-center transition cursor-pointer flex flex-col items-center gap-0.5 ${
                     mesin === 'Auto'
-                      ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
+                      ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400'
                       : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                   }`}
                   title="Rekomendasi Otomatis (A4 ≤200 Print Inter, Folio/Oplah besar Oliver)"
@@ -409,7 +409,7 @@ export default function StopmapSimulator({
                     isFolio
                       ? 'border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed opacity-60'
                       : mesin === 'PRINT INTER'
-                      ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs cursor-pointer'
+                      ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400 cursor-pointer'
                       : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 cursor-pointer'
                   }`}
                   title={isFolio ? 'Ukuran Folio bentangan 48x35 cm melebihi kapasitas A3+ (32.5 cm)' : 'Cetak Digital Print Inter'}
@@ -423,7 +423,7 @@ export default function StopmapSimulator({
                   onClick={() => setMesin('Oliver')}
                   className={`py-2 px-1.5 rounded-lg border text-[11px] font-bold text-center transition cursor-pointer flex flex-col items-center gap-0.5 ${
                     mesin === 'Oliver'
-                      ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
+                      ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400'
                       : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                   }`}
                   title="Offset Heidelberg Oliver 4 Warna (Plat + Ongkos Cetak)"
@@ -441,8 +441,8 @@ export default function StopmapSimulator({
 
             {/* 3. Jenis Finishing Laminasi */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                3. Finishing Laminasi Cover
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(3)} Finishing Laminasi Cover
               </label>
               <div className="grid grid-cols-2 gap-1.5">
                 {LAMINASI_OPTIONS.map((l) => {
@@ -454,7 +454,7 @@ export default function StopmapSimulator({
                       onClick={() => setLaminasi(l.id)}
                       className={`py-1.5 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
                         active
-                          ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
+                          ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400'
                           : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                       }`}
                     >
@@ -467,8 +467,8 @@ export default function StopmapSimulator({
 
             {/* 4. Opsi Pisau Ponz & Packing */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                4. Opsi Khusus &amp; Pengemasan
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(4)} Opsi Khusus &amp; Pengemasan
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white transition cursor-pointer select-none">
@@ -501,8 +501,8 @@ export default function StopmapSimulator({
 
             {/* 5. Kuantitas Oplah */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                5. Kuantitas Oplah (Pcs)
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(5)} Kuantitas Oplah (Pcs)
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <select
@@ -579,8 +579,7 @@ export default function StopmapSimulator({
 
         {/* Kolom Kanan: Rincian & Hasil (lg:col-span-7) */}
         <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
-          {/* 4 Kartu Finansial Utama */}
-          {/* Sticky 3-Kartu Metrik Ringkasan Finansial Baku */}
+          {/* 3 Kartu Finansial Baku */}
           <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
             <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
               {stepChip(6)} Kalkulasi Total

@@ -394,11 +394,12 @@ export default function LabelKhqSimulator({
 
             {/* Finishing */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Finishing</label>
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                {stepChip(3)} Finishing
+              </label>
               <div className="grid grid-cols-2 gap-2">
                 <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:bg-slate-50 cursor-pointer text-xs">
                   <input
-                    type="checkbox"
                     checked={opsiLaminasi}
                     onChange={(e) => setOpsiLaminasi(e.target.checked)}
                     className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
@@ -426,11 +427,12 @@ export default function LabelKhqSimulator({
             {/* Margin & Nego */}
             <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Margin Profit (%)</label>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                  {stepChip(4)} Margin Profit (%)
+                </label>
                 <div className="relative">
                   <input
                     type="number"
-                    min={0}
                     max={100}
                     value={marginPct}
                     onChange={(e) => setMarginPct(Number(e.target.value) || 0)}
@@ -461,8 +463,7 @@ export default function LabelKhqSimulator({
 
         {/* Kolom Kanan: Hasil (Scrollbar Mandiri) */}
         <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
-          {/* 4 Kartu Finansial — style identik Brosur */}
-          {/* Sticky 3-Kartu Metrik Ringkasan Finansial Baku */}
+          {/* 3 Kartu Finansial Baku */}
           <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
             <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
               {stepChip(5)} Kalkulasi Total

@@ -378,7 +378,7 @@ export default function BukuTabunganSecuritySimulator({
             </div>
 
             <div>
-              <label className={lbl}>Pilihan Finishing</label>
+              <label className={`flex items-center gap-1.5 ${lbl}`}>{stepChip(5)} Pilihan Finishing</label>
               <select value={finishing} onChange={(e) => setFinishing(e.target.value as TabunganSecurityFinishing)} className={`${numInput} cursor-pointer`}>
                 {TABUNGAN_SECURITY_FINISHING.map((f) => <option key={f} value={f}>{f.replace(/,$/, '')}</option>)}
               </select>
