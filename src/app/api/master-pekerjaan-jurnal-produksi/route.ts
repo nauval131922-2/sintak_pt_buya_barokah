@@ -12,8 +12,8 @@ const execFilePromise = promisify(execFile);
 // Batas eksekusi tool dekripsi — file jahat tak boleh gantung worker
 const DECRYPT_EXEC_OPTS = { timeout: 30_000, maxBuffer: 10 * 1024 * 1024 };
 
-// Batas staging upload Excel — cegah disk-fill dari file raksasa
-const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+// Batas staging upload Excel — file master/karyawan bisa 100MB+
+const MAX_UPLOAD_BYTES = 150 * 1024 * 1024;
 
 export async function GET(request: NextRequest) {
   const search = request.nextUrl.searchParams.get('search') || '';
@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
     if (buffer.length > MAX_UPLOAD_BYTES) {
-      return NextResponse.json({ error: 'Ukuran file melebihi batas 25MB.' }, { status: 413 });
+      return NextResponse.json({ error: 'Ukuran file melebihi batas 150MB.' }, { status: 413 });
     }
     await fs.promises.writeFile(tempInputPath, buffer);
 

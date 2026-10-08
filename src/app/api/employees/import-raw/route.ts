@@ -4,6 +4,8 @@ import db from '@/lib/db';
 import { requireApiPermission } from '@/lib/api-guard';
 
 const SHEET_NAME = 'A.DATA KARYAWAN';
+// ponytail: satu chunk JSON jangan jebol bodySizeLimit — tolak chunk raksasa per request
+const MAX_CHUNK_BYTES = 15 * 1024 * 1024;
 const COL_A = 0; // ID Karyawan (employee_no)
 const COL_B = 1; // filter: tidak kosong (baris valid)
 const COL_C = 2; // Nama
@@ -14,7 +16,11 @@ export async function POST(req: NextRequest) {
   const gate = await requireApiPermission('karyawan');
   if (gate.error) return gate.error;
   try {
-    const { filename, rows, chunkIndex = 0, totalChunks = 1 } = await req.json();
+    const bodyText = await req.text();
+    if (Buffer.byteLength(bodyText, 'utf8') > MAX_CHUNK_BYTES) {
+      return NextResponse.json({ error: 'Ukuran chunk melebihi 15MB. Kecilkan ukuran file atau bagi menjadi beberapa file.' }, { status: 413 });
+    }
+    const { filename, rows, chunkIndex = 0, totalChunks = 1 } = JSON.parse(bodyText);
 
     if (!rows || !Array.isArray(rows)) {
       return NextResponse.json({ error: 'Data tidak valid.' }, { status: 400 });
