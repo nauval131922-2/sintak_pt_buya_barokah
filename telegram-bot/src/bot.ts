@@ -199,6 +199,10 @@ async function checkSintakWebhook() {
       console.error(`   1. SINTAK server mati / port salah (cek WEBHOOK_URL di .env bot)`);
       console.error(`   2. SINTAK jalan di port beda dari WEBHOOK_URL`);
       console.error(`   Fix: set WEBHOOK_URL ke URL SINTAK yang benar, lalu restart bot.\n`);
+    } else if (res.status === 401) {
+      console.error(`\n❌ [WEBHOOK HEALTH] ${url} -> 401 UNAUTHORIZED`);
+      console.error(`   SINTAK_API_KEY bot tidak cocok dengan SCRAPER_API_KEY server.`);
+      console.error(`   Fix: samakan SINTAK_API_KEY di .env bot dengan SCRAPER_API_KEY server, lalu restart bot.\n`);
     } else if (res.status >= 500) {
       console.error(`\n⚠️  [WEBHOOK HEALTH] ${url} -> ${res.status} (server error, push mungkin gagal)\n`);
     } else {
