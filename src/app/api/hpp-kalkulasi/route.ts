@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: true, data, total, page, limit, lastExcelUpdate, lastUpdated });
 
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Terjadi kesalahan internal.' }, { status: 500 });
   }
 }
 
@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error("Upload Excel Error:", error);
     return NextResponse.json(
-      { error: "Gagal memproses file Excel", details: error.message },
+      { error: "Gagal memproses file Excel" },
       { status: 500 }
     );
   }
@@ -225,7 +225,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ error: 'Data tidak valid' }, { status: 400 });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Terjadi kesalahan internal.' }, { status: 500 });
   }
 }
 
@@ -237,6 +237,6 @@ export async function DELETE(request: NextRequest) {
     await db.execute({ sql: 'DELETE FROM hpp_kalkulasi', args: [] });
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Terjadi kesalahan internal.' }, { status: 500 });
   }
 }

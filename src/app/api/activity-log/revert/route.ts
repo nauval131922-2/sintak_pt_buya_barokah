@@ -151,7 +151,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Server error' }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: 'Terjadi kesalahan internal.' }, { status: 500 });
   }
 }

@@ -228,9 +228,8 @@ export async function GET(req: NextRequest) {
     const withStats = searchParams.get('stats') === '1';
     const result = await queryLogs(params, withStats);
     return NextResponse.json({ success: true, ...result });
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: 'Terjadi kesalahan internal.' }, { status: 500 });
   }
 }
 
@@ -264,9 +263,8 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true });
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: 'Terjadi kesalahan internal.' }, { status: 500 });
   }
 }
 

@@ -104,12 +104,12 @@ export async function GET(request: Request) {
       args: [
         'MAINTENANCE',
         'activity_logs',
-        `GAGAL mengarsip log aktivitas: ${error.message}`,
-        JSON.stringify({ error: error.message }),
+        'GAGAL mengarsip log aktivitas.',
+        JSON.stringify({ error: 'Terjadi kesalahan internal.' }),
         'system',
       ],
     }).catch(() => {});
 
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Terjadi kesalahan internal.' }, { status: 500 });
   }
 }

@@ -110,9 +110,9 @@ export async function GET(request: Request) {
     await db.execute({
       sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, user_id) 
             VALUES (?, ?, 0, ?, 0)`,
-      args: ['CRON_SYNC', 'system', `Gagal menjalankan Sinkronisasi Otomatis: ${error.message}`]
+      args: ['CRON_SYNC', 'system', 'Gagal menjalankan Sinkronisasi Otomatis.']
     }).catch(() => {});
 
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Terjadi kesalahan internal.' }, { status: 500 });
   }
 }

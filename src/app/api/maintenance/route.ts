@@ -41,6 +41,6 @@ export async function GET(request: Request) {
 
   } catch (error: any) {
     console.error('[MAINTENANCE] Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Terjadi kesalahan internal.' }, { status: 500 });
   }
 }
