@@ -187,7 +187,10 @@ async function checkSintakWebhook() {
   try {
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(process.env.SINTAK_API_KEY ? { 'X-API-Key': process.env.SINTAK_API_KEY } : {}),
+      },
       body: JSON.stringify({ nama_karyawan: '__health_check__', bagian: 'HEALTH' })
     });
     if (res.status === 404) {

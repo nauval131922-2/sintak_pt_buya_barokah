@@ -105,9 +105,10 @@ export const api = {
       
       fetch(`${webhookUrl}/api/telegram/register-webhook`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          ...(process.env.SINTAK_API_KEY ? { 'X-API-Key': process.env.SINTAK_API_KEY } : {}),
         },
         body: JSON.stringify({ nama_karyawan: employee.name, bagian })
       }).then(async res => {

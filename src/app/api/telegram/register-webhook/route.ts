@@ -5,6 +5,12 @@ export const dynamic = 'force-dynamic';
 
 // Webhook dipanggil oleh bot saat ada pendaftaran baru
 export async function POST(request: NextRequest) {
+  // Guard: hanya pemegang SCRAPER_API_KEY (bot internal) — tutup broadcast push publik
+  const expected = process.env.SCRAPER_API_KEY;
+  const apiKey = request.headers.get('X-API-Key') || request.headers.get('x-api-key');
+  if (!expected || !apiKey || apiKey !== expected) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const body = await request.json();
     const { nama_karyawan, bagian } = body;

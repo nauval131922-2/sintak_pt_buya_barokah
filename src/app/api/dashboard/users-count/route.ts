@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { requireApiPermission } from '@/lib/api-guard';
 
 export async function GET() {
+  // Guard: samakan dengan halaman dashboard (requirePermission dashboard)
+  const gate = await requireApiPermission('dashboard');
+  if (gate.error) return gate.error;
   try {
     const [totalRes, rolesRes] = await db.batch([
       'SELECT COUNT(*) as count FROM users',
