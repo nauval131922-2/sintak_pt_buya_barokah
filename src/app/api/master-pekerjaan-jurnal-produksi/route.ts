@@ -14,6 +14,8 @@ const DECRYPT_EXEC_OPTS = { timeout: 30_000, maxBuffer: 10 * 1024 * 1024 };
 
 // Batas staging upload Excel — file master/karyawan bisa 100MB+
 const MAX_UPLOAD_BYTES = 150 * 1024 * 1024;
+// ponytail: guard per-chunk JSON (konsisten import-raw) — satu chunk jangan jebol bodySizeLimit
+const MAX_CHUNK_BYTES = 15 * 1024 * 1024;
 
 export async function GET(request: NextRequest) {
   const search = request.nextUrl.searchParams.get('search') || '';
@@ -94,11 +96,41 @@ export async function POST(request: NextRequest) {
   }
 
   // JSON create single — dual mode dengan Excel upload
+  // JSON chunked import — file polos diparse di browser, dikirim per chunk (tanpa batas MB)
   if (contentType.includes('application/json')) {
     try {
-      const body = await request.json();
-      const category = String(body?.category ?? '').trim();
-      const name = String(body?.name ?? '').trim();
+      const bodyText = await request.text();
+      if (Buffer.byteLength(bodyText, 'utf8') > MAX_CHUNK_BYTES) {
+        return NextResponse.json({ error: 'Ukuran chunk melebihi 15MB.' }, { status: 413 });
+      }
+      const body = JSON.parse(bodyText);
+      if (Array.isArray(body?.items)) {
+        const items = body.items.filter(
+          (it: any) => it && typeof it.category === 'string' && typeof it.name === 'string' && it.category.trim() && it.name.trim()
+        );
+        if (items.length === 0) {
+          return NextResponse.json({ error: 'Tidak ada data valid pada chunk.' }, { status: 400 });
+        }
+        if (items.length > 20000) {
+          return NextResponse.json({ error: 'Chunk melebihi 20.000 baris.' }, { status: 413 });
+        }
+        const batchOps = items.map((it: any) => ({
+          sql: `INSERT OR IGNORE INTO master_pekerjaan_jurnal_produksi (category, name) VALUES (?, ?)`,
+          args: [it.category.trim(), it.name.trim()],
+        }));
+        await db.batch(batchOps, 'write');
+        if (body?.chunkIndex === 0 || body?.totalChunks === 1) {
+          const s = await getSession();
+          await db.execute({
+            sql: `INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by) VALUES (?, ?, ?, ?, ?, ?)`,
+            args: ['UPLOAD', 'master_pekerjaan_jurnal_produksi', 0, `Upload Master Pekerjaan Jurnal Produksi dari Excel (${body?.totalRows ?? items.length} data)`, JSON.stringify({ fileName: body?.filename ?? '', imported: body?.totalRows ?? items.length }), s?.username || 'System'],
+          });
+        }
+        return NextResponse.json({ success: true, imported: items.length });
+      }
+      const body2 = body;
+      const category = String(body2?.category ?? '').trim();
+      const name = String(body2?.name ?? '').trim();
 
       if (!category || !name) {
         return NextResponse.json({ error: 'Bagian dan nama pekerjaan wajib diisi.' }, { status: 400 });

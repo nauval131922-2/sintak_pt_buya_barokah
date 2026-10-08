@@ -24,6 +24,47 @@ export default function MasterPekerjaanJurnalProduksiUpload() {
 
   const fileRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  // Upload file polos via worker chunked (tanpa batas MB); file sandi tetap via FormData server
+  const handleChunkedUpload = async (file: File) => {
+    setStatus('loading');
+    setMessage('Membaca sheet MASTER PEKERJAAN...');
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const worker = new Worker(new URL('./master-pekerjaan-worker.ts', import.meta.url));
+      worker.postMessage({ arrayBuffer, filename: file.name, origin: window.location.origin }, [arrayBuffer]);
+      worker.onmessage = (e) => {
+        const { type, message: msg, error, totalImported } = e.data;
+        if (type === 'status') {
+          setMessage(msg);
+        } else if (type === 'done') {
+          setStatus('idle');
+          setDialog({
+            isOpen: true,
+            type: 'success',
+            title: 'Berhasil',
+            message: `Berhasil mengimpor ${totalImported} data Master Pekerjaan Jurnal Produksi.`,
+          });
+          setPendingFile(null);
+          setTypedPassword('');
+          setPasswordError('');
+          window.dispatchEvent(new Event('sintak:data-updated'));
+          localStorage.setItem('sintak_data_updated', Date.now().toString());
+          worker.terminate();
+          if (fileRef.current) fileRef.current.value = '';
+        } else if (type === 'error') {
+          // Sheet hilang / format salah / file ternyata bersandi → fallback ke jalur server
+          worker.terminate();
+          void handleFile(file);
+        }
+      };
+      worker.onerror = () => {
+        worker.terminate();
+        void handleFile(file);
+      };
+    } catch {
+      void handleFile(file);
+    }
+  };
 
   const handleFile = async (file: File, passVal?: string) => {
     if (!file) return;
@@ -120,7 +161,7 @@ export default function MasterPekerjaanJurnalProduksiUpload() {
               accept=".xls, .xlsx, .xlsm"
               className="hidden"
               ref={fileRef}
-              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleChunkedUpload(f); }}
             />
             <button
               onClick={() => fileRef.current?.click()}
