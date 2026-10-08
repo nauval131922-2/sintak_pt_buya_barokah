@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
+import { requireApiPermission } from "@/lib/api-guard";
 import { apiError, stripRawData, ORDERS_LIST_RAW_KEYS } from "@/lib/api-utils";
 import { buildFtsQuery } from "@/lib/fts";
 import { getScrapedPeriodSettingKey, parseScrapedPeriod } from "@/lib/server-scraped-period";
@@ -8,6 +9,9 @@ import { getScrapedPeriodSettingKey, parseScrapedPeriod } from "@/lib/server-scr
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  // Guard: samakan dengan halaman orders
+  const gate = await requireApiPermission('produksi_orders');
+  if (gate.error) return gate.error;
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');

@@ -1,11 +1,15 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
+import { requireApiPermission } from "@/lib/api-guard";
 import { getErrorMessage } from "@/lib/api-utils";
 import { ScrapedRecord, BatchOperation } from "@/lib/scraper-utils";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
+  // Guard: samakan dengan halaman bom
+  const gate = await requireApiPermission('produksi_bom');
+  if (gate.error) return gate.error;
   try {
     const { start, end } = await request.json();
 

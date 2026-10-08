@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from "@/lib/db";
+import { getSession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  // Guard: halaman tanpa permission khusus — minimal session login
+  const session = await getSession();
+  if (!session?.userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const { searchParams } = new URL(request.url);
     const noSopd = searchParams.get('no_sopd');

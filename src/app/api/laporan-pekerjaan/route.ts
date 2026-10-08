@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { gzipSync } from "zlib";
 import db from "@/lib/db";
+import { requireApiPermission } from "@/lib/api-guard";
 import { logActivity } from "@/lib/activity";
 import { getSpreadsheetTasks } from "@/lib/google-sheets";
 import { toNormDateString, isValidRangeDate, ensureLaporanPekerjaanNorms } from "@/lib/date-sort";
@@ -11,6 +12,9 @@ export const dynamic = "force-dynamic";
 let isInitialSeedChecked = false;
 
 export async function GET(request: NextRequest) {
+  // Guard: samakan dengan halaman laporan-pekerjaan
+  const gate = await requireApiPermission('produksi_laporan_pekerjaan');
+  if (gate.error) return gate.error;
   try {
     const { searchParams } = new URL(request.url);
     const pic = searchParams.get("pic")?.toLowerCase();
@@ -258,6 +262,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const gatePost = await requireApiPermission('produksi_laporan_pekerjaan');
+  if (gatePost.error) return gatePost.error;
   try {
     const body = await request.json();
     const { task, project, division, bagian, pic, priority, startDate, endDate, startTime, endTime, workDays, note, status, tglOrder } = body;
@@ -372,6 +378,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  const gatePut = await requireApiPermission('produksi_laporan_pekerjaan');
+  if (gatePut.error) return gatePut.error;
   try {
     const body = await request.json();
     const { id, task, project, division, bagian, pic, priority, startDate, endDate, startTime, endTime, workDays, note, status } = body;
@@ -488,6 +496,8 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const gatePatch = await requireApiPermission('produksi_laporan_pekerjaan');
+  if (gatePatch.error) return gatePatch.error;
   try {
     const body = await request.json();
     const { project, orderedIds } = body as { project?: string; orderedIds?: number[] };
@@ -545,6 +555,8 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const gateDel = await requireApiPermission('produksi_laporan_pekerjaan');
+  if (gateDel.error) return gateDel.error;
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
