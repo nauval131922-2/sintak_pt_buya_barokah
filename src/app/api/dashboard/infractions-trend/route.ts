@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { requireApiPermission } from '@/lib/api-guard';
 
 export async function GET(request: Request) {
+  // Guard: samakan dengan halaman dashboard-hrd
+  const gate = await requireApiPermission('hrd_dashboard');
+  if (gate.error) return gate.error;
   const { searchParams } = new URL(request.url);
-
   const now = new Date();
   const tz = 'Asia/Jakarta';
   const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(now);

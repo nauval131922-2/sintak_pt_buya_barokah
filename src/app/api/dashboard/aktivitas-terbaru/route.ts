@@ -1,16 +1,16 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
-import { getSession } from '@/lib/session';
+import { requireApiPermission } from '@/lib/api-guard';
+
 import { cacheGet, cacheSet } from '@/lib/server-cache';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
+  // Guard: samakan dengan halaman dashboard umum
+  const gate = await requireApiPermission('dashboard');
+  if (gate.error) return gate.error;
   try {
-    const session = await getSession();
-    if (!session?.userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
     const ck = 'dashboard:aktivitas-terbaru';
     const cached = cacheGet<unknown[]>(ck);

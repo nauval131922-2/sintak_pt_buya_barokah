@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { requireApiPermission } from '@/lib/api-guard';
 import { ensureJurnalUmumSchema } from '@/lib/jurnal-umum-schema';
 import type { JurnalUmumExecutor } from '@/lib/jurnal-umum-schema';
 
@@ -10,6 +11,9 @@ export const dynamic = 'force-dynamic';
  * dengan Laba/Rugi (akun 4-9) atau Arus Kas (rek_akuntansi.arus_kas = 'Kas').
  */
 export async function GET(_req: NextRequest) {
+  // Guard: samakan dengan halaman dashboard-akunting
+  const gate = await requireApiPermission('akt_dashboard');
+  if (gate.error) return gate.error;
   try {
     try {
       const executor = (db as unknown as { client?: JurnalUmumExecutor }).client || db;

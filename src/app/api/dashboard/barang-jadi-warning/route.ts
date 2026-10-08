@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { requireApiPermission } from '@/lib/api-guard';
 import { cacheGet, cacheSet } from '@/lib/server-cache';
 
 export const dynamic = 'force-dynamic';
@@ -16,6 +17,9 @@ const TGL_ISO = `substr(bj.tgl, 7, 4) || '-' || substr(bj.tgl, 4, 2) || '-' || s
 
 // ponytail: 1 scan + JOIN instead of 3× correlated-subquery full scans
 export async function GET() {
+  // Guard: samakan dengan halaman dashboard-akunting
+  const gate = await requireApiPermission('akt_dashboard');
+  if (gate.error) return gate.error;
   try {
     const now = new Date(
       new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' })

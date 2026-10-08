@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { requireApiPermission } from '@/lib/api-guard';
 import { ensureJurnalUmumSchema } from '@/lib/jurnal-umum-schema';
 import type { JurnalUmumExecutor } from '@/lib/jurnal-umum-schema';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
+  // Guard: samakan dengan halaman dashboard-akunting
+  const gate = await requireApiPermission('akt_dashboard');
+  if (gate.error) return gate.error;
   try {
     const { searchParams } = new URL(req.url);
     const from = searchParams.get('from');

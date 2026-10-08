@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { requireApiPermission } from '@/lib/api-guard';
 import { cacheGet, cacheSet } from '@/lib/server-cache';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(_request: NextRequest) {
+  // Guard: samakan dengan halaman dashboard-manufaktur
+  const gate = await requireApiPermission('produksi_dashboard');
+  if (gate.error) return gate.error;
   try {
     const ck = 'dashboard:jurnal-terbaru';
     const cached = cacheGet<unknown[]>(ck);

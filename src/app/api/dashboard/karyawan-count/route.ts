@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { requireApiPermission } from '@/lib/api-guard';
 
 export async function GET() {
+  // Guard: samakan dengan halaman dashboard-hrd
+  const gate = await requireApiPermission('hrd_dashboard');
+  if (gate.error) return gate.error;
   try {
     const [allRes, activeRes] = await db.batch([
       'SELECT COUNT(*) as count FROM employees',
