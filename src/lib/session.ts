@@ -46,7 +46,8 @@ export async function createSession(payload: SessionPayload) {
   cookieStore.set('sintak_session', session, {
     expires,
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production' && process.env.SECURE_COOKIE !== 'false',
+    // Secure unconditional: dev wajib via dev:https (TLS lokal tersedia)
+    secure: process.env.SECURE_COOKIE !== 'false',
     sameSite: 'lax',
     path: '/',
   });

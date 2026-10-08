@@ -10,6 +10,9 @@ import { promisify } from 'util';
 // ponytail: execFile (bukan exec) — argumen array tanpa shell, mencegah command injection via password Excel
 const execFilePromise = promisify(execFile);
 
+// Batas staging upload Excel — cegah disk-fill dari file raksasa
+const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+
 export async function GET(request: NextRequest) {
   const search = request.nextUrl.searchParams.get('search') || '';
   const category = request.nextUrl.searchParams.get('category') || '';
@@ -150,6 +153,9 @@ export async function POST(request: NextRequest) {
     tempOutputPath = path.join(tempDir, `upload_${Date.now()}_${rand}_decrypted.${fileExt}`);
 
     const buffer = Buffer.from(await file.arrayBuffer());
+    if (buffer.length > MAX_UPLOAD_BYTES) {
+      return NextResponse.json({ error: 'Ukuran file melebihi batas 25MB.' }, { status: 413 });
+    }
     await fs.promises.writeFile(tempInputPath, buffer);
 
     let finalPath = tempInputPath;
@@ -190,9 +196,10 @@ export async function POST(request: NextRequest) {
       }
 
       if (!decryptSuccess) {
-        return NextResponse.json({ 
-          error: 'PASSWORD_INCORRECT', 
-          message: 'Sandi Excel yang Anda masukkan salah. Silakan coba lagi.' 
+        // Pesan disatukan — jangan bedakan password salah vs file rusak (decrypt oracle)
+        return NextResponse.json({
+          error: 'DECRYPT_FAILED',
+          message: 'Gagal membuka berkas. Periksa sandi atau kondisi file.'
         }, { status: 401 });
       }
     }

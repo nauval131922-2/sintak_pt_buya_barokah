@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { verifyBearerToken } from '@/lib/crypto-compare';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300; // 5 menit max per Vercel Pro/Hobby
@@ -29,11 +30,8 @@ const MODULE_ENDPOINTS = [
 
 export async function GET(request: Request) {
   try {
-    const authHeader = request.headers.get('authorization');
-    const cronSecret = process.env.CRON_SECRET;
-    
-    // Auth untuk Vercel Cron — fail-closed: tanpa CRON_SECRET endpoint tidak berfungsi
-    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    // Auth untuk Vercel Cron — fail-closed + timing-safe compare
+    if (!verifyBearerToken(request.headers.get('authorization'), process.env.CRON_SECRET)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -62,6 +60,7 @@ export async function GET(request: Request) {
         batch.map(async (endpoint) => {
           const url = `${origin}${endpoint}?start=${start}&end=${end}`;
           const headers: Record<string, string> = {};
+          const cronSecret = process.env.CRON_SECRET;
           if (cronSecret) {
             headers['Authorization'] = `Bearer ${cronSecret}`;
           }

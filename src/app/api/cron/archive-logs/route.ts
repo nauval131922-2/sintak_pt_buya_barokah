@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { verifyBearerToken } from '@/lib/crypto-compare';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -13,11 +14,7 @@ export const maxDuration = 300;
 
 export async function GET(request: Request) {
   try {
-    const authHeader = request.headers.get('authorization');
-    const cronSecret = process.env.CRON_SECRET;
-
-    // Fail-closed: tanpa CRON_SECRET endpoint tidak berfungsi sama sekali
-    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    if (!verifyBearerToken(request.headers.get('authorization'), process.env.CRON_SECRET)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

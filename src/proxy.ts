@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
+import { verifyBearerToken } from '@/lib/crypto-compare';
 
 // ponytail: global auth guard — protect /api/* + /dashboard/* + all pages
 // except whitelisted public routes. Middleware can't use next/headers cookies(),
@@ -30,9 +31,8 @@ async function verifySession(request: NextRequest): Promise<boolean> {
   const token = request.cookies.get(SESSION_COOKIE)?.value;
   const authHeader = request.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
-
-  // Allow CRON_SECRET authorization for internal cron/scraper calls
-  if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
+  // Allow CRON_SECRET authorization for internal cron/scraper calls (timing-safe)
+  if (verifyBearerToken(authHeader, cronSecret)) {
     return true;
   }
 

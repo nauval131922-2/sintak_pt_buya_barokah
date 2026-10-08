@@ -1,16 +1,14 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { verifyBearerToken } from '@/lib/crypto-compare';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 export async function GET(request: Request) {
   try {
-    // Keamanan via Bearer token — fail-closed: tanpa CRON_SECRET endpoint tidak berfungsi
-    const authHeader = request.headers.get('authorization');
-    const cronSecret = process.env.CRON_SECRET;
-
-    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    // Keamanan via Bearer token — fail-closed + timing-safe compare
+    if (!verifyBearerToken(request.headers.get('authorization'), process.env.CRON_SECRET)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

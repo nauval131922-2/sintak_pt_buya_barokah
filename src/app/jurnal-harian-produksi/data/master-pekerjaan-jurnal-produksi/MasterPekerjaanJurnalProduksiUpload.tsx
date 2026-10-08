@@ -53,7 +53,7 @@ export default function MasterPekerjaanJurnalProduksiUpload() {
 
       const result = await res.json();
 
-      if (res.status === 401 && (result.error === 'PASSWORD_REQUIRED' || result.error === 'PASSWORD_INCORRECT')) {
+      if (res.status === 401 && (result.error === 'PASSWORD_REQUIRED' || result.error === 'DECRYPT_FAILED')) {
         // Simpan file untuk dikirim ulang setelah input sandi
         setPendingFile(file);
         setPasswordError(result.message);
