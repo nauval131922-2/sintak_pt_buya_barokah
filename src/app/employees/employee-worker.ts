@@ -35,14 +35,34 @@ self.addEventListener('message', async (e) => {
       throw new Error("Tidak dapat menemukan data karyawan pada file yang diunggah.");
     }
 
-    // 2. Konfigurasi Chunking (Disesuaikan agar tidak melebihi limit 4.5MB Vercel)
-    const CHUNK_SIZE = 8000;
-    const totalChunks = Math.ceil(validData.length / CHUNK_SIZE);
+    // 2. Chunking adaptif — belah otomatis bila payload dekati guard server 15MB
+    // (baris lebar/kolom banyak bisa jebol walau jumlah baris kecil)
+    const MAX_PAYLOAD_BYTES = 10 * 1024 * 1024; // jaga di bawah guard 15MB server
+    const chunks: any[][][] = [];
+    let cur: any[][] = [];
+    let curBytes = 0;
+    for (const row of validData) {
+      const rowBytes = JSON.stringify(row).length;
+      if (cur.length > 0 && curBytes + rowBytes > MAX_PAYLOAD_BYTES) {
+        chunks.push(cur);
+        cur = [];
+        curBytes = 0;
+      }
+      cur.push(row);
+      curBytes += rowBytes;
+      if (cur.length >= 8000) {
+        chunks.push(cur);
+        cur = [];
+        curBytes = 0;
+      }
+    }
+    if (cur.length > 0) chunks.push(cur);
+    const totalChunks = chunks.length;
     let totalImported = 0;
 
     // 3. Fungsi pembantu upload
     const uploadChunk = async (index: number) => {
-      const chunkData = validData.slice(index * CHUNK_SIZE, (index + 1) * CHUNK_SIZE);
+      const chunkData = chunks[index];
 
       const res = await fetch(apiUrl, {
         method: 'POST',
@@ -81,6 +101,7 @@ self.addEventListener('message', async (e) => {
     });
     
     totalImported += await uploadChunk(0);
+    let uploadedRows = chunks[0].length;
 
     // 5. Paralel Upload (Concurrency 3) - Untuk karyawan biasanya data tidak sebanyak jurnal, jadi 3 sudah cukup
     const remainingChunks = Array.from({ length: totalChunks - 1 }, (_, i) => i + 1);
@@ -95,13 +116,14 @@ self.addEventListener('message', async (e) => {
         const count = await uploadChunk(index);
         totalImported += count;
         completedChunks++;
+        uploadedRows += chunks[index].length;
 
-        self.postMessage({ 
-          type: 'status', 
+        self.postMessage({
+          type: 'status',
           message: `Mengunggah data... (${completedChunks}/${totalChunks})`,
           progress: Math.round((completedChunks / totalChunks) * 100),
           totalRows: validData.length,
-          currentRows: Math.min(completedChunks * CHUNK_SIZE, validData.length)
+          currentRows: Math.min(uploadedRows, validData.length)
         });
       }
     };
