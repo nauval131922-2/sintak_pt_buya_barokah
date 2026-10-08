@@ -12,11 +12,12 @@ export interface BatchOperation {
 }
 
 // ponytail: URL/secret alert dipindah ke env var agar tidak hardcode di repo.
-// Fallback ke nilai lama supaya perilaku default tidak berubah saat env belum diisi.
+// Fail-closed: tanpa WEBHOOK_ALERT_SECRET, alert tidak dikirim (fallback publik dihapus).
 const WEBHOOK_URL = process.env.WEBHOOK_ALERT_URL || "http://localhost:8644/webhooks/sintak-alert";
-const WEBHOOK_SECRET = process.env.WEBHOOK_ALERT_SECRET || "dfff91...d213";
+const WEBHOOK_SECRET = process.env.WEBHOOK_ALERT_SECRET;
 
 export async function sendErrorAlert(source: string, error: unknown): Promise<void> {
+  if (!WEBHOOK_SECRET) return;
   try {
     await fetch(WEBHOOK_URL, {
       method: "POST",

@@ -2,17 +2,24 @@ import webpush from 'web-push';
 import db from '@/lib/db';
 
 const VAPID_PUBLIC_KEY = 'BGR9pZCmLIDbpXJG7Epd53mpac_BMToDQkhutZEvs4vR6VQpLDABLWRxhvcfbp0ZK-UC5T-luVxbqmfbVQSn2Ss';
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || 'PNWffx27ANb_GvgQo_Y_H_O39OHBkeKx1zBH_Ds9nH8';
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
 
-webpush.setVapidDetails(
-  'mailto:admin@sintak.com',
-  VAPID_PUBLIC_KEY,
-  VAPID_PRIVATE_KEY
-);
+// Fail-closed: tanpa VAPID_PRIVATE_KEY, pengiriman push dinonaktifkan (fallback publik dihapus)
+if (!VAPID_PRIVATE_KEY) {
+  console.error('[PUSH] VAPID_PRIVATE_KEY tidak diset — push dinonaktifkan.');
+}
+
+if (VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(
+    'mailto:admin@sintak.com',
+    VAPID_PUBLIC_KEY,
+    VAPID_PRIVATE_KEY
+  );
+}
 
 export async function sendPushNotification(title: string, body: string, url?: string) {
+  if (!VAPID_PRIVATE_KEY) return { success: false, error: 'VAPID_PRIVATE_KEY tidak diset' };
   try {
-    console.log('[PUSH] Starting sendPushNotification...');
     console.log('[PUSH] Title:', title);
     console.log('[PUSH] Body:', body);
     
