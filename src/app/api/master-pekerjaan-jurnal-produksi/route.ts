@@ -9,6 +9,8 @@ import { promisify } from 'util';
 
 // ponytail: execFile (bukan exec) — argumen array tanpa shell, mencegah command injection via password Excel
 const execFilePromise = promisify(execFile);
+// Batas eksekusi tool dekripsi — file jahat tak boleh gantung worker
+const DECRYPT_EXEC_OPTS = { timeout: 30_000, maxBuffer: 10 * 1024 * 1024 };
 
 // Batas staging upload Excel — cegah disk-fill dari file raksasa
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
@@ -163,7 +165,7 @@ export async function POST(request: NextRequest) {
 
     // Check if the file is encrypted
     try {
-      await execFilePromise('msoffcrypto-tool', ['-t', tempInputPath]);
+      await execFilePromise('msoffcrypto-tool', ['-t', tempInputPath], DECRYPT_EXEC_OPTS);
       isEncrypted = true;
     } catch {
       isEncrypted = false;
@@ -182,7 +184,7 @@ export async function POST(request: NextRequest) {
 
       let decryptSuccess = false;
       try {
-        await execFilePromise('msoffcrypto-tool', ['-p', password, tempInputPath, tempOutputPath]);
+        await execFilePromise('msoffcrypto-tool', ['-p', password, tempInputPath, tempOutputPath], DECRYPT_EXEC_OPTS);
         
         // Verifikasi apakah file output didekripsi benar-benar ada dan tidak kosong (minimal 100 bytes)
         if (fs.existsSync(tempOutputPath) && fs.statSync(tempOutputPath).size > 100) {

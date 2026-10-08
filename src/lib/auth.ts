@@ -13,6 +13,14 @@ const LOGIN_MAX_FAILS = 10;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const loginFailures = new Map<string, number[]>();
 
+function loginRetryAfterSec(username: string): number {
+  const now = Date.now();
+  const fails = (loginFailures.get(username) || []).filter((t) => now - t < LOGIN_WINDOW_MS);
+  if (fails.length === 0) return 0;
+  // Sisa waktu hingga kegagalan tertua kedaluwarsa
+  return Math.max(1, Math.ceil((Math.min(...fails) + LOGIN_WINDOW_MS - now) / 1000));
+}
+
 function isLoginBlocked(username: string): boolean {
   const now = Date.now();
   const fails = (loginFailures.get(username) || []).filter((t) => now - t < LOGIN_WINDOW_MS);
@@ -35,12 +43,10 @@ function clearLoginFailures(username: string) {
 export async function login(
   username: string,
   password: string
-): Promise<{ success: boolean; message?: string; firstRoute?: string }> {
-  console.log(`[AUTH] Login attempt for user: ${username}`);
+): Promise<{ success: boolean; message?: string; firstRoute?: string; retryAfterSec?: number }> {
   try {
     if (isLoginBlocked(username)) {
-      console.log(`[AUTH] Login blocked (rate limit): ${username}`);
-      return { success: false, message: 'Terlalu banyak percobaan login gagal. Coba lagi dalam beberapa menit.' };
+      return { success: false, message: 'Terlalu banyak percobaan login gagal. Coba lagi dalam beberapa menit.', retryAfterSec: loginRetryAfterSec(username) };
     }
 
     const result = await db.execute({

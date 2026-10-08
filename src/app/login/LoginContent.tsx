@@ -26,7 +26,10 @@ export default function LoginContent() {
         router.push(targetRoute);
         router.refresh();
       } else {
-        setError(result.message || 'Login gagal.');
+        const wait = result.retryAfterSec && result.retryAfterSec > 0
+          ? ` Coba lagi dalam ${Math.ceil(result.retryAfterSec / 60)} menit.`
+          : '';
+        setError((result.message || 'Login gagal.') + wait);
       }
     } catch (err) {
       setError('Terjadi kesalahan yang tidak terduga.');
