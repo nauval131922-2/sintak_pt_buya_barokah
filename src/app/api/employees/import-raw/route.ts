@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import db from '@/lib/db';
-import { getSession } from '@/lib/session';
+import { requireApiPermission } from '@/lib/api-guard';
 
 const SHEET_NAME = 'A.DATA KARYAWAN';
 const COL_A = 0; // ID Karyawan (employee_no)
@@ -10,6 +10,9 @@ const COL_C = 2; // Nama
 const COL_J = 9; // Jabatan/Bagian
 
 export async function POST(req: NextRequest) {
+  // Guard: samakan dengan halaman employees (requirePermission karyawan)
+  const gate = await requireApiPermission('karyawan');
+  if (gate.error) return gate.error;
   try {
     const { filename, rows, chunkIndex = 0, totalChunks = 1 } = await req.json();
 
@@ -32,8 +35,7 @@ export async function POST(req: NextRequest) {
 
     let importedCount = 0;
 
-    const session = await getSession();
-    const currentUser = session?.username || 'System';
+    const currentUser = gate.session.username;
 
     for (const row of dataRows) {
         const colA = String(row[COL_A] ?? '').trim();

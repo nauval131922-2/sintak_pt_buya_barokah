@@ -3,10 +3,14 @@ import db from "@/lib/db";
 import { getSession } from "@/lib/session";
 import { logActivity } from "@/lib/activity";
 import { buildFtsQuery } from "@/lib/fts";
+import { requireApiPermission } from "@/lib/api-guard";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  // Guard: samakan dengan halaman (requirePermission hpp_kalkulasi)
+  const gate = await requireApiPermission('hpp_kalkulasi');
+  if (gate.error) return gate.error;
   try {
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get("search");
@@ -83,6 +87,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // Guard: hanya pemilik modul hpp_kalkulasi (halaman konversi dibatasi Super Admin)
+  const gate = await requireApiPermission('hpp_kalkulasi');
+  if (gate.error) return gate.error;
   try {
     const { filename, data: rawData } = await request.json();
 

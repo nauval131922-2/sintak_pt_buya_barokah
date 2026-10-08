@@ -183,13 +183,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const preview = searchParams.get('preview') === '1';
+    void searchParams.get('preview');
 
-    if (!preview) {
-      const allowed = await canViewActivityLog(session.role);
-      if (!allowed) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-      }
+    // Guard: preview maupun list wajib lolos permission lihat (tutup bypass preview=1)
+    const roles = Array.isArray(session.roles) && session.roles.length > 0 ? session.roles : [session.role];
+    const allowed = await canViewActivityLog(roles);
+    if (!allowed) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const logId = searchParams.get('logId');
@@ -235,13 +235,24 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // Guard: session wajib; atribusi selalu dari server; hanya aksi SCRAPE client yang diizinkan
+  // (aksi lain ditulis server-side via logActivity). Batasan: tabel tujuan allowlist.
+  const session = await getSession();
+  if (!session?.userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const body = await req.json();
-    const { action_type, table_name, message, raw_data, recorded_by } = body;
-    const session = await getSession();
+    const { action_type, table_name, message, raw_data } = body;
 
     if (!action_type || !table_name || !message) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+    if (action_type !== 'SCRAPE') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(table_name)) {
+      return NextResponse.json({ error: 'Nama tabel tidak valid' }, { status: 400 });
     }
 
     await db.execute({
@@ -249,7 +260,7 @@ export async function POST(req: NextRequest) {
         INSERT INTO activity_logs (action_type, table_name, record_id, message, raw_data, recorded_by)
         VALUES (?, ?, 0, ?, ?, ?)
       `,
-      args: [action_type, table_name, message, raw_data || '{}', session?.username || recorded_by || 'System']
+      args: [action_type, table_name, message, raw_data || '{}', session.username || 'System']
     });
 
     return NextResponse.json({ success: true });

@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
+import { requireSuperAdmin } from "@/lib/api-guard";
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
+  // Guard: hanya Super Admin — settings dipakai 20+ rute (last_scrape/period)
+  const gate = await requireSuperAdmin();
+  if (gate.error) return gate.error;
   try {
     const { key, value } = await request.json();
     if (!key) return NextResponse.json({ error: 'key diperlukan' }, { status: 400 });

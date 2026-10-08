@@ -1,22 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getSession } from '@/lib/session';
+import { canAdminActivityLog } from '@/lib/activity-log-permissions';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
+  // Guard: hanya pemilik hak kelola log (canAdminActivityLog) — revert menulis ke tabel asing
+  const session = await getSession();
+  if (!session?.userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const roles = Array.isArray(session.roles) && session.roles.length > 0 ? session.roles : [session.role];
+  if (!(await canAdminActivityLog(roles))) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
   try {
-    const session = await getSession();
-    if (!session?.userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { logId } = await req.json();
     if (!logId) {
       return NextResponse.json({ error: 'Log ID required' }, { status: 400 });
     }
-
-    // 1. Ambil data log aktivitas
     const logResult = await db.execute({
       sql: `SELECT id, action_type, table_name, record_id, raw_data FROM activity_logs WHERE id = ?`,
       args: [logId]

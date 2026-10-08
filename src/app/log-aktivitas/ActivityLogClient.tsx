@@ -1128,7 +1128,7 @@ export default function ActivityLogClient({
                                   <div className="flex items-center justify-between mb-1.5 pb-1 border-b border-gray-100">
                                     <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Perubahan Field</span>
                                     <div className="flex items-center gap-1.5">
-                                      {log.action_type === 'UPDATE' && rawParsed?.before && !String(log.message || '').startsWith('Undo Perubahan') && (
+                                      {canAdminLogs && log.action_type === 'UPDATE' && rawParsed?.before && !String(log.message || '').startsWith('Undo Perubahan') && (
                                         <button
                                           type="button"
                                           onClick={() => handleUndo(log.id)}
@@ -1331,7 +1331,7 @@ export default function ActivityLogClient({
                                     </div>
 
                                     <div className="flex items-center gap-2">
-                                      {log.action_type === 'UPDATE' && rawParsed?.before && !String(log.message || '').startsWith('Undo Perubahan') && (
+                                      {canAdminLogs && log.action_type === 'UPDATE' && rawParsed?.before && !String(log.message || '').startsWith('Undo Perubahan') && (
                                         <button
                                           type="button"
                                           onClick={() => handleUndo(log.id)}
