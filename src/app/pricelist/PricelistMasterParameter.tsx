@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Database,
   Sliders,
@@ -14,6 +14,7 @@ import {
   FileSpreadsheet,
   FolderTree,
   ExternalLink,
+  Search,
   X,
   BookOpen,
   Bookmark,
@@ -81,13 +82,14 @@ export default function PricelistMasterParameter({
   activeSimulationTitle,
   onBackToSimulator,
 }: MasterParameterProps) {
+  const [q, setQ] = useState('');
   const [showManualModal, setShowManualModal] = useState(false);
 
   const handleChange = (key: keyof SimulatorMasterParams, val: number) => {
     setCustomParams((prev) => ({ ...prev, [key]: Math.max(0, val) }));
   };
 
-  const standardParams = React.useMemo(() => {
+  const standardParams = useMemo(() => {
     return activeFinishing === 'Klem' ? DEFAULT_MASTER_PARAMS_KLEM : DEFAULT_MASTER_PARAMS;
   }, [activeFinishing]);
 
@@ -101,10 +103,9 @@ export default function PricelistMasterParameter({
     toast.info(`Field dikembalikan ke standar master (${standardParams[key]}).`);
   };
 
-  const isModified = React.useMemo(() => {
+  const isModified = useMemo(() => {
     return KALENDER_VISIBLE_KEYS.some((key) => customParams[key] !== standardParams[key]);
   }, [customParams, standardParams]);
-
   const handleReset = () => {
     setCustomParams((prev) => {
       const resetObj = { ...prev };
@@ -117,72 +118,79 @@ export default function PricelistMasterParameter({
     toast.success('Tarif parameter kalender berhasil dikembalikan ke standar master.');
   };
 
+  const matchQ = (label: string) =>
+    q.trim() === '' || label.toLowerCase().includes(q.trim().toLowerCase());
+
   return (
-    <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
-      {/* Sticky Action Bar */}
-      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1.5 flex items-center justify-between gap-3 border-b border-slate-200/80 -mt-1 mb-1">
-        <div className="flex items-center gap-2">
-          <Database className="w-4 h-4 text-emerald-700" />
-          <h2 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-            Master Parameter Tarif Kalender
-          </h2>
-          {isModified && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
-              Dimodifikasi
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          {onChangeFinishing && (
-            <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs shadow-2xs">
-              <button
-                type="button"
-                onClick={() => onChangeFinishing('Spiral')}
-                className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                  activeFinishing === 'Spiral'
-                    ? 'bg-emerald-700 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-                title="Profil Tarif Jilid Spiral"
-              >
-                Spiral
-              </button>
-              <button
-                type="button"
-                onClick={() => onChangeFinishing('Klem')}
-                className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                  activeFinishing === 'Klem'
-                    ? 'bg-amber-600 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-                title="Profil Tarif Jilid Klem Seng"
-              >
-                Klem
-              </button>
-            </div>
-          )}
-          <button
-            type="button"
-            onClick={() => setShowManualModal(true)}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all cursor-pointer shadow-2xs"
-          >
-            <BookOpen size={13} />
-            <span>Panduan</span>
-          </button>
-          {isModified && (
+    <div className="flex flex-col gap-4 pb-8 overflow-y-auto">
+      {/* Sticky Search Bar & Actions */}
+      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1 flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Cari nama parameter ..."
+            className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs font-medium"
+          />
+          {q && (
             <button
               type="button"
-              onClick={handleReset}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs cursor-pointer"
+              onClick={() => setQ('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
             >
-              <RotateCcw size={13} />
-              <span>Reset Standar</span>
+              <X size={13} />
             </button>
           )}
         </div>
+        {onChangeFinishing && (
+          <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 text-xs shadow-2xs shrink-0">
+            <button
+              type="button"
+              onClick={() => onChangeFinishing('Spiral')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeFinishing === 'Spiral'
+                  ? 'bg-emerald-700 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+              title="Profil Tarif Jilid Spiral"
+            >
+              Spiral
+            </button>
+            <button
+              type="button"
+              onClick={() => onChangeFinishing('Klem')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeFinishing === 'Klem'
+                  ? 'bg-amber-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+              title="Profil Tarif Jilid Klem Seng"
+            >
+              Klem
+            </button>
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={() => setShowManualModal(true)}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition cursor-pointer shrink-0"
+        >
+          <BookOpen size={14} className="text-slate-500" />
+          <span>Panduan & Rumus</span>
+        </button>
+        {isModified && (
+          <button
+            type="button"
+            onClick={handleReset}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs transition cursor-pointer shrink-0"
+          >
+            <RotateCcw size={14} />
+            <span>Reset Semua</span>
+          </button>
+        )}
       </div>
- 
 
       {/* Banner Informasi Mode Edit Simulasi Aktif */}
       {activeSimulationId && (
@@ -234,6 +242,7 @@ export default function PricelistMasterParameter({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-[11px]">
+              {matchQ('Ongkos Min Order (4 plat)') && (
               <tr>
                 <td className="py-1 px-1.5 text-slate-700">Ongkos Min Order (4 plat)</td>
                 <td className={`py-1 px-1.5 ${isFieldModified('oliverMinOngkos') ? 'bg-amber-50/70' : ''}`}>
@@ -277,6 +286,8 @@ export default function PricelistMasterParameter({
                   </div>
                 </td>
               </tr>
+              )}
+              {matchQ('Insheet Plat Cetak') && (
               <tr>
                 <td className="py-1 px-1.5 text-slate-700">Insheet Plat Cetak</td>
                 <td className={`py-1 px-1.5 ${isFieldModified('oliverInsheet') ? 'bg-amber-50/70' : ''}`}>
@@ -320,6 +331,8 @@ export default function PricelistMasterParameter({
                   </div>
                 </td>
               </tr>
+              )}
+              {matchQ('Biaya Plat / Unit') && (
               <tr>
                 <td className="py-1 px-1.5 text-slate-700">Biaya Plat / Unit</td>
                 <td className={`py-1 px-1.5 ${isFieldModified('oliverPlatUnit') ? 'bg-amber-50/70' : ''}`}>
@@ -363,6 +376,8 @@ export default function PricelistMasterParameter({
                   </div>
                 </td>
               </tr>
+              )}
+              {matchQ('Batas Min Drek (Kapasitas Min)') && (
               <tr>
                 <td className="py-1 px-1.5 text-slate-700">Batas Min Drek (Kapasitas Min)</td>
                 <td className={`py-1 px-1.5 ${isFieldModified('oliverBatasDrek') ? 'bg-amber-50/70' : ''}`}>
@@ -406,6 +421,8 @@ export default function PricelistMasterParameter({
                   </div>
                 </td>
               </tr>
+              )}
+              {matchQ('Drek Over / Drek') && (
               <tr>
                 <td className="py-1 px-1.5 text-slate-700">Drek Over / Drek</td>
                 <td className={`py-1 px-1.5 ${isFieldModified('oliverDrekOver') ? 'bg-amber-50/70' : ''}`}>
@@ -449,6 +466,8 @@ export default function PricelistMasterParameter({
                   </div>
                 </td>
               </tr>
+              )}
+              {matchQ('Biaya Transportasi Mesin') && (
               <tr>
                 <td className="py-1 px-1.5 text-slate-700">Biaya Transportasi Mesin</td>
                 <td className={`py-1 px-1.5 ${isFieldModified('oliverTransport') ? 'bg-amber-50/70' : ''}`}>
@@ -492,6 +511,7 @@ export default function PricelistMasterParameter({
                   </div>
                 </td>
               </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -504,6 +524,7 @@ export default function PricelistMasterParameter({
             <h3 className="text-xs font-bold text-slate-800">2. Jasa Desain, Almanak & Royalty</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {matchQ('Jasa Desain') && (
               <div className={`p-2.5 rounded-lg border transition-all ${
                 isFieldModified('tarifDesain')
                   ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
@@ -531,7 +552,9 @@ export default function PricelistMasterParameter({
                   />
                 </div>
               </div>
+            )}
 
+            {matchQ('Desain Almanak') && (
               <div className={`p-2.5 rounded-lg border transition-all ${
                 isFieldModified('tarifAlmanakDesain')
                   ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
@@ -559,7 +582,9 @@ export default function PricelistMasterParameter({
                   />
                 </div>
               </div>
+            )}
 
+            {matchQ('Royalti Almanak') && (
               <div className={`p-2.5 rounded-lg border transition-all ${
                 isFieldModified('tarifRoyalty')
                   ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
@@ -587,6 +612,7 @@ export default function PricelistMasterParameter({
                   />
                 </div>
               </div>
+            )}
           </div>
         </div>
 
@@ -598,6 +624,7 @@ export default function PricelistMasterParameter({
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {matchQ('Ukuran 32 x 48 cm') && (
               <div className={`p-2.5 rounded-lg border flex items-center justify-between transition-all ${
                 isFieldModified('potong32x48') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
               }`}>
@@ -626,7 +653,9 @@ export default function PricelistMasterParameter({
                   />
                 </div>
               </div>
+              )}
 
+              {matchQ('Ukuran 38 x 54 cm') && (
               <div className={`p-2.5 rounded-lg border flex items-center justify-between transition-all ${
                 isFieldModified('potong38x54') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
               }`}>
@@ -655,7 +684,9 @@ export default function PricelistMasterParameter({
                   />
                 </div>
               </div>
+              )}
 
+              {matchQ('Ukuran 46 x 64 cm') && (
               <div className={`p-2.5 rounded-lg border flex items-center justify-between transition-all ${
                 isFieldModified('potong46x64') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
               }`}>
@@ -684,7 +715,9 @@ export default function PricelistMasterParameter({
                   />
                 </div>
               </div>
+              )}
 
+              {matchQ('Ukuran 48 x 64 cm') && (
               <div className={`p-2.5 rounded-lg border flex items-center justify-between transition-all ${
                 isFieldModified('potong48x64') ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
               }`}>
@@ -713,10 +746,12 @@ export default function PricelistMasterParameter({
                   />
                 </div>
               </div>
+              )}
             </div>
 
             {/* Konstanta Grafika */}
             <div className="p-3 bg-violet-50/60 rounded-lg border border-violet-100 flex flex-col gap-2.5 text-xs text-violet-950">
+              {matchQ('Konstanta Berat 1 Rim Kertas Plano') && (
               <div className={`flex items-center justify-between gap-2 border-b border-violet-200/50 pb-2 p-1 rounded ${
                 isFieldModified('konstantaBeratRim') ? 'bg-amber-50 border-amber-200' : ''
               }`}>
@@ -741,6 +776,8 @@ export default function PricelistMasterParameter({
                   />
                 </div>
               </div>
+              )}
+              {matchQ('Standar Isi 1 Rim (Lembar)') && (
               <div className={`flex items-center justify-between gap-2 border-b border-violet-200/50 pb-2 p-1 rounded ${
                 isFieldModified('lembarPerRim') ? 'bg-amber-50 border-amber-200' : ''
               }`}>
@@ -766,6 +803,8 @@ export default function PricelistMasterParameter({
                   />
                 </div>
               </div>
+              )}
+              {matchQ('Kapasitas Lakban per Roll') && (
               <div className={`flex items-center justify-between gap-2 p-1 rounded ${
                 isFieldModified('kapasitasLakbanRoll') ? 'bg-amber-50 border-amber-200' : ''
               }`}>
@@ -794,6 +833,7 @@ export default function PricelistMasterParameter({
                   />
                 </div>
               </div>
+              )}
             </div>
           </div>
         </div>
@@ -807,6 +847,7 @@ export default function PricelistMasterParameter({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {/* Sub: Spiral & Jasa Umum */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {matchQ('Spiral (cm x Rp)') && (
               <div className={`p-2.5 rounded-lg border transition-all ${
                 isFieldModified('tarifSpiralLubang')
                   ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
@@ -832,7 +873,9 @@ export default function PricelistMasterParameter({
                   className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                 />
               </div>
+              )}
 
+              {matchQ('Spiral Min Order') && (
               <div className={`p-2.5 rounded-lg border transition-all ${
                 isFieldModified('tarifSpiralMin')
                   ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
@@ -858,7 +901,9 @@ export default function PricelistMasterParameter({
                   className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                 />
               </div>
+              )}
 
+              {matchQ('Desain Kalender') && (
               <div className={`p-2.5 rounded-lg border transition-all ${
                 isFieldModified('tarifDesain')
                   ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
@@ -884,7 +929,9 @@ export default function PricelistMasterParameter({
                   className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                 />
               </div>
+              )}
 
+              {matchQ('Almanak Desain') && (
               <div className={`p-2.5 rounded-lg border transition-all ${
                 isFieldModified('tarifAlmanakDesain')
                   ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
@@ -910,7 +957,9 @@ export default function PricelistMasterParameter({
                   className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                 />
               </div>
+              )}
 
+              {matchQ('Royalty Kalender') && (
               <div className={`p-2.5 rounded-lg border transition-all ${
                 isFieldModified('tarifRoyalty')
                   ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
@@ -936,7 +985,9 @@ export default function PricelistMasterParameter({
                   className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                 />
               </div>
+              )}
 
+              {matchQ('Potong Dasar') && (
               <div className={`p-2.5 rounded-lg border transition-all ${
                 isFieldModified('tarifPotongDasar')
                   ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
@@ -962,6 +1013,7 @@ export default function PricelistMasterParameter({
                   className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                 />
               </div>
+              )}
             </div>
 
             {/* Sub: Tarif Klem Seng per Ukuran */}
@@ -971,6 +1023,7 @@ export default function PricelistMasterParameter({
                 <span className="text-[10px] text-amber-800">Rumus: (Oplah + 5) * Tarif</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {matchQ('32 x 48 cm') && (
                 <div className={`p-2.5 rounded-lg border transition-all ${
                   isFieldModified('klem32x48') ? 'bg-amber-100/60 border-amber-400 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
                 }`}>
@@ -994,6 +1047,9 @@ export default function PricelistMasterParameter({
                     className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                   />
                 </div>
+                )}
+
+                {matchQ('38 x 54 cm') && (
                 <div className={`p-2.5 rounded-lg border transition-all ${
                   isFieldModified('klem38x54') ? 'bg-amber-100/60 border-amber-400 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
                 }`}>
@@ -1017,6 +1073,9 @@ export default function PricelistMasterParameter({
                     className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                   />
                 </div>
+                )}
+
+                {matchQ('46 x 64 cm') && (
                 <div className={`p-2.5 rounded-lg border transition-all ${
                   isFieldModified('klem46x64') ? 'bg-amber-100/60 border-amber-400 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
                 }`}>
@@ -1040,6 +1099,9 @@ export default function PricelistMasterParameter({
                     className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                   />
                 </div>
+                )}
+
+                {matchQ('48 x 64 cm') && (
                 <div className={`p-2.5 rounded-lg border transition-all ${
                   isFieldModified('klem48x64') ? 'bg-amber-100/60 border-amber-400 ring-1 ring-amber-400/40' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
                 }`}>
@@ -1063,6 +1125,7 @@ export default function PricelistMasterParameter({
                     className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
                   />
                 </div>
+                )}
               </div>
             </div>
           </div>

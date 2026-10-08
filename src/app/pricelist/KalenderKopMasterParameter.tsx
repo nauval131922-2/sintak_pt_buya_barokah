@@ -2,13 +2,14 @@
 
 import { toast } from '@/lib/toast';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   RotateCcw,
   Printer,
   Scissors,
   Database,
   HelpCircle,
+  Search,
   X,
   FileText,
   Calendar,
@@ -40,17 +41,17 @@ export default function KalenderKopMasterParameter({
   customParams,
   setCustomParams,
 }: Props) {
+  const [q, setQ] = useState('');
   const [showManualModal, setShowManualModal] = useState(false);
 
   const isFieldModified = (key: keyof KalenderKopMasterParams) => {
     return customParams[key] !== DEFAULT_KALENDER_KOP_PARAMS[key];
   };
 
-  const isModified = React.useMemo(
+  const isModified = useMemo(
     () => KALENDER_KOP_VISIBLE_KEYS.some((k) => customParams[k] !== DEFAULT_KALENDER_KOP_PARAMS[k]),
     [customParams]
   );
-
   const handleResetField = (key: keyof KalenderKopMasterParams) => {
     setCustomParams((prev) => ({
       ...prev,
@@ -81,17 +82,22 @@ export default function KalenderKopMasterParameter({
     }));
   };
 
+  const matchQ = (label: string) =>
+    q.trim() === '' || label.toLowerCase().includes(q.trim().toLowerCase());
+
   const fieldRow = (
     key: keyof KalenderKopMasterParams,
     label: string,
     isCurrency = true,
     isFloat = false
   ) => {
+    if (!matchQ(label)) return null;
     const modified = isFieldModified(key);
     const val = customParams[key];
 
     return (
       <div
+        key={key}
         className={`p-2.5 rounded-lg border flex items-center justify-between transition-all ${
           modified
             ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
@@ -153,123 +159,137 @@ export default function KalenderKopMasterParameter({
 
   return (
     <div className="flex flex-col gap-4 pb-8">
-      {/* Sticky Action Bar */}
-      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1.5 flex items-center justify-between gap-3 border-b border-slate-200/80 -mt-1 mb-1">
-        <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-emerald-700" />
-          <h2 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-            Master Parameter Kalender Kop
-          </h2>
-          {isModified && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
-              Dimodifikasi
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowManualModal(true)}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all cursor-pointer shadow-2xs"
-          >
-            <HelpCircle size={13} className="text-emerald-600" />
-            <span>Panduan</span>
-          </button>
-          {isModified && (
+      {/* Sticky Search Bar & Actions */}
+      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1 flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Cari nama parameter ..."
+            className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs font-medium"
+          />
+          {q && (
             <button
               type="button"
-              onClick={handleResetAll}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs cursor-pointer"
+              onClick={() => setQ('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
             >
-              <RotateCcw size={13} />
-              <span>Reset Standar</span>
+              <X size={13} />
             </button>
           )}
         </div>
+        <button
+          type="button"
+          onClick={() => setShowManualModal(true)}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition cursor-pointer shrink-0"
+        >
+          <HelpCircle size={14} className="text-slate-500" />
+          <span>Panduan & Rumus</span>
+        </button>
+        {isModified && (
+          <button
+            type="button"
+            onClick={handleResetAll}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs transition cursor-pointer shrink-0"
+          >
+            <RotateCcw size={14} />
+            <span>Reset Semua</span>
+          </button>
+        )}
       </div>
-
-      {isModified && (
-        <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900">
-          <Database size={15} className="text-amber-600 shrink-0 mt-0.5" />
-          <span>
-            <strong>Ada parameter yang dimodifikasi</strong> dari nilai default. Baris berwarna oranye menunjukkan perubahan aktif.
-          </span>
-        </div>
-      )}
-
       {/* Grid 2 Kolom Standar */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Card 1: Blanko & Desain Kop */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <FileText size={15} className="text-emerald-700" />
-            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              1. Blanko Kalender &amp; Desain Kop
-            </h4>
+        {Boolean([
+          fieldRow('tarifBlankoKalender6Lbr', 'Blanko Kalender 6 Lbr (Rp/eks)', true),
+          fieldRow('tarifDesainKop', 'Desain Kop Kalender (Rp/order)', true),
+        ].filter(Boolean).length) && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <FileText size={15} className="text-emerald-700" />
+              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                1. Blanko Kalender &amp; Desain Kop
+              </h4>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {fieldRow('tarifBlankoKalender6Lbr', 'Blanko Kalender 6 Lbr (Rp/eks)', true)}
+              {fieldRow('tarifDesainKop', 'Desain Kop Kalender (Rp/order)', true)}
+            </div>
+            <p className="text-[10px] text-slate-500">
+              Blanko Kalender Dwi Wulan (6 lembar) Art Paper 120 gsm ukuran 32 × 48 cm.
+            </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifBlankoKalender6Lbr', 'Blanko Kalender 6 Lbr (Rp/eks)', true)}
-            {fieldRow('tarifDesainKop', 'Desain Kop Kalender (Rp/order)', true)}
-          </div>
-          <p className="text-[10px] text-slate-500">
-            Blanko Kalender Dwi Wulan (6 lembar) Art Paper 120 gsm ukuran 32 × 48 cm.
-          </p>
-        </div>
-
+        )}
         {/* Card 2: Ongkos Cetak Kop per Warna */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Printer size={15} className="text-emerald-700" />
-            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              2. Ongkos Cetak Kop per Warna
-            </h4>
+        {Boolean([
+          fieldRow('tarifCetakKop1Warna', 'Cetak Kop 1 Warna (Rp/eks)', true),
+          fieldRow('tarifCetakKop2Warna', 'Cetak Kop 2 Warna (Rp/eks)', true),
+          fieldRow('tarifCetakKop3Warna', 'Cetak Kop 3 Warna (Rp/eks)', true),
+          fieldRow('tarifCetakKop4Warna', 'Cetak Kop 4 Warna (Rp/eks)', true),
+        ].filter(Boolean).length) && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <Printer size={15} className="text-emerald-700" />
+              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                2. Ongkos Cetak Kop per Warna
+              </h4>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {fieldRow('tarifCetakKop1Warna', 'Cetak Kop 1 Warna (Rp/eks)', true)}
+              {fieldRow('tarifCetakKop2Warna', 'Cetak Kop 2 Warna (Rp/eks)', true)}
+              {fieldRow('tarifCetakKop3Warna', 'Cetak Kop 3 Warna (Rp/eks)', true)}
+              {fieldRow('tarifCetakKop4Warna', 'Cetak Kop 4 Warna (Rp/eks)', true)}
+            </div>
+            <p className="text-[10px] text-slate-500">
+              Cetak sablon / offset header kop instansi pada blanko kalender.
+            </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifCetakKop1Warna', 'Cetak Kop 1 Warna (Rp/eks)', true)}
-            {fieldRow('tarifCetakKop2Warna', 'Cetak Kop 2 Warna (Rp/eks)', true)}
-            {fieldRow('tarifCetakKop3Warna', 'Cetak Kop 3 Warna (Rp/eks)', true)}
-            {fieldRow('tarifCetakKop4Warna', 'Cetak Kop 4 Warna (Rp/eks)', true)}
-          </div>
-          <p className="text-[10px] text-slate-500">
-            Cetak sablon / offset header kop instansi pada blanko kalender.
-          </p>
-        </div>
-
+        )}
         {/* Card 3: Finishing Jilid Klem Seng & Packing */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Scissors size={15} className="text-emerald-700" />
-            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              3. Finishing Jilid Klem &amp; Packing
-            </h4>
+        {Boolean([
+          fieldRow('tarifKlemSeng', 'Jilid Klem Seng (Rp/eks)', true),
+          fieldRow('tarifPackingKardus', 'Packing Kardus (Rp/box)', true),
+        ].filter(Boolean).length) && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <Scissors size={15} className="text-emerald-700" />
+              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                3. Finishing Jilid Klem &amp; Packing
+              </h4>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {fieldRow('tarifKlemSeng', 'Jilid Klem Seng (Rp/eks)', true)}
+              {fieldRow('tarifPackingKardus', 'Packing Kardus (Rp/box)', true)}
+            </div>
+            <p className="text-[10px] text-slate-500">
+              Jilid jepit kaleng / klem seng 32 cm + packing kardus tebal.
+            </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifKlemSeng', 'Jilid Klem Seng (Rp/eks)', true)}
-            {fieldRow('tarifPackingKardus', 'Packing Kardus (Rp/box)', true)}
-          </div>
-          <p className="text-[10px] text-slate-500">
-            Jilid jepit kaleng / klem seng 32 cm + packing kardus tebal.
-          </p>
-        </div>
-
+        )}
         {/* Card 4: Margin & Nego Standar */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Database size={15} className="text-blue-700" />
-            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              4. Margin &amp; Nego Standar
-            </h4>
+        {Boolean([
+          fieldRow('marginDefaultPct', 'Margin Tambahan (%)', false),
+          fieldRow('negoDefaultPct', 'Batas Nego (%)', false),
+        ].filter(Boolean).length) && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <Database size={15} className="text-blue-700" />
+              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                4. Margin &amp; Nego Standar
+              </h4>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {fieldRow('marginDefaultPct', 'Margin Tambahan (%)', false)}
+              {fieldRow('negoDefaultPct', 'Batas Nego (%)', false)}
+            </div>
+            <p className="text-[10px] text-slate-500">
+              Harga penawaran standar = ROUNDUP(HPP, -2). Batas nego marketing 4%.
+            </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('marginDefaultPct', 'Margin Tambahan (%)', false)}
-            {fieldRow('negoDefaultPct', 'Batas Nego (%)', false)}
-          </div>
-          <p className="text-[10px] text-slate-500">
-            Harga penawaran standar = ROUNDUP(HPP, -2). Batas nego marketing 4%.
-          </p>
-        </div>
+        )}
       </div>
+
 
       {/* Manual Modal */}
       {showManualModal && (

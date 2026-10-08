@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   RotateCcw,
   ShoppingBag,
   Database,
   HelpCircle,
+  Search,
   X,
   Printer,
   Scissors,
@@ -59,6 +60,7 @@ export default function PaperbagMasterParameter({
   customParams,
   setCustomParams,
 }: PaperbagMasterParameterProps) {
+  const [q, setQ] = useState('');
   const [showManualModal, setShowManualModal] = useState(false);
 
   const handleChange = (field: keyof PaperbagMasterParams, value: number) => {
@@ -74,10 +76,12 @@ export default function PaperbagMasterParameter({
     }
   };
 
-  const isModified = React.useMemo(
+  const isModified = useMemo(
     () => PAPERBAG_VISIBLE_KEYS.some((k) => customParams[k] !== DEFAULT_PAPERBAG_PARAMS[k]),
     [customParams]
   );
+  const matchQ = (label: string) =>
+    q.trim() === '' || label.toLowerCase().includes(q.trim().toLowerCase());
 
   const fieldRow = (
     field: keyof PaperbagMasterParams,
@@ -85,9 +89,11 @@ export default function PaperbagMasterParameter({
     isCurrency: boolean = true,
     suffix?: string
   ) => {
+    if (!matchQ(label)) return null;
     const isFieldModified = customParams[field] !== DEFAULT_PAPERBAG_PARAMS[field];
     return (
       <div
+        key={field}
         className={`p-2.5 rounded-lg border transition-all ${
           isFieldModified
             ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
@@ -139,150 +145,187 @@ export default function PaperbagMasterParameter({
 
   return (
     <div className="flex flex-col gap-4 pb-8">
-      {/* Sticky Action Bar */}
-      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1.5 flex items-center justify-between gap-3 border-b border-slate-200/80 -mt-1 mb-1">
-        <div className="flex items-center gap-2">
-          <Database className="w-4 h-4 text-emerald-700" />
-          <h2 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-            Master Parameter Paperbag (Tas Kertas)
-          </h2>
-          {isModified && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
-              Dimodifikasi
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowManualModal(true)}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all cursor-pointer shadow-2xs"
-          >
-            <HelpCircle size={13} />
-            <span>Panduan</span>
-          </button>
-          {isModified && (
+      {/* Sticky Search Bar & Actions */}
+      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1 flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Cari nama parameter ..."
+            className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs font-medium"
+          />
+          {q && (
             <button
-              onClick={handleReset}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs cursor-pointer"
+              type="button"
+              onClick={() => setQ('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
             >
-              <RotateCcw size={13} />
-              <span>Reset Standar</span>
+              <X size={13} />
             </button>
           )}
         </div>
+        <button
+          type="button"
+          onClick={() => setShowManualModal(true)}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition cursor-pointer shrink-0"
+        >
+          <HelpCircle size={14} className="text-slate-500" />
+          <span>Panduan & Rumus</span>
+        </button>
+        {isModified && (
+          <button
+            type="button"
+            onClick={handleReset}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs transition cursor-pointer shrink-0"
+          >
+            <RotateCcw size={14} />
+            <span>Reset Semua</span>
+          </button>
+        )}
       </div>
-
-      {isModified && (
-        <div className="flex items-center gap-2.5 px-3.5 py-2 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-900">
-          <Database size={15} className="text-amber-700 shrink-0" />
-          <span>
-            <strong>Ada parameter yang dimodifikasi</strong> dari nilai default. Baris berwarna orange menunjukkan perubahan aktif.
-          </span>
-        </div>
-      )}
-
       {/* Grid Kategori Parameter (2 Kolom di md/2xl) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Card 1: Kertas Dasar & Desain */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <ShoppingBag className="w-4 h-4 text-emerald-700" />
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              1. Kertas Dasar & Desain Paperbag
-            </h3>
+        {Boolean([
+          fieldRow('hargaPlanoAC230', 'Art Carton 230 gsm (Rp/Plano)'),
+          fieldRow('biayaDesain', 'Jasa Desain Paperbag (Rp/Order)'),
+          fieldRow('insheetPlanoOliver', 'Insheet Oliver (Lbr Plano)', false, ' lbr'),
+          fieldRow('insheetPlanoSM', 'Insheet SM 52/72 (Lbr Plano)', false, ' lbr'),
+        ].filter(Boolean).length) && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <ShoppingBag className="w-4 h-4 text-emerald-700" />
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                1. Kertas Dasar & Desain Paperbag
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {fieldRow('hargaPlanoAC230', 'Art Carton 230 gsm (Rp/Plano)')}
+              {fieldRow('biayaDesain', 'Jasa Desain Paperbag (Rp/Order)')}
+              {fieldRow('insheetPlanoOliver', 'Insheet Oliver (Lbr Plano)', false, ' lbr')}
+              {fieldRow('insheetPlanoSM', 'Insheet SM 52/72 (Lbr Plano)', false, ' lbr')}
+            </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('hargaPlanoAC230', 'Art Carton 230 gsm (Rp/Plano)')}
-            {fieldRow('biayaDesain', 'Jasa Desain Paperbag (Rp/Order)')}
-            {fieldRow('insheetPlanoOliver', 'Insheet Oliver (Lbr Plano)', false, ' lbr')}
-            {fieldRow('insheetPlanoSM', 'Insheet SM 52/72 (Lbr Plano)', false, ' lbr')}
-          </div>
-        </div>
+        )}
 
-        {/* Card 2: Plat & Ongkos Cetak Offset */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Printer className="w-4 h-4 text-emerald-700" />
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              2. Plat & Ongkos Cetak Offset (4 Warna)
-            </h3>
+        {Boolean([
+          fieldRow('tarifPlatOliverPerWarna', 'Tarif Plat Oliver (Rp/Plat)'),
+          fieldRow('tarifPlatSMPerWarna', 'Tarif Plat SM (Rp/Plat)'),
+          fieldRow('oliverMinOngkosPerWarna', 'Min Oliver 4W s/d 1rb (Rp/Plat)'),
+          fieldRow('oliverDrekOverPerWarna', 'Oliver Drek Over (Rp/Drek/Warna)'),
+          fieldRow('smMinOngkosPerWarna', 'Min SM 4W s/d 3rb (Rp/Plat)'),
+          fieldRow('smDrekOverPerWarna', 'SM Drek Over (Rp/Drek/Warna)'),
+        ].filter(Boolean).length) && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <Printer className="w-4 h-4 text-emerald-700" />
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                2. Plat & Ongkos Cetak Offset (4 Warna)
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {fieldRow('tarifPlatOliverPerWarna', 'Tarif Plat Oliver (Rp/Plat)'),
+              fieldRow('tarifPlatSMPerWarna', 'Tarif Plat SM (Rp/Plat)'),
+              fieldRow('oliverMinOngkosPerWarna', 'Min Oliver 4W s/d 1rb (Rp/Plat)'),
+              fieldRow('oliverDrekOverPerWarna', 'Oliver Drek Over (Rp/Drek/Warna)'),
+              fieldRow('smMinOngkosPerWarna', 'Min SM 4W s/d 3rb (Rp/Plat)'),
+              fieldRow('smDrekOverPerWarna', 'SM Drek Over (Rp/Drek/Warna)')}
+            </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifPlatOliverPerWarna', 'Tarif Plat Oliver (Rp/Plat)')}
-            {fieldRow('tarifPlatSMPerWarna', 'Tarif Plat SM (Rp/Plat)')}
-            {fieldRow('oliverMinOngkosPerWarna', 'Min Oliver 4W s/d 1rb (Rp/Plat)')}
-            {fieldRow('oliverDrekOverPerWarna', 'Oliver Drek Over (Rp/Drek/Warna)')}
-            {fieldRow('smMinOngkosPerWarna', 'Min SM 4W s/d 3rb (Rp/Plat)')}
-            {fieldRow('smDrekOverPerWarna', 'SM Drek Over (Rp/Drek/Warna)')}
-          </div>
-        </div>
+        )}
 
-        {/* Card 3: Pond & Transport */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Scissors className="w-4 h-4 text-emerald-700" />
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              3. Pond & Transport
-            </h3>
+        {Boolean([
+          fieldRow('biayaTransport', 'Transport Ekspedisi (Rp/Order)'),
+          fieldRow('tarifPisauPondMin', 'Min Pisau Pond (Rp/Order)'),
+          fieldRow('tarifPisauPondPerCm2', 'Pisau Pond (Rp/cm²)', true, ' /cm²'),
+          fieldRow('tarifOngkosPondPerPcs', 'Ongkos Pond (Rp/pcs)', true, ' /pcs'),
+        ].filter(Boolean).length) && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <Scissors className="w-4 h-4 text-emerald-700" />
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                3. Pond & Transport
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {fieldRow('biayaTransport', 'Transport Ekspedisi (Rp/Order)'),
+              fieldRow('tarifPisauPondMin', 'Min Pisau Pond (Rp/Order)'),
+              fieldRow('tarifPisauPondPerCm2', 'Pisau Pond (Rp/cm²)', true, ' /cm²'),
+              fieldRow('tarifOngkosPondPerPcs', 'Ongkos Pond (Rp/pcs)', true, ' /pcs')}
+            </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('biayaTransport', 'Transport Ekspedisi (Rp/Order)')}
-            {fieldRow('tarifPisauPondMin', 'Min Pisau Pond (Rp/Order)')}
-            {fieldRow('tarifPisauPondPerCm2', 'Pisau Pond (Rp/cm²)', true, ' /cm²')}
-            {fieldRow('tarifOngkosPondPerPcs', 'Ongkos Pond (Rp/pcs)', true, ' /pcs')}
+        )}
+        {Boolean([
+          fieldRow('tarifDoubleTapePerPcs', 'Bahan Double Tape (Rp/pcs)'),
+          fieldRow('tarifTenagaTapePerPcs', 'Upah Tempel Tape (Rp/pcs)'),
+          fieldRow('tarifTaliKurPerPcs', 'Bahan Tali Kur (Rp/pcs)'),
+          fieldRow('tarifPasangTaliPerPcs', 'Upah Pasang Tali (Rp/pcs)'),
+          fieldRow('tarifFinishingLipatPerPcs', 'Upah Lipat & Rakit Tas (Rp/pcs)'),
+        ].filter(Boolean).length) && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <Wrench className="w-4 h-4 text-emerald-700" />
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                4. Assembly Paperbag (Tape, Tali, Lipat)
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {fieldRow('tarifDoubleTapePerPcs', 'Bahan Double Tape (Rp/pcs)'),
+              fieldRow('tarifTenagaTapePerPcs', 'Upah Tempel Tape (Rp/pcs)'),
+              fieldRow('tarifTaliKurPerPcs', 'Bahan Tali Kur (Rp/pcs)'),
+              fieldRow('tarifPasangTaliPerPcs', 'Upah Pasang Tali (Rp/pcs)'),
+              fieldRow('tarifFinishingLipatPerPcs', 'Upah Lipat & Rakit Tas (Rp/pcs)')}
+            </div>
           </div>
-        </div>
-
-        {/* Card 4: Assembly Paperbag (Tape, Tali, Lipat) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Wrench className="w-4 h-4 text-emerald-700" />
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              4. Assembly Paperbag (Tape, Tali, Lipat)
-            </h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifDoubleTapePerPcs', 'Bahan Double Tape (Rp/pcs)')}
-            {fieldRow('tarifTenagaTapePerPcs', 'Upah Tempel Tape (Rp/pcs)')}
-            {fieldRow('tarifTaliKurPerPcs', 'Bahan Tali Kur (Rp/pcs)')}
-            {fieldRow('tarifPasangTaliPerPcs', 'Upah Pasang Tali (Rp/pcs)')}
-            {fieldRow('tarifFinishingLipatPerPcs', 'Upah Lipat & Rakit Tas (Rp/pcs)')}
-          </div>
-        </div>
-
+        )}
         {/* Card 5: Packing Kardus & Bungkus */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Package className="w-4 h-4 text-emerald-700" />
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              5. Packing Kardus & Bungkus
-            </h3>
+        {Boolean([
+          fieldRow('tarifKardusPerPcs', 'Tarif Kardus Packing (Rp/Kardus)'),
+          fieldRow('kapasitasKardusPcs', 'Isi per Kardus (Tas)', false, ' tas'),
+          fieldRow('tarifLakbanPerRoll', 'Tarif Lakban (Rp/Roll)'),
+        ].filter(Boolean).length) && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <Package className="w-4 h-4 text-emerald-700" />
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                5. Packing Kardus & Bungkus
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {fieldRow('tarifKardusPerPcs', 'Tarif Kardus Packing (Rp/Kardus)'),
+              fieldRow('kapasitasKardusPcs', 'Isi per Kardus (Tas)', false, ' tas'),
+              fieldRow('tarifLakbanPerRoll', 'Tarif Lakban (Rp/Roll)')}
+            </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifKardusPerPcs', 'Tarif Kardus Packing (Rp/Kardus)')}
-            {fieldRow('kapasitasKardusPcs', 'Isi per Kardus (Tas)', false, ' tas')}
-            {fieldRow('tarifLakbanPerRoll', 'Tarif Lakban (Rp/Roll)')}
-          </div>
-        </div>
+        )}
 
         {/* Card 6: Finishing Tambahan & Margin */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Sparkles className="w-4 h-4 text-emerald-700" />
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              6. Finishing Tambahan & Margin
-            </h3>
+        {Boolean([
+          fieldRow('tarifLaminasiGlossyPerCm2', 'Laminasi Glossy (Rp/cm²)', true, ' /cm²'),
+          fieldRow('tarifLaminasiDoffPerCm2', 'Laminasi Doff (Rp/cm²)', true, ' /cm²'),
+          fieldRow('tarifUVVarnishPerCm2', 'UV Varnish (Rp/cm²)', true, ' /cm²'),
+          fieldRow('minBiayaLaminasi', 'Min Biaya Laminasi (Rp/Order)'),
+          fieldRow('marginDefaultPct', 'Margin Profit Default (%)', false, ' %'),
+          fieldRow('negoDefaultPct', 'Batas Nego Default (%)', false, ' %'),
+        ].filter(Boolean).length) && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+              <Sparkles className="w-4 h-4 text-emerald-700" />
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                6. Finishing Tambahan & Margin
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {fieldRow('tarifLaminasiGlossyPerCm2', 'Laminasi Glossy (Rp/cm²)', true, ' /cm²'),
+              fieldRow('tarifLaminasiDoffPerCm2', 'Laminasi Doff (Rp/cm²)', true, ' /cm²'),
+              fieldRow('tarifUVVarnishPerCm2', 'UV Varnish (Rp/cm²)', true, ' /cm²'),
+              fieldRow('minBiayaLaminasi', 'Min Biaya Laminasi (Rp/Order)'),
+              fieldRow('marginDefaultPct', 'Margin Profit Default (%)', false, ' %'),
+              fieldRow('negoDefaultPct', 'Batas Nego Default (%)', false, ' %')}
+            </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifLaminasiGlossyPerCm2', 'Laminasi Glossy (Rp/cm²)', true, ' /cm²')}
-            {fieldRow('tarifLaminasiDoffPerCm2', 'Laminasi Doff (Rp/cm²)', true, ' /cm²')}
-            {fieldRow('tarifUVVarnishPerCm2', 'UV Varnish (Rp/cm²)', true, ' /cm²')}
-            {fieldRow('minBiayaLaminasi', 'Min Biaya Laminasi (Rp/Order)')}
-            {fieldRow('marginDefaultPct', 'Margin Profit Default (%)', false, ' %')}
-            {fieldRow('negoDefaultPct', 'Batas Nego Default (%)', false, ' %')}
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Modal Panduan Rumus */}

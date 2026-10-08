@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Database,
   RotateCcw,
   BookOpen,
+  Search,
   X,
   Printer,
   Layers,
@@ -38,6 +39,7 @@ export default function BukuTabunganSecurityMasterParameter({
   customParams,
   setCustomParams,
 }: BukuTabunganSecurityMasterParameterProps) {
+  const [q, setQ] = useState('');
   const [showManualModal, setShowManualModal] = useState(false);
 
   const handleChange = (key: keyof BukuTabunganSecurityMasterParams, val: number) => {
@@ -52,7 +54,7 @@ export default function BukuTabunganSecurityMasterParameter({
     toast.info(`Field dikembalikan ke standar master (${DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS[key]}).`);
   };
 
-  const isModified = React.useMemo(
+  const isModified = useMemo(
     () => BUKU_TABUNGAN_SECURITY_VISIBLE_KEYS.some((key) => (customParams[key] ?? DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS[key]) !== DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS[key]),
     [customParams]
   );
@@ -68,15 +70,20 @@ export default function BukuTabunganSecurityMasterParameter({
     toast.success('Semua parameter Buku Tabungan Security dikembalikan ke standar master.');
   };
 
+  const matchQ = (label: string) =>
+    q.trim() === '' || label.toLowerCase().includes(q.trim().toLowerCase());
+
   const fieldRow = (
     key: keyof BukuTabunganSecurityMasterParams,
     label: string,
     opts?: { rupiah?: boolean; decimal?: boolean; suffix?: string }
   ) => {
+    if (!matchQ(label)) return null;
     const isRupiah = opts?.rupiah ?? true;
     const isDecimal = opts?.decimal ?? false;
     return (
       <div
+        key={key}
         className={`p-2.5 rounded-lg border transition-all ${
           isFieldModified(key)
             ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
@@ -112,53 +119,62 @@ export default function BukuTabunganSecurityMasterParameter({
     );
   };
 
-  const card = (icon: React.ReactNode, title: string, desc: string, children: React.ReactNode) => (
-    <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-      <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-        {icon}
-        <h3 className="text-xs font-bold text-slate-800">{title}</h3>
+  const card = (icon: React.ReactNode, title: string, desc: string, children: React.ReactNode[]) => {
+    const activeChildren = React.Children.toArray(children).filter(Boolean);
+    if (activeChildren.length === 0) return null;
+    return (
+      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
+        <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+          {icon}
+          <h3 className="text-xs font-bold text-slate-800">{title}</h3>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">{activeChildren}</div>
+        <p className="text-[10px] text-slate-500">{desc}</p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">{children}</div>
-      <p className="text-[10px] text-slate-500">{desc}</p>
-    </div>
-  );
+    );
+  };
 
   return (
-    <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
-      {/* Sticky Action Bar */}
-      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1.5 flex items-center justify-between gap-3 border-b border-slate-200/80 -mt-1 mb-1">
-        <div className="flex items-center gap-2">
-          <Database className="w-4 h-4 text-emerald-700" />
-          <h2 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-            Master Parameter Buku Tabungan Security
-          </h2>
-          {isModified && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
-              Dimodifikasi
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowManualModal(true)}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all cursor-pointer shadow-2xs"
-          >
-            <BookOpen size={13} />
-            <span>Panduan</span>
-          </button>
-          {isModified && (
+    <div className="flex flex-col gap-4 pb-8 overflow-y-auto">
+      {/* Sticky Search Bar & Actions */}
+      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1 flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Cari nama parameter ..."
+            className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs font-medium"
+          />
+          {q && (
             <button
               type="button"
-              onClick={handleResetAll}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs cursor-pointer"
+              onClick={() => setQ('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
             >
-              <RotateCcw size={13} />
-              <span>Reset Standar</span>
+              <X size={13} />
             </button>
           )}
         </div>
+        <button
+          type="button"
+          onClick={() => setShowManualModal(true)}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition cursor-pointer shrink-0"
+        >
+          <BookOpen size={14} className="text-slate-500" />
+          <span>Panduan & Rumus</span>
+        </button>
+        {isModified && (
+          <button
+            type="button"
+            onClick={handleResetAll}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs transition cursor-pointer shrink-0"
+          >
+            <RotateCcw size={14} />
+            <span>Reset Semua</span>
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -166,83 +182,83 @@ export default function BukuTabunganSecurityMasterParameter({
           <Printer className="w-4 h-4 text-blue-600" />,
           '1. Umum & Kertas Cover',
           'Cover Print Inter: kertas diganti jasa; Plat/Min/Drek hanya mesin offset.',
-          <>
-            {fieldRow('jumlahHalaman', 'Jumlah Halaman', { rupiah: false })}
-            {fieldRow('umr', 'UMR Acuan')}
-            {fieldRow('tarifKertasCoverKg', 'Kertas Cover /kg')}
-            {fieldRow('upKertasCoverPct', 'Up Kertas Cover %', { rupiah: false, suffix: '%' })}
-            {fieldRow('insheetCover', 'Insheet Cover (lbr)', { rupiah: false })}
-            {fieldRow('tarifDesainCover', 'Desain Cover /order')}
-            {fieldRow('tarifPrintCoverA3', 'Print Cover A3+')}
-            {fieldRow('tarifFilmBw', 'Film BW', { decimal: true })}
-          </>
+          [
+            fieldRow('jumlahHalaman', 'Jumlah Halaman', { rupiah: false }),
+            fieldRow('umr', 'UMR Acuan'),
+            fieldRow('tarifKertasCoverKg', 'Kertas Cover /kg'),
+            fieldRow('upKertasCoverPct', 'Up Kertas Cover %', { rupiah: false, suffix: '%' }),
+            fieldRow('insheetCover', 'Insheet Cover (lbr)', { rupiah: false }),
+            fieldRow('tarifDesainCover', 'Desain Cover /order'),
+            fieldRow('tarifPrintCoverA3', 'Print Cover A3+'),
+            fieldRow('tarifFilmBw', 'Film BW', { decimal: true }),
+          ]
         )}
 
         {card(
           <Layers className="w-4 h-4 text-emerald-600" />,
           '2. Kertas Isi & Cetak Isi',
           'Isi Print Buya: kertas diganti jasa; Inter: proporsional lembar cetak.',
-          <>
-            {fieldRow('tarifKertasIsiKg', 'Kertas Isi /kg')}
-            {fieldRow('upKertasIsiPct', 'Up Kertas Isi %', { rupiah: false, suffix: '%' })}
-            {fieldRow('insheetIsi', 'Insheet Isi (lbr)', { rupiah: false })}
-            {fieldRow('tarifDesainIsiPerLbr', 'Desain Isi /lbr')}
-            {fieldRow('tarifPrintIsiA3', 'Print Isi A3+')}
-            {fieldRow('tarifFilmWarna', 'Film Warna', { decimal: true })}
-            {fieldRow('tarifJasaPrintBuya', 'Jasa Print Buya')}
-          </>
+          [
+            fieldRow('tarifKertasIsiKg', 'Kertas Isi /kg'),
+            fieldRow('upKertasIsiPct', 'Up Kertas Isi %', { rupiah: false, suffix: '%' }),
+            fieldRow('insheetIsi', 'Insheet Isi (lbr)', { rupiah: false }),
+            fieldRow('tarifDesainIsiPerLbr', 'Desain Isi /lbr'),
+            fieldRow('tarifPrintIsiA3', 'Print Isi A3+'),
+            fieldRow('tarifFilmWarna', 'Film Warna', { decimal: true }),
+            fieldRow('tarifJasaPrintBuya', 'Jasa Print Buya'),
+          ]
         )}
 
         {card(
           <Scissors className="w-4 h-4 text-amber-600" />,
           '3. Jasa UMR & Finishing Mekanik',
           'Jasa berbasis target harian UMR. Jahit & Pound memiliki batas minimum charge.',
-          <>
-            {fieldRow('tarifPisauPound', 'Pisau Pound', { decimal: true })}
-            {fieldRow('tarifSisirPaket', 'Sisir /pcs')}
-            {fieldRow('tarifBending', 'Bending')}
-            {fieldRow('tarifTintaSpotUvKg', 'Tinta Spot UV /kg')}
-            {fieldRow('tarifPlastikSringRoll', 'Plastik Sring /roll')}
-            {fieldRow('tarifLakbanRoll', 'Lakban /roll')}
-            {fieldRow('tarifKardusBox', 'Kardus /box')}
-            {fieldRow('royalty', 'Royalty')}
-            {fieldRow('tarifKawatStiching', 'Kawat Stiching (info)')}
-            {fieldRow('tarifSteplesPack', 'Steples /pack (info)')}
-          </>
+          [
+            fieldRow('tarifPisauPound', 'Pisau Pound', { decimal: true }),
+            fieldRow('tarifSisirPaket', 'Sisir /pcs'),
+            fieldRow('tarifBending', 'Bending'),
+            fieldRow('tarifTintaSpotUvKg', 'Tinta Spot UV /kg'),
+            fieldRow('tarifPlastikSringRoll', 'Plastik Sring /roll'),
+            fieldRow('tarifLakbanRoll', 'Lakban /roll'),
+            fieldRow('tarifKardusBox', 'Kardus /box'),
+            fieldRow('royalty', 'Royalty'),
+            fieldRow('tarifKawatStiching', 'Kawat Stiching (info)'),
+            fieldRow('tarifSteplesPack', 'Steples /pack (info)'),
+          ]
         )}
 
         {card(
           <Layers className="w-4 h-4 text-violet-600" />,
           '4. Laminasi, Target Harian & Batas Min',
           'Laminasi dihitung dari luas × tarif. Target UMR per ukuran standar.',
-          <>
-            {fieldRow('tarifLamGlossy', 'Laminasi Glossy /cm²', { decimal: true })}
-            {fieldRow('tarifLamDoff', 'Laminasi Doff /cm²', { decimal: true })}
-            {fieldRow('tarifUvVarnish', 'UV Varnish /cm²', { decimal: true })}
-            {fieldRow('targetSusunLipat', 'Target Susun-Lipat', { rupiah: false })}
-            {fieldRow('targetJahit', 'Target Jahit', { rupiah: false })}
-            {fieldRow('targetPound', 'Target Pound', { rupiah: false })}
-            {fieldRow('targetSpotUv', 'Target Spot UV', { rupiah: false })}
-            {fieldRow('targetEmboss', 'Target Emboss', { rupiah: false })}
-            {fieldRow('targetSring', 'Target Sring', { rupiah: false })}
-            {fieldRow('targetLakban', 'Target Lakban', { rupiah: false })}
-            {fieldRow('minJahit', 'Min Jahit')}
-            {fieldRow('minPound', 'Min Pound')}
-            {fieldRow('minBendingKombi', 'Min Bending Kombi')}
-            {fieldRow('minLaminasi', 'Min Laminasi/UV')}
-          </>
+          [
+            fieldRow('tarifLamGlossy', 'Laminasi Glossy /cm²', { decimal: true }),
+            fieldRow('tarifLamDoff', 'Laminasi Doff /cm²', { decimal: true }),
+            fieldRow('tarifUvVarnish', 'UV Varnish /cm²', { decimal: true }),
+            fieldRow('targetSusunLipat', 'Target Susun-Lipat', { rupiah: false }),
+            fieldRow('targetJahit', 'Target Jahit', { rupiah: false }),
+            fieldRow('targetPound', 'Target Pound', { rupiah: false }),
+            fieldRow('targetSpotUv', 'Target Spot UV', { rupiah: false }),
+            fieldRow('targetEmboss', 'Target Emboss', { rupiah: false }),
+            fieldRow('targetSring', 'Target Sring', { rupiah: false }),
+            fieldRow('targetLakban', 'Target Lakban', { rupiah: false }),
+            fieldRow('minJahit', 'Min Jahit'),
+            fieldRow('minPound', 'Min Pound'),
+            fieldRow('minBendingKombi', 'Min Bending Kombi'),
+            fieldRow('minLaminasi', 'Min Laminasi/UV'),
+          ]
         )}
 
         {card(
           <Percent className="w-4 h-4 text-rose-600" />,
           '5. Konstanta Roll & Laba',
           'Acuan roll per ukuran 10 X 15. Laba standar margin dengan pembulatan puluhan.',
-          <>
-            {fieldRow('ukuranPlastikSringCm', 'Plastik Sring cm/roll', { rupiah: false })}
-            {fieldRow('ukuranLakbanCm', 'Lakban cm/roll', { rupiah: false })}
-            {fieldRow('acuanSpotUvCm', 'Acuan Spot UV cm', { rupiah: false })}
-            {fieldRow('labaPct', 'Laba %', { rupiah: false, suffix: '%' })}
-          </>
+          [
+            fieldRow('ukuranPlastikSringCm', 'Plastik Sring cm/roll', { rupiah: false }),
+            fieldRow('ukuranLakbanCm', 'Lakban cm/roll', { rupiah: false }),
+            fieldRow('acuanSpotUvCm', 'Acuan Spot UV cm', { rupiah: false }),
+            fieldRow('labaPct', 'Laba %', { rupiah: false, suffix: '%' }),
+          ]
         )}
       </div>
 
