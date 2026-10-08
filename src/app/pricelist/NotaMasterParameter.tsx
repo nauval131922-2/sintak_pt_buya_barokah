@@ -1,15 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
-  Database,
   RotateCcw,
-  BookOpen,
+  HelpCircle,
   X,
   Layers,
   Printer,
   FileText,
-  Box,
+  Search,
 } from 'lucide-react';
 import {
   DEFAULT_NOTA_PARAMS,
@@ -22,6 +21,85 @@ interface NotaMasterParameterProps {
   customParams: NotaMasterParams;
   setCustomParams: React.Dispatch<React.SetStateAction<NotaMasterParams>>;
 }
+
+interface FieldDef {
+  key: keyof NotaMasterParams;
+  label: string;
+  opts?: {
+    rupiah?: boolean;
+    decimal?: boolean;
+    suffix?: string;
+  };
+}
+
+interface GroupDef {
+  title: string;
+  border: string;
+  labelCls: string;
+  fields: FieldDef[];
+}
+
+const KERTAS_NOTA_GROUPS: GroupDef[] = [
+  {
+    title: 'Kertas HVS 70 gsm (Nota 1 Rangkap)',
+    border: 'border-emerald-300',
+    labelCls: 'text-emerald-800',
+    fields: [
+      { key: 'tarifHvs70Kg', label: 'HVS 70 gsm (Rp/Kg)' },
+      { key: 'upHvsPct', label: 'Markup / Up HVS', opts: { rupiah: false, suffix: '%' } },
+    ],
+  },
+  {
+    title: 'Kertas NCR 55 gsm (Nota 2, 3 & 4 Rangkap)',
+    border: 'border-emerald-300',
+    labelCls: 'text-emerald-800',
+    fields: [
+      { key: 'tarifNcrTopRim', label: 'NCR Top (Rp/Rim Folio)' },
+      { key: 'tarifNcrMiddleRim', label: 'NCR Middle (Rp/Rim Folio)' },
+      { key: 'tarifNcrBottomRim', label: 'NCR Bottom (Rp/Rim Folio)' },
+      { key: 'upNcrPct', label: 'Markup / Up NCR', opts: { rupiah: false, suffix: '%' } },
+    ],
+  },
+];
+
+const MESIN_CETAK_GROUPS: GroupDef[] = [
+  {
+    title: 'Mesin Cetak Toko / Ryobi',
+    border: 'border-blue-300',
+    labelCls: 'text-blue-800',
+    fields: [
+      { key: 'tarifPlatRyobi', label: 'Plat Ryobi (Rp/plat)' },
+      { key: 'minOngkosCetakRyobi', label: 'Ongkos Min Cetak Ryobi (Rp/500 drek)' },
+      { key: 'tarifDrekOverRyobi', label: 'Ongkos Drek Over (Rp/drek)' },
+      { key: 'tarifDesainNota', label: 'Biaya Desain Setting (Rp)' },
+    ],
+  },
+];
+
+const JILID_FINISHING_GROUPS: GroupDef[] = [
+  {
+    title: 'Bahan & Perakitan Jilid',
+    border: 'border-amber-300',
+    labelCls: 'text-amber-800',
+    fields: [
+      { key: 'tarifKertasSamson', label: 'Kertas Samson Sampul (Rp/Rim)' },
+      { key: 'tarifKertasBoard', label: 'Kertas Board Alas (Rp/Rim)' },
+      { key: 'tarifSusunKomplit', label: 'Susun Komplit (Rp/Rim)' },
+      { key: 'tarifStaplesNota', label: 'Tarif Staples Nota (Rp/Rim)' },
+      { key: 'tarifLemNgetruk', label: 'Tarif Lem Ngetruk (Rp/Rim)' },
+    ],
+  },
+  {
+    title: 'Potong, Porporasi & Nomorator',
+    border: 'border-amber-300',
+    labelCls: 'text-amber-800',
+    fields: [
+      { key: 'tarifSisirNota', label: 'Potong Sisir (Rp/Rim)' },
+      { key: 'tarifPorporasiPerRim', label: 'Porporasi Sobekan (Rp/Rim)' },
+      { key: 'tarifNomoratorPerRim', label: 'Nomorator Seri (Rp/Rim)' },
+    ],
+  },
+];
 
 const NOTA_VISIBLE_KEYS: (keyof NotaMasterParams)[] = [
   'tarifHvs70Kg',
@@ -48,66 +126,81 @@ export default function NotaMasterParameter({
   customParams,
   setCustomParams,
 }: NotaMasterParameterProps) {
+  const [q, setQ] = useState('');
   const [showManualModal, setShowManualModal] = useState(false);
 
   const handleChange = (key: keyof NotaMasterParams, val: number) => {
     setCustomParams((prev) => ({ ...prev, [key]: Math.max(0, val) }));
   };
 
-  const isFieldModified = (key: keyof NotaMasterParams) => {
-    return (customParams[key] ?? DEFAULT_NOTA_PARAMS[key]) !== DEFAULT_NOTA_PARAMS[key];
-  };
+  const isFieldModified = (key: keyof NotaMasterParams) =>
+    (customParams[key] ?? DEFAULT_NOTA_PARAMS[key]) !== DEFAULT_NOTA_PARAMS[key];
 
   const handleResetField = (key: keyof NotaMasterParams) => {
     setCustomParams((prev) => ({ ...prev, [key]: DEFAULT_NOTA_PARAMS[key] }));
     toast.info(`Field dikembalikan ke standar master (${DEFAULT_NOTA_PARAMS[key]}).`);
   };
 
-  const isModified = React.useMemo(() => {
-    return NOTA_VISIBLE_KEYS.some((key) => (customParams[key] ?? DEFAULT_NOTA_PARAMS[key]) !== DEFAULT_NOTA_PARAMS[key]);
-  }, [customParams]);
+  const isModified = useMemo(
+    () => NOTA_VISIBLE_KEYS.some((key) => (customParams[key] ?? DEFAULT_NOTA_PARAMS[key]) !== DEFAULT_NOTA_PARAMS[key]),
+    [customParams]
+  );
 
   const handleResetAll = () => {
     setCustomParams((prev) => {
       const resetObj = { ...prev };
       NOTA_VISIBLE_KEYS.forEach((k) => {
-        (resetObj as any)[k] = DEFAULT_NOTA_PARAMS[k];
+        resetObj[k] = DEFAULT_NOTA_PARAMS[k];
       });
       return resetObj;
     });
     toast.success('Semua parameter Nota dikembalikan ke standar master.');
   };
 
-  const fieldRow = (
-    key: keyof NotaMasterParams,
-    label: string,
-    isRupiah = true,
-    isDecimal = false
-  ) => {
+  const fmtStd = (f: FieldDef) => {
+    const def = DEFAULT_NOTA_PARAMS[f.key];
+    if (f.opts?.suffix === '%') return `${def}%`;
+    if (f.opts?.rupiah === false && !f.opts?.decimal) return Number(def).toLocaleString('id-ID');
+    if (f.opts?.rupiah === false) return String(def);
+    return `Rp ${Number(def).toLocaleString('id-ID')}`;
+  };
+
+  const matchQ = (label: string) =>
+    q.trim() === '' || label.toLowerCase().includes(q.trim().toLowerCase());
+
+  const fieldRow = (f: FieldDef) => {
+    const key = f.key;
+    const isRupiah = f.opts?.rupiah ?? true;
+    const isDecimal = f.opts?.decimal ?? false;
+    const modified = isFieldModified(key);
     const rawVal = customParams[key] ?? DEFAULT_NOTA_PARAMS[key];
     const val = typeof rawVal === 'number' ? rawVal : 0;
+
     return (
       <div
+        key={key}
         className={`p-2.5 rounded-lg border transition-all ${
-          isFieldModified(key)
+          modified
             ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
             : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
         }`}
       >
         <div className="flex items-center justify-between gap-1 mb-1.5">
-          <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
-            {label}
+          <label className="text-xs font-semibold text-slate-700 truncate" title={f.label}>
+            {f.label}
           </label>
-          {isFieldModified(key) && (
-            <button
-              type="button"
-              onClick={() => handleResetField(key)}
-              className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-              title="Reset ke default"
-            >
-              <RotateCcw className="w-2.5 h-2.5" /> Def
-            </button>
-          )}
+          <div className="flex items-center gap-1 shrink-0">
+            {modified && (
+              <button
+                type="button"
+                onClick={() => handleResetField(key)}
+                className="text-amber-700 hover:text-amber-900 flex items-center bg-amber-100/80 p-1 rounded cursor-pointer shrink-0"
+                title="Reset ke standar master"
+              >
+                <RotateCcw className="w-3 h-3" />
+              </button>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-1.5">
           <ThousandInput
@@ -115,189 +208,110 @@ export default function NotaMasterParameter({
             onValueChange={(v) => handleChange(key, v || 0)}
             className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
             prefix={isRupiah ? 'Rp' : undefined}
-            suffix={isRupiah ? undefined : '%'}
+            suffix={f.opts?.suffix}
             allowDecimals={isDecimal}
           />
         </div>
+        {modified && (
+          <p className="text-[10px] text-slate-500 mt-1">Master: {fmtStd(f)}</p>
+        )}
       </div>
     );
   };
 
+  const subGroup = (g: GroupDef) => {
+    const visible = g.fields.filter((f) => matchQ(f.label));
+    if (visible.length === 0) return null;
+    return (
+      <div key={g.title} className={`rounded-lg border ${g.border} bg-white/70 p-2.5 space-y-2`}>
+        <span className={`block text-[10px] font-black uppercase tracking-wider ${g.labelCls}`}>{g.title}</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">{visible.map(fieldRow)}</div>
+      </div>
+    );
+  };
+
+  const cardShell = (cls: string, header: React.ReactNode, groups: GroupDef[], note?: React.ReactNode) => {
+    const hasVisible = groups.some((g) => g.fields.some((f) => matchQ(f.label)));
+    if (!hasVisible) return null;
+    return (
+      <div className={`${cls} rounded-xl border p-4 shadow-2xs flex flex-col gap-3 break-inside-avoid mb-4`}>
+        {header}
+        <div className="flex flex-col gap-2.5">{groups.map(subGroup)}</div>
+        {note}
+      </div>
+    );
+  };
+
+  const cardHeader = (badgeCls: string, badge: string, Icon: any, iconCls: string, title: string) => (
+    <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+      <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${badgeCls}`}>{badge}</span>
+      <Icon className={`w-4 h-4 ${iconCls}`} />
+      <h3 className="text-xs font-bold text-slate-800">{title}</h3>
+    </div>
+  );
+
   return (
-    <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
-      {/* Sticky Action Bar */}
-      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1.5 flex items-center justify-between gap-3 border-b border-slate-200/80 -mt-1 mb-1">
-        <div className="flex items-center gap-2">
-          <Database className="w-4 h-4 text-emerald-700" />
-          <h2 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-            Master Parameter Nota 1 Warna
-          </h2>
-          {isModified && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
-              Dimodifikasi
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowManualModal(true)}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all cursor-pointer shadow-2xs"
-          >
-            <BookOpen size={13} />
-            <span>Panduan</span>
-          </button>
-          {isModified && (
+    <div className="flex flex-col gap-4 pb-8 overflow-y-auto">
+      {/* Sticky Search Bar & Actions */}
+      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1 flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Cari nama parameter ..."
+            className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs font-medium"
+          />
+          {q && (
             <button
               type="button"
-              onClick={handleResetAll}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs cursor-pointer"
+              onClick={() => setQ('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
             >
-              <RotateCcw size={13} />
-              <span>Reset Standar</span>
+              <X size={13} />
             </button>
           )}
         </div>
+        <button
+          type="button"
+          onClick={() => setShowManualModal(true)}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition cursor-pointer shrink-0"
+        >
+          <HelpCircle size={14} className="text-slate-500" />
+          <span>Panduan & Rumus</span>
+        </button>
+        {isModified && (
+          <button
+            type="button"
+            onClick={handleResetAll}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs transition cursor-pointer shrink-0"
+          >
+            <RotateCcw size={14} />
+            <span>Reset Semua</span>
+          </button>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Card 1: Bahan Kertas Nota (HVS 70 & NCR 55) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <FileText className="w-4 h-4 text-emerald-700" />
-            <h3 className="text-xs font-bold text-slate-800">1. Bahan Kertas Nota (HVS 70 &amp; NCR 55)</h3>
-          </div>
+      {/* Grid 2 Kolom Seimbang */}
+      <div className="columns-1 md:columns-2 gap-4">
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('text-emerald-900 bg-emerald-100', 'Kertas', FileText, 'text-emerald-700', '1. Bahan Kertas Nota (HVS 70 & NCR 55)'),
+          KERTAS_NOTA_GROUPS
+        )}
 
-          {/* Sub: Kertas HVS 70 (1 Rangkap) */}
-          <div>
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Kertas HVS 70 gsm (Nota 1 Rangkap):
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {fieldRow('tarifHvs70Kg', 'HVS 70 gsm (Rp/Kg)')}
-              {fieldRow('upHvsPct', 'Markup / Up HVS', false)}
-            </div>
-          </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('text-blue-900 bg-blue-100', 'Mesin', Printer, 'text-blue-600', '2. Mesin Cetak Toko / Ryobi'),
+          MESIN_CETAK_GROUPS
+        )}
 
-          {/* Sub: Kertas NCR 55 (2, 3 & 4 Rangkap) */}
-          <div className="pt-2 border-t border-slate-100">
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Kertas NCR 55 gsm (Nota 2, 3 &amp; 4 Rangkap):
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {fieldRow('tarifNcrTopRim', 'NCR Top (Rp/Rim Folio)')}
-              {fieldRow('tarifNcrMiddleRim', 'NCR Middle (Rp/Rim Folio)')}
-              {fieldRow('tarifNcrBottomRim', 'NCR Bottom (Rp/Rim Folio)')}
-              {fieldRow('upNcrPct', 'Markup / Up NCR', false)}
-            </div>
-          </div>
-        </div>
-
-        {/* Card 2: Mesin Cetak Toko / Ryobi */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Printer className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Mesin Cetak Toko / Ryobi</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifPlatRyobi', 'Plat Ryobi (Rp/plat)')}
-            {fieldRow('minOngkosCetakRyobi', 'Ongkos Min Cetak Ryobi (Rp/500 drek)')}
-            {fieldRow('tarifDrekOverRyobi', 'Ongkos Drek Over (Rp/drek)')}
-            {fieldRow('tarifDesainNota', 'Biaya Desain Setting (Rp)')}
-          </div>
-        </div>
-
-        {/* Card 3: Ongkos Jilid & Finishing */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Layers className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">3. Ongkos Jilid & Finishing</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <div
-              className={`p-2.5 rounded-lg border transition-all ${
-                isFieldModified('tarifKertasSamson') || isFieldModified('tarifKertasBoard')
-                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-              }`}
-            >
-              <div className="flex items-center justify-between gap-1 mb-1.5">
-                <label className="text-xs font-semibold text-slate-700 truncate" title="Cover Samson & Board (Rp/Rim)">
-                  Cover Samson & Board (Rp/Rim)
-                </label>
-                {(isFieldModified('tarifKertasSamson') || isFieldModified('tarifKertasBoard')) && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleResetField('tarifKertasSamson');
-                      handleResetField('tarifKertasBoard');
-                    }}
-                    className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                    title="Reset ke default"
-                  >
-                    <RotateCcw className="w-2.5 h-2.5" /> Def
-                  </button>
-                )}
-              </div>
-              <div className="flex items-center gap-1.5">
-                <ThousandInput
-                  value={customParams.tarifKertasSamson + customParams.tarifKertasBoard}
-                  onValueChange={(v) => {
-                    handleChange('tarifKertasSamson', Math.round((v || 0) * 0.56));
-                    handleChange('tarifKertasBoard', Math.round((v || 0) * 0.44));
-                  }}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                  prefix="Rp"
-                />
-              </div>
-            </div>
-
-            {fieldRow('tarifSusunKomplit', 'Susun Komplit (Rp/Rim)')}
-
-            <div
-              className={`p-2.5 rounded-lg border transition-all ${
-                isFieldModified('tarifStaplesNota') || isFieldModified('tarifLemNgetruk')
-                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-                  : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-              }`}
-            >
-              <div className="flex items-center justify-between gap-1 mb-1.5">
-                <label className="text-xs font-semibold text-slate-700 truncate" title="Staples & Lem Ngetruk (Rp/Rim)">
-                  Staples & Lem Ngetruk (Rp/Rim)
-                </label>
-                {(isFieldModified('tarifStaplesNota') || isFieldModified('tarifLemNgetruk')) && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleResetField('tarifStaplesNota');
-                      handleResetField('tarifLemNgetruk');
-                    }}
-                    className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-                    title="Reset ke default"
-                  >
-                    <RotateCcw className="w-2.5 h-2.5" /> Def
-                  </button>
-                )}
-              </div>
-              <div className="flex items-center gap-1.5">
-                <ThousandInput
-                  value={customParams.tarifStaplesNota + customParams.tarifLemNgetruk}
-                  onValueChange={(v) => {
-                    handleChange('tarifStaplesNota', Math.round((v || 0) * 0.6));
-                    handleChange('tarifLemNgetruk', Math.round((v || 0) * 0.4));
-                  }}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-                  prefix="Rp"
-                />
-              </div>
-            </div>
-
-            {fieldRow('tarifSisirNota', 'Potong Sisir (Rp/Rim)')}
-            {fieldRow('tarifPorporasiPerRim', 'Porporasi Sobekan (Rp/Rim)')}
-            {fieldRow('tarifNomoratorPerRim', 'Nomorator Seri (Rp/Rim)')}
-          </div>
-        </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('text-amber-900 bg-amber-100', 'Jilid', Layers, 'text-amber-600', '3. Ongkos Jilid & Finishing'),
+          JILID_FINISHING_GROUPS
+        )}
       </div>
 
       {/* Modal Manual Pengguna Master Parameter */}
@@ -314,7 +328,7 @@ export default function NotaMasterParameter({
             <div className="px-6 py-4 bg-emerald-900 text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-emerald-800/80 rounded-xl border border-emerald-700 text-emerald-200">
-                  <Database className="w-5 h-5" />
+                  <HelpCircle className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="text-base font-bold tracking-tight">Manual Pengguna & Pemetaan Sumber Excel (Nota 1 & 2 Warna)</h3>

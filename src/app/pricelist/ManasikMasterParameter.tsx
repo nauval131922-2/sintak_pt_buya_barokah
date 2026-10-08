@@ -1,17 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
-  Database,
-  BookOpen,
   RotateCcw,
   Sparkles,
+  HelpCircle,
   X,
-  Sliders,
-  Layers,
   Printer,
-  FileText,
-  Box,
+  BookOpen,
+  Search,
 } from 'lucide-react';
 import {
   DEFAULT_MANASIK_PARAMS,
@@ -24,6 +21,137 @@ interface ManasikMasterParameterProps {
   customParams: ManasikMasterParams;
   setCustomParams: React.Dispatch<React.SetStateAction<ManasikMasterParams>>;
 }
+
+interface FieldDef {
+  key: keyof ManasikMasterParams;
+  label: string;
+  badge?: string;
+  opts?: {
+    rupiah?: boolean;
+    decimal?: boolean;
+    suffix?: string;
+  };
+}
+
+interface GroupDef {
+  title: string;
+  border: string;
+  labelCls: string;
+  fields: FieldDef[];
+}
+
+const KOSONGAN_GROUPS: GroupDef[] = [
+  {
+    title: 'Bahan Baku Kertas',
+    border: 'border-amber-300',
+    labelCls: 'text-amber-800',
+    fields: [
+      { key: 'tarifKertasHvs70Kg', label: 'Kertas HVS 70 gsm / Kg', badge: 'Folio HVS' },
+    ],
+  },
+  {
+    title: 'Insheet Kertas Cetak Isi (Toleransi)',
+    border: 'border-amber-300',
+    labelCls: 'text-amber-800',
+    fields: [
+      { key: 'insheetIsiBuya', label: 'Insheet Buya', badge: 'Print Buya', opts: { rupiah: false } },
+      { key: 'insheetIsiRyobi', label: 'Insheet Ryobi', badge: 'Ryobi', opts: { rupiah: false } },
+      { key: 'insheetIsiOliver', label: 'Insheet Oliver', badge: 'Oliver', opts: { rupiah: false } },
+    ],
+  },
+  {
+    title: 'Ongkos Cetak & Plat Mesin',
+    border: 'border-amber-300',
+    labelCls: 'text-amber-800',
+    fields: [
+      { key: 'tarifPrintBuyaPerLbr', label: 'Cetak Print Buya', badge: 'Rp/lbr' },
+      { key: 'ryobiPlatUnitIsi', label: 'Plat Ryobi Isi', badge: 'Rp/plat' },
+      { key: 'oliverPlatUnitIsi', label: 'Plat Oliver Isi', badge: 'Rp/plat' },
+      { key: 'tarifSpiralManasik', label: 'Spiral Kawat Alternatif', badge: 'Spiral' },
+    ],
+  },
+];
+
+const CUSTOM_COVER_GROUPS: GroupDef[] = [
+  {
+    title: 'Harga Isi Kosongan (per Buku)',
+    border: 'border-emerald-300',
+    labelCls: 'text-emerald-800',
+    fields: [
+      { key: 'hargaIsiKosongan208', label: 'Isi 212 Hal (2026)', badge: '212 Hal' },
+      { key: 'hargaIsiKosongan192', label: 'Isi 192 Hal (Lama)', badge: '192 Hal' },
+      { key: 'hargaIsiKosongan128', label: 'Isi 128 Hal', badge: '128 Hal' },
+      { key: 'hargaIsiKosongan96', label: 'Isi 96 Hal', badge: '96 Hal' },
+    ],
+  },
+  {
+    title: 'Cetak Cover & Sisipan PT',
+    border: 'border-emerald-300',
+    labelCls: 'text-emerald-800',
+    fields: [
+      { key: 'tarifPrintCoverA3', label: 'Print Digital Cover A3+', badge: 'AC 230 Digital' },
+      { key: 'tarifPrintSisipanA3', label: 'Print Sisipan PT A3+', badge: 'Sisipan PT' },
+      { key: 'tarifDesainCover', label: 'Jasa Desain Cover', badge: 'Cover Baru' },
+      { key: 'insheetCover', label: 'Insheet Print Digital', badge: 'lbr A3+', opts: { rupiah: false } },
+    ],
+  },
+  {
+    title: 'Cover Offset Oliver (Plano 79x109)',
+    border: 'border-emerald-300',
+    labelCls: 'text-emerald-800',
+    fields: [
+      { key: 'oliverPlatUnitCover', label: 'Plat Oliver', badge: 'Rp/plat' },
+      { key: 'oliverMinOngkosCover', label: 'Min. Cetak Oliver', badge: '4 Plat' },
+      { key: 'oliverDrekOverCover', label: 'Tarif Drek Over', badge: 'Rp/drek' },
+      { key: 'insheetOffsetCover', label: 'Insheet Cover Oliver', badge: 'plano', opts: { rupiah: false } },
+    ],
+  },
+  {
+    title: 'Jilid Staples, Tali & Finishing',
+    border: 'border-emerald-300',
+    labelCls: 'text-emerald-800',
+    fields: [
+      { key: 'tarifTaliKurPerPcs', label: 'Bahan Tali Kur', badge: 'Rp/pcs' },
+      { key: 'tarifPasangTali', label: 'Jasa Pasang Tali', badge: 'Rp/pcs' },
+      { key: 'tarifLubangBor', label: 'Lubang Bor Mata Ayam', badge: 'Rp/pcs' },
+      { key: 'tarifBendingPerCm2', label: 'Tarif Lem Panas', badge: 'Bending' },
+    ],
+  },
+];
+
+const MINI_TIKTOK_GROUPS: GroupDef[] = [
+  {
+    title: 'Print Digital Cocard (A3+ 2 Muka)',
+    border: 'border-purple-300',
+    labelCls: 'text-purple-800',
+    fields: [
+      { key: 'tarifPrintMiniTikTokA3', label: 'Print Cocard AC 310 A3+', badge: '20 Kartu/A3+' },
+      { key: 'tarifDesainMiniTikTok', label: 'Jasa Desain Cocard', badge: 'Rp/order' },
+    ],
+  },
+  {
+    title: 'Cetak Offset Oliver (Plano 79x109 AC 310)',
+    border: 'border-purple-300',
+    labelCls: 'text-purple-800',
+    fields: [
+      { key: 'oliverPlatUnitCover', label: 'Plat Oliver (2 Muka)', badge: '8 Plat' },
+      { key: 'oliverMinOngkosCover', label: 'Min. Cetak Oliver', badge: 'Rp/order' },
+      { key: 'oliverDrekOverCover', label: 'Tarif Drek Over', badge: 'Rp/drek' },
+      { key: 'insheetOffsetCover', label: 'Insheet Toleransi', badge: 'plano', opts: { rupiah: false } },
+    ],
+  },
+  {
+    title: 'Aksesoris & Perlengkapan Cocard',
+    border: 'border-purple-300',
+    labelCls: 'text-purple-800',
+    fields: [
+      { key: 'tarifRingBinderMini', label: 'Ring Binder 3cm', badge: 'Rp/pcs' },
+      { key: 'tarifTaliCocardMini', label: 'Tali Cocard Mini', badge: 'Rp/pcs' },
+      { key: 'tarifPlastikZiplockMini', label: 'Plastik Ziplock', badge: 'Rp/pcs' },
+      { key: 'tarifPisauPoundMini', label: 'Pisau Pond Custom', badge: 'Rp/order' },
+    ],
+  },
+];
 
 const MANASIK_VISIBLE_KEYS: (keyof ManasikMasterParams)[] = [
   'hargaIsiKosongan96',
@@ -53,312 +181,206 @@ const MANASIK_VISIBLE_KEYS: (keyof ManasikMasterParams)[] = [
   'tarifRingBinderMini',
   'tarifPlastikZiplockMini',
   'tarifPisauPoundMini',
+  'tarifSpiralManasik',
+  'oliverPlatUnitCover',
+  'oliverMinOngkosCover',
+  'oliverDrekOverCover',
+  'insheetOffsetCover',
+  'tarifTaliKurPerPcs',
 ];
 
 export default function ManasikMasterParameter({
   customParams,
   setCustomParams,
 }: ManasikMasterParameterProps) {
+  const [q, setQ] = useState('');
   const [showManualModal, setShowManualModal] = useState(false);
+
   const handleChange = (key: keyof ManasikMasterParams, val: number) => {
     setCustomParams((prev) => ({ ...prev, [key]: Math.max(0, val) }));
   };
 
-  const isFieldModified = (key: keyof ManasikMasterParams) => {
-    return (customParams[key] ?? DEFAULT_MANASIK_PARAMS[key]) !== DEFAULT_MANASIK_PARAMS[key];
-  };
+  const isFieldModified = (key: keyof ManasikMasterParams) =>
+    (customParams[key] ?? DEFAULT_MANASIK_PARAMS[key]) !== DEFAULT_MANASIK_PARAMS[key];
 
   const handleResetField = (key: keyof ManasikMasterParams) => {
     setCustomParams((prev) => ({ ...prev, [key]: DEFAULT_MANASIK_PARAMS[key] }));
     toast.info(`Field dikembalikan ke standar master (${DEFAULT_MANASIK_PARAMS[key]}).`);
   };
 
-  const isModified = React.useMemo(() => {
-    return MANASIK_VISIBLE_KEYS.some(
-      (key) => (customParams[key] ?? DEFAULT_MANASIK_PARAMS[key]) !== DEFAULT_MANASIK_PARAMS[key]
-    );
-  }, [customParams]);
+  const isModified = useMemo(
+    () => MANASIK_VISIBLE_KEYS.some((key) => (customParams[key] ?? DEFAULT_MANASIK_PARAMS[key]) !== DEFAULT_MANASIK_PARAMS[key]),
+    [customParams]
+  );
 
   const handleResetAll = () => {
     setCustomParams({ ...DEFAULT_MANASIK_PARAMS });
     toast.success('Semua parameter Buku Manasik dikembalikan ke standar master 2026.');
   };
 
-  const fieldRow = (
-    key: keyof ManasikMasterParams,
-    label: string,
-    isRupiah = true,
-    isDecimal = false,
-    badge?: string,
-    badgeColor: 'emerald' | 'amber' | 'blue' | 'purple' | 'cyan' | 'slate' = 'slate'
-  ) => {
-    const badgeBg = {
-      emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-      amber: 'bg-amber-50 text-amber-700 border-amber-200',
-      blue: 'bg-blue-50 text-blue-700 border-blue-200',
-      purple: 'bg-purple-50 text-purple-700 border-purple-200',
-      cyan: 'bg-cyan-50 text-cyan-700 border-cyan-200',
-      slate: 'bg-slate-100 text-slate-600 border-slate-200',
-    }[badgeColor];
+  const fmtStd = (f: FieldDef) => {
+    const def = DEFAULT_MANASIK_PARAMS[f.key];
+    if (f.opts?.suffix === '%') return `${def}%`;
+    if (f.opts?.rupiah === false && !f.opts?.decimal) return Number(def).toLocaleString('id-ID');
+    if (f.opts?.rupiah === false) return String(def);
+    return `Rp ${Number(def).toLocaleString('id-ID')}`;
+  };
 
+  const matchQ = (label: string) =>
+    q.trim() === '' || label.toLowerCase().includes(q.trim().toLowerCase());
+
+  const fieldRow = (f: FieldDef) => {
+    const key = f.key;
+    const isRupiah = f.opts?.rupiah ?? true;
+    const isDecimal = f.opts?.decimal ?? false;
+    const modified = isFieldModified(key);
     const rawVal = customParams[key] ?? DEFAULT_MANASIK_PARAMS[key];
     const val = typeof rawVal === 'number' ? rawVal : 0;
 
     return (
       <div
+        key={key}
         className={`p-2.5 rounded-lg border transition-all ${
-          isFieldModified(key)
+          modified
             ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
             : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
         }`}
       >
         <div className="flex items-center justify-between gap-1 mb-1.5">
-          <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
-            {label}
+          <label className="text-xs font-semibold text-slate-700 truncate" title={f.label}>
+            {f.label}
           </label>
           <div className="flex items-center gap-1 shrink-0">
-            {badge && (
-              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${badgeBg}`}>
-                {badge}
+            {f.badge && (
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded border bg-slate-100 text-slate-600 border-slate-200">
+                {f.badge}
               </span>
             )}
-            {isFieldModified(key) && (
+            {modified && (
               <button
                 type="button"
                 onClick={() => handleResetField(key)}
-                className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer"
-                title="Reset ke default"
+                className="text-amber-700 hover:text-amber-900 flex items-center bg-amber-100/80 p-1 rounded cursor-pointer shrink-0"
+                title="Reset ke standar master"
               >
-                <RotateCcw className="w-2.5 h-2.5" /> Def
+                <RotateCcw className="w-3 h-3" />
               </button>
             )}
           </div>
         </div>
         <div className="flex items-center gap-1.5">
-          {isRupiah ? (
-            <ThousandInput
-              value={val}
-              onValueChange={(v) => handleChange(key, v || 0)}
-              className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-              prefix="Rp"
-              allowDecimals={isDecimal}
-            />
-          ) : (
-            <input
-              type="number"
-              value={val}
-              onChange={(e) => handleChange(key, Number(e.target.value) || 0)}
-              className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-            />
-          )}
+          <ThousandInput
+            value={val}
+            onValueChange={(v) => handleChange(key, v || 0)}
+            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
+            prefix={isRupiah ? 'Rp' : undefined}
+            suffix={f.opts?.suffix}
+            allowDecimals={isDecimal}
+          />
         </div>
+        {modified && (
+          <p className="text-[10px] text-slate-500 mt-1">Master: {fmtStd(f)}</p>
+        )}
       </div>
     );
   };
 
+  const subGroup = (g: GroupDef) => {
+    const visible = g.fields.filter((f) => matchQ(f.label));
+    if (visible.length === 0) return null;
+    return (
+      <div key={g.title} className={`rounded-lg border ${g.border} bg-white/70 p-2.5 space-y-2`}>
+        <span className={`block text-[10px] font-black uppercase tracking-wider ${g.labelCls}`}>{g.title}</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">{visible.map(fieldRow)}</div>
+      </div>
+    );
+  };
+
+  const cardShell = (cls: string, header: React.ReactNode, groups: GroupDef[], note?: React.ReactNode) => {
+    const hasVisible = groups.some((g) => g.fields.some((f) => matchQ(f.label)));
+    if (!hasVisible) return null;
+    return (
+      <div className={`${cls} rounded-xl border p-4 shadow-2xs flex flex-col gap-3 break-inside-avoid mb-4`}>
+        {header}
+        <div className="flex flex-col gap-2.5">{groups.map(subGroup)}</div>
+        {note}
+      </div>
+    );
+  };
+
+  const cardHeader = (badgeCls: string, badge: string, Icon: any, iconCls: string, title: string) => (
+    <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+      <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${badgeCls}`}>{badge}</span>
+      <Icon className={`w-4 h-4 ${iconCls}`} />
+      <h3 className="text-xs font-bold text-slate-800">{title}</h3>
+    </div>
+  );
+
   return (
-    <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
-      {/* Sticky Action Bar */}
-      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1.5 flex items-center justify-between gap-3 border-b border-slate-200/80 -mt-1 mb-1">
-        <div className="flex items-center gap-2">
-          <Database className="w-4 h-4 text-emerald-700" />
-          <h2 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-            Master Parameter Buku Manasik
-          </h2>
-          {isModified && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
-              Dimodifikasi
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowManualModal(true)}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all cursor-pointer shadow-2xs"
-          >
-            <BookOpen size={13} />
-            <span>Panduan</span>
-          </button>
-          {isModified && (
+    <div className="flex flex-col gap-4 pb-8 overflow-y-auto">
+      {/* Sticky Search Bar & Actions */}
+      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1 flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Cari nama parameter ..."
+            className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs font-medium"
+          />
+          {q && (
             <button
               type="button"
-              onClick={handleResetAll}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs cursor-pointer"
+              onClick={() => setQ('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
             >
-              <RotateCcw size={13} />
-              <span>Reset Standar</span>
+              <X size={13} />
             </button>
           )}
         </div>
+        <button
+          type="button"
+          onClick={() => setShowManualModal(true)}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition cursor-pointer shrink-0"
+        >
+          <HelpCircle size={14} className="text-slate-500" />
+          <span>Panduan & Rumus</span>
+        </button>
+        {isModified && (
+          <button
+            type="button"
+            onClick={handleResetAll}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs transition cursor-pointer shrink-0"
+          >
+            <RotateCcw size={14} />
+            <span>Reset Semua</span>
+          </button>
+        )}
       </div>
 
-      {/* Grid Parameter: Dikelompokkan Presisi Sesuai 3 Model / Varian Produk (Urutan: Kosongan -> Custom Cover -> Cocard) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Varian 1: Kosongan (10 x 15,5 cm) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3.5">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <div className="flex items-center gap-2">
-              <Printer className="w-4 h-4 text-amber-700" />
-              <h3 className="text-xs font-bold text-slate-800">1. Kosongan (10 x 15,5 cm)</h3>
-            </div>
-            <span className="text-[10px] font-bold bg-amber-50 text-amber-800 px-2 py-0.5 rounded border border-amber-200">
-              Varian 1
-            </span>
-          </div>
+      {/* Grid 2 Kolom Seimbang */}
+      <div className="columns-1 md:columns-2 gap-4">
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('text-amber-900 bg-amber-100', 'Varian 1', Printer, 'text-amber-700', '1. Kosongan (10 x 15,5 cm)'),
+          KOSONGAN_GROUPS
+        )}
 
-          {/* Sub: Bahan Baku Kertas */}
-          <div>
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Bahan Baku Kertas:
-            </span>
-            <div className="grid grid-cols-1 gap-2">
-              {fieldRow('tarifKertasHvs70Kg', 'Kertas HVS 70 gsm / Kg', true, false, 'Folio HVS', 'emerald')}
-            </div>
-          </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('text-emerald-900 bg-emerald-100', 'Varian 2', BookOpen, 'text-emerald-700', '2. Custom Cover (10 x 15,5 cm)'),
+          CUSTOM_COVER_GROUPS
+        )}
 
-          {/* Sub: Insheet Toleransi Mesin */}
-          <div className="pt-2 border-t border-slate-100">
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Insheet Kertas Cetak Isi (Toleransi):
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {fieldRow('insheetIsiBuya', 'Insheet Buya', false, false, 'Print Buya', 'amber')}
-              {fieldRow('insheetIsiRyobi', 'Insheet Ryobi', false, false, 'Ryobi', 'cyan')}
-              {fieldRow('insheetIsiOliver', 'Insheet Oliver', false, false, 'Oliver', 'purple')}
-            </div>
-          </div>
-
-          {/* Sub: Ongkos Cetak & Plat Mesin */}
-          <div className="pt-2 border-t border-slate-100">
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Ongkos Cetak & Plat Mesin:
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {fieldRow('tarifPrintBuyaPerLbr', 'Cetak Print Buya', true, false, 'Rp/lbr', 'amber')}
-              {fieldRow('ryobiPlatUnitIsi', 'Plat Ryobi Isi', true, false, 'Rp/plat', 'cyan')}
-              {fieldRow('oliverPlatUnitIsi', 'Plat Oliver Isi', true, false, 'Rp/plat', 'purple')}
-              {fieldRow('tarifSpiralManasik', 'Spiral Kawat Alternatif', true, false, 'Spiral', 'cyan')}
-            </div>
-          </div>
-        </div>
-
-        {/* Varian 2: Custom Cover (10 x 15,5 cm) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3.5">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <div className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-emerald-700" />
-              <h3 className="text-xs font-bold text-slate-800">2. Custom Cover (10 x 15,5 cm)</h3>
-            </div>
-            <span className="text-[10px] font-bold bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200">
-              Varian 2
-            </span>
-          </div>
-
-          {/* Sub: Harga Isi Kosongan */}
-          <div>
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Harga Isi Kosongan (per Buku):
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {fieldRow('hargaIsiKosongan208', 'Isi 212 Hal (2026)', true, false, '212 Hal', 'emerald')}
-              {fieldRow('hargaIsiKosongan192', 'Isi 192 Hal (Lama)', true, false, '192 Hal', 'slate')}
-              {fieldRow('hargaIsiKosongan128', 'Isi 128 Hal', true, false, '128 Hal', 'slate')}
-              {fieldRow('hargaIsiKosongan96', 'Isi 96 Hal', true, false, '96 Hal', 'slate')}
-            </div>
-          </div>
-
-          {/* Sub: Cetak Cover & Sisipan */}
-          <div className="pt-2 border-t border-slate-100">
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Cetak Cover & Sisipan PT:
-            </span>
-            <div className="grid grid-cols-1 gap-2">
-              {fieldRow('tarifPrintCoverA3', 'Print Digital Cover A3+', true, false, 'AC 230 Digital', 'blue')}
-              {fieldRow('tarifPrintSisipanA3', 'Print Sisipan PT A3+', true, false, 'Sisipan PT', 'blue')}
-              {fieldRow('tarifDesainCover', 'Jasa Desain Cover', true, false, 'Cover Baru', 'blue')}
-              {fieldRow('insheetCover', 'Insheet Print Digital', false, false, 'lbr A3+', 'amber')}
-            </div>
-          </div>
-
-          {/* Sub: Cover Offset Oliver */}
-          <div className="pt-2 border-t border-slate-100">
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Cover Offset Oliver (Plano 79x109):
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {fieldRow('oliverPlatUnitCover', 'Plat Oliver', true, false, 'Rp/plat', 'purple')}
-              {fieldRow('oliverMinOngkosCover', 'Min. Cetak Oliver', true, false, '4 Plat', 'emerald')}
-              {fieldRow('oliverDrekOverCover', 'Tarif Drek Over', true, false, 'Rp/drek', 'slate')}
-              {fieldRow('insheetOffsetCover', 'Insheet Cover Oliver', false, false, 'plano', 'amber')}
-            </div>
-          </div>
-
-          {/* Sub: Jilid & Tali Kur */}
-          <div className="pt-2 border-t border-slate-100">
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Jilid Staples, Tali & Finishing:
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {fieldRow('tarifTaliKurPerPcs', 'Bahan Tali Kur', true, false, 'Rp/pcs', 'amber')}
-              {fieldRow('tarifPasangTali', 'Jasa Pasang Tali', true, false, 'Rp/pcs', 'amber')}
-              {fieldRow('tarifLubangBor', 'Lubang Bor Mata Ayam', true, false, 'Rp/pcs', 'blue')}
-              {fieldRow('tarifBendingPerCm2', 'Tarif Lem Panas', true, false, 'Bending', 'emerald')}
-            </div>
-          </div>
-        </div>
-
-        {/* Varian 3: Cocard Mini TikTok (6,3 x 10,3 cm) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3.5">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-600" />
-              <h3 className="text-xs font-bold text-slate-800">3. Cocard Mini TikTok (6,3 x 10,3 cm)</h3>
-            </div>
-            <span className="text-[10px] font-bold bg-purple-50 text-purple-800 px-2 py-0.5 rounded border border-purple-200">
-              Varian 3
-            </span>
-          </div>
-
-          {/* Sub: Bahan Cetak & Desain Cocard */}
-          <div>
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Print Digital Cocard (A3+ 2 Muka):
-            </span>
-            <div className="grid grid-cols-1 gap-2">
-              {fieldRow('tarifPrintMiniTikTokA3', 'Print Cocard AC 310 A3+', true, false, '20 Kartu/A3+', 'purple')}
-              {fieldRow('tarifDesainMiniTikTok', 'Jasa Desain Cocard', true, false, 'Rp/order', 'purple')}
-            </div>
-          </div>
-
-          {/* Sub: Cetak Offset Oliver Cocard */}
-          <div className="pt-2 border-t border-slate-100">
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Cetak Offset Oliver (Plano 79x109 AC 310):
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {fieldRow('oliverPlatUnitCover', 'Plat Oliver (2 Muka)', true, false, '8 Plat', 'purple')}
-              {fieldRow('oliverMinOngkosCover', 'Min. Cetak Oliver', true, false, 'Rp/order', 'emerald')}
-              {fieldRow('oliverDrekOverCover', 'Tarif Drek Over', true, false, 'Rp/drek', 'slate')}
-              {fieldRow('insheetOffsetCover', 'Insheet Toleransi', false, false, 'plano', 'amber')}
-            </div>
-          </div>
-
-          {/* Sub: Aksesoris & Perlengkapan Cocard */}
-          <div className="pt-2 border-t border-slate-100">
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Aksesoris & Perlengkapan Cocard:
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {fieldRow('tarifRingBinderMini', 'Ring Binder 3cm', true, false, 'Rp/pcs', 'purple')}
-              {fieldRow('tarifTaliCocardMini', 'Tali Cocard Mini', true, false, 'Rp/pcs', 'purple')}
-              {fieldRow('tarifPlastikZiplockMini', 'Plastik Ziplock', true, false, 'Rp/pcs', 'purple')}
-              {fieldRow('tarifPisauPoundMini', 'Pisau Pond Custom', true, false, 'Rp/order', 'purple')}
-            </div>
-          </div>
-        </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('text-purple-900 bg-purple-100', 'Varian 3', Sparkles, 'text-purple-600', '3. Cocard Mini TikTok (6,3 x 10,3 cm)'),
+          MINI_TIKTOK_GROUPS
+        )}
       </div>
+
+      {/* Manual Modal */}
       {showManualModal && (
         <div
           onClick={() => setShowManualModal(false)}
@@ -372,7 +394,7 @@ export default function ManasikMasterParameter({
             <div className="px-6 py-4 bg-emerald-900 text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-emerald-800/80 rounded-xl border border-emerald-700 text-emerald-200">
-                  <Database className="w-5 h-5" />
+                  <HelpCircle className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="text-base font-bold tracking-tight">Manual Pengguna & Pemetaan Sumber Excel</h3>

@@ -1,17 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
-  Database,
-  BookOpen,
   RotateCcw,
-  Sparkles,
+  HelpCircle,
   X,
-  Sliders,
   Layers,
-  Printer,
-  FileText,
   Box,
+  Search,
 } from 'lucide-react';
 import {
   DEFAULT_YASIN_PARAMS,
@@ -24,6 +20,100 @@ interface YasinMasterParameterProps {
   customParams: YasinMasterParams;
   setCustomParams: React.Dispatch<React.SetStateAction<YasinMasterParams>>;
 }
+
+interface FieldDef {
+  key: keyof YasinMasterParams;
+  label: string;
+  opts?: {
+    rupiah?: boolean;
+    decimal?: boolean;
+    suffix?: string;
+  };
+}
+
+interface GroupDef {
+  title: string;
+  border: string;
+  labelCls: string;
+  fields: FieldDef[];
+}
+
+const SOFTCOVER_GROUPS: GroupDef[] = [
+  {
+    title: 'Harga Isi Kitab Yasin (per Buku)',
+    border: 'border-emerald-300',
+    labelCls: 'text-emerald-800',
+    fields: [
+      { key: 'hargaIsiYasin64', label: 'Yasin 64 Hal' },
+      { key: 'hargaIsiYasin96', label: 'Yasin 96 Hal' },
+      { key: 'hargaIsiYasin112', label: 'Yasin 112 Hal' },
+      { key: 'hargaIsiYasin128', label: 'Yasin 128 Hal' },
+      { key: 'hargaIsiYasin144', label: 'Yasin 144 Hal' },
+      { key: 'hargaIsiYasin192', label: 'Yasin 192 Hal' },
+    ],
+  },
+  {
+    title: 'Cetak Cover Softcover (AC 230) & Hardcover (AP 150)',
+    border: 'border-emerald-300',
+    labelCls: 'text-emerald-800',
+    fields: [
+      { key: 'tarifPrintCoverA3', label: 'Print Cover A3+ Soft (AC 230)' },
+      { key: 'tarifPrintCoverHC', label: 'Print Cover A3+ Hard (AP 150)' },
+      { key: 'tarifDesainCover', label: 'Jasa Desain Cover & Foto' },
+      { key: 'insheetCover', label: 'Insheet Cover Soft (lbr A3+)', opts: { rupiah: false, suffix: ' A3+' } },
+      { key: 'insheetCoverHC', label: 'Insheet Cover Hard (lbr A3+)', opts: { rupiah: false, suffix: ' A3+' } },
+    ],
+  },
+  {
+    title: 'Finishing Jilid Dasar & Softcover',
+    border: 'border-emerald-300',
+    labelCls: 'text-emerald-800',
+    fields: [
+      { key: 'tarifSisipLembar', label: 'Ongkos Sisip /lbr' },
+      { key: 'tarifStaplesYasin', label: 'Ongkos Staples /buku' },
+      { key: 'tarifSisirYasin', label: 'Ongkos Sisir Potong /buku' },
+      { key: 'tarifPasangCoverSoft', label: 'Pasang Cover Soft /buku' },
+      { key: 'tarifPlastikOppYasin', label: 'Plastik OPP Soft /pcs' },
+    ],
+  },
+];
+
+const HARDCOVER_GROUPS: GroupDef[] = [
+  {
+    title: 'Sisipan Halaman Foto & Doa (AP 120 gsm)',
+    border: 'border-purple-300',
+    labelCls: 'text-purple-800',
+    fields: [
+      { key: 'tarifPrintSisipanFotoA3', label: 'Print Sisipan Foto FC A3+' },
+      { key: 'tarifPrintSisipanTeksA3', label: 'Print Sisipan Teks 2M A3+' },
+      { key: 'insheetSisipan', label: 'Insheet Sisipan', opts: { rupiah: false, suffix: ' lbr' } },
+    ],
+  },
+  {
+    title: 'Komponen & Aksesoris Hardcover',
+    border: 'border-purple-300',
+    labelCls: 'text-purple-800',
+    fields: [
+      { key: 'tarifBoardHardcover', label: 'Board Greyboard No.30/40', opts: { decimal: true } },
+      { key: 'tarifCasingInHardcover', label: 'Jasa Casing-In Hardcover', opts: { decimal: true } },
+      { key: 'tarifSkiblat', label: 'Skiblat Sambung Dalam' },
+      { key: 'tarifPitaRumbaiPapercraft', label: 'Pita Pembatas Rumbai' },
+      { key: 'tarifSikuSudutEmas', label: 'Siku Sudut Emas (4 Pcs)' },
+      { key: 'tarifEmbossFoilGembos', label: 'Foil Gembos Emboss Setup' },
+      { key: 'tarifPlastikOppHC', label: 'Plastik OPP Hardcover /pcs' },
+    ],
+  },
+  {
+    title: 'Tarif Laminasi Cover (Glossy & Doff)',
+    border: 'border-purple-300',
+    labelCls: 'text-purple-800',
+    fields: [
+      { key: 'tarifLaminasiGlossyCm2', label: 'Laminasi Glossy /cm²', opts: { decimal: true } },
+      { key: 'tarifLaminasiDoffCm2', label: 'Laminasi Doff /cm²', opts: { decimal: true } },
+      { key: 'minLaminasi', label: 'Min. Order Laminasi' },
+    ],
+  },
+];
 
 const YASIN_VISIBLE_KEYS: (keyof YasinMasterParams)[] = [
   'hargaIsiYasin64',
@@ -61,66 +151,81 @@ export default function YasinMasterParameter({
   customParams,
   setCustomParams,
 }: YasinMasterParameterProps) {
+  const [q, setQ] = useState('');
   const [showManualModal, setShowManualModal] = useState(false);
+
   const handleChange = (key: keyof YasinMasterParams, val: number) => {
     setCustomParams((prev) => ({ ...prev, [key]: Math.max(0, val) }));
   };
 
-  const isFieldModified = (key: keyof YasinMasterParams) => {
-    return (customParams[key] ?? DEFAULT_YASIN_PARAMS[key]) !== DEFAULT_YASIN_PARAMS[key];
-  };
+  const isFieldModified = (key: keyof YasinMasterParams) =>
+    (customParams[key] ?? DEFAULT_YASIN_PARAMS[key]) !== DEFAULT_YASIN_PARAMS[key];
 
   const handleResetField = (key: keyof YasinMasterParams) => {
     setCustomParams((prev) => ({ ...prev, [key]: DEFAULT_YASIN_PARAMS[key] }));
     toast.info(`Field dikembalikan ke standar master (${DEFAULT_YASIN_PARAMS[key]}).`);
   };
 
-  const isModified = React.useMemo(() => {
-    return YASIN_VISIBLE_KEYS.some((key) => (customParams[key] ?? DEFAULT_YASIN_PARAMS[key]) !== DEFAULT_YASIN_PARAMS[key]);
-  }, [customParams]);
+  const isModified = useMemo(
+    () => YASIN_VISIBLE_KEYS.some((key) => (customParams[key] ?? DEFAULT_YASIN_PARAMS[key]) !== DEFAULT_YASIN_PARAMS[key]),
+    [customParams]
+  );
 
   const handleResetAll = () => {
     setCustomParams((prev) => {
       const resetObj = { ...prev };
       YASIN_VISIBLE_KEYS.forEach((k) => {
-        (resetObj as any)[k] = DEFAULT_YASIN_PARAMS[k];
+        resetObj[k] = DEFAULT_YASIN_PARAMS[k];
       });
       return resetObj;
     });
     toast.success('Semua parameter Buku Surat Yasin dikembalikan ke standar master.');
   };
 
-  const fieldRow = (
-    key: keyof YasinMasterParams,
-    label: string,
-    isRupiah = true,
-    isDecimal = false,
-    customUnit?: string
-  ) => {
+  const fmtStd = (f: FieldDef) => {
+    const def = DEFAULT_YASIN_PARAMS[f.key];
+    if (f.opts?.suffix === '%') return `${def}%`;
+    if (f.opts?.rupiah === false && !f.opts?.decimal) return Number(def).toLocaleString('id-ID');
+    if (f.opts?.rupiah === false) return String(def);
+    return `Rp ${Number(def).toLocaleString('id-ID')}`;
+  };
+
+  const matchQ = (label: string) =>
+    q.trim() === '' || label.toLowerCase().includes(q.trim().toLowerCase());
+
+  const fieldRow = (f: FieldDef) => {
+    const key = f.key;
+    const isRupiah = f.opts?.rupiah ?? true;
+    const isDecimal = f.opts?.decimal ?? false;
+    const modified = isFieldModified(key);
     const rawVal = customParams[key] ?? DEFAULT_YASIN_PARAMS[key];
     const val = typeof rawVal === 'number' ? rawVal : 0;
+
     return (
       <div
+        key={key}
         className={`p-2.5 rounded-lg border transition-all ${
-          isFieldModified(key)
+          modified
             ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
             : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
         }`}
       >
         <div className="flex items-center justify-between gap-1 mb-1.5">
-          <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
-            {label}
+          <label className="text-xs font-semibold text-slate-700 truncate" title={f.label}>
+            {f.label}
           </label>
-          {isFieldModified(key) && (
-            <button
-              type="button"
-              onClick={() => handleResetField(key)}
-              className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-              title="Reset ke default"
-            >
-              <RotateCcw className="w-2.5 h-2.5" /> Def
-            </button>
-          )}
+          <div className="flex items-center gap-1 shrink-0">
+            {modified && (
+              <button
+                type="button"
+                onClick={() => handleResetField(key)}
+                className="text-amber-700 hover:text-amber-900 flex items-center bg-amber-100/80 p-1 rounded cursor-pointer shrink-0"
+                title="Reset ke standar master"
+              >
+                <RotateCcw className="w-3 h-3" />
+              </button>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-1.5">
           <ThousandInput
@@ -128,162 +233,104 @@ export default function YasinMasterParameter({
             onValueChange={(v) => handleChange(key, v || 0)}
             className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
             prefix={isRupiah ? 'Rp' : undefined}
-            suffix={isRupiah ? undefined : (customUnit !== undefined ? customUnit : '%')}
+            suffix={f.opts?.suffix}
             allowDecimals={isDecimal}
           />
         </div>
+        {modified && (
+          <p className="text-[10px] text-slate-500 mt-1">Master: {fmtStd(f)}</p>
+        )}
       </div>
     );
   };
 
+  const subGroup = (g: GroupDef) => {
+    const visible = g.fields.filter((f) => matchQ(f.label));
+    if (visible.length === 0) return null;
+    return (
+      <div key={g.title} className={`rounded-lg border ${g.border} bg-white/70 p-2.5 space-y-2`}>
+        <span className={`block text-[10px] font-black uppercase tracking-wider ${g.labelCls}`}>{g.title}</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">{visible.map(fieldRow)}</div>
+      </div>
+    );
+  };
+
+  const cardShell = (cls: string, header: React.ReactNode, groups: GroupDef[], note?: React.ReactNode) => {
+    const hasVisible = groups.some((g) => g.fields.some((f) => matchQ(f.label)));
+    if (!hasVisible) return null;
+    return (
+      <div className={`${cls} rounded-xl border p-4 shadow-2xs flex flex-col gap-3 break-inside-avoid mb-4`}>
+        {header}
+        <div className="flex flex-col gap-2.5">{groups.map(subGroup)}</div>
+        {note}
+      </div>
+    );
+  };
+
+  const cardHeader = (badgeCls: string, badge: string, Icon: any, iconCls: string, title: string) => (
+    <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+      <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${badgeCls}`}>{badge}</span>
+      <Icon className={`w-4 h-4 ${iconCls}`} />
+      <h3 className="text-xs font-bold text-slate-800">{title}</h3>
+    </div>
+  );
+
   return (
-    <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
-      {/* Sticky Action Bar */}
-      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1.5 flex items-center justify-between gap-3 border-b border-slate-200/80 -mt-1 mb-1">
-        <div className="flex items-center gap-2">
-          <Database className="w-4 h-4 text-emerald-700" />
-          <h2 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-            Master Parameter Buku Yasin
-          </h2>
-          {isModified && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
-              Dimodifikasi
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowManualModal(true)}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all cursor-pointer shadow-2xs"
-          >
-            <BookOpen size={13} />
-            <span>Panduan</span>
-          </button>
-          {isModified && (
+    <div className="flex flex-col gap-4 pb-8 overflow-y-auto">
+      {/* Sticky Search Bar & Actions */}
+      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1 flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Cari nama parameter ..."
+            className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs font-medium"
+          />
+          {q && (
             <button
               type="button"
-              onClick={handleResetAll}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs cursor-pointer"
+              onClick={() => setQ('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
             >
-              <RotateCcw size={13} />
-              <span>Reset Standar</span>
+              <X size={13} />
             </button>
           )}
         </div>
+        <button
+          type="button"
+          onClick={() => setShowManualModal(true)}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition cursor-pointer shrink-0"
+        >
+          <HelpCircle size={14} className="text-slate-500" />
+          <span>Panduan & Rumus</span>
+        </button>
+        {isModified && (
+          <button
+            type="button"
+            onClick={handleResetAll}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs transition cursor-pointer shrink-0"
+          >
+            <RotateCcw size={14} />
+            <span>Reset Semua</span>
+          </button>
+        )}
       </div>
 
-      {/* Grid Parameter: Dikelompokkan Sesuai 2 Model Yasin (Softcover vs Hardcover) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Kolom 1: Isi Kitab Yasin & Softcover */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3.5">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <div className="flex items-center gap-2">
-              <Box className="w-4 h-4 text-emerald-700" />
-              <h3 className="text-xs font-bold text-slate-800">1. Isi Kitab Yasin Kosongan & Softcover</h3>
-            </div>
-            <span className="text-[10px] font-bold bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200">
-              Softcover
-            </span>
-          </div>
+      {/* Grid 2 Kolom Seimbang */}
+      <div className="columns-1 md:columns-2 gap-4">
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('text-emerald-900 bg-emerald-100', 'Softcover', Box, 'text-emerald-700', '1. Isi Kitab Yasin Kosongan & Softcover'),
+          SOFTCOVER_GROUPS
+        )}
 
-          {/* Sub: Database Isi Yasin */}
-          <div>
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Harga Isi Kitab Yasin (per Buku):
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {fieldRow('hargaIsiYasin64', 'Yasin 64 Hal')}
-              {fieldRow('hargaIsiYasin96', 'Yasin 96 Hal')}
-              {fieldRow('hargaIsiYasin112', 'Yasin 112 Hal')}
-              {fieldRow('hargaIsiYasin128', 'Yasin 128 Hal')}
-              {fieldRow('hargaIsiYasin144', 'Yasin 144 Hal')}
-              {fieldRow('hargaIsiYasin192', 'Yasin 192 Hal')}
-            </div>
-          </div>
-
-          {/* Sub: Cover AC 230 & Desain */}
-          <div className="pt-2 border-t border-slate-100">
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Cetak Cover Softcover (AC 230) & Hardcover (AP 150):
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {fieldRow('tarifPrintCoverA3', 'Print Cover A3+ Soft (AC 230)')}
-              {fieldRow('tarifPrintCoverHC', 'Print Cover A3+ Hard (AP 150)')}
-              {fieldRow('tarifDesainCover', 'Jasa Desain Cover & Foto')}
-              {fieldRow('insheetCover', 'Insheet Cover Soft (lbr A3+)', false, false, 'A3+')}
-              {fieldRow('insheetCoverHC', 'Insheet Cover Hard (lbr A3+)', false, false, 'A3+')}
-            </div>
-          </div>
-
-          {/* Sub: Finishing Jilid Dasar & Softcover */}
-          <div className="pt-2 border-t border-slate-100">
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Finishing Jilid Dasar &amp; Softcover:
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {fieldRow('tarifSisipLembar', 'Ongkos Sisip /lbr')}
-              {fieldRow('tarifStaplesYasin', 'Ongkos Staples /buku')}
-              {fieldRow('tarifSisirYasin', 'Ongkos Sisir Potong /buku')}
-              {fieldRow('tarifPasangCoverSoft', 'Pasang Cover Soft /buku')}
-              {fieldRow('tarifPlastikOppYasin', 'Plastik OPP Soft /pcs')}
-            </div>
-          </div>
-        </div>
-
-        {/* Kolom 2: Komponen Khusus Hardcover, Sisipan & Foil Gembos */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3.5">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <div className="flex items-center gap-2">
-              <Layers className="w-4 h-4 text-purple-600" />
-              <h3 className="text-xs font-bold text-slate-800">2. Hardcover, Sisipan & Foil Gembos</h3>
-            </div>
-            <span className="text-[10px] font-bold bg-purple-50 text-purple-800 px-2 py-0.5 rounded border border-purple-200">
-              Hardcover
-            </span>
-          </div>
-
-          {/* Sub: Cetak Sisipan Foto & Teks */}
-          <div>
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Sisipan Halaman Foto & Doa (AP 120 gsm):
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {fieldRow('tarifPrintSisipanFotoA3', 'Print Sisipan Foto FC A3+')}
-              {fieldRow('tarifPrintSisipanTeksA3', 'Print Sisipan Teks 2M A3+')}
-              {fieldRow('insheetSisipan', 'Insheet Sisipan', false, false, 'lbr')}
-            </div>
-          </div>
-
-          {/* Sub: Perakitan Hardcover & Aksesoris */}
-          <div className="pt-2 border-t border-slate-100">
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Komponen & Aksesoris Hardcover:
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {fieldRow('tarifBoardHardcover', 'Board Greyboard No.30/40', true, true)}
-              {fieldRow('tarifCasingInHardcover', 'Jasa Casing-In Hardcover', true, true)}
-              {fieldRow('tarifSkiblat', 'Skiblat Sambung Dalam')}
-              {fieldRow('tarifPitaRumbaiPapercraft', 'Pita Pembatas Rumbai')}
-              {fieldRow('tarifSikuSudutEmas', 'Siku Sudut Emas (4 Pcs)')}
-              {fieldRow('tarifEmbossFoilGembos', 'Foil Gembos Emboss Setup')}
-              {fieldRow('tarifPlastikOppHC', 'Plastik OPP Hardcover /pcs')}
-            </div>
-          </div>
-
-          {/* Sub: Tarif Laminasi Cover */}
-          <div className="pt-2 border-t border-slate-100">
-            <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
-              • Tarif Laminasi Cover (Glossy &amp; Doff):
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {fieldRow('tarifLaminasiGlossyCm2', 'Laminasi Glossy /cm²', true, true)}
-              {fieldRow('tarifLaminasiDoffCm2', 'Laminasi Doff /cm²', true, true)}
-              {fieldRow('minLaminasi', 'Min. Order Laminasi')}
-            </div>
-          </div>
-        </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('text-purple-900 bg-purple-100', 'Hardcover', Layers, 'text-purple-600', '2. Hardcover, Sisipan & Foil Gembos'),
+          HARDCOVER_GROUPS
+        )}
       </div>
 
       {/* Modal Manual Pengguna Master Parameter */}
@@ -300,7 +347,7 @@ export default function YasinMasterParameter({
             <div className="px-6 py-4 bg-emerald-900 text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-emerald-800/80 rounded-xl border border-emerald-700 text-emerald-200">
-                  <Database className="w-5 h-5" />
+                  <HelpCircle className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="text-base font-bold tracking-tight">Manual Pengguna & Pemetaan Sumber Excel</h3>
